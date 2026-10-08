@@ -6,6 +6,7 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
@@ -37,17 +38,9 @@ internal sealed partial class BadgeControl : AdaptiveVisualControl
             _ => (12d, new Thickness(6, 1, 6, 2)),
         };
 
-        var text = new TextBlock
-        {
-            Text = _model.Text,
-            FontSize = fontSize,
-            FontWeight = FontWeights.SemiBold,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
         var badge = new Border
         {
             Padding = padding,
-            Child = text,
             CornerRadius = _model.Shape switch
             {
                 BadgeShape.Square => new CornerRadius(2),
@@ -57,6 +50,7 @@ internal sealed partial class BadgeControl : AdaptiveVisualControl
         };
 
         // Badges are neutral unless they ask for a semantic style.
+        Brush foreground;
         var color = ChartTheme.ResolveSemantic(_model.Style ?? "default", isDarkTheme);
         if (color is ChartColor semantic)
         {
@@ -65,19 +59,21 @@ internal sealed partial class BadgeControl : AdaptiveVisualControl
                 badge.Background = ChartTheme.ToBrush(semantic.WithOpacity(isDarkTheme ? 0.22 : 0.14));
                 badge.BorderBrush = ChartTheme.ToBrush(semantic.WithOpacity(0.45));
                 badge.BorderThickness = new Thickness(1);
-                text.Foreground = ChartTheme.ToBrush(semantic);
+                foreground = ChartTheme.ToBrush(semantic);
             }
             else
             {
                 badge.Background = ChartTheme.ToBrush(semantic);
-                text.Foreground = ChartTheme.ToBrush(ChartTheme.GetContrastingText(semantic));
+                foreground = ChartTheme.ToBrush(ChartTheme.GetContrastingText(semantic));
             }
         }
         else
         {
             badge.Background = ChartTheme.ToBrush(ChartTheme.GetTrackColor(isDarkTheme));
-            text.Foreground = ChartTheme.ToBrush(ChartTheme.GetTextColor(isDarkTheme, secondary: false));
+            foreground = ChartTheme.ToBrush(ChartTheme.GetTextColor(isDarkTheme, secondary: false));
         }
+
+        badge.Child = CreateContent(fontSize, foreground);
 
         if (!string.IsNullOrWhiteSpace(_model.Tooltip))
         {
@@ -85,6 +81,41 @@ internal sealed partial class BadgeControl : AdaptiveVisualControl
         }
 
         Content = badge;
-        AutomationProperties.SetName(this, _model.Text);
+
+        // An icon-only badge is described by its tooltip.
+        AutomationProperties.SetName(this, _model.Text.Length > 0 ? _model.Text : _model.Tooltip ?? string.Empty);
+    }
+
+    private UIElement CreateContent(double fontSize, Brush foreground)
+    {
+        var text = new TextBlock
+        {
+            Text = _model.Text,
+            FontSize = fontSize,
+            FontWeight = FontWeights.SemiBold,
+            VerticalAlignment = VerticalAlignment.Center,
+            Foreground = foreground,
+        };
+        if (_model.IconGlyph is null)
+        {
+            return text;
+        }
+
+        var icon = new FontIcon
+        {
+            Glyph = _model.IconGlyph,
+            FontSize = fontSize,
+            Foreground = foreground,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        if (_model.Text.Length == 0)
+        {
+            return icon;
+        }
+
+        var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        content.Children.Add(_model.IconPosition == BadgeIconPosition.After ? text : icon);
+        content.Children.Add(_model.IconPosition == BadgeIconPosition.After ? icon : text);
+        return content;
     }
 }

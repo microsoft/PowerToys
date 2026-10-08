@@ -62,6 +62,16 @@ internal sealed record NetworkConnectionDetails(NetworkInterfaceType Type, strin
         _ => null,
     };
 
+    /// <summary>Returns the Adaptive Cards icon name for an adapter type, such as <c>Wifi1</c>.</summary>
+    public static string GetTypeIconName(NetworkInterfaceType? type) => type switch
+    {
+        NetworkInterfaceType.Wireless80211 => "Wifi1",
+        NetworkInterfaceType.Ethernet or NetworkInterfaceType.GigabitEthernet or NetworkInterfaceType.FastEthernetT
+            or NetworkInterfaceType.FastEthernetFx or NetworkInterfaceType.Ethernet3Megabit => "NetworkAdapter",
+        NetworkInterfaceType.Wwanpp or NetworkInterfaceType.Wwanpp2 => "CellularData1",
+        _ => "Globe",
+    };
+
     /// <summary>
     /// Picks the address to show for a family: a public (global) address first, then a private
     /// one, and a link-local address last, since it only works on the local network segment.

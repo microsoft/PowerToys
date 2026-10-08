@@ -26,6 +26,7 @@ internal static class AdaptiveVisualElements
         new("Chart.HorizontalBar", (json, warnings) => BarChartModel.Parse(json, BarOrientation.Horizontal, warnings), model => new BarChartControl((BarChartModel)model)),
         new("ProgressBar", (json, warnings) => ProgressBarModel.Parse(json, warnings), model => new ProgressBarControl((ProgressBarModel)model)),
         new("Badge", (json, warnings) => BadgeModel.Parse(json, warnings), model => new BadgeControl((BadgeModel)model)),
+        new("Icon", (json, warnings) => IconModel.Parse(json, warnings), model => new IconControl((IconModel)model)),
     ];
 
     /// <summary>Gets the registration that lets these elements update in place.</summary>

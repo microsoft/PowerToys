@@ -26,11 +26,18 @@ internal enum BadgeSize
     ExtraLarge,
 }
 
+internal enum BadgeIconPosition
+{
+    Before,
+    After,
+}
+
 /// <summary>
 /// The parsed form of an Adaptive Cards <c>Badge</c> element: <c>text</c>, <c>style</c>
 /// (<c>default</c>, <c>subtle</c>, <c>informative</c>, <c>accent</c>, <c>good</c>,
-/// <c>attention</c>, <c>warning</c>), <c>appearance</c>, <c>shape</c>, <c>size</c>, and
-/// <c>tooltip</c>.
+/// <c>attention</c>, <c>warning</c>), <c>appearance</c>, <c>shape</c>, <c>size</c>,
+/// <c>icon</c> (a Fluent icon name, optionally followed by <c>,filled</c>), <c>iconPosition</c>,
+/// and <c>tooltip</c>.
 /// </summary>
 internal sealed class BadgeModel : IAdaptiveVisualModel
 {
@@ -43,6 +50,11 @@ internal sealed class BadgeModel : IAdaptiveVisualModel
     public BadgeShape Shape { get; init; }
 
     public BadgeSize Size { get; init; }
+
+    /// <summary>Gets the icon glyph to draw, or null when the badge has no icon or it has no glyph.</summary>
+    public string? IconGlyph { get; init; }
+
+    public BadgeIconPosition IconPosition { get; init; }
 
     public string? Tooltip { get; init; }
 
@@ -61,6 +73,8 @@ internal sealed class BadgeModel : IAdaptiveVisualModel
                 Appearance = ChartJson.GetEnum(element, "appearance", BadgeAppearance.Filled, warnings),
                 Shape = ChartJson.GetEnum(element, "shape", BadgeShape.Rounded, warnings),
                 Size = ChartJson.GetEnum(element, "size", BadgeSize.Medium, warnings),
+                IconGlyph = GetIconGlyph(ChartJson.GetString(element, "icon"), warnings),
+                IconPosition = ChartJson.GetEnum(element, "iconPosition", BadgeIconPosition.Before, warnings),
                 Tooltip = ChartJson.GetString(element, "tooltip"),
                 IncrementalState = ChartJson.Canonicalize(element),
             };
@@ -70,5 +84,22 @@ internal sealed class BadgeModel : IAdaptiveVisualModel
             warnings.Add($"The element JSON could not be read: {ex.Message}");
             return new BadgeModel();
         }
+    }
+
+    private static string? GetIconGlyph(string? icon, ICollection<string> warnings)
+    {
+        if (string.IsNullOrWhiteSpace(icon))
+        {
+            return null;
+        }
+
+        var (name, filled) = FluentIconGlyphs.ParseReference(icon);
+        if (FluentIconGlyphs.TryGetGlyph(name, filled, out var glyph))
+        {
+            return glyph;
+        }
+
+        warnings.Add($"icon '{name}' has no matching glyph.");
+        return null;
     }
 }

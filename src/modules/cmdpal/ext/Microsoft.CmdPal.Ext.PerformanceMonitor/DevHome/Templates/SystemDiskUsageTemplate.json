@@ -140,6 +140,7 @@
                 {
                   "type": "Badge",
                   "text": "${diskType}",
+                  "icon": "HardDrive",
                   "style": "informative",
                   "appearance": "tint",
                   "fallback": "drop"

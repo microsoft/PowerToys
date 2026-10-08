@@ -48,6 +48,16 @@ public class NetworkConnectionDetailsTests
     }
 
     [TestMethod]
+    public void AdapterTypesHaveIcons()
+    {
+        Assert.AreEqual("Wifi1", NetworkConnectionDetails.GetTypeIconName(NetworkInterfaceType.Wireless80211));
+        Assert.AreEqual("NetworkAdapter", NetworkConnectionDetails.GetTypeIconName(NetworkInterfaceType.Ethernet));
+        Assert.AreEqual("CellularData1", NetworkConnectionDetails.GetTypeIconName(NetworkInterfaceType.Wwanpp));
+        Assert.AreEqual("Globe", NetworkConnectionDetails.GetTypeIconName(NetworkInterfaceType.Tunnel));
+        Assert.AreEqual("Globe", NetworkConnectionDetails.GetTypeIconName(null));
+    }
+
+    [TestMethod]
     public void InterfaceIdIsReadFromTheAdapterId()
     {
         var id = Guid.NewGuid();

@@ -1275,6 +1275,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             ContentData["netLinkSpeed"] = LinkSpeedToString(currentData.GetLinkSpeed(_networkIndex));
 
             var connection = GetConnectionDetails(currentData.GetNetworkId(_networkIndex));
+            ContentData["netIcon"] = NetworkConnectionDetails.GetTypeIconName(connection?.Type);
             if (connection is not null)
             {
                 if (NetworkConnectionDetails.GetTypeResourceKey(connection.Type) is string typeKey)
@@ -1713,6 +1714,7 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
                 ContentData["batteryStatus"] = Resources.GetResource("Battery_Usage_Unknown");
                 ContentData["batteryTimeRemaining"] = string.Empty;
                 ContentData["batteryStatusStyle"] = "default";
+                ContentData["batteryIcon"] = string.Empty;
                 ContentJson["batteryPercent"] = 0;
                 ContentData["batteryColor"] = "neutral";
                 return;
@@ -1726,6 +1728,7 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             ContentData["batteryTimeRemaining"] = GetTimeRemainingText(stats);
             ContentData["batteryStatusStyle"] = stats.IsCharging ? "good" : stats.IsOnAcPower ? "informative" : "accent";
             ContentData["batteryColor"] = GetChargeColor(stats.IsCharging, stats.ChargePercent);
+            ContentData["batteryIcon"] = GetChargeIconName(stats.IsCharging, stats.ChargePercent);
             ContentJson["batteryPercent"] = Math.Round(Math.Max(0, stats.ChargePercent) * 100);
 
             stats.ReadReport();
@@ -1766,6 +1769,17 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
         > 0.5f => "good",
         > 0.2f => "warning",
         _ => "attention",
+    };
+
+    /// <summary>
+    /// Returns the Adaptive Cards icon for the charge: <c>BatteryCharge</c> while charging,
+    /// otherwise <c>Battery0</c> to <c>Battery10</c>. An unknown charge has no icon.
+    /// </summary>
+    internal static string GetChargeIconName(bool isCharging, float chargePercent) => chargePercent switch
+    {
+        < 0 => string.Empty,
+        _ when isCharging => "BatteryCharge",
+        _ => "Battery" + ((int)Math.Round(Math.Min(chargePercent, 1) * 10)).ToString(CultureInfo.InvariantCulture),
     };
 
     protected override string GetTemplatePath(WidgetPageState page)

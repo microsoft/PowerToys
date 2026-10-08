@@ -324,11 +324,23 @@ internal static class SampleChartsTemplate
           "spacing": "medium",
           "columns": [
             { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Default", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Accent", "style": "accent", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Good", "style": "good", "appearance": "tint", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Warning", "style": "warning", "appearance": "tint", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Accent", "style": "accent", "icon": "Info", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Good", "style": "good", "appearance": "tint", "icon": "CheckmarkCircle,filled", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Warning", "style": "warning", "appearance": "tint", "icon": "Warning", "fallback": "drop" } ] },
             { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Attention", "style": "attention", "shape": "circular", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Large", "size": "large", "appearance": "tint", "fallback": "drop" } ] }
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Large", "size": "large", "appearance": "tint", "icon": "Wifi1", "iconPosition": "After", "fallback": "drop" } ] }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "spacing": "medium",
+          "columns": [
+            { "type": "Column", "width": "auto", "verticalContentAlignment": "center", "items": [ { "type": "Icon", "name": "DeveloperBoard", "size": "Small", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "verticalContentAlignment": "center", "items": [ { "type": "Icon", "name": "Ram", "color": "Accent", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "verticalContentAlignment": "center", "items": [ { "type": "Icon", "name": "HardDrive", "size": "Medium", "color": "Good", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "verticalContentAlignment": "center", "items": [ { "type": "Icon", "name": "Wifi1", "size": "Large", "color": "Warning", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "verticalContentAlignment": "center", "items": [ { "type": "Icon", "name": "BatteryCharge", "size": "xLarge", "color": "Attention", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "verticalContentAlignment": "center", "items": [ { "type": "Icon", "name": "Calendar", "size": "xxLarge", "style": "Filled", "fallback": "drop" } ] }
           ]
         }
       ]

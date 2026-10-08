@@ -21,6 +21,21 @@
                         {
                           "type": "Column",
                           "width": "auto",
+                          "verticalContentAlignment": "center",
+                          "items": [
+                            {
+                              "type": "Icon",
+                              "name": "DeveloperBoard",
+                              "size": "xSmall",
+                              "fallback": "drop"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "spacing": "small",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -33,6 +48,7 @@
                         {
                           "type": "Column",
                           "width": "stretch",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -83,6 +99,21 @@
                         {
                           "type": "Column",
                           "width": "auto",
+                          "verticalContentAlignment": "center",
+                          "items": [
+                            {
+                              "type": "Icon",
+                              "name": "Ram",
+                              "size": "xSmall",
+                              "fallback": "drop"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "spacing": "small",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -95,6 +126,7 @@
                         {
                           "type": "Column",
                           "width": "stretch",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -145,6 +177,21 @@
                         {
                           "type": "Column",
                           "width": "auto",
+                          "verticalContentAlignment": "center",
+                          "items": [
+                            {
+                              "type": "Icon",
+                              "name": "Desktop",
+                              "size": "xSmall",
+                              "fallback": "drop"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "spacing": "small",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -157,6 +204,7 @@
                         {
                           "type": "Column",
                           "width": "stretch",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -213,6 +261,21 @@
                         {
                           "type": "Column",
                           "width": "auto",
+                          "verticalContentAlignment": "center",
+                          "items": [
+                            {
+                              "type": "Icon",
+                              "name": "HardDrive",
+                              "size": "xSmall",
+                              "fallback": "drop"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "spacing": "small",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -225,6 +288,7 @@
                         {
                           "type": "Column",
                           "width": "stretch",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -275,6 +339,21 @@
                         {
                           "type": "Column",
                           "width": "auto",
+                          "verticalContentAlignment": "center",
+                          "items": [
+                            {
+                              "type": "Icon",
+                              "name": "${network.netIcon}",
+                              "size": "xSmall",
+                              "fallback": "drop"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "spacing": "small",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -287,6 +366,7 @@
                         {
                           "type": "Column",
                           "width": "stretch",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -337,6 +417,21 @@
                         {
                           "type": "Column",
                           "width": "auto",
+                          "verticalContentAlignment": "center",
+                          "items": [
+                            {
+                              "type": "Icon",
+                              "name": "${battery.batteryIcon}",
+                              "size": "xSmall",
+                              "fallback": "drop"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "spacing": "small",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -349,6 +444,7 @@
                         {
                           "type": "Column",
                           "width": "stretch",
+                          "verticalContentAlignment": "center",
                           "items": [
                             {
                               "type": "TextBlock",
@@ -392,10 +488,36 @@
                   "height": "stretch",
                   "items": [
                     {
-                      "type": "TextBlock",
-                      "size": "small",
-                      "weight": "bolder",
-                      "text": "%CPUUsage_Widget_Template/Up_Time%"
+                      "type": "ColumnSet",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "verticalContentAlignment": "center",
+                          "items": [
+                            {
+                              "type": "Icon",
+                              "name": "Clock",
+                              "size": "xSmall",
+                              "fallback": "drop"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "spacing": "small",
+                          "verticalContentAlignment": "center",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "weight": "bolder",
+                              "text": "%CPUUsage_Widget_Template/Up_Time%"
+                            }
+                          ]
+                        }
+                      ]
                     },
                     {
                       "type": "TextBlock",

@@ -144,6 +144,16 @@ public class CardFormattingTests
     }
 
     [TestMethod]
+    public void ChargeIconReflectsTheChargeLevel()
+    {
+        Assert.AreEqual("Battery10", SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: false, 1f));
+        Assert.AreEqual("Battery7", SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: false, 0.66f));
+        Assert.AreEqual("Battery0", SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: false, 0.02f));
+        Assert.AreEqual("BatteryCharge", SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: true, 0.4f));
+        Assert.AreEqual(string.Empty, SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: false, -1f));
+    }
+
+    [TestMethod]
     public void MemoryUseShowsTheSizeUnit()
     {
         const ulong BytesPerGigabyte = 1024UL * 1024 * 1024;

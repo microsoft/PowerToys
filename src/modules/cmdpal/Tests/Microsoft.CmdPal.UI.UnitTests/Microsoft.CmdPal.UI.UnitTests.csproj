@@ -135,6 +135,8 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\MonitorService.cs" Link="Services\MonitorService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartAxisRange.cs" Link="Controls\AdaptiveCards\Charts\ChartAxisRange.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\BadgeModel.cs" Link="Controls\AdaptiveCards\Charts\BadgeModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\FluentIconGlyphs.cs" Link="Controls\AdaptiveCards\Charts\FluentIconGlyphs.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\IconModel.cs" Link="Controls\AdaptiveCards\Charts\IconModel.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\BarChartModel.cs" Link="Controls\AdaptiveCards\Charts\BarChartModel.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartArc.cs" Link="Controls\AdaptiveCards\Charts\ChartArc.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartDataPoint.cs" Link="Controls\AdaptiveCards\Charts\ChartDataPoint.cs" />

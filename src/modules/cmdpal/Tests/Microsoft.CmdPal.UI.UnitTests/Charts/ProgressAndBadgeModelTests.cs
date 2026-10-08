@@ -79,4 +79,37 @@ public class ProgressAndBadgeModelTests
         Assert.AreEqual(BadgeShape.Rounded, model.Shape);
         Assert.AreEqual(BadgeSize.Medium, model.Size);
     }
+
+    [TestMethod]
+    public void BadgeParsesItsIcon()
+    {
+        var warnings = new List<string>();
+        var model = BadgeModel.Parse("""{ "type": "Badge", "text": "Done", "icon": "CheckmarkCircle,filled", "iconPosition": "After" }""", warnings);
+
+        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.AreEqual("\uEC61", model.IconGlyph);
+        Assert.AreEqual(BadgeIconPosition.After, model.IconPosition);
+    }
+
+    [TestMethod]
+    public void BadgeIconIsBeforeTheTextAndRegularByDefault()
+    {
+        var warnings = new List<string>();
+        var model = BadgeModel.Parse("""{ "type": "Badge", "text": "Wi-Fi", "icon": "Wifi1" }""", warnings);
+
+        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.AreEqual("\uE701", model.IconGlyph);
+        Assert.AreEqual(BadgeIconPosition.Before, model.IconPosition);
+    }
+
+    [TestMethod]
+    public void BadgeWithAnUnknownIconShowsOnlyText()
+    {
+        var warnings = new List<string>();
+        var model = BadgeModel.Parse("""{ "type": "Badge", "text": "New", "icon": "NotAnIcon" }""", warnings);
+
+        Assert.AreEqual(1, warnings.Count);
+        Assert.IsNull(model.IconGlyph);
+        Assert.AreEqual("New", model.Text);
+    }
 }

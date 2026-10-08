@@ -99,6 +99,7 @@
                 {
                   "type": "Badge",
                   "text": "${netConnectionType}",
+                  "icon": "${netIcon}",
                   "style": "informative",
                   "appearance": "tint",
                   "fallback": "drop"

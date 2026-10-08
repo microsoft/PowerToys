@@ -143,7 +143,7 @@ See [form-patterns.md](references/form-patterns.md) for template JSON for common
 
 ## Charts and Visuals
 
-Command Palette renders `Chart.Line`, `Chart.Gauge`, `Chart.Donut`, `Chart.Pie`, the bar charts, `ProgressBar`, and `Badge` natively, and containers accept `roundedCorners` and `showBorder` for dashboard tiles. Update `DataJson` to update charts in place. See [charts-and-visuals.md](references/charts-and-visuals.md) for properties, colors, and examples, and always give these elements a `fallback` for hosts that don't support them.
+Command Palette renders `Chart.Line`, `Chart.Gauge`, `Chart.Donut`, `Chart.Pie`, the bar charts, `ProgressBar`, `Badge`, and `Icon` natively, and containers accept `roundedCorners` and `showBorder` for dashboard tiles. Update `DataJson` to update charts in place. See [charts-and-visuals.md](references/charts-and-visuals.md) for properties, colors, and examples, and always give these elements a `fallback` for hosts that don't support them.
 
 ## Documentation
 
