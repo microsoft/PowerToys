@@ -137,4 +137,77 @@ public sealed class AdaptiveCardSemanticFingerprintTests
             AdaptiveCardSemanticFingerprint.Create(left, mappedTextBlockCount: 1, mappedInlineSvgImageCount: 0),
             AdaptiveCardSemanticFingerprint.Create(right, mappedTextBlockCount: 1, mappedInlineSvgImageCount: 0));
     }
+
+    [TestMethod]
+    public void RegisteredCustomElementDataIsPatchable()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","yMax":100,"data":[{"values":[{"y":1}]}]}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","yMax":50,"data":[{"values":[{"y":2}]}]}]}""";
+
+        Assert.AreEqual(
+            CreateWithChart(left, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void UnregisteredCustomElementDataRemainsReplacementSensitive()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":1}]}]}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":2}]}]}]}""";
+
+        Assert.AreNotEqual(
+            AdaptiveCardSemanticFingerprint.Create(left, 0, 0, 1, new IncrementalPatchableElements().Add("Chart.Gauge")),
+            AdaptiveCardSemanticFingerprint.Create(right, 0, 0, 1, new IncrementalPatchableElements().Add("Chart.Gauge")));
+    }
+
+    [TestMethod]
+    public void CustomElementHostOwnedPropertiesRemainReplacementSensitive()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","spacing":"small","data":[]}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","spacing":"large","data":[]}]}""";
+
+        Assert.AreNotEqual(
+            CreateWithChart(left, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void CustomElementDataRemainsReplacementSensitiveWhenMappingIsIncomplete()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":1}]}]}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":2}]}]}]}""";
+
+        Assert.AreNotEqual(
+            CreateWithChart(left, mappedCustomElementCount: 0),
+            CreateWithChart(right, mappedCustomElementCount: 0));
+    }
+
+    [TestMethod]
+    public void CustomElementInsideActionSubtreeRemainsReplacementSensitive()
+    {
+        var left = """{"type":"AdaptiveCard","actions":[{"type":"Action.ShowCard","card":{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":1}]}]}]}}]}""";
+        var right = """{"type":"AdaptiveCard","actions":[{"type":"Action.ShowCard","card":{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":2}]}]}]}}]}""";
+
+        Assert.AreNotEqual(
+            CreateWithChart(left, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void HostOwnedPropertiesAreNotPatchable()
+    {
+        Assert.IsFalse(IncrementalPatchableElements.IsPatchableProperty("spacing"));
+        Assert.IsFalse(IncrementalPatchableElements.IsPatchableProperty("isVisible"));
+        Assert.IsFalse(IncrementalPatchableElements.IsPatchableProperty("selectAction"));
+        Assert.IsTrue(IncrementalPatchableElements.IsPatchableProperty("data"));
+        Assert.IsTrue(IncrementalPatchableElements.IsPatchableProperty("title"));
+    }
+
+    private static string CreateWithChart(string cardJson, int mappedCustomElementCount) =>
+        AdaptiveCardSemanticFingerprint.Create(
+            cardJson,
+            mappedTextBlockCount: 0,
+            mappedInlineSvgImageCount: 0,
+            mappedCustomElementCount,
+            new IncrementalPatchableElements().Add("Chart.Line"));
 }

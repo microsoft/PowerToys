@@ -287,9 +287,12 @@ internal sealed class ChartHelper
         points.Append(CultureInfo.InvariantCulture, $" {startX},{ChartHeight - 1}");
     }
 
-    public static void AddNextChartValue(float value, List<float> chartValues)
+    public static void AddNextChartValue(float value, List<float> chartValues) =>
+        AddNextChartValue(value, chartValues, MaxChartValues);
+
+    public static void AddNextChartValue(float value, List<float> chartValues, int maxValues)
     {
-        if (chartValues.Count >= MaxChartValues)
+        while (chartValues.Count >= maxValues)
         {
             chartValues.RemoveAt(0);
         }

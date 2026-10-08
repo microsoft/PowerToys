@@ -434,6 +434,12 @@ internal abstract partial class WidgetPage : OnLoadContentPage
 
     protected Dictionary<string, string> ContentData { get; } = new();
 
+    /// <summary>
+    /// Gets structured template data, such as chart series, that can't be expressed as strings.
+    /// Guarded by the <see cref="ContentData"/> lock.
+    /// </summary>
+    protected Dictionary<string, JsonNode> ContentJson { get; } = new();
+
     protected WidgetPageState Page { get; set; } = WidgetPageState.Unknown;
 
     protected Dictionary<WidgetPageState, string> Template { get; set; } = new();
@@ -451,6 +457,11 @@ internal abstract partial class WidgetPage : OnLoadContentPage
                     {
                         json[kvp.Key] = kvp.Value;
                     }
+                }
+
+                foreach (var kvp in ContentJson)
+                {
+                    json[kvp.Key] = kvp.Value.DeepClone();
                 }
             }
 
@@ -636,6 +647,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -645,9 +657,17 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
 
             ContentData["cpuUsage"] = FloatToPercentString(currentData.CpuUsage);
             ContentData["cpuSpeed"] = SpeedToString(currentData.CpuSpeed);
-            ContentData["cpuGraphUrl"] = currentData.CreateCPUImageUrl();
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["cpuBaseSpeed"] = SpeedToString(currentData.CpuBaseSpeed);
+            ContentData["cpuName"] = CPUStats.ProcessorName;
+            ContentData["cpuProcesses"] = currentData.ProcessCount.ToString("N0", CultureInfo.CurrentCulture);
+            ContentData["cpuThreads"] = currentData.ThreadCount.ToString("N0", CultureInfo.CurrentCulture);
+            ContentData["cpuHandles"] = currentData.HandleCount.ToString("N0", CultureInfo.CurrentCulture);
+            ContentData["cpuUptime"] = UptimeToString(CPUStats.Uptime);
+            ContentData["cpuLogicalProcessors"] = CPUStats.LogicalProcessorCount.ToString(CultureInfo.CurrentCulture);
+            ContentJson["cpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
+                "categoricalBlue",
+                PerformanceChartData.Snapshot(currentData.CpuChartValues)));
 
             // ContentData["cpuProc1"] = currentData.GetCpuProcessText(0);
             // ContentData["cpuProc2"] = currentData.GetCpuProcessText(1);
@@ -661,6 +681,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         {
             // Log.Error(e, "Error retrieving stats.");
             ContentData.Clear();
+            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
 
             // ContentData = content.ToJsonString();
@@ -694,6 +715,18 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
     private string SpeedToString(float cpuSpeed)
     {
         return string.Format(CultureInfo.InvariantCulture, "{0:0.00} GHz", cpuSpeed / 1000);
+    }
+
+    /// <summary>Formats uptime the way Task Manager does: days:hours:minutes:seconds.</summary>
+    internal static string UptimeToString(TimeSpan uptime)
+    {
+        return string.Format(
+            CultureInfo.CurrentCulture,
+            "{0}:{1:00}:{2:00}:{3:00}",
+            (int)uptime.TotalDays,
+            uptime.Hours,
+            uptime.Minutes,
+            uptime.Seconds);
     }
 
     protected override void OnActivated() => _dataManager.Start();

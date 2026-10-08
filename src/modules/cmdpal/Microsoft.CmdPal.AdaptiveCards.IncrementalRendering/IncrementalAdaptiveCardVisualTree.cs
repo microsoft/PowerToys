@@ -20,16 +20,22 @@ internal static class IncrementalAdaptiveCardVisualTree
     private const string CardSemanticsProperty = "CardSemantics";
     private const string ImageSourceProperty = "ImageSource";
     private const string TextProperty = "Text";
+    private const string CustomStateProperty = "CustomState";
 
-    public static IncrementalTreeSnapshot Build(FrameworkElement root, string cardJson)
+    public static IncrementalTreeSnapshot Build(FrameworkElement root, string cardJson) =>
+        Build(root, cardJson, null);
+
+    public static IncrementalTreeSnapshot Build(
+        FrameworkElement root,
+        string cardJson,
+        IncrementalPatchableElements? patchableElements)
     {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentException.ThrowIfNullOrWhiteSpace(cardJson);
 
-        var mappedTextTargets = new HashSet<TextBlock>();
-        var mappedImageTargets = new HashSet<Image>();
+        var mappedTargets = new MappedTargets(patchableElements);
         var nodes = new List<IncrementalNodeSnapshot>();
-        BuildNode(root, nodes, mappedTextTargets, mappedImageTargets);
+        BuildNode(root, nodes, mappedTargets);
 
         var rootNode = nodes[0];
         var rootProperties = new List<IncrementalPropertySnapshot>(rootNode.Properties.Count + 1)
@@ -38,8 +44,10 @@ internal static class IncrementalAdaptiveCardVisualTree
                 CardSemanticsProperty,
                 AdaptiveCardSemanticFingerprint.Create(
                     cardJson,
-                    mappedTextTargets.Count,
-                    mappedImageTargets.Count),
+                    mappedTargets.Text.Count,
+                    mappedTargets.Images.Count,
+                    mappedTargets.Custom.Count,
+                    patchableElements),
                 IncrementalPropertyBehavior.ReplaceRoot),
         };
         foreach (var property in rootNode.Properties)
@@ -54,10 +62,18 @@ internal static class IncrementalAdaptiveCardVisualTree
         return new IncrementalTreeSnapshot(nodes);
     }
 
+    public static Task<bool> TryApplyAsync(
+        FrameworkElement currentRoot,
+        FrameworkElement candidateRoot,
+        IncrementalUpdatePlan plan,
+        CancellationToken cancellationToken) =>
+        TryApplyAsync(currentRoot, candidateRoot, plan, null, cancellationToken);
+
     public static async Task<bool> TryApplyAsync(
         FrameworkElement currentRoot,
         FrameworkElement candidateRoot,
         IncrementalUpdatePlan plan,
+        IncrementalPatchableElements? patchableElements,
         CancellationToken cancellationToken)
     {
         if (plan.Disposition == IncrementalPlanDisposition.NoChanges)
@@ -87,12 +103,22 @@ internal static class IncrementalAdaptiveCardVisualTree
                     currentNode,
                     update.PropertyName,
                     update.ExpectedOldValue,
-                    validateImageValue: false)
+                    validateImageValue: false,
+                    patchableElements)
                 || !HasExpectedValue(
                     candidateNode,
                     update.PropertyName,
                     update.NewValue,
-                    validateImageValue: true))
+                    validateImageValue: true,
+                    patchableElements))
+            {
+                return false;
+            }
+
+            if (string.Equals(update.PropertyName, CustomStateProperty, StringComparison.Ordinal)
+                && (!TryGetCustomTarget(currentNode, patchableElements, out var currentControl)
+                    || !TryGetCustomTarget(candidateNode, patchableElements, out var candidateControl)
+                    || !currentControl.CanApplyIncrementalState(candidateControl)))
             {
                 return false;
             }
@@ -162,6 +188,12 @@ internal static class IncrementalAdaptiveCardVisualTree
                 TryGetPlainTextTarget(candidateNode, out var candidateText);
                 ApplyPlainText(currentText, candidateText);
             }
+            else if (string.Equals(update.PropertyName, CustomStateProperty, StringComparison.Ordinal))
+            {
+                TryGetCustomTarget(currentNode, patchableElements, out var currentControl);
+                TryGetCustomTarget(candidateNode, patchableElements, out var candidateControl);
+                currentControl.ApplyIncrementalState(candidateControl);
+            }
             else
             {
                 TryGetInlineSvgTarget(currentNode, out var currentImage, out _);
@@ -181,22 +213,29 @@ internal static class IncrementalAdaptiveCardVisualTree
     private static void BuildNode(
         DependencyObject node,
         List<IncrementalNodeSnapshot> nodes,
-        HashSet<TextBlock> mappedTextTargets,
-        HashSet<Image> mappedImageTargets)
+        MappedTargets mappedTargets)
     {
         var properties = new List<IncrementalPropertySnapshot>(1);
-        if (TryMapPlainText(node, mappedTextTargets, out var textBlock))
+        if (TryMapPlainText(node, mappedTargets.Text, out var textBlock))
         {
             properties.Add(new IncrementalPropertySnapshot(
                 TextProperty,
                 textBlock.Text,
                 IncrementalPropertyBehavior.PatchInPlace));
         }
-        else if (TryMapInlineSvg(node, mappedImageTargets, out _, out var imageResource))
+        else if (TryMapInlineSvg(node, mappedTargets.Images, out _, out var imageResource))
         {
             properties.Add(new IncrementalPropertySnapshot(
                 ImageSourceProperty,
                 imageResource,
+                IncrementalPropertyBehavior.PatchInPlace));
+        }
+        else if (TryGetCustomTarget(node, mappedTargets.PatchableElements, out var customControl)
+            && mappedTargets.Custom.Add(customControl))
+        {
+            properties.Add(new IncrementalPropertySnapshot(
+                CustomStateProperty,
+                customControl.IncrementalState,
                 IncrementalPropertyBehavior.PatchInPlace));
         }
 
@@ -204,8 +243,30 @@ internal static class IncrementalAdaptiveCardVisualTree
         nodes.Add(new IncrementalNodeSnapshot(NodeType(node), childCount, properties));
         for (var i = 0; i < childCount; i++)
         {
-            BuildNode(GetLogicalChild(node, i), nodes, mappedTextTargets, mappedImageTargets);
+            BuildNode(GetLogicalChild(node, i), nodes, mappedTargets);
         }
+    }
+
+    /// <summary>
+    /// Finds the control rendered for a registered custom element. The renderer tags the control
+    /// it returned for the element, so only that exact control can be a target.
+    /// </summary>
+    private static bool TryGetCustomTarget(
+        DependencyObject node,
+        IncrementalPatchableElements? patchableElements,
+        out IIncrementalAdaptiveElementControl control)
+    {
+        if (patchableElements is { IsEmpty: false }
+            && node is FrameworkElement { Tag: ElementTagContent tag }
+            && node is IIncrementalAdaptiveElementControl candidate
+            && patchableElements.Contains(tag.CardElement?.ElementTypeString))
+        {
+            control = candidate;
+            return true;
+        }
+
+        control = null!;
+        return false;
     }
 
     private static void CollectNodes(
@@ -239,12 +300,19 @@ internal static class IncrementalAdaptiveCardVisualTree
         DependencyObject node,
         string propertyName,
         string? expectedValue,
-        bool validateImageValue)
+        bool validateImageValue,
+        IncrementalPatchableElements? patchableElements)
     {
         if (string.Equals(propertyName, TextProperty, StringComparison.Ordinal)
             && TryGetPlainTextTarget(node, out var textBlock))
         {
             return string.Equals(textBlock.Text, expectedValue, StringComparison.Ordinal);
+        }
+
+        if (string.Equals(propertyName, CustomStateProperty, StringComparison.Ordinal))
+        {
+            return TryGetCustomTarget(node, patchableElements, out var control)
+                && string.Equals(control.IncrementalState, expectedValue, StringComparison.Ordinal);
         }
 
         return string.Equals(propertyName, ImageSourceProperty, StringComparison.Ordinal)
@@ -490,6 +558,17 @@ internal static class IncrementalAdaptiveCardVisualTree
     }
 
     private static string NodeType(DependencyObject node) => node.GetType().FullName ?? node.GetType().Name;
+
+    private sealed class MappedTargets(IncrementalPatchableElements? patchableElements)
+    {
+        public HashSet<TextBlock> Text { get; } = [];
+
+        public HashSet<Image> Images { get; } = [];
+
+        public HashSet<IIncrementalAdaptiveElementControl> Custom { get; } = new(ReferenceEqualityComparer.Instance);
+
+        public IncrementalPatchableElements? PatchableElements { get; } = patchableElements;
+    }
 
     private sealed record ImageUpdate(
         int NodeIndex,

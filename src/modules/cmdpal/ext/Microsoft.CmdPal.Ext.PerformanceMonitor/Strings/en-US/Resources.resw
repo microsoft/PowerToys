@@ -249,6 +249,38 @@
   <data name="CPUUsage_Widget_Template.End_Process" xml:space="preserve">
     <value>End process</value>
   </data>
+  <data name="CPUUsage_Widget_Template.Threads" xml:space="preserve">
+    <value>Threads</value>
+    <comment>Label for the number of threads running on the system</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Handles" xml:space="preserve">
+    <value>Handles</value>
+    <comment>Label for the number of open kernel object handles on the system</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Up_Time" xml:space="preserve">
+    <value>Up time</value>
+    <comment>Label for how long the system has been running since it started</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Base_Speed" xml:space="preserve">
+    <value>Base speed</value>
+    <comment>Label for the processor's nominal clock speed</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Logical_Processors" xml:space="preserve">
+    <value>Logical processors</value>
+    <comment>Label for the number of logical processors (hardware threads)</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Chart_Y_Axis" xml:space="preserve">
+    <value>% Utilization</value>
+    <comment>Vertical axis title of the CPU usage history chart</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Chart_X_Axis" xml:space="preserve">
+    <value>60 seconds</value>
+    <comment>Horizontal axis title of the CPU usage history chart; the chart shows the last 60 seconds</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Chart_Legend" xml:space="preserve">
+    <value>Utilization</value>
+    <comment>Name of the CPU usage data series, read by screen readers</comment>
+  </data>
   <data name="Widget_Template_Button.Preview" xml:space="preserve">
     <value>Preview</value>
     <comment>Shown in Widget, Button text</comment>

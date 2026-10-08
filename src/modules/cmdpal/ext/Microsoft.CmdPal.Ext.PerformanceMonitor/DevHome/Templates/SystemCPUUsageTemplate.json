@@ -19,44 +19,43 @@
       "$when": "${errorMessage == null}",
       "items": [
         {
-          "type": "Image",
-          "url": "${cpuGraphUrl}",
-          "height": "${chartHeight}",
-          "width": "${chartWidth}",
-          "$when": "${$host.widgetSize != \"small\"}",
-          "horizontalAlignment": "center"
-        },
-        {
           "type": "ColumnSet",
           "columns": [
             {
               "type": "Column",
+              "width": "stretch",
               "items": [
                 {
                   "type": "TextBlock",
                   "isSubtle": true,
+                  "size": "small",
                   "text": "%CPUUsage_Widget_Template/CPU_Usage%"
                 },
                 {
                   "type": "TextBlock",
-                  "size": "large",
+                  "size": "extraLarge",
                   "weight": "bolder",
+                  "spacing": "none",
                   "text": "${cpuUsage}"
                 }
               ]
             },
             {
               "type": "Column",
+              "width": "auto",
               "items": [
                 {
                   "type": "TextBlock",
                   "isSubtle": true,
+                  "size": "small",
                   "horizontalAlignment": "right",
                   "text": "%CPUUsage_Widget_Template/CPU_Speed%"
                 },
                 {
                   "type": "TextBlock",
-                  "size": "large",
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
                   "horizontalAlignment": "right",
                   "text": "${cpuSpeed}"
                 }
@@ -65,29 +64,190 @@
           ]
         },
         {
-          "type": "Container",
-          "$when": false,
-          "items": [
+          "type": "Chart.Line",
+          "spacing": "medium",
+          "yAxisTitle": "%CPUUsage_Widget_Template/Chart_Y_Axis%",
+          "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
+          "yMin": 0,
+          "yMax": 100,
+          "valueFormat": "percentage",
+          "fill": "gradient",
+          "data": "${cpuSeries}",
+          "fallback": "drop"
+        },
+        {
+          "type": "TextBlock",
+          "$when": "${cpuName != ''}",
+          "spacing": "medium",
+          "isSubtle": true,
+          "wrap": true,
+          "text": "${cpuName}"
+        },
+        {
+          "type": "ColumnSet",
+          "spacing": "small",
+          "columns": [
             {
-              "type": "TextBlock",
-              "isSubtle": true,
-              "text": "%CPUUsage_Widget_Template/Processes%",
-              "wrap": true
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%CPUUsage_Widget_Template/Processes%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${cpuProcesses}"
+                    }
+                  ]
+                }
+              ]
             },
             {
-              "type": "TextBlock",
-              "size": "medium",
-              "text": "${cpuProc1}"
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%CPUUsage_Widget_Template/Threads%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${cpuThreads}"
+                    }
+                  ]
+                }
+              ]
             },
             {
-              "type": "TextBlock",
-              "size": "medium",
-              "text": "${cpuProc2}"
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%CPUUsage_Widget_Template/Handles%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${cpuHandles}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "spacing": "small",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%CPUUsage_Widget_Template/Up_Time%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${cpuUptime}"
+                    }
+                  ]
+                }
+              ]
             },
             {
-              "type": "TextBlock",
-              "size": "medium",
-              "text": "${cpuProc3}"
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%CPUUsage_Widget_Template/Base_Speed%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${cpuBaseSpeed}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%CPUUsage_Widget_Template/Logical_Processors%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${cpuLogicalProcessors}"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }

@@ -1817,6 +1817,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Browse...</value>
     <comment>Button that opens a picker for a single file or folder path.</comment>
   </data>
+  <data name="AdaptiveChart_LineChart" xml:space="preserve">
+    <value>Line chart</value>
+    <comment>Accessible name of a line chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_SeriesName" xml:space="preserve">
+    <value>Series {0}</value>
+    <comment>Name of an unnamed data series in a chart. {0} is the series number, starting at 1.</comment>
+  </data>
+  <data name="AdaptiveChart_SeriesSummary" xml:space="preserve">
+    <value>{0}: latest {1}, low {2}, high {3}.</value>
+    <comment>Screen reader summary of one chart data series. {0} is the series name; {1}, {2}, and {3} are formatted values.</comment>
+  </data>
   <data name="AdaptiveFilePathInput_BrowseFor" xml:space="preserve">
     <value>Browse for {0}</value>
     <comment>Accessible label for the browse button. {0} is the name of the path field.</comment>

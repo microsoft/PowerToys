@@ -6,11 +6,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
+using Microsoft.Win32;
+using Windows.Win32;
 
 namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposable
 {
+    private static readonly Lazy<string> CachedProcessorName = new(ReadProcessorName);
+
     // CPU counters
     private readonly PerformanceCounter? _procPerf;
     private readonly PerformanceCounter? _procPerformance;
@@ -31,6 +37,21 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     public float CpuUsage { get; set; }
 
     public float CpuSpeed { get; set; }
+
+    /// <summary>Gets or sets the nominal processor frequency in MHz.</summary>
+    public float CpuBaseSpeed { get; set; }
+
+    public uint ProcessCount { get; private set; }
+
+    public uint ThreadCount { get; private set; }
+
+    public uint HandleCount { get; private set; }
+
+    public static string ProcessorName => CachedProcessorName.Value;
+
+    public static int LogicalProcessorCount => Environment.ProcessorCount;
+
+    public static TimeSpan Uptime => TimeSpan.FromMilliseconds(Environment.TickCount64);
 
     public ProcessStats[] ProcessCPUStats { get; set; }
 
@@ -103,13 +124,17 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
             var usageMs = timer.ElapsedMilliseconds;
             if (_procFrequency is not null && _procPerformance is not null)
             {
-                CpuSpeed = _procFrequency.NextValue() * (_procPerformance.NextValue() / 100);
+                var frequency = _procFrequency.NextValue();
+                CpuBaseSpeed = frequency;
+                CpuSpeed = frequency * (_procPerformance.NextValue() / 100);
             }
+
+            ReadSystemCounts();
 
             var speedMs = timer.ElapsedMilliseconds - usageMs;
             lock (CpuChartValues)
             {
-                ChartHelper.AddNextChartValue(CpuUsage * 100, CpuChartValues);
+                ChartHelper.AddNextChartValue(CpuUsage * 100, CpuChartValues, PerformanceChartData.HistoryLength);
             }
 
             var chartMs = timer.ElapsedMilliseconds - speedMs;
@@ -167,9 +192,35 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
         }
     }
 
-    internal string CreateCPUImageUrl()
+    /// <summary>Reads the system-wide process, thread, and handle counts in one call.</summary>
+    private void ReadSystemCounts()
     {
-        return ChartHelper.CreateImageUrl(CpuChartValues, ChartHelper.ChartType.CPU);
+        var info = new Windows.Win32.System.ProcessStatus.PERFORMANCE_INFORMATION
+        {
+            cb = (uint)Marshal.SizeOf<Windows.Win32.System.ProcessStatus.PERFORMANCE_INFORMATION>(),
+        };
+        if (PInvoke.GetPerformanceInfo(ref info, info.cb))
+        {
+            ProcessCount = info.ProcessCount;
+            ThreadCount = info.ThreadCount;
+            HandleCount = info.HandleCount;
+        }
+    }
+
+    private static string ReadProcessorName()
+    {
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0");
+            var name = key?.GetValue("ProcessorNameString") as string;
+            return string.IsNullOrWhiteSpace(name)
+                ? string.Empty
+                : string.Join(' ', name.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        }
+        catch (Exception)
+        {
+            return string.Empty;
+        }
     }
 
     internal string GetCpuProcessText(int cpuProcessIndex)

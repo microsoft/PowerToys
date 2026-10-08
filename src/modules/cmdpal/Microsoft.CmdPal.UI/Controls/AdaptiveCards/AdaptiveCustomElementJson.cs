@@ -14,12 +14,13 @@ internal static class AdaptiveCustomElementJson
         JsonObject inputJson,
         AdaptiveElementParserRegistration elementParsers,
         AdaptiveActionParserRegistration actionParsers,
-        IList<AdaptiveWarning> warnings)
+        IList<AdaptiveWarning> warnings,
+        bool requireId = true)
     {
         element.AdditionalProperties = JsonObject.Parse(inputJson.Stringify());
 
         element.Id = inputJson.GetNamedString("id", string.Empty);
-        if (string.IsNullOrEmpty(element.Id))
+        if (requireId && string.IsNullOrEmpty(element.Id))
         {
             warnings.Add(new AdaptiveWarning(
                 WarningStatusCode.RequiredPropertyMissing,

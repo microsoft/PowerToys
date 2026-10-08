@@ -7,6 +7,7 @@ using AdaptiveCards.Rendering.WinUI3;
 using ManagedCommon;
 using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
+using Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -20,6 +21,10 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContentFormControl : UserControl
 {
+    // Custom elements whose controls absorb data updates in place, so live charts don't flicker.
+    private static readonly IncrementalPatchableElements PatchableElements =
+        new IncrementalPatchableElements().Add(AdaptiveLineChartElement.CustomInputType);
+
     private readonly IncrementalAdaptiveCardUpdater _cardUpdater;
     private static bool _customElementParsersRegistered;
     private ContentFormViewModel? _viewModel;
@@ -43,6 +48,7 @@ public sealed partial class ContentFormControl : UserControl
         RegisterParser<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser>();
         RegisterParser<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser>();
         RegisterParser<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser>();
+        RegisterParser<AdaptiveLineChartElement, AdaptiveLineChartElementParser>();
 
         _customElementParsersRegistered = true;
     }
@@ -60,11 +66,14 @@ public sealed partial class ContentFormControl : UserControl
         RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveLineChartElement, AdaptiveLineChartElementRenderer>(renderer);
+        AdaptiveContainerDecoratorRenderer.Register(renderer);
         _cardUpdater = new IncrementalAdaptiveCardUpdater(
             renderer,
             CardHost,
             AdaptiveCardParserRegistrations.ElementParsers,
-            AdaptiveCardParserRegistrations.ActionParsers);
+            AdaptiveCardParserRegistrations.ActionParsers,
+            PatchableElements);
 
         // TODO in the future, we should handle ActualThemeChanged and replace
         // our rendered card with one for that theme. But today is not that day

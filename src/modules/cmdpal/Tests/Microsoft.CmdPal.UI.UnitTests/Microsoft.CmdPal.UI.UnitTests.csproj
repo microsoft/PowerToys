@@ -133,5 +133,19 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\BuildInfo.cs" Link="Helpers\BuildInfo.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\LanguageService.cs" Link="Services\LanguageService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\MonitorService.cs" Link="Services\MonitorService.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartAxisRange.cs" Link="Controls\AdaptiveCards\Charts\ChartAxisRange.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartBezierSegment.cs" Link="Controls\AdaptiveCards\Charts\ChartBezierSegment.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartColor.cs" Link="Controls\AdaptiveCards\Charts\ChartColor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartCurve.cs" Link="Controls\AdaptiveCards\Charts\ChartCurve.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartJson.cs" Link="Controls\AdaptiveCards\Charts\ChartJson.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartPalette.cs" Link="Controls\AdaptiveCards\Charts\ChartPalette.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartPoint.cs" Link="Controls\AdaptiveCards\Charts\ChartPoint.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartScale.cs" Link="Controls\AdaptiveCards\Charts\ChartScale.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartValueFormatter.cs" Link="Controls\AdaptiveCards\Charts\ChartValueFormatter.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\LineChartLayout.cs" Link="Controls\AdaptiveCards\Charts\LineChartLayout.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\LineChartModel.cs" Link="Controls\AdaptiveCards\Charts\LineChartModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\LineChartPoint.cs" Link="Controls\AdaptiveCards\Charts\LineChartPoint.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\LineChartSeries.cs" Link="Controls\AdaptiveCards\Charts\LineChartSeries.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\LineChartUpdate.cs" Link="Controls\AdaptiveCards\Charts\LineChartUpdate.cs" />
   </ItemGroup>
 </Project>

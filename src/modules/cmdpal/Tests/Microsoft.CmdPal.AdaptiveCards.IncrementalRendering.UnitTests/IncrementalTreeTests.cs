@@ -88,6 +88,37 @@ public sealed class IncrementalTreeTests
         Assert.AreEqual(IncrementalPlanDisposition.ReplaceRoot, plan.Disposition);
     }
 
+    [TestMethod]
+    public void CustomStateChangeProducesValidatedPatch()
+    {
+        var plan = IncrementalTreeDiffer.CreatePlan(
+            CustomTree("""{"data":[1]}"""),
+            CustomTree("""{"data":[2]}"""));
+
+        Assert.AreEqual(IncrementalPlanDisposition.PatchInPlace, plan.Disposition);
+        Assert.AreEqual(1, plan.PropertyUpdates.Count);
+        var update = plan.PropertyUpdates[0];
+        Assert.AreEqual(1, update.NodeIndex);
+        Assert.AreEqual("CustomState", update.PropertyName);
+        Assert.AreEqual("""{"data":[1]}""", update.ExpectedOldValue);
+        Assert.AreEqual("""{"data":[2]}""", update.NewValue);
+    }
+
+    private static IncrementalTreeSnapshot CustomTree(string state)
+    {
+        return Tree(
+            new IncrementalNodeSnapshot("Root", 1),
+            new IncrementalNodeSnapshot(
+                "LineChartControl",
+                0,
+                [
+                    new(
+                        "CustomState",
+                        state,
+                        IncrementalPropertyBehavior.PatchInPlace),
+                ]));
+    }
+
     private static IncrementalTreeSnapshot TextTree(string text)
     {
         return Tree(

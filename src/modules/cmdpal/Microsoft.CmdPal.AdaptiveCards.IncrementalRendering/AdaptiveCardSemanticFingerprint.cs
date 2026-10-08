@@ -15,7 +15,11 @@ namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 /// </summary>
 internal static class AdaptiveCardSemanticFingerprint
 {
-    public static string Create(string cardJson) => Create(cardJson, null, null);
+    private const string TextPlaceholder = "$cmdpal.incremental.text$";
+    private const string InlineSvgPlaceholder = "$cmdpal.incremental.inline-svg$";
+    private const string CustomElementPlaceholder = "$cmdpal.incremental.custom$";
+
+    public static string Create(string cardJson) => Create(cardJson, null, null, null, null);
 
     public static string Create(
         string cardJson,
@@ -27,28 +31,50 @@ internal static class AdaptiveCardSemanticFingerprint
         return Create(
             cardJson,
             (int?)mappedTextBlockCount,
-            (int?)mappedInlineSvgImageCount);
+            (int?)mappedInlineSvgImageCount,
+            null,
+            null);
+    }
+
+    public static string Create(
+        string cardJson,
+        int mappedTextBlockCount,
+        int mappedInlineSvgImageCount,
+        int mappedCustomElementCount,
+        IncrementalPatchableElements? patchableElements)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(mappedTextBlockCount);
+        ArgumentOutOfRangeException.ThrowIfNegative(mappedInlineSvgImageCount);
+        ArgumentOutOfRangeException.ThrowIfNegative(mappedCustomElementCount);
+        return Create(
+            cardJson,
+            (int?)mappedTextBlockCount,
+            (int?)mappedInlineSvgImageCount,
+            mappedCustomElementCount,
+            patchableElements);
     }
 
     private static string Create(
         string cardJson,
         int? mappedTextBlockCount,
-        int? mappedInlineSvgImageCount)
+        int? mappedInlineSvgImageCount,
+        int? mappedCustomElementCount,
+        IncrementalPatchableElements? patchableElements)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cardJson);
 
         using var document = JsonDocument.Parse(cardJson);
-        var authoredTextBlockCount = 0;
-        var authoredInlineSvgImageCount = 0;
-        CountPatchableElements(
-            document.RootElement,
-            ref authoredTextBlockCount,
-            ref authoredInlineSvgImageCount);
+        PatchableCounts authored = default;
+        CountPatchableElements(document.RootElement, patchableElements, ref authored);
 
-        var allowTextPatch = mappedTextBlockCount is null
-            || mappedTextBlockCount == authoredTextBlockCount;
-        var allowInlineSvgPatch = mappedInlineSvgImageCount is null
-            || mappedInlineSvgImageCount == authoredInlineSvgImageCount;
+        var allowText = mappedTextBlockCount is null
+            || mappedTextBlockCount == authored.TextBlocks;
+        var allowInlineSvg = mappedInlineSvgImageCount is null
+            || mappedInlineSvgImageCount == authored.InlineSvgImages;
+        var allowCustom = patchableElements is { IsEmpty: false }
+            && (mappedCustomElementCount is null
+                || mappedCustomElementCount == authored.CustomElements);
+        var options = new PatchOptions(allowText, allowInlineSvg, allowCustom, patchableElements);
         var buffer = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -56,8 +82,7 @@ internal static class AdaptiveCardSemanticFingerprint
                 writer,
                 document.RootElement,
                 allowPatch: true,
-                allowTextPatch,
-                allowInlineSvgPatch);
+                options);
         }
 
         return Convert.ToHexString(SHA256.HashData(buffer.WrittenSpan));
@@ -67,19 +92,18 @@ internal static class AdaptiveCardSemanticFingerprint
         Utf8JsonWriter writer,
         JsonElement value,
         bool allowPatch,
-        bool allowTextPatch,
-        bool allowInlineSvgPatch)
+        PatchOptions options)
     {
         switch (value.ValueKind)
         {
             case JsonValueKind.Object:
-                WriteCanonicalObject(writer, value, allowPatch, allowTextPatch, allowInlineSvgPatch);
+                WriteCanonicalObject(writer, value, allowPatch, options);
                 break;
             case JsonValueKind.Array:
                 writer.WriteStartArray();
                 foreach (var item in value.EnumerateArray())
                 {
-                    WriteCanonicalValue(writer, item, allowPatch, allowTextPatch, allowInlineSvgPatch);
+                    WriteCanonicalValue(writer, item, allowPatch, options);
                 }
 
                 writer.WriteEndArray();
@@ -107,8 +131,7 @@ internal static class AdaptiveCardSemanticFingerprint
         Utf8JsonWriter writer,
         JsonElement value,
         bool allowPatch,
-        bool allowTextPatch,
-        bool allowInlineSvgPatch)
+        PatchOptions options)
     {
         var properties = new List<JsonProperty>();
         foreach (var property in value.EnumerateObject())
@@ -118,16 +141,17 @@ internal static class AdaptiveCardSemanticFingerprint
 
         properties.Sort(static (left, right) => string.CompareOrdinal(left.Name, right.Name));
 
-        var typeName = value.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String
-            ? type.GetString()
-            : null;
+        var typeName = GetTypeName(value);
         var isAction = typeName?.StartsWith("Action.", StringComparison.Ordinal) == true;
         var isTextBlock = allowPatch
-            && allowTextPatch
+            && options.AllowText
             && string.Equals(typeName, "TextBlock", StringComparison.Ordinal);
         var isImage = allowPatch
-            && allowInlineSvgPatch
+            && options.AllowInlineSvg
             && string.Equals(typeName, "Image", StringComparison.Ordinal);
+        var isPatchableCustomElement = allowPatch
+            && options.AllowCustom
+            && options.PatchableElements!.Contains(typeName);
 
         writer.WriteStartObject();
         foreach (var property in properties)
@@ -135,13 +159,18 @@ internal static class AdaptiveCardSemanticFingerprint
             writer.WritePropertyName(property.Name);
             if (isTextBlock && string.Equals(property.Name, "text", StringComparison.Ordinal))
             {
-                writer.WriteStringValue("$cmdpal.incremental.text$");
+                writer.WriteStringValue(TextPlaceholder);
             }
             else if (isImage
                 && string.Equals(property.Name, "url", StringComparison.Ordinal)
                 && IsInlineSvg(property.Value))
             {
-                writer.WriteStringValue("$cmdpal.incremental.inline-svg$");
+                writer.WriteStringValue(InlineSvgPlaceholder);
+            }
+            else if (isPatchableCustomElement
+                && IncrementalPatchableElements.IsPatchableProperty(property.Name))
+            {
+                writer.WriteStringValue(CustomElementPlaceholder);
             }
             else
             {
@@ -152,13 +181,17 @@ internal static class AdaptiveCardSemanticFingerprint
                     writer,
                     property.Value,
                     childAllowsPatch,
-                    allowTextPatch,
-                    allowInlineSvgPatch);
+                    options);
             }
         }
 
         writer.WriteEndObject();
     }
+
+    private static string? GetTypeName(JsonElement value) =>
+        value.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String
+            ? type.GetString()
+            : null;
 
     private static bool IsActionProperty(string propertyName) => propertyName is
         "actions" or
@@ -179,34 +212,35 @@ internal static class AdaptiveCardSemanticFingerprint
 
     private static void CountPatchableElements(
         JsonElement value,
-        ref int textBlockCount,
-        ref int inlineSvgImageCount)
+        IncrementalPatchableElements? patchableElements,
+        ref PatchableCounts counts)
     {
         switch (value.ValueKind)
         {
             case JsonValueKind.Object:
-                var typeName = value.TryGetProperty("type", out var type)
-                    && type.ValueKind == JsonValueKind.String
-                        ? type.GetString()
-                        : null;
+                var typeName = GetTypeName(value);
                 if (string.Equals(typeName, "TextBlock", StringComparison.Ordinal)
                     && value.TryGetProperty("text", out _))
                 {
-                    textBlockCount++;
+                    counts.TextBlocks++;
                 }
                 else if (string.Equals(typeName, "Image", StringComparison.Ordinal)
                     && value.TryGetProperty("url", out var url)
                     && IsInlineSvg(url))
                 {
-                    inlineSvgImageCount++;
+                    counts.InlineSvgImages++;
+                }
+                else if (patchableElements?.Contains(typeName) == true)
+                {
+                    counts.CustomElements++;
                 }
 
                 foreach (var property in value.EnumerateObject())
                 {
                     CountPatchableElements(
                         property.Value,
-                        ref textBlockCount,
-                        ref inlineSvgImageCount);
+                        patchableElements,
+                        ref counts);
                 }
 
                 break;
@@ -215,11 +249,24 @@ internal static class AdaptiveCardSemanticFingerprint
                 {
                     CountPatchableElements(
                         item,
-                        ref textBlockCount,
-                        ref inlineSvgImageCount);
+                        patchableElements,
+                        ref counts);
                 }
 
                 break;
         }
     }
+
+    private struct PatchableCounts
+    {
+        public int TextBlocks;
+        public int InlineSvgImages;
+        public int CustomElements;
+    }
+
+    private readonly record struct PatchOptions(
+        bool AllowText,
+        bool AllowInlineSvg,
+        bool AllowCustom,
+        IncrementalPatchableElements? PatchableElements);
 }
