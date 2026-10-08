@@ -5,12 +5,14 @@
 using System.Collections.ObjectModel;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics;
+using Windows.System;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -88,6 +90,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             SearchBox.Focus(FocusState.Programmatic);
             args.Handled = true;
+        }
+
+        private void SearchBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            // ListView can't tab into its items because the containers aren't tab stops,
+            // so move focus from the search box to the first character button manually.
+            if (e.Key != VirtualKey.Tab ||
+                InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(global::Windows.UI.Core.CoreVirtualKeyStates.Down))
+            {
+                return;
+            }
+
+            if (FocusManager.FindFirstFocusableElement(LanguagesListView) is Control first &&
+                first.Focus(FocusState.Keyboard))
+            {
+                e.Handled = true;
+            }
         }
 
         private void CharacterButton_Click(object sender, RoutedEventArgs e)

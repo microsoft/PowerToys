@@ -21,6 +21,7 @@
 
     <!--  Group header container without the default divider line.  -->
     <Style x:Key="PlainListViewHeaderItemStyle" TargetType="ListViewHeaderItem">
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="0,16,0,4" />
         <Setter Property="MinHeight" Value="0" />

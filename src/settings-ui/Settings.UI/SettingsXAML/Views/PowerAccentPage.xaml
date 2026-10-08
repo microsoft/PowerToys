@@ -78,6 +78,12 @@
                             Style="{ThemeResource AccentButtonStyle}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Name="SelectedCharacterSetsCard" Description="{x:Bind ViewModel.SelectedLanguagesSummary, Mode=OneWay}" />
+                            <tkcontrols:SettingsCard
+                                x:Name="ReferenceGuideCard"
+                                x:Uid="QuickAccent_ReferenceGuide_Card"
+                                ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                                Click="ReferenceGuideButton_Click"
+                                IsClickEnabled="True" />
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                     <InfoBar
@@ -87,15 +93,6 @@
                         IsTabStop="False"
                         Severity="Warning"
                         Visibility="{x:Bind ViewModel.HasSelectedLanguages, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
-                </controls:SettingsGroup>
-
-                <controls:SettingsGroup x:Uid="QuickAccent_ReferenceGuide" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="QuickAccent_ReferenceGuide_Card" HeaderIcon="{ui:FontIcon Glyph=&#xE736;}">
-                        <Button
-                            x:Uid="QuickAccent_ReferenceGuide_Button"
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            Click="ReferenceGuideButton_Click" />
-                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

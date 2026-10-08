@@ -44,7 +44,10 @@
             </Style>
         </Grid.Resources>
 
-        <TitleBar x:Name="titleBar">
+        <TitleBar
+            x:Name="titleBar"
+            IsTabStop="False"
+            TabNavigation="Local">
             <TitleBar.Resources>
                 <!--  Let the search box stretch (up to its MaxWidth) instead of sizing to MinWidth.  -->
                 <HorizontalAlignment x:Key="TitleBarContentHorizontalAlignment">Stretch</HorizontalAlignment>
@@ -60,6 +63,7 @@
                     MaxWidth="480"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
+                    PreviewKeyDown="SearchBox_PreviewKeyDown"
                     QueryIcon="Find"
                     Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <AutoSuggestBox.KeyboardAccelerators>
@@ -81,12 +85,15 @@
 
         <!--  Main scrollable content - single virtualising ListView with GroupStyle  -->
         <ListView
+            x:Name="LanguagesListView"
             Grid.Row="1"
             Padding="16,0,16,16"
             IsItemClickEnabled="False"
+            IsTabStop="False"
             ItemContainerStyle="{StaticResource NonInteractiveListViewItemStyle}"
             ItemsSource="{x:Bind LanguagesViewSource.View, Mode=OneWay}"
-            SelectionMode="None">
+            SelectionMode="None"
+            TabNavigation="Local">
 
             <!--  Language card template  -->
             <ListView.ItemTemplate>
@@ -112,6 +119,7 @@
                             <ItemsControl
                                 Grid.Row="2"
                                 Margin="12,4,12,12"
+                                IsTabStop="False"
                                 ItemsSource="{x:Bind KeyMappings}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:KeyMappingModel">
@@ -135,6 +143,7 @@
                                             <ItemsControl
                                                 Grid.Column="1"
                                                 VerticalAlignment="Center"
+                                                IsTabStop="False"
                                                 ItemsSource="{x:Bind Characters}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
