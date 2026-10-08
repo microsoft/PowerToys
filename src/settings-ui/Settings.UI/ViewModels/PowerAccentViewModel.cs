@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
@@ -157,6 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _groupResourceKeys[lang.Group]);
 
                 model.Language = ResourceLoaderInstance.ResourceLoader.GetString(languageResourceId);
+                model.CharacterPreview = BuildCharacterPreview(lang);
                 return model;
             }).ToList();
 
@@ -180,6 +182,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 })
                 .OfType<PowerAccentLanguageGroupModel>()
                 .ToArray();
+        }
+
+        private const int CharacterPreviewLength = 12;
+
+        /// <summary>
+        /// Builds a short, space-separated sample of the characters provided by a
+        /// character set, used as the description of its card in the Settings UI.
+        /// </summary>
+        internal static string BuildCharacterPreview(LanguageInfo language)
+        {
+            var characters = language.Characters
+                .OrderBy(kvp => kvp.Key)
+                .SelectMany(kvp => kvp.Value)
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            string preview = string.Join(' ', characters.Take(CharacterPreviewLength));
+            return characters.Count > CharacterPreviewLength ? preview + " …" : preview;
         }
 
         public bool IsEnabled
@@ -334,16 +354,68 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool AllSelected => _selectedLanguageOptions.Length == Languages.Count;
 
-        private PowerAccentLanguageModel[] _selectedLanguageOptions;
+        private PowerAccentLanguageModel[] _selectedLanguageOptions = [];
 
         public PowerAccentLanguageModel[] SelectedLanguageOptions
         {
             get => _selectedLanguageOptions;
             set
             {
-                _selectedLanguageOptions = value;
+                // Normalize to the canonical (sorted) order of Languages and drop duplicates.
+                var selected = new HashSet<PowerAccentLanguageModel>(value ?? []);
+                _selectedLanguageOptions = Languages.Where(selected.Contains).ToArray();
                 _powerAccentSettings.Properties.SelectedLang.Value = string.Join(',', _selectedLanguageOptions.Select(l => l.LanguageCode));
+
+                SelectedLanguages.Clear();
+                foreach (var language in _selectedLanguageOptions)
+                {
+                    SelectedLanguages.Add(language);
+                }
+
+                OnPropertyChanged(nameof(HasSelectedLanguages));
+                OnPropertyChanged(nameof(CanAddLanguages));
                 RaisePropertyChanged(nameof(SelectedLanguageOptions));
+            }
+        }
+
+        /// <summary>
+        /// Gets the character sets the user has added, in display order. Bound to the
+        /// list of character set cards in the Settings UI.
+        /// </summary>
+        public ObservableCollection<PowerAccentLanguageModel> SelectedLanguages { get; } = new();
+
+        public bool HasSelectedLanguages => _selectedLanguageOptions.Length > 0;
+
+        public bool CanAddLanguages => _selectedLanguageOptions.Length < Languages.Count;
+
+        /// <summary>
+        /// Gets the character sets that have not yet been added, grouped in display order.
+        /// Used to populate the "Add character sets" dialog.
+        /// </summary>
+        public IEnumerable<PowerAccentLanguageGroupModel> GetAvailableLanguageGroups()
+        {
+            var selected = new HashSet<PowerAccentLanguageModel>(_selectedLanguageOptions);
+            return LanguageGroups
+                .Select(group => new PowerAccentLanguageGroupModel(group.Where(l => !selected.Contains(l)).ToList(), group.Group))
+                .Where(group => group.Count > 0);
+        }
+
+        public void AddLanguages(IEnumerable<PowerAccentLanguageModel> languages)
+        {
+            ArgumentNullException.ThrowIfNull(languages);
+
+            var toAdd = languages.Where(l => !_selectedLanguageOptions.Contains(l)).ToList();
+            if (toAdd.Count > 0)
+            {
+                SelectedLanguageOptions = _selectedLanguageOptions.Concat(toAdd).ToArray();
+            }
+        }
+
+        public void RemoveLanguage(PowerAccentLanguageModel language)
+        {
+            if (language != null && _selectedLanguageOptions.Contains(language))
+            {
+                SelectedLanguageOptions = _selectedLanguageOptions.Where(l => l != language).ToArray();
             }
         }
 

@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -23,7 +23,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new PowerAccentViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             this.InitializeComponent();
-            this.InitializeControlsStates();
         }
 
         public void RefreshEnabledState()
@@ -31,139 +30,87 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
         }
 
-        private void InitializeControlsStates()
+        private List<CharacterSetPickerGroup> _availableCharacterSetGroups = [];
+
+        private async void AddCharacterSetsButton_Click(object sender, RoutedEventArgs e)
         {
-            SetCheckBoxStatus();
+            _availableCharacterSetGroups = ViewModel.GetAvailableLanguageGroups()
+                .Select(group => new CharacterSetPickerGroup(group.Group, group.Select(l => new CharacterSetPickerItem(l))))
+                .ToList();
+
+            CharacterSetsSearchBox.Text = string.Empty;
+            ApplyCharacterSetsFilter(string.Empty);
+            UpdateAddButtonState();
+
+            AddCharacterSetsDialog.XamlRoot = XamlRoot;
+            await AddCharacterSetsDialog.ShowAsync();
         }
 
-        private bool updatingSelectAllCheckBox;
-
-        private void SetCheckBoxStatus()
+        private void ApplyCharacterSetsFilter(string query)
         {
-            updatingSelectAllCheckBox = true;
-            try
+            query = query?.Trim() ?? string.Empty;
+
+            var filtered = string.IsNullOrEmpty(query)
+                ? _availableCharacterSetGroups
+                : _availableCharacterSetGroups
+                    .Select(group => new CharacterSetPickerGroup(
+                        group.Header,
+                        group.Where(item => item.Language.Language.Contains(query, StringComparison.CurrentCultureIgnoreCase))))
+                    .Where(group => group.Count > 0)
+                    .ToList();
+
+            AvailableCharacterSetsViewSource.Source = filtered;
+            AvailableCharacterSetsList.ItemsSource = AvailableCharacterSetsViewSource.View;
+            NoCharacterSetsFoundText.Visibility = filtered.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void CharacterSetsSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                if (ViewModel.SelectedLanguageOptions.Length == 0)
-                {
-                    this.QuickAccent_SelectedLanguage_All.IsChecked = false;
-                    this.QuickAccent_SelectedLanguage_All.IsThreeState = false;
-                }
-                else if (ViewModel.AllSelected)
-                {
-                    this.QuickAccent_SelectedLanguage_All.IsChecked = true;
-                    this.QuickAccent_SelectedLanguage_All.IsThreeState = false;
-                }
-                else
-                {
-                    this.QuickAccent_SelectedLanguage_All.IsThreeState = true;
-                    this.QuickAccent_SelectedLanguage_All.IsChecked = null;
-                }
-            }
-            finally
-            {
-                updatingSelectAllCheckBox = false;
+                ApplyCharacterSetsFilter(sender.Text);
             }
         }
 
-        private void QuickAccent_SelectedLanguage_SelectAll(object sender, RoutedEventArgs e)
+        private void AvailableCharacterSetsList_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (updatingSelectAllCheckBox)
+            if (e.ClickedItem is CharacterSetPickerItem item)
             {
-                return;
+                item.IsChecked = !item.IsChecked;
+                UpdateAddButtonState();
             }
-
-            loadingLanguageListDontTriggerSelectionChanged = true;
-            try
-            {
-                this.QuickAccent_Language_Select.SelectAllSafe();
-                ViewModel.SelectedLanguageOptions = ViewModel.Languages.ToArray();
-            }
-            finally
-            {
-                loadingLanguageListDontTriggerSelectionChanged = false;
-            }
-
-            SetCheckBoxStatus();
         }
 
-        private void QuickAccent_SelectedLanguage_UnselectAll(object sender, RoutedEventArgs e)
+        private void CharacterSetCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            if (updatingSelectAllCheckBox)
+            // Checked/Unchecked fire before the TwoWay binding writes back, so sync the item explicitly.
+            if (sender is CheckBox { DataContext: CharacterSetPickerItem item } checkBox)
             {
-                return;
+                item.IsChecked = checkBox.IsChecked == true;
             }
 
-            loadingLanguageListDontTriggerSelectionChanged = true;
-            try
-            {
-                this.QuickAccent_Language_Select.DeselectAll();
-                ViewModel.SelectedLanguageOptions = [];
-            }
-            finally
-            {
-                loadingLanguageListDontTriggerSelectionChanged = false;
-            }
-
-            SetCheckBoxStatus();
+            UpdateAddButtonState();
         }
 
-        private bool loadingLanguageListDontTriggerSelectionChanged;
+        private IEnumerable<PowerAccentLanguageModel> GetCheckedCharacterSets() =>
+            _availableCharacterSetGroups.SelectMany(group => group).Where(item => item.IsChecked).Select(item => item.Language);
 
-        private void QuickAccent_SelectedLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void UpdateAddButtonState()
         {
-            if (loadingLanguageListDontTriggerSelectionChanged)
+            AddCharacterSetsDialog.IsPrimaryButtonEnabled = GetCheckedCharacterSets().Any();
+        }
+
+        private void AddCharacterSetsDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            ViewModel.AddLanguages(GetCheckedCharacterSets().ToList());
+        }
+
+        private void RemoveCharacterSet_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is PowerAccentLanguageModel language)
             {
-                return;
+                ViewModel.RemoveLanguage(language);
             }
-
-            var listView = sender as ListView;
-
-            ViewModel.SelectedLanguageOptions = listView.SelectedItems
-                .Select(item => item as PowerAccentLanguageModel)
-                .ToArray();
-
-            SetCheckBoxStatus();
-        }
-
-        private void QuickAccent_Language_Select_Loaded(object sender, RoutedEventArgs e)
-        {
-            loadingLanguageListDontTriggerSelectionChanged = true;
-            foreach (var languageOption in ViewModel.SelectedLanguageOptions)
-            {
-                this.QuickAccent_Language_Select.SelectedItems.Add(languageOption);
-            }
-
-            loadingLanguageListDontTriggerSelectionChanged = false;
-        }
-
-        private void LanguageSettingsCard_Loaded(object sender, RoutedEventArgs e)
-        {
-            UpdateLanguageListMaxWidth(sender as Control);
-        }
-
-        private void LanguageSettingsCard_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            UpdateLanguageListMaxWidth(sender as Control);
-        }
-
-        /// <summary>
-        /// Constrain the character set lists to the width of the parent card to permit
-        /// column reflow.
-        /// </summary>
-        /// <param name="card">The parent SettingsCard control.</param>
-        private void UpdateLanguageListMaxWidth(Control card)
-        {
-            if (card is null)
-            {
-                return;
-            }
-
-            double availableWidth =
-                card.ActualWidth - card.Padding.Left - card.Padding.Right;
-
-            QuickAccent_Language_Select.MaxWidth = Math.Max(
-                QuickAccent_Language_Select.MinWidth,
-                availableWidth);
         }
 
         private void ReferenceGuideButton_Click(object sender, RoutedEventArgs e)

@@ -3574,13 +3574,41 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Characters</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
-    <value>Choose character sets</value>
+    <value>Character sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected sets</value>
+    <value>Quick Accent shows accented characters from the character sets you add</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
-    <value>All available</value>
+  <data name="QuickAccent_AddCharacterSets_Button.Content" xml:space="preserve">
+    <value>Add character sets</value>
+  </data>
+  <data name="QuickAccent_AddCharacterSetsDialog.Title" xml:space="preserve">
+    <value>Add character sets</value>
+  </data>
+  <data name="QuickAccent_AddCharacterSetsDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="QuickAccent_AddCharacterSetsDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="QuickAccent_AddCharacterSetsDialog_Search.PlaceholderText" xml:space="preserve">
+    <value>Search character sets</value>
+  </data>
+  <data name="QuickAccent_AddCharacterSetsDialog_Search.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search character sets</value>
+  </data>
+  <data name="QuickAccent_AddCharacterSetsDialog_NoResults.Text" xml:space="preserve">
+    <value>No character sets found</value>
+  </data>
+  <data name="QuickAccent_RemoveCharacterSet.Text" xml:space="preserve">
+    <value>Remove</value>
+    <comment>Removes a character set from the list of added character sets</comment>
+  </data>
+  <data name="QuickAccent_NoCharacterSets.Title" xml:space="preserve">
+    <value>No character sets added</value>
+  </data>
+  <data name="QuickAccent_NoCharacterSets.Message" xml:space="preserve">
+    <value>Quick Accent won't show any accented characters until you add at least one character set.</value>
   </data>
   <data name="QuickAccent_Group_Special" xml:space="preserve">
     <value>Special sets</value>
