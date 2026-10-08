@@ -2994,6 +2994,22 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Hold a mouse button to lock it for hands-free dragging.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="Oobe_MouseUtils_CursorHide.Text" xml:space="preserve">
+    <value>CursorHide</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorHide_Description.Text" xml:space="preserve">
+    <value>Hide the mouse pointer while you type or when it's been idle for a while.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorWrap.Text" xml:space="preserve">
+    <value>CursorWrap</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorWrap_Description.Text" xml:space="preserve">
+    <value>Move the mouse pointer past a screen edge to wrap it around to the opposite side.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Open PowerToys Run</value>
   </data>
