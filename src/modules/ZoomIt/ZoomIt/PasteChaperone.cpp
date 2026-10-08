@@ -26,7 +26,9 @@ namespace
     // Applications read the clipboard asynchronously after the paste
     // keystroke, so the image has to stay put long enough for the target to
     // finish reading it before the transcription replaces it.
-    constexpr UINT CONSUME_DELAY = 400;
+    // VS Code Copilot Chat creates the image attachment asynchronously and
+    // ignores another paste while that operation is still settling.
+    constexpr UINT CONSUME_DELAY = 1500;
 
     // Time to leave the transcription on the clipboard for the synthesized
     // paste before the combined payload is restored.
