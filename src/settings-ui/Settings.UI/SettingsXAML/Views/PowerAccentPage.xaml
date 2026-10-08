@@ -209,7 +209,7 @@
                             x:Name="AvailableCharacterSetsList"
                             Grid.Row="2"
                             Height="520"
-                            Margin="-14,0,0,0"
+                            Margin="-14,-8,0,0"
                             SelectionChanged="AvailableCharacterSetsList_SelectionChanged"
                             SelectionMode="Multiple">
                             <ListView.ItemTemplate>
@@ -226,6 +226,28 @@
                             </ListView.ItemTemplate>
                             <ListView.GroupStyle>
                                 <GroupStyle>
+                                    <GroupStyle.HeaderContainerStyle>
+                                        <!--  Default ListViewHeaderItem template without the divider line  -->
+                                        <Style TargetType="ListViewHeaderItem">
+                                            <Setter Property="Margin" Value="0" />
+                                            <Setter Property="Padding" Value="12,16,12,4" />
+                                            <Setter Property="MinHeight" Value="0" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ListViewHeaderItem">
+                                                        <ContentPresenter
+                                                            Margin="{TemplateBinding Padding}"
+                                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                            Background="{TemplateBinding Background}"
+                                                            Content="{TemplateBinding Content}"
+                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                            ContentTransitions="{TemplateBinding ContentTransitions}" />
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </GroupStyle.HeaderContainerStyle>
                                     <GroupStyle.HeaderTemplate>
                                         <DataTemplate x:DataType="vm:CharacterSetPickerGroup">
                                             <TextBlock
