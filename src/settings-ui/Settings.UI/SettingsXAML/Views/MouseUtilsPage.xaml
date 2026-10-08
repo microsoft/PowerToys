@@ -337,25 +337,17 @@
                                 <CheckBox x:Uid="MouseUtils_MouseButtonLock_MmbLock" AutomationProperties.AutomationId="MouseUtils_MouseButtonLockMmbLockId" IsChecked="{x:Bind ViewModel.MouseButtonLockMmbEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsMouseButtonLockHoldDuration" x:Uid="MouseUtils_MouseButtonLock_HoldDuration">
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <TextBlock
-                                        MinWidth="56"
-                                        VerticalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=OneWay, Converter={StaticResource MillisecondsLabelConverter}}"
-                                        TextAlignment="Right" />
-                                    <Slider
-                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                        AutomationProperties.AutomationId="MouseUtils_MouseButtonLockHoldDurationId"
-                                        LargeChange="400"
-                                        Maximum="2200"
-                                        Minimum="200"
-                                        SmallChange="100"
-                                        SnapsTo="StepValues"
-                                        StepFrequency="100"
-                                        ThumbToolTipValueConverter="{StaticResource MillisecondsLabelConverter}"
-                                        Value="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=TwoWay}" />
-                                </StackPanel>
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_MouseButtonLockHoldDurationId"
+                                    LargeChange="400"
+                                    Maximum="2200"
+                                    Minimum="200"
+                                    SmallChange="100"
+                                    SnapsTo="StepValues"
+                                    StepFrequency="100"
+                                    ThumbToolTipValueConverter="{StaticResource MillisecondsLabelConverter}"
+                                    Value="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="MouseUtilsMouseButtonLockMoveCancelPixels"
