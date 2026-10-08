@@ -13,6 +13,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         public const string DiagnosticsAndFeedback = "ms-settings:privacy-feedback";
         public const string NightLightSettings = "ms-settings:nightlight";
 
+        // Mouse Properties control panel applet; opens on the Buttons tab, which hosts ClickLock.
+        public const string MouseControlPanel = "main.cpl";
+
         public static string AnimationsSettings => OSVersionHelper.IsWindows11()
             ? "ms-settings:easeofaccess-visualeffects"
             : "ms-settings:easeofaccess-display";
@@ -20,6 +23,11 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         public static void Start(string process)
         {
             Process.Start(new ProcessStartInfo(process) { UseShellExecute = true });
+        }
+
+        public static void StartControlPanelApplet(string applet)
+        {
+            Process.Start(new ProcessStartInfo("control.exe", applet) { UseShellExecute = true });
         }
     }
 }

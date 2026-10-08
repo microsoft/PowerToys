@@ -2892,9 +2892,21 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_MouseButtonLock_Options.Description" xml:space="preserve">
     <value>Choose which buttons can be locked</value>
   </data>
-  <data name="MouseUtils_MouseButtonLock_LmbLock.Content" xml:space="preserve">
+  <data name="MouseUtils_MouseButtonLock_LmbLock.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Left button</value>
     <comment>Left (primary) mouse button.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock_Header.Text" xml:space="preserve">
+    <value>Left button</value>
+    <comment>Left (primary) mouse button.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock_Description.Text" xml:space="preserve">
+    <value>Windows has a built-in ClickLock for this button.</value>
+    <comment>ClickLock is a Windows feature name. Followed by a link that opens the Windows mouse settings.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock_Link.Text" xml:space="preserve">
+    <value>Open mouse settings</value>
+    <comment>Link that opens the Windows Mouse Properties dialog, where ClickLock can be turned on.</comment>
   </data>
   <data name="MouseUtils_MouseButtonLock_RmbLock.Content" xml:space="preserve">
     <value>Right button</value>

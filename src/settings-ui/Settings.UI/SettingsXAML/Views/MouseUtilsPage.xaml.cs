@@ -71,5 +71,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 Logger.LogError("Error while trying to open the animations settings", ex);
             }
         }
+
+        private void OpenMouseControlPanel_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            try
+            {
+                StartProcessHelper.StartControlPanelApplet(StartProcessHelper.MouseControlPanel);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the mouse control panel", ex);
+            }
+        }
     }
 }
