@@ -203,10 +203,48 @@ public sealed class AdaptiveCardSemanticFingerprintTests
         Assert.IsTrue(IncrementalPatchableElements.IsPatchableProperty("title"));
     }
 
+    [TestMethod]
+    public void UnusedFallbackDoesNotStopTextPatching()
+    {
+        // The chart always renders itself, so only the first TextBlock is drawn and mapped.
+        var left = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"old"},{"type":"Chart.Line","data":[],"fallback":{"type":"TextBlock","text":"old value"}}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"new"},{"type":"Chart.Line","data":[],"fallback":{"type":"TextBlock","text":"new value"}}]}""";
+
+        Assert.AreEqual(
+            CreateWithChart(left, mappedTextBlockCount: 1, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedTextBlockCount: 1, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void FallbackOfElementWithRequirementsIsStillCounted()
+    {
+        // A host that doesn't meet requires draws the fallback, here as unmapped markdown.
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","requires":{"charts":"2.0"},"data":[],"fallback":{"type":"TextBlock","text":"[old](https://example.com)"}}]}""";
+        var right = left.Replace("[old]", "[new]", StringComparison.Ordinal);
+
+        Assert.AreNotEqual(
+            CreateWithChart(left, mappedTextBlockCount: 0, mappedCustomElementCount: 0),
+            CreateWithChart(right, mappedTextBlockCount: 0, mappedCustomElementCount: 0));
+    }
+
+    [TestMethod]
+    public void ElementsInsideUnusedFallbackAreNotCounted()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":1}]}],"fallback":{"type":"Chart.Line","data":[]}}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":2}]}],"fallback":{"type":"Chart.Line","data":[]}}]}""";
+
+        Assert.AreEqual(
+            CreateWithChart(left, mappedTextBlockCount: 0, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedTextBlockCount: 0, mappedCustomElementCount: 1));
+    }
+
     private static string CreateWithChart(string cardJson, int mappedCustomElementCount) =>
+        CreateWithChart(cardJson, mappedTextBlockCount: 0, mappedCustomElementCount);
+
+    private static string CreateWithChart(string cardJson, int mappedTextBlockCount, int mappedCustomElementCount) =>
         AdaptiveCardSemanticFingerprint.Create(
             cardJson,
-            mappedTextBlockCount: 0,
+            mappedTextBlockCount,
             mappedInlineSvgImageCount: 0,
             mappedCustomElementCount,
             new IncrementalPatchableElements().Add("Chart.Line"));

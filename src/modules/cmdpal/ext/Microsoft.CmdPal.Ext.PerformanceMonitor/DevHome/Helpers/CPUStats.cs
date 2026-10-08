@@ -19,6 +19,10 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
 {
     private static readonly Lazy<string> CachedProcessorName = new(ReadProcessorName);
 
+    // A longer gap between per-processor samples means sampling stopped while no CPU card was
+    // open, and utilization averaged over the gap wouldn't be current.
+    private static readonly TimeSpan CoreSampleMaximumGap = TimeSpan.FromSeconds(3);
+
     // CPU counters
     private readonly PerformanceCounter? _procPerf;
     private readonly PerformanceCounter? _procPerformance;
@@ -30,6 +34,7 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     private PerformanceCounterCategory? _processorCategory;
     private bool _processorCategoryCreated;
     private Dictionary<string, CounterSample> _previousCoreSamples = [];
+    private long _previousCoreTimestamp;
     private int _detailRequests;
     private bool _detailsRead;
     private bool _coreReadFailureLogged;
@@ -187,34 +192,60 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
                 return;
             }
 
+            var timestamp = Stopwatch.GetTimestamp();
             var samples = new Dictionary<string, CounterSample>();
-            var cores = new List<(int Group, int Index, float Usage)>();
             foreach (InstanceData instance in categoryData["% Processor Time"].Values)
             {
-                if (!TryParseProcessor(instance.InstanceName, out var group, out var index))
+                if (TryParseProcessor(instance.InstanceName, out _, out _))
                 {
-                    continue;
+                    samples[instance.InstanceName] = instance.Sample;
                 }
+            }
 
-                samples[instance.InstanceName] = instance.Sample;
-                var usage = 0f;
-                if (_previousCoreSamples.TryGetValue(instance.InstanceName, out var previous))
-                {
-                    var cooked = CounterSampleCalculator.ComputeCounterValue(previous, instance.Sample);
-                    usage = float.IsFinite(cooked) ? Math.Clamp(cooked, 0f, 100f) : 0f;
-                }
-
-                cores.Add((group, index, usage));
+            var previous = _previousCoreSamples;
+            if (Stopwatch.GetElapsedTime(_previousCoreTimestamp, timestamp) > CoreSampleMaximumGap)
+            {
+                previous = [];
             }
 
             _previousCoreSamples = samples;
-            cores.Sort(static (left, right) => left.Group != right.Group ? left.Group.CompareTo(right.Group) : left.Index.CompareTo(right.Index));
-            CoreUsage = cores.Select(static core => core.Usage).ToArray();
+            _previousCoreTimestamp = timestamp;
+            CoreUsage = ComputeCoreUsage(previous, samples);
         }
         catch (Exception ex)
         {
             LogFailureOnce(ref _coreReadFailureLogged, "Failed while reading per-processor performance counters.", ex);
         }
+    }
+
+    /// <summary>
+    /// Computes each processor's utilization in percent, in processor order, from two samples per
+    /// processor. Utilization needs both, so this returns nothing until every processor has an
+    /// earlier sample, instead of showing 0%.
+    /// </summary>
+    internal static float[] ComputeCoreUsage(
+        IReadOnlyDictionary<string, CounterSample> previous,
+        IReadOnlyDictionary<string, CounterSample> current)
+    {
+        var cores = new List<(int Group, int Index, float Usage)>(current.Count);
+        foreach (var (name, sample) in current)
+        {
+            if (!TryParseProcessor(name, out var group, out var index))
+            {
+                continue;
+            }
+
+            if (!previous.TryGetValue(name, out var earlier))
+            {
+                return [];
+            }
+
+            var cooked = CounterSampleCalculator.ComputeCounterValue(earlier, sample);
+            cores.Add((group, index, float.IsFinite(cooked) ? Math.Clamp(cooked, 0f, 100f) : 0f));
+        }
+
+        cores.Sort(static (left, right) => left.Group != right.Group ? left.Group.CompareTo(right.Group) : left.Index.CompareTo(right.Index));
+        return cores.Select(static core => core.Usage).ToArray();
     }
 
     /// <summary>

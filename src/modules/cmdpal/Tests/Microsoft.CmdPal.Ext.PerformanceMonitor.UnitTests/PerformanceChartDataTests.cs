@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -87,6 +89,46 @@ public class PerformanceChartDataTests
     }
 
     [TestMethod]
+    public void CoreUsageWaitsForAnEarlierSampleOfEveryProcessor()
+    {
+        var current = new Dictionary<string, CounterSample>
+        {
+            ["0,0"] = ProcessorTimeSample(idle: 5_000_000, time: 10_000_000),
+            ["0,1"] = ProcessorTimeSample(idle: 5_000_000, time: 10_000_000),
+        };
+        var partial = new Dictionary<string, CounterSample> { ["0,0"] = ProcessorTimeSample(idle: 0, time: 0) };
+
+        Assert.AreEqual(0, CoreWidgetProvider.Helpers.CPUStats.ComputeCoreUsage(new Dictionary<string, CounterSample>(), current).Length);
+        Assert.AreEqual(0, CoreWidgetProvider.Helpers.CPUStats.ComputeCoreUsage(partial, current).Length);
+    }
+
+    [TestMethod]
+    public void CoreUsageIsInProcessorOrder()
+    {
+        var previous = new Dictionary<string, CounterSample>
+        {
+            ["0,10"] = ProcessorTimeSample(idle: 0, time: 0),
+            ["0,2"] = ProcessorTimeSample(idle: 0, time: 0),
+            ["1,0"] = ProcessorTimeSample(idle: 0, time: 0),
+        };
+
+        // Idle for all, a quarter, and half of one second.
+        var current = new Dictionary<string, CounterSample>
+        {
+            ["1,0"] = ProcessorTimeSample(idle: 10_000_000, time: 10_000_000),
+            ["0,10"] = ProcessorTimeSample(idle: 2_500_000, time: 10_000_000),
+            ["0,2"] = ProcessorTimeSample(idle: 5_000_000, time: 10_000_000),
+        };
+
+        var usage = CoreWidgetProvider.Helpers.CPUStats.ComputeCoreUsage(previous, current);
+
+        Assert.AreEqual(3, usage.Length);
+        Assert.AreEqual(50f, usage[0], 0.5f);
+        Assert.AreEqual(75f, usage[1], 0.5f);
+        Assert.AreEqual(0f, usage[2], 0.5f);
+    }
+
+    [TestMethod]
     public void SparklinesRoundUpToTheNextTenPercent()
     {
         Assert.AreEqual(10d, PerformanceChartData.GetSparklineMax(0));
@@ -110,4 +152,8 @@ public class PerformanceChartDataTests
         Assert.AreEqual(PerformanceChartData.HistoryLength, values.Count);
         Assert.AreEqual(23d, (double)values[^1]["y"], 1e-9);
     }
+
+    // "% Processor Time" counts idle time, in 100-nanosecond units, against elapsed time.
+    private static CounterSample ProcessorTimeSample(long idle, long time) =>
+        new(idle, 0, 10_000_000, 10_000_000, time, time, PerformanceCounterType.Timer100NsInverse);
 }

@@ -155,9 +155,13 @@ internal sealed class ProcessCpuSampler
         return ranked.Count > count ? ranked.GetRange(0, count).ToArray() : ranked.ToArray();
     }
 
+    // The snapshot holds absolute pointers into the buffer, such as each process's image name, so
+    // the buffer must not move between the query and the walk. Pinned arrays never move.
+    private static byte[] AllocateBuffer(int size) => GC.AllocateUninitializedArray<byte>(size, pinned: true);
+
     private unsafe byte[] ReadSnapshot()
     {
-        _buffer ??= new byte[InitialBufferSize];
+        _buffer ??= AllocateBuffer(InitialBufferSize);
         while (true)
         {
             uint needed;
@@ -178,7 +182,7 @@ internal sealed class ProcessCpuSampler
             }
 
             // Processes start between calls, so leave room to grow.
-            _buffer = new byte[Math.Max(needed + (64 * 1024), (uint)_buffer.Length * 2)];
+            _buffer = AllocateBuffer(checked((int)Math.Max(needed + (64 * 1024), (uint)_buffer.Length * 2)));
         }
     }
 }

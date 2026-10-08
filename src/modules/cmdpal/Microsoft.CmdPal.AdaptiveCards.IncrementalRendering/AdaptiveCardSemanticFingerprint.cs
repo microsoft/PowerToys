@@ -18,6 +18,8 @@ internal static class AdaptiveCardSemanticFingerprint
     private const string TextPlaceholder = "$cmdpal.incremental.text$";
     private const string InlineSvgPlaceholder = "$cmdpal.incremental.inline-svg$";
     private const string CustomElementPlaceholder = "$cmdpal.incremental.custom$";
+    private const string UnusedFallbackPlaceholder = "$cmdpal.incremental.unused-fallback$";
+    private const string FallbackProperty = "fallback";
 
     public static string Create(string cardJson) => Create(cardJson, null, null, null, null);
 
@@ -152,12 +154,18 @@ internal static class AdaptiveCardSemanticFingerprint
         var isPatchableCustomElement = allowPatch
             && options.AllowCustom
             && options.PatchableElements!.Contains(typeName);
+        var hasUnusedFallback = allowPatch
+            && AlwaysRendersItself(value, typeName, options.PatchableElements);
 
         writer.WriteStartObject();
         foreach (var property in properties)
         {
             writer.WritePropertyName(property.Name);
-            if (isTextBlock && string.Equals(property.Name, "text", StringComparison.Ordinal))
+            if (hasUnusedFallback && string.Equals(property.Name, FallbackProperty, StringComparison.Ordinal))
+            {
+                writer.WriteStringValue(UnusedFallbackPlaceholder);
+            }
+            else if (isTextBlock && string.Equals(property.Name, "text", StringComparison.Ordinal))
             {
                 writer.WriteStringValue(TextPlaceholder);
             }
@@ -192,6 +200,19 @@ internal static class AdaptiveCardSemanticFingerprint
         value.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String
             ? type.GetString()
             : null;
+
+    /// <summary>
+    /// Returns whether <paramref name="value"/> is a registered element that always renders
+    /// itself. The renderer uses an element's fallback only when it can't render the element or
+    /// the host doesn't meet the element's <c>requires</c>, so the fallback of such an element is
+    /// never drawn: its content can't be mapped, and its changes can't change what's on screen.
+    /// </summary>
+    private static bool AlwaysRendersItself(
+        JsonElement value,
+        string? typeName,
+        IncrementalPatchableElements? patchableElements) =>
+        patchableElements?.Contains(typeName) == true
+        && !value.TryGetProperty("requires", out _);
 
     private static bool IsActionProperty(string propertyName) => propertyName is
         "actions" or
@@ -235,8 +256,15 @@ internal static class AdaptiveCardSemanticFingerprint
                     counts.CustomElements++;
                 }
 
+                // A fallback that's never drawn has no rendered elements to map.
+                var hasUnusedFallback = AlwaysRendersItself(value, typeName, patchableElements);
                 foreach (var property in value.EnumerateObject())
                 {
+                    if (hasUnusedFallback && string.Equals(property.Name, FallbackProperty, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
                     CountPatchableElements(
                         property.Value,
                         patchableElements,

@@ -12,6 +12,9 @@ namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 /// For a registered element, every property except the host-owned ones is patchable. The
 /// Adaptive Cards renderer applies host-owned properties (layout, visibility, fallback, and
 /// actions) outside the custom control, so changing them always replaces the complete card.
+/// The exception is the fallback of an element without <c>requires</c>: a registered element
+/// always renders itself, so that fallback is never drawn and its changes are ignored. Register
+/// only element types that the host's renderer renders.
 /// </remarks>
 public sealed class IncrementalPatchableElements
 {

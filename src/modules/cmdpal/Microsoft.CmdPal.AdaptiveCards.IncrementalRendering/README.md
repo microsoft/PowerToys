@@ -56,6 +56,8 @@ The updater calls `CanApplyIncrementalState` for every changed control before it
 For a registered element, every property is patchable except the host-owned ones.
 Host-owned properties are applied by the Adaptive Cards renderer, so changing them replaces the complete card.
 They are `type`, `id`, `isVisible`, `separator`, `spacing`, `height`, `fallback`, `requires`, `targetWidth`, `horizontalAlignment`, `grid.area`, `lang`, and the action properties.
+A registered element always renders itself, so unless it has `requires`, its `fallback` is never drawn: the updater ignores it, and a fallback such as a `TextBlock` with the element's value doesn't stop other text from updating in place.
+Register only element types that the renderer renders.
 The updater treats the control as a leaf, so the control can change its internal tree freely.
 
 ## Update behavior
