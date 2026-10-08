@@ -229,6 +229,24 @@
     <value>Link speed</value>
     <comment>Label for the speed of the network connection, such as 1 Gbps</comment>
   </data>
+  <data name="NetworkUsage_Widget_Template.Type_WiFi" xml:space="preserve">
+    <value>Wi-Fi</value>
+    <comment>Connection type of a wireless network adapter</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Type_Ethernet" xml:space="preserve">
+    <value>Ethernet</value>
+    <comment>Connection type of a wired network adapter</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Type_Cellular" xml:space="preserve">
+    <value>Cellular</value>
+    <comment>Connection type of a mobile broadband adapter</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.IPv4" xml:space="preserve">
+    <value>IPv4 address</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.IPv6" xml:space="preserve">
+    <value>IPv6 address</value>
+  </data>
   <data name="Previous_Network_Title" xml:space="preserve">
     <value>Previous network</value>
   </data>

@@ -1169,10 +1169,17 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     public override IconInfo Icon => Icons.NetworkIcon;
 
+    // Connection details change rarely and are slow to read, so they're refreshed at most every
+    // few seconds, and when the card switches adapters.
+    private const long ConnectionDetailsLifetimeMilliseconds = 15_000;
+
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
     private int _networkIndex;
     private bool _defaultNetworkInitialized;
+    private NetworkConnectionDetails? _connectionDetails;
+    private string? _connectionDetailsAdapterId;
+    private long _connectionDetailsTime;
 
     public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
     {
@@ -1219,6 +1226,25 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             ContentData["networkName"] = netName;
             ContentData["netLinkSpeed"] = LinkSpeedToString(currentData.GetLinkSpeed(_networkIndex));
 
+            var connection = GetConnectionDetails(currentData.GetNetworkId(_networkIndex));
+            if (connection is not null)
+            {
+                if (NetworkConnectionDetails.GetTypeResourceKey(connection.Type) is string typeKey)
+                {
+                    ContentData["netConnectionType"] = Resources.GetResource(typeKey);
+                }
+
+                if (connection.IPv4.Length > 0)
+                {
+                    ContentData["netIPv4"] = connection.IPv4;
+                }
+
+                if (connection.IPv6.Length > 0)
+                {
+                    ContentData["netIPv6"] = connection.IPv6;
+                }
+            }
+
             var history = currentData.GetHistory(_networkIndex);
             var sent = history.Sent.Snapshot();
             var received = history.Received.Snapshot();
@@ -1249,6 +1275,34 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         > 0 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Kbps", bitsPerSecond / 1e3),
         _ => "—",
     };
+
+    /// <summary>
+    /// Returns the connection details for an adapter id from <see cref="NetworkStats"/>. The
+    /// all-adapters entry describes the connection with the default gateway.
+    /// </summary>
+    private NetworkConnectionDetails? GetConnectionDetails(string adapterId)
+    {
+        var now = Environment.TickCount64;
+        if (string.Equals(adapterId, _connectionDetailsAdapterId, StringComparison.Ordinal)
+            && now - _connectionDetailsTime < ConnectionDetailsLifetimeMilliseconds)
+        {
+            return _connectionDetails;
+        }
+
+        _connectionDetailsAdapterId = adapterId;
+        _connectionDetailsTime = now;
+        _connectionDetails = adapterId == NetworkStats.AllPhysicalAdaptersId
+            ? NetworkConnectionDetails.Read(null)
+            : TryGetInterfaceId(adapterId) is Guid interfaceId ? NetworkConnectionDetails.Read(interfaceId) : null;
+        return _connectionDetails;
+    }
+
+    /// <summary>Reads the interface GUID from an adapter id such as <c>network-interface:{guid}</c>.</summary>
+    internal static Guid? TryGetInterfaceId(string adapterId)
+    {
+        var separator = adapterId.LastIndexOf(':');
+        return separator >= 0 && Guid.TryParse(adapterId.AsSpan(separator + 1), out var id) ? id : null;
+    }
 
     protected override string GetTemplatePath(WidgetPageState page)
     {
