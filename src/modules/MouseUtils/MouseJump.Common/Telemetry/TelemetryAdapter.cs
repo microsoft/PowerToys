@@ -68,7 +68,19 @@ internal sealed class TelemetryAdapter : IDisposable
                 // writer's own work does
                 await this.writeGate.WaitAsync().ConfigureAwait(false);
                 this.writeGate.Release();
-                action();
+
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    // telemetry is diagnostic, so a failing writer only loses the record it
+                    // failed on - letting this escape would end the loop for good, after which
+                    // nothing else is written, Flush blocks forever waiting for a signal that
+                    // never runs, and Dispose rethrows the writer's exception into the app
+                    Debug.WriteLine($"Telemetry writer failed: {ex}");
+                }
             }
         });
     }
