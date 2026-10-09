@@ -39,7 +39,7 @@ namespace WorkspacesCli
     class ConsoleApproval
     {
     public:
-        ConsoleApproval(HANDLE input, HANDLE error, ApprovalPromptText text);
+        ConsoleApproval(HANDLE input, HANDLE error, ApprovalPromptText text, decltype(&WriteConsoleW) writeConsole = &WriteConsoleW);
         ~ConsoleApproval();
         ConsoleApproval(const ConsoleApproval&) = delete;
         ConsoleApproval& operator=(const ConsoleApproval&) = delete;
@@ -53,6 +53,7 @@ namespace WorkspacesCli
         HANDLE m_input;
         HANDLE m_error;
         ApprovalPromptText m_text;
+        decltype(&WriteConsoleW) m_writeConsole;
         ApprovalInput m_choice;
         DWORD m_originalMode = 0;
         DWORD m_promptMode = 0;

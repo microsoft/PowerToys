@@ -138,8 +138,9 @@ console with the application, checked path, arguments, verification reason and s
 
 - A followed by Enter allows only the current checked target/request. Normal Windows UAC may
   still follow. S or an empty Enter skips that application, not the rest of the workspace.
-- Invalid input asks again; it never becomes approval by default. Pre-existing type-ahead is
-  discarded for each newly displayed warning.
+- Invalid input asks again; it never becomes approval by default. Input queued before or while
+  each warning is being written is discarded after the complete prompt is written, before
+  acknowledging display or accepting a decision.
 - Both stdin and stderr must be attached to an interactive console. Redirecting stdin or stderr,
   EOF (Ctrl+Z/Ctrl+D), unavailable display/input, or a disconnected presenter cannot approve.
   The per-app result reports `confirmationRequired`, distinct from an explicit `skipped` choice.

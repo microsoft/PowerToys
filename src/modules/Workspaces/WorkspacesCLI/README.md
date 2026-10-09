@@ -83,7 +83,9 @@ Opt-in `CliApprovalConsoleTests` builds `Tests\ApprovalConsoleFixture` and runs 
 in separate hidden consoles. Inputs target only those fixture consoles; the fixture exchanges
 decisions but never executes a target or requests UAC. It checks Allow, default/explicit Skip,
 EOF, redirection, cancellation/deadline, mode restoration, control-character escaping, fresh
-approval per app, discarded type-ahead and uncontaminated JSON stdout.
+approval per app, discarded type-ahead and uncontaminated JSON stdout. During-output tests inject
+`A` + Enter between writes of a multi-chunk warning and require fresh input after the full prompt;
+without fresh input the request times out without approval.
 
 Real worker tests use synthetic snapshots and a disposable window fixture, not saved user launch
 configurations. They are opt-in:

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 // This fixture only exchanges decisions. It never executes a configured application or requests UAC.
 #include <windows.h>
+#include <algorithm>
 #include <future>
 #include <iostream>
 #include <WorkspacesCLI/ApprovalChannel.h>
@@ -9,10 +10,14 @@
 
 namespace
 {
-    void Check(bool value)
+    HANDLE inputDuringOutput = nullptr;
+    bool typeaheadInjected = false;
+    DWORD outputWrites = 0;
+
+    void Check(bool value, const char* message = "Isolated console assertion failed")
     {
         if (!value)
-            throw std::runtime_error("Isolated console assertion failed");
+            throw std::runtime_error(message);
     }
 
     void Type(HANDLE input, std::wstring_view text)
@@ -32,6 +37,18 @@ namespace
               written == records.size());
     }
 
+    BOOL WINAPI WriteConsoleWithTypeahead(HANDLE output, const void* buffer, DWORD count, LPDWORD written, LPVOID reserved)
+    {
+        const auto result = WriteConsoleW(output, buffer, count, written, reserved);
+        ++outputWrites;
+        if (result && !typeaheadInjected)
+        {
+            typeaheadInjected = true;
+            Type(inputDuringOutput, L"A\r");
+        }
+        return result;
+    }
+
     void Run(std::wstring_view scenario)
     {
         wil::unique_handle input(CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr));
@@ -47,16 +64,27 @@ namespace
         WorkspacesCli::ApprovalPromptText text{
             L"TEST warning", L"Application: ", L"Path: ", L"Arguments: ", L"Verification: ", L"Status: ", L"[A] Allow once [S] Skip (default): ", L"Invalid choice"
         };
+        const bool duringOutput = scenario.starts_with(L"during-output-");
+        if (duringOutput)
+        {
+            inputDuringOutput = input.get();
+            // Force multiple writes so injected input arrives before the whole prompt is written.
+            text.choices.append(8192, L' ');
+            CONSOLE_SCREEN_BUFFER_INFO buffer{};
+            Check(GetConsoleScreenBufferInfo(output.get(), &buffer) != FALSE);
+            buffer.dwSize.Y = (std::max)(buffer.dwSize.Y, SHORT{ 512 });
+            Check(SetConsoleScreenBufferSize(output.get(), buffer.dwSize) != FALSE);
+        }
         WorkspacesCli::ConsoleApproval console(scenario == L"redirected-input" ? redirected.read.get() : input.get(),
                                                scenario == L"redirected-error" ? redirected.write.get() : output.get(),
-                                               text);
+                                               text, duringOutput ? &WriteConsoleWithTypeahead : &WriteConsoleW);
         auto requests = WorkspacesCli::ApprovalPipe::Create();
         auto replies = WorkspacesCli::ApprovalPipe::Create();
         wil::unique_handle cancel(CreateEventW(nullptr, TRUE, FALSE, nullptr));
         Check(static_cast<bool>(cancel));
         WorkspacesCli::FrontendApproval frontend(requests.read.get(), replies.write.get(), console, cancel.get());
         const bool twoRequests = scenario == L"two-requests" || scenario == L"typeahead";
-        const auto deadline = GetTickCount64() + (scenario == L"timeout" || scenario == L"typeahead" ? 1500 : 5000);
+        const auto deadline = GetTickCount64() + (scenario == L"timeout" || scenario == L"typeahead" || scenario == L"during-output-timeout" ? 1500 : 5000);
         auto work = std::async(std::launch::async, [&] {
             winrt::init_apartment();
             WorkspacesCli::WorkerApproval worker(requests.write.get(), replies.read.get(), [&] {
@@ -91,7 +119,7 @@ namespace
                     ++prompts;
                     if (scenario == L"cancel")
                         SetEvent(cancel.get());
-                    else if (scenario == L"timeout")
+                    else if (scenario == L"timeout" || scenario == L"during-output-timeout")
                     {
                     }
                     else if (scenario == L"typeahead")
@@ -99,11 +127,11 @@ namespace
                         if (prompts == 1)
                             Type(input.get(), L"a\ra\r");
                     }
-                    else if (scenario == L"allow")
+                    else if (scenario == L"allow" || scenario == L"during-output-allow")
                         Type(input.get(), L"A\r");
                     else if (scenario == L"invalid")
                         Type(input.get(), L"allow\rA\r");
-                    else if (scenario == L"skip")
+                    else if (scenario == L"skip" || scenario == L"during-output-skip")
                         Type(input.get(), L"S\r");
                     else if (scenario == L"eof")
                         Type(input.get(), std::wstring_view(L"\x001a", 1));
@@ -121,11 +149,13 @@ namespace
         frontend.Stop();
         DWORD restoredMode{};
         Check(GetConsoleMode(input.get(), &restoredMode) && restoredMode == originalMode);
+        if (duringOutput)
+            Check(typeaheadInjected && outputWrites >= 3 && prompts == 1, "During-output input was not discarded before accepting a fresh decision.");
         if (scenario == L"redirected-input" || scenario == L"redirected-error" || scenario == L"eof")
             Check(decisions[0] == LaunchDecision::UiUnavailable);
-        else if (scenario == L"timeout" || scenario == L"cancel")
+        else if (scenario == L"timeout" || scenario == L"cancel" || scenario == L"during-output-timeout")
             Check(decisions[0] == LaunchDecision::Canceled);
-        else if (scenario == L"allow" || scenario == L"invalid" || twoRequests)
+        else if (scenario == L"allow" || scenario == L"invalid" || scenario == L"during-output-allow" || twoRequests)
             Check(decisions[0] == LaunchDecision::Approved);
         else
             Check(decisions[0] == LaunchDecision::Skipped);
@@ -152,9 +182,12 @@ int wmain(int argc, wchar_t** argv)
         std::cout << "{\"passed\":true}\n";
         return 0;
     }
-    catch (const std::exception&)
+    catch (const std::exception& error)
     {
-        std::cout << "{\"passed\":false}\n";
+        json::JsonObject result;
+        result.SetNamedValue(L"passed", json::value(false));
+        result.SetNamedValue(L"error", json::value(winrt::to_hstring(error.what())));
+        std::cout << winrt::to_string(result.Stringify()) << '\n';
         return 1;
     }
     catch (const winrt::hresult_error&)

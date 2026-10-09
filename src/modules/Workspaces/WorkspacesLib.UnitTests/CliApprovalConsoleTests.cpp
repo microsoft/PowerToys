@@ -79,5 +79,20 @@ namespace WorkspacesLibUnitTests
             Run(L"two-requests");
             Run(L"typeahead");
         }
+
+        TEST_METHOD (InputDuringPromptOutputCannotApproveWithoutFreshInput)
+        {
+            Run(L"during-output-timeout");
+        }
+
+        TEST_METHOD (InputDuringPromptOutputDoesNotOverrideFreshSkip)
+        {
+            Run(L"during-output-skip");
+        }
+
+        TEST_METHOD (InputDuringPromptOutputRequiresFreshAllow)
+        {
+            Run(L"during-output-allow");
+        }
     };
 }

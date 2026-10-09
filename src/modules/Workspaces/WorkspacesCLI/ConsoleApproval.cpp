@@ -58,8 +58,8 @@ namespace WorkspacesCli
         return std::nullopt;
     }
 
-    ConsoleApproval::ConsoleApproval(HANDLE input, HANDLE error, ApprovalPromptText text) :
-        m_input(input), m_error(error), m_text(std::move(text))
+    ConsoleApproval::ConsoleApproval(HANDLE input, HANDLE error, ApprovalPromptText text, decltype(&WriteConsoleW) writeConsole) :
+        m_input(input), m_error(error), m_text(std::move(text)), m_writeConsole(writeConsole)
     {
     }
 
@@ -74,7 +74,7 @@ namespace WorkspacesCli
         while (offset < text.size())
         {
             DWORD written{};
-            if (!WriteConsoleW(m_error, text.data() + offset, static_cast<DWORD>((std::min)(text.size() - offset, size_t{ 4096 })), &written, nullptr) || !written)
+            if (!m_writeConsole(m_error, text.data() + offset, static_cast<DWORD>((std::min)(text.size() - offset, size_t{ 4096 })), &written, nullptr) || !written)
                 return false;
             offset += written;
         }
@@ -101,8 +101,8 @@ namespace WorkspacesCli
             return false;
         m_active = true;
         m_choice = {};
-        // Pre-existing type-ahead must not approve a warning the user has not seen.
-        if (!FlushConsoleInputBuffer(m_input) || !Write(text))
+        // Discard input queued before or while the warning was being written.
+        if (!FlushConsoleInputBuffer(m_input) || !Write(text) || !FlushConsoleInputBuffer(m_input))
         {
             End();
             return false;
