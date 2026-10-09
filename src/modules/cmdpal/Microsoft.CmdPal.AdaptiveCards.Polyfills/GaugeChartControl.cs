@@ -10,9 +10,8 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
 /// Renders an Adaptive Cards <c>Chart.Gauge</c> element as a semicircular gauge. The value fills
@@ -159,7 +158,7 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
         }
 
         Content = root;
-        AutomationProperties.SetName(this, FirstNonEmpty(_model.Title, _model.SubLabel) ?? RS_.GetString("AdaptiveChart_Gauge"));
+        AutomationProperties.SetName(this, FirstNonEmpty(_model.Title, _model.SubLabel) ?? ChartStrings.Get("AdaptiveChart_Gauge"));
         AutomationProperties.SetHelpText(this, valueText.Text);
     }
 

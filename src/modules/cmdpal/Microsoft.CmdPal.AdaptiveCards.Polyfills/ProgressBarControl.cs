@@ -5,7 +5,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
 /// Renders an Adaptive Cards <c>ProgressBar</c> element with the native WinUI progress bar, so

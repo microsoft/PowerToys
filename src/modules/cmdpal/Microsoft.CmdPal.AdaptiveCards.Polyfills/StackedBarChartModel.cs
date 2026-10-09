@@ -4,7 +4,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
 /// The parsed form of an Adaptive Cards <c>Chart.HorizontalBar.Stacked</c> element, with the

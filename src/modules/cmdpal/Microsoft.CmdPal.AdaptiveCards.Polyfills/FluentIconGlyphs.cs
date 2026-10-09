@@ -5,7 +5,7 @@
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
 /// Maps Adaptive Cards icon names, from the Fluent System Icons catalog, to the Segoe Fluent Icons

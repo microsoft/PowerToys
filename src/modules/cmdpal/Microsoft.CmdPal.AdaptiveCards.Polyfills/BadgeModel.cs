@@ -4,7 +4,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 internal enum BadgeAppearance
 {

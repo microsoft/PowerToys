@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Path = Microsoft.UI.Xaml.Shapes.Path;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Builds the XAML shapes and text shared by the native chart controls.</summary>
 internal static class ChartShapes

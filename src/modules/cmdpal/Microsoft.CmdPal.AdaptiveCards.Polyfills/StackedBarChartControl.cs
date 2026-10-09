@@ -7,9 +7,8 @@ using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
 /// Renders an Adaptive Cards <c>Chart.HorizontalBar.Stacked</c> element: one rounded bar per
@@ -82,7 +81,7 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
         }
 
         Content = root;
-        AutomationProperties.SetName(this, !string.IsNullOrWhiteSpace(_model.Title) ? _model.Title : RS_.GetString("AdaptiveChart_BarChart"));
+        AutomationProperties.SetName(this, !string.IsNullOrWhiteSpace(_model.Title) ? _model.Title : ChartStrings.Get("AdaptiveChart_BarChart"));
         AutomationProperties.SetHelpText(this, CreateSummary());
     }
 

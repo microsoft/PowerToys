@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Lenient readers for chart element JSON. Invalid values read as missing.</summary>
 internal static class ChartJson

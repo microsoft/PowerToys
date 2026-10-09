@@ -9,9 +9,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Renders an Adaptive Cards <c>Chart.Donut</c> or <c>Chart.Pie</c> element with a legend.</summary>
 internal sealed partial class DonutChartControl : AdaptiveVisualControl
@@ -85,7 +84,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
         Content = root;
         var name = !string.IsNullOrWhiteSpace(_model.Title)
             ? _model.Title
-            : RS_.GetString(_model.IsPie ? "AdaptiveChart_PieChart" : "AdaptiveChart_DonutChart");
+            : ChartStrings.Get(_model.IsPie ? "AdaptiveChart_PieChart" : "AdaptiveChart_DonutChart");
         AutomationProperties.SetName(this, name);
         AutomationProperties.SetHelpText(this, CreateSummary(shares));
     }

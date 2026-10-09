@@ -4,7 +4,7 @@
 
 using System.Text;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Formats that shorten large chart values, where <c>{0}</c> is the scaled number, as in <c>{0}K</c>.</summary>
 /// <param name="Thousands">The format for units of 10^3.</param>

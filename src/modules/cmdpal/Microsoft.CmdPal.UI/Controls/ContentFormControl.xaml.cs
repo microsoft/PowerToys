@@ -6,8 +6,8 @@ using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using ManagedCommon;
 using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
+using Microsoft.CmdPal.AdaptiveCards.Polyfills;
 using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
-using Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.System;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -46,7 +47,7 @@ public sealed partial class ContentFormControl : UserControl
         RegisterParser<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser>();
         RegisterParser<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser>();
         RegisterParser<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser>();
-        AdaptiveVisualElements.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
+        AdaptiveCardPolyfills.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
 
         _customElementParsersRegistered = true;
     }
@@ -65,14 +66,13 @@ public sealed partial class ContentFormControl : UserControl
         RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
-        AdaptiveVisualElements.RegisterRenderers(renderer);
-        AdaptiveContainerDecoratorRenderer.Register(renderer);
+        AdaptiveCardPolyfills.RegisterRenderers(renderer, RS_.GetString);
         _cardUpdater = new IncrementalAdaptiveCardUpdater(
             renderer,
             CardHost,
             AdaptiveCardParserRegistrations.ElementParsers,
             AdaptiveCardParserRegistrations.ActionParsers,
-            AdaptiveVisualElements.PatchableElements);
+            AdaptiveCardPolyfills.PatchableElements);
 
         // The theme can differ once the control joins a window with its own requested theme.
         Loaded += (_, _) => RefreshHostConfig();

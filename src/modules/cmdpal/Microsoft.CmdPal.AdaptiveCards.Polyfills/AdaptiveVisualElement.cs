@@ -9,7 +9,7 @@ using Windows.Data.Json;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>A schema element, such as a chart, that Command Palette parses and renders natively.</summary>
 internal sealed partial class AdaptiveVisualElement : IAdaptiveCardElement

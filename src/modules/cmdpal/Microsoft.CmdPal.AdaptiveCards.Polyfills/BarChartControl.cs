@@ -11,9 +11,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Path = Microsoft.UI.Xaml.Shapes.Path;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Renders an Adaptive Cards <c>Chart.VerticalBar</c> or <c>Chart.HorizontalBar</c> element.</summary>
 internal sealed partial class BarChartControl : AdaptiveVisualControl
@@ -75,7 +74,7 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
         }
 
         Content = root;
-        AutomationProperties.SetName(this, !string.IsNullOrWhiteSpace(_model.Title) ? _model.Title : RS_.GetString("AdaptiveChart_BarChart"));
+        AutomationProperties.SetName(this, !string.IsNullOrWhiteSpace(_model.Title) ? _model.Title : ChartStrings.Get("AdaptiveChart_BarChart"));
         AutomationProperties.SetHelpText(this, CreateSummary());
     }
 

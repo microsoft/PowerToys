@@ -3,10 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
-using Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.UnitTests.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
 [TestClass]
 public class IconModelTests

@@ -4,7 +4,7 @@
 
 using System.Text;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Formats chart values for axis labels, tooltips, and accessible summaries.</summary>
 internal static partial class ChartValueFormatter

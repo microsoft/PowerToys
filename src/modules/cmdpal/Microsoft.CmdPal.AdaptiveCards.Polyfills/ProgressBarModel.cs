@@ -4,7 +4,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>The parsed form of an Adaptive Cards <c>ProgressBar</c> element. Without a value, it's indeterminate.</summary>
 internal sealed class ProgressBarModel : IAdaptiveVisualModel

@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Data.Json;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
 /// Wraps the built-in container renderers to support <c>roundedCorners</c> and <c>showBorder</c>,

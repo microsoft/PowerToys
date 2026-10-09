@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI.ViewManagement;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Theme services shared by the native chart controls.</summary>
 internal static class ChartTheme
@@ -76,6 +76,17 @@ internal static class ChartTheme
     /// <summary>Gets the color of an empty track, such as the unfilled part of a gauge.</summary>
     public static ChartColor GetTrackColor(bool isDarkTheme) =>
         isDarkTheme ? new ChartColor(0x29, 0xFF, 0xFF, 0xFF) : new ChartColor(0x1F, 0x00, 0x00, 0x00);
+
+    /// <summary>Gets Fluent's divider color, which is the text color in high contrast.</summary>
+    public static ChartColor GetDividerColor(bool isDarkTheme)
+    {
+        if (IsHighContrast)
+        {
+            return GetSystemColor(UIElementType.WindowText);
+        }
+
+        return isDarkTheme ? new ChartColor(0x15, 0xFF, 0xFF, 0xFF) : new ChartColor(0x0F, 0x00, 0x00, 0x00);
+    }
 
     /// <summary>Gets the Fluent text color for the element's theme, which can differ from the app's.</summary>
     public static ChartColor GetTextColor(bool isDarkTheme, bool secondary)

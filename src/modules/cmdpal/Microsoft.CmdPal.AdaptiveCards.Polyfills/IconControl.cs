@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Renders an Adaptive Cards <c>Icon</c> element as a Segoe Fluent Icons glyph.</summary>
 internal sealed partial class IconControl : AdaptiveVisualControl

@@ -6,7 +6,7 @@ using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using Microsoft.UI.Xaml;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Draws the <c>fallback</c> of an element that can't draw itself, such as an icon without a glyph.</summary>
 /// <remarks>

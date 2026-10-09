@@ -5,7 +5,7 @@
 using System.Text.Json;
 using Microsoft.UI.Xaml;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Describes one natively rendered element type: how to parse it and how to draw it.</summary>
 /// <param name="Name">The element's <c>type</c>.</param>

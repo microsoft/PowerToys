@@ -4,9 +4,8 @@
 
 using System.Globalization;
 using System.Text;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>Formats chart values in the user's language.</summary>
 internal static partial class ChartValueFormatter
@@ -24,7 +23,7 @@ internal static partial class ChartValueFormatter
     // A missing or broken translation falls back to English rather than losing the number.
     private static CompositeFormat Load(string resourceId, CompositeFormat english)
     {
-        var format = RS_.GetString(resourceId);
+        var format = ChartStrings.Get(resourceId);
         if (string.IsNullOrWhiteSpace(format) || !format.Contains("{0}", StringComparison.Ordinal))
         {
             return english;

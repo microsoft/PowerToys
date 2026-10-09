@@ -4,7 +4,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>The parsed form of an Adaptive Cards <c>Chart.Line</c> element, with the schema's defaults.</summary>
 internal sealed class LineChartModel : IAdaptiveVisualModel

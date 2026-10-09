@@ -4,7 +4,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>An sRGB color with alpha that does not depend on a UI framework.</summary>
 internal readonly record struct ChartColor(byte A, byte R, byte G, byte B)

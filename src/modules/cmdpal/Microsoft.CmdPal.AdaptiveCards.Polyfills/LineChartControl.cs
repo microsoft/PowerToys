@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -15,9 +16,8 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Path = Microsoft.UI.Xaml.Shapes.Path;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
 /// Renders an Adaptive Cards <c>Chart.Line</c> element as smooth, filled lines. New versions apply
@@ -47,8 +47,36 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     private static readonly TimeSpan DefaultScrollDuration = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan MinimumScrollDuration = TimeSpan.FromMilliseconds(250);
     private static readonly TimeSpan MaximumScrollDuration = TimeSpan.FromMilliseconds(1500);
-    private static readonly CompositeFormat SeriesNameFormat = CompositeFormat.Parse(RS_.GetString("AdaptiveChart_SeriesName"));
-    private static readonly CompositeFormat SeriesSummaryFormat = CompositeFormat.Parse(RS_.GetString("AdaptiveChart_SeriesSummary"));
+    private static readonly CompositeFormat SeriesNameFormat = CompositeFormat.Parse(ChartStrings.Get("AdaptiveChart_SeriesName"));
+    private static readonly CompositeFormat SeriesSummaryFormat = CompositeFormat.Parse(ChartStrings.Get("AdaptiveChart_SeriesSummary"));
+
+    private readonly RowDefinition _plotRow = new() { Height = new GridLength(120) };
+    private readonly TextBlock _titleText = new()
+    {
+        Margin = new Thickness(0, 0, 0, 4),
+        Style = ChartTheme.GetTextStyle(ChartShapes.BodyStrongStyle),
+        TextTrimming = TextTrimming.CharacterEllipsis,
+        Visibility = Visibility.Collapsed,
+    };
+
+    private readonly TextBlock _yAxisTitleText = ChartShapes.CreateText(string.Empty, ChartShapes.CaptionStyle);
+    private readonly TextBlock _maxLabelText = ChartShapes.CreateText(string.Empty, ChartShapes.CaptionStyle);
+    private readonly TextBlock _xAxisTitleText = ChartShapes.CreateText(string.Empty, ChartShapes.CaptionStyle);
+    private readonly TextBlock _minLabelText = ChartShapes.CreateText(string.Empty, ChartShapes.CaptionStyle);
+    private readonly Grid _headerRow;
+    private readonly Grid _footerRow;
+    private readonly Canvas _plotCanvas = new();
+    private readonly Path _gridLinesPath = new() { StrokeThickness = 1 };
+    private readonly TranslateTransform _scrollTransform = new();
+    private readonly Canvas _seriesLayer;
+    private readonly Canvas _xLabelsCanvas = new() { Height = 16, Visibility = Visibility.Collapsed };
+    private readonly WrapPanel _legendPanel = new()
+    {
+        Margin = new Thickness(0, 4, 0, 0),
+        HorizontalSpacing = 16,
+        VerticalSpacing = 4,
+        Visibility = Visibility.Collapsed,
+    };
 
     private LineChartModel _model;
     private bool _isCompact;
@@ -59,10 +87,15 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     public LineChartControl(LineChartModel model)
     {
         _model = model;
-        InitializeComponent();
+        _headerRow = CreateAxisRow(_yAxisTitleText, _maxLabelText);
+        _footerRow = CreateAxisRow(_xAxisTitleText, _minLabelText);
+        _seriesLayer = new Canvas { RenderTransform = _scrollTransform };
+        IsTabStop = false;
+        HorizontalAlignment = HorizontalAlignment.Stretch;
+        Content = CreateLayout();
         ApplyText();
         SizeChanged += OnSizeChanged;
-        PlotCanvas.SizeChanged += (_, _) => Redraw(scrolled: false);
+        _plotCanvas.SizeChanged += (_, _) => Redraw(scrolled: false);
         ActualThemeChanged += (_, _) => Redraw(scrolled: false);
         Unloaded += (_, _) => StopScrollAnimation();
     }
@@ -90,21 +123,50 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         Redraw(scrolled);
     }
 
+    private Grid CreateLayout()
+    {
+        _plotCanvas.Children.Add(_gridLinesPath);
+        _plotCanvas.Children.Add(_seriesLayer);
+        var root = new Grid { RowSpacing = 4 };
+        FrameworkElement[] rows = [_titleText, _headerRow, _plotCanvas, _xLabelsCanvas, _footerRow, _legendPanel];
+        for (var i = 0; i < rows.Length; i++)
+        {
+            root.RowDefinitions.Add(rows[i] == _plotCanvas ? _plotRow : new RowDefinition { Height = GridLength.Auto });
+            Grid.SetRow(rows[i], i);
+            root.Children.Add(rows[i]);
+        }
+
+        return root;
+    }
+
+    // An axis title, trimmed to fit, beside the value at that end of the axis.
+    private static Grid CreateAxisRow(TextBlock title, TextBlock value)
+    {
+        var row = new Grid { ColumnSpacing = 12 };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        title.TextTrimming = TextTrimming.CharacterEllipsis;
+        Grid.SetColumn(value, 1);
+        row.Children.Add(title);
+        row.Children.Add(value);
+        return row;
+    }
+
     private void ApplyText()
     {
         var title = _model.ShowTitle && !_isCompact ? _model.Title : null;
-        TitleText.Text = title ?? string.Empty;
-        TitleText.Visibility = string.IsNullOrEmpty(title) ? Visibility.Collapsed : Visibility.Visible;
-        YAxisTitleText.Text = _model.YAxisTitle ?? string.Empty;
-        XAxisTitleText.Text = _model.XAxisTitle ?? string.Empty;
-        HeaderRow.Visibility = _isCompact ? Visibility.Collapsed : Visibility.Visible;
-        FooterRow.Visibility = _isCompact ? Visibility.Collapsed : Visibility.Visible;
+        _titleText.Text = title ?? string.Empty;
+        _titleText.Visibility = string.IsNullOrEmpty(title) ? Visibility.Collapsed : Visibility.Visible;
+        _yAxisTitleText.Text = _model.YAxisTitle ?? string.Empty;
+        _xAxisTitleText.Text = _model.XAxisTitle ?? string.Empty;
+        _headerRow.Visibility = _isCompact ? Visibility.Collapsed : Visibility.Visible;
+        _footerRow.Visibility = _isCompact ? Visibility.Collapsed : Visibility.Visible;
 
         var name = FirstNonEmpty(
             _model.Title,
             _model.YAxisTitle,
             _model.Series.Count > 0 ? _model.Series[0].Legend : null)
-            ?? RS_.GetString("AdaptiveChart_LineChart");
+            ?? ChartStrings.Get("AdaptiveChart_LineChart");
         AutomationProperties.SetName(this, name);
     }
 
@@ -133,29 +195,31 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         var height = _isCompact
             ? SparklineHeight
             : Math.Clamp(width * PlotHeightToWidth, MinimumPlotHeight, MaximumPlotHeight);
-        if (Math.Abs(PlotRow.Height.Value - height) > 0.5)
+        if (Math.Abs(_plotRow.Height.Value - height) > 0.5)
         {
-            PlotRow.Height = new GridLength(height);
+            _plotRow.Height = new GridLength(height);
         }
     }
 
     private void Redraw(bool scrolled)
     {
-        SeriesLayer.Children.Clear();
-        var width = PlotCanvas.ActualWidth;
-        var height = PlotCanvas.ActualHeight;
+        var isDarkTheme = ActualTheme == ElementTheme.Dark;
+        ApplyThemeColors(isDarkTheme);
+        _seriesLayer.Children.Clear();
+        var width = _plotCanvas.ActualWidth;
+        var height = _plotCanvas.ActualHeight;
         if (width <= 0 || height <= 0)
         {
             StopScrollAnimation();
             return;
         }
 
-        PlotCanvas.Clip = new RectangleGeometry { Rect = new Rect(0, 0, width, height) };
+        _plotCanvas.Clip = new RectangleGeometry { Rect = new Rect(0, 0, width, height) };
 
         var (dataMin, dataMax) = _model.GetValueExtent();
         var range = ChartScale.Compute(_model.YMin, _model.YMax, dataMin, dataMax);
-        MaxLabelText.Text = ChartValueFormatter.FormatCompact(range.Max);
-        MinLabelText.Text = ChartValueFormatter.FormatCompact(range.Min);
+        _maxLabelText.Text = ChartValueFormatter.FormatCompact(range.Max);
+        _minLabelText.Text = ChartValueFormatter.FormatCompact(range.Min);
 
         var layout = new LineChartLayout(
             width,
@@ -165,9 +229,8 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             PlotTopPadding,
             _isCompact ? SparklineRightPadding : PlotRightPadding,
             PlotBottomPadding);
-        GridLinesPath.Data = _isCompact ? null : CreateGridLines(layout);
+        _gridLinesPath.Data = _isCompact ? null : CreateGridLines(layout);
 
-        var isDarkTheme = ActualTheme == ElementTheme.Dark;
         var isHighContrast = ChartTheme.IsHighContrast;
         var fillOpacity = isHighContrast ? 0 : (isDarkTheme ? DarkThemeAreaOpacity : LightThemeAreaOpacity);
         var markerScale = _isCompact ? 0.75 : 1;
@@ -194,6 +257,16 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         }
     }
 
+    private void ApplyThemeColors(bool isDarkTheme)
+    {
+        var secondary = ChartTheme.ToBrush(ChartTheme.GetTextColor(isDarkTheme, secondary: true));
+        _yAxisTitleText.Foreground = secondary;
+        _maxLabelText.Foreground = secondary;
+        _xAxisTitleText.Foreground = secondary;
+        _minLabelText.Foreground = secondary;
+        _gridLinesPath.Stroke = ChartTheme.ToBrush(ChartTheme.GetDividerColor(isDarkTheme));
+    }
+
     private void DrawSeries(
         LineChartSeries series,
         LineChartLayout layout,
@@ -217,7 +290,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         {
             if (fillOpacity > 0)
             {
-                SeriesLayer.Children.Add(new Path { Data = CreateAreaGeometry(points, layout), Fill = CreateAreaBrush(color, layout, fillOpacity) });
+                _seriesLayer.Children.Add(new Path { Data = CreateAreaGeometry(points, layout), Fill = CreateAreaBrush(color, layout, fillOpacity) });
             }
 
             var line = new Path
@@ -234,7 +307,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
                 ChartShapes.ApplyDashPattern(line, dashPattern);
             }
 
-            SeriesLayer.Children.Add(line);
+            _seriesLayer.Children.Add(line);
         }
 
         // Mark the newest sample: the "now" of a live series.
@@ -326,15 +399,15 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         var dot = new Ellipse { Width = diameter, Height = diameter, Fill = fill };
         Canvas.SetLeft(dot, center.X - (diameter / 2));
         Canvas.SetTop(dot, center.Y - (diameter / 2));
-        SeriesLayer.Children.Add(dot);
+        _seriesLayer.Children.Add(dot);
     }
 
     private void UpdateLegend(IReadOnlyList<ChartColor> colors, bool isHighContrast)
     {
-        LegendPanel.Children.Clear();
+        _legendPanel.Children.Clear();
         if (!_model.ShowsLegend || _isCompact)
         {
-            LegendPanel.Visibility = Visibility.Collapsed;
+            _legendPanel.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -360,22 +433,22 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
                 Style = captionStyle,
                 VerticalAlignment = VerticalAlignment.Center,
             });
-            LegendPanel.Children.Add(entry);
+            _legendPanel.Children.Add(entry);
         }
 
-        LegendPanel.Visibility = Visibility.Visible;
+        _legendPanel.Visibility = Visibility.Visible;
     }
 
     private void UpdateXLabels(LineChartLayout layout)
     {
-        XLabelsCanvas.Children.Clear();
+        _xLabelsCanvas.Children.Clear();
         if (!_model.HasPointLabels || _isCompact || _model.SlotCount == 0)
         {
-            XLabelsCanvas.Visibility = Visibility.Collapsed;
+            _xLabelsCanvas.Visibility = Visibility.Collapsed;
             return;
         }
 
-        XLabelsCanvas.Visibility = Visibility.Visible;
+        _xLabelsCanvas.Visibility = Visibility.Visible;
         var points = GetLongestSeries().Points;
         var firstSlot = layout.GetFirstSlot(points.Count);
         var maxLabels = Math.Max(2, (int)(layout.Width / MinimumXLabelSpacing));
@@ -390,7 +463,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
                 continue;
             }
 
-            var text = new TextBlock { Text = label, Style = captionStyle, Foreground = MinLabelText.Foreground };
+            var text = new TextBlock { Text = label, Style = captionStyle, Foreground = _minLabelText.Foreground };
             text.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             var labelWidth = text.DesiredSize.Width;
             var left = Math.Clamp(
@@ -403,7 +476,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             }
 
             Canvas.SetLeft(text, left);
-            XLabelsCanvas.Children.Add(text);
+            _xLabelsCanvas.Children.Add(text);
             previousRight = left + labelWidth;
         }
     }
@@ -456,7 +529,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             To = 0,
             Duration = new Duration(_scrollDuration),
         };
-        Storyboard.SetTarget(animation, ScrollTransform);
+        Storyboard.SetTarget(animation, _scrollTransform);
         Storyboard.SetTargetProperty(animation, "X");
         var storyboard = new Storyboard();
         storyboard.Children.Add(animation);

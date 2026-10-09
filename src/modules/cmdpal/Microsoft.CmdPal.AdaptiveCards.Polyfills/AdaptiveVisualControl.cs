@@ -6,7 +6,7 @@ using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
 /// <summary>
 /// Base class for natively rendered elements whose look depends on the theme and width. New

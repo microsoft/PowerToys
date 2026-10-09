@@ -5,9 +5,10 @@
 using AdaptiveCards.ObjectModel.WinUI3;
 using Windows.Data.Json;
 
-namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 
-internal static class AdaptiveCustomElementJson
+/// <summary>Reads and writes the properties that every element has, for custom elements.</summary>
+public static class AdaptiveCustomElementJson
 {
     public static void ParseCommonProperties(
         IAdaptiveCardElement element,

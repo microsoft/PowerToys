@@ -4,10 +4,9 @@
 
 using System.Globalization;
 using System.Text;
-using Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.UI.UnitTests.Charts;
+namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
 [TestClass]
 public class ChartPaletteTests
