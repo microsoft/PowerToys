@@ -23,6 +23,11 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     private const string ClipboardRegistryPath = @"Software\Microsoft\Clipboard";
     private const string ClipboardRegistryValue = "EnableClipboardHistory";
     private const int MaximumHistoryEntries = 25;
+    private const string ClipboardHistoryIgnoreReason =
+        "Temporarily disabled due to recurring Windows 11 CI clipboard-history setup failures: " +
+        "copied text reaches the current clipboard but not Windows history, and subsequent fixtures cannot enable history. " +
+        "The same failures recur across independent PRs. " +
+        "Re-enable these tests when the CI clipboard-history activation and capture setup is resolved.";
 
     private readonly string historyPrefix = $"PowerToys.AdvancedPaste.UITests.{Guid.NewGuid():N}";
     private readonly HashSet<string> originalHistoryIds = new(StringComparer.Ordinal);
@@ -35,6 +40,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     protected override bool ReuseScopeAcrossTests => false;
 
     [TestMethod]
+    [Ignore(ClipboardHistoryIgnoreReason)]
     public Task SelectingANonFirstEntryUpdatesClipboardWithoutChangingHistoryIdentity()
     {
         return RunHistoryScenarioAsync(
@@ -78,6 +84,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    [Ignore(ClipboardHistoryIgnoreReason)]
     public Task DeletingAnEntryRemovesOnlyItsExactWindowsHistoryId()
     {
         return RunHistoryScenarioAsync(
@@ -125,6 +132,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    [Ignore(ClipboardHistoryIgnoreReason)]
     public Task DisablingClipboardHistoryThroughSettingsHidesHistoryAccess()
     {
         return RunHistoryScenarioAsync(
@@ -171,6 +179,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    [Ignore(ClipboardHistoryIgnoreReason)]
     public Task FullHistoryCanBeResetBeforeAddingNewFixtureEntries()
     {
         return RunHistoryScenarioAsync(
