@@ -98,7 +98,11 @@ internal sealed partial class AdaptiveVisualElementRenderer : IAdaptiveElementRe
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {
         var model = ((AdaptiveVisualElement)element).Model ?? _type.Parse("{}", new List<string>());
-        return _type.Create(model);
+
+        // An element that can't draw itself shows its fallback, or nothing when it has none.
+        return model.RendersItself
+            ? _type.Create(model)
+            : AdaptiveFallbackRenderer.Render(element, context, renderArgs)!;
     }
 }
 

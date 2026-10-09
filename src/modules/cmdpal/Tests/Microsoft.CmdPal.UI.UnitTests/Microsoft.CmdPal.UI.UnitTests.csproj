@@ -154,6 +154,7 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartPoint.cs" Link="Controls\AdaptiveCards\Charts\ChartPoint.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartScale.cs" Link="Controls\AdaptiveCards\Charts\ChartScale.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartValueFormatter.cs" Link="Controls\AdaptiveCards\Charts\ChartValueFormatter.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\CompactNumberFormats.cs" Link="Controls\AdaptiveCards\Charts\CompactNumberFormats.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\LineChartLayout.cs" Link="Controls\AdaptiveCards\Charts\LineChartLayout.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\LineChartModel.cs" Link="Controls\AdaptiveCards\Charts\LineChartModel.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\LineChartPoint.cs" Link="Controls\AdaptiveCards\Charts\LineChartPoint.cs" />

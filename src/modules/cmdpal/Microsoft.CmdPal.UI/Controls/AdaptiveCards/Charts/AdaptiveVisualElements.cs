@@ -26,7 +26,7 @@ internal static class AdaptiveVisualElements
         new("Chart.HorizontalBar", (json, warnings) => BarChartModel.Parse(json, BarOrientation.Horizontal, warnings), model => new BarChartControl((BarChartModel)model)),
         new("ProgressBar", (json, warnings) => ProgressBarModel.Parse(json, warnings), model => new ProgressBarControl((ProgressBarModel)model)),
         new("Badge", (json, warnings) => BadgeModel.Parse(json, warnings), model => new BadgeControl((BadgeModel)model)),
-        new("Icon", (json, warnings) => IconModel.Parse(json, warnings), model => new IconControl((IconModel)model)),
+        new("Icon", (json, warnings) => IconModel.Parse(json, warnings), model => new IconControl((IconModel)model), IconModel.HasGlyph),
     ];
 
     /// <summary>Gets the registration that lets these elements update in place.</summary>
@@ -53,7 +53,14 @@ internal static class AdaptiveVisualElements
         var elements = new IncrementalPatchableElements();
         foreach (var type in Types)
         {
-            elements.Add(type.Name);
+            if (type.RendersItself is { } rendersItself)
+            {
+                elements.Add(type.Name, rendersItself);
+            }
+            else
+            {
+                elements.Add(type.Name);
+            }
         }
 
         return elements;

@@ -158,8 +158,8 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
 
         var (dataMin, dataMax) = _model.GetValueExtent();
         var range = ChartScale.Compute(_model.YMin, _model.YMax, dataMin, dataMax);
-        MaxLabelText.Text = ChartValueFormatter.FormatCompact(range.Max, CultureInfo.CurrentCulture);
-        MinLabelText.Text = ChartValueFormatter.FormatCompact(range.Min, CultureInfo.CurrentCulture);
+        MaxLabelText.Text = ChartValueFormatter.FormatCompact(range.Max);
+        MinLabelText.Text = ChartValueFormatter.FormatCompact(range.Min);
 
         var layout = new LineChartLayout(
             width,
@@ -180,10 +180,11 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         {
             var series = _model.Series[i];
             colors[i] = ChartTheme.Resolve(series.Color, _model.Color, _model.ColorSet, i, isDarkTheme);
-            DrawSeries(series, layout, colors[i], fillOpacity, markerScale, isHighContrast ? ChartPalette.GetHighContrastDashPattern(i) : null);
+            var dashPattern = isHighContrast ? ChartPalette.GetHighContrastDashPattern(i) : null;
+            DrawSeries(series, layout, colors[i], fillOpacity, markerScale, dashPattern);
         }
 
-        UpdateLegend(colors);
+        UpdateLegend(colors, isHighContrast);
         UpdateXLabels(layout);
         UpdateSummary();
 
@@ -203,7 +204,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         ChartColor color,
         double fillOpacity,
         double markerScale,
-        double[]? dashPattern)
+        IReadOnlyList<double>? dashPattern)
     {
         var runs = layout.GetRuns(series.Points);
         var stroke = new SolidColorBrush(ToColor(color));
@@ -238,8 +239,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             };
             if (dashPattern is not null)
             {
-                line.StrokeDashCap = PenLineCap.Round;
-                line.StrokeDashArray = CreateDashArray(dashPattern);
+                ChartShapes.ApplyDashPattern(line, dashPattern);
             }
 
             SeriesLayer.Children.Add(line);
@@ -252,17 +252,6 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             AddDot(point, MarkerHaloDiameter * markerScale, new SolidColorBrush(ToColor(color.WithOpacity(MarkerHaloOpacity))));
             AddDot(point, MarkerDiameter * markerScale, stroke);
         }
-    }
-
-    private static DoubleCollection CreateDashArray(double[] pattern)
-    {
-        var dashes = new DoubleCollection();
-        foreach (var value in pattern)
-        {
-            dashes.Add(value);
-        }
-
-        return dashes;
     }
 
     private PathGeometry CreateLineGeometry(IReadOnlyList<ChartPoint> run)
@@ -353,7 +342,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         SeriesLayer.Children.Add(dot);
     }
 
-    private void UpdateLegend(IReadOnlyList<ChartColor> colors)
+    private void UpdateLegend(IReadOnlyList<ChartColor> colors, bool isHighContrast)
     {
         LegendPanel.Children.Clear();
         if (!_model.ShowsLegend || _isCompact)
@@ -366,13 +355,18 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         for (var i = 0; i < _model.Series.Count; i++)
         {
             var entry = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
-            entry.Children.Add(new Ellipse
-            {
-                Width = LegendSwatchDiameter,
-                Height = LegendSwatchDiameter,
-                Fill = new SolidColorBrush(ToColor(colors[i])),
-                VerticalAlignment = VerticalAlignment.Center,
-            });
+            var brush = new SolidColorBrush(ToColor(colors[i]));
+
+            // In high contrast, lines also differ by dash pattern, so the legend shows it.
+            entry.Children.Add(isHighContrast
+                ? (UIElement)ChartShapes.CreateLineSwatch(brush, LineThickness, ChartPalette.GetHighContrastDashPattern(i))
+                : new Ellipse
+                {
+                    Width = LegendSwatchDiameter,
+                    Height = LegendSwatchDiameter,
+                    Fill = brush,
+                    VerticalAlignment = VerticalAlignment.Center,
+                });
             entry.Children.Add(new TextBlock
             {
                 Text = GetSeriesName(i),
@@ -459,9 +453,9 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
                 CultureInfo.CurrentCulture,
                 SeriesSummaryFormat,
                 GetSeriesName(i),
-                ChartValueFormatter.FormatCompact(last, CultureInfo.CurrentCulture),
-                ChartValueFormatter.FormatCompact(low, CultureInfo.CurrentCulture),
-                ChartValueFormatter.FormatCompact(high, CultureInfo.CurrentCulture)));
+                ChartValueFormatter.FormatCompact(last),
+                ChartValueFormatter.FormatCompact(low),
+                ChartValueFormatter.FormatCompact(high)));
         }
 
         AutomationProperties.SetHelpText(this, summary.ToString());

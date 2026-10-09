@@ -58,6 +58,14 @@ Host-owned properties are applied by the Adaptive Cards renderer, so changing th
 They are `type`, `id`, `isVisible`, `separator`, `spacing`, `height`, `fallback`, `requires`, `targetWidth`, `horizontalAlignment`, `grid.area`, `lang`, and the action properties.
 A registered element always renders itself, so unless it has `requires`, its `fallback` is never drawn: the updater ignores it, and a fallback such as a `TextBlock` with the element's value doesn't stop other text from updating in place.
 Register only element types that the renderer renders.
+If the element renderer draws the fallback of some elements of a type instead, by returning the fallback's control as Command Palette does for an `Icon` whose name has no glyph, register the type with a check:
+
+```csharp
+patchable.Add("Icon", element => HasGlyph(element));
+```
+
+An element that fails the check isn't patchable, so a change to it replaces the complete card.
+Its fallback counts like other content, except for the fallback's own text or image: the renderer tags that control with the original element, so a change to it replaces the complete card, while other text in the card still updates in place.
 The updater treats the control as a leaf, so the control can change its internal tree freely.
 
 ## Update behavior

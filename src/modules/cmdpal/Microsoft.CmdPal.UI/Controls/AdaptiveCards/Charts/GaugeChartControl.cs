@@ -51,9 +51,12 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
         var canvas = new Canvas { Width = diameter, Height = center.Y + (thickness / 2) + labelHeight, HorizontalAlignment = HorizontalAlignment.Center };
 
         var colors = new ChartColor[_model.Segments.Count];
+        var outlines = new bool[colors.Length];
+        var isHighContrast = ChartTheme.IsHighContrast;
         for (var i = 0; i < colors.Length; i++)
         {
             colors[i] = ChartTheme.Resolve(_model.Segments[i].Color, null, _model.ColorSet, i, isDarkTheme);
+            outlines[i] = isHighContrast && ChartPalette.IsHighContrastOutline(i);
         }
 
         var fraction = _model.Fraction;
@@ -86,17 +89,17 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
             var spans = ChartArc.GetSpans(shares, SegmentGap, closed: false);
             for (var i = 0; i < spans.Count; i++)
             {
-                if (spans[i].End > spans[i].Start)
+                if (spans[i].End <= spans[i].Start)
                 {
-                    canvas.Children.Add(ChartShapes.CreateArc(
-                        center,
-                        radius,
-                        ChartArc.GaugeAngle(spans[i].Start),
-                        ChartArc.GaugeAngle(spans[i].End),
-                        ChartTheme.ToBrush(colors[i]),
-                        thickness,
-                        PenLineCap.Flat));
+                    continue;
                 }
+
+                var brush = ChartTheme.ToBrush(colors[i]);
+                var start = ChartArc.GaugeAngle(spans[i].Start);
+                var end = ChartArc.GaugeAngle(spans[i].End);
+                canvas.Children.Add(outlines[i]
+                    ? ChartShapes.CreateRingSegmentOutline(center, radius, thickness, start, end, brush)
+                    : ChartShapes.CreateArc(center, radius, start, end, brush, thickness, PenLineCap.Flat));
             }
 
             var active = _model.GetActiveSegment();
@@ -138,8 +141,8 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
         if (_model.ShowMinMax)
         {
             var top = center.Y + (thickness / 2) + 2;
-            AddCenteredLabel(canvas, ChartValueFormatter.FormatCompact(_model.Min, CultureInfo.CurrentCulture), center.X - radius, top, secondary);
-            AddCenteredLabel(canvas, ChartValueFormatter.FormatCompact(_model.Max, CultureInfo.CurrentCulture), center.X + radius, top, secondary);
+            AddCenteredLabel(canvas, ChartValueFormatter.FormatCompact(_model.Min), center.X - radius, top, secondary);
+            AddCenteredLabel(canvas, ChartValueFormatter.FormatCompact(_model.Max), center.X + radius, top, secondary);
         }
 
         root.Children.Add(canvas);
@@ -149,7 +152,7 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
             var legend = new WrapPanel { HorizontalSpacing = 12, VerticalSpacing = 4, HorizontalAlignment = HorizontalAlignment.Center };
             for (var i = 0; i < _model.Segments.Count; i++)
             {
-                legend.Children.Add(ChartShapes.CreateLegendEntry(colors[i], _model.Segments[i].Label ?? string.Empty, null));
+                legend.Children.Add(ChartShapes.CreateLegendEntry(colors[i], _model.Segments[i].Label ?? string.Empty, null, outlines[i]));
             }
 
             root.Children.Add(legend);

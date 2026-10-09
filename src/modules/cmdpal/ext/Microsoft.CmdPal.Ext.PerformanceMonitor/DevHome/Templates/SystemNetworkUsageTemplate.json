@@ -101,6 +101,7 @@
                   "icon": "${netIcon}",
                   "style": "informative",
                   "appearance": "tint",
+                  "shape": "rounded",
                   "fallback": "drop"
                 }
               ]

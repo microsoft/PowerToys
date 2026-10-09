@@ -12,9 +12,6 @@ internal static class ChartPalette
 {
     public const string AccentColorName = "accent";
 
-    /// <summary>The number of distinct system colors that data items cycle through in high contrast.</summary>
-    public const int HighContrastColorCount = 3;
-
     // Each entry is (light theme, dark theme). Semantic colors follow the Fluent system fill
     // colors. The other colors are tuned to keep contrast on both Mica and Acrylic surfaces.
     private static readonly Dictionary<string, (uint Light, uint Dark)> NamedColors = new(StringComparer.OrdinalIgnoreCase)
@@ -97,6 +94,31 @@ internal static class ChartPalette
         "divergingGray",
     ];
 
+    // In multiples of the line thickness, for round dash caps, which add one thickness to each
+    // dash: a zero-length dash draws a dot.
+    private static readonly double[][] HighContrastDashPatterns =
+    [
+        [],
+        [3, 3],
+        [0, 3],
+        [3, 3, 0, 3],
+    ];
+
+    /// <summary>
+    /// Gets the dash pattern of the line series at <paramref name="index"/> in high contrast,
+    /// where a few system colors can't tell every line apart: solid, dashed, dotted, and
+    /// dash-dot, in turn. An empty pattern is a solid line.
+    /// </summary>
+    public static IReadOnlyList<double> GetHighContrastDashPattern(int index) =>
+        HighContrastDashPatterns[Math.Abs(index) % HighContrastDashPatterns.Length];
+
+    /// <summary>
+    /// Gets whether the slice, segment, or part at <paramref name="index"/> is drawn as an outline
+    /// in high contrast. Items take four system colors in turn, and two of them can be alike, such
+    /// as Highlight and Hotlight in Aquatic, so the third and fourth colors are outlines.
+    /// </summary>
+    public static bool IsHighContrastOutline(int index) => Math.Abs(index) % 4 >= 2;
+
     /// <summary>Returns the color names in <paramref name="colorSet"/>; unknown sets use categorical.</summary>
     public static IReadOnlyList<string> GetColorSet(string? colorSet)
     {
@@ -161,22 +183,4 @@ internal static class ChartPalette
         TryResolve(set[Math.Abs(index) % set.Count], isDarkTheme, accent, out color);
         return color;
     }
-
-    /// <summary>
-    /// Gets which of the <see cref="HighContrastColorCount"/> distinct system colors an item uses
-    /// in high contrast, cycling by index the way the color sets do.
-    /// </summary>
-    public static int GetHighContrastSlot(int index) => Math.Abs(index) % HighContrastColorCount;
-
-    /// <summary>
-    /// Gets the dash pattern for a line series in high contrast: solid for the first series, then
-    /// dashed and dotted (in multiples of the stroke thickness, with round dash caps), so lines
-    /// stay distinct even when contrast theme colors are close. Returns null for a solid line.
-    /// </summary>
-    public static double[]? GetHighContrastDashPattern(int index) => (Math.Abs(index) % 3) switch
-    {
-        1 => [3, 3],
-        2 => [0, 2],
-        _ => null,
-    };
 }

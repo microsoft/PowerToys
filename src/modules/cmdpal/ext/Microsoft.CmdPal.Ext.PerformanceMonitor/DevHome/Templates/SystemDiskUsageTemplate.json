@@ -142,6 +142,7 @@
                   "icon": "HardDrive",
                   "style": "informative",
                   "appearance": "tint",
+                  "shape": "rounded",
                   "fallback": "drop"
                 }
               ]

@@ -45,7 +45,7 @@ internal static class SampleChartsTemplate
                   "text": "Live",
                   "style": "good",
                   "appearance": "tint",
-                  "shape": "circular",
+                  "shape": "rounded",
                   "fallback": "drop"
                 }
               ]
@@ -327,12 +327,12 @@ internal static class SampleChartsTemplate
           "type": "ColumnSet",
           "spacing": "medium",
           "columns": [
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Default", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Accent", "style": "accent", "icon": "Info", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Good", "style": "good", "appearance": "tint", "icon": "CheckmarkCircle,filled", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Warning", "style": "warning", "appearance": "tint", "icon": "Warning", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Attention", "style": "attention", "shape": "circular", "fallback": "drop" } ] },
-            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Large", "size": "large", "appearance": "tint", "icon": "Wifi1", "iconPosition": "After", "fallback": "drop" } ] }
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Default", "shape": "rounded", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Accent", "style": "accent", "icon": "Info", "shape": "rounded", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Good", "style": "good", "appearance": "tint", "icon": "CheckmarkCircle,filled", "shape": "rounded", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Warning", "style": "warning", "appearance": "tint", "icon": "Warning", "shape": "rounded", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Attention", "style": "attention", "shape": "rounded", "fallback": "drop" } ] },
+            { "type": "Column", "width": "auto", "items": [ { "type": "Badge", "text": "Large", "size": "large", "appearance": "tint", "icon": "Wifi1", "iconPosition": "After", "shape": "rounded", "fallback": "drop" } ] }
           ]
         },
         {

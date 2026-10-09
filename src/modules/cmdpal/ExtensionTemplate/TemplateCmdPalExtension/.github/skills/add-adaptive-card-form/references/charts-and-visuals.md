@@ -71,7 +71,7 @@ Chart colors (`color` on a chart, a series, a bar, a slice, or a segment) are na
 - Categorical: `categoricalBlue`, `categoricalLightBlue`, `categoricalTeal`, `categoricalGreen`, `categoricalLime`, `categoricalMarigold`, `categoricalRed`, `categoricalPurple`, and `categoricalLavender`.
 - Sequential (`sequential1`-`sequential8`) and diverging (`divergingBlue`, `divergingTeal`, `divergingYellow`, `divergingRed`, and others).
 
-Names have a light theme and a dark theme variant. Without a color, items take colors from `colorSet` (`categorical`, `sequential`, or `diverging`) in order: categorical by default, starting with `categoricalBlue`. A gauge without segments uses the user's accent color. In high contrast, items cycle through the system highlight, hyperlink, and text colors instead, and line series also alternate solid, dashed, and dotted lines.
+Names have a light theme and a dark theme variant. Without a color, items take the colors of `colorSet` in order: `categorical` by default, starting with `categoricalBlue`. The bars of `Chart.VerticalBar` and `Chart.HorizontalBar` share the first color unless the chart sets `colorSet`. Set `colorSet` to `sequential` or `diverging` to use another set. A gauge without segments uses the user's accent color. In high contrast, items take the contrast theme's system colors in turn, the lines of a line chart also differ by dash pattern, and every third and fourth slice, segment, or part is an outline instead of filled.
 
 `ProgressBar`, `Badge`, and `Icon` have their own, shorter lists, below.
 
@@ -148,7 +148,7 @@ Labels longer than 40% of the chart's width are trimmed, with the full label in 
 
 - `style`: `default`, `subtle`, `informative`, `accent`, `good`, `warning`, or `attention`.
 - `appearance`: `filled` (default) or `tint`.
-- `shape`: `circular` (default), `rounded`, or `square`.
+- `shape`: `circular` (default), `rounded`, or `square`. Command Palette's own cards use `rounded`, a rectangle with rounded corners, which matches the cards' tiles.
 - `size`: `medium` (default), `large`, or `extraLarge`.
 - `icon`: a Fluent icon name, optionally followed by `,filled`, such as `"CheckmarkCircle,filled"`.
 - `iconPosition`: `before` (default) or `after` the text.
@@ -156,7 +156,7 @@ Labels longer than 40% of the chart's width are trimmed, with the full label in 
 
 ## Icon
 
-`name` is a Fluent icon name from the Adaptive Cards icon catalog, such as `Calendar`, `Wifi1`, or `Battery7`. Command Palette draws icons with Segoe Fluent Icons, so it supports the common names that have a matching glyph, including system names (`DeveloperBoard`, `Ram`, `HardDrive`, `Desktop`, `NetworkAdapter`, `Wifi1` to `Wifi4`, `Battery0` to `Battery10`, `BatteryCharge`), status names (`Checkmark`, `CheckmarkCircle`, `Warning`, `ErrorCircle`, `Info`), and common actions. Command Palette renders nothing for other names, and doesn't use the icon's `fallback` for them: the `fallback` applies only in hosts that don't support `Icon`. Use a supported name, and still give each icon a `fallback` for those hosts.
+`name` is a Fluent icon name from the Adaptive Cards icon catalog, such as `Calendar`, `Wifi1`, or `Battery7`. Command Palette draws icons with Segoe Fluent Icons, so it supports the common names that have a matching glyph, including system names (`DeveloperBoard`, `Ram`, `HardDrive`, `Desktop`, `NetworkAdapter`, `Wifi1` to `Wifi4`, `Battery0` to `Battery10`, `BatteryCharge`), status names (`Checkmark`, `CheckmarkCircle`, `Warning`, `ErrorCircle`, `Info`), and common actions. For other names, Command Palette draws the icon's `fallback`, so give each icon a `fallback`: `"drop"`, or a `TextBlock` or an `Image`.
 
 - `size`: `xxSmall` (12 px), `xSmall` (16), `Small` (20), `Standard` (24, the default), `Medium` (28), `Large` (32), `xLarge` (40), or `xxLarge` (48).
 - `style`: `Regular` (default) or `Filled`. Icons without a filled glyph use the regular one.
@@ -188,7 +188,7 @@ Put a small icon in an `auto` column before a title, and center it vertically:
 
 ## Not supported yet
 
-Command Palette doesn't render `Chart.VerticalBar.Grouped` or `ProgressRing`, so they show their `fallback`. It also ignores these properties: `thickness`, `valueColor`, and `showOutlines` on donut, pie, and gauge charts; `maxWidth` on charts; and `selectAction` on `Icon`. A `Chart.Line` spaces its points evenly, even when its `x` values are numbers or dates. Charts with any of these still render.
+Command Palette doesn't render `Chart.VerticalBar.Grouped` or `ProgressRing`. Like any element it doesn't support, it drops them, even with a `fallback`: the WinUI 3 Adaptive Cards renderer doesn't show the fallback of an element it can't render. Other hosts still use the fallback. Command Palette also ignores these properties: `thickness`, `valueColor`, and `showOutlines` on donut, pie, and gauge charts; `maxWidth` on charts; and `selectAction` on `Icon`. A `Chart.Line` spaces its points evenly, even when its `x` values are numbers or dates. Charts with any of these still render.
 
 ## Tiles with roundedCorners and showBorder
 

@@ -68,6 +68,7 @@
                   "icon": "${batteryIcon}",
                   "style": "${batteryStatusStyle}",
                   "appearance": "tint",
+                  "shape": "rounded",
                   "size": "large",
                   "fallback": {
                     "type": "TextBlock",

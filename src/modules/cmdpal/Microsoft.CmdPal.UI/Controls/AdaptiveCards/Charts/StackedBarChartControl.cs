@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
 using System.Text;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
@@ -43,9 +42,15 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
         var track = ChartTheme.ToBrush(ChartTheme.GetTrackColor(isDarkTheme));
         var legend = _model.GetLegend();
         var colors = new Dictionary<string, ChartColor>(StringComparer.Ordinal);
+        var outlines = new HashSet<string>(StringComparer.Ordinal);
+        var isHighContrast = ChartTheme.IsHighContrast;
         foreach (var entry in legend)
         {
             colors[entry.Legend] = ChartTheme.Resolve(entry.Color, _model.Color, _model.ColorSet, entry.ColorIndex, isDarkTheme);
+            if (isHighContrast && ChartPalette.IsHighContrastOutline(entry.ColorIndex))
+            {
+                outlines.Add(entry.Legend);
+            }
         }
 
         var root = new StackPanel { Spacing = 8 };
@@ -62,7 +67,7 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
                 root.Children.Add(ChartShapes.CreateText(group.Title, ChartShapes.CaptionStyle, secondary));
             }
 
-            root.Children.Add(CreateBar(group, maxTotal, colors, track));
+            root.Children.Add(CreateBar(group, maxTotal, colors, outlines, track));
         }
 
         if (_model.ShowLegend && legend.Count > 0)
@@ -70,7 +75,7 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
             var legendPanel = new WrapPanel { HorizontalSpacing = 16, VerticalSpacing = 4 };
             foreach (var entry in legend)
             {
-                legendPanel.Children.Add(ChartShapes.CreateLegendEntry(colors[entry.Legend], entry.Legend, null));
+                legendPanel.Children.Add(ChartShapes.CreateLegendEntry(colors[entry.Legend], entry.Legend, null, outlines.Contains(entry.Legend)));
             }
 
             root.Children.Add(legendPanel);
@@ -81,7 +86,12 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
         AutomationProperties.SetHelpText(this, CreateSummary());
     }
 
-    private static Grid CreateBar(StackedBarGroup group, double maxTotal, Dictionary<string, ChartColor> colors, Microsoft.UI.Xaml.Media.Brush track)
+    private static Grid CreateBar(
+        StackedBarGroup group,
+        double maxTotal,
+        Dictionary<string, ChartColor> colors,
+        HashSet<string> outlines,
+        Microsoft.UI.Xaml.Media.Brush track)
     {
         var bar = new Grid { Height = BarHeight, ColumnSpacing = 2 };
         var cells = new List<Border>();
@@ -93,10 +103,16 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
             }
 
             bar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(point.Value, GridUnitType.Star) });
-            var cell = new Border { Background = ChartTheme.ToBrush(colors[point.Label ?? string.Empty]) };
+            var label = point.Label ?? string.Empty;
+            var brush = ChartTheme.ToBrush(colors[label]);
+
+            // A transparent background keeps an outlined part's tooltip reachable.
+            var cell = outlines.Contains(label)
+                ? new Border { BorderBrush = brush, BorderThickness = new Thickness(ChartShapes.OutlineThickness), Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent) }
+                : new Border { Background = brush };
             ToolTipService.SetToolTip(
                 cell,
-                $"{point.Label}: {ChartValueFormatter.FormatCompact(point.Value, CultureInfo.CurrentCulture)}");
+                $"{point.Label}: {ChartValueFormatter.FormatCompact(point.Value)}");
             cells.Add(cell);
         }
 
@@ -144,7 +160,7 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
 
                 summary.Append(group.Data[i].Label)
                     .Append(' ')
-                    .Append(ChartValueFormatter.FormatCompact(group.Data[i].Value, CultureInfo.CurrentCulture));
+                    .Append(ChartValueFormatter.FormatCompact(group.Data[i].Value));
             }
         }
 

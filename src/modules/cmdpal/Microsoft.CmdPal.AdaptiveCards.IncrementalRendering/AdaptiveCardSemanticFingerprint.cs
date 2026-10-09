@@ -84,7 +84,8 @@ internal static class AdaptiveCardSemanticFingerprint
                 writer,
                 document.RootElement,
                 allowPatch: true,
-                options);
+                options,
+                isDrawnFallback: false);
         }
 
         return Convert.ToHexString(SHA256.HashData(buffer.WrittenSpan));
@@ -94,18 +95,19 @@ internal static class AdaptiveCardSemanticFingerprint
         Utf8JsonWriter writer,
         JsonElement value,
         bool allowPatch,
-        PatchOptions options)
+        PatchOptions options,
+        bool isDrawnFallback)
     {
         switch (value.ValueKind)
         {
             case JsonValueKind.Object:
-                WriteCanonicalObject(writer, value, allowPatch, options);
+                WriteCanonicalObject(writer, value, allowPatch, options, isDrawnFallback);
                 break;
             case JsonValueKind.Array:
                 writer.WriteStartArray();
                 foreach (var item in value.EnumerateArray())
                 {
-                    WriteCanonicalValue(writer, item, allowPatch, options);
+                    WriteCanonicalValue(writer, item, allowPatch, options, isDrawnFallback: false);
                 }
 
                 writer.WriteEndArray();
@@ -129,11 +131,22 @@ internal static class AdaptiveCardSemanticFingerprint
         }
     }
 
+    /// <summary>Writes an object with its properties in order and its patchable values replaced.</summary>
+    /// <param name="writer">The writer.</param>
+    /// <param name="value">The object.</param>
+    /// <param name="allowPatch">Whether the object is outside actions, where values can be patched.</param>
+    /// <param name="options">The patchable values.</param>
+    /// <param name="isDrawnFallback">
+    /// Whether <paramref name="value"/> is the fallback that the renderer draws for a registered
+    /// element. The renderer tags that control with the original element, so its own text or
+    /// image can't be mapped and stays replacement-sensitive. The elements inside it can be.
+    /// </param>
     private static void WriteCanonicalObject(
         Utf8JsonWriter writer,
         JsonElement value,
         bool allowPatch,
-        PatchOptions options)
+        PatchOptions options,
+        bool isDrawnFallback)
     {
         var properties = new List<JsonProperty>();
         foreach (var property in value.EnumerateObject())
@@ -146,16 +159,19 @@ internal static class AdaptiveCardSemanticFingerprint
         var typeName = GetTypeName(value);
         var isAction = typeName?.StartsWith("Action.", StringComparison.Ordinal) == true;
         var isTextBlock = allowPatch
+            && !isDrawnFallback
             && options.AllowText
             && string.Equals(typeName, "TextBlock", StringComparison.Ordinal);
         var isImage = allowPatch
+            && !isDrawnFallback
             && options.AllowInlineSvg
             && string.Equals(typeName, "Image", StringComparison.Ordinal);
         var isPatchableCustomElement = allowPatch
             && options.AllowCustom
-            && options.PatchableElements!.Contains(typeName);
+            && options.PatchableElements!.RendersItself(typeName, value);
         var hasUnusedFallback = allowPatch
-            && AlwaysRendersItself(value, typeName, options.PatchableElements);
+            && RendersItself(value, typeName, options.PatchableElements);
+        var drawsFallback = DrawsFallback(value, typeName, options.PatchableElements);
 
         writer.WriteStartObject();
         foreach (var property in properties)
@@ -189,7 +205,8 @@ internal static class AdaptiveCardSemanticFingerprint
                     writer,
                     property.Value,
                     childAllowsPatch,
-                    options);
+                    options,
+                    isDrawnFallback: drawsFallback && string.Equals(property.Name, FallbackProperty, StringComparison.Ordinal));
             }
         }
 
@@ -202,16 +219,31 @@ internal static class AdaptiveCardSemanticFingerprint
             : null;
 
     /// <summary>
-    /// Returns whether <paramref name="value"/> is a registered element that always renders
-    /// itself. The renderer uses an element's fallback only when it can't render the element or
-    /// the host doesn't meet the element's <c>requires</c>, so the fallback of such an element is
-    /// never drawn: its content can't be mapped, and its changes can't change what's on screen.
+    /// Returns whether <paramref name="value"/> is a registered element that renders itself. The
+    /// renderer uses an element's fallback only when it can't render the element or the host
+    /// doesn't meet the element's <c>requires</c>, so the fallback of such an element is never
+    /// drawn: its content can't be mapped, and its changes can't change what's on screen.
     /// </summary>
-    private static bool AlwaysRendersItself(
+    private static bool RendersItself(
         JsonElement value,
         string? typeName,
         IncrementalPatchableElements? patchableElements) =>
-        patchableElements?.Contains(typeName) == true
+        patchableElements?.RendersItself(typeName, value) == true
+        && !value.TryGetProperty("requires", out _);
+
+    /// <summary>
+    /// Returns whether <paramref name="value"/> is a registered element that the renderer draws
+    /// as its fallback, such as an icon without a glyph. The element isn't patchable, and its
+    /// fallback is fingerprinted and counted like other content, except for the fallback's own
+    /// text or image: the renderer tags that control with the original element.
+    /// </summary>
+    private static bool DrawsFallback(
+        JsonElement value,
+        string? typeName,
+        IncrementalPatchableElements? patchableElements) =>
+        patchableElements is not null
+        && patchableElements.Contains(typeName)
+        && !patchableElements.RendersItself(typeName, value)
         && !value.TryGetProperty("requires", out _);
 
     private static bool IsActionProperty(string propertyName) => propertyName is
@@ -234,33 +266,40 @@ internal static class AdaptiveCardSemanticFingerprint
     private static void CountPatchableElements(
         JsonElement value,
         IncrementalPatchableElements? patchableElements,
-        ref PatchableCounts counts)
+        ref PatchableCounts counts,
+        bool isDrawnFallback = false)
     {
         switch (value.ValueKind)
         {
             case JsonValueKind.Object:
                 var typeName = GetTypeName(value);
-                if (string.Equals(typeName, "TextBlock", StringComparison.Ordinal)
+
+                // A drawn fallback's own text or image is tagged with another element, so it's never mapped.
+                if (!isDrawnFallback
+                    && string.Equals(typeName, "TextBlock", StringComparison.Ordinal)
                     && value.TryGetProperty("text", out _))
                 {
                     counts.TextBlocks++;
                 }
-                else if (string.Equals(typeName, "Image", StringComparison.Ordinal)
+                else if (!isDrawnFallback
+                    && string.Equals(typeName, "Image", StringComparison.Ordinal)
                     && value.TryGetProperty("url", out var url)
                     && IsInlineSvg(url))
                 {
                     counts.InlineSvgImages++;
                 }
-                else if (patchableElements?.Contains(typeName) == true)
+                else if (patchableElements?.RendersItself(typeName, value) == true)
                 {
                     counts.CustomElements++;
                 }
 
                 // A fallback that's never drawn has no rendered elements to map.
-                var hasUnusedFallback = AlwaysRendersItself(value, typeName, patchableElements);
+                var hasUnusedFallback = RendersItself(value, typeName, patchableElements);
+                var drawsFallback = DrawsFallback(value, typeName, patchableElements);
                 foreach (var property in value.EnumerateObject())
                 {
-                    if (hasUnusedFallback && string.Equals(property.Name, FallbackProperty, StringComparison.Ordinal))
+                    var isFallback = string.Equals(property.Name, FallbackProperty, StringComparison.Ordinal);
+                    if (hasUnusedFallback && isFallback)
                     {
                         continue;
                     }
@@ -268,7 +307,8 @@ internal static class AdaptiveCardSemanticFingerprint
                     CountPatchableElements(
                         property.Value,
                         patchableElements,
-                        ref counts);
+                        ref counts,
+                        drawsFallback && isFallback);
                 }
 
                 break;

@@ -12,4 +12,10 @@ internal interface IAdaptiveVisualModel
     /// incremental updater can tell when a control needs new state.
     /// </summary>
     string IncrementalState { get; }
+
+    /// <summary>
+    /// Gets whether the element draws itself. When it doesn't, as for an icon name without a
+    /// glyph, the renderer draws the element's <c>fallback</c> instead.
+    /// </summary>
+    bool RendersItself => true;
 }

@@ -1833,6 +1833,22 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Gauge</value>
     <comment>Accessible name of a gauge chart in a form when the chart has no title.</comment>
   </data>
+  <data name="AdaptiveChart_CompactThousands" xml:space="preserve">
+    <value>{0}K</value>
+    <comment>A large chart value in units of 1,000, in axis labels and tooltips. For example, 12.3K is 12,300. {0} is the number of thousands. Use your language's short form.</comment>
+  </data>
+  <data name="AdaptiveChart_CompactMillions" xml:space="preserve">
+    <value>{0}M</value>
+    <comment>A large chart value in units of 1,000,000, in axis labels and tooltips. For example, 2.5M is 2,500,000. {0} is the number of millions. Use your language's short form.</comment>
+  </data>
+  <data name="AdaptiveChart_CompactBillions" xml:space="preserve">
+    <value>{0}B</value>
+    <comment>A large chart value in units of 1,000,000,000 (10^9), in axis labels and tooltips. For example, 3B is 3,000,000,000. {0} is the number of units. Use your language's short form for 10^9.</comment>
+  </data>
+  <data name="AdaptiveChart_CompactTrillions" xml:space="preserve">
+    <value>{0}T</value>
+    <comment>A large chart value in units of 1,000,000,000,000 (10^12), in axis labels and tooltips. For example, 1.2T is 1,200,000,000,000. {0} is the number of units. Use your language's short form for 10^12.</comment>
+  </data>
   <data name="AdaptiveChart_DonutChart" xml:space="preserve">
     <value>Donut chart</value>
     <comment>Accessible name of a donut chart in a form when the chart has no title.</comment>

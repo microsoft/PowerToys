@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.Text;
 using Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,6 +13,9 @@ namespace Microsoft.CmdPal.UI.UnitTests.Charts;
 public class ChartPaletteTests
 {
     private static readonly ChartColor Accent = new(0xFF, 1, 2, 3);
+    private static readonly double[] DashedPattern = [3, 3];
+    private static readonly double[] DottedPattern = [0, 3];
+    private static readonly double[] DashDotPattern = [3, 3, 0, 3];
 
     [TestMethod]
     public void NamedColorsDifferByTheme()
@@ -94,30 +98,47 @@ public class ChartPaletteTests
     [DataRow(12345.0, "12.3K")]
     [DataRow(2500000.0, "2.5M")]
     [DataRow(3000000000.0, "3B")]
+    [DataRow(1200000000000.0, "1.2T")]
     public void LargeNumbersUseCompactSuffixes(double value, string expected)
     {
-        Assert.AreEqual(expected, ChartValueFormatter.FormatCompact(value, CultureInfo.InvariantCulture));
+        Assert.AreEqual(expected, ChartValueFormatter.FormatCompact(value, CultureInfo.InvariantCulture, CompactNumberFormats.English));
     }
 
     [TestMethod]
-    public void HighContrastSlotsCycleByIndex()
+    [DataRow(12345.0, "12,3 Tsd.")]
+    [DataRow(2500000.0, "2,5 Mio.")]
+    [DataRow(-3000000000.0, "-3 Mrd.")]
+    [DataRow(1234.0, "1.234")]
+    public void CompactSuffixesComeFromTheFormats(double value, string expected)
     {
-        Assert.AreEqual(3, ChartPalette.HighContrastColorCount);
-        Assert.AreEqual(0, ChartPalette.GetHighContrastSlot(0));
-        Assert.AreEqual(1, ChartPalette.GetHighContrastSlot(1));
-        Assert.AreEqual(2, ChartPalette.GetHighContrastSlot(2));
-        Assert.AreEqual(0, ChartPalette.GetHighContrastSlot(3));
+        var german = new CompactNumberFormats(
+            CompositeFormat.Parse("{0} Tsd."),
+            CompositeFormat.Parse("{0} Mio."),
+            CompositeFormat.Parse("{0} Mrd."),
+            CompositeFormat.Parse("{0} Bio."));
+
+        Assert.AreEqual(expected, ChartValueFormatter.FormatCompact(value, CultureInfo.GetCultureInfo("de-DE"), german));
     }
 
     [TestMethod]
-    public void HighContrastDashPatternsVaryBySeries()
+    public void HighContrastLinesTakeDashPatternsInTurn()
     {
-        Assert.IsNull(ChartPalette.GetHighContrastDashPattern(0));
-        var dashed = ChartPalette.GetHighContrastDashPattern(1);
-        var dotted = ChartPalette.GetHighContrastDashPattern(2);
-        Assert.IsNotNull(dashed);
-        Assert.IsNotNull(dotted);
-        CollectionAssert.AreNotEqual(dashed, dotted);
-        Assert.IsNull(ChartPalette.GetHighContrastDashPattern(3));
+        Assert.AreEqual(0, ChartPalette.GetHighContrastDashPattern(0).Count);
+        CollectionAssert.AreEqual(DashedPattern, ChartPalette.GetHighContrastDashPattern(1).ToArray());
+        CollectionAssert.AreEqual(DottedPattern, ChartPalette.GetHighContrastDashPattern(2).ToArray());
+        CollectionAssert.AreEqual(DashDotPattern, ChartPalette.GetHighContrastDashPattern(3).ToArray());
+        Assert.AreSame(ChartPalette.GetHighContrastDashPattern(1), ChartPalette.GetHighContrastDashPattern(5));
+    }
+
+    [TestMethod]
+    [DataRow(0, false)]
+    [DataRow(1, false)]
+    [DataRow(2, true)]
+    [DataRow(3, true)]
+    [DataRow(4, false)]
+    [DataRow(6, true)]
+    public void HighContrastPartsAlternateFillsAndOutlines(int index, bool outline)
+    {
+        Assert.AreEqual(outline, ChartPalette.IsHighContrastOutline(index));
     }
 }

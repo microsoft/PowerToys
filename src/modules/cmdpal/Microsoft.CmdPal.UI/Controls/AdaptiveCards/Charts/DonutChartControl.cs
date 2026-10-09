@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
@@ -41,14 +40,17 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
         var secondary = ChartTheme.ToBrush(ChartTheme.GetTextColor(isDarkTheme, secondary: true));
         var shares = _model.GetShares();
         var colors = new ChartColor[_model.Data.Count];
+        var outlines = new bool[colors.Length];
+        var isHighContrast = ChartTheme.IsHighContrast;
         for (var i = 0; i < colors.Length; i++)
         {
             colors[i] = ChartTheme.Resolve(_model.Data[i].Color, null, _model.ColorSet, i, isDarkTheme);
+            outlines[i] = isHighContrast && ChartPalette.IsHighContrastOutline(i);
         }
 
         var sideBySide = _model.ShowLegend && LayoutWidth >= SideBySideMinimumWidth;
         var diameter = Math.Clamp(sideBySide ? LayoutWidth * 0.32 : LayoutWidth * 0.5, MinimumDiameter, MaximumDiameter);
-        var chart = CreateChart(diameter, shares, colors, isDarkTheme);
+        var chart = CreateChart(diameter, shares, colors, outlines, isDarkTheme);
 
         var root = new StackPanel { Spacing = 12 };
         if (_model.ShowTitle && !string.IsNullOrWhiteSpace(_model.Title))
@@ -66,7 +68,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
             var row = new Grid { ColumnSpacing = 24 };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            var legend = CreateLegend(shares, colors, secondary);
+            var legend = CreateLegend(shares, colors, outlines, secondary);
             legend.VerticalAlignment = VerticalAlignment.Center;
             Grid.SetColumn(legend, 1);
             row.Children.Add(chart);
@@ -77,7 +79,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
         {
             chart.HorizontalAlignment = HorizontalAlignment.Center;
             root.Children.Add(chart);
-            root.Children.Add(CreateLegend(shares, colors, secondary));
+            root.Children.Add(CreateLegend(shares, colors, outlines, secondary));
         }
 
         Content = root;
@@ -88,7 +90,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
         AutomationProperties.SetHelpText(this, CreateSummary(shares));
     }
 
-    private Canvas CreateChart(double diameter, IReadOnlyList<double> shares, IReadOnlyList<ChartColor> colors, bool isDarkTheme)
+    private Canvas CreateChart(double diameter, IReadOnlyList<double> shares, IReadOnlyList<ChartColor> colors, IReadOnlyList<bool> outlines, bool isDarkTheme)
     {
         var canvas = new Canvas { Width = diameter, Height = diameter };
         var center = new ChartPoint(diameter / 2, diameter / 2);
@@ -101,17 +103,37 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
                 return canvas;
             }
 
+            // In high contrast, a window-colored edge keeps filled wedges apart, and some wedges
+            // are outlines.
+            var separator = ChartTheme.IsHighContrast ? ChartTheme.ToBrush(ChartTheme.GetHighContrastBackground()) : null;
             var spans = ChartArc.GetSpans(shares, 0);
             for (var i = 0; i < spans.Count; i++)
             {
-                var fill = ChartTheme.ToBrush(colors[i]);
+                var brush = ChartTheme.ToBrush(colors[i]);
                 if (shares[i] >= 0.9999)
                 {
-                    canvas.Children.Add(ChartShapes.CreateCircle(center, diameter, fill));
+                    canvas.Children.Add(outlines[i]
+                        ? ChartShapes.CreateCircle(center, diameter, null, brush, ChartShapes.OutlineThickness)
+                        : ChartShapes.CreateCircle(center, diameter, brush));
                 }
                 else if (spans[i].End > spans[i].Start)
                 {
-                    canvas.Children.Add(ChartShapes.CreateWedge(center, diameter / 2, ChartArc.DonutAngle(spans[i].Start), ChartArc.DonutAngle(spans[i].End), fill));
+                    var wedge = ChartShapes.CreateWedge(center, diameter / 2, ChartArc.DonutAngle(spans[i].Start), ChartArc.DonutAngle(spans[i].End), brush);
+                    if (outlines[i])
+                    {
+                        wedge.Fill = null;
+                        wedge.Stroke = brush;
+                        wedge.StrokeThickness = ChartShapes.OutlineThickness;
+                        wedge.StrokeLineJoin = PenLineJoin.Round;
+                    }
+                    else if (separator is not null)
+                    {
+                        wedge.Stroke = separator;
+                        wedge.StrokeThickness = 2;
+                        wedge.StrokeLineJoin = PenLineJoin.Round;
+                    }
+
+                    canvas.Children.Add(wedge);
                 }
             }
 
@@ -130,9 +152,19 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
             for (var i = 0; i < spans.Count; i++)
             {
                 var stroke = ChartTheme.ToBrush(colors[i]);
-                if (shares[i] >= 0.9999)
+                if (shares[i] >= 0.9999 && outlines[i])
+                {
+                    var inner = diameter - (2 * thickness) + (2 * ChartShapes.OutlineThickness);
+                    canvas.Children.Add(ChartShapes.CreateCircle(center, diameter, null, stroke, ChartShapes.OutlineThickness));
+                    canvas.Children.Add(ChartShapes.CreateCircle(center, inner, null, stroke, ChartShapes.OutlineThickness));
+                }
+                else if (shares[i] >= 0.9999)
                 {
                     canvas.Children.Add(ChartShapes.CreateCircle(center, diameter, null, stroke, thickness));
+                }
+                else if (spans[i].End > spans[i].Start && outlines[i])
+                {
+                    canvas.Children.Add(ChartShapes.CreateRingSegmentOutline(center, radius, thickness, ChartArc.DonutAngle(spans[i].Start), ChartArc.DonutAngle(spans[i].End), stroke));
                 }
                 else if (spans[i].End > spans[i].Start)
                 {
@@ -157,7 +189,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
         return canvas;
     }
 
-    private Grid CreateLegend(IReadOnlyList<double> shares, IReadOnlyList<ChartColor> colors, Brush secondary)
+    private Grid CreateLegend(IReadOnlyList<double> shares, IReadOnlyList<ChartColor> colors, IReadOnlyList<bool> outlines, Brush secondary)
     {
         var legend = new Grid { ColumnSpacing = 8, RowSpacing = 6 };
         legend.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -166,13 +198,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
         for (var i = 0; i < _model.Data.Count; i++)
         {
             legend.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            var dot = new Ellipse
-            {
-                Width = 10,
-                Height = 10,
-                Fill = ChartTheme.ToBrush(colors[i]),
-                VerticalAlignment = VerticalAlignment.Center,
-            };
+            var dot = ChartShapes.CreateLegendDot(ChartTheme.ToBrush(colors[i]), 10, outlines[i]);
             var label = ChartShapes.CreateText(_model.Data[i].Label ?? string.Empty, ChartShapes.BodyStyle, secondary);
             label.TextTrimming = TextTrimming.CharacterEllipsis;
             var share = ChartShapes.CreateText(

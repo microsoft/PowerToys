@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json;
 using Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -78,13 +79,31 @@ public class IconModelTests
     }
 
     [TestMethod]
-    public void UnknownOrMissingNamesDrawNothing()
+    public void UnknownOrMissingNamesUseTheFallback()
     {
         var warnings = new List<string>();
-        Assert.IsNull(IconModel.Parse("""{ "type": "Icon", "name": "NotAnIcon" }""", warnings).Glyph);
-        Assert.IsNull(IconModel.Parse("""{ "type": "Icon" }""", warnings).Glyph);
+        var unknown = IconModel.Parse("""{ "type": "Icon", "name": "NotAnIcon" }""", warnings);
+        var missing = IconModel.Parse("""{ "type": "Icon" }""", warnings);
 
+        Assert.IsNull(unknown.Glyph);
+        Assert.IsNull(missing.Glyph);
+        Assert.IsFalse(((IAdaptiveVisualModel)unknown).RendersItself);
+        Assert.IsFalse(((IAdaptiveVisualModel)missing).RendersItself);
         Assert.AreEqual(2, warnings.Count);
+    }
+
+    [TestMethod]
+    [DataRow("""{ "type": "Icon", "name": "Calendar" }""", true)]
+    [DataRow("""{ "type": "Icon", "name": " calendar ", "style": "Filled" }""", true)]
+    [DataRow("""{ "type": "Icon", "name": "NotAnIcon", "fallback": "drop" }""", false)]
+    [DataRow("""{ "type": "Icon", "name": 7 }""", false)]
+    [DataRow("""{ "type": "Icon" }""", false)]
+    public void HasGlyphMatchesTheParsedModel(string json, bool expected)
+    {
+        using var document = JsonDocument.Parse(json);
+
+        Assert.AreEqual(expected, IconModel.HasGlyph(document.RootElement));
+        Assert.AreEqual(expected, ((IAdaptiveVisualModel)IconModel.Parse(json, new List<string>())).RendersItself);
     }
 
     [TestMethod]

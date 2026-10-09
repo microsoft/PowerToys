@@ -63,6 +63,9 @@ internal sealed class IconModel : IAdaptiveVisualModel
 
     public string IncrementalState { get; init; } = "{}";
 
+    /// <summary>Gets whether the name has a glyph. Without one, the renderer draws the fallback.</summary>
+    public bool RendersItself => Glyph is not null;
+
     /// <summary>Gets the size in pixels, from the Fluent icon sizes.</summary>
     public double PixelSize => Size switch
     {
@@ -75,6 +78,10 @@ internal sealed class IconModel : IAdaptiveVisualModel
         IconSize.XxLarge => 48,
         _ => 24,
     };
+
+    /// <summary>Returns whether the name of an <c>Icon</c> element has a glyph, so the icon draws itself.</summary>
+    public static bool HasGlyph(JsonElement element) =>
+        FluentIconGlyphs.TryGetGlyph(ChartJson.GetString(element, "name"), filled: false, out _);
 
     public static IconModel Parse(string elementJson, ICollection<string> warnings)
     {

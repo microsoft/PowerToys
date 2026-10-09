@@ -249,7 +249,7 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
         return grid;
     }
 
-    private static string FormatValue(double value) => ChartValueFormatter.FormatCompact(value, CultureInfo.CurrentCulture);
+    private static string FormatValue(double value) => ChartValueFormatter.FormatCompact(value);
 
     private static Grid CreateLabelRow(string? left, string right, Brush foreground)
     {

@@ -16,13 +16,14 @@ internal static class ChartTheme
     private static readonly Lazy<UISettings> UserInterfaceSettings = new(() => new UISettings());
     private static readonly Lazy<AccessibilitySettings> AccessibilitySettings = new(() => new AccessibilitySettings());
 
-    // Contrast themes define these as distinct, readable colors on the Window background. The count
-    // matches ChartPalette.HighContrastColorCount.
-    private static readonly UIElementType[] HighContrastDataElements =
+    // Contrast themes have few colors, so data takes these in turn. WindowText comes second
+    // because Highlight and Hotlight are alike in some themes, such as Aquatic.
+    private static readonly UIElementType[] HighContrastDataColors =
     [
         UIElementType.Highlight,
-        UIElementType.Hotlight,
         UIElementType.WindowText,
+        UIElementType.Hotlight,
+        UIElementType.GrayText,
     ];
 
     public static bool IsHighContrast => AccessibilitySettings.Value.HighContrast;
@@ -37,12 +38,13 @@ internal static class ChartTheme
     }
 
     /// <summary>
-    /// Resolves a data color. In high contrast, items cycle through distinct system colors by
-    /// index, so series, slices, and segments stay distinguishable.
+    /// Resolves a data color. In high contrast, the series, slice, or segment at
+    /// <paramref name="index"/> takes the contrast theme's system colors in turn instead, so
+    /// neighbors stay apart and the legend still matches.
     /// </summary>
     public static ChartColor Resolve(string? itemColor, string? chartColor, string? colorSet, int index, bool isDarkTheme) =>
         IsHighContrast
-            ? GetSystemColor(HighContrastDataElements[ChartPalette.GetHighContrastSlot(index)])
+            ? GetSystemColor(HighContrastDataColors[Math.Abs(index) % HighContrastDataColors.Length])
             : ChartPalette.ResolveSeriesColor(itemColor, chartColor, colorSet, index, isDarkTheme, GetAccent(isDarkTheme));
 
     /// <summary>
@@ -101,6 +103,9 @@ internal static class ChartTheme
     }
 
     public static ChartColor GetHighContrastColor() => GetSystemColor(UIElementType.Highlight);
+
+    /// <summary>Gets the contrast theme's window color, which separates neighboring shapes.</summary>
+    public static ChartColor GetHighContrastBackground() => GetSystemColor(UIElementType.Window);
 
     /// <summary>
     /// Gets a contrast theme color: the same system color the SystemColor*Color resources use.
