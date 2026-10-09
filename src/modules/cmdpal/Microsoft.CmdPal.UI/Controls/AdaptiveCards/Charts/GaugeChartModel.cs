@@ -12,12 +12,7 @@ internal enum GaugeValueFormat
     Fraction,
 }
 
-/// <summary>
-/// The parsed form of an Adaptive Cards <c>Chart.Gauge</c> element, with the schema's defaults:
-/// <c>value</c>, <c>min</c>, <c>max</c>, <c>segments</c> (<c>legend</c>, <c>size</c>,
-/// <c>color</c>), <c>valueFormat</c>, <c>subLabel</c>, <c>showLegend</c>, <c>showMinMax</c>,
-/// <c>showNeedle</c>, <c>title</c>, <c>showTitle</c>, and <c>colorSet</c>.
-/// </summary>
+/// <summary>The parsed form of an Adaptive Cards <c>Chart.Gauge</c> element, with the schema's defaults.</summary>
 internal sealed class GaugeChartModel : IAdaptiveVisualModel
 {
     public string? Title { get; init; }

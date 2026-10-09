@@ -8,10 +8,7 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-/// <summary>
-/// Creates Adaptive Card host configs from Fluent theme tokens, the system accent color, and the
-/// high contrast colors, so cards match the rest of Command Palette in every theme.
-/// </summary>
+/// <summary>Creates Adaptive Card host configs that match Command Palette's theme, accent color, and contrast colors.</summary>
 public sealed class AdaptiveCardsConfig
 {
     // Accent and contrast changes create new configs, so keep only the latest few.
@@ -27,9 +24,8 @@ public sealed class AdaptiveCardsConfig
     public static AdaptiveHostConfig Dark => Create(ElementTheme.Dark);
 
     /// <summary>
-    /// Returns the host config for content shown in <paramref name="theme"/>. Calls that resolve
-    /// to the same colors return the same instance, so callers can compare by reference, even
-    /// when light and dark content are on screen at the same time.
+    /// Returns the host config for content shown in <paramref name="theme"/>. Calls that resolve to the
+    /// same colors return the same instance, so callers can compare by reference.
     /// </summary>
     public static AdaptiveHostConfig Create(ElementTheme theme)
     {
@@ -77,9 +73,8 @@ public sealed class AdaptiveCardsConfig
     }
 
     /// <summary>
-    /// Gets a contrast theme color: the same system color the SystemColor*Color resources use.
-    /// It's read with a typed call because a color boxed in a resource dictionary can't be
-    /// unboxed under native AOT.
+    /// Gets a contrast theme color with a typed call, since a color boxed in a resource dictionary
+    /// can't be unboxed under native AOT.
     /// </summary>
     private static string GetSystemColor(UIElementType type)
     {

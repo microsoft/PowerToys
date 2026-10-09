@@ -10,12 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-/// <summary>
-/// Shows the charts and visuals that Command Palette renders natively in Adaptive Cards:
-/// Chart.Line, Chart.Gauge, Chart.Donut, Chart.Pie, Chart.VerticalBar, Chart.HorizontalBar,
-/// Chart.HorizontalBar.Stacked, ProgressBar, Badge, and rounded, bordered containers. The line
-/// chart, gauge, and progress bar update every second, and update in place.
-/// </summary>
+/// <summary>Shows the Adaptive Cards charts and visuals that Command Palette renders natively, with live data.</summary>
 internal sealed partial class SampleChartsPage : ContentPage, IDisposable
 {
     private readonly SampleChartsForm _form = new();

@@ -7,15 +7,9 @@ namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 /// <summary>The parsed form of an element that Command Palette renders natively.</summary>
 internal interface IAdaptiveVisualModel
 {
-    /// <summary>
-    /// Gets the canonical element JSON. It identifies everything the control renders, so the
-    /// incremental updater can tell when a control needs new state.
-    /// </summary>
+    /// <summary>Gets the canonical element JSON, which identifies everything the control draws.</summary>
     string IncrementalState { get; }
 
-    /// <summary>
-    /// Gets whether the element draws itself. When it doesn't, as for an icon name without a
-    /// glyph, the renderer draws the element's <c>fallback</c> instead.
-    /// </summary>
+    /// <summary>Gets whether the element draws itself; if not, its <c>fallback</c> is drawn instead.</summary>
     bool RendersItself => true;
 }

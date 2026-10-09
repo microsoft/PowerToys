@@ -6,12 +6,7 @@ using System.Text.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>
-/// The parsed form of an Adaptive Cards <c>Chart.Line</c> element: <c>title</c>,
-/// <c>showTitle</c>, <c>xAxisTitle</c>, <c>yAxisTitle</c>, <c>yMin</c>, <c>yMax</c>,
-/// <c>color</c>, <c>colorSet</c>, <c>showLegend</c>, and <c>data</c>, with the schema's defaults.
-/// It reads no other properties, so cards that render here render the same way in other hosts.
-/// </summary>
+/// <summary>The parsed form of an Adaptive Cards <c>Chart.Line</c> element, with the schema's defaults.</summary>
 internal sealed class LineChartModel : IAdaptiveVisualModel
 {
     public static LineChartModel Empty { get; } = new() { IncrementalState = "{}" };
@@ -42,13 +37,9 @@ internal sealed class LineChartModel : IAdaptiveVisualModel
     /// <summary>Gets a value indicating whether any sample has an <c>x</c> label.</summary>
     public bool HasPointLabels { get; init; }
 
-    /// <summary>Gets the canonical element JSON, which identifies everything the control renders.</summary>
     public string IncrementalState { get; init; } = "{}";
 
-    /// <summary>
-    /// Gets a value indicating whether the legend has something to show: it's on, as it is by
-    /// default, and there's more than one series or a series has a legend.
-    /// </summary>
+    /// <summary>Gets a value indicating whether the legend shows: it's on, with several series or a named one.</summary>
     public bool ShowsLegend => ShowLegend && (Series.Count > 1 || Series.Any(series => !string.IsNullOrEmpty(series.Legend)));
 
     /// <summary>Returns the smallest and largest sample, or NaN when there are no samples.</summary>
@@ -60,13 +51,8 @@ internal sealed class LineChartModel : IAdaptiveVisualModel
         {
             foreach (var point in series.Points)
             {
-                if (point.Y is not double y)
-                {
-                    continue;
-                }
-
-                min = double.IsNaN(min) ? y : Math.Min(min, y);
-                max = double.IsNaN(max) ? y : Math.Max(max, y);
+                min = double.IsNaN(min) ? point.Y : Math.Min(min, point.Y);
+                max = double.IsNaN(max) ? point.Y : Math.Max(max, point.Y);
             }
         }
 
@@ -176,16 +162,18 @@ internal sealed class LineChartModel : IAdaptiveVisualModel
                 continue;
             }
 
-            // y is a number that defaults to 0, so a value without a usable y is plotted at 0.
+            // y is a number that defaults to 0.
             var label = value.TryGetProperty("x", out var x) ? ChartJson.ToLabel(x) : null;
-            double? y = 0;
+            var y = 0d;
             if (value.TryGetProperty("y", out var yValue))
             {
-                y = ChartJson.ToNumber(yValue);
-                if (y is null)
+                if (ChartJson.ToNumber(yValue) is double number)
+                {
+                    y = number;
+                }
+                else
                 {
                     warnings.Add("y must be a number.");
-                    y = 0;
                 }
             }
 

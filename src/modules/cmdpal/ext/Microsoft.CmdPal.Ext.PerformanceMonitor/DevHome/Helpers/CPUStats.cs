@@ -61,10 +61,7 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
 
     public List<float> CpuChartValues { get; set; } = new();
 
-    /// <summary>
-    /// Gets the utilization of each logical processor in percent, in processor order. It's empty
-    /// unless a card has requested details with <see cref="RequestDetails"/>.
-    /// </summary>
+    /// <summary>Gets each logical processor's utilization in percent; empty unless a card requested details.</summary>
     public float[] CoreUsage { get; private set; } = [];
 
     /// <summary>Gets the busiest processes, busiest first. It's empty unless a card has requested details.</summary>
@@ -219,9 +216,8 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     }
 
     /// <summary>
-    /// Computes each processor's utilization in percent, in processor order, from two samples per
-    /// processor. Utilization needs both, so this returns nothing until every processor has an
-    /// earlier sample, instead of showing 0%.
+    /// Computes each processor's utilization in percent from two samples per processor, or nothing
+    /// until every processor has an earlier sample.
     /// </summary>
     internal static float[] ComputeCoreUsage(
         IReadOnlyDictionary<string, CounterSample> previous,

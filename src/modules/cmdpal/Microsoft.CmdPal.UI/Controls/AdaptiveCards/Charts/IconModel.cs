@@ -42,10 +42,7 @@ internal enum IconAlignment
     Right,
 }
 
-/// <summary>
-/// The parsed form of an Adaptive Cards <c>Icon</c> element: <c>name</c> (a Fluent icon name),
-/// <c>size</c>, <c>style</c>, <c>color</c>, and <c>horizontalAlignment</c>.
-/// </summary>
+/// <summary>The parsed form of an Adaptive Cards <c>Icon</c> element.</summary>
 internal sealed class IconModel : IAdaptiveVisualModel
 {
     public string Name { get; init; } = string.Empty;

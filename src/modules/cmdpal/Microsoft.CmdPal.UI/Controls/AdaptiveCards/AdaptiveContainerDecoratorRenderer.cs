@@ -12,14 +12,9 @@ using Windows.Data.Json;
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 
 /// <summary>
-/// Wraps a built-in container renderer to support the Adaptive Cards <c>roundedCorners</c> and
-/// <c>showBorder</c> properties, which the WinUI 3 renderer doesn't implement. The properties
-/// reach the renderer through <see cref="IAdaptiveCardElement.AdditionalProperties"/>.
+/// Wraps the built-in container renderers to support <c>roundedCorners</c> and <c>showBorder</c>,
+/// which the WinUI 3 renderer ignores, with theme-aware styles from the override styles.
 /// </summary>
-/// <remarks>
-/// The look comes from theme-aware styles in the renderer's override styles, so the corners and
-/// the stroke follow the app theme. The renderer never sets these Border properties itself.
-/// </remarks>
 internal sealed partial class AdaptiveContainerDecoratorRenderer : IAdaptiveElementRenderer
 {
     internal const string RoundedStyleKey = "CmdPal.Adaptive.Container.Rounded";
@@ -51,13 +46,11 @@ internal sealed partial class AdaptiveContainerDecoratorRenderer : IAdaptiveElem
         }
     }
 
-    // The rendered element and the style come back as base types or plain objects, and under
-    // native AOT CsWinRT finds their actual type by name, which needs the type's metadata.
+    // Under native AOT, the casts to these types need their metadata.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Border))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Style))]
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {
-        // Let fallback signals from the inner renderer propagate unchanged.
         var rendered = _inner.Render(element, context, renderArgs);
 
         var styleKey = GetStyleKey(element.AdditionalProperties);

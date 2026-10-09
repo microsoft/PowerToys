@@ -11,10 +11,7 @@ namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 /// <param name="Name">The element's <c>type</c>.</param>
 /// <param name="Parse">Parses the element JSON into its model.</param>
 /// <param name="Create">Creates the control that draws a model.</param>
-/// <param name="RendersItself">
-/// Gets whether the element JSON draws itself, matching the model's
-/// <see cref="IAdaptiveVisualModel.RendersItself"/>. Null when every element of the type does.
-/// </param>
+/// <param name="RendersItself">Gets whether element JSON draws itself, or null when every element of the type does.</param>
 internal sealed record AdaptiveVisualElementType(
     string Name,
     Func<string, ICollection<string>, IAdaptiveVisualModel> Parse,

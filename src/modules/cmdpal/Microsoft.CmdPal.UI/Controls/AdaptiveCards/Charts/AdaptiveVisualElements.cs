@@ -8,11 +8,7 @@ using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>
-/// The Adaptive Cards elements that Command Palette renders natively because the WinUI 3
-/// renderer doesn't support them. Names and properties follow the Adaptive Cards schema, so any
-/// extension can use them and the same JSON renders in other hosts.
-/// </summary>
+/// <summary>The schema elements that Command Palette renders natively, because the WinUI 3 renderer doesn't.</summary>
 internal static class AdaptiveVisualElements
 {
     public static IReadOnlyList<AdaptiveVisualElementType> Types { get; } =

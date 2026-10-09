@@ -53,19 +53,17 @@ The control that the element renderer returns must implement `IIncrementalAdapti
 `IncrementalState` reports a deterministic snapshot of the patchable state.
 The updater calls `CanApplyIncrementalState` for every changed control before it changes anything, then calls `ApplyIncrementalState`.
 
-For a registered element, every property is patchable except the host-owned ones.
-Host-owned properties are applied by the Adaptive Cards renderer, so changing them replaces the complete card.
-They are `type`, `id`, `isVisible`, `separator`, `spacing`, `height`, `fallback`, `requires`, `targetWidth`, `horizontalAlignment`, `grid.area`, `lang`, and the action properties.
-A registered element always renders itself, so unless it has `requires`, its `fallback` is never drawn: the updater ignores it, and a fallback such as a `TextBlock` with the element's value doesn't stop other text from updating in place.
+For a registered element, every property is patchable except the host-owned ones: `type`, `id`, `isVisible`, `separator`, `spacing`, `height`, `fallback`, `requires`, `targetWidth`, `horizontalAlignment`, `grid.area`, `lang`, and the action properties.
+The renderer applies those, so changing them replaces the complete card.
+A registered element draws itself, so its `fallback` is ignored unless the element has `requires`.
 Register only element types that the renderer renders.
-If the element renderer draws the fallback of some elements of a type instead, by returning the fallback's control as Command Palette does for an `Icon` whose name has no glyph, register the type with a check:
+If the element renderer draws the fallback of some elements instead, as Command Palette does for an `Icon` whose name has no glyph, register the type with a check:
 
 ```csharp
 patchable.Add("Icon", element => HasGlyph(element));
 ```
 
-An element that fails the check isn't patchable, so a change to it replaces the complete card.
-Its fallback counts like other content, except for the fallback's own text or image: the renderer tags that control with the original element, so a change to it replaces the complete card, while other text in the card still updates in place.
+Elements that fail the check aren't patchable, and a change to their fallback's own text or image replaces the complete card.
 The updater treats the control as a leaf, so the control can change its internal tree freely.
 
 ## Update behavior

@@ -39,24 +39,11 @@ public class LineChartLayoutTests
         var layout = new LineChartLayout(40, 100, PercentRange, SlotCount: 5, TopPadding: 0, RightPadding: 0, BottomPadding: 0);
         LineChartPoint[] points = [new(null, 10), new(null, 20)];
 
-        var runs = layout.GetRuns(points);
+        var mapped = layout.MapPoints(points);
 
-        Assert.AreEqual(1, runs.Count);
-        Assert.AreEqual(30, runs[0][0].X);
-        Assert.AreEqual(40, runs[0][1].X);
-    }
-
-    [TestMethod]
-    public void MissingSamplesSplitRuns()
-    {
-        var layout = new LineChartLayout(40, 100, PercentRange, SlotCount: 5, TopPadding: 0, RightPadding: 0, BottomPadding: 0);
-        LineChartPoint[] points = [new(null, 10), new(null, 20), new(null, null), new(null, 30), new(null, 40)];
-
-        var runs = layout.GetRuns(points);
-
-        Assert.AreEqual(2, runs.Count);
-        Assert.AreEqual(2, runs[0].Count);
-        Assert.AreEqual(2, runs[1].Count);
+        Assert.AreEqual(2, mapped.Length);
+        Assert.AreEqual(30, mapped[0].X);
+        Assert.AreEqual(40, mapped[1].X);
     }
 
     [TestMethod]

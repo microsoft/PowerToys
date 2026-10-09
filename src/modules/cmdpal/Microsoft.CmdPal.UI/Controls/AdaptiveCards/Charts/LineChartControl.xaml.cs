@@ -20,14 +20,10 @@ using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
 /// <summary>
-/// Renders an Adaptive Cards <c>Chart.Line</c> element with XAML shapes. Newer versions of the
-/// element are applied in place, and a one-sample shift of live data animates as a scroll.
+/// Renders an Adaptive Cards <c>Chart.Line</c> element as smooth, filled lines. New versions apply
+/// in place, and a one-sample shift of live data animates as a scroll. Narrower than
+/// <see cref="LineChartLayout.CompactWidth"/>, the chart draws as a sparkline: just the lines.
 /// </summary>
-/// <remarks>
-/// Lines are smooth and filled with a soft gradient. Narrower than
-/// <see cref="LineChartLayout.CompactWidth"/>, as in a dashboard tile, the chart draws as a
-/// sparkline: just the lines, without the title, axis labels, grid lines, or legend.
-/// </remarks>
 internal sealed partial class LineChartControl : UserControl, IIncrementalAdaptiveElementControl
 {
     private const double LineThickness = 2;
@@ -206,31 +202,27 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         double markerScale,
         IReadOnlyList<double>? dashPattern)
     {
-        var runs = layout.GetRuns(series.Points);
-        var stroke = new SolidColorBrush(ToColor(color));
-        if (fillOpacity > 0)
+        var points = layout.MapPoints(series.Points);
+        if (points.Length == 0)
         {
-            var fill = CreateAreaBrush(color, layout, fillOpacity);
-            foreach (var run in runs)
-            {
-                if (run.Count > 1)
-                {
-                    SeriesLayer.Children.Add(new Path { Data = CreateAreaGeometry(run, layout), Fill = fill });
-                }
-            }
+            return;
         }
 
-        foreach (var run in runs)
+        var stroke = new SolidColorBrush(ToColor(color));
+        if (points.Length == 1)
         {
-            if (run.Count == 1)
+            AddDot(points[0], IsolatedPointDiameter, stroke);
+        }
+        else
+        {
+            if (fillOpacity > 0)
             {
-                AddDot(run[0], IsolatedPointDiameter, stroke);
-                continue;
+                SeriesLayer.Children.Add(new Path { Data = CreateAreaGeometry(points, layout), Fill = CreateAreaBrush(color, layout, fillOpacity) });
             }
 
             var line = new Path
             {
-                Data = CreateLineGeometry(run),
+                Data = CreateLineGeometry(points),
                 Stroke = stroke,
                 StrokeThickness = LineThickness,
                 StrokeLineJoin = PenLineJoin.Round,
@@ -246,44 +238,40 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         }
 
         // Mark the newest sample: the "now" of a live series.
-        if (series.Points.Count > 0 && series.Points[^1].Y is double latest)
-        {
-            var point = new ChartPoint(layout.MapX(layout.SlotCount - 1), layout.MapY(latest));
-            AddDot(point, MarkerHaloDiameter * markerScale, new SolidColorBrush(ToColor(color.WithOpacity(MarkerHaloOpacity))));
-            AddDot(point, MarkerDiameter * markerScale, stroke);
-        }
+        AddDot(points[^1], MarkerHaloDiameter * markerScale, new SolidColorBrush(ToColor(color.WithOpacity(MarkerHaloOpacity))));
+        AddDot(points[^1], MarkerDiameter * markerScale, stroke);
     }
 
-    private PathGeometry CreateLineGeometry(IReadOnlyList<ChartPoint> run)
+    private PathGeometry CreateLineGeometry(IReadOnlyList<ChartPoint> points)
     {
-        var figure = new PathFigure { StartPoint = ToPoint(run[0]), IsClosed = false, IsFilled = false };
-        AppendCurve(figure, run);
+        var figure = new PathFigure { StartPoint = ToPoint(points[0]), IsClosed = false, IsFilled = false };
+        AppendCurve(figure, points);
         var geometry = new PathGeometry();
         geometry.Figures.Add(figure);
         return geometry;
     }
 
-    private PathGeometry CreateAreaGeometry(IReadOnlyList<ChartPoint> run, LineChartLayout layout)
+    private PathGeometry CreateAreaGeometry(IReadOnlyList<ChartPoint> points, LineChartLayout layout)
     {
         var figure = new PathFigure
         {
-            StartPoint = new Point(run[0].X, layout.PlotBottom),
+            StartPoint = new Point(points[0].X, layout.PlotBottom),
             IsClosed = true,
             IsFilled = true,
         };
-        figure.Segments.Add(new LineSegment { Point = ToPoint(run[0]) });
-        AppendCurve(figure, run);
-        figure.Segments.Add(new LineSegment { Point = new Point(run[^1].X, layout.PlotBottom) });
+        figure.Segments.Add(new LineSegment { Point = ToPoint(points[0]) });
+        AppendCurve(figure, points);
+        figure.Segments.Add(new LineSegment { Point = new Point(points[^1].X, layout.PlotBottom) });
         var geometry = new PathGeometry();
         geometry.Figures.Add(figure);
         return geometry;
     }
 
-    private void AppendCurve(PathFigure figure, IReadOnlyList<ChartPoint> run)
+    private void AppendCurve(PathFigure figure, IReadOnlyList<ChartPoint> points)
     {
-        if (run.Count > 2)
+        if (points.Count > 2)
         {
-            foreach (var segment in ChartCurve.CreateMonotoneSegments(run))
+            foreach (var segment in ChartCurve.CreateMonotoneSegments(points))
             {
                 figure.Segments.Add(new BezierSegment
                 {
@@ -296,16 +284,15 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             return;
         }
 
-        for (var i = 1; i < run.Count; i++)
+        for (var i = 1; i < points.Count; i++)
         {
-            figure.Segments.Add(new LineSegment { Point = ToPoint(run[i]) });
+            figure.Segments.Add(new LineSegment { Point = ToPoint(points[i]) });
         }
     }
 
     private static LinearGradientBrush CreateAreaBrush(ChartColor color, LineChartLayout layout, double opacity)
     {
-        // Absolute mapping ties the gradient to the plot, not to each run, so equal values
-        // always get the same fill intensity.
+        // Absolute mapping ties the gradient to the plot, so equal values always get the same fill intensity.
         var brush = new LinearGradientBrush
         {
             MappingMode = BrushMappingMode.Absolute,
@@ -426,22 +413,18 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         var summary = new StringBuilder();
         for (var i = 0; i < _model.Series.Count; i++)
         {
-            double? latest = null;
-            var low = double.MaxValue;
-            var high = double.MinValue;
-            foreach (var point in _model.Series[i].Points)
-            {
-                if (point.Y is double y)
-                {
-                    latest = y;
-                    low = Math.Min(low, y);
-                    high = Math.Max(high, y);
-                }
-            }
-
-            if (latest is not double last)
+            var points = _model.Series[i].Points;
+            if (points.Count == 0)
             {
                 continue;
+            }
+
+            var low = double.MaxValue;
+            var high = double.MinValue;
+            foreach (var point in points)
+            {
+                low = Math.Min(low, point.Y);
+                high = Math.Max(high, point.Y);
             }
 
             if (summary.Length > 0)
@@ -453,7 +436,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
                 CultureInfo.CurrentCulture,
                 SeriesSummaryFormat,
                 GetSeriesName(i),
-                ChartValueFormatter.FormatCompact(last),
+                ChartValueFormatter.FormatCompact(points[^1].Y),
                 ChartValueFormatter.FormatCompact(low),
                 ChartValueFormatter.FormatCompact(high)));
         }

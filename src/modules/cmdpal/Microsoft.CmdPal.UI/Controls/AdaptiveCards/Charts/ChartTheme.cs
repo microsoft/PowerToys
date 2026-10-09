@@ -37,20 +37,15 @@ internal static class ChartTheme
         return new ChartColor(color.A, color.R, color.G, color.B);
     }
 
-    /// <summary>
-    /// Resolves a data color. In high contrast, the series, slice, or segment at
-    /// <paramref name="index"/> takes the contrast theme's system colors in turn instead, so
-    /// neighbors stay apart and the legend still matches.
-    /// </summary>
+    /// <summary>Resolves a data color. In high contrast, items take the contrast theme's colors in turn.</summary>
     public static ChartColor Resolve(string? itemColor, string? chartColor, string? colorSet, int index, bool isDarkTheme) =>
         IsHighContrast
             ? GetSystemColor(HighContrastDataColors[Math.Abs(index) % HighContrastDataColors.Length])
             : ChartPalette.ResolveSeriesColor(itemColor, chartColor, colorSet, index, isDarkTheme, GetAccent(isDarkTheme));
 
     /// <summary>
-    /// Resolves a semantic color name from the schema: <c>accent</c> (and a badge's
-    /// <c>informative</c>), <c>good</c>, <c>warning</c>, or <c>attention</c>. Other names, such as
-    /// <c>default</c> or <c>subtle</c>, return null, so callers fall back to their default.
+    /// Resolves a schema semantic color: <c>accent</c> (or a badge's <c>informative</c>), <c>good</c>,
+    /// <c>warning</c>, or <c>attention</c>. Other names return null.
     /// </summary>
     public static ChartColor? ResolveSemantic(string? style, bool isDarkTheme)
     {
@@ -82,10 +77,7 @@ internal static class ChartTheme
     public static ChartColor GetTrackColor(bool isDarkTheme) =>
         isDarkTheme ? new ChartColor(0x29, 0xFF, 0xFF, 0xFF) : new ChartColor(0x1F, 0x00, 0x00, 0x00);
 
-    /// <summary>
-    /// Gets the Fluent text color for the element's theme. Lookups through application resources
-    /// follow the app theme instead, which can differ from the window's theme.
-    /// </summary>
+    /// <summary>Gets the Fluent text color for the element's theme, which can differ from the app's.</summary>
     public static ChartColor GetTextColor(bool isDarkTheme, bool secondary)
     {
         if (IsHighContrast)
@@ -108,9 +100,8 @@ internal static class ChartTheme
     public static ChartColor GetHighContrastBackground() => GetSystemColor(UIElementType.Window);
 
     /// <summary>
-    /// Gets a contrast theme color: the same system color the SystemColor*Color resources use.
-    /// It's read with a typed call because a color boxed in a resource dictionary can't be
-    /// unboxed under native AOT.
+    /// Gets a contrast theme color with a typed call, since a color boxed in a resource dictionary
+    /// can't be unboxed under native AOT.
     /// </summary>
     private static ChartColor GetSystemColor(UIElementType type)
     {
@@ -131,8 +122,7 @@ internal static class ChartTheme
     public static SolidColorBrush ToBrush(ChartColor color) => new(ToColor(color));
 
     /// <summary>
-    /// Gets a text style from the application resources. Resource values reach managed code as
-    /// plain objects, and under native AOT CsWinRT finds their type by name, which needs
+    /// Gets a text style from the application resources. Under native AOT, the cast needs
     /// <see cref="Style"/>'s metadata.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Style))]

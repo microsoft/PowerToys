@@ -131,16 +131,7 @@ internal static class AdaptiveCardSemanticFingerprint
         }
     }
 
-    /// <summary>Writes an object with its properties in order and its patchable values replaced.</summary>
-    /// <param name="writer">The writer.</param>
-    /// <param name="value">The object.</param>
-    /// <param name="allowPatch">Whether the object is outside actions, where values can be patched.</param>
-    /// <param name="options">The patchable values.</param>
-    /// <param name="isDrawnFallback">
-    /// Whether <paramref name="value"/> is the fallback that the renderer draws for a registered
-    /// element. The renderer tags that control with the original element, so its own text or
-    /// image can't be mapped and stays replacement-sensitive. The elements inside it can be.
-    /// </param>
+    // A drawn fallback's control is tagged with the element it replaces, so its own text or image can't be patched.
     private static void WriteCanonicalObject(
         Utf8JsonWriter writer,
         JsonElement value,
@@ -218,12 +209,7 @@ internal static class AdaptiveCardSemanticFingerprint
             ? type.GetString()
             : null;
 
-    /// <summary>
-    /// Returns whether <paramref name="value"/> is a registered element that renders itself. The
-    /// renderer uses an element's fallback only when it can't render the element or the host
-    /// doesn't meet the element's <c>requires</c>, so the fallback of such an element is never
-    /// drawn: its content can't be mapped, and its changes can't change what's on screen.
-    /// </summary>
+    /// <summary>Returns whether <paramref name="value"/> draws itself, so its fallback is never drawn.</summary>
     private static bool RendersItself(
         JsonElement value,
         string? typeName,
@@ -232,10 +218,8 @@ internal static class AdaptiveCardSemanticFingerprint
         && !value.TryGetProperty("requires", out _);
 
     /// <summary>
-    /// Returns whether <paramref name="value"/> is a registered element that the renderer draws
-    /// as its fallback, such as an icon without a glyph. The element isn't patchable, and its
-    /// fallback is fingerprinted and counted like other content, except for the fallback's own
-    /// text or image: the renderer tags that control with the original element.
+    /// Returns whether <paramref name="value"/> is a registered element that draws its fallback,
+    /// such as an icon without a glyph.
     /// </summary>
     private static bool DrawsFallback(
         JsonElement value,

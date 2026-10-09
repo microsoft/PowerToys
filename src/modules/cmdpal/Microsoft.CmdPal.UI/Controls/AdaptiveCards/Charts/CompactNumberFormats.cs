@@ -6,10 +6,7 @@ using System.Text;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>
-/// The formats that shorten large chart values, where <c>{0}</c> is the scaled number: for
-/// example, <c>{0}K</c> shows 12,345 as 12.3K.
-/// </summary>
+/// <summary>Formats that shorten large chart values, where <c>{0}</c> is the scaled number, as in <c>{0}K</c>.</summary>
 /// <param name="Thousands">The format for units of 10^3.</param>
 /// <param name="Millions">The format for units of 10^6.</param>
 /// <param name="Billions">The format for units of 10^9.</param>

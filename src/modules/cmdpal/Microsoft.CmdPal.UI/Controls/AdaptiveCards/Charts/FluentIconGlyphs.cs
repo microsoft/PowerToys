@@ -8,9 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
 /// <summary>
-/// Maps Adaptive Cards icon names, which come from the Fluent System Icons catalog, to the
-/// Segoe Fluent Icons glyphs that draw the same symbols, so cards can use icons without another
-/// icon font. Only names with a matching glyph are listed; other names don't render.
+/// Maps Adaptive Cards icon names, from the Fluent System Icons catalog, to the Segoe Fluent Icons
+/// glyphs that draw the same symbols. Names without a matching glyph aren't listed.
 /// </summary>
 internal static class FluentIconGlyphs
 {
@@ -152,10 +151,7 @@ internal static class FluentIconGlyphs
     /// <summary>Gets every icon name that has a glyph.</summary>
     public static IEnumerable<string> Names => Glyphs.Keys;
 
-    /// <summary>
-    /// Finds the glyph for an icon name, ignoring case. A filled glyph is used when asked for and
-    /// available; otherwise the regular glyph is.
-    /// </summary>
+    /// <summary>Finds the glyph for an icon name, ignoring case, using the filled glyph when asked for and available.</summary>
     public static bool TryGetGlyph(string? name, bool filled, [NotNullWhen(true)] out string? glyph)
     {
         if (name is not null && Glyphs.TryGetValue(name.Trim(), out var entry))
@@ -168,10 +164,7 @@ internal static class FluentIconGlyphs
         return false;
     }
 
-    /// <summary>
-    /// Reads an icon reference in the <c>name[,regular|filled]</c> format of the Badge
-    /// <c>icon</c> property. The regular style is the default.
-    /// </summary>
+    /// <summary>Reads a Badge <c>icon</c> reference, <c>name[,regular|filled]</c>; regular is the default.</summary>
     public static (string Name, bool Filled) ParseReference(string reference)
     {
         var comma = reference.IndexOf(',');

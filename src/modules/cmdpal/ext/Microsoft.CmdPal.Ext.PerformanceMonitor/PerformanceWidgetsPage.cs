@@ -1772,9 +1772,8 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
     }
 
     /// <summary>
-    /// Returns the rate to show in milliwatts: a charge rate (positive) while charging, or a
-    /// discharge rate (negative) on battery power. On AC power without charging, the battery is
-    /// idle and the report's small readings come and go, so there's no rate to show.
+    /// Returns the rate to show in milliwatts: positive while charging, negative on battery power, and
+    /// none while plugged in and idle, when small readings come and go.
     /// </summary>
     internal static int? GetDisplayedRate(bool isCharging, bool isOnAcPower, int? rateMilliwatts) => rateMilliwatts switch
     {

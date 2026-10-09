@@ -12,10 +12,8 @@ namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class DataManager : IDisposable
 {
-    // Every page that shows a metric runs its own timer, and the dock bands and the list page
-    // can show the same metric at the same time. They share one stats object, so sample it at
-    // most once per interval: its history must keep one sample per second. The interval leaves
-    // room for timer jitter.
+    // Pages and dock bands that show the same metric share its stats, so it's sampled at most once
+    // per interval to keep one sample per second. The interval leaves room for timer jitter.
     internal const long MinimumSampleIntervalMilliseconds = 750;
 
     private static readonly ConditionalWeakTable<object, StrongBox<long>> LastSampleTimes = new();

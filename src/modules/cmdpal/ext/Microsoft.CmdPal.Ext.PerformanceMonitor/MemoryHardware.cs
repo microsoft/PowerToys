@@ -11,8 +11,7 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 /// <summary>
 /// Reads the memory hardware details that Task Manager shows: speed, slots, form factor, and
-/// how much installed memory the hardware reserves. They don't change while Windows runs, so
-/// they're read once.
+/// hardware reserved memory. They're read once, since they don't change while Windows runs.
 /// </summary>
 internal static class MemoryHardware
 {

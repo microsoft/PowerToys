@@ -8,9 +8,7 @@ namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
 /// <summary>
 /// The parsed form of an Adaptive Cards <c>Chart.Donut</c> or <c>Chart.Pie</c> element, with the
-/// schema's defaults: <c>data</c> (<c>legend</c>, <c>value</c>, <c>color</c>), <c>title</c>,
-/// <c>showTitle</c>, <c>colorSet</c>, <c>showLegend</c>, and a donut's <c>value</c>, shown in its
-/// center.
+/// schema's defaults.
 /// </summary>
 internal sealed class DonutChartModel : IAdaptiveVisualModel
 {

@@ -11,11 +11,7 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>
-/// An Adaptive Cards element from the current schema (charts, progress bars, badges, icons) that
-/// the WinUI 3 renderer doesn't support. Command Palette parses and renders it natively. Cards stay
-/// portable: other hosts render the same JSON or use the element's <c>fallback</c>.
-/// </summary>
+/// <summary>A schema element, such as a chart, that Command Palette parses and renders natively.</summary>
 internal sealed partial class AdaptiveVisualElement : IAdaptiveCardElement
 {
     public AdaptiveVisualElement(string elementType)

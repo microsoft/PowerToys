@@ -6,10 +6,7 @@ using System.Collections.Generic;
 
 namespace CoreWidgetProvider.Helpers;
 
-/// <summary>
-/// Maintains fixed-length sample histories. The cards draw them with the Adaptive Cards
-/// <c>Chart.Line</c> element, which Command Palette renders natively.
-/// </summary>
+/// <summary>Maintains the fixed-length sample histories that the cards' line charts show.</summary>
 internal sealed class ChartHelper
 {
     public static void AddNextChartValue(float value, List<float> chartValues, int maxValues)

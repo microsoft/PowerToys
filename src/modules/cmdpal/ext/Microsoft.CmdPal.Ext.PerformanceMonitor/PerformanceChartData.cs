@@ -28,9 +28,8 @@ internal static class PerformanceChartData
     internal readonly record struct Series(string Legend, string Color, IReadOnlyList<float> Values);
 
     /// <summary>
-    /// Creates the series array, with up to <see cref="HistoryLength"/> of the newest samples.
-    /// Every value is a number: the schema has no way to mark a missing sample, so a short
-    /// history is just a shorter series.
+    /// Creates the series array from up to <see cref="HistoryLength"/> of the newest samples. The schema
+    /// can't mark a missing sample, so a short history is a shorter series.
     /// </summary>
     public static JsonArray Create(params Series[] series)
     {

@@ -4,10 +4,7 @@
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>
-/// Resolves the Adaptive Cards chart color names (<c>categoricalBlue</c>, <c>good</c>,
-/// <c>sequential1</c>, and so on) and color sets to theme-aware colors.
-/// </summary>
+/// <summary>Resolves the schema's chart color names and color sets to theme-aware colors.</summary>
 internal static class ChartPalette
 {
     public const string AccentColorName = "accent";
@@ -105,17 +102,15 @@ internal static class ChartPalette
     ];
 
     /// <summary>
-    /// Gets the dash pattern of the line series at <paramref name="index"/> in high contrast,
-    /// where a few system colors can't tell every line apart: solid, dashed, dotted, and
-    /// dash-dot, in turn. An empty pattern is a solid line.
+    /// Gets the high contrast dash pattern of the line series at <paramref name="index"/>: solid,
+    /// dashed, dotted, and dash-dot in turn. An empty pattern is solid.
     /// </summary>
     public static IReadOnlyList<double> GetHighContrastDashPattern(int index) =>
         HighContrastDashPatterns[Math.Abs(index) % HighContrastDashPatterns.Length];
 
     /// <summary>
-    /// Gets whether the slice, segment, or part at <paramref name="index"/> is drawn as an outline
-    /// in high contrast. Items take four system colors in turn, and two of them can be alike, such
-    /// as Highlight and Hotlight in Aquatic, so the third and fourth colors are outlines.
+    /// Gets whether the part at <paramref name="index"/> is an outline in high contrast, where two of
+    /// the four system colors can be alike, such as Highlight and Hotlight in Aquatic.
     /// </summary>
     public static bool IsHighContrastOutline(int index) => Math.Abs(index) % 4 >= 2;
 
@@ -135,9 +130,7 @@ internal static class ChartPalette
         return CategoricalSet;
     }
 
-    /// <summary>
-    /// Resolves a color name, <c>accent</c>, or a <c>#RRGGBB</c> value for the current theme.
-    /// </summary>
+    /// <summary>Resolves a color name, <c>accent</c>, or a <c>#RRGGBB</c> value for the current theme.</summary>
     public static bool TryResolve(string? color, bool isDarkTheme, ChartColor accent, out ChartColor resolved)
     {
         resolved = default;
@@ -161,10 +154,7 @@ internal static class ChartPalette
         return ChartColor.TryParseHex(color, out resolved);
     }
 
-    /// <summary>
-    /// Picks the color for one series or data point. An explicit item color wins, then the
-    /// chart-wide color, then the color set in order.
-    /// </summary>
+    /// <summary>Picks an item's color: its own, then the chart's, then the color set's in order.</summary>
     public static ChartColor ResolveSeriesColor(
         string? itemColor,
         string? chartColor,

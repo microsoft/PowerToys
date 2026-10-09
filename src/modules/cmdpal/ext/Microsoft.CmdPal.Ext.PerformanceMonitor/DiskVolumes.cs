@@ -57,10 +57,7 @@ internal static class DiskVolumes
         return parts.Length > 0 && int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out number);
     }
 
-    /// <summary>
-    /// Describes a disk as Task Manager does, such as <c>SSD (NVMe)</c>, or returns null when the
-    /// disk's kind is unknown.
-    /// </summary>
+    /// <summary>Describes a disk as Task Manager does, such as <c>SSD (NVMe)</c>, or returns null if unknown.</summary>
     public static string? GetTypeText(DiskDeviceInfo info)
     {
         var type = info.IsSolidState switch
@@ -79,10 +76,7 @@ internal static class DiskVolumes
         };
     }
 
-    /// <summary>
-    /// Returns the semantic color for a capacity bar: accent normally, then warning and
-    /// attention as the volume fills up.
-    /// </summary>
+    /// <summary>Returns a capacity bar's color: accent, then warning and attention as the volume fills up.</summary>
     public static string GetCapacityColor(double usedPercent) => usedPercent switch
     {
         >= AttentionPercent => "attention",

@@ -5,10 +5,7 @@
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
 /// <summary>Maps line chart samples to plot coordinates.</summary>
-/// <remarks>
-/// Samples are right-aligned: the last sample of every series sits at the right edge, so live
-/// series that are still filling up grow from the right like a scrolling history.
-/// </remarks>
+/// <remarks>Samples are right-aligned, so a series that's still filling up grows from the right.</remarks>
 internal readonly record struct LineChartLayout(
     double Width,
     double Height,
@@ -41,31 +38,16 @@ internal readonly record struct LineChartLayout(
     /// <summary>Returns the slot of the first sample of a series with <paramref name="pointCount"/> samples.</summary>
     public int GetFirstSlot(int pointCount) => Math.Max(0, SlotCount - pointCount);
 
-    /// <summary>Splits a series into runs of consecutive samples; missing samples end a run.</summary>
-    public IReadOnlyList<IReadOnlyList<ChartPoint>> GetRuns(IReadOnlyList<LineChartPoint> points)
+    /// <summary>Maps a series' samples to plot coordinates.</summary>
+    public ChartPoint[] MapPoints(IReadOnlyList<LineChartPoint> points)
     {
-        var runs = new List<IReadOnlyList<ChartPoint>>();
         var firstSlot = GetFirstSlot(points.Count);
-        List<ChartPoint>? current = null;
+        var mapped = new ChartPoint[points.Count];
         for (var i = 0; i < points.Count; i++)
         {
-            if (points[i].Y is double y)
-            {
-                current ??= [];
-                current.Add(new ChartPoint(MapX(firstSlot + i), MapY(y)));
-            }
-            else if (current is not null)
-            {
-                runs.Add(current);
-                current = null;
-            }
+            mapped[i] = new ChartPoint(MapX(firstSlot + i), MapY(points[i].Y));
         }
 
-        if (current is not null)
-        {
-            runs.Add(current);
-        }
-
-        return runs;
+        return mapped;
     }
 }

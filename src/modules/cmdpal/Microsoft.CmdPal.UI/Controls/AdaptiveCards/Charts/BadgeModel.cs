@@ -32,13 +32,7 @@ internal enum BadgeIconPosition
     After,
 }
 
-/// <summary>
-/// The parsed form of an Adaptive Cards <c>Badge</c> element, with the schema's defaults:
-/// <c>text</c>, <c>style</c> (<c>default</c>, <c>subtle</c>, <c>informative</c>, <c>accent</c>,
-/// <c>good</c>, <c>attention</c>, <c>warning</c>), <c>appearance</c>, <c>shape</c> (circular by
-/// default), <c>size</c>, <c>icon</c> (a Fluent icon name, optionally followed by
-/// <c>,filled</c>), <c>iconPosition</c>, and <c>tooltip</c>.
-/// </summary>
+/// <summary>The parsed form of an Adaptive Cards <c>Badge</c> element, with the schema's defaults.</summary>
 internal sealed class BadgeModel : IAdaptiveVisualModel
 {
     public string Text { get; init; } = string.Empty;

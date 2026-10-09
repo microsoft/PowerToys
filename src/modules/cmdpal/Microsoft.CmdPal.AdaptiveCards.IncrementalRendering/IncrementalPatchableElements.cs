@@ -7,17 +7,12 @@ using System.Text.Json;
 namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 
 /// <summary>
-/// Lists the custom element types whose rendered controls implement
-/// <see cref="IIncrementalAdaptiveElementControl"/> and can be patched in place.
+/// Lists the custom element types whose controls implement <see cref="IIncrementalAdaptiveElementControl"/>.
 /// </summary>
 /// <remarks>
-/// For a registered element, every property except the host-owned ones is patchable. The
-/// Adaptive Cards renderer applies host-owned properties (layout, visibility, fallback, and
-/// actions) outside the custom control, so changing them always replaces the complete card.
-/// The exception is the fallback of an element without <c>requires</c>: a registered element
-/// renders itself, so that fallback is never drawn and its changes are ignored. Register only
-/// element types that the host's renderer renders, and register a check for a type whose
-/// renderer draws the fallback of some elements instead.
+/// Every property of a registered element is patchable except the host-owned ones, which the
+/// renderer applies outside the control. Its <c>fallback</c> is never drawn, so it's ignored, unless
+/// the element has <c>requires</c> or fails its renders-itself check.
 /// </remarks>
 public sealed class IncrementalPatchableElements
 {
@@ -52,9 +47,8 @@ public sealed class IncrementalPatchableElements
     }
 
     /// <summary>
-    /// Registers an element type as patchable, with a check for whether the renderer draws an
-    /// element itself. When <paramref name="rendersItself"/> returns false for an element, the
-    /// renderer draws the element's <c>fallback</c> instead, so the element isn't patchable.
+    /// Registers an element type as patchable. Elements that <paramref name="rendersItself"/> rejects
+    /// draw their <c>fallback</c> instead, so they aren't patchable.
     /// </summary>
     /// <param name="elementType">The element's <c>type</c>.</param>
     /// <param name="rendersItself">Gets whether the renderer draws the element JSON itself.</param>
@@ -67,10 +61,7 @@ public sealed class IncrementalPatchableElements
         return this;
     }
 
-    /// <summary>
-    /// Returns whether <paramref name="propertyName"/> is applied by the custom control rather than
-    /// by the Adaptive Cards renderer.
-    /// </summary>
+    /// <summary>Returns whether the control, not the renderer, applies <paramref name="propertyName"/>.</summary>
     public static bool IsPatchableProperty(string propertyName) =>
         !string.IsNullOrEmpty(propertyName) && !HostOwnedProperties.Contains(propertyName);
 

@@ -11,7 +11,7 @@ Each element has two parts, joined in `AdaptiveVisualElements`:
 - **Model** (`*Model.cs`): parses the element JSON with `ChartJson`, leniently. Invalid values read as missing and add a warning. Models don't use WinUI, so the unit tests link them directly. `IncrementalState` is the element's canonical JSON.
 - **Control** (`*Control.cs`): an `AdaptiveVisualControl` that draws the model with shapes and text. It re-renders when the theme or, for width-dependent layouts, the width changes.
 
-Models read only the properties that the element's page in the [Adaptive Cards element reference](https://adaptivecards.microsoft.com/) defines, with the defaults it gives, such as `showTitle` off and `showLegend` on. Don't add properties of your own: a card that relies on one renders differently in other hosts, and the schema doesn't allow it. Make rendering choices in the control instead. For example, line charts are always smooth and filled, and a line chart narrower than `LineChartLayout.CompactWidth` draws as a sparkline.
+Models read only the properties that the element's page in the [Adaptive Cards element reference](https://adaptivecards.microsoft.com/) defines, with the defaults it gives, such as `showTitle` off and `showLegend` on. Don't add properties of your own: a card that relies on one renders differently in other hosts, and the schema doesn't allow it. Make rendering choices in the control instead. For example, line charts are always smooth and filled, a line chart narrower than `LineChartLayout.CompactWidth` draws as a sparkline, and a gauge fills up to its value in the color of the segment that the value falls in, with the segments as a thin scale.
 
 `AdaptiveVisualElements.Types` lists every element with its parser and control factory. `ContentFormControl` registers the parsers, the renderers, and `PatchableElements`, so the incremental updater can move a new model into an existing control instead of rebuilding the card. A line chart that gains one sample scrolls instead of redrawing.
 
@@ -20,12 +20,12 @@ Models read only the properties that the element's page in the [Adaptive Cards e
 ## Theming
 
 - `ChartPalette` resolves color names (semantic, categorical, sequential, and diverging) to a light theme and a dark theme variant.
-- `ChartTheme` adds the accent color, text and track colors, and high contrast, where data colors become the contrast theme's system colors in turn, line series also differ by dash pattern, and the third and fourth slices, segments, or parts are outlines (`ChartPalette.IsHighContrastOutline`).
+- `ChartTheme` adds the accent color, text and track colors, and high contrast: data takes the contrast theme's colors in turn, line series also differ by dash pattern, and every third and fourth part is an outline.
 - `AdaptiveCardsConfig` builds the host config from `AdaptiveCardThemeTokens`, so text sizes, spacing, and container styles match Fluent, and cards re-render when the theme changes.
 
 ## Icons
 
-`Icon` elements and the `Badge` `icon` property name icons from the Fluent System Icons catalog that Adaptive Cards uses, such as `Calendar` or `Wifi1`. Command Palette draws them with Segoe Fluent Icons, the font it already uses for glyphs, so `FluentIconGlyphs` maps each name to the Segoe Fluent Icons glyph that draws the same symbol, with a filled glyph where one exists. Names without a matching glyph aren't listed. For them, the element renderer draws the icon's `fallback` itself with `AdaptiveFallbackRenderer`, because the WinUI 3 renderer renders an element's fallback but doesn't show it, and `IconModel.HasGlyph` tells the incremental updater that the icon doesn't draw itself.
+`Icon` elements and the `Badge` `icon` property name icons from the Fluent System Icons catalog that Adaptive Cards uses, such as `Calendar` or `Wifi1`. Command Palette draws them with Segoe Fluent Icons, the font it already uses for glyphs, so `FluentIconGlyphs` maps each name to the Segoe Fluent Icons glyph that draws the same symbol, with a filled glyph where one exists. Names without a matching glyph aren't listed. For them, `AdaptiveFallbackRenderer` draws the icon's `fallback`, since the WinUI 3 renderer drops fallback content, and `IconModel.HasGlyph` tells the incremental updater that the icon doesn't draw itself.
 
 To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName` type of `@microsoft/teams.cards`), and compare the two glyphs side by side before adding it. Some glyphs, such as `RAM`, are only in Segoe Fluent Icons; on Windows 10 without that font they don't draw, as with other Command Palette glyphs.
 

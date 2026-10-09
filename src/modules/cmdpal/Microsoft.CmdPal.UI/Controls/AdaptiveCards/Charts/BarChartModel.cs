@@ -18,7 +18,7 @@ internal enum BarDisplayMode
     /// <summary>Bars on a value axis that starts at zero.</summary>
     AbsoluteWithAxis,
 
-    /// <summary>Bars scaled like <see cref="AbsoluteWithAxis"/>, with each value at the end of its bar instead of an axis.</summary>
+    /// <summary>Bars without an axis, each with its value at its end.</summary>
     AbsoluteNoAxis,
 
     /// <summary>Each bar shows its share of the total.</summary>
@@ -27,10 +27,7 @@ internal enum BarDisplayMode
 
 /// <summary>
 /// The parsed form of an Adaptive Cards <c>Chart.VerticalBar</c> or <c>Chart.HorizontalBar</c>
-/// element, with the schema's defaults. Both read <c>data</c> (<c>x</c>, <c>y</c>, <c>color</c>),
-/// <c>title</c>, <c>showTitle</c>, <c>xAxisTitle</c>, <c>yAxisTitle</c>, <c>color</c>, and
-/// <c>colorSet</c>. <c>Chart.VerticalBar</c> also reads <c>showBarValues</c>, <c>yMin</c>, and
-/// <c>yMax</c>, and <c>Chart.HorizontalBar</c> reads <c>displayMode</c>.
+/// element, with the schema's defaults.
 /// </summary>
 internal sealed class BarChartModel : IAdaptiveVisualModel
 {

@@ -18,7 +18,7 @@ internal static class ChartShapes
     public const string BodyStyle = "BodyTextBlockStyle";
     public const string BodyStrongStyle = "BodyStrongTextBlockStyle";
 
-    /// <summary>The stroke of a shape drawn as an outline instead of filled, in high contrast.</summary>
+    /// <summary>The stroke width of a part drawn as an outline in high contrast.</summary>
     public const double OutlineThickness = 2;
 
     public static Point ToPoint(ChartPoint point) => new(point.X, point.Y);
@@ -135,11 +135,7 @@ internal static class ChartShapes
         VerticalAlignment = VerticalAlignment.Center,
     };
 
-    /// <summary>
-    /// Creates the outline of a ring segment: the band of <paramref name="bandThickness"/> around
-    /// <paramref name="radius"/>, clockwise between two angles. High contrast draws some donut and
-    /// gauge segments this way.
-    /// </summary>
+    /// <summary>Creates the outline of a band around <paramref name="radius"/>, clockwise between two angles.</summary>
     public static Path CreateRingSegmentOutline(
         ChartPoint center,
         double radius,
@@ -184,10 +180,7 @@ internal static class ChartShapes
         };
     }
 
-    /// <summary>
-    /// Applies a dash pattern from <see cref="ChartPalette.GetHighContrastDashPattern"/> to a
-    /// stroke. An empty pattern leaves the stroke solid.
-    /// </summary>
+    /// <summary>Applies a dash pattern to a stroke. An empty pattern leaves it solid.</summary>
     public static void ApplyDashPattern(Shape shape, IReadOnlyList<double> pattern)
     {
         if (pattern.Count == 0)

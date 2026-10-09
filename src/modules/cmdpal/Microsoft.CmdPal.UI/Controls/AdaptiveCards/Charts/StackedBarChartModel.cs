@@ -8,9 +8,7 @@ namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
 /// <summary>
 /// The parsed form of an Adaptive Cards <c>Chart.HorizontalBar.Stacked</c> element, with the
-/// schema's defaults: <c>data</c> is a list of bars, each with a <c>title</c> and its own
-/// <c>data</c> of <c>legend</c>, <c>value</c>, and <c>color</c>. Also reads <c>title</c>,
-/// <c>showTitle</c>, <c>color</c>, <c>colorSet</c>, and <c>showLegend</c>.
+/// schema's defaults.
 /// </summary>
 internal sealed class StackedBarChartModel : IAdaptiveVisualModel
 {
@@ -43,10 +41,7 @@ internal sealed class StackedBarChartModel : IAdaptiveVisualModel
         }
     }
 
-    /// <summary>
-    /// Returns each distinct legend in first-seen order, with the color index the chart uses for it,
-    /// so the same legend has the same color in every bar.
-    /// </summary>
+    /// <summary>Returns each legend once, in first-seen order, with its color index, so it keeps its color in every bar.</summary>
     public IReadOnlyList<(string Legend, string? Color, int ColorIndex)> GetLegend()
     {
         var legend = new List<(string Legend, string? Color, int ColorIndex)>();

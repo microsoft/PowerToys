@@ -79,10 +79,7 @@ public sealed partial class ContentFormControl : UserControl
         ActualThemeChanged += (_, _) => RefreshHostConfig();
     }
 
-    /// <summary>
-    /// Re-renders the card with the host config for the current theme. Host config colors are
-    /// baked into the rendered card, so a theme change needs a full render.
-    /// </summary>
+    /// <summary>Re-renders the card for the current theme, since host config colors are baked into it.</summary>
     private void RefreshHostConfig()
     {
         var hostConfig = AdaptiveCardsConfig.Create(ActualTheme);

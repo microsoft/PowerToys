@@ -248,15 +248,10 @@ internal static class IncrementalAdaptiveCardVisualTree
         }
     }
 
-    /// <summary>
-    /// Finds the control rendered for a registered custom element. The renderer tags the control
-    /// it returned for the element, so only that exact control can be a target.
-    /// </summary>
+    /// <summary>Finds the control that the renderer tagged with a registered custom element.</summary>
     /// <remarks>
-    /// Element tags reach managed code as plain objects, and under native AOT CsWinRT finds their
-    /// projected type by name, which needs the type's metadata. Without it, every tag is a bare
-    /// IInspectable, nothing matches, and each update rebuilds the whole card. The methods that
-    /// read tags keep the metadata they need with <see cref="DynamicDependencyAttribute"/>.
+    /// Under native AOT, a tag only matches its type if the type's metadata is kept, so the methods
+    /// that read tags declare it with <see cref="DynamicDependencyAttribute"/>.
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ElementTagContent))]
     private static bool TryGetCustomTarget(

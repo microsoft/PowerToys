@@ -17,9 +17,8 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 internal sealed record NetworkConnectionDetails(NetworkInterfaceType Type, string IPv4, string IPv6)
 {
     /// <summary>
-    /// Reads the details of the adapter with <paramref name="interfaceId"/>, or, without one, of
-    /// the adapter that has a default gateway, which carries most traffic. Enumerating adapters
-    /// takes milliseconds, so callers cache the result.
+    /// Reads the details of the adapter with <paramref name="interfaceId"/>, or else of the adapter
+    /// with a default gateway. It takes milliseconds, so callers cache the result.
     /// </summary>
     public static NetworkConnectionDetails? Read(Guid? interfaceId)
     {

@@ -102,9 +102,8 @@ internal sealed class ProcessCpuSampler
     }
 
     /// <summary>
-    /// Drops the snapshots that later samples won't compare with, so the first one left is the
-    /// newest that's at least a window older than <paramref name="timestamp"/>, or the oldest
-    /// there is. Drops every snapshot if sampling stopped for a while.
+    /// Drops snapshots that later samples won't compare with, keeping the newest that's at least a
+    /// window older than <paramref name="timestamp"/>. Drops them all if sampling stopped for a while.
     /// </summary>
     internal static void PruneHistory(List<Snapshot> history, long timestamp)
     {

@@ -8,9 +8,8 @@ namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 internal static class ChartScale
 {
     /// <summary>
-    /// Computes the axis range. A fixed minimum or maximum is kept as-is; open ends are rounded
-    /// outward to the grid line step. Without a fixed minimum the axis starts at zero unless the
-    /// data is negative.
+    /// Computes the axis range: fixed ends are kept, and open ends round outward to a grid line. The
+    /// axis starts at zero unless the minimum is fixed or the data is negative.
     /// </summary>
     public static ChartAxisRange Compute(
         double? fixedMin,
@@ -54,9 +53,7 @@ internal static class ChartScale
         return new ChartAxisRange(min, max, step);
     }
 
-    /// <summary>
-    /// Returns a number close to <paramref name="value"/> that is 1, 2, 2.5, or 5 times a power of ten.
-    /// </summary>
+    /// <summary>Returns a number near <paramref name="value"/> that's 1, 2, 2.5, or 5 times a power of ten.</summary>
     public static double NiceNumber(double value, bool round)
     {
         if (!double.IsFinite(value) || value <= 0)

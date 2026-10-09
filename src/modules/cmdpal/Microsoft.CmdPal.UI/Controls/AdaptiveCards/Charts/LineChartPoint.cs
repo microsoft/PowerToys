@@ -4,5 +4,5 @@
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>One sample. A missing <see cref="Y"/> leaves a gap in the line.</summary>
-internal readonly record struct LineChartPoint(string? Label, double? Y);
+/// <summary>One sample: its optional <c>x</c> label and its <c>y</c> value.</summary>
+internal readonly record struct LineChartPoint(string? Label, double Y);

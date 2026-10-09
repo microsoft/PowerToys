@@ -17,10 +17,7 @@ internal static partial class ChartValueFormatter
         Load("AdaptiveChart_CompactBillions", CompactNumberFormats.English.Billions),
         Load("AdaptiveChart_CompactTrillions", CompactNumberFormats.English.Trillions)));
 
-    /// <summary>
-    /// Formats a value in the user's language and shortens large numbers so labels stay short,
-    /// such as 12.3K for 12,345 in English.
-    /// </summary>
+    /// <summary>Formats a value in the user's language, shortening large numbers such as 12,345 to 12.3K.</summary>
     public static string FormatCompact(double value) =>
         FormatCompact(value, CultureInfo.CurrentCulture, LocalizedFormats.Value);
 

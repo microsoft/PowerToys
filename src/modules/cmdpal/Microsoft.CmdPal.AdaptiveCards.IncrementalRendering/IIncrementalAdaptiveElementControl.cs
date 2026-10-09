@@ -5,14 +5,9 @@
 namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 
 /// <summary>
-/// Implemented by the control that a custom element renderer returns when that control can
-/// absorb a newer version of its element without the card being replaced.
+/// Implemented by a custom element's control when it can take a newer version of its element
+/// in place. Register the element type with <see cref="IncrementalPatchableElements"/>.
 /// </summary>
-/// <remarks>
-/// The element type must also be registered with <see cref="IncrementalPatchableElements"/>.
-/// The updater only patches the properties that registration reports as patchable; every
-/// other property change still replaces the complete card.
-/// </remarks>
 public interface IIncrementalAdaptiveElementControl
 {
     /// <summary>

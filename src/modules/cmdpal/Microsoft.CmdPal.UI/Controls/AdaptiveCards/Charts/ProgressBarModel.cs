@@ -6,11 +6,7 @@ using System.Text.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>
-/// The parsed form of an Adaptive Cards <c>ProgressBar</c> element: <c>value</c>, <c>max</c>,
-/// and <c>color</c> (<c>accent</c>, <c>good</c>, <c>warning</c>, or <c>attention</c>). Without
-/// a value, the bar is indeterminate.
-/// </summary>
+/// <summary>The parsed form of an Adaptive Cards <c>ProgressBar</c> element. Without a value, it's indeterminate.</summary>
 internal sealed class ProgressBarModel : IAdaptiveVisualModel
 {
     public double? Value { get; init; }

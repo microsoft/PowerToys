@@ -14,9 +14,8 @@ using Timer = System.Timers.Timer;
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 /// <summary>
-/// Shows every metric at a glance: one tile per metric with its current value and the last
-/// minute as a sparkline. Each tile shows the data of that metric's own page, so the values
-/// match the detail cards, and those pages do the sampling.
+/// Shows every metric at a glance: one tile per metric with its value and a sparkline of the last
+/// minute. Tiles show each metric page's data, so they match the detail cards.
 /// </summary>
 internal sealed partial class SystemOverviewWidgetPage : WidgetPage, IDisposable
 {

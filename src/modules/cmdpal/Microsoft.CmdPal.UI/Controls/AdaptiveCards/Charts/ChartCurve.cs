@@ -8,12 +8,10 @@ namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 internal static class ChartCurve
 {
     /// <summary>
-    /// Builds a monotone cubic curve through <paramref name="points"/>, which must be ordered by
-    /// X (see https://en.wikipedia.org/wiki/Monotone_cubic_interpolation). The curve never
-    /// overshoots the data, so it can't dip below zero or rise above a fixed maximum between two
-    /// samples.
+    /// Builds a monotone cubic curve (https://en.wikipedia.org/wiki/Monotone_cubic_interpolation)
+    /// through <paramref name="points"/>, ordered by X. It never overshoots the data, so a line
+    /// can't dip below zero between samples.
     /// </summary>
-    /// <returns>One segment per pair of neighboring points.</returns>
     public static ChartBezierSegment[] CreateMonotoneSegments(IReadOnlyList<ChartPoint> points)
     {
         var count = points.Count;

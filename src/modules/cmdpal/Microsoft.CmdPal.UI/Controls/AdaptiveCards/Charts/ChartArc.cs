@@ -24,10 +24,8 @@ internal static class ChartArc
     public static double DonutAngle(double fraction) => 90 - (fraction * 360);
 
     /// <summary>
-    /// Splits 0..1 into one span per share, leaving <paramref name="gap"/> (as a fraction of the
-    /// whole) between neighboring non-empty spans. Empty shares get an empty span. A closed ring,
-    /// such as a donut, also has a gap where the last span meets the first; an open arc, such as a
-    /// gauge, starts and ends without one.
+    /// Splits 0..1 into one span per share, with <paramref name="gap"/> between neighbors. A closed
+    /// ring, such as a donut, also has a gap where the last span meets the first.
     /// </summary>
     public static IReadOnlyList<(double Start, double End)> GetSpans(IReadOnlyList<double> shares, double gap, bool closed = true)
     {

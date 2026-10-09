@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>Renders an Adaptive Cards <c>Badge</c> element as a small status pill.</summary>
+/// <summary>Renders an Adaptive Cards <c>Badge</c> element.</summary>
 internal sealed partial class BadgeControl : AdaptiveVisualControl
 {
     private BadgeModel _model;

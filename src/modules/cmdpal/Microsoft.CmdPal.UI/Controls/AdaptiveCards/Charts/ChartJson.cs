@@ -62,10 +62,7 @@ internal static class ChartJson
         _ => null,
     };
 
-    /// <summary>
-    /// Reads an array of objects such as <c>[{ "legend": "A", "value": 1, "color": "good" }]</c>.
-    /// Missing values read as zero, the schema's default.
-    /// </summary>
+    /// <summary>Reads an array of objects such as <c>[{ "legend": "A", "value": 1 }]</c>. Missing values read as 0.</summary>
     public static List<ChartDataPoint> GetDataPoints(
         JsonElement element,
         string arrayProperty,
@@ -123,10 +120,7 @@ internal static class ChartJson
         return defaultValue;
     }
 
-    /// <summary>
-    /// Serializes <paramref name="element"/> with object properties sorted, so two equivalent
-    /// elements always produce the same string.
-    /// </summary>
+    /// <summary>Serializes <paramref name="element"/> with sorted properties, so equal elements give equal strings.</summary>
     public static string Canonicalize(JsonElement element)
     {
         var buffer = new ArrayBufferWriter<byte>();

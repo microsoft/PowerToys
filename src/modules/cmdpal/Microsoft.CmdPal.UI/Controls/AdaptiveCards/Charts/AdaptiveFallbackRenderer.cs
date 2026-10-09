@@ -8,15 +8,10 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>
-/// Draws an element's <c>fallback</c> for an element that can't draw itself, such as an icon
-/// without a glyph.
-/// </summary>
+/// <summary>Draws the <c>fallback</c> of an element that can't draw itself, such as an icon without a glyph.</summary>
 /// <remarks>
-/// The WinUI 3 renderer is meant to do this when an element renderer fails with its fallback
-/// error, but <c>XamlBuilder::RenderAsUIElement</c> renders the fallback and then returns an empty
-/// result, so the fallback never shows. The element renderer returns the fallback's control as
-/// its own instead, and the renderer tags it with the original element.
+/// The WinUI 3 renderer drops fallback content (<c>XamlBuilder::RenderAsUIElement</c> returns an
+/// empty result), so element renderers return the fallback's control as their own.
 /// </remarks>
 internal static class AdaptiveFallbackRenderer
 {
