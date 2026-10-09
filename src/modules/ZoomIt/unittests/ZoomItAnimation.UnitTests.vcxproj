@@ -34,6 +34,7 @@
     <ClCompile Include="..\ZoomIt\DictationBadge.cpp" />
     <ClCompile Include="DictationBadgeTests.cpp" />
     <ClCompile Include="DictationFinalizationTests.cpp" />
+    <ClCompile Include="PasteChaperoneTests.cpp" />
     <ClCompile Include="..\ZoomIt\SelectRectangle.cpp" />
     <ClCompile Include="SelectRectangleTests.cpp" />
     <ClCompile Include="..\ZoomIt\Utility.cpp" />

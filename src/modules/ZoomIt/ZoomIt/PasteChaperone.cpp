@@ -37,6 +37,7 @@ namespace
     // How long to wait for the user's paste before giving up and restoring the
     // combined payload.
     constexpr UINT ARM_TIMEOUT = 60 * 1000;
+    constexpr UINT OWNERSHIP_CHECK_INTERVAL = 1000;
 
     // Clipboard consumers such as Electron can keep the clipboard open while
     // asynchronously creating an image attachment. Retry the stage transition
@@ -90,6 +91,7 @@ namespace
         DWORD           Sequence = 0;
         HWND            PasteTarget = nullptr;
         bool            SawPaste = false;
+        bool            ReplayPaste = false;
         UINT_PTR        TimerConsume = 0;
         UINT_PTR        TimerRestore = 0;
         UINT_PTR        TimerTimeout = 0;
@@ -124,11 +126,27 @@ namespace
             if( key->vkCode == 'V' && ( key->flags & LLKHF_INJECTED ) == 0 &&
                 ( GetAsyncKeyState( VK_CONTROL ) & 0x8000 ) != 0 )
             {
+                if( GetClipboardSequenceNumber() != g_State->Sequence )
+                {
+                    PostThreadMessage( g_State->ThreadId, WM_CHAPERONE_CANCEL, 0, 0 );
+                    return CallNextHookEx( nullptr, code, wParam, lParam );
+                }
+
                 g_State->SawPaste = true;
                 g_State->PasteTarget = GetForegroundWindow();
                 OutputDebug( L"[Snip/PasteChaperone] Physical paste target=%p sequence=%lu\n",
                              g_State->PasteTarget, g_State->Sequence );
-                PostThreadMessage( g_State->ThreadId, WM_CHAPERONE_PASTED, 0, 0 );
+                if( !PostThreadMessage( g_State->ThreadId, WM_CHAPERONE_PASTED, 0, 0 ) )
+                {
+                    g_State->SawPaste = false;
+                    OutputDebug( L"[Snip/PasteChaperone] Could not queue paste err=%lu\n", GetLastError() );
+                }
+                else if( g_State->ReplayPaste )
+                {
+                    // The restored combined payload must become image-only
+                    // before the target handles this repeat paste.
+                    return 1;
+                }
             }
         }
 
@@ -335,7 +353,21 @@ namespace
 
                     KillTimer( nullptr, state->TimerTimeout );
                     state->TimerTimeout = 0;
-                    state->TimerConsume = SetTimer( nullptr, 0, CONSUME_DELAY, nullptr );
+                    if( !state->ReplayPaste ||
+                        ( PublishStageWithRetry( SNIP_CLIPBOARD_IMAGE, true, true ) && SendPaste() ) )
+                    {
+                        state->TimerConsume = SetTimer( nullptr, 0, CONSUME_DELAY, nullptr );
+                    }
+                    if( state->TimerConsume == 0 )
+                    {
+                        OutputDebug( L"[Snip/PasteChaperone] Could not start image paste stage err=%lu\n",
+                                     GetLastError() );
+                        if( ClipboardStillOurs() )
+                        {
+                            PublishStageWithRetry( state->CombinedFormats, true, false );
+                        }
+                        done = true;
+                    }
                 }
                 else if( msg.message == WM_TIMER && state->TimerConsume != 0 &&
                          msg.wParam == state->TimerConsume )
@@ -349,6 +381,13 @@ namespace
                         PublishStageWithRetry( SNIP_CLIPBOARD_TEXT, true, true ) && SendPaste() )
                     {
                         state->TimerRestore = SetTimer( nullptr, 0, RESTORE_DELAY, nullptr );
+                        if( state->TimerRestore == 0 )
+                        {
+                            OutputDebug( L"[Snip/PasteChaperone] Could not start restore timer err=%lu\n",
+                                         GetLastError() );
+                            PublishStageWithRetry( state->CombinedFormats, true, false );
+                            done = true;
+                        }
                     }
                     else
                     {
@@ -365,25 +404,40 @@ namespace
                     KillTimer( nullptr, state->TimerRestore );
                     state->TimerRestore = 0;
 
-                    if( ClipboardStillOurs() )
+                    if( ClipboardStillOurs() &&
+                        PublishStageWithRetry( state->CombinedFormats, true, false ) )
                     {
-                        PublishStageWithRetry( state->CombinedFormats, true, false );
+                        state->SawPaste = false;
+                        state->ReplayPaste = true;
+                        state->PasteTarget = nullptr;
+                        state->Hook = SetWindowsHookEx( WH_KEYBOARD_LL, KeyboardHookProc,
+                                                       GetModuleHandle( nullptr ), 0 );
+                        state->TimerTimeout = SetTimer( nullptr, 0, OWNERSHIP_CHECK_INTERVAL, nullptr );
+                        if( state->Hook == nullptr || state->TimerTimeout == 0 )
+                        {
+                            OutputDebug( L"[Snip/PasteChaperone] Could not rearm repeat paste hook=%p timer=%zu err=%lu\n",
+                                         state->Hook, state->TimerTimeout, GetLastError() );
+                            done = true;
+                        }
                     }
-                    done = true;
+                    else
+                    {
+                        done = true;
+                    }
                 }
                 else if( msg.message == WM_TIMER && state->TimerTimeout != 0 &&
                          msg.wParam == state->TimerTimeout )
                 {
-                    KillTimer( nullptr, state->TimerTimeout );
-                    state->TimerTimeout = 0;
-
-                    // The user never pasted. Leave them with everything, the
-                    // same as if the chaperone had not been armed at all.
-                    if( ClipboardStillOurs() )
+                    if( !state->ReplayPaste || !ClipboardStillOurs() )
                     {
-                        PublishStageWithRetry( state->CombinedFormats, true, false );
+                        KillTimer( nullptr, state->TimerTimeout );
+                        state->TimerTimeout = 0;
+                        if( ClipboardStillOurs() )
+                        {
+                            PublishStageWithRetry( state->CombinedFormats, true, false );
+                        }
+                        done = true;
                     }
-                    done = true;
                 }
 
                 if( done )

@@ -18,6 +18,8 @@
 // transcription and synthesizes a second Ctrl+V. The user presses Ctrl+V once
 // and the target receives the screenshot as an attachment followed by the
 // dictated instruction.
+// After restoring the combined payload, it rearms for subsequent Ctrl+V
+// gestures until another copy replaces the clipboard or Cancel is called.
 //
 //==============================================================================
 #pragma once
