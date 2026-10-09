@@ -23,6 +23,9 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
         // Program handles help/version itself so "-h" stays a valid option value (see InvokeWithDefaultsAsync).
         Options.Clear();
 
+        // This CLI handles execution itself; completion directives must not suppress parse errors.
+        Directives.Clear();
+
         Options.Add(CliOptions.Quiet);
         Options.Add(CliOptions.Json);
 

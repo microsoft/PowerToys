@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Cli;
@@ -72,6 +74,35 @@ public class ProgramTokenTests
     [TestMethod]
     public void ApplyProfileWithId_IsNotVersion()
         => Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "5")));
+
+    [DataTestMethod]
+    [DataRow("[suggest]", new[] { "set", "-n", "bad", "--brightness", "50" })]
+    [DataRow("[suggest:32]", new[] { "set", "-n", "bad", "--brightness", "50" })]
+    [DataRow("[suggest]", new[] { "set", "--brightness", "invalid" })]
+    [DataRow("[suggest:32]", new[] { "set", "--brightness", "invalid" })]
+    [DataRow("[suggest]", new[] { "set", "--brightness", "50", "--bogus" })]
+    [DataRow("[suggest:32]", new[] { "set", "--brightness", "50", "--bogus" })]
+    [DataRow("[suggest]", new[] { "up", "--brightness", "--step", "-1" })]
+    [DataRow("[suggest:32]", new[] { "up", "--brightness", "--step", "-1" })]
+    [DataRow("[suggest]", new[] { "apply-profile" })]
+    [DataRow("[suggest:32]", new[] { "apply-profile" })]
+    public void SuggestDirective_InvalidArguments_PreserveParseErrors(string directive, string[] arguments)
+    {
+        var parsed = Parse([directive, .. arguments]);
+
+        Assert.IsTrue(parsed.Errors.Count > 0, "Completion directives must not hide errors before manual command dispatch.");
+    }
+
+    [DataTestMethod]
+    [DataRow("[suggest]")]
+    [DataRow("[suggest:32]")]
+    public void SuggestDirective_MissingResponseFile_PreservesParseError(string directive)
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"PowerDisplay-{Guid.NewGuid():N}.rsp");
+        var parsed = Parse(directive, "set", "--brightness", "50", "@" + missingPath);
+
+        Assert.IsTrue(parsed.Errors.Count > 0, "A missing response file must prevent dispatch of a partial command.");
+    }
 
     [TestMethod]
     public void BuildParseErrorResult_CollapsesMultipleMessagesIntoOneEnvelope()

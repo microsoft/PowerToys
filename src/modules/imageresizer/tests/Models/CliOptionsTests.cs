@@ -280,6 +280,33 @@ namespace ImageResizer.Tests.Models
             Assert.IsNull(options.Fit);
         }
 
+        [DataTestMethod]
+        [DataRow("[suggest]", "abc")]
+        [DataRow("[suggest:30]", "abc")]
+        [DataRow("[suggest]", "-1")]
+        [DataRow("[suggest:30]", "-1")]
+        public void Parse_WithCompletionDirectiveAndInvalidWidth_ReturnsError(string directive, string width)
+        {
+            var options = CliOptions.ParseForCli([directive, "--width", width, "--replace", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.IsNull(options.Width);
+        }
+
+        [DataTestMethod]
+        [DataRow("[suggest]")]
+        [DataRow("[suggest:30]")]
+        public void Parse_WithCompletionDirectiveAndMissingResponseFile_ReturnsError(string directive)
+        {
+            using var directory = new TestDirectory();
+            var responseFile = Path.Combine(directory, "missing.rsp");
+
+            var options = CliOptions.ParseForCli([directive, "@" + responseFile, "--replace", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "missing.rsp");
+        }
+
         [TestMethod]
         public void Parse_WithUnknownLongOption_ReturnsError()
         {

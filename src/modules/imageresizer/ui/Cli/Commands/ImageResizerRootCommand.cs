@@ -19,6 +19,9 @@ namespace ImageResizer.Cli.Commands
             // This CLI has its own help option and uses -h for --height, so drop RootCommand's built-ins.
             Options.Clear();
 
+            // This CLI handles execution itself; completion directives must not suppress parse errors.
+            Directives.Clear();
+
             HelpOption = new HelpOption();
             ShowConfigOption = new ShowConfigOption();
             DestinationOption = new DestinationOption();
