@@ -244,15 +244,11 @@ public sealed partial class MainListPage : DynamicListPage,
             _appItemsChangedWhileLoading = false;
         }
 
-        if (shouldReapplyApps
+        if ((shouldReapplyApps || resultLimitChanged)
             && _includeApps
             && !string.IsNullOrWhiteSpace(SearchText))
         {
             ReapplySearchInBackground(force: true);
-        }
-        else if (resultLimitChanged && _includeApps && !string.IsNullOrWhiteSpace(SearchText))
-        {
-            RequestRefresh(fullRefresh: false);
         }
     }
 
@@ -629,6 +625,8 @@ public sealed partial class MainListPage : DynamicListPage,
         IReadOnlyList<InProcObject<IListItem>> fallbackSource;
         InProcObject<IListItem>[] globalFallbackSources;
         AppListItemSnapshot appSnapshot;
+        RoScored<InProcObject<IListItem>>[]? previousSearchResults;
+        int appResultLimit;
         bool includeAppsSnapshot;
 
         // ===== SNAPSHOT PHASE (under lock) =====
@@ -685,19 +683,22 @@ public sealed partial class MainListPage : DynamicListPage,
 
             includeAppsSnapshot = _includeApps;
             appSnapshot = _appListItemSource.GetSnapshot();
+            appResultLimit = AppResultLimit;
 
             // A query that doesn't extend the old one, or a change in app inclusion, means we
             // can't re-use the previous results and have to rebuild from the full catalog. On an
             // extend we re-score only the previously matched non-app commands.
-            var reset = forceReset || !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
+            var reset = forceReset
+                || !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
                 || _filteredItemsIncludesApps != includeAppsSnapshot;
 
             var prevFilteredItems = reset ? null : _filteredItems;
+            previousSearchResults = _filteredItems;
             var prevApps = reset ? null : _filteredApps;
             var prevFallbacks = reset ? null : _fallbackItems;
 
             IEnumerable<InProcObject<IListItem>> newFilteredItems = prevFilteredItems is not null
-                ? prevFilteredItems.Select(s => s.Item)
+                ? prevFilteredItems.Select(s => s.Item.Safe is AppSearchResultListItem result ? new InProcObject<IListItem>(result.Source) : s.Item)
                 : Enumerable.Empty<InProcObject<IListItem>>();
             IEnumerable<InProcObject<IListItem>> newFallbacks = prevFallbacks is not null
                 ? prevFallbacks.Select(s => s.Item)
@@ -821,6 +822,15 @@ public sealed partial class MainListPage : DynamicListPage,
             }
         }
 
+        if (appSearch is not null)
+        {
+            ProjectAppSearchResults(scoredFilteredItems, appSearch, appSnapshot, previousSearchResults);
+            if (scoredApps is not null)
+            {
+                ProjectAppSearchResults(scoredApps.AsSpan(0, Math.Min(scoredApps.Length, appResultLimit)), appSearch, appSnapshot, null);
+            }
+        }
+
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
         var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
 #endif
@@ -893,6 +903,37 @@ public sealed partial class MainListPage : DynamicListPage,
     // Anything already an IReadOnlyList passes through; lazy LINQ over live data gets copied.
     private static IReadOnlyList<InProcObject<IListItem>> MaterializeSource(IEnumerable<InProcObject<IListItem>> items)
         => items as IReadOnlyList<InProcObject<IListItem>> ?? items.ToArray();
+
+    /// <summary>Projects admitted app results to their matching shortcut without modifying catalog rows or saved commands.</summary>
+    private static void ProjectAppSearchResults(
+        Span<RoScored<InProcObject<IListItem>>> results,
+        AppSearch search,
+        AppListItemSnapshot snapshot,
+        RoScored<InProcObject<IListItem>>[]? previous)
+    {
+        for (var i = 0; i < results.Length; i++)
+        {
+            var source = results[i].Item.Safe;
+            var app = source is AppListItem direct
+                ? direct
+                : source is TopLevelViewModel topLevel && IsAppCommand(topLevel) ? snapshot.GetApp(topLevel.Id) : null;
+            if (app is null)
+            {
+                continue;
+            }
+
+            var presentation = app.GetSearchResult(search.Evaluate(app));
+            if (ReferenceEquals(presentation, app))
+            {
+                continue;
+            }
+
+            IListItem result = source is TopLevelViewModel saved
+                ? AppSearchResultListItem.CreateOrReuse(previous, saved, presentation)
+                : presentation;
+            results[i] = new RoScored<InProcObject<IListItem>>(new(result), results[i].Score);
+        }
+    }
 
     private static bool IsAppCommand(TopLevelViewModel item)
         => item.CommandProviderId == AllAppsCommandProvider.WellKnownId && item.CommandViewModel.IsInvokableCommand;
@@ -968,6 +1009,7 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             ArgumentNullException.ThrowIfNull(appSearch);
             var match = appSearch.Evaluate(app);
+            title = match.ShortcutIndex is { } shortcutIndex ? app.App.Shortcuts[shortcutIndex].Name : app.Title;
             lexicalQuality = match.LexicalScore;
             matchedLexically = match.HasMatch;
             exactMetadataMatch = match.IsExactMetadataMatch;
@@ -1072,7 +1114,7 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         var appSnapshot = _appListItemSource.GetSnapshot();
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        if (topLevelOrAppItem.Safe is AppListItem || (topLevelOrAppItem.Safe is TopLevelViewModel topLevel && IsAppCommand(topLevel)))
+        if (topLevelOrAppItem.Safe is AppListItem or AppSearchResultListItem || (topLevelOrAppItem.Safe is TopLevelViewModel topLevel && IsAppCommand(topLevel)))
         {
             id = appSnapshot.GetApp(id)?.Command?.Id ?? id;
         }

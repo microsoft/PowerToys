@@ -100,7 +100,7 @@ internal sealed class AppCatalogProvenance
 
         for (var index = 0; index < References.Length; index++)
         {
-            if (!References[index].Equals(other.References[index]))
+            if (!References[index].HasSameContent(other.References[index]))
             {
                 return false;
             }

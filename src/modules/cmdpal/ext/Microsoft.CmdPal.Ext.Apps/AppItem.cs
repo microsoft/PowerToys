@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Ext.Apps;
@@ -87,6 +88,10 @@ public sealed class AppItem
     /// Gets or sets source names, aliases, and other retained metadata used by search and catalog policy.
     /// </summary>
     public IReadOnlyList<string> MatchTerms { get; set; } = [];
+
+    /// <summary>Gets or sets named shortcuts retained for query-specific presentation and activation.</summary>
+    /// <remarks>These representations share this application's canonical identity.</remarks>
+    public IReadOnlyList<AppShortcut> Shortcuts { get; set; } = [];
 
     /// <summary>Gets or sets fully qualified executable discovery paths retained through catalog provenance.</summary>
     /// <remarks>Preserves executable-name matching when another source representation supplies the preferred payload.</remarks>

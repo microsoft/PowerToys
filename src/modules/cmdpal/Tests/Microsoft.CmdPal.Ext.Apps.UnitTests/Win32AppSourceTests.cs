@@ -23,6 +23,8 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public partial class Win32AppSourceTests
 {
+    private static readonly string[] NestedShortcutNames = ["Xilbaba", "Tartarus", "Deeps", "On Level 3"];
+
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
@@ -1090,6 +1092,56 @@ public partial class Win32AppSourceTests
             Assert.AreEqual("Restored", (restoredItems[0].Payload as Win32AppPayload)?.Name);
             Assert.AreEqual(1, repeatedItems.Count);
             Assert.IsTrue(restoredItems[0].HasSamePersistedContent(repeatedItems[0]));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ApplyChangesAsync_NestedShortcutCreationsRetainOneAppAndEveryName()
+    {
+        var root = CreateTemporaryDirectory("cmdpal-nested-incremental-apps");
+        var firstPath = Path.Combine(root, "Xilbaba.lnk");
+        var targetPath = Path.Combine(root, "PrintMe.exe");
+        File.WriteAllText(firstPath, string.Empty);
+
+        try
+        {
+            using var source = new Win32AppSource(
+                CreateShortcutDirectorySource(root),
+                (path, _) => CreateExecutable(Path.GetFileNameWithoutExtension(path), targetPath, path),
+                createWatchers: false);
+            var items = await source.LoadAsync(CancellationToken.None);
+            var directory = root;
+            foreach (var name in NestedShortcutNames.Skip(1))
+            {
+                directory = Path.Combine(directory, name);
+                Directory.CreateDirectory(directory);
+                var shortcutPath = Path.Combine(directory, name + ".lnk");
+                File.WriteAllText(shortcutPath, string.Empty);
+                AppSourcePathChange[] changes =
+                [
+                    new(WatcherChangeTypes.Created, directory),
+                    new(WatcherChangeTypes.Created, shortcutPath),
+                    new(WatcherChangeTypes.Changed, shortcutPath),
+                ];
+
+                items = await source.ApplyChangesAsync(items, changes, CancellationToken.None);
+                var repeated = await source.ApplyChangesAsync(items, changes, CancellationToken.None);
+
+                Assert.AreEqual(1, items.Count);
+                Assert.AreEqual(1, repeated.Count);
+                Assert.IsTrue(ContainsSourceReference(items[0], $"custom-shortcut:{root}", firstPath));
+                Assert.IsTrue(ContainsSourceReference(items[0], $"custom-shortcut:{root}", shortcutPath));
+                CollectionAssert.Contains(items[0].MatchTerms.ToArray(), name);
+                Assert.IsTrue(items[0].HasSamePersistedContent(repeated[0]));
+                items = repeated;
+            }
+
+            Assert.AreEqual(4, items[0].Provenance.References.Length);
+            CollectionAssert.AreEquivalent(NestedShortcutNames, items[0].ToAppItem().Shortcuts.Select(shortcut => shortcut.Name).ToArray());
         }
         finally
         {

@@ -49,6 +49,16 @@ public partial class AppCatalogTests
     }
 
     [TestMethod]
+    public void Provenance_ShortcutNameChangeInvalidatesContentWithoutChangingIdentity()
+    {
+        var first = new AppCatalogSourceReference("desktop", @"C:\Desktop\App.lnk", "First name");
+        var renamed = new AppCatalogSourceReference("desktop", first.ItemId, "New name");
+
+        Assert.AreEqual(first, renamed);
+        Assert.IsFalse(new AppCatalogProvenance(0, first).HasSamePersistedContent(new AppCatalogProvenance(0, renamed)));
+    }
+
+    [TestMethod]
     public void Provenance_CaseVariantsRemainAdjacentWhenNormalizingAndMerging()
     {
         var first = new AppCatalogSourceReference("A", "x");
@@ -1345,6 +1355,46 @@ public partial class AppCatalogTests
         await catalog.RefreshAsync();
 
         Assert.AreEqual(0, changedCount);
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_ShortcutDisplayNameCaseChange_RebuildsMaterializedApp()
+    {
+        const string shortcutPath = @"C:\Desktop\Raw shortcut.lnk";
+        var preferred = CreateCatalogItem("Editor");
+        var program = TestDataHelper.CreateTestWin32Metadata("Raw shortcut", shortcutPath);
+        program.DisplayName = "Editor shortcut";
+        var payload = Win32AppPayload.From(program);
+        var initial = preferred.MergeProvenance(new AppCatalogItem(
+            preferred.Identity,
+            10,
+            new AppCatalogSourceReference("desktop", shortcutPath, payload.DisplayName),
+            [payload.DisplayName, shortcutPath],
+            payload));
+        using var source = new TestAppSource("test", [initial]);
+        using var catalog = CreateCatalog([source], new TestCache(null));
+        await catalog.RefreshAsync();
+        var originalApp = catalog.GetSnapshot().Items.Single();
+        var changedCount = 0;
+        catalog.Changed += (_, _) => changedCount++;
+        var renamedPayload = payload with { DisplayName = "EDITOR SHORTCUT" };
+        var updated = preferred.MergeProvenance(new AppCatalogItem(
+            preferred.Identity,
+            10,
+            new AppCatalogSourceReference("desktop", shortcutPath, renamedPayload.DisplayName),
+            [renamedPayload.DisplayName, shortcutPath],
+            renamedPayload));
+        CollectionAssert.AreEqual(initial.CommandIds.ToArray(), updated.CommandIds.ToArray(), "A Shell display-name change does not change the released ID.");
+        source.SetItems([updated]);
+
+        await catalog.RefreshAsync();
+
+        var app = catalog.GetSnapshot().Items.Single();
+        Assert.AreNotSame(originalApp, app);
+        Assert.AreEqual(originalApp.CatalogId, app.CatalogId);
+        Assert.AreEqual("EDITOR SHORTCUT", app.Shortcuts.Single().Name);
+        Assert.AreEqual(shortcutPath, app.Shortcuts.Single().Path);
+        Assert.AreEqual(1, changedCount);
     }
 
     [TestMethod]
