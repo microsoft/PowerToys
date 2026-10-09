@@ -379,6 +379,15 @@ complete, recognized launch metadata so unfamiliar formats cannot merge unrelate
   score**.
 - Queries containing a path separator or colon additionally search full paths.
 - Ordinary searches omit shared discovery-directory prefixes.
+- A strong retained shortcut-name match uses that shortcut's title, launch path and location
+  actions in All Apps and Home. When the names differ, its subtitle explains the relationship
+  with "Also listed as {preferred name}", followed by the description when descriptions are shown.
+  Browsing, pins and dock entries keep the preferred representation, and every search projection
+  keeps the canonical command ID for pinning and usage history.
+- Executable, description and explicit-path matches keep the preferred title. Shortcut names are
+  retained separately from generic metadata. Explicit `.exe` queries and exact matches to an app's
+  actual executable filename keep its preferred representation. Other dotted shortcut names, such
+  as `Outlook.com`, remain eligible for shortcut presentation.
 - Exact executable names from the actual launch/target paths can take priority over fuzzy
   matches when the launch has no arguments. Argument-bearing shortcuts remain searchable
   without that priority; retained metadata does not imply an executable match.

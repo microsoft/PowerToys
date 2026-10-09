@@ -88,6 +88,10 @@ public sealed class AppItem
     /// </summary>
     public IReadOnlyList<string> MatchTerms { get; set; } = [];
 
+    /// <summary>Gets or sets named shortcuts retained for query-specific presentation and activation.</summary>
+    /// <remarks>These representations share this application's canonical identity.</remarks>
+    public IReadOnlyList<AppShortcut> Shortcuts { get; set; } = [];
+
     /// <summary>Gets or sets fully qualified executable discovery paths retained through catalog provenance.</summary>
     /// <remarks>Preserves executable-name matching when another source representation supplies the preferred payload.</remarks>
     public IReadOnlyList<string> ExecutableSourcePaths { get; set; } = [];

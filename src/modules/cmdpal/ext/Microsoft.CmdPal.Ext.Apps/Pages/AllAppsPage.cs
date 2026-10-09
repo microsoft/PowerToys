@@ -186,7 +186,7 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
             var match = search.Evaluate(candidate);
             if (match.HasMatch)
             {
-                scoredItems.Add(new ScoredAppListItem(candidate, match));
+                scoredItems.Add(new ScoredAppListItem(candidate.GetSearchResult(match), match));
             }
         }
 

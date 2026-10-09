@@ -655,6 +655,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Also listed as {0}.
+        /// </summary>
+        internal static string shortcut_also_listed_as {
+            get {
+                return ResourceManager.GetString("shortcut_also_listed_as", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Unhide app.
         /// </summary>
         internal static string unhide_app {

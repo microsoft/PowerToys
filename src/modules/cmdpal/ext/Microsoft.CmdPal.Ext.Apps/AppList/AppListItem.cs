@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -13,6 +15,7 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Commands;
+using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -21,9 +24,17 @@ namespace Microsoft.CmdPal.Ext.Apps.AppList;
 
 public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 {
+    private static readonly CompositeFormat ShortcutAlsoListedAsFormat = CompositeFormat.Parse(Resources.shortcut_also_listed_as);
+
     private readonly AppItem _app;
     private readonly Lazy<Task<Details>> _detailsLoadTask;
     private readonly string[] _pathSearchTerms;
+    private readonly AppShortcut? _shortcut;
+    private AppListItem?[]? _shortcutResults;
+    private IContextItem[]? _shortcutCommandsSource;
+    private (string Title, string Subtitle)? _shortcutSubtitleSource;
+    private InterlockedBoolean _shortcutPresentationRequested;
+    private InterlockedBoolean _updatingShortcutPresentation;
 
     private InterlockedBoolean _isLoadingDetails;
 
@@ -110,22 +121,36 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .ToArray();
 
-        // Only the actual launch/target paths identify an executable. Retained metadata
-        // may name other files, and arguments identify a specialized launch rather than the executable alone.
-        ExecutableNames = string.IsNullOrWhiteSpace(app.LaunchArguments)
-            ? new[] { app.LaunchTarget, app.ResolvedTarget ?? string.Empty }
-                .Concat(app.ExecutableSourcePaths)
-                .Where(path => Path.IsPathFullyQualified(path) && PathHelpers.IsExecutablePath(path))
-                .Select(path => Path.GetFileName(path))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray()
-            : [];
+        // Only actual launch/target paths identify an executable; retained metadata may name other files.
+        ExecutableNames = new[] { app.LaunchTarget, app.ResolvedTarget ?? string.Empty }
+            .Concat(app.ExecutableSourcePaths)
+            .Where(path => Path.IsPathFullyQualified(path) && PathHelpers.IsExecutablePath(path))
+            .Select(path => Path.GetFileName(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         _pathSearchTerms = terms.Where(Path.IsPathFullyQualified).Except(SearchTerms, StringComparer.OrdinalIgnoreCase).ToArray();
         Icon = appCommand.Icon = CreateIcon(app);
 
         MoreCommands = _app.Commands?.ToArray() ?? [];
 
         _detailsLoadTask = new Lazy<Task<Details>>(BuildDetails);
+    }
+
+    private AppListItem(AppListItem source, AppShortcut shortcut)
+    {
+        // Shortcut rows share immutable search inputs and deferred icon requests with the preferred row.
+        _app = source._app;
+        _pathSearchTerms = source._pathSearchTerms;
+        SearchTerms = source.SearchTerms;
+        ExecutableNames = source.ExecutableNames;
+        _shortcut = shortcut;
+        Title = shortcut.Name;
+        Icon = source.Icon;
+        Command = new AppCommand(_app, shortcut.Path) { Icon = CoalesceIcon(Icon as IconInfo) };
+        _detailsLoadTask = new Lazy<Task<Details>>(BuildDetails);
+
+        // Complete the first presentation before another caller can obtain the cached row.
+        UpdateShortcutPresentation(source);
     }
 
     private async Task LoadDetailsAsync()
@@ -160,9 +185,9 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         // Build metadata, with app type, path, etc.
         var metadata = new List<DetailsElement>();
         metadata.Add(new DetailsElement() { Key = "Type", Data = new DetailsTags() { Tags = [new Tag(_app.AppTypeLabel)] } });
-        if (!_app.IsPackaged)
+        if (_shortcut is not null || !_app.IsPackaged)
         {
-            metadata.Add(new DetailsElement() { Key = "Path", Data = new DetailsLink() { Text = _app.LaunchTarget } });
+            metadata.Add(new DetailsElement() { Key = "Path", Data = new DetailsLink() { Text = _shortcut?.Path ?? _app.LaunchTarget } });
         }
 
 #if DEBUG
@@ -253,6 +278,113 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         return _subtitleCache.GetOrUpdate(matcher, Subtitle);
     }
 
+    /// <summary>Returns a stable query-specific shortcut row without changing the canonical application or command identity.</summary>
+    /// <param name="match">A match evaluated against this application's search targets.</param>
+    public AppListItem GetSearchResult(AppSearch.Match match)
+    {
+        if (match.ShortcutIndex is not { } index
+            || string.Equals(_app.Shortcuts[index].Name, Title, StringComparison.OrdinalIgnoreCase))
+        {
+            return this;
+        }
+
+        var results = Volatile.Read(ref _shortcutResults);
+        if (results is null)
+        {
+            results = new AppListItem?[_app.Shortcuts.Count];
+            results = Interlocked.CompareExchange(ref _shortcutResults, results, null) ?? results;
+        }
+
+        var result = Volatile.Read(ref results[index]);
+        if (result is null)
+        {
+            var created = new AppListItem(this, _app.Shortcuts[index]);
+            result = Interlocked.CompareExchange(ref results[index], created, null) ?? created;
+        }
+
+        result.UpdateShortcutPresentation(this);
+        return result;
+    }
+
+    private void UpdateShortcutPresentation(AppListItem source)
+    {
+        _shortcutPresentationRequested.Set();
+        if (!_updatingShortcutPresentation.Set())
+        {
+            return;
+        }
+
+        // Drain updates with one writer so property notifications never run under a lock.
+        do
+        {
+            try
+            {
+                while (_shortcutPresentationRequested.Clear())
+                {
+                    var subtitleSource = (source.Title, source.Subtitle);
+                    if (_shortcutSubtitleSource != subtitleSource)
+                    {
+                        _shortcutSubtitleSource = subtitleSource;
+                        var alternateName = string.Format(CultureInfo.CurrentCulture, ShortcutAlsoListedAsFormat, subtitleSource.Title);
+                        Subtitle = string.IsNullOrEmpty(subtitleSource.Subtitle)
+                            ? alternateName
+                            : $"{alternateName} • {subtitleSource.Subtitle}";
+                    }
+
+                    var commands = source.MoreCommands;
+                    if (!ReferenceEquals(_shortcutCommandsSource, commands))
+                    {
+                        var shortcutCommands = GetShortcutCommands(commands);
+                        _shortcutCommandsSource = commands;
+                        MoreCommands = shortcutCommands;
+                    }
+                }
+            }
+            finally
+            {
+                _updatingShortcutPresentation.Clear();
+            }
+        }
+        while (_shortcutPresentationRequested.Value && _updatingShortcutPresentation.Set());
+    }
+
+    /// <summary>Retargets shortcut location and launch actions while preserving application and host-owned actions.</summary>
+    /// <param name="commands">The canonical application's or saved command's context actions.</param>
+    public IContextItem[] GetShortcutCommands(IContextItem?[] commands)
+    {
+        if (_shortcut is null)
+        {
+            return commands.OfType<IContextItem>().ToArray();
+        }
+
+        var directory = Path.GetDirectoryName(_shortcut.Path)!;
+        return commands.OfType<IContextItem>().Select(item =>
+        {
+            if (item is not ICommandContextItem context)
+            {
+                return item;
+            }
+
+            ICommand? replacement = context.Command switch
+            {
+                RunAsAdminCommand => new RunAsAdminCommand(_shortcut.Path, directory, packaged: false),
+                RunAsUserCommand => new RunAsUserCommand(_shortcut.Path, directory),
+                ShowFileInFolderCommand show => new ShowFileInFolderCommand(_shortcut.Path) { Name = show.Name, Result = show.Result },
+                OpenFileCommand open when _app.IsPackaged => new ShowFileInFolderCommand(_shortcut.Path) { Name = open.Name, Result = open.Result },
+                OpenInConsoleCommand => OpenInConsoleCommand.FromDirectory(directory),
+                _ => null,
+            };
+            return replacement is null ? item : new CommandContextItem(replacement)
+            {
+                Title = context.Title,
+                Subtitle = context.Subtitle,
+                Icon = context.Icon,
+                RequestedShortcut = context.RequestedShortcut,
+                IsCritical = context.IsCritical,
+            };
+        }).ToArray();
+    }
+
     /// <summary>Gets a complete matcher-specific bundle of title, description, and metadata search targets.</summary>
     /// <remarks>The bundle is replaced atomically when its matcher schema or presentation text changes.</remarks>
     internal AppSearch.Targets GetSearchTargets(IPrecomputedFuzzyMatcher matcher)
@@ -266,12 +398,58 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
             || targets.Description.Original != description)
         {
             var metadata = SearchTerms.Select(matcher.PrecomputeTarget).ToArray();
+            var pathMetadata = metadata.Concat(_pathSearchTerms.Select(matcher.PrecomputeTarget)).ToArray();
+            AppSearch.ShortcutTarget[] shortcuts = [];
+            if (_app.Shortcuts.Count > 0)
+            {
+                // Keep raw casing: a matcher's same-case bonus can distinguish otherwise equal names.
+                var metadataCount = metadata.Length;
+                var shortcutTargets = new List<AppSearch.ShortcutTarget>(_app.Shortcuts.Count);
+                for (var i = 0; i < _app.Shortcuts.Count; i++)
+                {
+                    var name = _app.Shortcuts[i].Name;
+                    var duplicate = false;
+                    foreach (var existing in shortcutTargets)
+                    {
+                        if (string.Equals(name, existing.Target.Original, StringComparison.Ordinal))
+                        {
+                            duplicate = true;
+                            break;
+                        }
+                    }
+
+                    if (duplicate)
+                    {
+                        continue;
+                    }
+
+                    var index = 0;
+                    while (index < metadataCount && !string.Equals(name, metadata[index].Original, StringComparison.Ordinal))
+                    {
+                        index++;
+                    }
+
+                    var isMetadata = index < metadataCount;
+                    var target = isMetadata ? metadata[index] : matcher.PrecomputeTarget(name);
+                    if (isMetadata)
+                    {
+                        metadata[index] = metadata[--metadataCount];
+                    }
+
+                    shortcutTargets.Add(new AppSearch.ShortcutTarget(target, i, isMetadata));
+                }
+
+                Array.Resize(ref metadata, metadataCount);
+                shortcuts = [.. shortcutTargets];
+            }
+
             targets = new AppSearch.Targets(
                 matcher.SchemaId,
                 matcher.PrecomputeTarget(title),
                 matcher.PrecomputeTarget(description),
                 metadata,
-                metadata.Concat(_pathSearchTerms.Select(matcher.PrecomputeTarget)).ToArray());
+                pathMetadata,
+                shortcuts);
 
             // Home and All Apps may search these rows concurrently. Publish a complete bundle;
             // each caller keeps its own bundle even if another matcher replaces the cache.

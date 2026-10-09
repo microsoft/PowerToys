@@ -20,10 +20,17 @@ namespace Microsoft.CmdPal.Ext.Apps.Commands;
 internal sealed partial class AppCommand : InvokableCommand
 {
     private readonly AppItem _app;
+    private readonly string? _shortcutPath;
 
-    public AppCommand(AppItem app)
+    /// <summary>Creates an application command, optionally launching a matched shortcut under the same command ID.</summary>
+    /// <param name="app">The canonical application that owns the command identity.</param>
+    /// <param name="shortcutPath">A retained shortcut to launch instead of the preferred representation.</param>
+    public AppCommand(AppItem app, string? shortcutPath = null)
     {
+        ArgumentNullException.ThrowIfNull(app);
+
         _app = app;
+        _shortcutPath = shortcutPath;
         Name = Resources.run_command_action!;
         Id = string.IsNullOrEmpty(app.CatalogId)
             ? GenerateId(app.Name, app.Subtitle, app.LaunchTarget)
@@ -73,7 +80,11 @@ internal sealed partial class AppCommand : InvokableCommand
 
     private async Task Launch()
     {
-        if (_app.IsPackaged)
+        if (_shortcutPath is not null)
+        {
+            await StartExe(_shortcutPath);
+        }
+        else if (_app.IsPackaged)
         {
             await StartApp(_app.AppUserModelId);
         }

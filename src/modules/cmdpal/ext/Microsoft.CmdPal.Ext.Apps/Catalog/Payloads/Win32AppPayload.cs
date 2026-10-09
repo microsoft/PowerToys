@@ -214,7 +214,7 @@ internal sealed record Win32AppPayload : IAppCatalogPayload
         {
             RequestedShortcut = KeyChords.OpenFileLocation,
         });
-        commands.Add(new CommandContextItem(new OpenInConsoleCommand(ParentDirectory))
+        commands.Add(new CommandContextItem(OpenInConsoleCommand.FromDirectory(ParentDirectory))
         {
             RequestedShortcut = KeyChords.OpenInConsole,
         });

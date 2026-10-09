@@ -7,14 +7,17 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Pages;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -34,6 +37,178 @@ public partial class MainListPageTests
     private static readonly string[] NonAppQueries = ["c", "Application", "Apps"];
     private static readonly string[] InfrastructureQueries = ["start", "program", "windows", "micro", "apps"];
     private static readonly string[] DisabledAppsQueries = ["wt", "WT.EXE", "Terminal"];
+    private static readonly string[] ShortcutNameQueries = ["On", "On Level", "On Level 3"];
+
+    [TestMethod]
+    public async Task Search_IncreasingResultLimitProjectsNewlyVisibleShortcuts()
+    {
+        var apps = Enumerable.Range(0, 2).Select(index => new AppListItem(new AppItem
+        {
+            Name = $"App{index}",
+            LaunchTarget = $@"C:\Tools\App{index}.exe",
+            Shortcuts = [new("Shared shortcut", $@"C:\Desktop\Shortcut{index}.lnk")],
+        })).ToArray();
+        var snapshot = new AppListItemSnapshot(apps, []);
+        var resultLimit = 1;
+        var source = new Mock<IAppListItemSource>();
+        source.Setup(service => service.GetSnapshot()).Returns(snapshot);
+        source.SetupGet(service => service.TopLevelResultLimit).Returns(() => resultLimit);
+        await WithSearchPages(snapshot, false, appListItemSource: source, check: async (home, _, _) =>
+        {
+            home.SearchText = "Shared shortcut";
+            Assert.AreEqual("Shared shortcut", home.GetItems().OfType<AppListItem>().Single().Title);
+            resultLimit = 2;
+            source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
+
+            await WaitForConditionAsync(() =>
+            {
+                var results = home.GetItems().OfType<AppListItem>().ToArray();
+                return results.Length == 2 && results.All(result => result.Title == "Shared shortcut");
+            });
+
+            Assert.AreEqual("Shared shortcut", home.SearchText);
+            CollectionAssert.AreEquivalent(apps.Select(app => app.Command!.Id).ToArray(), home.GetItems().OfType<AppListItem>().Select(app => app.Command!.Id).ToArray());
+            source.Verify(service => service.RefreshAsync(), Times.Never);
+        });
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task Search_ShortcutNameProjectsBothPagesAndPreservesSavedPin(bool pinned, bool useSavedAlias)
+    {
+        var app = new AppListItem(new AppItem
+        {
+            Name = "Deeps",
+            Subtitle = "Prints a message",
+            CatalogId = @"win32:C:\Commands\_PrintMe.exe|args:",
+            LaunchTarget = @"C:\Desktop\Deeps.lnk",
+            ResolvedTarget = @"C:\Commands\_PrintMe.exe",
+            Shortcuts = [new("On Level 3", @"C:\Desktop\On Level 3.lnk")],
+        });
+        var primaryId = app.Command!.Id;
+        var pinId = useSavedAlias ? "Old Print shortcut_42" : primaryId;
+        var snapshot = new AppListItemSnapshot([app], [], commandAliases: new Dictionary<string, string> { [pinId] = primaryId });
+        var state = new AppStateModel();
+        var stateService = new Mock<IAppStateService>();
+        stateService.SetupGet(service => service.State).Returns(() => state);
+        stateService.Setup(service => service.UpdateState(It.IsAny<Func<AppStateModel, AppStateModel>>()))
+            .Callback<Func<AppStateModel, AppStateModel>>(update => state = update(state));
+
+        await WithSearchPages(snapshot, pinned, pinnedCommandId: pinned ? pinId : null, appStateService: stateService, check: (home, allApps, manager) =>
+        {
+            IListItem? previous = null;
+            foreach (var query in ShortcutNameQueries)
+            {
+                home.SearchText = allApps.SearchText = query;
+                var homeResult = home.GetItems().Single(item => item.Command?.Id == primaryId);
+                var appResult = allApps.GetItems().OfType<AppListItem>().Single();
+                Assert.AreEqual("On Level 3", homeResult.Title);
+                Assert.AreEqual("Also listed as Deeps • Prints a message", homeResult.Subtitle);
+                Assert.AreSame(appResult, pinned ? ((AppSearchResultListItem)homeResult).Presentation : homeResult);
+                if (previous is not null)
+                {
+                    Assert.AreSame(previous, homeResult, "Growing a query must keep the projected row stable and avoid duplicate pins.");
+                }
+
+                if (pinned)
+                {
+                    var saved = ((AppSearchResultListItem)homeResult).Source;
+                    Assert.AreEqual(pinId, saved.Id, "Unpin actions must still belong to the saved command, including a legacy ID.");
+                    Assert.AreEqual("Deeps", saved.Title);
+                    Assert.AreSame(saved.ProviderContext, ((ICommandContextSource)homeResult).ProviderContext);
+                }
+
+                previous = homeResult;
+            }
+
+            home.UpdateHistory(previous!);
+            Assert.AreEqual(primaryId, state.RecentCommands.History.Single().CommandId);
+            home.SearchText = allApps.SearchText = string.Empty;
+            Assert.AreSame(app, allApps.GetItems().OfType<AppListItem>().Single());
+            if (pinned)
+            {
+                Assert.AreEqual("Deeps", home.GetItems().Single(item => item.Command?.Id == pinId).Title);
+                Assert.AreEqual(pinId, manager.TopLevelCommands.Single(item => item.Id == pinId).Id);
+            }
+
+            Assert.AreEqual("Deeps", app.Title);
+            return Task.CompletedTask;
+        });
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task Search_PinnedShortcutPreservesHostActionsAndRetargetsLocations(bool useSavedAlias)
+    {
+        const string preferredPath = @"C:\Start Menu\Deeps.lnk";
+        const string shortcutPath = @"C:\Desktop\On Level 3.lnk";
+        var show = new CommandContextItem(new ShowFileInFolderCommand(preferredPath) { Result = CommandResult.KeepOpen() })
+        {
+            Title = "Show shortcut",
+            RequestedShortcut = WellKnownKeyChords.OpenFileLocation,
+        };
+        var console = new CommandContextItem(OpenInConsoleCommand.FromDirectory(Path.GetDirectoryName(preferredPath)!))
+        {
+            Title = "Open shortcut folder in console",
+            RequestedShortcut = WellKnownKeyChords.OpenInConsole,
+        };
+        var appAction = new CommandContextItem(new AnonymousCommand(() => { })) { Title = "App action" };
+        var app = new AppListItem(new AppItem
+        {
+            Name = "Deeps",
+            CatalogId = @"win32:C:\Commands\_PrintMe.exe|args:",
+            LaunchTarget = preferredPath,
+            ResolvedTarget = @"C:\Commands\_PrintMe.exe",
+            Shortcuts = [new("On Level 3", shortcutPath)],
+        }) { MoreCommands = [show, console, appAction] };
+        var primaryId = app.Command!.Id;
+        var pinId = useSavedAlias ? "Old Print shortcut_42" : primaryId;
+        var snapshot = new AppListItemSnapshot([app], [], commandAliases: new Dictionary<string, string> { [pinId] = primaryId });
+        var unpin = new CommandContextItem(new AnonymousCommand(() => { })) { Title = "Unpin" };
+        var dock = new CommandContextItem(new AnonymousCommand(() => { })) { Title = "Pin to dock" };
+        var factory = new Mock<IContextMenuFactory>();
+        factory.Setup(value => value.UnsafeBuildAndInitMoreCommands(It.IsAny<IContextItem[]>(), It.IsAny<CommandItemViewModel>()))
+            .Returns((IContextItem[] items, CommandItemViewModel commandItem) => DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(items, commandItem));
+        factory.Setup(value => value.AddMoreCommandsToTopLevel(It.IsAny<TopLevelViewModel>(), It.IsAny<ICommandProviderContext>(), It.IsAny<List<IContextItem?>>()))
+            .Callback<TopLevelViewModel, ICommandProviderContext, List<IContextItem?>>((saved, _, items) =>
+            {
+                if (saved.Id == pinId)
+                {
+                    items.Add(unpin);
+                    items.Add(dock);
+                }
+            });
+
+        await WithSearchPages(snapshot, true, pinnedCommandId: pinId, contextMenuFactory: factory.Object, check: (home, _, _) =>
+        {
+            home.SearchText = "On Level 3";
+            var result = home.GetItems().OfType<AppSearchResultListItem>().Single();
+            var actions = result.MoreCommands;
+            Assert.AreEqual(pinId, result.Source.Id);
+            Assert.AreEqual(primaryId, result.Command!.Id);
+            Assert.IsTrue(actions.Contains(unpin), "Host unpin actions must still belong to the saved command.");
+            Assert.IsTrue(actions.Contains(dock), "Host dock actions must survive shortcut projection.");
+            Assert.IsTrue(actions.Contains(appAction));
+            factory.Verify(value => value.AddMoreCommandsToTopLevel(result.Source, result.Source.ProviderContext!, It.IsAny<List<IContextItem?>>()), Times.AtLeastOnce);
+
+            // Inspect targets without launching the app, Explorer or a console during the test.
+            Assert.AreEqual(shortcutPath, result.Command.GetType().GetField("_shortcutPath", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(result.Command));
+            var location = actions.OfType<ICommandContextItem>().Single(value => value.Command is ShowFileInFolderCommand);
+            Assert.AreEqual(show.Title, location.Title);
+            Assert.AreEqual(show.RequestedShortcut, location.RequestedShortcut);
+            Assert.AreSame(((ShowFileInFolderCommand)show.Command!).Result, ((ShowFileInFolderCommand)location.Command!).Result);
+            Assert.AreEqual(shortcutPath, typeof(ShowFileInFolderCommand).GetField("_path", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(location.Command));
+            var consoleAction = actions.OfType<ICommandContextItem>().Single(value => value.Command is OpenInConsoleCommand);
+            Assert.AreEqual(console.Title, consoleAction.Title);
+            Assert.AreEqual(console.RequestedShortcut, consoleAction.RequestedShortcut);
+            Assert.AreEqual(Path.GetDirectoryName(shortcutPath), typeof(OpenInConsoleCommand).GetField("_path", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(consoleAction.Command));
+            Assert.AreEqual(true, typeof(OpenInConsoleCommand).GetField("_isDirectory", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(consoleAction.Command));
+            return Task.CompletedTask;
+        });
+    }
 
     [TestMethod]
     [DataRow(false, false)]
@@ -760,7 +935,7 @@ public partial class MainListPageTests
             });
     }
 
-    private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null, Mock<IAppStateService>? appStateService = null, Mock<IAppListItemSource>? appListItemSource = null, bool appsEnabled = true)
+    private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null, Mock<IAppStateService>? appStateService = null, Mock<IAppListItemSource>? appListItemSource = null, bool appsEnabled = true, IContextMenuFactory? contextMenuFactory = null)
     {
         var settings = new SettingsModel();
         if (!appsEnabled)
@@ -783,6 +958,7 @@ public partial class MainListPageTests
         using var services = new ServiceCollection()
             .AddSingleton(TaskScheduler.Default)
             .AddSingleton(settingsService.Object)
+            .AddSingleton(contextMenuFactory ?? DefaultContextMenuFactory.Instance)
             .BuildServiceProvider();
         var source = appListItemSource ?? new Mock<IAppListItemSource>();
         if (appListItemSource is null)

@@ -350,4 +350,8 @@
   <data name="executable_name_match_mode_disabled" xml:space="preserve">
     <value>Disabled</value>
   </data>
+  <data name="shortcut_also_listed_as" xml:space="preserve">
+    <value>Also listed as {0}</value>
+    <comment>Explains that a search result uses another shortcut name for the same app. {0} is the app's preferred display name.</comment>
+  </data>
 </root>

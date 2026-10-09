@@ -104,6 +104,11 @@ internal sealed class AppCatalogItem
         var app = Payload.ToAppItem();
         app.CatalogId = Identity;
         app.MatchTerms = MatchTerms;
+        app.Shortcuts = Provenance.References
+            .Where(IsShortcutReference)
+            .Select(reference => new AppShortcut(reference.ShortcutName!, reference.ItemId))
+            .DistinctBy(shortcut => shortcut.Path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         app.ExecutableSourcePaths = Provenance.References
             .Select(reference => reference.ItemId)
             .Where(path => Path.IsPathFullyQualified(path) && PathHelpers.IsExecutablePath(path))
@@ -210,7 +215,49 @@ internal sealed class AppCatalogItem
             && Payload.Equals(other.Payload)
             && CommandIds.SequenceEqual(other.CommandIds, StringComparer.Ordinal)
             && IdentityAliases.SequenceEqual(other.IdentityAliases, StringComparer.OrdinalIgnoreCase)
+            && HasSameShortcutReferences(other)
             && HasSameMatchTerms(MatchTerms, other.MatchTerms);
+    }
+
+    private bool HasSameShortcutReferences(AppCatalogItem other)
+    {
+        var left = Provenance.References.AsSpan();
+        var right = other.Provenance.References.AsSpan();
+        var leftIndex = 0;
+        var rightIndex = 0;
+        while (true)
+        {
+            while (leftIndex < left.Length && !IsShortcutReference(left[leftIndex]))
+            {
+                leftIndex++;
+            }
+
+            while (rightIndex < right.Length && !IsShortcutReference(right[rightIndex]))
+            {
+                rightIndex++;
+            }
+
+            if (leftIndex == left.Length || rightIndex == right.Length)
+            {
+                return leftIndex == left.Length && rightIndex == right.Length;
+            }
+
+            if (!string.Equals(left[leftIndex].ItemId, right[rightIndex].ItemId, StringComparison.OrdinalIgnoreCase)
+                || !string.Equals(left[leftIndex].ShortcutName, right[rightIndex].ShortcutName, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            leftIndex++;
+            rightIndex++;
+        }
+    }
+
+    private static bool IsShortcutReference(AppCatalogSourceReference reference)
+    {
+        return !string.IsNullOrWhiteSpace(reference.ShortcutName)
+            && Path.IsPathFullyQualified(reference.ItemId)
+            && PathHelpers.IsShortcutFile(reference.ItemId);
     }
 
     private static bool HasSameMatchTerms(ImmutableArray<string> left, ImmutableArray<string> right)

@@ -196,7 +196,7 @@ public class AppCatalogCacheTests
             var item = Item("win32:cached", program, "start-menu");
             var legacyPayload = Win32AppPayload.From(program) with { Name = "Legacy name", LnkFilePath = @"C:\Links\Legacy.lnk" };
             var legacyId = new AppCommand(legacyPayload.ToAppItem()).Id;
-            item = item.MergeProvenance(new AppCatalogItem(item.Identity, 10, new AppCatalogSourceReference("start-menu", legacyPayload.LnkFilePath), [], legacyPayload));
+            item = item.MergeProvenance(new AppCatalogItem(item.Identity, 10, new AppCatalogSourceReference("start-menu", legacyPayload.LnkFilePath, "Legacy name"), [], legacyPayload));
             item = item.WithIdentity("win32:canonical-cache-identity");
             var cache = new AppCatalogCache(cachePath);
 
@@ -238,6 +238,7 @@ public class AppCatalogCacheTests
             Assert.IsFalse(app.IsPackaged);
             Assert.AreEqual(new AppCommand(item.ToAppItem()).Id, new AppCommand(app).Id);
             CollectionAssert.AreEqual(item.ToAppItem().CommandIds.ToArray(), app.CommandIds.ToArray());
+            Assert.AreEqual(new AppShortcut("Legacy name", legacyPayload.LnkFilePath), app.Shortcuts.Single(), "Shortcut presentation must survive the source-generated cache round trip.");
             var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));

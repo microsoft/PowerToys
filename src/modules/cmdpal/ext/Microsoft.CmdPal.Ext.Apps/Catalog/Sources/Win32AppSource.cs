@@ -582,10 +582,13 @@ internal sealed partial class Win32AppSource : IAppSource
 
             var identity = CreateCatalogIdentity(target.IdentityToken, program.Arguments, workingDirectory);
             var launchIdentity = CreateCatalogIdentity(LaunchTarget.FilePath(path).IdentityToken, program.Arguments, workingDirectory);
+            var shortcutName = PathHelpers.IsShortcutFile(path)
+                ? string.IsNullOrWhiteSpace(program.DisplayName) ? program.Name : program.DisplayName
+                : null;
             var item = new AppCatalogItem(
                 identity,
                 GetRepresentationPriority(program, path) + _source.Priority,
-                new AppCatalogSourceReference(_source.Id, path),
+                new AppCatalogSourceReference(_source.Id, path, shortcutName),
                 CreateMatchTerms(program, path, candidate.MatchTerms),
                 Win32AppPayload.From(program),
                 [launchIdentity]);
