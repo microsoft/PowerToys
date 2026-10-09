@@ -67,8 +67,19 @@ public sealed class ScreenshotBlurPipeline
     private readonly Dictionary<nint, ScreenshotBlurState> screens = new();
 
     public ScreenshotBlurPipeline(TimeProvider? timeProvider = null)
+        : this(timeProvider, ScreenshotBlurPipeline.CreateBlurredCopy)
+    {
+    }
+
+    /// <summary>
+    /// Test-only - lets a test substitute <paramref name="blur"/> (e.g. one that blocks until
+    /// released) so it can deterministically hold a blur "in progress" while it submits more
+    /// screenshots or changes the active screens.
+    /// </summary>
+    internal ScreenshotBlurPipeline(TimeProvider? timeProvider, Func<Bitmap, Bitmap> blur)
     {
         this.TimeProvider = timeProvider ?? TimeProvider.System;
+        this.Blur = blur ?? throw new ArgumentNullException(nameof(blur));
     }
 
     /// <summary>
@@ -78,6 +89,15 @@ public sealed class ScreenshotBlurPipeline
     /// real. Defaults to <see cref="TimeProvider.System"/> in production.
     /// </summary>
     private TimeProvider TimeProvider
+    {
+        get;
+    }
+
+    /// <summary>
+    /// Gets the function that produces a blurred copy of a screenshot - always
+    /// <see cref="CreateBlurredCopy"/> in production.
+    /// </summary>
+    private Func<Bitmap, Bitmap> Blur
     {
         get;
     }
@@ -241,8 +261,7 @@ public sealed class ScreenshotBlurPipeline
             using (ScreenshotBlurPipeline.CurrentTelemetry.BeginTimer(new { }, "CreateBlurredCopy"))
             using (image)
             {
-                blurredImage = BlurHelper.CreateBlurredCopy(
-                    image, ScreenshotBlurPipeline.BlurIntensity, ScreenshotBlurPipeline.BlurSaturation, ScreenshotBlurPipeline.BlurBrightness);
+                blurredImage = this.Blur(image);
             }
         }
         catch (Exception ex)
@@ -289,4 +308,8 @@ public sealed class ScreenshotBlurPipeline
             this.BlurCompleted?.Invoke(screenInfo);
         }
     }
+
+    private static Bitmap CreateBlurredCopy(Bitmap image)
+        => BlurHelper.CreateBlurredCopy(
+            image, ScreenshotBlurPipeline.BlurIntensity, ScreenshotBlurPipeline.BlurSaturation, ScreenshotBlurPipeline.BlurBrightness);
 }
