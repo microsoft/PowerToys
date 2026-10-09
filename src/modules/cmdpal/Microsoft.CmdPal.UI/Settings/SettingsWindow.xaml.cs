@@ -423,6 +423,9 @@ public sealed partial class SettingsWindow : WindowEx,
             case SettingsPageTags.Dock:
                 pageType = typeof(DockSettingsPage);
                 break;
+            case SettingsPageTags.Dashboard:
+                pageType = typeof(DashboardSettingsPage);
+                break;
             case SettingsPageTags.Internal:
                 pageType = typeof(InternalPage);
                 break;
@@ -1040,6 +1043,11 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             NavView.SelectedItem = DockSettingsPageNavItem;
             BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), SettingsPageTags.Dock));
+        }
+        else if (e.SourcePageType == typeof(DashboardSettingsPage))
+        {
+            NavView.SelectedItem = DashboardSettingsPageNavItem;
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DashboardPage"), SettingsPageTags.Dashboard));
         }
         else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is CommandProviderWrapper provider)
         {

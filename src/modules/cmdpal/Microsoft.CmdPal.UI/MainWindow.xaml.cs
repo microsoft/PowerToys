@@ -18,6 +18,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dashboard;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -627,6 +628,8 @@ public sealed partial class MainWindow : WindowEx,
                 && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
                 && x.DockFocusHotkey == y.DockFocusHotkey
                 && x.EnableDock == y.EnableDock
+                && x.EnableDashboard == y.EnableDashboard
+                && x.DashboardHotkey == y.DashboardHotkey
                 && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
         }
 
@@ -669,6 +672,8 @@ public sealed partial class MainWindow : WindowEx,
             hash.Add(obj.Hotkey);
             hash.Add(obj.DockFocusHotkey);
             hash.Add(obj.EnableDock);
+            hash.Add(obj.EnableDashboard);
+            hash.Add(obj.DashboardHotkey);
             hash.Add(obj.CommandHotkeys.Count);
             return hash.ToHashCode();
         }
@@ -1692,6 +1697,11 @@ public sealed partial class MainWindow : WindowEx,
             RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
         }
 
+        if (settings.EnableDashboard)
+        {
+            RegisterHotkey(settings, settings.DashboardHotkey, DashboardHotkeyIds.Toggle);
+        }
+
         foreach (var commandHotkey in settings.CommandHotkeys)
         {
             RegisterHotkey(settings, commandHotkey.Hotkey, commandHotkey.CommandId);
@@ -1734,6 +1744,13 @@ public sealed partial class MainWindow : WindowEx,
         if (DockHotkeyIds.IsDockHotkey(commandId))
         {
             WeakReferenceMessenger.Default.Send<FocusDockMessage>(new());
+            return;
+        }
+
+        // The dashboard applies its own full-screen policy, so don't run the palette's here.
+        if (DashboardHotkeyIds.IsDashboardHotkey(commandId))
+        {
+            WeakReferenceMessenger.Default.Send(new ToggleDashboardMessage(FromHotkey: true));
             return;
         }
 

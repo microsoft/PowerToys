@@ -86,4 +86,17 @@ public static class SettingsLinkIds
         public const string AutoHide = "dock-auto-hide";
         public const string Monitors = "dock-monitors";
     }
+
+    public static class Dashboard
+    {
+        public const string Page = "dashboard";
+        public const string Enabled = "dashboard-enabled";
+        public const string Shortcut = "dashboard-shortcut";
+        public const string IgnoreInFullscreen = "dashboard-ignore-fullscreen";
+        public const string DismissOnFocusLost = "dashboard-dismiss-on-focus-lost";
+        public const string AppearanceSection = "dashboard-appearance";
+        public const string Backdrop = "dashboard-backdrop";
+        public const string BackgroundOpacity = "dashboard-background-opacity";
+        public const string TilesSection = "dashboard-tiles";
+    }
 }

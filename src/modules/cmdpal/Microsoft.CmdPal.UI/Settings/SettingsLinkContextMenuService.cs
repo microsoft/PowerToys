@@ -190,6 +190,7 @@ public sealed class SettingsLinkContextMenuService
             AppearancePage => SettingsPageTags.Appearance,
             ExtensionsPage => SettingsPageTags.Extensions,
             DockSettingsPage => SettingsPageTags.Dock,
+            DashboardSettingsPage => SettingsPageTags.Dashboard,
             _ => null,
         };
 

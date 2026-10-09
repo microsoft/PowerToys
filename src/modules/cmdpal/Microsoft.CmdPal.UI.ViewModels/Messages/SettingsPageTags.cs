@@ -22,6 +22,9 @@ public static class SettingsPageTags
     /// <summary>Dock settings page.</summary>
     public const string Dock = "Dock";
 
+    /// <summary>Dashboard settings page.</summary>
+    public const string Dashboard = "Dashboard";
+
     /// <summary>Internal tools page.</summary>
     public const string Internal = "Internal";
 }

@@ -179,3 +179,4 @@ RegDisposition_OpenExisting
 REG_SAM_FLAGS
 RegQueryValueEx
 RegCloseKey
+GetWindow

@@ -11,7 +11,10 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
-    <Grid MaxHeight="560" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+    <Grid
+        x:Name="RootGrid"
+        MaxHeight="560"
+        Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
         <!--
             These transitions are deliberately Storyboards, not the Implicit Show/Hide
             composition animations that ShellPage uses. In this windowed flyout, the

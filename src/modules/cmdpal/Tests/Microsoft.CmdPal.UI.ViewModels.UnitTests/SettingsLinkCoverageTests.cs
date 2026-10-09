@@ -45,6 +45,7 @@ public class SettingsLinkCoverageTests
         new("ExtensionsPage.xaml", SettingsPageTags.Extensions),
         new("ExtensionPage.xaml", SettingsPageTags.Extensions, RequiresExtensionProvider: true),
         new("DockSettingsPage.xaml", SettingsPageTags.Dock, RequiresSectionHeaderTargets: true),
+        new("DashboardSettingsPage.xaml", SettingsPageTags.Dashboard, RequiresSectionHeaderTargets: true),
     ];
 
     [TestMethod]

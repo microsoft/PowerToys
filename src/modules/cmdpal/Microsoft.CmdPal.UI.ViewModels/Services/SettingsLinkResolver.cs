@@ -103,6 +103,16 @@ public sealed class SettingsLinkResolver : ISettingsLinkResolver
         CreateTarget(SettingsLinkIds.Dock.AlwaysOnTop, SettingsPageTags.Dock, "always-on-top"),
         CreateTarget(SettingsLinkIds.Dock.AutoHide, SettingsPageTags.Dock, "auto-hide"),
         CreateTarget(SettingsLinkIds.Dock.Monitors, SettingsPageTags.Dock, "monitors"),
+
+        new(SettingsLinkIds.Dashboard.Page, SettingsPageTags.Dashboard),
+        CreateTarget(SettingsLinkIds.Dashboard.Enabled, SettingsPageTags.Dashboard, "enabled"),
+        CreateTarget(SettingsLinkIds.Dashboard.Shortcut, SettingsPageTags.Dashboard, "shortcut"),
+        CreateTarget(SettingsLinkIds.Dashboard.IgnoreInFullscreen, SettingsPageTags.Dashboard, "ignore-fullscreen"),
+        CreateTarget(SettingsLinkIds.Dashboard.DismissOnFocusLost, SettingsPageTags.Dashboard, "dismiss-on-focus-lost"),
+        CreateTarget(SettingsLinkIds.Dashboard.AppearanceSection, SettingsPageTags.Dashboard, "appearance-section"),
+        CreateTarget(SettingsLinkIds.Dashboard.Backdrop, SettingsPageTags.Dashboard, "backdrop"),
+        CreateTarget(SettingsLinkIds.Dashboard.BackgroundOpacity, SettingsPageTags.Dashboard, "background-opacity"),
+        CreateTarget(SettingsLinkIds.Dashboard.TilesSection, SettingsPageTags.Dashboard, "tiles-section"),
     ];
 
     private readonly IReadOnlyDictionary<string, SettingsLinkDestination> _destinations;

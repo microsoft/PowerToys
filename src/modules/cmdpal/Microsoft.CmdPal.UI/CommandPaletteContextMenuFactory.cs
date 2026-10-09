@@ -126,6 +126,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 }
 
                 TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
+
+                TryAddPinToDashboardCommand(itemId, providerId, moreCommands, commandItem);
             }
         }
 
@@ -190,6 +192,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             TryAddPinToHomeCommand(itemId, providerId, commandItem, moreCommands);
 
             TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
+
+            TryAddPinToDashboardCommand(itemId, providerId, moreCommands, commandItem);
         }
 
         if (moreCommands.Count > 0)
@@ -332,6 +336,31 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         moreCommands.Add(contextItem);
     }
 
+    private void TryAddPinToDashboardCommand(
+        string itemId,
+        string providerId,
+        List<IContextItem> moreCommands,
+        CommandItemViewModel commandItem)
+    {
+        // Dashboard tiles host pages, so only pages can be pinned there.
+        if (!_settingsService.Settings.EnableDashboard || !commandItem.Command.IsPage)
+        {
+            return;
+        }
+
+        var alreadyPinned = _settingsService.Settings.DashboardSettings.IsPinned(providerId, itemId);
+        var pinToDashboardCommand = new PinToCommand(
+            commandId: itemId,
+            providerId: providerId,
+            pin: !alreadyPinned,
+            PinLocation.Dashboard,
+            _settingsService,
+            _topLevelCommandManager,
+            commandItemViewModel: commandItem);
+
+        moreCommands.Add(new PinToContextItem(pinToDashboardCommand, commandItem));
+    }
+
     internal static bool MatchesBand(DockBandSettings bandSettings, string commandId, string providerId)
     {
         return bandSettings.CommandId == commandId &&
@@ -342,6 +371,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     {
         TopLevel,
         Dock,
+        Dashboard,
     }
 
     private sealed partial class PinToContextItem : CommandContextItem
@@ -434,13 +464,17 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly PinLocation _pinLocation;
         private readonly CommandItemViewModel? _commandItemViewModel;
 
-        private bool IsPinToDock => _pinLocation == PinLocation.Dock;
-
         public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
 
-        public override string Name => _pin ?
-            (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_pin_command_name")) :
-            (IsPinToDock ? RS_.GetString("dock_unpin_command_name") : RS_.GetString("top_level_unpin_command_name"));
+        public override string Name => (_pinLocation, _pin) switch
+        {
+            (PinLocation.Dock, true) => RS_.GetString("dock_pin_command_name"),
+            (PinLocation.Dock, false) => RS_.GetString("dock_unpin_command_name"),
+            (PinLocation.Dashboard, true) => RS_.GetString("dashboard_pin_command_name"),
+            (PinLocation.Dashboard, false) => RS_.GetString("dashboard_unpin_command_name"),
+            (_, true) => RS_.GetString("top_level_pin_command_name"),
+            (_, false) => RS_.GetString("top_level_unpin_command_name"),
+        };
 
         internal event EventHandler? PinStateChanged;
 
@@ -478,6 +512,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                     case PinLocation.Dock:
                         PinToDock();
                         break;
+
+                    case PinLocation.Dashboard:
+                        _settingsService.UpdateSettings(s => s with { DashboardSettings = s.DashboardSettings.WithTilePinned(_providerId, _commandId) });
+                        break;
                 }
             }
             else
@@ -490,6 +528,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
                     case PinLocation.Dock:
                         UnpinFromDock();
+                        break;
+
+                    case PinLocation.Dashboard:
+                        _settingsService.UpdateSettings(s => s with { DashboardSettings = s.DashboardSettings.WithTileUnpinned(_providerId, _commandId) });
                         break;
                 }
             }
