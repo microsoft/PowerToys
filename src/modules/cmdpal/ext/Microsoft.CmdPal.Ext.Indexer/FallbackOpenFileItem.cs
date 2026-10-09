@@ -9,7 +9,6 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CmdPal.Ext.Indexer.Indexer;
@@ -17,7 +16,6 @@ using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
@@ -102,8 +100,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
         var indexerListItem = new IndexerListItem(item, IncludeBrowseCommand.AsDefault);
 
         ct.ThrowIfCancellationRequested();
-        UpdateResultForCurrentQuery(indexerListItem, skipIcon: true, ct);
-        _ = LoadIconAsync(item.FullPath, ct);
+        UpdateResultForCurrentQuery(indexerListItem, ct);
     }
 
     private void ProcessSearchQuery(string query, CancellationToken ct)
@@ -120,7 +117,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
             ct.ThrowIfCancellationRequested();
 
             // We only need to know whether there are 0, 1, or more than one result
-            var results = searchEngine.FetchItems(0, 2, queryCookie: HardQueryCookie, out _, out var notice, noIcons: true);
+            var results = searchEngine.FetchItems(0, 2, queryCookie: HardQueryCookie, out _, out var notice);
             var count = results.Count;
 
             if (count == 0)
@@ -138,8 +135,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
             {
                 if (results[0] is IndexerListItem indexerListItem)
                 {
-                    UpdateResultForCurrentQuery(indexerListItem, skipIcon: true, ct);
-                    _ = LoadIconAsync(indexerListItem.FilePath, ct);
+                    UpdateResultForCurrentQuery(indexerListItem, ct);
                 }
                 else
                 {
@@ -157,7 +153,6 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
                     indexerPage,
                     MoreCommands,
                     DataPackage,
-                    skipIcon: false,
                     ct);
 
                 if (!set)
@@ -173,38 +168,12 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
         }
     }
 
-    private async Task LoadIconAsync(string path, CancellationToken ct)
-    {
-        try
-        {
-            var stream = await ThumbnailHelper.GetThumbnail(path).ConfigureAwait(false);
-            if (stream is null || ct.IsCancellationRequested)
-            {
-                return;
-            }
-
-            var thumbnailStream = RandomAccessStreamReference.CreateFromStream(stream);
-            if (ct.IsCancellationRequested)
-            {
-                return;
-            }
-
-            var data = new IconData(thumbnailStream);
-            UpdateIconForCurrentQuery(new IconInfo(data), ct);
-        }
-        catch
-        {
-            // ignore - keep default icon
-            UpdateIconForCurrentQuery(Icons.FileExplorerIcon, ct);
-        }
-    }
-
     private bool ClearResultForCurrentQuery(CancellationToken ct)
     {
-        return UpdateResultForCurrentQuery(string.Empty, string.Empty, Icons.FileExplorerIcon, BaseCommandWithId, null, null, false, ct);
+        return UpdateResultForCurrentQuery(string.Empty, string.Empty, Icons.FileExplorerIcon, BaseCommandWithId, null, null, ct);
     }
 
-    private bool UpdateResultForCurrentQuery(IndexerListItem listItem, bool skipIcon, CancellationToken ct)
+    private bool UpdateResultForCurrentQuery(IndexerListItem listItem, CancellationToken ct)
     {
         return UpdateResultForCurrentQuery(
             listItem.Title,
@@ -213,11 +182,10 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
             listItem.Command,
             listItem.MoreCommands,
             DataPackageHelper.CreateDataPackageForPath(listItem, listItem.FilePath),
-            skipIcon,
             ct);
     }
 
-    private bool UpdateResultForCurrentQuery(string title, string subtitle, IIconInfo? iconInfo, ICommand? command, IContextItem[]? moreCommands, DataPackage? dataPackage, bool skipIcon, CancellationToken ct)
+    private bool UpdateResultForCurrentQuery(string title, string subtitle, IIconInfo? iconInfo, ICommand? command, IContextItem[]? moreCommands, DataPackage? dataPackage, CancellationToken ct)
     {
         lock (_resultLock)
         {
@@ -228,10 +196,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
 
             Title = title;
             Subtitle = subtitle;
-            if (!skipIcon)
-            {
-                Icon = iconInfo!;
-            }
+            Icon = iconInfo ?? Icons.FileExplorerIcon;
 
             MoreCommands = moreCommands!;
             DataPackage = dataPackage;
@@ -253,7 +218,6 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
                 new CommandContextItem(new OpenUrlCommand("ms-settings:search") { Name = Resources.Indexer_Command_OpenIndexerSettings! }),
             ],
             null,
-            skipIcon: false,
             ct);
 
         if (!set)
@@ -267,19 +231,6 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
     internal static (string Title, string Subtitle) GetFallbackNoticeText(SearchNoticeInfo notice)
     {
         return (Resources.IndexerCommandsProvider_DisplayName!, notice.Title);
-    }
-
-    private void UpdateIconForCurrentQuery(IIconInfo icon, CancellationToken ct)
-    {
-        lock (_resultLock)
-        {
-            if (ct.IsCancellationRequested)
-            {
-                return;
-            }
-
-            Icon = icon;
-        }
     }
 
     public void Dispose()

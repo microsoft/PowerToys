@@ -48,6 +48,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.Repair_Fail | Triggered when the PowerToys repair operation fails to complete successfully due to an error. |
 | Microsoft.PowerToys.Runner_Launch | Indicates when the PowerToys Runner is launched. |
 | Microsoft.PowerToys.ScoobeStartedEvent | Triggered when SCOOBE (Secondary Out-of-box experience) starts. |
+| Microsoft.PowerToys.Settings_CLICommand | Triggered when the Settings CLI is invoked, logging only a fixed command category and success status. Module names, settings values, and other arguments are not collected. |
 | Microsoft.PowerToys.SettingsBootEvent | Triggered when PowerToys settings are initialized at startup. |
 | Microsoft.PowerToys.SettingsEnabledEvent | Indicates that the PowerToys settings have been enabled. |
 | Microsoft.PowerToys.ShortcutConflictControlClickedEvent | Triggered when a user clicks on the Shortcut Conflict Control button in the PowerToys Settings UI Dashboard. |
@@ -213,6 +214,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.FileLocksmith_Invoked | Occurs when File Locksmith is invoked. |
 | Microsoft.PowerToys.FileLocksmith_InvokedRet | Triggered when File Locksmith invocation returns a result. |
 | Microsoft.PowerToys.FileLocksmith_QueryContextMenuError | Occurs when there is an error querying the context menu for File Locksmith. |
+| Microsoft.PowerToys.FileLocksmith_ServicingWindowInitialization | Records the HRESULT result of initializing the servicing window for the packaged File Locksmith context-menu surrogate. |
 | Microsoft.PowerToys.FileLocksmith_CLICommand | Triggered when a File Locksmith CLI command is executed, logging the operation mode (query, kill, query-wait, query-json, or help) and success status. |
 
 ### FileExplorerAddOns
@@ -275,6 +277,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.ImageResizer_Invoked | Occurs when Image Resizer is invoked by the user. |
 | Microsoft.PowerToys.ImageResizer_InvokedRet | Fires when the Image Resizer operation is completed and returns a result. |
 | Microsoft.PowerToys.ImageResizer_QueryContextMenuError | Triggered when there is an error querying the context menu for Image Resizer. |
+| Microsoft.PowerToys.ImageResizer_ServicingWindowInitialization | Records the HRESULT result of initializing the servicing window for the packaged Image Resizer context-menu surrogate. |
 | Microsoft.PowerToys.ImageResizer_CLICommand | Triggered when an Image Resizer CLI command is executed, logging the command name and success status. |
 
 ### Keyboard Manager
@@ -312,6 +315,12 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.LightSwitch_ScheduleModeToggled | Occurs when a new schedule mode is selected for Light Switch. |
 | Microsoft.PowerToys.LightSwitch_ShortcutInvoked | Occurs when the shortcut for Light Switch is invoked. |
 | Microsoft.PowerToys.LightSwitch_ThemeTargetChanged | Occurs when the options for targeting the system or apps is updated. |
+
+### Mouse Button Lock
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.MouseButtonLock_EnableMouseButtonLock | Triggered when Mouse Button Lock is enabled or disabled. |
 
 ### Mouse Highlighter
 
@@ -363,6 +372,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.NewPlus_EventOpenTemplates | Triggered when the templates folder is opened. |
 | Microsoft.PowerToys.NewPlus_EventShowTemplateItems | Triggered when the New+ context menu flyout is displayed. |
 | Microsoft.PowerToys.NewPlus_EventToggleOnOff | Triggered when New+ is enabled or disabled. |
+| Microsoft.PowerToys.NewPlus_ServicingWindowInitialization | Records the HRESULT result of initializing the servicing window for the packaged New+ context-menu surrogate. |
 
 ### Peek
 
@@ -394,6 +404,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.PowerRename_Invoked | Occurs when PowerRename is invoked. |
 | Microsoft.PowerToys.PowerRename_InvokedRet | Triggered when the invocation of PowerRename returns a result. |
 | Microsoft.PowerToys.PowerRename_RenameOperation | Triggered during the rename operation within PowerRename. |
+| Microsoft.PowerToys.PowerRename_ServicingWindowInitialization | Records the HRESULT result of initializing the servicing window for the packaged PowerRename context-menu surrogate. |
 | Microsoft.PowerToys.PowerRename_SettingsChanged | Occurs when the settings for PowerRename are changed. |
 | Microsoft.PowerToys.PowerRename_UIShownRet | Triggered when the PowerRename user interface is shown. |
 

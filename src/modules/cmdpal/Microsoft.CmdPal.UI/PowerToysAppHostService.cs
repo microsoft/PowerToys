@@ -17,23 +17,19 @@ internal sealed class PowerToysAppHostService : IAppHostService
 
     public AppExtensionHost GetHostForCommand(object? context, AppExtensionHost? currentHost)
     {
-        AppExtensionHost? topLevelHost = null;
-        if (context is TopLevelViewModel topLevelViewModel)
-        {
-            topLevelHost = topLevelViewModel.ExtensionHost;
-        }
+        var contextProvidedHost = (context as ICommandContextSource)?.ExtensionHost;
 
-        return topLevelHost ?? currentHost ?? CommandPaletteHost.Instance;
+        return contextProvidedHost
+               ?? currentHost
+               ?? CommandPaletteHost.Instance;
     }
 
     public ICommandProviderContext GetProviderContextForCommand(object? command, ICommandProviderContext? currentContext)
     {
-        ICommandProviderContext? topLevelId = null;
-        if (command is TopLevelViewModel topLevelViewModel)
-        {
-            topLevelId = topLevelViewModel.ProviderContext;
-        }
+        var contextProvidedProviderContext = (command as ICommandContextSource)?.ProviderContext;
 
-        return topLevelId ?? currentContext ?? throw new InvalidOperationException("No command provider context could be found for the given command, and no current context was provided.");
+        return contextProvidedProviderContext
+               ?? currentContext
+               ?? throw new InvalidOperationException("No command provider context could be found for the given command, and no current context was provided.");
     }
 }

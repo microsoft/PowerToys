@@ -3,38 +3,49 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContextMenuViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>
+public partial class ContextMenuViewModel : ObservableObject
 {
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+    private readonly List<(IContextMenuContext Context, IReadOnlyList<IContextItemViewModel> Commands)> _contextMenuStack = [];
+    private readonly ContextMenuBackItemViewModel _backItem = new();
 
-    private IReadOnlyList<IContextItemViewModel>? _rootCommands;
+    public IContextMenuContext? SelectedItem { get; private set; }
 
-    public IContextMenuContext? SelectedItem
-    {
-        get => field;
-        set
-        {
-            field = value;
-            UpdateContextItems();
-        }
-    }
+    public IContextMenuContext? CurrentContext => _contextMenuStack.LastOrDefault().Context;
+
+    public bool IsSubmenu => _contextMenuStack.Count > 1;
+
+    public string CurrentMenuTitle => IsSubmenu && CurrentContext is CommandItemViewModel command ? command.Title : string.Empty;
 
     [ObservableProperty]
-    private partial ObservableCollection<List<IContextItemViewModel>> ContextMenuStack { get; set; } = [];
+    public partial bool HasSubmenuItems { get; private set; }
 
-    private List<IContextItemViewModel>? CurrentContextMenu => ContextMenuStack.LastOrDefault();
+    private IReadOnlyList<IContextItemViewModel>? CurrentContextMenu => _contextMenuStack.LastOrDefault().Commands;
+
+    public CommandItemViewModel? SecondaryCommand
+    {
+        get
+        {
+            var (context, commands) = _contextMenuStack.LastOrDefault();
+            var secondary = (context as ICommandBarContext)?.SecondaryCommand;
+
+            // Names can change action roles without replacing the displayed rows.
+            // A replacement command is usable only once its row is in this menu.
+            return secondary is not null && commands.Any(command => ReferenceEquals(command, secondary)) ? secondary : null;
+        }
+    }
 
     [ObservableProperty]
     public partial ObservableCollection<IContextItemViewModel> FilteredItems { get; set; } = [];
@@ -49,80 +60,145 @@ public partial class ContextMenuViewModel : ObservableObject,
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
     }
 
-    public void HookCommandBar()
+    public void PrepareForOpen(IContextMenuContext context, CommandContextItemViewModel? initialSubmenu = null)
     {
-        var messenger = WeakReferenceMessenger.Default;
-        if (!messenger.IsRegistered<UpdateCommandBarMessage>(this))
+        Close();
+        SelectedItem = context;
+        PushContextStack(context);
+        if (initialSubmenu?.HasSubmenu == true && context.AllCommands.Contains(initialSubmenu))
         {
-            messenger.Register<UpdateCommandBarMessage>(this);
+            PushContextStack(initialSubmenu);
         }
+
+        RefreshCurrentLevel(resetSearch: true);
     }
 
-    public void UnhookCommandBar()
+    public void Close()
     {
-        WeakReferenceMessenger.Default.Unregister<UpdateCommandBarMessage>(this);
+        while (_contextMenuStack.Count > 0)
+        {
+            RemoveLastContext();
+        }
+
+        SelectedItem = null;
+        _lastSearchText = string.Empty;
+        UpdateFilteredItems();
+        OnPropertyChanged(nameof(IsSubmenu));
+        OnPropertyChanged(nameof(CurrentMenuTitle));
     }
 
-    public void Receive(UpdateCommandBarMessage message)
+    private void Context_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        // Property changes can send multiple updates for the same published menu.
-        // Explicit selection assignments and resets still refresh the menu.
-        if (ReferenceEquals(SelectedItem, message.ViewModel) &&
-            ReferenceEquals(_rootCommands, message.ViewModel?.AllCommands))
+        if (e.PropertyName == nameof(CommandItemViewModel.Title) && ReferenceEquals(sender, CurrentContext))
+        {
+            OnPropertyChanged(nameof(CurrentMenuTitle));
+        }
+
+        if (e.PropertyName != nameof(IContextMenuContext.AllCommands))
         {
             return;
         }
 
-        SelectedItem = message.ViewModel;
+        var index = _contextMenuStack.FindIndex(level => ReferenceEquals(level.Context, sender));
+        if (index < 0)
+        {
+            return;
+        }
+
+        RefreshContextSnapshot(index);
+
+        var stackChanged = false;
+        for (var i = 1; i < _contextMenuStack.Count; i++)
+        {
+            if (_contextMenuStack[i].Context is CommandContextItemViewModel submenu &&
+                (!submenu.HasSubmenu || !_contextMenuStack[i - 1].Commands.Contains(submenu)))
+            {
+                while (_contextMenuStack.Count > i)
+                {
+                    RemoveLastContext();
+                }
+
+                stackChanged = true;
+                break;
+            }
+        }
+
+        if (stackChanged || index == _contextMenuStack.Count - 1)
+        {
+            RefreshCurrentLevel(resetSearch: stackChanged);
+        }
     }
 
-    public void UpdateContextItems()
+    private void RefreshContextSnapshot(int index)
     {
-        _rootCommands = SelectedItem?.AllCommands;
-        ContextMenuStack.Clear();
-        if (_rootCommands is not null)
+        var (context, commands) = _contextMenuStack[index];
+        var updatedCommands = context.AllCommands;
+        if (!ReferenceEquals(commands, updatedCommands))
         {
-            PushContextStack(_rootCommands);
-        }
-        else
-        {
-            FilteredItems.Clear();
+            ClearDefaultShortcuts(commands);
+            _contextMenuStack[index] = (context, updatedCommands);
         }
     }
 
     public void SetSearchText(string searchText)
     {
-        if (searchText == _lastSearchText)
-        {
-            return;
-        }
-
-        if (SelectedItem is null)
+        if (searchText == _lastSearchText || SelectedItem is null)
         {
             return;
         }
 
         _lastSearchText = searchText;
+        UpdateFilteredItems();
+    }
 
-        if (CurrentContextMenu is null)
+    private void UpdateFilteredItems()
+    {
+        foreach (var command in FilteredItems.OfType<CommandContextItemViewModel>())
         {
-            ListHelpers.InPlaceUpdateList(FilteredItems, []);
-            return;
+            command.PropertyChanged -= MenuItem_PropertyChanged;
         }
 
-        if (string.IsNullOrEmpty(searchText))
+        IReadOnlyList<IContextItemViewModel> items = CurrentContextMenu ?? [];
+        if (!string.IsNullOrEmpty(_lastSearchText))
         {
-            ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu);
-            return;
+            var commands = items.OfType<CommandContextItemViewModel>().Where(command => command.ShouldBeVisible);
+            var query = _fuzzyMatcherProvider.Current.PrecomputeQuery(_lastSearchText);
+            items = InternalListHelpers.FilterList(commands, in query, ScoreFunction);
         }
 
-        var commands = CurrentContextMenu
-                            .OfType<CommandContextItemViewModel>()
-                            .Where(c => c.ShouldBeVisible);
+        ListHelpers.InPlaceUpdateList(FilteredItems, IsSubmenu ? [_backItem, .. items] : items);
+        foreach (var command in FilteredItems.OfType<CommandContextItemViewModel>())
+        {
+            command.PropertyChanged += MenuItem_PropertyChanged;
+        }
 
-        var query = _fuzzyMatcherProvider.Current.PrecomputeQuery(searchText);
-        var newResults = InternalListHelpers.FilterList(commands, in query, ScoreFunction);
-        ListHelpers.InPlaceUpdateList(FilteredItems, newResults);
+        UpdateHasSubmenuItems();
+    }
+
+    private void UpdateHasSubmenuItems() =>
+        HasSubmenuItems = FilteredItems.OfType<CommandContextItemViewModel>().Any(command => command.HasSubmenu);
+
+    private void MenuItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CommandItemViewModel.HasSubmenu))
+        {
+            UpdateHasSubmenuItems();
+        }
+    }
+
+    public int GetNextItemIndex(int currentIndex, bool forward)
+    {
+        for (var i = 0; i < FilteredItems.Count; i++)
+        {
+            currentIndex = forward ? (currentIndex + 1) % FilteredItems.Count :
+                currentIndex <= 0 ? FilteredItems.Count - 1 : currentIndex - 1;
+            if (FilteredItems[currentIndex] is CommandContextItemViewModel or ContextMenuBackItemViewModel)
+            {
+                return currentIndex;
+            }
+        }
+
+        return -1;
     }
 
     private int ScoreFunction(in FuzzyQuery query, CommandContextItemViewModel item)
@@ -154,56 +230,75 @@ public partial class ContextMenuViewModel : ObservableObject,
         return m > c ? m : c;
     }
 
-    public ContextKeybindingResult? CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
-    {
-        var keybindings = IContextMenuContext.CreateKeybindings(CurrentContextMenu);
+    public CommandContextItemViewModel? FindKeybinding(KeyChord chord) =>
+        IContextMenuContext.FindKeybinding(CurrentContextMenu, chord);
 
-        // Does the pressed key match any of the keybindings?
-        var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-        return keybindings.TryGetValue(pressedKeyChord, out var item) ? InvokeCommand(item) : null;
-    }
-
-    public bool CanPopContextStack()
-    {
-        return ContextMenuStack.Count > 1;
-    }
+    public bool CanPopContextStack() => IsSubmenu;
 
     public void PopContextStack()
     {
-        if (ContextMenuStack.Count > 1)
+        if (CanPopContextStack())
         {
-            ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
+            RemoveLastContext();
+            RefreshCurrentLevel(resetSearch: true);
         }
-
-        OnPropertyChanging(nameof(CurrentContextMenu));
-        OnPropertyChanged(nameof(CurrentContextMenu));
-
-        ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu!);
     }
 
-    private void PushContextStack(IEnumerable<IContextItemViewModel> commands)
+    private void PushContextStack(IContextMenuContext context)
     {
-        ContextMenuStack.Add(commands.ToList());
-        OnPropertyChanging(nameof(CurrentContextMenu));
-        OnPropertyChanged(nameof(CurrentContextMenu));
-
-        ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu!);
+        ClearDefaultShortcuts(CurrentContextMenu);
+        _contextMenuStack.Add((context, context.AllCommands));
+        context.PropertyChanged += Context_PropertyChanged;
     }
 
-    public void ResetContextMenu()
+    private void RemoveLastContext()
     {
-        while (ContextMenuStack.Count > 1)
+        var (context, commands) = _contextMenuStack[^1];
+        context.PropertyChanged -= Context_PropertyChanged;
+        ClearDefaultShortcuts(commands);
+        _contextMenuStack.RemoveAt(_contextMenuStack.Count - 1);
+    }
+
+    private static void ClearDefaultShortcuts(IReadOnlyList<IContextItemViewModel>? commands)
+    {
+        if (commands is null)
         {
-            ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
+            return;
         }
 
-        OnPropertyChanging(nameof(CurrentContextMenu));
-        OnPropertyChanged(nameof(CurrentContextMenu));
-
-        if (CurrentContextMenu is not null)
+        foreach (var command in commands.OfType<CommandContextItemViewModel>())
         {
-            ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu!);
+            command.SetDefaultShortcut(DefaultShortcutRole.None);
         }
+    }
+
+    private void RefreshCurrentLevel(bool resetSearch)
+    {
+        RefreshContextSnapshot(_contextMenuStack.Count - 1);
+        var (context, commands) = _contextMenuStack[^1];
+        var primary = context switch
+        {
+            CommandItemViewModel item => item.PrimaryMenuItem,
+            ICommandBarContext commandContext => commandContext.PrimaryCommand as CommandContextItemViewModel,
+            _ => null,
+        };
+        var secondary = SecondaryCommand;
+        foreach (var command in commands.OfType<CommandContextItemViewModel>())
+        {
+            var role = ReferenceEquals(command, primary) ? DefaultShortcutRole.Primary :
+                ReferenceEquals(command, secondary) ? DefaultShortcutRole.Secondary : DefaultShortcutRole.None;
+            command.SetDefaultShortcut(role);
+        }
+
+        if (resetSearch)
+        {
+            _lastSearchText = string.Empty;
+        }
+
+        UpdateFilteredItems();
+        OnPropertyChanged(nameof(IsSubmenu));
+        OnPropertyChanged(nameof(CurrentMenuTitle));
+        OnPropertyChanged(resetSearch ? nameof(CurrentContext) : nameof(FilteredItems));
     }
 
     /// <summary>
@@ -220,29 +315,31 @@ public partial class ContextMenuViewModel : ObservableObject,
     /// </summary>
     public event EventHandler<PerformCommandMessage>? CommandInvoking;
 
-    public ContextKeybindingResult InvokeCommand(CommandItemViewModel? command)
+    public ContextKeybindingResult InvokeCommand(CommandItemViewModel? command, bool navigateSubmenus = true)
     {
         if (command is null)
         {
             return ContextKeybindingResult.Unhandled;
         }
 
-        if (command.HasSubmenu)
+        if (navigateSubmenus && command.HasSubmenu)
         {
-            // Display the commands child commands
-            PushContextStack(command.AllCommands);
-            OnPropertyChanging(nameof(FilteredItems));
-            OnPropertyChanged(nameof(FilteredItems));
+            PushContextStack(command);
+            RefreshCurrentLevel(resetSearch: true);
             return ContextKeybindingResult.KeepOpen;
         }
-        else
-        {
-            var message = new PerformCommandMessage(command.Command.Model, command.Model);
-            CommandInvoking?.Invoke(this, message);
-            WeakReferenceMessenger.Default.Send(message);
-            UpdateContextItems();
-            CommandInvoked?.Invoke(this, command);
-            return ContextKeybindingResult.Hide;
-        }
+
+        var message = new PerformCommandMessage(command);
+        CommandInvoking?.Invoke(this, message);
+        WeakReferenceMessenger.Default.Send(message);
+        CommandInvoked?.Invoke(this, command);
+        return ContextKeybindingResult.Hide;
     }
+}
+
+public enum ContextKeybindingResult
+{
+    Unhandled,
+    Hide,
+    KeepOpen,
 }
