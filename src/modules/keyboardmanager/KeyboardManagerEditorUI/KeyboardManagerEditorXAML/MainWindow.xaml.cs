@@ -31,7 +31,6 @@ namespace KeyboardManagerEditorUI
         public MainWindow()
         {
             this.InitializeComponent();
-            EngineSuspendHelper.Acquire();
             SetTitleBar();
             this.Activated += MainWindow_Activated;
             this.Closed += MainWindow_Closed;
