@@ -39,6 +39,12 @@ namespace KeyboardManagerEditorUI
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             // Initialize the logger synchronously, before anything else can log. Doing this on a
             // background task races window creation, so a failure during startup leaves no trace
             // at all - which is exactly what happened in #49399.
