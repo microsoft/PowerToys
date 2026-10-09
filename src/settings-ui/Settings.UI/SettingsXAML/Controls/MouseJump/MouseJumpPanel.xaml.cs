@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using MouseJump.Common.Helpers;
 using MouseJump.Models.Settings;
 
-namespace Microsoft.PowerToys.Settings.UI.Panels
+namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class MouseJumpPanel : UserControl
     {

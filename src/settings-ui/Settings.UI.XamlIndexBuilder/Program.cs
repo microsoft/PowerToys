@@ -98,7 +98,7 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
                 }
 
                 // Scan well-known subdirectories under the provided root
-                var subDirs = new[] { "Views", "Panels" };
+                var subDirs = new[] { "Views", "Controls" };
                 foreach (var sub in subDirs)
                 {
                     ScanDirectory(Path.Combine(xamlRootDirectory, sub));
