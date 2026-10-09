@@ -68,9 +68,9 @@ NULLCURSOR              CURSOR                  "cursor1.cur"
 // remains consistent on all systems.
 APPICON                 ICON                    "appicon.ico"
 
-IDR_WHISPER_MODEL_0     RCDATA                  "third_party\\whisper\\model\\ggml-small.en-q5_1.part0.bin"
-IDR_WHISPER_MODEL_1     RCDATA                  "third_party\\whisper\\model\\ggml-small.en-q5_1.part1.bin"
-IDR_WHISPER_MODEL_2     RCDATA                  "third_party\\whisper\\model\\ggml-small.en-q5_1.part2.bin"
+IDR_WHISPER_MODEL_0     RCDATA                  "third_party\\whisper\\model\\ggml-base.en-q5_1.part0.bin"
+IDR_WHISPER_MODEL_1     RCDATA                  "third_party\\whisper\\model\\ggml-base.en-q5_1.part1.bin"
+IDR_WHISPER_MODEL_2     RCDATA                  "third_party\\whisper\\model\\ggml-base.en-q5_1.part2.bin"
 
 
 /////////////////////////////////////////////////////////////////////////////

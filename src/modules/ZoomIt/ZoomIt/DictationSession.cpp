@@ -7,7 +7,7 @@
 //
 // Two engines are used, in preference order:
 //
-//   * whisper.cpp with an embedded quantized small.en model. It runs entirely
+//   * whisper.cpp with an embedded quantized base.en model. It runs entirely
 //     in process, needs no package identity or network service, and records
 //     directly from the microphone selected on ZoomIt's Record page.
 //
@@ -632,9 +632,9 @@ std::wstring DictationSession::Stop(
     PostCommand( Command::Stop );
 
     std::unique_lock<std::mutex> lock( m_lock );
-    // CPU-only small.en inference can exceed ten seconds on native ARM64 even
-    // for a short utterance. Keep the wait bounded, but allow enough time for
-    // the embedded model to return a useful transcript on supported hardware.
+    // CPU-only inference can take several seconds and varies significantly by
+    // hardware. Keep the wait bounded, but allow enough time for the embedded
+    // model to return a useful transcript on supported hardware.
     const DWORD waitMilliseconds =
         waitForWhisper ? std::max<DWORD>( graceMilliseconds, 20000 ) : graceMilliseconds;
     const auto waitResult = WaitForDictationFinalization(

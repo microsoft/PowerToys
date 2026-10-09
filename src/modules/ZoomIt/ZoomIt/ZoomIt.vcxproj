@@ -596,9 +596,9 @@
     <None Include="packages.config" />
     <None Include="third_party\whisper\LICENSE" />
     <None Include="third_party\whisper\README.zoomit.md" />
-    <None Include="third_party\whisper\model\ggml-small.en-q5_1.part0.bin" />
-    <None Include="third_party\whisper\model\ggml-small.en-q5_1.part1.bin" />
-    <None Include="third_party\whisper\model\ggml-small.en-q5_1.part2.bin" />
+    <None Include="third_party\whisper\model\ggml-base.en-q5_1.part0.bin" />
+    <None Include="third_party\whisper\model\ggml-base.en-q5_1.part1.bin" />
+    <None Include="third_party\whisper\model\ggml-base.en-q5_1.part2.bin" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="binres.rc">

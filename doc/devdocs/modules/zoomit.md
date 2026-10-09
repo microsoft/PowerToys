@@ -208,8 +208,8 @@ bit 30 of `lParam`.
 `DictationSession` tries two engines and silently falls back, which is what lets the
 feature work with no setup at all:
 
-1. `whisper.cpp` with a quantized English `small.en` model. The model is split into three
-   source files below GitHub's per-file limit and linked as `RCDATA`; the runtime loader
+1. `whisper.cpp` with a quantized English `base.en` model. The model is split into three
+   source files below GitHub's per-file warning threshold and linked as `RCDATA`; the runtime loader
    presents those resources as one contiguous model stream without extracting anything to
    disk. Recognition is offline and works identically in packaged PowerToys and standalone
    ZoomIt.
@@ -219,10 +219,11 @@ feature work with no setup at all:
 
 #### Recognition accuracy
 
-ZoomIt embeds `ggml-small.en-q5_1.bin` (190,098,681 bytes), whose SHA-256 is
-`bfdff4894dcb76bbf647d56263ea2a96645423f1669176f4844a1bf8e478ad30`. The quantized
-`small.en` model is substantially more accurate than the legacy Windows Speech Recognizer
-8.0 used by SAPI while remaining practical for short, CPU-only utterances.
+ZoomIt embeds `ggml-base.en-q5_1.bin` (59,721,011 bytes), whose SHA-256 is
+`4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f`. The quantized
+`base.en` model is substantially more accurate than the legacy Windows Speech Recognizer
+8.0 used by SAPI while reducing the embedded model and inference working set compared with
+`small.en`.
 
 `Prewarm` loads the model on the dictation worker while the user begins selecting the snip.
 Audio is captured during the drag, converted to mono floating-point PCM, resampled to
