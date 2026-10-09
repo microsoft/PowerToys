@@ -140,6 +140,41 @@ namespace
         return value;
     }
 
+    std::string ResolveWhisperLanguage( LANGID displayLanguage )
+    {
+        wchar_t locale[LOCALE_NAME_MAX_LENGTH]{};
+        wchar_t languageCode[16]{};
+        std::string language = "auto";
+        if( LCIDToLocaleName( MAKELCID( displayLanguage, SORT_DEFAULT ),
+                             locale, ARRAYSIZE( locale ), 0 ) == 0 ||
+            GetLocaleInfoEx( locale, LOCALE_SISO639LANGNAME,
+                             languageCode, ARRAYSIZE( languageCode ) ) == 0 )
+        {
+            OutputDebug( L"[Dictation] Windows display language lookup failed err=%lu; detecting language automatically\n",
+                         GetLastError() );
+        }
+        else
+        {
+            std::string candidate;
+            for( const wchar_t character : std::wstring( languageCode ) )
+            {
+                candidate += static_cast<char>( character );
+            }
+            if( whisper_lang_id( candidate.c_str() ) >= 0 )
+            {
+                language = candidate;
+            }
+            else
+            {
+                OutputDebug( L"[Dictation] Windows display language %s is unsupported; detecting language automatically\n",
+                             locale );
+            }
+        }
+        OutputDebug( L"[Dictation] Recognition language=%hs Windows display language=%s\n",
+                     language.c_str(), locale );
+        return language;
+    }
+
     HRESULT ResolveCaptureDevice( IMMDeviceEnumerator* enumerator, IMMDevice** result )
     {
         *result = nullptr;
@@ -644,9 +679,10 @@ std::wstring WhisperRecognizer::Stop(
     }
 
     auto parameters = whisper_full_default_params( WHISPER_SAMPLING_GREEDY );
+    const std::string language = ResolveWhisperLanguage( GetUserDefaultUILanguage() );
     const unsigned int processors = (std::max)( 1u, std::thread::hardware_concurrency() );
     parameters.n_threads = static_cast<int>( (std::min)( 8u, processors ) );
-    parameters.language = "en";
+    parameters.language = language.c_str();
     parameters.translate = false;
     parameters.no_context = true;
     parameters.no_timestamps = true;

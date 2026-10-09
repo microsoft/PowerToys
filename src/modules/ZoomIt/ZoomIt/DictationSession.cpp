@@ -7,7 +7,7 @@
 //
 // Two engines are used, in preference order:
 //
-//   * whisper.cpp with an embedded quantized base.en model. It runs entirely
+//   * whisper.cpp with an embedded quantized base model. It runs entirely
 //     in process, needs no package identity or network service, and records
 //     directly from the microphone selected on ZoomIt's Record page.
 //

@@ -208,22 +208,24 @@ bit 30 of `lParam`.
 `DictationSession` tries two engines and silently falls back, which is what lets the
 feature work with no setup at all:
 
-1. `whisper.cpp` with a quantized English `base.en` model. The model is split into three
+1. `whisper.cpp` with a quantized multilingual `base` model. The model is split into three
    source files below GitHub's per-file warning threshold and linked as `RCDATA`; the runtime loader
    presents those resources as one contiguous model stream without extracting anything to
    disk. Recognition is offline and works identically in packaged PowerToys and standalone
-   ZoomIt.
+   ZoomIt. Recognition uses the current user's Windows display language, reduced to
+   its ISO language code (for example, `de-DE` becomes `de`). If Windows language
+   lookup fails or Whisper does not support that language, a diagnostic is logged
+   and automatic language detection is used. Transcription is not translated.
 2. SAPI (`CLSID_SpInprocRecognizer`) with a dictation grammar. Entirely on device, needs no
    privacy consent or package identity, and remains available if the embedded model or
    Whisper capture path cannot initialize.
 
 #### Recognition accuracy
 
-ZoomIt embeds `ggml-base.en-q5_1.bin` (59,721,011 bytes), whose SHA-256 is
-`4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f`. The quantized
-`base.en` model is substantially more accurate than the legacy Windows Speech Recognizer
-8.0 used by SAPI while reducing the embedded model and inference working set compared with
-`small.en`.
+ZoomIt embeds `ggml-base-q5_1.bin` (59,707,625 bytes), whose SHA-256 is
+`422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898`. The quantized
+`base` model supports multilingual transcription while reducing the embedded model
+and inference working set compared with `small.en`.
 
 `Prewarm` loads the model on the dictation worker while the user begins selecting the snip.
 Audio is captured during the drag, converted to mono floating-point PCM, resampled to

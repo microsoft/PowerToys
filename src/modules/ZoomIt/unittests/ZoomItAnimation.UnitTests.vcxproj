@@ -35,6 +35,27 @@
     <ClCompile Include="DictationBadgeTests.cpp" />
     <ClCompile Include="DictationFinalizationTests.cpp" />
     <ClCompile Include="PasteChaperoneTests.cpp" />
+    <ClCompile Include="WhisperLanguageTests.cpp" />
+    <ClCompile Include="..\ZoomIt\third_party\whisper\whisper.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="..\ZoomIt\third_party\whisper\ggml.c">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="..\ZoomIt\third_party\whisper\ggml-alloc.c">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="..\ZoomIt\third_party\whisper\ggml-backend.c">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="..\ZoomIt\third_party\whisper\ggml-quants.c">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+    </ClCompile>
     <ClCompile Include="..\ZoomIt\SelectRectangle.cpp" />
     <ClCompile Include="SelectRectangleTests.cpp" />
     <ClCompile Include="..\ZoomIt\Utility.cpp" />
