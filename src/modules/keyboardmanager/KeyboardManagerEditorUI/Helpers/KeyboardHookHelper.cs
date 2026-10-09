@@ -5,8 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using KeyboardManagerEditorUI.Interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -32,6 +31,16 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private bool _disposed;
 
+        private bool _exitRequested;
+
+        private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
         // Singleton to make sure only one instance of the hook is active
         private KeyboardHookHelper()
         {
@@ -47,9 +56,10 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public void ActivateHook(IKeyboardHookTarget target)
         {
-            CleanupHook();
+            CleanupHook(notifyTarget: false);
 
             _activeTarget = target;
+            _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
             _currentlyPressedKeys.Clear();
             _keyPressOrder.Clear();
@@ -59,8 +69,8 @@ namespace KeyboardManagerEditorUI.Helpers
                 _keyboardHook = new HotkeySettingsControlHook(
                     KeyDown,
                     KeyUp,
-                    () => true,
-                    (key, extraInfo) => true);
+                    IsEditorForeground,
+                    ShouldHandleKeyboardEvent);
             }
             catch (Exception ex)
             {
@@ -70,6 +80,15 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public void CleanupHook()
         {
+            CleanupHook(cancelRecording: false, notifyTarget: true);
+        }
+
+        private void CleanupHook(bool cancelRecording = false, bool notifyTarget = true)
+        {
+            IKeyboardHookTarget? target = _activeTarget;
+            _activeTarget = null;
+            _exitRequested = false;
+
             if (_keyboardHook != null)
             {
                 _keyboardHook.Dispose();
@@ -78,7 +97,72 @@ namespace KeyboardManagerEditorUI.Helpers
 
             _currentlyPressedKeys.Clear();
             _keyPressOrder.Clear();
-            _activeTarget = null;
+
+            if (notifyTarget)
+            {
+                target?.OnRecordingStopped(cancelRecording);
+            }
+        }
+
+        private static bool IsEditorForeground()
+        {
+            IntPtr foregroundWindow = GetForegroundWindow();
+            if (foregroundWindow == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            _ = GetWindowThreadProcessId(foregroundWindow, out uint foregroundProcessId);
+            return foregroundProcessId == (uint)Environment.ProcessId;
+        }
+
+        private bool ShouldHandleKeyboardEvent(int key, UIntPtr extraInfo)
+        {
+            if (_activeTarget == null)
+            {
+                return false;
+            }
+
+            if (_exitRequested)
+            {
+                return false;
+            }
+
+            var virtualKey = (VirtualKey)key;
+            if (IsKeyboardNavigationExit(virtualKey))
+            {
+                // Defer cleanup: disposing the hook from inside its own callback is unsafe.
+                _exitRequested = true;
+                if (_dispatcherQueue == null || !_dispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_exitRequested)
+                    {
+                        CleanupHook(cancelRecording: true, notifyTarget: true);
+                    }
+                }))
+                {
+                    CleanupHook(cancelRecording: true, notifyTarget: true);
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsKeyboardNavigationExit(VirtualKey virtualKey)
+        {
+            if (virtualKey != VirtualKey.Tab)
+            {
+                return false;
+            }
+
+            return _currentlyPressedKeys.Count == 0 || _currentlyPressedKeys.All(IsShiftKey);
+        }
+
+        private static bool IsShiftKey(VirtualKey key)
+        {
+            return key == VirtualKey.Shift || key == VirtualKey.LeftShift || key == VirtualKey.RightShift;
         }
 
         private void KeyDown(int key)
@@ -300,5 +384,7 @@ namespace KeyboardManagerEditorUI.Helpers
         void ClearKeys();
 
         void OnInputLimitReached();
+
+        void OnRecordingStopped(bool restorePreviousKeys);
     }
 }

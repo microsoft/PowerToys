@@ -219,6 +219,9 @@
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
   </data>
+  <data name="KeyDropDownButton_SelectKeyPlaceholder.Text" xml:space="preserve">
+    <value>Select key</value>
+  </data>
   <data name="ExactMatchCheckBox.Content" xml:space="preserve">
     <value>Exact match</value>
   </data>
