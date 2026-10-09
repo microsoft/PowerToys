@@ -15,4 +15,10 @@ internal static partial class Win32ReturnCode
         this uint result,
         [CallerMemberName] string memberName = "")
         => new(result, result != 0, lastError: null, memberName);
+
+    public static Win32ReturnCode<uint> SuccessIsEqualTo(
+        this uint result,
+        uint expected,
+        [CallerMemberName] string memberName = "")
+        => new(result, result == expected, lastError: null, memberName);
 }
