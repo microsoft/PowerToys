@@ -50,7 +50,7 @@ The Bug Report Tool creates a zip file on the desktop named "PowerToys_Report_[d
 * `dotnet-installation-info.txt` - Information about the installed .NET versions.
 * `EventViewer-*.xml` - These files contain event logs from the Windows Event Viewer for the executable specified in the file name.
 * `EventViewer-Microsoft-Windows-AppXDeploymentServer/Operational.xml` - Contains event logs from the AppXDeployment-Server which are useful for diagnosing MSIX installation issues.
-* `gpo-configuration-info.txt` - Information about the configured [GPO](doc/devdocs/processes/gpo.md).
+* `gpo-configuration-info.txt` - Information about the configured [GPO](../processes/gpo.md).
 * `installationFolderStructure.txt` - Information about the folder structure of the installation. All lines with files have the following structure: `FileName Version MD5Hash`.
 * `last_version_run.json` - Information about the last version of PowerToys that was run.
 * `log_settings.json` - Information about the log level settings.

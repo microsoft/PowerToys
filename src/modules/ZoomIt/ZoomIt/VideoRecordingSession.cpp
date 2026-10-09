@@ -13,6 +13,7 @@
 void OutputDebug(const TCHAR* format, ...);
 #include "CaptureFrameWait.h"
 #include "Utility.h"
+#include "ZoomItMessages.h"
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <winrt/Windows.Media.h>
 #include <cstdlib>
@@ -39,14 +40,6 @@ extern class ClassRegistry reg;
 extern REG_SETTING RegSettings[];
 extern HINSTANCE g_hInstance;
 extern HWND g_hWndMain;
-
-// Must match the definition in ZoomIt.h.
-#ifndef WM_USER_RECORDING_STARTED
-#define WM_USER_RECORDING_STARTED (WM_USER + 111)
-#endif
-#ifndef WM_USER_RECORDING_NO_FRAMES
-#define WM_USER_RECORDING_NO_FRAMES (WM_USER + 112)
-#endif
 
 HWND hDlgTrimDialog = nullptr;
 
@@ -1283,10 +1276,23 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
             }
             RecDiag( L"StartAsync: audio initialized\n" );
 
+            const WPARAM unavailableAudio =
+                (m_audioGenerator->MicrophoneUnavailable() ? 1 : 0) |
+                (m_audioGenerator->SystemAudioUnavailable() ? 2 : 0);
+            if (unavailableAudio && !PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, unavailableAudio, 0))
+            {
+                RecDiag(L"StartAsync: failed to notify user of unavailable audio (error %lu)\n", GetLastError());
+            }
+
+            if (!m_audioGenerator->HasAudio())
+            {
+                m_audioGenerator.reset();
+            }
+        }
+
+        if (m_audioGenerator) {
             // Set up the audio encoding profile now that the audio graph is
-            // fully initialized.  GetEncodingProperties() requires
-            // m_audioOutputNode to be valid, which is only guaranteed after
-            // InitializeAsync completes.
+            // fully initialized, or the loopback-only output format is known.
             auto audioProps = m_audioGenerator->GetEncodingProperties();
             m_encodingProfile.Audio(winrt::AudioEncodingProperties::CreateAac(
                 audioProps.SampleRate(), audioProps.ChannelCount(), 192000));

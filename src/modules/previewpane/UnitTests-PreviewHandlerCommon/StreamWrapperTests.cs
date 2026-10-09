@@ -21,13 +21,13 @@ namespace PreviewHandlerCommonUnitTests
         public void StreamWrapperShouldThrowIfInitializeWithNullStream()
         {
             // Arrange
-            IStream stream = null;
-            ArgumentNullException exception = null;
+            IStream? stream = null;
+            ArgumentNullException? exception = null;
 
             // Act
             try
             {
-                using (var streamWrapper = new ReadonlyStream(stream))
+                using (var streamWrapper = new ReadonlyStream(stream!))
                 {
                     // do work
                 }
@@ -222,7 +222,7 @@ namespace PreviewHandlerCommonUnitTests
             // Arrange
             var buffer = new byte[bufferLength];
             var streamMock = new Mock<IStream>();
-            ArgumentOutOfRangeException exception = null;
+            ArgumentOutOfRangeException? exception = null;
 
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
@@ -283,7 +283,7 @@ namespace PreviewHandlerCommonUnitTests
             var streamMock = new Mock<IStream>();
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
-                NotImplementedException exception = null;
+                NotImplementedException? exception = null;
 
                 // Act
                 try
@@ -307,7 +307,7 @@ namespace PreviewHandlerCommonUnitTests
             var streamMock = new Mock<IStream>();
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
-                NotImplementedException exception = null;
+                NotImplementedException? exception = null;
 
                 // Act
                 try
@@ -331,7 +331,7 @@ namespace PreviewHandlerCommonUnitTests
             var streamMock = new Mock<IStream>();
             using (var streamWrapper = new ReadonlyStream(streamMock.Object))
             {
-                NotImplementedException exception = null;
+                NotImplementedException? exception = null;
 
                 // Act
                 try

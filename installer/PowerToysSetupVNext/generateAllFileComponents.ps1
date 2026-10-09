@@ -33,7 +33,7 @@ Function Generate-FileList() {
     # Without them GetReadyState() reports NotReady and EnsureReadyAsync() fails with
     # RO_E_METADATA_NAME_NOT_FOUND (0x8000000F). The build already emits them into the app output
     # (e.g. WinUI3Apps); they were previously dropped here because the harvest didn't include them.
-    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml", "*.winmd")
+    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.mp4", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml", "*.winmd")
 
     # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
     # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
@@ -180,6 +180,48 @@ $baseAppWxs = $baseAppWxs -replace '=;', '='
 $baseAppWxs = $baseAppWxs -replace ';"', '"'
 Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
 Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
+
+# Light Switch CLI translations can arrive after the English resources. Harvest only
+# available satellites, including System.CommandLine's neutral language directories.
+$resourcesWxsPath = Join-Path $PSScriptRoot 'Resources.wxs'
+$resourcesWxs = Get-Content -LiteralPath $resourcesWxsPath -Raw
+$localizedLanguages = [regex]::Match($resourcesWxs, '<\?define LocLanguageList\s*=\s*([^?]+)\?>').Groups[1].Value.Trim().Split(';')
+$releaseDirectory = Join-Path $PSScriptRoot "..\..\$platform\Release"
+$cliSatellites = foreach ($assembly in @('PowerToys.LightSwitch.Cli.resources.dll', 'System.CommandLine.resources.dll')) {
+    Get-ChildItem -Path (Join-Path $releaseDirectory "*\$assembly") -File -ErrorAction SilentlyContinue
+}
+$resourceDirectories = ''
+$resourceComponents = ''
+foreach ($culture in ($cliSatellites | Group-Object { $_.Directory.Name } | Sort-Object Name)) {
+    $language = $culture.Name
+    $idSafeLanguage = $language -replace '-', '_'
+    $directoryId = "Resource$($idSafeLanguage)INSTALLFOLDER"
+    # The existing pipeline-only resource block already declares these directories.
+    $directory = @"
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="$directoryId" Name="$language" />
+    </DirectoryRef>
+"@
+    if ($language -in $localizedLanguages) {
+        $directory = "<?ifndef env.IsPipeline?>`r`n$directory`r`n<?endif?>"
+    }
+    $resourceDirectories += "$directory`r`n"
+    foreach ($satellite in $culture.Group) {
+        $componentId = "LightSwitchCli_$($idSafeLanguage)_$($satellite.BaseName)"
+        $resourceComponents += @"
+      <Component Id="$componentId" Directory="$directoryId" Guid="$((New-Guid).ToString().ToUpper())">
+        <RegistryKey Root="`$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="$componentId" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Id="$($componentId)_File" Source="`$(var.BinDir)$language\$($satellite.Name)" />
+        <RemoveFolder Id="$($componentId)_Folder" Directory="$directoryId" On="uninstall" />
+      </Component>
+"@
+    }
+}
+$resourcesWxs = $resourcesWxs.Replace('<!--LightSwitchCliResourceDirectories-->', $resourceDirectories)
+$resourcesWxs = $resourcesWxs.Replace('<!--LightSwitchCliResourceComponents-->', $resourceComponents)
+Set-Content -LiteralPath $resourcesWxsPath -Value $resourcesWxs
 
 #WinUI3Applications
 Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"

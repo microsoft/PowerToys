@@ -34,6 +34,11 @@ internal sealed partial class ShellIconCacheInvalidator : IDisposable
         Register();
     }
 
+    public static bool InitializeShellIconCache()
+    {
+        return NativeMethods.FileIconInit(true);
+    }
+
     public bool TryHandleMessage(uint message, nint wParam, nint lParam)
     {
         if (_messageId == 0 || message != _messageId)
@@ -71,7 +76,20 @@ internal sealed partial class ShellIconCacheInvalidator : IDisposable
         Register();
     }
 
-    public void Dispose() => Deregister();
+    public void OnNonClientMetricsChanged()
+    {
+        if (!NativeMethods.FileIconInit(false))
+        {
+            Logger.LogWarning("Failed to refresh the Shell image lists after non-client metrics changed");
+        }
+
+        Invalidate(ShellIconCacheInvalidationReason.NonClientMetricsChanged);
+    }
+
+    public void Dispose()
+    {
+        Deregister();
+    }
 
     private unsafe void Register()
     {
@@ -138,6 +156,12 @@ internal sealed partial class ShellIconCacheInvalidator : IDisposable
 
     private static partial class NativeMethods
     {
+        // FileIconInit is exported only by ordinal.
+        [LibraryImport("shell32.dll", EntryPoint = "#660")]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool FileIconInit([MarshalAs(UnmanagedType.Bool)] bool restoreCache);
+
         [LibraryImport("shell32.dll")]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         internal static unsafe partial int SHGetKnownFolderIDList(

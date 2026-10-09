@@ -48,6 +48,7 @@ public static class WindowHelper
         public int Bottom;
     }
 
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint SWP_NOMOVE = 0x0002;
     private const uint SWP_NOSIZE = 0x0001;
     private const uint SWP_NOZORDER = 0x0004;
@@ -61,6 +62,7 @@ public static class WindowHelper
     private const int SW_MAXIMIZE = 3;
     private const int SW_RESTORE = 9;
     private const int SW_MINIMIZE = 6;
+#pragma warning restore SA1310
     private const int DwmCloakedAttribute = 14;
     private const int DwmExtendedFrameBoundsAttribute = 9;
 
@@ -265,7 +267,9 @@ public static class WindowHelper
         try
         {
             SetWindowPos(hWnd, topmost, 0, 0, 0, 0, noMoveOrResize);
-            DwmFlush();
+
+            // Best-effort compositor sync before capture; a failed flush just captures the current frame.
+            _ = DwmFlush();
 
             using var bitmap = new Bitmap(bounds.Right - bounds.Left, bounds.Bottom - bounds.Top);
             using var graphics = Graphics.FromImage(bitmap);
@@ -283,7 +287,7 @@ public static class WindowHelper
             if (!wasTopmost)
             {
                 SetWindowPos(hWnd, notTopmost, 0, 0, 0, 0, noMoveOrResize);
-                DwmFlush();
+                _ = DwmFlush();
             }
         }
     }
@@ -352,7 +356,8 @@ public static class WindowHelper
         }
         finally
         {
-            ReleaseDC(IntPtr.Zero, hdc);
+            // Nothing actionable if releasing the screen DC fails.
+            _ = ReleaseDC(IntPtr.Zero, hdc);
         }
     }
 
