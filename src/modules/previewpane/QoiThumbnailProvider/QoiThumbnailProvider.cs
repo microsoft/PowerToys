@@ -40,14 +40,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
         /// <param name="stream">The Stream instance for the Qoi bitmap.</param>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
         /// <returns>A thumbnail rendered from the Qoi bitmap.</returns>
-        public static Bitmap GetThumbnail(Stream stream, uint cx)
+        public static Bitmap? GetThumbnail(Stream? stream, uint cx)
         {
             if (cx > MaxThumbnailSize || stream == null || stream.Length == 0)
             {
                 return null;
             }
 
-            Bitmap thumbnail = null;
+            Bitmap? thumbnail = null;
             try
             {
                 thumbnail = QoiImage.FromStream(stream);
@@ -79,7 +79,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
         /// <param name="width">The width to resize to.</param>
         /// <param name="height">The height to resize to.</param>
         /// <returns>The resized image.</returns>
-        public static Bitmap ResizeImage(Image image, int width, int height)
+        public static Bitmap? ResizeImage(Image image, int width, int height)
         {
             if (width <= 0 ||
                 height <= 0 ||
@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
         /// </summary>
         /// <param name="cx">Maximum thumbnail size, in pixels.</param>
         /// <returns>Generated bitmap</returns>
-        public Bitmap GetThumbnail(uint cx)
+        public Bitmap? GetThumbnail(uint cx)
         {
             if (cx == 0 || cx > MaxThumbnailSize)
             {
@@ -128,7 +128,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
                 return null;
             }
 
-            Bitmap thumbnail = GetThumbnail(this.Stream, cx);
+            Bitmap? thumbnail = GetThumbnail(this.Stream, cx);
             if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
             {
                 return thumbnail;

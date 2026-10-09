@@ -52,6 +52,7 @@ namespace BgcodePreviewHandlerUnitTests
                 // Act
                 bgcodePreviewHandlerControl.DoPreview(mockStream.Object);
                 var textBox = bgcodePreviewHandlerControl.Controls[0] as RichTextBox;
+                Assert.IsNotNull(textBox);
 
                 // Assert
                 Assert.IsFalse(string.IsNullOrWhiteSpace(textBox.Text));

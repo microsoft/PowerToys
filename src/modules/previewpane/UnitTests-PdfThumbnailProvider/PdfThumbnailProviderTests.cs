@@ -26,7 +26,7 @@ namespace PdfThumbnailProviderUnitTests
 
             PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
-            Bitmap bitmap = provider.GetThumbnail(256);
+            Bitmap? bitmap = provider.GetThumbnail(256);
 
             Assert.IsTrue(bitmap != null);
         }
@@ -39,7 +39,7 @@ namespace PdfThumbnailProviderUnitTests
 
             PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
-            Bitmap bitmap = provider.GetThumbnail(0);
+            Bitmap? bitmap = provider.GetThumbnail(0);
 
             Assert.IsTrue(bitmap == null);
         }
@@ -52,7 +52,7 @@ namespace PdfThumbnailProviderUnitTests
 
             PdfThumbnailProvider provider = new PdfThumbnailProvider(filePath);
 
-            Bitmap bitmap = provider.GetThumbnail(10001);
+            Bitmap? bitmap = provider.GetThumbnail(10001);
 
             Assert.IsTrue(bitmap == null);
         }

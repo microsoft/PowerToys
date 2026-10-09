@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
     {
         private static CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
-        private static MonacoPreviewHandlerControl _previewHandlerControl;
+        private static MonacoPreviewHandlerControl? _previewHandlerControl;
 
         /// <summary>
         ///  The main entry point for the application.

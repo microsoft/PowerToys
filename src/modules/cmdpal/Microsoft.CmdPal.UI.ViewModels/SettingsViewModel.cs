@@ -232,7 +232,20 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
             _settingsService.UpdateSettings(s => s with { CompactMode = value });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandPaletteOpeningModeIndex)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+        }
+    }
+
+    public int CommandPaletteOpeningModeIndex
+    {
+        get => CompactMode ? 1 : 0;
+        set
+        {
+            if (value is 0 or 1)
+            {
+                CompactMode = value == 1;
+            }
         }
     }
 
@@ -705,6 +718,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
                 }
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandPaletteOpeningModeIndex)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowQuickAccessShelf)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
             },

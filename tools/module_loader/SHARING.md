@@ -93,6 +93,17 @@ Note: MouseJump is a UI-based module and may not work fully with ModuleLoader
 Size: ~200KB
 ```
 
+### MouseButtonLock
+```
+Files to share:
+  - x64\Debug\PowerToys.MouseButtonLock.dll  (or Release)
+  - %LOCALAPPDATA%\Microsoft\PowerToys\MouseButtonLock\settings.json
+
+Note: the module installs a low-level mouse hook; a locked button is released
+      when the module is disabled or the host process exits gracefully.
+Size: ~650KB
+```
+
 ### AlwaysOnTop
 ```
 Files to share:

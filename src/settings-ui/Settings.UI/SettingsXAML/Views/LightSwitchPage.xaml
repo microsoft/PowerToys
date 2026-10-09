@@ -267,21 +267,6 @@
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
-                    <!--  Force mode buttons  -->
-                    <!--<tkcontrols:SettingsCard
-        Header="Force mode now"
-        HeaderIcon="{ui:FontIcon Glyph=&#xE706;}"
-        Description="Apply light or dark mode immediately">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <Button
-        Content="Force Light"
-        Command="{x:Bind ViewModel.ForceLightCommand}" />
-              <Button
-        Content="Force Dark"
-        Command="{x:Bind ViewModel.ForceDarkCommand}" />
-            </StackPanel>
-          </tkcontrols:SettingsCard>-->
-
                     <ContentDialog
                         x:Name="LocationDialog"
                         x:Uid="LightSwitch_LocationDialog"

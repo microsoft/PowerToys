@@ -135,7 +135,7 @@ internal sealed class TestHelper
         WaitForSetting("changeApps", apps);
     }
 
-    public void SendShortcut()
+    public void SendShortcut(bool expectThemeChange = true)
     {
         var keys = ReadShortcut();
         RequireForeground();
@@ -149,24 +149,26 @@ internal sealed class TestHelper
             pollIntervalMS: 250);
         Assert.IsTrue(received.Succeeded, $"The Runner did not acknowledge the single shortcut. Foreground: {WindowControl.GetForegroundWindowInfo()}. New LightSwitch logs:\n{received.LastObservation}");
 
-        // ThemeHelper.cpp sends several synchronous HWND_BROADCAST messages, each allowing 5s per
-        // recipient window. The 120s completion budget covers those serial waits on busy desktops;
-        // hotkey acknowledgement is separate, and this wait never resends the toggle chord.
-        var completed = WaitHelper.WaitForStable(
-            () => logs.ReadNew(),
-            text => text!.Contains("[Light Switch] Manual override event set", StringComparison.Ordinal),
-            timeoutMS: 120_000,
-            pollIntervalMS: 250);
-        Assert.IsTrue(completed.Succeeded, $"The Runner did not finish applying the single theme-toggle chord. New LightSwitch logs:\n{completed.LastObservation}");
+        if (!expectThemeChange)
+        {
+            // The service owns the queued toggle. Confirm it processed the no-target request
+            // before checking that the theme stayed unchanged; never resend the chord.
+            var completed = WaitHelper.WaitForStable(
+                () => logs.ReadNew(),
+                text => text!.Contains("[LightSwitchService] Toggle failed: No theme targets are enabled in Light Switch settings.", StringComparison.Ordinal),
+                timeoutMS: 120_000,
+                pollIntervalMS: 250);
+            Assert.IsTrue(completed.Succeeded, $"The service did not reject the no-target shortcut. New LightSwitch logs:\n{completed.LastObservation}");
+        }
     }
 
-    public void WaitForTheme(ThemeState expected)
+    public void WaitForTheme(ThemeState expected, int timeoutMS = 30_000)
     {
         Step($"Waiting for HKCU theme state {expected}");
         var result = WaitHelper.WaitForStable(
             TestState.ReadTheme,
             theme => theme == expected,
-            timeoutMS: 30_000,
+            timeoutMS: timeoutMS,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 250);
         Assert.IsTrue(result.Succeeded, $"Expected HKCU theme {expected}, observed {result.LastObservation}.");
@@ -174,7 +176,7 @@ internal sealed class TestHelper
 
     public void AssertThemeUnchanged(ThemeState expected)
     {
-        Step($"Verifying both themes remain {expected} throughout five seconds after the acknowledged shortcut");
+        Step($"Verifying both themes remain {expected} throughout five seconds after the service rejected the no-target shortcut");
         var watch = Stopwatch.StartNew();
         do
         {
@@ -235,7 +237,7 @@ internal sealed class TestHelper
 
     public TimelineState WaitForPersistedTimeline()
     {
-        WaitForScheduleReload();
+        WaitForSettingsChangeNotification();
         int light = ReadSetting<int>("lightTime");
         int dark = ReadSetting<int>("darkTime");
         Assert.IsTrue(light is >= 0 and < 1440 && dark is >= 0 and < 1440 && light != dark, $"Sun times must be distinct valid minutes: {light}/{dark}.");
@@ -244,7 +246,7 @@ internal sealed class TestHelper
 
     public void WaitForScheduledTheme()
     {
-        WaitForScheduleReload();
+        WaitForSettingsChangeNotification();
         string mode = ReadSetting<string>("scheduleMode");
         Assert.IsTrue(mode is "FixedHours" or "SunsetToSunrise", "This check requires an active time schedule.");
         int light = ReadSetting<int>("lightTime") + (mode == "SunsetToSunrise" ? ReadSetting<int>("sunrise_offset") : 0);
@@ -459,17 +461,20 @@ internal sealed class TestHelper
         }
     }
 
-    private void WaitForScheduleReload()
+    private void WaitForSettingsChangeNotification()
     {
         Assert.IsNotNull(scheduleUpdate, "A real Settings edit must precede the native scheduling check.");
-        Step("Waiting for the LightSwitch service's debounced settings reload");
+        Step("Waiting for the LightSwitch service's debounced settings change notification");
+
+        // This marker confirms notification only. The subsequent theme checks
+        // wait for the worker to apply the changed schedule.
         var result = WaitHelper.WaitForStable(
             () => scheduleUpdate.ReadNew(),
-            text => text!.Contains("[LightSwitchSettings] Settings file stabilized, reloading.", StringComparison.Ordinal),
+            text => text!.Contains("[LightSwitchSettings] Settings file stabilized, notifying worker.", StringComparison.Ordinal),
             timeoutMS: 20_000,
             pollIntervalMS: 250);
-        Assert.IsTrue(result.Succeeded, $"The service did not reload the changed schedule. New logs:\n{result.LastObservation}");
-        Assert.HasCount(1, ObserveService(), "The native scheduler must remain alive after loading settings.");
+        Assert.IsTrue(result.Succeeded, $"The service did not notify its worker about the changed schedule. New logs:\n{result.LastObservation}");
+        Assert.HasCount(1, ObserveService(), "The native scheduler must remain alive after the settings change notification.");
     }
 
     private bool HasSunTimes()

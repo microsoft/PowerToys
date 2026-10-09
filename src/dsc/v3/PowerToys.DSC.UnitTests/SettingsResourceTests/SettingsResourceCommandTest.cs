@@ -35,6 +35,7 @@ public sealed class SettingsResourceCommandTest : BaseDscTest
             nameof(ModuleType.Hosts),
             nameof(ModuleType.ImageResizer),
             nameof(ModuleType.KeyboardManager),
+            nameof(ModuleType.MouseButtonLock),
             nameof(ModuleType.MouseHighlighter),
             nameof(ModuleType.MouseJump),
             nameof(ModuleType.MousePointerCrosshairs),

@@ -251,7 +251,7 @@ public class ItemActionControllerTests
             {
                 Assert.IsEmpty(_opened);
                 Assert.HasCount(1, invocations);
-                Assert.AreSame(model, invocations[0].Context);
+                Assert.AreSame(model, invocations[0].CommandContext);
             }
         }
         finally
