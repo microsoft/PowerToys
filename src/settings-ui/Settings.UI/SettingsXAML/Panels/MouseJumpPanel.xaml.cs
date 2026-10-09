@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Controls;
@@ -17,11 +18,31 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
 {
     public sealed partial class MouseJumpPanel : UserControl
     {
+        private static readonly HashSet<string> StylePropertyNames = new()
+        {
+            nameof(MouseUtilsViewModel.MouseJumpBackgroundColor1),
+            nameof(MouseUtilsViewModel.MouseJumpBackgroundColor2),
+            nameof(MouseUtilsViewModel.MouseJumpBorderThickness),
+            nameof(MouseUtilsViewModel.MouseJumpBorderColor),
+            nameof(MouseUtilsViewModel.MouseJumpBorder3dDepth),
+            nameof(MouseUtilsViewModel.MouseJumpBorderPadding),
+            nameof(MouseUtilsViewModel.MouseJumpBezelThickness),
+            nameof(MouseUtilsViewModel.MouseJumpBezelColor),
+            nameof(MouseUtilsViewModel.MouseJumpBezel3dDepth),
+            nameof(MouseUtilsViewModel.MouseJumpScreenMargin),
+            nameof(MouseUtilsViewModel.MouseJumpScreenColor1),
+            nameof(MouseUtilsViewModel.MouseJumpScreenColor2),
+        };
+
+        private bool isApplyingPreset;
+
         internal MouseUtilsViewModel ViewModel { get; set; }
 
         public MouseJumpPanel()
         {
             InitializeComponent();
+            Loaded += MouseJumpPanel_Loaded;
+            Unloaded += MouseJumpPanel_Unloaded;
         }
 
         private void PreviewImage_Loaded(object sender, RoutedEventArgs e)
@@ -70,87 +91,90 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
 
         private void PreviewTypeSetting_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // The Segmented control can fire SelectionChanged transiently with SelectedIndex == -1
-            // (e.g. during template apply or when items are being initialized/refreshed before the
-            // x:Bind two-way binding restores the persisted value). Ignore those intermediate states
-            // instead of throwing.
+            // SelectionChanged can fire transiently with SelectedIndex == -1 (e.g. while items are
+            // being initialized before the x:Bind two-way binding restores the persisted value).
+            // Ignore those intermediate states instead of throwing.
             if (this.PreviewTypeSetting.SelectedIndex < 0)
             {
                 return;
             }
 
-            // hide or display controls based on whether the "Custom" preview type is selected
+            // show the selected preset's values in the style settings so that editing any of them
+            // starts from the preset (and switches the style to "Custom", see ViewModel_PropertyChanged)
             var selectedPreviewType = this.GetSelectedPreviewType();
-            var customPreviewTypeSelected = selectedPreviewType == PreviewType.Custom;
-            this.CopyStyleToCustom.IsEnabled = !customPreviewTypeSelected;
-            var customControlVisibility = customPreviewTypeSelected
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-            this.MouseUtils_MouseJump_BackgroundColor1.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_BackgroundColor2.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_BorderThickness.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_BorderColor.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_Border3dDepth.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_BorderPadding.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_BezelThickness.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_BezelColor.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_Bezel3dDepth.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_ScreenMargin.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_ScreenColor1.Visibility = customControlVisibility;
-            this.MouseUtils_MouseJump_ScreenColor2.Visibility = customControlVisibility;
+            if (selectedPreviewType != PreviewType.Custom)
+            {
+                this.ApplyPresetValues(selectedPreviewType);
+            }
         }
 
-        private /* async */ void CopyStyleToCustom_Click(object sender, RoutedEventArgs e)
+        private void MouseJumpPanel_Loaded(object sender, RoutedEventArgs e)
         {
-            /*
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var messageBox = this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox;
-            messageBox.Title = resourceLoader.GetString("MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Title");
-            messageBox.PrimaryButtonText = resourceLoader.GetString("MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonText");
-            messageBox.PrimaryButtonCommand = new RelayCommand(this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand);
-            // await messageBox.ShowAsync();
-            */
-            this.MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand();
+            this.ViewModel.PropertyChanged -= this.ViewModel_PropertyChanged;
+            this.ViewModel.PropertyChanged += this.ViewModel_PropertyChanged;
         }
 
-        private void MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonCommand()
+        private void MouseJumpPanel_Unloaded(object sender, RoutedEventArgs e)
         {
-            var selectedPreviewType = this.GetSelectedPreviewType();
-            var selectedPreviewStyle = selectedPreviewType switch
+            this.ViewModel.PropertyChanged -= this.ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // editing any style setting while a preset is selected turns it into a custom style
+            if (this.isApplyingPreset || !StylePropertyNames.Contains(e.PropertyName))
+            {
+                return;
+            }
+
+            if (this.ViewModel.MouseJumpPreviewType != nameof(PreviewType.Custom))
+            {
+                this.ViewModel.MouseJumpPreviewType = nameof(PreviewType.Custom);
+            }
+        }
+
+        private void ApplyPresetValues(PreviewType presetType)
+        {
+            var selectedPreviewStyle = presetType switch
             {
                 PreviewType.Compact => StyleHelper.CompactPreviewStyle,
-                PreviewType.Bezelled => StyleHelper.BezelledPreviewStyle,
-                PreviewType.Custom => StyleHelper.BezelledPreviewStyle,
-                _ => throw new InvalidOperationException(),
+                _ => StyleHelper.BezelledPreviewStyle,
             };
 
-            // convert the color into a string.
-            // note that we have to replace Named and System colors with their ARGB equivalents
-            // so that serialization returns an ARGB string rather than the Named or System color *name*.
-            this.ViewModel.MouseJumpPreviewType = selectedPreviewType.ToString();
-            this.ViewModel.MouseJumpBackgroundColor1 = ColorHelper.SerializeToConfigColorString(
-                ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BackgroundStyle.Color1));
-            this.ViewModel.MouseJumpBackgroundColor2 = ColorHelper.SerializeToConfigColorString(
-                ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BackgroundStyle.Color2));
-            this.ViewModel.MouseJumpBorderThickness = (int)selectedPreviewStyle.CanvasStyle.BorderStyle.Top;
-            this.ViewModel.MouseJumpBorderColor = ColorHelper.SerializeToConfigColorString(
-                ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BorderStyle.Color));
-            this.ViewModel.MouseJumpBorder3dDepth = (int)selectedPreviewStyle.CanvasStyle.BorderStyle.Depth;
-            this.ViewModel.MouseJumpBorderPadding = (int)selectedPreviewStyle.CanvasStyle.PaddingStyle.Top;
-            this.ViewModel.MouseJumpBezelThickness = (int)selectedPreviewStyle.ScreenStyle.BorderStyle.Top;
-            this.ViewModel.MouseJumpBezelColor = ColorHelper.SerializeToConfigColorString(
-                ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BorderStyle.Color));
-            this.ViewModel.MouseJumpBezel3dDepth = (int)selectedPreviewStyle.ScreenStyle.BorderStyle.Depth;
-            this.ViewModel.MouseJumpScreenMargin = (int)selectedPreviewStyle.ScreenStyle.MarginStyle.Top;
-            this.ViewModel.MouseJumpScreenColor1 = ColorHelper.SerializeToConfigColorString(
-                ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BackgroundStyle.Color1));
-            this.ViewModel.MouseJumpScreenColor2 = ColorHelper.SerializeToConfigColorString(
-                ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BackgroundStyle.Color2));
+            this.isApplyingPreset = true;
+            try
+            {
+                // convert the color into a string.
+                // note that we have to replace Named and System colors with their ARGB equivalents
+                // so that serialization returns an ARGB string rather than the Named or System color *name*.
+                this.ViewModel.MouseJumpBackgroundColor1 = ColorHelper.SerializeToConfigColorString(
+                    ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BackgroundStyle.Color1));
+                this.ViewModel.MouseJumpBackgroundColor2 = ColorHelper.SerializeToConfigColorString(
+                    ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BackgroundStyle.Color2));
+                this.ViewModel.MouseJumpBorderThickness = (int)selectedPreviewStyle.CanvasStyle.BorderStyle.Top;
+                this.ViewModel.MouseJumpBorderColor = ColorHelper.SerializeToConfigColorString(
+                    ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BorderStyle.Color));
+                this.ViewModel.MouseJumpBorder3dDepth = (int)selectedPreviewStyle.CanvasStyle.BorderStyle.Depth;
+                this.ViewModel.MouseJumpBorderPadding = (int)selectedPreviewStyle.CanvasStyle.PaddingStyle.Top;
+                this.ViewModel.MouseJumpBezelThickness = (int)selectedPreviewStyle.ScreenStyle.BorderStyle.Top;
+                this.ViewModel.MouseJumpBezelColor = ColorHelper.SerializeToConfigColorString(
+                    ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BorderStyle.Color));
+                this.ViewModel.MouseJumpBezel3dDepth = (int)selectedPreviewStyle.ScreenStyle.BorderStyle.Depth;
+                this.ViewModel.MouseJumpScreenMargin = (int)selectedPreviewStyle.ScreenStyle.MarginStyle.Top;
+                this.ViewModel.MouseJumpScreenColor1 = ColorHelper.SerializeToConfigColorString(
+                    ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BackgroundStyle.Color1));
+                this.ViewModel.MouseJumpScreenColor2 = ColorHelper.SerializeToConfigColorString(
+                    ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BackgroundStyle.Color2));
+            }
+            finally
+            {
+                this.isApplyingPreset = false;
+            }
         }
 
         private PreviewType GetSelectedPreviewType()
         {
-            // this needs to match the order of the SegmentedItems in the "Preview Type" Segmented control
+            // this needs to match the order of the items in the "Style" ComboBox
             var previewTypeOrder = new PreviewType[]
             {
                 PreviewType.Compact, PreviewType.Bezelled, PreviewType.Custom,

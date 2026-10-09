@@ -4563,11 +4563,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
     <value>Thumbnail size</value>
   </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
-    <value>Constrain thumbnail image size to a maximum of</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
-    <value>pixels</value>
+  <data name="MouseUtils_MouseJump_ThumbnailSize.Description" xml:space="preserve">
+    <value>The maximum size of the preview image, in pixels</value>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
     <value>Maximum height (px)</value>
@@ -4578,25 +4575,19 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>px = pixels</comment>
   </data>
   <data name="MouseUtils_MouseJump_Appearance.Header" xml:space="preserve">
-    <value>Appearance</value>
-  </data>
-  <data name="MouseUtils_MouseJump_PreviewType.Header" xml:space="preserve">
     <value>Preview style</value>
   </data>
-  <data name="MouseUtils_MouseJump_PreviewType.Description" xml:space="preserve">
-    <value>Select a predefined style, or apply a custom one</value>
+  <data name="MouseUtils_MouseJump_Appearance.Description" xml:space="preserve">
+    <value>Choose a preset, or change any setting to create a custom style</value>
   </data>
-  <data name="MouseUtils_MouseJump_PreviewType_Compact.Text" xml:space="preserve">
+  <data name="MouseUtils_MouseJump_PreviewType_Compact.Content" xml:space="preserve">
     <value>Compact</value>
   </data>
-  <data name="MouseUtils_MouseJump_PreviewType_Bezelled.Text" xml:space="preserve">
+  <data name="MouseUtils_MouseJump_PreviewType_Bezelled.Content" xml:space="preserve">
     <value>Bezelled</value>
   </data>
-  <data name="MouseUtils_MouseJump_PreviewType_Custom.Text" xml:space="preserve">
+  <data name="MouseUtils_MouseJump_PreviewType_Custom.Content" xml:space="preserve">
     <value>Custom</value>
-  </data>
-  <data name="MouseUtils_MouseJump_CopyStyle.Content" xml:space="preserve">
-    <value>Copy to Custom preview style</value>
   </data>
   <data name="MouseUtils_MouseJump_BackgroundColor1.Header" xml:space="preserve">
     <value>Background color 1</value>
@@ -4669,12 +4660,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_MouseJump_ScreenColor2.Description" xml:space="preserve">
     <value>The end color for the background gradient fill on individual screen images</value>
-  </data>
-  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Title" xml:space="preserve">
-    <value>Copy to Custom preview style</value>
-  </data>
-  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonText" xml:space="preserve">
-    <value>Copy</value>
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
