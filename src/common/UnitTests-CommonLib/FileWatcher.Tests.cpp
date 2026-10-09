@@ -98,6 +98,34 @@ namespace UnitTestsCommonLib
     TEST_CLASS (FileWatcherTests)
     {
     public:
+        TEST_METHOD (FirstOrdinaryWriteRefreshesCache)
+        {
+            WatcherTestDirectory directory;
+            const auto destination = directory.path() / L"SeTtInGs.json";
+            const std::string contents = "{\"enabled\":false}";
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(destination.wstring(), contents));
+
+            WIN32_FILE_ATTRIBUTE_DATA attributes{};
+            Assert::IsTrue(GetFileAttributesExW(destination.c_str(), GetFileExInfoStandard, &attributes) != FALSE);
+            ULARGE_INTEGER nextWriteTime{};
+            nextWriteTime.HighPart = attributes.ftLastWriteTime.dwHighDateTime;
+            nextWriteTime.LowPart = attributes.ftLastWriteTime.dwLowDateTime;
+            nextWriteTime.QuadPart += 10000000; // One second in FILETIME units.
+            const FILETIME lastWriteTime{ nextWriteTime.LowPart, nextWriteTime.HighPart };
+
+            WatchedFileCache cache;
+            FileWatcher watcher(destination.wstring(), [&]() { cache.reload(destination); });
+            {
+                // Change only metadata so the first write notification cannot race
+                // a partially written file or be hidden by a later content write.
+                wil::unique_hfile file(CreateFileW(destination.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, 0, nullptr));
+                Assert::IsTrue(static_cast<bool>(file));
+                Assert::IsTrue(SetFileTime(file.get(), nullptr, nullptr, &lastWriteTime) != FALSE);
+            }
+
+            Assert::IsTrue(cache.waitFor(contents), L"The first ordinary write did not refresh the cache");
+        }
+
         TEST_METHOD (AtomicCreationRefreshesCache)
         {
             WatcherTestDirectory directory;

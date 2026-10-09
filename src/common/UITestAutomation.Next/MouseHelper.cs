@@ -39,6 +39,7 @@ public static class MouseHelper
         public MOUSEINPUT Mi;
     }
 
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint INPUT_MOUSE = 0;
 
     private const uint MouseEventMove = 0x01;
@@ -49,9 +50,11 @@ public static class MouseHelper
     private const uint MOUSEEVENTF_MIDDLEDOWN = 0x20;
     private const uint MOUSEEVENTF_MIDDLEUP = 0x40;
     private const uint MOUSEEVENTF_WHEEL = 0x0800;
+#pragma warning restore SA1310
 
     private const int ClickDelayMs = 100;
     private const int WheelTick = 120;
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetCursorPos(int x, int y);
 

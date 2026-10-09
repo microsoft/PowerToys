@@ -114,13 +114,12 @@ FileWatcher::FileWatcher(const std::wstring& path, std::function<void()> callbac
                 m_lastWrite = lastWrite;
                 m_callback();
             }
-            else if (!m_lastWrite.has_value())
-            {
-                m_lastWrite = lastWrite;
-            }
             else if (lastWrite.has_value() &&
-                     (m_lastWrite->dwHighDateTime != lastWrite->dwHighDateTime || m_lastWrite->dwLowDateTime != lastWrite->dwLowDateTime))
+                     (!m_lastWrite.has_value() ||
+                      m_lastWrite->dwHighDateTime != lastWrite->dwHighDateTime ||
+                      m_lastWrite->dwLowDateTime != lastWrite->dwLowDateTime))
             {
+                // The first observed write is a change too, not a baseline to discard.
                 m_lastWrite = lastWrite;
                 m_callback();
             }

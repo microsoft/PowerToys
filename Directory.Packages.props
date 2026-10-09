@@ -32,6 +32,7 @@
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
+    <!-- Transitive pin: keeps one HtmlAgilityPack version across apps. -->
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.3" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
@@ -66,7 +67,7 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.71.0-alpha" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4022.49" />
-    <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
+    <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="$(DotNetRuntimePackageVersion)" />
@@ -91,14 +92,13 @@
     <PackageVersion Include="MSTest" Version="$(MSTestVersion)" />
     <PackageVersion Include="MSTest.TestFramework" Version="$(MSTestVersion)" />
     <PackageVersion Include="NJsonSchema" Version="11.4.0" />
+    <!-- Transitive pin: keeps one Newtonsoft.Json version across apps. -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NLog" Version="5.2.8" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
     <PackageVersion Include="OpenAI" Version="2.7.0" />
-    <PackageVersion Include="Polly.Core" Version="8.6.5" />
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
-    <PackageVersion Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="ScreenRecorderLib" Version="6.6.0" />
     <PackageVersion Include="SharpCompress" Version="0.50.1" />
@@ -107,29 +107,32 @@
     <PackageVersion Include="SkiaSharp.Views.WinUI" Version="2.88.9" />
     <PackageVersion Include="StreamJsonRpc" Version="2.21.69" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
-    <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
+    <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
     <PackageVersion Include="System.CodeDom" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Data.OleDb" Version="$(DotNetRuntimePackageVersion)" />
-    <!-- Package System.Diagnostics.EventLog added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
+    <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
     <PackageVersion Include="System.Diagnostics.EventLog" Version="$(DotNetRuntimePackageVersion)" />
-    <!-- Package System.Diagnostics.PerformanceCounter added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.11. -->
+    <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.ClientModel" Version="1.8.1" />
     <PackageVersion Include="System.Drawing.Common" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="$(DotNetRuntimePackageVersion)" />
+    <!-- Security pin (CVE-2018-8292): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Numerics.Tensors" Version="10.0.2" />
+    <!-- Security pin (CVE-2019-0657, CVE-2019-0980, CVE-2019-0981): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(DotNetRuntimePackageVersion)" />
+    <!-- Security pin (CVE-2019-0820): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="ToolGood.Words.Pinyin" Version="3.1.0.3" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
