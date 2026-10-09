@@ -4,95 +4,58 @@
 
 #pragma once
 
-#include <cstdint>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <utility>
 
-// Settings persists the modules' runtime state when it starts. Queue requests until
-// module initialization finishes, and while the Settings process is being created.
+// Settings persists the modules' runtime state when it starts. Defer requests only
+// until module initialization finishes; subsequent requests use the normal window path.
 class SettingsWindowStartup
 {
 public:
-    enum class Action
-    {
-        None,
-        Launch,
-        Show,
-    };
-
     struct Request
     {
-        Action action = Action::None;
         std::optional<std::wstring> page;
     };
 
-    Request Open(std::optional<std::wstring> page)
+    struct Completion
+    {
+        bool canceled = false;
+        std::optional<Request> request;
+    };
+
+    bool DeferOrCancel(std::optional<std::wstring> page)
     {
         std::scoped_lock lock(mutex);
         if (stopped)
         {
-            return {};
+            return true;
         }
-        pending = Request{ Action::None, std::move(page) };
-        return take_pending();
-    }
-
-    Request CompleteStartup()
-    {
-        std::scoped_lock lock(mutex);
-        initialized = true;
-        return take_pending();
-    }
-
-    // OOBE/SCOOBE are requested by the Runner only after modules are initialized.
-    // Reserve their launch before CompleteStartup releases ordinary Settings requests.
-    bool BeginOnboardingLaunch()
-    {
-        std::scoped_lock lock(mutex);
-        if (stopped || launching || running)
+        if (initialized)
         {
             return false;
         }
-        launching = true;
+        pending = Request{ std::move(page) };
         return true;
     }
 
-    void ProcessCreated(std::uint32_t id)
+    Completion CompleteStartup(bool openSettings = false, std::optional<std::wstring> page = std::nullopt)
     {
         std::scoped_lock lock(mutex);
-        if (!stopped && launching)
+        if (stopped)
         {
-            processId = id;
+            return { true, std::nullopt };
         }
-    }
+        initialized = true;
 
-    Request LaunchCompleted(std::uint32_t id)
-    {
-        std::scoped_lock lock(mutex);
-        // Readiness can already be queued on the Runner thread when the worker
-        // observes process exit. It must not complete a closed or newer launch.
-        if (stopped || !launching || id == 0 || processId != id)
+        // A request received during startup is newer than the command-line request.
+        auto request = std::exchange(pending, std::nullopt);
+        if (!request && openSettings)
         {
-            return {};
+            request = Request{ std::move(page) };
         }
-        launching = false;
-        running = true;
-        return take_pending();
-    }
-
-    Request Closed(std::uint32_t id)
-    {
-        std::scoped_lock lock(mutex);
-        if (processId != id)
-        {
-            return {};
-        }
-        launching = false;
-        running = false;
-        processId = 0;
-        return take_pending();
+        return { false, std::move(request) };
     }
 
     void Stop()
@@ -103,25 +66,8 @@ public:
     }
 
 private:
-    Request take_pending()
-    {
-        if (stopped || !initialized || launching || !pending)
-        {
-            return {};
-        }
-
-        auto request = std::move(*pending);
-        pending.reset();
-        request.action = running ? Action::Show : Action::Launch;
-        launching = !running;
-        return request;
-    }
-
     std::mutex mutex;
     bool initialized = false;
-    bool launching = false;
-    bool running = false;
     bool stopped = false;
-    std::uint32_t processId = 0;
     std::optional<Request> pending;
 };

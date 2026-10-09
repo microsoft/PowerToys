@@ -19,144 +19,105 @@ namespace RunnerUnitTests
         TEST_METHOD(RequestDuringModuleStartupWaitsAndPreservesLatestPage)
         {
             SettingsWindowStartup startup;
+            Assert::IsTrue(startup.DeferOrCancel(L"FancyZones"));
+            Assert::IsTrue(startup.DeferOrCancel(L"Run"));
 
-            AssertAction(SettingsWindowStartup::Action::None, startup.Open(L"FancyZones"));
-            AssertAction(SettingsWindowStartup::Action::None, startup.Open(L"Run"));
-
-            const auto request = startup.CompleteStartup();
-            AssertAction(SettingsWindowStartup::Action::Launch, request);
-            Assert::AreEqual(std::wstring(L"Run"), request.page.value());
-            AssertAction(SettingsWindowStartup::Action::None, startup.CompleteStartup());
+            const auto completion = startup.CompleteStartup();
+            Assert::IsFalse(completion.canceled);
+            Assert::IsTrue(completion.request.has_value());
+            Assert::AreEqual(std::wstring(L"Run"), completion.request->page.value());
+            Assert::IsFalse(startup.CompleteStartup().request.has_value());
         }
 
         TEST_METHOD(DashboardRequestIsNotMistakenForNoRequest)
         {
             SettingsWindowStartup startup;
-            AssertAction(SettingsWindowStartup::Action::None, startup.Open(std::nullopt));
+            Assert::IsTrue(startup.DeferOrCancel(std::nullopt));
 
-            const auto request = startup.CompleteStartup();
-            AssertAction(SettingsWindowStartup::Action::Launch, request);
-            Assert::IsFalse(request.page.has_value());
+            const auto completion = startup.CompleteStartup();
+            Assert::IsTrue(completion.request.has_value());
+            Assert::IsFalse(completion.request->page.has_value());
         }
 
-        TEST_METHOD(RequestWhileSettingsLaunchesIsShownAfterIpcIsReady)
+        TEST_METHOD(CommandLineRequestIsUsedWhenNoNewerRequestArrives)
+        {
+            SettingsWindowStartup startup;
+            const auto completion = startup.CompleteStartup(true, L"Run");
+
+            Assert::IsFalse(completion.canceled);
+            Assert::IsTrue(completion.request.has_value());
+            Assert::AreEqual(std::wstring(L"Run"), completion.request->page.value());
+        }
+
+        TEST_METHOD(DeferredRequestTakesPrecedenceOverCommandLineAndAutomaticOnboarding)
+        {
+            SettingsWindowStartup startup;
+            startup.DeferOrCancel(L"FancyZones");
+
+            const auto completion = startup.CompleteStartup(true, L"Run");
+            Assert::IsFalse(completion.canceled);
+            // A requested normal page is selected instead of automatic OOBE/SCOOBE.
+            Assert::IsTrue(completion.request.has_value());
+            Assert::AreEqual(std::wstring(L"FancyZones"), completion.request->page.value());
+        }
+
+        TEST_METHOD(NoNormalRequestLeavesAutomaticOnboardingAvailable)
+        {
+            SettingsWindowStartup startup;
+            const auto completion = startup.CompleteStartup();
+
+            Assert::IsFalse(completion.canceled);
+            Assert::IsFalse(completion.request.has_value());
+        }
+
+        TEST_METHOD(RequestsAfterStartupUseExistingWindowBehavior)
         {
             SettingsWindowStartup startup;
             startup.CompleteStartup();
-            AssertAction(SettingsWindowStartup::Action::Launch, startup.Open(L"FancyZones"));
-            AssertAction(SettingsWindowStartup::Action::None, startup.Open(L"Run"));
-            AssertAction(SettingsWindowStartup::Action::None, startup.Open(std::nullopt));
 
-            startup.ProcessCreated(123);
-            const auto request = startup.LaunchCompleted(123);
-            AssertAction(SettingsWindowStartup::Action::Show, request);
-            Assert::IsFalse(request.page.has_value());
-            AssertAction(SettingsWindowStartup::Action::Show, startup.Open(L"General"));
+            Assert::IsFalse(startup.DeferOrCancel(L"Run"));
+            Assert::IsFalse(startup.DeferOrCancel(std::nullopt));
+            Assert::IsFalse(startup.CompleteStartup().request.has_value());
         }
 
-        TEST_METHOD(StartupRequestReusesOnboardingProcess)
+        TEST_METHOD(StopCancelsPendingCommandLineAndAutomaticStartupWindows)
         {
             SettingsWindowStartup startup;
-            startup.Open(L"Run");
-            Assert::IsTrue(startup.BeginOnboardingLaunch());
-            Assert::IsFalse(startup.BeginOnboardingLaunch());
-            AssertAction(SettingsWindowStartup::Action::None, startup.CompleteStartup());
+            startup.DeferOrCancel(L"Run");
+            startup.Stop();
 
-            startup.ProcessCreated(123);
-            const auto request = startup.LaunchCompleted(123);
-            AssertAction(SettingsWindowStartup::Action::Show, request);
-            Assert::AreEqual(std::wstring(L"Run"), request.page.value());
+            const auto completion = startup.CompleteStartup(true, L"FancyZones");
+            Assert::IsTrue(completion.canceled);
+            Assert::IsFalse(completion.request.has_value());
+            Assert::IsTrue(startup.CompleteStartup().canceled);
+            Assert::IsTrue(startup.DeferOrCancel(L"General"));
         }
 
-        TEST_METHOD(FailedLaunchDoesNotLoseNewerRequestOrLeaveLaunchReserved)
+        TEST_METHOD(RequestConcurrentWithStartupCompletionIsHandledExactlyOnce)
         {
             SettingsWindowStartup startup;
-            startup.CompleteStartup();
-            startup.Open(L"FancyZones");
-            startup.Open(L"Run");
-
-            const auto retry = startup.Closed(0);
-            AssertAction(SettingsWindowStartup::Action::Launch, retry);
-            Assert::AreEqual(std::wstring(L"Run"), retry.page.value());
-            AssertAction(SettingsWindowStartup::Action::None, startup.Closed(0));
-            AssertAction(SettingsWindowStartup::Action::Launch, startup.Open(std::nullopt));
-        }
-
-        TEST_METHOD(RequestConcurrentWithStartupCompletionLaunchesExactlyOnce)
-        {
-            SettingsWindowStartup startup;
-            SettingsWindowStartup::Request openRequest;
-            SettingsWindowStartup::Request readyRequest;
+            bool deferred = false;
+            SettingsWindowStartup::Completion completion;
             std::barrier<> ready(3);
             std::thread requester([&]() {
                 ready.arrive_and_wait();
-                openRequest = startup.Open(L"Run");
+                deferred = startup.DeferOrCancel(L"Run");
             });
             std::thread initializer([&]() {
                 ready.arrive_and_wait();
-                readyRequest = startup.CompleteStartup();
+                completion = startup.CompleteStartup();
             });
 
             ready.arrive_and_wait();
             requester.join();
             initializer.join();
 
-            const auto launches = static_cast<int>(openRequest.action == SettingsWindowStartup::Action::Launch) +
-                                  static_cast<int>(readyRequest.action == SettingsWindowStartup::Action::Launch);
-            Assert::AreEqual(1, launches);
-            const auto& launched = openRequest.action == SettingsWindowStartup::Action::Launch ? openRequest : readyRequest;
-            Assert::AreEqual(std::wstring(L"Run"), launched.page.value());
-        }
-
-        TEST_METHOD(ExitDuringModuleStartupCancelsDeferredRequests)
-        {
-            SettingsWindowStartup startup;
-            startup.Open(L"Run");
-            startup.Stop();
-
-            AssertAction(SettingsWindowStartup::Action::None, startup.CompleteStartup());
-            AssertAction(SettingsWindowStartup::Action::None, startup.LaunchCompleted(123));
-            AssertAction(SettingsWindowStartup::Action::None, startup.Closed(0));
-            AssertAction(SettingsWindowStartup::Action::None, startup.Open(L"FancyZones"));
-            Assert::IsFalse(startup.BeginOnboardingLaunch());
-        }
-
-        TEST_METHOD(ReadinessQueuedBeforeProcessExitCannotPreventReopening)
-        {
-            SettingsWindowStartup startup;
-            startup.CompleteStartup();
-            startup.Open(L"Run");
-            startup.ProcessCreated(123);
-            startup.Closed(123);
-
-            AssertAction(SettingsWindowStartup::Action::None, startup.LaunchCompleted(123));
-            AssertAction(SettingsWindowStartup::Action::Launch, startup.Open(L"FancyZones"));
-        }
-
-        TEST_METHOD(OldProcessCallbacksCannotCompleteOrCloseNewerLaunch)
-        {
-            SettingsWindowStartup startup;
-            startup.CompleteStartup();
-            startup.Open(L"Run");
-            startup.ProcessCreated(123);
-            startup.Open(L"FancyZones");
-            AssertAction(SettingsWindowStartup::Action::Launch, startup.Closed(123));
-            startup.ProcessCreated(456);
-
-            AssertAction(SettingsWindowStartup::Action::None, startup.LaunchCompleted(123));
-            AssertAction(SettingsWindowStartup::Action::None, startup.Closed(123));
-            AssertAction(SettingsWindowStartup::Action::None, startup.Closed(0));
-            AssertAction(SettingsWindowStartup::Action::None, startup.Open(L"General"));
-
-            const auto request = startup.LaunchCompleted(456);
-            AssertAction(SettingsWindowStartup::Action::Show, request);
-            Assert::AreEqual(std::wstring(L"General"), request.page.value());
-        }
-
-    private:
-        static void AssertAction(SettingsWindowStartup::Action expected, const SettingsWindowStartup::Request& request)
-        {
-            Assert::AreEqual(static_cast<int>(expected), static_cast<int>(request.action));
+            Assert::IsFalse(completion.canceled);
+            Assert::AreEqual(deferred, completion.request.has_value());
+            if (completion.request)
+            {
+                Assert::AreEqual(std::wstring(L"Run"), completion.request->page.value());
+            }
         }
     };
 }

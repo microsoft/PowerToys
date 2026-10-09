@@ -20,7 +20,6 @@ using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using PowerToys.Interop;
 using Windows.UI.Popups;
@@ -60,10 +59,6 @@ namespace Microsoft.PowerToys.Settings.UI
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
-
-        private DispatcherQueueTimer settingsReadyTimer;
-
-        private int settingsReadyAttempts;
 
         public static bool IsElevated { get; set; }
 
@@ -228,24 +223,14 @@ namespace Microsoft.PowerToys.Settings.UI
                 Environment.Exit(0);
             });
 
-            var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             ipcmanager = new TwoWayPipeMessageIPCManaged(cmdArgs[(int)Arguments.SettingsPipeName], cmdArgs[(int)Arguments.PTPipeName], (string message) =>
             {
-                if (message == "{\"settings_ready_ack\":true}")
-                {
-                    dispatcherQueue.TryEnqueue(() =>
-                    {
-                        settingsReadyTimer?.Stop();
-                        ipcmanager.Send($"{{\"settings_ready_confirmed\":{Environment.ProcessId}}}");
-                    });
-                    return;
-                }
-
                 if (IPCMessageReceivedCallback != null && message.Length > 0)
                 {
                     IPCMessageReceivedCallback(message);
                 }
             });
+            ipcmanager.Start();
 
             GlobalHotkeyConflictManager.Initialize(message =>
             {
@@ -279,29 +264,6 @@ namespace Microsoft.PowerToys.Settings.UI
                     OpenScoobe();
                 }
             }
-
-            // Incoming navigation must wait for MainWindow's callbacks. Outgoing
-            // constructor requests remain queued until Start().
-            ipcmanager.Start();
-            settingsReadyTimer = dispatcherQueue.CreateTimer();
-            settingsReadyTimer.Interval = TimeSpan.FromMilliseconds(500);
-            settingsReadyTimer.Tick += (_, _) => SendSettingsReady();
-            settingsReadyTimer.Start();
-            SendSettingsReady();
-        }
-
-        private void SendSettingsReady()
-        {
-            // Pipe listener threads start asynchronously. Retry until the Runner's
-            // acknowledgement confirms that both directions are ready.
-            if (settingsReadyAttempts++ >= 60)
-            {
-                settingsReadyTimer.Stop();
-                Logger.LogWarning("Runner did not acknowledge Settings startup within 30 seconds.");
-                return;
-            }
-
-            ipcmanager.Send($"{{\"settings_ready\":{Environment.ProcessId}}}");
         }
 
         /// <summary>

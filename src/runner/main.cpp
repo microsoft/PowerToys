@@ -324,29 +324,34 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);
 
-        if (openSettings)
+        std::optional<std::wstring> window;
+        if (!settingsWindow.empty())
         {
-            std::optional<std::wstring> window;
-            if (!settingsWindow.empty())
+            window = winrt::to_hstring(settingsWindow);
+        }
+
+        // Settings saves runtime module state when it starts, so defer early opens
+        // until initialization finishes. Explicit requests take precedence over
+        // automatic onboarding, avoiding two Settings processes at startup.
+        const auto settings_startup = complete_settings_window_startup(openSettings, std::move(window));
+        if (!settings_startup.canceled)
+        {
+            if (settings_startup.request)
             {
-                window = winrt::to_hstring(settingsWindow);
+                open_settings_window(settings_startup.request->page);
             }
-            open_settings_window(window);
+            else if (openOobe)
+            {
+                if (open_oobe_window())
+                {
+                    PTSettingsHelper::save_oobe_opened_state();
+                }
+            }
+            else if (openScoobe)
+            {
+                open_scoobe_window();
+            }
         }
-
-        if (openOobe)
-        {
-            PTSettingsHelper::save_oobe_opened_state();
-            open_oobe_window();
-        }
-        else if (openScoobe)
-        {
-            open_scoobe_window();
-        }
-
-        // Settings snapshots runtime module state when it launches. Requests received
-        // through a nested startup message loop must wait until all modules are ready.
-        complete_settings_window_startup();
 
         settings_telemetry::init();
         result = run_message_loop();
