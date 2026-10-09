@@ -35,7 +35,7 @@
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
 std::mutex ipc_mutex;
-std::atomic_bool g_isLaunchInProgress = false;
+bool g_isLaunchInProgress = false; // Protected by ipc_mutex.
 std::atomic_bool isUpdateCheckThreadRunning = false;
 std::atomic<DWORD> g_settings_process_id = 0;
 HANDLE g_terminateSettingsEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::TERMINATE_SETTINGS_SHARED_EVENT);
@@ -700,11 +700,11 @@ namespace
     {
         {
             std::unique_lock lock{ ipc_mutex };
-            bool expected = false;
-            if (g_settings_process_id != 0 || !g_isLaunchInProgress.compare_exchange_strong(expected, true))
+            if (g_settings_process_id != 0 || g_isLaunchInProgress)
             {
                 return false;
             }
+            g_isLaunchInProgress = true;
         }
 
         // Claim the launch before creating the worker so concurrent requests cannot
