@@ -498,17 +498,13 @@ namespace newplus::utilities
             return false;
         }
 
-        const auto built_in_new_registry_disabled_value_prefix_len = lstrlenW(built_in_new_registry_disabled_value_prefix);
+        // REG_SZ data is specified in bytes and includes the terminating null character
+        const DWORD built_in_new_registry_disabled_value_size = static_cast<DWORD>((lstrlenW(built_in_new_registry_disabled_value_prefix) + 1) * sizeof(wchar_t));
 
-        if (RegSetValueExW(key, nullptr, 0, REG_SZ, reinterpret_cast<const BYTE*>(&built_in_new_registry_disabled_value_prefix), built_in_new_registry_disabled_value_prefix_len) != ERROR_SUCCESS)
-        {
-            RegCloseKey(key);
-            return true;
-        }
+        const LONG set_result = RegSetValueExW(key, nullptr, 0, REG_SZ, reinterpret_cast<const BYTE*>(built_in_new_registry_disabled_value_prefix), built_in_new_registry_disabled_value_size);
 
         RegCloseKey(key);
-        return false;
-
+        return set_result == ERROR_SUCCESS;
     }
 
     inline bool enable_built_in_new_via_registry()
@@ -519,23 +515,22 @@ namespace newplus::utilities
 
         HKEY key{};
 
-        if (RegOpenKeyExW(HKEY_CURRENT_USER,
-                          built_in_new_registry_path,
-                          0,
-                          KEY_ALL_ACCESS,
-                          &key) != ERROR_SUCCESS)
+        const LONG open_result = RegOpenKeyExW(HKEY_CURRENT_USER,
+                                               built_in_new_registry_path,
+                                               0,
+                                               KEY_ALL_ACCESS,
+                                               &key);
+        if (open_result != ERROR_SUCCESS)
         {
-            return true;
+            // A missing key means the built-in New handler is already enabled
+            return open_result == ERROR_FILE_NOT_FOUND;
         }
 
-        if (RegDeleteValueW(key, nullptr) != ERROR_SUCCESS)
-        {
-            RegCloseKey(key);
-            return true;
-        }
+        const LONG delete_result = RegDeleteValueW(key, nullptr);
 
         RegCloseKey(key);
-        return false;
 
+        // A missing default value means the built-in New handler is already enabled
+        return delete_result == ERROR_SUCCESS || delete_result == ERROR_FILE_NOT_FOUND;
     }
 }
