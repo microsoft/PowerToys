@@ -24,6 +24,8 @@
     <ProjectPriFileName>PowerToys.ImageResizer.pri</ProjectPriFileName>
     <!-- Custom Main entry point -->
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
+    <!-- CommunityToolkit.Mvvm 8.4 needs C# preview to generate [ObservableProperty] partial properties (MVVMTK0045). -->
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
