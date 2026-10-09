@@ -502,6 +502,10 @@
   <data name="Warning_Title" xml:space="preserve">
     <value>Warning</value>
   </data>
+  <data name="OrphanedKeysWarning_Message" xml:space="preserve">
+    <value>Warning: The following keys do not have assignments: {0}. Select Save again to continue.</value>
+    <comment>{0} is a comma-separated list of key names.</comment>
+  </data>
   <data name="Error_UnknownValidation_Title" xml:space="preserve">
     <value>Validation error</value>
   </data>
