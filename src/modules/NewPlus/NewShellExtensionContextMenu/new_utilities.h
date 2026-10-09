@@ -112,30 +112,58 @@ namespace newplus::utilities
         }
     }
 
-    inline std::wstring get_path_from_unknown_site(const ComPtr<IUnknown> site_of_folder)
-    {
-        ComPtr<IServiceProvider> service_provider;
-        site_of_folder->QueryInterface(IID_PPV_ARGS(&service_provider));
-        ComPtr<IFolderView> folder_view;
-        service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&folder_view));
-        ComPtr<IShellFolder> shell_folder;
-        folder_view->GetFolder(IID_PPV_ARGS(&shell_folder));
-        STRRET strings_returned;
-        shell_folder->GetDisplayNameOf(0, SHGDN_FORPARSING, &strings_returned);
-        LPWSTR path;
-        StrRetToStr(&strings_returned, NULL, &path);
-        return path;
-    }
-
+    // Returns an empty string when the path can't be determined
     inline std::wstring get_path_from_folder_view(const ComPtr<IFolderView> folder_view)
     {
+        if (folder_view == nullptr)
+        {
+            return {};
+        }
+
         ComPtr<IShellFolder> shell_folder;
-        folder_view->GetFolder(IID_PPV_ARGS(&shell_folder));
+        if (FAILED(folder_view->GetFolder(IID_PPV_ARGS(&shell_folder))) || shell_folder == nullptr)
+        {
+            return {};
+        }
+
         STRRET strings_returned;
-        shell_folder->GetDisplayNameOf(0, SHGDN_FORPARSING, &strings_returned);
-        LPWSTR path;
-        StrRetToStr(&strings_returned, NULL, &path);
-        return path;
+        if (FAILED(shell_folder->GetDisplayNameOf(0, SHGDN_FORPARSING, &strings_returned)))
+        {
+            return {};
+        }
+
+        LPWSTR path = nullptr;
+        if (FAILED(StrRetToStr(&strings_returned, NULL, &path)) || path == nullptr)
+        {
+            return {};
+        }
+
+        std::wstring path_string(path);
+        CoTaskMemFree(path);
+        return path_string;
+    }
+
+    // Returns an empty string when the path can't be determined
+    inline std::wstring get_path_from_unknown_site(const ComPtr<IUnknown> site_of_folder)
+    {
+        if (site_of_folder == nullptr)
+        {
+            return {};
+        }
+
+        ComPtr<IServiceProvider> service_provider;
+        if (FAILED(site_of_folder->QueryInterface(IID_PPV_ARGS(&service_provider))) || service_provider == nullptr)
+        {
+            return {};
+        }
+
+        ComPtr<IFolderView> folder_view;
+        if (FAILED(service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&folder_view))) || folder_view == nullptr)
+        {
+            return {};
+        }
+
+        return get_path_from_folder_view(folder_view);
     }
 
     inline bool is_desktop_folder(const std::filesystem::path target_fullpath)
@@ -380,6 +408,10 @@ namespace newplus::utilities
 
             // Determine target path of where context menu was displayed
             const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
+            if (target_path_name.empty())
+            {
+                throw std::runtime_error("Failed to determine the folder to create the template in");
+            }
 
             // Determine initial filename
             std::filesystem::path source_fullpath = template_entry->path;
