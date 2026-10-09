@@ -12,7 +12,6 @@
       injection in KeyboardHelper. (Same approach as the legacy harness.)
     -->
     <UseWindowsForms>true</UseWindowsForms>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.PowerToys.UITest.Next</RootNamespace>
     <AssemblyName>Microsoft.PowerToys.UITest.Next</AssemblyName>
   </PropertyGroup>
