@@ -1041,7 +1041,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null, bool reDoBackupDryRun = true)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
@@ -1050,7 +1050,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             SendConfigMSG(outsettings.ToString());
 
-            if (reDoBackupDryRun && DoBackupAndRestoreDryRun != null)
+            if (DoBackupAndRestoreDryRun != null)
             {
                 DoBackupAndRestoreDryRun(500);
             }

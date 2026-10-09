@@ -69,6 +69,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 _watcher = new FileSystemWatcher(directory, fileName);
                 _watcher.NotifyFilter = NotifyFilters.LastWrite;
                 _watcher.Changed += Watcher_Changed;
+
+                // The runner publishes general settings by atomically replacing the file.
+                if (string.IsNullOrEmpty(settingsItem.GetModuleName()))
+                {
+                    _watcher.NotifyFilter |= NotifyFilters.FileName;
+                    _watcher.Created += Watcher_Changed;
+                    _watcher.Renamed += Watcher_Changed;
+                }
+
                 _watcher.EnableRaisingEvents = true;
             }
             catch (Exception ex)

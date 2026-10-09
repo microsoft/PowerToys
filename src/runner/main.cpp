@@ -618,9 +618,11 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe, showRestartNotificationAfterUpdate);
 
-            if (result == 0)
+            if (result == 0 && !is_system_session_ending())
             {
-                // Save settings on closing, if closed 'normal'
+                // Changes are saved as they are applied. Once WM_ENDSESSION has
+                // returned, Windows may terminate us at any time; do not start
+                // another save while the session is ending.
                 PTSettingsHelper::save_general_settings(get_general_settings().to_json());
             }
         }

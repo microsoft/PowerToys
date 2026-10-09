@@ -22,7 +22,7 @@ namespace notifications
 
         m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsFileName, [this]() {
             ReadSettings();
-        });
+        }, true);
     }
 
     NotificationUtil::~NotificationUtil()
