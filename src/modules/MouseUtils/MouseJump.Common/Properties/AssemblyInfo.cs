@@ -4,4 +4,4 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("MouseJump.Common.UnitTests")]
+[assembly: InternalsVisibleTo("PowerToys.MouseJump.Common.UnitTests")]

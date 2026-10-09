@@ -46,6 +46,13 @@ internal sealed class TelemetryAdapter : IDisposable
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity =>
             {
+                // scopes don't generate actual telemetry output - they just contain
+                // tags to attach to timers and events that are raised within their lifetime
+                if (activity.GetTagItem(TelemetryContext.KindTag) is "scope")
+                {
+                    return;
+                }
+
                 var record = TelemetryAdapter.Flatten(activity);
                 _ = this.channel.Writer.TryWrite(() => writer.Write(record));
             },
