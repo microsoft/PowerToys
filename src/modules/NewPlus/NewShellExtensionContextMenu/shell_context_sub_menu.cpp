@@ -20,15 +20,16 @@ shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_fo
     utilities::create_folder_if_not_exist(root);
 
     // Scan the folder for any files and folders (the templates)
-    templates = new template_folder(root);
-    templates->rescan_template_folder();
+    // The menu items share ownership of their template, so the folder itself isn't needed past this constructor
+    template_folder templates(root);
+    templates.rescan_template_folder();
 
     // Add template items to context menu
-    const auto number_of_templates = templates->list_of_templates.size();
+    const auto number_of_templates = templates.list_of_templates.size();
     int index = 0;
     for (int i = 0; i < number_of_templates; i++)
     {
-        explorer_menu_item_commands.push_back(Make<shell_context_sub_menu_item>(templates->get_template_item(i), site_of_folder, mouse_position_at_time_of_invoke));
+        explorer_menu_item_commands.push_back(Make<shell_context_sub_menu_item>(templates.get_template_item(i), site_of_folder, mouse_position_at_time_of_invoke));
     }
 
     // Add separator to context menu
