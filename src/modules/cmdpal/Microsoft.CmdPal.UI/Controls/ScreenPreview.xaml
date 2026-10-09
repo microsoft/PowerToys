@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ScreenPreview"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Border
+        x:Name="ScreenBorder"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        BorderBrush="Black"
+        BorderThickness="8"
+        CornerRadius="8"
+        UseLayoutRounding="True">
+        <Viewbox Height="120" UseLayoutRounding="True">
+            <Grid>
+                <Image
+                    x:Name="WallpaperImage"
+                    MaxHeight="200"
+                    Stretch="Uniform"
+                    UseLayoutRounding="True" />
+                <ContentPresenter
+                    x:Name="ContentPresenter"
+                    Margin="40"
+                    Content="{x:Bind PreviewContent}"
+                    UseLayoutRounding="True" />
+            </Grid>
+        </Viewbox>
+    </Border>
+
+</UserControl>

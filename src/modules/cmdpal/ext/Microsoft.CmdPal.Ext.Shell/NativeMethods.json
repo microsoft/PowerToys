@@ -1,0 +1,13 @@
+{
+  "$schema": "https://aka.ms/CsWin32.schema.json",
+  "allowMarshaling": true,
+  "useSafeHandles": true,
+  "comInterop": {
+    "preserveSigMethods": [
+      "*"
+    ]
+  },
+  "friendlyOverloads": {
+    "enabled": true
+  }
+}

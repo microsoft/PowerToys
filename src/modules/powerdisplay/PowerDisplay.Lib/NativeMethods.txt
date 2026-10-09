@@ -1,0 +1,9 @@
+// Structs and constants only - functions use LibraryImport for AOT compatibility
+// CsWin32 generates blittable types when allowMarshaling: false
+
+// Note: All structs are manually defined in NativeStructures.cs with proper blittable layouts
+// This file is intentionally left with only LUID as a minimal test
+// Full DISPLAYCONFIG_* types need helper methods like GetViewGdiDeviceName() which CsWin32 doesn't provide
+
+// Only request LUID from CsWin32 (other types manually defined in NativeStructures.cs)
+LUID

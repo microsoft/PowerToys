@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  
+    <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
+    <AssemblyTitle>UnitTests-BgcodeThumbnailProvider</AssemblyTitle>
+    <AssemblyDescription>PowerToys UnitTests-BgcodeThumbnailProvider</AssemblyDescription>
+    <AssemblyTitle>UnitTests-BgcodeThumbnailProvider</AssemblyTitle>
+    <Description>PowerToys UnitTests-BgcodeThumbnailProvider</Description>
+    <ProjectGuid>{61CBF221-9452-4934-B685-146285E080D7}</ProjectGuid>
+    <RootNamespace>BgcodeThumbnailProviderUnitTests</RootNamespace>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="HelperFiles\sample.bgcode" />
+    <None Remove="HelperFiles\sample_JPG.bgcode" />
+    <None Remove="HelperFiles\sample_QOI.bgcode" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\BgcodeThumbnailProvider\BgcodeThumbnailProvider.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HelperFiles\sample.bgcode">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

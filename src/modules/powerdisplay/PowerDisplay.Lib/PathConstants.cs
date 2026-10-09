@@ -1,0 +1,140 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.IO;
+
+namespace PowerDisplay.Common
+{
+    /// <summary>
+    /// Centralized path constants for PowerDisplay module.
+    /// Provides unified access to all file and folder paths used by PowerDisplay and related integrations.
+    /// </summary>
+    public static class PathConstants
+    {
+        /// <summary>
+        /// Gets the base PowerToys settings folder path.
+        /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys
+        /// </summary>
+        public static string PowerToysBasePath
+            => Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft",
+                "PowerToys");
+
+        /// <summary>
+        /// Gets the PowerDisplay module folder path.
+        /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay
+        /// </summary>
+        public static string PowerDisplayFolderPath
+            => Path.Combine(PowerToysBasePath, "PowerDisplay");
+
+        /// <summary>
+        /// Gets the PowerDisplay profiles file path.
+        /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay\profiles.json
+        /// </summary>
+        public static string ProfilesFilePath => Path.Combine(PowerDisplayFolderPath, ProfilesFileName);
+
+        /// <summary>
+        /// Gets the PowerDisplay settings file path.
+        /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay\settings.json
+        /// </summary>
+        public static string SettingsFilePath => Path.Combine(PowerDisplayFolderPath, SettingsFileName);
+
+        /// <summary>
+        /// Gets the LightSwitch module folder path.
+        /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\LightSwitch
+        /// </summary>
+        public static string LightSwitchFolderPath => Path.Combine(PowerToysBasePath, "LightSwitch");
+
+        /// <summary>
+        /// Gets the LightSwitch settings file path.
+        /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\LightSwitch\settings.json
+        /// </summary>
+        public static string LightSwitchSettingsFilePath => Path.Combine(LightSwitchFolderPath, SettingsFileName);
+
+        /// <summary>
+        /// The name of the profiles file.
+        /// </summary>
+        public const string ProfilesFileName = "profiles.json";
+
+        /// <summary>
+        /// The name of the settings file.
+        /// </summary>
+        public const string SettingsFileName = "settings.json";
+
+        /// <summary>
+        /// The name of the monitor state file.
+        /// </summary>
+        public const string MonitorStateFileName = "monitor_state.json";
+
+        /// <summary>
+        /// Gets the monitor state file path.
+        /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay\monitor_state.json
+        /// </summary>
+        public static string MonitorStateFilePath => Path.Combine(PowerDisplayFolderPath, MonitorStateFileName);
+
+        /// <summary>
+        /// Full path of discovery.lock. Existence at PowerDisplay.exe startup
+        /// indicates the previous run crashed inside DDC/CI capability fetch.
+        /// </summary>
+        public static string DiscoveryLockPath => Path.Combine(PowerDisplayFolderPath, "discovery.lock");
+
+        /// <summary>
+        /// Full path of crash_detected.flag. UI signal — Settings UI shows the
+        /// auto-disable InfoBar when this exists. Settings UI computes the same
+        /// path independently (cannot reference PowerDisplay.Lib).
+        /// </summary>
+        public static string CrashDetectedFlagPath => Path.Combine(PowerDisplayFolderPath, "crash_detected.flag");
+
+        /// <summary>
+        /// Full path of the global PowerToys settings.json (NOT the per-module file).
+        /// PowerDisplay.exe Phase 0 mutates enabled.PowerDisplay here.
+        /// </summary>
+        public static string GlobalPowerToysSettingsPath => Path.Combine(PowerToysBasePath, "settings.json");
+
+        /// <summary>
+        /// Event name for LightSwitch light theme change notifications.
+        /// Signaled when LightSwitch switches to light mode.
+        /// Must match CommonSharedConstants::LIGHT_SWITCH_LIGHT_THEME_EVENT in shared_constants.h.
+        /// </summary>
+        public const string LightSwitchLightThemeEventName = "Local\\PowerToysLightSwitch-LightThemeEvent-50077121-2ffc-4841-9c86-ab1bd3f9baca";
+
+        /// <summary>
+        /// Event name for LightSwitch dark theme change notifications.
+        /// Signaled when LightSwitch switches to dark mode.
+        /// Must match CommonSharedConstants::LIGHT_SWITCH_DARK_THEME_EVENT in shared_constants.h.
+        /// </summary>
+        public const string LightSwitchDarkThemeEventName = "Local\\PowerToysLightSwitch-DarkThemeEvent-b3a835c0-eaa2-49b0-b8eb-f793e3df3368";
+
+        /// <summary>
+        /// Ensures the PowerDisplay folder exists. Creates it if necessary.
+        /// </summary>
+        /// <returns>The PowerDisplay folder path</returns>
+        public static string EnsurePowerDisplayFolderExists()
+            => EnsureFolderExists(PowerDisplayFolderPath);
+
+        /// <summary>
+        /// Ensures the LightSwitch folder exists. Creates it if necessary.
+        /// </summary>
+        /// <returns>The LightSwitch folder path</returns>
+        public static string EnsureLightSwitchFolderExists()
+            => EnsureFolderExists(LightSwitchFolderPath);
+
+        /// <summary>
+        /// Ensures the specified folder exists. Creates it if necessary.
+        /// </summary>
+        /// <param name="folderPath">The folder path to ensure exists</param>
+        /// <returns>The folder path</returns>
+        private static string EnsureFolderExists(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            return folderPath;
+        }
+    }
+}

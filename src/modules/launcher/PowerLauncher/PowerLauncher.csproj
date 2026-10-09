@@ -1,0 +1,120 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />	
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.Run</AssemblyTitle>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <!-- For some users, it crashes in ExtractAssociatedIcon https://github.com/microsoft/PowerToys/issues/37254. Workaround suggested here https://github.com/dotnet/wpf/issues/10483 was to disable CETCompat -->
+    <CETCompat>false</CETCompat>
+    <UseWindowsForms>False</UseWindowsForms>
+    <StartupObject>PowerLauncher.App</StartupObject>
+    <ApplicationIcon>Assets\PowerLauncher\RunResource.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssetTargetFallback>uap10.0.19041</AssetTargetFallback>
+    <Description>PowerToys PowerLauncher</Description>
+    <AssemblyName>PowerToys.PowerLauncher</AssemblyName>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\PowerLauncher\app_error.dark.png" />
+    <None Remove="Assets\PowerLauncher\app_error.light.png" />
+    <None Remove="Assets\PowerLauncher\RunResource.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\PowerLauncher\app_error.dark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\PowerLauncher\app_error.light.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Interop.Microsoft.Office.Interop.OneNote" />
+    <PackageReference Include="Mages" />
+    <PackageReference Include="LazyCache" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
+    <PackageReference Include="ScipBe.Common.Office.OneNote" />
+    <PackageReference Include="System.Reactive" />
+    <PackageReference Include="System.Data.OleDb" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" />
+    <PackageReference Include="UnitsNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\PowerLauncher.Telemetry\PowerLauncher.Telemetry.csproj" />
+    <ProjectReference Include="..\Wox.Infrastructure\Wox.Infrastructure.csproj" />
+    <ProjectReference Include="..\Wox.Plugin\Wox.Plugin.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\PowerLauncher\RunAsset.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Themes\HighContrastBlack.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrastWhite.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrast2.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\HighContrast1.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\PowerLauncher\RunResource.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.ExtViews.Controls.PlainTextContentViewer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Border Padding="12,8,8,8">
+        <ScrollViewer
+            x:Name="Scroller"
+            HorizontalScrollBarVisibility="Auto"
+            HorizontalScrollMode="Auto"
+            IsDeferredScrollingEnabled="False"
+            IsHorizontalScrollChainingEnabled="False">
+            <TextBlock
+                x:Name="ContentTextBlock"
+                IsTextSelectionEnabled="True"
+                PointerWheelChanged="ContentTextBlock_PointerWheelChanged">
+                <TextBlock.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            x:Name="CopySelectionItem"
+                            x:Uid="PlainTextContentViewer_Copy"
+                            Click="CopySelection_Click"
+                            Icon="Copy"
+                            Text="Copy">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="C" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="PlainTextContentViewer_SelectAll"
+                            Click="SelectAll_Click"
+                            Icon="SelectAll"
+                            Text="Select All">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="A" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <ToggleMenuFlyoutItem
+                            x:Uid="PlainTextContentViewer_WordWrap"
+                            IsChecked="{x:Bind WordWrapEnabled, Mode=TwoWay}"
+                            Text="Word Wrap" />
+                        <ToggleMenuFlyoutItem
+                            x:Uid="PlainTextContentViewer_MonospaceFont"
+                            IsChecked="{x:Bind UseMonospace, Mode=TwoWay}"
+                            Text="Monospace Font" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem
+                            x:Uid="PlainTextContentViewer_ZoomIn"
+                            Click="ZoomIn_Click"
+                            Icon="ZoomIn"
+                            Text="Zoom In">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Add" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="PlainTextContentViewer_ZoomOut"
+                            Click="ZoomOut_Click"
+                            Icon="ZoomOut"
+                            Text="Zoom Out">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Subtract" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="PlainTextContentViewer_ResetZoom"
+                            Click="ResetZoom_Click"
+                            Text="Reset Zoom">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE9A6;" />
+                            </MenuFlyoutItem.Icon>
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Number0" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </TextBlock.ContextFlyout>
+            </TextBlock>
+        </ScrollViewer>
+    </Border>
+</UserControl>

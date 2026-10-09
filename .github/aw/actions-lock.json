@@ -1,0 +1,14 @@
+{
+  "entries": {
+    "actions/checkout@v6.0.2": {
+      "repo": "actions/checkout",
+      "version": "v6.0.2",
+      "sha": "de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+    },
+    "github/gh-aw-actions/setup@v0.87.10": {
+      "repo": "github/gh-aw-actions/setup",
+      "version": "v0.87.10",
+      "sha": "bc8c008a419c5b7a29df6f5641edd35fd1c6ea85"
+    }
+  }
+}

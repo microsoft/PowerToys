@@ -1,0 +1,38 @@
+# .pipelines/v2/nightly-prewarm.yml
+# Nightly pre-warm that reuses your existing ci.yml as-is
+
+trigger: none
+pr: none
+
+# (18:00 UTC) — adjust as you like
+schedules:
+  - cron: "0 18 * * *"   # UTC
+    displayName: Nightly pre-warm (main)
+    branches:
+      include:
+        - main
+    always: true
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+parameters:
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: enableMsBuildCaching
+    type: boolean
+    displayName: "Enable MSBuild Caching"
+    default: true
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    displayName: "MSBuild Cache Read Only"
+    default: false
+
+extends:
+  template: templates/pipeline-ci-build.yml
+  parameters:
+    buildPlatforms: ${{ parameters.buildPlatforms }}
+    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}

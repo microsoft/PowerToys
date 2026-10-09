@@ -1,0 +1,10 @@
+namespace PowerToys
+{
+    namespace ZoomItSettingsInterop
+    {
+        [default_interface] static runtimeclass ZoomItSettings {
+            static String LoadSettingsJson();
+            static void SaveSettingsJson(String json);
+        }
+    }
+}

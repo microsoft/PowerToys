@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <AssemblyName>PowerToys.AdvancedPaste.Engine</AssemblyName>
+    <RootNamespace>AdvancedPaste</RootNamespace>
+    <Platforms>x64;ARM64</Platforms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+  </PropertyGroup>
+
+  <Target Name="GeneratePhiSilicaLafCredentials" BeforeTargets="BeforeCompile;CoreCompile">
+    <PropertyGroup>
+      <PhiSilicaLafCredentialsFile>$(IntermediateOutputPath)PhiSilicaLafCredentials.g.cs</PhiSilicaLafCredentialsFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(PhiSilicaLafCredentialsFile)" Overwrite="true" Lines="// &lt;auto-generated/&gt;;namespace AdvancedPaste%3B;;internal static class PhiSilicaLafCredentials;{;    internal const string Token = &quot;$(PhiSilicaLafToken)&quot;%3B;    internal const string Attestation = &quot;$(PhiSilicaLafAttestation)&quot;%3B;}" />
+    <ItemGroup>
+      <Compile Include="$(PhiSilicaLafCredentialsFile)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Compile Include="AdvancedPasteServiceCollectionExtensions.cs" />
+    <Compile Include="AdvancedPastePolicy.cs" />
+    <Compile Include="AdvancedPasteTempFileManager.cs" />
+    <Compile Include="..\AdvancedPaste\PhiSilicaLafHelper.cs" Link="PhiSilicaLafHelper.cs" />
+    <Compile Include="..\AdvancedPaste\Helpers\*.cs"
+             Exclude="..\AdvancedPaste\Helpers\ClipboardHelper.cs;..\AdvancedPaste\Helpers\ClipboardItemHelper.cs;..\AdvancedPaste\Helpers\NamedPipeProcessor.cs" />
+    <Compile Include="..\AdvancedPaste\Models\**\*.cs"
+             Exclude="..\AdvancedPaste\Models\ClipboardItem.cs;..\AdvancedPaste\Models\PasteActionError.cs" />
+    <Compile Include="..\AdvancedPaste\Services\**\*.cs" />
+    <Compile Include="..\AdvancedPaste\SerializationContext\*.cs" />
+    <Compile Include="..\AdvancedPaste\Telemetry\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PowerToys.AdvancedPaste</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PowerToys.AdvancedPaste.Cli</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>AdvancedPaste.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>AdvancedPaste.Cli.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.SemanticKernel" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.MistralAI" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
+    <PackageReference Include="OpenAI" />
+    <PackageReference Include="ReverseMarkdown" />
+    <PackageReference Include="StreamJsonRpc" />
+    <PackageReference Include="System.ClientModel" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AdvancedPaste.Core\AdvancedPaste.Core.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+</Project>

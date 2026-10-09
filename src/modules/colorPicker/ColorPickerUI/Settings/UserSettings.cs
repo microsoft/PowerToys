@@ -1,0 +1,221 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.IO.Abstractions;
+using System.Text.Json;
+using System.Threading;
+
+using ColorPicker.Common;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Telemetry;
+
+namespace ColorPicker.Settings
+{
+    public class UserSettings : IUserSettings
+    {
+        private readonly SettingsUtils _settingsUtils;
+        private const string ColorPickerModuleName = "ColorPicker";
+        private const string ColorPickerHistoryFilename = "colorHistory.json";
+        private const string DefaultActivationShortcut = "Ctrl + Break";
+        private const int MaxNumberOfRetry = 5;
+        private const int SettingsReadOnChangeDelayInMs = 300;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Actually, call back is LoadSettingsFromJson")]
+        private readonly IFileSystemWatcher _watcher;
+
+        private readonly Lock _loadingSettingsLock = new Lock();
+
+        private bool _loadingColorsHistory;
+
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+
+        public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
+        {
+            _settingsUtils = SettingsUtils.Default;
+            ChangeCursor = new SettingItem<bool>(true);
+            ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
+            CopiedColorRepresentation = new SettingItem<string>(ColorRepresentationType.HEX.ToString());
+            ActivationAction = new SettingItem<ColorPickerActivationAction>(ColorPickerActivationAction.OpenColorPicker);
+            PrimaryClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.PickColorThenEditor);
+            MiddleClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.PickColorAndClose);
+            SecondaryClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.Close);
+            ColorHistoryLimit = new SettingItem<int>(20);
+            ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
+            ShowColorName = new SettingItem<bool>(false);
+
+            LoadSettingsFromJson();
+
+            // delay loading settings on change by some time to avoid file in use exception
+            _watcher = Helper.GetFileWatcher(ColorPickerModuleName, "settings.json", () => throttledActionInvoker.ScheduleAction(LoadSettingsFromJson, SettingsReadOnChangeDelayInMs));
+        }
+
+        private void ColorHistory_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (!_loadingColorsHistory)
+            {
+                _settingsUtils.SaveSettings(JsonSerializer.Serialize(ColorHistory, _serializerOptions), ColorPickerModuleName, ColorPickerHistoryFilename);
+            }
+        }
+
+        public SettingItem<string> ActivationShortcut { get; private set; }
+
+        public SettingItem<bool> ChangeCursor { get; private set; }
+
+        public SettingItem<string> CopiedColorRepresentation { get; set; }
+
+        public SettingItem<string> CopiedColorRepresentationFormat { get; set; }
+
+        public SettingItem<ColorPickerActivationAction> ActivationAction { get; private set; }
+
+        public SettingItem<ColorPickerClickAction> PrimaryClickAction { get; private set; }
+
+        public SettingItem<ColorPickerClickAction> MiddleClickAction { get; private set; }
+
+        public SettingItem<ColorPickerClickAction> SecondaryClickAction { get; private set; }
+
+        public RangeObservableCollection<string> ColorHistory { get; private set; } = new RangeObservableCollection<string>();
+
+        public SettingItem<int> ColorHistoryLimit { get; }
+
+        public ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>> VisibleColorFormats { get; private set; } = new ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>>();
+
+        public SettingItem<bool> ShowColorName { get; }
+
+        private void LoadSettingsFromJson()
+        {
+            // TODO this IO call should by Async, update GetFileWatcher helper to support async
+            lock (_loadingSettingsLock)
+            {
+                {
+                    var retry = true;
+                    var retryCount = 0;
+
+                    while (retry)
+                    {
+                        try
+                        {
+                            retryCount++;
+
+                            if (!_settingsUtils.SettingsExists(ColorPickerModuleName))
+                            {
+                                Logger.LogInfo("ColorPicker settings.json was missing, creating a new one");
+                                var defaultColorPickerSettings = new ColorPickerSettings();
+                                defaultColorPickerSettings.Save(_settingsUtils);
+                            }
+
+                            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
+                            if (settings != null)
+                            {
+                                ChangeCursor.Value = settings.Properties.ChangeCursor;
+                                ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
+                                if (settings.Properties.CopiedColorRepresentation == null)
+                                {
+                                    settings.Properties.CopiedColorRepresentation = "HEX";
+                                }
+
+                                CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
+                                CopiedColorRepresentationFormat = new SettingItem<string>(string.Empty);
+                                ActivationAction.Value = settings.Properties.ActivationAction;
+                                PrimaryClickAction.Value = settings.Properties.PrimaryClickAction;
+                                MiddleClickAction.Value = settings.Properties.MiddleClickAction;
+                                SecondaryClickAction.Value = settings.Properties.SecondaryClickAction;
+                                ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
+                                ShowColorName.Value = settings.Properties.ShowColorName;
+
+                                List<string> savedColorHistory = new List<string>();
+                                try
+                                {
+                                    string filePath = _settingsUtils.GetSettingsFilePath(ColorPickerModuleName, ColorPickerHistoryFilename);
+                                    if (!File.Exists(filePath))
+                                    {
+                                        if (settings.Properties.ColorHistory != null)
+                                        {
+                                            savedColorHistory = settings.Properties.ColorHistory;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        string jsonSettingsString = System.IO.File.ReadAllText(filePath).Trim('\0');
+                                        savedColorHistory = JsonSerializer.Deserialize<List<string>>(jsonSettingsString);
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    Logger.LogInfo("ColorPicker colorHistory.json was missing or corrupt");
+                                }
+
+                                _loadingColorsHistory = true;
+                                ColorHistory.Clear();
+                                foreach (var item in savedColorHistory)
+                                {
+                                    ColorHistory.Add(item);
+                                }
+
+                                _loadingColorsHistory = false;
+
+                                VisibleColorFormats.Clear();
+                                foreach (var item in settings.Properties.VisibleColorFormats)
+                                {
+                                    if (item.Value.Key)
+                                    {
+                                        VisibleColorFormats.Add(new System.Collections.Generic.KeyValuePair<string, string>(item.Key, item.Value.Value));
+                                    }
+
+                                    if (item.Key == CopiedColorRepresentation.Value)
+                                    {
+                                        CopiedColorRepresentationFormat.Value = item.Value.Value;
+                                    }
+                                }
+                            }
+
+                            retry = false;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (retryCount > MaxNumberOfRetry)
+                            {
+                                retry = false;
+                            }
+
+                            Logger.LogError("Failed to read changed settings", ex);
+                            Thread.Sleep(500);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void SendSettingsTelemetry()
+        {
+            Logger.LogInfo("Sending settings telemetry");
+            var settings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
+            var properties = settings?.Properties;
+            if (properties == null)
+            {
+                Logger.LogError("Failed to send settings telemetry");
+                return;
+            }
+
+            var telemetrySettings = new Telemetry.ColorPickerSettings(properties.VisibleColorFormats)
+            {
+                ActivationShortcut = properties.ActivationShortcut.ToString(),
+                ActivationBehaviour = properties.ActivationAction.ToString(),
+                ColorFormatForClipboard = properties.CopiedColorRepresentation.ToString(),
+                ShowColorName = properties.ShowColorName,
+            };
+
+            PowerToysTelemetry.Log.WriteEvent(telemetrySettings);
+        }
+    }
+}

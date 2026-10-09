@@ -1,0 +1,178 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "$when": "${errorMessage != null}",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${errorMessage}",
+          "wrap": true,
+          "size": "small"
+        }
+      ],
+      "style": "warning"
+    },
+    {
+      "type": "Container",
+      "$when": "${errorMessage == null}",
+      "items": [
+        {
+          "type": "Image",
+          "url": "${memGraphUrl}",
+          "height": "${chartHeight}",
+          "width": "${chartWidth}",
+          "$when": "${$host.widgetSize != \"small\"}",
+          "horizontalAlignment": "center"
+        },
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Memory_Widget_Template/UsedMemory%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${usedMem}",
+                  "type": "TextBlock",
+                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"large\")}",
+                  "weight": "bolder"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Memory_Widget_Template/AllMemory%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right"
+                },
+                {
+                  "text": "${allMem}",
+                  "type": "TextBlock",
+                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"large\")}",
+                  "weight": "bolder",
+                  "horizontalAlignment": "right"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Memory_Widget_Template/Committed%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${committedMem}/${committedLimitMem}",
+                  "type": "TextBlock",
+                  "size": "medium"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Memory_Widget_Template/Cached%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right"
+                },
+                {
+                  "text": "${cachedMem}",
+                  "type": "TextBlock",
+                  "size": "medium",
+                  "horizontalAlignment": "right"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${$host.widgetSize == \"large\"}",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Memory_Widget_Template/PagedPool%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${pagedPoolMem}",
+                  "type": "TextBlock",
+                  "size": "medium"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Memory_Widget_Template/NonPagedPool%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right"
+                },
+                {
+                  "text": "${nonPagedPoolMem}",
+                  "type": "TextBlock",
+                  "size": "medium",
+                  "horizontalAlignment": "right"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${$host.widgetSize != \"small\"}",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Memory_Widget_Template/MemoryUsage%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right"
+                },
+                {
+                  "text": "${memUsage}",
+                  "type": "TextBlock",
+                  "size": "medium",
+                  "horizontalAlignment": "right"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

@@ -1,0 +1,113 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.IO;
+using System.IO.Abstractions;
+using System.Threading;
+
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using PowerOCR.Helpers;
+
+namespace PowerOCR.Settings
+{
+    public partial class UserSettings : IUserSettings
+    {
+        private readonly SettingsUtils _settingsUtils;
+        private const string PowerOcrModuleName = "TextExtractor";
+        private const string DefaultActivationShortcut = "Win + Shift + O";
+        private const int MaxNumberOfRetry = 5;
+        private const int SettingsReadOnChangeDelayInMs = 300;
+
+        private readonly IFileSystemWatcher _watcher;
+        private readonly Lock _loadingSettingsLock = new();
+
+        public UserSettings(IThrottledActionInvoker throttledActionInvoker)
+        {
+            _settingsUtils = SettingsUtils.Default;
+            ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
+            PreferredLanguage = new SettingItem<string>(string.Empty);
+
+            LoadSettingsFromJson();
+
+            // delay loading settings on change by some time to avoid file in use exception
+            _watcher = Helper.GetFileWatcher(PowerOcrModuleName, "settings.json", () => throttledActionInvoker.ScheduleAction(LoadSettingsFromJson, SettingsReadOnChangeDelayInMs));
+        }
+
+        public SettingItem<string> ActivationShortcut { get; private set; }
+
+        public SettingItem<string> PreferredLanguage { get; private set; }
+
+        private void LoadSettingsFromJson()
+        {
+            // TODO this IO call should by Async, update GetFileWatcher helper to support async
+            lock (_loadingSettingsLock)
+            {
+                {
+                    var retry = true;
+                    var retryCount = 0;
+
+                    while (retry)
+                    {
+                        try
+                        {
+                            retryCount++;
+
+                            // This API also creates a source-generated, AOT-safe default file
+                            // when settings.json is missing or corrupt.
+                            var settings = _settingsUtils.GetSettingsOrDefault<PowerOcrSettings>(PowerOcrModuleName);
+                            if (settings != null)
+                            {
+                                ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
+                                PreferredLanguage.Value = settings.Properties.PreferredLanguage.ToString();
+                            }
+
+                            retry = false;
+                        }
+                        catch (IOException ex)
+                        {
+                            if (retryCount > MaxNumberOfRetry)
+                            {
+                                retry = false;
+                            }
+
+                            Logger.LogError("Failed to read changed settings", ex);
+                            Thread.Sleep(500);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (retryCount > MaxNumberOfRetry)
+                            {
+                                retry = false;
+                            }
+
+                            Logger.LogError("Failed to read changed settings", ex);
+                            Thread.Sleep(500);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void SendSettingsTelemetry()
+        {
+            Logger.LogInfo("Sending settings telemetry");
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerOcrSettings>(PowerOcrModuleName);
+            var properties = settings?.Properties;
+            if (properties == null)
+            {
+                Logger.LogError("Failed to send settings telemetry");
+                return;
+            }
+        }
+
+        public void Dispose()
+        {
+            _watcher?.Dispose();
+            GC.SuppressFinalize(this);
+        }
+    }
+}

@@ -1,0 +1,54 @@
+jobs:
+- job: Resolve
+  displayName: Resolve affected UI test projects
+  condition: eq(variables['Build.Reason'], 'PullRequest')
+  pool:
+    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+      name: SHINE-INT-L
+    ${{ else }}:
+      name: SHINE-OSS-L
+    demands: ImageOverride -equals SHINE-VS18-Latest
+  steps:
+    - checkout: self
+      clean: true
+      submodules: false
+      persistCredentials: True
+      fetchTags: false
+      fetchDepth: 0
+
+    - pwsh: |
+        $ErrorActionPreference = 'Stop'
+        $targetBranch = '$(System.PullRequest.TargetBranch)'
+        if ([string]::IsNullOrWhiteSpace($targetBranch) -or $targetBranch.StartsWith('$(')) {
+          throw 'System.PullRequest.TargetBranch is unavailable for this pull request build.'
+        }
+
+        $targetRef = $targetBranch -replace '^refs/heads/', 'refs/remotes/origin/'
+        & git fetch --no-tags origin "+${targetBranch}:${targetRef}"
+        if ($LASTEXITCODE -ne 0) {
+          throw "Failed to fetch pull request target branch '$targetBranch'."
+        }
+
+        $mergeBase = & git merge-base HEAD $targetRef
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mergeBase)) {
+          throw "Failed to find the merge base between HEAD and '$targetRef'."
+        }
+
+        $changedFiles = @(& git diff --name-only --diff-filter=ACDMRTUXB "$mergeBase...HEAD")
+        if ($LASTEXITCODE -ne 0) {
+          throw 'Failed to enumerate pull request changes.'
+        }
+
+        $result = & "$(Build.SourcesDirectory)\.pipelines\resolveUiTestModules.ps1" `
+          -RepoRoot "$(Build.SourcesDirectory)" `
+          -ChangedFile $changedFiles
+        $modules = @($result.UiTestModules)
+        $modulesValue = $modules -join ';'
+        $hasUiTests = if ($modules.Count -gt 0) { 'true' } else { 'false' }
+
+        Write-Host "Touched modules: $($result.TouchedModules -join ', ')"
+        Write-Host "Selected UI tests: $($modules -join ', ')"
+        Write-Host "##vso[task.setvariable variable=hasUiTests;isOutput=true]$hasUiTests"
+        Write-Host "##vso[task.setvariable variable=uiTestModules;isOutput=true]$modulesValue"
+      name: resolve
+      displayName: Resolve UI tests from pull request changes

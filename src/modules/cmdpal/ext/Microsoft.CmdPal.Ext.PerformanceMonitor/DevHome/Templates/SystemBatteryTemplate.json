@@ -1,0 +1,90 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "$when": "${errorMessage != null}",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${errorMessage}",
+          "wrap": true,
+          "size": "small"
+        }
+      ],
+      "style": "warning"
+    },
+    {
+      "type": "Container",
+      "$when": "${errorMessage == null}",
+      "items": [
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Battery_Widget_Template/Charge%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${batteryCharge}",
+                  "type": "TextBlock",
+                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"extraLarge\")}",
+                  "weight": "bolder"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Battery_Widget_Template/Status%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right"
+                },
+                {
+                  "text": "${batteryStatus}",
+                  "type": "TextBlock",
+                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"large\")}",
+                  "weight": "bolder",
+                  "horizontalAlignment": "right"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${$host.widgetSize != \"small\"}",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Battery_Widget_Template/TimeRemaining%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${batteryTimeRemaining}",
+                  "type": "TextBlock",
+                  "size": "medium",
+                  "wrap": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

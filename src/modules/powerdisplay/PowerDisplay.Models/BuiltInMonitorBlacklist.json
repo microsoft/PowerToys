@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "edidId": "LTM2C02",
+      "comments": "See https://github.com/microsoft/PowerToys/issues/47556"
+    },
+    {
+      "edidId": "GSM7714",
+      "comments": "See https://github.com/microsoft/PowerToys/issues/47968"
+    }
+  ]
+}

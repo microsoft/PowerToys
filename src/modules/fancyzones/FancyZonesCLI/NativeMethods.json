@@ -1,0 +1,5 @@
+{
+  "$schema": "https://aka.ms/CsWin32.schema.json",
+  "emitSingleFile": true,
+  "allowMarshaling": false
+}

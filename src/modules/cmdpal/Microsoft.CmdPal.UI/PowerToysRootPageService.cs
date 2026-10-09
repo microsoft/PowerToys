@@ -1,0 +1,100 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using ManagedCommon;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CommandPalette.Extensions;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+namespace Microsoft.CmdPal.UI;
+
+internal sealed class PowerToysRootPageService : IRootPageService
+{
+    private readonly TopLevelCommandManager _tlcManager;
+
+    private IExtensionWrapper? _activeExtension;
+    private Lazy<MainListPage> _mainListPage;
+
+    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService)
+    {
+        _tlcManager = topLevelCommandManager;
+
+        _mainListPage = new Lazy<MainListPage>(() =>
+        {
+            return new MainListPage(_tlcManager, aliasManager, fuzzyMatcherProvider, settingsService, appStateService);
+        });
+    }
+
+    public async Task PreLoadAsync()
+    {
+        await _tlcManager.LoadBuiltInProvidersAsync();
+    }
+
+    public Microsoft.CommandPalette.Extensions.IPage GetRootPage()
+    {
+        return _mainListPage.Value;
+    }
+
+    public async Task PostLoadRootPageAsync()
+    {
+        // After loading built-ins, and starting navigation, kick off a thread to load external extensions.
+        _tlcManager.LoadExternalProvidersCommand.Execute(null);
+
+        await _tlcManager.LoadExternalProvidersCommand.ExecutionTask!;
+        if (_tlcManager.LoadExternalProvidersCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+        {
+            // TODO: Handle failure case
+        }
+    }
+
+    private void OnPerformTopLevelCommand(object? context)
+    {
+        try
+        {
+            if (context is IListItem listItem)
+            {
+                _mainListPage.Value.UpdateHistory(listItem);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update history in PowerToysRootPageService");
+            Logger.LogError(ex.ToString());
+        }
+    }
+
+    public void OnPerformCommand(object? context, bool topLevel, AppExtensionHost? currentHost)
+    {
+        if (topLevel)
+        {
+            OnPerformTopLevelCommand(context);
+        }
+
+        if (currentHost is CommandPaletteHost host)
+        {
+            SetActiveExtension(host.Extension);
+        }
+        else
+        {
+            throw new InvalidOperationException("This must be a programming error - everything in Command Palette should have a CommandPaletteHost");
+        }
+    }
+
+    public void SetActiveExtension(IExtensionWrapper? extension)
+    {
+        // Input to another process can revoke foreground rights, so renew them for each command.
+        var previousExtension = Interlocked.Exchange(ref _activeExtension, extension);
+        extension?.TryAllowSetForeground(checkLiveness: extension != previousExtension);
+    }
+
+    public void GoHome()
+    {
+        SetActiveExtension(null);
+    }
+}

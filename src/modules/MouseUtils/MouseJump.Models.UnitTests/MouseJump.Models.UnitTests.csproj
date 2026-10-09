@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+    <PropertyGroup>
+        <ProjectGuid>{AB6305DB-CA33-4EF4-BA40-B0CFC10E7B9F}</ProjectGuid>
+        <AssemblyName>PowerToys.MouseJump.Models.UnitTests</AssemblyName>
+        <AssemblyTitle>PowerToys.MouseJump.Models.UnitTests</AssemblyTitle>
+        <AssemblyDescription>PowerToys MouseJump.Models.UnitTests</AssemblyDescription>
+        <OutputType>Library</OutputType>
+        <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\MouseJump.Models.UnitTests\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MouseJump.Models\MouseJump.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" />
+    </ItemGroup>
+</Project>

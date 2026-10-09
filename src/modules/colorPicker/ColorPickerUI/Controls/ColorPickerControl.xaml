@@ -1,0 +1,246 @@
+﻿<UserControl
+    x:Class="ColorPicker.Controls.ColorPickerControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Uid="Color_Palette"
+    mc:Ignorable="d">
+    <Grid
+        x:Name="PickerPanel"
+        Height="236"
+        HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Button
+            x:Name="colorVariation1Button"
+            x:Uid="Lightest_color"
+            Grid.Row="0"
+            Background="LightPink"
+            BorderThickness="1,1,1,0"
+            Click="ColorVariationButton_Click"
+            CornerRadius="4,4,0,0"
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <ToolTipService.ToolTip>
+                <TextBlock x:Uid="Select_color" />
+            </ToolTipService.ToolTip>
+        </Button>
+        <Button
+            x:Name="colorVariation2Button"
+            x:Uid="Lighter_color"
+            Grid.Row="1"
+            Background="LightPink"
+            BorderThickness="1,0,1,0"
+            Click="ColorVariationButton_Click"
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <ToolTipService.ToolTip>
+                <TextBlock x:Uid="Select_color" />
+            </ToolTipService.ToolTip>
+        </Button>
+        <Button
+            x:Name="colorVariation3Button"
+            x:Uid="Darker_color"
+            Grid.Row="3"
+            Background="LightPink"
+            BorderThickness="1,0,1,0"
+            Click="ColorVariationButton_Click"
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <ToolTipService.ToolTip>
+                <TextBlock x:Uid="Select_color" />
+            </ToolTipService.ToolTip>
+        </Button>
+        <Button
+            x:Name="colorVariation4Button"
+            x:Uid="Darkest_color"
+            Grid.Row="4"
+            Background="LightPink"
+            BorderThickness="1,0,1,1"
+            Click="ColorVariationButton_Click"
+            CornerRadius="0,0,4,4"
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <ToolTipService.ToolTip>
+                <TextBlock x:Uid="Select_color" />
+            </ToolTipService.ToolTip>
+        </Button>
+        <Button
+            x:Name="CurrentColorButton"
+            x:Uid="Selected_color"
+            Grid.Row="2"
+            BorderThickness="1,0,1,0"
+            Click="CurrentColorButton_Click"
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <Button.Flyout>
+                <Flyout
+                    x:Name="DetailsFlyout"
+                    Closed="DetailsFlyout_Closed"
+                    Opened="DetailsFlyout_Opened"
+                    Placement="Right"
+                    ShouldConstrainToRootBounds="False">
+                    <Grid
+                        x:Name="detailsGrid"
+                        Width="316"
+                        RowSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="44" />
+                            <ColumnDefinition Width="86" />
+                            <ColumnDefinition Width="86" />
+                            <ColumnDefinition Width="86" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="H"
+                            TextAlignment="Center" />
+                        <Grid
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            VerticalAlignment="Center">
+                            <Border x:Name="HueGradientBorder" Style="{StaticResource ColorPickerGradientBorderStyle}" />
+                            <Slider
+                                x:Name="HueGradientSlider"
+                                x:Uid="Hue_slider"
+                                Style="{StaticResource ColorPickerGradientSliderStyle}"
+                                ValueChanged="HueGradientSlider_ValueChanged" />
+                        </Grid>
+
+                        <TextBlock
+                            Grid.Row="1"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="S"
+                            TextAlignment="Center" />
+                        <Grid
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            VerticalAlignment="Center">
+                            <Border Style="{StaticResource ColorPickerGradientBorderStyle}">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                        <GradientStop x:Name="SaturationStartColor" Color="Black" />
+                                        <GradientStop x:Name="SaturationStopColor" Offset="1" Color="Red" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <Slider
+                                x:Name="SaturationGradientSlider"
+                                x:Uid="Saturation_slider"
+                                Style="{StaticResource ColorPickerGradientSliderStyle}"
+                                ValueChanged="SaturationGradientSlider_ValueChanged" />
+                        </Grid>
+
+                        <TextBlock
+                            Grid.Row="2"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="V"
+                            TextAlignment="Center" />
+                        <Grid
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            VerticalAlignment="Center">
+                            <Border Style="{StaticResource ColorPickerGradientBorderStyle}">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                        <GradientStop x:Name="ValueStartColor" Color="Black" />
+                                        <GradientStop x:Name="ValueStopColor" Offset="1" Color="Red" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <Slider
+                                x:Name="ValueGradientSlider"
+                                x:Uid="Value_slider"
+                                Style="{StaticResource ColorPickerGradientSliderStyle}"
+                                ValueChanged="ValueGradientSlider_ValueChanged" />
+                        </Grid>
+
+                        <TextBlock
+                            Grid.Row="3"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="RGB"
+                            TextAlignment="Center" />
+                        <TextBox
+                            x:Name="RNumberBox"
+                            x:Uid="Red_value"
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            BeforeTextChanging="NumberBox_BeforeTextChanging"
+                            LostFocus="RGBNumberBox_LostFocus"
+                            MaxLength="3"
+                            TextChanged="RGBNumberBox_TextChanged" />
+                        <TextBox
+                            x:Name="GNumberBox"
+                            x:Uid="Green_value"
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Margin="4,0,0,0"
+                            BeforeTextChanging="NumberBox_BeforeTextChanging"
+                            LostFocus="RGBNumberBox_LostFocus"
+                            MaxLength="3"
+                            TextChanged="RGBNumberBox_TextChanged" />
+                        <TextBox
+                            x:Name="BNumberBox"
+                            x:Uid="Blue_value"
+                            Grid.Row="3"
+                            Grid.Column="3"
+                            Margin="4,0,0,0"
+                            BeforeTextChanging="NumberBox_BeforeTextChanging"
+                            LostFocus="RGBNumberBox_LostFocus"
+                            MaxLength="3"
+                            TextChanged="RGBNumberBox_TextChanged" />
+                        <TextBlock
+                            Grid.Row="4"
+                            Width="38"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="HEX"
+                            TextAlignment="Center" />
+                        <TextBox
+                            x:Name="HexCode"
+                            x:Uid="Hex_value"
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            HorizontalAlignment="Stretch"
+                            GotFocus="HexCode_GotFocus"
+                            LostFocus="HexCode_LostFocus"
+                            MaxLength="7"
+                            TextChanged="HexCode_TextChanged" />
+
+                        <Button
+                            x:Name="OKButton"
+                            x:Uid="Select"
+                            Grid.Row="5"
+                            Grid.ColumnSpan="4"
+                            Margin="0,32,0,0"
+                            HorizontalAlignment="Stretch"
+                            Click="OKButton_Click"
+                            Style="{StaticResource AccentButtonStyle}" />
+                    </Grid>
+                </Flyout>
+            </Button.Flyout>
+        </Button>
+    </Grid>
+</UserControl>

@@ -1,0 +1,12913 @@
+//============================================================================
+//
+// Zoomit
+// Copyright (C) Mark Russinovich
+// Sysinternals - www.sysinternals.com
+//
+// Screen zoom and annotation tool.
+//
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+//============================================================================
+#include "pch.h"
+
+#include "zoomit.h"
+#include "Utility.h"
+#include "WindowsVersions.h"
+#include "ZoomItSettings.h"
+#include "GifRecordingSession.h"
+#include "WebcamPreviewWindow.h"
+#include "MirrorWindow.h"
+#include "BreakTimer.h"
+#include "PanoramaCapture.h"
+#include "ImageEncoder.h"
+#include "ZoomAnimation.h"
+#include <wtsapi32.h>
+#include <tlhelp32.h>
+#include <vector>
+
+#ifdef __ZOOMIT_POWERTOYS__
+#include <common/interop/shared_constants.h>
+#include <common/utils/ProcessWaiter.h>
+#include <common/utils/process_path.h>
+
+#include "../ZoomItModuleInterface/trace.h"
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+#include <common/logger/logger.h>
+#include <common/utils/logger_helper.h>
+#include <common/utils/winapi_error.h>
+#include <common/utils/gpo.h>
+#include <array>
+#include <vector>
+#endif // __ZOOMIT_POWERTOYS__
+
+#ifdef __ZOOMIT_POWERTOYS__
+enum class ZoomItCommand
+{
+    Zoom,
+    Draw,
+    Break,
+    LiveZoom,
+    Snip,
+    SnipOcr,
+    Record,
+};
+#endif // __ZOOMIT_POWERTOYS__
+
+namespace winrt
+{
+    using namespace Windows::Foundation;
+    using namespace Windows::Graphics;
+    using namespace Windows::Graphics::Capture;
+    using namespace Windows::Graphics::Imaging;
+    using namespace Windows::Storage;
+    using namespace Windows::UI::Composition;
+    using namespace Windows::Storage::Pickers;
+    using namespace Windows::System;
+    using namespace Windows::Devices::Enumeration;
+    using namespace Windows::Media::Ocr;
+}
+
+namespace util
+{
+    using namespace robmikh::common::uwp;
+    using namespace robmikh::common::desktop;
+}
+
+// This workaround keeps live zoom enabled after zooming out at level 1 (not zoomed) and disables
+// live zoom when recording is stopped
+#define WINDOWS_CURSOR_RECORDING_WORKAROUND 1
+
+HINSTANCE		g_hInstance;
+
+COLORREF	g_CustomColors[16];
+
+#define ZOOM_HOTKEY				0
+#define DRAW_HOTKEY				1
+#define BREAK_HOTKEY			2
+#define LIVE_HOTKEY				3
+#define LIVE_DRAW_HOTKEY		    4
+#define RECORD_HOTKEY		    5
+#define RECORD_CROP_HOTKEY	    6
+#define RECORD_WINDOW_HOTKEY	    7
+#define SNIP_HOTKEY			    8
+#define SNIP_SAVE_HOTKEY		    9
+#define DEMOTYPE_HOTKEY		    10
+#define DEMOTYPE_RESET_HOTKEY    11
+#define RECORD_GIF_HOTKEY        12
+#define RECORD_GIF_WINDOW_HOTKEY 13
+#define SAVE_IMAGE_HOTKEY        14
+#define SAVE_CROP_HOTKEY         15
+#define COPY_IMAGE_HOTKEY        16
+#define COPY_CROP_HOTKEY         17
+#define SNIP_OCR_HOTKEY          18
+#define SNIP_PANORAMA_HOTKEY     19
+#define SNIP_PANORAMA_SAVE_HOTKEY 20
+#define WEBCAM_TOGGLE_HOTKEY     21
+#define MIRROR_HOTKEY            22
+#define MIRROR_WINDOW_HOTKEY     23
+#define MIRROR_CROP_HOTKEY       24
+
+#define ZOOM_PAGE	  0
+#define LIVE_PAGE	  1
+
+// Screensaver activation constant
+#ifndef SC_SCREENSAVE
+#define SC_SCREENSAVE 0xF140
+#endif
+#define DRAW_PAGE	  2
+#define TYPE_PAGE	  3
+#define DEMOTYPE_PAGE 4
+#define BREAK_PAGE	  5
+#define RECORD_PAGE	  6
+#define SNIP_PAGE	  7
+#define PANORAMA_PAGE 8
+#define MIRROR_PAGE	  9
+
+OPTION_TABS g_OptionsTabs[] = {
+    { _T("Zoom"), NULL },
+    { _T("LiveZoom"), NULL },
+    { _T("Draw"), NULL },
+    { _T("Type"), NULL },
+    { _T("DemoType"), NULL },
+    { _T("Break"), NULL },
+    { _T("Record"), NULL },
+    { _T("Snip"), NULL },
+    { _T("Panorama"), NULL },
+    { _T("DemoMirror"), NULL }
+};
+
+static const TCHAR* g_RecordingFormats[] = {
+    _T("GIF"),
+    _T("MP4")
+};
+
+float g_ZoomLevels[] = {
+    1.25,
+    1.50,
+    1.75,
+    2.00,
+    3.00,
+    4.00
+};
+
+DWORD g_FramerateOptions[] = {
+    15,
+    24,
+    30,
+    60
+};
+
+//
+// For typing mode
+//
+typedef enum {
+    TypeModeOff = 0,
+    TypeModeLeftJustify,
+    TypeModeRightJustify
+} TypeModeState;
+
+const DWORD CURSOR_ARM_LENGTH = 4;
+
+const float NORMAL_BLUR_RADIUS = 20;
+const float STRONG_BLUR_RADIUS = 40;
+
+DWORD	g_ToggleMod;
+DWORD	g_LiveZoomToggleMod;
+DWORD	g_DrawToggleMod;
+DWORD	g_BreakToggleMod;
+DWORD	g_DemoTypeToggleMod;
+DWORD	g_RecordToggleMod;
+DWORD   g_SnipToggleMod;
+DWORD   g_SnipPanoramaToggleMod;
+DWORD   g_SnipOcrToggleMod;
+DWORD   g_SnipSaveToggleMod;
+DWORD   g_SnipPanoramaSaveToggleMod;
+DWORD   g_MirrorToggleMod;
+
+BOOLEAN	g_ZoomOnLiveZoom = FALSE;
+DWORD	g_PenWidth = PEN_WIDTH;
+float   g_BlurRadius = NORMAL_BLUR_RADIUS;
+HWND	hWndOptions = NULL;
+BOOLEAN	g_DrawPointer = FALSE;
+BOOLEAN g_PenDown = FALSE;
+BOOLEAN g_PenInverted = FALSE;
+DWORD	g_OsVersion;
+HWND	g_hWndLiveZoom = NULL;
+HWND    g_hWndLiveZoomMag = NULL;
+HWND	g_hWndMain;
+int		g_AlphaBlend = 0x80;
+BOOL	g_fullScreenWorkaround = FALSE;
+bool	g_bSaveInProgress = false;
+bool    g_PanoramaCaptureActive = false;
+bool    g_PanoramaStopRequested = false;
+bool    g_PanoramaDebugMode = false;
+std::wstring	g_TextBuffer;
+// This is useful in the context of right-justified text only.
+std::list<std::wstring> g_TextBufferPreviousLines;
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+bool	g_LiveZoomLevelOne = false;
+#endif
+
+// True if ZoomIt was started by PowerToys instead of standalone.
+BOOLEAN g_StartedByPowerToys = FALSE;
+BOOLEAN g_running = TRUE;
+
+// Screen recording globals
+#define DEFAULT_RECORDING_FILE		L"Recording.mp4"
+#define DEFAULT_GIF_RECORDING_FILE	L"Recording.gif"
+#define DEFAULT_SCREENSHOT_FILE		L"ZoomIt.png"
+
+BOOL	g_RecordToggle = FALSE;
+BOOL	g_RecordCropping = FALSE;
+SelectRectangle g_SelectRectangle;
+WebcamPreviewWindow g_WebcamPreview;
+SelectRectangle g_MirrorSelectRectangle;
+MirrorWindow g_MirrorWindow;
+// The full path of the last saved recording file.
+std::wstring	g_RecordingSaveLocation;
+// The last user-chosen recording filename. Used to construct unique recording filenames.
+std::wstring	g_RecordingSaveBaseFilename;
+std::wstring	g_ScreenshotSaveLocation;
+winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
+std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
+std::shared_ptr<GifRecordingSession> g_GifRecordingSession = nullptr;
+type_pGetMonitorInfo		pGetMonitorInfo;
+type_MonitorFromPoint		pMonitorFromPoint;
+type_pSHAutoComplete		pSHAutoComplete;
+type_pSetLayeredWindowAttributes	pSetLayeredWindowAttributes;
+type_pSetProcessDPIAware	pSetProcessDPIAware;
+type_pMagSetWindowSource	pMagSetWindowSource;
+type_pMagSetWindowTransform pMagSetWindowTransform;
+type_pMagSetFullscreenTransform pMagSetFullscreenTransform;
+type_pMagSetInputTransform	pMagSetInputTransform;
+type_pMagShowSystemCursor	pMagShowSystemCursor;
+type_pMagSetWindowFilterList pMagSetWindowFilterList;
+type_MagSetFullscreenUseBitmapSmoothing pMagSetFullscreenUseBitmapSmoothing;
+type_pMagSetLensUseBitmapSmoothing pMagSetLensUseBitmapSmoothing;
+type_pMagInitialize			pMagInitialize;
+type_pDwmIsCompositionEnabled	pDwmIsCompositionEnabled;
+type_pGetPointerType		pGetPointerType;
+type_pGetPointerPenInfo pGetPointerPenInfo;
+type_pSystemParametersInfoForDpi pSystemParametersInfoForDpi;
+type_pGetDpiForWindow		pGetDpiForWindow;
+
+type_pSHQueryUserNotificationState	pSHQueryUserNotificationState;
+
+type_pCreateDirect3D11DeviceFromDXGIDevice		pCreateDirect3D11DeviceFromDXGIDevice;
+type_pCreateDirect3D11SurfaceFromDXGISurface	pCreateDirect3D11SurfaceFromDXGISurface;
+type_pD3D11CreateDevice 						pD3D11CreateDevice;
+
+ClassRegistry	reg( _T("Software\\Sysinternals\\") APPNAME );
+
+ComputerGraphicsInit	g_GraphicsInit;
+
+
+// Event handler to set icon and extended style on dialog creation
+class OpenSaveDialogEvents : public IFileDialogEvents
+{
+public:
+    OpenSaveDialogEvents(bool showOnTaskbar = true) : m_refCount(1), m_initialized(false), m_showOnTaskbar(showOnTaskbar) {}
+
+    // IUnknown
+    IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv)
+    {
+        static const QITAB qit[] = {
+            QITABENT(OpenSaveDialogEvents, IFileDialogEvents),
+            { 0 },
+        };
+        return QISearch(this, qit, riid, ppv);
+    }
+    IFACEMETHODIMP_(ULONG) AddRef() { return InterlockedIncrement(&m_refCount); }
+    IFACEMETHODIMP_(ULONG) Release()
+    {
+        ULONG count = InterlockedDecrement(&m_refCount);
+        if (count == 0) delete this;
+        return count;
+    }
+
+    // IFileDialogEvents
+    IFACEMETHODIMP OnFileOk(IFileDialog*) { return S_OK; }
+    IFACEMETHODIMP OnFolderChange(IFileDialog* pfd)
+    {
+        if (!m_initialized)
+        {
+            m_initialized = true;
+            wil::com_ptr<IOleWindow> pWindow;
+            if (SUCCEEDED(pfd->QueryInterface(IID_PPV_ARGS(&pWindow))))
+            {
+                HWND hwndDialog = nullptr;
+                if (SUCCEEDED(pWindow->GetWindow(&hwndDialog)) && hwndDialog)
+                {
+                    if (m_showOnTaskbar)
+                    {
+                        // Set WS_EX_APPWINDOW extended style
+                        LONG_PTR exStyle = GetWindowLongPtr(hwndDialog, GWL_EXSTYLE);
+                        SetWindowLongPtr(hwndDialog, GWL_EXSTYLE, exStyle | WS_EX_APPWINDOW);
+                    }
+
+                    // Set the dialog icon
+                    HICON hIcon = LoadIcon(g_hInstance, L"APPICON");
+                    if (hIcon)
+                    {
+                        SendMessage(hwndDialog, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
+                        SendMessage(hwndDialog, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
+                    }
+                }
+            }
+        }
+        return S_OK;
+    }
+    IFACEMETHODIMP OnFolderChanging(IFileDialog*, IShellItem*) { return S_OK; }
+    IFACEMETHODIMP OnSelectionChange(IFileDialog*) { return S_OK; }
+    IFACEMETHODIMP OnShareViolation(IFileDialog*, IShellItem*, FDE_SHAREVIOLATION_RESPONSE*) { return S_OK; }
+    IFACEMETHODIMP OnTypeChange(IFileDialog*) { return S_OK; }
+    IFACEMETHODIMP OnOverwrite(IFileDialog*, IShellItem*, FDE_OVERWRITE_RESPONSE*) { return S_OK; }
+
+private:
+    LONG m_refCount;
+    bool m_initialized;
+    bool m_showOnTaskbar;
+};
+
+
+//----------------------------------------------------------------------------
+//
+// Saves specified filePath to clipboard.
+//
+//----------------------------------------------------------------------------
+bool SaveToClipboard( const WCHAR* filePath, HWND hwnd )
+{
+    if( filePath == NULL || hwnd == NULL || wcslen( filePath ) == 0 )
+    {
+        return false;
+    }
+
+    size_t size = sizeof(DROPFILES) + sizeof(WCHAR) * ( _tcslen( filePath ) + 1 ) + sizeof(WCHAR);
+
+    HDROP hDrop   = static_cast<HDROP>(GlobalAlloc( GHND, size ));
+    if (hDrop == NULL)
+    {
+        return false;
+    }
+
+    DROPFILES* dFiles = static_cast<DROPFILES*>(GlobalLock( hDrop ));
+    if (dFiles == NULL)
+    {
+        GlobalFree( hDrop );
+        return false;
+    }
+
+    dFiles->pFiles = sizeof(DROPFILES);
+    dFiles->fWide = TRUE;
+
+    wcscpy( reinterpret_cast<WCHAR*>(& dFiles[1]), filePath);
+    GlobalUnlock( hDrop );
+
+    if( OpenClipboard( hwnd ) )
+    {
+        EmptyClipboard();
+        SetClipboardData( CF_HDROP, hDrop );
+        CloseClipboard();
+    }
+
+    GlobalFree( hDrop );
+
+    return true;
+}
+
+//----------------------------------------------------------------------
+//
+// OutputDebug
+//
+//----------------------------------------------------------------------
+void OutputDebug(const TCHAR* format, ...)
+{
+#if _DEBUG
+    TCHAR	msg[1024];
+    va_list	va;
+
+#ifdef _MSC_VER
+// For some reason, ARM64 Debug builds causes an analyzer error on va_start: "error C26492: Don't use const_cast to cast away const or volatile (type.3)."
+#pragma warning(push)
+#pragma warning(disable : 26492)
+#endif
+    va_start(va, format);
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+    _vstprintf_s(msg, format, va);
+    va_end(va);
+
+    OutputDebugString(msg);
+#endif
+}
+
+//----------------------------------------------------------------------
+//
+// IsLiveZoomActive
+//
+// The live zoom window is kept cached while hidden, so a non-NULL handle
+// does not mean live zoom is on screen.
+//
+//----------------------------------------------------------------------
+bool IsLiveZoomActive()
+{
+    return g_hWndLiveZoom != nullptr && IsWindowVisible( g_hWndLiveZoom );
+}
+
+const wchar_t* HotkeyIdToString( WPARAM hotkeyId )
+{
+    switch( hotkeyId )
+    {
+    case ZOOM_HOTKEY: return L"ZOOM_HOTKEY";
+    case DRAW_HOTKEY: return L"DRAW_HOTKEY";
+    case BREAK_HOTKEY: return L"BREAK_HOTKEY";
+    case LIVE_HOTKEY: return L"LIVE_HOTKEY";
+    case LIVE_DRAW_HOTKEY: return L"LIVE_DRAW_HOTKEY";
+    case RECORD_HOTKEY: return L"RECORD_HOTKEY";
+    case RECORD_CROP_HOTKEY: return L"RECORD_CROP_HOTKEY";
+    case RECORD_WINDOW_HOTKEY: return L"RECORD_WINDOW_HOTKEY";
+    case SNIP_HOTKEY: return L"SNIP_HOTKEY";
+    case SNIP_SAVE_HOTKEY: return L"SNIP_SAVE_HOTKEY";
+    case DEMOTYPE_HOTKEY: return L"DEMOTYPE_HOTKEY";
+    case DEMOTYPE_RESET_HOTKEY: return L"DEMOTYPE_RESET_HOTKEY";
+    case RECORD_GIF_HOTKEY: return L"RECORD_GIF_HOTKEY";
+    case RECORD_GIF_WINDOW_HOTKEY: return L"RECORD_GIF_WINDOW_HOTKEY";
+    case SAVE_IMAGE_HOTKEY: return L"SAVE_IMAGE_HOTKEY";
+    case SAVE_CROP_HOTKEY: return L"SAVE_CROP_HOTKEY";
+    case COPY_IMAGE_HOTKEY: return L"COPY_IMAGE_HOTKEY";
+    case COPY_CROP_HOTKEY: return L"COPY_CROP_HOTKEY";
+    case SNIP_OCR_HOTKEY: return L"SNIP_OCR_HOTKEY";
+    case SNIP_PANORAMA_HOTKEY: return L"SNIP_PANORAMA_HOTKEY";
+    case SNIP_PANORAMA_SAVE_HOTKEY: return L"SNIP_PANORAMA_SAVE_HOTKEY";
+    case MIRROR_HOTKEY: return L"MIRROR_HOTKEY";
+    case MIRROR_WINDOW_HOTKEY: return L"MIRROR_WINDOW_HOTKEY";
+    case MIRROR_CROP_HOTKEY: return L"MIRROR_CROP_HOTKEY";
+    default: return L"UNKNOWN_HOTKEY";
+    }
+}
+
+static void LogHotkeyRegistrationResult( const wchar_t* phase, HWND hWnd, int hotkeyId, UINT modifiers, UINT key, BOOL success )
+{
+#if _DEBUG
+    const DWORD lastError = success ? 0 : GetLastError();
+    OutputDebug( L"[Hotkey/%s] hwnd=%p id=%d(%s) mods=0x%X key=0x%X success=%d err=%lu\n",
+                 phase,
+                 hWnd,
+                 hotkeyId,
+                 HotkeyIdToString( hotkeyId ),
+                 modifiers,
+                 key,
+                 success ? 1 : 0,
+                 lastError );
+#else
+    UNREFERENCED_PARAMETER( phase );
+    UNREFERENCED_PARAMETER( hWnd );
+    UNREFERENCED_PARAMETER( hotkeyId );
+    UNREFERENCED_PARAMETER( modifiers );
+    UNREFERENCED_PARAMETER( key );
+    UNREFERENCED_PARAMETER( success );
+#endif
+}
+
+static void LogPanoramaState( const wchar_t* phase, WPARAM hotkeyId = static_cast<WPARAM>(-1) )
+{
+#if _DEBUG
+    const auto mainWindowStyle = ( g_hWndMain != nullptr ) ? static_cast<unsigned long long>( GetWindowLongPtr( g_hWndMain, GWL_EXSTYLE ) ) : 0ULL;
+    OutputDebug( L"[Panorama/State] %s hotkey=%ld(%s) active=%d stop=%d recordCropping=%d selectActive=%d mainExStyle=0x%llX\n",
+                 phase,
+                 static_cast<long>( hotkeyId ),
+                 HotkeyIdToString( hotkeyId ),
+                 g_PanoramaCaptureActive ? 1 : 0,
+                 g_PanoramaStopRequested ? 1 : 0,
+                 g_RecordCropping ? 1 : 0,
+                 g_SelectRectangle.IsActive() ? 1 : 0,
+                 mainWindowStyle );
+#else
+    UNREFERENCED_PARAMETER( phase );
+    UNREFERENCED_PARAMETER( hotkeyId );
+#endif
+}
+
+//----------------------------------------------------------------------------
+//
+// InitializeFonts
+//
+// Return a bold equivalent of either a DPI aware font face for GUI text or
+// just the stock object for DEFAULT_GUI_FONT.
+//
+//----------------------------------------------------------------------------
+void InitializeFonts( HWND hwnd, HFONT *bold )
+{
+    LOGFONT logFont;
+    bool haveLogFont = false;
+
+    if( *bold )
+    {
+        DeleteObject( *bold );
+        *bold = nullptr;
+    }
+
+    if( pSystemParametersInfoForDpi && pGetDpiForWindow )
+    {
+        NONCLIENTMETRICSW metrics{};
+        metrics.cbSize = sizeof( metrics );
+
+        if( pSystemParametersInfoForDpi( SPI_GETNONCLIENTMETRICS, sizeof( metrics ), &metrics, 0, pGetDpiForWindow( hwnd ) ) )
+        {
+            CopyMemory( &logFont, &metrics.lfMessageFont, sizeof( logFont ) );
+            haveLogFont = true;
+        }
+    }
+
+    if( !haveLogFont )
+    {
+        auto normal = static_cast<HFONT>(GetStockObject( DEFAULT_GUI_FONT ));
+        GetObject( normal, sizeof( logFont ), &logFont );
+        haveLogFont = true; // for correctness
+    }
+
+    logFont.lfWeight = FW_BOLD;
+    *bold = CreateFontIndirect( &logFont );
+}
+
+//----------------------------------------------------------------------------
+//
+// EnsureForeground
+//
+//----------------------------------------------------------------------------
+void EnsureForeground()
+{
+    if( !IsWindowVisible( g_hWndMain ) )
+        SetForegroundWindow( g_hWndMain );
+}
+
+//----------------------------------------------------------------------------
+//
+// RestoreForeground
+//
+//----------------------------------------------------------------------------
+void RestoreForeground()
+{
+    // If the main window is not visible, move foreground to the next window.
+    if( !IsWindowVisible( g_hWndMain ) ) {
+
+        // Activate the next window by showing and hiding the main window.
+        MoveWindow( g_hWndMain, 0, 0, 0, 0, FALSE );
+        ShowWindow( g_hWndMain, SW_SHOWNA );
+        ShowWindow( g_hWndMain, SW_HIDE );
+
+		OutputDebug(L"RESTORE FOREGROUND\n");
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// ErrorDialog
+//
+//----------------------------------------------------------------------------
+VOID ErrorDialog( HWND hParent, PCTSTR message, DWORD _Error )
+{
+    LPTSTR	lpMsgBuf;
+    TCHAR	errmsg[1024];
+
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                    NULL, _Error,
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                    reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, NULL );
+    _stprintf( errmsg, L"%s: %s", message, lpMsgBuf );
+#ifdef __ZOOMIT_POWERTOYS__
+    if( g_StartedByPowerToys )
+    {
+        Logger::error( errmsg );
+    }
+#endif // __ZOOMIT_POWERTOYS__
+    MessageBox( hParent, errmsg, APPNAME, MB_OK|MB_ICONERROR);
+}
+
+//----------------------------------------------------------------------------
+//
+// ErrorDialogString
+//
+//----------------------------------------------------------------------------
+VOID ErrorDialogString( HWND hParent, PCTSTR Message, const wchar_t *_Error )
+{
+    TCHAR	errmsg[1024];
+
+    _stprintf_s( errmsg, _countof( errmsg ), L"%s: %s", Message, _Error );
+    if( hParent == g_hWndMain )
+    {
+        EnsureForeground();
+    }
+#ifdef __ZOOMIT_POWERTOYS__
+    if( g_StartedByPowerToys )
+    {
+        Logger::error( errmsg );
+    }
+#endif // __ZOOMIT_POWERTOYS__
+    MessageBox(hParent, errmsg, APPNAME, MB_OK | MB_ICONERROR);
+    if( hParent == g_hWndMain )
+    {
+        RestoreForeground();
+    }
+}
+
+
+//--------------------------------------------------------------------
+//
+// SetAutostartFilePath
+//
+// Sets the file path for later autostart config.
+//
+//--------------------------------------------------------------------
+void SetAutostartFilePath()
+{
+    HKEY hZoomit;
+    DWORD error;
+    TCHAR imageFile[MAX_PATH] = { 0 };
+
+    error = RegCreateKeyEx( HKEY_CURRENT_USER, _T( "Software\\Sysinternals\\Zoomit" ), 0,
+        0, 0, KEY_SET_VALUE, NULL, &hZoomit, NULL );
+    if( error == ERROR_SUCCESS ) {
+
+        GetModuleFileName( NULL, imageFile + 1, _countof( imageFile ) - 2 );
+        imageFile[0] = '"';
+        *(_tcschr( imageFile, 0 )) = '"';
+        error = RegSetValueEx( hZoomit, L"FilePath", 0, REG_SZ, (BYTE *) imageFile,
+            static_cast<DWORD>(_tcslen( imageFile ) + 1)* sizeof( TCHAR ));
+        RegCloseKey( hZoomit );
+    }
+}
+
+//--------------------------------------------------------------------
+//
+// ConfigureAutostart
+//
+// Enables or disables Zoomit autostart for the current image file.
+//
+//--------------------------------------------------------------------
+bool ConfigureAutostart( HWND hParent, bool Enable )
+{
+    HKEY hRunKey, hZoomit;
+    DWORD error, length, type;
+    TCHAR imageFile[MAX_PATH];
+
+    error = RegOpenKeyEx( HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        0, KEY_SET_VALUE, &hRunKey );
+    if( error == ERROR_SUCCESS ) {
+
+        if( Enable ) {
+
+            error = RegOpenKeyEx( HKEY_CURRENT_USER, _T("Software\\Sysinternals\\Zoomit"), 0,
+                        KEY_QUERY_VALUE, &hZoomit );
+            if( error == ERROR_SUCCESS ) {
+
+                length = sizeof(imageFile);
+#ifdef _WIN64
+                // Unconditionally reset filepath in case this was already set by 32 bit version
+                SetAutostartFilePath();
+#endif
+                error = RegQueryValueEx( hZoomit, _T( "Filepath" ), 0, &type, (BYTE *) imageFile, &length );
+                RegCloseKey( hZoomit );
+                if( error == ERROR_SUCCESS ) {
+
+                    error = RegSetValueEx( hRunKey, APPNAME, 0, REG_SZ, (BYTE *) imageFile,
+                        static_cast<DWORD>(_tcslen(imageFile)+1) * sizeof(TCHAR));
+                }
+            }
+        } else {
+
+            error = RegDeleteValue( hRunKey, APPNAME );
+            if( error == ERROR_FILE_NOT_FOUND ) error = ERROR_SUCCESS;
+        }
+        RegCloseKey( hRunKey );
+    }
+    if( error != ERROR_SUCCESS ) {
+
+        ErrorDialog( hParent, L"Error configuring auto start", error );
+    }
+    return error == ERROR_SUCCESS;
+}
+
+
+//--------------------------------------------------------------------
+//
+// IsAutostartConfigured
+//
+// Is this version of zoomit configured to autostart.
+//
+//--------------------------------------------------------------------
+bool IsAutostartConfigured()
+{
+    HKEY	hRunKey;
+    TCHAR	imageFile[MAX_PATH];
+    DWORD	error, imageFileLength, type;
+
+    error = RegOpenKeyEx( HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        0, KEY_QUERY_VALUE, &hRunKey );
+    if( error == ERROR_SUCCESS ) {
+
+        imageFileLength = sizeof(imageFile);
+        error = RegQueryValueEx( hRunKey, _T("Zoomit"), 0, &type, (BYTE *) imageFile, &imageFileLength );
+        RegCloseKey( hRunKey );
+    }
+    return error == ERROR_SUCCESS;
+}
+
+
+#ifndef _WIN64
+
+//--------------------------------------------------------------------
+//
+// RunningOnWin64
+//
+// Returns true if this is the 32-bit version of the executable
+// and we're on 64-bit Windows.
+//
+//--------------------------------------------------------------------
+typedef BOOL (__stdcall *P_IS_WOW64PROCESS)(
+            HANDLE hProcess,
+            PBOOL Wow64Process
+            );
+BOOL
+RunningOnWin64(
+    VOID
+    )
+{
+    P_IS_WOW64PROCESS		pIsWow64Process;
+    BOOL				isWow64 = FALSE;
+
+    pIsWow64Process = (P_IS_WOW64PROCESS) GetProcAddress(GetModuleHandle(_T("kernel32.dll")),
+                            "IsWow64Process");
+    if( pIsWow64Process ) {
+
+        pIsWow64Process( GetCurrentProcess(), &isWow64 );
+    }
+    return isWow64;
+}
+
+
+//--------------------------------------------------------------------
+//
+// ExtractImageResource
+//
+// Extracts the specified file that is located in a resource for
+// this executable.
+//
+//--------------------------------------------------------------------
+BOOLEAN ExtractImageResource( PCTSTR ResourceName, PTCHAR TargetFile )
+{
+    HRSRC		hResource;
+    HGLOBAL		hImageResource;
+    DWORD		dwImageSize;
+    LPVOID		lpvImage;
+    FILE		*hFile;
+
+    // Locate the resource
+    hResource = FindResource( NULL, ResourceName, _T("BINRES") );
+    if( !hResource )
+        return FALSE;
+
+    hImageResource	= LoadResource( NULL, hResource );
+    dwImageSize		= SizeofResource( NULL, hResource );
+    lpvImage		= LockResource( hImageResource );
+
+    // Now copy it out
+    _tfopen_s( &hFile, TargetFile, _T("wb") );
+    if( hFile == NULL ) return FALSE;
+
+    fwrite( lpvImage, 1, dwImageSize, hFile );
+    fclose( hFile );
+    return TRUE;
+}
+
+
+
+//--------------------------------------------------------------------
+//
+// Run64bitVersion
+//
+// Returns true if this is the 32-bit version of the executable
+// and we're on 64-bit Windows.
+//
+//--------------------------------------------------------------------
+DWORD
+Run64bitVersion(
+    void
+    )
+{
+    TCHAR		szPath[MAX_PATH];
+    TCHAR		originalPath[MAX_PATH];
+    TCHAR		tmpPath[MAX_PATH];
+    SHELLEXECUTEINFO	info = { 0 };
+
+    if ( GetModuleFileName( NULL, szPath, sizeof(szPath)/sizeof(TCHAR)) == 0 ) {
+
+        return -1;
+    }
+    _tcscpy_s( originalPath, _countof(originalPath), szPath );
+
+    *_tcsrchr( originalPath, '.') = 0;
+    _tcscat_s( originalPath, _countof(szPath), _T("64.exe"));
+
+    //
+    // Extract the 64-bit version
+    //
+    ExpandEnvironmentStrings( L"%TEMP%", tmpPath, sizeof tmpPath / sizeof ( TCHAR));
+    _tcscat_s( tmpPath, _countof(tmpPath), _tcsrchr( originalPath, '\\'));
+    _tcscpy_s( szPath, _countof(szPath), tmpPath );
+    if( !ExtractImageResource( _T("RCZOOMIT64"), szPath )) {
+
+        if( GetFileAttributes( szPath ) == INVALID_FILE_ATTRIBUTES ) {
+
+            ErrorDialog( NULL,_T("Error launching 64-bit version"), GetLastError());
+            return -1;
+        }
+    }
+
+    info.cbSize = sizeof(info);
+    info.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
+    info.lpFile = szPath;
+    info.lpParameters = GetCommandLine();
+    info.nShow = SW_SHOWNORMAL;
+    if( !ShellExecuteEx( &info ) ) {
+
+        ErrorDialog( NULL,_T("Error launching 64-bit version"), GetLastError());
+        DeleteFile( szPath );
+        return -1;
+    }
+    WaitForSingleObject( info.hProcess, INFINITE );
+
+    DWORD result;
+    GetExitCodeProcess( info.hProcess, &result );
+    CloseHandle( info.hProcess );
+    DeleteFile( szPath );
+    return result;
+}
+#endif
+
+
+//----------------------------------------------------------------------------
+//
+// IsPresentationMode
+//
+//----------------------------------------------------------------------------
+BOOLEAN IsPresentationMode()
+{
+    QUERY_USER_NOTIFICATION_STATE pUserState;
+
+    pSHQueryUserNotificationState( &pUserState );
+    return pUserState == QUNS_PRESENTATION_MODE;
+}
+
+//----------------------------------------------------------------------------
+//
+// EnableDisableSecondaryDisplay
+//
+// Creates a second display on the secondary monitor for displaying the
+// break timer.
+//
+//----------------------------------------------------------------------------
+LONG EnableDisableSecondaryDisplay( HWND hWnd, BOOLEAN Enable,
+                                    PDEVMODE OriginalDevMode )
+{
+    LONG		result;
+    DEVMODE		devMode{};
+
+    if( Enable ) {
+
+        //
+        // Prepare the position of Display 2 to be right to the right of Display 1
+        //
+        devMode.dmSize = sizeof(devMode);
+        devMode.dmDriverExtra = 0;
+        EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devMode);
+        *OriginalDevMode = devMode;
+
+        //
+        // Enable display 2 in the registry
+        //
+        devMode.dmPosition.x = devMode.dmPelsWidth;
+        devMode.dmFields = DM_POSITION |
+                            DM_DISPLAYORIENTATION |
+                            DM_BITSPERPEL |
+                            DM_PELSWIDTH |
+                            DM_PELSHEIGHT |
+                            DM_DISPLAYFLAGS |
+                            DM_DISPLAYFREQUENCY;
+        result = ChangeDisplaySettingsEx( L"\\\\.\\DISPLAY2",
+                                          &devMode,
+                                          NULL,
+                                          CDS_NORESET | CDS_UPDATEREGISTRY,
+                                          NULL);
+
+    } else {
+
+        OriginalDevMode->dmFields = DM_POSITION |
+                            DM_DISPLAYORIENTATION |
+                            DM_BITSPERPEL |
+                            DM_PELSWIDTH |
+                            DM_PELSHEIGHT |
+                            DM_DISPLAYFLAGS |
+                            DM_DISPLAYFREQUENCY;
+        result = ChangeDisplaySettingsEx( L"\\\\.\\DISPLAY2",
+                                          OriginalDevMode,
+                                          NULL,
+                                          CDS_NORESET | CDS_UPDATEREGISTRY,
+                                          NULL);
+    }
+
+    //
+    // Update the hardware
+    //
+    if( result == DISP_CHANGE_SUCCESSFUL ) {
+
+        if( !ChangeDisplaySettingsEx(NULL, NULL, NULL, 0, NULL)) {
+
+            result = GetLastError();
+        }
+
+        //
+        // If enabling, move zoomit to the second monitor
+        //
+        if( Enable && result == DISP_CHANGE_SUCCESSFUL ) {
+
+            SetWindowPos(FindWindowW(L"ZoomitClass", NULL),
+                     NULL,
+                     devMode.dmPosition.x,
+                     0,
+                     0,
+                     0,
+                     SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+            SetCursorPos( devMode.dmPosition.x+1, devMode.dmPosition.y+1 );
+        }
+    }
+    return result;
+}
+
+//----------------------------------------------------------------------------
+//
+// GetLineBounds
+//
+// Gets the rectangle bounding a line, taking into account pen width
+//
+//----------------------------------------------------------------------------
+Gdiplus::Rect GetLineBounds( POINT p1, POINT p2, int penWidth )
+{
+    Gdiplus::Rect rect( min(p1.x, p2.x), min(p1.y, p2.y),
+                        abs(p1.x - p2.x), abs( p1.y - p2.y));
+    rect.Inflate( penWidth, penWidth );
+    return rect;
+}
+
+//----------------------------------------------------------------------------
+//
+// InvalidateGdiplusRect
+//
+// Invalidate portion of window specified by Gdiplus::Rect
+//
+//----------------------------------------------------------------------------
+void InvalidateGdiplusRect(HWND hWnd, Gdiplus::Rect BoundsRect)
+{
+    RECT lineBoundsGdi;
+    lineBoundsGdi.left = BoundsRect.X;
+    lineBoundsGdi.top = BoundsRect.Y;
+    lineBoundsGdi.right = BoundsRect.X + BoundsRect.Width;
+    lineBoundsGdi.bottom = BoundsRect.Y + BoundsRect.Height;
+    InvalidateRect(hWnd, &lineBoundsGdi, FALSE);
+}
+
+
+
+//----------------------------------------------------------------------------
+//
+// CreateGdiplusBitmap
+//
+// Creates a gdiplus bitmap of the specified region of the HDC.
+//
+//----------------------------------------------------------------------------
+Gdiplus::Bitmap *CreateGdiplusBitmap( HDC hDc, int x, int y, int Width, int Height )
+{
+    HBITMAP hBitmap = CreateCompatibleBitmap(hDc, Width, Height);
+
+    // Create a device context for the new bitmap
+    HDC hdcNewBitmap = CreateCompatibleDC(hDc);
+    SelectObject(hdcNewBitmap, hBitmap);
+
+    // Copy from the oldest undo bitmap to the new bitmap using the lineBounds as the source rectangle
+    BitBlt(hdcNewBitmap, 0, 0, Width, Height, hDc, x, y, SRCCOPY);
+    Gdiplus::Bitmap *blurBitmap = new Gdiplus::Bitmap(hBitmap, NULL);
+    DeleteDC(hdcNewBitmap);
+    DeleteObject(hBitmap);
+    return blurBitmap;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// CreateBitmapMemoryDIB
+//
+// Creates a memory DC and DIB for the specified region of the screen.
+//
+//----------------------------------------------------------------------------
+BYTE* CreateBitmapMemoryDIB(HDC hdcScreenCompat, HDC hBitmapDc, Gdiplus::Rect* lineBounds,
+    HDC* hdcMem, HBITMAP* hDIBOrig, HBITMAP* hPreviousBitmap)
+{
+    // Create a memory DIB for the relevant region of the original bitmap
+    BITMAPINFO bmiOrig = { 0 };
+    bmiOrig.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmiOrig.bmiHeader.biWidth = lineBounds->Width;
+    bmiOrig.bmiHeader.biHeight = -lineBounds->Height;  // Top-down DIB
+    bmiOrig.bmiHeader.biPlanes = 1;
+    bmiOrig.bmiHeader.biBitCount = 32;  // 32 bits per pixel
+    bmiOrig.bmiHeader.biCompression = BI_RGB;
+
+    VOID* pDIBBitsOrig;
+    *hDIBOrig = CreateDIBSection(hdcScreenCompat, &bmiOrig, DIB_RGB_COLORS, &pDIBBitsOrig, NULL, 0);
+
+    if( *hDIBOrig == NULL ) {
+
+        OutputDebug(L"NULL DIB: %d\n", GetLastError());
+        OutputDebug(L"lineBounds: %d %d %d %d\n", lineBounds->X, lineBounds->Y, lineBounds->Width, lineBounds->Height);
+        return NULL;
+    }
+
+    *hdcMem = CreateCompatibleDC(hdcScreenCompat);
+    *hPreviousBitmap = static_cast<HBITMAP>(SelectObject(*hdcMem, *hDIBOrig));
+
+    // Copy the relevant part of hdcScreenCompat to the DIB
+    BitBlt(*hdcMem, 0, 0, lineBounds->Width, lineBounds->Height, hBitmapDc, lineBounds->X, lineBounds->Y, SRCCOPY);
+
+    // Pointer to the DIB bits
+    return static_cast<BYTE*>(pDIBBitsOrig);
+}
+
+//----------------------------------------------------------------------------
+//
+// LockGdiPlusBitmap
+//
+// Locks the Gdi+ bitmap so that we can access its pixels in memory.
+//
+//----------------------------------------------------------------------------
+#ifdef _MSC_VER
+    // Analyzers want us to use a scoped object instead of new. But given all the operations done in Bitmaps it seems better to leave it as a heap object.
+    #pragma warning(push)
+    #pragma warning(disable : 26402)
+#endif
+
+Gdiplus::BitmapData* LockGdiPlusBitmap(Gdiplus::Bitmap* Bitmap)
+{
+    Gdiplus::BitmapData *lineData = new Gdiplus::BitmapData();
+    Bitmap->GetPixelFormat();
+    Gdiplus::Rect lineBitmapBounds(0, 0, Bitmap->GetWidth(), Bitmap->GetHeight());
+    Bitmap->LockBits(&lineBitmapBounds, Gdiplus::ImageLockModeRead,
+        Bitmap->GetPixelFormat(), lineData);
+    return lineData;
+}
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
+
+
+//----------------------------------------------------------------------------
+//
+// BlurScreen
+//
+// Blur the portion of the screen by copying a blurred bitmap with the
+// specified shape.
+//
+//----------------------------------------------------------------------------
+void BlurScreen(HDC hdcScreenCompat, Gdiplus::Rect* lineBounds,
+                    Gdiplus::Bitmap *BlurBitmap, BYTE* pPixels)
+{
+    HDC hdcDIB;
+    HBITMAP hDibOrigBitmap, hDibBitmap;
+    BYTE* pDestPixels = CreateBitmapMemoryDIB(hdcScreenCompat, hdcScreenCompat, lineBounds,
+                                &hdcDIB, &hDibBitmap, &hDibOrigBitmap);
+
+    // Iterate through the pixels
+    for (int y = 0; y < lineBounds->Height; ++y) {
+        for (int x = 0; x < lineBounds->Width; ++x) {
+            int index = (y * lineBounds->Width * 4) + (x * 4);  // Assuming 4 bytes per pixel
+            // BYTE b = pPixels[index + 0];  // Blue channel
+            // BYTE g = pPixels[index + 1];  // Green channel
+            // BYTE r = pPixels[index + 2];  // Red channel
+            BYTE a = pPixels[index + 3];  // Alpha channel
+
+            // Check if this is a drawn pixel
+            if (a != 0) {
+                // get the blur pixel
+                Gdiplus::Color pixel;
+                BlurBitmap->GetPixel(x, y, &pixel);
+
+                COLORREF newPixel = pixel.GetValue() & 0xFFFFFF;
+                pDestPixels[index + 0] = GetRValue(newPixel);
+                pDestPixels[index + 1] = GetGValue(newPixel);
+                pDestPixels[index + 2] = GetBValue(newPixel);
+            }
+        }
+    }
+
+    // Copy the updated DIB back to hdcScreenCompat
+    BitBlt(hdcScreenCompat, lineBounds->X, lineBounds->Y, lineBounds->Width, lineBounds->Height, hdcDIB, 0, 0, SRCCOPY);
+
+    // Clean up
+    SelectObject(hdcDIB, hDibOrigBitmap);
+    DeleteObject(hDibBitmap);
+    DeleteDC(hdcDIB);
+}
+
+
+
+//----------------------------------------------------------------------------
+//
+// BitmapBlur
+//
+// Blurs the bitmap.
+//
+//----------------------------------------------------------------------------
+void BitmapBlur(Gdiplus::Bitmap* hBitmap)
+{
+    // Git bitmap size
+    Gdiplus::Size bitmapSize;
+    bitmapSize.Width = hBitmap->GetWidth();
+    bitmapSize.Height = hBitmap->GetHeight();
+
+    // Blur the new bitmap
+    Gdiplus::Blur blurObject;
+    Gdiplus::BlurParams blurParams;
+    blurParams.radius = g_BlurRadius;
+    blurParams.expandEdge = FALSE;
+    blurObject.SetParameters(&blurParams);
+
+    // Apply blur to image
+    RECT linesRect;
+    linesRect.left = 0;
+    linesRect.top = 0;
+    linesRect.right = bitmapSize.Width;
+    linesRect.bottom = bitmapSize.Height;
+    hBitmap->ApplyEffect(&blurObject, &linesRect);
+}
+
+
+//----------------------------------------------------------------------------
+//
+// DrawBlurredShape
+//
+// Blur a shaped region of the screen.
+//
+//----------------------------------------------------------------------------
+void DrawBlurredShape( DWORD Shape, Gdiplus::Pen *pen, HDC hdcScreenCompat, Gdiplus::Graphics *dstGraphics,
+                    int x1, int y1, int x2, int y2)
+{
+    // Create a new bitmap that's the size of the area covered by the line + 2 * g_PenWidth
+    Gdiplus::Rect lineBounds( min( x1, x2 ), min( y1, y2 ), abs( x2 - x1 ), abs( y2 - y1 ) );
+
+    // Expand for line drawing
+    if (Shape == DRAW_LINE)
+        lineBounds.Inflate( static_cast<int>(g_PenWidth / 2), static_cast<int>(g_PenWidth / 2) );
+
+    Gdiplus::Bitmap* lineBitmap = new Gdiplus::Bitmap(lineBounds.Width, lineBounds.Height, PixelFormat32bppARGB);
+    Gdiplus::Graphics lineGraphics(lineBitmap);
+    static const auto blackBrush = Gdiplus::SolidBrush(Gdiplus::Color::Black);
+    switch (Shape) {
+    case DRAW_RECTANGLE:
+        lineGraphics.FillRectangle(&blackBrush, 0, 0, lineBounds.Width, lineBounds.Height);
+        break;
+    case DRAW_ELLIPSE:
+        lineGraphics.FillEllipse(&blackBrush, 0, 0, lineBounds.Width, lineBounds.Height);
+        break;
+    case DRAW_LINE:
+        OutputDebug(L"BLUR_LINE: %d %d\n", lineBounds.Width, lineBounds.Height);
+        lineGraphics.DrawLine( pen, x1 - lineBounds.X, y1 - lineBounds.Y, x2 - lineBounds.X, y2 - lineBounds.Y );
+        break;
+    }
+
+    Gdiplus::BitmapData* lineData = LockGdiPlusBitmap(lineBitmap);
+    BYTE* pPixels = static_cast<BYTE*>(lineData->Scan0);
+
+    // Create a GDI bitmap that's the size of the lineBounds rectangle
+    Gdiplus::Bitmap* blurBitmap = CreateGdiplusBitmap(hdcScreenCompat,
+        lineBounds.X, lineBounds.Y, lineBounds.Width, lineBounds.Height);
+
+    // Blur it
+    BitmapBlur(blurBitmap);
+    BlurScreen(hdcScreenCompat, &lineBounds, blurBitmap, pPixels);
+
+    // Unlock the bits
+    lineBitmap->UnlockBits(lineData);
+    delete lineBitmap;
+    delete blurBitmap;
+}
+
+//----------------------------------------------------------------------------
+//
+// CreateDrawingBitmap
+//
+// Create a bitmap to draw on.
+//
+//----------------------------------------------------------------------------
+Gdiplus::Bitmap* CreateDrawingBitmap(Gdiplus::Rect lineBounds )
+{
+    Gdiplus::Bitmap* lineBitmap = new Gdiplus::Bitmap(lineBounds.Width, lineBounds.Height, PixelFormat32bppARGB);
+    Gdiplus::Graphics lineGraphics(lineBitmap);
+    return lineBitmap;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// DrawBitmapLine
+//
+// Creates a bitmap and draws a line on it.
+//
+//----------------------------------------------------------------------------
+Gdiplus::Bitmap* DrawBitmapLine(Gdiplus::Rect lineBounds, POINT p1, POINT p2, Gdiplus::Pen *pen)
+{
+    Gdiplus::Bitmap* lineBitmap = new Gdiplus::Bitmap(lineBounds.Width, lineBounds.Height, PixelFormat32bppARGB);
+    Gdiplus::Graphics lineGraphics(lineBitmap);
+
+    // Draw the line on the temporary bitmap
+    lineGraphics.DrawLine(pen, static_cast<INT>(p1.x - lineBounds.X), static_cast<INT>(p1.y - lineBounds.Y),
+        static_cast<INT>(p2.x - lineBounds.X), static_cast<INT>(p2.y - lineBounds.Y));
+
+    return lineBitmap;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ColorFromColorRef
+//
+// Returns a color object from the colorRef that includes the alpha channel
+//
+//----------------------------------------------------------------------------
+Gdiplus::Color ColorFromColorRef(DWORD colorRef) {
+    BYTE a = (colorRef >> 24) & 0xFF;  // Extract the alpha channel value
+    BYTE b = (colorRef >> 16) & 0xFF;  // Extract the red channel value
+    BYTE g = (colorRef >> 8) & 0xFF;   // Extract the green channel value
+    BYTE r = colorRef & 0xFF;          // Extract the blue channel value
+    OutputDebug( L"ColorFromColorRef: %d %d %d %d\n", a, r, g, b );
+    return Gdiplus::Color(a, r, g, b);
+}
+
+//----------------------------------------------------------------------------
+//
+// AdjustHighlighterColor
+//
+// Lighten the color.
+//
+//----------------------------------------------------------------------------
+void AdjustHighlighterColor(BYTE* red, BYTE* green, BYTE* blue) {
+
+    // Adjust the color to be more visible
+    *red = min( 0xFF, *red ? *red + 0x40 : *red + 0x80 );
+    *green = min( 0xFF, *green ? *green + 0x40 : *green + 0x80);
+    *blue = min( 0xFF, *blue ? *blue + 0x40 : *blue + 0x80);
+}
+
+//----------------------------------------------------------------------------
+//
+// BlendColors
+//
+// Blends two colors together using the alpha channel of the second color.
+// The highlighter is the second color.
+//
+//----------------------------------------------------------------------------
+COLORREF BlendColors(COLORREF color1, const Gdiplus::Color& color2) {
+
+    BYTE redResult, greenResult, blueResult;
+
+    // Extract the channels from the COLORREF
+    BYTE red1 = GetRValue(color1);
+    BYTE green1 = GetGValue(color1);
+    BYTE blue1 = GetBValue(color1);
+
+    // Get the channels and alpha from the Gdiplus::Color
+    BYTE blue2 = color2.GetRed();
+    BYTE green2 = color2.GetGreen();
+    BYTE red2 = color2.GetBlue();
+    float alpha2 = color2.GetAlpha() / 255.0f;  // Normalize to [0, 1]
+    //alpha2 /= 2; // Use half the alpha for higher contrast
+
+    // Don't blend grey's as much
+    // int minValue = min(red1, min(green1, blue1));
+    // int maxValue = max(red1, max(green1, blue1));
+    if(TRUE) { // red1 > 0x10 && red1 < 0xC0 && (maxValue - minValue < 0x40)) {
+
+        // This does a standard bright highlight
+        alpha2 = 0;
+        AdjustHighlighterColor( &red2, &green2, &blue2 );
+        redResult	= red2 & red1;
+        greenResult = green2 & green1;
+        blueResult	= blue2 & blue1;
+    }
+    else {
+
+        // Blend each channel
+        redResult = static_cast<BYTE>(red2 * alpha2 + red1 * (1 - alpha2));
+        greenResult = static_cast<BYTE>(green2 * alpha2 + green1 * (1 - alpha2));
+        blueResult = static_cast<BYTE>(blue2 * alpha2 + blue1 * (1 - alpha2));
+    }
+    // Combine the result channels back into a COLORREF
+    return RGB(redResult, greenResult, blueResult);
+}
+
+
+
+//----------------------------------------------------------------------------
+//
+// DrawHighlightedShape
+//
+// Draws the shape with the highlighter color.
+//
+//----------------------------------------------------------------------------
+void DrawHighlightedShape( DWORD Shape, HDC hdcScreenCompat, Gdiplus::Brush *pBrush,
+                        Gdiplus::Pen *pPen, int x1, int y1, int x2, int y2)
+{
+    // Create a new bitmap that's the size of the area covered by the line + 2 * g_PenWidth
+    Gdiplus::Rect lineBounds(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1));
+
+    OutputDebug(L"DrawHighlightedShape\n");
+
+    // Expand for line drawing
+    if (Shape == DRAW_LINE)
+        lineBounds.Inflate(static_cast<int>(g_PenWidth / 2), static_cast<int>(g_PenWidth / 2));
+
+    Gdiplus::Bitmap* lineBitmap = CreateDrawingBitmap(lineBounds);
+    Gdiplus::Graphics lineGraphics(lineBitmap);
+    switch (Shape) {
+    case DRAW_RECTANGLE:
+        lineGraphics.FillRectangle(pBrush, 0, 0, lineBounds.Width, lineBounds.Height);
+        break;
+    case DRAW_ELLIPSE:
+        lineGraphics.FillEllipse( pBrush, 0, 0, lineBounds.Width, lineBounds.Height);
+        break;
+    case DRAW_LINE:
+        lineGraphics.DrawLine(pPen, x1 - lineBounds.X, y1 - lineBounds.Y, x2 - lineBounds.X, y2 - lineBounds.Y);
+        break;
+    }
+
+    Gdiplus::BitmapData* lineData = LockGdiPlusBitmap(lineBitmap);
+    BYTE* pPixels = static_cast<BYTE*>(lineData->Scan0);
+
+    // Create a DIB section for efficient pixel manipulation
+    BITMAPINFO bmi = { 0 };
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = lineBounds.Width;
+    bmi.bmiHeader.biHeight = -lineBounds.Height;  // Top-down DIB
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;  // 32 bits per pixel
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    VOID* pDIBBits;
+    HBITMAP hDIB = CreateDIBSection(hdcScreenCompat, &bmi, DIB_RGB_COLORS, &pDIBBits, NULL, 0);
+
+    HDC hdcDIB = CreateCompatibleDC(hdcScreenCompat);
+    SelectObject(hdcDIB, hDIB);
+
+    // Copy the relevant part of hdcScreenCompat to the DIB
+    BitBlt(hdcDIB, 0, 0, lineBounds.Width, lineBounds.Height, hdcScreenCompat, lineBounds.X, lineBounds.Y, SRCCOPY);
+
+    // Pointer to the DIB bits
+    BYTE* pDestPixels = static_cast<BYTE*>(pDIBBits);
+
+    // Pointer to screen bits
+    HDC hdcDIBOrig;
+    HBITMAP hDibOrigBitmap, hDibBitmap;
+    BYTE* pDestPixels2 = CreateBitmapMemoryDIB(hdcScreenCompat, hdcScreenCompat, &lineBounds,
+        &hdcDIBOrig, &hDibBitmap, &hDibOrigBitmap);
+
+    for (int y = 0; y < lineBounds.Height; ++y) {
+        for (int x = 0; x < lineBounds.Width; ++x) {
+            int index = (y * lineBounds.Width * 4) + (x * 4);  // Assuming 4 bytes per pixel
+            // BYTE b = pPixels[index + 0];  // Blue channel
+            // BYTE g = pPixels[index + 1];  // Green channel
+            // BYTE r = pPixels[index + 2];  // Red channel
+            BYTE a = pPixels[index + 3];  // Alpha channel
+
+            // Check if this is a drawn pixel
+            if (a != 0) {
+                // Assuming pDestPixels is a valid pointer to the destination bitmap's pixel data
+                BYTE destB = pDestPixels2[index + 0];  // Blue channel
+                BYTE destG = pDestPixels2[index + 1];  // Green channel
+                BYTE destR = pDestPixels2[index + 2];  // Red channel
+
+                // Create a COLORREF value from the destination pixel data
+                COLORREF currentPixel = RGB(destR, destG, destB);
+                // Blend the colors
+                COLORREF newPixel = BlendColors(currentPixel, g_PenColor);
+                // Update the destination pixel data with the new color
+                pDestPixels[index + 0] = GetBValue(newPixel);
+                pDestPixels[index + 1] = GetGValue(newPixel);
+                pDestPixels[index + 2] = GetRValue(newPixel);
+            }
+        }
+    }
+
+    // Copy the updated DIB back to hdcScreenCompat
+    BitBlt(hdcScreenCompat, lineBounds.X, lineBounds.Y, lineBounds.Width, lineBounds.Height, hdcDIB, 0, 0, SRCCOPY);
+
+    // Clean up
+    DeleteObject(hDIB);
+    DeleteDC(hdcDIB);
+
+    SelectObject(hdcDIBOrig, hDibOrigBitmap);
+    DeleteObject(hDibBitmap);
+    DeleteDC(hdcDIBOrig);
+
+    // Invalidate the updated rectangle
+    //InvalidateGdiplusRect(hWnd, lineBounds);
+}
+
+//----------------------------------------------------------------------------
+//
+// CreateFadedDesktopBackground
+//
+// Creates a snapshot of the desktop that's faded and alpha blended with
+// black.
+//
+//----------------------------------------------------------------------------
+HBITMAP CreateFadedDesktopBackground( HDC hdc, LPRECT rcScreen, LPRECT rcCrop )
+{
+    // create bitmap
+    int		width		= rcScreen->right - rcScreen->left;
+    int		height		= rcScreen->bottom - rcScreen->top;
+    HDC		hdcScreen	= hdc;
+    HDC		hdcMem		= CreateCompatibleDC( hdcScreen );
+    HBITMAP	hBitmap		= CreateCompatibleBitmap( hdcScreen, width, height );
+    HBITMAP	hOld		= static_cast<HBITMAP>(SelectObject( hdcMem, hBitmap ));
+    HBRUSH	hBrush		= CreateSolidBrush(RGB(0, 0, 0));
+
+    // start with black background
+    FillRect( hdcMem, rcScreen, hBrush );
+    if(rcCrop != NULL && rcCrop->left != -1 ) {
+
+        // copy screen contents that are not cropped
+        BitBlt(hdcMem, rcCrop->left, rcCrop->top, rcCrop->right - rcCrop->left,
+            rcCrop->bottom - rcCrop->top, hdcScreen, rcCrop->left, rcCrop->top, SRCCOPY);
+    }
+
+    // blend screen contents into it
+    BLENDFUNCTION	blend = { 0 };
+    blend.BlendOp				= AC_SRC_OVER;
+    blend.BlendFlags			= 0;
+    blend.SourceConstantAlpha   = 0x4F;
+    blend.AlphaFormat			= 0;
+    AlphaBlend( hdcMem,0, 0, width, height,
+                hdcScreen, rcScreen->left, rcScreen->top,
+                width, height, blend );
+
+    SelectObject( hdcMem, hOld );
+    DeleteDC( hdcMem );
+    DeleteObject(hBrush);
+    ReleaseDC( NULL, hdcScreen );
+
+    return hBitmap;
+}
+
+//----------------------------------------------------------------------------
+//
+// AdjustToMoveBoundary
+//
+// Shifts to accommodate move boundary.
+//
+//----------------------------------------------------------------------------
+void AdjustToMoveBoundary( float zoomLevel, int *coordinate, int cursor, int size, int max )
+{
+    int diff = static_cast<int> (static_cast<float>(size)/ static_cast<float>(LIVEZOOM_MOVE_REGIONS));
+    if( cursor - *coordinate < diff )
+        *coordinate = max( 0, cursor - diff );
+    else if( (*coordinate + size) - cursor < diff )
+        *coordinate = min( cursor + diff - size, max - size );
+}
+
+//----------------------------------------------------------------------------
+//
+// GetZoomedTopLeftCoordinates
+//
+// Gets the left top coordinate of the zoomed area of the screen
+//
+//----------------------------------------------------------------------------
+void GetZoomedTopLeftCoordinates( float zoomLevel, POINT *cursorPos, int *x, int width, int *y, int height )
+{
+    // smoother and more natural zoom in
+    float scaledWidth = width/zoomLevel;
+    float scaledHeight = height/zoomLevel;
+    *x = max( 0, min( (int) (width - scaledWidth), (int) (cursorPos->x - (int) (((float) cursorPos->x/ (float) width)*scaledWidth))));
+    AdjustToMoveBoundary( zoomLevel, x, cursorPos->x, static_cast<int>(scaledWidth), width );
+    *y = max( 0, min( (int) (height - scaledHeight), (int) (cursorPos->y - (int) (((float) cursorPos->y/ (float) height)*scaledHeight))));
+    AdjustToMoveBoundary( zoomLevel, y, cursorPos->y, static_cast<int>(scaledHeight), height );
+}
+
+void GetAnimatedZoomSourceCoordinates( float zoomLevel, const POINT* cursorPos, int width, int height, float* x, float* y )
+{
+    const auto scaledWidth = static_cast<float>(width) / zoomLevel;
+    const auto scaledHeight = static_cast<float>(height) / zoomLevel;
+    *x = max(0.0f, min(static_cast<float>(width) - scaledWidth,
+                       static_cast<float>(cursorPos->x) - static_cast<float>(cursorPos->x) / static_cast<float>(width) * scaledWidth));
+    *y = max(0.0f, min(static_cast<float>(height) - scaledHeight,
+                       static_cast<float>(cursorPos->y) - static_cast<float>(cursorPos->y) / static_cast<float>(height) * scaledHeight));
+
+    const auto horizontalBoundary = scaledWidth / static_cast<float>(LIVEZOOM_MOVE_REGIONS);
+    if (static_cast<float>(cursorPos->x) - *x < horizontalBoundary)
+        *x = max(0.0f, static_cast<float>(cursorPos->x) - horizontalBoundary);
+    else if ((*x + scaledWidth) - static_cast<float>(cursorPos->x) < horizontalBoundary)
+        *x = min(static_cast<float>(cursorPos->x) + horizontalBoundary - scaledWidth, static_cast<float>(width) - scaledWidth);
+
+    const auto verticalBoundary = scaledHeight / static_cast<float>(LIVEZOOM_MOVE_REGIONS);
+    if (static_cast<float>(cursorPos->y) - *y < verticalBoundary)
+        *y = max(0.0f, static_cast<float>(cursorPos->y) - verticalBoundary);
+    else if ((*y + scaledHeight) - static_cast<float>(cursorPos->y) < verticalBoundary)
+        *y = min(static_cast<float>(cursorPos->y) + verticalBoundary - scaledHeight, static_cast<float>(height) - scaledHeight);
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ScaleImage
+//
+// Use gdi+ for anti-aliased bitmap stretching.
+//
+//----------------------------------------------------------------------------
+void ScaleImage( HDC hdcDst, float xDst, float yDst, float wDst, float hDst,
+                 HBITMAP bmSrc, float xSrc, float ySrc, float wSrc, float hSrc )
+{
+    Gdiplus::Graphics	dstGraphics( hdcDst );
+    {
+        Gdiplus::Bitmap		srcBitmap( bmSrc, NULL );
+
+        // Use high quality interpolation when smooth image is enabled
+        if (g_SmoothImage) {
+            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeHighQuality );
+        } else {
+            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeLowQuality );
+        }
+        dstGraphics.SetPixelOffsetMode( Gdiplus::PixelOffsetModeHalf );
+
+        dstGraphics.DrawImage( &srcBitmap, Gdiplus::RectF(xDst,yDst,wDst,hDst), xSrc, ySrc, wSrc, hSrc, Gdiplus::UnitPixel );
+    }
+}
+
+
+//----------------------------------------------------------------------
+//
+// ConvertToUnicode
+//
+//----------------------------------------------------------------------
+void
+ConvertToUnicode(
+    PCHAR aString,
+    PWCHAR  wString,
+    DWORD wStringLength
+    )
+{
+    size_t	len;
+
+    len = MultiByteToWideChar( CP_ACP, 0, aString, static_cast<int>(strlen(aString)),
+                wString, wStringLength );
+    wString[len] = 0;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// LoadImageFile
+//
+// Use gdi+ to load an image.
+//
+//----------------------------------------------------------------------------
+HBITMAP LoadImageFile( PTCHAR Filename )
+{
+    HBITMAP		hBmp;
+
+    Gdiplus::Bitmap		*bitmap;
+
+    bitmap = Gdiplus::Bitmap::FromFile(Filename);
+    if( bitmap->GetHBITMAP( NULL, &hBmp )) {
+
+        return NULL;
+    }
+    delete bitmap;
+    return hBmp;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// OcrFromHBITMAP
+//
+// Perform OCR on an HBITMAP and return the recognized text.
+// Uses WIC to convert HBITMAP to IWICBitmap, then ISoftwareBitmapNativeFactory
+// for zero-copy conversion to SoftwareBitmap, then Windows.Media.Ocr.
+//
+//----------------------------------------------------------------------------
+std::wstring OcrFromHBITMAP( HBITMAP hBitmap )
+{
+    try
+    {
+        // The main thread is STA (CoInitialize), but RecognizeAsync().get()
+        // asserts if called on an STA thread. Run the entire OCR pipeline
+        // on a background MTA thread.
+        auto future = std::async( std::launch::async, [hBitmap]() -> std::wstring
+        {
+            // Initialize COM as MTA on this worker thread
+            CoInitializeEx( nullptr, COINIT_MULTITHREADED );
+            auto comCleanup = wil::scope_exit( [] { CoUninitialize(); } );
+
+            // Create WIC factory
+            wil::com_ptr<IWICImagingFactory> wicFactory;
+            THROW_IF_FAILED( CoCreateInstance(
+                CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
+                IID_PPV_ARGS( wicFactory.put() ) ) );
+
+            // Create IWICBitmap from HBITMAP
+            wil::com_ptr<IWICBitmap> wicBitmap;
+            THROW_IF_FAILED( wicFactory->CreateBitmapFromHBITMAP(
+                hBitmap, nullptr, WICBitmapIgnoreAlpha, wicBitmap.put() ) );
+
+            // Convert to SoftwareBitmap via ISoftwareBitmapNativeFactory (zero-copy)
+            auto softwareBitmap = winrt::capture<winrt::SoftwareBitmap>(
+                winrt::create_instance<ISoftwareBitmapNativeFactory>( CLSID_SoftwareBitmapNativeFactory ),
+                &ISoftwareBitmapNativeFactory::CreateFromWICBitmap,
+                wicBitmap.get(),
+                false );
+
+            // OcrEngine requires Gray8 or Bgra8 pixel format
+            if( softwareBitmap.BitmapPixelFormat() != winrt::BitmapPixelFormat::Bgra8 ||
+                softwareBitmap.BitmapAlphaMode() != winrt::BitmapAlphaMode::Premultiplied )
+            {
+                softwareBitmap = winrt::SoftwareBitmap::Convert(
+                    softwareBitmap,
+                    winrt::BitmapPixelFormat::Bgra8,
+                    winrt::BitmapAlphaMode::Premultiplied );
+            }
+
+            // Scale down if image exceeds OCR engine's max dimension (2600px)
+            const uint32_t maxDim = winrt::OcrEngine::MaxImageDimension();
+            if( softwareBitmap.PixelWidth() > static_cast<int32_t>( maxDim ) ||
+                softwareBitmap.PixelHeight() > static_cast<int32_t>( maxDim ) )
+            {
+                // Calculate scale factor to fit within max dimensions
+                float scale = min(
+                    static_cast<float>( maxDim ) / softwareBitmap.PixelWidth(),
+                    static_cast<float>( maxDim ) / softwareBitmap.PixelHeight() );
+
+                int32_t newWidth = static_cast<int32_t>( softwareBitmap.PixelWidth() * scale );
+                int32_t newHeight = static_cast<int32_t>( softwareBitmap.PixelHeight() * scale );
+
+                // Use WIC scaler for high-quality downscale
+                wil::com_ptr<IWICBitmapScaler> scaler;
+                THROW_IF_FAILED( wicFactory->CreateBitmapScaler( scaler.put() ) );
+                THROW_IF_FAILED( scaler->Initialize(
+                    wicBitmap.get(), newWidth, newHeight, WICBitmapInterpolationModeHighQualityCubic ) );
+
+                // Create new WICBitmap from scaled result
+                wil::com_ptr<IWICBitmap> scaledBitmap;
+                THROW_IF_FAILED( wicFactory->CreateBitmapFromSource(
+                    scaler.get(), WICBitmapCacheOnDemand, scaledBitmap.put() ) );
+
+                softwareBitmap = winrt::capture<winrt::SoftwareBitmap>(
+                    winrt::create_instance<ISoftwareBitmapNativeFactory>( CLSID_SoftwareBitmapNativeFactory ),
+                    &ISoftwareBitmapNativeFactory::CreateFromWICBitmap,
+                    scaledBitmap.get(),
+                    false );
+
+                if( softwareBitmap.BitmapPixelFormat() != winrt::BitmapPixelFormat::Bgra8 ||
+                    softwareBitmap.BitmapAlphaMode() != winrt::BitmapAlphaMode::Premultiplied )
+                {
+                    softwareBitmap = winrt::SoftwareBitmap::Convert(
+                        softwareBitmap,
+                        winrt::BitmapPixelFormat::Bgra8,
+                        winrt::BitmapAlphaMode::Premultiplied );
+                }
+            }
+
+            // Create OCR engine from user profile languages
+            winrt::OcrEngine engine = winrt::OcrEngine::TryCreateFromUserProfileLanguages();
+            if( !engine )
+            {
+                return std::wstring{};
+            }
+
+            // Run OCR — safe to call .get() on an MTA thread
+            winrt::OcrResult result = engine.RecognizeAsync( softwareBitmap ).get();
+            return std::wstring( result.Text() );
+        } );
+
+        return future.get();
+    }
+    catch( ... )
+    {
+        OutputDebug( L"OcrFromHBITMAP failed\n" );
+        return {};
+    }
+}
+
+
+//----------------------------------------------------------------------------
+//
+// EnableDisableTrayIcon
+//
+//----------------------------------------------------------------------------
+void EnableDisableTrayIcon( HWND hWnd, BOOLEAN Enable )
+{
+    NOTIFYICONDATA tNotifyIconData;
+
+    memset( &tNotifyIconData, 0, sizeof(tNotifyIconData));
+    tNotifyIconData.cbSize = sizeof(NOTIFYICONDATA);
+    tNotifyIconData.hWnd = hWnd;
+    tNotifyIconData.uID = 1;
+    tNotifyIconData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+    tNotifyIconData.uCallbackMessage = WM_USER_TRAY_ACTIVATE;
+    tNotifyIconData.hIcon = LoadIcon( g_hInstance, L"APPICON" );
+    lstrcpyn(tNotifyIconData.szTip, APPNAME, sizeof(APPNAME));
+    Shell_NotifyIcon(Enable ? NIM_ADD : NIM_DELETE, &tNotifyIconData);
+}
+
+//----------------------------------------------------------------------------
+//
+// EnableDisableOpacity
+//
+//----------------------------------------------------------------------------
+void EnableDisableOpacity( HWND hWnd, BOOLEAN Enable )
+{
+    DWORD	exStyle;
+
+    if( pSetLayeredWindowAttributes && g_BreakOpacity != 100 ) {
+
+        if( Enable ) {
+
+            exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+            SetWindowLong(hWnd, GWL_EXSTYLE, (exStyle | WS_EX_LAYERED));
+
+            pSetLayeredWindowAttributes(hWnd, 0, static_cast<BYTE> ((255 * g_BreakOpacity) / 100), LWA_ALPHA);
+            RedrawWindow(hWnd, 0, 0, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+
+        } else {
+
+            exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+            SetWindowLong(hWnd, GWL_EXSTYLE, (exStyle & ~WS_EX_LAYERED));
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// EnableDisableScreenSaver
+//
+//----------------------------------------------------------------------------
+void EnableDisableScreenSaver( BOOLEAN Enable )
+{
+    SystemParametersInfo(SPI_SETSCREENSAVEACTIVE,Enable,0,0);
+    SystemParametersInfo(SPI_SETPOWEROFFACTIVE,Enable,0,0);
+    SystemParametersInfo(SPI_SETLOWPOWERACTIVE,Enable,0,0);
+}
+
+
+//----------------------------------------------------------------------------
+//
+// SaveBitmapToFile
+//
+// Save an HBITMAP to a BMP file using GDI+.
+//
+//----------------------------------------------------------------------------
+static BOOLEAN SaveBitmapToFile( HBITMAP hBitmap, PTCHAR filePath )
+{
+    Gdiplus::Bitmap bitmap( hBitmap, NULL );
+    if( bitmap.GetLastStatus() != Gdiplus::Ok )
+        return FALSE;
+
+    // Find the BMP encoder CLSID.
+    UINT num = 0, size = 0;
+    Gdiplus::GetImageEncodersSize( &num, &size );
+    if( size == 0 ) return FALSE;
+
+    Gdiplus::ImageCodecInfo* pInfo = static_cast<Gdiplus::ImageCodecInfo*>( malloc( size ) );
+    if( !pInfo ) return FALSE;
+
+    Gdiplus::GetImageEncoders( num, size, pInfo );
+    CLSID clsid = {};
+    BOOLEAN found = FALSE;
+    for( UINT i = 0; i < num; i++ )
+    {
+        if( wcscmp( pInfo[i].MimeType, L"image/bmp" ) == 0 )
+        {
+            clsid = pInfo[i].Clsid;
+            found = TRUE;
+            break;
+        }
+    }
+    free( pInfo );
+    if( !found ) return FALSE;
+
+    return bitmap.Save( filePath, &clsid, NULL ) == Gdiplus::Ok;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ExtractResourceToFile
+//
+// Extracts a BINRES resource to a file on disk.
+//
+//----------------------------------------------------------------------------
+static BOOLEAN ExtractResourceToFile( LPCTSTR resName, LPCTSTR resType, LPCTSTR destPath )
+{
+    HRSRC hRes = FindResource( NULL, resName, resType );
+    if( !hRes ) return FALSE;
+
+    HGLOBAL hData = LoadResource( NULL, hRes );
+    if( !hData ) return FALSE;
+
+    LPVOID pData = LockResource( hData );
+    DWORD  size  = SizeofResource( NULL, hRes );
+    if( !pData || size == 0 ) return FALSE;
+
+    HANDLE hFile = CreateFile( destPath, GENERIC_WRITE, 0, NULL,
+                               CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+    if( hFile == INVALID_HANDLE_VALUE ) return FALSE;
+
+    DWORD written;
+    BOOL ok = WriteFile( hFile, pData, size, &written, NULL );
+    CloseHandle( hFile );
+
+    return ok && written == size;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// Screensaver settings save / restore for crash recovery.
+//
+// Before swapping in our .scr, save the user's current screensaver
+// settings.  On startup and WM_ENDSESSION, check for orphaned settings
+// and restore them.
+//
+//----------------------------------------------------------------------------
+#define SCREENSAVER_BACKUP_KEY  L"Software\\Sysinternals\\ZoomIt\\SavedScreenSaver"
+
+struct ScreenSaverSnapshot
+{
+    TCHAR scrPath[MAX_PATH] = {};
+    TCHAR screenSaveActive[8] = {};
+    TCHAR secure[8] = {};
+    TCHAR timeoutText[16] = {};
+    DWORD timeoutSeconds = 0;
+    BOOLEAN hasScrPath = FALSE;
+    BOOLEAN hasScreenSaveActive = FALSE;
+    BOOLEAN hasSecure = FALSE;
+    BOOLEAN hasTimeoutText = FALSE;
+    BOOLEAN screenSaveActiveRuntime = TRUE;
+    BOOLEAN valid = FALSE;
+};
+
+// Per-run snapshot captured immediately before we swap in ZoomIt's .scr.
+// This avoids relying only on registry backup timing for unlock restore.
+static ScreenSaverSnapshot g_PreBreakScreenSaverSnapshot;
+
+static BOOLEAN CaptureCurrentScreenSaverSettings( ScreenSaverSnapshot* snapshot )
+{
+    if( snapshot == nullptr )
+        return FALSE;
+
+    ScreenSaverSnapshot localSnapshot;
+
+    DWORD cbPath = sizeof( localSnapshot.scrPath );
+    localSnapshot.hasScrPath =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.scrPath, &cbPath ) == ERROR_SUCCESS );
+
+    DWORD cbScreenSaveActive = sizeof( localSnapshot.screenSaveActive );
+    localSnapshot.hasScreenSaveActive =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveActive",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.screenSaveActive, &cbScreenSaveActive ) == ERROR_SUCCESS );
+
+    DWORD cbSecure = sizeof( localSnapshot.secure );
+    localSnapshot.hasSecure =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.secure, &cbSecure ) == ERROR_SUCCESS );
+
+    DWORD cbTimeoutText = sizeof( localSnapshot.timeoutText );
+    localSnapshot.hasTimeoutText =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveTimeOut",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.timeoutText, &cbTimeoutText ) == ERROR_SUCCESS );
+
+    UINT timeout = 0;
+    SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &timeout, 0 );
+    localSnapshot.timeoutSeconds = timeout;
+
+    BOOL screenSaveActive = TRUE;
+    SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &screenSaveActive, 0 );
+    localSnapshot.screenSaveActiveRuntime = screenSaveActive ? TRUE : FALSE;
+
+    if( localSnapshot.hasTimeoutText )
+    {
+        const int parsed = _tstoi( localSnapshot.timeoutText );
+        if( parsed > 0 )
+        {
+            localSnapshot.timeoutSeconds = static_cast<DWORD>( parsed );
+        }
+    }
+
+    localSnapshot.valid = TRUE;
+
+    *snapshot = localSnapshot;
+    return TRUE;
+}
+
+static void ApplyScreenSaverSnapshot( const ScreenSaverSnapshot* snapshot )
+{
+    if( snapshot == nullptr || !snapshot->valid )
+        return;
+
+    if( snapshot->hasScrPath )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"SCRNSAVE.EXE", REG_SZ, snapshot->scrPath,
+                        static_cast<DWORD>( ( _tcslen( snapshot->scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE" );
+    }
+
+    if( snapshot->hasScreenSaveActive )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaveActive", REG_SZ, snapshot->screenSaveActive,
+                        static_cast<DWORD>( ( _tcslen( snapshot->screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveActive" );
+    }
+    SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, snapshot->screenSaveActiveRuntime ? TRUE : FALSE, 0, SPIF_SENDCHANGE );
+
+    if( snapshot->hasSecure )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaverIsSecure", REG_SZ, snapshot->secure,
+                        static_cast<DWORD>( ( _tcslen( snapshot->secure ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure" );
+    }
+
+    if( snapshot->hasTimeoutText )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaveTimeOut", REG_SZ, snapshot->timeoutText,
+                        static_cast<DWORD>( ( _tcslen( snapshot->timeoutText ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveTimeOut" );
+    }
+
+    SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, snapshot->timeoutSeconds, 0, SPIF_SENDCHANGE );
+}
+
+static void SaveScreenSaverSettings( void )
+{
+    CaptureCurrentScreenSaverSettings( &g_PreBreakScreenSaverSnapshot );
+
+    HKEY hKey;
+    if( RegCreateKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0, NULL,
+                        0, KEY_SET_VALUE, NULL, &hKey, NULL ) == ERROR_SUCCESS )
+    {
+        const ScreenSaverSnapshot& snap = g_PreBreakScreenSaverSnapshot;
+
+        DWORD has = snap.hasScrPath;
+        RegSetValueEx( hKey, L"HasSCRNSAVE.EXE", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"SCRNSAVE.EXE", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.scrPath ),
+                       static_cast<DWORD>( ( _tcslen( snap.scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+
+        has = snap.hasScreenSaveActive;
+        RegSetValueEx( hKey, L"HasScreenSaveActive", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"ScreenSaveActive", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.screenSaveActive ),
+                       static_cast<DWORD>( ( _tcslen( snap.screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
+
+        has = snap.hasSecure;
+        RegSetValueEx( hKey, L"HasScreenSaverIsSecure", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"ScreenSaverIsSecure", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.secure ),
+                       static_cast<DWORD>( ( _tcslen( snap.secure ) + 1 ) * sizeof( TCHAR ) ) );
+
+        has = snap.hasTimeoutText;
+        RegSetValueEx( hKey, L"HasScreenSaveTimeOut", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"ScreenSaveTimeOutText", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.timeoutText ),
+                       static_cast<DWORD>( ( _tcslen( snap.timeoutText ) + 1 ) * sizeof( TCHAR ) ) );
+
+        RegSetValueEx( hKey, L"ScreenSaveTimeOut", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &snap.timeoutSeconds ), sizeof( DWORD ) );
+
+        DWORD runtimeActive = snap.screenSaveActiveRuntime;
+        RegSetValueEx( hKey, L"ScreenSaveActiveRuntime", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &runtimeActive ), sizeof( DWORD ) );
+
+        RegCloseKey( hKey );
+    }
+}
+
+static void RestoreScreenSaverSettings( void )
+{
+    bool restored = false;
+
+    // Preferred restore path: exact values captured in-memory before this run
+    // applied ZoomIt's screensaver settings.
+    if( g_PreBreakScreenSaverSnapshot.valid )
+    {
+        ApplyScreenSaverSnapshot( &g_PreBreakScreenSaverSnapshot );
+        g_PreBreakScreenSaverSnapshot.valid = FALSE;
+        restored = true;
+        RegDeleteKey( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY );
+    }
+    else
+    {
+        // Crash-recovery fallback path.
+        HKEY hKey;
+        if( RegOpenKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0,
+                          KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+        {
+            ScreenSaverSnapshot backupSnapshot;
+
+            DWORD has = 1;
+            DWORD cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasSCRNSAVE.EXE", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasScrPath = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasScrPath = TRUE;
+            }
+
+            DWORD cbPath = sizeof( backupSnapshot.scrPath );
+            if( RegQueryValueEx( hKey, L"SCRNSAVE.EXE", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.scrPath ), &cbPath ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.scrPath[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaveActive", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasScreenSaveActive = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasScreenSaveActive = TRUE;
+            }
+
+            DWORD cbScreenSaveActive = sizeof( backupSnapshot.screenSaveActive );
+            if( RegQueryValueEx( hKey, L"ScreenSaveActive", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.screenSaveActive ), &cbScreenSaveActive ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.screenSaveActive[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaverIsSecure", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasSecure = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasSecure = TRUE;
+            }
+
+            DWORD cbSecure = sizeof( backupSnapshot.secure );
+            if( RegQueryValueEx( hKey, L"ScreenSaverIsSecure", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.secure ), &cbSecure ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.secure[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaveTimeOut", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasTimeoutText = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasTimeoutText = TRUE;
+            }
+
+            DWORD cbTimeoutText = sizeof( backupSnapshot.timeoutText );
+            if( RegQueryValueEx( hKey, L"ScreenSaveTimeOutText", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.timeoutText ), &cbTimeoutText ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.timeoutText[0] = 0;
+            }
+
+            DWORD dwTimeout = 0;
+            DWORD cbTimeout = sizeof( dwTimeout );
+            if( RegQueryValueEx( hKey, L"ScreenSaveTimeOut", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &dwTimeout ), &cbTimeout ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.timeoutSeconds = dwTimeout;
+            }
+            else
+            {
+                UINT timeout = 0;
+                SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &timeout, 0 );
+                backupSnapshot.timeoutSeconds = timeout;
+            }
+
+            DWORD runtimeActive = TRUE;
+            DWORD cbRuntimeActive = sizeof( runtimeActive );
+            if( RegQueryValueEx( hKey, L"ScreenSaveActiveRuntime", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &runtimeActive ), &cbRuntimeActive ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.screenSaveActiveRuntime = runtimeActive ? TRUE : FALSE;
+            }
+            else
+            {
+                BOOL active = TRUE;
+                SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &active, 0 );
+                backupSnapshot.screenSaveActiveRuntime = active ? TRUE : FALSE;
+            }
+
+            backupSnapshot.valid = TRUE;
+            ApplyScreenSaverSnapshot( &backupSnapshot );
+            restored = true;
+
+            RegCloseKey( hKey );
+            RegDeleteKey( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY );
+        }
+    }
+
+    if( restored )
+    {
+        // Broadcast settings change so Windows picks up all registry-only
+        // values (SCRNSAVE.EXE, ScreenSaverIsSecure) and refreshed timeout.
+        SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, 0,
+                           reinterpret_cast<LPARAM>( L"Control Panel\\Desktop" ) );
+        SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETSCREENSAVEACTIVE, 0 );
+    }
+}
+
+static BOOLEAN HasOrphanedScreenSaverSettings( void )
+{
+    HKEY hKey;
+    if( RegOpenKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0,
+                      KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+    {
+        RegCloseKey( hKey );
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static BOOLEAN IsBreakScreenSaverRunning( void )
+{
+    HANDLE hSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+    if( hSnap == INVALID_HANDLE_VALUE )
+    {
+        return FALSE;
+    }
+
+    PROCESSENTRY32 pe = { sizeof( pe ) };
+    BOOLEAN running = FALSE;
+    if( Process32First( hSnap, &pe ) )
+    {
+        do
+        {
+            if( _tcsicmp( pe.szExeFile, L"ZoomItBreak.scr" ) == 0 )
+            {
+                running = TRUE;
+                break;
+            }
+        }
+        while( Process32Next( hSnap, &pe ) );
+    }
+
+    CloseHandle( hSnap );
+    return running;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ActivateBreakScreenSaver
+//
+// Activates the break timer as a secure screensaver using the registry-swap
+// approach:
+// 1. Extracts the embedded .scr to %TEMP%
+// 2. Writes config file with break timer settings
+// 3. Saves user's current screensaver settings
+// 4. Configures system to use our .scr with password protection
+// 5. Triggers screensaver via SC_SCREENSAVE
+//
+// The screensaver runs on the ScreenSaver Desktop and displays the countdown
+// timer.  With ScreenSaverIsSecure=1, students must authenticate to dismiss it.
+// The user's original settings are restored on session unlock (WTS_SESSION_UNLOCK)
+// or on ZoomIt shutdown (crash recovery).
+//
+//----------------------------------------------------------------------------
+static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
+{
+    TCHAR tempDir[MAX_PATH];
+    GetTempPath( MAX_PATH, tempDir );
+
+    {
+        TCHAR dbg[256];
+        _stprintf( dbg, L"[ZoomIt] ActivateBreakScreenSaver: timeout=%d\n", breakTimeoutSeconds );
+        OutputDebugString( dbg );
+    }
+
+    //
+    // 1. Extract the embedded .scr to %TEMP%.
+    //    Kill any previous instance first — the file may be locked by a
+    //    still-running screensaver process (ERROR_SHARING_VIOLATION).
+    //
+    TCHAR scrPath[MAX_PATH];
+    _stprintf( scrPath, L"%sZoomItBreak.scr", tempDir );
+
+    // Try extracting; if the file is locked, find and kill the old process.
+    if( !ExtractResourceToFile( L"RCZOOMITSCR", L"BINRES", scrPath ) )
+    {
+        DWORD err = GetLastError();
+        if( err == ERROR_SHARING_VIOLATION )
+        {
+            OutputDebugString( L"[ZoomIt] .scr file locked, killing previous instance\n" );
+
+            // Find and terminate any running ZoomItBreak.scr process.
+            HANDLE hSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+            if( hSnap != INVALID_HANDLE_VALUE )
+            {
+                PROCESSENTRY32 pe = { sizeof( pe ) };
+                if( Process32First( hSnap, &pe ) )
+                {
+                    do
+                    {
+                        if( _tcsicmp( pe.szExeFile, L"ZoomItBreak.scr" ) == 0 )
+                        {
+                            HANDLE hProc = OpenProcess( PROCESS_TERMINATE, FALSE, pe.th32ProcessID );
+                            if( hProc )
+                            {
+                                TerminateProcess( hProc, 0 );
+                                WaitForSingleObject( hProc, 2000 );
+                                CloseHandle( hProc );
+                            }
+                        }
+                    }
+                    while( Process32Next( hSnap, &pe ) );
+                }
+                CloseHandle( hSnap );
+            }
+            Sleep( 200 );  // Brief wait for file handle release.
+
+            // Retry extraction.
+            if( !ExtractResourceToFile( L"RCZOOMITSCR", L"BINRES", scrPath ) )
+            {
+                TCHAR dbg[256];
+                _stprintf( dbg, L"[ZoomIt] ExtractResourceToFile FAILED (retry), err=%lu\n", GetLastError() );
+                OutputDebugString( dbg );
+                return FALSE;
+            }
+        }
+        else
+        {
+            TCHAR dbg[256];
+            _stprintf( dbg, L"[ZoomIt] ExtractResourceToFile FAILED, err=%lu\n", err );
+            OutputDebugString( dbg );
+            return FALSE;
+        }
+    }
+    //
+    // 2. Capture desktop screenshot if the user wants "show desktop" background.
+    //
+    TCHAR screenshotPath[MAX_PATH] = {};
+    if( g_BreakShowBackgroundFile && g_BreakShowDesktop )
+    {
+        _stprintf( screenshotPath, L"%sZoomItBreakBg.bmp", tempDir );
+        HDC hdcDesktop = GetDC( NULL );
+        MONITORINFO monInfo = { sizeof( monInfo ) };
+        POINT pt;
+        GetCursorPos( &pt );
+        HMONITOR hMon = MonitorFromPoint( pt, MONITOR_DEFAULTTONEAREST );
+        GetMonitorInfo( hMon, &monInfo );
+        HBITMAP hBmp = CreateFadedDesktopBackground( hdcDesktop, &monInfo.rcMonitor, NULL );
+        ReleaseDC( NULL, hdcDesktop );
+        if( hBmp )
+        {
+            SaveBitmapToFile( hBmp, screenshotPath );
+            DeleteObject( hBmp );
+        }
+    }
+
+    //
+    // 3. Write the config file for the screensaver to read.
+    //
+    BreakScrConfig config = {};
+    config.magic = BREAKSCR_CONFIG_MAGIC;
+    config.timeoutSeconds = breakTimeoutSeconds;
+    config.settings.penColor         = g_BreakPenColor;
+    config.settings.backgroundColor  = g_BreakBackgroundColor;
+    config.settings.timerPosition    = g_BreakTimerPosition;
+    config.settings.opacity          = g_BreakOpacity;
+    config.settings.showExpiredTime  = g_ShowExpiredTime;
+    config.settings.smoothImage      = g_SmoothImage;
+    config.settings.backgroundStretch = g_BreakBackgroundStretch;
+    config.settings.playSound        = g_BreakPlaySoundFile;
+    _tcscpy( config.settings.soundFile, g_BreakSoundFile );
+    config.settings.showDesktop      = g_BreakShowDesktop;
+    config.settings.showBackgroundFile = g_BreakShowBackgroundFile;
+    _tcscpy( config.settings.backgroundFile, g_BreakBackgroundFile );
+    config.settings.logFont          = g_LogFont;
+    _tcscpy( config.screenshotPath, screenshotPath );
+
+    // If a desktop screenshot was captured, tell the screensaver to load it
+    // as its background file.
+    if( screenshotPath[0] )
+    {
+        config.settings.showBackgroundFile = TRUE;
+        config.settings.showDesktop = FALSE;
+        _tcscpy( config.settings.backgroundFile, screenshotPath );
+    }
+
+    if( !BreakScrConfig_Write( &config ) )
+    {
+        OutputDebugString( L"[ZoomIt] BreakScrConfig_Write FAILED\n" );
+        return FALSE;
+    }
+
+    //
+    // 4. Save current screensaver settings for later restoration.
+    //    Always take a fresh snapshot immediately before swapping in
+    //    ZoomIt's .scr so unlock cleanup can reliably restore the user's
+    //    pre-break values (path, active flag, secure flag, timeout).
+    //
+    // If a stale backup exists from an interrupted prior run, restore it
+    // first so we don't snapshot already-overridden ZoomIt values.
+    if( HasOrphanedScreenSaverSettings() )
+    {
+        RestoreScreenSaverSettings();
+    }
+    SaveScreenSaverSettings();
+
+    //
+    // 4a. Ensure screensaver is fully reset before reconfiguring.
+    //     Disable screensaver, wait briefly, then reconfigure.  This ensures
+    //     Windows processes the state change and allows subsequent activations.
+    //
+    SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, FALSE, 0, SPIF_SENDCHANGE );
+    Sleep( 200 );  // Allow Windows to process the disable
+
+    //
+    // 5. Configure system to use our screensaver.
+    //
+
+    // Set our .scr as the system screensaver
+    if( RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"SCRNSAVE.EXE", REG_SZ, scrPath,
+                        static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) ) != ERROR_SUCCESS )
+    {
+        OutputDebugString( L"[ZoomIt] Failed to set SCRNSAVE.EXE\n" );
+        RestoreScreenSaverSettings();
+        return FALSE;
+    }
+
+    // Set screensaver timeout to 15 seconds.
+    // The initial activation uses SC_SCREENSAVE for immediate launch.
+    // This timeout controls how quickly the screensaver REACTIVATES on the lock
+    // screen after a student triggers the credential provider but doesn't
+    // authenticate and walks away.  1 second may be below Windows' enforced
+    // minimum, so we use 15 seconds as a practical value.
+    // ScreenSaveTimeOut is stored as REG_SZ in Control Panel\Desktop.
+    RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                    L"ScreenSaveTimeOut", REG_SZ, L"15",
+                    static_cast<DWORD>( 3 * sizeof( TCHAR ) ) );
+    SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, 15, 0, SPIF_SENDCHANGE );
+
+    // Force password protection for classroom security
+    TCHAR secure[] = L"1";
+    if( RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaverIsSecure", REG_SZ, secure,
+                        static_cast<DWORD>( ( _tcslen( secure ) + 1 ) * sizeof( TCHAR ) ) ) != ERROR_SUCCESS )
+    {
+        OutputDebugString( L"[ZoomIt] Failed to set ScreenSaverIsSecure\n" );
+        RestoreScreenSaverSettings();
+        return FALSE;
+    }
+
+    // Activate screensaver (must be enabled for SC_SCREENSAVE to work).
+    // Set both the registry value and runtime state — Winlogon reads the
+    // registry directly and ignores the SPI runtime flag.
+    RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                    L"ScreenSaveActive", REG_SZ, L"1",
+                    static_cast<DWORD>( 2 * sizeof( TCHAR ) ) );
+    SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, TRUE, 0, SPIF_SENDCHANGE );
+
+    // Broadcast and give Windows time to process all registry changes before
+    // triggering the screensaver.  If we trigger too quickly, Windows may not
+    // see ScreenSaverIsSecure=1 and the screensaver won't require authentication.
+    SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETSCREENSAVEACTIVE,
+                      reinterpret_cast<LPARAM>( L"Policy" ) );
+    Sleep( 500 );
+
+    //
+    // 6. Trigger the screensaver via system mechanism.
+    //    This causes Windows/Winlogon to launch our .scr on the ScreenSaver Desktop.
+    //
+    //    IMPORTANT: Use DefWindowProc on our own window rather than
+    //    SendMessage(HWND_BROADCAST).  Broadcasting WM_SYSCOMMAND is synchronous
+    //    and blocks our message loop for the entire screensaver session, making
+    //    the desktop unresponsive.  It also delivers SC_SCREENSAVE to ZoomIt's
+    //    own window, triggering unwanted LiveZoom activation.
+    //
+    DefWindowProc( hWnd, WM_SYSCOMMAND, SC_SCREENSAVE, 0 );
+
+    // Defensive cleanup path: if session-change notifications are delayed or
+    // missed, poll until the break .scr exits and then restore original values.
+    // This ensures ScreenSaveTimeOut/SCRNSAVE.EXE don't remain overridden.
+    SetTimer( hWnd, 4, 2000, NULL );
+
+    return TRUE;
+}
+
+//----------------------------------------------------------------------------
+//
+// EnableDisableStickyKeys
+//
+//----------------------------------------------------------------------------
+void EnableDisableStickyKeys( BOOLEAN Enable )
+{
+    static STICKYKEYS	prevStickyKeyValue = {0};
+    STICKYKEYS			newStickyKeyValue = {0};
+
+    // Need to do this on Vista tablet to stop sticky key popup when you
+    // hold down the shift key and draw with the pen.
+    if( Enable ) {
+
+        if( prevStickyKeyValue.cbSize == sizeof(STICKYKEYS)) {
+
+            SystemParametersInfo(SPI_SETSTICKYKEYS,
+                    sizeof(STICKYKEYS), &prevStickyKeyValue, SPIF_SENDCHANGE);
+        }
+
+    } else {
+
+        prevStickyKeyValue.cbSize = sizeof(STICKYKEYS);
+        if (SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS),
+                &prevStickyKeyValue, 0)) {
+
+            newStickyKeyValue.cbSize = sizeof(STICKYKEYS);
+            newStickyKeyValue.dwFlags = 0;
+            if( !SystemParametersInfo(SPI_SETSTICKYKEYS,
+                sizeof(STICKYKEYS), &newStickyKeyValue, SPIF_SENDCHANGE)) {
+
+                // DWORD error = GetLastError();
+
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+//
+// GetKeyMod
+//
+//----------------------------------------------------------------------------
+constexpr DWORD GetKeyMod( DWORD Key )
+{
+    DWORD	 keyMod = 0;
+    if( (Key >> 8) & HOTKEYF_ALT ) keyMod |= MOD_ALT;
+    if( (Key >> 8) & HOTKEYF_CONTROL) keyMod |= MOD_CONTROL;
+    if( (Key >> 8) & HOTKEYF_SHIFT) keyMod |= MOD_SHIFT;
+    if( (Key >> 8) & HOTKEYF_EXT) keyMod |= MOD_WIN;
+    return keyMod;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// AdvancedBreakProc
+//
+//----------------------------------------------------------------------------
+INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
+{
+    TCHAR	opacity[10];
+    static	TCHAR newSoundFile[MAX_PATH];
+    static	TCHAR newBackgroundFile[MAX_PATH];
+    TCHAR	filePath[MAX_PATH], initDir[MAX_PATH];
+    DWORD	i;
+    static UINT currentDpi = DPI_BASELINE;
+
+    switch ( message )  {
+    case WM_INITDIALOG:
+        // Set the dialog icon
+        {
+            HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+            if( hIcon )
+            {
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon) );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon) );
+            }
+        }
+        if( pSHAutoComplete ) {
+            pSHAutoComplete( GetDlgItem( hDlg, IDC_SOUND_FILE), SHACF_FILESYSTEM );
+            pSHAutoComplete( GetDlgItem( hDlg, IDC_BACKGROUND_FILE), SHACF_FILESYSTEM );
+        }
+        CheckDlgButton( hDlg, IDC_CHECK_BACKGROUND_FILE,
+            g_BreakShowBackgroundFile ? BST_CHECKED: BST_UNCHECKED );
+        CheckDlgButton( hDlg, IDC_CHECK_SOUND_FILE,
+            g_BreakPlaySoundFile ? BST_CHECKED: BST_UNCHECKED );
+        CheckDlgButton( hDlg, IDC_CHECK_SHOW_EXPIRED,
+            g_ShowExpiredTime ? BST_CHECKED : BST_UNCHECKED );
+        CheckDlgButton( hDlg, IDC_CHECK_BACKGROUND_STRETCH,
+            g_BreakBackgroundStretch ? BST_CHECKED : BST_UNCHECKED );
+#if 0
+        CheckDlgButton( hDlg, IDC_CHECK_SECONDARYDISPLAY,
+            g_BreakOnSecondary ? BST_CHECKED : BST_UNCHECKED );
+#endif
+        if( pSetLayeredWindowAttributes == NULL ) {
+
+            EnableWindow( GetDlgItem( hDlg, IDC_OPACITY ), FALSE );
+        }
+
+        // sound file
+        if( !g_BreakPlaySoundFile ) {
+
+            EnableWindow( GetDlgItem( hDlg, IDC_STATIC_SOUND_FILE ), FALSE );
+            EnableWindow( GetDlgItem( hDlg, IDC_SOUND_FILE ), FALSE );
+            EnableWindow( GetDlgItem( hDlg, IDC_SOUND_BROWSE ), FALSE );
+        }
+        _tcscpy( newSoundFile, g_BreakSoundFile );
+        _tcscpy( filePath, g_BreakSoundFile );
+        if( _tcsrchr( filePath, '\\' )) _tcscpy( filePath, _tcsrchr( g_BreakSoundFile, '\\' )+1);
+        if( _tcsrchr( filePath, '.' )) *_tcsrchr( filePath, '.' ) = 0;
+        SetDlgItemText( hDlg, IDC_SOUND_FILE, filePath );
+
+        // background file
+        if( !g_BreakShowBackgroundFile ) {
+
+            EnableWindow( GetDlgItem( hDlg, IDC_STATIC_DESKTOP_BACKGROUND ), FALSE );
+            EnableWindow( GetDlgItem( hDlg, IDC_STATIC_DESKTOP_BACKGROUND ), FALSE );
+            EnableWindow( GetDlgItem( hDlg, IDC_STATIC_BACKGROUND_FILE ), FALSE );
+            EnableWindow( GetDlgItem( hDlg, IDC_BACKGROUND_FILE ), FALSE );
+            EnableWindow( GetDlgItem( hDlg, IDC_BACKGROUND_BROWSE ), FALSE );
+            EnableWindow( GetDlgItem( hDlg, IDC_CHECK_BACKGROUND_STRETCH ), FALSE );
+        }
+        CheckDlgButton( hDlg,
+            g_BreakShowDesktop ? IDC_STATIC_DESKTOP_BACKGROUND : IDC_STATIC_BACKGROUND_FILE, BST_CHECKED );
+        _tcscpy( newBackgroundFile, g_BreakBackgroundFile );
+        SetDlgItemText( hDlg, IDC_BACKGROUND_FILE, g_BreakBackgroundFile );
+
+        CheckDlgButton( hDlg, IDC_TIMER_POS1 + g_BreakTimerPosition, BST_CHECKED );
+
+        for( i = 10; i <= 100; i += 10) {
+
+            _stprintf( opacity, L"%d%%", i );
+            SendMessage( GetDlgItem( hDlg, IDC_OPACITY ), CB_ADDSTRING, 0,
+                    reinterpret_cast<LPARAM>(opacity));
+        }
+        SendMessage( GetDlgItem( hDlg, IDC_OPACITY ), CB_SETCURSEL,
+                g_BreakOpacity / 10 - 1, 0 );
+
+        // Apply DPI scaling to the dialog
+        currentDpi = GetDpiForWindowHelper( hDlg );
+        if( currentDpi != DPI_BASELINE )
+        {
+            ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
+        }
+
+        // Apply dark mode
+        ApplyDarkModeToDialog( hDlg );
+        return TRUE;
+
+    case WM_DPICHANGED:
+        HandleDialogDpiChange( hDlg, wParam, lParam, currentDpi );
+        return TRUE;
+
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hDlg, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            return reinterpret_cast<INT_PTR>(hBrush);
+        }
+        break;
+    }
+
+    case WM_COMMAND:
+        switch ( HIWORD( wParam )) {
+        case BN_CLICKED:
+            if( LOWORD( wParam ) == IDC_CHECK_SOUND_FILE ) {
+
+                EnableWindow( GetDlgItem( hDlg, IDC_STATIC_SOUND_FILE ),
+                        IsDlgButtonChecked( hDlg, IDC_CHECK_SOUND_FILE) == BST_CHECKED );
+                EnableWindow( GetDlgItem( hDlg, IDC_SOUND_FILE ),
+                        IsDlgButtonChecked( hDlg, IDC_CHECK_SOUND_FILE) == BST_CHECKED );
+                EnableWindow( GetDlgItem( hDlg, IDC_SOUND_BROWSE ),
+                        IsDlgButtonChecked( hDlg, IDC_CHECK_SOUND_FILE) == BST_CHECKED );
+            }
+            if( LOWORD( wParam ) == IDC_CHECK_BACKGROUND_FILE ) {
+
+                EnableWindow( GetDlgItem( hDlg, IDC_CHECK_BACKGROUND_STRETCH ),
+                        IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_FILE) == BST_CHECKED );
+                EnableWindow( GetDlgItem( hDlg, IDC_STATIC_DESKTOP_BACKGROUND ),
+                        IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_FILE) == BST_CHECKED );
+                EnableWindow( GetDlgItem( hDlg, IDC_STATIC_BACKGROUND_FILE ),
+                        IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_FILE) == BST_CHECKED );
+                EnableWindow( GetDlgItem( hDlg, IDC_BACKGROUND_FILE ),
+                        IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_FILE) == BST_CHECKED );
+                EnableWindow( GetDlgItem( hDlg, IDC_BACKGROUND_BROWSE ),
+                        IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_FILE) == BST_CHECKED );
+            }
+            break;
+        }
+        switch ( LOWORD( wParam )) {
+        case IDC_SOUND_BROWSE:
+        {
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Sounds", L"*.wav" },
+                { L"All Files", L"*.*" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 1 );
+            openDialog->SetDefaultExtension( L"wav" );
+            openDialog->SetTitle( L"ZoomIt: Specify Sound File..." );
+
+            // Set initial folder
+            GetDlgItemText( hDlg, IDC_SOUND_FILE, filePath, _countof( filePath ) );
+            if( _tcsrchr( filePath, '\\' ) )
+            {
+                _tcscpy( initDir, filePath );
+                *( _tcsrchr( initDir, '\\' ) + 1 ) = 0;
+            }
+            else
+            {
+                _tcscpy( filePath, L"%WINDIR%\\Media" );
+                ExpandEnvironmentStrings( filePath, initDir, _countof( initDir ) );
+            }
+            wil::com_ptr<IShellItem> folderItem;
+            if( SUCCEEDED( SHCreateItemFromParsingName( initDir, nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+            {
+                openDialog->SetFolder( folderItem.get() );
+            }
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        _tcscpy( newSoundFile, pathStr.get() );
+                        _tcscpy( filePath, pathStr.get() );
+                        if( _tcsrchr( filePath, '\\' ) ) _tcscpy( filePath, _tcsrchr( filePath, '\\' ) + 1 );
+                        if( _tcsrchr( filePath, '.' ) ) *_tcsrchr( filePath, '.' ) = 0;
+                        SetDlgItemText( hDlg, IDC_SOUND_FILE, filePath );
+                    }
+                }
+            }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
+            break;
+        }
+
+        case IDC_BACKGROUND_BROWSE:
+        {
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Bitmap Files (*.bmp;*.dib)", L"*.bmp;*.dib" },
+                { L"PNG (*.png)", L"*.png" },
+                { L"JPEG (*.jpg;*.jpeg;*.jpe;*.jfif)", L"*.jpg;*.jpeg;*.jpe;*.jfif" },
+                { L"GIF (*.gif)", L"*.gif" },
+                { L"All Picture Files", L"*.bmp;*.dib;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif" },
+                { L"All Files", L"*.*" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 5 ); // Default to "All Picture Files"
+            openDialog->SetTitle( L"ZoomIt: Specify Background File..." );
+
+            // Set initial folder
+            GetDlgItemText( hDlg, IDC_BACKGROUND_FILE, filePath, _countof( filePath ) );
+            if( _tcsrchr( filePath, '\\' ) )
+            {
+                _tcscpy( initDir, filePath );
+                *( _tcsrchr( initDir, '\\' ) + 1 ) = 0;
+            }
+            else
+            {
+                _tcscpy( filePath, L"%USERPROFILE%\\Pictures" );
+                ExpandEnvironmentStrings( filePath, initDir, _countof( initDir ) );
+            }
+            wil::com_ptr<IShellItem> folderItem;
+            if( SUCCEEDED( SHCreateItemFromParsingName( initDir, nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+            {
+                openDialog->SetFolder( folderItem.get() );
+            }
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        _tcscpy( newBackgroundFile, pathStr.get() );
+                        SetDlgItemText( hDlg, IDC_BACKGROUND_FILE, pathStr.get() );
+                    }
+                }
+            }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
+            break;
+        }
+
+        case IDOK:
+
+            // sound file has to be valid
+            g_BreakPlaySoundFile = IsDlgButtonChecked( hDlg, IDC_CHECK_SOUND_FILE ) == BST_CHECKED;
+            g_BreakShowBackgroundFile = IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_FILE ) == BST_CHECKED;
+            g_BreakBackgroundStretch = IsDlgButtonChecked( hDlg, IDC_CHECK_BACKGROUND_STRETCH ) == BST_CHECKED;
+#if 0
+            g_BreakOnSecondary = IsDlgButtonChecked( hDlg, IDC_CHECK_SECONDARYDISPLAY ) == BST_CHECKED;
+#endif
+            if( g_BreakPlaySoundFile && GetFileAttributes( newSoundFile ) == -1 ) {
+
+                MessageBox( hDlg, L"The specified sound file is inaccessible",
+                        L"Advanced Break Options Error", MB_ICONERROR );
+                break;
+            }
+            _tcscpy( g_BreakSoundFile, newSoundFile );
+
+            // Background file
+            g_BreakShowDesktop = IsDlgButtonChecked( hDlg, IDC_STATIC_DESKTOP_BACKGROUND ) == BST_CHECKED;
+
+            if( !g_BreakShowDesktop && g_BreakShowBackgroundFile && GetFileAttributes( newBackgroundFile ) == -1 ) {
+
+                MessageBox( hDlg, L"The specified background file is inaccessible",
+                        L"Advanced Break Options Error", MB_ICONERROR );
+                break;
+            }
+            _tcscpy( g_BreakBackgroundFile, newBackgroundFile );
+
+            for( i = 0; i < 10; i++ ) {
+
+                if( IsDlgButtonChecked( hDlg, IDC_TIMER_POS1+i) == BST_CHECKED ) {
+
+                    g_BreakTimerPosition = i;
+                    break;
+                }
+            }
+            GetDlgItemText( hDlg, IDC_OPACITY, opacity, sizeof(opacity)/sizeof(opacity[0]));
+            _stscanf( opacity, L"%d%%", &g_BreakOpacity );
+            reg.WriteRegSettings( RegSettings );
+            EndDialog(hDlg, 0);
+            break;
+
+        case IDCANCEL:
+            EndDialog( hDlg, 0 );
+            return TRUE;
+        }
+        break;
+
+    default:
+        break;
+    }
+    return FALSE;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// WebcamSettingsProc
+//
+//----------------------------------------------------------------------------
+INT_PTR CALLBACK WebcamSettingsProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
+{
+    static std::vector<std::pair<std::wstring, std::wstring>> webcams;
+    static UINT currentDpi = DPI_BASELINE;
+    static HWND s_hBrightnessTooltip = nullptr;
+
+    switch( message ) {
+    case WM_INITDIALOG:
+    {
+        HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+        if( hIcon )
+        {
+            SendMessage( hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon) );
+            SendMessage( hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon) );
+        }
+
+        // Enumerate webcam devices
+        webcams.clear();
+        {
+            MFStartup( MF_VERSION, MFSTARTUP_LITE );
+            IMFAttributes* pAttributes = nullptr;
+            if( SUCCEEDED( MFCreateAttributes( &pAttributes, 1 ) ) )
+            {
+                pAttributes->SetGUID( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID );
+                IMFActivate** ppDevices = nullptr;
+                UINT32 count = 0;
+                if( SUCCEEDED( MFEnumDeviceSources( pAttributes, &ppDevices, &count ) ) )
+                {
+                    for( UINT32 i = 0; i < count; i++ )
+                    {
+                        LPWSTR symLink = nullptr, friendlyName = nullptr;
+                        UINT32 nameLen = 0;
+                        if( SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &symLink, &nameLen ) ) &&
+                            SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &friendlyName, &nameLen ) ) )
+                        {
+                            webcams.emplace_back( symLink, friendlyName );
+                        }
+                        if( symLink ) CoTaskMemFree( symLink );
+                        if( friendlyName ) CoTaskMemFree( friendlyName );
+                        ppDevices[i]->Release();
+                    }
+                    CoTaskMemFree( ppDevices );
+                }
+                pAttributes->Release();
+            }
+            MFShutdown();
+        }
+
+        // Populate camera combo
+        SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_DEVICE ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Default") );
+        {
+            int selection = 0;
+            for( size_t i = 0; i < webcams.size(); i++ )
+            {
+                SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_DEVICE ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(webcams[i].second.c_str()) );
+                if( selection == 0 && wcscmp( webcams[i].first.c_str(), g_WebcamDeviceSymLink ) == 0 )
+                    selection = static_cast<int>(i + 1);
+            }
+            SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_DEVICE ), CB_SETCURSEL, selection, 0 );
+        }
+
+        // Populate position combo
+        {
+            const wchar_t* positions[] = { L"Top-left", L"Top-right", L"Bottom-left", L"Bottom-right" };
+            for( int i = 0; i < 4; i++ )
+                SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_POSITION ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(positions[i]) );
+            SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_POSITION ), CB_SETCURSEL, g_WebcamPosition, 0 );
+        }
+
+        // Populate size combo
+        {
+            const wchar_t* sizes[] = { L"Small", L"Medium", L"Large", L"X-Large", L"Full screen" };
+            for( int i = 0; i < 5; i++ )
+                SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SIZE ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(sizes[i]) );
+            SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SIZE ), CB_SETCURSEL, g_WebcamSize, 0 );
+        }
+
+        // Populate shape combo
+        {
+            const wchar_t* shapes[] = { L"Rectangle", L"Rounded Rectangle", L"Rounded Square", L"Circle" };
+            for( int i = 0; i < 4; i++ )
+                SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(shapes[i]) );
+            SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), CB_SETCURSEL, g_WebcamShape, 0 );
+        }
+
+        // Populate background mode combo
+        {
+            HWND hBgMode = GetDlgItem( hDlg, IDC_WEBCAM_BG_MODE );
+            SendMessage( hBgMode, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"None") );
+            SendMessage( hBgMode, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Blur") );
+            SendMessage( hBgMode, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Image") );
+            SendMessage( hBgMode, CB_SETCURSEL, g_WebcamBackgroundMode, 0 );
+            SetDlgItemText( hDlg, IDC_WEBCAM_BG_IMAGE, g_WebcamBackgroundImage );
+        }
+
+        // Initialize brightness slider
+        {
+            HWND hSlider = GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER );
+            SendMessage( hSlider, TBM_SETRANGE, FALSE, MAKELONG( 0, 100 ) );
+            SendMessage( hSlider, TBM_SETPOS, TRUE, g_WebcamBrightness );
+
+            // Place the built-in drag tooltip (TBS_TOOLTIPS) beneath the slider.
+            SendMessage( hSlider, TBM_SETTIPSIDE, TBTS_BOTTOM, 0 );
+
+            // Hover tooltip that displays the current brightness when not dragging.
+            // TTF_SUBCLASS lets the tooltip detect hover itself; LPSTR_TEXTCALLBACK
+            // makes us supply the current value via TTN_GETDISPINFO.
+            s_hBrightnessTooltip = CreateWindowEx(
+                WS_EX_TOPMOST, TOOLTIPS_CLASS, nullptr,
+                WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
+                CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+                hDlg, nullptr, g_hInstance, nullptr );
+            if( s_hBrightnessTooltip )
+            {
+                TOOLINFO ti = { sizeof(TOOLINFO) };
+                ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+                ti.hwnd = hDlg;
+                ti.uId = reinterpret_cast<UINT_PTR>(hSlider);
+                ti.lpszText = LPSTR_TEXTCALLBACK;
+                SendMessage( s_hBrightnessTooltip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti) );
+            }
+        }
+
+        // Set initial enabled state
+        {
+            bool isFullScreen = g_WebcamSize == 4;
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE_LABEL ), !isFullScreen );
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), !isFullScreen );
+            bool isImageMode = g_WebcamBackgroundMode == 2;
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_BG_IMAGE ), isImageMode );
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_BG_BROWSE ), isImageMode );
+        }
+
+        // DPI scaling
+        currentDpi = GetDpiForWindowHelper( hDlg );
+        if( currentDpi != DPI_BASELINE )
+            ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
+
+        ApplyDarkModeToDialog( hDlg );
+        return TRUE;
+    }
+
+    case WM_DPICHANGED:
+        HandleDialogDpiChange( hDlg, wParam, lParam, currentDpi );
+        return TRUE;
+
+    case WM_ERASEBKGND:
+        if( IsDarkModeEnabled() )
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect( hDlg, &rc );
+            FillRect( hdc, &rc, GetDarkModeBrush() );
+            return TRUE;
+        }
+        break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor( hdc, hCtrl, message );
+        if( hBrush )
+            return reinterpret_cast<INT_PTR>(hBrush);
+        break;
+    }
+
+    case WM_NOTIFY:
+    {
+        LPNMHDR pnmh = reinterpret_cast<LPNMHDR>(lParam);
+        if( s_hBrightnessTooltip && pnmh->hwndFrom == s_hBrightnessTooltip )
+        {
+            if( pnmh->code == TTN_GETDISPINFO )
+            {
+                LPNMTTDISPINFO pdi = reinterpret_cast<LPNMTTDISPINFO>(lParam);
+                static wchar_t buf[16];
+                int pos = static_cast<int>(SendMessage(
+                    GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER ), TBM_GETPOS, 0, 0 ));
+                _snwprintf_s( buf, _countof(buf), _TRUNCATE, L"%d", pos );
+                pdi->lpszText = buf;
+                return TRUE;
+            }
+            if( pnmh->code == TTN_SHOW )
+            {
+                // Reposition the tooltip directly beneath the slider, centered on the cursor.
+                HWND hSlider = GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER );
+                RECT rcSlider, rcTip;
+                GetWindowRect( hSlider, &rcSlider );
+                GetWindowRect( s_hBrightnessTooltip, &rcTip );
+                POINT pt;
+                GetCursorPos( &pt );
+                int tipW = rcTip.right - rcTip.left;
+                SetWindowPos( s_hBrightnessTooltip, HWND_TOPMOST,
+                              pt.x - tipW / 2, rcSlider.bottom + 4, 0, 0,
+                              SWP_NOSIZE | SWP_NOACTIVATE );
+                return TRUE;
+            }
+        }
+        break;
+    }
+
+    case WM_DESTROY:
+        if( s_hBrightnessTooltip )
+        {
+            DestroyWindow( s_hBrightnessTooltip );
+            s_hBrightnessTooltip = nullptr;
+        }
+        break;
+
+    case WM_COMMAND:
+        // Handle size combo change — disable shape when Full screen
+        if( HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_WEBCAM_SIZE )
+        {
+            bool isFullScreen = SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SIZE ), CB_GETCURSEL, 0, 0 ) == 4;
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE_LABEL ), !isFullScreen );
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), !isFullScreen );
+        }
+        // Handle background mode combo change — show/hide browse controls
+        if( HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_WEBCAM_BG_MODE )
+        {
+            bool isImageMode = SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_BG_MODE ), CB_GETCURSEL, 0, 0 ) == 2;
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_BG_IMAGE ), isImageMode );
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_BG_BROWSE ), isImageMode );
+        }
+
+        switch( LOWORD(wParam) ) {
+        case IDC_WEBCAM_BG_BROWSE:
+        {
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Bitmap Files (*.bmp;*.dib)", L"*.bmp;*.dib" },
+                { L"PNG (*.png)", L"*.png" },
+                { L"JPEG (*.jpg;*.jpeg;*.jpe;*.jfif)", L"*.jpg;*.jpeg;*.jpe;*.jfif" },
+                { L"GIF (*.gif)", L"*.gif" },
+                { L"All Picture Files", L"*.bmp;*.dib;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif" },
+                { L"All Files", L"*.*" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 5 );
+            openDialog->SetTitle( L"ZoomIt: Specify Background Image..." );
+
+            TCHAR bgFilePath[MAX_PATH], bgInitDir[MAX_PATH];
+            GetDlgItemText( hDlg, IDC_WEBCAM_BG_IMAGE, bgFilePath, _countof( bgFilePath ) );
+            if( _tcsrchr( bgFilePath, '\\' ) )
+            {
+                _tcscpy( bgInitDir, bgFilePath );
+                *( _tcsrchr( bgInitDir, '\\' ) + 1 ) = 0;
+            }
+            else
+            {
+                _tcscpy( bgFilePath, L"%USERPROFILE%\\Pictures" );
+                ExpandEnvironmentStrings( bgFilePath, bgInitDir, _countof( bgInitDir ) );
+            }
+            wil::com_ptr<IShellItem> folderItem;
+            if( SUCCEEDED( SHCreateItemFromParsingName( bgInitDir, nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+                openDialog->SetFolder( folderItem.get() );
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                        SetDlgItemText( hDlg, IDC_WEBCAM_BG_IMAGE, pathStr.get() );
+                }
+            }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
+            break;
+        }
+
+        case IDOK:
+            g_WebcamPosition = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_POSITION ), CB_GETCURSEL, 0, 0 ));
+            g_WebcamSize = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SIZE ), CB_GETCURSEL, 0, 0 ));
+            g_WebcamShape = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), CB_GETCURSEL, 0, 0 ));
+            g_WebcamBackgroundMode = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_BG_MODE ), CB_GETCURSEL, 0, 0 ));
+            GetDlgItemText( hDlg, IDC_WEBCAM_BG_IMAGE, g_WebcamBackgroundImage, MAX_PATH );
+            g_WebcamBrightness = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER ), TBM_GETPOS, 0, 0 ));
+            {
+                int wcIndex = static_cast<int>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_DEVICE ), CB_GETCURSEL, 0, 0 ));
+                _tcscpy( g_WebcamDeviceSymLink, wcIndex == 0 ? L"" : webcams[static_cast<size_t>(wcIndex) - 1].first.c_str() );
+            }
+            reg.WriteRegSettings( RegSettings );
+            EndDialog( hDlg, 0 );
+            break;
+
+        case IDCANCEL:
+            EndDialog( hDlg, 0 );
+            return TRUE;
+        }
+        break;
+    }
+
+    return FALSE;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// OptionsTabProc
+//
+//----------------------------------------------------------------------------
+
+static UINT_PTR CALLBACK ChooseFontHookProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        // Set the dialog icon
+        {
+            HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+            if( hIcon )
+            {
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon) );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon) );
+            }
+        }
+        // Basic (incomplete) dark mode attempt: theme the main common dialog window.
+        ApplyDarkModeToDialog(hDlg);
+        return 0;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            return reinterpret_cast<UINT_PTR>(hBrush);
+        }
+        break;
+    }
+    }
+
+    return 0;
+}
+
+INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
+                                WPARAM wParam, LPARAM lParam )
+{
+    HDC			hDC;
+    LOGFONT		lf;
+    CHOOSEFONT	chooseFont;
+    HFONT		hFont;
+    PAINTSTRUCT	ps;
+    HWND		hTextPreview;
+    HDC			hDc;
+    RECT		previewRc;
+
+    switch ( message )  {
+    case WM_INITDIALOG:
+        return TRUE;
+
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hDlg, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            return reinterpret_cast<INT_PTR>(hBrush);
+        }
+        break;
+    }
+
+    case WM_COMMAND:
+        // Handle combo box selection changes
+        if (HIWORD(wParam) == CBN_SELCHANGE) {
+            if (LOWORD(wParam) == IDC_RECORD_SCALING) {
+
+                int format = static_cast<int>(SendMessage(GetDlgItem(hDlg, IDC_RECORD_FORMAT), CB_GETCURSEL, 0, 0));
+                int scale = static_cast<int>(SendMessage(GetDlgItem(hDlg, IDC_RECORD_SCALING), CB_GETCURSEL, 0, 0));
+                if(format == 0)
+                {
+                    g_RecordScalingGIF = static_cast<BYTE>((scale + 1) * 10);
+                }
+                else
+                {
+                    g_RecordScalingMP4 = static_cast<BYTE>((scale + 1) * 10);
+                }
+            }
+            else if (LOWORD(wParam) == IDC_RECORD_FORMAT) {
+                // Get the currently selected format
+                int selection = static_cast<int>(SendMessage(GetDlgItem(hDlg, IDC_RECORD_FORMAT),
+                                                            CB_GETCURSEL, 0, 0));
+
+                // Get the selected text to check if it's GIF
+                TCHAR selectedText[32] = {0};
+                SendMessage(GetDlgItem(hDlg, IDC_RECORD_FORMAT),
+                           CB_GETLBTEXT, selection, reinterpret_cast<LPARAM>(selectedText));
+
+                // Check if GIF is selected by comparing the text
+                bool isGifSelected = (wcscmp(selectedText, L"GIF") == 0);
+
+                // If GIF is selected, set the scaling to the g_RecordScalingGIF value
+                if (isGifSelected) {
+                    g_RecordScaling = g_RecordScalingGIF;
+
+                } else {
+
+                    g_RecordScaling = g_RecordScalingMP4;
+                }
+
+                for (int i = 0; i < 10; i++) {
+                    int scalingValue = (i + 1) * 10;
+                    if (scalingValue == static_cast<int>(g_RecordScaling)) {
+                        SendMessage(GetDlgItem(hDlg, IDC_RECORD_SCALING),
+                                    CB_SETCURSEL, i, 0);
+                        break;
+                    }
+                }
+
+                // Enable/disable audio controls based on selection (GIF has no audio)
+                EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_SYSTEM_AUDIO), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_AUDIO), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_NOISE_CANCELLATION), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_MIC_MONO_MIX), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), !isGifSelected);
+
+                // Enable/disable webcam overlay and settings button (webcam overlay is MP4-only).
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_OVERLAY), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SETTINGS), !isGifSelected && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED);
+            }
+        }
+        if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_WEBCAM_OVERLAY) {
+            bool webcamEnabled = IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SETTINGS), webcamEnabled);
+        }
+        if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_CAPTURE_AUDIO) {
+            bool micEnabled = IsDlgButtonChecked(hDlg, IDC_CAPTURE_AUDIO) == BST_CHECKED;
+            EnableWindow(GetDlgItem(hDlg, IDC_NOISE_CANCELLATION), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MIC_MONO_MIX), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), micEnabled);
+
+        }
+
+        switch ( LOWORD( wParam )) {
+        case IDC_WEBCAM_SETTINGS:
+            DialogBox( g_hInstance, L"WEBCAM_SETTINGS", hDlg, WebcamSettingsProc );
+            break;
+        case IDC_ADVANCED_BREAK:
+            DialogBox( g_hInstance, L"ADVANCED_BREAK", hDlg, AdvancedBreakProc );
+            break;
+        case IDC_FONT:
+            hDC = GetDC (hDlg );
+            lf = g_LogFont;
+            lf.lfHeight = -21;
+            chooseFont.hDC = CreateCompatibleDC (hDC);
+            ReleaseDC (hDlg, hDC);
+            chooseFont.lStructSize = sizeof (CHOOSEFONT);
+            chooseFont.hwndOwner = hDlg;
+            chooseFont.lpLogFont = &lf;
+            chooseFont.Flags     = CF_SCREENFONTS|CF_ENABLETEMPLATE|CF_ENABLEHOOK|
+                        CF_INITTOLOGFONTSTRUCT|CF_LIMITSIZE;
+            chooseFont.rgbColors = RGB (0, 0, 0);
+            chooseFont.lCustData = 0;
+            chooseFont.nSizeMin  = 16;
+            chooseFont.nSizeMax  = 16;
+            chooseFont.hInstance = g_hInstance;
+            chooseFont.lpszStyle = static_cast<LPTSTR>(NULL);
+            chooseFont.nFontType = SCREEN_FONTTYPE;
+            chooseFont.lpfnHook  = ChooseFontHookProc;
+            chooseFont.lpTemplateName = static_cast<LPTSTR>(MAKEINTRESOURCE (FORMATDLGORD31));
+            if( ChooseFont( &chooseFont ) ) {
+                g_LogFont = lf;
+                InvalidateRect( hDlg, NULL, TRUE );
+            }
+            break;
+        case IDC_DEMOTYPE_BROWSE:
+        {
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"All Files", L"*.*" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 1 );
+            openDialog->SetTitle( L"ZoomIt: Specify DemoType File..." );
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        if( GetFileAttributes( pathStr.get() ) == INVALID_FILE_ATTRIBUTES )
+                        {
+                            MessageBox( hDlg, L"The specified file is inaccessible", APPNAME, MB_ICONERROR );
+                        }
+                        else
+                        {
+                            SetDlgItemText( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE, pathStr.get() );
+                            _tcscpy( g_DemoTypeFile, pathStr.get() );
+                        }
+                    }
+                }
+            }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
+            break;
+        }
+        case IDC_TRIM_FILE:
+        {
+            // Open a video file for trimming
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Video Files (*.mp4;*.gif)", L"*.mp4;*.gif" },
+                { L"MP4 Video (*.mp4)", L"*.mp4" },
+                { L"GIF Animation (*.gif)", L"*.gif" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 1 );
+            openDialog->SetTitle( L"ZoomIt: Open Video for Trimming..." );
+
+            wil::com_ptr<IShellItem> videosFolder;
+            if( SUCCEEDED( SHGetKnownFolderItem( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_PPV_ARGS( &videosFolder ) ) ) )
+                openDialog->SetDefaultFolder( videosFolder.get() );
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        std::wstring videoPath( pathStr.get() );
+                        winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
+                        winrt::Windows::Foundation::TimeSpan trimEnd{ 0 };
+                        VideoRecordingSession::ShowTrimDialog(
+                            GetParent( hDlg ), videoPath, trimStart, trimEnd, true );
+                    }
+                }
+            }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
+            break;
+        }
+        }
+        break;
+
+    case WM_PAINT:
+        if( (hTextPreview = GetDlgItem( hDlg, IDC_TEXT_FONT )) != 0 ) {
+
+            // 16-pt preview
+            LOGFONT _lf = g_LogFont;
+            _lf.lfHeight = -21;
+            hFont = CreateFontIndirect( &_lf);
+            hDc = BeginPaint(hDlg, &ps);
+            SelectObject( hDc, hFont );
+
+            GetWindowRect( hTextPreview, &previewRc );
+            MapWindowPoints( NULL, hDlg, reinterpret_cast<LPPOINT>(&previewRc), 2);
+
+            previewRc.top += 6;
+
+            // Set text color based on dark mode
+            if (IsDarkModeEnabled())
+            {
+                SetTextColor(hDc, DarkMode::TextColor);
+                SetBkMode(hDc, TRANSPARENT);
+            }
+
+            DrawText( hDc, L"AaBbYyZz", static_cast<int>(_tcslen(L"AaBbYyZz")), &previewRc,
+                DT_CENTER|DT_VCENTER|DT_SINGLELINE );
+
+            EndPaint( hDlg, &ps );
+            DeleteObject( hFont );
+        }
+        break;
+    default:
+        break;
+    }
+    return FALSE;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// RepositionTabPages
+//
+// Reposition tab pages to fit current tab control size (call after DPI change)
+//
+//----------------------------------------------------------------------------
+VOID RepositionTabPages( HWND hTabCtrl )
+{
+    RECT rc, pageRc;
+    GetWindowRect( hTabCtrl, &rc );
+    TabCtrl_AdjustRect( hTabCtrl, FALSE, &rc );
+
+    // Inset the display area to leave room for border in dark mode
+    if (IsDarkModeEnabled())
+    {
+        rc.left += 2;
+        rc.top += 2;
+        rc.right -= 2;
+        rc.bottom -= 2;
+    }
+
+    // Get the parent dialog to convert coordinates correctly
+    HWND hParent = GetParent( hTabCtrl );
+
+    for( int i = 0; i < sizeof( g_OptionsTabs )/sizeof(g_OptionsTabs[0]); i++ ) {
+        if( g_OptionsTabs[i].hPage ) {
+            pageRc = rc;
+            // Convert screen coords to parent dialog client coords
+            MapWindowPoints( NULL, hParent, reinterpret_cast<LPPOINT>(&pageRc), 2);
+
+            SetWindowPos( g_OptionsTabs[i].hPage,
+                 HWND_TOP,
+                 pageRc.left, pageRc.top,
+                 pageRc.right - pageRc.left, pageRc.bottom - pageRc.top,
+                 SWP_NOACTIVATE | SWP_NOZORDER );
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// OptionsAddTabs
+//
+//----------------------------------------------------------------------------
+VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
+{
+    int		i;
+    TCITEM	tcItem;
+    RECT	rc, pageRc;
+
+    GetWindowRect( hTabCtrl, &rc );
+    for( i = 0; i < sizeof( g_OptionsTabs )/sizeof(g_OptionsTabs[0]); i++ ) {
+
+        tcItem.mask = TCIF_TEXT;
+        tcItem.pszText = g_OptionsTabs[i].TabTitle;
+        TabCtrl_InsertItem( hTabCtrl, i, &tcItem );
+        g_OptionsTabs[i].hPage = CreateDialog( g_hInstance, g_OptionsTabs[i].TabTitle,
+                    hOptionsDlg, OptionsTabProc );
+    }
+
+    TabCtrl_AdjustRect( hTabCtrl, FALSE, &rc );
+
+    // Inset the display area to leave room for border in dark mode
+    // Need 2 pixels so tab pages don't cover the 1-pixel border
+    if (IsDarkModeEnabled())
+    {
+        rc.left += 2;
+        rc.top += 2;
+        rc.right -= 2;
+        rc.bottom -= 2;
+    }
+
+    for( i = 0; i < sizeof( g_OptionsTabs )/sizeof(g_OptionsTabs[0]); i++ ) {
+
+        pageRc = rc;
+        // Convert screen coords to parent dialog client coords.
+        MapWindowPoints( NULL, hOptionsDlg, reinterpret_cast<LPPOINT>(&pageRc), 2);
+
+        SetWindowPos( g_OptionsTabs[i].hPage,
+             HWND_TOP,
+             pageRc.left, pageRc.top,
+             pageRc.right - pageRc.left, pageRc.bottom - pageRc.top,
+             SWP_NOACTIVATE | SWP_HIDEWINDOW );
+
+        if( pEnableThemeDialogTexture ) {
+            if( IsDarkModeEnabled() ) {
+                // Disable theme dialog texture in dark mode - it interferes with dark backgrounds
+                pEnableThemeDialogTexture( g_OptionsTabs[i].hPage, ETDT_DISABLE );
+            } else {
+                // Enable tab texturing in light mode
+                pEnableThemeDialogTexture( g_OptionsTabs[i].hPage, ETDT_ENABLETAB );
+            }
+        }
+    }
+
+    // Show the initial page once positioned to reduce visible churn.
+    if( g_OptionsTabs[0].hPage )
+    {
+        ShowWindow( g_OptionsTabs[0].hPage, SW_SHOW );
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// UnregisterAllHotkeys
+//
+//----------------------------------------------------------------------------
+void UnregisterAllHotkeys( HWND hWnd )
+{
+    auto unregisterHotkey = [hWnd]( int id )
+    {
+        const BOOL unregistered = UnregisterHotKey( hWnd, id );
+        LogHotkeyRegistrationResult( L"unregister", hWnd, id, 0, 0, unregistered );
+    };
+
+    unregisterHotkey( ZOOM_HOTKEY );
+    unregisterHotkey( LIVE_HOTKEY );
+    unregisterHotkey( LIVE_DRAW_HOTKEY );
+    unregisterHotkey( DRAW_HOTKEY );
+    unregisterHotkey( BREAK_HOTKEY );
+    unregisterHotkey( RECORD_HOTKEY );
+    unregisterHotkey( RECORD_CROP_HOTKEY );
+    unregisterHotkey( RECORD_WINDOW_HOTKEY );
+    unregisterHotkey( SNIP_HOTKEY );
+    unregisterHotkey( SNIP_SAVE_HOTKEY );
+    unregisterHotkey( SNIP_PANORAMA_HOTKEY );
+    unregisterHotkey( SNIP_PANORAMA_SAVE_HOTKEY );
+    unregisterHotkey( SNIP_OCR_HOTKEY );
+    unregisterHotkey( DEMOTYPE_HOTKEY );
+    unregisterHotkey( DEMOTYPE_RESET_HOTKEY );
+    unregisterHotkey( RECORD_GIF_HOTKEY );
+    unregisterHotkey( RECORD_GIF_WINDOW_HOTKEY );
+    unregisterHotkey( SAVE_IMAGE_HOTKEY );
+    unregisterHotkey( SAVE_CROP_HOTKEY );
+    unregisterHotkey( COPY_IMAGE_HOTKEY );
+    unregisterHotkey( COPY_CROP_HOTKEY );
+    unregisterHotkey( MIRROR_HOTKEY );
+    unregisterHotkey( MIRROR_WINDOW_HOTKEY );
+    unregisterHotkey( MIRROR_CROP_HOTKEY );
+}
+
+//----------------------------------------------------------------------------
+//
+// RegisterAllHotkeys
+//
+//----------------------------------------------------------------------------
+void RegisterAllHotkeys(HWND hWnd)
+{
+    auto registerHotkey = [hWnd]( int id, UINT modifiers, UINT key )
+    {
+        const BOOL registered = RegisterHotKey( hWnd, id, modifiers, key );
+        LogHotkeyRegistrationResult( L"register", hWnd, id, modifiers, key, registered );
+    };
+
+    if (g_ToggleKey) 			registerHotkey( ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF );
+    if (g_LiveZoomToggleKey) {
+        registerHotkey( LIVE_HOTKEY, g_LiveZoomToggleMod | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF );
+        registerHotkey( LIVE_DRAW_HOTKEY, ( g_LiveZoomToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF );
+    }
+    if (g_DrawToggleKey) 		registerHotkey( DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF );
+    if (g_BreakToggleKey) 		registerHotkey( BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF );
+    if (g_DemoTypeToggleKey) {
+        registerHotkey( DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF );
+        registerHotkey( DEMOTYPE_RESET_HOTKEY, ( g_DemoTypeToggleMod ^ MOD_SHIFT ), g_DemoTypeToggleKey & 0xFF );
+    }
+    if (g_SnipToggleKey) {
+        registerHotkey( SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF );
+    }
+    if (g_SnipSaveToggleKey) {
+        registerHotkey( SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF);
+    }
+    if (g_SnipPanoramaToggleKey &&
+        (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
+        registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
+    }
+    if (g_SnipPanoramaSaveToggleKey) {
+        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF );
+    }
+    if (g_SnipOcrToggleKey) {
+        registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
+    }
+    if (g_RecordToggleKey) {
+        registerHotkey( RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        UINT cropMod = g_RecordToggleMod ^ MOD_SHIFT;
+        UINT windowMod = g_RecordToggleMod ^ MOD_ALT;
+        if ( cropMod != 0 ) {
+            registerHotkey( RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        }
+        if ( windowMod != 0 ) {
+            registerHotkey( RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        }
+    }
+    if (g_MirrorToggleKey) {
+        registerHotkey( MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+        UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+        if ( mirrorCropMod != 0 ) {
+            registerHotkey( MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        }
+        if ( mirrorWindowMod != 0 ) {
+            registerHotkey( MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        }
+    }
+
+    // Note: COPY_IMAGE_HOTKEY, COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) and
+    // SAVE_IMAGE_HOTKEY, SAVE_CROP_HOTKEY (Ctrl+S, Ctrl+Shift+S) are registered
+    // only during static zoom mode to avoid blocking system-wide Ctrl+C/Ctrl+S
+}
+
+
+
+//----------------------------------------------------------------------------
+//
+// UpdateDrawTabHeaderFont
+//
+//----------------------------------------------------------------------------
+void UpdateDrawTabHeaderFont()
+{
+    static HFONT	headerFont = nullptr;
+    TCHAR 			text[64];
+
+    constexpr int headers[] = { IDC_PEN_CONTROL, IDC_COLORS, IDC_HIGHLIGHT_AND_BLUR, IDC_SHAPES, IDC_SCREEN };
+
+    HWND hPage = g_OptionsTabs[DRAW_PAGE].hPage;
+    if( !hPage )
+    {
+        return;
+    }
+
+    // Get the font from an actual body text control that has been DPI-scaled.
+    // This ensures headers use the exact same font as body text, just bold.
+    // Find the first static text child control (ID -1) to get the scaled body text font.
+    HFONT hBaseFont = nullptr;
+    HWND hChild = GetWindow( hPage, GW_CHILD );
+    while( hChild != nullptr )
+    {
+        if( GetDlgCtrlID( hChild ) == -1 )  // IDC_STATIC is -1
+        {
+            hBaseFont = reinterpret_cast<HFONT>(SendMessage( hChild, WM_GETFONT, 0, 0 ));
+            if( hBaseFont )
+            {
+                break;
+            }
+        }
+        hChild = GetWindow( hChild, GW_HWNDNEXT );
+    }
+
+    if( !hBaseFont )
+    {
+        hBaseFont = static_cast<HFONT>(GetStockObject( DEFAULT_GUI_FONT ));
+    }
+
+    LOGFONT lf{};
+    if( !GetObject( hBaseFont, sizeof( LOGFONT ), &lf ) )
+    {
+        GetObject( GetStockObject( DEFAULT_GUI_FONT ), sizeof( LOGFONT ), &lf );
+    }
+    lf.lfWeight = FW_BOLD;
+
+    HFONT newHeaderFont = CreateFontIndirect( &lf );
+    if( !newHeaderFont )
+    {
+        return;
+    }
+
+    // Swap fonts safely: apply the new font to all header controls first, then delete the old.
+    HFONT oldHeaderFont = headerFont;
+    headerFont = newHeaderFont;
+
+    for( int i = 0; i < _countof( headers ); i++ )
+    {
+        // Change the header font to bold
+        HWND hHeader = GetDlgItem( hPage, headers[i] );
+        if( !hHeader )
+        {
+            continue;
+        }
+
+        // StaticTextSubclassProc already supports a per-control font override via this property.
+        // Setting it here makes Draw tab headers resilient if something later overwrites WM_SETFONT.
+        SetPropW( hHeader, L"ZoomIt.HeaderFont", headerFont );
+
+        SendMessage( hHeader, WM_SETFONT, reinterpret_cast<WPARAM>(headerFont), TRUE );
+
+        // Resize the control to fit the text
+        GetWindowText( hHeader, text, sizeof( text ) / sizeof( text[0] ) );
+        RECT rc;
+        GetWindowRect( hHeader, &rc );
+        MapWindowPoints( NULL, g_OptionsTabs[DRAW_PAGE].hPage, reinterpret_cast<LPPOINT>(&rc), 2 );
+        HDC hDC = GetDC( hHeader );
+        SelectFont( hDC, headerFont );
+        DrawText( hDC, text, static_cast<int>(_tcslen( text )), &rc, DT_CALCRECT | DT_SINGLELINE | DT_LEFT | DT_VCENTER );
+        ReleaseDC( hHeader, hDC );
+        SetWindowPos( hHeader, nullptr, 0, 0, rc.right - rc.left + ScaleForDpi( 4, GetDpiForWindowHelper( hHeader ) ), rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER );
+        InvalidateRect( hHeader, nullptr, TRUE );
+    }
+
+    if( oldHeaderFont )
+    {
+        DeleteObject( oldHeaderFont );
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// CheckboxSubclassProc
+//
+// Subclass procedure for checkbox and radio button controls to handle dark mode colors
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK CheckboxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg)
+    {
+    case WM_PAINT:
+        if (IsDarkModeEnabled())
+        {
+            TCHAR dbgText[256] = { 0 };
+            GetWindowText(hWnd, dbgText, _countof(dbgText));
+            bool dbgEnabled = IsWindowEnabled(hWnd);
+            LONG dbgStyle = GetWindowLong(hWnd, GWL_STYLE);
+            LONG dbgType = dbgStyle & BS_TYPEMASK;
+            bool dbgIsRadio = (dbgType == BS_RADIOBUTTON || dbgType == BS_AUTORADIOBUTTON);
+            OutputDebugStringW((std::wstring(L"[Checkbox] WM_PAINT: ") + dbgText +
+                L" enabled=" + (dbgEnabled ? L"1" : L"0") +
+                L" isRadio=" + (dbgIsRadio ? L"1" : L"0") + L"\n").c_str());
+
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+
+            // Fill background
+            FillRect(hdc, &rc, GetDarkModeBrush());
+
+            // Get button state and style
+            LRESULT state = SendMessage(hWnd, BM_GETCHECK, 0, 0);
+            bool isChecked = (state == BST_CHECKED);
+            bool isEnabled = IsWindowEnabled(hWnd);
+
+            // Check if this is a radio button
+            LONG style = GetWindowLong(hWnd, GWL_STYLE);
+            LONG buttonType = style & BS_TYPEMASK;
+            bool isRadioButton = (buttonType == BS_RADIOBUTTON || buttonType == BS_AUTORADIOBUTTON);
+
+            // Check if checkbox should be on the right (BS_LEFTTEXT or WS_EX_RIGHT)
+            bool checkOnRight = (style & BS_LEFTTEXT) != 0;
+            LONG exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+            if (exStyle & WS_EX_RIGHT)
+                checkOnRight = true;
+
+            // Get DPI for scaling
+            UINT dpi = GetDpiForWindowHelper(hWnd);
+            int checkSize = ScaleForDpi(13, dpi);
+            int margin = ScaleForDpi(2, dpi);
+
+            // Calculate checkbox/radio position
+            RECT rcCheck;
+            if (checkOnRight)
+            {
+                rcCheck.right = rc.right - margin;
+                rcCheck.left = rcCheck.right - checkSize;
+            }
+            else
+            {
+                rcCheck.left = rc.left + margin;
+                rcCheck.right = rcCheck.left + checkSize;
+            }
+            rcCheck.top = rc.top + (rc.bottom - rc.top - checkSize) / 2;
+            rcCheck.bottom = rcCheck.top + checkSize;
+
+            // Choose colors based on enabled state
+            COLORREF borderColor = isEnabled ? DarkMode::BorderColor : RGB(60, 60, 60);
+            COLORREF fillColor = isChecked ? (isEnabled ? DarkMode::AccentColor : RGB(80, 80, 85)) : DarkMode::SurfaceColor;
+            COLORREF textColor = isEnabled ? DarkMode::TextColor : RGB(100, 100, 100);
+
+            if (isRadioButton)
+            {
+                // Draw radio button (circle)
+                HPEN hPen = CreatePen(PS_SOLID, 1, borderColor);
+                HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+                HBRUSH hFillBrush = CreateSolidBrush(isChecked ? fillColor : DarkMode::SurfaceColor);
+                HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, hFillBrush));
+                Ellipse(hdc, rcCheck.left, rcCheck.top, rcCheck.right, rcCheck.bottom);
+                SelectObject(hdc, hOldBrush);
+                SelectObject(hdc, hOldPen);
+                DeleteObject(hPen);
+                DeleteObject(hFillBrush);
+
+                // Draw inner circle if checked
+                if (isChecked)
+                {
+                    int innerMargin = ScaleForDpi(3, dpi);
+                    HBRUSH hInnerBrush = CreateSolidBrush(isEnabled ? RGB(255, 255, 255) : RGB(140, 140, 140));
+                    HBRUSH hOldInnerBrush = static_cast<HBRUSH>(SelectObject(hdc, hInnerBrush));
+                    HPEN hNullPen = static_cast<HPEN>(SelectObject(hdc, GetStockObject(NULL_PEN)));
+                    Ellipse(hdc, rcCheck.left + innerMargin, rcCheck.top + innerMargin,
+                            rcCheck.right - innerMargin, rcCheck.bottom - innerMargin);
+                    SelectObject(hdc, hNullPen);
+                    SelectObject(hdc, hOldInnerBrush);
+                    DeleteObject(hInnerBrush);
+                }
+            }
+            else
+            {
+                // Draw checkbox (rectangle)
+                HPEN hPen = CreatePen(PS_SOLID, 1, borderColor);
+                HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+                HBRUSH hFillBrush = CreateSolidBrush(fillColor);
+                HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, hFillBrush));
+                Rectangle(hdc, rcCheck.left, rcCheck.top, rcCheck.right, rcCheck.bottom);
+                SelectObject(hdc, hOldBrush);
+                SelectObject(hdc, hOldPen);
+                DeleteObject(hPen);
+                DeleteObject(hFillBrush);
+
+                // Draw checkmark if checked
+                if (isChecked)
+                {
+                    COLORREF checkColor = isEnabled ? RGB(255, 255, 255) : RGB(140, 140, 140);
+                    HPEN hCheckPen = CreatePen(PS_SOLID, ScaleForDpi(2, dpi), checkColor);
+                    HPEN hOldCheckPen = static_cast<HPEN>(SelectObject(hdc, hCheckPen));
+
+                    // Draw checkmark
+                    int x = rcCheck.left + ScaleForDpi(3, dpi);
+                    int y = rcCheck.top + ScaleForDpi(6, dpi);
+                    MoveToEx(hdc, x, y, nullptr);
+                    LineTo(hdc, x + ScaleForDpi(2, dpi), y + ScaleForDpi(3, dpi));
+                    LineTo(hdc, x + ScaleForDpi(7, dpi), y - ScaleForDpi(3, dpi));
+
+                    SelectObject(hdc, hOldCheckPen);
+                    DeleteObject(hCheckPen);
+                }
+            }
+
+            // Draw text
+            TCHAR text[256] = { 0 };
+            GetWindowText(hWnd, text, _countof(text));
+
+            SetBkMode(hdc, TRANSPARENT);
+            SetTextColor(hdc, textColor);
+            HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+            HFONT hOldFont = nullptr;
+            if (hFont)
+            {
+                hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
+            }
+
+            RECT rcText = rc;
+            UINT textFormat = DT_VCENTER | DT_SINGLELINE;
+            if (checkOnRight)
+            {
+                rcText.right = rcCheck.left - ScaleForDpi(4, dpi);
+                textFormat |= DT_LEFT;
+            }
+            else
+            {
+                rcText.left = rcCheck.right + ScaleForDpi(4, dpi);
+                textFormat |= DT_LEFT;
+            }
+            DrawText(hdc, text, -1, &rcText, textFormat);
+
+            if (hOldFont)
+            {
+                SelectObject(hdc, hOldFont);
+            }
+
+            EndPaint(hWnd, &ps);
+            return 0;
+        }
+        break;
+
+    case WM_ENABLE:
+        if (IsDarkModeEnabled())
+        {
+            // Let base window proc handle enable state change, but avoid any subclass chain
+            // that might trigger themed drawing
+            LRESULT result = DefWindowProc(hWnd, uMsg, wParam, lParam);
+            // Force immediate repaint with our custom painting
+            InvalidateRect(hWnd, nullptr, TRUE);
+            UpdateWindow(hWnd);
+            return result;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, CheckboxSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
+// HotkeyControlSubclassProc
+//
+// Subclass procedure for hotkey controls to handle dark mode colors
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK HotkeyControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg)
+    {
+    case WM_PAINT:
+        if (IsDarkModeEnabled())
+        {
+            // Get the hotkey from the control using HKM_GETHOTKEY
+            LRESULT hk = SendMessage(hWnd, HKM_GETHOTKEY, 0, 0);
+            WORD hotkey = LOWORD(hk);
+            BYTE vk = LOBYTE(hotkey);
+            BYTE mods = HIBYTE(hotkey);
+
+            // Build the hotkey text
+            std::wstring text;
+            if (vk != 0)
+            {
+                if (mods & HOTKEYF_CONTROL)
+                    text += L"Ctrl+";
+                if (mods & HOTKEYF_SHIFT)
+                    text += L"Shift+";
+                if (mods & HOTKEYF_ALT)
+                    text += L"Alt+";
+
+                // Get key name using virtual key code
+                UINT scanCode = MapVirtualKeyW(vk, MAPVK_VK_TO_VSC);
+                if (scanCode != 0)
+                {
+                    TCHAR keyName[64] = { 0 };
+                    LONG lParamKey = (scanCode << 16);
+                    // Set extended key bit for certain keys
+                    if ((vk >= VK_PRIOR && vk <= VK_DELETE) ||
+                        (vk >= VK_LWIN && vk <= VK_APPS) ||
+                        vk == VK_DIVIDE || vk == VK_NUMLOCK)
+                    {
+                        lParamKey |= (1 << 24);
+                    }
+                    if (GetKeyNameTextW(lParamKey, keyName, _countof(keyName)) > 0)
+                    {
+                        text += keyName;
+                    }
+                    else
+                    {
+                        // Fallback: use the virtual key character for printable keys
+                        if (vk >= '0' && vk <= '9')
+                        {
+                            text += static_cast<wchar_t>(vk);
+                        }
+                        else if (vk >= 'A' && vk <= 'Z')
+                        {
+                            text += static_cast<wchar_t>(vk);
+                        }
+                        else if (vk >= VK_F1 && vk <= VK_F24)
+                        {
+                            text += L"F";
+                            text += std::to_wstring(vk - VK_F1 + 1);
+                        }
+                    }
+                }
+                else
+                {
+                    // No scan code, try direct character representation
+                    if (vk >= '0' && vk <= '9')
+                    {
+                        text += static_cast<wchar_t>(vk);
+                    }
+                    else if (vk >= 'A' && vk <= 'Z')
+                    {
+                        text += static_cast<wchar_t>(vk);
+                    }
+                    else if (vk >= VK_F1 && vk <= VK_F24)
+                    {
+                        text += L"F";
+                        text += std::to_wstring(vk - VK_F1 + 1);
+                    }
+                }
+            }
+
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+
+            // Fill background with dark surface color
+            FillRect(hdc, &rc, GetDarkModeSurfaceBrush());
+
+            // No border in dark mode - just the filled background
+
+            // Draw text if we have any
+            if (!text.empty())
+            {
+                SetBkMode(hdc, TRANSPARENT);
+                SetTextColor(hdc, DarkMode::TextColor);
+                HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+                HFONT hOldFont = nullptr;
+                if (hFont)
+                {
+                    hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
+                }
+                RECT rcText = rc;
+                rcText.left += 4;
+                rcText.right -= 4;
+                DrawTextW(hdc, text.c_str(), -1, &rcText, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+                if (hOldFont)
+                {
+                    SelectObject(hdc, hOldFont);
+                }
+            }
+
+            EndPaint(hWnd, &ps);
+            return 0;
+        }
+        break;
+
+    case WM_NCPAINT:
+        if (IsDarkModeEnabled())
+        {
+            // Fill the non-client area with background color to hide the border
+            HDC hdc = GetWindowDC(hWnd);
+            if (hdc)
+            {
+                RECT rc;
+                GetWindowRect(hWnd, &rc);
+                int width = rc.right - rc.left;
+                int height = rc.bottom - rc.top;
+                rc.left = 0;
+                rc.top = 0;
+                rc.right = width;
+                rc.bottom = height;
+
+                // Get NC border size
+                RECT rcClient;
+                GetClientRect(hWnd, &rcClient);
+                MapWindowPoints(hWnd, nullptr, reinterpret_cast<LPPOINT>(&rcClient), 2);
+
+                RECT rcWindow;
+                GetWindowRect(hWnd, &rcWindow);
+
+                int borderLeft = rcClient.left - rcWindow.left;
+                int borderTop = rcClient.top - rcWindow.top;
+                int borderRight = rcWindow.right - rcClient.right;
+                int borderBottom = rcWindow.bottom - rcClient.bottom;
+
+                // Fill the entire NC border area with background color
+                HBRUSH hBrush = CreateSolidBrush(DarkMode::BackgroundColor);
+
+                // Top border
+                RECT rcTop = { 0, 0, width, borderTop };
+                FillRect(hdc, &rcTop, hBrush);
+
+                // Bottom border
+                RECT rcBottom = { 0, height - borderBottom, width, height };
+                FillRect(hdc, &rcBottom, hBrush);
+
+                // Left border
+                RECT rcLeft = { 0, borderTop, borderLeft, height - borderBottom };
+                FillRect(hdc, &rcLeft, hBrush);
+
+                // Right border
+                RECT rcRight = { width - borderRight, borderTop, width, height - borderBottom };
+                FillRect(hdc, &rcRight, hBrush);
+
+                DeleteObject(hBrush);
+
+                // Draw thin border around the control
+                HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
+                HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+                HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, GetStockObject(NULL_BRUSH)));
+                Rectangle(hdc, 0, 0, width, height);
+                SelectObject(hdc, hOldBrush);
+                SelectObject(hdc, hOldPen);
+                DeleteObject(hPen);
+
+                ReleaseDC(hWnd, hdc);
+            }
+            return 0;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, HotkeyControlSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
+// EditControlSubclassProc
+//
+// Subclass procedure for edit controls to handle dark mode (no border)
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK EditControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    // Helper to adjust formatting rectangle for vertical text centering
+    auto AdjustTextRect = [](HWND hEdit) {
+        RECT rcClient;
+        GetClientRect(hEdit, &rcClient);
+
+        // Get font metrics to calculate text height
+        HDC hdc = GetDC(hEdit);
+        HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hEdit, WM_GETFONT, 0, 0));
+        HFONT hOldFont = hFont ? static_cast<HFONT>(SelectObject(hdc, hFont)) : nullptr;
+
+        TEXTMETRIC tm;
+        GetTextMetrics(hdc, &tm);
+        int textHeight = tm.tmHeight;
+
+        if (hOldFont)
+            SelectObject(hdc, hOldFont);
+        ReleaseDC(hEdit, hdc);
+
+        // Calculate vertical offset to center text
+        int clientHeight = rcClient.bottom - rcClient.top;
+        int topOffset = (clientHeight - textHeight) / 2;
+        if (topOffset < 0) topOffset = 0;
+
+        RECT rcFormat = rcClient;
+        rcFormat.top = topOffset;
+        rcFormat.left += 2;  // Small left margin
+        rcFormat.right -= 2; // Small right margin
+
+        SendMessage(hEdit, EM_SETRECT, 0, reinterpret_cast<LPARAM>(&rcFormat));
+    };
+
+    switch (uMsg)
+    {
+    case WM_SIZE:
+    {
+        // Adjust the formatting rectangle to vertically center text
+        LRESULT result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        AdjustTextRect(hWnd);
+        return result;
+    }
+
+    case WM_SETFONT:
+    {
+        // After font is set, adjust formatting rectangle
+        LRESULT result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        AdjustTextRect(hWnd);
+        return result;
+    }
+
+    case WM_NCPAINT:
+        if (IsDarkModeEnabled())
+        {
+            OutputDebugStringW(L"[Edit] WM_NCPAINT in dark mode\n");
+
+            // Get the window DC which includes NC area
+            HDC hdc = GetWindowDC(hWnd);
+            if (hdc)
+            {
+                RECT rc;
+                GetWindowRect(hWnd, &rc);
+                int width = rc.right - rc.left;
+                int height = rc.bottom - rc.top;
+                rc.left = 0;
+                rc.top = 0;
+                rc.right = width;
+                rc.bottom = height;
+
+                // Get NC border size
+                RECT rcClient;
+                GetClientRect(hWnd, &rcClient);
+                MapWindowPoints(hWnd, nullptr, reinterpret_cast<LPPOINT>(&rcClient), 2);
+
+                RECT rcWindow;
+                GetWindowRect(hWnd, &rcWindow);
+
+                int borderLeft = rcClient.left - rcWindow.left;
+                int borderTop = rcClient.top - rcWindow.top;
+                int borderRight = rcWindow.right - rcClient.right;
+                int borderBottom = rcWindow.bottom - rcClient.bottom;
+
+                OutputDebugStringW((L"[Edit] Border: L=" + std::to_wstring(borderLeft) + L" T=" + std::to_wstring(borderTop) +
+                    L" R=" + std::to_wstring(borderRight) + L" B=" + std::to_wstring(borderBottom) + L"\n").c_str());
+
+                // Fill the entire NC border area with background color
+                HBRUSH hBrush = CreateSolidBrush(DarkMode::BackgroundColor);
+
+                // Top border
+                RECT rcTop = { 0, 0, width, borderTop };
+                FillRect(hdc, &rcTop, hBrush);
+
+                // Bottom border
+                RECT rcBottom = { 0, height - borderBottom, width, height };
+                FillRect(hdc, &rcBottom, hBrush);
+
+                // Left border
+                RECT rcLeft = { 0, borderTop, borderLeft, height - borderBottom };
+                FillRect(hdc, &rcLeft, hBrush);
+
+                // Right border
+                RECT rcRight = { width - borderRight, borderTop, width, height - borderBottom };
+                FillRect(hdc, &rcRight, hBrush);
+
+                DeleteObject(hBrush);
+
+                // Draw thin border around the control
+                HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
+                HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+                HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, GetStockObject(NULL_BRUSH)));
+                Rectangle(hdc, 0, 0, width, height);
+                SelectObject(hdc, hOldBrush);
+                SelectObject(hdc, hOldPen);
+                DeleteObject(hPen);
+
+                ReleaseDC(hWnd, hdc);
+            }
+            return 0;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, EditControlSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
+// SliderSubclassProc
+//
+// Subclass procedure for slider/trackbar controls to handle dark mode
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK SliderSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg)
+    {
+    case WM_LBUTTONDOWN:
+    case WM_MOUSEMOVE:
+    case WM_LBUTTONUP:
+        if (IsDarkModeEnabled())
+        {
+            // Let the default handler process the message first
+            LRESULT result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+            // Force full repaint to avoid artifacts at high DPI
+            InvalidateRect(hWnd, nullptr, TRUE);
+            return result;
+        }
+        break;
+
+    case WM_PAINT:
+        if (IsDarkModeEnabled())
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+
+            // Fill background
+            FillRect(hdc, &rc, GetDarkModeBrush());
+
+            // Get slider info
+            RECT rcChannel = { 0 };
+            SendMessage(hWnd, TBM_GETCHANNELRECT, 0, reinterpret_cast<LPARAM>(&rcChannel));
+
+            RECT rcThumb = { 0 };
+            SendMessage(hWnd, TBM_GETTHUMBRECT, 0, reinterpret_cast<LPARAM>(&rcThumb));
+
+            // Draw channel (track) - simple dark line
+            int channelHeight = 4;
+            int channelY = (rc.bottom + rc.top) / 2 - channelHeight / 2;
+            RECT rcTrack = { rcChannel.left, channelY, rcChannel.right, channelY + channelHeight };
+            HBRUSH hTrackBrush = CreateSolidBrush(RGB(80, 80, 85));
+            FillRect(hdc, &rcTrack, hTrackBrush);
+            DeleteObject(hTrackBrush);
+
+            // Center thumb vertically - at high DPI the thumb rect may not be centered
+            int thumbHeight = rcThumb.bottom - rcThumb.top;
+            int thumbCenterY = (rc.bottom + rc.top) / 2;
+            rcThumb.top = thumbCenterY - thumbHeight / 2;
+            rcThumb.bottom = rcThumb.top + thumbHeight;
+
+            // Draw thumb - dark rectangle
+            HBRUSH hThumbBrush = CreateSolidBrush(RGB(160, 160, 165));
+            FillRect(hdc, &rcThumb, hThumbBrush);
+            DeleteObject(hThumbBrush);
+
+            // Draw thumb border
+            HPEN hPen = CreatePen(PS_SOLID, 1, RGB(100, 100, 105));
+            HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+            HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, GetStockObject(NULL_BRUSH)));
+            Rectangle(hdc, rcThumb.left, rcThumb.top, rcThumb.right, rcThumb.bottom);
+            SelectObject(hdc, hOldBrush);
+            SelectObject(hdc, hOldPen);
+            DeleteObject(hPen);
+
+            EndPaint(hWnd, &ps);
+            return 0;
+        }
+        break;
+
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, SliderSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
+// GroupBoxSubclassProc
+//
+// Subclass procedure for group box controls to handle dark mode painting
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK GroupBoxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg)
+    {
+    case WM_PAINT:
+        if (IsDarkModeEnabled())
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+
+            // Get the text and font
+            HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+            HFONT hOldFont = hFont ? static_cast<HFONT>(SelectObject(hdc, hFont)) : nullptr;
+
+            TCHAR szText[256] = { 0 };
+            GetWindowText(hWnd, szText, _countof(szText));
+
+            // Measure text
+            SIZE textSize = { 0 };
+            GetTextExtentPoint32(hdc, szText, static_cast<int>(_tcslen(szText)), &textSize);
+
+            // Text starts at left + 8 pixels
+            const int textLeft = 8;
+            const int textPadding = 4;
+            int frameTop = textSize.cy / 2;
+
+            // Only fill the frame border areas, not the interior (to avoid painting over child controls)
+            // Fill top strip (above frame line)
+            RECT rcTop = { rc.left, rc.top, rc.right, frameTop + 1 };
+            FillRect(hdc, &rcTop, GetDarkModeBrush());
+
+            // Fill left edge strip
+            RECT rcLeft = { rc.left, frameTop, rc.left + 1, rc.bottom };
+            FillRect(hdc, &rcLeft, GetDarkModeBrush());
+
+            // Fill right edge strip
+            RECT rcRight = { rc.right - 1, frameTop, rc.right, rc.bottom };
+            FillRect(hdc, &rcRight, GetDarkModeBrush());
+
+            // Fill bottom edge strip
+            RECT rcBottom = { rc.left, rc.bottom - 1, rc.right, rc.bottom };
+            FillRect(hdc, &rcBottom, GetDarkModeBrush());
+
+            // Draw the group box frame (with gap for text)
+            HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
+            HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+
+            // Top line - left segment (before text)
+            MoveToEx(hdc, rc.left, frameTop, NULL);
+            LineTo(hdc, textLeft - textPadding, frameTop);
+
+            // Top line - right segment (after text)
+            MoveToEx(hdc, textLeft + textSize.cx + textPadding, frameTop, NULL);
+            LineTo(hdc, rc.right - 1, frameTop);
+
+            // Right line
+            LineTo(hdc, rc.right - 1, rc.bottom - 1);
+
+            // Bottom line
+            LineTo(hdc, rc.left, rc.bottom - 1);
+
+            // Left line
+            LineTo(hdc, rc.left, frameTop);
+
+            SelectObject(hdc, hOldPen);
+            DeleteObject(hPen);
+
+            // Draw text with background
+            SetBkMode(hdc, OPAQUE);
+            SetBkColor(hdc, DarkMode::BackgroundColor);
+            SetTextColor(hdc, DarkMode::TextColor);
+            RECT rcText = { textLeft, 0, textLeft + textSize.cx, textSize.cy };
+            DrawText(hdc, szText, -1, &rcText, DT_LEFT | DT_SINGLELINE);
+
+            if (hOldFont)
+                SelectObject(hdc, hOldFont);
+
+            EndPaint(hWnd, &ps);
+            return 0;
+        }
+        break;
+
+    case WM_ERASEBKGND:
+        // Don't erase background - let parent handle it
+        if (IsDarkModeEnabled())
+        {
+            return TRUE;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, GroupBoxSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
+// StaticTextSubclassProc
+//
+// Subclass procedure for static text controls to handle dark mode painting
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK StaticTextSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    const int ctrlId = GetDlgCtrlID( hWnd );
+    const bool isOptionsHeader = (ctrlId == IDC_VERSION || ctrlId == IDC_COPYRIGHT);
+
+    auto paintStaticText = [](HWND hWnd, HDC hdc) -> void
+    {
+        RECT rc;
+        GetClientRect(hWnd, &rc);
+
+        // Fill background
+        if( IsDarkModeEnabled() )
+        {
+            FillRect(hdc, &rc, GetDarkModeBrush());
+        }
+        else
+        {
+            FillRect(hdc, &rc, GetSysColorBrush( COLOR_BTNFACE ));
+        }
+
+        // Get text
+        TCHAR text[512] = { 0 };
+        GetWindowText(hWnd, text, _countof(text));
+
+        // Set up text drawing
+        SetBkMode(hdc, TRANSPARENT);
+        bool isEnabled = IsWindowEnabled(hWnd);
+        if( IsDarkModeEnabled() )
+        {
+            SetTextColor(hdc, isEnabled ? DarkMode::TextColor : RGB(100, 100, 100));
+        }
+        else
+        {
+            SetTextColor( hdc, isEnabled ? GetSysColor( COLOR_WINDOWTEXT ) : GetSysColor( COLOR_GRAYTEXT ) );
+        }
+
+        // Try to get the font from a window property first (for header controls where
+        // WM_GETFONT may not work reliably), then fall back to WM_GETFONT.
+        HFONT hFont = static_cast<HFONT>(GetPropW( hWnd, L"ZoomIt.HeaderFont" ));
+        HFONT hCreatedFont = nullptr; // Track if we created a font that needs cleanup
+
+        // For IDC_VERSION, create a large title font on-demand if the property font doesn't work
+        const int thisCtrlId = GetDlgCtrlID( hWnd );
+        if( thisCtrlId == IDC_VERSION )
+        {
+            // Create a title font that is proportionally larger than the dialog font
+            LOGFONT lf{};
+            HFONT hDialogFont = reinterpret_cast<HFONT>(SendMessage( GetParent( hWnd ), WM_GETFONT, 0, 0 ));
+            if( hDialogFont )
+            {
+                GetObject( hDialogFont, sizeof( lf ), &lf );
+            }
+            else
+            {
+                GetObject( GetStockObject( DEFAULT_GUI_FONT ), sizeof( lf ), &lf );
+            }
+            lf.lfWeight = FW_BOLD;
+            // Make title 50% larger than dialog font (lfHeight is negative for character height)
+            lf.lfHeight = MulDiv( lf.lfHeight, 3, 2 );
+            hCreatedFont = CreateFontIndirect( &lf );
+            if( hCreatedFont )
+            {
+                hFont = hCreatedFont;
+            }
+        }
+
+        if( !hFont )
+        {
+            hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+        }
+        HFONT hOldFont = nullptr;
+        if (hFont)
+        {
+            hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
+        }
+
+#if _DEBUG
+        if( thisCtrlId == IDC_VERSION )
+        {
+            TEXTMETRIC tm{};
+            GetTextMetrics( hdc, &tm );
+            OutputDebug(L"IDC_VERSION paint: tmHeight=%d selectResult=%p hFont=%p created=%p rc=(%d,%d,%d,%d)\n",
+                tm.tmHeight, hOldFont, hFont, hCreatedFont, rc.left, rc.top, rc.right, rc.bottom );
+        }
+#endif
+
+        // Get style to determine alignment and wrapping behavior
+        LONG style = GetWindowLong(hWnd, GWL_STYLE);
+        const LONG staticType = style & SS_TYPEMASK;
+
+        UINT format = 0;
+        if (style & SS_CENTER)
+            format |= DT_CENTER;
+        else if (style & SS_RIGHT)
+            format |= DT_RIGHT;
+        else
+            format |= DT_LEFT;
+
+        if (style & SS_NOPREFIX)
+            format |= DT_NOPREFIX;
+
+        bool noWrap = (staticType == SS_LEFTNOWORDWRAP) || (staticType == SS_SIMPLE);
+        if( GetDlgCtrlID( hWnd ) == IDC_VERSION )
+        {
+            // The header title is intended to be a single line.
+            noWrap = true;
+        }
+        if (noWrap)
+        {
+            // Single-line labels should match the classic static control behavior.
+            format |= DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS;
+        }
+        else
+        {
+            // Multi-line/static text (LTEXT) should wrap like the default control.
+            format |= DT_WORDBREAK | DT_EDITCONTROL;
+        }
+
+        DrawText(hdc, text, -1, &rc, format);
+
+        if (hOldFont)
+        {
+            SelectObject(hdc, hOldFont);
+        }
+
+        // Clean up any font we created on-demand
+        if( hCreatedFont )
+        {
+            DeleteObject( hCreatedFont );
+        }
+    };
+
+    if (IsDarkModeEnabled() || isOptionsHeader)
+    {
+        switch (uMsg)
+        {
+        case WM_ERASEBKGND:
+            {
+                HDC hdc = reinterpret_cast<HDC>(wParam);
+                RECT rc;
+                GetClientRect(hWnd, &rc);
+                if( IsDarkModeEnabled() )
+                {
+                    FillRect(hdc, &rc, GetDarkModeBrush());
+                }
+                else
+                {
+                    FillRect(hdc, &rc, GetSysColorBrush( COLOR_BTNFACE ));
+                }
+                return TRUE;
+            }
+
+        case WM_PAINT:
+            {
+                PAINTSTRUCT ps;
+                HDC hdc = BeginPaint(hWnd, &ps);
+                paintStaticText(hWnd, hdc);
+                EndPaint(hWnd, &ps);
+                return 0;
+            }
+
+        case WM_PRINTCLIENT:
+            {
+                HDC hdc = reinterpret_cast<HDC>(wParam);
+                paintStaticText(hWnd, hdc);
+                return 0;
+            }
+
+        case WM_SETTEXT:
+            {
+                // Let the default handle the text change, then repaint
+                DefWindowProc(hWnd, uMsg, wParam, lParam);
+                InvalidateRect(hWnd, nullptr, TRUE);
+                return TRUE;
+            }
+
+        case WM_ENABLE:
+            {
+                // Let base window proc handle enable state change, but avoid any subclass chain
+                // that might trigger themed drawing
+                LRESULT result = DefWindowProc(hWnd, uMsg, wParam, lParam);
+                // Force immediate repaint with our custom painting
+                InvalidateRect(hWnd, nullptr, TRUE);
+                UpdateWindow(hWnd);
+                return result;
+            }
+
+        case WM_NCDESTROY:
+#if _DEBUG
+            RemovePropW( hWnd, L"ZoomIt.VersionFontLogged" );
+#endif
+            RemoveWindowSubclass(hWnd, StaticTextSubclassProc, uIdSubclass);
+            break;
+        }
+    }
+    else
+    {
+        if (uMsg == WM_NCDESTROY)
+        {
+#if _DEBUG
+            RemovePropW( hWnd, L"ZoomIt.VersionFontLogged" );
+#endif
+            RemoveWindowSubclass(hWnd, StaticTextSubclassProc, uIdSubclass);
+        }
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+
+
+//----------------------------------------------------------------------------
+//
+// TabControlSubclassProc
+//
+// Subclass procedure for tab control to handle dark mode background
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK TabControlSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg)
+    {
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
+
+    case WM_PAINT:
+        if (IsDarkModeEnabled())
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+
+            RECT rcClient;
+            GetClientRect(hWnd, &rcClient);
+
+            // Fill entire background with dark color
+            FillRect(hdc, &rcClient, GetDarkModeBrush());
+
+            // Get the display area (content area below tabs)
+            RECT rcDisplay = rcClient;
+            TabCtrl_AdjustRect(hWnd, FALSE, &rcDisplay);
+
+            // Debug output
+            TCHAR dbg[256];
+            _stprintf_s(dbg, _T("TabCtrl: client=(%d,%d,%d,%d) display=(%d,%d,%d,%d)\n"),
+                rcClient.left, rcClient.top, rcClient.right, rcClient.bottom,
+                rcDisplay.left, rcDisplay.top, rcDisplay.right, rcDisplay.bottom);
+            OutputDebugString(dbg);
+
+            // Draw grey border around the display area
+            HPEN hPen = CreatePen(PS_SOLID, 1, DarkMode::BorderColor);
+            HPEN hOldPen = static_cast<HPEN>(SelectObject(hdc, hPen));
+            HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject(hdc, GetStockObject(NULL_BRUSH)));
+
+            // Draw border at the edges of the display area (inset by 1 to be visible)
+            int left = rcDisplay.left;
+            int top = rcDisplay.top - 1;
+            int right = (rcDisplay.right < rcClient.right) ? rcDisplay.right : rcClient.right - 1;
+            int bottom = (rcDisplay.bottom < rcClient.bottom) ? rcDisplay.bottom : rcClient.bottom - 1;
+
+            _stprintf_s(dbg, _T("TabCtrl border: left=%d top=%d right=%d bottom=%d\n"), left, top, right, bottom);
+            OutputDebugString(dbg);
+
+            // Top line
+            MoveToEx(hdc, left, top, NULL);
+            LineTo(hdc, right, top);
+            // Right line
+            MoveToEx(hdc, right - 1, top, NULL);
+            LineTo(hdc, right - 1, bottom);
+            // Bottom line
+            MoveToEx(hdc, left, bottom - 1, NULL);
+            LineTo(hdc, right, bottom - 1);
+            // Left line
+            MoveToEx(hdc, left, top, NULL);
+            LineTo(hdc, left, bottom);
+
+            // Draw each tab
+            int tabCount = TabCtrl_GetItemCount(hWnd);
+            int selectedTab = TabCtrl_GetCurSel(hWnd);
+
+            // Get the font from the tab control
+            HFONT hFont = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0));
+            HFONT hOldFont = hFont ? static_cast<HFONT>(SelectObject(hdc, hFont)) : nullptr;
+
+            SetBkMode(hdc, TRANSPARENT);
+
+            for (int i = 0; i < tabCount; i++)
+            {
+                RECT rcTab;
+                TabCtrl_GetItemRect(hWnd, i, &rcTab);
+
+                bool isSelected = (i == selectedTab);
+
+                // Fill tab background
+                FillRect(hdc, &rcTab, GetDarkModeBrush());
+
+                // Draw grey border around tab (left, top, right)
+                MoveToEx(hdc, rcTab.left, rcTab.bottom - 1, NULL);
+                LineTo(hdc, rcTab.left, rcTab.top);
+                LineTo(hdc, rcTab.right - 1, rcTab.top);
+                LineTo(hdc, rcTab.right - 1, rcTab.bottom);
+
+                // For selected tab, erase the bottom border to merge with content
+                if (isSelected)
+                {
+                    HPEN hBgPen = CreatePen(PS_SOLID, 1, DarkMode::BackgroundColor);
+                    SelectObject(hdc, hBgPen);
+                    MoveToEx(hdc, rcTab.left + 1, rcTab.bottom - 1, NULL);
+                    LineTo(hdc, rcTab.right - 1, rcTab.bottom - 1);
+                    SelectObject(hdc, hPen);
+                    DeleteObject(hBgPen);
+                }
+
+                // Get tab text
+                TCITEM tci = {};
+                tci.mask = TCIF_TEXT;
+                TCHAR szText[128] = { 0 };
+                tci.pszText = szText;
+                tci.cchTextMax = _countof(szText);
+                TabCtrl_GetItem(hWnd, i, &tci);
+
+                // Draw text
+                SetTextColor(hdc, isSelected ? DarkMode::TextColor : DarkMode::DisabledTextColor);
+                RECT rcText = rcTab;
+                rcText.top += 4;
+                DrawText(hdc, szText, -1, &rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+                // Draw underline for selected tab
+                if (isSelected)
+                {
+                    RECT rcUnderline = rcTab;
+                    rcUnderline.top = rcUnderline.bottom - 2;
+                    rcUnderline.left += 1;
+                    rcUnderline.right -= 1;
+                    HBRUSH hAccent = CreateSolidBrush(DarkMode::AccentColor);
+                    FillRect(hdc, &rcUnderline, hAccent);
+                    DeleteObject(hAccent);
+                }
+            }
+
+            if (hOldFont)
+                SelectObject(hdc, hOldFont);
+            SelectObject(hdc, hOldBrush);
+            SelectObject(hdc, hOldPen);
+            DeleteObject(hPen);
+
+            EndPaint(hWnd, &ps);
+            return 0;
+        }
+        break;
+
+    case WM_NCDESTROY:
+        RemoveWindowSubclass(hWnd, TabControlSubclassProc, uIdSubclass);
+        break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+//----------------------------------------------------------------------------
+//
+// OptionsProc
+//
+//----------------------------------------------------------------------------
+INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
+                             WPARAM wParam, LPARAM lParam )
+{
+    constexpr UINT WM_APPLY_HEADER_FONTS = WM_APP + 42;
+    static HFONT	hFontBold = nullptr;
+    static HFONT    hFontVersion = nullptr;
+    PNMLINK			notify = nullptr;
+    static int		curTabSel = 0;
+    static HWND		hTabCtrl;
+    static HWND		hOpacity;
+    static HWND		hToggleKey;
+    static UINT		currentDpi = DPI_BASELINE;
+    static RECT     stableWindowRect{};
+    static bool     stableWindowRectValid = false;
+    TCHAR			text[32];
+    DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipPanoramaToggleKey, newSnipOcrToggleKey;
+    DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipPanoramaToggleMod, newSnipOcrToggleMod;
+    DWORD			newSnipSaveToggleKey, newSnipSaveToggleMod;
+    DWORD			newSnipPanoramaSaveToggleKey, newSnipPanoramaSaveToggleMod;
+    DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
+    DWORD			newMirrorToggleKey, newMirrorToggleMod;
+    static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
+
+    auto CleanupFonts = [&]()
+    {
+        if( hFontBold )
+        {
+            DeleteObject( hFontBold );
+            hFontBold = nullptr;
+        }
+        if( hFontVersion )
+        {
+            DeleteObject( hFontVersion );
+            hFontVersion = nullptr;
+        }
+    };
+
+    auto UpdateVersionFont = [&]()
+    {
+        if( hFontVersion )
+        {
+            DeleteObject( hFontVersion );
+            hFontVersion = nullptr;
+        }
+
+        HWND hVersion = GetDlgItem( hDlg, IDC_VERSION );
+        if( !hVersion )
+        {
+            return;
+        }
+
+        // Prefer the control's current font (it may already be DPI-scaled).
+        HFONT hBaseFont = reinterpret_cast<HFONT>(SendMessage( hVersion, WM_GETFONT, 0, 0 ));
+        if( !hBaseFont )
+        {
+            hBaseFont = reinterpret_cast<HFONT>(SendMessage( hDlg, WM_GETFONT, 0, 0 ));
+        }
+        if( !hBaseFont )
+        {
+            hBaseFont = static_cast<HFONT>(GetStockObject( DEFAULT_GUI_FONT ));
+        }
+
+        LOGFONT lf{};
+        if( !GetObject( hBaseFont, sizeof( lf ), &lf ) )
+        {
+            return;
+        }
+
+        // Make the header version text title-sized using an explicit point size,
+        // scaled by the current DPI.
+        const UINT dpi = GetDpiForWindowHelper( hDlg );
+        constexpr int kTitlePointSize = 22;
+
+        lf.lfWeight = FW_BOLD;
+        lf.lfHeight = -MulDiv( kTitlePointSize, static_cast<int>(dpi), 72 );
+        hFontVersion = CreateFontIndirect( &lf );
+        if( hFontVersion )
+        {
+            SendMessage( hVersion, WM_SETFONT, reinterpret_cast<WPARAM>(hFontVersion), TRUE );
+            // Also store in a property so our subclass paint can reliably retrieve it.
+            SetPropW( hVersion, L"ZoomIt.HeaderFont", reinterpret_cast<HANDLE>(hFontVersion) );
+#if _DEBUG
+            HFONT checkFont = static_cast<HFONT>(GetPropW( hVersion, L"ZoomIt.HeaderFont" ));
+            OutputDebug( L"SetPropW HeaderFont: hwnd=%p font=%p verify=%p\n", hVersion, hFontVersion, checkFont );
+#endif
+        }
+
+    #if _DEBUG
+        OutputDebug(L"UpdateVersionFont: dpi=%u titlePt=%d lfHeight=%d font=%p\n",
+            dpi, kTitlePointSize, lf.lfHeight, hFontVersion );
+
+        {
+            HFONT currentFont = reinterpret_cast<HFONT>(SendMessage( hVersion, WM_GETFONT, 0, 0 ));
+            LOGFONT currentLf{};
+            if( currentFont && GetObject( currentFont, sizeof( currentLf ), &currentLf ) )
+            {
+                OutputDebug( L"IDC_VERSION WM_GETFONT after set: font=%p lfHeight=%d lfWeight=%d\n",
+                    currentFont, currentLf.lfHeight, currentLf.lfWeight );
+            }
+            else
+            {
+                OutputDebug( L"IDC_VERSION WM_GETFONT after set: font=%p (no logfont)\n", currentFont );
+            }
+        }
+    #endif
+
+        // Resize the version control to fit the new font, and reflow the lines below if needed.
+        RECT rcVersion{};
+        GetWindowRect( hVersion, &rcVersion );
+        MapWindowPoints( nullptr, hDlg, reinterpret_cast<LPPOINT>(&rcVersion), 2 );
+        const int oldVersionHeight = rcVersion.bottom - rcVersion.top;
+
+        TCHAR versionText[128] = {};
+        GetWindowText( hVersion, versionText, _countof( versionText ) );
+
+        RECT rcCalc{ 0, 0, 0, 0 };
+        HDC hdc = GetDC( hVersion );
+        if( hdc )
+        {
+            HFONT oldFont = static_cast<HFONT>(SelectObject( hdc, hFontVersion ? hFontVersion : hBaseFont ));
+            DrawText( hdc, versionText, -1, &rcCalc, DT_CALCRECT | DT_SINGLELINE | DT_LEFT | DT_VCENTER );
+            SelectObject( hdc, oldFont );
+            ReleaseDC( hVersion, hdc );
+        }
+
+        // Keep within dialog client width.
+        RECT rcClient{};
+        GetClientRect( hDlg, &rcClient );
+        const int maxWidth = max( 0, rcClient.right - rcVersion.left - ScaleForDpi( 8, GetDpiForWindowHelper( hDlg ) ) );
+        const int desiredWidth = min( maxWidth, (rcCalc.right - rcCalc.left) + ScaleForDpi( 6, GetDpiForWindowHelper( hDlg ) ) );
+        const int desiredHeight = (rcCalc.bottom - rcCalc.top) + ScaleForDpi( 2, GetDpiForWindowHelper( hDlg ) );
+        const int newVersionHeight = max( oldVersionHeight, desiredHeight );
+
+        SetWindowPos( hVersion, nullptr,
+            rcVersion.left, rcVersion.top,
+            max( 1, desiredWidth ), newVersionHeight,
+            SWP_NOZORDER | SWP_NOACTIVATE );
+
+#if _DEBUG
+        {
+            RECT rcAfter{};
+            GetClientRect( hVersion, &rcAfter );
+            OutputDebug( L"UpdateVersionFont resize: desired=(%d,%d) oldH=%d newH=%d actual=(%d,%d)\n",
+                desiredWidth, desiredHeight, oldVersionHeight, newVersionHeight,
+                rcAfter.right - rcAfter.left, rcAfter.bottom - rcAfter.top );
+        }
+#endif
+
+        InvalidateRect( hVersion, nullptr, TRUE );
+
+        const int deltaY = newVersionHeight - oldVersionHeight;
+        if( deltaY > 0 )
+        {
+            const int headerIdsToShift[] = { IDC_COPYRIGHT, IDC_LINK };
+            for( int i = 0; i < _countof( headerIdsToShift ); i++ )
+            {
+                HWND hCtrl = GetDlgItem( hDlg, headerIdsToShift[i] );
+                if( !hCtrl )
+                {
+                    continue;
+                }
+                RECT rc{};
+                GetWindowRect( hCtrl, &rc );
+                MapWindowPoints( nullptr, hDlg, reinterpret_cast<LPPOINT>(&rc), 2 );
+                SetWindowPos( hCtrl, nullptr,
+                    rc.left, rc.top + deltaY,
+                    0, 0,
+                    SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+            }
+        }
+    };
+
+    switch ( message )  {
+    case WM_INITDIALOG:
+    {
+        if( hWndOptions ) {
+
+            BringWindowToTop( hWndOptions );
+            SetFocus( hWndOptions );
+            SetForegroundWindow( hWndOptions );
+            EndDialog( hDlg, 0 );
+            return FALSE;
+        }
+        hWndOptions = hDlg;
+
+        // Set the dialog icon
+        {
+            HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+            if( hIcon )
+            {
+                SendMessage( hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon) );
+                SendMessage( hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon) );
+            }
+        }
+
+        SetForegroundWindow( hDlg );
+        SetActiveWindow( hDlg );
+        // Do not force-show the dialog here. DialogBox will show it after WM_INITDIALOG
+        // returns, and showing early causes visible layout churn while we add tabs, scale,
+        // and center the window.
+#if 1
+        // set version info
+        TCHAR               filePath[MAX_PATH];
+        const TCHAR* verString;
+
+        GetModuleFileName(NULL, filePath, _countof(filePath));
+        DWORD               zero = 0;
+        DWORD               infoSize = GetFileVersionInfoSize(filePath, &zero);
+        void* versionInfo = malloc(infoSize);
+        GetFileVersionInfo(filePath, 0, infoSize, versionInfo);
+
+        verString = GetVersionString(static_cast<VERSION_INFO*>(versionInfo), _T("FileVersion"));
+        SetDlgItemText(hDlg, IDC_VERSION, (std::wstring(L"ZoomIt v") + verString).c_str());
+
+        verString = GetVersionString(static_cast<VERSION_INFO*>(versionInfo), _T("LegalCopyright"));
+        SetDlgItemText(hDlg, IDC_COPYRIGHT, verString);
+
+        free(versionInfo);
+#endif
+        // Add tabs
+        hTabCtrl = GetDlgItem( hDlg, IDC_TAB );
+
+        // Set owner-draw style for tab control when in dark mode
+        if (IsDarkModeEnabled())
+        {
+            LONG_PTR style = GetWindowLongPtr(hTabCtrl, GWL_STYLE);
+            SetWindowLongPtr(hTabCtrl, GWL_STYLE, style | TCS_OWNERDRAWFIXED);
+            // Subclass the tab control for dark mode background painting
+            SetWindowSubclass(hTabCtrl, TabControlSubclassProc, 1, 0);
+        }
+
+        OptionsAddTabs( hDlg, hTabCtrl );
+
+        // Configure options
+        SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_SETRULES,
+            static_cast<WPARAM>(HKCOMB_NONE), // invalid key combinations
+            MAKELPARAM(HOTKEYF_ALT, 0));     // add ALT to invalid entries
+
+        if( g_ToggleKey )		SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_SETHOTKEY, g_ToggleKey, 0 );
+        if( pMagInitialize ) {
+
+            if( g_LiveZoomToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[LIVE_PAGE].hPage, IDC_LIVE_HOTKEY), HKM_SETHOTKEY, g_LiveZoomToggleKey, 0 );
+
+        } else {
+
+            EnableWindow( GetDlgItem( g_OptionsTabs[LIVE_PAGE].hPage, IDC_LIVE_HOTKEY), FALSE );
+            EnableWindow( GetDlgItem( g_OptionsTabs[LIVE_PAGE].hPage, IDC_ZOOM_LEVEL), FALSE );
+            EnableWindow( GetDlgItem( g_OptionsTabs[LIVE_PAGE].hPage, IDC_ZOOM_SPIN), FALSE );
+        }
+        if( g_DrawToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[DRAW_PAGE].hPage, IDC_DRAW_HOTKEY), HKM_SETHOTKEY, g_DrawToggleKey, 0 );
+        if( g_BreakToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[BREAK_PAGE].hPage, IDC_BREAK_HOTKEY), HKM_SETHOTKEY, g_BreakToggleKey, 0 );
+        if( g_DemoTypeToggleKey ) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_SETHOTKEY, g_DemoTypeToggleKey, 0 );
+        if( g_RecordToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_SETHOTKEY, g_RecordToggleKey, 0 );
+        if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
+        if( g_SnipSaveToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipSaveToggleKey, 0 );
+        if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
+        if( g_SnipPanoramaSaveToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaSaveToggleKey, 0 );
+        if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
+        if( g_MirrorToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_HOTKEY), HKM_SETHOTKEY, g_MirrorToggleKey, 0 );
+        CheckDlgButton( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_TRACK_WINDOW,
+            g_MirrorTrackWindow ? BST_CHECKED: BST_UNCHECKED );
+        CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
+            g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
+        CheckDlgButton( hDlg, IDC_AUTOSTART,
+            IsAutostartConfigured() ? BST_CHECKED: BST_UNCHECKED );
+        CheckDlgButton( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ANIMATE_ZOOM,
+            g_AnimateZoom ? BST_CHECKED: BST_UNCHECKED );
+        CheckDlgButton( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_SMOOTH_IMAGE,
+            g_SmoothImage ? BST_CHECKED: BST_UNCHECKED );
+
+        SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_SETRANGE, false, MAKELONG(0,_countof(g_ZoomLevels)-1) );
+        SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_SETPOS, true, g_SliderZoomLevel );
+
+        _stprintf( text, L"%d", g_PenWidth );
+        SetDlgItemText( g_OptionsTabs[DRAW_PAGE].hPage, IDC_PEN_WIDTH, text );
+        SendMessage( GetDlgItem( g_OptionsTabs[DRAW_PAGE].hPage, IDC_PEN_WIDTH ), EM_LIMITTEXT, 1, 0 );
+        SendMessage (GetDlgItem( g_OptionsTabs[DRAW_PAGE].hPage, IDC_SPIN), UDM_SETRANGE, 0L,
+                            MAKELPARAM (19, 1));
+
+        _stprintf( text, L"%d", g_BreakTimeout );
+        SetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text );
+        SendMessage( GetDlgItem( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER ), EM_LIMITTEXT, 2, 0 );
+        SendMessage (GetDlgItem( g_OptionsTabs[BREAK_PAGE].hPage, IDC_SPIN_TIMER), UDM_SETRANGE, 0L,
+                            MAKELPARAM (99, 1));
+        CheckDlgButton( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED,
+            g_ShowExpiredTime ? BST_CHECKED : BST_UNCHECKED );
+        CheckDlgButton( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_LOCK_WORKSTATION,
+            g_BreakLockWorkstation ? BST_CHECKED : BST_UNCHECKED );
+
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO,
+            g_CaptureSystemAudio ? BST_CHECKED: BST_UNCHECKED );
+
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO,
+            g_CaptureAudio ? BST_CHECKED: BST_UNCHECKED );
+
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX,
+            g_MicMonoMix ? BST_CHECKED: BST_UNCHECKED );
+
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION,
+            g_NoiseCancellation ? BST_CHECKED: BST_UNCHECKED );
+
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO,
+            g_RecordAspectRatio ? BST_CHECKED: BST_UNCHECKED );
+
+        //
+        // The framerate drop down list is not used in the current version (might be added in the future)
+        //
+        /*for (int i = 0; i < _countof(g_FramerateOptions); i++) {
+
+            _stprintf(text, L"%d", g_FramerateOptions[i]);
+            SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), static_cast<UINT>(CB_ADDSTRING),
+                static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(text));
+            if (g_RecordFrameRate == g_FramerateOptions[i]) {
+
+                SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), CB_SETCURSEL, static_cast<WPARAM>(i), static_cast<LPARAM>(0));
+            }
+        }*/
+
+        // Add the recording format to the combo box and set the current selection
+        size_t selection = 0;
+        const wchar_t* currentFormatString = (g_RecordingFormat == RecordingFormat::GIF) ? L"GIF" : L"MP4";
+
+        for( size_t i = 0; i < (sizeof(g_RecordingFormats) / sizeof(g_RecordingFormats[0])); i++ )
+        {
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(g_RecordingFormats[i]) );
+
+            if( selection == 0 && wcscmp( g_RecordingFormats[i], currentFormatString ) == 0 )
+            {
+                selection = i;
+            }
+        }
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
+
+        for(unsigned int i = 1; i < 11; i++) {
+
+            _stprintf(text, L"%2.1f", (static_cast<double>(i)) / 10 );
+            SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), static_cast<UINT>(CB_ADDSTRING),
+                static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(text));
+
+            if (g_RecordingFormat == RecordingFormat::GIF && i*10 == g_RecordScalingGIF ) {
+
+                SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), CB_SETCURSEL, static_cast<WPARAM>(i)-1, static_cast<LPARAM>(0));
+            }
+            if (g_RecordingFormat == RecordingFormat::MP4 && i*10 == g_RecordScalingMP4 ) {
+
+                SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), CB_SETCURSEL, static_cast<WPARAM>(i)-1, static_cast<LPARAM>(0));
+            }
+        }
+
+        // Get the current set of microphones
+        microphones.clear();
+        concurrency::create_task([]{
+            auto devices = winrt::DeviceInformation::FindAllAsync( winrt::DeviceClass::AudioCapture ).get();
+            for( auto device : devices )
+            {
+                microphones.emplace_back( device.Id().c_str(), device.Name().c_str() );
+            }
+        }).get();
+
+        // Add the microphone devices to the combo box and set the current selection
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(L"Default"));
+        selection = 0;
+        for( size_t i = 0; i < microphones.size(); i++ )
+        {
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(microphones[i].second.c_str()) );
+            if( selection == 0 && wcscmp( microphones[i].first.c_str(), g_MicrophoneDeviceId ) == 0 )
+            {
+                selection = i + 1;
+            }
+        }
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
+
+        // Set initial state of audio controls based on recording format (GIF has no audio)
+        bool isGifSelected = (g_RecordingFormat == RecordingFormat::GIF);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO), !isGifSelected);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO), !isGifSelected);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION), !isGifSelected && g_CaptureAudio);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX), !isGifSelected && g_CaptureAudio);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE_LABEL), !isGifSelected && g_CaptureAudio);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected && g_CaptureAudio);
+
+        // Webcam overlay controls
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY,
+            g_WebcamOverlay ? BST_CHECKED : BST_UNCHECKED );
+
+        // Set initial enabled state for webcam overlay and settings button
+        {
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY), !isGifSelected);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SETTINGS), !isGifSelected && g_WebcamOverlay);
+        }
+
+        if( GetFileAttributes( g_DemoTypeFile ) == -1 )
+        {
+            memset( g_DemoTypeFile, 0, sizeof( g_DemoTypeFile ) );
+        }
+        else
+        {
+            SetDlgItemText( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE, g_DemoTypeFile );
+        }
+        SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_SETRANGE, false, MAKELONG( MAX_TYPING_SPEED, MIN_TYPING_SPEED ) );
+        SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_SETPOS, true, g_DemoTypeSpeedSlider );
+        CheckDlgButton( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_USER_DRIVEN, g_DemoTypeUserDriven ? BST_CHECKED: BST_UNCHECKED );
+
+        // Apply DPI scaling to the main dialog and to controls inside tab pages.
+        // Note: Scaling the main dialog only scales its direct children (including the
+        // tab page windows), but NOT the controls contained within the tab pages.
+        // So we scale each tab page's child controls separately.
+        currentDpi = GetDpiForWindowHelper( hDlg );
+        if( currentDpi != DPI_BASELINE )
+        {
+            ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
+
+            for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
+            {
+                if( g_OptionsTabs[i].hPage )
+                {
+                    ScaleChildControlsForDpi( g_OptionsTabs[i].hPage, currentDpi, DPI_BASELINE );
+                }
+            }
+        }
+        // Always reposition tab pages to fit the tab control (whether scaled or not)
+        RepositionTabPages( hTabCtrl );
+
+        // Initialize DPI-aware fonts after scaling so text sizing is correct.
+        InitializeFonts( hDlg, &hFontBold );
+        UpdateDrawTabHeaderFont();
+        UpdateVersionFont();
+
+        // Always render the header labels using our static text subclass (even in light mode)
+        // so the larger title font is honored.
+        if( HWND hVersion = GetDlgItem( hDlg, IDC_VERSION ) )
+        {
+            SetWindowSubclass( hVersion, StaticTextSubclassProc, 55, 0 );
+        }
+        if( HWND hCopyright = GetDlgItem( hDlg, IDC_COPYRIGHT ) )
+        {
+            SetWindowSubclass( hCopyright, StaticTextSubclassProc, 56, 0 );
+        }
+
+        // Apply dark mode to the dialog and all tab pages
+        ApplyDarkModeToDialog( hDlg );
+        for( int i = 0; i < sizeof( g_OptionsTabs ) / sizeof( g_OptionsTabs[0] ); i++ )
+        {
+            if( g_OptionsTabs[i].hPage )
+            {
+                ApplyDarkModeToDialog( g_OptionsTabs[i].hPage );
+            }
+        }
+
+        UnregisterAllHotkeys(GetParent( hDlg ));
+
+        // Center dialog on screen, clamping to fit if it's too large for the work area
+        {
+            RECT rcDlg;
+            GetWindowRect(hDlg, &rcDlg);
+            int dlgWidth = rcDlg.right - rcDlg.left;
+            int dlgHeight = rcDlg.bottom - rcDlg.top;
+
+            // Get the monitor where the cursor is
+            POINT pt;
+            GetCursorPos(&pt);
+            HMONITOR hMon = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO mi = { sizeof(mi) };
+            GetMonitorInfo(hMon, &mi);
+
+            // Calculate available work area size
+            const int workWidth = mi.rcWork.right - mi.rcWork.left;
+            const int workHeight = mi.rcWork.bottom - mi.rcWork.top;
+
+            // Clamp dialog size to fit within work area (with a small margin)
+            constexpr int kMargin = 8;
+            if (dlgWidth > workWidth - kMargin * 2)
+            {
+                dlgWidth = workWidth - kMargin * 2;
+            }
+            if (dlgHeight > workHeight - kMargin * 2)
+            {
+                dlgHeight = workHeight - kMargin * 2;
+            }
+
+            // Apply clamped size if it changed
+            if (dlgWidth != (rcDlg.right - rcDlg.left) || dlgHeight != (rcDlg.bottom - rcDlg.top))
+            {
+                SetWindowPos(hDlg, nullptr, 0, 0, dlgWidth, dlgHeight, SWP_NOMOVE | SWP_NOZORDER);
+            }
+
+            int x = mi.rcWork.left + (workWidth - dlgWidth) / 2;
+            int y = mi.rcWork.top + (workHeight - dlgHeight) / 2;
+            SetWindowPos(hDlg, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        }
+
+        // Capture a stable window size so per-monitor DPI changes won't resize/reflow the dialog.
+        GetWindowRect(hDlg, &stableWindowRect);
+        stableWindowRectValid = true;
+
+        PostMessage( hDlg, WM_USER, 0, 0 );
+        // Reapply header fonts once the dialog has finished any late initialization.
+        PostMessage( hDlg, WM_APPLY_HEADER_FONTS, 0, 0 );
+
+        // Set focus to the tab control instead of the first hotkey control
+        SetFocus( hTabCtrl );
+        return FALSE;
+    }
+
+    case WM_APPLY_HEADER_FONTS:
+        InitializeFonts( hDlg, &hFontBold );
+        UpdateDrawTabHeaderFont();
+        UpdateVersionFont();
+        return TRUE;
+
+    case WM_USER+100:
+        BringWindowToTop( hDlg );
+        SetFocus( hDlg );
+        SetForegroundWindow( hDlg );
+        return TRUE;
+
+    case WM_DPICHANGED:
+    {
+        // Requirement: keep the Options dialog stable while it is open.
+        // Windows may already have resized the window by the time this arrives,
+        // so explicitly restore the previous size (but allow the suggested top-left).
+
+        RECT* suggested = reinterpret_cast<RECT*>(lParam);
+        if (stableWindowRectValid && suggested)
+        {
+            const int stableW = stableWindowRect.right - stableWindowRect.left;
+            const int stableH = stableWindowRect.bottom - stableWindowRect.top;
+            SetWindowPos(hDlg, nullptr,
+                suggested->left,
+                suggested->top,
+                stableW,
+                stableH,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+        return TRUE;
+    }
+
+    case WM_ERASEBKGND:
+        if (IsDarkModeEnabled())
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect(hDlg, &rc);
+            FillRect(hdc, &rc, GetDarkModeBrush());
+            return TRUE;
+        }
+        break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+
+        // Always force the Options header title to use the large version font.
+        // Note: We must also return a brush in light mode
+        // dialog proc may ignore our HDC changes.
+        if( message == WM_CTLCOLORSTATIC && hCtrl == GetDlgItem( hDlg, IDC_VERSION ) && hFontVersion )
+        {
+            SetBkMode( hdc, TRANSPARENT );
+            SelectObject( hdc, hFontVersion );
+
+#if _DEBUG
+            OutputDebug( L"WM_CTLCOLORSTATIC IDC_VERSION: dark=%d font=%p\n", IsDarkModeEnabled() ? 1 : 0, hFontVersion );
+#endif
+
+            if( !IsDarkModeEnabled() )
+            {
+                // Light mode: explicitly return the dialog background brush.
+                return reinterpret_cast<INT_PTR>(GetSysColorBrush( COLOR_BTNFACE ));
+            }
+        }
+
+        // Handle dark mode colors
+        HBRUSH hBrush = HandleDarkModeCtlColor(hdc, hCtrl, message);
+        if (hBrush)
+        {
+            // Ensure the header version text uses the title font in dark mode.
+            if( message == WM_CTLCOLORSTATIC && hCtrl == GetDlgItem( hDlg, IDC_VERSION ) && hFontVersion )
+            {
+                SelectObject( hdc, hFontVersion );
+            }
+
+            // For bold title controls, also set the bold font
+            if (message == WM_CTLCOLORSTATIC &&
+                (hCtrl == GetDlgItem(hDlg, IDC_TITLE) ||
+                 hCtrl == GetDlgItem(hDlg, IDC_DRAWING) ||
+                 hCtrl == GetDlgItem(hDlg, IDC_ZOOM) ||
+                 hCtrl == GetDlgItem(hDlg, IDC_BREAK) ||
+                 hCtrl == GetDlgItem(hDlg, IDC_TYPE)))
+            {
+                SelectObject(hdc, hFontBold);
+            }
+            return reinterpret_cast<INT_PTR>(hBrush);
+        }
+
+        // Light mode handling for bold title controls
+        if (message == WM_CTLCOLORSTATIC &&
+            (hCtrl == GetDlgItem(hDlg, IDC_TITLE) ||
+             hCtrl == GetDlgItem(hDlg, IDC_DRAWING) ||
+             hCtrl == GetDlgItem(hDlg, IDC_ZOOM) ||
+             hCtrl == GetDlgItem(hDlg, IDC_BREAK) ||
+             hCtrl == GetDlgItem(hDlg, IDC_TYPE)))
+        {
+            SetBkMode(hdc, TRANSPARENT);
+            SelectObject(hdc, hFontBold);
+            return reinterpret_cast<INT_PTR>(GetSysColorBrush(COLOR_BTNFACE));
+        }
+        break;
+    }
+
+    case WM_SETTINGCHANGE:
+        // Handle theme change (dark/light mode toggle)
+        if (lParam && (wcscmp(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0))
+        {
+            RefreshDarkModeState();
+            ApplyDarkModeToDialog(hDlg);
+            for (int i = 0; i < sizeof(g_OptionsTabs) / sizeof(g_OptionsTabs[0]); i++)
+            {
+                if (g_OptionsTabs[i].hPage)
+                {
+                    ApplyDarkModeToDialog(g_OptionsTabs[i].hPage);
+                }
+            }
+            InvalidateRect(hDlg, nullptr, TRUE);
+            for (int i = 0; i < sizeof(g_OptionsTabs) / sizeof(g_OptionsTabs[0]); i++)
+            {
+                if (g_OptionsTabs[i].hPage)
+                {
+                    InvalidateRect(g_OptionsTabs[i].hPage, nullptr, TRUE);
+                }
+            }
+        }
+        break;
+
+    case WM_DRAWITEM:
+    {
+        // Handle owner-draw for tab control in dark mode
+        DRAWITEMSTRUCT* pDIS = reinterpret_cast<DRAWITEMSTRUCT*>(lParam);
+        if (pDIS->CtlID == IDC_TAB && IsDarkModeEnabled())
+        {
+            // Fill tab background
+            HBRUSH hBrush = GetDarkModeBrush();
+            FillRect(pDIS->hDC, &pDIS->rcItem, hBrush);
+
+            // Get tab text
+            TCITEM tci = {};
+            tci.mask = TCIF_TEXT;
+            TCHAR szText[128] = { 0 };
+            tci.pszText = szText;
+            tci.cchTextMax = _countof(szText);
+            TabCtrl_GetItem(hTabCtrl, pDIS->itemID, &tci);
+
+            // Draw text
+            SetBkMode(pDIS->hDC, TRANSPARENT);
+            bool isSelected = (pDIS->itemState & ODS_SELECTED) != 0;
+            SetTextColor(pDIS->hDC, isSelected ? DarkMode::TextColor : DarkMode::DisabledTextColor);
+
+            // Draw underline for selected tab
+            if (isSelected)
+            {
+                RECT rcUnderline = pDIS->rcItem;
+                rcUnderline.top = rcUnderline.bottom - 2;
+                HBRUSH hAccent = CreateSolidBrush(DarkMode::AccentColor);
+                FillRect(pDIS->hDC, &rcUnderline, hAccent);
+                DeleteObject(hAccent);
+            }
+
+            RECT rcText = pDIS->rcItem;
+            rcText.top += 4;
+            DrawText(pDIS->hDC, szText, -1, &rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+            return TRUE;
+        }
+        break;
+    }
+
+    case WM_NOTIFY:
+        notify = reinterpret_cast<PNMLINK>(lParam);
+        if( notify->hdr.idFrom == IDC_LINK )
+        {
+            switch( notify->hdr.code )
+            {
+            case NM_CLICK:
+            case NM_RETURN:
+                ShellExecute( hDlg, _T("open"), notify->item.szUrl, NULL, NULL, SW_SHOWNORMAL );
+                break;
+            }
+        }
+        else switch( notify->hdr.code )
+        {
+        case TCN_SELCHANGE:
+            ShowWindow( g_OptionsTabs[curTabSel].hPage, SW_HIDE );
+            curTabSel = TabCtrl_GetCurSel(hTabCtrl);
+            ShowWindow( g_OptionsTabs[curTabSel].hPage, SW_SHOW );
+            break;
+        }
+        break;
+
+    case WM_COMMAND:
+        switch ( LOWORD( wParam )) {
+        case IDOK:
+        {
+            if( !ConfigureAutostart( hDlg, IsDlgButtonChecked( hDlg, IDC_AUTOSTART) == BST_CHECKED )) {
+
+                break;
+            }
+            g_ShowTrayIcon = IsDlgButtonChecked( hDlg, IDC_SHOW_TRAY_ICON ) == BST_CHECKED;
+            g_AnimateZoom = IsDlgButtonChecked( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ANIMATE_ZOOM ) == BST_CHECKED;
+            g_SmoothImage = IsDlgButtonChecked( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_SMOOTH_IMAGE ) == BST_CHECKED;
+            g_DemoTypeUserDriven = IsDlgButtonChecked( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_USER_DRIVEN ) == BST_CHECKED;
+
+            newToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newLiveZoomToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[LIVE_PAGE].hPage, IDC_LIVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newDrawToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DRAW_PAGE].hPage, IDC_DRAW_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newBreakToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[BREAK_PAGE].hPage, IDC_BREAK_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_GETHOTKEY, 0, 0 ));
+            newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_GETHOTKEY, 0, 0));
+            newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipPanoramaSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newMirrorToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+
+            newToggleMod = GetKeyMod( newToggleKey );
+            newLiveZoomToggleMod = GetKeyMod( newLiveZoomToggleKey );
+            newDrawToggleMod = GetKeyMod( newDrawToggleKey );
+            newBreakToggleMod = GetKeyMod( newBreakToggleKey );
+            newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
+            newRecordToggleMod = GetKeyMod(newRecordToggleKey);
+            newSnipToggleMod = GetKeyMod( newSnipToggleKey );
+            newSnipSaveToggleMod = GetKeyMod( newSnipSaveToggleKey );
+            newSnipPanoramaToggleMod = GetKeyMod( newSnipPanoramaToggleKey );
+            newSnipPanoramaSaveToggleMod = GetKeyMod( newSnipPanoramaSaveToggleKey );
+            newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
+            newMirrorToggleMod = GetKeyMod( newMirrorToggleKey );
+
+            g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
+            g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_GETPOS, 0, 0 ));
+
+            g_ShowExpiredTime = IsDlgButtonChecked(  g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED ) == BST_CHECKED;
+            g_BreakLockWorkstation = IsDlgButtonChecked( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_LOCK_WORKSTATION ) == BST_CHECKED;
+            g_CaptureSystemAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO) == BST_CHECKED;
+            g_CaptureAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO) == BST_CHECKED;
+            g_MicMonoMix = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX) == BST_CHECKED;
+            g_NoiseCancellation = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION) == BST_CHECKED;
+            g_RecordAspectRatio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO) == BST_CHECKED;
+            g_MirrorTrackWindow = IsDlgButtonChecked(g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_TRACK_WINDOW) == BST_CHECKED;
+            GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
+            text[2] = 0;
+            newTimeout = _tstoi( text );
+
+            g_RecordingFormat = static_cast<RecordingFormat>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)));
+            g_RecordFrameRate = (g_RecordingFormat == RecordingFormat::GIF) ? RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE : RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
+            g_RecordScaling = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)) * 10 + 10);
+
+            // Get the selected microphone
+            int index = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0) ));
+            _tcscpy( g_MicrophoneDeviceId, index == 0 ? L"" : microphones[static_cast<size_t>(index) - 1].first.c_str() );
+
+            // Get the webcam overlay setting (other webcam settings are saved in WebcamSettingsProc)
+            g_WebcamOverlay = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+
+            if( newToggleKey && !RegisterHotKey( GetParent( hDlg ), ZOOM_HOTKEY, newToggleMod, newToggleKey & 0xFF )) {
+
+                MessageBox( hDlg, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
+                    APPNAME, MB_ICONERROR );
+                UnregisterAllHotkeys(GetParent( hDlg ));
+                break;
+
+            } else if(newLiveZoomToggleKey &&
+                (!RegisterHotKey( GetParent( hDlg ), LIVE_HOTKEY, newLiveZoomToggleMod | MOD_NOREPEAT, newLiveZoomToggleKey & 0xFF ) ||
+                !RegisterHotKey(GetParent(hDlg), LIVE_DRAW_HOTKEY, (newLiveZoomToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, newLiveZoomToggleKey & 0xFF))) {
+
+                MessageBox( hDlg, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
+                    APPNAME, MB_ICONERROR );
+                UnregisterAllHotkeys(GetParent( hDlg ));
+                break;
+
+            } else if( newDrawToggleKey && !RegisterHotKey( GetParent( hDlg ), DRAW_HOTKEY, newDrawToggleMod, newDrawToggleKey & 0xFF )) {
+
+                MessageBox( hDlg, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.",
+                    APPNAME, MB_ICONERROR );
+                UnregisterAllHotkeys(GetParent( hDlg ));
+                break;
+
+            } else if( newBreakToggleKey && !RegisterHotKey( GetParent( hDlg ), BREAK_HOTKEY, newBreakToggleMod, newBreakToggleKey & 0xFF )) {
+
+                MessageBox( hDlg, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.",
+                    APPNAME, MB_ICONERROR );
+                UnregisterAllHotkeys(GetParent( hDlg ));
+                break;
+
+            } else if( newDemoTypeToggleKey &&
+                (!RegisterHotKey( GetParent( hDlg ), DEMOTYPE_HOTKEY, newDemoTypeToggleMod, newDemoTypeToggleKey & 0xFF ) ||
+                    !RegisterHotKey(GetParent(hDlg), DEMOTYPE_RESET_HOTKEY, (newDemoTypeToggleMod ^ MOD_SHIFT), newDemoTypeToggleKey & 0xFF))) {
+
+                MessageBox( hDlg, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.",
+                    APPNAME, MB_ICONERROR );
+                UnregisterAllHotkeys( GetParent( hDlg ) );
+                break;
+
+            }
+            else if (newSnipToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_HOTKEY, newSnipToggleMod, newSnipToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if (newSnipSaveToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, newSnipSaveToggleMod, newSnipSaveToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if (newSnipPanoramaToggleKey &&
+                (newSnipPanoramaToggleKey != newSnipToggleKey || newSnipPanoramaToggleMod != newSnipToggleMod) &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if (newSnipPanoramaSaveToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, newSnipPanoramaSaveToggleMod | MOD_NOREPEAT, newSnipPanoramaSaveToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if (newSnipOcrToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_OCR_HOTKEY, newSnipOcrToggleMod, newSnipOcrToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if( UINT cropMod = newRecordToggleMod ^ MOD_SHIFT, windowMod = newRecordToggleMod ^ MOD_ALT; newRecordToggleKey &&
+                (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY, newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
+                (cropMod != 0 && !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF)) ||
+                (windowMod != 0 && !RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF)))) {
+
+                MessageBox(hDlg, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+            }
+            else if( UINT mirrorCropMod = newMirrorToggleMod ^ MOD_SHIFT, mirrorWindowMod = newMirrorToggleMod ^ MOD_ALT; newMirrorToggleKey &&
+                (!RegisterHotKey(GetParent(hDlg), MIRROR_HOTKEY, newMirrorToggleMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF) ||
+                (mirrorCropMod != 0 && !RegisterHotKey(GetParent(hDlg), MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF)) ||
+                (mirrorWindowMod != 0 && !RegisterHotKey(GetParent(hDlg), MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF)))) {
+
+                MessageBox(hDlg, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+            } else {
+
+                g_BreakTimeout = newTimeout;
+                g_ToggleKey = newToggleKey;
+                g_LiveZoomToggleKey = newLiveZoomToggleKey;
+                g_ToggleMod = newToggleMod;
+                g_DrawToggleKey = newDrawToggleKey;
+                g_DrawToggleMod = newDrawToggleMod;
+                g_BreakToggleKey = newBreakToggleKey;
+                g_BreakToggleMod = newBreakToggleMod;
+                g_DemoTypeToggleKey = newDemoTypeToggleKey;
+                g_DemoTypeToggleMod = newDemoTypeToggleMod;
+                g_RecordToggleKey = newRecordToggleKey;
+                g_RecordToggleMod = newRecordToggleMod;
+                g_SnipToggleKey = newSnipToggleKey;
+                g_SnipToggleMod = newSnipToggleMod;
+                g_SnipSaveToggleKey = newSnipSaveToggleKey;
+                g_SnipSaveToggleMod = newSnipSaveToggleMod;
+                g_SnipPanoramaToggleKey = newSnipPanoramaToggleKey;
+                g_SnipPanoramaToggleMod = newSnipPanoramaToggleMod;
+                g_SnipPanoramaSaveToggleKey = newSnipPanoramaSaveToggleKey;
+                g_SnipPanoramaSaveToggleMod = newSnipPanoramaSaveToggleMod;
+                g_SnipOcrToggleKey = newSnipOcrToggleKey;
+                g_SnipOcrToggleMod = newSnipOcrToggleMod;
+                g_MirrorToggleKey = newMirrorToggleKey;
+                g_MirrorToggleMod = newMirrorToggleMod;
+                reg.WriteRegSettings( RegSettings );
+                EnableDisableTrayIcon( GetParent( hDlg ), g_ShowTrayIcon );
+
+                hWndOptions = NULL;
+                CleanupFonts();
+                EndDialog( hDlg, 0 );
+                return TRUE;
+            }
+            break;
+        }
+
+        case IDCANCEL:
+            RegisterAllHotkeys(GetParent(hDlg));
+            hWndOptions = NULL;
+            CleanupFonts();
+            EndDialog( hDlg, 0 );
+            return TRUE;
+        }
+        break;
+
+    case WM_CLOSE:
+        hWndOptions = NULL;
+        RegisterAllHotkeys(GetParent(hDlg));
+        CleanupFonts();
+        EndDialog( hDlg, 0 );
+        return TRUE;
+
+    default:
+        break;
+    }
+    return FALSE;
+}
+
+//----------------------------------------------------------------------------
+//
+// DeleteDrawUndoList
+//
+//----------------------------------------------------------------------------
+void DeleteDrawUndoList( P_DRAW_UNDO *DrawUndoList )
+{
+    P_DRAW_UNDO	nextUndo;
+
+    nextUndo = *DrawUndoList;
+    while( nextUndo ) {
+
+        *DrawUndoList = nextUndo->Next;
+        DeleteObject( nextUndo->hBitmap );
+        DeleteDC( nextUndo->hDc );
+        free( nextUndo );
+        nextUndo = *DrawUndoList;
+    }
+    *DrawUndoList = NULL;
+}
+
+//----------------------------------------------------------------------------
+//
+// PopDrawUndo
+//
+//----------------------------------------------------------------------------
+BOOLEAN PopDrawUndo( HDC hDc, P_DRAW_UNDO *DrawUndoList,
+                  int width, int height )
+{
+    P_DRAW_UNDO	nextUndo;
+
+    nextUndo = *DrawUndoList;
+    if( nextUndo ) {
+
+        BitBlt( hDc, 0, 0, width, height,
+            nextUndo->hDc, 0, 0, SRCCOPY|CAPTUREBLT );
+        *DrawUndoList = nextUndo->Next;
+        DeleteObject( nextUndo->hBitmap );
+        DeleteDC( nextUndo->hDc );
+        free( nextUndo );
+        return TRUE;
+
+    } else {
+
+        Beep( 700, 200 );
+        return FALSE;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+//
+// DeleteOldestUndo
+//
+//----------------------------------------------------------------------------
+void DeleteOldestUndo( P_DRAW_UNDO *DrawUndoList )
+{
+    P_DRAW_UNDO	nextUndo, freeUndo = NULL, prevUndo = NULL;
+
+    nextUndo = *DrawUndoList;
+    freeUndo = nextUndo;
+    do {
+
+        prevUndo = freeUndo;
+        freeUndo = nextUndo;
+        nextUndo = nextUndo->Next;
+
+    } while( nextUndo );
+
+    if( freeUndo ) {
+
+        DeleteObject( freeUndo->hBitmap );
+        DeleteDC( freeUndo->hDc );
+        free( freeUndo );
+        if( prevUndo != *DrawUndoList ) prevUndo->Next = NULL;
+        else *DrawUndoList = NULL;
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// GetOldestUndo
+//
+//----------------------------------------------------------------------------
+P_DRAW_UNDO GetOldestUndo(P_DRAW_UNDO DrawUndoList)
+{
+    P_DRAW_UNDO	nextUndo, oldestUndo = NULL;
+
+    nextUndo = DrawUndoList;
+    oldestUndo = nextUndo;
+    do {
+
+        oldestUndo = nextUndo;
+        nextUndo = nextUndo->Next;
+
+    } while( nextUndo );
+    return oldestUndo;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// PushDrawUndo
+//
+//----------------------------------------------------------------------------
+void PushDrawUndo( HDC hDc, P_DRAW_UNDO *DrawUndoList, int width, int height )
+{
+    P_DRAW_UNDO	nextUndo, newUndo;
+    int			i = 0;
+    HBITMAP		hUndoBitmap;
+
+    OutputDebug(L"PushDrawUndo\n");
+
+    // Don't store more than 8 undo's (XP gets really upset when we
+    // exhaust heap with them)
+    nextUndo = *DrawUndoList;
+    do {
+
+        i++;
+        if( i == MAX_UNDO_HISTORY ) {
+
+            DeleteOldestUndo( DrawUndoList );
+            break;
+        }
+        if( nextUndo ) nextUndo = nextUndo->Next;
+
+    } while( nextUndo );
+
+    hUndoBitmap = CreateCompatibleBitmap( hDc, width, height );
+    if( !hUndoBitmap && *DrawUndoList ) {
+
+        // delete the oldest and try again
+        DeleteOldestUndo( DrawUndoList );
+        hUndoBitmap = CreateCompatibleBitmap( hDc, width, height );
+    }
+    if( hUndoBitmap ) {
+
+        newUndo = static_cast<P_DRAW_UNDO>(malloc( sizeof( DRAW_UNDO )));
+        if (newUndo != NULL)
+        {
+            newUndo->hDc = CreateCompatibleDC(hDc);
+            newUndo->hBitmap = hUndoBitmap;
+            SelectObject(newUndo->hDc, newUndo->hBitmap);
+            BitBlt(newUndo->hDc, 0, 0, width, height, hDc, 0, 0, SRCCOPY | CAPTUREBLT);
+            newUndo->Next = *DrawUndoList;
+            *DrawUndoList = newUndo;
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// DeleteTypedText
+//
+//----------------------------------------------------------------------------
+void DeleteTypedText( P_TYPED_KEY *TypedKeyList )
+{
+    P_TYPED_KEY	nextKey;
+
+    while( *TypedKeyList ) {
+
+        nextKey = (*TypedKeyList)->Next;
+        free( *TypedKeyList );
+        *TypedKeyList = nextKey;
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// BlankScreenArea
+//
+//----------------------------------------------------------------------------
+void BlankScreenArea( HDC hDc, PRECT Rc, int BlankMode )
+{
+    if( BlankMode == 'K' ) {
+
+        HBRUSH hBrush = CreateSolidBrush( RGB( 0, 0, 0 ));
+        FillRect( hDc, Rc, hBrush );
+        DeleteObject( static_cast<HGDIOBJ>(hBrush) );
+
+    } else {
+
+        FillRect( hDc, Rc, GetSysColorBrush( COLOR_WINDOW ));
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// ClearTypingCursor
+//
+//----------------------------------------------------------------------------
+void ClearTypingCursor( HDC hdcScreenCompat, HDC hdcScreenCursorCompat, RECT rc,
+                            int BlankMode )
+{
+    if( false ) { // BlankMode ) {
+
+        BlankScreenArea( hdcScreenCompat, &rc, BlankMode );
+
+    } else {
+
+        BitBlt(hdcScreenCompat, rc.left, rc.top, rc.right - rc.left,
+            rc.bottom - rc.top, hdcScreenCursorCompat,0, 0, SRCCOPY|CAPTUREBLT );
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// DrawTypingCursor
+//
+//----------------------------------------------------------------------------
+void DrawTypingCursor( HWND hWnd, POINT *textPt, HDC hdcScreenCompat,
+	HDC hdcScreenCursorCompat, RECT *rc, bool centerUnderSystemCursor = false )
+{
+	// Draw the typing cursor
+	rc->left = textPt->x;
+	rc->top = textPt->y;
+	TCHAR vKey = '|';
+	DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_CALCRECT );
+
+	// LiveDraw uses a layered window which means mouse messages pass through
+	//   to lower windows unless the system cursor is above a painted area.
+	// Centering the typing cursor directly under the system cursor allows
+	//   us to capture the mouse wheel input required to change font size.
+	if( centerUnderSystemCursor )
+	{
+		const LONG halfWidth  = static_cast<LONG>( (rc->right - rc->left) / 2 );
+		const LONG halfHeight = static_cast<LONG>( (rc->bottom - rc->top) / 2 );
+
+		rc->left   -= halfWidth;
+		rc->right  -= halfWidth;
+		rc->top    -= halfHeight;
+		rc->bottom -= halfHeight;
+
+		textPt->x   = rc->left;
+		textPt->y   = rc->top;
+	}
+
+	BitBlt(hdcScreenCursorCompat, 0, 0, rc->right -rc->left, rc->bottom - rc->top,
+		hdcScreenCompat, rc->left, rc->top, SRCCOPY|CAPTUREBLT );
+
+	DrawText( hdcScreenCompat, static_cast<PTCHAR>(&vKey), 1, rc, DT_LEFT );
+	InvalidateRect( hWnd, NULL, TRUE );
+}
+
+//----------------------------------------------------------------------------
+//
+// BoundMouse
+//
+//----------------------------------------------------------------------------
+RECT BoundMouse( float zoomLevel, MONITORINFO *monInfo, int width, int height,
+                    POINT *cursorPos )
+{
+    RECT		rc;
+    int			x, y;
+
+    GetZoomedTopLeftCoordinates( zoomLevel, cursorPos, &x, width, &y, height );
+    rc.left = monInfo->rcMonitor.left + x;
+    rc.right = rc.left + static_cast<int>(width/zoomLevel);
+    rc.top = monInfo->rcMonitor.top + y;
+    rc.bottom = rc.top + static_cast<int>(height/zoomLevel);
+
+    OutputDebug( L"x: %d y: %d width: %d height: %d zoomLevel: %g\n",
+        cursorPos->x, cursorPos->y, width, height, zoomLevel);
+    OutputDebug( L"left: %d top: %d right: %d bottom: %d\n",
+            rc.left, rc.top, rc.right, rc.bottom);
+    OutputDebug( L"mon.left: %d mon.top: %d mon.right: %d mon.bottom: %d\n",
+        monInfo->rcMonitor.left, monInfo->rcMonitor.top, monInfo->rcMonitor.right, monInfo->rcMonitor.bottom);
+
+    ClipCursor( &rc );
+    return rc;
+}
+
+//----------------------------------------------------------------------------
+//
+// DrawArrow
+//
+//----------------------------------------------------------------------------
+void DrawArrow( HDC hdc, int x1, int y1, int x2, int y2, double length, double width,
+        bool UseGdiplus )
+{
+    // get normalized dx/dy
+    double dx = static_cast<double>(x2) - x1;
+    double dy = static_cast<double>(y2) - y1;
+    double bodyLen = sqrt( dx*dx + dy*dy );
+    if ( bodyLen )  {
+        dx /= bodyLen;
+        dy /= bodyLen;
+    } else {
+        dx = 1;
+        dy = 0;
+    }
+
+    // get midpoint of base
+    int xMid = x2 - static_cast<int>(length*dx+0.5);
+    int yMid = y2 - static_cast<int>(length*dy+0.5);
+
+    // get left wing
+    int xLeft = xMid - static_cast<int>(dy*width+0.5);
+    int yLeft = yMid + static_cast<int>(dx*width+0.5);
+
+    // get right wing
+    int xRight = xMid + static_cast<int>(dy*width+0.5);
+    int yRight = yMid - static_cast<int>(dx*width+0.5);
+
+    // Bring in midpoint to make a nicer arrow
+    xMid = x2 - static_cast<int>(length/2*dx+0.5);
+    yMid = y2 - static_cast<int>(length/2*dy+0.5);
+    if (UseGdiplus) {
+
+        Gdiplus::Graphics	dstGraphics(hdc);
+
+        if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+        {
+            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        }
+        Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+        pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
+#if 0
+        Gdiplus::PointF	pts[] = {
+            {(Gdiplus::REAL)x1, (Gdiplus::REAL)y1},
+            {(Gdiplus::REAL)xMid, (Gdiplus::REAL)yMid},
+            {(Gdiplus::REAL)xLeft, (Gdiplus::REAL)yLeft},
+            {(Gdiplus::REAL)x2, (Gdiplus::REAL)y2},
+            {(Gdiplus::REAL)xRight, (Gdiplus::REAL)yRight},
+            {(Gdiplus::REAL)xMid, (Gdiplus::REAL)yMid}
+        };
+        dstGraphics.DrawPolygon(&pen, pts, _countof(pts));
+#else
+        Gdiplus::GraphicsPath path;
+        path.StartFigure();
+        path.AddLine(static_cast<INT>(x1), static_cast<INT>(y1), static_cast<INT>(x2), static_cast<INT>(y2));
+        path.AddLine(static_cast<INT>(x2), static_cast<INT>(y2), static_cast<INT>(xMid), static_cast<INT>(yMid));
+        path.AddLine(static_cast<INT>(xMid), static_cast<INT>(yMid), static_cast<INT>(xLeft), static_cast<INT>(yLeft));
+        path.AddLine(static_cast<INT>(xLeft), static_cast<INT>(yLeft), static_cast<INT>(x2), static_cast<INT>(y2));
+        path.AddLine(static_cast<INT>(x2), static_cast<INT>(y2), static_cast<INT>(xRight), static_cast<INT>(yRight));
+        path.AddLine(static_cast<INT>(xRight), static_cast<INT>(yRight), static_cast<INT>(xMid), static_cast<INT>(yMid));
+        pen.SetLineJoin(Gdiplus::LineJoinRound);
+        dstGraphics.DrawPath(&pen, &path);
+#endif
+    }
+    else {
+        POINT	pts[] = {
+            x1, y1,
+            xMid, yMid,
+            xLeft, yLeft,
+            x2, y2,
+            xRight, yRight,
+            xMid, yMid
+        };
+
+        // draw arrow head filled with current color
+        HBRUSH hBrush = CreateSolidBrush(g_PenColor);
+        HBRUSH hOldBrush = SelectBrush(hdc, hBrush);
+        Polygon(hdc, pts, sizeof(pts) / sizeof(pts[0]));
+
+        DeleteObject(hBrush);
+        SelectObject(hdc, hOldBrush);
+    }
+}
+
+
+
+//----------------------------------------------------------------------------
+//
+// DrawShape
+//
+//----------------------------------------------------------------------------
+VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
+{
+    bool	isBlur = false;
+
+    Gdiplus::Graphics	dstGraphics(hDc);
+	if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+	{
+		dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+	}
+    Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+    pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
+
+    // Check for highlighting or blur
+    Gdiplus::Brush *pBrush = NULL;
+    if (PEN_COLOR_HIGHLIGHT(g_PenColor)) {
+        // Use half the alpha for higher contrast
+        DWORD newColor = g_PenColor & 0xFFFFFF | ((g_AlphaBlend / 2) << 24);
+        pBrush = new Gdiplus::SolidBrush(ColorFromColorRef(newColor));
+        if(UseGdiPlus && Shape != DRAW_LINE && Shape != DRAW_ARROW)
+            InflateRect(Rect, g_PenWidth/2, g_PenWidth/2);
+    }
+    else if ((g_PenColor & 0xFFFFFF) == COLOR_BLUR) {
+        if (UseGdiPlus && Shape != DRAW_LINE && Shape != DRAW_ARROW)
+            InflateRect(Rect, g_PenWidth / 2, g_PenWidth / 2);
+        isBlur = true;
+    }
+    OutputDebug(L"Draw shape: highlight: %d pbrush: %d\n", PEN_COLOR_HIGHLIGHT(g_PenColor), pBrush != NULL);
+
+    switch (Shape) {
+    case DRAW_RECTANGLE:
+        if (UseGdiPlus)
+            if(pBrush)
+                DrawHighlightedShape(DRAW_RECTANGLE, hDc, pBrush, NULL,
+                    static_cast<int>(Rect->left - 1), static_cast<int>(Rect->top - 1),
+                    static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
+            else if (isBlur)
+                DrawBlurredShape( DRAW_RECTANGLE, &pen, hDc, &dstGraphics,
+                    static_cast<int>(Rect->left - 1), static_cast<int>(Rect->top - 1),
+                    static_cast<int>(Rect->right), static_cast<int>(Rect->bottom) );
+            else
+                dstGraphics.DrawRectangle(&pen,
+                    Gdiplus::Rect::Rect(Rect->left - 1, Rect->top - 1,
+                        Rect->right - Rect->left, Rect->bottom - Rect->top));
+        else
+            Rectangle(hDc, Rect->left, Rect->top,
+                Rect->right, Rect->bottom);
+        break;
+    case DRAW_ELLIPSE:
+        if (UseGdiPlus)
+            if (pBrush)
+                DrawHighlightedShape(DRAW_ELLIPSE, hDc, pBrush, NULL,
+                    static_cast<int>(Rect->left - 1), static_cast<int>(Rect->top - 1),
+                    static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
+            else if (isBlur)
+                DrawBlurredShape( DRAW_ELLIPSE, &pen, hDc, &dstGraphics,
+                    static_cast<int>(Rect->left - 1), static_cast<int>(Rect->top - 1),
+                    static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
+            else
+                dstGraphics.DrawEllipse(&pen,
+                    Gdiplus::Rect::Rect(Rect->left - 1, Rect->top - 1,
+                        Rect->right - Rect->left, Rect->bottom - Rect->top));
+        else
+            Ellipse(hDc, Rect->left, Rect->top,
+                Rect->right, Rect->bottom);
+        break;
+    case DRAW_LINE:
+        if (UseGdiPlus)
+            if (pBrush)
+                DrawHighlightedShape(DRAW_LINE, hDc, NULL, &pen,
+                    static_cast<int>(Rect->left), static_cast<int>(Rect->top),
+                    static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
+            else if (isBlur)
+                DrawBlurredShape(DRAW_LINE, &pen, hDc, &dstGraphics,
+                    static_cast<int>(Rect->left), static_cast<int>(Rect->top),
+                    static_cast<int>(Rect->right), static_cast<int>(Rect->bottom));
+            else
+                dstGraphics.DrawLine(&pen,
+                    static_cast<INT>(Rect->left - 1), static_cast<INT>(Rect->top - 1),
+                    static_cast<INT>(Rect->right), static_cast<INT>(Rect->bottom));
+        else {
+            MoveToEx(hDc, Rect->left, Rect->top, NULL);
+            LineTo(hDc, Rect->right + 1, Rect->bottom + 1);
+        }
+        break;
+    case DRAW_ARROW:
+        DrawArrow(hDc, Rect->right + 1, Rect->bottom + 1,
+            Rect->left, Rect->top,
+            static_cast<double>(g_PenWidth) * 2.5, static_cast<double>(g_PenWidth) * 1.5, UseGdiPlus);
+        break;
+    }
+    if( pBrush ) delete pBrush;
+}
+
+//----------------------------------------------------------------------------
+//
+// SendPenMessage
+//
+// Inserts the pen message marker.
+//
+//----------------------------------------------------------------------------
+VOID SendPenMessage(HWND hWnd, UINT Message, LPARAM lParam)
+{
+    WPARAM		wParam = 0;
+    //
+    // Get key states
+    //
+    if(GetKeyState(VK_LCONTROL) < 0 ) {
+
+        wParam |= MK_CONTROL;
+    }
+    if( GetKeyState( VK_LSHIFT) < 0 || GetKeyState( VK_RSHIFT) < 0 ) {
+
+        wParam |= MK_SHIFT;
+    }
+    SetMessageExtraInfo(static_cast<LPARAM>(MI_WP_SIGNATURE));
+    SendMessage(hWnd, Message, wParam, lParam);
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ScalePenPosition
+//
+// Maps pen input to mouse input coordinates based on zoom level. Returns
+// 0 if pen is active but we didn't send this message to ourselves (pen
+// signature will be missing).
+//
+//----------------------------------------------------------------------------
+LPARAM ScalePenPosition( float zoomLevel, MONITORINFO *monInfo, RECT boundRc,
+                    UINT message, LPARAM lParam )
+{
+    RECT	rc;
+    WORD	x, y;
+    LPARAM	extraInfo;
+
+    extraInfo = GetMessageExtraInfo();
+    if( g_PenDown ) {
+
+        // ignore messages we didn't tag as pen
+        if (extraInfo == MI_WP_SIGNATURE) {
+
+            OutputDebug( L"Tablet Pen message\n");
+
+            // tablet input: don't bound the cursor
+            ClipCursor(NULL);
+
+            x = LOWORD(lParam);
+            y = HIWORD(lParam);
+
+            x = static_cast<WORD>((x - static_cast<WORD>(monInfo->rcMonitor.left))/ zoomLevel) + static_cast<WORD>(boundRc.left - monInfo->rcMonitor.left);
+            y = static_cast<WORD>((y - static_cast<WORD>(monInfo->rcMonitor.top)) / zoomLevel) + static_cast<WORD>(boundRc.top - monInfo->rcMonitor.top);
+
+            lParam = MAKELPARAM(x, y);
+        }
+        else {
+
+            OutputDebug(L"Ignore pen message we didn't send\n");
+            lParam = 0;
+        }
+
+    } else {
+
+        if( !GetClipCursor( &rc )) {
+
+            ClipCursor( &boundRc );
+        }
+        OutputDebug( L"Mouse message\n");
+    }
+    return lParam;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// DrawHighlightedCursor
+//
+//----------------------------------------------------------------------------
+BOOLEAN DrawHighlightedCursor( float ZoomLevel, int Width, int Height )
+{
+    DWORD zoomWidth = static_cast<DWORD> (static_cast<float>(Width)/ZoomLevel);
+    DWORD zoomHeight = static_cast<DWORD> (static_cast<float>(Height)/ZoomLevel);
+    if( g_PenWidth < 5 && zoomWidth > g_PenWidth * 100 && zoomHeight > g_PenWidth * 100 ) {
+
+        return TRUE;
+
+    } else {
+
+        return FALSE;
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// InvalidateCursorMoveArea
+//
+//----------------------------------------------------------------------------
+void InvalidateCursorMoveArea( HWND hWnd, float zoomLevel, int width, int height,
+                              POINT currentPt, POINT prevPt, POINT cursorPos )
+{
+    int		x, y;
+    RECT	rc;
+    int		invWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
+
+    if( DrawHighlightedCursor( zoomLevel, width, height ) ) {
+
+        invWidth = g_PenWidth * 3 + 1;
+    }
+    GetZoomedTopLeftCoordinates( zoomLevel, &cursorPos, &x, width, &y, height );
+    rc.left = static_cast<int>(max( 0, (int) ((min( prevPt.x, currentPt.x)-invWidth - x) * zoomLevel)));
+    rc.right = static_cast<int>((max( prevPt.x, currentPt.x)+invWidth - x) * zoomLevel);
+    rc.top = static_cast<int>(max( 0, (int) ((min( prevPt.y, currentPt.y)-invWidth - y) * zoomLevel)));
+    rc.bottom = static_cast<int>((max( prevPt.y, currentPt.y)+invWidth -y) * zoomLevel);
+    InvalidateRect( hWnd, &rc, FALSE );
+
+    OutputDebug( L"INVALIDATE: (%d, %d) - (%d, %d)\n", rc.left, rc.top, rc.right, rc.bottom);
+}
+
+
+//----------------------------------------------------------------------------
+//
+// SaveCursorArea
+//
+//----------------------------------------------------------------------------
+void SaveCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
+{
+    OutputDebug( L"SaveCursorArea\n");
+    int penWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
+    BitBlt( hDcTarget, 0, 0, penWidth +CURSOR_ARM_LENGTH*2, penWidth +CURSOR_ARM_LENGTH*2,
+        hDcSource, static_cast<INT> (pt.x- penWidth /2)-CURSOR_ARM_LENGTH,
+        static_cast<INT>(pt.y- penWidth /2)-CURSOR_ARM_LENGTH, SRCCOPY|CAPTUREBLT );
+}
+
+//----------------------------------------------------------------------------
+//
+// RestoreCursorArea
+//
+//----------------------------------------------------------------------------
+void RestoreCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
+{
+    OutputDebug( L"RestoreCursorArea\n");
+    int penWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
+    BitBlt( hDcTarget, static_cast<INT>(pt.x- penWidth /2)-CURSOR_ARM_LENGTH,
+        static_cast<INT>(pt.y- penWidth /2)-CURSOR_ARM_LENGTH, penWidth +CURSOR_ARM_LENGTH*2,
+        penWidth + CURSOR_ARM_LENGTH*2, hDcSource, 0, 0, SRCCOPY|CAPTUREBLT );
+}
+
+
+//----------------------------------------------------------------------------
+//
+// DrawCursor
+//
+//----------------------------------------------------------------------------
+void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height )
+{
+    RECT	rc;
+
+    if( g_DrawPointer ) {
+
+        Gdiplus::Graphics	dstGraphics(hDcTarget);
+        if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+        {
+            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        }
+        Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+
+        rc.left = pt.x - CURSOR_ARM_LENGTH;
+        rc.right = pt.x + CURSOR_ARM_LENGTH;
+        rc.top = pt.y - CURSOR_ARM_LENGTH;
+        rc.bottom = pt.y + CURSOR_ARM_LENGTH;
+
+        Gdiplus::GraphicsPath path;
+        path.StartFigure();
+        path.AddLine(static_cast<INT>(rc.left) - 1, static_cast<INT>(rc.top) - 1, static_cast<INT>(rc.right), static_cast<INT>(rc.bottom));
+        path.AddLine(static_cast<INT>(rc.left) - 2, static_cast<INT>(rc.top) - 1, rc.left + (rc.right - rc.left) / 2, rc.top - 1);
+        path.AddLine(static_cast<INT>(rc.left) - 1, static_cast<INT>(rc.top) - 2, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
+        path.AddLine(static_cast<INT>(rc.left) - 1, static_cast<INT>(rc.top) - 2, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
+        path.AddLine(static_cast<INT>(rc.left + (rc.right - rc.left) / 2), rc.top - 1, rc.left - 1, rc.top + (rc.bottom - rc.top) / 2);
+        pen.SetLineJoin(Gdiplus::LineJoinRound);
+        dstGraphics.DrawPath(&pen, &path);
+        OutputDebug(L"DrawPointer: %d %d %d %d\n", rc.left, rc.top, rc.right, rc.bottom);
+
+    } else if( DrawHighlightedCursor( ZoomLevel, Width, Height )) {
+
+        OutputDebug(L"DrawHighlightedCursor: %d %d %d %d\n", pt.x, pt.y, g_PenWidth, g_PenWidth);
+        Gdiplus::Graphics	dstGraphics(hDcTarget);
+        if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+        {
+            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+        }
+        Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+        Gdiplus::GraphicsPath path;
+        path.StartFigure();
+        pen.SetLineJoin(Gdiplus::LineJoinRound);
+        path.AddLine(static_cast<INT>(pt.x - CURSOR_ARM_LENGTH), pt.y, pt.x + CURSOR_ARM_LENGTH, pt.y);
+        path.CloseFigure();
+        path.StartFigure();
+        pen.SetLineJoin(Gdiplus::LineJoinRound);
+        path.AddLine(static_cast<INT>(pt.x), pt.y - CURSOR_ARM_LENGTH, pt.x, pt.y + CURSOR_ARM_LENGTH);
+        path.CloseFigure();
+        dstGraphics.DrawPath(&pen, &path);
+
+    } else {
+
+        Gdiplus::Graphics	dstGraphics(hDcTarget);
+        {
+            if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+            {
+                dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+            }
+            Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+
+            Gdiplus::SolidBrush solidBrush(color);
+
+            dstGraphics.FillEllipse(&solidBrush, static_cast<INT>(pt.x-g_PenWidth/2), static_cast<INT>(pt.y-g_PenWidth/2),
+                        static_cast<INT>(g_PenWidth), static_cast<INT>(g_PenWidth));
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// ResizePen
+//
+//----------------------------------------------------------------------------
+void ResizePen( HWND hWnd, HDC hdcScreenCompat, HDC hdcScreenCursorCompat, POINT prevPt,
+                BOOLEAN g_Tracing, BOOLEAN *g_Drawing, float g_LiveZoomLevel,
+                BOOLEAN isUser, int newWidth )
+{
+    if( !g_Tracing ) {
+
+        RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+    }
+
+    OutputDebug( L"RESIZE_PEN-PRE: penWidth: %d ", g_PenWidth );
+    int prevWidth = g_PenWidth;
+    if( g_ZoomOnLiveZoom )
+    {
+        if( isUser )
+        {
+            // Amplify user delta proportional to LiveZoomLevel
+            newWidth = g_PenWidth + static_cast<int> ((newWidth - static_cast<int>(g_PenWidth))*g_LiveZoomLevel);
+        }
+
+        g_PenWidth = min( max( newWidth, MIN_PEN_WIDTH ),
+            min( static_cast<int>(MAX_PEN_WIDTH * g_LiveZoomLevel), MAX_LIVE_PEN_WIDTH ) );
+        g_RootPenWidth = static_cast<int>(g_PenWidth / g_LiveZoomLevel);
+    }
+    else
+    {
+        g_PenWidth = min( max( newWidth, MIN_PEN_WIDTH ), MAX_PEN_WIDTH );
+        g_RootPenWidth = g_PenWidth;
+    }
+
+    if(prevWidth == static_cast<int>(g_PenWidth) ) {
+        // No change
+        return;
+    }
+
+    OutputDebug( L"newWidth: %d\nRESIZE_PEN-POST: penWidth: %d\n", newWidth, g_PenWidth );
+    reg.WriteRegSettings( RegSettings );
+    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+    *g_Drawing = FALSE;
+    EnableDisableStickyKeys( TRUE );
+    SendMessage( hWnd, WM_LBUTTONDOWN, -1, MAKELPARAM(prevPt.x, prevPt.y) );
+}
+
+//----------------------------------------------------------------------------
+//
+// IsPenInverted
+//
+//----------------------------------------------------------------------------
+bool IsPenInverted( WPARAM wParam )
+{
+    POINTER_INPUT_TYPE pointerType;
+    POINTER_PEN_INFO penInfo;
+    return
+        pGetPointerType( GET_POINTERID_WPARAM( wParam ), &pointerType ) && ( pointerType == PT_PEN ) &&
+        pGetPointerPenInfo( GET_POINTERID_WPARAM( wParam ), &penInfo ) && ( penInfo.penFlags & PEN_FLAG_INVERTED );
+}
+
+
+//----------------------------------------------------------------------------
+//
+// CaptureScreenshotAsync
+//
+// Captures the specified screen using the capture APIs
+//
+//----------------------------------------------------------------------------
+wil::task<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
+{
+    auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
+    winrt::com_ptr<ID3D11DeviceContext> d3dContext;
+    d3dDevice->GetImmediateContext(d3dContext.put());
+
+    // Creating our frame pool with CreateFreeThreaded means that we
+    // will be called back from the frame pool's internal worker thread
+    // instead of the thread we are currently on. It also disables the
+    // DispatcherQueue requirement.
+    auto framePool = winrt::Direct3D11CaptureFramePool::CreateFreeThreaded(
+        device,
+        pixelFormat,
+        1,
+        item.Size());
+    auto session = framePool.CreateCaptureSession(item);
+
+    wil::shared_event captureEvent(wil::EventOptions::ManualReset);
+    winrt::Direct3D11CaptureFrame frame{ nullptr };
+    framePool.FrameArrived([&frame, captureEvent](auto& framePool, auto&)
+        {
+            frame = framePool.TryGetNextFrame();
+
+            // Complete the operation
+            captureEvent.SetEvent();
+        });
+
+    session.IsCursorCaptureEnabled( false );
+    session.StartCapture();
+    co_await winrt::resume_on_signal(captureEvent.get());
+
+    // End the capture
+    session.Close();
+    framePool.Close();
+
+    auto texture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
+    co_return util::CopyD3DTexture(d3dDevice, texture, true);
+}
+
+//----------------------------------------------------------------------------
+//
+// CaptureScreenshot
+//
+// Captures the specified screen using the capture APIs
+//
+//----------------------------------------------------------------------------
+winrt::com_ptr<ID3D11Texture2D>CaptureScreenshot(winrt::DirectXPixelFormat const& pixelFormat)
+{
+    auto d3dDevice = util::CreateD3D11Device();
+    auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
+    auto device = CreateDirect3DDevice(dxgiDevice.get());
+
+    // Get the active MONITOR capture device
+    HMONITOR hMon = NULL;
+    POINT cursorPos = { 0, 0 };
+    if (pMonitorFromPoint) {
+
+        GetCursorPos(&cursorPos);
+        hMon = pMonitorFromPoint(cursorPos, MONITOR_DEFAULTTONEAREST);
+    }
+
+    auto item = util::CreateCaptureItemForMonitor(hMon);
+
+    return CaptureScreenshotAsync(device, item, pixelFormat).get();
+}
+
+
+//----------------------------------------------------------------------------
+//
+// CopyD3DTexture
+//
+//----------------------------------------------------------------------------
+inline auto CopyD3DTexture(winrt::com_ptr<ID3D11Device> const& device,
+            winrt::com_ptr<ID3D11Texture2D> const& texture, bool asStagingTexture)
+{
+    winrt::com_ptr<ID3D11DeviceContext> context;
+    device->GetImmediateContext(context.put());
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    texture->GetDesc(&desc);
+    // Clear flags that we don't need
+    desc.Usage = asStagingTexture ? D3D11_USAGE_STAGING : D3D11_USAGE_DEFAULT;
+    desc.BindFlags = asStagingTexture ? 0 : D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags = asStagingTexture ? D3D11_CPU_ACCESS_READ : 0;
+    desc.MiscFlags = 0;
+
+    // Create and fill the texture copy
+    winrt::com_ptr<ID3D11Texture2D> textureCopy;
+    winrt::check_hresult(device->CreateTexture2D(&desc, nullptr, textureCopy.put()));
+    context->CopyResource(textureCopy.get(), texture.get());
+
+    return textureCopy;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// PrepareStagingTexture
+//
+//----------------------------------------------------------------------------
+inline auto PrepareStagingTexture(winrt::com_ptr<ID3D11Device> const& device,
+            winrt::com_ptr<ID3D11Texture2D> const& texture)
+{
+    // If our texture is already set up for staging, then use it.
+    D3D11_TEXTURE2D_DESC desc = {};
+    texture->GetDesc(&desc);
+    if (desc.Usage == D3D11_USAGE_STAGING && desc.CPUAccessFlags & D3D11_CPU_ACCESS_READ)
+    {
+        return texture;
+    }
+
+    return CopyD3DTexture(device, texture, true);
+}
+
+//----------------------------------------------------------------------------
+//
+// GetBytesPerPixel
+//
+//----------------------------------------------------------------------------
+inline size_t
+GetBytesPerPixel(DXGI_FORMAT pixelFormat)
+{
+    switch (pixelFormat)
+    {
+    case DXGI_FORMAT_R32G32B32A32_TYPELESS:
+    case DXGI_FORMAT_R32G32B32A32_FLOAT:
+    case DXGI_FORMAT_R32G32B32A32_UINT:
+    case DXGI_FORMAT_R32G32B32A32_SINT:
+        return 16;
+    case DXGI_FORMAT_R32G32B32_TYPELESS:
+    case DXGI_FORMAT_R32G32B32_FLOAT:
+    case DXGI_FORMAT_R32G32B32_UINT:
+    case DXGI_FORMAT_R32G32B32_SINT:
+        return 12;
+    case DXGI_FORMAT_R16G16B16A16_TYPELESS:
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+    case DXGI_FORMAT_R16G16B16A16_UNORM:
+    case DXGI_FORMAT_R16G16B16A16_UINT:
+    case DXGI_FORMAT_R16G16B16A16_SNORM:
+    case DXGI_FORMAT_R16G16B16A16_SINT:
+    case DXGI_FORMAT_R32G32_TYPELESS:
+    case DXGI_FORMAT_R32G32_FLOAT:
+    case DXGI_FORMAT_R32G32_UINT:
+    case DXGI_FORMAT_R32G32_SINT:
+    case DXGI_FORMAT_R32G8X24_TYPELESS:
+        return 8;
+    case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+    case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
+    case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
+    case DXGI_FORMAT_R10G10B10A2_TYPELESS:
+    case DXGI_FORMAT_R10G10B10A2_UNORM:
+    case DXGI_FORMAT_R10G10B10A2_UINT:
+    case DXGI_FORMAT_R11G11B10_FLOAT:
+    case DXGI_FORMAT_R8G8B8A8_TYPELESS:
+    case DXGI_FORMAT_R8G8B8A8_UNORM:
+    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+    case DXGI_FORMAT_R8G8B8A8_UINT:
+    case DXGI_FORMAT_R8G8B8A8_SNORM:
+    case DXGI_FORMAT_R8G8B8A8_SINT:
+    case DXGI_FORMAT_R16G16_TYPELESS:
+    case DXGI_FORMAT_R16G16_FLOAT:
+    case DXGI_FORMAT_UNKNOWN:
+    case DXGI_FORMAT_R16G16_UINT:
+    case DXGI_FORMAT_R16G16_SNORM:
+    case DXGI_FORMAT_R16G16_SINT:
+    case DXGI_FORMAT_R32_TYPELESS:
+    case DXGI_FORMAT_D32_FLOAT:
+    case DXGI_FORMAT_R32_FLOAT:
+    case DXGI_FORMAT_R32_UINT:
+    case DXGI_FORMAT_R32_SINT:
+    case DXGI_FORMAT_R24G8_TYPELESS:
+    case DXGI_FORMAT_D24_UNORM_S8_UINT:
+    case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
+    case DXGI_FORMAT_X24_TYPELESS_G8_UINT:
+    case DXGI_FORMAT_R8G8_B8G8_UNORM:
+    case DXGI_FORMAT_G8R8_G8B8_UNORM:
+    case DXGI_FORMAT_B8G8R8A8_UNORM:
+    case DXGI_FORMAT_B8G8R8X8_UNORM:
+    case DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM:
+    case DXGI_FORMAT_B8G8R8A8_TYPELESS:
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+    case DXGI_FORMAT_B8G8R8X8_TYPELESS:
+    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+        return 4;
+    case DXGI_FORMAT_R8G8_TYPELESS:
+    case DXGI_FORMAT_R8G8_UNORM:
+    case DXGI_FORMAT_R8G8_UINT:
+    case DXGI_FORMAT_R8G8_SNORM:
+    case DXGI_FORMAT_R8G8_SINT:
+    case DXGI_FORMAT_R16_TYPELESS:
+    case DXGI_FORMAT_R16_FLOAT:
+    case DXGI_FORMAT_D16_UNORM:
+    case DXGI_FORMAT_R16_UNORM:
+    case DXGI_FORMAT_R16_UINT:
+    case DXGI_FORMAT_R16_SNORM:
+    case DXGI_FORMAT_R16_SINT:
+    case DXGI_FORMAT_B5G6R5_UNORM:
+    case DXGI_FORMAT_B5G5R5A1_UNORM:
+    case DXGI_FORMAT_B4G4R4A4_UNORM:
+        return 2;
+    case DXGI_FORMAT_R8_TYPELESS:
+    case DXGI_FORMAT_R8_UNORM:
+    case DXGI_FORMAT_R8_UINT:
+    case DXGI_FORMAT_R8_SNORM:
+    case DXGI_FORMAT_R8_SINT:
+    case DXGI_FORMAT_A8_UNORM:
+        return 1;
+    default:
+        throw winrt::hresult_invalid_argument(L"Invalid pixel format!");
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// CopyBytesFromTexture
+//
+//----------------------------------------------------------------------------
+inline auto CopyBytesFromTexture(winrt::com_ptr<ID3D11Texture2D> const& texture, uint32_t subresource = 0)
+{
+    winrt::com_ptr<ID3D11Device> device;
+    texture->GetDevice(device.put());
+    winrt::com_ptr<ID3D11DeviceContext> context;
+    device->GetImmediateContext(context.put());
+
+    auto stagingTexture = PrepareStagingTexture(device, texture);
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    stagingTexture->GetDesc(&desc);
+    auto bytesPerPixel = GetBytesPerPixel(desc.Format);
+
+    // Copy the bits
+    D3D11_MAPPED_SUBRESOURCE mapped = {};
+    winrt::check_hresult(context->Map(stagingTexture.get(), subresource, D3D11_MAP_READ, 0, &mapped));
+
+    auto bytesStride = static_cast<size_t>(desc.Width) * bytesPerPixel;
+    std::vector<byte> bytes(bytesStride * static_cast<size_t>(desc.Height), 0);
+    auto source = static_cast<byte*>(mapped.pData);
+    auto dest = bytes.data();
+    for (auto i = 0; i < static_cast<int>(desc.Height); i++)
+    {
+        memcpy(dest, source, bytesStride);
+
+        source += mapped.RowPitch;
+        dest += bytesStride;
+    }
+    context->Unmap(stagingTexture.get(), 0);
+
+    return bytes;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// StopRecording
+//
+//----------------------------------------------------------------------------
+void StopRecording()
+{
+    OutputDebugStringW(L"[Recording] StopRecording called\n");
+    if( g_RecordToggle == TRUE ) {
+
+        OutputDebugStringW(L"[Recording] g_RecordToggle was TRUE, stopping...\n");
+        UnregisterHotKey( g_hWndMain, WEBCAM_TOGGLE_HOTKEY );
+        g_WebcamPreview.Destroy();
+        g_SelectRectangle.Stop();
+
+        if ( g_RecordingSession != nullptr ) {
+
+            OutputDebugStringW(L"[Recording] Closing VideoRecordingSession\n");
+            g_RecordingSession->Close();
+            // NOTE: Do NOT null the session here - let the coroutine finish first
+        }
+
+        if ( g_GifRecordingSession != nullptr ) {
+
+            OutputDebugStringW(L"[Recording] Closing GifRecordingSession\n");
+            g_GifRecordingSession->Close();
+            // NOTE: Do NOT null the session here - let the coroutine finish first
+        }
+
+        g_RecordToggle = FALSE;
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+
+        if( g_hWndLiveZoom != NULL && g_LiveZoomLevelOne ) {
+
+            if( IsWindowVisible( g_hWndLiveZoom ) ) {
+
+                ShowWindow( g_hWndLiveZoom, SW_HIDE );
+                DestroyWindow( g_hWndLiveZoom );
+                g_LiveZoomLevelOne = false;
+            }
+        }
+#endif
+    }
+}
+
+//----------------------------------------------------------------------------
+// GetTimestampSuffix
+//
+// Returns a timestamp string for disambiguating filenames.
+// Format: " YYYY-MM-DD HHMMSS", e.g." 2025-11-02 143000".
+//
+// Used as a suffix for the default recording filename. Ensures
+// chronological name sorting in Explorer.
+// 
+//----------------------------------------------------------------------------
+static std::wstring GetTimestampSuffix()
+{
+    auto const now = std::chrono::system_clock::now();
+    auto const in_time_t = std::chrono::system_clock::to_time_t( now );
+
+    std::tm buf{};
+    localtime_s( &buf, &in_time_t );
+
+    std::wstringstream ss;
+    ss << L" " << std::put_time( &buf, L"%Y-%m-%d %H%M%S" );
+
+    return ss.str();
+}
+
+//----------------------------------------------------------------------------
+// IsDefaultRecordingFilename
+// 
+// Determines if the provided filename matches the default recording name.
+// Case-insensitive comparison.
+// 
+// Returns:
+//   true if filename is the default; otherwise false.
+// 
+//----------------------------------------------------------------------------
+static bool IsDefaultRecordingFilename(const std::wstring& filename)
+{
+    return CompareStringOrdinal( DEFAULT_RECORDING_FILE, -1, filename.c_str(), -1, TRUE ) == CSTR_EQUAL
+        || CompareStringOrdinal( DEFAULT_GIF_RECORDING_FILE, -1, filename.c_str(), -1, TRUE ) == CSTR_EQUAL;
+}
+
+//----------------------------------------------------------------------------
+//
+// GetUniqueFilename
+//
+// Returns a unique filename by checking for existing files and adding (1), (2), etc.
+// suffixes as needed. Uses the folder from lastSavePath if available
+//
+//----------------------------------------------------------------------------
+std::wstring GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId)
+{
+    // Get the folder where the file will be saved
+    std::filesystem::path saveFolder;
+    if (!lastSavePath.empty())
+    {
+        // Use folder from last save location
+        saveFolder = std::filesystem::path(lastSavePath).parent_path();
+    }
+
+    if (saveFolder.empty())
+    {
+        // Default to specified known folder
+        wil::unique_cotaskmem_string folderPath;
+        if (SUCCEEDED(SHGetKnownFolderPath(defaultFolderId, KF_FLAG_DEFAULT, nullptr, folderPath.put())))
+        {
+            saveFolder = folderPath.get();
+        }
+    }
+
+    // Build base name and extension
+    std::filesystem::path defaultPath = defaultFilename;
+    auto base = defaultPath.stem().wstring();
+    auto ext = defaultPath.extension().wstring();
+
+    // Check for existing files and find unique name
+    std::wstring candidateName = base + ext;
+    std::filesystem::path checkPath = saveFolder / candidateName;
+
+    int index = 1;
+    std::error_code ec;
+    while (std::filesystem::exists(checkPath, ec))
+    {
+        candidateName = base + L" (" + std::to_wstring(index) + L")" + ext;
+        checkPath = saveFolder / candidateName;
+        index++;
+    }
+
+    return candidateName;
+}
+
+//----------------------------------------------------------------------------
+//
+// GetUniqueRecordingFilename
+//
+// Generates a unique filename to be suggested in the "Save As" recording
+// dialog, based on the user's last chosen filename and save location.
+// This allows the user to quickly save a recording without worrying about
+// manual renaming to prevent overwriting earlier recordings.
+// 
+// There are two distinct behaviors based on the last used filename:
+// 
+// 1. For the default filename ("Recording.mp4"):
+//    Generates a more descriptive name by appending a timestamp, e.g.
+//    "Recording 2025-11-03 143015.mp4". This ensures chronological sorting
+//    in Explorer when ordered by name and is consistent with other tools.
+// 
+// 2. For custom filenames (e.g. "Presentation.mp4"):
+//    Appends a numeric suffix if the file already exists, e.g.
+//    "Presentation (1).mp4", "Presentation (2).mp4", etc.
+// 
+// Returns:
+//   A unique filename (without folder path).
+// 
+// Relies upon the global state of `g_RecordingSaveLocation` and
+// `g_RecordingSaveBaseFilename`.
+//
+//----------------------------------------------------------------------------
+static auto GetUniqueRecordingFilename()
+{
+    const wchar_t* defaultFile = (g_RecordingFormat == RecordingFormat::GIF)
+        ? DEFAULT_GIF_RECORDING_FILE
+        : DEFAULT_RECORDING_FILE;
+
+    // Without a remembered filename, suggest the default name for the current format.
+    std::wstring baseFilename = g_RecordingSaveBaseFilename.empty()
+        ? std::wstring( defaultFile )
+        : g_RecordingSaveBaseFilename;
+
+    std::filesystem::path basePath{ baseFilename };
+
+    // For the default filename, append a timestamp so successive default saves stay
+    // unique and sort chronologically in Explorer.
+    if ( IsDefaultRecordingFilename( basePath.filename().wstring() ) )
+    {
+        return basePath.stem().wstring() + GetTimestampSuffix() + basePath.extension().wstring();
+    }
+
+    // For custom filenames, append a numeric suffix to avoid collisions.
+    std::filesystem::path directory;
+    if ( !g_RecordingSaveLocation.empty() )
+        directory = std::filesystem::path( g_RecordingSaveLocation ).parent_path();
+    if ( directory.empty() )
+    {
+        wil::unique_cotaskmem_string folderPath;
+        if ( SUCCEEDED( SHGetKnownFolderPath( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, folderPath.put() ) ) )
+            directory = folderPath.get();
+    }
+
+    std::wstring baseStem = basePath.stem().wstring();
+    std::wstring baseExtension = basePath.extension().wstring();
+
+    std::filesystem::path testPath = directory / ( baseStem + baseExtension );
+    for ( int index = 1; std::filesystem::exists( testPath ); index++ )
+    {
+        testPath = directory / ( baseStem + L" (" + std::to_wstring( index ) + L')' + baseExtension );
+    }
+
+    return testPath.filename().wstring();
+}
+
+//----------------------------------------------------------------------------
+//
+// GetUniqueScreenshotFilename
+//
+// Gets a unique file name for screenshot saves, using the current date and
+// time as a suffix. This reduces the chance that the user could overwrite an
+// existing file if they are saving multiple captures in the same folder, and
+// also ensures that ordering is correct when sorted by name.
+//
+//----------------------------------------------------------------------------
+auto GetUniqueScreenshotFilename()
+{
+    SYSTEMTIME lt;
+    GetLocalTime(&lt);
+
+    // Format: "ZoomIt YYYY-MM-DD HHMMSS.png"
+    wchar_t buffer[MAX_PATH];
+    swprintf_s(buffer, L"%s %04d-%02d-%02d %02d%02d%02d.png",
+        APPNAME,
+        lt.wYear, lt.wMonth, lt.wDay,
+        lt.wHour, lt.wMinute, lt.wSecond);
+
+    return std::wstring(buffer);
+}
+
+//----------------------------------------------------------------------------
+//
+// FindMirrorTargetMonitor
+//
+// Picks the monitor to mirror onto: the one showing a PowerPoint slide show
+// if there is one, otherwise the first monitor that isn't the source.
+//
+//----------------------------------------------------------------------------
+HMONITOR FindMirrorTargetMonitor( HMONITOR sourceMonitor )
+{
+    HWND hWndSlideShow = FindWindow( L"screenClass", NULL );
+    if( hWndSlideShow != NULL && IsWindowVisible( hWndSlideShow ) ) {
+
+        HMONITOR hMonitor = MonitorFromWindow( hWndSlideShow, MONITOR_DEFAULTTONEAREST );
+        if( hMonitor != sourceMonitor ) {
+
+            return hMonitor;
+        }
+    }
+
+    struct MONITOR_SEARCH {
+        HMONITOR	sourceMonitor;
+        HMONITOR	targetMonitor;
+    } search = { sourceMonitor, NULL };
+
+    EnumDisplayMonitors( NULL, NULL, []( HMONITOR hMonitor, HDC, LPRECT, LPARAM lParam ) -> BOOL {
+
+        auto search = reinterpret_cast<MONITOR_SEARCH *>( lParam );
+        if( hMonitor != search->sourceMonitor && search->targetMonitor == NULL ) {
+
+            search->targetMonitor = hMonitor;
+            return FALSE;
+        }
+        return TRUE;
+    }, reinterpret_cast<LPARAM>( &search ));
+
+    return search.targetMonitor;
+}
+
+//----------------------------------------------------------------------------
+//
+// StartRecordingAsync
+//
+// Initiates screen recording and handles the save dialog workflow.
+//
+//----------------------------------------------------------------------------
+winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndRecord ) try
+{
+    // Capture the UI thread context so we can resume on it for the save dialog
+    winrt::apartment_context uiThread;
+
+    // Start audio initialization as early as possible.  AudioGraph creation
+    // and microphone device opening take ~1400 ms.  By starting here, the
+    // init runs in the background during D3D device creation, capture-item
+    // creation, file I/O, and the entire VideoRecordingSession constructor
+    // (webcam probe + warmup), giving it ~1400 ms of overlap — enough to
+    // finish before StartAsync even needs the result.
+    std::unique_ptr<AudioSampleGenerator> audioGenerator;
+    winrt::Windows::Foundation::IAsyncAction audioInitAction{ nullptr };
+    if ((g_RecordingFormat != RecordingFormat::GIF) && (g_CaptureAudio || g_CaptureSystemAudio))
+    {
+        audioGenerator = std::make_unique<AudioSampleGenerator>(
+            g_CaptureAudio, g_CaptureSystemAudio, g_MicMonoMix, g_NoiseCancellation );
+        audioInitAction = audioGenerator->InitializeAsync();
+    }
+
+    // audioGenerator must never be destroyed by stack unwinding while
+    // InitializeAsync is still pending: ~AudioSampleGenerator -> Stop() would
+    // block this (STA) thread on the event that only the pending continuation
+    // can set, and that continuation needs this thread to pump.  Hand ownership
+    // to the async disposer instead.  On the success path the generator has
+    // already been moved into the recording session, so this is a no-op.
+    auto disposeAudioGenerator = wil::scope_exit( [&]
+    {
+        if( audioGenerator )
+        {
+            AudioSampleGenerator::DisposeAsync( std::move( audioGenerator ), audioInitAction );
+            audioInitAction = nullptr;
+        }
+    } );
+
+    auto tempFolderPath = std::filesystem::temp_directory_path().wstring();
+    auto tempFolder = co_await winrt::StorageFolder::GetFolderFromPathAsync( tempFolderPath );
+    auto appFolder = co_await tempFolder.CreateFolderAsync( L"ZoomIt", winrt::CreationCollisionOption::OpenIfExists );
+
+    // Choose temp file extension based on format
+    const wchar_t* tempFileName = (g_RecordingFormat == RecordingFormat::GIF) ? L"zoomit.gif" : L"zoomit.mp4";
+    auto file = co_await appFolder.CreateFileAsync( tempFileName, winrt::CreationCollisionOption::ReplaceExisting );
+
+    // Get the device
+    auto d3dDevice = util::CreateD3D11Device();
+    auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
+    g_RecordDevice = CreateDirect3DDevice( dxgiDevice.get() );
+
+    // Get the active MONITOR capture device
+    HMONITOR hMon = NULL;
+    POINT cursorPos = { 0, 0 };
+    if( pMonitorFromPoint )	{
+
+        GetCursorPos( &cursorPos );
+        hMon = pMonitorFromPoint( cursorPos, MONITOR_DEFAULTTONEAREST );
+    }
+
+    winrt::Windows::Graphics::Capture::GraphicsCaptureItem item{ nullptr };
+    if( hWndRecord )
+        item = util::CreateCaptureItemForWindow( hWndRecord );
+    else
+        item = util::CreateCaptureItemForMonitor( hMon );
+
+    auto stream = co_await file.OpenAsync( winrt::FileAccessMode::ReadWrite );
+
+    // Create the appropriate recording session based on format
+    OutputDebugStringW((L"Starting recording session. Framerate:  " + std::to_wstring(g_RecordFrameRate) + L" scaling: " + std::to_wstring(g_RecordScaling) + L" Format: " + (g_RecordingFormat == RecordingFormat::GIF ? L"GIF" : L"MP4") + L"\n").c_str());
+    bool recordingStarted = false;
+    HRESULT captureStatus = S_OK;
+
+    if (g_RecordingFormat == RecordingFormat::GIF)
+    {
+        g_GifRecordingSession = GifRecordingSession::Create(
+                                        g_RecordDevice,
+                                        item,
+                                        *rcCrop,
+                                        g_RecordFrameRate,
+                                        stream );
+
+        recordingStarted = (g_GifRecordingSession != nullptr);
+
+        if( IsLiveZoomActive() )
+            g_GifRecordingSession->EnableCursorCapture( false );
+
+        if (recordingStarted)
+        {
+            try
+            {
+                co_await g_GifRecordingSession->StartAsync();
+            }
+            catch (const winrt::hresult_error& error)
+            {
+                captureStatus = error.code();
+                OutputDebugStringW((L"Recording session failed: " + error.message() + L"\n").c_str());
+            }
+        }
+
+        // If no frames were captured, behave as if the hotkey was never pressed.
+        if (recordingStarted && g_GifRecordingSession && !g_GifRecordingSession->HasCapturedFrames())
+        {
+            if (stream)
+            {
+                stream.Close();
+                stream = nullptr;
+            }
+            try { co_await file.DeleteAsync(); } catch (...) {}
+            g_RecordingSession = nullptr;
+            g_GifRecordingSession = nullptr;
+            co_return;
+        }
+    }
+    else
+    {
+        g_RecordingSession = VideoRecordingSession::Create(
+                                        g_RecordDevice,
+                                        item,
+                                        *rcCrop,
+                                        g_RecordFrameRate,
+                                        std::move(audioGenerator),
+                                        audioInitAction,
+                                        stream );
+
+        recordingStarted = (g_RecordingSession != nullptr);
+
+        // Show a live on-screen preview of the webcam overlay so the user
+        // can see themselves while recording.
+        if( recordingStarted && g_WebcamOverlay && g_RecordingSession->GetWebcamCapture() )
+        {
+            // Determine the screen region being recorded.
+            RECT screenRect;
+            if( rcCrop->right - rcCrop->left > 0 )
+            {
+                // Region recording: the crop rect IS in screen coordinates.
+                screenRect = *rcCrop;
+            }
+            else
+            {
+                // Full-screen: use the monitor rect.
+                MONITORINFO mi = { sizeof( mi ) };
+                if( pGetMonitorInfo && hMon && pGetMonitorInfo( hMon, &mi ) )
+                    screenRect = mi.rcMonitor;
+                else
+                    SetRect( &screenRect, 0, 0, GetSystemMetrics( SM_CXSCREEN ), GetSystemMetrics( SM_CYSCREEN ) );
+            }
+
+            auto* wc = g_RecordingSession->GetWebcamCapture();
+            g_WebcamPreview.Create( wc, screenRect, wc->GetOutputWidth(), wc->GetOutputHeight() );
+
+            // Register Ctrl+C to toggle webcam overlay during recording.
+            RegisterHotKey( hWnd, WEBCAM_TOGGLE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C' );
+        }
+
+        if( IsLiveZoomActive() )
+            g_RecordingSession->EnableCursorCapture( false );
+
+        if (recordingStarted)
+        {
+            try
+            {
+                co_await g_RecordingSession->StartAsync();
+            }
+            catch (const winrt::hresult_error& error)
+            {
+                captureStatus = error.code();
+                OutputDebugStringW((L"Recording session failed: " + error.message() + L"\n").c_str());
+            }
+        }
+
+        // If no frames were captured, behave as if the hotkey was never pressed.
+        if (recordingStarted && g_RecordingSession && !g_RecordingSession->HasCapturedVideoFrames())
+        {
+            if (stream)
+            {
+                stream.Close();
+                stream = nullptr;
+            }
+            try { co_await file.DeleteAsync(); } catch (...) {}
+            g_RecordingSession = nullptr;
+            g_GifRecordingSession = nullptr;
+            co_return;
+        }
+    }
+
+    // If we never created a session, bail and clean up the temp file silently
+    if( !recordingStarted ) {
+
+        if (stream) {
+            stream.Close();
+            stream = nullptr;
+        }
+        try { co_await file.DeleteAsync(); } catch (...) {}
+        co_return;
+    }
+
+    // Recording completed (closed via hotkey or item close). Proceed to save/trim workflow.
+    OutputDebugStringW(L"[Recording] StartAsync completed, entering save workflow\n");
+
+    // Release the writer stream and session objects before trim/save. Keeping the temp file
+    // open here can cause trimming and later MoveAndReplaceAsync calls to fail on the same file.
+    if (stream)
+    {
+        stream.Close();
+        stream = nullptr;
+    }
+    g_RecordingSession = nullptr;
+    g_GifRecordingSession = nullptr;
+
+    // Resume on the UI thread for the save dialog
+    co_await uiThread;
+    OutputDebugStringW(L"[Recording] Resumed on UI thread\n");
+
+    {
+
+        g_bSaveInProgress = true;
+
+        SendMessage( g_hWndMain, WM_USER_SAVE_CURSOR, 0, 0 );
+
+        winrt::StorageFile destFile = nullptr;
+        HRESULT hr = S_OK;
+        try {
+            // Show trim dialog option and save dialog
+            std::wstring trimmedFilePath;
+            auto suggestedName = GetUniqueRecordingFilename();
+            auto finalPath = VideoRecordingSession::ShowSaveDialogWithTrim(
+                hWnd,
+                suggestedName,
+                std::wstring{ file.Path() },
+                trimmedFilePath
+            );
+
+            if (!finalPath.empty())
+            {
+                auto path = std::filesystem::path(finalPath);
+
+                // Remember the user's chosen filename and apply a timestamp to default
+                // names so successive saves stay unique and sort chronologically.
+                std::wstring filename = path.filename().wstring();
+                std::wstring finalFilename = filename;
+                if ( IsDefaultRecordingFilename( filename ) )
+                {
+                    // The user accepted or re-typed the default filename. Remember it so the
+                    // next suggestion also uses a timestamp, and append one to this save.
+                    g_RecordingSaveBaseFilename = filename;
+                    finalFilename = path.stem().wstring() + GetTimestampSuffix() + path.extension().wstring();
+                }
+                else if ( CompareStringOrdinal( suggestedName.c_str(), -1, filename.c_str(), -1, TRUE ) != CSTR_EQUAL )
+                {
+                    // The user chose their own filename instead of the suggested one. Remember
+                    // it so future suggestions use numeric suffixes based on this name.
+                    g_RecordingSaveBaseFilename = filename;
+                }
+
+                // The path actually written to disk (with any timestamp applied).
+                std::wstring savedPath = ( path.parent_path() / finalFilename ).wstring();
+
+                winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync(path.parent_path().c_str()) };
+                destFile = co_await folder.CreateFileAsync(finalFilename.c_str(), winrt::CreationCollisionOption::ReplaceExisting);
+
+                // If user trimmed, use the trimmed file
+                winrt::StorageFile sourceFile = file;
+                if (!trimmedFilePath.empty())
+                {
+                    sourceFile = co_await winrt::StorageFile::GetFileFromPathAsync(trimmedFilePath);
+                }
+
+                // Move the chosen source into the user-selected destination
+                co_await sourceFile.MoveAndReplaceAsync(destFile);
+
+                // If we moved a trimmed copy, clean up the original temp capture file
+                if (sourceFile != file)
+                {
+                    try { co_await file.DeleteAsync(); } catch (...) {}
+                }
+
+                // Use savedPath directly - destFile.Path() may be stale after MoveAndReplaceAsync
+                g_RecordingSaveLocation = savedPath;
+                // Update the registry buffer and save to persist across app restarts
+                wcsncpy_s(g_RecordingSaveLocationBuffer, g_RecordingSaveLocation.c_str(), _TRUNCATE);
+                reg.WriteRegSettings(RegSettings);
+                SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
+            }
+            else
+            {
+                // User cancelled
+                hr = HRESULT_FROM_WIN32(ERROR_CANCELLED);
+            }
+
+            //auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
+            //FILEOPENDIALOGOPTIONS options;
+            //if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
+            //    saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+            //wil::com_ptr<IShellItem> videosItem;
+            //if( SUCCEEDED ( SHGetKnownFolderItem( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_IShellItem, (void**) videosItem.put() ) ) )
+            //    saveDialog->SetDefaultFolder( videosItem.get() );
+
+            //// Set file type based on the recording format
+            //if (g_RecordingFormat == RecordingFormat::GIF)
+            //{
+            //    saveDialog->SetDefaultExtension( L".gif" );
+            //    COMDLG_FILTERSPEC fileTypes[] = {
+            //        { L"GIF Animation", L"*.gif" }
+            //    };
+            //    saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            //}
+            //else
+            //{
+            //    saveDialog->SetDefaultExtension( L".mp4" );
+            //    COMDLG_FILTERSPEC fileTypes[] = {
+            //        { L"MP4 Video", L"*.mp4" }
+            //    };
+            //    saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            //}
+
+            //// Peek the folder Windows has chosen to display
+            //static std::filesystem::path lastSaveFolder;
+            //wil::unique_cotaskmem_string chosenFolderPath;
+            //wil::com_ptr<IShellItem> currentSelectedFolder;
+            //bool bFolderChanged = false;
+            //if (SUCCEEDED(saveDialog->GetFolder(currentSelectedFolder.put())))
+            //{
+            //    if (SUCCEEDED(currentSelectedFolder->GetDisplayName(SIGDN_FILESYSPATH, chosenFolderPath.put())))
+            //    {
+            //        if (lastSaveFolder != chosenFolderPath.get())
+            //        {
+            //            lastSaveFolder = chosenFolderPath.get() ? chosenFolderPath.get() : std::filesystem::path{};
+            //            bFolderChanged = true;
+            //        }
+            //    }
+            //}
+
+            //if( (g_RecordingFormat == RecordingFormat::GIF && g_RecordingSaveLocationGIF.size() == 0) || (g_RecordingFormat == RecordingFormat::MP4 && g_RecordingSaveLocation.size() == 0) || (bFolderChanged)) {
+
+            //    wil::com_ptr<IShellItem> shellItem;
+            //    wil::unique_cotaskmem_string folderPath;
+            //    if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put()))) {
+            //        if (g_RecordingFormat == RecordingFormat::GIF) {
+            //            g_RecordingSaveLocationGIF = folderPath.get();
+            //            std::filesystem::path currentPath{ g_RecordingSaveLocationGIF };
+            //            g_RecordingSaveLocationGIF = currentPath / DEFAULT_GIF_RECORDING_FILE;
+            //        }
+            //        else {
+            //            g_RecordingSaveLocation = folderPath.get();
+            //            if (g_RecordingFormat == RecordingFormat::MP4) {
+            //                std::filesystem::path currentPath{ g_RecordingSaveLocation };
+            //                g_RecordingSaveLocation = currentPath / DEFAULT_RECORDING_FILE;
+            //            }
+            //        }
+            //    }
+            //}
+
+            //// Always use appropriate default filename based on current format
+            //auto suggestedName = GetUniqueRecordingFilename();
+            //saveDialog->SetFileName( suggestedName.c_str() );
+
+            //THROW_IF_FAILED( saveDialog->Show( hWnd ) );
+            //wil::com_ptr<IShellItem> shellItem;
+            //THROW_IF_FAILED(saveDialog->GetResult(shellItem.put()));
+            //wil::unique_cotaskmem_string filePath;
+            //THROW_IF_FAILED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, filePath.put()));
+            //auto path = std::filesystem::path( filePath.get() );
+
+            //winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync( path.parent_path().c_str() ) };
+            //destFile = co_await folder.CreateFileAsync( path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting );
+        }
+        catch( const wil::ResultException& error ) {
+            OutputDebugStringW((L"[Recording] wil exception: hr=0x" + std::to_wstring(error.GetErrorCode()) + L"\n").c_str());
+            hr = error.GetErrorCode();
+        }
+        catch( const std::exception& ex ) {
+            OutputDebugStringA("[Recording] std::exception: ");
+            OutputDebugStringA(ex.what());
+            OutputDebugStringA("\n");
+            hr = E_FAIL;
+        }
+        catch( ... ) {
+            OutputDebugStringW(L"[Recording] Unknown exception in save workflow\n");
+            hr = E_FAIL;
+        }
+        if( destFile == nullptr ) {
+
+            if (stream) {
+                stream.Close();
+                stream = nullptr;
+            }
+            try { co_await file.DeleteAsync(); } catch (...) {}
+        }
+        g_bSaveInProgress = false;
+
+        SendMessage( g_hWndMain, WM_USER_RESTORE_CURSOR, 0, 0 );
+        if( hWnd == g_hWndMain )
+            RestoreForeground();
+
+        if( FAILED( hr ) )
+        {
+            if( hr != HRESULT_FROM_WIN32( ERROR_CANCELLED ) )
+            {
+                throw winrt::hresult_error( hr );
+            }
+        }
+    }
+
+    // Ensure globals are reset after the save/cleanup path completes
+    if (stream) {
+        stream.Close();
+        stream = nullptr;
+    }
+    g_RecordingSession = nullptr;
+    g_GifRecordingSession = nullptr;
+} catch( const winrt::hresult_error& error ) {
+
+    // Reset the save-in-progress flag so that hotkeys are not blocked after an error or cancellation
+    g_bSaveInProgress = false;
+
+    PostMessage( g_hWndMain, WM_USER_STOP_RECORDING, 0, 0 );
+
+    // Suppress the error from canceling the save dialog
+    if( error.code() == HRESULT_FROM_WIN32( ERROR_CANCELLED ))
+        co_return;
+
+    if (g_RecordToggle == FALSE) {
+
+        MessageBox(g_hWndMain, L"Recording cancelled before started", APPNAME, MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+    }
+    else {
+
+        ErrorDialogString(g_hWndMain, L"Error starting recording", error.message().c_str());
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// UpdateMonitorInfo
+//
+//----------------------------------------------------------------------------
+void UpdateMonitorInfo( POINT point, MONITORINFO* monInfo )
+{
+    HMONITOR hMon{};
+    if( pMonitorFromPoint != nullptr )
+    {
+        hMon = pMonitorFromPoint( point, MONITOR_DEFAULTTONEAREST );
+    }
+    if( hMon != nullptr )
+    {
+        monInfo->cbSize = sizeof *monInfo;
+        pGetMonitorInfo( hMon, monInfo );
+    }
+    else
+    {
+        *monInfo = {};
+        HDC hdcScreen = CreateDC( L"DISPLAY", nullptr, nullptr, nullptr );
+        if( hdcScreen != nullptr )
+        {
+            monInfo->rcMonitor.right = GetDeviceCaps( hdcScreen, HORZRES );
+            monInfo->rcMonitor.bottom = GetDeviceCaps( hdcScreen, VERTRES );
+            DeleteDC( hdcScreen );
+        }
+    }
+}
+
+#ifdef __ZOOMIT_POWERTOYS__
+HRESULT OpenPowerToysSettingsApp()
+{
+    std::wstring path = get_module_folderpath(g_hInstance);
+    path += L"\\PowerToys.exe";
+
+    std::wstring openSettings = L"--open-settings=ZoomIt";
+
+    std::wstring full_command_path = path + L" " + openSettings;
+
+    STARTUPINFO startupInfo;
+    ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.wShowWindow = SW_SHOWNORMAL;
+
+    PROCESS_INFORMATION processInformation;
+
+    CreateProcess(
+        path.c_str(),
+        full_command_path.data(),
+        NULL,
+        NULL,
+        TRUE,
+        0,
+        NULL,
+        NULL,
+        &startupInfo,
+        &processInformation);
+
+    if (!CloseHandle(processInformation.hProcess))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+    if (!CloseHandle(processInformation.hThread))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+    return S_OK;
+}
+#endif // __ZOOMIT_POWERTOYS__
+
+//----------------------------------------------------------------------------
+//
+// ShowMainWindow
+//
+//----------------------------------------------------------------------------
+void ShowMainWindow(HWND hWnd, const MONITORINFO& monInfo, int width, int height)
+{
+    // Show the window first
+    SetWindowPos(hWnd, HWND_TOPMOST, monInfo.rcMonitor.left, monInfo.rcMonitor.top,
+        width, height, SWP_SHOWWINDOW | SWP_NOCOPYBITS);
+
+    // Now invalidate and update the window
+    InvalidateRect(hWnd, NULL, TRUE);
+    UpdateWindow(hWnd);
+
+    SetForegroundWindow(hWnd);
+    SetActiveWindow(hWnd);
+}
+
+//----------------------------------------------------------------------------
+//
+// MainWndProc
+//
+//----------------------------------------------------------------------------
+LRESULT APIENTRY MainWndProc(
+    HWND hWnd,
+    UINT message,
+    WPARAM wParam,
+    LPARAM lParam)
+{
+    static int		width, height;
+    static HDC		hdcScreen, hdcScreenCompat, hdcScreenCursorCompat, hdcScreenSaveCompat;
+    static HBITMAP	hbmpCompat, hbmpDrawingCompat, hbmpCursorCompat;
+    static RECT     cropRc{};
+    static BITMAP	bmp;
+    static BOOLEAN	g_TimerActive = FALSE;
+    static BOOLEAN	g_Zoomed = FALSE;
+    static TypeModeState g_TypeMode = TypeModeOff;
+    static BOOLEAN	g_HaveTyped = FALSE;
+    static DEVMODE	secondaryDevMode;
+    static RECT		g_LiveZoomSourceRect;
+    static float	g_LiveZoomLevel;
+    static float	zoomLevel;
+    static float	zoomTelescopeTarget;
+    static ZoomAnimation zoomAnimation;
+    static POINT	cursorPos;
+    static POINT	savedCursorPos;
+    static RECT		cursorRc;
+    static RECT		boundRc;
+    static POINT	prevPt;
+    static POINT	textStartPt;
+    static POINT	textPt;
+    static P_DRAW_UNDO drawUndoList = NULL;
+    static P_TYPED_KEY	typedKeyList = NULL;
+    static BOOLEAN	g_HaveDrawn = FALSE;
+    static DWORD	g_DrawingShape = 0;
+    static DWORD    prevPenWidth = g_PenWidth;
+    static POINT	g_RectangleAnchor;
+    static RECT		g_rcRectangle;
+    static BOOLEAN	g_Tracing = FALSE;
+    static int		g_BlankedScreen = 0;
+    static int		g_StraightDirection = 0;
+    static BOOLEAN	g_Drawing = FALSE;
+    static HWND		g_ActiveWindow = NULL;
+    static int		breakTimeout;
+    static HBITMAP	g_hBackgroundBmp = NULL;
+    static HDC		g_hDcBackgroundFile;
+    static HPEN		hDrawingPen;
+    static HFONT	hTimerFont;
+    static HFONT	hNegativeTimerFont;
+    static HFONT	hTypingFont;
+    static MONITORINFO	monInfo;
+    static MONITORINFO  lastMonInfo;
+    static HWND		hTargetWindow = NULL;
+    static RECT		rcTargetWindow;
+    static BOOLEAN  forcePenResize = TRUE;
+    static BOOLEAN  activeBreakShowDesktop = g_BreakShowDesktop;
+    static BOOLEAN	activeBreakShowBackgroundFile = g_BreakShowBackgroundFile;
+    static TCHAR    activeBreakBackgroundFile[MAX_PATH] = {0};
+    static UINT     wmTaskbarCreated;
+#if 0
+    TITLEBARINFO	titleBarInfo;
+    WINDOWINFO		targetWindowInfo;
+#endif
+    bool			isCaptureSupported = false;
+    RECT			rc, rc1;
+    PAINTSTRUCT		ps;
+    TCHAR			timerText[16];
+    TCHAR			negativeTimerText[16];
+    BOOLEAN			penInverted;
+    BOOLEAN			zoomIn;
+    HDC				hDc;
+    HWND			hWndRecord;
+    int				x, y, delta;
+    HMENU			hPopupMenu;
+    static TCHAR	filePath[MAX_PATH] = {L"zoomit"};
+    NOTIFYICONDATA	tNotifyIconData;
+    const auto drawAllRightJustifiedLines = [&rc]( long lineHeight, bool doPop = false ) {
+        rc.top = textPt.y - static_cast<LONG>(g_TextBufferPreviousLines.size()) * lineHeight;
+
+        for( const auto& line : g_TextBufferPreviousLines )
+        {
+            DrawText( hdcScreenCompat, line.c_str(), static_cast<int>(line.length()), &rc, DT_CALCRECT );
+            const auto textWidth = rc.right - rc.left;
+            rc.left = textPt.x - textWidth;
+            rc.right = textPt.x;
+            DrawText( hdcScreenCompat, line.c_str(), static_cast<int>(line.length()), &rc, DT_LEFT );
+            rc.top += lineHeight;
+        }
+        if( !g_TextBuffer.empty() )
+        {
+            if( doPop )
+            {
+                g_TextBuffer.pop_back();
+            }
+            DrawText( hdcScreenCompat, g_TextBuffer.c_str(), static_cast<int>(g_TextBuffer.length()), &rc, DT_CALCRECT );
+            rc.left = textPt.x - (rc.right - rc.left);
+            rc.right = textPt.x;
+            DrawText( hdcScreenCompat, g_TextBuffer.c_str(), static_cast<int>(g_TextBuffer.length()), &rc, DT_LEFT );
+        }
+    };
+
+    const auto doTelescopingZoomTimer = [hWnd, wParam, lParam, &x, &y]( bool invalidate = true ) {
+        if( zoomAnimation.IsActive() )
+        {
+            zoomLevel = zoomAnimation.Sample( GetTickCount64() );
+            if( !zoomAnimation.IsActive() )
+            {
+                zoomLevel = zoomTelescopeTarget;
+
+                KillTimer( hWnd, wParam );
+            }
+        }
+        else
+        {
+            // Case where we didn't zoom at all
+            KillTimer( hWnd, wParam );
+        }
+        if( wParam == 1 && !zoomAnimation.IsActive() )
+        {
+            OutputDebug( L"SETCURSOR mon_left: %x mon_top: %x x: %d y: %d\n",
+                        monInfo.rcMonitor.left,
+                        monInfo.rcMonitor.top,
+                        cursorPos.x,
+                        cursorPos.y );
+            SetCursorPos( monInfo.rcMonitor.left + cursorPos.x,
+                         monInfo.rcMonitor.top + cursorPos.y );
+        }
+        if( wParam == 2 && zoomLevel == 1 )
+        {
+            g_Zoomed = FALSE;
+
+            // Unregister Ctrl+C and Ctrl+S hotkeys when exiting static zoom
+            UnregisterHotKey( hWnd, COPY_IMAGE_HOTKEY );
+            UnregisterHotKey( hWnd, COPY_CROP_HOTKEY );
+            UnregisterHotKey( hWnd, SAVE_IMAGE_HOTKEY );
+            UnregisterHotKey( hWnd, SAVE_CROP_HOTKEY );
+
+            if( g_ZoomOnLiveZoom )
+            {
+                GetCursorPos( &cursorPos );
+                cursorPos = ScalePointInRects( cursorPos, monInfo.rcMonitor, g_LiveZoomSourceRect );
+                SetCursorPos( cursorPos.x, cursorPos.y );
+                SendMessage( hWnd, WM_HOTKEY, LIVE_HOTKEY, 0 );
+            }
+            else if( lParam != SHALLOW_ZOOM )
+            {
+                // Figure out where final unzoomed cursor should be
+                if( g_Drawing )
+                {
+                    cursorPos = prevPt;
+                }
+                OutputDebug( L"FINAL MOUSE: x: %d y: %d\n", cursorPos.x, cursorPos.y );
+                GetZoomedTopLeftCoordinates( zoomLevel, &cursorPos, &x, width, &y, height );
+                cursorPos.x = monInfo.rcMonitor.left + x + static_cast<int>((cursorPos.x - x) * zoomLevel);
+                cursorPos.y = monInfo.rcMonitor.top + y + static_cast<int>((cursorPos.y - y) * zoomLevel);
+                SetCursorPos( cursorPos.x, cursorPos.y );
+            }
+            if( hTargetWindow )
+            {
+                SetWindowPos( hTargetWindow, HWND_BOTTOM, rcTargetWindow.left, rcTargetWindow.top, rcTargetWindow.right - rcTargetWindow.left, rcTargetWindow.bottom - rcTargetWindow.top, 0 );
+                hTargetWindow = NULL;
+            }
+            DeleteDrawUndoList( &drawUndoList );
+
+            // Restore live zoom if we came from that mode
+            if( g_ZoomOnLiveZoom )
+            {
+                SendMessage( g_hWndLiveZoom, WM_USER_SET_ZOOM, static_cast<WPARAM>(g_LiveZoomLevel), reinterpret_cast<LPARAM>(&g_LiveZoomSourceRect) );
+                g_ZoomOnLiveZoom = FALSE;
+                forcePenResize = TRUE;
+            }
+
+            SetForegroundWindow( g_ActiveWindow );
+            ClipCursor( NULL );
+            g_HaveDrawn = FALSE;
+            g_TypeMode = TypeModeOff;
+            g_HaveTyped = FALSE;
+            g_Drawing = FALSE;
+            EnableDisableStickyKeys( TRUE );
+            DeleteObject( hTypingFont );
+            DeleteDC( hdcScreen );
+            DeleteDC( hdcScreenCompat );
+            DeleteDC( hdcScreenCursorCompat );
+            DeleteDC( hdcScreenSaveCompat );
+            DeleteObject( hbmpCompat );
+            DeleteObject (hbmpCursorCompat );
+            DeleteObject( hbmpDrawingCompat );
+            DeleteObject( hDrawingPen );
+
+            SetFocus( g_ActiveWindow );
+            ShowWindow( hWnd, SW_HIDE );
+        }
+        if( invalidate )
+        {
+            InvalidateRect( hWnd, NULL, FALSE );
+        }
+    };
+
+    switch (message) {
+    case WM_CREATE:
+
+        // get default font
+        GetObject( GetStockObject(DEFAULT_GUI_FONT), sizeof g_LogFont, &g_LogFont );
+        g_LogFont.lfWeight = FW_NORMAL;
+        hDc = CreateCompatibleDC( NULL );
+        g_LogFont.lfHeight = -MulDiv(8, GetDeviceCaps(hDc, LOGPIXELSY), 72);
+        DeleteDC( hDc );
+
+        reg.ReadRegSettings( RegSettings );
+
+        // Recover screensaver settings if ZoomIt crashed while the break
+        // screensaver was active (or was force-killed).
+        if( HasOrphanedScreenSaverSettings() )
+        {
+            RestoreScreenSaverSettings();
+        }
+
+        // Register for session change notifications so we can restore
+        // screensaver settings after the break timer screensaver is dismissed
+        // via user authentication (session unlock).
+        WTSRegisterSessionNotification( hWnd, NOTIFY_FOR_THIS_SESSION );
+
+        // Refresh dark mode state after loading theme override from registry
+        RefreshDarkModeState();
+
+        // Initialize save location strings from registry buffers
+        g_RecordingSaveLocation = g_RecordingSaveLocationBuffer;
+        g_ScreenshotSaveLocation = g_ScreenshotSaveLocationBuffer;
+
+        // Set g_RecordScaling based on the current recording format
+        if (g_RecordingFormat == RecordingFormat::GIF) {
+            g_RecordScaling = g_RecordScalingGIF;
+            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE;
+        } else {
+            g_RecordScaling = g_RecordScalingMP4;
+            g_RecordFrameRate = RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
+        }
+
+        // to support migrating from
+        if ((g_PenColor >> 24) == 0) {
+            g_PenColor |= 0xFF << 24;
+        }
+
+        g_PenWidth = g_RootPenWidth;
+
+        g_ToggleMod = GetKeyMod( g_ToggleKey );
+        g_LiveZoomToggleMod = GetKeyMod( g_LiveZoomToggleKey );
+        g_DrawToggleMod = GetKeyMod( g_DrawToggleKey );
+        g_BreakToggleMod = GetKeyMod( g_BreakToggleKey );
+        g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
+        g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
+        g_SnipSaveToggleMod = GetKeyMod( g_SnipSaveToggleKey );
+        g_SnipPanoramaToggleMod = GetKeyMod( g_SnipPanoramaToggleKey );
+        g_SnipPanoramaSaveToggleMod = GetKeyMod( g_SnipPanoramaSaveToggleKey );
+        g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
+        g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
+        g_MirrorToggleMod = GetKeyMod( g_MirrorToggleKey );
+
+        if( !g_OptionsShown && !g_StartedByPowerToys ) {
+            // First run should show options when running as standalone. If not running as standalone,
+            // options screen won't show and we should register keys instead.
+            SendMessage( hWnd, WM_COMMAND, IDC_OPTIONS, 0 );
+            g_OptionsShown = TRUE;
+            reg.WriteRegSettings( RegSettings );
+        } else {
+            BOOL	showOptions = FALSE;
+
+            if( g_ToggleKey && !RegisterHotKey( hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF)) {
+
+                MessageBox( hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
+                    APPNAME, MB_ICONERROR );
+                showOptions = TRUE;
+
+            } else if( g_LiveZoomToggleKey &&
+                (!RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF) ||
+                    !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF))) {
+
+                MessageBox( hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
+                    APPNAME, MB_ICONERROR );
+                showOptions = TRUE;
+
+            } else if( g_DrawToggleKey && !RegisterHotKey( hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF )) {
+
+                MessageBox( hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.",
+                    APPNAME, MB_ICONERROR );
+                showOptions = TRUE;
+
+            }
+            else if (g_BreakToggleKey && !RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if( g_DemoTypeToggleKey &&
+                (!RegisterHotKey( hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF ) ||
+                 !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF))) {
+
+                MessageBox( hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.",
+                    APPNAME, MB_ICONERROR );
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipSaveToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipPanoramaToggleKey &&
+                (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipPanoramaSaveToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipOcrToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_RecordToggleKey) {
+                UINT cropMod = g_RecordToggleMod ^ MOD_SHIFT;
+                UINT windowMod = g_RecordToggleMod ^ MOD_ALT;
+                if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
+                    (cropMod != 0 && !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)) ||
+                    (windowMod != 0 && !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))) {
+
+                    MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
+                        APPNAME, MB_ICONERROR);
+                    showOptions = TRUE;
+                }
+            }
+            if (showOptions == FALSE && g_MirrorToggleKey) {
+                UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+                UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+                if (!RegisterHotKey(hWnd, MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF) ||
+                    (mirrorCropMod != 0 && !RegisterHotKey(hWnd, MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)) ||
+                    (mirrorWindowMod != 0 && !RegisterHotKey(hWnd, MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF))) {
+
+                    MessageBox(hWnd, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.",
+                        APPNAME, MB_ICONERROR);
+                    showOptions = TRUE;
+                }
+            }
+            if( showOptions ) {
+
+                SendMessage( hWnd, WM_COMMAND, IDC_OPTIONS, 0 );
+            }
+        }
+        SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
+        wmTaskbarCreated = RegisterWindowMessage(_T("TaskbarCreated"));
+        return TRUE;
+
+    case WM_CLOSE:
+        // Do not allow users to close the main window, for example with Alt-F4.
+        return 0;
+
+    case WM_HOTKEY:
+        OutputDebug( L"[Hotkey] WM_HOTKEY id=%ld(%s) lParam=0x%llX\n",
+                     static_cast<long>( wParam ),
+                     HotkeyIdToString( wParam ),
+                     static_cast<unsigned long long>( lParam ) );
+        LogPanoramaState( L"WM_HOTKEY entry", wParam );
+
+        if( g_PanoramaCaptureActive )
+        {
+            if( wParam == SNIP_PANORAMA_HOTKEY || wParam == SNIP_PANORAMA_SAVE_HOTKEY )
+            {
+                OutputDebug( L"[Panorama] Stop hotkey received while capture is active\n" );
+                g_PanoramaStopRequested = true;
+
+                // If we're still selecting the panorama source area, stop selection
+                // immediately so the capture path can unwind cleanly.
+                if( g_RecordCropping == TRUE )
+                {
+                    OutputDebug( L"[Panorama] Stop requested during crop selection; stopping SelectRectangle\n" );
+                    g_SelectRectangle.Stop();
+                    g_RecordCropping = FALSE;
+                }
+            }
+
+            // Do not process any other hotkeys while panorama capture is active.
+            LogPanoramaState( L"WM_HOTKEY consumed while panorama active", wParam );
+            return 0;
+        }
+
+        if( g_RecordCropping == TRUE )
+        {
+            // If the crop overlay has already been torn down, clear stale state.
+            if( !g_SelectRectangle.IsActive() )
+            {
+                OutputDebug( L"[Hotkey] Clearing stale crop state (g_RecordCropping=TRUE but SelectRectangle inactive)\n" );
+                g_RecordCropping = FALSE;
+            }
+        }
+
+        if( g_RecordCropping == TRUE )
+        {
+            if( wParam != RECORD_CROP_HOTKEY )
+            {
+                // Cancel cropping on any hotkey.
+                OutputDebug( L"[Hotkey] Cancelling crop due to hotkey id=%ld(%s)\n",
+                             static_cast<long>( wParam ),
+                             HotkeyIdToString( wParam ) );
+                g_SelectRectangle.Stop();
+                g_RecordCropping = FALSE;
+
+                // Cropping is handled by a blocking call in WM_HOTKEY, so post
+                // this message to the window for processing after the previous
+                // WM_HOTKEY message completes processing.
+                PostMessage( hWnd, message, wParam, lParam );
+            }
+            return 0;
+        }
+
+        //
+        // Magic value that comes from tray context menu
+        //
+        if (lParam == 1) {
+
+            //
+            // Sleep to let context menu dismiss
+            //
+            Sleep(250);
+        }
+        switch( wParam ) {
+        case WEBCAM_TOGGLE_HOTKEY:
+        {
+            // Ctrl+C during recording: toggle webcam overlay on/off.
+            if( g_RecordToggle && g_RecordingSession && g_RecordingSession->GetWebcamCapture() )
+            {
+                auto* wc = g_RecordingSession->GetWebcamCapture();
+                bool wasEnabled = wc->IsEnabled();
+                wc->SetEnabled( !wasEnabled );
+                if( wasEnabled )
+                {
+                    // Hide the on-screen preview but keep the window alive
+                    // so that position/size are preserved for re-show.
+                    g_WebcamPreview.Hide();
+                }
+                else
+                {
+                    // Re-show the on-screen preview at its last position/size.
+                    g_WebcamPreview.Show();
+                }
+                OutputDebug( L"[Webcam] Toggle: %s\n", wasEnabled ? L"OFF" : L"ON" );
+            }
+            break;
+        }
+        case LIVE_DRAW_HOTKEY:
+        {
+            OutputDebug(L"LIVE_DRAW_HOTKEY\n");
+            LONG_PTR exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+
+            if ((exStyle & WS_EX_LAYERED)) {
+                OutputDebug(L"LiveDraw reactivate\n");
+
+                // Just focus on the window and re-enter drawing mode
+                SetFocus(hWnd);
+                SetForegroundWindow(hWnd);
+                SendMessage(hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
+                SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
+                if( IsWindowVisible( g_hWndLiveZoom ) )
+                {
+                    SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
+                }
+                break;
+            }
+            else {
+                OutputDebug(L"LiveDraw create\n");
+
+                exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+                SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+                SetLayeredWindowAttributes(hWnd, COLORREF(RGB(0, 0, 0)), 0, LWA_COLORKEY);
+                pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 0, nullptr );
+            }
+            [[fallthrough]];
+        }
+        case DRAW_HOTKEY:
+            //
+            // Enter drawing mode without zoom
+            //
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
+                Trace::ZoomItActivateDraw();
+            }
+#endif // __ZOOMIT_POWERTOYS__
+
+            if( !g_Zoomed ) {
+                OutputDebug(L"LiveDraw: %d (%d)\n", wParam, (wParam == LIVE_DRAW_HOTKEY));
+
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+                if( IsWindowVisible( g_hWndLiveZoom ) && !g_LiveZoomLevelOne ) {
+#else
+                if( IsWindowVisible( g_hWndLiveZoom )) {
+#endif
+
+                    OutputDebug(L"   In Live zoom\n");
+                    SendMessage(hWnd, WM_HOTKEY, ZOOM_HOTKEY, wParam == LIVE_DRAW_HOTKEY ? LIVE_DRAW_ZOOM : 0);
+
+                } else {
+                    OutputDebug(L"   Not in Live zoom\n");
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, wParam == LIVE_DRAW_HOTKEY ? LIVE_DRAW_ZOOM : 0 );
+                    zoomLevel = zoomTelescopeTarget = 1;
+                    SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y ));
+                }
+                if(wParam == LIVE_DRAW_HOTKEY) {
+
+                    SetLayeredWindowAttributes(hWnd, COLORREF(RGB(0, 0, 0)), 0, LWA_COLORKEY);
+                    SendMessage(hWnd, WM_KEYDOWN, 'K', LIVE_DRAW_ZOOM);
+                    SetTimer(hWnd, 3, 10, NULL);
+                    SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(cursorPos.x, cursorPos.y));
+                    ShowMainWindow(hWnd, monInfo, width, height);
+                    if( ( g_PenColor & 0xFFFFFF ) == COLOR_BLUR )
+                    {
+                        // Blur is not supported in LiveDraw
+                        g_PenColor = COLOR_RED;
+                    }
+                    // Highlight is not supported in LiveDraw
+                    g_PenColor |= 0xFF << 24;
+				}
+            }
+            break;
+
+        case SNIP_PANORAMA_HOTKEY:
+        case SNIP_PANORAMA_SAVE_HOTKEY:
+        case SNIP_SAVE_HOTKEY:
+        case SNIP_HOTKEY:
+        {
+            OutputDebugStringW((L"[Snip] Hotkey received: " + std::to_wstring(LOWORD(wParam)) +
+                L" (SNIP_SAVE=" + std::to_wstring(SNIP_SAVE_HOTKEY) +
+                L" SNIP=" + std::to_wstring(SNIP_HOTKEY) + L")\n").c_str());
+
+            const bool panoramaRequested = (LOWORD(wParam) == SNIP_PANORAMA_HOTKEY || LOWORD(wParam) == SNIP_PANORAMA_SAVE_HOTKEY);
+            const bool panoramaSaveToFile = (LOWORD(wParam) == SNIP_PANORAMA_SAVE_HOTKEY);
+
+            if( panoramaRequested )
+            {
+                LogPanoramaState( L"Panorama requested", wParam );
+                // Block liveZoom liveDraw snip due to mirroring bug
+                if( IsWindowVisible( g_hWndLiveZoom )
+                    && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    OutputDebug( L"[Panorama] Request ignored because liveDraw overlay is active\n" );
+                    break;
+                }
+
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
+                    Trace::ZoomItActivateSnip();
+                }
+#endif // __ZOOMIT_POWERTOYS__
+
+                if( g_Drawing )
+                {
+                    OutputDebug( L"[Panorama] Exiting drawing mode before capture\n" );
+                    SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                    if( g_Drawing )
+                    {
+                        SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                    }
+                }
+
+                if( g_Zoomed )
+                {
+                    OutputDebug( L"[Panorama] Exiting zoom before capture; zoomOnLiveZoom=%d\n", g_ZoomOnLiveZoom ? 1 : 0 );
+                    if( g_ZoomOnLiveZoom )
+                    {
+                        ShowCursor( false );
+                        SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                        ShowCursor( true );
+                    }
+                    else
+                    {
+                        SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                    }
+                }
+
+                g_PanoramaCaptureActive = true;
+                g_PanoramaStopRequested = false;
+                LogPanoramaState( L"Panorama capture armed", wParam );
+                auto panoramaCaptureCleanup = wil::scope_exit( [hWnd] {
+                    LogPanoramaState( L"Panorama cleanup begin" );
+                    g_PanoramaCaptureActive = false;
+                    g_PanoramaStopRequested = false;
+                    g_RecordCropping = FALSE;
+                    g_SelectRectangle.Stop();
+                    UNREFERENCED_PARAMETER( hWnd );
+                    LogPanoramaState( L"Panorama cleanup end" );
+                } );
+                const bool captureSuccess = panoramaSaveToFile
+                    ? RunPanoramaCaptureToFile( hWnd )
+                    : RunPanoramaCaptureToClipboard( hWnd );
+                OutputDebug( L"[Panorama] RunPanoramaCapture%s result=%d\n",
+                             panoramaSaveToFile ? L"ToFile" : L"ToClipboard",
+                             captureSuccess ? 1 : 0 );
+                if( !captureSuccess )
+                {
+                    OutputDebugStringW( panoramaSaveToFile
+                        ? L"[Panorama] Failed to save capture to file\n"
+                        : L"[Panorama] Failed to copy capture to clipboard\n" );
+                }
+                break;
+            }
+
+            // Block liveZoom liveDraw snip due to mirroring bug
+            if( IsWindowVisible( g_hWndLiveZoom )
+                && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+            {
+                break;
+            }
+
+            bool zoomed = true;
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
+                Trace::ZoomItActivateSnip();
+            }
+#endif // __ZOOMIT_POWERTOYS__
+
+            // First, static zoom
+            if( !g_Zoomed )
+            {
+                zoomed = false;
+                if( IsWindowVisible( g_hWndLiveZoom ) && !g_LiveZoomLevelOne )
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, LIVE_DRAW_ZOOM);
+                }
+                zoomLevel = zoomTelescopeTarget = 1;
+            }
+            else if( g_Drawing )
+            {
+                // Exit drawing mode to hide the drawing cursor
+                SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+
+                // Exit again if still in drawing mode, which happens from type mode
+                if( g_Drawing )
+                {
+                    SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                }
+            }
+            ShowMainWindow(hWnd, monInfo, width, height);
+
+            if( LOWORD( wParam ) == SNIP_SAVE_HOTKEY )
+            {
+                // IDC_SAVE_CROP handles cursor hiding internally after region selection
+                SendMessage( hWnd, WM_COMMAND, IDC_SAVE_CROP, ( zoomed ? 0 : SHALLOW_ZOOM ) );
+            }
+            else
+            {
+                SendMessage( hWnd, WM_COMMAND, IDC_COPY_CROP, ( zoomed ? 0 : SHALLOW_ZOOM ) );
+            }
+
+            // Now if we weren't zoomed, unzoom
+            if( !zoomed )
+            {
+                if( g_ZoomOnLiveZoom )
+                {
+                    // hiding the cursor allows for a cleaner transition back to the magnified cursor
+                    ShowCursor( false );
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    ShowCursor( true );
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                }
+            }
+
+            // exit zoom
+            if( g_Zoomed )
+            {
+                // If from liveDraw, extra care is needed to destruct
+                if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                {
+                    OutputDebug( L"Exiting liveDraw after snip\n" );
+                    SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
+                }
+            }
+            break;
+        }
+
+        case SNIP_OCR_HOTKEY:
+        {
+            OutputDebugStringW( L"[SnipOCR] Hotkey received\n" );
+
+            // Block liveZoom liveDraw snip OCR due to mirroring bug
+            if( IsWindowVisible( g_hWndLiveZoom )
+                && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+            {
+                break;
+            }
+
+            bool zoomed = true;
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
+                Trace::ZoomItActivateSnipOcr();
+            }
+#endif // __ZOOMIT_POWERTOYS__
+
+            // First, static zoom at 1x
+            if( !g_Zoomed )
+            {
+                zoomed = false;
+                if( IsWindowVisible( g_hWndLiveZoom ) && !g_LiveZoomLevelOne )
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, LIVE_DRAW_ZOOM );
+                }
+                zoomLevel = zoomTelescopeTarget = 1;
+            }
+            else if( g_Drawing )
+            {
+                SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                if( g_Drawing )
+                {
+                    SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                }
+            }
+            ShowMainWindow( hWnd, monInfo, width, height );
+
+            // Perform OCR on the selected region
+            SendMessage( hWnd, WM_COMMAND, IDC_COPY_OCR, ( zoomed ? 0 : SHALLOW_ZOOM ) );
+
+            // Now if we weren't zoomed, unzoom
+            if( !zoomed )
+            {
+                if( g_ZoomOnLiveZoom )
+                {
+                    ShowCursor( false );
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    ShowCursor( true );
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                }
+            }
+
+            // exit zoom
+            if( g_Zoomed )
+            {
+                if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                {
+                    OutputDebug( L"Exiting liveDraw after snip OCR\n" );
+                    SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
+                }
+            }
+            break;
+        }
+
+        case SAVE_IMAGE_HOTKEY:
+            SendMessage(hWnd, WM_COMMAND, IDC_SAVE, 0);
+            break;
+
+        case SAVE_CROP_HOTKEY:
+            SendMessage(hWnd, WM_COMMAND, IDC_SAVE_CROP, 0);
+            break;
+
+        case COPY_IMAGE_HOTKEY:
+            SendMessage(hWnd, WM_COMMAND, IDC_COPY, 0);
+            break;
+
+        case COPY_CROP_HOTKEY:
+            SendMessage(hWnd, WM_COMMAND, IDC_COPY_CROP, 0);
+            break;
+
+        case BREAK_HOTKEY:
+            //
+            // Go to break timer
+            //
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+            if( !g_Zoomed && ( !IsWindowVisible( g_hWndLiveZoom ) || g_LiveZoomLevelOne ) ) {
+#else
+            if( !g_Zoomed && !IsWindowVisible( g_hWndLiveZoom )) {
+#endif
+                SendMessage( hWnd, WM_COMMAND, IDC_BREAK, 0 );
+            }
+            break;
+
+        case DEMOTYPE_RESET_HOTKEY:
+            ResetDemoTypeIndex();
+            break;
+
+        case DEMOTYPE_HOTKEY:
+        {
+            //
+            // Live type
+            //
+            switch( StartDemoType( g_DemoTypeFile, g_DemoTypeSpeedSlider, g_DemoTypeUserDriven ) )
+            {
+            case ERROR_LOADING_FILE:
+                ErrorDialog( hWnd, L"Error loading DemoType file", GetLastError() );
+                break;
+
+            case NO_FILE_SPECIFIED:
+                MessageBox( hWnd, L"No DemoType file specified", APPNAME, MB_OK );
+                break;
+
+            case FILE_SIZE_OVERFLOW:
+            {
+                std::wstring msg = L"Unsupported DemoType file size ("
+                    + std::to_wstring( MAX_INPUT_SIZE ) + L" byte limit)";
+                MessageBox( hWnd, msg.c_str(), APPNAME, MB_OK );
+                break;
+            }
+
+            case UNKNOWN_FILE_DATA:
+                MessageBox( hWnd, L"Unrecognized DemoType file content", APPNAME, MB_OK );
+                break;
+            default:
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
+                    Trace::ZoomItActivateDemoType();
+                }
+#endif // __ZOOMIT_POWERTOYS__
+                break;
+            }
+            break;
+        }
+
+        case LIVE_HOTKEY:
+            //
+            // Live zoom
+            //
+            OutputDebug(L"*** LIVE_HOTKEY\n");
+
+            // If LiveZoom and LiveDraw are active then exit both
+            if( g_Zoomed && IsWindowVisible( g_hWndLiveZoom ) && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+            {
+                SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
+                PostMessage(hWnd, WM_HOTKEY, LIVE_HOTKEY, 0);
+                break;
+            }
+
+            if( !g_Zoomed && !g_TimerActive && ( !g_fullScreenWorkaround || !g_RecordToggle ) ) {
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
+                    Trace::ZoomItActivateLiveZoom();
+                }
+#endif // __ZOOMIT_POWERTOYS__
+
+                if( g_hWndLiveZoom == NULL ) {
+                    OutputDebug(L"Create LIVEZOOM\n");
+                    g_hWndLiveZoom = CreateWindowEx( WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TRANSPARENT,
+                        L"MagnifierClass", L"ZoomIt Live Zoom",
+                        WS_POPUP | WS_CLIPSIBLINGS,
+                        0, 0, 0, 0, NULL, NULL, g_hInstance, static_cast<PVOID>(GetForegroundWindow()) );
+                    if( g_hWndLiveZoom != NULL )
+                    {
+                        pSetLayeredWindowAttributes( hWnd, 0, 0, LWA_ALPHA );
+                        EnableWindow( g_hWndLiveZoom, FALSE );
+                        pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 1, &hWnd );
+                        ShowWindow( g_hWndLiveZoom, SW_SHOW );
+                    }
+
+                } else {
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+                    if( g_LiveZoomLevelOne ) {
+                        OutputDebug(L"liveZoom level one\n");
+                        SendMessage( g_hWndLiveZoom, WM_USER_SET_ZOOM, static_cast<WPARAM>(g_LiveZoomLevel), 0 );
+                    }
+                    else {
+#endif
+
+                    if( IsWindowVisible( g_hWndLiveZoom )) {
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+
+                        if( g_RecordToggle )
+                            g_LiveZoomLevel = g_ZoomLevels[g_SliderZoomLevel];
+#endif
+                        // Unzoom
+                        SendMessage( g_hWndLiveZoom, WM_KEYDOWN, VK_ESCAPE, 0 );
+
+                    } else {
+
+                        OutputDebug(L"Show liveZoom\n");
+                        ShowWindow( g_hWndLiveZoom, SW_SHOW );
+                    }
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+                    }
+#endif
+                }
+                OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
+                if (!pMagSetLensUseBitmapSmoothing(g_hWndLiveZoomMag, g_SmoothImage))
+                {
+                    OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
+                }
+
+                if ( g_RecordToggle )
+                {
+                    g_SelectRectangle.UpdateOwner( g_hWndLiveZoom );
+                }
+            }
+            break;
+
+        case RECORD_HOTKEY:
+        case RECORD_CROP_HOTKEY:
+        case RECORD_WINDOW_HOTKEY:
+        case RECORD_GIF_HOTKEY:
+        case RECORD_GIF_WINDOW_HOTKEY:
+
+            //
+            // Recording
+            // This gets entered twice per recording:
+            // 1. When the hotkey is pressed to start recording
+            // 2. When the hotkey is pressed to stop recording
+            //
+            if( g_fullScreenWorkaround && g_hWndLiveZoom != NULL && IsWindowVisible( g_hWndLiveZoom ) != FALSE )
+            {
+                break;
+            }
+
+            if( g_RecordCropping == TRUE )
+            {
+                break;
+            }
+
+            // Ignore recording hotkey when save dialog is open
+            if( g_bSaveInProgress )
+            {
+                break;
+            }
+
+            // Start screen recording
+            try
+            {
+                isCaptureSupported = winrt::GraphicsCaptureSession::IsSupported();
+            }
+            catch( const winrt::hresult_error& ) {}
+            if( !isCaptureSupported )
+            {
+                MessageBox( hWnd, L"Screen recording requires Windows 10, May 2019 Update or higher.", APPNAME, MB_OK );
+                break;
+            }
+
+            // If shift, then we're cropping
+            hWndRecord = 0;
+            if( wParam == RECORD_CROP_HOTKEY )
+            {
+                if( g_RecordToggle == TRUE )
+                {
+                    // Already recording
+                    break;
+                }
+
+                g_RecordCropping = TRUE;
+
+                POINT savedPoint{};
+                RECT savedClip = {};
+
+                // Handle the cursor for live zoom and static zoom modes.
+                if( IsLiveZoomActive() || ( g_Zoomed == TRUE ) )
+                {
+                    GetCursorPos( &savedPoint );
+                    UpdateMonitorInfo( savedPoint, &monInfo );
+                }
+                if( IsLiveZoomActive() )
+                {
+                    // Hide the magnified cursor.
+                    SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
+
+                    // Show the system cursor where the magnified was.
+                    g_LiveZoomSourceRect = *reinterpret_cast<RECT *>( SendMessage( g_hWndLiveZoom, WM_USER_GET_SOURCE_RECT, 0, 0 ) );
+                    savedPoint = ScalePointInRects( savedPoint, g_LiveZoomSourceRect, monInfo.rcMonitor );
+                    SetCursorPos( savedPoint.x, savedPoint.y );
+                    if ( pMagShowSystemCursor != nullptr )
+                    {
+                        pMagShowSystemCursor( TRUE );
+                    }
+                }
+                else if( ( g_Zoomed == TRUE ) && ( g_Drawing == TRUE ) )
+                {
+                    // Unclip the cursor.
+                    GetClipCursor( &savedClip );
+                    ClipCursor( nullptr );
+
+                    // Scale the cursor position to the zoomed and move it.
+                    auto point = ScalePointInRects( savedPoint, boundRc, monInfo.rcMonitor );
+                    SetCursorPos( point.x, point.y );
+                }
+
+                if( g_Zoomed == FALSE )
+                {
+                    SetWindowPos( hWnd, HWND_TOPMOST, monInfo.rcMonitor.left, monInfo.rcMonitor.top, width, height, SWP_SHOWWINDOW );
+                }
+
+                // This call blocks with a message loop while cropping.
+                g_SelectRectangle.AspectRatio( g_RecordAspectRatio ? 16.0 / 9.0 : 0.0 );
+                auto canceled = !g_SelectRectangle.Start( IsLiveZoomActive() ? g_hWndLiveZoom : hWnd );
+                g_RecordCropping = FALSE;
+
+                // Restore the cursor if applicable.
+                if( IsLiveZoomActive() )
+                {
+                    // Hide the system cursor.
+                    if ( pMagShowSystemCursor != nullptr )
+                    {
+                        pMagShowSystemCursor( FALSE );
+                    }
+
+                    // Show the magnified cursor where the system cursor was.
+                    GetCursorPos( &savedPoint );
+                    savedPoint = ScalePointInRects( savedPoint, monInfo.rcMonitor, g_LiveZoomSourceRect );
+                    SetCursorPos( savedPoint.x, savedPoint.y );
+                    SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, TRUE, 0 );
+                }
+                else if( g_Zoomed == TRUE )
+                {
+                    SetCursorPos( savedPoint.x, savedPoint.y );
+
+                    if ( g_Drawing == TRUE )
+                    {
+                        ClipCursor( &savedClip );
+                    }
+                }
+
+                SetForegroundWindow( hWnd );
+                if( g_Zoomed == FALSE )
+                {
+                    SetActiveWindow( hWnd );
+                    ShowWindow( hWnd, SW_HIDE );
+                }
+
+                if( canceled )
+                {
+                    break;
+                }
+
+                g_SelectRectangle.UpdateOwner( IsLiveZoomActive() ? g_hWndLiveZoom : hWnd );
+                cropRc = g_SelectRectangle.SelectedRect();
+            }
+            else
+            {
+                cropRc = {};
+
+                // if we're recording a window, get the window
+                if (wParam == RECORD_WINDOW_HOTKEY || wParam == RECORD_GIF_WINDOW_HOTKEY)
+                {
+                    GetCursorPos(&cursorPos);
+                    hWndRecord = WindowFromPoint(cursorPos);
+                    while( GetParent(hWndRecord) != NULL)
+                    {
+                        hWndRecord = GetParent(hWndRecord);
+                    }
+                    if( hWndRecord == GetDesktopWindow()) {
+
+                        hWndRecord = NULL;
+                    }
+                }
+
+                // Show a full-monitor recording border (yellow → orange once
+                // the first frame is captured) so the user knows something is
+                // happening, even for full-screen / window captures.
+                // Only create the border when starting a NEW recording
+                // (g_RecordToggle==FALSE).  On the second hotkey press (stop),
+                // skip this — StopRecording() will tear down the border.
+                if( g_RecordToggle == FALSE )
+                {
+                    OutputDebugStringW( L"[RecBorder] About to call SelectRectangle::Start(fullMonitor=true)\n" );
+                    try
+                    {
+                        // Pass NULL as owner — the main window may be hidden,
+                        // and owned popups of hidden owners are hidden too.
+                        g_SelectRectangle.AspectRatio( 0.0 );
+                        g_SelectRectangle.Start( nullptr, true );
+                        OutputDebugStringW( L"[RecBorder] SelectRectangle::Start returned OK\n" );
+                    }
+                    catch( ... )
+                    {
+                        OutputDebugStringW( L"[RecBorder] SelectRectangle::Start THREW an exception!\n" );
+                    }
+                }
+            }
+
+            if( g_RecordToggle == FALSE )
+            {
+                g_RecordToggle = TRUE;
+
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
+                    Trace::ZoomItActivateRecord();
+                }
+#endif // __ZOOMIT_POWERTOYS__
+
+                StartRecordingAsync( hWnd, &cropRc, hWndRecord );
+            }
+            else
+            {
+                StopRecording();
+            }
+            break;
+
+        case MIRROR_HOTKEY:
+        case MIRROR_CROP_HOTKEY:
+        case MIRROR_WINDOW_HOTKEY: {
+
+            //
+            // DemoMirror: mirror the screen, a region (Shift), or a window
+            // (Alt), including the mouse cursor, onto a second monitor on
+            // top of a slide show so the audience can follow a demo without
+            // the presenter leaving the presentation. Entered once to start
+            // mirroring and again to stop.
+            //
+            if( g_MirrorWindow.IsActive() ) {
+
+                g_MirrorWindow.Stop();
+                g_MirrorSelectRectangle.Stop();
+                break;
+            }
+
+            if( g_RecordCropping == TRUE || g_bSaveInProgress ) {
+
+                break;
+            }
+
+            bool mirrorCaptureSupported = false;
+            try {
+
+                mirrorCaptureSupported = winrt::GraphicsCaptureSession::IsSupported();
+            }
+            catch( const winrt::hresult_error& ) {}
+            if( !mirrorCaptureSupported ) {
+
+                MessageBox( hWnd, L"Screen mirroring requires Windows 10, May 2019 Update or higher.", APPNAME, MB_OK );
+                break;
+            }
+
+            HWND		hWndMirrorSource = NULL;
+            HMONITOR	mirrorSourceMonitor = NULL;
+            RECT		mirrorSourceRect = {};
+
+            if( wParam == MIRROR_WINDOW_HOTKEY ) {
+
+                // Mirror the top-level window under the cursor.
+                POINT mirrorPoint;
+                GetCursorPos( &mirrorPoint );
+                hWndMirrorSource = WindowFromPoint( mirrorPoint );
+                while( hWndMirrorSource != NULL && GetParent( hWndMirrorSource ) != NULL ) {
+
+                    hWndMirrorSource = GetParent( hWndMirrorSource );
+                }
+                if( hWndMirrorSource == NULL || hWndMirrorSource == GetDesktopWindow() ||
+                    hWndMirrorSource == hWnd ) {
+
+                    break;
+                }
+                mirrorSourceMonitor = MonitorFromWindow( hWndMirrorSource, MONITOR_DEFAULTTONEAREST );
+                mirrorSourceRect = MirrorWindow::GetWindowFrameRect( hWndMirrorSource );
+
+            } else if( wParam == MIRROR_CROP_HOTKEY ) {
+
+                // Select the region to mirror. The selection border stays up
+                // to show what's being mirrored; it is excluded from capture.
+                g_RecordCropping = TRUE;
+                g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
+                g_MirrorSelectRectangle.AspectRatio( 0.0 );
+                bool mirrorCanceled = !g_MirrorSelectRectangle.Start( nullptr, false, MIRROR_BORDER_COLOR );
+                g_RecordCropping = FALSE;
+                if( mirrorCanceled ) {
+
+                    break;
+                }
+                mirrorSourceRect = g_MirrorSelectRectangle.SelectedRect();
+                mirrorSourceMonitor = MonitorFromRect( &mirrorSourceRect, MONITOR_DEFAULTTONEAREST );
+
+                // The selection border defaults to translucent; make the
+                // mirror border fully opaque so it reads bright green.
+                SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
+
+            } else {
+
+                // Mirror the entire monitor under the cursor, with a
+                // full-monitor border showing that mirroring is active.
+                POINT mirrorPoint;
+                GetCursorPos( &mirrorPoint );
+                mirrorSourceMonitor = MonitorFromPoint( mirrorPoint, MONITOR_DEFAULTTONEAREST );
+                MONITORINFO mirrorMonitorInfo = { sizeof( mirrorMonitorInfo ) };
+                GetMonitorInfo( mirrorSourceMonitor, &mirrorMonitorInfo );
+                mirrorSourceRect = mirrorMonitorInfo.rcMonitor;
+
+                g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
+                g_MirrorSelectRectangle.AspectRatio( 0.0 );
+                g_MirrorSelectRectangle.Start( nullptr, true, MIRROR_BORDER_COLOR );
+                SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
+            }
+
+            HMONITOR mirrorTargetMonitor = FindMirrorTargetMonitor( mirrorSourceMonitor );
+            if( mirrorTargetMonitor == NULL ) {
+
+                g_MirrorSelectRectangle.Stop();
+                MessageBox( hWnd, L"Screen mirroring requires a second monitor.", APPNAME, MB_OK );
+                break;
+            }
+
+            // With window tracking, mirror the monitor region under the
+            // window instead of the window's own surface so ZoomIt zoom and
+            // draw annotations show in place.
+            bool mirrorTrackWindow = ( hWndMirrorSource != NULL && g_MirrorTrackWindow );
+
+            winrt::Windows::Graphics::Capture::GraphicsCaptureItem mirrorItem{ nullptr };
+            try {
+
+                if( hWndMirrorSource != NULL && !mirrorTrackWindow )
+                    mirrorItem = util::CreateCaptureItemForWindow( hWndMirrorSource );
+                else
+                    mirrorItem = util::CreateCaptureItemForMonitor( mirrorSourceMonitor );
+            }
+            catch( const winrt::hresult_error& ) {}
+
+            // Reports when a zoom/draw/live-zoom mode is active so a window
+            // mirror can temporarily capture the monitor instead - those
+            // modes render in overlay windows a window capture can't see.
+            auto mirrorAnnotationQuery = []() {
+                if( g_hWndLiveZoom != NULL && IsWindowVisible( g_hWndLiveZoom ))
+                    return MirrorWindow::AnnotationState::AnnotatingLiveZoom;
+                if( g_Zoomed )
+                    return MirrorWindow::AnnotationState::Annotating;
+                return MirrorWindow::AnnotationState::None;
+            };
+
+            HWND mirrorBorderWindow = hWndMirrorSource == NULL ? g_MirrorSelectRectangle.Window() : NULL;
+            if( mirrorItem == nullptr ||
+                !g_MirrorWindow.Start( mirrorItem, mirrorSourceRect, hWndMirrorSource,
+                                       mirrorSourceMonitor, mirrorTargetMonitor, hWnd,
+                                       mirrorAnnotationQuery, mirrorTrackWindow,
+                                       mirrorBorderWindow )) {
+
+                g_MirrorSelectRectangle.Stop();
+                MessageBox( hWnd, L"Unable to start screen mirroring.", APPNAME, MB_OK );
+            }
+            break;
+        }
+
+        case ZOOM_HOTKEY:
+            //
+            // Zoom
+            //
+            // Don't react to hotkey while options are open or we're
+            // saving the screen or live zoom is active
+            //
+            if( hWndOptions ) {
+
+                break;
+            }
+
+            OutputDebug( L"ZOOM HOTKEY: %d\n", lParam);
+            if( g_TimerActive ) {
+
+                //
+                // Finished with break timer
+                //
+                if( g_BreakOnSecondary )
+                {
+                    EnableDisableSecondaryDisplay( hWnd, FALSE, &secondaryDevMode );
+                }
+
+                if( lParam != SHALLOW_DESTROY )
+                {
+                    ShowWindow( hWnd, SW_HIDE );
+                    if( g_hBackgroundBmp )
+                    {
+                        DeleteObject( g_hBackgroundBmp );
+                        DeleteDC( g_hDcBackgroundFile );
+                        g_hBackgroundBmp = NULL;
+                    }
+                }
+
+                SetFocus( GetDesktopWindow() );
+                KillTimer( hWnd, 0 );
+                g_TimerActive = FALSE;
+
+                DeleteObject( hTimerFont );
+                DeleteObject( hNegativeTimerFont );
+                DeleteDC( hdcScreen );
+                DeleteDC( hdcScreenCompat );
+                DeleteDC( hdcScreenSaveCompat );
+                DeleteDC( hdcScreenCursorCompat );
+                DeleteObject( hbmpCompat );
+                EnableDisableScreenSaver( TRUE );
+                EnableDisableOpacity( hWnd, FALSE );
+
+            } else {
+
+                SendMessage( hWnd, WM_USER_TYPING_OFF, 0, 0 );
+                if( !g_Zoomed ) {
+
+                    g_Zoomed = TRUE;
+                    g_DrawingShape = FALSE;
+                    OutputDebug( L"Zoom on\n");
+
+                    // Register Ctrl+C and Ctrl+S hotkeys only during static zoom
+                    RegisterHotKey(hWnd, COPY_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C');
+                    RegisterHotKey(hWnd, COPY_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'C');
+                    RegisterHotKey(hWnd, SAVE_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'S');
+                    RegisterHotKey(hWnd, SAVE_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'S');
+
+#ifdef __ZOOMIT_POWERTOYS__
+                    if( g_StartedByPowerToys )
+                    {
+                        Trace::ZoomItActivateZoom();
+                    }
+#endif // __ZOOMIT_POWERTOYS__
+
+                    // Hide the cursor before capturing if in live zoom
+                    if( IsLiveZoomActive() )
+                    {
+                        OutputDebug(L"Hide cursor\n");
+                        SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
+                        SendMessage( g_hWndLiveZoom, WM_TIMER, 0, 0 );
+                        SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
+                    }
+
+                    // Get screen DCs
+                    hdcScreen = CreateDC(L"DISPLAY", static_cast<PTCHAR>(NULL),
+                            static_cast<PTCHAR>(NULL), static_cast<CONST DEVMODE *>(NULL));
+                    hdcScreenCompat = CreateCompatibleDC(hdcScreen);
+                    hdcScreenSaveCompat = CreateCompatibleDC(hdcScreen);
+                    hdcScreenCursorCompat = CreateCompatibleDC(hdcScreen);
+
+                    // Determine what monitor we're on
+                    GetCursorPos(&cursorPos);
+                    UpdateMonitorInfo( cursorPos, &monInfo );
+                    width = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
+                    height = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
+                    OutputDebug( L"ZOOM x: %d y: %d width: %d height: %d zoomLevel: %g\n",
+                            cursorPos.x, cursorPos.y, width, height, zoomLevel );
+
+                    // Create display bitmap
+                    bmp.bmBitsPixel = static_cast<BYTE>(GetDeviceCaps(hdcScreen, BITSPIXEL));
+                    bmp.bmPlanes = static_cast<BYTE>(GetDeviceCaps(hdcScreen, PLANES));
+                    bmp.bmWidth = width;
+                    bmp.bmHeight = height;
+                    bmp.bmWidthBytes = ((bmp.bmWidth + 15) &~15)/8;
+                    hbmpCompat = CreateBitmap(bmp.bmWidth, bmp.bmHeight,
+                        bmp.bmPlanes, bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
+                     SelectObject(hdcScreenCompat, hbmpCompat);
+
+                    // Create saved bitmap
+                    hbmpDrawingCompat = CreateBitmap(bmp.bmWidth, bmp.bmHeight,
+                        bmp.bmPlanes, bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
+                    SelectObject(hdcScreenSaveCompat, hbmpDrawingCompat);
+
+                    // Create cursor save bitmap
+                    // (have to accommodate large fonts and LiveZoom pen scaling)
+                    hbmpCursorCompat = CreateBitmap( MAX_LIVE_PEN_WIDTH+CURSOR_ARM_LENGTH*2,
+                        MAX_LIVE_PEN_WIDTH+CURSOR_ARM_LENGTH*2, bmp.bmPlanes,
+                        bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
+                    SelectObject(hdcScreenCursorCompat, hbmpCursorCompat);
+
+                    // Create typing font
+                    g_LogFont.lfHeight = height / 15;
+                    if (g_LogFont.lfHeight < 20)
+                        g_LogFont.lfQuality = NONANTIALIASED_QUALITY;
+                    else
+                        g_LogFont.lfQuality = ANTIALIASED_QUALITY;
+                    hTypingFont = CreateFontIndirect(&g_LogFont);
+                    SelectObject(hdcScreenCompat, hTypingFont);
+                    SetTextColor(hdcScreenCompat, g_PenColor & 0xFFFFFF);
+                    SetBkMode(hdcScreenCompat, TRANSPARENT);
+
+                    // Use the screen DC unless recording, because it contains the yellow border
+                    HDC hdcSource = hdcScreen;
+                    if( g_RecordToggle ) try {
+
+                        auto capture = CaptureScreenshot( winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized );
+                        auto bytes = CopyBytesFromTexture( capture );
+
+                        D3D11_TEXTURE2D_DESC desc;
+                        capture->GetDesc( &desc );
+                        BITMAPINFO bitmapInfo = {};
+                        bitmapInfo.bmiHeader.biSize = sizeof bitmapInfo.bmiHeader;
+                        bitmapInfo.bmiHeader.biWidth = desc.Width;
+                        bitmapInfo.bmiHeader.biHeight = -static_cast<LONG>(desc.Height);
+                        bitmapInfo.bmiHeader.biPlanes = 1;
+                        bitmapInfo.bmiHeader.biBitCount = 32;
+                        bitmapInfo.bmiHeader.biCompression = BI_RGB;
+                        void *bits;
+                        auto dib = CreateDIBSection( NULL, &bitmapInfo, DIB_RGB_COLORS, &bits, nullptr, 0 );
+                        if( dib ) {
+
+                            CopyMemory( bits, bytes.data(), bytes.size() );
+                            auto hdcCapture = CreateCompatibleDC( hdcScreen );
+                            SelectObject( hdcCapture, dib );
+                            hdcSource = hdcCapture;
+                        }
+
+                    } catch( const winrt::hresult_error& ) {} // on any failure, fall back to the screen DC
+
+                    bool captured = hdcSource != hdcScreen;
+
+                    // paint the initial bitmap
+                    BitBlt( hdcScreenCompat, 0, 0, bmp.bmWidth, bmp.bmHeight, hdcSource,
+                        captured ? 0 : monInfo.rcMonitor.left, captured ? 0 : monInfo.rcMonitor.top, SRCCOPY|CAPTUREBLT );
+                    BitBlt( hdcScreenSaveCompat, 0, 0, bmp.bmWidth, bmp.bmHeight, hdcSource,
+                        captured ? 0 : monInfo.rcMonitor.left, captured ? 0 : monInfo.rcMonitor.top, SRCCOPY|CAPTUREBLT );
+
+                    if( captured )
+                    {
+                        OutputDebug(L"Captured screen\n");
+                        auto bitmap = GetCurrentObject( hdcSource, OBJ_BITMAP );
+                        DeleteObject( bitmap );
+                        DeleteDC( hdcSource );
+                    }
+
+                    // Create drawing pen
+                    hDrawingPen = CreatePen(PS_SOLID, g_PenWidth, g_PenColor & 0xFFFFFF);
+
+                    g_BlankedScreen = FALSE;
+                    g_HaveTyped = FALSE;
+                    g_Drawing = FALSE;
+                    g_TypeMode = TypeModeOff;
+                    g_HaveDrawn = FALSE;
+                    EnableDisableStickyKeys( TRUE );
+
+                    // Go full screen
+                    g_ActiveWindow = GetForegroundWindow();
+                    OutputDebug( L"active window: %x\n", PtrToLong(g_ActiveWindow) );
+
+                    if( lParam != LIVE_DRAW_ZOOM) {
+
+                        OutputDebug(L"Calling ShowMainWindow\n");
+                        ShowMainWindow(hWnd, monInfo, width, height);
+                    }
+
+                    // Start telescoping zoom. Lparam is non-zero if this
+                    // was a real hotkey and not the message we send ourself to enter
+                    // unzoomed drawing mode.
+
+                    //
+                    // Are we switching from live zoom to standard zoom?
+                    //
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+                    if( IsWindowVisible( g_hWndLiveZoom ) && !g_LiveZoomLevelOne ) {
+#else
+                    if( IsWindowVisible( g_hWndLiveZoom )) {
+#endif
+
+                        // Enter drawing mode
+                        OutputDebug(L"Enter liveZoom draw\n");
+                        g_LiveZoomSourceRect = *reinterpret_cast<RECT *>(SendMessage( g_hWndLiveZoom, WM_USER_GET_SOURCE_RECT, 0, 0 ));
+                        g_LiveZoomLevel = *reinterpret_cast<float*>(SendMessage(g_hWndLiveZoom, WM_USER_GET_ZOOM_LEVEL, 0, 0));
+
+                        // Set live zoom level to 1 in preparation of us being full screen static
+                        zoomLevel = 1.0;
+                        zoomTelescopeTarget = 1.0;
+                        if (lParam != LIVE_DRAW_ZOOM) {
+
+                            g_ZoomOnLiveZoom = TRUE;
+                        }
+
+                        UpdateWindow( hWnd ); // overwrites where cursor erased
+                        if( lParam != SHALLOW_ZOOM )
+                        {
+                            // Put the drawing cursor where the magnified cursor was
+                            OutputDebug(L"Setting cursor\n");
+
+                            if (lParam != LIVE_DRAW_ZOOM)
+                            {
+                                cursorPos = ScalePointInRects( cursorPos, g_LiveZoomSourceRect, monInfo.rcMonitor );
+                                SetCursorPos( cursorPos.x, cursorPos.y );
+                                UpdateWindow( hWnd ); // overwrites where cursor erased
+                                SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y ));
+                            }
+                        }
+                        else
+                        {
+                            InvalidateRect( hWnd, NULL, FALSE );
+                        }
+                        UpdateWindow( hWnd );
+                        if( g_RecordToggle )
+                        {
+                            g_SelectRectangle.UpdateOwner( hWnd );
+                        }
+                        if( lParam != LIVE_DRAW_ZOOM ) {
+
+                            OutputDebug(L"Calling ShowMainWindow 2\n");
+
+                            ShowWindow( g_hWndLiveZoom, SW_HIDE );
+                        }
+
+                    } else if( lParam != 0 && lParam != LIVE_DRAW_ZOOM ) {
+
+                        zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
+                        if( g_AnimateZoom )
+                        {
+                            zoomLevel = 1.0f;
+                            zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
+                                                 ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
+                        }
+                        else
+                        {
+                            zoomLevel = zoomTelescopeTarget;
+                            zoomAnimation.Stop( zoomLevel );
+                        }
+                        SetTimer( hWnd, 1, ZOOM_ANIMATION_FRAME_TIME, NULL );
+                    }
+
+                } else {
+
+                    OutputDebug( L"Zoom off: don't animate=%d\n", lParam );
+                    // turn off liveDraw
+                    SetLayeredWindowAttributes(hWnd, 0, 255, LWA_ALPHA);
+
+                    if( lParam != SHALLOW_DESTROY && !g_ZoomOnLiveZoom && g_AnimateZoom &&
+                        g_TelescopeZoomOut && zoomTelescopeTarget != 1 ) {
+
+                        // Start telescoping zoom.
+                        zoomTelescopeTarget = 1.0;
+                        zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
+                                             ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
+                        SetTimer( hWnd, 2, ZOOM_ANIMATION_FRAME_TIME, NULL );
+
+                    } else {
+
+                        // Simulate timer expiration
+                        zoomTelescopeTarget = zoomLevel = 1.0;
+                        zoomAnimation.Stop( zoomLevel );
+                        SendMessage( hWnd, WM_TIMER, 2, lParam );
+                    }
+                }
+            }
+            break;
+        }
+        return TRUE;
+
+    case WM_POINTERUPDATE: {
+        penInverted = IsPenInverted(wParam);
+        OutputDebug( L"WM_POINTERUPDATE: contact: %d button down: %d X: %d Y: %d\n",
+            IS_POINTER_INCONTACT_WPARAM(wParam),
+            penInverted,
+            GET_X_LPARAM(lParam),
+            GET_Y_LPARAM(lParam));
+        if( penInverted != g_PenInverted) {
+
+            g_PenInverted = penInverted;
+            if (g_PenInverted) {
+                if (PopDrawUndo(hdcScreenCompat, &drawUndoList, width, height)) {
+
+                    SaveCursorArea(hdcScreenCursorCompat, hdcScreenCompat, prevPt);
+                    InvalidateRect(hWnd, NULL, FALSE);
+                }
+            }
+        } else if( g_PenDown && !penInverted) {
+
+            SendPenMessage(hWnd, WM_MOUSEMOVE, lParam);
+        }
+        }
+        return TRUE;
+
+    case WM_POINTERUP:
+        OutputDebug(L"WM_POINTERUP\n");
+        penInverted = IsPenInverted(wParam);
+        if (!penInverted) {
+
+            SendPenMessage(hWnd, WM_LBUTTONUP, lParam);
+            SendPenMessage(hWnd, WM_RBUTTONDOWN, lParam);
+            g_PenDown = FALSE;
+        }
+        break;
+
+    case WM_POINTERDOWN:
+        OutputDebug(L"WM_POINTERDOWN\n");
+        penInverted = IsPenInverted(wParam);
+        if (!penInverted) {
+
+            g_PenDown = TRUE;
+
+            // Enter drawing mode
+            SendPenMessage(hWnd, WM_LBUTTONDOWN, lParam);
+            SendPenMessage(hWnd, WM_MOUSEMOVE, lParam);
+            SendPenMessage(hWnd, WM_LBUTTONUP, lParam);
+            SendPenMessage(hWnd, WM_MOUSEMOVE, lParam);
+            PopDrawUndo(hdcScreenCompat, &drawUndoList, width, height);
+
+            // Enter tracing mode
+            SendPenMessage(hWnd, WM_LBUTTONDOWN, lParam);
+        }
+        break;
+
+    case WM_KILLFOCUS:
+        if( ( g_RecordCropping == FALSE ) && g_Zoomed && !g_bSaveInProgress ) {
+
+            // Don't exit zoom when focus moves to the webcam overlay
+            if( g_WebcamPreview.IsActive() &&
+                reinterpret_cast<HWND>( wParam ) == g_WebcamPreview.GetHwnd() )
+            {
+                break;
+            }
+
+            // Turn off zoom if not in liveDraw
+            DWORD layeringFlag;
+            GetLayeredWindowAttributes(hWnd, NULL, NULL, &layeringFlag);
+            if( !(layeringFlag & LWA_COLORKEY)) {
+
+                PostMessage(hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0);
+            }
+        }
+        break;
+
+    case WM_MOUSEWHEEL:
+
+        //
+        // Zoom or modify break timer
+        //
+        if( GET_WHEEL_DELTA_WPARAM(wParam) < 0 )
+            wParam -= (WHEEL_DELTA-1) << 16;
+        else
+            wParam += (WHEEL_DELTA-1) << 16;
+        delta = GET_WHEEL_DELTA_WPARAM(wParam)/WHEEL_DELTA;
+        OutputDebug( L"mousewheel: wParam: %d delta: %d\n",
+                GET_WHEEL_DELTA_WPARAM(wParam), delta );
+        if( g_Zoomed ) {
+
+            if( g_TypeMode == TypeModeOff ) {
+
+                if( g_Drawing && (LOWORD( wParam ) & MK_CONTROL) ) {
+
+                    ResizePen( hWnd, hdcScreenCompat, hdcScreenCursorCompat, prevPt,
+                        g_Tracing, &g_Drawing, g_LiveZoomLevel, TRUE, g_PenWidth + delta );
+
+                // Perform static zoom unless in liveDraw
+                } else if( !( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) ) {
+
+                    if( delta > 0 ) zoomIn = TRUE;
+                    else {
+                        zoomIn = FALSE;
+                        delta = -delta;
+                    }
+                    while( delta-- ) {
+
+                        if( zoomIn ) {
+
+                            if( zoomTelescopeTarget < ZOOM_LEVEL_MAX ) {
+
+                                if( zoomTelescopeTarget < 2 ) {
+
+                                    zoomTelescopeTarget = 2;
+
+                                } else {
+
+                                    // Start telescoping zoom
+                                    zoomTelescopeTarget = zoomTelescopeTarget * 2;
+                                }
+                                if( g_AnimateZoom )
+                                    zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                                      ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
+                                else
+                                {
+                                    zoomLevel = zoomTelescopeTarget;
+                                    zoomAnimation.Stop( zoomLevel );
+                                }
+
+                                if( zoomLevel > zoomTelescopeTarget )
+                                    zoomLevel = zoomTelescopeTarget;
+                                else
+                                    SetTimer( hWnd, 1, ZOOM_ANIMATION_FRAME_TIME, NULL );
+                            }
+
+                        } else if( zoomTelescopeTarget > ZOOM_LEVEL_MIN ) {
+
+                            // Let them more gradually zoom out from 2x to 1x
+                            if( zoomTelescopeTarget <= 2 ) {
+
+                                zoomTelescopeTarget *= .75;
+                                if( zoomTelescopeTarget < ZOOM_LEVEL_MIN )
+                                    zoomTelescopeTarget = ZOOM_LEVEL_MIN;
+
+                            } else {
+
+                                zoomTelescopeTarget = zoomTelescopeTarget/2;
+                            }
+                            if( g_AnimateZoom )
+                                zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                                  ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
+                            else
+                            {
+                                zoomLevel = zoomTelescopeTarget;
+                                zoomAnimation.Stop( zoomLevel );
+                            }
+
+                            if( zoomLevel < zoomTelescopeTarget )
+                            {
+                                zoomLevel = zoomTelescopeTarget;
+                                // Force update on final step out
+                                InvalidateRect( hWnd, NULL, FALSE );
+                            }
+                            else
+                            {
+                                SetTimer( hWnd, 1, ZOOM_ANIMATION_FRAME_TIME, NULL );
+                            }
+                        }
+                    }
+                    if( zoomLevel != zoomTelescopeTarget ) {
+
+                        if( g_Drawing ) {
+
+                            if( !g_Tracing ) {
+
+                                RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                            }
+                            //SetCursorPos( monInfo.rcMonitor.left + cursorPos.x,
+                            //		monInfo.rcMonitor.top + cursorPos.y );
+                        }
+                        InvalidateRect( hWnd, NULL, FALSE );
+                    }
+                }
+            } else {
+
+                // Resize the text font
+                if( (delta > 0 && g_FontScale > -20) || (delta < 0 && g_FontScale < 50 )) {
+
+                    ClearTypingCursor(hdcScreenCompat, hdcScreenCursorCompat, cursorRc, g_BlankedScreen);
+
+                    g_FontScale -= delta;
+                    if( g_FontScale == 0 ) g_FontScale = 1;
+                    // Set lParam to 0 as part of message to keyup handler
+                    DeleteObject(hTypingFont);
+                    g_LogFont.lfHeight = max((int)(height / zoomLevel) / g_FontScale, 12);
+                    if (g_LogFont.lfHeight < 20)
+                        g_LogFont.lfQuality = NONANTIALIASED_QUALITY;
+                    else
+                        g_LogFont.lfQuality = ANTIALIASED_QUALITY;
+                    hTypingFont = CreateFontIndirect(&g_LogFont);
+                    SelectObject(hdcScreenCompat, hTypingFont);
+
+                    DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+                }
+            }
+        } else if( g_TimerActive && (breakTimeout > 0 || delta )) {
+
+            if( delta ) {
+
+                if( breakTimeout < 0 ) breakTimeout = 0;
+                if( breakTimeout % 60 ) {
+                    breakTimeout += (60 - breakTimeout % 60);
+                    delta--;
+                }
+                breakTimeout += delta * 60;
+
+            } else {
+
+                if( breakTimeout % 60 ) {
+                    breakTimeout -= breakTimeout % 60;
+                    delta--;
+                }
+                breakTimeout -= delta * 60;
+            }
+            if( breakTimeout < 0 ) breakTimeout = 0;
+            KillTimer( hWnd, 0 );
+            SetTimer( hWnd, 0, 1000, NULL );
+            InvalidateRect( hWnd, NULL, TRUE );
+        }
+
+        if( zoomLevel != 1 && g_Drawing ) {
+
+            // Constrain the mouse to the visible region
+            boundRc = BoundMouse( zoomTelescopeTarget, &monInfo, width, height, &cursorPos );
+
+        } else {
+
+            ClipCursor( NULL );
+        }
+        return TRUE;
+
+    case WM_IME_CHAR:
+    case WM_CHAR:
+
+        if( (g_TypeMode != TypeModeOff) &&
+            (iswprint(static_cast<TCHAR>(wParam)) || (static_cast<TCHAR>(wParam) == L'&')) ) {
+            g_HaveTyped = TRUE;
+
+            TCHAR	 vKey = static_cast<TCHAR>(wParam);
+
+            g_HaveDrawn = TRUE;
+
+            // Clear typing cursor
+            rc.left = textPt.x;
+            rc.top = textPt.y;
+            ClearTypingCursor( hdcScreenCompat, hdcScreenCursorCompat, cursorRc, g_BlankedScreen );
+            if (g_TypeMode == TypeModeRightJustify) {
+
+                if( !g_TextBuffer.empty() || !g_TextBufferPreviousLines.empty() ) {
+
+                    PopDrawUndo(hdcScreenCompat, &drawUndoList, width, height); //***
+                }
+                PushDrawUndo(hdcScreenCompat, &drawUndoList, width, height);
+
+                // Restore previous lines.
+                wParam = 'X';
+                DrawText(hdcScreenCompat, reinterpret_cast<PTCHAR>(&wParam), 1, &rc, DT_CALCRECT);
+                const auto lineHeight = rc.bottom - rc.top;
+
+                rc.top -= static_cast< LONG >( g_TextBufferPreviousLines.size() ) * lineHeight;
+
+                // Draw the current character on the current line.
+                g_TextBuffer += vKey;
+                drawAllRightJustifiedLines( lineHeight );
+            }
+            else {
+                DrawText( hdcScreenCompat, &vKey, 1, &rc, DT_CALCRECT|DT_NOPREFIX);
+                DrawText( hdcScreenCompat, &vKey, 1, &rc, DT_LEFT|DT_NOPREFIX);
+                textPt.x += rc.right - rc.left;
+            }
+            InvalidateRect( hWnd, NULL, TRUE );
+
+            // Save the key for undo
+            P_TYPED_KEY newKey = static_cast<P_TYPED_KEY>(malloc( sizeof(TYPED_KEY) ));
+            newKey->rc = rc;
+            newKey->Next = typedKeyList;
+            typedKeyList = newKey;
+
+            // Draw the typing cursor
+            DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+            return FALSE;
+        }
+        break;
+
+    case WM_KEYUP:
+        if( wParam == 'T' && (g_TypeMode == TypeModeOff)) {
+
+            // lParam is 0 when we're resizing the font and so don't have a cursor that
+            // we need to restore
+            if( !g_Drawing && lParam == 0 ) {
+
+                OutputDebug(L"Entering typing mode and resetting cursor position\n");
+                SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
+            }
+
+            // Do they want to right-justify text?
+            OutputDebug(L"Keyup Shift: %x\n", GetAsyncKeyState(VK_SHIFT));
+            if(GetAsyncKeyState(VK_SHIFT) != 0 ) {
+
+                g_TypeMode = TypeModeRightJustify;
+                g_TextBuffer.clear();
+
+                // Also empty all previous lines
+                g_TextBufferPreviousLines = {};
+            }
+            else {
+
+                g_TypeMode = TypeModeLeftJustify;
+            }
+            textStartPt = cursorPos;
+            textPt = prevPt;
+
+            g_HaveTyped = FALSE;
+
+            // Get a font of a decent size
+            DeleteObject( hTypingFont );
+            g_LogFont.lfHeight = max( (int) (height / zoomLevel)/g_FontScale, 12 );
+            if (g_LogFont.lfHeight < 20)
+                g_LogFont.lfQuality = NONANTIALIASED_QUALITY;
+            else
+                g_LogFont.lfQuality = ANTIALIASED_QUALITY;
+            hTypingFont = CreateFontIndirect( &g_LogFont );
+            SelectObject( hdcScreenCompat, hTypingFont );
+
+            // If lparam == 0 that means that we sent the message as part of a font resize
+            if( g_Drawing && lParam != 0) {
+
+                RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+
+            } else if( !g_Drawing ) {
+
+                textPt = cursorPos;
+            }
+
+            // Draw the typing cursor
+            DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc, true );
+            prevPt = textPt;
+        }
+        break;
+
+    case WM_KEYDOWN:
+
+        if( (g_TypeMode != TypeModeOff) && g_HaveTyped && wParam != VK_UP && wParam != VK_DOWN &&
+            (( wParam <= 127 && isprint( static_cast<int>( wParam ) ) ) ||
+            wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK )) {
+
+            if( wParam == VK_RETURN ) {
+
+                // Clear the typing cursor
+                ClearTypingCursor( hdcScreenCompat, hdcScreenCursorCompat, cursorRc, g_BlankedScreen );
+
+                if( g_TypeMode == TypeModeRightJustify )
+                {
+                    g_TextBufferPreviousLines.push_back( g_TextBuffer );
+                    g_TextBuffer.clear();
+                }
+                else
+                {
+                    // Insert a fake return key in the list to undo.
+                    P_TYPED_KEY newKey = static_cast<P_TYPED_KEY>(malloc(sizeof(TYPED_KEY)));
+                    newKey->rc.left = textPt.x;
+                    newKey->rc.top = textPt.y;
+                    newKey->rc.right = newKey->rc.left;
+                    newKey->rc.bottom = newKey->rc.top;
+                    newKey->Next = typedKeyList;
+                    typedKeyList = newKey;
+                }
+
+                wParam = 'X';
+                DrawText( hdcScreenCompat, reinterpret_cast<PTCHAR>(&wParam), 1, &rc, DT_CALCRECT );
+                textPt.x = prevPt.x; // + g_PenWidth;
+                textPt.y += rc.bottom - rc.top;
+
+                // Draw the typing cursor
+                DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+            } else if( wParam == VK_DELETE || wParam == VK_BACK ) {
+
+                P_TYPED_KEY	deletedKey = typedKeyList;
+                if( deletedKey ) {
+
+                    // Clear the typing cursor
+                    ClearTypingCursor( hdcScreenCompat, hdcScreenCursorCompat, cursorRc, g_BlankedScreen );
+
+                    if( g_TypeMode == TypeModeRightJustify ) {
+
+                        if( !g_TextBuffer.empty() || !g_TextBufferPreviousLines.empty() ) {
+
+                            PopDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+                        }
+                        PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+
+                        rc.left = textPt.x;
+                        rc.top = textPt.y;
+
+                        // Restore the previous lines.
+                        wParam = 'X';
+                        DrawText( hdcScreenCompat, reinterpret_cast<PTCHAR>(&wParam), 1, &rc, DT_CALCRECT );
+                        const auto lineHeight = rc.bottom - rc.top;
+
+                        const bool lineWasEmpty = g_TextBuffer.empty();
+                        drawAllRightJustifiedLines( lineHeight, true );
+                        if( lineWasEmpty && !g_TextBufferPreviousLines.empty() )
+                        {
+                            g_TextBuffer = g_TextBufferPreviousLines.back();
+                            g_TextBufferPreviousLines.pop_back();
+                            textPt.y -= lineHeight;
+                        }
+                    }
+                    else {
+                        RECT rect = deletedKey->rc;
+                        if (g_BlankedScreen) {
+
+                            BlankScreenArea(hdcScreenCompat, &rect, g_BlankedScreen);
+                        }
+                        else {
+
+                            BitBlt(hdcScreenCompat, rect.left, rect.top, rect.right - rect.left,
+                                rect.bottom - rect.top, hdcScreenSaveCompat, rect.left, rect.top, SRCCOPY | CAPTUREBLT );
+                        }
+                        InvalidateRect( hWnd, NULL, FALSE );
+
+                        textPt.x = rect.left;
+                        textPt.y = rect.top;
+
+                        typedKeyList = deletedKey->Next;
+                        free(deletedKey);
+
+                        // Refresh cursor if we deleted the last key
+                        if( typedKeyList == NULL ) {
+
+                            SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ) );
+                        }
+                    }
+                    DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+                }
+            }
+            break;
+        }
+        switch (wParam) {
+        case 'R':
+        case 'B':
+        case 'Y':
+        case 'O':
+        case 'G':
+        case 'X':
+        case 'P':
+        case 'W':
+        case 'K':
+            // Ctrl+K / Ctrl+W: blank screen (sketch pad)
+            // Also triggered internally via SendMessage with lParam == LIVE_DRAW_ZOOM.
+            if( (wParam == 'K' || wParam == 'W') &&
+                ((GetKeyState( VK_CONTROL ) & 0x8000) || lParam == LIVE_DRAW_ZOOM) )
+            {
+                // Break timer: change background color
+                if( g_TimerActive )
+                {
+                    g_BreakBackgroundColor = ( wParam == 'K' ) ? 1 : 0;
+                    reg.WriteRegSettings( RegSettings );
+                    InvalidateRect( hWnd, NULL, FALSE );
+                    break;
+                }
+
+                // Block user-driven sketch pad in liveDraw
+                if( lParam != LIVE_DRAW_ZOOM
+                    && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    break;
+                }
+
+                // Don't allow screen blanking while we've got the typing cursor active
+                // because we don't really handle going from white to black.
+                if( g_Zoomed && (g_TypeMode == TypeModeOff)) {
+
+                    if( !g_Drawing ) {
+
+                        SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
+                    }
+                    // Restore area where cursor was previously
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                    PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+                    g_BlankedScreen = static_cast<int>(wParam);
+                    rc.top = rc.left = 0;
+                    rc.bottom = height;
+                    rc.right = width;
+                    BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
+                    InvalidateRect( hWnd, NULL, FALSE );
+
+                    // Save area that's going to be occupied by new cursor position
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                    SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
+                }
+                break;
+            }
+
+            if( (g_Zoomed || g_TimerActive) && (g_TypeMode == TypeModeOff)) {
+
+                PDWORD	penColor;
+                if( g_TimerActive )
+                    penColor = &g_BreakPenColor;
+                else
+                    penColor = &g_PenColor;
+
+                if( wParam == 'R' )		 *penColor = COLOR_RED;
+                else if( wParam == 'G' ) *penColor = COLOR_GREEN;
+                else if( wParam == 'B' ) *penColor = COLOR_BLUE;
+                else if( wParam == 'Y' ) *penColor = COLOR_YELLOW;
+                else if( wParam == 'O' ) *penColor = COLOR_ORANGE;
+                else if( wParam == 'P' ) *penColor = COLOR_PINK;
+                else if( wParam == 'W' ) *penColor = COLOR_WHITE;
+                else if( wParam == 'K' ) *penColor = COLOR_BLACK;
+                else if( wParam == 'X' )
+                {
+                    if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                    {
+                        // Blur is not supported in LiveDraw
+                        break;
+                    }
+                    *penColor = COLOR_BLUR;
+                }
+
+                bool shift = GetKeyState( VK_SHIFT ) & 0x8000;
+                if( shift && ( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    // Highlight is not supported in LiveDraw
+                    break;
+                }
+
+                reg.WriteRegSettings( RegSettings );
+                DeleteObject( hDrawingPen );
+                SetTextColor( hdcScreenCompat, *penColor );
+
+                // Highlight and blur level
+                if( shift && *penColor != COLOR_BLUR )
+                {
+                    *penColor |= (g_AlphaBlend << 24);
+                }
+                else
+                {
+                    if( *penColor == COLOR_BLUR )
+                    {
+                        g_BlurRadius = shift ? STRONG_BLUR_RADIUS : NORMAL_BLUR_RADIUS;
+                    }
+                    *penColor |= (0xFF << 24);
+                }
+                hDrawingPen = CreatePen(PS_SOLID, g_PenWidth, *penColor & 0xFFFFFF);
+
+                SelectObject( hdcScreenCompat, hDrawingPen );
+                if( g_Drawing ) {
+
+                    SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
+
+                } else if( g_TimerActive ) {
+
+                    InvalidateRect( hWnd, NULL, FALSE );
+
+                } else if( g_TypeMode != TypeModeOff ) {
+
+                    ClearTypingCursor( hdcScreenCompat, hdcScreenCursorCompat, cursorRc, g_BlankedScreen );
+                    DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc );
+                    InvalidateRect( hWnd, NULL, FALSE );
+                }
+            }
+            break;
+
+        case 'Z':
+            if( (GetKeyState( VK_CONTROL ) & 0x8000 ) && g_HaveDrawn && !g_Tracing ) {
+
+                if( PopDrawUndo( hdcScreenCompat, &drawUndoList, width, height )) {
+
+                    if( g_Drawing ) {
+
+                        SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                        SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
+                    }
+                    else {
+
+                        SaveCursorArea(hdcScreenCursorCompat, hdcScreenCompat, prevPt);
+                    }
+                    InvalidateRect( hWnd, NULL, FALSE );
+                }
+            }
+            break;
+
+        case VK_SPACE:
+            if( g_Drawing && !g_Tracing ) {
+
+                SetCursorPos(  boundRc.left + (boundRc.right - boundRc.left)/2,
+                         boundRc.top + (boundRc.bottom - boundRc.top)/2 );
+                SendMessage( hWnd, WM_MOUSEMOVE, 0,
+                    MAKELPARAM( (boundRc.right - boundRc.left)/2,
+                                (boundRc.bottom - boundRc.top)/2 ));
+            }
+            break;
+
+        case 'E':
+            // Don't allow erase while we have the typing cursor active
+            if( g_HaveDrawn && (g_TypeMode == TypeModeOff)) {
+
+                DeleteDrawUndoList( &drawUndoList );
+                g_HaveDrawn = FALSE;
+                OutputDebug(L"Erase\n");
+                if(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
+                    // Blank the live-draw canvas to black directly.
+                    if( !g_Drawing ) {
+                        SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
+                    }
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                    PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+                    g_BlankedScreen = 'K';
+                    rc.top = rc.left = 0;
+                    rc.bottom = height;
+                    rc.right = width;
+                    BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                    SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
+                }
+                else {
+                    BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth,
+                        bmp.bmHeight, hdcScreenSaveCompat, 0, 0, SRCCOPY | CAPTUREBLT);
+
+                    if (g_Drawing) {
+
+                        OutputDebug(L"Erase: draw cursor\n");
+                        SaveCursorArea(hdcScreenCursorCompat, hdcScreenCompat, prevPt);
+                        DrawCursor(hdcScreenCompat, prevPt, zoomLevel, width, height);
+                        g_HaveDrawn = TRUE;
+                    }
+                }
+                InvalidateRect( hWnd, NULL, FALSE );
+                g_BlankedScreen = FALSE;
+            }
+            break;
+
+        case VK_UP:
+            SendMessage( hWnd, WM_MOUSEWHEEL,
+                MAKEWPARAM( GetAsyncKeyState( VK_LCONTROL ) != 0 || GetAsyncKeyState( VK_RCONTROL ) != 0 ?
+                        MK_CONTROL: 0, WHEEL_DELTA), 0 );
+            return TRUE;
+
+        case VK_DOWN:
+            SendMessage( hWnd, WM_MOUSEWHEEL,
+                MAKEWPARAM( GetAsyncKeyState( VK_LCONTROL ) != 0 || GetAsyncKeyState( VK_RCONTROL ) != 0 ?
+                        MK_CONTROL: 0, -WHEEL_DELTA), 0 );
+            return TRUE;
+
+        case VK_LEFT:
+        case VK_RIGHT:
+            if( wParam == VK_RIGHT ) delta = 10;
+            else					  delta = -10;
+            if( g_TimerActive && (breakTimeout > 0 || delta )) {
+
+                if( breakTimeout < 0 ) breakTimeout = 0;
+                breakTimeout += delta;
+                breakTimeout -= (breakTimeout % 10);
+                if( breakTimeout < 0 ) breakTimeout = 0;
+                KillTimer( hWnd, 0 );
+                SetTimer( hWnd, 0, 1000, NULL );
+                InvalidateRect( hWnd, NULL, TRUE );
+            }
+            break;
+
+        case VK_ESCAPE:
+            if( g_TypeMode != TypeModeOff) {
+
+                // Turn off
+                SendMessage( hWnd, WM_USER_TYPING_OFF, 0, 0 );
+
+            } else {
+
+                forcePenResize = TRUE;
+                PostMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+
+                // In case we were in liveDraw
+                if( GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
+
+                    KillTimer(hWnd, 3);
+                    LONG_PTR exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+                    SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+                    pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 1, &hWnd );
+                    SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, TRUE, 0 );
+                }
+            }
+            break;
+        }
+        return TRUE;
+
+    case WM_RBUTTONDOWN:
+        SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+        break;
+
+    case WM_MOUSEMOVE:
+        OutputDebug(L"MOUSEMOVE: zoomed: %d drawing: %d tracing: %d\n",
+            g_Zoomed, g_Drawing, g_Tracing);
+
+        OutputDebug(L"Window visible: %d Topmost: %d\n", IsWindowVisible(hWnd), GetWindowLong(hWnd, GWL_EXSTYLE)& WS_EX_TOPMOST);
+        if( g_Zoomed && zoomAnimation.IsActive() && !g_Drawing && !g_Tracing )
+        {
+            doTelescopingZoomTimer( false );
+        }
+
+        if( g_Zoomed && (g_TypeMode == TypeModeOff) && !g_bSaveInProgress ) {
+
+            if( g_Drawing ) {
+
+                OutputDebug(L"Mousemove: Drawing\n");
+
+                POINT currentPt;
+
+                // Are we in pen mode on a tablet?
+                lParam = ScalePenPosition( zoomLevel, &monInfo, boundRc, message, lParam);
+                currentPt.x = LOWORD(lParam);
+                currentPt.y = HIWORD(lParam);
+
+                if(lParam == 0) {
+
+                    // Drop it
+                    OutputDebug(L"Mousemove: Dropping\n");
+                    break;
+
+                } else if(g_DrawingShape) {
+
+                    SetROP2(hdcScreenCompat, R2_NOT);
+
+                    // Select a hollow brush so GDI Rectangle/Ellipse draw
+                    // outlines only during rubber-banding (no fill).
+                    HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject( hdcScreenCompat, GetStockObject( NULL_BRUSH ) ));
+
+                    // If a previous target rectangle exists, erase
+                    // it by drawing another rectangle on top.
+                    if( g_rcRectangle.top != g_rcRectangle.bottom ||
+                        g_rcRectangle.left != g_rcRectangle.right )
+                    {
+                        if( prevPenWidth != g_PenWidth )
+                        {
+                            auto penWidth = g_PenWidth;
+                            g_PenWidth = prevPenWidth;
+
+                            auto prevPen = CreatePen( PS_SOLID, g_PenWidth, g_PenColor & 0xFFFFFF );
+                            SelectObject( hdcScreenCompat, prevPen );
+
+                            DrawShape( g_DrawingShape, hdcScreenCompat, &g_rcRectangle );
+
+                            g_PenWidth = penWidth;
+                            SelectObject( hdcScreenCompat, hDrawingPen );
+                            DeleteObject( prevPen );
+                        }
+                        else
+                        {
+                            if (PEN_COLOR_HIGHLIGHT(g_PenColor))
+                            {
+                                // copy original bitmap to screen bitmap to erase previous highlight
+                                BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth, bmp.bmHeight, drawUndoList->hDc, 0, 0, SRCCOPY | CAPTUREBLT);
+                            }
+                            else
+                            {
+                                DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle, PEN_COLOR_HIGHLIGHT(g_PenColor));
+                            }
+                        }
+                    }
+
+                    // Save the coordinates of the target rectangle.
+                    // Avoid invalid rectangles by ensuring that the
+                    // value of the left coordinate is greater than
+                    // that of the right, and that the value of the
+                    // bottom coordinate is greater than that of
+                    // the top.
+                    if( g_DrawingShape == DRAW_LINE ||
+                        g_DrawingShape == DRAW_ARROW ) {
+
+                        g_rcRectangle.right = static_cast<LONG>(LOWORD(lParam));
+                        g_rcRectangle.bottom = static_cast<LONG>(HIWORD(lParam));
+
+                    } else {
+
+                        if ((g_RectangleAnchor.x < currentPt.x) &&
+                                (g_RectangleAnchor.y > currentPt.y)) {
+
+                            SetRect(&g_rcRectangle, g_RectangleAnchor.x, currentPt.y,
+                                currentPt.x, g_RectangleAnchor.y);
+
+                        } else if ((g_RectangleAnchor.x > currentPt.x) &&
+                                (g_RectangleAnchor.y > currentPt.y )) {
+
+                            SetRect(&g_rcRectangle, currentPt.x,
+                                currentPt.y, g_RectangleAnchor.x,g_RectangleAnchor.y);
+
+                        } else if ((g_RectangleAnchor.x > currentPt.x) &&
+                                (g_RectangleAnchor.y < currentPt.y )) {
+
+                            SetRect(&g_rcRectangle, currentPt.x, g_RectangleAnchor.y,
+                                g_RectangleAnchor.x, currentPt.y );
+                        } else {
+
+                            SetRect(&g_rcRectangle, g_RectangleAnchor.x, g_RectangleAnchor.y,
+                                currentPt.x, currentPt.y );
+                        }
+                    }
+
+                    if (g_rcRectangle.left != g_rcRectangle.right ||
+                        g_rcRectangle.top != g_rcRectangle.bottom) {
+
+                        // Draw the new target rectangle.
+                        DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle, PEN_COLOR_HIGHLIGHT(g_PenColor));
+                        OutputDebug(L"SHAPE: (%d, %d) - (%d, %d)\n", g_rcRectangle.left, g_rcRectangle.top,
+                            g_rcRectangle.right, g_rcRectangle.bottom);
+                    }
+
+                    prevPenWidth = g_PenWidth;
+                    SelectObject( hdcScreenCompat, hOldBrush );
+                    SetROP2( hdcScreenCompat, R2_NOP );
+                }
+                else if (g_Tracing) {
+
+                    OutputDebug(L"Mousemove: Tracing\n");
+
+                    g_HaveDrawn = TRUE;
+                    Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
+                    if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+                    {
+                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    }
+                    Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+                    pen.SetLineCap(Gdiplus::LineCapRound, Gdiplus::LineCapRound, Gdiplus::DashCapRound);
+
+                    // If highlighting, use a double layer approach
+                    OutputDebug(L"PenColor: %x\n", g_PenColor);
+                    OutputDebug(L"Blur color: %x\n", COLOR_BLUR);
+                    if( (g_PenColor & 0xFFFFFF) == COLOR_BLUR) {
+
+                        OutputDebug(L"BLUR\n");
+
+                        // Restore area where cursor was previously
+                        RestoreCursorArea(hdcScreenCompat, hdcScreenCursorCompat, prevPt);
+
+                        // Create a new bitmap that's the size of the area covered by the line + 2 * g_PenWidth
+                        Gdiplus::Rect lineBounds = GetLineBounds( prevPt, currentPt, g_PenWidth );
+                        Gdiplus::Bitmap* lineBitmap = DrawBitmapLine(lineBounds, prevPt, currentPt, &pen);
+                        Gdiplus::BitmapData* lineData = LockGdiPlusBitmap(lineBitmap);
+                        BYTE* pPixels = static_cast<BYTE*>(lineData->Scan0);
+
+                        // Create a GDI bitmap that's the size of the lineBounds rectangle
+                        Gdiplus::Bitmap *blurBitmap = CreateGdiplusBitmap( hdcScreenCompat, // oldestUndo->hDc,
+                                            lineBounds.X, lineBounds.Y, lineBounds.Width, lineBounds.Height);
+
+                        // Blur it
+                        BitmapBlur(blurBitmap);
+                        BlurScreen(hdcScreenCompat, &lineBounds, blurBitmap, pPixels);
+
+                        // Unlock the bits
+                        lineBitmap->UnlockBits(lineData);
+                        delete lineBitmap;
+                        delete blurBitmap;
+
+                        // Invalidate the updated rectangle
+                        InvalidateGdiplusRect( hWnd, lineBounds );
+
+                        // Save area that's going to be occupied by new cursor position
+                        SaveCursorArea(hdcScreenCursorCompat, hdcScreenCompat, currentPt);
+
+                        // Draw new cursor
+                        DrawCursor(hdcScreenCompat, currentPt, zoomLevel, width, height);
+                    }
+                    else if(PEN_COLOR_HIGHLIGHT(g_PenColor)) {
+
+                        OutputDebug(L"HIGHLIGHT\n");
+
+                        // This is a highlighting pen color
+                        Gdiplus::Rect lineBounds = GetLineBounds(prevPt, currentPt, g_PenWidth);
+                        Gdiplus::Bitmap* lineBitmap = DrawBitmapLine(lineBounds, prevPt, currentPt, &pen);
+                        Gdiplus::BitmapData* lineData = LockGdiPlusBitmap(lineBitmap);
+                        BYTE* pPixels = static_cast<BYTE*>(lineData->Scan0);
+
+                        // Create a DIB section for efficient pixel manipulation
+                        BITMAPINFO bmi = { 0 };
+                        bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+                        bmi.bmiHeader.biWidth = lineBounds.Width;
+                        bmi.bmiHeader.biHeight = -lineBounds.Height;  // Top-down DIB
+                        bmi.bmiHeader.biPlanes = 1;
+                        bmi.bmiHeader.biBitCount = 32;  // 32 bits per pixel
+                        bmi.bmiHeader.biCompression = BI_RGB;
+
+                        VOID* pDIBBits;
+                        HBITMAP hDIB = CreateDIBSection(hdcScreenCompat, &bmi, DIB_RGB_COLORS, &pDIBBits, NULL, 0);
+
+                        HDC hdcDIB = CreateCompatibleDC(hdcScreenCompat);
+                        SelectObject(hdcDIB, hDIB);
+
+                        // Copy the relevant part of hdcScreenCompat to the DIB
+                        BitBlt(hdcDIB, 0, 0, lineBounds.Width, lineBounds.Height, hdcScreenCompat, lineBounds.X, lineBounds.Y, SRCCOPY);
+
+                        // Pointer to the DIB bits
+                        BYTE* pDestPixels = static_cast<BYTE*>(pDIBBits);
+
+                        // Pointer to screen bits
+                        HDC hdcDIBOrig;
+                        HBITMAP hDibOrigBitmap, hDibBitmap;
+                        P_DRAW_UNDO oldestUndo = GetOldestUndo(drawUndoList);
+                        BYTE* pDestPixels2 = CreateBitmapMemoryDIB(hdcScreenCompat, oldestUndo->hDc, &lineBounds,
+                                                &hdcDIBOrig, &hDibBitmap, &hDibOrigBitmap);
+
+                        for (int local_y = 0; local_y < lineBounds.Height; ++local_y) {
+                            for (int local_x = 0; local_x < lineBounds.Width; ++local_x) {
+                                int index = (local_y * lineBounds.Width * 4) + (local_x * 4); // Assuming 4 bytes per pixel
+                                // BYTE b = pPixels[index + 0];  // Blue channel
+                                // BYTE g = pPixels[index + 1];  // Green channel
+                                // BYTE r = pPixels[index + 2];  // Red channel
+                                BYTE a = pPixels[index + 3];  // Alpha channel
+
+                                // Check if this is a drawn pixel
+                                if (a != 0) {
+                                    // Assuming pDestPixels is a valid pointer to the destination bitmap's pixel data
+                                    BYTE destB = pDestPixels2[index + 0];  // Blue channel
+                                    BYTE destG = pDestPixels2[index + 1];  // Green channel
+                                    BYTE destR = pDestPixels2[index + 2];  // Red channel
+
+                                    // Create a COLORREF value from the destination pixel data
+                                    COLORREF currentPixel = RGB(destR, destG, destB);
+                                    // Blend the colors
+                                    COLORREF newPixel = BlendColors(currentPixel, g_PenColor);
+                                    // Update the destination pixel data with the new color
+                                    pDestPixels[index + 0] = GetBValue(newPixel);
+                                    pDestPixels[index + 1] = GetGValue(newPixel);
+                                    pDestPixels[index + 2] = GetRValue(newPixel);
+                                }
+                            }
+                        }
+
+                        // Copy the updated DIB back to hdcScreenCompat
+                        BitBlt(hdcScreenCompat, lineBounds.X, lineBounds.Y, lineBounds.Width, lineBounds.Height, hdcDIB, 0, 0, SRCCOPY);
+
+                        // Clean up
+                        DeleteObject(hDIB);
+                        DeleteDC(hdcDIB);
+
+                        SelectObject(hdcDIBOrig, hDibOrigBitmap);
+                        DeleteObject(hDibBitmap);
+                        DeleteDC(hdcDIBOrig);
+
+                        // Invalidate the updated rectangle
+                        InvalidateGdiplusRect(hWnd, lineBounds);
+                    }
+                    else {
+
+                        // Normal tracing
+                        dstGraphics.DrawLine(&pen, static_cast<INT>(prevPt.x), static_cast<INT>(prevPt.y),
+                                static_cast<INT>(currentPt.x), static_cast<INT>(currentPt.y));
+                    }
+
+                } else {
+
+                    OutputDebug(L"Mousemove: Moving cursor\n");
+
+                    // Restore area where cursor was previously
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+
+                    // Save area that's going to be occupied by new cursor position
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, currentPt );
+
+                    // Draw new cursor
+                    DrawCursor( hdcScreenCompat, currentPt, zoomLevel, width, height );
+                }
+
+                if( g_DrawingShape ) {
+
+                    InvalidateRect( hWnd, NULL, FALSE );
+
+                } else {
+
+                    // Invalidate area just modified
+                    InvalidateCursorMoveArea( hWnd, zoomLevel, width, height, currentPt, prevPt, cursorPos );
+                }
+                prevPt = currentPt;
+
+                // In liveDraw we miss the mouse up
+                if( GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
+
+                    if((GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
+
+                        OutputDebug(L"LIVE_DRAW missed mouse up. Sending synthetic.\n");
+                        SendMessage(hWnd, WM_LBUTTONUP, wParam, lParam);
+                    }
+                }
+
+            } else {
+
+                cursorPos.x = LOWORD( lParam );
+                cursorPos.y = HIWORD( lParam );
+                InvalidateRect( hWnd, NULL, FALSE );
+            }
+        } else if( g_Zoomed && (g_TypeMode != TypeModeOff) && !g_HaveTyped ) {
+
+            ClearTypingCursor( hdcScreenCompat, hdcScreenCursorCompat, cursorRc, g_BlankedScreen );
+            textPt.x = prevPt.x = LOWORD( lParam );
+            textPt.y = prevPt.y = HIWORD( lParam );
+
+            // Draw the typing cursor
+            DrawTypingCursor( hWnd, &textPt, hdcScreenCompat, hdcScreenCursorCompat, &cursorRc, true );
+            prevPt = textPt;
+            InvalidateRect( hWnd, NULL, FALSE );
+        }
+#if 0
+        {
+            static int index = 0;
+            OutputDebug( L"%d: foreground: %x focus: %x (hwnd: %x)\n",
+                index++, (DWORD) PtrToUlong(GetForegroundWindow()),  PtrToUlong(GetFocus()), PtrToUlong(hWnd));
+        }
+#endif
+        return TRUE;
+
+    case WM_LBUTTONDOWN:
+        g_StraightDirection = 0;
+
+        if( g_Zoomed && (g_TypeMode == TypeModeOff) && zoomTelescopeTarget == zoomLevel ) {
+
+            OutputDebug(L"LBUTTONDOWN: drawing\n");
+
+            // Save current bitmap to undo history
+            if( g_HaveDrawn ) {
+
+                RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+            }
+
+            // don't push undo if we sent this to ourselves for a pen resize
+            if( wParam != -1 ) {
+
+                PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+
+            } else {
+
+                wParam = 0;
+            }
+
+            // Are we in pen mode on a tablet?
+            lParam = ScalePenPosition( zoomLevel, &monInfo, boundRc,
+                        message, lParam);
+
+            if (lParam == 0) {
+
+                // Drop it
+                break;
+
+            } else if( g_Drawing ) {
+
+                // is the user drawing a rectangle?
+                if( wParam & MK_CONTROL ||
+                    wParam & MK_SHIFT ||
+                    GetKeyState( VK_TAB ) < 0 ) {
+
+                    // Restore area where cursor was previously
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+
+                    if( wParam & MK_SHIFT && wParam & MK_CONTROL )
+                        g_DrawingShape = DRAW_ARROW;
+                    else if( wParam & MK_CONTROL )
+                        g_DrawingShape = DRAW_RECTANGLE;
+                    else if( wParam & MK_SHIFT )
+                        g_DrawingShape = DRAW_LINE;
+                    else
+                        g_DrawingShape = DRAW_ELLIPSE;
+                    g_RectangleAnchor.x = LOWORD(lParam);
+                    g_RectangleAnchor.y = HIWORD(lParam);
+                    SetRect(&g_rcRectangle, g_RectangleAnchor.x, g_RectangleAnchor.y,
+                            g_RectangleAnchor.x, g_RectangleAnchor.y);
+
+                } else {
+
+                    Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
+                    if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+                    {
+                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    }
+                    Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+                    Gdiplus::GraphicsPath path;
+                    pen.SetLineJoin(Gdiplus::LineJoinRound);
+                    path.AddLine(static_cast<INT>(prevPt.x), prevPt.y, prevPt.x, prevPt.y);
+                    dstGraphics.DrawPath(&pen, &path);
+                }
+                g_Tracing = TRUE;
+                SetROP2( hdcScreenCompat, R2_COPYPEN );
+                prevPt.x = LOWORD(lParam);
+                prevPt.y = HIWORD(lParam);
+                g_HaveDrawn = TRUE;
+
+            } else {
+
+                OutputDebug(L"Tracing on\n");
+
+                // Turn on drawing
+                if( !g_HaveDrawn ) {
+
+                    // refresh drawing bitmap with original screen image
+                    BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth,
+                        bmp.bmHeight, hdcScreenSaveCompat, 0, 0, SRCCOPY|CAPTUREBLT );
+                    g_HaveDrawn = TRUE;
+                }
+                DeleteObject( hDrawingPen );
+                hDrawingPen = CreatePen(PS_SOLID, g_PenWidth, g_PenColor & 0xFFFFFF);
+                SelectObject( hdcScreenCompat, hDrawingPen );
+
+                // is the user drawing a rectangle?
+                if( wParam & MK_CONTROL && g_Drawing ) {
+
+                    // Restore area where cursor was previously
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+
+                    // Configure rectangle drawing
+                    g_DrawingShape = TRUE;
+                    g_RectangleAnchor.x = LOWORD(lParam);
+                    g_RectangleAnchor.y = HIWORD(lParam);
+                    SetRect(&g_rcRectangle, g_RectangleAnchor.x, g_RectangleAnchor.y,
+                        g_RectangleAnchor.x, g_RectangleAnchor.y);
+                    OutputDebug( L"RECTANGLE: %d, %d\n", prevPt.x, prevPt.y );
+
+                } else {
+
+                    prevPt.x = LOWORD( lParam );
+                    prevPt.y = HIWORD( lParam );
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+
+                    Gdiplus::Graphics	dstGraphics(hdcScreenCursorCompat);
+                    if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+                    {
+                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    }
+                    Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+                    Gdiplus::GraphicsPath path;
+                    pen.SetLineJoin(Gdiplus::LineJoinRound);
+                    path.AddLine(static_cast<INT>(prevPt.x), prevPt.y, prevPt.x, prevPt.y);
+                    dstGraphics.DrawPath(&pen, &path);
+                }
+                InvalidateRect( hWnd, NULL, FALSE );
+
+                // If we're in live zoom, make the drawing pen larger to compensate
+                if( g_ZoomOnLiveZoom && forcePenResize )
+                {
+                    forcePenResize = FALSE;
+
+                    ResizePen( hWnd, hdcScreenCompat, hdcScreenCursorCompat, prevPt, g_Tracing,
+                        &g_Drawing, g_LiveZoomLevel, FALSE, min( static_cast<int>(g_LiveZoomLevel * g_RootPenWidth),
+                        static_cast<int>(g_LiveZoomLevel * MAX_PEN_WIDTH) ) );
+                    OutputDebug( L"LIVEZOOM_DRAW: zoomLevel: %d rootPenWidth: %d penWidth: %d\n",
+                        static_cast<int>(g_LiveZoomLevel), g_RootPenWidth, g_PenWidth );
+                }
+                else if( !g_ZoomOnLiveZoom && forcePenResize )
+                {
+                    forcePenResize = FALSE;
+                    // Scale pen down to root for regular drawing mode
+                    ResizePen( hWnd, hdcScreenCompat, hdcScreenCursorCompat, prevPt, g_Tracing,
+                        &g_Drawing, g_LiveZoomLevel, FALSE, g_RootPenWidth );
+                }
+                g_Drawing = TRUE;
+
+                EnableDisableStickyKeys( FALSE );
+                OutputDebug( L"LBUTTONDOWN: %d, %d\n", prevPt.x, prevPt.y );
+
+                // Constrain the mouse to the visible region
+                boundRc = BoundMouse( zoomLevel, &monInfo, width, height, &cursorPos );
+            }
+        } else if( g_TypeMode != TypeModeOff ) {
+
+            if( !g_HaveTyped ) {
+
+                g_HaveTyped = TRUE;
+
+            } else {
+
+                SendMessage( hWnd, WM_USER_TYPING_OFF, 0, 0 );
+            }
+        }
+        return TRUE;
+
+    case WM_LBUTTONUP:
+        OutputDebug(L"LBUTTONUP: zoomed: %d drawing: %d tracing: %d\n",
+            g_Zoomed, g_Drawing, g_Tracing);
+
+        if( g_Zoomed && g_Drawing && g_Tracing ) {
+
+            // Are we in pen mode on a tablet?
+            lParam = ScalePenPosition( zoomLevel, &monInfo, boundRc,
+                        message, lParam);
+            OutputDebug(L"LBUTTONUP: %d, %d\n", LOWORD(lParam), HIWORD(lParam));
+            if (lParam == 0) {
+
+                // Drop it
+                break;
+            }
+
+            POINT adjustPos;
+            adjustPos.x = LOWORD(lParam);
+            adjustPos.y = HIWORD(lParam);
+            if( g_StraightDirection == -1 ) {
+
+                adjustPos.x = prevPt.x;
+
+            } else {
+
+                adjustPos.y = prevPt.y;
+            }
+            lParam = MAKELPARAM( adjustPos.x, adjustPos.y );
+
+            if( !g_DrawingShape ) {
+
+                // If the point has changed, draw a line to it
+                if (!PEN_COLOR_HIGHLIGHT(g_PenColor))
+                {
+                    if (prevPt.x != LOWORD(lParam) || prevPt.y != HIWORD(lParam))
+                    {
+                        Gdiplus::Graphics dstGraphics(hdcScreenCompat);
+                        if ((GetWindowLong(g_hWndMain, GWL_EXSTYLE) & WS_EX_LAYERED) == 0)
+                        {
+                            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                        }
+                        Gdiplus::Color color = ColorFromColorRef(g_PenColor);
+                        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+                        Gdiplus::GraphicsPath path;
+                        pen.SetLineJoin(Gdiplus::LineJoinRound);
+                        path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
+                        dstGraphics.DrawPath(&pen, &path);
+                    }
+                    // Draw a dot at the current point, if the point hasn't changed
+                    else
+                    {
+                        MoveToEx(hdcScreenCompat, prevPt.x, prevPt.y, NULL);
+                        LineTo(hdcScreenCompat, LOWORD(lParam), HIWORD(lParam));
+                        InvalidateRect(hWnd, NULL, FALSE);
+                    }
+                }
+                prevPt.x = LOWORD( lParam );
+                prevPt.y = HIWORD( lParam );
+
+                if ((g_PenColor & 0xFFFFFF) == COLOR_BLUR) {
+
+                    RestoreCursorArea(hdcScreenCompat, hdcScreenCursorCompat, prevPt);
+                }
+                SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                DrawCursor( hdcScreenCompat, prevPt, zoomLevel, width, height );
+
+            } else if (g_rcRectangle.top != g_rcRectangle.bottom ||
+                        g_rcRectangle.left != g_rcRectangle.right ) {
+
+                // erase previous rubber-band outline
+                if (!PEN_COLOR_HIGHLIGHT(g_PenColor))
+                {
+                    HBRUSH hNullBrush = static_cast<HBRUSH>(SelectObject( hdcScreenCompat, GetStockObject( NULL_BRUSH ) ));
+                    SetROP2(hdcScreenCompat, R2_NOT);
+                    DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle);
+                    SelectObject( hdcScreenCompat, hNullBrush );
+                }
+
+                // Draw the final shape
+                HBRUSH hBrush = static_cast<HBRUSH>(GetStockObject( NULL_BRUSH ));
+                HBRUSH oldHbrush = static_cast<HBRUSH>(SelectObject( hdcScreenCompat, hBrush ));
+                SetROP2( hdcScreenCompat, R2_COPYPEN );
+
+                // smooth line
+                if( g_SnapToGrid ) {
+
+                    if( g_DrawingShape == DRAW_LINE ||
+                        g_DrawingShape == DRAW_ARROW ) {
+
+                        if( abs(g_rcRectangle.bottom - g_rcRectangle.top) <
+                            abs(g_rcRectangle.right - g_rcRectangle.left)/10 ) {
+
+                            g_rcRectangle.bottom = g_rcRectangle.top-1;
+                        }
+                        if( abs(g_rcRectangle.right - g_rcRectangle.left) <
+                            abs(g_rcRectangle.bottom - g_rcRectangle.top)/10 ) {
+
+                            g_rcRectangle.right = g_rcRectangle.left-1;
+                        }
+                    }
+                }
+                // Draw final one using Gdi+
+                DrawShape( g_DrawingShape, hdcScreenCompat, &g_rcRectangle, true );
+
+                InvalidateRect( hWnd, NULL, FALSE );
+                DeleteObject( hBrush );
+                SelectObject( hdcScreenCompat, oldHbrush );
+
+                prevPt.x = LOWORD( lParam );
+                prevPt.y = HIWORD( lParam );
+                SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+            }
+            g_Tracing = FALSE;
+            g_DrawingShape = FALSE;
+            OutputDebug( L"LBUTTONUP:" );
+        }
+        return TRUE;
+
+    case WM_GETMINMAXINFO:
+
+        reinterpret_cast<MINMAXINFO *>(lParam)->ptMaxSize.x = width;
+        reinterpret_cast<MINMAXINFO*>(lParam)->ptMaxSize.y = height;
+        reinterpret_cast<MINMAXINFO*>(lParam)->ptMaxPosition.x = 0;
+        reinterpret_cast<MINMAXINFO*>(lParam)->ptMaxPosition.y = 0;
+        return TRUE;
+
+    case WM_USER_TYPING_OFF:	{
+
+        if( g_TypeMode != TypeModeOff ) {
+
+            g_TypeMode = TypeModeOff;
+            ClearTypingCursor( hdcScreenCompat, hdcScreenCursorCompat, cursorRc, g_BlankedScreen );
+            InvalidateRect( hWnd, NULL, FALSE );
+            DeleteTypedText( &typedKeyList );
+
+            // 1 means don't reset the cursor. We get that for font resizing
+            // Only move the cursor if we're drawing, else the screen moves to center
+            // on the new cursor position
+            if( wParam != 1 && g_Drawing ) {
+
+                prevPt.x = cursorRc.left;
+                prevPt.y = cursorRc.top;
+                SetCursorPos( monInfo.rcMonitor.left + prevPt.x,
+                        monInfo.rcMonitor.top + prevPt.y );
+
+                SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
+
+            } else if( !g_Drawing) {
+
+                // FIX: would be nice to reset cursor so screen doesn't move
+                prevPt = textStartPt;
+                SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                SetCursorPos( prevPt.x, prevPt.y );
+                SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
+            }
+        }
+        }
+        return TRUE;
+
+    case WM_USER_TRAY_ACTIVATE:
+
+        switch( lParam ) {
+        case WM_RBUTTONUP:
+        case WM_LBUTTONUP:
+        case WM_CONTEXTMENU:
+        {
+            // Set the foreground window so the menu can be closed by clicking elsewhere when
+            // opened via right click, and so keyboard navigation works when opened with the menu
+            // key or Shift-F10.
+            SetForegroundWindow( hWndOptions ? hWndOptions : hWnd );
+
+            // Pop up context menu
+            POINT pt;
+            GetCursorPos( &pt );
+            hPopupMenu = CreatePopupMenu();
+            if(!g_StartedByPowerToys) {
+                // Exiting will happen through disabling in PowerToys, not the context menu.
+                InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDCANCEL, L"E&xit" );
+                InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
+            }
+            InsertMenu( hPopupMenu, 0, MF_BYPOSITION | ( g_RecordToggle ? MF_CHECKED : 0 ), IDC_RECORD, L"&Record" );
+            InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_ZOOM, L"&Zoom" );
+            InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_DRAW, L"&Draw" );
+            InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_BREAK, L"&Break Timer" );
+            if(!g_StartedByPowerToys) {
+                // When started by PowerToys, options are configured through the PowerToys Settings.
+                InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
+                InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_OPTIONS, L"&Options" );
+            }
+            // Apply dark mode theme to the menu
+            ApplyDarkModeToMenu( hPopupMenu );
+            TrackPopupMenu( hPopupMenu, 0, pt.x , pt.y, 0, hWnd, NULL );
+            DestroyMenu( hPopupMenu );
+            break;
+        }
+        case WM_LBUTTONDBLCLK:
+            if( !g_TimerActive ) {
+
+                SendMessage( hWnd, WM_COMMAND, IDC_OPTIONS, 0 );
+
+            } else {
+
+                SetForegroundWindow( hWnd );
+            }
+            break;
+        }
+        break;
+
+    case WM_USER_STOP_RECORDING:
+        StopRecording();
+        break;
+
+    case WM_USER_MIRROR_STOP:
+        // The mirrored window closed.
+        g_MirrorWindow.Stop();
+        g_MirrorSelectRectangle.Stop();
+        break;
+
+    case WM_USER_RECORDING_STARTED:
+        // The first video frame has been captured.  Change the selection
+        // border from yellow to orange so the user knows recording is live.
+        OutputDebugStringW( L"[RecBorder] WM_USER_RECORDING_STARTED received\n" );
+        {
+            wchar_t dbg[256];
+            swprintf_s( dbg, L"[RecBorder] m_window=%p m_selected=%d\n",
+                        g_SelectRectangle.Window(), g_SelectRectangle.IsSelected() );
+            OutputDebugStringW( dbg );
+        }
+        g_SelectRectangle.SetRecordingActive();
+        break;
+
+    case WM_USER_RECORDING_NO_FRAMES:
+        // The capture pipeline started but never delivered a single frame,
+        // so recording was aborted.  This is typical on headless / GPU-less
+        // virtual machines, cloud PCs, or remote sessions where
+        // Windows.Graphics.Capture cannot capture the display.  Tear down the
+        // recording border / state and tell the user why nothing was saved.
+        OutputDebugStringW( L"[RecBorder] WM_USER_RECORDING_NO_FRAMES received\n" );
+        StopRecording();
+        MessageBox( g_hWndMain,
+            L"ZoomIt could not capture any video from the display, so recording was cancelled.\n\n"
+            L"Screen recording uses Windows Graphics Capture, which needs a GPU-backed (WDDM) display. "
+            L"This is often unavailable on virtual machines, cloud PCs, or remote sessions that lack a virtual GPU.",
+            APPNAME, MB_OK | MB_ICONWARNING );
+        break;
+
+    case WM_USER_SAVE_CURSOR:
+        if( g_Zoomed == TRUE )
+        {
+            GetCursorPos( &savedCursorPos );
+            if( g_Drawing == TRUE )
+            {
+                ClipCursor( NULL );
+            }
+        }
+        break;
+
+    case WM_USER_RESTORE_CURSOR:
+        if( g_Zoomed == TRUE )
+        {
+            if( g_Drawing == TRUE )
+            {
+                boundRc = BoundMouse( zoomLevel, &monInfo, width, height, &cursorPos );
+            }
+            SetCursorPos( savedCursorPos.x, savedCursorPos.y );
+        }
+        break;
+
+    case WM_USER_EXIT_MODE:
+        if( g_Zoomed )
+        {
+            // Turn off
+            if( g_TypeMode != TypeModeOff )
+            {
+                SendMessage( hWnd, WM_USER_TYPING_OFF, 0, 0 );
+            }
+            else if( !g_Drawing )
+            {
+                // Turn off
+                PostMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+            }
+            else
+            {
+                if( !g_Tracing )
+                {
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+
+                    // Ensure the cursor area is painted before returning
+                    InvalidateRect( hWnd, NULL, FALSE );
+                    UpdateWindow( hWnd );
+
+                    // Make the magnified cursor visible again if LiveDraw is on in LiveZoom
+                    if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                    {
+                        if( IsWindowVisible( g_hWndLiveZoom ) )
+                        {
+                            SendMessage( g_hWndLiveZoom, WM_USER_MAGNIFY_CURSOR, TRUE, 0 );
+                        }
+                    }
+                }
+                if( zoomLevel != 1 )
+                {
+                    // Restore the cursor position to prevent moving the view in static zoom
+                    SetCursorPos( monInfo.rcMonitor.left + cursorPos.x, monInfo.rcMonitor.top + cursorPos.y );
+                }
+                g_Drawing = FALSE;
+                g_Tracing = FALSE;
+                EnableDisableStickyKeys( TRUE );
+                SendMessage( hWnd, WM_USER_TYPING_OFF, 0, 0 );
+
+                // Unclip cursor
+                ClipCursor( NULL );
+            }
+        }
+        else if( g_TimerActive )
+        {
+            // Turn off
+            PostMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+        }
+        break;
+
+    case WM_USER_RELOAD_SETTINGS:
+    {
+        // Reload the settings. This message is called from PowerToys after a setting is changed by the user.
+        reg.ReadRegSettings(RegSettings);
+
+        // Refresh dark mode state after loading theme override from registry
+        RefreshDarkModeState();
+
+        if (g_RecordingFormat == RecordingFormat::GIF)
+        {
+            g_RecordScaling = g_RecordScalingGIF;
+            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE;
+        }
+        else
+        {
+            g_RecordScaling = g_RecordScalingMP4;
+            g_RecordFrameRate = RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
+        }
+
+        // Apply tray icon setting
+        EnableDisableTrayIcon(hWnd, g_ShowTrayIcon);
+
+        // This is also called by ZoomIt when it starts and loads the Settings. Opacity is added after loading from registry, so we use the same pattern.
+        if ((g_PenColor >> 24) == 0)
+        {
+            g_PenColor |= 0xFF << 24;
+        }
+
+        // Apply hotkey settings
+        UnregisterAllHotkeys(hWnd);
+        g_ToggleMod = GetKeyMod(g_ToggleKey);
+        g_LiveZoomToggleMod = GetKeyMod(g_LiveZoomToggleKey);
+        g_DrawToggleMod = GetKeyMod(g_DrawToggleKey);
+        g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
+        g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
+        g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_SnipSaveToggleMod = GetKeyMod(g_SnipSaveToggleKey);
+        g_SnipPanoramaToggleMod = GetKeyMod(g_SnipPanoramaToggleKey);
+        g_SnipPanoramaSaveToggleMod = GetKeyMod(g_SnipPanoramaSaveToggleKey);
+        g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
+        g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
+        g_MirrorToggleMod = GetKeyMod(g_MirrorToggleKey);
+        BOOL showOptions = FALSE;
+        if (g_ToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_LiveZoomToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_LiveZoomToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_DrawToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_BreakToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_DemoTypeToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipSaveToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipPanoramaToggleKey &&
+            (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
+        {
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipPanoramaSaveToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipOcrToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_RecordToggleKey)
+        {
+            UINT cropMod = g_RecordToggleMod ^ MOD_SHIFT;
+            UINT windowMod = g_RecordToggleMod ^ MOD_ALT;
+            if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
+                (cropMod != 0 && !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)) ||
+                (windowMod != 0 && !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_MirrorToggleKey)
+        {
+            UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+            UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+            if (!RegisterHotKey(hWnd, MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF) ||
+                (mirrorCropMod != 0 && !RegisterHotKey(hWnd, MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)) ||
+                (mirrorWindowMod != 0 && !RegisterHotKey(hWnd, MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (showOptions)
+        {
+            // To open the PowerToys settings in the ZoomIt page.
+            SendMessage(hWnd, WM_COMMAND, IDC_OPTIONS, 0);
+        }
+        break;
+    }
+    case WM_COMMAND:
+
+        switch(LOWORD( wParam )) {
+
+        case IDC_SAVE_CROP:
+        case IDC_SAVE:
+        {
+            POINT local_savedCursorPos{};
+            if( lParam != SHALLOW_ZOOM )
+            {
+                GetCursorPos(&local_savedCursorPos);
+            }
+
+            // Determine the user's desired save area in zoomed viewport coordinates.
+            // This will be the entire viewport if the user does not select a crop
+            // rectangle.
+            int copyX = 0, copyY = 0, copyWidth = width, copyHeight = height;
+
+            if ( LOWORD( wParam ) == IDC_SAVE_CROP )
+            {
+                g_RecordCropping = TRUE;
+                SelectRectangle selectRectangle;
+                if( !selectRectangle.Start( hWnd ) )
+                {
+                    g_RecordCropping = FALSE;
+                    if( lParam != SHALLOW_ZOOM )
+                    {
+                        SetCursorPos(local_savedCursorPos.x, local_savedCursorPos.y);
+                    }
+                    break;
+                }
+
+                auto copyRc = selectRectangle.SelectedRect();
+                selectRectangle.Stop();
+                g_RecordCropping = FALSE;
+
+                copyX = copyRc.left;
+                copyY = copyRc.top;
+                copyWidth = copyRc.right - copyRc.left;
+                copyHeight = copyRc.bottom - copyRc.top;
+            }
+            OutputDebug( L"***x: %d, y: %d, width: %d, height: %d\n", copyX, copyY, copyWidth, copyHeight );
+
+            RECT oldClipRect{};
+            GetClipCursor( &oldClipRect );
+            ClipCursor( NULL );
+
+            // Translate the viewport selection into coordinates for the 1:1 source
+            // bitmap hdcScreenCompat.
+            int viewportX, viewportY;
+            GetZoomedTopLeftCoordinates(
+                zoomLevel, &cursorPos, &viewportX, width, &viewportY, height );
+
+            int saveX = viewportX + static_cast<int>( copyX / zoomLevel );
+            int saveY = viewportY + static_cast<int>( copyY / zoomLevel );
+            int saveWidth = static_cast<int>( copyWidth / zoomLevel );
+            int saveHeight = static_cast<int>( copyHeight / zoomLevel );
+
+            // Create a pixel-accurate copy of the desired area from the source bitmap.
+            wil::unique_hdc hdcActualSize( CreateCompatibleDC( hdcScreen ) );
+            wil::unique_hbitmap hbmActualSize(
+                CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight ) );
+            // Note: we do not need to restore the existing context later. The objects
+            // are transient and not reused.
+            SelectObject( hdcActualSize.get(), hbmActualSize.get() );
+
+            // Perform a direct 1:1 copy from the backing bitmap.
+            BitBlt( hdcActualSize.get(),
+                    0, 0,
+                    saveWidth, saveHeight,
+                    hdcScreenCompat,
+                    saveX, saveY,
+                    SRCCOPY | CAPTUREBLT );
+
+            // Open the Save As dialog and capture the desired file path and whether to
+            // save the zoomed display or the source bitmap pixels.
+            g_bSaveInProgress = true;
+
+            // Get a unique filename suggestion
+            auto suggestedName = GetUniqueScreenshotFilename();
+
+            // Create modern IFileSaveDialog
+            auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
+                saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT );
+
+            // Set file types - index is 1-based when retrieved via GetFileTypeIndex.
+            // Keep fileTypes[] and s_saveFilters[] below in the same order so the
+            // selected filter index maps directly to format/size/extension.
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Zoomed PNG", L"*.png" },
+                { L"Actual size PNG", L"*.png" },
+                { L"Zoomed WebP", L"*.webp" },
+                { L"Actual size WebP", L"*.webp" },
+                { L"Zoomed JPG", L"*.jpg" },
+                { L"Actual size JPG", L"*.jpg" }
+            };
+            struct SaveFilterInfo
+            {
+                ImageFormat    format;
+                bool           actualSize;
+                const wchar_t* extension;
+            };
+            static const SaveFilterInfo s_saveFilters[] = {
+                { ImageFormat::Png,  false, L".png" },
+                { ImageFormat::Png,  true,  L".png" },
+                { ImageFormat::Webp, false, L".webp" },
+                { ImageFormat::Webp, true,  L".webp" },
+                { ImageFormat::Jpeg, false, L".jpg" },
+                { ImageFormat::Jpeg, true,  L".jpg" }
+            };
+
+            saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            saveDialog->SetFileTypeIndex( 1 ); // Default to "Zoomed PNG"
+            saveDialog->SetDefaultExtension( L"png" );
+            saveDialog->SetFileName( suggestedName.c_str() );
+            saveDialog->SetTitle( L"ZoomIt: Save Zoomed Screen..." );
+
+            // Set default folder to the configured/last save location if available.
+            // The stored value may be a directory (a user-configured default folder)
+            // or a full file path (the last saved screenshot); handle both.
+            if( !g_ScreenshotSaveLocation.empty() )
+            {
+                std::filesystem::path lastPath( g_ScreenshotSaveLocation );
+                std::error_code ec;
+                std::filesystem::path folderPath =
+                    std::filesystem::is_directory( lastPath, ec )
+                        ? lastPath
+                        : lastPath.parent_path();
+                if( !folderPath.empty() )
+                {
+                    wil::com_ptr<IShellItem> folderItem;
+                    if( SUCCEEDED( SHCreateItemFromParsingName( folderPath.c_str(),
+                        nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+                    {
+                        saveDialog->SetFolder( folderItem.get() );
+                    }
+                }
+            }
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents();
+            DWORD dwCookie = 0;
+            saveDialog->Advise(pEvents, &dwCookie);
+
+            UINT selectedFilterIndex = 1;
+            std::wstring selectedFilePath;
+
+            if( SUCCEEDED( saveDialog->Show( hWnd ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( saveDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        selectedFilePath = pathStr.get();
+                    }
+                }
+                saveDialog->GetFileTypeIndex( &selectedFilterIndex );
+            }
+
+            saveDialog->Unadvise(dwCookie);
+            pEvents->Release();
+
+            if( !selectedFilePath.empty() )
+            {
+                // Map the selected filter to an image format and whether to save the
+                // pixel-accurate (actual size) bitmap. Filter indices are 1-based and
+                // map directly into the parallel s_saveFilters[] table defined above.
+                UINT filterSlot = ( selectedFilterIndex >= 1 &&
+                                    selectedFilterIndex <= _countof( s_saveFilters ) )
+                                  ? selectedFilterIndex - 1 : 0;
+                const SaveFilterInfo& filterInfo = s_saveFilters[filterSlot];
+                ImageFormat imageFormat = filterInfo.format;
+                bool saveActualSize = filterInfo.actualSize;
+                const wchar_t* desiredExtension = filterInfo.extension;
+
+                // Ensure the filename carries the extension that matches the chosen
+                // format. Only override when the user left the extension off or used a
+                // format extension we manage (.png/.webp/.jpg/.jpeg); otherwise respect
+                // their input.
+                std::filesystem::path targetPath( selectedFilePath );
+                std::wstring currentExt = targetPath.extension().wstring();
+                if( currentExt.empty() ||
+                    _wcsicmp( currentExt.c_str(), L".png" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".webp" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".jpg" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".jpeg" ) == 0 )
+                {
+                    targetPath.replace_extension( desiredExtension );
+                }
+                std::wstring targetFilePath = targetPath.wstring();
+
+                if( saveActualSize )
+                {
+                    // Save at actual size.
+                    SaveImage( targetFilePath.c_str(), hbmActualSize.get(), imageFormat );
+                }
+                else
+                {
+                    // Save zoomed-in image at screen resolution.
+#if SCALE_HALFTONE
+                    const int bltMode = HALFTONE;
+#else
+                    // Use HALFTONE for better quality when smooth image is enabled
+                    const int bltMode = g_SmoothImage ? HALFTONE : COLORONCOLOR;
+#endif
+                    // Recreate the zoomed-in view by upscaling from our source bitmap.
+                    wil::unique_hdc hdcZoomed( CreateCompatibleDC(hdcScreen) );
+                    wil::unique_hbitmap hbmZoomed(
+                        CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight ) );
+                    SelectObject( hdcZoomed.get(), hbmZoomed.get() );
+
+                    SetStretchBltMode( hdcZoomed.get(), bltMode );
+
+                    StretchBlt( hdcZoomed.get(),
+                                0, 0,
+                                copyWidth, copyHeight,
+                                hdcActualSize.get(),
+                                0, 0,
+                                saveWidth, saveHeight,
+                                SRCCOPY | CAPTUREBLT );
+
+                    SaveImage( targetFilePath.c_str(), hbmZoomed.get(), imageFormat );
+                }
+
+                // Remember the save location for next time and persist to registry
+                g_ScreenshotSaveLocation = targetFilePath;
+                wcsncpy_s(g_ScreenshotSaveLocationBuffer, g_ScreenshotSaveLocation.c_str(), _TRUNCATE);
+                reg.WriteRegSettings(RegSettings);
+
+                // When enabled, also place the captured (actual-size) image on the
+                // clipboard so the snip is immediately available to paste. CF_BITMAP
+                // takes ownership of the handle, so hand it a dedicated copy.
+                if( g_SnipCopyToClipboard )
+                {
+                    wil::unique_hdc hdcClipboard( CreateCompatibleDC( hdcScreen ) );
+                    HBITMAP hbmClipboard =
+                        CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight );
+                    if( hdcClipboard && hbmClipboard )
+                    {
+                        HGDIOBJ hOldClip = SelectObject( hdcClipboard.get(), hbmClipboard );
+                        BitBlt( hdcClipboard.get(),
+                                0, 0,
+                                saveWidth, saveHeight,
+                                hdcActualSize.get(),
+                                0, 0,
+                                SRCCOPY );
+                        SelectObject( hdcClipboard.get(), hOldClip );
+
+                        bool ownershipTransferred = false;
+                        if( OpenClipboard( hWnd ) )
+                        {
+                            EmptyClipboard();
+                            // SetClipboardData only transfers ownership on success;
+                            // on failure the handle is still ours and must be freed.
+                            if( SetClipboardData( CF_BITMAP, hbmClipboard ) != nullptr )
+                            {
+                                ownershipTransferred = true;
+                            }
+                            CloseClipboard();
+                        }
+
+                        if( !ownershipTransferred )
+                        {
+                            DeleteObject( hbmClipboard );
+                        }
+                    }
+                    else if( hbmClipboard )
+                    {
+                        DeleteObject( hbmClipboard );
+                    }
+                }
+            }
+            g_bSaveInProgress = false;
+
+            if( lParam != SHALLOW_ZOOM )
+            {
+                SetCursorPos( local_savedCursorPos.x, local_savedCursorPos.y );
+            }
+            ClipCursor( &oldClipRect );
+
+            break;
+        }
+
+        case IDC_COPY_CROP:
+        case IDC_COPY: {
+            HBITMAP		hSaveBitmap;
+            HDC			hSaveDc;
+            int         copyX, copyY;
+            int         copyWidth, copyHeight;
+
+            if( LOWORD( wParam ) == IDC_COPY_CROP )
+            {
+                g_RecordCropping = TRUE;
+                POINT local_savedCursorPos{};
+                if( lParam != SHALLOW_ZOOM )
+                {
+                    GetCursorPos(&local_savedCursorPos);
+                }
+                SelectRectangle selectRectangle;
+                if( !selectRectangle.Start( hWnd ) )
+                {
+                    g_RecordCropping = FALSE;
+                    break;
+                }
+                auto copyRc = selectRectangle.SelectedRect();
+                selectRectangle.Stop();
+                if( lParam != SHALLOW_ZOOM )
+                {
+                    SetCursorPos(local_savedCursorPos.x, local_savedCursorPos.y);
+                }
+                g_RecordCropping = FALSE;
+
+                copyX = copyRc.left;
+                copyY = copyRc.top;
+                copyWidth = copyRc.right - copyRc.left;
+                copyHeight = copyRc.bottom - copyRc.top;
+            }
+            else
+            {
+                copyX = 0;
+                copyY = 0;
+                copyWidth = width;
+                copyHeight = height;
+            }
+            OutputDebug( L"***x: %d, y: %d, width: %d, height: %d\n", copyX, copyY, copyWidth, copyHeight );
+
+            hSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
+            hSaveDc = CreateCompatibleDC( hdcScreen );
+            SelectObject( hSaveDc, hSaveBitmap );
+#if SCALE_HALFTONE
+            SetStretchBltMode( hSaveDc, HALFTONE );
+#else
+            // Use HALFTONE for better quality when smooth image is enabled
+            if (g_SmoothImage) {
+                SetStretchBltMode( hSaveDc, HALFTONE );
+            } else {
+                SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            }
+#endif
+			StretchBlt( hSaveDc,
+                        0, 0,
+                        copyWidth, copyHeight,
+                        hdcScreen,
+                        monInfo.rcMonitor.left + copyX,
+                        monInfo.rcMonitor.top + copyY,
+                        copyWidth, copyHeight,
+                        SRCCOPY|CAPTUREBLT );
+
+            if( OpenClipboard( hWnd )) {
+
+                EmptyClipboard();
+                SetClipboardData( CF_BITMAP, hSaveBitmap );
+                CloseClipboard();
+            }
+
+            DeleteDC( hSaveDc );
+            }
+            break;
+
+        case IDC_COPY_OCR:
+        {
+            int         copyX, copyY;
+            int         copyWidth, copyHeight;
+
+            g_RecordCropping = TRUE;
+            POINT local_savedCursorPos{};
+            if( lParam != SHALLOW_ZOOM )
+            {
+                GetCursorPos( &local_savedCursorPos );
+            }
+            SelectRectangle selectRectangle;
+            if( !selectRectangle.Start( hWnd ) )
+            {
+                g_RecordCropping = FALSE;
+                break;
+            }
+            auto copyRc = selectRectangle.SelectedRect();
+            selectRectangle.Stop();
+            if( lParam != SHALLOW_ZOOM )
+            {
+                SetCursorPos( local_savedCursorPos.x, local_savedCursorPos.y );
+            }
+            g_RecordCropping = FALSE;
+
+            copyX = copyRc.left;
+            copyY = copyRc.top;
+            copyWidth = copyRc.right - copyRc.left;
+            copyHeight = copyRc.bottom - copyRc.top;
+
+            if( copyWidth <= 0 || copyHeight <= 0 )
+            {
+                break;
+            }
+
+            // Capture the selected region into an HBITMAP
+            HBITMAP hSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
+            HDC hSaveDc = CreateCompatibleDC( hdcScreen );
+            SelectObject( hSaveDc, hSaveBitmap );
+            if( g_SmoothImage )
+            {
+                SetStretchBltMode( hSaveDc, HALFTONE );
+            }
+            else
+            {
+                SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            }
+            StretchBlt( hSaveDc,
+                        0, 0,
+                        copyWidth, copyHeight,
+                        hdcScreen,
+                        monInfo.rcMonitor.left + copyX,
+                        monInfo.rcMonitor.top + copyY,
+                        copyWidth, copyHeight,
+                        SRCCOPY | CAPTUREBLT );
+
+            // Run OCR on the captured bitmap
+            std::wstring ocrText = OcrFromHBITMAP( hSaveBitmap );
+
+            // Copy OCR text to clipboard
+            if( !ocrText.empty() && OpenClipboard( hWnd ) )
+            {
+                EmptyClipboard();
+                size_t cbSize = ( ocrText.size() + 1 ) * sizeof( wchar_t );
+                HGLOBAL hGlobal = GlobalAlloc( GMEM_MOVEABLE, cbSize );
+                if( hGlobal )
+                {
+                    void* pMem = GlobalLock( hGlobal );
+                    if( pMem )
+                    {
+                        memcpy( pMem, ocrText.c_str(), cbSize );
+                        GlobalUnlock( hGlobal );
+                        SetClipboardData( CF_UNICODETEXT, hGlobal );
+                    }
+                    else
+                    {
+                        GlobalFree( hGlobal );
+                    }
+                }
+                CloseClipboard();
+            }
+
+            DeleteObject( hSaveBitmap );
+            DeleteDC( hSaveDc );
+            break;
+        }
+
+        case IDC_DRAW:
+            PostMessage( hWnd, WM_HOTKEY, DRAW_HOTKEY, 1 );
+            break;
+
+        case IDC_ZOOM:
+            PostMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 1 );
+            break;
+
+        case IDC_RECORD:
+            PostMessage( hWnd, WM_HOTKEY, RECORD_HOTKEY, 1 );
+            break;
+
+        case IDC_OPTIONS:
+            // Don't show win32 forms options if started by PowerToys.
+            // Show the PowerToys Settings application instead.
+
+            if( g_StartedByPowerToys )
+            {
+#ifdef __ZOOMIT_POWERTOYS__
+                OpenPowerToysSettingsApp();
+#endif // __ZOOMIT_POWERTOYS__
+            }
+            else
+            {
+                DialogBox( g_hInstance, L"OPTIONS", hWnd, OptionsProc );
+            }
+            break;
+
+        case IDC_BREAK:
+        {
+            // Manage handles, clean visual transitions, and Options delta
+            if( g_TimerActive )
+            {
+                if( activeBreakShowBackgroundFile != g_BreakShowBackgroundFile ||
+                    activeBreakShowDesktop != g_BreakShowDesktop )
+                {
+                    if( g_BreakShowBackgroundFile && !g_BreakShowDesktop )
+                    {
+                        SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_DESTROY );
+                    }
+                    else
+                    {
+                        SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    }
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_DESTROY );
+                    g_TimerActive = TRUE;
+                }
+            }
+
+            hdcScreen = CreateDC( L"DISPLAY", static_cast<PTCHAR>(NULL), static_cast<PTCHAR>(NULL), static_cast<CONST DEVMODE*>(NULL) );
+
+            // toggle second monitor
+            // FIX: we should save whether or not we've switched to a second monitor
+            // rather than just assume that the setting hasn't changed since the break timer
+            // became active
+            if( g_BreakOnSecondary )
+            {
+                EnableDisableSecondaryDisplay( hWnd, TRUE, &secondaryDevMode );
+            }
+
+            // Determine what monitor we're on
+            GetCursorPos( &cursorPos );
+            UpdateMonitorInfo( cursorPos, &monInfo );
+            width = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
+            height = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
+
+            // Trigger desktop recapture as necessary when switching monitors
+            if( g_TimerActive && g_BreakShowDesktop && lastMonInfo.rcMonitor != monInfo.rcMonitor )
+            {
+                lastMonInfo = monInfo;
+                SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                PostMessage( hWnd, WM_COMMAND, IDC_BREAK, 0 );
+                break;
+            }
+            lastMonInfo = monInfo;
+
+            // If the background is a file that hasn't been collected, grab it now
+            if( g_BreakShowBackgroundFile && !g_BreakShowDesktop &&
+                ( !g_TimerActive || wcscmp( activeBreakBackgroundFile, g_BreakBackgroundFile ) ) )
+            {
+                _tcscpy( activeBreakBackgroundFile, g_BreakBackgroundFile );
+
+                DeleteObject( g_hBackgroundBmp );
+                DeleteDC( g_hDcBackgroundFile );
+
+                g_hBackgroundBmp = NULL;
+                g_hBackgroundBmp = LoadImageFile( g_BreakBackgroundFile );
+                if( g_hBackgroundBmp == NULL )
+                {
+                    // Clean up hanging handles
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    ErrorDialog( hWnd, L"Error loading background bitmap", GetLastError() );
+                    break;
+                }
+                g_hDcBackgroundFile = CreateCompatibleDC( hdcScreen );
+                SelectObject( g_hDcBackgroundFile, g_hBackgroundBmp );
+            }
+            // If the background is a desktop that hasn't been collected, grab it now
+            else if( g_BreakShowBackgroundFile && g_BreakShowDesktop && !g_TimerActive )
+            {
+                g_hBackgroundBmp = CreateFadedDesktopBackground( GetDC(NULL), & monInfo.rcMonitor, NULL );
+                g_hDcBackgroundFile = CreateCompatibleDC( hdcScreen );
+                SelectObject( g_hDcBackgroundFile, g_hBackgroundBmp );
+            }
+
+            // Track Options.Break delta
+            activeBreakShowBackgroundFile = g_BreakShowBackgroundFile;
+            activeBreakShowDesktop = g_BreakShowDesktop;
+
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
+                Trace::ZoomItActivateBreak();
+            }
+#endif // __ZOOMIT_POWERTOYS__
+
+            breakTimeout = g_BreakTimeout * 60 + 1;
+
+            //
+            // If lock workstation is enabled, skip the local break timer
+            // window entirely — the embedded screensaver will run it on
+            // the ScreenSaver Desktop with authentication required.
+            //
+            if( g_BreakLockWorkstation )
+            {
+                DeleteDC( hdcScreen );
+                ActivateBreakScreenSaver( hWnd, breakTimeout );
+                break;
+            }
+
+            g_TimerActive = TRUE;
+
+            // Create font
+            g_LogFont.lfHeight = height / 5;
+            hTimerFont = CreateFontIndirect( &g_LogFont );
+            g_LogFont.lfHeight = height / 8;
+            hNegativeTimerFont = CreateFontIndirect( &g_LogFont );
+
+            // Create backing bitmap
+            hdcScreenCompat = CreateCompatibleDC(hdcScreen);
+            bmp.bmBitsPixel = static_cast<BYTE>(GetDeviceCaps(hdcScreen, BITSPIXEL));
+            bmp.bmPlanes = static_cast<BYTE>(GetDeviceCaps(hdcScreen, PLANES));
+            bmp.bmWidth = width;
+            bmp.bmHeight = height;
+            bmp.bmWidthBytes = ((bmp.bmWidth + 15) &~15)/8;
+            hbmpCompat = CreateBitmap(bmp.bmWidth, bmp.bmHeight,
+                bmp.bmPlanes, bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
+             SelectObject(hdcScreenCompat, hbmpCompat);
+
+            SetTextColor( hdcScreenCompat, g_BreakPenColor );
+            SetBkMode( hdcScreenCompat, TRANSPARENT );
+            SelectObject( hdcScreenCompat, hTimerFont );
+
+            EnableDisableOpacity( hWnd, TRUE );
+            EnableDisableScreenSaver( FALSE );
+
+            SendMessage( hWnd, WM_TIMER, 0, 0 );
+            SetTimer( hWnd, 0, 1000, NULL );
+
+            BringWindowToTop( hWnd );
+            SetForegroundWindow( hWnd );
+            SetActiveWindow( hWnd );
+            SetWindowPos( hWnd, HWND_NOTOPMOST, monInfo.rcMonitor.left, monInfo.rcMonitor.top,
+                    width, height, SWP_SHOWWINDOW );
+        }
+        break;
+
+        case IDCANCEL:
+
+            memset( &tNotifyIconData, 0, sizeof(tNotifyIconData));
+            tNotifyIconData.cbSize = sizeof(NOTIFYICONDATA);
+            tNotifyIconData.hWnd = hWnd;
+            tNotifyIconData.uID = 1;
+            Shell_NotifyIcon(NIM_DELETE, &tNotifyIconData);
+            reg.WriteRegSettings( RegSettings );
+
+            if( hWndOptions )
+            {
+                DestroyWindow( hWndOptions );
+            }
+            DestroyWindow( hWnd );
+            break;
+        }
+        break;
+
+    case WM_TIMER:
+        switch( wParam ) {
+        case 0:
+            //
+            // Break timer
+            //
+            breakTimeout -= 1;
+            InvalidateRect( hWnd, NULL, FALSE );
+            if( breakTimeout == 0 && g_BreakPlaySoundFile ) {
+
+                PlaySound( g_BreakSoundFile, NULL, SND_FILENAME|SND_ASYNC );
+            }
+            break;
+
+        case 2:
+        case 1:
+            doTelescopingZoomTimer();
+            break;
+
+        case 3:
+            POINT mousePos;
+            GetCursorPos(&mousePos);
+            if (mousePos.x != cursorPos.x || mousePos.y != cursorPos.y)
+            {
+                MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+                UpdateMonitorInfo(mousePos, &monitorInfo);
+
+                mousePos.x -= monitorInfo.rcMonitor.left;
+                mousePos.y -= monitorInfo.rcMonitor.top;
+
+                OutputDebug(L"RETRACKING MOUSE: x: %d y: %d\n", mousePos.x, mousePos.y);
+                SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(mousePos.x, mousePos.y));
+            }
+            break;
+
+        case 4:
+            // Break screensaver post-cleanup watchdog.
+            if( HasOrphanedScreenSaverSettings() )
+            {
+                if( !IsBreakScreenSaverRunning() )
+                {
+                    RestoreScreenSaverSettings();
+                    KillTimer( hWnd, 4 );
+                }
+            }
+            else
+            {
+                KillTimer( hWnd, 4 );
+            }
+            break;
+
+        case 5:
+        {
+            //
+            // Deferred SPI re-apply after session unlock.
+            // Winlogon may override our SPI_SETSCREENSAVEACTIVE /
+            // SPI_SETSCREENSAVETIMEOUT calls during the desktop switch.
+            // Re-read the (already-restored) registry values and push
+            // them into the runtime SPI state.
+            //
+            KillTimer( hWnd, 5 );
+
+            TCHAR regActive[16] = {};
+            DWORD cbActive = sizeof( regActive );
+            BOOL rtActive = FALSE;
+            if( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                             L"ScreenSaveActive", RRF_RT_REG_SZ, NULL,
+                             regActive, &cbActive ) == ERROR_SUCCESS )
+            {
+                rtActive = ( wcstol( regActive, nullptr, 10 ) != 0 );
+            }
+            SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, rtActive, 0, SPIF_SENDCHANGE );
+
+            TCHAR regTimeout[16] = {};
+            DWORD cbTimeout = sizeof( regTimeout );
+            UINT timeout = 300;  // safe default
+            if( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                             L"ScreenSaveTimeOut", RRF_RT_REG_SZ, NULL,
+                             regTimeout, &cbTimeout ) == ERROR_SUCCESS )
+            {
+                long parsed = wcstol( regTimeout, nullptr, 10 );
+                if( parsed > 0 )
+                    timeout = static_cast<UINT>( parsed );
+            }
+            SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, timeout, 0, SPIF_SENDCHANGE );
+            break;
+        }
+        }
+        break;
+
+    case WM_PAINT:
+
+        hDc = BeginPaint(hWnd, &ps);
+
+        if( ( ( g_RecordCropping == FALSE ) || ( zoomLevel == 1 ) ) && g_Zoomed ) {
+
+            OutputDebug( L"PAINT x: %d y: %d width: %d height: %d zoomLevel: %g\n",
+                    cursorPos.x, cursorPos.y, width, height, zoomLevel );
+            GetZoomedTopLeftCoordinates( zoomLevel, &cursorPos, &x, width, &y, height );
+#if SCALE_GDIPLUS
+            if ( zoomLevel >= zoomTelescopeTarget )  {
+                // do a high-quality render
+                extern void ScaleImage( HDC hdcDst, float xDst, float yDst, float wDst, float hDst,
+                                        HBITMAP bmSrc, float xSrc, float ySrc, float wSrc, float hSrc );
+
+                ScaleImage( ps.hdc,
+                            0, 0,
+                            (float)bmp.bmWidth, (float)bmp.bmHeight,
+                            hbmpCompat,
+                            (float)x, (float)y,
+                            width/zoomLevel, height/zoomLevel );
+            } else {
+                // do a fast, less accurate render (but use smooth if enabled)
+                SetStretchBltMode( hDc, g_SmoothImage && !zoomAnimation.IsActive() ? HALFTONE : COLORONCOLOR );
+                StretchBlt( ps.hdc,
+                        0, 0,
+                        bmp.bmWidth, bmp.bmHeight,
+                        hdcScreenCompat,
+                        x, y,
+                        (int) (width/zoomLevel), (int) (height/zoomLevel),
+                        SRCCOPY);
+            }
+#else
+#if SCALE_HALFTONE
+            SetStretchBltMode( hDc, zoomLevel == zoomTelescopeTarget ? HALFTONE : COLORONCOLOR );
+#else
+            // Interpolate while the scale is changing so sub-pixel motion is smooth; keep the user's setting once settled.
+            if (zoomAnimation.IsActive() || g_SmoothImage) {
+                SetStretchBltMode( hDc, HALFTONE );
+                SetBrushOrgEx( hDc, 0, 0, nullptr );
+            } else {
+                SetStretchBltMode( hDc, COLORONCOLOR );
+            }
+#endif
+            // Render with the continuous fractional viewport whenever we are not drawing/typing/tracing so the
+            // animation moves at device-pixel granularity and converges without snapping on the final frame.
+            const bool renderFractionalZoom = zoomAnimation.IsActive() ||
+                ( !g_Drawing && !g_Tracing && g_TypeMode == TypeModeOff );
+            if( renderFractionalZoom ) {
+                float sourceX;
+                float sourceY;
+                GetAnimatedZoomSourceCoordinates( zoomLevel, &cursorPos, width, height, &sourceX, &sourceY );
+
+                const int sourceLeft = static_cast<int>( std::floor( sourceX ) );
+                const int sourceTop = static_cast<int>( std::floor( sourceY ) );
+                const int sourceRight = min( width, static_cast<int>( std::ceil( sourceX + static_cast<float>( width ) / zoomLevel ) ) );
+                const int sourceBottom = min( height, static_cast<int>( std::ceil( sourceY + static_cast<float>( height ) / zoomLevel ) ) );
+                const int srcW = sourceRight - sourceLeft;
+                const int srcH = sourceBottom - sourceTop;
+                // Enlarge with StretchBlt (so HALFTONE interpolates) and offset the destination to compensate the
+                // sub-pixel origin, giving smooth device-pixel-granular motion instead of source-pixel snapping.
+                const int destX = static_cast<int>( std::lround( ( static_cast<float>( sourceLeft ) - sourceX ) * zoomLevel ) );
+                const int destY = static_cast<int>( std::lround( ( static_cast<float>( sourceTop ) - sourceY ) * zoomLevel ) );
+                const int destW = static_cast<int>( std::lround( static_cast<float>( srcW ) * zoomLevel ) );
+                const int destH = static_cast<int>( std::lround( static_cast<float>( srcH ) * zoomLevel ) );
+                StretchBlt( ps.hdc,
+                        destX, destY, destW, destH,
+                        hdcScreenCompat,
+                        sourceLeft, sourceTop, srcW, srcH,
+                        SRCCOPY|CAPTUREBLT );
+            } else {
+                StretchBlt( ps.hdc,
+                        0, 0,
+                        bmp.bmWidth, bmp.bmHeight,
+                        hdcScreenCompat,
+                        x, y,
+                        static_cast<int>(width/zoomLevel), static_cast<int>(height/zoomLevel),
+                        SRCCOPY|CAPTUREBLT );
+            }
+#endif
+        } else if( g_TimerActive ) {
+
+            // Fill background (white by default, black if saved as 1)
+            rc.top = rc.left = 0;
+            rc.bottom = height;
+            rc.right = width;
+            BlankScreenArea( hdcScreenCompat, &rc, g_BreakBackgroundColor ? 'K' : 'W' );
+
+            // If there's a background bitmap, draw it in the center
+            if( g_hBackgroundBmp ) {
+
+                BITMAP local_bmp;
+                GetObject(g_hBackgroundBmp, sizeof(local_bmp), &local_bmp);
+                SetStretchBltMode( hdcScreenCompat, g_SmoothImage ? HALFTONE : COLORONCOLOR );
+                if( g_BreakBackgroundStretch ) {
+                    StretchBlt( hdcScreenCompat, 0, 0, width, height,
+                        g_hDcBackgroundFile, 0, 0, local_bmp.bmWidth, local_bmp.bmHeight, SRCCOPY|CAPTUREBLT  );
+                } else {
+                    BitBlt( hdcScreenCompat, width/2 - local_bmp.bmWidth/2, height/2 - local_bmp.bmHeight/2,
+                        local_bmp.bmWidth, local_bmp.bmHeight, g_hDcBackgroundFile, 0, 0, SRCCOPY|CAPTUREBLT  );
+                }
+            }
+
+            // Draw time
+            if( breakTimeout > 0 ) {
+
+                _stprintf( timerText, L"% 2d:%02d", breakTimeout/60, breakTimeout % 60 );
+
+            } else {
+
+                _tcscpy( timerText, L"0:00" );
+            }
+            rc.left = rc.top = 0;
+            DrawText( hdcScreenCompat, timerText, -1, &rc,
+                DT_NOCLIP|DT_LEFT|DT_NOPREFIX|DT_CALCRECT );
+
+            rc1.left = rc1.right = rc1.bottom = rc1.top = 0;
+            if( g_ShowExpiredTime && breakTimeout < 0 ) {
+
+                _stprintf( negativeTimerText, L"(-% 2d:%02d)",
+                        -breakTimeout/60, -breakTimeout % 60 );
+                HFONT prevFont = static_cast<HFONT>(SelectObject( hdcScreenCompat, hNegativeTimerFont ));
+                DrawText( hdcScreenCompat, negativeTimerText, -1, &rc1,
+                    DT_NOCLIP|DT_LEFT|DT_NOPREFIX|DT_CALCRECT );
+                SelectObject( hdcScreenCompat, prevFont );
+            }
+
+            // Position time vertically
+            switch( g_BreakTimerPosition ) {
+            case 0:
+            case 1:
+            case 2:
+                rc.top = 50;
+                break;
+            case 3:
+            case 4:
+            case 5:
+                rc.top = (height - (rc.bottom - rc.top))/2;
+                break;
+            case 6:
+            case 7:
+            case 8:
+                rc.top = height - rc.bottom - 50 - rc1.bottom;
+                break;
+            }
+
+            // Position time horizontally
+            switch( g_BreakTimerPosition ) {
+            case 0:
+            case 3:
+            case 6:
+                rc.left = 50;
+                break;
+            case 1:
+            case 4:
+            case 7:
+                rc.left = (width - (rc.right - rc.left))/2;
+                break;
+            case 2:
+            case 5:
+            case 8:
+                rc.left = width - rc.right - 50;
+                break;
+            }
+            rc.bottom += rc.top;
+            rc.right += rc.left;
+
+            DrawText( hdcScreenCompat, timerText, -1, &rc, DT_NOCLIP|DT_LEFT|DT_NOPREFIX );
+
+            if( g_ShowExpiredTime && breakTimeout < 0 ) {
+
+                rc1.top = rc.bottom + 10;
+                rc1.left = rc.left + ((rc.right - rc.left)-(rc1.right-rc1.left))/2;
+                HFONT prevFont = static_cast<HFONT>(SelectObject( hdcScreenCompat, hNegativeTimerFont ));
+                DrawText( hdcScreenCompat, negativeTimerText, -1, &rc1,
+                    DT_NOCLIP|DT_LEFT|DT_NOPREFIX );
+                SelectObject( hdcScreenCompat, prevFont );
+            }
+
+            // Copy to screen
+            BitBlt( ps.hdc, 0, 0, width, height, hdcScreenCompat, 0, 0, SRCCOPY|CAPTUREBLT  );
+        }
+        EndPaint(hWnd, &ps);
+        return TRUE;
+
+    case WM_WTSSESSION_CHANGE:
+        //
+        // When the user unlocks the workstation after a break timer screensaver
+        // session, restore the original screensaver settings so the break timer
+        // doesn't reactivate.
+        //
+        if( wParam == WTS_SESSION_UNLOCK ||
+            wParam == WTS_SESSION_LOGON ||
+            wParam == WTS_CONSOLE_CONNECT )
+        {
+            RestoreScreenSaverSettings();
+
+            //
+            // Schedule a deferred SPI re-apply.  Winlogon may re-read the
+            // (now-stale) screensaver policy during the desktop switch,
+            // overriding the SPI_SETSCREENSAVEACTIVE / TIMEOUT calls we
+            // just made.  Timer 5 fires after the transition completes
+            // and re-asserts the correct runtime state.
+            //
+            SetTimer( hWnd, 5, 5000, NULL );
+        }
+        break;
+
+    case WM_DESTROY:
+        // Restore screensaver settings on clean shutdown in case the
+        // break screensaver was still active.
+        if( HasOrphanedScreenSaverSettings() )
+            RestoreScreenSaverSettings();
+        WTSUnRegisterSessionNotification( hWnd );
+        CleanupDarkModeResources();
+        PostQuitMessage( 0 );
+        break;
+
+    default:
+        if( message == wmTaskbarCreated )
+        {
+            if( g_ShowTrayIcon )
+            {
+                EnableDisableTrayIcon( hWnd, TRUE );
+            }
+            return TRUE;
+        }
+       return DefWindowProc(hWnd, message, wParam, lParam );
+    }
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// LiveZoomWndProc
+//
+//----------------------------------------------------------------------------
+LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    RECT		rc;
+    POINT		cursorPos;
+    static int	width, height;
+    static MONITORINFO	monInfo;
+#if 0
+    int			delta;
+    BOOLEAN		zoomIn;
+#endif
+    static POINT	lastCursorPos;
+    POINT			adjustedCursorPos, zoomCenterPos;
+    int				moveWidth, moveHeight;
+    int				sourceRectHeight, sourceRectWidth;
+    RECT			sourceRect{};
+    static RECT		lastSourceRect;
+    static float	zoomLevel;
+    static float	zoomTelescopeTarget;
+    static ZoomAnimation zoomAnimation;
+    static BOOLEAN animationSmoothingForced = FALSE;
+    static BOOL		dwmEnabled = FALSE;
+    static BOOLEAN	startedInPresentationMode = FALSE;
+    MAGTRANSFORM matrix;
+
+    switch (message)  {
+    case WM_CREATE: {
+
+        // Initialize
+        const BOOL magnificationInitialized = pMagInitialize();
+        if (pDwmIsCompositionEnabled) pDwmIsCompositionEnabled(&dwmEnabled);
+
+        // Create the zoom window
+        if( !g_fullScreenWorkaround ) {
+
+            g_hWndLiveZoomMag = CreateWindowEx( 0,
+                                        WC_MAGNIFIER,
+                                        TEXT("MagnifierWindow"),
+                                        WS_CHILD | MS_SHOWMAGNIFIEDCURSOR | WS_VISIBLE,
+                                        0, 0, 0, 0, hWnd, NULL, g_hInstance, NULL );
+        }
+        if( !magnificationInitialized || (!g_fullScreenWorkaround && g_hWndLiveZoomMag == nullptr) )
+        {
+            return -1;
+        }
+        InvalidateRect( g_hWndLiveZoomMag, NULL, TRUE );
+
+        if( !g_fullScreenWorkaround )
+            SetForegroundWindow(static_cast<HWND>(reinterpret_cast<LPCREATESTRUCT>(lParam)->lpCreateParams));
+
+        // If we're not on Win7+, then set a timer to go off two hours from
+        // now
+        if( g_OsVersion < WIN7_VERSION ) {
+
+            startedInPresentationMode = IsPresentationMode();
+            // if we're not in presentation mode, kill ourselves after a timeout
+            if( !startedInPresentationMode ) {
+
+                SetTimer( hWnd, 1, LIVEZOOM_WINDOW_TIMEOUT, NULL );
+            }
+        }
+        break;
+    }
+
+    case WM_SHOWWINDOW:
+        if( wParam == TRUE ) {
+
+            animationSmoothingForced = FALSE;
+            KillTimer( hWnd, 1 );
+
+            // The cached control relinquishes cursor rendering while hidden. Restore it before live zoom is shown.
+            if( !g_fullScreenWorkaround )
+                SendMessage( hWnd, WM_USER_MAGNIFY_CURSOR, TRUE, 0 );
+
+            if( !g_fullScreenWorkaround && pMagSetLensUseBitmapSmoothing )
+                pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
+
+            // Determine what monitor we're on
+            lastCursorPos.x = -1;
+            GetCursorPos( &cursorPos );
+            UpdateMonitorInfo( cursorPos, &monInfo );
+            width = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
+            height = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
+            lastSourceRect.left = lastSourceRect.right = 0;
+            lastSourceRect.right = width;
+            lastSourceRect.bottom = height;
+
+            // Set window size
+            if( !g_fullScreenWorkaround ) {
+
+                SetWindowPos( hWnd, NULL, monInfo.rcMonitor.left, monInfo.rcMonitor.top,
+                    monInfo.rcMonitor.right - monInfo.rcMonitor.left,
+                    monInfo.rcMonitor.bottom - monInfo.rcMonitor.top,
+                    SWP_NOACTIVATE | SWP_NOZORDER );
+                UpdateWindow(hWnd);
+            }
+
+            // Are we coming back from a static zoom that
+            // was started while we were live zoomed?
+            if( g_ZoomOnLiveZoom ) {
+
+                // Force a zoom to 2x without telescope
+                zoomTelescopeTarget = 2.0;
+                zoomLevel = zoomTelescopeTarget;
+                zoomAnimation.Stop( zoomLevel );
+
+            } else {
+
+                zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
+
+                if( dwmEnabled ) {
+
+                    zoomLevel = static_cast<float>(1);
+                    zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
+                                         ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, true ) );
+
+                } else {
+
+                    zoomLevel = zoomTelescopeTarget;
+                    zoomAnimation.Stop( zoomLevel );
+                }
+            }
+            RegisterHotKey( hWnd, 0, MOD_CONTROL, VK_UP );
+            RegisterHotKey( hWnd, 1, MOD_CONTROL, VK_DOWN );
+
+            // Hide hardware cursor
+            if( !g_fullScreenWorkaround )
+                if( pMagShowSystemCursor ) pMagShowSystemCursor( FALSE );
+
+            if( g_RecordToggle )
+                g_RecordingSession->EnableCursorCapture( false );
+
+            GetCursorPos( &lastCursorPos );
+            SetCursorPos( lastCursorPos.x, lastCursorPos.y );
+
+            SetTimer( hWnd, 0, ZOOM_ANIMATION_FRAME_TIME, NULL );
+            SendMessage( hWnd, WM_TIMER, 0, 0);
+
+        } else {
+
+            KillTimer( hWnd, 0 );
+            if( animationSmoothingForced ) {
+
+                animationSmoothingForced = FALSE;
+                if( pMagSetLensUseBitmapSmoothing )
+                    pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
+            }
+
+            if( g_RecordToggle )
+                g_RecordingSession->EnableCursorCapture();
+
+            if( !g_fullScreenWorkaround ) {
+
+                // Stop the magnifier control from retaining ownership of the cursor while its expensive surfaces
+                // remain resident. Destroying the control also releases the cursor, but makes the next activation cold.
+                SendMessage( hWnd, WM_USER_MAGNIFY_CURSOR, FALSE, 0 );
+                if( pMagShowSystemCursor ) pMagShowSystemCursor( TRUE );
+            }
+
+            // Keep the magnifier control resident on current Windows. Re-creating it costs ~200ms while warm and can
+            // take much longer after its ~76MB of fullscreen surfaces have left the standby list.
+            KillTimer( hWnd, 1 );
+            if( g_OsVersion < WIN7_VERSION && !IsPresentationMode()) {
+
+                SetTimer( hWnd, 1, LIVEZOOM_WINDOW_TIMEOUT, NULL );
+            }
+            UnregisterHotKey( hWnd, 0 );
+            UnregisterHotKey( hWnd, 1 );
+        }
+        break;
+
+    case WM_TIMER:
+        switch( wParam ) {
+        case 0: {
+            // if we're cropping, do not move
+            if( g_RecordCropping == TRUE )
+            {
+                // Still redraw to keep the contents live
+                InvalidateRect( g_hWndLiveZoomMag, nullptr, TRUE );
+                break;
+            }
+
+            GetCursorPos(&cursorPos);
+
+            // Reclaim topmost status, to prevent unmagnified menus from remaining in view.
+            memset(&matrix, 0, sizeof(matrix));
+            if( !g_fullScreenWorkaround ) {
+
+                pSetLayeredWindowAttributes( hWnd, 0, 255, LWA_ALPHA );
+
+                // Keep the webcam preview above the zoom window.
+                // Two-step: zoom reclaims topmost first, then preview
+                // goes on top.  SWP_NOACTIVATE does not affect
+                // SetCapture, so this is safe during drag/resize.
+                SetWindowPos( hWnd, HWND_TOPMOST, 0, 0, 0, 0,
+                              SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+                if( g_WebcamPreview.IsActive() )
+                {
+                    SetWindowPos( g_WebcamPreview.GetHwnd(), HWND_TOPMOST, 0, 0, 0, 0,
+                                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+                }
+
+                OutputDebug(L"LIVEZOOM RECLAIM\n");
+            }
+
+            sourceRectWidth = lastSourceRect.right - lastSourceRect.left;
+            sourceRectHeight = lastSourceRect.bottom - lastSourceRect.top;
+            moveWidth = sourceRectWidth/LIVEZOOM_MOVE_REGIONS;
+            moveHeight = sourceRectHeight/LIVEZOOM_MOVE_REGIONS;
+            if( zoomAnimation.IsActive() ) {
+
+                // Force interpolated magnification while the scale changes so sub-pixel motion is smooth, not blocky.
+                if( !g_fullScreenWorkaround && !animationSmoothingForced ) {
+
+                    animationSmoothingForced = TRUE;
+                    if( pMagSetLensUseBitmapSmoothing )
+                        pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, TRUE );
+                }
+                zoomLevel = zoomAnimation.Sample( GetTickCount64() );
+                if( animationSmoothingForced && !zoomAnimation.IsActive() ) {
+
+                    animationSmoothingForced = FALSE;
+                    if( pMagSetLensUseBitmapSmoothing )
+                        pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
+                }
+                // Time to exit zoom mode?
+                if( zoomTelescopeTarget == 1 && zoomLevel == 1 ) {
+
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+                    if( g_RecordToggle )
+                        g_LiveZoomLevelOne = true;
+                    else
+#endif
+                    ShowWindow( hWnd, SW_HIDE );
+
+                } else {
+
+                    matrix.v[0][0] = zoomLevel;
+                    matrix.v[0][2] = (static_cast<float>(-lastSourceRect.left) * zoomLevel);
+                    matrix.v[1][1] = zoomLevel;
+                    matrix.v[1][2] = (static_cast<float>(-lastSourceRect.top) * zoomLevel );
+                    matrix.v[2][2] = 1.0f;
+                }
+
+                //
+                // Pre-adjust for monitor boundary
+                //
+                adjustedCursorPos.x = cursorPos.x - monInfo.rcMonitor.left;
+                adjustedCursorPos.y = cursorPos.y - monInfo.rcMonitor.top;
+                GetZoomedTopLeftCoordinates( zoomLevel, &adjustedCursorPos,
+                    reinterpret_cast<int*>(&zoomCenterPos.x), width,
+                    reinterpret_cast<int*>(&zoomCenterPos.y), height );
+
+                // Add back monitor boundary.
+                zoomCenterPos.x += monInfo.rcMonitor.left + static_cast<LONG>(width / zoomLevel / 2);
+                zoomCenterPos.y += monInfo.rcMonitor.top + static_cast<LONG>(height / zoomLevel / 2);
+
+            } else {
+
+                int xOffset = cursorPos.x - lastSourceRect.left;
+                int yOffset = cursorPos.y - lastSourceRect.top;
+                zoomCenterPos.x = 0;
+                zoomCenterPos.y = 0;
+                if( xOffset < moveWidth )
+                    zoomCenterPos.x = lastSourceRect.left + sourceRectWidth/2 - (moveWidth - xOffset);
+                else if( xOffset > moveWidth * (LIVEZOOM_MOVE_REGIONS-1) )
+                    zoomCenterPos.x = lastSourceRect.left + sourceRectWidth/2 + (xOffset - moveWidth*(LIVEZOOM_MOVE_REGIONS-1));
+                if( yOffset < moveHeight )
+                    zoomCenterPos.y = lastSourceRect.top + sourceRectHeight/2 - (moveHeight - yOffset);
+                else if( yOffset > moveHeight * (LIVEZOOM_MOVE_REGIONS-1) )
+                    zoomCenterPos.y = lastSourceRect.top + sourceRectHeight/2 + (yOffset - moveHeight*(LIVEZOOM_MOVE_REGIONS-1));
+            }
+            if( matrix.v[0][0] || zoomCenterPos.x || zoomCenterPos.y ) {
+
+                if( zoomCenterPos.y == 0 )
+                    zoomCenterPos.y = lastSourceRect.top + sourceRectHeight/2;
+                if( zoomCenterPos.x == 0 )
+                    zoomCenterPos.x = lastSourceRect.left + sourceRectWidth/2;
+
+                int zoomWidth = static_cast<int>(width / zoomLevel);
+                int zoomHeight = static_cast<int>(height/ zoomLevel);
+                sourceRect.left = zoomCenterPos.x - zoomWidth / 2;
+                sourceRect.top = zoomCenterPos.y -  zoomHeight / 2;
+
+                // Don't scroll outside desktop area.
+                if (sourceRect.left < monInfo.rcMonitor.left)
+                    sourceRect.left = monInfo.rcMonitor.left;
+                else if (sourceRect.left > monInfo.rcMonitor.right - zoomWidth )
+                    sourceRect.left = monInfo.rcMonitor.right - zoomWidth;
+                sourceRect.right = sourceRect.left + zoomWidth;
+                if (sourceRect.top < monInfo.rcMonitor.top)
+                    sourceRect.top = monInfo.rcMonitor.top;
+                else if (sourceRect.top > monInfo.rcMonitor.bottom - zoomHeight)
+                    sourceRect.top = monInfo.rcMonitor.bottom - zoomHeight;
+                sourceRect.bottom = sourceRect.top + zoomHeight;
+
+                if( g_ZoomOnLiveZoom ) {
+
+                    matrix.v[0][0] = static_cast<float>(1.0);
+                    matrix.v[0][2] = (static_cast<float>(-monInfo.rcMonitor.left));
+
+                    matrix.v[1][1] = static_cast<float>(1.0);
+                    matrix.v[1][2] = (static_cast<float>(-monInfo.rcMonitor.top));
+
+                    matrix.v[2][2] = 1.0f;
+
+                } else if( lastSourceRect.left != sourceRect.left ||
+                    lastSourceRect.top  != sourceRect.top ) {
+
+                    matrix.v[0][0] = zoomLevel;
+                    matrix.v[0][2] = (static_cast<float>(-sourceRect.left) * zoomLevel);
+
+                    matrix.v[1][1] = zoomLevel;
+                    matrix.v[1][2] = (static_cast<float>(-sourceRect.top) * zoomLevel);
+
+                    matrix.v[2][2] = 1.0f;
+                }
+                lastSourceRect = sourceRect;
+            }
+            lastCursorPos = cursorPos;
+
+            // Update source and zoom if necessary
+            if( matrix.v[0][0] ) {
+
+                OutputDebug(L"LIVEZOOM update\n");
+                if( g_fullScreenWorkaround ) {
+
+                    pMagSetFullscreenTransform(zoomLevel, sourceRect.left, sourceRect.top);
+                    pMagSetInputTransform(TRUE, &sourceRect, &monInfo.rcMonitor);
+                }
+                else {
+
+                    pMagSetWindowTransform(g_hWndLiveZoomMag, &matrix);
+                }
+            }
+
+            if( !g_fullScreenWorkaround ) {
+
+                // Force redraw to refresh screen contents
+                InvalidateRect(g_hWndLiveZoomMag, NULL, TRUE);
+            }
+
+            // are we done zooming?
+            if( zoomTelescopeTarget == 1 && zoomLevel == 1 ) {
+
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+                if( g_RecordToggle ) {
+
+                    g_LiveZoomLevelOne = true;
+                }
+                else {
+
+#endif
+                ShowWindow( hWnd, SW_HIDE );
+            }
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+            }
+#endif
+            }
+            break;
+        case 1: {
+
+            if( !IsWindowVisible( hWnd )) {
+
+                // This is the cached window timeout. If not in presentation mode,
+                // time to exit
+                if( !IsPresentationMode()) {
+
+                    DestroyWindow( hWnd );
+                }
+            }
+            }
+            break;
+        }
+        break;
+
+    case WM_SETTINGCHANGE:
+        if( g_OsVersion < WIN7_VERSION ) {
+
+            if( startedInPresentationMode && !IsPresentationMode()) {
+
+                // Existing presentation mode
+                DestroyWindow( hWnd );
+
+            } else if( !startedInPresentationMode && IsPresentationMode()) {
+
+                // Kill the timer if one was configured, because now
+                // we're going to go away when they exit presentation mode
+                KillTimer( hWnd, 1 );
+            }
+        }
+        break;
+
+    case WM_HOTKEY: {
+        float newZoomLevel = zoomAnimation.IsActive() ? zoomTelescopeTarget : zoomLevel;
+        switch( wParam ) {
+        case 0:
+            // zoom in
+            if( newZoomLevel < ZOOM_LEVEL_MAX )
+                newZoomLevel *= 2;
+            break;
+
+        case 1:
+            if( newZoomLevel > 2 )
+                newZoomLevel /= 2;
+            else {
+
+                newZoomLevel *= .75;
+                if( newZoomLevel < ZOOM_LEVEL_MIN )
+                    newZoomLevel = ZOOM_LEVEL_MIN;
+            }
+            break;
+        }
+        zoomTelescopeTarget = newZoomLevel;
+        if( !dwmEnabled ) {
+
+            zoomLevel = newZoomLevel;
+            zoomAnimation.Stop( zoomLevel );
+        } else {
+
+            zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
+        }
+        }
+        break;
+
+    // NOTE: keyboard and mouse input actually don't get sent to us at all when in live zoom mode
+    case WM_KEYDOWN:
+        switch( wParam ) {
+        case VK_ESCAPE:
+            zoomTelescopeTarget = 1.0;
+            if( !dwmEnabled ) {
+
+                zoomLevel = zoomTelescopeTarget;
+                zoomAnimation.Stop( zoomLevel );
+            } else {
+
+                zoomLevel = zoomAnimation.Retarget( zoomTelescopeTarget, GetTickCount64(),
+                                                    ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
+            }
+            break;
+
+        case VK_UP:
+            SendMessage( hWnd, WM_MOUSEWHEEL,
+                MAKEWPARAM( GetAsyncKeyState( VK_LCONTROL ) != 0 ? MK_CONTROL: 0, WHEEL_DELTA), 0 );
+            return TRUE;
+
+        case VK_DOWN:
+            SendMessage( hWnd, WM_MOUSEWHEEL,
+                MAKEWPARAM( GetAsyncKeyState( VK_LCONTROL ) != 0 ? MK_CONTROL: 0, -WHEEL_DELTA), 0 );
+            return TRUE;
+        }
+        break;
+    case WM_DESTROY:
+        if( animationSmoothingForced && pMagSetLensUseBitmapSmoothing )
+            pMagSetLensUseBitmapSmoothing( g_hWndLiveZoomMag, g_SmoothImage );
+        animationSmoothingForced = FALSE;
+        g_hWndLiveZoom = NULL;
+        break;
+
+    case WM_SIZE:
+        GetClientRect(hWnd, &rc);
+        SetWindowPos(g_hWndLiveZoomMag, NULL,
+            rc.left, rc.top, rc.right, rc.bottom, 0 );
+        break;
+
+    case WM_USER_GET_ZOOM_LEVEL:
+        return reinterpret_cast<LRESULT>(&zoomLevel);
+
+    case WM_USER_GET_SOURCE_RECT:
+        return reinterpret_cast<LRESULT>(&lastSourceRect);
+
+    case WM_USER_MAGNIFY_CURSOR:
+        {
+            auto style = GetWindowLong( g_hWndLiveZoomMag, GWL_STYLE );
+            if( wParam == TRUE )
+            {
+                style |= MS_SHOWMAGNIFIEDCURSOR;
+            }
+            else
+            {
+                style &= ~MS_SHOWMAGNIFIEDCURSOR;
+            }
+            SetWindowLong( g_hWndLiveZoomMag, GWL_STYLE, style );
+            InvalidateRect( g_hWndLiveZoomMag, nullptr, TRUE );
+            RedrawWindow( hWnd, nullptr, nullptr, RDW_ALLCHILDREN | RDW_UPDATENOW );
+        }
+        break;
+
+    case WM_USER_SET_ZOOM:
+        {
+            if( g_RecordToggle )
+            {
+                g_SelectRectangle.UpdateOwner( hWnd );
+            }
+
+            if( lParam != NULL ) {
+
+                lastSourceRect = *reinterpret_cast<RECT *>(lParam);
+            }
+#if WINDOWS_CURSOR_RECORDING_WORKAROUND
+            if( g_LiveZoomLevelOne ) {
+
+                g_LiveZoomLevelOne = FALSE;
+
+                zoomTelescopeTarget = static_cast<float>(wParam);
+                zoomLevel = 1.0;
+                zoomAnimation.Start( zoomLevel, zoomTelescopeTarget, GetTickCount64(),
+                                     ZoomAnimation::Duration( zoomLevel, zoomTelescopeTarget, false ) );
+
+                break;
+            }
+#endif
+            zoomLevel = static_cast<float>(wParam);
+            zoomTelescopeTarget = zoomLevel;
+            zoomAnimation.Stop( zoomLevel );
+            matrix.v[0][0] = zoomLevel;
+            matrix.v[0][2] = (static_cast<float>(-lastSourceRect.left) * static_cast<float>(wParam));
+
+            matrix.v[1][1] = zoomLevel;
+            matrix.v[1][2] = (static_cast<float>(-lastSourceRect.top) * static_cast<float>(wParam));
+
+            matrix.v[2][2] = 1.0f;
+
+            if( g_fullScreenWorkaround ) {
+
+                pMagSetFullscreenTransform(zoomLevel, lastSourceRect.left, lastSourceRect.top);
+                pMagSetInputTransform(TRUE, &lastSourceRect, &monInfo.rcMonitor);
+            }
+            else {
+
+                pMagSetWindowTransform(g_hWndLiveZoomMag, &matrix);
+            }
+        }
+        break;
+
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// Wrapper functions for explicit linking to d3d11.dll
+//
+//----------------------------------------------------------------------------
+
+HRESULT __stdcall WrapCreateDirect3D11DeviceFromDXGIDevice(
+    IDXGIDevice		*dxgiDevice,
+    IInspectable	**graphicsDevice)
+{
+    if( pCreateDirect3D11DeviceFromDXGIDevice == nullptr )
+        return E_NOINTERFACE;
+
+    return pCreateDirect3D11DeviceFromDXGIDevice( dxgiDevice, graphicsDevice );
+}
+
+HRESULT __stdcall WrapCreateDirect3D11SurfaceFromDXGISurface(
+    IDXGISurface	*dxgiSurface,
+    IInspectable	**graphicsSurface)
+{
+    if( pCreateDirect3D11SurfaceFromDXGISurface == nullptr )
+        return E_NOINTERFACE;
+
+    return pCreateDirect3D11SurfaceFromDXGISurface( dxgiSurface, graphicsSurface );
+}
+
+HRESULT __stdcall WrapD3D11CreateDevice(
+    IDXGIAdapter			*pAdapter,
+    D3D_DRIVER_TYPE			DriverType,
+    HMODULE					Software,
+    UINT					Flags,
+    const D3D_FEATURE_LEVEL	*pFeatureLevels,
+    UINT					FeatureLevels,
+    UINT					SDKVersion,
+    ID3D11Device			**ppDevice,
+    D3D_FEATURE_LEVEL		*pFeatureLevel,
+    ID3D11DeviceContext		**ppImmediateContext)
+{
+    if( pD3D11CreateDevice == nullptr )
+        return E_NOINTERFACE;
+
+    return pD3D11CreateDevice( pAdapter, DriverType, Software, Flags, pFeatureLevels,
+                FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext );
+}
+
+
+//----------------------------------------------------------------------------
+//
+// InitInstance
+//
+//----------------------------------------------------------------------------
+HWND InitInstance( HINSTANCE hInstance, int nCmdShow )
+{
+    WNDCLASS  wcZoomIt;
+    HWND	  hWndMain;
+
+    g_hInstance = hInstance;
+
+    // If magnification, set default hotkey for live zoom
+    if( pMagInitialize ) {
+
+        // register live zoom host window
+        wcZoomIt.style          = CS_HREDRAW | CS_VREDRAW;
+        wcZoomIt.lpfnWndProc    = LiveZoomWndProc;
+        wcZoomIt.cbClsExtra     = 0;
+        wcZoomIt.cbWndExtra     = 0;
+        wcZoomIt.hInstance      = hInstance;
+        wcZoomIt.hIcon          = 0;
+        wcZoomIt.hCursor        = LoadCursor(NULL, IDC_ARROW);
+        wcZoomIt.hbrBackground  = NULL;
+        wcZoomIt.lpszMenuName   = NULL;
+        wcZoomIt.lpszClassName  = L"MagnifierClass";
+        RegisterClass(&wcZoomIt);
+
+    } else {
+
+        g_LiveZoomToggleKey = 0;
+    }
+
+    wcZoomIt.style = 0;
+    wcZoomIt.lpfnWndProc	= (WNDPROC)MainWndProc;
+    wcZoomIt.cbClsExtra		= 0;
+    wcZoomIt.cbWndExtra		= 0;
+    wcZoomIt.hInstance		= hInstance;       wcZoomIt.hIcon			= NULL;
+    wcZoomIt.hCursor		= LoadCursor( hInstance, L"NULLCURSOR" );
+    wcZoomIt.hbrBackground	= NULL;
+    wcZoomIt.lpszMenuName	= NULL;
+    wcZoomIt.lpszClassName	= L"ZoomitClass";
+    if ( ! RegisterClass(&wcZoomIt) )
+        return FALSE;
+
+    hWndMain = CreateWindowEx( WS_EX_TOOLWINDOW, L"ZoomitClass",
+                    L"Zoomit Zoom Window",
+                    WS_POPUP,
+                    0, 0,
+                    0, 0,
+                    NULL,
+                    NULL,
+                    hInstance,
+                    NULL);
+
+    // If window could not be created, return "failure"
+    if (!hWndMain )
+        return NULL;
+
+    // Make the window visible; update its client area; and return "success"
+    ShowWindow(hWndMain, SW_HIDE);
+
+    // Add tray icon
+    EnableDisableTrayIcon( hWndMain, g_ShowTrayIcon );
+    return hWndMain;
+
+}
+
+// Dispatch commands coming from the PowerToys IPC channel.
+#ifdef __ZOOMIT_POWERTOYS__
+void ZoomIt_DispatchCommand(ZoomItCommand cmd)
+{
+    auto post_hotkey = [](WPARAM id)
+    {
+        if (g_hWndMain != nullptr)
+        {
+            PostMessage(g_hWndMain, WM_HOTKEY, id, 0);
+        }
+    };
+
+    switch (cmd)
+    {
+    case ZoomItCommand::Zoom:
+        if (g_hWndMain != nullptr)
+        {
+            PostMessage(g_hWndMain, WM_COMMAND, IDC_ZOOM, 0);
+        }
+        Trace::ZoomItActivateZoom();
+        break;
+    case ZoomItCommand::Draw:
+        post_hotkey(DRAW_HOTKEY);
+        Trace::ZoomItActivateDraw();
+        break;
+    case ZoomItCommand::Break:
+        post_hotkey(BREAK_HOTKEY);
+        Trace::ZoomItActivateBreak();
+        break;
+    case ZoomItCommand::LiveZoom:
+        post_hotkey(LIVE_HOTKEY);
+        Trace::ZoomItActivateLiveZoom();
+        break;
+    case ZoomItCommand::Snip:
+        post_hotkey(SNIP_HOTKEY);
+        Trace::ZoomItActivateSnip();
+        break;
+    case ZoomItCommand::SnipOcr:
+        post_hotkey(SNIP_OCR_HOTKEY);
+        Trace::ZoomItActivateSnipOcr();
+        break;
+    case ZoomItCommand::Record:
+        post_hotkey(RECORD_HOTKEY);
+        Trace::ZoomItActivateRecord();
+        break;
+    default:
+        break;
+    }
+}
+#endif
+
+//----------------------------------------------------------------------------
+//
+// WinMain
+//
+//----------------------------------------------------------------------------
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
+    _In_ PWSTR lpCmdLine, _In_ int nCmdShow )
+{
+    MSG					msg;
+    HACCEL				hAccel;
+
+    // Enable panorama frame/log dumps in release builds when requested.
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-debug" ) != nullptr )
+    {
+        g_PanoramaDebugMode = true;
+    }
+
+#ifdef _DEBUG
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-selftest" ) != nullptr )
+    {
+        const bool selfTestPassed = RunPanoramaStitchSelfTest();
+        return selfTestPassed ? 0 : 2;
+    }
+
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-stitch-latest" ) != nullptr )
+    {
+        const bool replayStitchPassed = RunPanoramaStitchLatestDebugDump();
+        return replayStitchPassed ? 0 : 3;
+    }
+
+    {
+        const wchar_t* replayArg = lpCmdLine != nullptr ? wcsstr( lpCmdLine, L"/panorama-stitch-replay " ) : nullptr;
+        if( replayArg != nullptr )
+        {
+            const wchar_t* path = replayArg + wcslen( L"/panorama-stitch-replay " );
+            while( *path == L' ' || *path == L'\"' ) ++path;
+            std::wstring replayPath( path );
+            while( !replayPath.empty() && ( replayPath.back() == L'\"' || replayPath.back() == L' ' ) )
+                replayPath.pop_back();
+            const bool ok = RunPanoramaStitchDumpDirectory( replayPath.c_str() );
+            return ok ? 0 : 3;
+        }
+    }
+#endif // _DEBUG
+
+    if( !ShowEula( APPNAME, NULL, NULL )) return 1;
+
+#ifdef __ZOOMIT_POWERTOYS__
+    if (powertoys_gpo::getConfiguredZoomItEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 1;
+    }
+
+    Shared::Trace::ETWTrace* trace = nullptr;
+    std::wstring pid = std::wstring(lpCmdLine); // The PowerToys pid is the argument to the process.
+    auto mainThreadId = GetCurrentThreadId();
+    if (!pid.empty())
+    {
+        g_StartedByPowerToys = TRUE;
+
+        trace = new Shared::Trace::ETWTrace();
+        Trace::RegisterProvider();
+        trace->UpdateState(true);
+        Trace::ZoomItStarted();
+
+        // Initialize logger
+        LoggerHelpers::init_logger(L"ZoomIt", L"", LogSettings::zoomItLoggerName);
+        ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
+            if (err != ERROR_SUCCESS)
+            {
+                Logger::error(L"Failed to wait for parent process exit. {}", get_last_error_or_default(err));
+            }
+            else
+            {
+                Logger::trace(L"PowerToys runner exited.");
+            }
+
+            Logger::trace(L"Exiting ZoomIt");
+            PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+        });
+    }
+#endif // __ZOOMIT_POWERTOYS__
+
+
+#ifndef _WIN64
+
+    if(!g_StartedByPowerToys)
+    {
+        // Launch 64-bit version if necessary
+        SetAutostartFilePath();
+        if( RunningOnWin64()) {
+
+            // Record where we are if we're the 32-bit version
+            return Run64bitVersion();
+        }
+    }
+#endif
+
+    // Single instance per desktop
+
+    if( !CreateEvent( NULL, FALSE, FALSE, _T("Local\\ZoomitActive"))) {
+
+        CreateEvent( NULL, FALSE, FALSE, _T("ZoomitActive"));
+    }
+    if( GetLastError() == ERROR_ALREADY_EXISTS ) {
+        if (g_StartedByPowerToys)
+        {
+            MessageBox(NULL, L"We've detected another instance of ZoomIt is already running.\nCan't start a new ZoomIt instance from PowerToys.",
+            APPNAME, MB_ICONERROR | MB_SETFOREGROUND);
+            return 1;
+        }
+
+        // Tell the other instance to show the options dialog
+        g_hWndMain = FindWindow( L"ZoomitClass", NULL );
+        if( g_hWndMain != NULL ) {
+
+            PostMessage( g_hWndMain, WM_COMMAND, IDC_OPTIONS, 0 );
+            int count = 0;
+            while( count++ < 5 ) {
+
+                HWND local_hWndOptions = FindWindow( NULL, L"ZoomIt - Sysinternals: www.sysinternals.com" );
+                if( local_hWndOptions ) {
+
+                    SetForegroundWindow( local_hWndOptions );
+                    SetWindowPos( local_hWndOptions, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW );
+                    break;
+                }
+                Sleep( 100 );
+            }
+        }
+        return 0;
+    }
+
+    g_OsVersion = GetVersion() & 0xFFFF;
+
+    // load accelerators
+    hAccel = LoadAccelerators( hInstance, TEXT("ACCELERATORS"));
+
+    if (FAILED(CoInitialize(0)))
+    {
+        return 0;
+    }
+
+    pEnableThemeDialogTexture = (type_pEnableThemeDialogTexture) GetProcAddress( GetModuleHandle( L"uxtheme.dll" ),
+                    "EnableThemeDialogTexture" );
+
+    // Initialize dark mode support early, before any windows are created
+    // This is required for popup menus to use dark mode
+    InitializeDarkMode();
+
+    pMonitorFromPoint = (type_MonitorFromPoint) GetProcAddress( LoadLibrarySafe( L"User32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MonitorFromPoint" );
+    pGetMonitorInfo = (type_pGetMonitorInfo) GetProcAddress( LoadLibrarySafe( L"User32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "GetMonitorInfoA" );
+    pSHAutoComplete = (type_pSHAutoComplete) GetProcAddress( LoadLibrarySafe(L"Shlwapi.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "SHAutoComplete" );
+    pSetLayeredWindowAttributes = (type_pSetLayeredWindowAttributes) GetProcAddress( LoadLibrarySafe(L"user32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "SetLayeredWindowAttributes" );
+    pMagSetWindowSource = (type_pMagSetWindowSource) GetProcAddress( LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetWindowSource" );
+    pGetPointerType = (type_pGetPointerType)GetProcAddress(LoadLibrarySafe(L"user32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "GetPointerType" );
+    pGetPointerPenInfo = (type_pGetPointerPenInfo)GetProcAddress(LoadLibrarySafe(L"user32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "GetPointerPenInfo" );
+    pMagInitialize = (type_pMagInitialize)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagInitialize");
+    pMagSetWindowTransform = (type_pMagSetWindowTransform) GetProcAddress( LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetWindowTransform" );
+    pMagSetFullscreenTransform = (type_pMagSetFullscreenTransform)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetFullscreenTransform");
+    pMagSetFullscreenUseBitmapSmoothing = (type_MagSetFullscreenUseBitmapSmoothing)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetFullscreenUseBitmapSmoothing");
+    pMagSetLensUseBitmapSmoothing = (type_pMagSetLensUseBitmapSmoothing)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetLensUseBitmapSmoothing");
+    pMagSetInputTransform = (type_pMagSetInputTransform)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetInputTransform");
+    pMagShowSystemCursor = (type_pMagShowSystemCursor)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagShowSystemCursor");
+    pMagSetWindowFilterList = (type_pMagSetWindowFilterList)GetProcAddress( LoadLibrarySafe( L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM ),
+                    "MagSetWindowFilterList" );
+    pSHQueryUserNotificationState = (type_pSHQueryUserNotificationState) GetProcAddress( LoadLibrarySafe(L"shell32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "SHQueryUserNotificationState" );
+    pDwmIsCompositionEnabled = (type_pDwmIsCompositionEnabled) GetProcAddress( LoadLibrarySafe(L"dwmapi.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "DwmIsCompositionEnabled" );
+    pSetProcessDPIAware = (type_pSetProcessDPIAware) GetProcAddress( LoadLibrarySafe(L"User32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "SetProcessDPIAware");
+    pSystemParametersInfoForDpi = (type_pSystemParametersInfoForDpi)GetProcAddress(LoadLibrarySafe(L"User32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "SystemParametersInfoForDpi");
+    pGetDpiForWindow = (type_pGetDpiForWindow)GetProcAddress(LoadLibrarySafe(L"User32.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "GetDpiForWindow" );
+    pCreateDirect3D11DeviceFromDXGIDevice = (type_pCreateDirect3D11DeviceFromDXGIDevice) GetProcAddress( LoadLibrarySafe(L"d3d11.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "CreateDirect3D11DeviceFromDXGIDevice" );
+    pCreateDirect3D11SurfaceFromDXGISurface = (type_pCreateDirect3D11SurfaceFromDXGISurface) GetProcAddress( LoadLibrarySafe(L"d3d11.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "CreateDirect3D11SurfaceFromDXGISurface" );
+    pD3D11CreateDevice = (type_pD3D11CreateDevice) GetProcAddress( LoadLibrarySafe(L"d3d11.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "D3D11CreateDevice" );
+
+    // Windows Server 2022 (and including Windows 11) introduced a bug where the cursor disappears
+    // in live zoom. Use the full-screen magnifier as a workaround on those versions only. It is
+    // currently impractical as a replacement; it requires calling MagSetInputTransform for all
+    // input to be transformed. Else, some hit-testing is misdirected. MagSetInputTransform
+    // fails without token UI access, which is impractical; it requires copying the executable
+    // under either %ProgramFiles% or %SystemRoot%, which requires elevation.
+    //
+    // TODO: Update the Windows 11 21H2 revision check when the final number is known. Also add a
+    //       check for the Windows Server 2022 revision if that bug (https://task.ms/38611091) is
+    //       fixed.
+    DWORD windowsRevision, windowsBuild = GetWindowsBuild( &windowsRevision );
+    if( ( windowsBuild == BUILD_WINDOWS_SERVER_2022 ) ||
+        ( ( windowsBuild == BUILD_WINDOWS_11_21H2 ) && ( windowsRevision < 829 ) ) ) {
+
+        if( pMagSetFullscreenTransform && pMagSetInputTransform )
+            g_fullScreenWorkaround = TRUE;
+    }
+
+#if 1
+    // Calling this causes Windows to mess with our query of monitor height and width
+    if( pSetProcessDPIAware ) {
+
+        pSetProcessDPIAware();
+    }
+#endif
+    /* Perform initializations that apply to a specific instance */
+    g_hWndMain = InitInstance(hInstance, nCmdShow);
+    if (!g_hWndMain )
+        return FALSE;
+
+#ifdef __ZOOMIT_POWERTOYS__
+    HANDLE m_reload_settings_event_handle = NULL;
+    HANDLE m_exit_event_handle = NULL;
+    HANDLE m_zoom_event_handle = NULL;
+    HANDLE m_draw_event_handle = NULL;
+    HANDLE m_break_event_handle = NULL;
+    HANDLE m_live_zoom_event_handle = NULL;
+    HANDLE m_snip_event_handle = NULL;
+    HANDLE m_snip_ocr_event_handle = NULL;
+    HANDLE m_record_event_handle = NULL;
+    std::thread m_event_triggers_thread;
+
+    if( g_StartedByPowerToys ) {
+        // Start a thread to listen to PowerToys Events.
+        m_reload_settings_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT);
+        m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_EXIT_EVENT);
+        m_zoom_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_ZOOM_EVENT);
+        m_draw_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_DRAW_EVENT);
+        m_break_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_BREAK_EVENT);
+        m_live_zoom_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_LIVEZOOM_EVENT);
+        m_snip_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_SNIP_EVENT);
+        m_snip_ocr_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_SNIPOCR_EVENT);
+        m_record_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_RECORD_EVENT);
+        if (!m_reload_settings_event_handle || !m_exit_event_handle || !m_zoom_event_handle || !m_draw_event_handle || !m_break_event_handle || !m_live_zoom_event_handle || !m_snip_event_handle || !m_snip_ocr_event_handle || !m_record_event_handle)
+        {
+            Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
+            return 1;
+        }
+        const std::array<HANDLE, 9> event_handles{
+            m_reload_settings_event_handle,
+            m_exit_event_handle,
+            m_zoom_event_handle,
+            m_draw_event_handle,
+            m_break_event_handle,
+            m_live_zoom_event_handle,
+            m_snip_event_handle,
+            m_snip_ocr_event_handle,
+            m_record_event_handle,
+        };
+        const DWORD handle_count = static_cast<DWORD>(event_handles.size());
+        m_event_triggers_thread = std::thread([event_handles, handle_count]() {
+            MSG msg;
+            while (g_running)
+            {
+                DWORD dwEvt = MsgWaitForMultipleObjects(handle_count, event_handles.data(), false, INFINITE, QS_ALLINPUT);
+                if (dwEvt == WAIT_FAILED)
+                {
+                    Logger::error(L"ZoomIt event wait failed. {}", get_last_error_or_default(GetLastError()));
+                    break;
+                }
+                if (!g_running)
+                {
+                    break;
+                }
+                if (dwEvt == WAIT_OBJECT_0 + handle_count)
+                {
+                    if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+                    {
+                        TranslateMessage(&msg);
+                        DispatchMessageW(&msg);
+                    }
+                    continue;
+                }
+                switch (dwEvt)
+                {
+                case WAIT_OBJECT_0:
+                {
+                    // Reload Settings Event
+                    Logger::trace(L"Received a reload settings event.");
+                    PostMessage(g_hWndMain, WM_USER_RELOAD_SETTINGS, 0, 0);
+                    break;
+                }
+                case WAIT_OBJECT_0 + 1:
+                {
+                    // Exit Event
+                    PostMessage(g_hWndMain, WM_QUIT, 0, 0);
+                    break;
+                }
+                case WAIT_OBJECT_0 + 2:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Zoom);
+                    break;
+                case WAIT_OBJECT_0 + 3:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Draw);
+                    break;
+                case WAIT_OBJECT_0 + 4:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Break);
+                    break;
+                case WAIT_OBJECT_0 + 5:
+                    ZoomIt_DispatchCommand(ZoomItCommand::LiveZoom);
+                    break;
+                case WAIT_OBJECT_0 + 6:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Snip);
+                    break;
+                case WAIT_OBJECT_0 + 7:
+                    ZoomIt_DispatchCommand(ZoomItCommand::SnipOcr);
+                    break;
+                case WAIT_OBJECT_0 + 8:
+                    ZoomIt_DispatchCommand(ZoomItCommand::Record);
+                    break;
+                default: break;
+                }
+            }
+        });
+    }
+#endif // __ZOOMIT_POWERTOYS__
+
+    /* Acquire and dispatch messages until a WM_QUIT message is received. */
+    while (GetMessage(&msg,	NULL, 0, 0 ))  {
+        if( !TranslateAccelerator( g_hWndMain, hAccel, &msg )) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+    int retCode = (int) msg.wParam;
+
+    g_running = FALSE;
+
+#ifdef __ZOOMIT_POWERTOYS__
+    if(g_StartedByPowerToys)
+    {
+        if (trace!=nullptr) {
+            trace->Flush();
+            delete trace;
+        }
+        Trace::UnregisterProvider();
+        // Needed to unblock MsgWaitForMultipleObjects one last time
+        SetEvent(m_reload_settings_event_handle);
+        CloseHandle(m_reload_settings_event_handle);
+        CloseHandle(m_exit_event_handle);
+        CloseHandle(m_zoom_event_handle);
+        CloseHandle(m_draw_event_handle);
+        CloseHandle(m_break_event_handle);
+        CloseHandle(m_live_zoom_event_handle);
+        CloseHandle(m_snip_event_handle);
+        CloseHandle(m_snip_ocr_event_handle);
+        CloseHandle(m_record_event_handle);
+        m_event_triggers_thread.join();
+    }
+#endif // __ZOOMIT_POWERTOYS__
+
+    return retCode;
+}

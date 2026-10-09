@@ -1,0 +1,392 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+
+using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Exceptions;
+
+// <summary>
+//     Logging.
+// </summary>
+// <history>
+//     2008 created by Truong Do (ductdo).
+//     2009-... modified by Truong Do (TruongDo).
+//     2023- Included in PowerToys.
+// </history>
+namespace MouseWithoutBorders.Core;
+
+internal static class Logger
+{
+    // keep a count of unique lines of text that get logged
+    private static readonly ConcurrentDictionary<string, int> LogCounter = new();
+
+    // implements a simple ring buffer to store recent log entries in memory
+    private const int MAX_LOG = 10000;
+    private static readonly string[] AllLogs = new string[MAX_LOG];
+    private static readonly Lock AllLogsLock = new();
+    private static int allLogsIndex;
+
+    // used for throttling the number of exceptions that get logged
+    // so that high-volume exceptions don't flood the logs
+    private const int MaxLogExceptionPerHour = 1000;
+    private static int lastHour;
+    private static int exceptionCount;
+
+    // track some application statistics
+    private static PackageMonitor lastPackageSent;
+    private static PackageMonitor lastPackageReceived;
+
+    internal static void TelemetryLogTrace(string log, SeverityLevel severityLevel, bool flush = false)
+    {
+        var logCount = Logger.LogCounter.AddOrUpdate(log, 1, (key, value) => value + 1);
+        Logger.Log(log);
+    }
+
+    private static void Log(string format, params object[] args)
+    {
+        Logger.Log(string.Format(CultureInfo.InvariantCulture, format, args));
+    }
+
+    internal static void Log(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        log = DateTime.Now.ToString("MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture) + $"({Thread.CurrentThread.ManagedThreadId})" + log;
+
+        ManagedCommon.Logger.LogInfo(log, memberName, sourceFilePath, sourceLineNumber);
+        lock (AllLogsLock)
+        {
+            if (clearLog)
+            {
+                allLogsIndex = 0;
+            }
+
+            AllLogs[allLogsIndex] = log;
+            allLogsIndex = (allLogsIndex + 1) % MAX_LOG;
+        }
+    }
+
+    internal static void Log(Exception e, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        if (e is not KnownException)
+        {
+            var exText = e.ToString();
+
+            Logger.Log($"!Exception!: {exText}", memberName, sourceFilePath, sourceLineNumber);
+
+            if (DateTime.UtcNow.Hour != lastHour)
+            {
+                lastHour = DateTime.UtcNow.Hour;
+                exceptionCount = 0;
+            }
+
+            if (exceptionCount < MaxLogExceptionPerHour)
+            {
+                exceptionCount++;
+            }
+            else if (exceptionCount != short.MaxValue)
+            {
+                exceptionCount = short.MaxValue;
+            }
+        }
+    }
+
+    [Conditional("DEBUG")]
+    internal static void LogDebug(string format, params object[] args)
+    {
+        Logger.Log(format, args);
+    }
+
+    [Conditional("DEBUG")]
+    internal static void LogDebug(string log, bool clearLog = false, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        Logger.Log(log, clearLog, memberName, sourceFilePath, sourceLineNumber);
+    }
+
+    [Conditional("DEBUG")]
+    internal static void LogStatistics()
+    {
+        if (!lastPackageSent.Equals(Package.PackageSent))
+        {
+            var log =
+                $"SENT:" +
+                $"Be{Package.PackageSent.Heartbeat}," +
+                $"Ke{Package.PackageSent.Keyboard}," +
+                $"Mo{Package.PackageSent.Mouse}," +
+                $"He{Package.PackageSent.Hello}," +
+                $"Mx{Package.PackageSent.Matrix}," +
+                $"Tx{Package.PackageSent.ClipboardText}," +
+                $"Im{Package.PackageSent.ClipboardImage}," +
+                $"By{Package.PackageSent.ByeBye}," +
+                $"Cl{Package.PackageSent.Clipboard}," +
+                $"Dr{Package.PackageSent.ClipboardDragDrop}," +
+                $"De{Package.PackageSent.ClipboardDragDropEnd}," +
+                $"Ed{Package.PackageSent.ExplorerDragDrop}," +
+                $"Ie{Event.inputEventCount}," +
+                $"Ni{Package.PackageSent.Nil}";
+            Logger.Log(log);
+            lastPackageSent = Package.PackageSent;
+        }
+
+        if (!lastPackageReceived.Equals(Package.PackageReceived))
+        {
+            var log =
+                $"RECEIVED:" +
+                $"Be{Package.PackageReceived.Heartbeat}," +
+                $"Ke{Package.PackageReceived.Keyboard}," +
+                $"Mo{Package.PackageReceived.Mouse}," +
+                $"He{Package.PackageReceived.Hello}," +
+                $"Mx{Package.PackageReceived.Matrix}," +
+                $"Tx{Package.PackageReceived.ClipboardText}," +
+                $"Im{Package.PackageReceived.ClipboardImage}," +
+                $"By{Package.PackageReceived.ByeBye}," +
+                $"Cl{Package.PackageReceived.Clipboard}," +
+                $"Dr{Package.PackageReceived.ClipboardDragDrop}," +
+                $"De{Package.PackageReceived.ClipboardDragDropEnd}," +
+                $"Ed{Package.PackageReceived.ExplorerDragDrop}," +
+                $"Ie{Event.invalidPackageCount}," +
+                $"Ni{Package.PackageReceived.Nil}" +
+                $"Pc{Receiver.processedPackageCount}/{Receiver.skippedPackageCount}";
+            Logger.Log(log);
+            lastPackageReceived = Package.PackageReceived;
+        }
+    }
+
+    internal static void DumpProgramLogs(StringBuilder sb, int level)
+    {
+        _ = Logger.PrivateDump(sb, AllLogs, "[Program Logs]\r\n===============\r\n", 0, level, true);
+    }
+
+    internal static string DumpObjects(int level)
+    {
+        var sb = new StringBuilder(1000000);
+
+        Logger.DumpProgramLogs(sb, level);
+        Logger.DumpStaticTypes(sb, level);
+
+        var log =
+            $"{Application.ProductName} {Application.ProductVersion}\r\n" +
+            $"Private Mem: {Process.GetCurrentProcess().PrivateMemorySize64 / 1024}KB\r\n" +
+            $"\r\n" +
+            $"{sb}\r\n";
+
+        // obfuscate the current encryption key
+        if (!string.IsNullOrEmpty(Encryption.myKey))
+        {
+            log = log.Replace(Encryption.MyKey, Logger.GetChecksum(Encryption.MyKey));
+        }
+
+        log += Thread.DumpThreadsStack();
+        log += "\r\n";
+        log += $"Current process session: {Process.GetCurrentProcess().SessionId}\r\n";
+        log += $"Active console session: {NativeMethods.WTSGetActiveConsoleSessionId()}";
+
+        return log;
+    }
+
+    private static void DumpObject(StringBuilder sb, object obj, int level, Type t, int maxLevel)
+    {
+        if (t == typeof(Delegate))
+        {
+            return;
+        }
+
+        if (obj is PackageType or string or AddressFamily or ID or IPAddress)
+        {
+            return;
+        }
+
+        var typeName = obj.GetType().ToString();
+        if (typeName.EndsWith("type", StringComparison.CurrentCultureIgnoreCase)
+            || typeName.Contains("Cryptography")
+            || typeName.EndsWith("AsyncEventBits", StringComparison.CurrentCultureIgnoreCase))
+        {
+            return;
+        }
+
+        var recurse = (obj is not null)
+            && (obj is not DATA)
+            && (obj.GetType().BaseType != typeof(ValueType))
+            && !obj.GetType().Namespace.Contains("System.Windows");
+        var fi = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+        foreach (var f in fi)
+        {
+            if (f.GetValue(obj) != AllLogs)
+            {
+                _ = PrivateDump(sb, f.GetValue(obj), f.Name, level + 1, maxLevel, recurse);
+            }
+        }
+
+        if (obj is Dictionary<string, List<IPAddress>> dict)
+        {
+            foreach (var kvp in dict)
+            {
+                foreach (var ipAddress in kvp.Value)
+                {
+                    _ = PrivateDump(sb, ipAddress, $"[{kvp.Key}]", level + 1, maxLevel, true);
+                }
+            }
+        }
+        else if (obj is Array arr)
+        {
+            try
+            {
+                if (obj is string[] or int[] or uint[] or short[] or ushort[]
+                    or MachineInf[] or TcpClient[] or IPAddress[] or TcpSk[]
+                    or TcpServer[] or ProcessThread[] or Thread[])
+                {
+                    for (var i = 0; i < arr.GetLength(0); i++)
+                    {
+                        _ = PrivateDump(sb, arr.GetValue(i), $"[{i}]", level + 1, maxLevel, true);
+                    }
+                }
+                else
+                {
+                    _ = PrivateDump(sb, $"{typeName}: N/A", typeName, level + 1, maxLevel, true);
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+    }
+
+    private static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool recurse)
+    {
+        if (obj == null || ((maxLevel is >= 0) && (level >= maxLevel)) || obj is Cursor)
+        {
+            return false;
+        }
+
+        var objString = obj.ToString();
+        var values = new string[7];
+        values[0] = new string('-', Math.Max(level - 1, 0) * 2);
+        values[1] = objName;
+        /* values[2] = " "; */
+        /* values[3] = t.FullName; */
+        values[4] = " = ";
+        values[5] = objName.Equals(nameof(Encryption.myKey), StringComparison.OrdinalIgnoreCase)
+            ? Logger.GetChecksum(objString)
+            : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : objString
+                    .Replace("System.Windows.Forms.", string.Empty)
+                    .Replace("System.Net.Sockets.", string.Empty)
+                    .Replace("System.Security.Cryptography.", string.Empty)
+                    .Replace("System.Threading.", string.Empty)
+                    .Replace("System.ComponentModel.", string.Empty)
+                    .Replace("System.Runtime.", string.Empty)
+                    .Replace("System.Drawing.", string.Empty)
+                    .Replace("System.Object", "O")
+                    .Replace("System.Diagnostics.", string.Empty)
+                    .Replace("System.Collections.", string.Empty)
+                    .Replace("System.Drawing.", string.Empty)
+                    .Replace("System.Int", string.Empty)
+                    .Replace("System.EventHandler.", string.Empty);
+        values[6] = "\r\n";
+        _ = sb.Append(string.Concat(values).Replace(Common.BinaryName, "MM"));
+
+        var t = obj.GetType();
+        if (!recurse || t.IsPrimitive)
+        {
+            return false;
+        }
+
+        Logger.DumpObject(sb, obj, level, t, maxLevel);
+        return true;
+    }
+
+    internal static void DumpStaticTypes(StringBuilder sb, int level)
+    {
+        var staticTypes = new List<Type>
+        {
+            typeof(Clipboard),
+            typeof(Common),
+            typeof(DragDrop),
+            typeof(Encryption),
+            typeof(Event),
+            typeof(IpcChannelHelper),
+            typeof(InitAndCleanup),
+            typeof(Helper),
+            typeof(Launch),
+            typeof(Logger),
+            typeof(MachineStuff),
+            typeof(Package),
+            typeof(Receiver),
+            typeof(Service),
+            typeof(WinAPI),
+            typeof(WM),
+        };
+        foreach (var staticType in staticTypes)
+        {
+            sb.AppendLine(CultureInfo.InvariantCulture, $"[{staticType.Name}]\r\n===============");
+            Logger.DumpType(sb, staticType, 0, level);
+        }
+    }
+
+    private static void DumpType(StringBuilder sb, Type typeToDump, int level, int maxLevel)
+    {
+        if ((typeToDump == typeof(Delegate))
+            || (typeToDump == typeof(PackageType))
+            || (typeToDump == typeof(string))
+            || (typeToDump == typeof(AddressFamily))
+            || (typeToDump == typeof(ID))
+            || (typeToDump == typeof(IPAddress)))
+        {
+            return;
+        }
+
+        var typeName = typeToDump.ToString();
+        if (typeName.EndsWith("type", StringComparison.CurrentCultureIgnoreCase)
+            || typeName.Contains("Cryptography")
+            || typeName.EndsWith("AsyncEventBits", StringComparison.CurrentCultureIgnoreCase))
+        {
+            return;
+        }
+
+        var recurse = (typeToDump is not null)
+            && (typeToDump != typeof(DATA))
+            && (typeToDump.BaseType != typeof(ValueType))
+            && !typeToDump.Namespace.Contains("System.Windows");
+
+        var fieldInfos = typeToDump.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+        foreach (var fieldInfo in fieldInfos)
+        {
+            var fieldValue = fieldInfo.GetValue(null);
+            if (fieldValue != AllLogs)
+            {
+                _ = Logger.PrivateDump(sb, fieldValue, fieldInfo.Name, level + 1, maxLevel, recurse);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Calculates a basic checksum of the given string to be written to logs
+    /// for quick verification without revealing the original sensitive value.
+    /// </summary>
+    internal static string GetChecksum(string st)
+    {
+        return string.IsNullOrEmpty(st)
+            ? st
+            : ((byte)(Common.GetBytesU(st).Sum(value => value) % 256)).ToString(CultureInfo.InvariantCulture);
+    }
+
+    internal static string GetStackTrace(StackTrace st)
+    {
+        return string.Join(
+            " <= ",
+            st.GetFrames().Select(frame => frame.GetMethod().ToString()));
+    }
+}

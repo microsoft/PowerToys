@@ -1,0 +1,2176 @@
+#include "pch.h"
+#include <atlbase.h>
+#include <shellapi.h>
+#include <shobjidl.h>
+#include "KeyboardEventHandlers.h"
+
+#include <common/interop/shared_constants.h>
+#include <common/utils/elevation.h>
+#include <wil/resource.h>
+
+#include <keyboardmanager/common/InputInterface.h>
+#include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
+
+#include <TlHelp32.h>
+#include <thread>
+#include <future>
+#include <chrono>
+
+#include <winrt/Windows.UI.Notifications.h>
+#include <winrt/Windows.Data.Xml.Dom.h>
+
+#include <windows.h>
+#include <string>
+#include <urlmon.h>
+#include <mmsystem.h>
+
+using namespace winrt;
+using namespace Windows::UI::Notifications;
+using namespace Windows::Data::Xml::Dom;
+
+namespace
+{
+    bool GeneratedByKBM(const LowlevelKeyboardEvent* data)
+    {
+        return data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
+    }
+
+    void UpdateNumpadWithShift(LowlevelKeyboardEvent* data, State& state)
+    {
+        //Function for fixing numpad when used as shift https://github.com/microsoft/PowerToys/issues/22346
+        //VK_CLEAR is not encoded in IsNumpadOriginated
+        if (Helpers::IsNumpadOriginated(data->lParam->vkCode) || data->lParam->vkCode == VK_CLEAR)
+        {
+            // Decode it. If it is VK_CLEAR it will do nothing
+            DWORD decodedKey = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
+            //check if we already have a stored scanID
+            auto scanKey = MapVirtualKey(decodedKey, MAPVK_VK_TO_VSC);
+            auto it = state.scanMap.find(scanKey);
+            if (it != state.scanMap.end())
+            {
+                auto keyIt = state.GetSingleKeyRemap(it->second);
+                if (keyIt)
+                {
+                    //if key is stored as shift replace it with the numpad key
+                    auto keyValue = keyIt.value();
+                    if (keyValue->second.index() == 0)
+                    {
+                        auto key = std::get<DWORD>(keyValue->second);
+                        if (key == VK_LSHIFT || key == VK_RSHIFT || key == VK_SHIFT)
+                        {
+                            if (state.numpadKeyPressed[it->second])
+                            {
+                                //replace it with original numpad
+                                data->lParam->vkCode = it->second;
+                            }
+                        }
+                    }
+                    if (keyValue->second.index() == 1)
+                    {
+                        auto key = std::get<Shortcut>(keyValue->second);
+                        if (key.shiftKey != ModifierKey::Disabled)
+                        {
+                            if (state.numpadKeyPressed[it->second])
+                            { 
+                                //replace it with original numpad
+                                data->lParam->vkCode = it->second;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (Helpers::IsNumpadKeyThatIsAffectedByShift(data->lParam->vkCode))
+        {
+            // store if the Numpad key was pressed or not. If numpad numbers were pressed but then we get the same key KEY UP but with Numpad unlocked we will replace it.
+            state.numpadKeyPressed[data->lParam->vkCode] = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+        }
+    }
+}
+
+namespace KeyboardEventHandlers
+{
+    namespace ProgramLauncher
+    {
+        namespace
+        {
+            std::optional<std::wstring> ExpandEnvironmentVariables(const std::wstring& value)
+            {
+                DWORD capacity = ExpandEnvironmentStringsW(value.c_str(), nullptr, 0);
+                while (capacity != 0)
+                {
+                    std::wstring expanded(capacity, L'\0');
+                    const DWORD written = ExpandEnvironmentStringsW(value.c_str(), expanded.data(), capacity);
+                    if (written == 0)
+                    {
+                        return std::nullopt;
+                    }
+                    if (written <= capacity)
+                    {
+                        expanded.resize(written - 1);
+                        return expanded;
+                    }
+                    capacity = written;
+                }
+                return std::nullopt;
+            }
+
+            std::optional<std::wstring> GetLinkProcessName(const std::wstring& linkPath)
+            {
+                const HRESULT initialized = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+                if (FAILED(initialized) && initialized != RPC_E_CHANGED_MODE)
+                {
+                    return std::nullopt;
+                }
+
+                const auto uninitialize = wil::scope_exit([initialized] {
+                    if (SUCCEEDED(initialized))
+                    {
+                        CoUninitialize();
+                    }
+                });
+
+                CComPtr<IShellLinkW> link;
+                if (FAILED(link.CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER)))
+                {
+                    return std::nullopt;
+                }
+
+                CComPtr<IPersistFile> file;
+                if (FAILED(link->QueryInterface(IID_PPV_ARGS(&file))) || FAILED(file->Load(linkPath.c_str(), STGM_READ)))
+                {
+                    return std::nullopt;
+                }
+
+                // GetPath supports at most MAX_PATH characters. Read the stored target
+                // without searching for moved files or changing the shortcut.
+                wchar_t rawTarget[MAX_PATH]{};
+                if (link->GetPath(rawTarget, ARRAYSIZE(rawTarget), nullptr, SLGP_RAWPATH) != S_OK || rawTarget[0] == L'\0')
+                {
+                    return std::nullopt;
+                }
+
+                const auto expandedTarget = ExpandEnvironmentVariables(rawTarget);
+                if (!expandedTarget || expandedTarget->empty())
+                {
+                    return std::nullopt;
+                }
+
+                const std::filesystem::path target{ *expandedTarget };
+                const auto extension = target.extension().wstring();
+                if (!target.is_absolute() ||
+                    (_wcsicmp(extension.c_str(), L".exe") != 0 && _wcsicmp(extension.c_str(), L".com") != 0))
+                {
+                    return std::nullopt;
+                }
+
+                return target.filename().wstring();
+            }
+        }
+
+        std::optional<std::wstring> ExpandAndGetAbsolutePath(const std::wstring& value)
+        {
+            const auto expanded = ExpandEnvironmentVariables(value);
+            if (!expanded || expanded->empty())
+            {
+                return std::nullopt;
+            }
+
+            DWORD capacity = GetFullPathNameW(expanded->c_str(), 0, nullptr, nullptr);
+            while (capacity != 0)
+            {
+                std::wstring absolutePath(capacity, L'\0');
+                const DWORD written = GetFullPathNameW(expanded->c_str(), capacity, absolutePath.data(), nullptr);
+                if (written == 0)
+                {
+                    return std::nullopt;
+                }
+                if (written < capacity)
+                {
+                    absolutePath.resize(written);
+                    return absolutePath;
+                }
+                capacity = written;
+            }
+            return std::nullopt;
+        }
+
+        std::wstring GetWorkingDirectory(const std::wstring& filePath, const std::wstring& configuredDirectory)
+        {
+            if (!configuredDirectory.empty())
+            {
+                return configuredDirectory;
+            }
+
+            const std::filesystem::path path{ filePath };
+            const auto extension = path.extension().wstring();
+            if (_wcsicmp(extension.c_str(), L".exe") != 0 && _wcsicmp(extension.c_str(), L".com") != 0)
+            {
+                return {};
+            }
+
+            return path.parent_path().wstring();
+        }
+    }
+
+    // Append a key event for an alone key's ORIGINAL (source) key while preserving its numpad origin.
+    // Alone keys are tracked by the value of `data->lParam->vkCode`, which is stored numpad-origin
+    // encoded (see EncodeKeyNumpadOrigin in KeyboardManager.cpp): the marker rides in bit 31, so a bare
+    // `static_cast<WORD>` would drop it and re-inject e.g. a NumLock-off numpad navigation key as its
+    // extended (arrow-cluster) twin. Clear the marker to recover the real VK, then force the injected
+    // event's extended flag to match the physical origin.
+    void AppendAloneSourceKeyEvent(std::vector<INPUT>& keyEventList, DWORD encodedKey, bool keyUp) noexcept
+    {
+        const DWORD plainKey = Helpers::ClearKeyNumpadOrigin(encodedKey);
+        const DWORD flags = keyUp ? KEYEVENTF_KEYUP : 0;
+        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(plainKey), flags, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+
+        if (Helpers::IsNumpadOriginated(encodedKey))
+        {
+            // Numpad origin: override SetKeyEvent's VK-based extended default. This is the inverse of
+            // EncodeKeyNumpadOrigin -- for the navigation keys a numpad origin means NOT extended, while
+            // for VK_RETURN / VK_DIVIDE it means extended.
+            INPUT& injected = keyEventList.back();
+            if (plainKey == VK_RETURN || plainKey == VK_DIVIDE)
+            {
+                injected.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+            }
+            else
+            {
+                injected.ki.dwFlags &= ~KEYEVENTF_EXTENDEDKEY;
+            }
+        }
+    }
+
+    // See header. Injects the original key-down for each pending alone key (except `exceptKey`) and
+    // marks it as a started combination, so a subsequent mouse/keyboard action is seen with the real
+    // modifier held. Its matching real key-up is injected later when the alone key is released.
+    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey) noexcept
+    {
+        for (const DWORD pendingKey : state.GetPendingAloneKeys())
+        {
+            if (pendingKey == exceptKey)
+            {
+                // Auto-repeat of the alone key itself; keep it a tap candidate.
+                continue;
+            }
+
+            std::vector<INPUT> keyEventList;
+            AppendAloneSourceKeyEvent(keyEventList, pendingKey, /*keyUp*/ false);
+            if (!ii.SendVirtualInput(keyEventList))
+            {
+                // Injection was blocked (e.g. by UIPI). Don't mark this as a started combination,
+                // otherwise the eventual key-up would inject an unmatched real key-up while the physical
+                // key-down was swallowed. Mirrors the injection-failure handling in HandleSingleKeyRemapEvent.
+                continue;
+            }
+
+            state.SetAloneCombination(pendingKey);
+        }
+    }
+
+    // Handle an "Alone" single key remap (dual-key / Karabiner to_if_alone). Semantics:
+    //  - Pressing an alone-mapped key does NOT inject anything yet (lazy): we wait to see whether it
+    //    is tapped alone or used in combination. The physical key-down is suppressed meanwhile.
+    //  - If another key is pressed while the alone key is held, that is a combination: the alone key's
+    //    ORIGINAL key-down is injected as a real key/modifier (so e.g. Right Ctrl behaves as Ctrl), and
+    //    the alone action is cancelled. The matching real key-up is injected when the alone key is released.
+    //  - If the alone key is released with no other key in between, that is a tap: the remapped alone
+    //    action is injected on release (as a down+up tap).
+    // Timeout-based cancellation (hold too long => not a tap) is intentionally out of scope for now;
+    // it needs an injectable clock to be unit-testable and will be added with that abstraction.
+    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        // Ignore our own injected events to avoid re-processing / recursion.
+        if (GeneratedByKBM(data))
+        {
+            return 0;
+        }
+
+        const DWORD vk = data->lParam->vkCode;
+        const bool isKeyUp = (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP);
+        const bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+
+        // Detect, before any state below is mutated, whether another alone-mapped key is already held
+        // (pending or already in a combination) as this key goes down. If so, this key is being pressed
+        // in combination with that one -- it was NOT tapped alone -- so it must not become a solo-tap
+        // candidate that would fire its alone action on release.
+        const bool pressedInCombination = isKeyDown && state.HasOtherHeldAloneKey(vk);
+
+        // Step 1: a key-down of a DIFFERENT key while alone keys are pending means those pending keys
+        // are now being used in combination. Flush them by injecting their original key-down as a real
+        // key/modifier so the in-combination behavior (e.g. Right Ctrl acting as Ctrl) works. (A click
+        // or scroll does the same via the mouse hook; see PromotePendingAloneKeysToCombination.)
+        if (isKeyDown)
+        {
+            PromotePendingAloneKeysToCombination(ii, state, vk);
+        }
+
+        // Step 2: handle the alone-mapped key's own events.
+        const auto aloneRemap = state.GetSingleKeyAloneRemap(vk);
+        if (aloneRemap)
+        {
+            auto it = aloneRemap.value();
+
+            if (isKeyDown)
+            {
+                // Suppress the physical key-down. Become a tap candidate on the first down; while already
+                // in a combination (real key-down injected), just keep suppressing auto-repeats.
+                if (!state.IsAloneCombination(vk))
+                {
+                    if (pressedInCombination)
+                    {
+                        // Pressed while another alone key was held: treat as a combination, not a tap.
+                        // Inject the real key-down now and mark it a combination so its release only
+                        // releases the real key and never fires the alone action.
+                        std::vector<INPUT> keyEventList;
+                        AppendAloneSourceKeyEvent(keyEventList, vk, /*keyUp*/ false);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            // Injection was blocked (e.g. by UIPI): let the physical key-down through
+                            // instead of suppressing it into a combination we could not start, so it is
+                            // not swallowed with no matching injected key. Its later physical key-up then
+                            // also passes through (the key is neither pending nor a combination).
+                            return 0;
+                        }
+                        state.SetAloneCombination(vk);
+                    }
+                    else
+                    {
+                        state.SetAlonePending(vk);
+                    }
+                }
+                return 1;
+            }
+
+            if (isKeyUp)
+            {
+                if (state.IsAlonePending(vk))
+                {
+                    // Tapped alone: fire the remapped alone action as a tap (down + up).
+                    std::vector<INPUT> keyEventList;
+                    const auto& target = it->second;
+                    if (target.index() == 0)
+                    {
+                        const DWORD targetKey = std::get<DWORD>(target);
+                        // A disabled alone target means "tapping alone does nothing".
+                        if (targetKey != CommonSharedConstants::VK_DISABLED)
+                        {
+                            // Filter artificial KBM key codes (e.g. VK_WIN_BOTH -> VK_LWIN) before
+                            // injecting, mirroring HandleSingleKeyRemapEvent; otherwise a "Win (Both)"
+                            // alone target would inject the invalid virtual key 0x104 and do nothing.
+                            const DWORD filteredTargetKey = Helpers::FilterArtificialKeys(targetKey);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredTargetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredTargetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        }
+                    }
+                    else if (target.index() == 1)
+                    {
+                        // Shortcut-valued alone target: a tap fires the whole shortcut as a
+                        // press-and-release (modifiers down, action-key down, then released in
+                        // reverse). Mirrors the key-to-shortcut injection in HandleSingleKeyRemapEvent.
+                        const Shortcut targetShortcut = std::get<Shortcut>(target);
+                        // Filter the action key too (e.g. VK_WIN_BOTH -> VK_LWIN), mirroring the
+                        // key-to-shortcut path in HandleSingleKeyRemapEvent.
+                        const DWORD filteredActionKey = Helpers::FilterArtificialKeys(targetShortcut.GetActionKey());
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredActionKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredActionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
+                    // NOTE: text-valued alone targets are a later phase (no producer yet).
+
+                    if (!keyEventList.empty())
+                    {
+                        ii.SendVirtualInput(keyEventList);
+                    }
+
+                    state.ClearAloneKeyState(vk);
+                    return 1;
+                }
+
+                if (state.IsAloneCombination(vk))
+                {
+                    // Was used in combination: release the real key we injected on its key-down (matching
+                    // its numpad origin, so a numpad-originated key is released as the same key we pressed).
+                    std::vector<INPUT> keyEventList;
+                    AppendAloneSourceKeyEvent(keyEventList, vk, /*keyUp*/ true);
+                    ii.SendVirtualInput(keyEventList);
+
+                    state.ClearAloneKeyState(vk);
+                    return 1;
+                }
+
+                // Not tracked (already resolved): pass the key-up through.
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
+    // Function to handle a single key remap
+    intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
+        if (!GeneratedByKBM(data))
+        {
+            UpdateNumpadWithShift(data, state);
+            const auto remapping = state.GetSingleKeyRemap(data->lParam->vkCode);
+            if (remapping)
+            {
+                auto it = remapping.value();
+
+                // Check if the remap is to a key or a shortcut
+                const bool remapToKey = it->second.index() == 0;
+
+                // If mapped to VK_DISABLED then the key is disabled
+                if (remapToKey)
+                {
+                    if (std::get<DWORD>(it->second) == CommonSharedConstants::VK_DISABLED)
+                    {
+                        return 1;
+                    }
+                }
+
+                int key_count;
+                if (remapToKey)
+                {
+                    key_count = 1;
+                }
+                else
+                {
+                    key_count = std::get<Shortcut>(it->second).Size();
+                }
+
+                const DWORD sourceKey = data->lParam->vkCode;
+                const bool isKeyUp = (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP);
+
+                // If the matching key-down injection was blocked earlier, we passed the
+                // original key-down through to the foreground app to keep the key alive.
+                // The corresponding key-up must be passed through as well; otherwise the
+                // physical key is stranded DOWN (its down reached the app, but its up would
+                // be swallowed by the remap). Key-down and key-up arrive as separate hook
+                // events, so this is the cross-invocation counterpart of the key-down
+                // passthrough handled below.
+                if (isKeyUp && state.ConsumeSingleKeyRemapInjectionFailed(sourceKey))
+                {
+                    return 0;
+                }
+
+                std::vector<INPUT> keyEventList;
+
+                // Handle remaps to VK_WIN_BOTH
+                DWORD target;
+                if (remapToKey)
+                {
+                    target = Helpers::FilterArtificialKeys(std::get<DWORD>(it->second));
+                }
+                else
+                {
+                    target = Helpers::FilterArtificialKeys(std::get<Shortcut>(it->second).GetActionKey());
+                }
+
+                // If Ctrl/Alt/Shift is being remapped to Caps Lock, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
+                if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                {
+                    ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first, target);
+
+                    // If a Ctrl/Alt/Shift key is remapped to a non-modifier key, reset the modifier state to prevent the injected key from being delivered as WM_SYSKEYDOWN instead of WM_KEYDOWN
+                    if (Helpers::IsModifierKey(it->first) && !Helpers::IsModifierKey(target) && target != VK_CAPITAL && !(it->first == VK_LWIN || it->first == VK_RWIN || it->first == CommonSharedConstants::VK_WIN_BOTH))
+                    {
+                        std::vector<INPUT> suppressList;
+                        Helpers::SetKeyEvent(suppressList, INPUT_KEYBOARD, static_cast<WORD>(it->first), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+                        ii.SendVirtualInput(suppressList);
+                    }
+                }
+
+                if (remapToKey)
+                {
+                    if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                    {
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(target), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
+                    else
+                    {
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(target), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
+                }
+                else
+                {
+                    Shortcut targetShortcut = std::get<Shortcut>(it->second);
+                    if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                    {
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        // Dummy key is not required here since SetModifierKeyEvents will only add key-up events for the modifiers here, and the action key key-up is already sent before it
+                    }
+                    else
+                    {
+                        // Dummy key is not required here since SetModifierKeyEvents will only add key-down events for the modifiers here, and the action key key-down is already sent after it
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
+                }
+
+                if (!ii.SendVirtualInput(keyEventList))
+                {
+                    // Injection was blocked (e.g. by UIPI). Return 0 so the ORIGINAL key is
+                    // passed through instead of being swallowed, leaving no dead key. For a
+                    // key-down, remember that we passed it through so the matching key-up is
+                    // passed through too (handled above), preventing a key stranded DOWN.
+                    if (!isKeyUp)
+                    {
+                        state.SetSingleKeyRemapInjectionFailed(sourceKey, true);
+                    }
+                    return 0;
+                }
+
+                // Injection succeeded; drop any stale passthrough marker for this key so its
+                // key-up follows the normal (suppressed) path.
+                if (!isKeyUp)
+                {
+                    state.SetSingleKeyRemapInjectionFailed(sourceKey, false);
+                }
+
+                if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                {
+                    // If Caps Lock is being remapped to Ctrl/Alt/Shift, then reset the modifier key state to fix issues in certain IME keyboards where the IME shortcut gets invoked since it detects that the modifier and Caps Lock is pressed even though it is suppressed by the hook - More information at the GitHub issue https://github.com/microsoft/PowerToys/issues/3397
+                    if (remapToKey)
+                    {
+                        ResetIfModifierKeyForLowerLevelKeyHandlers(ii, target, it->first);
+                    }
+                    else
+                    {
+                        std::vector<DWORD> shortcutKeys = std::get<Shortcut>(it->second).GetKeyCodes();
+                        for (auto& itSk : shortcutKeys)
+                        {
+                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, itSk, it->first);
+                        }
+                    }
+
+                    // Send daily telemetry event for Keyboard Manager key activation.
+                    if (remapToKey)
+                    {
+                        static int dayWeLastSentKeyToKeyTelemetryOn = -1;
+                        auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                        if (dayWeLastSentKeyToKeyTelemetryOn != currentDay)
+                        {
+                            Trace::DailyKeyToKeyRemapInvoked();
+                            dayWeLastSentKeyToKeyTelemetryOn = currentDay;
+                        }
+                    }
+                    else
+                    {
+                        static int dayWeLastSentKeyToShortcutTelemetryOn = -1;
+                        auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                        if (dayWeLastSentKeyToShortcutTelemetryOn != currentDay)
+                        {
+                            Trace::DailyKeyToShortcutRemapInvoked();
+                            dayWeLastSentKeyToShortcutTelemetryOn = currentDay;
+                        }
+                    }
+                }
+
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    /* This feature has not been enabled (code from proof of concept stage)
+    * 
+    // Function to change a key's behavior from toggle to modifier
+    __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, State& State) noexcept
+    {
+        // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
+        if (!(data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG))
+        {
+            // The mutex should be unlocked before SendInput is called to avoid re-entry into the same mutex. More details can be found at https://github.com/microsoft/PowerToys/pull/1789#issuecomment-607555837
+            std::unique_lock<std::mutex> lock(State.singleKeyToggleToMod_mutex);
+            auto it = State.singleKeyToggleToMod.find(data->lParam->vkCode);
+            if (it != State.singleKeyToggleToMod.end())
+            {
+                // To avoid long presses (which leads to continuous keydown messages) from toggling the key on and off
+                if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                {
+                    if (it->second == false)
+                    {
+                        State.singleKeyToggleToMod[data->lParam->vkCode] = true;
+                    }
+                    else
+                    {
+                        lock.unlock();
+                        return 1;
+                    }
+                }
+                std::vector<INPUT> keyEventList;
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, (WORD)data->lParam->vkCode, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+
+                lock.unlock();
+                ii.SendVirtualInput(keyEventList);
+
+                // Reset the long press flag when the key has been lifted.
+                if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                {
+                    lock.lock();
+                    State.singleKeyToggleToMod[data->lParam->vkCode] = false;
+                    lock.unlock();
+                }
+
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+    */
+
+    // Function to handle a shortcut remap
+    intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp) noexcept
+    {
+        auto resetChordsResults = ResetChordsIfNeeded(data, state, activatedApp);
+
+        // Check if any shortcut is currently in the invoked state
+        bool isShortcutInvoked = state.CheckShortcutRemapInvoked(activatedApp);
+
+        // Get shortcut table for given activatedApp
+        ShortcutRemapTable& reMap = state.GetShortcutRemapTable(activatedApp);
+
+        // Iterate through the shortcut remaps and apply whichever has been pressed
+        for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
+        {
+            const auto it = reMap.find(itShortcut);
+
+            // If a shortcut is currently in the invoked state then skip till the shortcut that is currently invoked
+            if (isShortcutInvoked && !it->second.isShortcutInvoked)
+            {
+                continue;
+            }
+
+            // Check if the remap is to a key or a shortcut
+            const bool remapToKey = it->second.targetShortcut.index() == 0;
+            const bool remapToShortcut = it->second.targetShortcut.index() == 1;
+            const bool remapToText = it->second.targetShortcut.index() == 2;
+            const bool isRunProgram = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).IsRunProgram());
+            const bool isOpenUri = (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).IsOpenURI());
+            const size_t src_size = it->first.Size();
+            const size_t dest_size = remapToShortcut ? std::get<Shortcut>(it->second.targetShortcut).Size() : 1;
+
+            bool isMatchOnChordEnd = false;
+            bool isMatchOnChordStart = false;
+
+            static bool isAltRightKeyInvoked = false;
+
+            // Check if the right Alt key (AltGr) is pressed.
+            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+            {
+                isAltRightKeyInvoked = true;
+            }
+            else if (data->lParam->vkCode == VK_RMENU && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+            {
+                isAltRightKeyInvoked = false;
+            }
+
+            // If the shortcut has been pressed down
+            if (!it->second.isShortcutInvoked && it->first.CheckModifiersKeyboardState(ii))
+            {
+                // if not a mod key, check for chord stuff
+                if (!resetChordsResults.CurrentKeyIsModifierKey && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                {
+                    if (it->first.exactMatch == true && !it->first.IsKeyboardStateClearExceptShortcut(ii))
+                    {
+                        continue;
+                    }
+
+                    if (itShortcut.HasChord())
+                    {
+                        if (!resetChordsResults.AnyChordStarted && data->lParam->vkCode == itShortcut.GetActionKey() && !itShortcut.IsChordStarted() && itShortcut.HasChord())
+                        {
+                            // start new chord
+                            // Logger::trace(L"ChordKeyboardHandler:new chord started for {}", data->lParam->vkCode);
+                            isMatchOnChordStart = true;
+                            ResetAllOtherStartedChords(state, activatedApp, data->lParam->vkCode);
+                            itShortcut.SetChordStarted(true);
+                            continue;
+                        }
+
+                        if (itShortcut.IsChordStarted() && itShortcut.HasChord())
+                        {
+                            if (data->lParam->vkCode == itShortcut.GetSecondKey())
+                            {
+                                Logger::trace(L"ChordKeyboardHandler:found chord match {}, {}", itShortcut.GetActionKey(), itShortcut.GetSecondKey());
+                                isMatchOnChordEnd = true;
+                            }
+                            // Resets chord status for the shortcut. A key was pressed and we registered if it was the end of the chord. We can reset it.
+                            if (data->lParam->vkCode != itShortcut.GetActionKey())
+                            {
+                                itShortcut.SetChordStarted(false);
+                            }
+                        }
+
+                        if (resetChordsResults.AnyChordStarted && !isMatchOnChordEnd)
+                        {
+                            // Logger::trace(L"ChordKeyboardHandler:waiting on second key of chord, checked {} for {}", itShortcut.GetSecondKey(), data->lParam->vkCode);
+                            // this is a key and there is a mod, but it's not the second key of a chord.
+                            // we can't do anything with this key, we're waiting.
+                            continue;
+                        }
+                    }
+                }
+
+                if (isMatchOnChordEnd || (!resetChordsResults.AnyChordStarted && !itShortcut.HasChord() && (data->lParam->vkCode == it->first.GetActionKey() && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))))
+                {
+                    ResetAllStartedChords(state, activatedApp);
+                    resetChordsResults.AnyChordStarted = false;
+
+                    // Check if any other keys have been pressed apart from the shortcut. If true, then check for the next shortcut. This is to be done only for shortcut to shortcut remaps
+                    if (!it->first.IsKeyboardStateClearExceptShortcut(ii) && (remapToShortcut || (remapToKey && std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)))
+                    {
+                        continue;
+                    }
+
+                    std::vector<INPUT> keyEventList;
+
+                    // Remember which win key was pressed initially
+                    if (ii.GetVirtualKeyState(VK_RWIN))
+                    {
+                        it->second.modifierKeysInvoked.winKey = ModifierKey::Right;
+                    }
+                    else if (ii.GetVirtualKeyState(VK_LWIN))
+                    {
+                        it->second.modifierKeysInvoked.winKey = ModifierKey::Left;
+                    }
+                    if (ii.GetVirtualKeyState(VK_RCONTROL))
+                    {
+                        it->second.modifierKeysInvoked.ctrlKey = ModifierKey::Right;
+                    }
+                    else if (ii.GetVirtualKeyState(VK_LCONTROL))
+                    {
+                        it->second.modifierKeysInvoked.ctrlKey = ModifierKey::Left;
+                    }
+                    if (ii.GetVirtualKeyState(VK_RSHIFT))
+                    {
+                        it->second.modifierKeysInvoked.shiftKey = ModifierKey::Right;
+                    }
+                    else if (ii.GetVirtualKeyState(VK_LSHIFT))
+                    {
+                        it->second.modifierKeysInvoked.shiftKey = ModifierKey::Left;
+                    }
+                    if (ii.GetVirtualKeyState(VK_RMENU))
+                    {
+                        it->second.modifierKeysInvoked.altKey = ModifierKey::Right;
+                    }
+                    else if (ii.GetVirtualKeyState(VK_LMENU))
+                    {
+                        it->second.modifierKeysInvoked.altKey = ModifierKey::Left;
+                    }
+
+                    if (isRunProgram)
+                    {
+                        auto threadFunction = [it]() {
+                            CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+                        };
+
+                        std::thread myThread(threadFunction);
+                        if (myThread.joinable())
+                        {
+                            myThread.detach();
+                        }
+
+                        Logger::trace(L"ChordKeyboardHandler:returning..");
+                        return 1;
+                    }
+                    else if (isOpenUri)
+                    {
+                        auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
+
+                        auto uri = shortcut.uriToOpen;
+                        auto newUri = uri;
+
+                        if (!PathIsURL(uri.c_str()))
+                        {
+                            WCHAR url[1024];
+                            DWORD bufferSize = 1024;
+
+                            if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
+                            {
+                                newUri = url;
+                                Logger::trace(L"ChordKeyboardHandler:ConvertPathToURI from {} to {}", uri, url);
+                            }
+                            else
+                            {
+                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
+                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
+                                toast(L"Error", L"Could not understand the Path or URI");
+                                return 1;
+                            }
+                        }
+
+                        auto threadFunction = [newUri]() {
+                            HINSTANCE result = ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+                            if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
+                            {
+                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
+                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
+                                toast(L"Error", L"Could not understand the Path or URI");
+                            }
+                        };
+
+                        std::thread myThread(threadFunction);
+                        if (myThread.joinable())
+                        {
+                            myThread.detach();
+                        }
+
+                        Logger::trace(L"ChordKeyboardHandler:returning..");
+                        return 1;
+                    }
+                    else if (remapToShortcut)
+                    {
+                        // Get the common keys between the two shortcuts if this is not a runProgram shortcut
+
+                        int commonKeys = it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut));
+
+                        // If the original shortcut modifiers are a subset of the new shortcut
+                        if (commonKeys == src_size - 1)
+                        {
+                            // key down for all new shortcut keys except the common modifiers
+                            keyEventList = std::vector<INPUT>{};
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+                        else
+                        {
+                            // Dummy key, key up for all the original shortcut modifier keys and key down for all the new shortcut keys but common keys in each are not repeated
+                            // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->Ctrl+V, press Win+A, since Win will be released here we need to send a dummy event before it
+                            Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                            // Release original shortcut state (release in reverse order of shortcut to be accurate)
+                            Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
+
+                            // Set new shortcut key down state
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+
+                        // Modifier state reset might be required for this key depending on the shortcut's action and target modifiers - ex: Win+Caps -> Ctrl+A
+                        if (it->first.GetCtrlKey(it->second.modifierKeysInvoked.ctrlKey) == NULL && it->first.GetAltKey(it->second.modifierKeysInvoked.altKey) == NULL && it->first.GetShiftKey(it->second.modifierKeysInvoked.shiftKey) == NULL)
+                        {
+                            Shortcut temp = std::get<Shortcut>(it->second.targetShortcut);
+                            for (auto keys : temp.GetKeyCodes())
+                            {
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, keys, data->lParam->vkCode);
+                            }
+                        }
+                    }
+                    else if (remapToKey)
+                    {
+                        // Do not send Disable key
+                        if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
+                        {
+                            // Since the original shortcut's action key is pressed, set it to true
+                            it->second.isOriginalActionKeyPressed = true;
+                        }
+
+                        // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->V, press Win+A, since Win will be released here we need to send a dummy event before it
+                        Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                        // Release original shortcut state (release in reverse order of shortcut to be accurate)
+                        Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                        // Set target key down state
+                        if (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED)
+                        {
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+
+                        // Modifier state reset might be required for this key depending on the shortcut's action and target modifier - ex: Win+Caps -> Ctrl
+                        if (it->first.GetCtrlKey(it->second.modifierKeysInvoked.ctrlKey) == NULL && it->first.GetAltKey(it->second.modifierKeysInvoked.altKey) == NULL && it->first.GetShiftKey(it->second.modifierKeysInvoked.shiftKey) == NULL)
+                        {
+                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), data->lParam->vkCode);
+                        }
+                    }
+                    // Remapped to text
+                    else
+                    {
+                        auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
+
+                        Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                        // Release original shortcut state (release in reverse order of shortcut to be accurate)
+                        Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                        // Send modifier release events first, then send text directly
+                        // (SendTextInput handles multiline by flushing between chunks)
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
+                        keyEventList.clear();
+                        Helpers::SendTextInput(remapping, ii);
+                    }
+
+                    it->second.isShortcutInvoked = true;
+                    // If app specific shortcut is invoked, store the target application
+                    if (activatedApp)
+                    {
+                        state.SetActivatedApp(*activatedApp);
+                    }
+
+                    Logger::trace(L"ChordKeyboardHandler:keyEventList.size:{}", keyEventList.size());
+
+                    if (!ii.SendVirtualInput(keyEventList))
+                    {
+                        return 0;
+                    }
+                    if (activatedApp.has_value())
+                    {
+                        if (remapToKey)
+                        {
+                            static int dayWeLastSentAppSpecificShortcutToKeyTelemetryOn = -1;
+                            auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            if (dayWeLastSentAppSpecificShortcutToKeyTelemetryOn != currentDay)
+                            {
+                                Trace::DailyAppSpecificShortcutToKeyRemapInvoked();
+                                dayWeLastSentAppSpecificShortcutToKeyTelemetryOn = currentDay;
+                            }
+                        }
+                        else if (remapToShortcut && (!isRunProgram) && (!isOpenUri))
+                        {
+                            static int dayWeLastSentAppSpecificShortcutToShortcutTelemetryOn = -1;
+                            auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            if (dayWeLastSentAppSpecificShortcutToShortcutTelemetryOn != currentDay)
+                            {
+                                Trace::DailyAppSpecificShortcutToShortcutRemapInvoked();
+                                dayWeLastSentAppSpecificShortcutToShortcutTelemetryOn = currentDay;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (remapToKey)
+                        {
+                            static int dayWeLastSentShortcutToKeyTelemetryOn = -1;
+                            auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            if (dayWeLastSentShortcutToKeyTelemetryOn != currentDay)
+                            {
+                                Trace::DailyShortcutToKeyRemapInvoked();
+                                dayWeLastSentShortcutToKeyTelemetryOn = currentDay;
+                            }
+                        }
+                        else if (remapToShortcut && (!isRunProgram) && (!isOpenUri))
+                        {
+                            static int dayWeLastSentShortcutToShortcutTelemetryOn = -1;
+                            auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                            if (dayWeLastSentShortcutToShortcutTelemetryOn != currentDay)
+                            {
+                                Trace::DailyShortcutToShortcutRemapInvoked();
+                                dayWeLastSentShortcutToShortcutTelemetryOn = currentDay;
+                            }
+                        }
+                    }
+
+                    return 1;
+                }
+            }
+            else if (it->second.isShortcutInvoked)
+            {
+                // The shortcut has already been pressed down at least once, i.e. the shortcut has been invoked
+                // There are 6 cases to be handled if the shortcut has been pressed down
+                // 1. The user lets go of one of the modifier keys - reset the keyboard back to the state of the keys actually being pressed down
+                // 2. The user keeps the shortcut pressed - the shortcut is repeated (for example you could hold down Ctrl+V and it will keep pasting)
+                // 3. The user lets go of the action key - keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
+                // 4. The user presses a modifier key in the original shortcut - suppress that key event since the original shortcut is already held down physically (This case can occur only if a user has a duplicated modifier key (possibly by remapping) or if user presses both L/R versions of a modifier remapped with "Both")
+                // 5. The user presses any key apart from the action key or a modifier key in the original shortcut - revert the keyboard state to just the original modifiers being held down along with the current key press
+                // 6. The user releases any key apart from original modifier or original action key - This can't happen since the key down would have to happen first, which is handled above
+
+                // Prevents the unintended release of the Ctrl part when AltGr is pressed. AltGr acts as both Ctrl and Alt being pressed.
+                // After triggering a shortcut involving AltGr, the system might attempt to release the Ctrl part. This code ensures Ctrl remains pressed, maintaining the AltGr state correctly.
+                if (isAltRightKeyInvoked && data->lParam->vkCode == VK_LCONTROL && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                {
+                    break;
+                }
+
+                // Get the common keys between the two shortcuts
+                int commonKeys = (remapToShortcut && !isRunProgram) ? it->first.GetCommonModifiersCount(std::get<Shortcut>(it->second.targetShortcut)) : 0;
+
+                // Case 1: If any of the modifier keys of the original shortcut are released before the action key
+                if ((it->first.CheckWinKey(data->lParam->vkCode) || it->first.CheckCtrlKey(data->lParam->vkCode) || it->first.CheckAltKey(data->lParam->vkCode) || it->first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                {
+                    // Release new shortcut, and set original shortcut keys except the one released
+                    std::vector<INPUT> keyEventList;
+                    if (remapToShortcut && !isRunProgram)
+                    {
+                        // If the target shortcut's action key is pressed, then it should be released
+                        bool isActionKeyPressed = ii.GetVirtualKeyState(std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
+
+                        // Release new shortcut state (release in reverse order of shortcut to be accurate)
+                        if (isActionKeyPressed)
+                        {
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+
+                        Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first, data->lParam->vkCode);
+
+                        if (!isAltRightKeyInvoked)
+                        {
+                            // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate its own key message
+                            Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut), data->lParam->vkCode);
+                        }
+                        else
+                        {
+                            isAltRightKeyInvoked = false;
+                        }
+
+                        // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->Ctrl+V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
+                        Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                    }
+                    else if (remapToKey)
+                    {
+                        bool isTargetKeyPressed = (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED) && ii.GetVirtualKeyState(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)));
+
+                        // Release new key state
+                        if (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED && isTargetKeyPressed)
+                        {
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+
+                        // Ensures that after releasing both the action key and AltGr, Ctrl does not remain falsely pressed.
+                        if (!isAltRightKeyInvoked)
+                        {
+                            // Set original shortcut key down state except the action key and the released modifier since the original action key may or may not be held down. If it is held down it will generate its own key message
+                            Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, Shortcut(), data->lParam->vkCode);
+                        }
+                        else
+                        {
+                            isAltRightKeyInvoked = false;
+                        }
+
+                        // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+Ctrl+A->V, press Win+Ctrl+A and release A then Ctrl, since Win will be pressed here we need to send a dummy event after it
+                        Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                    }
+
+                    // Reset the remap state
+                    it->second.isShortcutInvoked = false;
+                    it->second.modifierKeysInvoked.Reset();
+                    it->second.isOriginalActionKeyPressed = false;
+
+                    // If app specific shortcut has finished invoking, reset the target application
+                    if (activatedApp)
+                    {
+                        state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                    }
+
+                    if (!ii.SendVirtualInput(keyEventList))
+                    {
+                        return 0;
+                    }
+                    return 1;
+                }
+
+                // The system will see the modifiers of the new shortcut as being held down because of the shortcut remap
+                if (!remapToShortcut || (remapToShortcut && std::get<Shortcut>(it->second.targetShortcut).CheckModifiersKeyboardState(ii)))
+                {
+                    // Case 2: If the original shortcut is still held down the keyboard will get a key down message of the action key in the original shortcut and the new shortcut's modifiers will be held down (keys held down send repeated keydown messages)
+                    if (((data->lParam->vkCode == it->first.GetActionKey() && !it->first.HasChord()) || (data->lParam->vkCode == it->first.GetSecondKey() && it->first.HasChord())) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    {
+                        // In case of mapping to disable do not send anything
+                        if (remapToKey && std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
+                        {
+                            // Since the original shortcut's action key is pressed, set it to true
+                            it->second.isOriginalActionKeyPressed = true;
+                            return 1;
+                        }
+
+                        std::vector<INPUT> keyEventList;
+                        if (remapToShortcut)
+                        {
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+                        else if (remapToKey)
+                        {
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+                        else if (remapToText)
+                        {
+                            auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
+                            Helpers::SendTextInput(remapping, ii);
+                            return 1;
+                        }
+
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
+                        return 1;
+                    }
+
+                    // Case 3: If the action key is released from the original shortcut, keep modifiers of the new shortcut until some other key event which doesn't apply to the original shortcut
+                    if (!remapToText && ((!it->first.HasChord() && data->lParam->vkCode == it->first.GetActionKey()) || (it->first.HasChord() && data->lParam->vkCode == it->first.GetSecondKey())) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                    {
+                        std::vector<INPUT> keyEventList;
+                        if (remapToShortcut && !it->first.HasChord())
+                        {
+                            // Just lift the action key for no chords.
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                        }
+                        else if (remapToShortcut && it->first.HasChord())
+                        {
+                            // If it has a chord, we'll want a full clean contemplated in the else, since you can't really repeat chords by pressing the end key again.
+
+                            // Key up for all new shortcut keys, key down for original shortcut modifiers and current key press but common keys aren't repeated
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                            // Release new shortcut state (release in reverse order of shortcut to be accurate)
+                            Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+
+                            // Set old shortcut key down state
+                            Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
+
+                            // Reset the remap state
+                            it->second.isShortcutInvoked = false;
+                            it->second.modifierKeysInvoked.Reset();
+                            it->second.isOriginalActionKeyPressed = false;
+
+                            // If app specific shortcut has finished invoking, reset the target application
+                            if (activatedApp)
+                            {
+                                state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                            }
+                        }
+                        else if (std::get<DWORD>(it->second.targetShortcut) == CommonSharedConstants::VK_DISABLED)
+                        {
+                            // If remapped to disable, do nothing and suppress the key event
+                            // Since the original shortcut's action key is released, set it to false
+                            it->second.isOriginalActionKeyPressed = false;
+                            return 1;
+                        }
+                        else
+                        {
+                            // Check if the keyboard state is clear apart from the target remap key (by creating a temp Shortcut object with the target key)
+                            bool isKeyboardStateClear = Shortcut(std::vector<int32_t>({ Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)) })).IsKeyboardStateClearExceptShortcut(ii);
+
+                            // If the keyboard state is clear, we release the target key but do not reset the remap state
+                            if (isKeyboardStateClear)
+                            {
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                            }
+                            else
+                            {
+                                // If any other key is pressed, then the keyboard state must be reverted back to the physical keys.
+                                // This is to take cases like Ctrl+A->D remap and user presses B+Ctrl+A and releases A, or Ctrl+A+B and releases A
+
+                                // Release new key state
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut))), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                                if (!isAltRightKeyInvoked)
+                                {
+                                    // Set original shortcut key down state except the action key
+                                    Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                }
+
+                                // Send a dummy key event to prevent modifier press+release from being triggered. Example: Win+A->V, press Shift+Win+A and release A, since Win will be pressed here we need to send a dummy event after it
+                                Helpers::SetDummyKeyEvent(keyEventList, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+                                if (!isAltRightKeyInvoked)
+                                {
+                                    // Reset the remap state
+                                    it->second.isShortcutInvoked = false;
+                                    it->second.modifierKeysInvoked.Reset();
+                                    it->second.isOriginalActionKeyPressed = false;
+                                }
+
+                                // If app specific shortcut has finished invoking, reset the target application
+                                if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
+                                {
+                                    state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                                }
+                            }
+                        }
+
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
+                        return 1;
+                    }
+
+                    // Case 4: If a modifier key in the original shortcut is pressed then suppress that key event since the original shortcut is already held down physically - This case can occur only if a user has a duplicated modifier key (possibly by remapping) or if user presses both L/R versions of a modifier remapped with "Both"
+                    if ((it->first.CheckWinKey(data->lParam->vkCode) || it->first.CheckCtrlKey(data->lParam->vkCode) || it->first.CheckAltKey(data->lParam->vkCode) || it->first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
+                    {
+                        if (remapToShortcut)
+                        {
+                            // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps
+                            if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey(it->second.modifierKeysInvoked.ctrlKey) == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey(it->second.modifierKeysInvoked.altKey) == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey(it->second.modifierKeysInvoked.shiftKey) == NULL)
+                            {
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
+                            }
+                        }
+                        else if (std::get<DWORD>(it->second.targetShortcut) != CommonSharedConstants::VK_DISABLED)
+                        {
+                            // If it is not remapped to Disable
+                            // Modifier state reset might be required for this key depending on the target key - ex: Ctrl+A -> Caps
+                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, Helpers::FilterArtificialKeys(std::get<DWORD>(it->second.targetShortcut)));
+                        }
+
+                        // Suppress the modifier as it is already physically pressed
+                        return 1;
+                    }
+
+                    // Case 5: If any key apart from the action key or a modifier key in the original shortcut is pressed then revert the keyboard state to just the original modifiers being held down along with the current key press
+                    if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                    {
+                        if (remapToShortcut)
+                        {
+                            // Modifier state reset might be required for this key depending on the target shortcut action key - ex: Ctrl+A -> Win+Caps, Shift is pressed. System should not see Shift and Caps pressed together
+                            if (std::get<Shortcut>(it->second.targetShortcut).GetCtrlKey(it->second.modifierKeysInvoked.ctrlKey) == NULL && std::get<Shortcut>(it->second.targetShortcut).GetAltKey(it->second.modifierKeysInvoked.altKey) == NULL && std::get<Shortcut>(it->second.targetShortcut).GetShiftKey(it->second.modifierKeysInvoked.shiftKey) == NULL)
+                            {
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
+                            }
+
+                            std::vector<INPUT> keyEventList;
+
+                            // Check if a new remapping should be applied
+                            Shortcut currentlyPressed = it->first;
+                            currentlyPressed.actionKey = data->lParam->vkCode;
+                            auto newRemappingIter = reMap.find(currentlyPressed);
+                            if (newRemappingIter != reMap.end() && !newRemappingIter->first.HasChord())
+                            {
+                                auto& newRemapping = newRemappingIter->second;
+                                Shortcut from = std::get<Shortcut>(it->second.targetShortcut);
+                                if (newRemapping.RemapToKey())
+                                {
+                                    DWORD to = std::get<0>(newRemapping.targetShortcut);
+                                    if (!isAltRightKeyInvoked)
+                                    {
+                                        Helpers::SetModifierKeyEvents(from, it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    }
+                                    if (ii.GetVirtualKeyState(static_cast<WORD>(from.actionKey)))
+                                    {
+                                        // If the action key from the last shortcut is still being pressed, release it.
+                                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(from.actionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    }
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(to), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                }
+                                else
+                                {
+                                    Shortcut to = std::get<Shortcut>(newRemapping.targetShortcut);
+                                    if (!isAltRightKeyInvoked)
+                                    {
+                                        Helpers::SetModifierKeyEvents(from, it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, to);
+                                    }
+                                    if (ii.GetVirtualKeyState(static_cast<WORD>(from.actionKey)))
+                                    {
+                                        // If the action key from the last shortcut is still being pressed, release it.
+                                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(from.actionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    }
+                                    if (!isAltRightKeyInvoked)
+                                    {
+                                        Helpers::SetModifierKeyEvents(to, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, from);
+                                    }
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(to.actionKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                    newRemapping.isShortcutInvoked = true;
+                                }
+                            }
+                            else
+                            {
+                                // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
+                                bool isActionKeyPressed = ii.GetVirtualKeyState(std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
+
+                                // Release new shortcut state (release in reverse order of shortcut to be accurate)
+                                if (isActionKeyPressed)
+                                {
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                }
+                                if (!isAltRightKeyInvoked)
+                                {
+                                    Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
+
+                                    // Set old shortcut key down state
+                                    Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
+                                }
+
+                                // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
+                                if (isActionKeyPressed)
+                                {
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                }
+
+                                // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
+
+                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after shortcut to shortcut is released to open start menu
+                            }
+
+                            if (!isAltRightKeyInvoked)
+                            {
+                                // Reset the remap state
+                                it->second.isShortcutInvoked = false;
+                                it->second.modifierKeysInvoked.Reset();
+                                it->second.isOriginalActionKeyPressed = false;
+                            }
+
+                            // If app specific shortcut has finished invoking, reset the target application
+                            if (activatedApp)
+                            {
+                                state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                            }
+
+                            if (!ii.SendVirtualInput(keyEventList))
+                            {
+                                return 0;
+                            }
+                            return 1;
+                        }
+                        else
+                        {
+                            // For remap to key, if the original action key is not currently pressed, we should revert the keyboard state to the physical keys. If it is pressed we should not suppress the event so that shortcut to key remaps can be pressed with other keys. Example use-case: Alt+D->Win, allows Alt+D+A to perform Win+A
+
+                            // Modifier state reset might be required for this key depending on the target key - ex: Ctrl+A -> Caps, Shift is pressed. System should not see Shift and Caps pressed together
+
+                            auto maybeTargetKey = std::get_if<DWORD>(&it->second.targetShortcut);
+
+                            if (maybeTargetKey)
+                            {
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, Helpers::FilterArtificialKeys(*maybeTargetKey));
+                            }
+
+                            // If the shortcut is remapped to Disable then we have to revert the keyboard state to the physical keys
+                            bool isRemapToDisable = maybeTargetKey && (*maybeTargetKey == CommonSharedConstants::VK_DISABLED);
+                            bool isOriginalActionKeyPressed = false;
+
+                            if (maybeTargetKey && !isRemapToDisable)
+                            {
+                                // If the remap target key is currently pressed, then we do not have to revert the keyboard state to the physical keys
+                                if (ii.GetVirtualKeyState((Helpers::FilterArtificialKeys(*maybeTargetKey))))
+                                {
+                                    isOriginalActionKeyPressed = true;
+                                }
+                            }
+                            else
+                            {
+                                isOriginalActionKeyPressed = it->second.isOriginalActionKeyPressed;
+                            }
+
+                            if (isRemapToDisable || !isOriginalActionKeyPressed)
+                            {
+                                std::vector<INPUT> keyEventList;
+
+                                if (!isAltRightKeyInvoked)
+                                {
+                                    // Set original shortcut key down state
+                                    Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                }
+
+                                // Send the original action key only if it is physically pressed. For remappings to keys other than disabled we already check earlier that it is not pressed in this scenario. For remap to disable
+                                if (isRemapToDisable && isOriginalActionKeyPressed)
+                                {
+                                    // Set original action key
+                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                                }
+
+                                // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
+                                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
+
+                                // Do not send a dummy key as we want the current key press to behave as normal i.e. it can do press+release functionality if required. Required to allow a shortcut to Win key remap invoked directly after another shortcut to key remap is released to open start menu
+
+                                if (!isAltRightKeyInvoked)
+                                {
+                                    // Reset the remap state
+                                    it->second.isShortcutInvoked = false;
+                                    it->second.modifierKeysInvoked.Reset();
+                                    it->second.isOriginalActionKeyPressed = false;
+                                }
+
+                                // If app specific shortcut has finished invoking, reset the target application
+                                if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
+                                {
+                                    state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                                }
+
+                                if (!ii.SendVirtualInput(keyEventList))
+                                {
+                                    return 0;
+                                }
+                                return 1;
+                            }
+                            else
+                            {
+                                return 0;
+                            }
+                        }
+                    }
+                    // Case 6: If any key apart from original modifier or original action key is released - This can't happen since the key down would have to happen first, which is handled above. If a key up message is generated for some other key (maybe by code) do not suppress it
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    std::wstring URL_encode(const std::wstring& filepath)
+    {
+        std::wostringstream escaped;
+        escaped.fill('0');
+        escaped << std::hex;
+
+        for (wchar_t ch : filepath)
+        {
+            // Encode special characters except for colon after drive letter
+            if (!iswalnum(ch) && ch != L'-' && ch != L'_' && ch != L'.' && ch != L'~' && !(ch == L':' && std::isalpha(filepath[0])))
+            {
+                escaped << std::uppercase;
+                //escaped << '%' << std::setw(2) << int((unsigned char)ch);
+                escaped << '%' << std::setw(2) << static_cast<int>((static_cast<unsigned char>(ch)));
+                escaped << std::nouppercase;
+            }
+            else
+            {
+                escaped << ch;
+            }
+        }
+
+        return escaped.str();
+    }
+
+    std::wstring ConvertPathToURI(const std::wstring& filePath)
+    {
+        std::wstring fileUri = std::filesystem::absolute(filePath).wstring();
+        std::replace(fileUri.begin(), fileUri.end(), L'\\', L'/');
+        fileUri = L"file:///" + URL_encode(fileUri);
+
+        return fileUri;
+    }
+
+    void ResetAllOtherStartedChords(State& state, const std::optional<std::wstring>& activatedApp, DWORD keyToKeep)
+    {
+        for (auto& itShortcut_2 : state.GetSortedShortcutRemapVector(activatedApp))
+        {
+            if (keyToKeep == NULL || itShortcut_2.actionKey != keyToKeep)
+            {
+                itShortcut_2.SetChordStarted(false);
+            }
+        }
+    }
+
+    void ResetAllStartedChords(State& state, const std::optional<std::wstring>& activatedApp)
+    {
+        ResetAllOtherStartedChords(state, activatedApp, NULL);
+    }
+
+    ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp)
+    {
+        ResetChordsResults result;
+        result.AnyChordStarted = false;
+        result.CurrentKeyIsModifierKey = false;
+
+        bool isNewControlKey = false;
+        bool anyChordStarted = false;
+        if (VK_LWIN == data->lParam->vkCode || VK_RWIN == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LSHIFT == data->lParam->vkCode || VK_RSHIFT == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LMENU == data->lParam->vkCode || VK_RMENU == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+        if (VK_LCONTROL == data->lParam->vkCode || VK_RCONTROL == data->lParam->vkCode)
+        {
+            isNewControlKey = true;
+        }
+
+        if (isNewControlKey)
+        {
+            //Logger::trace(L"ChordKeyboardHandler:reset");
+
+            for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
+            {
+                itShortcut.SetChordStarted(false);
+            }
+            result.CurrentKeyIsModifierKey = true;
+        }
+        else
+        {
+            for (auto& itShortcut : state.GetSortedShortcutRemapVector(activatedApp))
+            {
+                if (itShortcut.IsChordStarted())
+                {
+                    result.AnyChordStarted = true;
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    struct handle_data
+    {
+        unsigned long process_id;
+        HWND window_handle;
+    };
+
+    // used for reactivating a window for a program we already started.
+    HWND FindMainWindow(unsigned long process_id, const bool allowNonVisible)
+    {
+        handle_data data;
+        data.process_id = process_id;
+        data.window_handle = 0;
+
+        if (allowNonVisible)
+        {
+            EnumWindows(EnumWindowsCallbackAllowNonVisible, reinterpret_cast<LPARAM>(&data));
+        }
+        else
+        {
+            EnumWindows(EnumWindowsCallback, reinterpret_cast<LPARAM>(&data));
+        }
+
+        return data.window_handle;
+    }
+
+    // used by FindMainWindow
+    BOOL CALLBACK EnumWindowsCallbackAllowNonVisible(HWND handle, LPARAM lParam)
+    {
+        handle_data& data = *reinterpret_cast<handle_data*>(lParam);
+        unsigned long process_id = 0;
+        GetWindowThreadProcessId(handle, &process_id);
+
+        if (data.process_id == process_id)
+        {
+            data.window_handle = handle;
+            return FALSE;
+        }
+        return TRUE;
+    }
+
+    // used by FindMainWindow
+    BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam)
+    {
+        handle_data& data = *reinterpret_cast<handle_data*>(lParam);
+        unsigned long process_id = 0;
+        GetWindowThreadProcessId(handle, &process_id);
+
+        if (data.process_id != process_id || !(GetWindow(handle, GW_OWNER) == static_cast<HWND>(0) && IsWindowVisible(handle)))
+        {
+            return TRUE;
+        }
+
+        data.window_handle = handle;
+        return FALSE;
+    }
+
+    // GetProcessIdByName also used by HandleCreateProcessHotKeysAndChords
+
+    std::vector<DWORD> GetProcessesIdByName(const std::wstring& processName)
+    {
+        std::vector<DWORD> processIds;
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+        if (snapshot != INVALID_HANDLE_VALUE)
+        {
+            PROCESSENTRY32 processEntry;
+            processEntry.dwSize = sizeof(PROCESSENTRY32);
+
+            if (Process32First(snapshot, &processEntry))
+            {
+                do
+                {
+                    if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
+                    {
+                        processIds.push_back(processEntry.th32ProcessID);
+                    }
+                } while (Process32Next(snapshot, &processEntry));
+            }
+
+            CloseHandle(snapshot);
+        }
+
+        return processIds;
+    }
+
+    DWORD GetProcessIdByName(const std::wstring& processName)
+    {
+        DWORD pid = 0;
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+        if (snapshot != INVALID_HANDLE_VALUE)
+        {
+            PROCESSENTRY32 processEntry;
+            processEntry.dwSize = sizeof(PROCESSENTRY32);
+
+            if (Process32First(snapshot, &processEntry))
+            {
+                do
+                {
+                    if (_wcsicmp(processEntry.szExeFile, processName.c_str()) == 0)
+                    {
+                        pid = processEntry.th32ProcessID;
+                        break;
+                    }
+                } while (Process32Next(snapshot, &processEntry));
+            }
+
+            CloseHandle(snapshot);
+        }
+
+        return pid;
+    }
+
+    // Use to find a process by its name
+    std::wstring GetFileNameFromPath(const std::wstring& fullPath)
+    {
+        size_t found = fullPath.find_last_of(L"\\");
+        if (found != std::wstring::npos)
+        {
+            return fullPath.substr(found + 1);
+        }
+        return fullPath;
+    }
+
+    void toast(param::hstring const& message1, param::hstring const& message2) noexcept
+    {
+        try
+        {
+            // Alternatively can build DOM from code:
+            XmlDocument toastXml;
+            XmlElement toastElement = toastXml.CreateElement(L"toast");
+            XmlElement visualElement = toastXml.CreateElement(L"visual");
+            XmlElement bindingElement = toastXml.CreateElement(L"binding");
+            XmlElement textElement1 = toastXml.CreateElement(L"text");
+            XmlElement textElement2 = toastXml.CreateElement(L"text");
+
+            toastXml.AppendChild(toastElement);
+            toastElement.AppendChild(visualElement);
+            visualElement.AppendChild(bindingElement);
+
+            bindingElement.AppendChild(textElement1);
+            bindingElement.AppendChild(textElement2);
+
+            bindingElement.SetAttribute(L"template", L"ToastGeneric");
+
+            textElement1.InnerText(message1);
+            textElement2.InnerText(message2);
+
+            Logger::trace(L"ChordKeyboardHandler:toastXml {}", toastXml.GetXml());
+            std::wstring APPLICATION_ID = L"Microsoft.PowerToysWin32";
+            const auto notifier = ToastNotificationManager::ToastNotificationManager::CreateToastNotifier(APPLICATION_ID);
+
+            ToastNotification notification{ toastXml };
+            notifier.Show(notification);
+        }
+        catch (...)
+        {
+        }
+
+        /*std::thread{ [message] {
+    
+        } }.detach();*/
+    }
+
+    void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
+    {
+        try
+        {
+            const auto launchPath = ProgramLauncher::ExpandAndGetAbsolutePath(shortcut.runProgramFilePath);
+            if (!launchPath)
+            {
+                toast(L"Error starting program", L"The program path was not valid. It could not be used.");
+                return;
+            }
+
+            const std::filesystem::path path{ *launchPath };
+            const auto fileNamePart = path.filename().wstring();
+            Logger::trace(L"ChordKeyboardHandler:{}, trying to run {}", fileNamePart, *launchPath);
+
+            if (shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
+            {
+                auto processName = fileNamePart;
+                if (_wcsicmp(path.extension().c_str(), L".lnk") == 0)
+                {
+                    const auto linkProcessName = ProgramLauncher::GetLinkProcessName(*launchPath);
+                    if (!linkProcessName)
+                    {
+                        toast(fmt::format(L"Error starting {}", fileNamePart),
+                              L"The shortcut target could not be identified as a program. Its already-running action could not be applied.");
+                        return;
+                    }
+                    processName = *linkProcessName;
+                }
+
+                const DWORD targetPid = GetProcessIdByName(processName);
+                Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", processName, targetPid, shortcut.alreadyRunningAction);
+
+                if (targetPid != 0)
+                {
+                    if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+                    {
+                        TerminateProcessesByName(processName);
+                    }
+                    else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
+                    {
+                        CloseProcessByName(processName);
+                    }
+                    else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
+                    {
+                        for (DWORD pid : GetProcessesIdByName(processName))
+                        {
+                            TryShowExistingProgram(pid, processName);
+                        }
+                    }
+                    return;
+                }
+            }
+
+            const DWORD dwAttrib = GetFileAttributesW(launchPath->c_str());
+            if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+            {
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The program was not found.");
+                return;
+            }
+
+            const auto expandedArgs = ProgramLauncher::ExpandEnvironmentVariables(shortcut.runProgramArgs);
+            if (!expandedArgs)
+            {
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The program arguments could not be expanded.");
+                return;
+            }
+
+            std::wstring currentDir;
+            if (shortcut.runProgramStartInDir.empty())
+            {
+                currentDir = ProgramLauncher::GetWorkingDirectory(*launchPath, {});
+            }
+            else
+            {
+                const auto expandedCurrentDir = ProgramLauncher::ExpandAndGetAbsolutePath(shortcut.runProgramStartInDir);
+                if (!expandedCurrentDir)
+                {
+                    toast(fmt::format(L"Error starting {}", fileNamePart), L"The start in path was not valid. It could not be used.");
+                    return;
+                }
+
+                currentDir = ProgramLauncher::GetWorkingDirectory(*launchPath, *expandedCurrentDir);
+                const DWORD directoryAttributes = GetFileAttributesW(currentDir.c_str());
+                if (directoryAttributes == INVALID_FILE_ATTRIBUTES || (directoryAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+                {
+                    toast(fmt::format(L"Error starting {}", fileNamePart), L"The start in path was not valid. It could not be used.");
+                    return;
+                }
+            }
+
+            DWORD processId = 0;
+            HANDLE newProcessHandle = nullptr;
+            bool processStarted = false;
+            const auto currentDirPtr = currentDir.empty() ? nullptr : currentDir.c_str();
+
+            if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
+            {
+                newProcessHandle = run_elevated(*launchPath, *expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                processStarted = newProcessHandle != nullptr;
+            }
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
+            {
+                if (ProgramLauncher::ShouldUseExplorerShell(shortcut.startWindowType))
+                {
+                    processStarted = RunNonElevatedEx(*launchPath, *expandedArgs, currentDir);
+                }
+                else
+                {
+                    processStarted = run_non_elevated(*launchPath, *expandedArgs, &processId, currentDirPtr, false);
+                }
+            }
+            else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
+            {
+                newProcessHandle = run_as_different_user(*launchPath, *expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                processStarted = newProcessHandle != nullptr;
+            }
+
+            if (newProcessHandle != nullptr)
+            {
+                processId = GetProcessId(newProcessHandle);
+                CloseHandle(newProcessHandle);
+            }
+
+            if (!processStarted)
+            {
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The application might not have started.");
+                return;
+            }
+
+            if (processId != 0 && shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
+            {
+                HideProgram(processId, fileNamePart, 0);
+            }
+        }
+        catch (...)
+        {
+            toast(L"Error starting program", L"The program settings could not be processed.");
+        }
+    }
+
+    void CloseProcessByName(const std::wstring& fileNamePart)
+    {
+        auto processIds = GetProcessesIdByName(fileNamePart);
+
+        if (processIds.size() == 0)
+        {
+            Logger::trace(L"ChordKeyboardHandler:{}, Nothing To WM_CLOSE", fileNamePart);
+            return;
+        }
+
+        auto threadFunction = [fileNamePart]() {
+            auto processIds = GetProcessesIdByName(fileNamePart);
+            auto retryCount = 10;
+            while (processIds.size() > 0 && retryCount-- > 0)
+            {
+                //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE 'ing {}processIds ", fileNamePart, processIds.size());
+                for (DWORD pid : processIds)
+                {
+                    //Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE ({}) -> pid:{}", fileNamePart, retryCount, pid);
+                    HWND hwnd = FindMainWindow(pid, false);
+                    SendMessage(hwnd, WM_CLOSE, 0, 0);
+
+                    // small sleep between when there are a lot might help
+                    Sleep(10);
+                }
+
+                processIds = GetProcessesIdByName(fileNamePart);
+                if (processIds.size() <= 0)
+                {
+                    Logger::trace(L"ChordKeyboardHandler:{}, WM_CLOSE done", fileNamePart);
+                    break;
+                }
+                else
+                {
+                    Sleep(100);
+                }
+            }
+        };
+
+        processIds = GetProcessesIdByName(fileNamePart);
+
+        if (processIds.size() > 0)
+        {
+            std::thread myThread(threadFunction);
+            if (myThread.joinable())
+            {
+                myThread.detach();
+            }
+        }
+
+        Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning", fileNamePart);
+    }
+
+    void TerminateProcessesByName(const std::wstring& fileNamePart)
+    {
+        auto processIds = GetProcessesIdByName(fileNamePart);
+
+        if (processIds.size() == 0)
+        {
+            Logger::trace(L"ChordKeyboardHandler:{}, Nothing To PROCESS_TERMINATE", fileNamePart);
+            return;
+        }
+
+        for (DWORD pid : processIds)
+        {
+            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+            Logger::trace(L"ChordKeyboardHandler:{}, PROCESS_TERMINATE (1) -> pid:{}", fileNamePart, pid);
+            if (hProcess != NULL)
+            {
+                if (!TerminateProcess(hProcess, 0))
+                {
+                    CloseHandle(hProcess);
+                }
+                else
+                {
+                    CloseHandle(hProcess);
+                }
+            }
+        }
+    }
+
+    bool HideProgram(DWORD pid, std::wstring programName, int retryCount)
+    {
+        Logger::trace(L"ChordKeyboardHandler:HideProgram starting with {},{}, retryCount:{}", pid, programName, retryCount);
+
+        HWND hwnd = FindMainWindow(pid, false);
+        if (hwnd == NULL)
+        {
+            if (retryCount < 20)
+            {
+                Logger::trace(L"ChordKeyboardHandler:hwnd not found will retry for pid:{}", pid);
+                auto future = std::async(std::launch::async, [=] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    auto result = HideProgram(pid, programName, retryCount + 1);
+                    return false;
+                });
+            }
+        }
+
+        hwnd = FindWindow(nullptr, nullptr);
+
+        auto anyHideResultFailed = false;
+
+        Logger::trace(L"ChordKeyboardHandler:{}:{},{}, FindWindow, HideProgram (all)", programName, pid, retryCount);
+        while (hwnd)
+        {
+            DWORD pidForHwnd;
+            GetWindowThreadProcessId(hwnd, &pidForHwnd);
+            if (pid == pidForHwnd)
+            {
+                if (IsWindowVisible(hwnd))
+                {
+                    ShowWindow(hwnd, SW_HIDE);
+                    Logger::trace(L"ChordKeyboardHandler:{}, tryToHide {}, {}", programName, reinterpret_cast<uintptr_t>(hwnd), anyHideResultFailed);
+                }
+            }
+            hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
+        }
+
+        return true;
+    }
+
+    bool TryShowExistingProgram(DWORD pid, const std::wstring& programName)
+    {
+        Logger::trace(L"ChordKeyboardHandler:TryShowExistingProgram starting with {},{}", pid, programName);
+
+        HWND hwnd = FindMainWindow(pid, false);
+        if (hwnd != nullptr)
+        {
+            Logger::trace(L"ChordKeyboardHandler:{}, got hwnd from FindMainWindow", programName);
+
+            if (hwnd == GetForegroundWindow())
+            {
+                return true;
+            }
+            else
+            {
+                Logger::trace(L"ChordKeyboardHandler:{}, not ForegroundWindow, doing SW_RESTORE", programName);
+
+                // Check if the window is minimized
+                if (IsIconic(hwnd))
+                {
+                    // Show the window since SetForegroundWindow fails on minimized windows
+                    if (!ShowWindow(hwnd, SW_RESTORE))
+                    {
+                        Logger::error(L"ShowWindow failed");
+                    }
+                }
+
+                INPUT inputs[1] = { { .type = INPUT_MOUSE } };
+                SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+
+                if (!SetForegroundWindow(hwnd))
+                {
+                    auto errorCode = GetLastError();
+                    Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                    return false;
+                }
+                else
+                {
+                    Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
+                    return true;
+                }
+            }
+        }
+
+        // Restore hidden titled windows immediately. An existing process without
+        // a window must not delay restoring windows owned by the remaining PIDs.
+        hwnd = FindWindow(nullptr, nullptr);
+
+        if (hwnd)
+        {
+            Logger::trace(L"ChordKeyboardHandler:{}:{}, FindWindow (show all mode)", programName, pid);
+            while (hwnd)
+            {
+                DWORD pidForHwnd;
+                GetWindowThreadProcessId(hwnd, &pidForHwnd);
+                if (pid == pidForHwnd)
+                {
+                    int length = GetWindowTextLength(hwnd);
+
+                    if (length > 0)
+                    {
+                        ShowWindow(hwnd, SW_RESTORE);
+
+                        // hwnd is the window handle with targetPid
+                        if (SetForegroundWindow(hwnd))
+                        {
+                            Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
+                            return true;
+                        }
+                        else
+                        {
+                            auto errorCode = GetLastError();
+                            Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
+                        }
+                    }
+                }
+                hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
+            }
+        }
+
+        return false;
+    }
+
+    // Function to handle an os-level shortcut remap
+    intptr_t HandleOSLevelShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
+        if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG)
+        {
+            bool result = HandleShortcutRemapEvent(ii, data, state);
+            return result;
+        }
+
+        return 0;
+    }
+
+    // Function to handle an app-specific shortcut remap
+    intptr_t HandleAppSpecificShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
+        if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG)
+        {
+            std::wstring process_name;
+
+            // Allocate MAX_PATH amount of memory
+            process_name.resize(MAX_PATH);
+            ii.GetForegroundProcess(process_name);
+
+            // Remove elements after null character
+            process_name.erase(std::find(process_name.begin(), process_name.end(), L'\0'), process_name.end());
+
+            if (process_name.empty())
+            {
+                return 0;
+            }
+
+            // Convert process name to lowercase
+            std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
+
+            std::wstring query_string;
+
+            AppSpecificShortcutRemapTable::iterator it;
+
+            // Check if an app-specific shortcut is already activated
+            if (state.GetActivatedApp() == KeyboardManagerConstants::NoActivatedApp)
+            {
+                query_string = process_name;
+                it = state.appSpecificShortcutReMap.find(query_string);
+
+                // If no entry is found, search for the process name without its file extension
+                if (it == state.appSpecificShortcutReMap.end())
+                {
+                    // Find index of the file extension
+                    size_t extensionIndex = process_name.find_last_of(L".");
+                    query_string = process_name.substr(0, extensionIndex);
+                    it = state.appSpecificShortcutReMap.find(query_string);
+                }
+            }
+            else
+            {
+                query_string = state.GetActivatedApp();
+                it = state.appSpecificShortcutReMap.find(query_string);
+            }
+
+            if (it != state.appSpecificShortcutReMap.end())
+            {
+                bool result = HandleShortcutRemapEvent(ii, data, state, query_string);
+                return result;
+            }
+        }
+
+        return 0;
+    }
+
+    // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
+    void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target)
+    {
+        // If the target is Caps Lock and the other key is either Ctrl/Alt/Shift then reset the modifier state to lower level handlers
+        if (target == VK_CAPITAL)
+        {
+            // If the argument is either of the Ctrl/Shift/Alt modifier key codes
+            if (Helpers::IsModifierKey(key) && !(key == VK_LWIN || key == VK_RWIN || key == CommonSharedConstants::VK_WIN_BOTH))
+            {
+                std::vector<INPUT> keyEventList;
+
+                // Use the suppress flag to ensure these are not intercepted by any remapped keys or shortcuts
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(key), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+                ii.SendVirtualInput(keyEventList);
+            }
+        }
+    }
+
+    // Function to generate a unicode string in response to a single keypress
+    intptr_t HandleSingleKeyToTextRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state)
+    {
+        if (GeneratedByKBM(data))
+        {
+            return 0;
+        }
+
+        // Only send the text on key-down events. WM_SYSKEYDOWN is sent instead of
+        // WM_KEYDOWN while Alt is held, so accept it too or the remap silently drops.
+        if (data->wParam != WM_KEYDOWN && data->wParam != WM_SYSKEYDOWN)
+        {
+            return 0;
+        }
+
+        const auto remapping = state.GetSingleKeyToTextRemapEvent(data->lParam->vkCode);
+        if (!remapping)
+        {
+            return 0;
+        }
+
+        // Release held modifiers before text injection to prevent Ctrl+text corruption
+        constexpr int modifierKeys[] = { VK_LCONTROL, VK_RCONTROL, VK_LSHIFT, VK_RSHIFT, VK_LMENU, VK_RMENU, VK_LWIN, VK_RWIN };
+        std::vector<INPUT> releaseEvents;
+
+        // A dummy key event must precede the modifier releases so that releasing a
+        // held Win (Start Menu) or Alt (menu bar) does not trigger its lone-press
+        // action when we inject the modifier key-up.
+        Helpers::SetDummyKeyEvent(releaseEvents, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+        bool anyModifierHeld = false;
+        for (int vk : modifierKeys)
+        {
+            if (ii.GetVirtualKeyState(vk))
+            {
+                Helpers::SetKeyEvent(releaseEvents, INPUT_KEYBOARD, static_cast<WORD>(vk), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                anyModifierHeld = true;
+            }
+        }
+
+        // Only inject the dummy + modifier releases when a modifier was actually held.
+        if (anyModifierHeld)
+        {
+            if (!ii.SendVirtualInput(releaseEvents))
+            {
+                return 0;
+            }
+        }
+
+        Helpers::SendTextInput(*remapping, ii);
+
+        // Intentionally do NOT re-press the released modifiers. Once we inject a
+        // KEYUP for a modifier, GetAsyncKeyState (and therefore GetVirtualKeyState)
+        // reports it as up, so there is no reliable way to tell whether the user is
+        // still physically holding the key or has released it. Re-pressing
+        // unconditionally would risk leaving a modifier stuck down if the user let
+        // go during injection - the exact failure this change set prevents. Leaving
+        // the modifier released is always safe: the user taps it again to re-engage.
+
+        return 1;
+    }
+}

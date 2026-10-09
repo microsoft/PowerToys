@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyTitle>PowerToys.PreviewHandlerCommon</AssemblyTitle>
+    <AssemblyDescription>PowerToys PreviewHandlerCommon</AssemblyDescription>
+    <Description>PowerToys PreviewHandlerCommon</Description>
+    <DocumentationFile>..\..\..\..\$(Platform)\$(Configuration)\PreviewHandlerCommonDocumentation.xml</DocumentationFile>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <Nullable>enable</Nullable>
+    <ProjectGuid>{AF2349B8-E5B6-4004-9502-687C1C7730B1}</ProjectGuid>
+    <AssemblyName>PowerToys.PreviewHandlerCommon</AssemblyName>
+    <!-- AutoUnify resolves WindowsBase version conflict (WebView2.Wpf refs .NET 5 version, we target .NET 9) -->
+    <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="examplehandler\CustomControlTest.cs" />
+    <Compile Update="controls\FormHandlerControl.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="System.IO.Abstractions" />
+  </ItemGroup>
+</Project>

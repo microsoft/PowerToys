@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+properties:
+  resources:
+    - resource: Microsoft.PowerToys.Configure/PowerToysConfigure
+      directives:
+        description: Configure PowerToys
+      settings:
+        ShortcutGuide:
+          Enabled: false
+          OverlayOpacity: 50
+        FancyZones:
+          Enabled: true
+          FancyzonesEditorHotkey: "Shift+Ctrl+Alt+F"
+        FileLocksmith:
+          Enabled: false
+  configurationVersion: 0.2.0

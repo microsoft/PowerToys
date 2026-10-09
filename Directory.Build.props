@@ -1,0 +1,205 @@
+<Project>
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)src\Version.props" />
+  <Import Project="$(RepoRoot)src\PhiSilicaLaf.props" />
+  <PropertyGroup>
+    <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
+    <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
+    <AssemblyProduct>PowerToys</AssemblyProduct>
+    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
+    <Company>Microsoft Corporation</Company>
+    <Authors>Microsoft Corporation</Authors>
+    <Product>PowerToys</Product>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Platforms>x64;ARM64</Platforms>
+    <PackageTags>PowerToys</PackageTags>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Source commit is exposed explicitly via Version.props/version_gen.h. -->
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <RestoreEnablePackagePruning Condition=" '$(VisualStudioVersion)' == '17.0'">false </RestoreEnablePackagePruning>
+
+    <!-- Enable Microsoft.Testing.Platform -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+    <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --report-trx</TestingPlatformCommandLineArguments>
+    <!-- No arm64 agents to run the tests. -->
+    <TestingPlatformDisableCustomTestTarget Condition="'$(Platform)' == 'ARM64'">true</TestingPlatformDisableCustomTestTarget>
+  </PropertyGroup>
+
+  <!--
+    UI tests are run in dedicated UI test jobs/pipelines.
+    In CI, the main build uses `/t:Build;Test` across the full solution, so
+    prevent UI test projects from being executed in that pass.
+  -->
+  <PropertyGroup Condition="'$(TF_BUILD)' != '' and $(MSBuildProjectName.Contains('UITest'))">
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
+  </PropertyGroup>
+
+  <!--
+    Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
+    This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
+    Match: projects ending in Test, Tests, UnitTests, UITests, FuzzTests, or in a folder named Tests.
+    Also matches projects starting with UnitTests- (e.g., UnitTests-CommonLib).
+    Also removes all PackageReference/ProjectReference to prevent NuGet restore and dependency builds.
+    Note: Checking both 'false' and 'False' to handle YAML boolean serialization.
+  -->
+  <PropertyGroup Condition="'$(BuildTests)' == 'false' or '$(BuildTests)' == 'False'">
+    <_ProjectName>$(MSBuildProjectName)</_ProjectName>
+    <!-- Match any project ending with "Test" or "Tests" (covers UnitTests, UITests, FuzzTests, etc.) -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Test'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Tests'))">true</_IsSkippedTestProject>
+    <!-- Match projects starting with UnitTests- or UITest- prefix -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UnitTests-'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UITest-'))">true</_IsSkippedTestProject>
+    <!-- Match projects in a Tests folder -->
+    <_IsSkippedTestProject Condition="$(MSBuildProjectDirectory.Contains('\Tests\'))">true</_IsSkippedTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateGlobalUsings>false</GenerateGlobalUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Disable all code analysis for skipped test projects -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzers>false</RunAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <VersionBuildSuffix Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(Version)', '^\d+\.\d+\.\d+$'))">.0</VersionBuildSuffix>
+    <VersionBuildSuffix Condition="'$(VersionBuildSuffix)' == ''"></VersionBuildSuffix>
+    <Version>$(Version)$(VersionBuildSuffix)</Version>
+    <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
+    <ForceImportBeforeCppProps>$(RepoRoot)Cpp.Build.props</ForceImportBeforeCppProps>
+  </PropertyGroup>
+
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(_IsSkippedTestProject)' != 'true'">
+    <PackageReference Include="StyleCop.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <Compile Include="$(RepoRoot)src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <AdditionalFiles Include="$(RepoRoot)src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
+
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- In CI, we build and test with `/t:Build;Test` -->
+  <!-- So, for non-test projects, we want the target to be there and it's basically doing nothing -->
+  <!-- For C# test projects, Microsoft.Testing.Platform should inject Test target here: -->
+  <!-- https://github.com/microsoft/testfx/blob/5ad21909704db501f58f27d4a7ec241edd761af5/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets#L270-L273 -->
+  <!-- For C++ test projects, the RunVSTest SDK will do its job -->
+  <Target Name="Test" />
+
+  <!-- Add ability to run tests via "msbuild /t:Test" using the RunVSTest SDK -->
+  <!-- This is only needed for C++, as we use Microsoft.Testing.Platform for C# -->
+  <!--
+    Work around an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
+    See: https://github.com/dotnet/msbuild/pull/9984
+    NB 1: This means that using "/t:Test" is not supported for Arm64 builds and tests will need to be run in an alternate way,
+          eg running tests in VS or invoking vstest.console directly.
+    NB 2: <Sdk> elements do not support conditions, so this is also being worked around.
+          Once the change referenced above is fixed, the ImportGroup below can be replaced with:
+            <Sdk Name="Microsoft.Build.RunVSTest" Version="1.0.319" />
+  -->
+  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64' AND ('$(Language)' == 'C++' OR '$(MSBuildProjectExtension)' == '.vcxproj')">
+    <Import Project="Sdk.props" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
+    <Import Project="Sdk.targets" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Language)' == 'C++' OR '$(MSBuildProjectExtension)' == '.vcxproj'">
+    <VSTestLogger>trx</VSTestLogger>
+    <!--
+      RunVSTest by default uses %VSINSTALLDIR%\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe,
+      but some of the CI scenarios don't define %VSINSTALLDIR%, so be explicit about where to look for vstest.
+      Note: $(VsInstallRoot) is a built-in MSBuild property, so should always be defined.
+    -->
+    <VSTestToolPath>$(VsInstallRoot)\Common7\IDE\CommonExtensions\Microsoft\TestWindow</VSTestToolPath>
+    <!-- No arm64 agents to run the tests. -->
+    <RunVSTest Condition="'$(Platform)' == 'ARM64'">false</RunVSTest>
+  </PropertyGroup>
+
+  <!-- MSBuildCache -->
+  <PropertyGroup>
+    <!-- Off by default -->
+    <MSBuildCacheEnabled Condition="'$(MSBuildCacheEnabled)' == ''">false</MSBuildCacheEnabled>
+
+    <!-- In Azure pipelines, use Pipeline Caching as the cache storage backend. Otherwise, use the local cache. -->
+    <MSBuildCachePackageName Condition="'$(TF_BUILD)' != ''">Microsoft.MSBuildCache.AzurePipelines</MSBuildCachePackageName>
+    <MSBuildCachePackageName Condition="'$(MSBuildCachePackageName)' == ''">Microsoft.MSBuildCache.Local</MSBuildCachePackageName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildCacheEnabled)' == 'true'">
+    <!-- Disable when running in a pipeline as the time to upload or download the massive .pch/.pchast to the cache is greater than the savings they provide. -->
+    <UsePrecompiledHeaders Condition="'$(TF_BUILD)' != ''">false</UsePrecompiledHeaders>
+
+    <!-- Change this to bust the cache -->
+    <MSBuildCacheCacheUniverse Condition="'$(MSBuildCacheCacheUniverse)' == ''">202408150737</MSBuildCacheCacheUniverse>
+
+    <!--
+      Visual Studio telemetry reads various ApplicationInsights.config files and other files after the project is finished, likely in a detached process.
+      This is acceptable and should not impact cache correctness.
+    -->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns);
+      \**\ApplicationInsights.config;
+      $(LocalAppData)\Microsoft\VSApplicationInsights\**;
+      $(LocalAppData)\Microsoft\Windows\INetCache\**;
+      A:\;
+      E:\;
+      $(windir)\**;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+
+    <!-- Unit tests of low-priv processes, eg the preview handler tests, may log to this location. -->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns);
+      $(USERPROFILE)\AppData\LocalLow\Microsoft\PowerToys\**;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+
+    <!-- dotnet.exe seems to access files after builds. Temporarily putting in this entry for testing if we get further. This looks to be related to a .NET Roslyn Analyzer in .NET 10-->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns);
+      \**\dotnet\dotnet.exe;
+      \**\vbcscompiler.exe;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns>
+    <!-- 
+      This repo uses a common output directory with many projects writing duplicate outputs. Allow everything, but note this costs some performance in the form of requiring
+      the cache to use copies instead of hardlinks when pulling from cache.
+    -->
+    <MSBuildCacheIdenticalDuplicateOutputPatterns>$(MSBuildCacheIdenticalDuplicateOutputPatterns);**</MSBuildCacheIdenticalDuplicateOutputPatterns>
+
+    <!-- version of MSBuildCache is not part of the cache key -->
+    <PackagesConfigFile>$(MSBuildThisFileDirectory)packages.config</PackagesConfigFile>
+    <MSBuildCacheIgnoredInputPatterns>$(MSBuildCacheIgnoredInputPatterns);$(PackagesConfigFile)</MSBuildCacheIgnoredInputPatterns>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildCacheEnabled)' == 'true' and '$(MSBuildCachePackageRoot)' == ''">
+    <PackagesConfigContents>$([System.IO.File]::ReadAllText("$(PackagesConfigFile)"))</PackagesConfigContents>
+    <MSBuildCachePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.MSBuildCache.*?version="(.*?)"').Groups[1].Value)</MSBuildCachePackageVersion>
+    <MSBuildCachePackageRoot>$(MSBuildThisFileDirectory)packages\$(MSBuildCachePackageName).$(MSBuildCachePackageVersion)</MSBuildCachePackageRoot>
+    <MSBuildCacheSharedCompilationPackageRoot>$(MSBuildThisFileDirectory)packages\Microsoft.MSBuildCache.SharedCompilation.$(MSBuildCachePackageVersion)</MSBuildCacheSharedCompilationPackageRoot>
+  </PropertyGroup>
+
+  <ImportGroup Condition="'$(MSBuildCacheEnabled)' == 'true'">
+    <Import Project="$(MSBuildCachePackageRoot)\build\$(MSBuildCachePackageName).props" />
+    <Import Project="$(MSBuildCacheSharedCompilationPackageRoot)\build\Microsoft.MSBuildCache.SharedCompilation.props" />
+  </ImportGroup>
+</Project>

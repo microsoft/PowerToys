@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="Microsoft Corporation" Copyright="Microsoft Corporation" Company="Microsoft Corporation">
+  <Profiles>
+    <EventCollector Id="EventCollector_Microsoft.PowerToys" Name="Microsoft.PowerToys">
+      <BufferSize Value="64" />
+      <Buffers Value="4" />
+    </EventCollector>
+    <EventProvider Id="EventProvider_Microsoft.PowerToys" Name="38e8889b-9731-53f5-e901-e8a7c1753074" />
+    <Profile Id="Microsoft.PowerToys.Verbose.File" Name="Microsoft.PowerToys" Description="Microsoft.PowerToys" LoggingMode="File" DetailLevel="Verbose">
+      <Collectors>
+        <EventCollectorId Value="EventCollector_Microsoft.PowerToys">
+          <EventProviders>
+            <EventProviderId Value="EventProvider_Microsoft.PowerToys" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+    <Profile Id="Microsoft.PowerToys.Light.File" Name="Microsoft.PowerToys" Description="Microsoft.PowerToys" Base="Microsoft.PowerToys.Verbose.File" LoggingMode="File" DetailLevel="Light" />
+    <Profile Id="Microsoft.PowerToys.Verbose.Memory" Name="Microsoft.PowerToys" Description="Microsoft.PowerToys" Base="Microsoft.PowerToys.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
+    <Profile Id="Microsoft.PowerToys.Light.Memory" Name="Microsoft.PowerToys" Description="Microsoft.PowerToys" Base="Microsoft.PowerToys.Verbose.File" LoggingMode="Memory" DetailLevel="Light" />
+  </Profiles>
+</WindowsPerformanceRecorder>

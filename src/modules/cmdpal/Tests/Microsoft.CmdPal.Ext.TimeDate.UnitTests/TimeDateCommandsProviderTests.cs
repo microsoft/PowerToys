@@ -1,0 +1,233 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.TimeDate.Helpers;
+using Microsoft.CmdPal.Ext.TimeDate.Pages;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
+{
+    [TestClass]
+    public class TimeDateCommandsProviderTests
+    {
+        private CultureInfo originalCulture = null!;
+        private CultureInfo originalUiCulture = null!;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            // Set culture to 'en-us'
+            originalCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo("en-us", false);
+            originalUiCulture = CultureInfo.CurrentUICulture;
+            CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            // Restore original culture
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
+        }
+
+        [TestMethod]
+        public void TimeDateCommandsProviderInitializationTest()
+        {
+            // Act
+            var provider = new TimeDateCommandsProvider();
+
+            // Assert
+            Assert.IsNotNull(provider);
+            Assert.IsNotNull(provider.DisplayName);
+            Assert.AreEqual("com.microsoft.cmdpal.builtin.datetime", provider.Id);
+            Assert.IsNotNull(provider.Icon);
+            Assert.IsNotNull(provider.Settings);
+        }
+
+        [TestMethod]
+        public void TopLevelCommandsTest()
+        {
+            // Setup
+            var provider = new TimeDateCommandsProvider();
+
+            // Act
+            var commands = provider.TopLevelCommands();
+
+            // Assert
+            Assert.IsNotNull(commands);
+            Assert.AreEqual(2, commands.Length);
+            Assert.IsNotNull(commands[0]);
+            Assert.IsNotNull(commands[0].Title);
+            Assert.IsNotNull(commands[0].Icon);
+            Assert.AreEqual(Resources.timedate_custom_clocks_manage, commands[1].Title);
+            Assert.IsNotNull(commands[1].Icon);
+        }
+
+        [TestMethod]
+        public void FallbackCommandsTest()
+        {
+            // Setup
+            var provider = new TimeDateCommandsProvider();
+
+            // Act
+            var fallbackCommands = provider.FallbackCommands();
+
+            // Assert
+            Assert.IsNotNull(fallbackCommands);
+            Assert.AreEqual(1, fallbackCommands.Length);
+            Assert.IsNotNull(fallbackCommands[0]);
+        }
+
+        [TestMethod]
+        public void DisplayNameTest()
+        {
+            // Setup
+            var provider = new TimeDateCommandsProvider();
+
+            // Act
+            var displayName = provider.DisplayName;
+
+            // Assert
+            Assert.IsFalse(string.IsNullOrEmpty(displayName));
+        }
+
+        [TestMethod]
+        public void GetDockBands_ReturnsNonEmptyArray()
+        {
+            var provider = new TimeDateCommandsProvider();
+
+            var bands = provider.GetDockBands();
+
+            Assert.IsTrue(bands.Length > 0, "GetDockBands should return at least one item");
+            Assert.IsNotNull(bands[0], "First dock band should not be null");
+        }
+
+        [TestMethod]
+        public void GetDockBands_NotificationCenterBandDoesNotSetDockIcon()
+        {
+            var provider = new TimeDateCommandsProvider();
+
+            var bands = provider.GetDockBands();
+
+            var notificationCenterBand = bands.Single(band => band.Command?.Id == "com.microsoft.cmdpal.timedate.notificationCenterBand");
+            Assert.IsNull(notificationCenterBand.Icon, "Notification center band should not set a dock icon");
+        }
+
+        [TestMethod]
+        public void GetDockBands_OffersAllClocksBandUnderTopLevelCommandId()
+        {
+            var provider = new TimeDateCommandsProvider();
+
+            var bands = provider.GetDockBands();
+
+            // The band shares the top-level command's ID so that pinning that
+            // command resolves to this band rather than a generic wrapper.
+            Assert.AreEqual(
+                1,
+                bands.Count(band => band.Command?.Id == CustomClockListPage.PageId),
+                "Expected exactly one all-clocks band offered under the top-level command ID");
+            Assert.IsTrue(
+                provider.TopLevelCommands().Any(command => command.Command?.Id == CustomClockListPage.PageId),
+                "The all-clocks band must share the top-level command's ID");
+        }
+
+        [TestMethod]
+        public void GetCommandItem_DoesNotReturnDockBandsForTopLevelPinning()
+        {
+            var provider = new TimeDateCommandsProvider();
+
+            // GetCommandItem also backs pinning to the top level, so it must
+            // never hand back a dock band wrapper.
+            Assert.IsNull(provider.GetCommandItem(CustomClockListPage.PageId), "The all-clocks band belongs to GetDockBands, not GetCommandItem");
+        }
+
+        [TestMethod]
+        public async Task GetCommandItem_ConcurrentClockChangesDoNotThrow()
+        {
+            var clockFilePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+            var settingsFilePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
+            var clock = new CustomClock();
+
+            try
+            {
+                var clockManager = new CustomClockManager(clockFilePath);
+                clockManager.Save(clock);
+                using var provider = new TimeDateCommandsProvider(
+                    new SettingsManager(settingsFilePath),
+                    clockManager,
+                    new ClockUpdateService(enableTimer: false));
+                using var start = new ManualResetEventSlim();
+                var detailPageId = CustomClockIds.GetDetailPage(clock.Id);
+
+                var writer = Task.Run(() =>
+                {
+                    start.Wait();
+                    for (var index = 0; index < 100; index++)
+                    {
+                        clockManager.Save(new CustomClock { Id = clock.Id, Title = index.ToString(CultureInfo.InvariantCulture) });
+                    }
+                });
+                var reader = Task.Run(() =>
+                {
+                    start.Wait();
+                    for (var index = 0; index < 1_000; index++)
+                    {
+                        _ = provider.GetCommandItem(detailPageId);
+                    }
+                });
+
+                start.Set();
+                await Task.WhenAll(writer, reader);
+            }
+            finally
+            {
+                File.Delete(clockFilePath);
+                File.Delete(settingsFilePath);
+            }
+        }
+
+        [TestMethod]
+        public void GetCommandItem_CustomClockDetailIdRehydratesNormalDetailPage()
+        {
+            var clockFilePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+            var settingsFilePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
+            var clock = new CustomClock { Title = "Pinned clock" };
+
+            try
+            {
+                var clockManager = new CustomClockManager(clockFilePath);
+                clockManager.Save(clock);
+                using var provider = new TimeDateCommandsProvider(
+                    new SettingsManager(settingsFilePath),
+                    clockManager,
+                    new ClockUpdateService(enableTimer: false));
+
+                var item = provider.GetCommandItem(CustomClockIds.GetDetailPage(clock.Id));
+                var dockBand = provider.GetDockBands().Single(candidate => candidate.Command?.Id == CustomClockIds.GetDockBand(clock.Id));
+
+                Assert.IsNotNull(item);
+                Assert.IsInstanceOfType<CustomClockDetailPage>(item.Command);
+                Assert.AreEqual(CustomClockIds.GetDetailPage(clock.Id), item.Command.Id);
+                Assert.IsInstanceOfType<ListItem>(item);
+                Assert.AreEqual(
+                    CustomClockIds.GetDockBand(clock.Id),
+                    ((ListItem)item).GetProperties()[WellKnownExtensionAttributes.DockCommandId]);
+                Assert.AreEqual(CustomClockIds.GetDockBand(clock.Id), dockBand.Command!.Id);
+            }
+            finally
+            {
+                File.Delete(clockFilePath);
+                File.Delete(settingsFilePath);
+            }
+        }
+    }
+}

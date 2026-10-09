@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.Settings.GeneralPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:services="using:Microsoft.CmdPal.UI.ViewModels.Services"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter
+            x:Key="InvertedBoolToVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="1">
+            <Grid Padding="16,0,16,16">
+                <StackPanel
+                    MaxWidth="1000"
+                    HorizontalAlignment="Stretch"
+                    Spacing="{StaticResource SettingsCardSpacing}">
+
+                    <!--
+                        I got these from the samples, but they break XAML hot-reloading,
+                        so I commented them out.
+                    -->
+
+                    <!--<StackPanel.ChildrenTransitions>
+                  <EntranceThemeTransition FromVerticalOffset="50" />
+                  <RepositionThemeTransition IsStaggeringEnabled="False" />
+              </StackPanel.ChildrenTransitions>-->
+
+                    <!--  'Activation' section  -->
+                    <HyperlinkButton
+                        x:Uid="CmdPal_LearnMore"
+                        Padding="0"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_LearnMore"
+                        FontWeight="SemiBold"
+                        NavigateUri="https://aka.ms/cmdpal" />
+
+                    <TextBlock x:Uid="Settings_GeneralPage_ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_ActivationKey"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
+                        <ptControls:ShortcutControl AutomationProperties.AutomationId="CmdPal_GeneralPage_HotkeyShortcut" HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_LowLevelHook"
+                                    IsChecked="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_IgnoreShortcutWhenFullscreen"
+                                    IsChecked="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_IgnoreShortcutWhenBusy"
+                                    IsChecked="{x:Bind viewModel.IgnoreShortcutWhenBusy, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowBreakthroughShortcut"
+                                    IsChecked="{x:Bind viewModel.AllowBreakthroughShortcut, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                        <controls:SettingsExpander.ItemsFooter>
+                            <InfoBar
+                                IsClosable="False"
+                                IsOpen="{x:Bind IsNotificationStateSuppressing, Mode=OneWay}"
+                                Message="{x:Bind NotificationStateMessage, Mode=OneWay}"
+                                Severity="Warning" />
+                        </controls:SettingsExpander.ItemsFooter>
+                    </controls:SettingsExpander>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_AutoGoHome"
+                            SelectedIndex="{x:Bind viewModel.AutoGoBackIntervalIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Never" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Immediately" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After10Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After20Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After30Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After60Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After90Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After120Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After180Seconds" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_KeepPreviousQuery_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_KeepPreviousQuery" IsOn="{x:Bind viewModel.KeepPreviousQuery, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch" IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <!--  'Behavior' section  -->
+
+                    <TextBlock x:Uid="Settings_GeneralPage_AppBehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_ShowSystemTrayIcon" IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowAltF4_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowAltF4" IsOn="{x:Bind viewModel.AllowAltF4, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_Language_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            ItemsSource="{x:Bind viewModel.Languages}"
+                            SelectedIndex="{x:Bind viewModel.LanguageIndex, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="services:LanguageItem">
+                                    <TextBlock Text="{x:Bind DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="Settings_GeneralPage_PseudoLocalizationInfo"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_PseudoLocalizationInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind viewModel.IsPseudoLocalizationMissing}"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="Settings_GeneralPage_LanguageRestartInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind viewModel.LanguageChanged, Mode=OneWay}"
+                        Message="{x:Bind local:GeneralPage.LanguageRestartMessage(viewModel.LanguageRestartFailed), Mode=OneWay}"
+                        Severity="{x:Bind local:GeneralPage.LanguageRestartSeverity(viewModel.LanguageRestartFailed), Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <Button x:Uid="Settings_GeneralPage_LanguageRestartButton" Click="LanguageRestartButton_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
+                    <!--  'External links' section  -->
+
+                    <TextBlock x:Uid="ExternalLinksSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_ExternalCommandLinks_SettingsExpander"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_ExternalCommandLinks"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE71B;}"
+                        ItemsSource="{x:Bind ExternalCommandPermissions, Mode=OneWay}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_EnableExternalCommandLinks" IsOn="{x:Bind viewModel.EnableExternalCommandLinks, Mode=TwoWay}" />
+                        <controls:SettingsExpander.ItemTemplate>
+                            <DataTemplate x:DataType="local:ExternalCommandPermissionViewModel">
+                                <controls:SettingsCard Description="{x:Bind ProviderName, Mode=OneTime}" Header="{x:Bind CommandName, Mode=OneTime}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <Button
+                                            x:Uid="Settings_GeneralPage_ExternalCommandPermission_DetailsButton"
+                                            Padding="8"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Visibility="{x:Bind HasCommandDetails, Mode=OneTime, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <FontIcon
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                FontSize="16"
+                                                Glyph="&#xE946;" />
+                                            <Button.Flyout>
+                                                <Flyout Placement="BottomEdgeAlignedRight">
+                                                    <StackPanel
+                                                        MinWidth="240"
+                                                        MaxWidth="400"
+                                                        Spacing="12">
+                                                        <TextBlock x:Uid="Settings_GeneralPage_ExternalCommandPermission_DetailsFlyout_Title" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                        <StackPanel Spacing="2">
+                                                            <TextBlock
+                                                                x:Uid="Settings_GeneralPage_ExternalCommandPermission_ProviderIdLabel"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{StaticResource CaptionTextBlockStyle}" />
+                                                            <TextBlock
+                                                                FontFamily="Consolas"
+                                                                IsTextSelectionEnabled="True"
+                                                                Text="{x:Bind ProviderId, Mode=OneTime}"
+                                                                TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <StackPanel Spacing="2">
+                                                            <TextBlock
+                                                                x:Uid="Settings_GeneralPage_ExternalCommandPermission_CommandIdLabel"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{StaticResource CaptionTextBlockStyle}" />
+                                                            <TextBlock
+                                                                FontFamily="Consolas"
+                                                                IsTextSelectionEnabled="True"
+                                                                Text="{x:Bind CommandId, Mode=OneTime}"
+                                                                TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                        <Button
+                                            x:Uid="Settings_GeneralPage_ExternalCommandPermission_RevokeButton"
+                                            VerticalAlignment="Center"
+                                            Click="RevokeExternalCommandPermission_Click"
+                                            DataContext="{x:Bind}" />
+                                    </StackPanel>
+                                </controls:SettingsCard>
+                            </DataTemplate>
+                        </controls:SettingsExpander.ItemTemplate>
+                        <controls:SettingsExpander.ItemsHeader>
+                            <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_ExternalCommandPermissions_SettingsCard"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                                <StackPanel Spacing="8">
+                                    <TextBlock
+                                        x:Uid="Settings_GeneralPage_ExternalCommandPermissions_Warning"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        x:Uid="Settings_GeneralPage_ExternalCommandPermissions_Empty"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Visibility="{x:Bind HasExternalCommandPermissions, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}" />
+                                </StackPanel>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.ItemsHeader>
+                        <controls:SettingsExpander.ItemsFooter>
+                            <controls:SettingsCard
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Left"
+                                Style="{StaticResource DefaultSettingsExpanderItemStyle}"
+                                Visibility="{x:Bind HasExternalCommandPermissions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Button
+                                        x:Uid="Settings_GeneralPage_ExternalCommandPermissions_ClearButton"
+                                        HorizontalAlignment="Right"
+                                        Click="ClearExternalCommandPermissions_Click" />
+                                </Grid>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.ItemsFooter>
+                    </controls:SettingsExpander>
+
+                    <!--  'About' section  -->
+
+                    <TextBlock x:Uid="Settings_GeneralPage_AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_About_SettingsExpander"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_About"
+                        HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind ApplicationVersion}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
+                                <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
+                                    <HyperlinkButton
+                                        x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink"
+                                        AutomationProperties.AutomationId="CmdPal_GeneralPage_GithubLink"
+                                        NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310837" />
+                                    <HyperlinkButton
+                                        x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink"
+                                        AutomationProperties.AutomationId="CmdPal_GeneralPage_SDKDocs"
+                                        NavigateUri="https://aka.ms/cmdpalextensions-devdocs" />
+                                </StackPanel>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                    <HyperlinkButton
+                        x:Uid="Settings_GeneralPage_SendFeedback_Hyperlink"
+                        Margin="0,8,0,0"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_SendFeedback"
+                        NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310638" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

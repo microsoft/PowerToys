@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="Microsoft.CmdPal.UI.Settings.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:text="using:Windows.UI.Text"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels.Gallery"
+    xmlns:winuiex="using:WinUIEx"
+    Title="SettingsWindow"
+    Width="1280"
+    Height="720"
+    MinWidth="480"
+    MinHeight="480"
+    Activated="Window_Activated"
+    Closed="Window_Closed"
+    mc:Ignorable="d">
+    <winuiex:WindowEx.SystemBackdrop>
+        <MicaBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
+    <Grid x:Name="RootElement">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TitleBar
+            x:Name="AppTitleBar"
+            BackRequested="TitleBar_BackRequested"
+            IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
+            IsTabStop="False"
+            PaneToggleRequested="AppTitleBar_PaneToggleRequested">
+            <TitleBar.Resources>
+                <!--  Override default WinUI 3 style  -->
+                <x:Double x:Key="TitleBarCompactHeight">40</x:Double>
+            </TitleBar.Resources>
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="ms-appx:///Assets/icon.svg" />
+            </TitleBar.IconSource>
+        </TitleBar>
+        <NavigationView
+            x:Name="NavView"
+            Grid.Row="1"
+            Grid.Column="0"
+            CompactModeThresholdWidth="1007"
+            DisplayModeChanged="NavView_DisplayModeChanged"
+            ExpandedModeThresholdWidth="1007"
+            IsBackButtonVisible="Collapsed"
+            IsPaneToggleButtonVisible="False"
+            IsSettingsVisible="False"
+            ItemInvoked="NavView_ItemInvoked"
+            Loaded="NavView_Loaded">
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+                <Thickness x:Key="NavigationViewHeaderMargin">15,0,0,0</Thickness>
+            </NavigationView.Resources>
+            <NavigationView.MenuItems>
+                <NavigationViewItem
+                    x:Name="GeneralPageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_General"
+                    Icon="{ui:FontIcon Glyph=&#xE80F;}"
+                    Tag="General" />
+                <NavigationViewItem
+                    x:Name="AppearancePageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Appearance"
+                    Icon="{ui:FontIcon Glyph=&#xE790;}"
+                    Tag="Appearance" />
+                <NavigationViewItem
+                    x:Name="DockSettingsPageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Dock"
+                    Icon="{ui:FontIcon Glyph=&#xF596;}"
+                    Tag="Dock">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
+                </NavigationViewItem>
+                <NavigationViewItemHeader x:Uid="Settings_GeneralPage_NavigationViewItemHeader_Extensions" />
+                <NavigationViewItem
+                    x:Name="ExtensionPageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
+                    Icon="{ui:FontIcon Glyph=&#xEA86;}"
+                    Tag="Extensions" />
+                <NavigationViewItem
+                    x:Name="GalleryPageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Gallery"
+                    Icon="{ui:FontIcon Glyph=&#xE719;}"
+                    Tag="Gallery" />
+                <!--  xF596 is HolePunchLandscapeTop  -->
+                <!--  "Internal Tools" page item is added dynamically from code  -->
+            </NavigationView.MenuItems>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid x:Name="BreadcrumbContainer" Padding="16,0">
+                    <BreadcrumbBar
+                        x:Name="NavigationBreadcrumbBar"
+                        MaxWidth="1000"
+                        ItemClicked="NavigationBreadcrumbBar_ItemClicked"
+                        ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
+                        <BreadcrumbBar.ItemTemplate>
+                            <DataTemplate x:DataType="local:Crumb">
+                                <TextBlock Text="{x:Bind Label}" />
+                            </DataTemplate>
+                        </BreadcrumbBar.ItemTemplate>
+                        <BreadcrumbBar.Resources>
+                            <ResourceDictionary>
+                                <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
+                                <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
+                                <text:FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</text:FontWeight>
+                                <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
+                            </ResourceDictionary>
+                        </BreadcrumbBar.Resources>
+                    </BreadcrumbBar>
+                </Grid>
+                <Grid Grid.Row="1" Grid.Column="0">
+                    <Grid.Transitions>
+                        <TransitionCollection>
+                            <RepositionThemeTransition />
+                        </TransitionCollection>
+                    </Grid.Transitions>
+                    <Frame x:Name="NavFrame" Navigated="NavFrame_OnNavigated" />
+
+                    <controls:WinGetOperationsButton
+                        x:Name="WinGetOperationsButtonControl"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Margin="0,0,16,16" />
+                </Grid>
+            </Grid>
+        </NavigationView>
+
+        <Popup x:Name="ScreenshotViewerPopup" IsLightDismissEnabled="False">
+            <Grid
+                x:Name="ScreenshotViewerOverlay"
+                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                IsTabStop="True"
+                KeyDown="ScreenshotViewerOverlay_KeyDown"
+                PointerWheelChanged="ScreenshotViewerOverlay_PointerWheelChanged">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Button
+                    x:Uid="SettingsWindow_CloseScreenshotViewerButton"
+                    Width="48"
+                    Height="48"
+                    Margin="16,48,32,0"
+                    HorizontalAlignment="Right"
+                    Click="CloseScreenshotViewerButton_Click"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="18" Glyph="&#xE711;" />
+                </Button>
+
+                <Grid Grid.Row="1" Margin="24,16,24,24">
+                    <Border x:Name="ScreenshotViewerImageHost" Padding="16">
+                        <FlipView
+                            x:Name="ScreenshotViewerFlipView"
+                            Background="Transparent"
+                            SelectionChanged="ScreenshotViewerFlipView_SelectionChanged">
+                            <FlipView.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
+                                    <Grid MinHeight="360">
+                                        <Image
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            AutomationProperties.Name="{x:Bind DisplayName}"
+                                            Source="{x:Bind ImageSource}"
+                                            Stretch="Uniform" />
+                                    </Grid>
+                                </DataTemplate>
+                            </FlipView.ItemTemplate>
+                        </FlipView>
+                    </Border>
+                </Grid>
+
+                <Border
+                    Grid.Row="2"
+                    Margin="0,0,0,24"
+                    Padding="20,12"
+                    HorizontalAlignment="Center"
+                    Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12">
+                    <StackPanel HorizontalAlignment="Center" Spacing="2">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="{x:Bind CurrentScreenshotDisplayName, Mode=OneTime}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind CurrentScreenshotPositionText, Mode=OneTime}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Popup>
+    </Grid>
+</winuiex:WindowEx>

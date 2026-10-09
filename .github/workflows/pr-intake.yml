@@ -1,0 +1,52 @@
+# PR intake
+#
+# Deterministic pull request intake. Applies additive Product-* labels from
+# changed path roots, posts a single canonical comment when there is something
+# for the author to act on or consider, keeps the Ready for review /
+# Needs-Author-Feedback lifecycle labels in sync, and nudges for visual evidence
+# on product UI changes.
+#
+# This workflow does not run any code from the pull request head. The Node
+# script reads all pull request data through the GitHub API, so the trusted
+# default branch is checked out only to run the script itself. 3rd-party
+# actions are pinned to a commit hash per Microsoft's security guidelines.
+name: PR intake
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+      - converted_to_draft
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pr-intake-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-intake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted workflow source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      - name: Run PR intake
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/pr-intake/pr-intake.mjs "$GITHUB_EVENT_PATH"

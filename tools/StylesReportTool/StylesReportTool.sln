@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StylesReportTool", "StylesReportTool.vcxproj", "{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}.Debug|ARM64.Build.0 = Debug|ARM64
+		{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}.Debug|x64.ActiveCfg = Debug|x64
+		{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}.Debug|x64.Build.0 = Debug|x64
+		{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}.Release|ARM64.ActiveCfg = Release|ARM64
+		{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}.Release|ARM64.Build.0 = Release|ARM64
+		{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}.Release|x64.ActiveCfg = Release|x64
+		{0FEBAFAF-CB77-41F0-8EF9-8E3AD4B4F842}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D271E9C3-5C4D-45E4-8D23-9F1BB5443513}
+	EndGlobalSection
+EndGlobal

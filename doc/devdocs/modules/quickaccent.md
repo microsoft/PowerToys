@@ -1,0 +1,170 @@
+# Quick Accent
+
+
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/quick-accent)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Quick%20Accent%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Quick%20Accent%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Quick+Accent%22)
+
+## Overview
+
+Quick Accent (formerly known as Power Accent) is a PowerToys module that allows users to quickly insert accented characters by holding a key and pressing an activation key (like the Space key or arrow keys). For example, holding 'a' might display options like 'à', 'á', 'â', etc. This tool enhances productivity by streamlining the input of special characters without the need to memorize keyboard shortcuts.
+
+## Architecture
+
+The Quick Accent module consists of six projects:
+
+```
+poweraccent/
+├── PowerAccent.Common/             # Language data, character mappings, LetterKey enum
+├── PowerAccent.Core/               # Accent logic, settings, positioning, usage statistics
+├── PowerAccent.UI/                 # WinUI 3 character selector app (PowerToys.PowerAccent.exe)
+├── PowerAccentKeyboardService/     # WinRT keyboard-hook component
+├── PowerAccentModuleInterface/     # Native runner module DLL
+└── PowerAccent.UITests/            # winappcli end-to-end UI tests
+```
+
+### Module Interface (PowerAccentModuleInterface)
+
+The Module Interface, implemented in `PowerAccentModuleInterface/dllmain.cpp`, is responsible for:
+- Handling communication between PowerToys Runner and the PowerAccent process
+- Managing module lifecycle (enable/disable/settings)
+- Launching and terminating the PowerToys.PowerAccent.exe process
+
+### Shared Data (PowerAccent.Common)
+
+`PowerAccent.Common` holds the UI- and runtime-agnostic data the other projects share:
+- The language / character-set definitions and per-letter accent mappings
+- The managed `LetterKey` enum (kept in sync with the WinRT `LetterKey` in `PowerAccentKeyboardService/KeyboardListener.idl`)
+
+It has no UI or WinRT dependencies and is unit-tested in isolation (`PowerAccent.Common.UnitTests`).
+
+### Core Logic (PowerAccent.Core)
+
+The Core component contains:
+- Main accent character logic, consuming the language data from `PowerAccent.Common`
+- Toolbar positioning math (9 anchor points with per-monitor DPI) and settings handling
+- Management of special characters (currency, math symbols, etc.) and usage statistics
+
+Core carries no UI-framework dependency: it raises events and accepts a UI-thread marshaller delegate instead of touching WPF/WinUI directly, and its positioning math is covered by `PowerAccent.Core.UnitTests`.
+
+### UI Layer (PowerAccent.UI)
+
+The UI component is a self-contained **WinUI 3 (Windows App SDK)** app, migrated from WPF.
+It is responsible for:
+- Displaying the accent toolbar — a non-activating, always-on-top `TransparentWindow` overlay shown with `SW_SHOWNA` so it never steals focus from the app being typed into
+- Handling selection and the toolbar's sizing / positioning
+- Following the system theme while the long-lived process runs
+
+It builds to `PowerToys.PowerAccent.exe` together with its `.pri` and the bundled Windows App SDK runtime, all under the `WinUI3Apps` output folder.
+
+### Keyboard Service (PowerAccentKeyboardService)
+
+This component:
+- Implements keyboard hooks to detect key presses
+- Manages the trigger mechanism for displaying the accent toolbar
+- Handles keyboard input processing
+
+### UI Tests (PowerAccent.UITests)
+
+`PowerAccent.UITests` uses `Microsoft.PowerToys.UITest.Next` and `winappcli` to drive Quick Accent
+through the Settings UI and a real Notepad window. The suite covers activation and character
+selection, module lifecycle, language filtering, every toolbar position, input delay, excluded
+applications, usage-frequency sorting, and start-from-left behavior.
+
+## Implementation Details
+
+### Activation Mechanism
+
+Quick Accent supports two activation styles, selected by the **Activation key** setting.
+
+**Trigger-key modes** (`Left/Right arrow`, `Space`, or `Both` — the default):
+1. A user presses and holds a character key (e.g., 'a')
+2. User presses the trigger key
+3. After a brief delay (around 300ms per setting), the accent toolbar appears
+4. The user can select an accented variant using the trigger key
+5. Upon releasing the keys, the selected accented character is inserted
+
+**Press-and-hold mode** (`Press and hold the letter`, iOS/macOS style, opt-in):
+1. A user presses and holds an accent-capable character key (e.g., 'a'); the base
+   letter is typed immediately
+2. After the configured **Hold duration** (around 500ms per setting), the accent
+   toolbar appears automatically — no separate trigger key is required
+3. The user navigates the options with the arrow keys or Space
+4. Upon releasing the letter, the selected accent replaces the base letter; if no
+   option was selected, the base letter that was already typed simply remains
+5. A quick tap (shorter than the Hold duration) types the base letter only, and
+   modifier combinations (Ctrl/Alt/AltGr/Win + letter) are left untouched
+
+### Character Sets
+
+The module includes multiple language-specific character sets and special character sets:
+- Various language sets for different alphabets and writing systems
+- Special character sets (currency symbols, mathematical notations, etc.)
+- These sets are defined in the core component and can be extended
+
+### Known Behaviors
+
+- The module has a specific timing mechanism for activation that users have become accustomed to. Initially, this was considered a bug (where the toolbar would still appear even after quickly tapping and releasing keys), but it has been maintained as expected behavior since users rely on it.
+- Multiple rapid key presses can trigger multiple background tasks.
+
+## Future Considerations
+
+- Potential refinements to the activation timing mechanism
+- Additional language and special character sets
+- Improved UI positioning in different application contexts
+
+## UI tests
+
+The UI tests require a live interactive desktop with the en-US keyboard layout selected and Caps Lock
+off. Build the test executable from the repository root:
+
+```powershell
+tools\build\build.cmd -Path src\modules\poweraccent\PowerAccent.UITests -Platform x64 -Configuration Debug
+```
+
+Run the produced Microsoft Testing Platform executable with the `PowerAccent` category:
+
+```powershell
+x64\Debug\tests\PowerAccent.UITests\net10.0-windows10.0.26100.0\PowerAccent.UITests.exe `
+  --filter "TestCategory=PowerAccent"
+```
+
+See the [UI tests framework](../development/ui-tests.md) for local-VM and pipeline workflows.
+
+## Debugging
+
+To debug the Quick Accent module via **runner** approach, follow these steps:
+
+0. Get familiar with the overall [Debugging Process](../development/debugging.md) for PowerToys.
+1. **Build** the entire PowerToys solution in Visual Studio
+2. Navigate to the **PowerAccent** folder in Solution Explorer
+3. Open the file you want to debug and set **breakpoints** at the relevant locations
+4. Find the **runner** project in the root of the solution
+5. Right-click on the **runner** project and select "*Set as Startup Project*"
+6. Start debugging by pressing `F5` or clicking the "*Start*" button
+7. When the PowerToys Runner launches, **enable** the Quick Accent module in the UI
+8. Use the Visual Studio Debug menu or press `Ctrl+Alt+P` to open "*Reattach to Process*"
+9. Find and select "**PowerToys.PowerAccent.exe**" in the process list
+10. Trigger the action in Quick Accent that should hit your breakpoint
+11. Verify that the debugger breaks at your breakpoint and you can inspect variables and step through code
+
+This process allows you to debug the Quick Accent module while it's running as part of the full PowerToys application.
+
+### Alternative Debugging Approach
+
+To directly debug the Quick Accent UI component:
+
+0. Get familiar with the overall [Debugging Process](../development/debugging.md) for PowerToys.
+1. **Build** the entire PowerToys solution in Visual Studio
+2. Navigate to the **PowerAccent** folder in Solution Explorer
+3. Open the file you want to debug and set **breakpoints** at the relevant locations
+4. Right-click on the **PowerAccent.UI** project and select "*Set as Startup Project*"
+5. Start debugging by pressing `F5` or clicking the "*Start*" button
+6. Verify that the debugger breaks at your breakpoint and you can inspect variables and step through code
+
+**Known issue**: A first incremental build can surface transient errors (for example from CsWinRT projection / WinUI XAML codegen ordering).<br>
+**Solution**: Right-click the **PowerAccent** folder in Solution Explorer and select "*Rebuild*", then start debugging again.
