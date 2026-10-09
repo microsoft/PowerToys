@@ -10,18 +10,28 @@ using MouseJump.Models.Display;
 namespace MouseJump.Common.Blurring;
 
 /// <summary>
-/// Generates and retains a blurred stand-in screenshot per physical screen, for use as an
-/// activation's initial placeholder while its own fresh screenshot is still loading - see
-/// <see cref="BlurHelper.CreateBlurredCopy"/> for what "blurred" means here.
+/// Generates and caches a blurred stand-in screenshot per physical screen, for use as the
+/// initial placeholder for any screen that takes longer than the grace period to capture
+/// a fresh image.
 /// </summary>
 /// <remarks>
-/// Each screen has three slots: at most one blur actually running ("doing"), at most one
-/// screenshot waiting for its turn ("todo" - only ever the latest; an older queued one is
-/// discarded rather than piling up), and at most one completed result ("done", served by
-/// <see cref="TryGet"/> until it expires). A "doing" blur is never interrupted once started -
-/// only ever superseded via "todo" - so blur work always eventually finishes and "done" keeps
-/// converging on something recent even under rapid repeat activation, rather than every new
-/// activation cancelling the previous one before any ever completes.
+/// Each screen has three slots:
+///
+/// * One that may contain a screenshot waiting its turn to be blurred ("todo"). This is
+///   only ever the latest submitted image - submitting a new screenshot to be blurred
+///   for a screen replaces anything currently waiting in this slot
+///
+/// * One that may contain a screenshot which is currently being blurred ("doing")
+///
+/// * One that may contain a completed result ("done"). This is returned by <see cref="TryGet"/>
+///   until it expires
+///
+/// This approach allows the "doing" screenshot to complete and move to "done" before
+/// starting the next "todo" screenshot. Under very high frequency activation all that
+/// happens is the "todo" image is repeatedly replaced while the "doing" screenshot is
+/// being processed, ensuring a regular supply of updated blurred "done" images, rather
+/// than constantly cancelling in-flight "doing" screenshots to start a more recent "todo"
+/// but never actually finishing any.
 /// </remarks>
 public sealed class ScreenshotBlurPipeline
 {
@@ -85,7 +95,7 @@ public sealed class ScreenshotBlurPipeline
 
     /// <remarks>
     /// <see cref="global::MouseJump.Common.Telemetry.Telemetry.Current"/>, renamed here because
-    /// "Telemetry" (the class) collides with the sibling <c>FancyMouse.Common.Telemetry</c>
+    /// "Telemetry" (the class) collides with the sibling <c>MouseJump.Common.Telemetry</c>
     /// namespace - a plain <c>using</c> can't fix this (enclosing-namespace lookup wins over
     /// using-aliases for a name reachable that way), so this avoids needing every call site
     /// below to fully-qualify it instead.
@@ -94,10 +104,41 @@ public sealed class ScreenshotBlurPipeline
         => global::MouseJump.Common.Telemetry.Telemetry.Current;
 
     /// <summary>
+    /// Updates the collection of screens we're currently tracking screenshots for.
+    /// Any tracked screens not in the new list are removed and their resources disposed.
+    /// Any new screens in the list are added to the tracked screen collection.
+    /// </summary>
+    public void SetActiveScreens(IReadOnlyCollection<ScreenInfo> currentScreens)
+    {
+        ArgumentNullException.ThrowIfNull(currentScreens);
+
+        lock (this.sync)
+        {
+            var currentHandles = currentScreens.Select(screenInfo => screenInfo.Handle).ToHashSet();
+
+            foreach (var handle in this.screens.Keys.Except(currentHandles).ToList())
+            {
+                var state = this.screens[handle];
+                state.Todo?.Dispose();
+                state.Done?.Dispose();
+                this.screens.Remove(handle);
+            }
+
+            foreach (var handle in currentHandles)
+            {
+                if (!this.screens.ContainsKey(handle))
+                {
+                    this.screens[handle] = new ScreenshotBlurState();
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Supplies a fresh screenshot for <paramref name="screenInfo"/>. Takes ownership of
     /// <paramref name="screenshotImage"/> - see <see cref="Capture.IScreenshotCaptureSink.SetScreenshotAsync"/>
     /// for the same convention this mirrors. If <paramref name="screenInfo"/> isn't one of the
-    /// currently active screens (see <see cref="SetActiveScreens"/>), disposes
+    /// currently active screens (see <see cref="SetActiveScreens"/>), it disposes
     /// <paramref name="screenshotImage"/> and returns. Otherwise, either starts blurring
     /// it immediately if nothing is already in progress for this screen, or queues it as this
     /// screen's "todo" - replacing, and disposing, whatever was previously queued, since only
@@ -110,6 +151,7 @@ public sealed class ScreenshotBlurPipeline
 
         lock (this.sync)
         {
+            // make sure we recognize this screen in our dictionary
             if (!this.screens.TryGetValue(screenInfo.Handle, out var state))
             {
                 screenshotImage.Dispose();
@@ -181,43 +223,6 @@ public sealed class ScreenshotBlurPipeline
     }
 
     /// <summary>
-    /// Reconciles current blur tasks and state against <paramref name="currentScreens"/> and
-    /// culls anything that is no longer valid (e.g. blurred images for monitors that have
-    /// been disconnected). <paramref name="currentScreens"/> is the full set of currently
-    /// connected physical screens, supplied once per activation - anything tracked for
-    /// a screen no longer in this list (todo/done bitmaps) is disposed and dropped entirely.
-    /// Any blurs still in progress for a dropped screen can't be interrupted (see the class
-    /// remarks), but <see cref="RunBlur"/> checks against the current set itself before
-    /// writing back, so its result is discarded harmlessly once it finishes. New screens
-    /// not seen before are initialised with empty state.
-    /// </summary>
-    public void SetActiveScreens(IReadOnlyCollection<ScreenInfo> currentScreens)
-    {
-        ArgumentNullException.ThrowIfNull(currentScreens);
-
-        lock (this.sync)
-        {
-            var currentHandles = currentScreens.Select(screenInfo => screenInfo.Handle).ToHashSet();
-
-            foreach (var handle in this.screens.Keys.Except(currentHandles).ToList())
-            {
-                var state = this.screens[handle];
-                state.Todo?.Dispose();
-                state.Done?.Dispose();
-                this.screens.Remove(handle);
-            }
-
-            foreach (var handle in currentHandles)
-            {
-                if (!this.screens.ContainsKey(handle))
-                {
-                    this.screens[handle] = new ScreenshotBlurState();
-                }
-            }
-        }
-    }
-
-    /// <summary>
     /// Blurs <paramref name="image"/> on this background thread, then writes the result into
     /// this screen's "done" slot, unless <paramref name="screenInfo"/> has since been dropped
     /// via <see cref="SetActiveScreens"/>, in which case the result is discarded instead. If a
@@ -225,16 +230,28 @@ public sealed class ScreenshotBlurPipeline
     /// </summary>
     /// <remarks>
     /// Ownership of <paramref name="image"/> is transferred to RunBlur, and the image is disposed
-    /// once it has been read from.
+    /// once it has been read from - including if blurring it fails, in which case "done" is left
+    /// untouched but the screen is still released for its next "todo" as normal.
     /// </remarks>
     private void RunBlur(ScreenInfo screenInfo, Bitmap image)
     {
-        Bitmap blurredImage;
-        using (ScreenshotBlurPipeline.CurrentTelemetry.BeginTimer(new { }, "CreateBlurredCopy"))
-        using (image)
+        Bitmap? blurredImage = null;
+        try
         {
-            blurredImage = BlurHelper.CreateBlurredCopy(
-                image, ScreenshotBlurPipeline.BlurIntensity, ScreenshotBlurPipeline.BlurSaturation, ScreenshotBlurPipeline.BlurBrightness);
+            using (ScreenshotBlurPipeline.CurrentTelemetry.BeginTimer(new { }, "CreateBlurredCopy"))
+            using (image)
+            {
+                blurredImage = BlurHelper.CreateBlurredCopy(
+                    image, ScreenshotBlurPipeline.BlurIntensity, ScreenshotBlurPipeline.BlurSaturation, ScreenshotBlurPipeline.BlurBrightness);
+            }
+        }
+        catch (Exception ex)
+        {
+            // nothing awaits this background task, so an exception escaping here would be
+            // silently swallowed *and* leave BlurInProgress stuck on - every later screenshot
+            // for this screen would then sit in "todo" forever. instead, treat a failed blur as
+            // "no result": keep whatever "done" already holds, and carry on to the next "todo"
+            ScreenshotBlurPipeline.CurrentTelemetry.WriteEvent(new { handle = screenInfo.Handle, error = ex.Message }, "screenshotBlurFailed");
         }
 
         try
@@ -243,13 +260,17 @@ public sealed class ScreenshotBlurPipeline
             {
                 if (!this.screens.TryGetValue(screenInfo.Handle, out var state))
                 {
-                    blurredImage.Dispose();
+                    blurredImage?.Dispose();
                     return;
                 }
 
-                state.Done?.Dispose();
-                state.Done = blurredImage;
-                state.DoneAt = this.TimeProvider.GetUtcNow();
+                if (blurredImage is not null)
+                {
+                    state.Done?.Dispose();
+                    state.Done = blurredImage;
+                    state.DoneAt = this.TimeProvider.GetUtcNow();
+                }
+
                 state.BlurInProgress = false;
 
                 if (state.Todo is not null)
