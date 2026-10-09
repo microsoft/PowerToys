@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events
         /// <summary>
         /// Gets or sets the error message.
         /// </summary>
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         /// <inheritdoc/>
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;

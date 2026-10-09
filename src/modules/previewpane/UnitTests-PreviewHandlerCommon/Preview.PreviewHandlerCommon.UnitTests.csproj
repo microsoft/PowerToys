@@ -3,6 +3,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <Nullable>enable</Nullable>
     <AssemblyTitle>UnitTests-PreviewHandlerCommon</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-PreviewHandlerCommon</AssemblyDescription>
     <AssemblyTitle>UnitTests-PreviewHandlerCommon</AssemblyTitle>
