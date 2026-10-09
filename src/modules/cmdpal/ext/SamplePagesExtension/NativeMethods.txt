@@ -1,3 +1,0 @@
-GetForegroundWindow
-GetWindowTextLength
-GetWindowText

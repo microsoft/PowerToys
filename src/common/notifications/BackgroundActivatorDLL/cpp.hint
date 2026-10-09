@@ -1,2 +1,0 @@
-#define NOTIFICATIONSDLL_API __declspec(dllexport)
-#define NOTIFICATIONSDLL_API __declspec(dllimport)

@@ -1,6 +1,0 @@
-#include <windows.h>
-#include "resource.h"
-
-#define APSTUDIO_READONLY_SYMBOLS
-#include "winres.h"
-#undef APSTUDIO_READONLY_SYMBOLS

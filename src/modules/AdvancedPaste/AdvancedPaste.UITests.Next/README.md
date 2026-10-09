@@ -42,6 +42,12 @@ without requiring a provider.
   setup. The `AdvancedPaste` project family participates in
   `$requiresAuthenticatedSettingsIpc`; lifecycle tests do not bypass IPC by editing
   the enabled map and restarting the Runner.
+- CI dispatches `AdvancedPaste.UITests.Next` through the existing
+  `runUiTestAsUser.ps1` limited interactive task, not the elevated pipeline agent.
+  The fixture reports its user, session, and elevation and fails if the desktop
+  context is elevated or session 0. Windows clipboard history must be exercised
+  in the same non-elevated desktop context as the user workflow; a checked registry
+  preference alone does not prove that Windows captured a history item.
 
 Build with the existing repository tools:
 

@@ -1,9 +1,0 @@
-{
-  "title": "PowerToys Dev Docs",
-  "src": "../devdocs",
-  "out": "site",
-  "base": "/",
-  "plugins": {
-    "docmd-plugin-github-source-links": {}
-  }
-}

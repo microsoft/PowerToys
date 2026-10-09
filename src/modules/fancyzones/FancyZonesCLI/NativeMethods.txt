@@ -1,4 +1,0 @@
-PostMessage
-SetForegroundWindow
-RegisterWindowMessage
-HWND_BROADCAST

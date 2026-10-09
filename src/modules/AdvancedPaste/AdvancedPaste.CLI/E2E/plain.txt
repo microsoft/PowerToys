@@ -1,2 +1,0 @@
-Hello from Advanced Paste.
-This line stays plain text.

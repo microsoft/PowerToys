@@ -5,6 +5,7 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -65,6 +66,13 @@ public abstract class AdvancedPasteTestBase : UITestBase
     {
         try
         {
+            using var identity = WindowsIdentity.GetCurrent();
+            var elevated = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+            using var process = Process.GetCurrentProcess();
+            Step($"Verifying the clipboard fixture's desktop context: user={identity.Name}, session={process.SessionId}, elevated={elevated}");
+            Assert.IsFalse(elevated, "Advanced Paste UI tests require a non-elevated interactive desktop. CI must dispatch AdvancedPaste.UITests.Next through runUiTestAsUser.ps1.");
+            Assert.IsTrue(process.SessionId > 0, "Advanced Paste UI tests cannot access the interactive clipboard from session 0.");
+
             Step("Waiting for the Settings navigation tree before preparing the paste destination");
             var settingsHandle = new IntPtr(Session.WindowHandle);
             var settingsReady = WaitHelper.WaitForStable(

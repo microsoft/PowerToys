@@ -1,2 +1,0 @@
-﻿## Something
-<img src="./a.jpg" \>

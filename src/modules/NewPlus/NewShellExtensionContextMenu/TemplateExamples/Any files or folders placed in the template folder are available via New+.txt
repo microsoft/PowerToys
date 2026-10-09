@@ -1,1 +1,0 @@
-Learn more about New+ by visiting https://aka.ms/PowerToysOverview_NewPlus
