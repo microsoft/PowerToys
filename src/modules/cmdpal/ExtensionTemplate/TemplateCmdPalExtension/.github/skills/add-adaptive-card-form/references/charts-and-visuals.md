@@ -71,7 +71,7 @@ Chart colors (`color` on a chart, a series, a bar, a slice, or a segment) are na
 - Categorical: `categoricalBlue`, `categoricalLightBlue`, `categoricalTeal`, `categoricalGreen`, `categoricalLime`, `categoricalMarigold`, `categoricalRed`, `categoricalPurple`, and `categoricalLavender`.
 - Sequential (`sequential1`-`sequential8`) and diverging (`divergingBlue`, `divergingTeal`, `divergingYellow`, `divergingRed`, and others).
 
-Names have a light theme and a dark theme variant. Without a color, items take the colors of `colorSet` in order: `categorical` by default, starting with `categoricalBlue`. The bars of `Chart.VerticalBar` and `Chart.HorizontalBar` share the first color unless the chart sets `colorSet`. Set `colorSet` to `sequential` or `diverging` to use another set. A gauge without segments uses the user's accent color. In high contrast, items take the contrast theme's system colors in turn, the lines of a line chart also differ by dash pattern, and every third and fourth slice, segment, or part is an outline instead of filled.
+Names have a light theme and a dark theme variant. Without a color, items take the colors of `colorSet` in order: `categorical` by default, starting with `categoricalBlue`. The bars of `Chart.VerticalBar` and `Chart.HorizontalBar` share the first color unless the chart sets `colorSet`. Set `colorSet` to `sequential` or `diverging` to use another set. A gauge without segments uses the user's accent color. In high contrast, items take the contrast theme's system colors in turn, the lines of a line chart also differ by dash pattern, every third and fourth slice, segment, or part is an outline instead of filled, and a gauge draws its segments full width.
 
 `ProgressBar`, `Badge`, and `Icon` have their own, shorter lists, below.
 
@@ -93,11 +93,11 @@ Command Palette draws smooth lines with a soft fill under them. A chart narrower
 | Property | Description |
 |----------|-------------|
 | `value`, `min`, `max` | The value and its range. Without `max`, the segments' total sets it. |
-| `segments` | Optional colored ranges: `[{ "legend": "Normal", "size": 60, "color": "good" }]`. Without segments, the gauge fills up to the value. |
+| `segments` | Optional colored ranges: `[{ "legend": "Normal", "size": 60, "color": "good" }]`. The gauge fills up to the value, in the color of the segment that the value falls in, and the segments form a thin scale along the inside of the arc. Without segments, the fill uses the accent color. |
 | `valueFormat` | `Percentage` (default) or `Fraction`, such as `3/5`. |
 | `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
 | `subLabel` | A label under the value. |
-| `showNeedle`, `showMinMax`, `showLegend` | Show the needle (a marker where the value falls), the range labels, and the segment legend. All default to `true`. |
+| `showNeedle`, `showMinMax`, `showLegend` | Show the needle (a tick where the value falls), the range labels, and the segment legend. All default to `true`. |
 
 ## Chart.Donut and Chart.Pie
 
