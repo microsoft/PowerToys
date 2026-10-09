@@ -38,6 +38,48 @@ std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyAloneRemap(const
     return std::nullopt;
 }
 
+std::optional<SingleKeyToSequenceRemapTable::iterator> State::GetSingleKeyToSequenceRemap(const DWORD& originalKey)
+{
+    auto it = singleKeyToSequenceReMap.find(originalKey);
+    if (it != singleKeyToSequenceReMap.end())
+    {
+        return it;
+    }
+
+    return std::nullopt;
+}
+
+bool State::MarkSequenceKeyHeld(const DWORD key)
+{
+    return heldSequenceKeys.insert(key).second;
+}
+
+bool State::ClearSequenceKeyHeld(const DWORD key)
+{
+    return heldSequenceKeys.erase(key) > 0;
+}
+
+void State::SetSequenceKeyPassedThrough(const DWORD key)
+{
+    passedThroughSequenceKeys.insert(key);
+}
+
+bool State::IsSequenceKeyPassedThrough(const DWORD key) const
+{
+    return passedThroughSequenceKeys.contains(key);
+}
+
+bool State::ClearSequenceKeyPassedThrough(const DWORD key)
+{
+    return passedThroughSequenceKeys.erase(key) > 0;
+}
+
+void State::ClearAllSequenceKeyState()
+{
+    // passedThroughSequenceKeys is deliberately kept (see State.h).
+    heldSequenceKeys.clear();
+}
+
 void State::SetAlonePending(const DWORD key)
 {
     aloneCombinationKeys.erase(key);
