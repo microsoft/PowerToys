@@ -128,14 +128,25 @@ public sealed class DesktopScreenshotCaptureProvider : IScreenshotCaptureProvide
     }
 
     /// <summary>
-    /// Checks if the target device context handle exists, and creates a new one from the
-    /// specified Graphics object if not.
+    /// Acquires a device context handle from the specified Graphics object and sets its
+    /// stretch mode. The caller is responsible for releasing the returned handle via
+    /// <see cref="FreeGraphicsDeviceContext"/>.
     /// </summary>
     private static HDC GetGraphicsDeviceContext(Graphics graphics, STRETCH_BLT_MODE mode)
     {
         var graphicsHdc = (HDC)graphics.GetHdc();
-        _ = Gdi32.SetStretchBltMode(graphicsHdc, mode)
-            .ThrowIfFailed();
+
+        // don't throw here on failure - we need to free the device context first
+        var result = Gdi32.SetStretchBltMode(graphicsHdc, mode)
+            .IgnoreFailure();
+
+        if (!result.Success)
+        {
+            // clean up, *then* throw
+            DesktopScreenshotCaptureProvider.FreeGraphicsDeviceContext(graphics, ref graphicsHdc);
+            _ = result.ThrowIfFailed();
+        }
+
         return graphicsHdc;
     }
 
