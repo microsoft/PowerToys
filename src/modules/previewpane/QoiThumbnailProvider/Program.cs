@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
 {
     internal static class Program
     {
-        private static QoiThumbnailProvider _thumbnailProvider;
+        private static QoiThumbnailProvider? _thumbnailProvider;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
                     uint cx = Convert.ToUInt32(args[1], 10);
 
                     _thumbnailProvider = new QoiThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                    Bitmap? thumbnail = _thumbnailProvider.GetThumbnail(cx);
                     if (thumbnail != null)
                     {
                         filePath = filePath.Replace(".qoi", ".bmp");

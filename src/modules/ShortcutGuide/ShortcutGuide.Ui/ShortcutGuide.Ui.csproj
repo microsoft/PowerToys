@@ -62,18 +62,6 @@
   <ItemGroup>
     <ApplicationDefinition Include="ShortcutGuideXAML\App.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="UIAutomationClient">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>1</VersionMajor>
-      <Guid>944de083-8fb8-45cf-bcb7-c477acb2f897</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
     <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
@@ -108,6 +96,7 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\ShortcutGuide.IndexYmlGenerator\ShortcutGuide.IndexYmlGenerator.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="ShortcutGuideXAML\CustomNavigationViewStyle.xaml">
@@ -140,6 +129,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="ShortcutGuideXAML\Helpers\" />
     <Folder Include="ShortcutGuideXAML\Styles\" />
   </ItemGroup>
   <!-- 

@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
         /// </summary>
         /// <param name="cx">Maximum thumbnail size, in pixels.</param>
         /// <returns>Generated bitmap</returns>
-        public Bitmap GetThumbnail(uint cx)
+        public Bitmap? GetThumbnail(uint cx)
         {
             return DoGetThumbnail(cx).Result;
         }
@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
         /// </summary>
         /// <param name="cx">Maximum thumbnail size, in pixels.</param>
         /// <returns>Generated bitmap</returns>
-        private async Task<Bitmap> DoGetThumbnail(uint cx)
+        private async Task<Bitmap?> DoGetThumbnail(uint cx)
         {
             if (cx == 0 || cx > MaxThumbnailSize)
             {
@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
                 return null;
             }
 
-            Bitmap thumbnail = null;
+            Bitmap? thumbnail = null;
             try
             {
                 var file = await StorageFile.GetFileFromPathAsync(FilePath);

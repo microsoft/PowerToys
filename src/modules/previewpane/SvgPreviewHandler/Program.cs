@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
     {
         private static CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
-        private static SvgPreviewControl _previewHandlerControl;
+        private static SvgPreviewControl? _previewHandlerControl;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             {
                 if (args.Length == 6)
                 {
-                    ETWTrace etwTrace = new ETWTrace(Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
+                    ETWTrace etwTrace = new ETWTrace(Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE")!, "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
 
                     string filePath = args[0];
                     IntPtr hwnd = IntPtr.Parse(args[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture);

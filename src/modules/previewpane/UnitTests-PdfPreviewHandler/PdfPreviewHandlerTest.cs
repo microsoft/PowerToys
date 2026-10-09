@@ -51,6 +51,7 @@ namespace PdfPreviewHandlerUnitTests
                 // Act
                 pdfPreviewHandlerControl.DoPreview(mockStream.Object);
                 var textBox = pdfPreviewHandlerControl.Controls[0] as RichTextBox;
+                Assert.IsNotNull(textBox);
 
                 // Assert
                 Assert.IsFalse(string.IsNullOrWhiteSpace(textBox.Text));

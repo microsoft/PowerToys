@@ -38,18 +38,14 @@ FileWatcher::FileWatcher(const std::wstring& path, std::function<void()> callbac
             if (m_file_name.compare(fileName) == 0)
             {
                 auto lastWrite = MyFileTime();
-                if (!m_lastWrite.has_value())
+                // The first observed write is a change too, not a baseline to discard.
+                if (lastWrite.has_value() &&
+                    (!m_lastWrite.has_value() ||
+                     m_lastWrite->dwHighDateTime != lastWrite->dwHighDateTime ||
+                     m_lastWrite->dwLowDateTime != lastWrite->dwLowDateTime))
                 {
                     m_lastWrite = lastWrite;
-                }
-                else if (lastWrite.has_value())
-                {
-                    if (m_lastWrite->dwHighDateTime != lastWrite->dwHighDateTime ||
-                        m_lastWrite->dwLowDateTime != lastWrite->dwLowDateTime)
-                    {
-                        m_lastWrite = lastWrite;
-                        m_callback();
-                    }
+                    m_callback();
                 }
             }
         });

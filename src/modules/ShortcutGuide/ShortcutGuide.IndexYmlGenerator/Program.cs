@@ -3,30 +3,45 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using ManagedCommon;
+using System.Diagnostics;
 
 namespace ShortcutGuide.IndexYmlGenerator
 {
     public static class Program
     {
-        public static void Main()
+        public static void Main(string[] args)
         {
             Logger.InitializeLogger(@"\ShortcutGuide\IndexYmlGenerator\Logs");
             Logger.LogInfo("Shortcut Guide index file generation started.");
 
+            string path = args.Length > 0 && !string.IsNullOrWhiteSpace(args[0])
+                ? args[0]
+                : ManifestIndexGenerator.DefaultManifestsPath;
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
             try
             {
-                ManifestIndexGenerator.CreateIndexYmlFile();
+                var result = ManifestIndexGenerator.CreateIndexYmlFile(path);
+                foreach (var (fileName, warning) in result.Warnings)
+                {
+                    Logger.LogWarning($"Skipping manifest '{fileName}': {warning}");
+                }
+
+                foreach (var (fileName, error) in result.Errors)
+                {
+                    Logger.LogError($"Error processing file '{fileName}'.", error);
+                }
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Error creating Shortcut Guide index file: {ex.Message}", ex);
 
-                // Informs the Shortcut Guide UI that the index generation failed.
+                // Inform the caller that the index generation failed.
                 Environment.ExitCode = 1;
             }
 
-            Logger.LogInfo("Shortcut Guide index file generation completed.");
+            stopwatch.Stop();
+            Logger.LogInfo($"Shortcut Guide index file generation completed in {stopwatch.ElapsedMilliseconds} ms.");
         }
     }
 }

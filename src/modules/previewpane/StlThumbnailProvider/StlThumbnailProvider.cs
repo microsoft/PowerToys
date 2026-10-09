@@ -47,14 +47,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
         /// <param name="stream">The Stream instance for the Stl content.</param>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
         /// <returns>A thumbnail rendered from the Stl model.</returns>
-        public static Bitmap GetThumbnail(Stream stream, uint cx)
+        public static Bitmap? GetThumbnail(Stream? stream, uint cx)
         {
             if (cx > MaxThumbnailSize || stream == null || stream.Length == 0)
             {
                 return null;
             }
 
-            Bitmap thumbnail = null;
+            Bitmap? thumbnail = null;
 
             var stlReader = new StLReader
             {
@@ -124,7 +124,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
         /// </summary>
         /// <param name="cx">Maximum thumbnail size, in pixels.</param>
         /// <returns>Generated bitmap</returns>
-        public Bitmap GetThumbnail(uint cx)
+        public Bitmap? GetThumbnail(uint cx)
         {
             if (cx == 0 || cx > MaxThumbnailSize)
             {
@@ -137,7 +137,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 return null;
             }
 
-            Bitmap thumbnail = GetThumbnail(this.Stream, cx);
+            Bitmap? thumbnail = GetThumbnail(this.Stream, cx);
             if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
             {
                 return thumbnail;
