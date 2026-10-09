@@ -33,7 +33,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Clipboard Manager](https://github.com/CoreyHayward/PowerToys-Run-ClipboardManager) | [CoreyHayward](https://github.com/CoreyHayward) | Search and paste text from your clipboard history |
 | [Currency Converter](https://github.com/Advaith3600/PowerToys-Run-Currency-Converter) | [advaith3600](https://github.com/advaith3600) | Convert real and crypto currencies |
 | [FastWeb](https://github.com/CCcat8059/FastWeb) | [CCcat](https://github.com/CCcat8059) | Open website in browser |
-|| [WebSearchShortcut](https://github.com/Daydreamer-riri/CmdPal-WebSearchShortcut) | [Daydreamer-riri](https://github.com/Daydreamer-riri) | Web Search Shortcut Plugin for PowerToys Run |
+| [WebSearchShortcut](https://github.com/Daydreamer-riri/CmdPal-WebSearchShortcut) | [Daydreamer-riri](https://github.com/Daydreamer-riri) | Web Search Shortcut Plugin for PowerToys Run |
 | [UnicodeInput](https://github.com/nathancartlidge/powertoys-run-unicode) | [nathancartlidge](https://github.com/nathancartlidge) | Copy Unicode characters to the clipboard |
 | [PowerHexInspector](https://github.com/NaroZeol/PowerHexInspector) | [NaroZeol](https://github.com/NaroZeol) | Peek other forms of an input number |
 | [GitHubRepo](https://github.com/8LWXpg/PowerToysRun-GitHubRepo) | [8LWXpg](https://github.com/8LWXpg) | Search and open GitHub repositories |
