@@ -297,7 +297,12 @@ namespace KeyboardManagerEditorUI.Helpers
                     continue;
                 }
 
-                originalKeys.Add(originalKey);
+                // An "alone" remap only replaces a lone tap; the key still works when held or
+                // combined with other keys, so it remains reachable.
+                if (mapping.Condition != SingleKeyRemapCondition.Alone)
+                {
+                    originalKeys.Add(originalKey);
+                }
 
                 if (mapping.OperationType == ShortcutOperationType.RemapShortcut &&
                     TryGetSingleKey(mapping.TargetKeys, out int targetKey) &&

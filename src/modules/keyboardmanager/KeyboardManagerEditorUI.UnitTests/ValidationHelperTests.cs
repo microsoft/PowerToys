@@ -76,12 +76,47 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEqual(new List<int> { VkA, VkC }, new List<int>(orphanedKeys));
         }
 
-        private static ShortcutKeyMapping CreateKeyRemap(int originalKey, int targetKey) =>
+        [TestMethod]
+        public void GetOrphanedKeys_ShouldNotReturnSourceKey_ForAloneRemap()
+        {
+            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeys(new[]
+            {
+                CreateKeyRemap(VkControl, VkA, SingleKeyRemapCondition.Alone),
+            });
+
+            Assert.AreEqual(0, orphanedKeys.Count);
+        }
+
+        [TestMethod]
+        public void GetOrphanedKeys_ShouldNotReturnSourceKey_ForAloneDisable()
+        {
+            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeys(new[]
+            {
+                CreateKeyRemap(VkControl, VkDisabled, SingleKeyRemapCondition.Alone),
+            });
+
+            Assert.AreEqual(0, orphanedKeys.Count);
+        }
+
+        [TestMethod]
+        public void GetOrphanedKeys_ShouldTreatAloneRemapTargetAsAssigned()
+        {
+            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeys(new[]
+            {
+                CreateKeyRemap(VkA, VkB),
+                CreateKeyRemap(VkControl, VkA, SingleKeyRemapCondition.Alone),
+            });
+
+            Assert.AreEqual(0, orphanedKeys.Count);
+        }
+
+        private static ShortcutKeyMapping CreateKeyRemap(int originalKey, int targetKey, SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always) =>
             new()
             {
                 OperationType = ShortcutOperationType.RemapShortcut,
                 OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
                 TargetKeys = targetKey.ToString(CultureInfo.InvariantCulture),
+                Condition = condition,
             };
 
         private static ShortcutKeyMapping CreateShortcutRemap(int originalKey, params int[] targetKeys) =>
