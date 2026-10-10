@@ -33,7 +33,6 @@
       <definition name="SUPPORTED_POWERTOYS_0_100_0" displayName="$(string.SUPPORTED_POWERTOYS_0_100_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_101_0" displayName="$(string.SUPPORTED_POWERTOYS_0_101_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_102_0" displayName="$(string.SUPPORTED_POWERTOYS_0_102_0)"/>
-      <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
   <categories>
@@ -54,9 +53,6 @@
       <parentCategory ref="PowerToys" />
     </category>
     <category name="NewPlus" displayName="$(string.NewPlus)">
-      <parentCategory ref="PowerToys" />
-    </category>
-    <category name="DeprecatedPolicies" displayName="$(string.DeprecatedPolicies)">
       <parentCategory ref="PowerToys" />
     </category>
     <category name="FileExplorerPreview" displayName="$(string.FileExplorerPreview)">
@@ -550,16 +546,6 @@
     <policy name="ConfigureEnabledUtilityTextExtractor" class="Both" displayName="$(string.ConfigureEnabledUtilityTextExtractor)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityTextExtractor">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
-      <enabledValue>
-        <decimal value="1" />
-      </enabledValue>
-      <disabledValue>
-        <decimal value="0" />
-      </disabledValue>
-    </policy>
-    <policy name="ConfigureEnabledUtilityVideoConferenceMute" class="Both" displayName="$(string.ConfigureEnabledUtilityVideoConferenceMute)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityVideoConferenceMute">
-      <parentCategory ref="DeprecatedPolicies" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

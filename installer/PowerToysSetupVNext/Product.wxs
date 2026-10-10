@@ -164,9 +164,6 @@
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
       <Custom Action="LaunchPowerToys" Before="InstallFinalize" Condition="NOT Installed" />
 
-      <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
-      <Custom Action="CleanVideoConferenceRegistry" Before="InstallFinalize" Condition="NOT Installed" />
-
       <!-- Restore built-in "New" context menu in case user disabled it via New+ -->
       <Custom Action="RestoreBuiltInNewContextMenu" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
 
@@ -248,8 +245,6 @@
     <CustomAction Id="TelemetryLogRepairFail" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogRepairFailCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="DetectPrevInstallPath" Return="check" Impersonate="yes" DllEntry="DetectPrevInstallPathCA" BinaryRef="PTCustomActions" />
-
-    <CustomAction Id="CleanVideoConferenceRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanVideoConferenceRegistryCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="ApplyModulesRegistryChangeSets" Return="check" Impersonate="yes" Execute="deferred" DllEntry="ApplyModulesRegistryChangeSetsCA" BinaryRef="PTCustomActions" />
 
