@@ -7,8 +7,12 @@ using System.Runtime.InteropServices;
 
 namespace ManagedCommon
 {
-    internal static class NativeMethods
+    internal static partial class NativeMethods
     {
+        internal const uint SPI_GETHIGHCONTRAST = 0x0042;
+        internal const uint HCF_HIGHCONTRASTON = 0x00000001;
+        internal const int COLOR_WINDOW = 5;
+
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
 
@@ -44,6 +48,13 @@ namespace ManagedCommon
 
         [DllImport("dwmapi")]
         internal static extern IntPtr DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS pMarInset);
+
+        [LibraryImport("user32.dll", EntryPoint = "SystemParametersInfoW")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool SystemParametersInfo(uint uiAction, uint uiParam, ref HIGHCONTRAST pvParam, uint fWinIni);
+
+        [LibraryImport("user32.dll")]
+        internal static partial uint GetSysColor(int nIndex);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct INPUT
@@ -111,6 +122,14 @@ namespace ManagedCommon
             public int cxRightWidth;
             public int cyTopHeight;
             public int cyBottomHeight;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct HIGHCONTRAST
+        {
+            internal uint cbSize;
+            internal uint dwFlags;
+            internal IntPtr lpszDefaultScheme;
         }
     }
 }

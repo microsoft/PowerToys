@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Common.UI;
 using FancyZoneEditor.Telemetry;
 using FancyZonesEditor.Utils;
@@ -171,7 +172,7 @@ namespace FancyZonesEditor
                 Logger.LogInfo("Exit event triggered");
                 Application.Current.Shutdown();
             },
-            Current.Dispatcher,
+            new DispatcherSynchronizationContext(Current.Dispatcher),
             NativeThreadCTS.Token);
         }
 

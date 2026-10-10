@@ -6,20 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.Web.WebView2.Core;
 using Peek.Common.Constants;
 using Peek.Common.Helpers;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
-
-using Control = System.Windows.Controls.Control;
 
 namespace Peek.FilePreviewer.Controls
 {
@@ -226,7 +224,7 @@ namespace Peek.FilePreviewer.Controls
             Navigate();
         }
 
-        private List<Control> GetContextMenuItems(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
+        private List<MenuFlyoutItemBase> GetContextMenuItems(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
         {
             var menuItems = args.MenuItems;
 
@@ -237,11 +235,11 @@ namespace Peek.FilePreviewer.Controls
 
             if (CustomContextMenu)
             {
-                MenuItem CreateCommandMenuItem(string resourceId, string commandName)
+                MenuFlyoutItem CreateCommandMenuItem(string resourceId, string commandName)
                 {
-                    MenuItem commandMenuItem = new()
+                    MenuFlyoutItem commandMenuItem = new()
                     {
-                        Header = ResourceLoaderInstance.ResourceLoader.GetString(resourceId),
+                        Text = ResourceLoaderInstance.ResourceLoader.GetString(resourceId),
                         IsEnabled = true,
                     };
 
@@ -257,20 +255,20 @@ namespace Peek.FilePreviewer.Controls
                 // WebView2 isn't able to show a "Copy" menu item of its own.
                 return [
                     CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
-                    new Separator(),
+                    new MenuFlyoutSeparator(),
                     CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
                     CreateCommandMenuItem("ContextMenu_ToggleMinimap", "runToggleMinimap")
                 ];
             }
             else
             {
-                MenuItem CreateMenuItemFromWebViewMenuItem(CoreWebView2ContextMenuItem webViewMenuItem)
+                MenuFlyoutItem CreateMenuItemFromWebViewMenuItem(CoreWebView2ContextMenuItem webViewMenuItem)
                 {
-                    MenuItem menuItem = new()
+                    MenuFlyoutItem menuItem = new()
                     {
-                        Header = webViewMenuItem.Label.Replace('&', '_'),  // replace with '_' so it is underlined in the label
+                        Text = webViewMenuItem.Label.Replace("&", string.Empty, StringComparison.Ordinal), // drop the Win32 access key marker
                         IsEnabled = webViewMenuItem.IsEnabled,
-                        InputGestureText = webViewMenuItem.ShortcutKeyDescription,
+                        KeyboardAcceleratorTextOverride = webViewMenuItem.ShortcutKeyDescription,
                     };
 
                     menuItem.Click += (_, _) =>
@@ -284,7 +282,7 @@ namespace Peek.FilePreviewer.Controls
                 // When not using Monaco, we keep the "Copy" menu item from WebView2's default context menu.
                 return menuItems.Where(menuItem => menuItem.Name == "copy")
                                 .Select(CreateMenuItemFromWebViewMenuItem)
-                                .ToList<Control>();
+                                .ToList<MenuFlyoutItemBase>();
             }
         }
 
@@ -297,14 +295,21 @@ namespace Peek.FilePreviewer.Controls
 
             if (menuItems.Count != 0)
             {
-                var contextMenu = new ContextMenu();
-                contextMenu.Closed += (_, _) => deferral.Complete();
-                contextMenu.IsOpen = true;
-
+                var contextMenu = new MenuFlyout();
                 foreach (var menuItem in menuItems)
                 {
                     contextMenu.Items.Add(menuItem);
                 }
+
+                // Enqueued so a clicked item's handler sets SelectedCommandId before WebView2 resumes.
+                contextMenu.Closed += (_, _) => DispatcherQueue.TryEnqueue(deferral.Complete);
+
+                // args.Location is in physical pixels; flyout positions are in DIPs.
+                var scale = PreviewBrowser.XamlRoot?.RasterizationScale ?? 1.0;
+                contextMenu.ShowAt(PreviewBrowser, new FlyoutShowOptions
+                {
+                    Position = new Windows.Foundation.Point(args.Location.X / scale, args.Location.Y / scale),
+                });
             }
         }
 
