@@ -37,6 +37,17 @@ WM_HOTKEY
 WM_NCLBUTTONDBLCLK
 SetWindowRgn
 CreateRectRgn
+GetDC
+ReleaseDC
+CreateCompatibleDC
+DeleteDC
+CreateCompatibleBitmap
+SelectObject
+DeleteObject
+StretchBlt
+SetStretchBltMode
+SetBrushOrgEx
+GetDIBits
 
 Shell_NotifyIcon
 LoadIcon

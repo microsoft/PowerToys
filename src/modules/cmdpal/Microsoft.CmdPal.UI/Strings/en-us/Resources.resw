@@ -529,7 +529,44 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Vertical search box position</value>
   </data>
   <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Description" xml:space="preserve">
-    <value>Move left to place it lower on the screen, or right to place it higher</value>
+    <value>Choose where the compact search box appears on the screen.</value>
+  </data>
+  <data name="Settings_GeneralPage_CompactCenterHeight_Button.Content" xml:space="preserve">
+    <value>Choose position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Title" xml:space="preserve">
+    <value>Compact search box position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Heading.Text" xml:space="preserve">
+    <value>Move the compact search box</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Instruction.Text" xml:space="preserve">
+    <value>Drag the preview, use the mouse wheel, or press Up and Down.</value>
+  </data>
+  <data name="CompactPositionPickerWindow_PositionFormat" xml:space="preserve">
+    <value>Position: {0:0}% from bottom</value>
+    <comment>{0} is the vertical position as a percentage from the bottom of the screen.</comment>
+  </data>
+  <data name="CompactPositionPickerWindow_Root.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Compact search box position picker</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Root.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Drag the preview, use the mouse wheel, or press Up and Down.</value>
+  </data>
+  <data name="CompactPositionPickerWindow_GhostPlaceholder.Text" xml:space="preserve">
+    <value>Search for a command</value>
+  </data>
+  <data name="CompactPositionPickerWindow_CancelButton.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CompactPositionPickerWindow_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="CompactPositionPickerWindow_CloseButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Close position picker</value>
+  </data>
+  <data name="CompactPositionPickerWindow_CloseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Header" xml:space="preserve">
     <value>Keep search text when reopened</value>

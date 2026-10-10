@@ -406,10 +406,12 @@ public sealed partial class MainWindow : WindowEx,
             {
                 var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                 var workArea = displayArea.WorkArea;
+                var targetDpi = WindowPositionHelper.GetDpiForDisplay(displayArea);
+                var workAreaHeightDip = workArea.Height * 96.0 / targetDpi;
 
                 // The setting is the relative height measured from the *bottom* of the screen,
                 // so a larger percentage places the search box higher up the display.
-                var fractionFromTop = GetCompactCenterFractionFromTop(settings);
+                var fractionFromTop = GetCompactCenterFractionFromTop(settings, workAreaHeightDip);
                 var desiredCardCenterY = workArea.Y + (int)Math.Round(workArea.Height * fractionFromTop);
                 finalRect.Y = desiredCardCenterY - searchRowCenterFromHwndTop;
 
@@ -471,9 +473,11 @@ public sealed partial class MainWindow : WindowEx,
     // Converts the "center height" setting (a percentage measured up from the bottom of the
     // screen) into the fraction of the work area, measured from the top, at which the
     // collapsed search box should be centered.
-    private static double GetCompactCenterFractionFromTop(SettingsModel settings)
+    private static double GetCompactCenterFractionFromTop(SettingsModel settings, double workAreaHeightDip)
     {
-        var pct = Math.Clamp(settings.CompactCenterHeightPercentage, 0, 100);
+        var pct = CompactPositionConstraints.ClampPercentageFromBottom(
+            settings.CompactCenterHeightPercentage,
+            workAreaHeightDip);
         return 1.0 - (pct / 100.0);
     }
 

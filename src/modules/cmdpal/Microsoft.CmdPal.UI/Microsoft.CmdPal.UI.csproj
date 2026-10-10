@@ -104,6 +104,7 @@
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
     <None Remove="Settings\AppearancePage.xaml" />
+    <None Remove="Settings\CompactPositionPickerWindow.xaml" />
     <None Remove="Settings\InternalPage.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Settings.xaml" />
@@ -298,6 +299,9 @@
 
   <ItemGroup>
     <Page Update="Settings\AppearancePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Settings\CompactPositionPickerWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
