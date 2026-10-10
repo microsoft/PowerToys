@@ -637,12 +637,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             }
 
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe, showRestartNotificationAfterUpdate);
-
-            if (result == 0)
-            {
-                // Save settings on closing, if closed 'normal'
-                PTSettingsHelper::save_general_settings(get_general_settings().to_json());
-            }
         }
         else
         {
