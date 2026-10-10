@@ -50,14 +50,18 @@
             Grid.Row="0"
             FileIndex="{x:Bind ViewModel.DisplayIndex, Mode=OneWay}"
             IsMultiSelection="{x:Bind ViewModel.NeighboringItemsQuery.IsMultipleFilesActivation, Mode=OneWay}"
-            Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
-            NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}" />
+            IsPreviewingShortcutTarget="{x:Bind ViewModel.IsPreviewingShortcutTarget, Mode=OneWay}"
+            Item="{x:Bind ViewModel.PreviewItem, Mode=OneWay}"
+            NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
+            ShowSelectedItemCommand="{x:Bind ViewModel.ShowSelectedItemCommand, Mode=OneWay}"
+            ShortcutName="{x:Bind ViewModel.ShortcutName, Mode=OneWay}" />
 
         <fp:FilePreview
             x:Name="FilePreviewer"
             Grid.Row="1"
-            Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
+            Item="{x:Bind ViewModel.PreviewItem, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
+            PeekShortcutTargetCommand="{x:Bind ViewModel.PeekShortcutTargetCommand, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}"
             Visibility="{x:Bind ContentVisibility(ViewModel.IsErrorVisible), Mode=OneWay}" />
