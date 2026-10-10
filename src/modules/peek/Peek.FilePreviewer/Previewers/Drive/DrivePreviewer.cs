@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -79,7 +79,7 @@ namespace Peek.FilePreviewer.Previewers.Drive
             }
             else
             {
-                preview.FileSystem = ResourceLoaderInstance.ResourceLoader.GetString("Drive_Unknown");
+                preview.FileSystem = ResourceLoaderInstance.GetString("Drive_Unknown");
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -97,14 +97,14 @@ namespace Peek.FilePreviewer.Previewers.Drive
 
         private string GetDriveTypeDescription(DriveType driveType) => driveType switch
         {
-            DriveType.Unknown => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Unknown"),
-            DriveType.NoRootDirectory => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Unknown"), // You shouldn't be able to preview an unmounted drives
-            DriveType.Removable => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type_Removable"),
-            DriveType.Fixed => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type_Fixed"),
-            DriveType.Network => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type_Network"),
-            DriveType.CDRom => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type_Optical"),
-            DriveType.Ram => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type_RAM_Disk"),
-            _ => ResourceLoaderInstance.ResourceLoader.GetString("Drive_Unknown"),
+            DriveType.Unknown => ResourceLoaderInstance.GetString("Drive_Unknown"),
+            DriveType.NoRootDirectory => ResourceLoaderInstance.GetString("Drive_Unknown"), // You shouldn't be able to preview an unmounted drive
+            DriveType.Removable => ResourceLoaderInstance.GetString("Drive_Type_Removable"),
+            DriveType.Fixed => ResourceLoaderInstance.GetString("Drive_Type_Fixed"),
+            DriveType.Network => ResourceLoaderInstance.GetString("Drive_Type_Network"),
+            DriveType.CDRom => ResourceLoaderInstance.GetString("Drive_Type_Optical"),
+            DriveType.Ram => ResourceLoaderInstance.GetString("Drive_Type_RAM_Disk"),
+            _ => ResourceLoaderInstance.GetString("Drive_Unknown"),
         };
     }
 }

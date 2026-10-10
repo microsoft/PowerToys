@@ -23,6 +23,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Peek.Common\Peek.Common.csproj" />
+    <ProjectReference Include="..\Peek.FilePreviewer\Peek.FilePreviewer.csproj" />
+    <Compile Include="..\Peek.UI\Models\NavigationPacer.cs" Link="Models\NavigationPacer.cs" />
+    <Compile Include="..\Peek.UI\Models\NavigationDirection.cs" Link="Models\NavigationDirection.cs" />
+    <Compile Include="..\Peek.UI\Models\INavigationPacerTimer.cs" Link="Models\INavigationPacerTimer.cs" />
+    <Compile Include="..\Peek.UI\Helpers\WindowPlacementHelper.cs" Link="Helpers\WindowPlacementHelper.cs" />
   </ItemGroup>
 
 </Project>

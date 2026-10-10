@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -147,13 +147,13 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
                     cancellationToken.ThrowIfCancellationRequested();
                     var artist = PropertyStoreHelper.TryGetStringProperty(Item.Path, PropertyKey.MusicDisplayArtist);
                     Preview.Artist = artist != null
-                        ? string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Audio_Artist"), artist)
+                        ? ResourceLoaderInstance.FormatString("Audio_Artist", artist)
                         : string.Empty;
 
                     cancellationToken.ThrowIfCancellationRequested();
                     var album = PropertyStoreHelper.TryGetStringProperty(Item.Path, PropertyKey.MusicAlbum);
                     Preview.Album = album != null
-                        ? string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Audio_Album"), album)
+                        ? ResourceLoaderInstance.FormatString("Audio_Album", album)
                         : string.Empty;
 
                     cancellationToken.ThrowIfCancellationRequested();
@@ -162,7 +162,7 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
                     {
                         var length = TimeSpan.FromTicks((long)ticksLength);
                         var truncatedLength = new TimeSpan(length.Hours, length.Minutes, length.Seconds).ToString("g", CultureInfo.CurrentCulture);
-                        Preview.Length = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Audio_Length"), truncatedLength);
+                        Preview.Length = ResourceLoaderInstance.FormatString("Audio_Length", truncatedLength);
                     }
                     else
                     {

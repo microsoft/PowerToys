@@ -241,7 +241,7 @@ namespace Peek.FilePreviewer.Controls
                 {
                     MenuItem commandMenuItem = new()
                     {
-                        Header = ResourceLoaderInstance.ResourceLoader.GetString(resourceId),
+                        Header = ResourceLoaderInstance.GetString(resourceId),
                         IsEnabled = true,
                     };
 

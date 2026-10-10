@@ -107,6 +107,7 @@ namespace Peek.UI
             try
             {
                 _isDeleteInProgress = true;
+                ViewModel.SuspendNavigation();
 
                 if (userSettings.ConfirmFileDelete)
                 {
@@ -124,6 +125,7 @@ namespace Peek.UI
             }
             finally
             {
+                ViewModel.ResumeNavigation();
                 _isDeleteInProgress = false;
             }
         }
@@ -148,6 +150,13 @@ namespace Peek.UI
 
             if (firstActivation)
             {
+                var launchWindowHandle = selectedItem is SelectedItemByWindowHandle selectedWindow
+                    ? selectedWindow.WindowHandle
+                    : Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
+
+                // Establish the launch monitor's DPI before activation replaces Explorer
+                // as the foreground window and before the first preview is sized.
+                this.CenterOnMonitor(launchWindowHandle);
                 Activate();
                 Initialize(selectedItem);
                 return;
@@ -232,6 +241,14 @@ namespace Peek.UI
 
             _cachedWindowHandle = new Windows.Win32.Foundation.HWND(this.GetWindowHandle());
             InstallKeyboardHook();
+
+            // Image decoding can outlast the spinner delay. A reopened window must be
+            // visible independently of the deferred image resize and buffer swap.
+            if (!AppWindow.IsVisible)
+            {
+                this.Show();
+                WindowHelpers.BringToForeground(this.GetWindowHandle());
+            }
 
             bootTime.Stop();
 
