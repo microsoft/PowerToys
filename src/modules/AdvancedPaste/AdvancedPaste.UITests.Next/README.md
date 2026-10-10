@@ -42,6 +42,12 @@ without requiring a provider.
   setup. The `AdvancedPaste` project family participates in
   `$requiresAuthenticatedSettingsIpc`; lifecycle tests do not bypass IPC by editing
   the enabled map and restarting the Runner.
+- CI dispatches `AdvancedPaste.UITests.Next` through the existing
+  `runUiTestAsUser.ps1` limited interactive task, not the elevated pipeline agent.
+  The fixture reports its user, session, and elevation and fails if the desktop
+  context is elevated or session 0. Windows clipboard history must be exercised
+  in the same non-elevated desktop context as the user workflow; a checked registry
+  preference alone does not prove that Windows captured a history item.
 
 Build with the existing repository tools:
 
@@ -81,9 +87,38 @@ Asynchronous snapshot reads stay on that thread across awaits, including when Te
 starts the test on an MTA worker with a nonempty desktop clipboard.
 Snapshots retry only the transient clipboard-busy HRESULT, asynchronously on the
 same STA and within a bounded deadline; no format is dropped to make a snapshot succeed.
+The backup regression uses the verified text fixture for text-only input and a
+desktop data object for HTML/RTF, with a bounded five-second native write retry
+budget. It does not retry the backup assertion or non-contention errors.
 Read errors are reported rather than converted to an empty string. RTF fixtures
 are copied from the real editor with Ctrl+C, and both text and RTF formats are
 verified before the formatting-removal scenarios start.
+
+Settings navigation and controls use a process-scoped session so a discarded
+startup HWND cannot invalidate an otherwise healthy Settings window. Physical
+keyboard interactions reacquire the current main HWND and still require foreground.
+
+History fixtures activate the feature through Windows' real clipboard Settings
+toggle, then copy text with Ctrl+C
+from the foreground editor. A registry write
+and a successful current-clipboard write do not establish the Windows capture
+service's readiness. Every copy still requires its exact Windows history ID before
+the next copy, and an additional regression covers three enable/disable cycles.
+Restoration drives the OS toggle before restoring the original registry value,
+including its presence and type.
+History failures preserve the original desktop, open Win+V, and attach a composed
+desktop screenshot and JSON containing the native popup's UIA subtree, explicit
+empty/populated/disabled/unknown state, visible test-owned content, and Windows API
+status/IDs before and after opening the popup on both the test thread and pumping STA.
+The popup is found through the desktop UIA root: a running TextInputHost or its
+empty CoreWindow tree does not prove the clipboard panel is visible or empty.
+Missing UIA content is reported as unavailable/unknown, never as an empty history.
+The repeated enable/disable regression also exercises this inspection against an
+empty baseline and each newly copied fixture.
+There is no unconditional Win+V warmup before fixture copies, and diagnostics never
+turn a failed capture into a passing test. Failures retain read-only clipboard-broker
+service state diagnostics; tests never alter service startup configuration or bypass
+clipboard policy.
 
 History tests use a fresh process per case so restoring the OS history preference
 does not carry an old ItemsView and pending notifications into the next fixture.

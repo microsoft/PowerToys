@@ -66,7 +66,7 @@ internal static class AdvancedPasteUi
     internal static bool IsStaleElement(Exception exception) =>
         exception is AssertFailedException && exception.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase);
 
-    private static IEnumerable<JsonElement> Nodes(JsonElement root, string[]? excludedSubtreeIds = null)
+    internal static IEnumerable<JsonElement> Nodes(JsonElement root, string[]? excludedSubtreeIds = null)
     {
         if (root.ValueKind == JsonValueKind.Object)
         {

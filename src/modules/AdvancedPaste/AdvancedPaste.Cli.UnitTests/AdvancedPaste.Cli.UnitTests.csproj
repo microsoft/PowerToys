@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>AdvancedPaste.Cli.UnitTests</RootNamespace>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\AdvancedPaste.Cli.UnitTests\</OutputPath>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AdvancedPaste.CLI\AdvancedPaste.CLI.csproj" />
+    <ProjectReference Include="..\AdvancedPaste.Core\AdvancedPaste.Core.csproj" />
+  </ItemGroup>
+</Project>

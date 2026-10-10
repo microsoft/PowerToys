@@ -53,7 +53,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
     [DataRow(true)]
     public async Task HtmlIsPastedAsHtmlFileWithoutClipboardMetadata(bool directShortcut)
     {
-        const string html = "<h2>Offline file</h2><p>alpha &amp; beta</p>";
+        const string html = "<h2>Offline file</h2><p>café 中文 &amp; beta</p>";
         SetHtmlClipboard(html);
         var output = await PasteFile(ProductStrings.PasteAsHtmlFile, Key.H, ".html", directShortcut);
         Assert.AreEqual(html, File.ReadAllText(output), "The HTML file changed the fragment or included CF_HTML metadata.");
@@ -199,6 +199,8 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
 
     private void FocusExplorerItemsView(Session explorer)
     {
+        // A cold Shell UIA lookup can consume a minute on a single-core guest.
+        // Leave time to re-query after a transient stale-element response.
         var handle = new IntPtr(explorer.WindowHandle);
         (bool Visible, bool Foreground, bool ShellReady, bool EmptySelection, bool KeyboardFocus)? lastState = null;
         var ready = WaitHelper.WaitForStable(
@@ -222,7 +224,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
                 lastState = state;
                 return state.Visible && state.Foreground && state.ShellReady && state.EmptySelection && state.KeyboardFocus;
             },
-            timeoutMS: 30_000,
+            timeoutMS: 90_000,
             requiredConsecutiveMatches: 3,
             recover: view =>
             {

@@ -10,6 +10,9 @@
     <CliShim Include="PowerToys.ImageResizer.CLI">
       <RelativeTarget>../WinUI3Apps/PowerToys.ImageResizerCLI.exe</RelativeTarget>
     </CliShim>
+    <CliShim Include="PowerToys.AdvancedPaste.CLI">
+      <RelativeTarget>../WinUI3Apps/PowerToys.AdvancedPaste.Cli.exe</RelativeTarget>
+    </CliShim>
     <CliShim Include="PowerToys.FileLocksmith.CLI">
       <RelativeTarget>../FileLocksmithCLI.exe</RelativeTarget>
     </CliShim>

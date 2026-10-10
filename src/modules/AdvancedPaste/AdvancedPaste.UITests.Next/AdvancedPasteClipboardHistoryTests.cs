@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Win32;
@@ -20,6 +23,7 @@ namespace AdvancedPaste.UITests;
 public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 {
     private const string HistoryCard = "AdvancedPasteClipboardHistoryEnabledSettingsCard";
+    private const string WindowsHistoryToggle = "SystemSettings_Clipboard_IsSaveClipboardItemsEnabled_ToggleSwitch";
     private const string ClipboardRegistryPath = @"Software\Microsoft\Clipboard";
     private const string ClipboardRegistryValue = "EnableClipboardHistory";
     private const int MaximumHistoryEntries = 25;
@@ -200,12 +204,38 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             });
     }
 
+    [TestMethod]
+    public Task RepeatedHistoryEnableDisableCapturesNewEntries()
+    {
+        return RunHistoryScenarioAsync(
+            entryCount: 3,
+            requiresEmptyHistory: true,
+            async () =>
+            {
+                var empty = await CaptureWindowsHistoryEvidenceAsync("empty-baseline");
+                Assert.AreEqual("Empty", empty.State, "Win+V did not show its explicit empty-history state for the empty Windows API baseline.");
+                for (var cycle = 0; cycle < 3; cycle++)
+                {
+                    var fixture = await CopyHistoryFixtureAsync($"enable-cycle-{cycle}");
+                    var items = await ReadHistoryAsync();
+                    Assert.IsTrue(items.Any(item => item.Id == fixture.Id), "The enabled Windows history did not retain the copied fixture.");
+                    var surface = await CaptureWindowsHistoryEvidenceAsync($"enable-cycle-{cycle}");
+                    CollectionAssert.Contains(surface.VisibleFixtureContents, fixture.Content, "Win+V did not expose the exact newly copied fixture through UIA.");
+                    SetWindowsHistoryEnabled(false);
+                    Assert.IsFalse(WinClipboard.IsHistoryEnabled(), "Windows history remained enabled after the OS Settings toggle was disabled.");
+                    SetWindowsHistoryEnabled(true);
+                }
+
+                await CopyHistoryFixtureAsync("after-repeated-enable");
+            });
+    }
+
     private async Task RunHistoryScenarioAsync(int entryCount, bool requiresEmptyHistory, Func<Task> scenario)
     {
-        var originalRegistry = ClipboardHistoryRegistrySnapshot.Capture();
+        var originalRegistry = ClipboardHistoryRegistrySnapshot.Capture(Target.Invoke(WinClipboard.IsHistoryEnabled));
         try
         {
-            Step("Preparing OS history as a fixture; the Advanced Paste checkbox cannot enable an OS-disabled history card");
+            Step("Enabling OS history through Windows Settings; a registry preference alone does not activate history capture");
             EnableHistoryFixture();
             var originalItems = await EnsureHistorySpaceAsync(entryCount, requiresEmptyHistory);
             originalHistoryIds.UnionWith(originalItems.Select(item => item.Id));
@@ -217,8 +247,28 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             Assert.IsTrue(HistoryCheckbox().IsChecked, "Settings did not reflect the enabled OS history fixture.");
             await scenario();
         }
-        catch
+        catch (Exception failure)
         {
+            Step($"History scenario failed before diagnostics: {failure}");
+            CaptureHistoryDesktop("before-winv");
+            try
+            {
+                await CaptureWindowsHistoryEvidenceAsync("failure");
+            }
+            catch (Exception diagnosticFailure)
+            {
+                Step($"Windows history diagnostics failed; preserving the original test failure: {diagnosticFailure}");
+            }
+
+            try
+            {
+                LogHistoryServiceDiagnostics();
+            }
+            catch (Exception diagnosticFailure)
+            {
+                Step($"Clipboard-broker diagnostics failed; preserving the original test failure: {diagnosticFailure}");
+            }
+
             await CaptureFailureArtifactsAsync();
             throw;
         }
@@ -232,7 +282,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             }
             finally
             {
-                originalRegistry.Restore();
+                originalRegistry.Restore(SetWindowsHistoryEnabled);
             }
         }
     }
@@ -258,21 +308,264 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         return await WaitForHistoryAsync(IsReady, message);
     }
 
-    private CheckBox HistoryCheckbox() => AdvancedPasteUi.CardControl<CheckBox>(Session, HistoryCard, "CheckBox");
+    private CheckBox HistoryCheckbox() => AdvancedPasteUi.CardControl<CheckBox>(SettingsSession, HistoryCard, "CheckBox");
 
-    private static void EnableHistoryFixture()
+    private void EnableHistoryFixture() => SetWindowsHistoryEnabled(true);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetDesktopWindow();
+
+    private async Task<NativeHistorySurface> CaptureWindowsHistoryEvidenceAsync(string label)
     {
-        using (var key = Registry.CurrentUser.CreateSubKey(ClipboardRegistryPath, writable: true))
+        var before = await ReadHistoryApiDiagnosticsAsync();
+        var beforeSta = await Target.Invoke(ReadHistoryApiDiagnosticsAsync);
+        Step($"Win+V '{label}' before opening: test-thread API {JsonSerializer.Serialize(before)}; pumping-STA API {JsonSerializer.Serialize(beforeSta)}");
+        var existing = ReadWindowsHistorySurface();
+        if (existing.Tree is null)
         {
-            Assert.IsNotNull(key, "BLOCKED: the current user's clipboard-history preference cannot be opened.");
-            key.SetValue(ClipboardRegistryValue, 1, RegistryValueKind.DWord);
-            key.Flush();
+            Step($"Opening native Windows history through Win+V for '{label}'; foreground: {WindowControl.GetForegroundWindowInfo()}");
+            Target.Invoke(() => KeyboardHelper.SendKeys(Key.LWin, Key.V));
         }
 
-        WaitUntil(
-            WinClipboard.IsHistoryEnabled,
-            "BLOCKED: Windows Clipboard.IsHistoryEnabled never became true after enabling the fixture. Check OS clipboard-history policy and service readiness; no test is skipped.",
-            timeoutMS: 20_000);
+        try
+        {
+            var ready = WaitHelper.WaitForStable(
+                ReadWindowsHistorySurface,
+                surface => surface.Tree is not null && surface.State != "Unknown",
+                timeoutMS: 20_000,
+                requiredConsecutiveMatches: 2,
+                shouldRetryException: AdvancedPasteUi.IsStaleElement);
+            var surface = ready.LastObservation ?? existing;
+            var after = await ReadHistoryApiDiagnosticsAsync();
+            var afterSta = await Target.Invoke(ReadHistoryApiDiagnosticsAsync);
+            var path = Path.Combine(TestContext.TestResultsDirectory ?? Path.GetTempPath(), $"winv-{label}-{Guid.NewGuid():N}.json");
+            File.WriteAllText(
+                path,
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        Before = before,
+                        BeforeSta = beforeSta,
+                        SurfaceReady = ready.Succeeded,
+                        SurfaceError = ready.LastException?.ToString(),
+                        Surface = surface,
+                        ExpectedFixtureContents = fixtureContents.ToArray(),
+                        After = after,
+                        AfterSta = afterSta,
+                        Foreground = WindowControl.GetForegroundWindowInfo().ToString(),
+                    },
+                    new JsonSerializerOptions { WriteIndented = true }));
+            TestContext.AddResultFile(path);
+            Step($"Win+V '{label}': ready={ready.Succeeded}; state={surface.State}; visible fixture count={surface.VisibleFixtureContents.Length}; after API {JsonSerializer.Serialize(after)}; evidence={path}");
+            return surface;
+        }
+        finally
+        {
+            CaptureHistoryDesktop($"winv-{label}");
+            var current = ReadWindowsHistorySurface();
+            if (current.Tree is { } tree)
+            {
+                var close = AdvancedPasteUi.Nodes(tree).Where(node =>
+                    AdvancedPasteUi.Property(node, "type") == "Button" &&
+                    AdvancedPasteUi.Property(node, "automationId") is "TEMPLATE_PART_CloseButton" or "CloseButton").ToArray();
+                Assert.IsTrue(close.Length <= 1, "The native Win+V panel exposed ambiguous Close buttons.");
+                if (close.Length == 1)
+                {
+                    var width = close[0].GetProperty("width").GetInt32();
+                    var height = close[0].GetProperty("height").GetInt32();
+                    Assert.IsTrue(width > 0 && height > 0, "The native Win+V Close button did not have visible bounds.");
+                    Step("Clicking the inspected native history panel's visible Close button");
+                    MouseHelper.LeftClickAt(
+                        close[0].GetProperty("x").GetInt32() + (width / 2),
+                        close[0].GetProperty("y").GetInt32() + (height / 2));
+                }
+                else
+                {
+                    Step("Dismissing the caret-anchored Win+V panel, which has no Close button, with Escape");
+                    Target.Invoke(() => KeyboardHelper.SendKeys(Key.Esc));
+                }
+            }
+            else
+            {
+                Target.Invoke(() => KeyboardHelper.SendKeys(Key.Esc));
+            }
+
+            WaitUntil(
+                () => ReadWindowsHistorySurface().Tree is null,
+                "The native Win+V panel did not close before the next fixture interaction.",
+                timeoutMS: 20_000);
+        }
+    }
+
+    private NativeHistorySurface ReadWindowsHistorySurface()
+    {
+        // UWP's composed popup lives under an ApplicationFrameWindow in the desktop UIA tree.
+        // Inspecting TextInputHost's CoreWindow directly can return only an empty, cloaked host.
+        var tree = WinappCli.InvokeJson(
+            "ui", "inspect", "-w", GetDesktopWindow().ToInt64().ToString(CultureInfo.InvariantCulture),
+            "--json", "-d", "20", "--hide-offscreen");
+        var windows = AdvancedPasteUi.Nodes(tree).Where(node =>
+            AdvancedPasteUi.Property(node, "type") == "Window" &&
+            AdvancedPasteUi.Property(node, "className") == "Windows.UI.Core.CoreWindow");
+        foreach (var window in windows)
+        {
+            var nodes = AdvancedPasteUi.Nodes(window).ToArray();
+            if (!nodes.Any(node => AdvancedPasteUi.Property(node, "automationId") is
+                "TEMPLATE_PART_ClipboardTitleBar" or "navigation-menu-item-container-clipboard"))
+            {
+                continue;
+            }
+
+            var names = nodes.Select(node => AdvancedPasteUi.Property(node, "name")).ToArray();
+            var state = names.Any(name => name == "Your clipboard is empty" || name.StartsWith("Nothing here,", StringComparison.Ordinal))
+                ? "Empty"
+                : nodes.Any(node =>
+                    AdvancedPasteUi.Property(node, "automationId").StartsWith("item-ClipboardHistory-", StringComparison.Ordinal) ||
+                    (AdvancedPasteUi.Property(node, "automationId") == "TEMPLATE_PART_ClipboardItemsList" &&
+                        AdvancedPasteUi.Nodes(node).Any(child => AdvancedPasteUi.Property(child, "type") == "ListItem")))
+                    ? "Populated"
+                    : names.Any(name => name.Equals("Turn on", StringComparison.OrdinalIgnoreCase))
+                        ? "Disabled"
+                        : "Unknown";
+            return new NativeHistorySurface(
+                window.Clone(),
+                state,
+                fixtureContents.Where(content => names.Contains(content, StringComparer.Ordinal)).ToArray());
+        }
+
+        return new NativeHistorySurface(null, "Unavailable", []);
+    }
+
+    private async Task<HistoryApiObservation> ReadHistoryApiDiagnosticsAsync()
+    {
+        try
+        {
+            var enabled = WinClipboard.IsHistoryEnabled();
+            var result = await WinClipboard.GetHistoryItemsAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10));
+            return new HistoryApiObservation(enabled, result.Status.ToString(), result.Items.Select(item => item.Id).ToArray(), null);
+        }
+        catch (Exception failure)
+        {
+            Step($"Native clipboard-history API diagnostic failed: {failure}");
+            return new HistoryApiObservation(null, "Error", [], failure.ToString());
+        }
+    }
+
+    private void CaptureHistoryDesktop(string label)
+    {
+        var path = Path.Combine(TestContext.TestResultsDirectory ?? Path.GetTempPath(), $"{label}-{Guid.NewGuid():N}.png");
+        if (ScreenCapture.TryCaptureDesktop(path))
+        {
+            TestContext.AddResultFile(path);
+        }
+        else
+        {
+            Step($"History diagnostic desktop capture failed: {path}");
+        }
+    }
+
+    private sealed record NativeHistorySurface(JsonElement? Tree, string State, string[] VisibleFixtureContents);
+
+    private sealed record HistoryApiObservation(bool? Enabled, string Status, string[] Ids, string? Error);
+
+    private void LogHistoryServiceDiagnostics()
+    {
+        using var services = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services");
+        Assert.IsNotNull(services, "Clipboard-history service diagnostics could not read the service registry.");
+        foreach (var name in services.GetSubKeyNames().Where(name => name.StartsWith("cbdhsvc", StringComparison.OrdinalIgnoreCase)))
+        {
+            var start = new ProcessStartInfo("sc.exe")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            start.ArgumentList.Add("query");
+            start.ArgumentList.Add(name);
+            using var process = Process.Start(start);
+            Assert.IsNotNull(process, "The clipboard-history service diagnostic process could not start.");
+            var stdout = process.StandardOutput.ReadToEndAsync();
+            var stderr = process.StandardError.ReadToEndAsync();
+            if (!process.WaitForExit(10_000))
+            {
+                process.Kill();
+                Step($"Clipboard-history service diagnostic timed out for {name}.");
+                continue;
+            }
+
+            Step($"Clipboard-history service {name}, exit {process.ExitCode}: {stdout.GetAwaiter().GetResult()}; {stderr.GetAwaiter().GetResult()}");
+        }
+    }
+
+    private void SetWindowsHistoryEnabled(bool enabled)
+    {
+        Step($"Setting Windows clipboard history to {enabled} through its real OS Settings control");
+        if (Target.Invoke(WinClipboard.IsHistoryEnabled) == enabled)
+        {
+            return;
+        }
+
+        var wasOpen = WindowsFinder.ListAll().Any(window =>
+            window.Title == "Settings" && window.ProcessName is "ApplicationFrameHost" or "SystemSettings");
+        using var launch = Process.Start(new ProcessStartInfo("ms-settings:clipboard") { UseShellExecute = true });
+        Session? lastWindow = null;
+        try
+        {
+            var timer = Stopwatch.StartNew();
+            var lastClick = TimeSpan.FromSeconds(-2);
+            var result = WaitHelper.WaitForStable(
+                () =>
+                {
+                    var historyEnabled = Target.Invoke(WinClipboard.IsHistoryEnabled);
+                    var window = WindowsFinder.WaitForWindow(
+                        window => window.Title == "Settings" && window.ProcessName is "ApplicationFrameHost" or "SystemSettings",
+                        timeoutMS: 500);
+                    lastWindow = window ?? lastWindow;
+                    var toggle = window?.FindAll<ToggleSwitch>(By.AccessibilityId(WindowsHistoryToggle), 0).SingleOrDefault();
+                    if (toggle is not null)
+                    {
+                        Assert.IsTrue(toggle.IsEnabled, "BLOCKED: Windows clipboard history cannot be changed through OS Settings. Check the clipboard-history policy.");
+                    }
+
+                    return (Window: window, Toggle: toggle, State: toggle?.GetProperty("ToggleState") ?? "<page not ready>", HistoryEnabled: historyEnabled);
+                },
+                state => state.HistoryEnabled == enabled,
+                timeoutMS: 45_000,
+                requiredConsecutiveMatches: 2,
+                recover: state =>
+                {
+                    var oppositeState = enabled ? "Off" : "On";
+                    if (state.Window is null || state.Toggle is null ||
+                        !string.Equals(state.State, oppositeState, StringComparison.OrdinalIgnoreCase) ||
+                        state.HistoryEnabled == enabled || timer.Elapsed - lastClick < TimeSpan.FromSeconds(2))
+                    {
+                        return;
+                    }
+
+                    Assert.IsTrue(
+                        WindowControl.WaitForForeground(new IntPtr(state.Window.WindowHandle), timeoutMS: 15_000, requiredConsecutiveMatches: 2),
+                        "Windows clipboard Settings did not become foreground before changing history.");
+                    Step($"Windows history is still {state.State} in both UI and API; activating the focused toggle once");
+                    state.Toggle.Focus();
+                    Assert.IsTrue(state.Toggle.WaitForProperty("HasKeyboardFocus", "true", 5_000), "The OS history toggle did not receive keyboard focus.");
+                    Target.Invoke(() => KeyboardHelper.SendChord(Key.Space));
+                    lastClick = timer.Elapsed;
+                },
+                shouldRetryException: AdvancedPasteUi.IsStaleElement);
+            Assert.IsTrue(
+                result.Succeeded,
+                $"Windows clipboard history did not become {enabled}. Last UI state: {result.LastObservation.State}; last API state: {result.LastObservation.HistoryEnabled}; last exception: {result.LastException}");
+        }
+        finally
+        {
+            if (!wasOpen && lastWindow is not null)
+            {
+                Assert.IsTrue(
+                    WindowControl.TryCloseByApp(lastWindow.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                    "The test-opened Windows Settings window could not be closed.");
+            }
+        }
     }
 
     private async Task<HistoryFixture> CopyHistoryFixtureAsync(string name)
@@ -280,16 +573,9 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         var content = $"{historyPrefix}.{name}";
         fixtureContents.Add(content);
         Step($"Copying the '{name}' history fixture and waiting for its exact Windows history ID");
-        var package = new DataPackage();
-        package.SetText(content);
-        Target.Invoke(() =>
-        {
-            Assert.IsTrue(
-                WinClipboard.SetContentWithOptions(package, new ClipboardContentOptions { IsAllowedInHistory = true, IsRoamable = false }),
-                "Windows rejected the test clipboard content.");
-            WinClipboard.Flush();
-        });
-        Assert.AreEqual(content, ReadClipboardText(), "The test history content did not reach the current clipboard.");
+        Target.CopyText(content);
+        WaitUntil(() => ReadClipboardText() == content, "The real editor copy did not put the exact history fixture on the current clipboard.");
+        Target.Clear();
 
         var items = await WaitForHistoryAsync(
             history => history.Count(item => ownedHistoryItems.TryGetValue(item.Id, out var text) && text == content) == 1,
@@ -441,7 +727,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 
     private sealed record ClipboardHistoryRegistrySnapshot(bool KeyExisted, bool ValueExisted, object? Value, RegistryValueKind Kind, bool HistoryEnabled)
     {
-        internal static ClipboardHistoryRegistrySnapshot Capture()
+        internal static ClipboardHistoryRegistrySnapshot Capture(bool historyEnabled)
         {
             using var key = Registry.CurrentUser.OpenSubKey(ClipboardRegistryPath);
             var valueExisted = key?.GetValueNames().Contains(ClipboardRegistryValue, StringComparer.OrdinalIgnoreCase) == true;
@@ -450,11 +736,12 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 valueExisted,
                 valueExisted ? key!.GetValue(ClipboardRegistryValue, null, RegistryValueOptions.DoNotExpandEnvironmentNames) : null,
                 valueExisted ? key!.GetValueKind(ClipboardRegistryValue) : RegistryValueKind.Unknown,
-                WinClipboard.IsHistoryEnabled());
+                historyEnabled);
         }
 
-        internal void Restore()
+        internal void Restore(Action<bool> setWindowsHistoryEnabled)
         {
+            setWindowsHistoryEnabled(HistoryEnabled);
             using (var key = Registry.CurrentUser.CreateSubKey(ClipboardRegistryPath, writable: true))
             {
                 Assert.IsNotNull(key, "The original Windows clipboard-history preference could not be restored.");

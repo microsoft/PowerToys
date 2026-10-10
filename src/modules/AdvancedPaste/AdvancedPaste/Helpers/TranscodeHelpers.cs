@@ -48,7 +48,7 @@ internal static class TranscodeHelpers
         Logger.LogDebug($"{nameof(outputProfile)}: {ProfileToString(outputProfile)}");
 #endif
 
-        var outputFolder = await Task.Run(() => Directory.CreateTempSubdirectory("PowerToys_AdvancedPaste_"), cancellationToken);
+        var outputFolder = await Task.Run(AdvancedPasteTempFileManager.CreateDirectory, cancellationToken);
         var outputFileName = StringComparer.OrdinalIgnoreCase.Equals(Path.GetExtension(inputFile.Path), extension) ? inputFileNameWithoutExtension + "_1" : inputFileNameWithoutExtension;
         var outputFilePath = Path.Combine(outputFolder.FullName, Path.ChangeExtension(outputFileName, extension));
         await File.WriteAllBytesAsync(outputFilePath, [], cancellationToken); // TranscodeAsync seems to require the output file to exist
