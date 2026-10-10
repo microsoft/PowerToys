@@ -97,6 +97,11 @@ or use a disposable desktop if saved history must be retained.
 The current clipboard and the original OS history preference are still restored.
 Cleanup clears only the current test-owned clipboard content before re-enabling
 history, then drains late test-owned IDs while preserving entries in the post-setup baseline.
+History fixture logs record the original registry preference and API-enabled state,
+plus the Windows build, clipboard-history policy values, and clipboard user-service
+configuration and state before activation. Enablement or history-insertion failures
+report the same diagnostics again to reveal changes from that baseline. These diagnostics
+do not enable services, override policy, or replace the exact Windows history-ID assertions.
 
 ## HTML-only conversion regression
 

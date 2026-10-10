@@ -22,6 +22,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     private const string HistoryCard = "AdvancedPasteClipboardHistoryEnabledSettingsCard";
     private const string ClipboardRegistryPath = @"Software\Microsoft\Clipboard";
     private const string ClipboardRegistryValue = "EnableClipboardHistory";
+    private const string ClipboardPolicyRegistryPath = @"Software\Policies\Microsoft\Windows\System";
     private const int MaximumHistoryEntries = 25;
 
     private readonly string historyPrefix = $"PowerToys.AdvancedPaste.UITests.{Guid.NewGuid():N}";
@@ -203,6 +204,8 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     private async Task RunHistoryScenarioAsync(int entryCount, bool requiresEmptyHistory, Func<Task> scenario)
     {
         var originalRegistry = ClipboardHistoryRegistrySnapshot.Capture();
+        Step($"Original OS history state: IsHistoryEnabled={originalRegistry.HistoryEnabled}; registry key existed={originalRegistry.KeyExisted}; value existed={originalRegistry.ValueExisted}; value={originalRegistry.Value}; kind={originalRegistry.Kind}");
+        Step(ClipboardHistoryDiagnostics());
         try
         {
             Step("Preparing OS history as a fixture; the Advanced Paste checkbox cannot enable an OS-disabled history card");
@@ -269,10 +272,17 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             key.Flush();
         }
 
-        WaitUntil(
+        var enabled = WaitHelper.WaitForStable(
             WinClipboard.IsHistoryEnabled,
-            "BLOCKED: Windows Clipboard.IsHistoryEnabled never became true after enabling the fixture. Check OS clipboard-history policy and service readiness; no test is skipped.",
-            timeoutMS: 20_000);
+            value => value,
+            timeoutMS: 20_000,
+            requiredConsecutiveMatches: 2,
+            shouldRetryException: AdvancedPasteUi.IsStaleElement);
+        if (!enabled.Succeeded)
+        {
+            Assert.Fail(
+                $"BLOCKED: Windows Clipboard.IsHistoryEnabled never became true after enabling the fixture. Check OS clipboard-history policy and service readiness. Last exception: {enabled.LastException}. {ClipboardHistoryDiagnostics()}");
+        }
     }
 
     private async Task<HistoryFixture> CopyHistoryFixtureAsync(string name)
@@ -290,6 +300,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             WinClipboard.Flush();
         });
         Assert.AreEqual(content, ReadClipboardText(), "The test history content did not reach the current clipboard.");
+        Step($"The '{name}' fixture reached the current clipboard; waiting for Windows history capture");
 
         var items = await WaitForHistoryAsync(
             history => history.Count(item => ownedHistoryItems.TryGetValue(item.Id, out var text) && text == content) == 1,
@@ -370,8 +381,79 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             await Task.Delay(100);
         }
 
-        Assert.Fail($"{message} Last Windows history item count: {lastCount}; known test-owned IDs: {ownedHistoryItems.Count}.");
+        Assert.Fail($"{message} Last Windows history item count: {lastCount}; known test-owned IDs: {ownedHistoryItems.Count}. {ClipboardHistoryDiagnostics()}");
         return [];
+    }
+
+    private static string ClipboardHistoryDiagnostics()
+    {
+        using var userSettings = Registry.CurrentUser.OpenSubKey(ClipboardRegistryPath);
+        using var policy = Registry.LocalMachine.OpenSubKey(ClipboardPolicyRegistryPath);
+        using var userPolicy = Registry.CurrentUser.OpenSubKey(ClipboardPolicyRegistryPath);
+        using var serviceTemplate = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\cbdhsvc");
+        using var windows = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows NT\CurrentVersion");
+        var build = $"{windows?.GetValue("CurrentBuildNumber")}.{windows?.GetValue("UBR")}";
+
+        return $"Clipboard history diagnostics: OS={windows?.GetValue("ProductName")} {windows?.GetValue("DisplayVersion")} build={build}; " +
+            $"IsHistoryEnabled={WinClipboard.IsHistoryEnabled()}; " +
+            $"HKCU EnableClipboardHistory={DescribeRegistryValue(userSettings, ClipboardRegistryValue)}; " +
+            $"HKLM AllowClipboardHistory={DescribeRegistryValue(policy, "AllowClipboardHistory")}; " +
+            $"HKCU AllowClipboardHistory={DescribeRegistryValue(userPolicy, "AllowClipboardHistory")}; " +
+            $"cbdhsvc template Start={DescribeRegistryValue(serviceTemplate, "Start")}, " +
+            $"DelayedAutoStart={DescribeRegistryValue(serviceTemplate, "DelayedAutoStart")}, " +
+            $"UserServiceFlags={DescribeRegistryValue(serviceTemplate, "UserServiceFlags")}; " +
+            $"Clipboard user services={ReadClipboardUserServiceStatus()}.";
+    }
+
+    private static string DescribeRegistryValue(RegistryKey? key, string valueName)
+    {
+        if (key is null)
+        {
+            return "key-missing";
+        }
+
+        var value = key.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+        return value is null ? "unset" : $"{value} ({key.GetValueKind(valueName)})";
+    }
+
+    private static string ReadClipboardUserServiceStatus()
+    {
+        var startInfo = new ProcessStartInfo("sc.exe")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+        };
+        startInfo.ArgumentList.Add("query");
+        startInfo.ArgumentList.Add("type=");
+        startInfo.ArgumentList.Add("service");
+        startInfo.ArgumentList.Add("state=");
+        startInfo.ArgumentList.Add("all");
+
+        using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Could not start sc.exe to inspect clipboard services.");
+        var output = process.StandardOutput.ReadToEndAsync();
+        var error = process.StandardError.ReadToEndAsync();
+        if (!process.WaitForExit(5_000))
+        {
+            process.Kill(entireProcessTree: true);
+            process.WaitForExit();
+            return "sc.exe service query timed out";
+        }
+
+        Task.WaitAll(output, error);
+        var services = output.Result
+            .Split("SERVICE_NAME:", StringSplitOptions.RemoveEmptyEntries)
+            .Select(service => service.Trim())
+            .Where(service => service.StartsWith("cbdhsvc", StringComparison.OrdinalIgnoreCase))
+            .Select(service => string.Join(" ", service.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim())))
+            .ToArray();
+        if (process.ExitCode != 0)
+        {
+            return $"sc.exe exited {process.ExitCode}: {error.Result.Trim()} {string.Join(" | ", services)}";
+        }
+
+        return services.Length == 0 ? "no cbdhsvc instances found" : string.Join(" | ", services);
     }
 
     private async Task DiscoverOwnedHistoryItemsAsync(IEnumerable<ClipboardHistoryItem> items)
