@@ -17,6 +17,7 @@ internal sealed partial class SystemData
     private readonly Lazy<GPUStats> _gpuStats = new(() => CreateGuarded("GPU.Initialize", static () => new GPUStats()));
     private readonly Lazy<CPUStats> _cpuStats = new(() => CreateGuarded("CPU.Initialize", static () => new CPUStats()));
     private readonly Lazy<BatteryStats> _batteryStats = new(() => CreateGuarded("Battery.Initialize", static () => new BatteryStats()));
+    private readonly Lazy<TemperatureStats> _temperatureStats = new(() => CreateGuarded("Temperature.Initialize", static () => new TemperatureStats()));
 
     public MemoryStats MemoryStats => _memoryStats.Value;
 
@@ -29,6 +30,8 @@ internal sealed partial class SystemData
     public CPUStats CpuStats => _cpuStats.Value;
 
     public BatteryStats BatteryStats => _batteryStats.Value;
+
+    public TemperatureStats TemperatureStats => _temperatureStats.Value;
 
     private SystemData()
     {

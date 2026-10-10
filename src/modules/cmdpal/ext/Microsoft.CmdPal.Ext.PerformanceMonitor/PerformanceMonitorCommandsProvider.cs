@@ -28,6 +28,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         PerformanceMetricKind.NetworkSpeed,
         PerformanceMetricKind.Gpu,
         PerformanceMetricKind.Battery,
+        PerformanceMetricKind.Temperature,
     ];
 
     internal static ProviderCrashSentinel CrashSentinel { get; } = new(ProviderIdValue);
@@ -45,6 +46,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     private PerformanceWidgetsPage? _networkSpeedBandPage;
     private PerformanceWidgetsPage? _gpuBandPage;
     private PerformanceWidgetsPage? _batteryBandPage;
+    private PerformanceWidgetsPage? _temperatureBandPage;
     private bool _softDisabled;
 
     public PerformanceMonitorCommandsProvider(bool softDisabled = false)
@@ -163,6 +165,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             PerformanceMetricKind.NetworkSpeed => Resources.GetResource("Network_Speed_Title"),
             PerformanceMetricKind.Gpu => Resources.GetResource("GPU_Usage_Title"),
             PerformanceMetricKind.Battery => Resources.GetResource("Battery_Usage_Title"),
+            PerformanceMetricKind.Temperature => Resources.GetResource("Temperature_Usage_Title"),
             _ => DisplayName,
         };
     }
@@ -177,6 +180,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             PerformanceMetricKind.NetworkSpeed => Resources.GetResource("Network_Usage_Subtitle"),
             PerformanceMetricKind.Gpu => Resources.GetResource("GPU_Usage_Subtitle"),
             PerformanceMetricKind.Battery => Resources.GetResource("Battery_Usage_Subtitle"),
+            PerformanceMetricKind.Temperature => Resources.GetResource("Temperature_Usage_Subtitle"),
             _ => string.Empty,
         };
     }
@@ -191,6 +195,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             PerformanceMetricKind.NetworkSpeed => Icons.NetworkIcon,
             PerformanceMetricKind.Gpu => Icons.GpuIcon,
             PerformanceMetricKind.Battery => Icons.BatteryIcon,
+            PerformanceMetricKind.Temperature => Icons.TemperatureIcon,
             _ => Icons.PerformanceMonitorIcon,
         };
     }
@@ -208,6 +213,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         _diskBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Disk);
         _gpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Gpu);
         _batteryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Battery);
+        _temperatureBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Temperature);
 
         List<ICommandItem> bands = [
             new CommandItem(_bandPage) { Title = DisplayName },
@@ -223,6 +229,11 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         if (batteryStats.HasBattery)
         {
             bands.Add(new CommandItem(_batteryBandPage) { Title = Resources.GetResource("Battery_Usage_Title") });
+        }
+
+        if (SystemData.Shared.TemperatureStats.IsAvailable)
+        {
+            bands.Add(new CommandItem(_temperatureBandPage) { Title = Resources.GetResource("Temperature_Usage_Title") });
         }
 
         _bands = bands.ToArray();
@@ -266,5 +277,8 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
         _batteryBandPage?.Dispose();
         _batteryBandPage = null;
+
+        _temperatureBandPage?.Dispose();
+        _temperatureBandPage = null;
     }
 }
