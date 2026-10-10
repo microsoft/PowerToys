@@ -64,12 +64,6 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-    <!-- This lets us reference types from CmdPalKeyboardService. -->
-    <CsWinRTIncludes>CmdPalKeyboardService</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <!-- This disables the auto-generated main, so we can be single-instanced -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
@@ -178,12 +172,6 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsTerminal\Microsoft.CmdPal.Ext.WindowsTerminal.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WinGet\Microsoft.CmdPal.Ext.WinGet.csproj" />
-
-    <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj">
-      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
-      <Private>True</Private>
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

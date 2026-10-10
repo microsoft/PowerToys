@@ -267,7 +267,6 @@
             "WinUI3Apps\\PowerToys.Settings.Cli.exe",
 
             "PowerToys.CmdPalModuleInterface.dll",
-            "CmdPalKeyboardService.dll",
             "PowerToys.ModuleContracts.dll",
             "Awake.ModuleServices.dll",
             "ColorPicker.ModuleServices.dll",

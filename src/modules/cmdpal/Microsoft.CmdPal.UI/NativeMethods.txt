@@ -69,6 +69,11 @@ SetWindowsHookEx
 UnhookWindowsHookEx
 CallNextHookEx
 GetModuleHandle
+GetAsyncKeyState
+KBDLLHOOKSTRUCT
+SendInput
+WM_KEYDOWN
+WM_SYSKEYDOWN
 
 GetWindowLong
 SetWindowLong
