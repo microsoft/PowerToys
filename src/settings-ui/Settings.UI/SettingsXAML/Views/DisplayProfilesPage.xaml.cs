@@ -1,0 +1,457 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+#nullable enable
+
+#pragma warning disable CA1863
+
+using System;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Graphics;
+
+namespace Microsoft.PowerToys.Settings.UI.Views
+{
+    public sealed partial class DisplayProfilesPage : NavigablePage
+    {
+        private MonitorPowerViewModel ViewModel { get; } = new();
+
+        public DisplayProfilesPage()
+        {
+            var initializationTimer = Stopwatch.StartNew();
+            Logger.LogInfo("Creating Display Profiles Settings page.");
+            DataContext = ViewModel;
+            try
+            {
+                InitializeComponent();
+                ViewModel.PreviewDisplays.CollectionChanged += PreviewDisplays_CollectionChanged;
+                Loaded += DisplayProfilesPage_Loaded;
+                Logger.LogInfo($"Display Profiles Settings page XAML initialized in {initializationTimer.ElapsedMilliseconds} ms.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to initialize the Display Profiles Settings page.", ex);
+                throw;
+            }
+
+            Logger.LogInfo("Display Profiles Settings page created.");
+        }
+
+        private void PreviewDisplays_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            RenderTopologyPreview();
+        }
+
+        private void RenderTopologyPreview()
+        {
+            if (Resources["PreviewTileTemplate"] is not DataTemplate previewTileTemplate)
+            {
+                throw new InvalidOperationException("The Display Profiles preview tile template is unavailable.");
+            }
+
+            DisplayTopologyCanvas.Children.Clear();
+            foreach (var display in ViewModel.PreviewDisplays)
+            {
+                if (previewTileTemplate.LoadContent() is not FrameworkElement tile)
+                {
+                    throw new InvalidOperationException("The Display Profiles preview tile template did not create a UI element.");
+                }
+
+                tile.DataContext = display;
+                Canvas.SetLeft(tile, display.LayoutLeft);
+                Canvas.SetTop(tile, display.LayoutTop);
+                DisplayTopologyCanvas.Children.Add(tile);
+            }
+        }
+
+        private void DisplayProfilesPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Logger.LogInfo("Display Profiles Settings page Loaded event fired; starting data initialization.");
+            ViewModel.OnPageLoaded();
+        }
+
+        private void ClearSelection_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ClearPreviewSelection();
+        }
+
+        private void PreviewDisplay_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { DataContext: MonitorDisplayInfo display })
+            {
+                ViewModel.TogglePreviewDisplaySelection(display);
+            }
+        }
+
+        private static bool TryGetProfile(object sender, out ProfileInfo profile)
+        {
+            if (sender is FrameworkElement { DataContext: ProfileInfo fromContext })
+            {
+                profile = fromContext;
+                return true;
+            }
+
+            if (sender is FrameworkElement { Tag: ProfileInfo fromTag })
+            {
+                profile = fromTag;
+                return true;
+            }
+
+            profile = null!;
+            return false;
+        }
+
+        private async void ApplyProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (TryGetProfile(sender, out var profile))
+            {
+                ViewModel.SelectedProfile = profile;
+                await ViewModel.ApplyProfileAsync();
+            }
+        }
+
+        private async void SaveProfile_Click(object sender, RoutedEventArgs e)
+        {
+            var nameInput = new TextBox
+            {
+                PlaceholderText = GetLocalizedString("DisplayProfiles_ProfileName_Placeholder", "Profile name"),
+            };
+            AutomationProperties.SetName(nameInput, GetLocalizedString("DisplayProfiles_ProfileName_AccessibilityName", "Profile name"));
+            var validationMessage = new TextBlock
+            {
+                TextWrapping = TextWrapping.Wrap,
+                Visibility = Visibility.Collapsed,
+            };
+            var content = new StackPanel { Spacing = 8 };
+            content.Children.Add(nameInput);
+            content.Children.Add(validationMessage);
+
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Title", "Save display profile"),
+                Content = content,
+                PrimaryButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Save", "Save"),
+                CloseButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Cancel", "Cancel"),
+                DefaultButton = ContentDialogButton.Primary,
+            };
+            dialog.PrimaryButtonClick += (_, args) =>
+            {
+                if (!ViewModel.TryValidateProfileName(nameInput.Text, out var message))
+                {
+                    validationMessage.Text = message;
+                    validationMessage.Visibility = Visibility.Visible;
+                    args.Cancel = true;
+                }
+            };
+            nameInput.TextChanged += (_, _) => validationMessage.Visibility = Visibility.Collapsed;
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                await ViewModel.SaveProfileAsync(nameInput.Text);
+            }
+        }
+
+        private static string[] SplitChord(string chord) =>
+            chord.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        private static Microsoft.PowerToys.Common.UI.Controls.KeyVisual CreateControllerKeyVisual(string text)
+        {
+            var key = new Microsoft.PowerToys.Common.UI.Controls.KeyVisual
+            {
+                Content = text,
+                MinWidth = 64,
+                MinHeight = 56,
+                Padding = new Thickness(12),
+                FontSize = 18,
+                IsHitTestVisible = false,
+            };
+            if (Application.Current.Resources.TryGetValue("AccentKeyVisualStyle", out var style) && style is Style keyStyle)
+            {
+                key.Style = keyStyle;
+            }
+
+            return key;
+        }
+
+        private async void EditControllerShortcut_Click(object sender, RoutedEventArgs e)
+        {
+            var pending = ViewModel.ControllerShortcut;
+            var held = Array.Empty<string>();
+
+            var keysPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Spacing = 12,
+                MinHeight = 64,
+            };
+            var statusBar = new InfoBar { Severity = InfoBarSeverity.Warning, IsClosable = false, IsOpen = false };
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = GetLocalizedString("DisplayProfiles_ControllerShortcutDialog_Title", "Controller shortcut"),
+                PrimaryButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Save", "Save"),
+                CloseButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Cancel", "Cancel"),
+                DefaultButton = ContentDialogButton.Primary,
+            };
+
+            string? renderedKeys = null;
+
+            void Render()
+            {
+                var names = held.Length > 0 ? held : SplitChord(pending);
+                dialog.IsPrimaryButtonEnabled = held.Length == 0 && SplitChord(pending).Length == 2;
+
+                var key = string.Join("+", names);
+                if (key == renderedKeys)
+                {
+                    return;
+                }
+
+                renderedKeys = key;
+                keysPanel.Children.Clear();
+                foreach (var name in names)
+                {
+                    keysPanel.Children.Add(CreateControllerKeyVisual(MonitorPowerViewModel.FormatControllerButton(name)));
+                }
+            }
+
+            var resetButton = new Button
+            {
+                Style = (Style)Application.Current.Resources["SubtleButtonStyle"],
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 8,
+                    Children = { new FontIcon { Glyph = "\uE777", FontSize = 14 }, new TextBlock { Text = GetLocalizedString("DisplayProfiles_ControllerShortcutDialog_Reset", "Reset") } },
+                },
+            };
+            resetButton.Click += (_, _) =>
+            {
+                pending = "View + A";
+                Render();
+            };
+
+            var clearButton = new Button
+            {
+                Style = (Style)Application.Current.Resources["SubtleButtonStyle"],
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 8,
+                    Children = { new FontIcon { Glyph = "\uE711", FontSize = 14 }, new TextBlock { Text = GetLocalizedString("DisplayProfiles_ControllerShortcutDialog_Clear", "Clear") } },
+                },
+            };
+            clearButton.Click += (_, _) =>
+            {
+                pending = string.Empty;
+                Render();
+            };
+
+            dialog.Content = new StackPanel
+            {
+                Spacing = 16,
+                MinWidth = 420,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = GetLocalizedString("DisplayProfiles_ControllerShortcutDialog_Instructions", "Hold exactly two buttons on your Xbox controller together. The Guide button may be reserved by Windows."),
+                        TextWrapping = TextWrapping.Wrap,
+                    },
+                    new Border
+                    {
+                        Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlFillColorDefaultBrush"],
+                        CornerRadius = new CornerRadius(8),
+                        Padding = new Thickness(24),
+                        Child = keysPanel,
+                    },
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Spacing = 8,
+                        Children = { resetButton, clearButton },
+                    },
+                    statusBar,
+                },
+            };
+
+            Render();
+
+            var gesture = new System.Collections.Generic.List<string>();
+            var controllerStatus = string.Empty;
+            var hint = string.Empty;
+
+            void UpdateStatus()
+            {
+                var message = string.IsNullOrEmpty(controllerStatus) ? hint : controllerStatus;
+                statusBar.Message = message;
+                statusBar.IsOpen = !string.IsNullOrEmpty(message);
+            }
+
+            using var cts = new System.Threading.CancellationTokenSource();
+            var captureTask = ViewModel.RunControllerCaptureAsync(
+                names =>
+                {
+                    if (names.Count > 0)
+                    {
+                        foreach (var name in names)
+                        {
+                            if (!gesture.Contains(name))
+                            {
+                                gesture.Add(name);
+                            }
+                        }
+
+                        hint = string.Empty;
+                        held = gesture.ToArray();
+                    }
+                    else if (gesture.Count > 0)
+                    {
+                        if (gesture.Count == 2)
+                        {
+                            pending = string.Join(" + ", gesture);
+                            hint = string.Empty;
+                        }
+                        else
+                        {
+                            hint = GetLocalizedString("DisplayProfiles_ControllerShortcutDialog_ExactlyTwo", "A controller shortcut needs exactly two buttons. Try again.");
+                        }
+
+                        gesture.Clear();
+                        held = Array.Empty<string>();
+                    }
+
+                    Render();
+                    UpdateStatus();
+                },
+                message =>
+                {
+                    controllerStatus = message;
+                    UpdateStatus();
+                },
+                cts.Token);
+
+            var result = await dialog.ShowAsync();
+            cts.Cancel();
+            await captureTask;
+
+            if (result == ContentDialogResult.Primary && SplitChord(pending).Length == 2)
+            {
+                ViewModel.ControllerShortcut = pending;
+            }
+        }
+
+        private async void TestController_Click(object sender, RoutedEventArgs e)
+        {
+            await ViewModel.TestControllerAsync();
+        }
+
+        private void OpenDiagnosticsLog_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.OpenDiagnosticsLog();
+        }
+
+        private void DeleteProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (TryGetProfile(sender, out var profile))
+            {
+                ViewModel.SelectedProfile = profile;
+                _ = ConfirmDeleteProfileAsync(profile);
+            }
+        }
+
+        private async void RenameProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (TryGetProfile(sender, out var profile) &&
+                await PromptForProfileNameAsync(
+                    GetLocalizedString("DisplayProfiles_RenameProfileDialog_Title", "Rename profile"),
+                    profile.Name,
+                    name => ViewModel.TryValidateProfileRename(profile, name, out var message) ? null : message) is { } newName)
+            {
+                await ViewModel.RenameProfileAsync(profile, newName);
+            }
+        }
+
+        private async Task ConfirmDeleteProfileAsync(ProfileInfo profile)
+        {
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = GetLocalizedString("DisplayProfiles_DeleteProfileDialog_Title", "Delete profile?"),
+                Content = string.Format(CultureInfo.CurrentCulture, GetLocalizedString("DisplayProfiles_DeleteProfileDialog_Content", "Delete '{0}'? This cannot be undone."), profile.Name),
+                PrimaryButtonText = GetLocalizedString("DisplayProfiles_DeleteProfileDialog_Delete", "Delete"),
+                CloseButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Cancel", "Cancel"),
+                DefaultButton = ContentDialogButton.Close,
+            };
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                ViewModel.DeleteProfile();
+            }
+        }
+
+        private async Task<string?> PromptForProfileNameAsync(string title, string initialName, Func<string, string?> validate)
+        {
+            var nameInput = new TextBox
+            {
+                Text = initialName,
+                PlaceholderText = GetLocalizedString("DisplayProfiles_ProfileName_Placeholder", "Profile name"),
+            };
+            AutomationProperties.SetName(nameInput, GetLocalizedString("DisplayProfiles_ProfileName_AccessibilityName", "Profile name"));
+            var validationMessage = new TextBlock
+            {
+                TextWrapping = TextWrapping.Wrap,
+                Visibility = Visibility.Collapsed,
+            };
+            var content = new StackPanel { Spacing = 8 };
+            content.Children.Add(nameInput);
+            content.Children.Add(validationMessage);
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = title,
+                Content = content,
+                PrimaryButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Save", "Save"),
+                CloseButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Cancel", "Cancel"),
+                DefaultButton = ContentDialogButton.Primary,
+            };
+            dialog.PrimaryButtonClick += (_, args) =>
+            {
+                var message = validate(nameInput.Text);
+                if (!string.IsNullOrEmpty(message))
+                {
+                    validationMessage.Text = message;
+                    validationMessage.Visibility = Visibility.Visible;
+                    args.Cancel = true;
+                }
+            };
+            nameInput.TextChanged += (_, _) => validationMessage.Visibility = Visibility.Collapsed;
+
+            return await dialog.ShowAsync() == ContentDialogResult.Primary
+                ? nameInput.Text
+                : null;
+        }
+
+        private static string GetLocalizedString(string key, string fallback)
+        {
+            var value = ResourceLoaderInstance.ResourceLoader.GetString(key);
+            return string.IsNullOrWhiteSpace(value) ? fallback : value;
+        }
+    }
+}
+
+#pragma warning restore CA1863

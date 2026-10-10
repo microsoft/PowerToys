@@ -109,7 +109,7 @@ internal sealed partial class ExtensionInstanceManager : IClassFactory
         var valueStr = new string(value);
         return valueStr switch
         {
-            "Microsoft.Windows.CmdPal_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal.Canary_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal.Dev_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome.Canary_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome.Dev_8wekyb3d8bbwe\0" or "Microsoft.WindowsTerminal\0" or "Microsoft.WindowsTerminal_8wekyb3d8bbwe\0" or "WindowsTerminalDev_8wekyb3d8bbwe\0" or "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\0" => true,
+            "Microsoft.CommandPalette_8wekyb3d8bbwe\0" or "Microsoft.CommandPalette.Canary_8wekyb3d8bbwe\0" or "Microsoft.CommandPalette.Dev_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal.Canary_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal.Dev_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome.Canary_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome.Dev_8wekyb3d8bbwe\0" or "Microsoft.WindowsTerminal\0" or "Microsoft.WindowsTerminal_8wekyb3d8bbwe\0" or "WindowsTerminalDev_8wekyb3d8bbwe\0" or "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\0" => true,
             _ => false,
         };
     }

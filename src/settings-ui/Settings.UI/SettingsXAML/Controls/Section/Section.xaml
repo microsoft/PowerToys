@@ -1,0 +1,41 @@
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.Section"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="Root"
+    HorizontalContentAlignment="Stretch">
+
+    <StackPanel Spacing="0">
+        <TextBlock
+            Margin="1,24,0,0"
+            AutomationProperties.HeadingLevel="Level2"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
+            Text="{Binding Title, ElementName=Root}"
+            Visibility="{Binding TitleVisibility, ElementName=Root}" />
+
+        <TextBlock
+            Margin="1,4,0,0"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Style="{ThemeResource CaptionTextBlockStyle}"
+            Text="{Binding Subtitle, ElementName=Root}"
+            TextWrapping="WrapWholeWords"
+            Visibility="{Binding SubtitleVisibility, ElementName=Root}" />
+
+        <Border
+            Margin="0,8,0,0"
+            Padding="16"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Visibility="{Binding CanvasVisibility, ElementName=Root}">
+            <ContentPresenter Content="{Binding CanvasContent, ElementName=Root}" HorizontalContentAlignment="Center" />
+        </Border>
+
+        <ContentPresenter
+            x:Name="ContentHost"
+            Margin="0,8,0,0"
+            Content="{Binding SectionContent, ElementName=Root}"
+            HorizontalContentAlignment="Stretch" />
+    </StackPanel>
+</UserControl>

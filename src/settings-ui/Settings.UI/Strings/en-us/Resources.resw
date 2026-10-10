@@ -6682,6 +6682,60 @@ The break timer font matches the text font.</value>
   <data name="CmdPal_Settings.Description" xml:space="preserve">
     <value>Configure the activation shortcut, extensions, behavior and much more</value>
   </data>
+  <data name="DisplayProfiles.ModuleTitle" xml:space="preserve"><value>Display Profiles</value></data>
+  <data name="MonitorPower/ModuleTitle" xml:space="preserve"><value>Display Profiles</value></data>
+  <data name="DisplayProfiles.ModuleDescription" xml:space="preserve"><value>Save and apply display layouts, active displays, resolutions, and orientations.</value></data>
+  <data name="DisplayProfiles_Controller.Header" xml:space="preserve"><value>Controller shortcut</value></data>
+  <data name="DisplayProfiles_ControllerEnabled.Header" xml:space="preserve"><value>Enable controller shortcut</value></data>
+  <data name="DisplayProfiles_ControllerEnabled.Description" xml:space="preserve"><value>Use an Xbox controller to open the display profile selector.</value></data>
+  <data name="DisplayProfiles_ControllerShortcut.Header" xml:space="preserve"><value>Shortcut</value></data>
+  <data name="DisplayProfiles_ControllerShortcut.Description" xml:space="preserve"><value>Hold two supported controller buttons together to choose the activation chord. The Xbox/Guide button may be reserved by Windows.</value></data>
+  <data name="DisplayProfiles_ControllerTest.Header" xml:space="preserve"><value>Test the shortcut</value></data>
+  <data name="DisplayProfiles_ControllerTest.Description" xml:space="preserve"><value>Check whether an XInput controller is connected and whether its buttons are readable.</value></data>
+  <data name="DisplayProfiles_ControllerTest_Status.Text" xml:space="preserve"><value>Controller input diagnostics are active.</value></data>
+<data name="Shell_DisplayProfiles.Content" xml:space="preserve"><value>Display Profiles</value></data>
+  <data name="DisplayProfiles_CurrentTopology.Header" xml:space="preserve"><value>Current Display Topology</value></data>
+  <data name="DisplayProfiles_ProfilesSection.Title" xml:space="preserve"><value>Display Profiles</value></data>
+  <data name="DisplayProfiles_ProfilesSection.Subtitle" xml:space="preserve"><value>Select a profile to apply it. Saved profiles keep the selected monitors, positions, resolutions, and orientations.</value></data>
+  <data name="DisplayProfiles_ControllerSection.Title" xml:space="preserve"><value>Controller shortcut</value></data>
+  <data name="DisplayProfiles_ControllerSection.Subtitle" xml:space="preserve"><value>Use an Xbox controller chord to open the quick display profile selector overlay.</value></data>
+  <data name="DisplayProfiles_DiagnosticsSection.Title" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="DisplayProfiles_ActivationSection.Title" xml:space="preserve"><value>Keyboard shortcut</value></data>
+  <data name="DisplayProfiles_ActivationSection.Subtitle" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>
+<data name="DisplayProfiles_TopologySection.Title" xml:space="preserve"><value>Current Display Topology</value></data>
+  <data name="DisplayProfiles_TopologySection.Subtitle" xml:space="preserve"><value>Select active displays directly in the topology preview. Selected displays are highlighted; mirrored outputs share a tile.</value></data>
+<data name="DisplayProfiles_Preview_Description.Text" xml:space="preserve"><value>Select active displays directly in the topology preview. Selected displays are highlighted; mirrored outputs share a tile.</value></data>
+<data name="DisplayProfiles_ConnectedDisplays.Header" xml:space="preserve"><value>Connected displays</value></data>
+  <data name="DisplayProfiles_ConnectedDisplays.Description" xml:space="preserve"><value>Monitor names, connection type, resolution, orientation, and active status.</value></data>
+  <data name="DisplayProfiles_ActiveDisplays_Title.Text" xml:space="preserve"><value>Connected displays</value></data>
+<data name="DisplayProfiles_RefreshDisplays.Content" xml:space="preserve"><value>Refresh</value></data>
+<data name="DisplayProfiles_DisplayList_Description.Text" xml:space="preserve"><value>Monitor names, connection type, resolution, orientation, and active status are shown below. Saving a profile captures the current active display topology.</value></data>
+<data name="DisplayProfiles_EmptyState.Text" xml:space="preserve"><value>No displays are available. Connect or enable a display, then refresh.</value></data>
+<data name="DisplayProfiles_PrimaryBadge.Text" xml:space="preserve"><value>Primary</value></data>
+  <data name="DisplayProfiles_BuiltInBadge.Text" xml:space="preserve"><value>Built-in</value></data>
+  <data name="DisplayProfiles_BuiltIn_AllDisplays" xml:space="preserve"><value>All displays</value></data>
+  <data name="DisplayProfiles_BuiltIn_PrimaryOnly" xml:space="preserve"><value>Primary display only</value></data>
+  <data name="DisplayProfiles_Diagnostics.Header" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="DisplayProfiles_Diagnostics_Header.Header" xml:space="preserve"><value>Diagnostics log</value></data>
+  <data name="DisplayProfiles_Diagnostics_OpenLog.Content" xml:space="preserve"><value>Open diagnostics log</value></data>
+  <data name="DisplayProfiles_Profiles.Header" xml:space="preserve"><value>Display Profiles</value></data>
+  <data name="DisplayProfiles_Profiles_Header.Header" xml:space="preserve"><value>Saved Profiles</value></data>
+  <data name="DisplayProfiles_SaveProfile.Content" xml:space="preserve"><value>Save profile</value></data>
+  <data name="DisplayProfiles_SaveProfileDialog_Title" xml:space="preserve"><value>Save display profile</value></data>
+  <data name="DisplayProfiles_SaveProfileDialog_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="DisplayProfiles_SaveProfileDialog_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="DisplayProfiles_ProfileName_Placeholder" xml:space="preserve"><value>Profile name</value></data>
+  <data name="DisplayProfiles_ProfileName_AccessibilityName" xml:space="preserve"><value>Profile name</value></data>
+  <data name="DisplayProfiles_ProfileName_Required" xml:space="preserve"><value>Enter a profile name.</value></data>
+  <data name="DisplayProfiles_ProfileName_Reserved" xml:space="preserve"><value>Built-in profile names are reserved.</value></data>
+  <data name="DisplayProfiles_ProfileName_NoDisplaysSelected" xml:space="preserve"><value>Select at least one active display in the topology preview.</value></data>
+  <data name="DisplayProfiles_ProfileName_CheckFailed" xml:space="preserve"><value>Could not check saved profiles: {0}</value></data>
+  <data name="DisplayProfiles_SavedProfiles_Description.Header" xml:space="preserve"><value>Click Apply to activate a saved display configuration. Profiles store monitor positions, resolutions, and orientations.</value></data>
+  <data name="DisplayProfiles_ControllerShortcut_Edit.AutomationProperties.Name" xml:space="preserve"><value>Edit controller activation chord</value></data>
+  <data name="DisplayProfiles_ControllerShortcut_Edit.ToolTipService.ToolTip" xml:space="preserve"><value>Change controller chord. Right-click to reset to default.</value></data>
+  <data name="DisplayProfiles_ActivationShortcut.Header" xml:space="preserve"><value>Activation Shortcut</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_Header.Header" xml:space="preserve"><value>Open Profile Selector</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_Description.Header" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>
   <data name="CmdPal_Launch.Header" xml:space="preserve">
     <value>Open Command Palette</value>
     <comment>Command Palette is a product name, do not loc</comment>
@@ -6886,4 +6940,72 @@ Text uses the current drawing color.</value>
     <value>Example: game.exe</value>
     <comment>{Locked="game.exe"}</comment>
   </data>
+  <data name="DisplayProfiles_ProfileActions.AutomationProperties.Name" xml:space="preserve"><value>More actions</value></data>
+  <data name="DisplayProfiles_RenameProfile.Text" xml:space="preserve"><value>Rename</value></data>
+  <data name="DisplayProfiles_DeleteProfile.Text" xml:space="preserve"><value>Delete</value></data>
+  <data name="DisplayProfiles_TopologyPreview.AutomationProperties.Name" xml:space="preserve"><value>Display topology preview</value></data>
+  <data name="DisplayProfiles_DeselectAll.Content" xml:space="preserve"><value>Deselect all</value></data>
+  <data name="DisplayProfiles_ControllerEnabledToggle.AutomationProperties.Name" xml:space="preserve"><value>Enable controller activation</value></data>
+  <data name="DisplayProfiles_AssignControllerShortcut.AutomationProperties.Name" xml:space="preserve"><value>Assign controller shortcut</value></data>
+  <data name="DisplayProfiles_AssignControllerShortcutText.Text" xml:space="preserve"><value>Assign shortcut</value></data>
+  <data name="DisplayProfiles_ControllerTestCard.Header" xml:space="preserve"><value>Test controller</value></data>
+  <data name="DisplayProfiles_ControllerTestCard.Description" xml:space="preserve"><value>Check whether an XInput controller is connected and whether its buttons are readable.</value></data>
+  <data name="DisplayProfiles_TestController.Content" xml:space="preserve"><value>Test controller</value></data>
+  <data name="DisplayProfiles_ControllerShortcutDialog_Title" xml:space="preserve"><value>Controller shortcut</value></data>
+  <data name="DisplayProfiles_ControllerShortcutDialog_Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="DisplayProfiles_ControllerShortcutDialog_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="DisplayProfiles_ControllerShortcutDialog_Instructions" xml:space="preserve"><value>Hold exactly two buttons on your Xbox controller together. The Guide button may be reserved by Windows.</value></data>
+  <data name="DisplayProfiles_ControllerShortcutDialog_ExactlyTwo" xml:space="preserve"><value>A controller shortcut needs exactly two buttons. Try again.</value></data>
+  <data name="DisplayProfiles_DeleteProfileDialog_Title" xml:space="preserve"><value>Delete profile?</value></data>
+  <data name="DisplayProfiles_DeleteProfileDialog_Content" xml:space="preserve"><value>Delete '{0}'? This cannot be undone.</value></data>
+  <data name="DisplayProfiles_DeleteProfileDialog_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="DisplayProfiles_RenameProfileDialog_Title" xml:space="preserve"><value>Rename profile</value></data>
+  <data name="DisplayProfiles_ControllerStatus_NotChecked" xml:space="preserve"><value>Controller status has not been checked.</value></data>
+  <data name="DisplayProfiles_ControllerShortcut_Invalid" xml:space="preserve"><value>Enter exactly two supported controller buttons, for example 'View + A'.</value></data>
+  <data name="DisplayProfiles_ControllerShortcut_InvalidSaved" xml:space="preserve"><value>The saved controller chord used an unsupported button. Capture a new chord; View + A is the default.</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_InvalidSaved" xml:space="preserve"><value>The saved activation shortcut is invalid; the default shortcut is in use.</value></data>
+  <data name="DisplayProfiles_Status_LoadingDisplays" xml:space="preserve"><value>Loading display topology...</value></data>
+  <data name="DisplayProfiles_Status_NoDisplays" xml:space="preserve"><value>No displays are currently available.</value></data>
+  <data name="DisplayProfiles_Status_DisplaysFound" xml:space="preserve"><value>Found {0} active display(s) and {1} inactive display(s).</value></data>
+  <data name="DisplayProfiles_Status_ProfilesLoaded" xml:space="preserve"><value>Loaded {0} saved profile(s)</value></data>
+  <data name="DisplayProfiles_Status_SavingProfile" xml:space="preserve"><value>Saving selected displays as a profile...</value></data>
+  <data name="DisplayProfiles_Status_SelectProfile" xml:space="preserve"><value>Please select a profile</value></data>
+  <data name="DisplayProfiles_Status_ApplyingProfile" xml:space="preserve"><value>Applying profile '{0}'...</value></data>
+  <data name="DisplayProfiles_Status_SelectProfileToDelete" xml:space="preserve"><value>Please select a profile to delete</value></data>
+  <data name="DisplayProfiles_Status_ProfileDeleted" xml:space="preserve"><value>Deleted profile '{0}'</value></data>
+  <data name="DisplayProfiles_Status_DuplicateProfile" xml:space="preserve"><value>A profile named '{0}' already exists.</value></data>
+  <data name="DisplayProfiles_DisplayState_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="DisplayProfiles_DisplayState_Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="DisplayProfiles_DisplayState_SelectedPrimary" xml:space="preserve"><value>Selected · Primary</value></data>
+  <data name="DisplayProfiles_DisplayState_Selected" xml:space="preserve"><value>Selected</value></data>
+  <data name="DisplayProfiles_DisplayState_Primary" xml:space="preserve"><value>Primary</value></data>
+  <data name="DisplayProfiles_DisplayState_Mirrored" xml:space="preserve"><value>Mirrored x{0}</value></data>
+  <data name="DisplayProfiles_DisplayDetails" xml:space="preserve"><value>{0} · {1} · {2}</value></data>
+  <data name="DisplayProfiles_DisplayAccessibility" xml:space="preserve"><value>{0}, {1}, {2}{3}</value></data>
+  <data name="DisplayProfiles_ProfileDescription_BuiltIn" xml:space="preserve"><value>Built-in profile</value></data>
+  <data name="DisplayProfiles_ProfileDescription_Saved" xml:space="preserve"><value>Saved profile</value></data>
+  <data name="DisplayProfiles_ControllerTest_InvalidChord" xml:space="preserve"><value>The configured controller chord is invalid. Capture a new chord before testing.</value></data>
+  <data name="DisplayProfiles_ControllerTest_Looking" xml:space="preserve"><value>Looking for a supported XInput controller. Hold {0} together to test the chord.</value></data>
+  <data name="DisplayProfiles_ControllerTest_NoneDetected" xml:space="preserve"><value>No supported XInput controller detected. Connect an Xbox-compatible controller and try again.</value></data>
+  <data name="DisplayProfiles_ControllerTest_Detected" xml:space="preserve"><value>Detected {0} XInput controller(s). Hold {1} at the same time within 5 seconds.</value></data>
+  <data name="DisplayProfiles_ControllerTest_Pressed" xml:space="preserve"><value>Controller {0} detected {1} pressed together.</value></data>
+  <data name="DisplayProfiles_ControllerTest_IndividualInput" xml:space="preserve"><value>Individual button input is detected ({0}). Hold {1} together; pressing the buttons separately does not activate the selector.</value></data>
+  <data name="DisplayProfiles_ControllerTest_IndividualTimeout" xml:space="preserve"><value>Individual buttons are readable, but {0} was not detected. Hold both buttons at the same time.</value></data>
+  <data name="DisplayProfiles_ControllerTest_NoInput" xml:space="preserve"><value>Controller detected, but no button input was received. Hold {0} at the same time.</value></data>
+  <data name="DisplayProfiles_Controller_Unsupported" xml:space="preserve"><value>Controller input is unsupported on this system (XInput is unavailable).</value></data>
+  <data name="DisplayProfiles_ControllerCapture_CouldNotPause" xml:space="preserve"><value>Could not pause the controller listener because the setting could not be saved.</value></data>
+  <data name="DisplayProfiles_ControllerCapture_NoneDetected" xml:space="preserve"><value>No XInput controller detected. Connect an Xbox-compatible controller.</value></data>
+  <data name="DisplayProfiles_Diagnostics_LogOpened" xml:space="preserve"><value>Opened the Display Profiles diagnostics log.</value></data>
+  <data name="DisplayProfiles_Status_LoadSettingsFailed" xml:space="preserve"><value>Could not load Display Profiles settings: {0}</value></data>
+  <data name="DisplayProfiles_Status_SaveSettingsFailed" xml:space="preserve"><value>Could not save Display Profiles settings: {0}</value></data>
+  <data name="DisplayProfiles_Status_RuntimeMissing" xml:space="preserve"><value>The Display Profiles runtime host is not installed beside Settings.</value></data>
+  <data name="DisplayProfiles_Status_RuntimeStartFailed" xml:space="preserve"><value>Could not start the Display Profiles runtime host.</value></data>
+  <data name="DisplayProfiles_Status_RuntimeStartFailedWithDetails" xml:space="preserve"><value>Could not start the Display Profiles runtime host: {0}</value></data>
+  <data name="DisplayProfiles_Status_LoadDisplaysFailed" xml:space="preserve"><value>Error loading displays: {0}</value></data>
+  <data name="DisplayProfiles_Status_LoadProfilesFailed" xml:space="preserve"><value>Error loading profiles: {0}</value></data>
+  <data name="DisplayProfiles_Status_SaveProfileFailed" xml:space="preserve"><value>Error saving profile: {0}</value></data>
+  <data name="DisplayProfiles_Status_ApplyProfileFailed" xml:space="preserve"><value>Error applying profile: {0}</value></data>
+  <data name="DisplayProfiles_Status_DeleteProfileFailed" xml:space="preserve"><value>Error deleting profile: {0}</value></data>
+  <data name="DisplayProfiles_Status_RenameProfileFailed" xml:space="preserve"><value>Error renaming profile: {0}</value></data>
+  <data name="DisplayProfiles_Diagnostics_LogOpenFailed" xml:space="preserve"><value>Could not open the Display Profiles diagnostics log: {0}</value></data>
 </root>

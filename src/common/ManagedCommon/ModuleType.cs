@@ -27,6 +27,7 @@ namespace ManagedCommon
         MouseJump,
         MousePointerCrosshairs,
         MouseWithoutBorders,
+        MonitorPower,
         NewPlus,
         Peek,
         PowerRename,

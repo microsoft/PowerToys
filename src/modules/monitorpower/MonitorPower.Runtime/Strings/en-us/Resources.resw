@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MonitorPower_Selector_Title.Text" xml:space="preserve"><value>Choose a display profile</value></data>
+  <data name="MonitorPower_Selector_ProfileList.AutomationProperties.Name" xml:space="preserve"><value>Display profiles</value></data>
+  <data name="MonitorPower_Selector_AllDisplays" xml:space="preserve"><value>All displays</value></data>
+  <data name="MonitorPower_Selector_PrimaryDisplayOnly" xml:space="preserve"><value>Primary display only</value></data>
+  <data name="MonitorPower_Selector_NoSavedProfiles" xml:space="preserve"><value>No custom profiles are saved yet. Built-in profiles are still available. Use the arrow keys or controller D-pad to select a profile, then press A or Apply to confirm.</value></data>
+  <data name="MonitorPower_Selector_ApplyButton.Content" xml:space="preserve"><value>Apply</value></data>
+  <data name="MonitorPower_Selector_Window.Title" xml:space="preserve"><value>Display profile selector</value></data>
+  <data name="MonitorPower_Selector_ApplyHint.Text" xml:space="preserve"><value>Apply</value></data>
+  <data name="MonitorPower_Selector_CloseHint.Text" xml:space="preserve"><value>Close</value></data>
+  <data name="MonitorPower_Selector_DPadHint.Text" xml:space="preserve"><value>D-pad / stick</value></data>
+  <data name="MonitorPower_Selector_Error_UnsupportedActivation" xml:space="preserve"><value>Unsupported activation shortcut: {0}</value></data>
+  <data name="MonitorPower_Selector_Error_UnsupportedChord" xml:space="preserve"><value>Unsupported controller chord: {0}</value></data>
+  <data name="MonitorPower_Selector_Error_SettingsRead" xml:space="preserve"><value>Could not read Display Profiles settings: {0}</value></data>
+  <data name="MonitorPower_Selector_Error_ControllerUnavailable" xml:space="preserve"><value>Controller input is unsupported on this system (XInput is unavailable).</value></data>
+  <data name="MonitorPower_Selector_Error_NoProfileSelected" xml:space="preserve"><value>Select a display profile first.</value></data>
+  <data name="MonitorPower_Selector_Applying" xml:space="preserve"><value>Applying '{0}'...</value></data>
+  <data name="MonitorPower_Selector_Error_TopologyChanged" xml:space="preserve"><value>The connected display topology changed while the selector was open. Close this window and reopen it to review the current displays.</value></data>
+  <data name="MonitorPower_Selector_Error_ApplyFailed" xml:space="preserve"><value>Could not apply '{0}': {1}</value></data>
+  <data name="MonitorPower_Selector_Profile_Saved" xml:space="preserve"><value>Saved profile</value></data>
+  <data name="MonitorPower_Selector_Profile_BuiltIn" xml:space="preserve"><value>Built-in profile</value></data>
+</root>

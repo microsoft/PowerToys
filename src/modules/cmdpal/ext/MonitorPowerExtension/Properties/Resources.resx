@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="provider_display_name" xml:space="preserve">
+    <value>Display Profiles</value>
+  </data>
+  <data name="provider_subtitle" xml:space="preserve">
+    <value>Apply and manage PowerToys display profiles</value>
+  </data>
+  <data name="page_title" xml:space="preserve">
+    <value>Display Profiles</value>
+  </data>
+  <data name="switch_to_external_title" xml:space="preserve">
+    <value>Switch to {0}</value>
+    <comment>{0} = external display name</comment>
+  </data>
+  <data name="switch_to_external_subtitle" xml:space="preserve">
+    <value>Turn off other displays, keep only {0}</value>
+    <comment>{0} = external display name</comment>
+  </data>
+  <data name="switch_to_internal_title" xml:space="preserve">
+    <value>Switch to {0}</value>
+    <comment>{0} = internal display name</comment>
+  </data>
+  <data name="switch_to_internal_subtitle" xml:space="preserve">
+    <value>Turn off external displays, keep only {0}</value>
+    <comment>{0} = internal display name</comment>
+  </data>
+  <data name="choose_monitors_title" xml:space="preserve">
+    <value>Choose active monitors</value>
+  </data>
+  <data name="apply_profile_title" xml:space="preserve">
+    <value>Apply selected display profile</value>
+  </data>
+  <data name="apply_profile_subtitle" xml:space="preserve">
+    <value>Apply a saved display setup from your profile</value>
+  </data>
+  <data name="restore_state_title" xml:space="preserve">
+    <value>Restore display state</value>
+  </data>
+  <data name="restore_state_subtitle" xml:space="preserve">
+    <value>Undo the last display topology change</value>
+  </data>
+  <data name="apply_selection" xml:space="preserve">
+    <value>Apply selection</value>
+  </data>
+  <data name="apply_selection_subtitle" xml:space="preserve">
+    <value>Activate the selected displays</value>
+  </data>
+  <data name="will_stay_on" xml:space="preserve">
+    <value>Will stay ON</value>
+  </data>
+  <data name="will_turn_off" xml:space="preserve">
+    <value>Will turn OFF</value>
+  </data>
+  <data name="cannot_disable_all" xml:space="preserve">
+    <value>Cannot disable all displays — select at least one</value>
+  </data>
+  <data name="no_active_displays" xml:space="preserve">
+    <value>No active displays detected</value>
+  </data>
+  <data name="display_state_restored" xml:space="preserve">
+    <value>Display state restored</value>
+  </data>
+  <data name="no_saved_state" xml:space="preserve">
+    <value>No saved display state to restore</value>
+  </data>
+  <data name="display_label" xml:space="preserve">
+    <value>Display {0}</value>
+    <comment>{0} = display number</comment>
+  </data>
+  <data name="unknown_display" xml:space="preserve">
+    <value>Unknown Display</value>
+  </data>
+  <data name="displays_active" xml:space="preserve">
+    <value>{0} display(s) active</value>
+    <comment>{0} = number of active displays</comment>
+  </data>
+  <data name="external_display" xml:space="preserve">
+    <value>External Display</value>
+  </data>
+  <data name="internal_display" xml:space="preserve">
+    <value>Internal Display</value>
+  </data>
+  <data name="switch_to_external_command_name" xml:space="preserve">
+    <value>Switch to external display</value>
+  </data>
+  <data name="switch_to_internal_command_name" xml:space="preserve">
+    <value>Switch to internal display</value>
+  </data>
+  <data name="choose_monitors_command_name" xml:space="preserve">
+    <value>Choose active monitors</value>
+  </data>
+  <data name="switched_display_topology" xml:space="preserve">
+    <value>Switched display topology</value>
+  </data>
+  <data name="activated_displays_format" xml:space="preserve">
+    <value>Activated {0} display(s)</value>
+    <comment>{0} = number of activated displays</comment>
+  </data>
+  <data name="profile_saved_format" xml:space="preserve">
+    <value>Profile saved with {0} display(s)</value>
+    <comment>{0} = number of displays in profile</comment>
+  </data>
+  <data name="error_format" xml:space="preserve">
+    <value>ERROR: {0}</value>
+    <comment>{0} = error details</comment>
+  </data>
+  <data name="error_prefix" xml:space="preserve">
+    <value>ERROR: </value>
+  </data>
+  <data name="error_saved_state_no_paths" xml:space="preserve">
+    <value>Saved state has no display paths</value>
+  </data>
+  <data name="error_no_displays_selected" xml:space="preserve">
+    <value>No displays selected</value>
+  </data>
+  <data name="error_no_displays_connected" xml:space="preserve">
+    <value>None of the selected displays are currently connected</value>
+  </data>
+  <data name="error_no_active_monitors_remaining" xml:space="preserve">
+    <value>Applying this profile would leave no active monitors. At least one selected target must already be active.</value>
+  </data>
+  <data name="error_no_matching_paths" xml:space="preserve">
+    <value>No matching display paths found for the selected targets</value>
+  </data>
+  <data name="error_no_active_to_save" xml:space="preserve">
+    <value>No active displays to save</value>
+  </data>
+  <data name="error_profile_not_found" xml:space="preserve">
+    <value>Profile file not found</value>
+  </data>
+  <data name="error_profile_empty" xml:space="preserve">
+    <value>Profile is empty or invalid</value>
+  </data>
+  <data name="error_profile_layout_invalid" xml:space="preserve">
+    <value>The profile display layout is invalid or ambiguous</value>
+  </data>
+  <data name="restore_failed_format" xml:space="preserve">
+    <value>Restore failed: {0}</value>
+    <comment>{0} = error details</comment>
+  </data>
+  <data name="press_esc_to_undo" xml:space="preserve">
+    <value>Press ESC to undo</value>
+  </data>
+  <data name="save_profile_title" xml:space="preserve">
+    <value>Create profile</value>
+  </data>
+  <data name="save_profile_subtitle" xml:space="preserve">
+    <value>Save the current display setup as a profile</value>
+  </data>
+  <data name="profile_saved" xml:space="preserve">
+    <value>Profile saved</value>
+  </data>
+  <data name="profile_name_label" xml:space="preserve">
+    <value>Profile name</value>
+  </data>
+  <data name="profile_name_placeholder" xml:space="preserve">
+    <value>e.g., Home office</value>
+  </data>
+  <data name="select_monitors_label" xml:space="preserve">
+    <value>Select monitors to include</value>
+  </data>
+  <data name="select_monitors_subtitle" xml:space="preserve">
+    <value>Toggle each monitor and confirm the profile name</value>
+  </data>
+  <data name="save_profile_button" xml:space="preserve">
+    <value>Save profile</value>
+  </data>
+  <data name="save_profile_command_subtitle" xml:space="preserve">
+    <value>Review and save the profile name and selected displays</value>
+  </data>
+  <data name="cancel_profile_title" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="cancel_profile_subtitle" xml:space="preserve">
+    <value>Discard changes and return to Display Profiles</value>
+  </data>
+  <data name="turn_monitor_on_title" xml:space="preserve">
+    <value>Turn monitor on</value>
+  </data>
+  <data name="turn_monitor_off_title" xml:space="preserve">
+    <value>Turn monitor off</value>
+  </data>
+  <data name="toggle_monitor_subtitle" xml:space="preserve">
+    <value>Toggle whether this monitor is included in the profile</value>
+  </data>
+  <data name="monitor_summary_format" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>{0} = monitor inclusion state; {1} = captured layout summary</comment>
+  </data>
+  <data name="monitor_on_label" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="monitor_off_label" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="layout_summary_format" xml:space="preserve">
+    <value>{0} × {1} at {2}, {3}</value>
+    <comment>{0} = width; {1} = height; {2} = X position; {3} = Y position</comment>
+  </data>
+  <data name="layout_captured_label" xml:space="preserve">
+    <value>Current layout will be captured</value>
+  </data>
+  <data name="confirm_create_profile_title" xml:space="preserve">
+    <value>Create display profile?</value>
+  </data>
+  <data name="confirm_update_profile_title" xml:space="preserve">
+    <value>Update display profile?</value>
+  </data>
+  <data name="confirm_profile_description" xml:space="preserve">
+    <value>Save "{0}" with these displays: {1}. Their current resolution, position, orientation, refresh rate, color depth, and primary-display state will be captured.</value>
+    <comment>{0} = profile name; {1} = selected display names</comment>
+  </data>
+  <data name="profile_name_required" xml:space="preserve">
+    <value>Profile name is required</value>
+  </data>
+  <data name="profile_no_monitors" xml:space="preserve">
+    <value>Select at least one monitor</value>
+  </data>
+  <data name="create_profile_page_title" xml:space="preserve">
+    <value>Create profile</value>
+  </data>
+  <data name="apply_profile_status" xml:space="preserve">
+    <value>Applying profile...</value>
+  </data>
+  <data name="profile_applied" xml:space="preserve">
+    <value>Profile applied</value>
+  </data>
+  <data name="all_displays_title" xml:space="preserve">
+    <value>All displays</value>
+  </data>
+  <data name="all_displays_subtitle" xml:space="preserve">
+    <value>Enable all connected displays</value>
+  </data>
+  <data name="primary_display_only_title" xml:space="preserve">
+    <value>Primary display only</value>
+  </data>
+  <data name="primary_display_only_subtitle" xml:space="preserve">
+    <value>Keep only the primary display active</value>
+  </data>
+  <data name="edit_profile_subtitle" xml:space="preserve">
+    <value>Change the profile name or selected displays</value>
+  </data>
+  <data name="delete_profile_title" xml:space="preserve">
+    <value>Delete profile</value>
+  </data>
+  <data name="delete_profile_subtitle" xml:space="preserve">
+    <value>Remove this saved display profile</value>
+  </data>
+  <data name="profile_deleted" xml:space="preserve">
+    <value>Profile deleted</value>
+  </data>
+  <data name="confirm_delete_profile_title" xml:space="preserve">
+    <value>Delete display profile?</value>
+  </data>
+  <data name="confirm_delete_profile_description" xml:space="preserve">
+    <value>Delete "{0}"? This action cannot be undone.</value>
+    <comment>{0} = profile name</comment>
+  </data>
+  <data name="apply_profile_busy" xml:space="preserve">
+    <value>Another display profile is already being applied</value>
+  </data>
+  <data name="profile_unavailable_monitors" xml:space="preserve">
+    <value>This profile contains unavailable displays. Reconnect them before saving changes.</value>
+  </data>
+  <data name="edit_profile_title" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+  <data name="edit_profile_page_title" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+</root>

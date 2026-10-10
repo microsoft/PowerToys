@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.MousePointerCrosshairs => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
                 ModuleType.MeasureTool => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
                 ModuleType.PowerLauncher => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
+                ModuleType.MonitorPower => "ms-appx:///Assets/Settings/Icons/DisplayProfiles.png",
                 ModuleType.GeneralSettings => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
                 _ => $"ms-appx:///Assets/Settings/Icons/{moduleType}.png",
             };
@@ -71,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.MouseJump => generalSettingsConfig.Enabled.MouseJump,
                 ModuleType.MousePointerCrosshairs => generalSettingsConfig.Enabled.MousePointerCrosshairs,
                 ModuleType.MouseWithoutBorders => generalSettingsConfig.Enabled.MouseWithoutBorders,
+                ModuleType.MonitorPower => generalSettingsConfig.Enabled.MonitorPower,
                 ModuleType.NewPlus => generalSettingsConfig.Enabled.NewPlus,
                 ModuleType.Peek => generalSettingsConfig.Enabled.Peek,
                 ModuleType.PowerRename => generalSettingsConfig.Enabled.PowerRename,
@@ -115,6 +117,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.MouseJump: generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
                 case ModuleType.MousePointerCrosshairs: generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
                 case ModuleType.MouseWithoutBorders: generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
+                case ModuleType.MonitorPower: generalSettingsConfig.Enabled.MonitorPower = isEnabled; break;
                 case ModuleType.NewPlus: generalSettingsConfig.Enabled.NewPlus = isEnabled; break;
                 case ModuleType.Peek: generalSettingsConfig.Enabled.Peek = isEnabled; break;
                 case ModuleType.PowerRename: generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
@@ -162,6 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.MouseJump => MouseJumpSettings.ModuleName,
                 ModuleType.MousePointerCrosshairs => MousePointerCrosshairsSettings.ModuleName,
                 ModuleType.MouseWithoutBorders => MouseWithoutBordersSettings.ModuleName,
+                ModuleType.MonitorPower => "MonitorPower",
                 ModuleType.NewPlus => NewPlusSettings.ModuleName,
                 ModuleType.Peek => PeekSettings.ModuleName,
                 ModuleType.PowerRename => PowerRenameSettings.ModuleName,

@@ -82,6 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.MouseJump => typeof(MouseUtilsPage),
                 ModuleType.MousePointerCrosshairs => typeof(MouseUtilsPage),
                 ModuleType.MouseWithoutBorders => typeof(MouseWithoutBordersPage),
+                ModuleType.MonitorPower => typeof(DisplayProfilesPage),
                 ModuleType.NewPlus => typeof(NewPlusPage),
                 ModuleType.Peek => typeof(PeekPage),
                 ModuleType.PowerRename => typeof(PowerRenamePage),

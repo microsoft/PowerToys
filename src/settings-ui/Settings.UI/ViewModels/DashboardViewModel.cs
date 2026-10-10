@@ -501,6 +501,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
                 ModuleType.MouseWithoutBorders => GetModuleItemsMouseWithoutBorders(),
+                ModuleType.MonitorPower => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.Peek => GetModuleItemsPeek(),
                 ModuleType.PowerDisplay => GetModuleItemsPowerDisplay(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
@@ -892,7 +893,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (sender is ModuleType moduleType)
             {
-                NavigationService.Navigate(ModuleGpoHelper.GetModulePageType(moduleType));
+                var pageType = ModuleGpoHelper.GetModulePageType(moduleType);
+                if (moduleType == ModuleType.MonitorPower)
+                {
+                    Logger.LogInfo($"Monitor Power dashboard card invoked; navigating to {pageType.Name}.");
+                }
+
+                var navigated = NavigationService.Navigate(pageType);
+                if (moduleType == ModuleType.MonitorPower)
+                {
+                    Logger.LogInfo($"Monitor Power navigation result: {navigated}.");
+                }
             }
         }
 
