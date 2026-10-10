@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         private static readonly PreviewType DefaultPreviewType = PreviewType.Bezelled;
 
         // Receives a string as a parameter and returns an int representing the index
-        // to select in the Segmented control on the Mouse Jump settings page
+        // to select in the preview style ComboBox on the Mouse Jump settings page
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             var previewType = MouseJumpPreviewTypeConverter.DefaultPreviewType;
@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
                 previewType);
         }
 
-        // Receives an int as a parameter that represents the selected index in the Segmented
+        // Receives an int as a parameter that represents the selected index in the preview style ComboBox
         // control on the Mouse Jump settings page, and returns the name of the PreviewType enum
         // for that index.
         public object ConvertBack(object value, Type targetType, object parameter, string language)

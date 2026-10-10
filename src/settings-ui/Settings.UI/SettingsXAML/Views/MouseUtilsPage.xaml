@@ -7,7 +7,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:panels="using:Microsoft.PowerToys.Settings.UI.Panels"
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
@@ -494,7 +493,7 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <panels:MouseJumpPanel x:Name="MouseUtils_MouseJump_Panel" x:Uid="MouseUtils_MouseJump_Panel" />
+                <controls:MouseJumpPanel x:Name="MouseUtils_MouseJump_Panel" x:Uid="MouseUtils_MouseJump_Panel" />
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs" AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}">
