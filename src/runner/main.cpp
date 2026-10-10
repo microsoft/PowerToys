@@ -66,6 +66,54 @@ namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
     const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
+
+    // Records when each startup stage completes, in ms since process creation. Each stage is an ETW
+    // event, and the whole set is also logged as one line so perf tools can read it without elevation.
+    class StartupStages
+    {
+    public:
+        void reached(const char* stage)
+        {
+            const auto ms = ms_since_process_start();
+            Trace::StartupStage(stage, ms);
+
+            if (!summary.empty())
+            {
+                summary += ' ';
+            }
+
+            summary += stage;
+            summary += '=';
+            summary += std::to_string(ms);
+        }
+
+        void log() const
+        {
+            Logger::info("Startup stages (ms since process start): {}", summary);
+        }
+
+    private:
+        static uint64_t ms_since_process_start()
+        {
+            FILETIME creation{}, exit{}, kernel{}, user{};
+            if (!GetProcessTimes(GetCurrentProcess(), &creation, &exit, &kernel, &user))
+            {
+                return 0;
+            }
+
+            FILETIME now{};
+            GetSystemTimePreciseAsFileTime(&now);
+
+            const auto to_100ns = [](const FILETIME& time) {
+                return (static_cast<uint64_t>(time.dwHighDateTime) << 32) | time.dwLowDateTime;
+            };
+            const auto start = to_100ns(creation);
+            const auto current = to_100ns(now);
+            return current > start ? (current - start) / 10'000 : 0;
+        }
+
+        std::string summary;
+    };
 }
 
 void chdir_current_executable()
@@ -214,11 +262,15 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 //init_global_error_handlers();
 #endif
     Trace::RegisterProvider();
+    Trace::RegisterPerformanceProvider();
+    StartupStages startupStages;
 
     // Load settings from file before reading them
     load_general_settings();
     auto const settings = get_general_settings();
+    startupStages.reached("SettingsLoaded");
     start_tray_icon(isProcessElevated, settings.showThemeAdaptiveTrayIcon);
+    startupStages.reached("TrayIconReady");
 
     if (settings.enableQuickAccess)
     {
@@ -344,8 +396,11 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
             }
         }
+        startupStages.reached("ModulesLoaded");
+
         // Start initial powertoys
         start_enabled_powertoys();
+        startupStages.reached("EnabledModulesStarted");
         std::wstring product_version = get_product_version();
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);
@@ -371,6 +426,8 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         }
 
         settings_telemetry::init();
+        startupStages.reached("Ready");
+        startupStages.log();
         result = run_message_loop();
     }
     catch (std::runtime_error& err)
@@ -379,6 +436,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         MessageBoxW(nullptr, std::wstring(err_what.begin(), err_what.end()).c_str(), GET_RESOURCE_STRING(IDS_ERROR).c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
         result = -1;
     }
+    Trace::UnregisterPerformanceProvider();
     Trace::UnregisterProvider();
     // When the full Windows session is ending, the OS reaps the Quick Access
     // host process in parallel, so its stop timeout is pure dead time against

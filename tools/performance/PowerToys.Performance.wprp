@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Captures the PowerToys performance markers (Microsoft.PowerToys.Performance provider). Combine it with
+     a built-in profile to see them next to CPU and disk activity, for example:
+     wpr -start CPU -start PowerToys.Performance.wprp -filemode -->
+<WindowsPerformanceRecorder Version="1.0" Author="Microsoft Corporation" Copyright="Microsoft Corporation" Company="Microsoft Corporation">
+  <Profiles>
+    <EventCollector Id="EventCollector_PowerToysPerformance" Name="PowerToys performance markers">
+      <BufferSize Value="64" />
+      <Buffers Value="4" />
+    </EventCollector>
+    <!-- Microsoft.PowerToys.Performance -->
+    <EventProvider Id="EventProvider_PowerToysPerformance" Name="9d83a68b-e53f-5d64-0e80-e3a9faf69485" />
+    <Profile Id="PowerToysPerformance.Verbose.File" Name="PowerToysPerformance" Description="PowerToys performance markers" LoggingMode="File" DetailLevel="Verbose">
+      <Collectors>
+        <EventCollectorId Value="EventCollector_PowerToysPerformance">
+          <EventProviders>
+            <EventProviderId Value="EventProvider_PowerToysPerformance" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+    <Profile Id="PowerToysPerformance.Verbose.Memory" Name="PowerToysPerformance" Description="PowerToys performance markers" Base="PowerToysPerformance.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
+  </Profiles>
+</WindowsPerformanceRecorder>
