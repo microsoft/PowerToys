@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
@@ -108,7 +108,7 @@
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
     <PackageVersion Include="System.CodeDom" Version="$(DotNetRuntimePackageVersion)" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.1" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Data.OleDb" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->

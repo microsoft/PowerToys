@@ -30,10 +30,10 @@ The shim returns the target CLI's exit code unchanged. It substitutes one of its
 
 ## Library
 
-Use the **System.CommandLine** library for CLI argument parsing. This is already defined in `Directory.Packages.props`:
+Use the **System.CommandLine** library for CLI argument parsing. The version is already defined in `Directory.Packages.props`:
 
 ```xml
-<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+<PackageVersion Include="System.CommandLine" Version="2.0.1" />
 ```
 
 Add the reference to your project:
@@ -46,20 +46,21 @@ Add the reference to your project:
 
 - Use `--kebab-case` for long form (e.g., `--shrink-only`).
 - Use single `-x` for short form (e.g., `-s`, `-w`).
-- Define aliases as static readonly arrays: `["--silent", "-s"]`.
-- Create options using `Option<T>` with descriptive help text.
-- Add validators for options that require range or format checking.
+- Pass the long name first, then any aliases: `new Option<bool>("--silent", "-s")`.
+- Create options using `Option<T>` and set `Description` to descriptive help text.
+- Add validators (`option.Validators.Add(...)`, reporting failures with `result.AddError(...)`) for options that require range or format checking.
 
 ## RootCommand Setup
 
 - Create a `RootCommand` with a brief description.
-- Add all options and arguments to the command.
+- Add all options and arguments to the command (`rootCommand.Options.Add(...)`, `rootCommand.Arguments.Add(...)`).
+- `RootCommand` includes the standard `--help` and `--version` options. Remove them from `rootCommand.Options` if the CLI renders its own help or reuses their aliases.
 
 ## Parsing
 
-- Use `Parser(rootCommand).Parse(args)` to parse CLI arguments.
-- Extract option values using `parseResult.GetValueForOption()`.
-- Note: Use `Parser` directly; `RootCommand.Parse()` may not be available with the pinned System.CommandLine version.
+- Use `rootCommand.Parse(args)` to parse CLI arguments.
+- Extract option values using `parseResult.GetValue(option)`.
+- To run a handler, register it with `command.SetAction(parseResult => ...)` and call `parseResult.Invoke()` or `parseResult.InvokeAsync()`.
 
 ### Parse/Validation Errors
 

@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Cli;
@@ -18,7 +20,7 @@ namespace PowerDisplay.Cli.UnitTests;
 public class ProgramTokenTests
 {
     private static ParseResult Parse(params string[] args)
-        => new Parser(new PowerDisplayRootCommand()).Parse(args);
+        => new PowerDisplayRootCommand().Parse(args);
 
     [TestMethod]
     public void HelpFlag_IsDetected()
@@ -73,6 +75,35 @@ public class ProgramTokenTests
     public void ApplyProfileWithId_IsNotVersion()
         => Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "5")));
 
+    [DataTestMethod]
+    [DataRow("[suggest]", new[] { "set", "-n", "bad", "--brightness", "50" })]
+    [DataRow("[suggest:32]", new[] { "set", "-n", "bad", "--brightness", "50" })]
+    [DataRow("[suggest]", new[] { "set", "--brightness", "invalid" })]
+    [DataRow("[suggest:32]", new[] { "set", "--brightness", "invalid" })]
+    [DataRow("[suggest]", new[] { "set", "--brightness", "50", "--bogus" })]
+    [DataRow("[suggest:32]", new[] { "set", "--brightness", "50", "--bogus" })]
+    [DataRow("[suggest]", new[] { "up", "--brightness", "--step", "-1" })]
+    [DataRow("[suggest:32]", new[] { "up", "--brightness", "--step", "-1" })]
+    [DataRow("[suggest]", new[] { "apply-profile" })]
+    [DataRow("[suggest:32]", new[] { "apply-profile" })]
+    public void SuggestDirective_InvalidArguments_PreserveParseErrors(string directive, string[] arguments)
+    {
+        var parsed = Parse([directive, .. arguments]);
+
+        Assert.IsTrue(parsed.Errors.Count > 0, "Completion directives must not hide errors before manual command dispatch.");
+    }
+
+    [DataTestMethod]
+    [DataRow("[suggest]")]
+    [DataRow("[suggest:32]")]
+    public void SuggestDirective_MissingResponseFile_PreservesParseError(string directive)
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"PowerDisplay-{Guid.NewGuid():N}.rsp");
+        var parsed = Parse(directive, "set", "--brightness", "50", "@" + missingPath);
+
+        Assert.IsTrue(parsed.Errors.Count > 0, "A missing response file must prevent dispatch of a partial command.");
+    }
+
     [TestMethod]
     public void BuildParseErrorResult_CollapsesMultipleMessagesIntoOneEnvelope()
     {
@@ -115,7 +146,7 @@ public class ProgramTokenTests
     {
         var parsed = Parse("up", "--brightness");
         Assert.AreEqual(0, parsed.Errors.Count);
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.BrightnessFlag));
+        Assert.IsTrue(parsed.GetValue(CliOptions.BrightnessFlag));
     }
 
     [TestMethod]
@@ -137,8 +168,8 @@ public class ProgramTokenTests
         var parsed = Parse("apply-profile", "--quiet", "1");
 
         Assert.AreEqual(0, parsed.Errors.Count, "--quiet must not consume the profile id");
-        Assert.AreEqual(1, parsed.GetValueForArgument(CliOptions.ProfileId));
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Quiet), "a bare --quiet resolves to true");
+        Assert.AreEqual(1, parsed.GetValue(CliOptions.ProfileId));
+        Assert.IsTrue(parsed.GetValue(CliOptions.Quiet), "a bare --quiet resolves to true");
     }
 
     [DataTestMethod]
@@ -150,8 +181,8 @@ public class ProgramTokenTests
         var parsed = Parse(first, second, third);
 
         Assert.AreEqual(0, parsed.Errors.Count);
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Json));
-        Assert.AreEqual(17, parsed.GetValueForArgument(CliOptions.ProfileId));
+        Assert.IsTrue(parsed.GetValue(CliOptions.Json));
+        Assert.AreEqual(17, parsed.GetValue(CliOptions.ProfileId));
         Assert.AreEqual(ArgumentArity.Zero, CliOptions.Json.Arity);
     }
 
@@ -163,7 +194,7 @@ public class ProgramTokenTests
         var parsed = Parse(first, second);
 
         Assert.AreEqual(0, parsed.Errors.Count);
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Json));
+        Assert.IsTrue(parsed.GetValue(CliOptions.Json));
     }
 
     [TestMethod]
@@ -205,8 +236,8 @@ public class ProgramTokenTests
         var parsed = Parse("set", "--power-state", "0x04", "--confirm-power-off");
 
         Assert.AreEqual(0, parsed.Errors.Count);
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.ConfirmPowerOff));
-        Assert.AreEqual("0x04", parsed.GetValueForOption(CliOptions.PowerState));
+        Assert.IsTrue(parsed.GetValue(CliOptions.ConfirmPowerOff));
+        Assert.AreEqual("0x04", parsed.GetValue(CliOptions.PowerState));
     }
 
     [TestMethod]
@@ -226,7 +257,7 @@ public class ProgramTokenTests
         var parse = Parse("apply-profile", "5");
 
         Assert.AreEqual(0, parse.Errors.Count);
-        Assert.AreEqual(5, parse.GetValueForArgument(CliOptions.ProfileId));
+        Assert.AreEqual(5, parse.GetValue(CliOptions.ProfileId));
     }
 
     [TestMethod]

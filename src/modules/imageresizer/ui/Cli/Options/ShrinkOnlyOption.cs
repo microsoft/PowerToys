@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class ShrinkOnlyOption : Option<bool>
     {
-        private static readonly string[] _aliases = ["--shrink-only"];
-
         public ShrinkOnlyOption()
-            : base(_aliases, Properties.Resources.CLI_Option_ShrinkOnly)
+            : base("--shrink-only")
         {
+            Description = Properties.Resources.CLI_Option_ShrinkOnly;
         }
     }
 }

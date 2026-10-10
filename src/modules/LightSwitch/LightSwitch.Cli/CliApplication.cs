@@ -60,9 +60,10 @@ internal sealed class CliApplication
                 var commandLine = new CliCommandLine();
                 var parsed = commandLine.Parse(presentation.Arguments);
 
-                if (parsed.Errors.Count != 0)
+                var parseErrors = CliCommandLine.GetErrors(parsed);
+                if (parseErrors.Count != 0)
                 {
-                    throw new CliException("INVALID_ARGUMENT", string.Join(" ", parsed.Errors.Select(error => error.Message)));
+                    throw new CliException("INVALID_ARGUMENT", string.Join(" ", parseErrors));
                 }
 
                 var request = commandLine.CreateRequest(parsed);

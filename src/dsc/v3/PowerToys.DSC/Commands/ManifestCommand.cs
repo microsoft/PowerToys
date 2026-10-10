@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.CommandLine.Invocation;
+using System.CommandLine;
 using PowerToys.DSC.Options;
 using PowerToys.DSC.Properties;
 
@@ -22,13 +22,13 @@ public sealed class ManifestCommand : BaseCommand
         : base("manifest", Resources.ManifestCommandDescription)
     {
         _outputDirectoryOption = new OutputDirectoryOption();
-        AddOption(_outputDirectoryOption);
+        Options.Add(_outputDirectoryOption);
     }
 
     /// <inheritdoc/>
-    public override void CommandHandlerInternal(InvocationContext context)
+    public override int CommandHandlerInternal(ParseResult parseResult)
     {
-        var outputDir = context.ParseResult.GetValueForOption(_outputDirectoryOption);
-        context.ExitCode = Resource!.Manifest(outputDir) ? 0 : 1;
+        var outputDir = parseResult.GetValue(_outputDirectoryOption);
+        return Resource!.Manifest(outputDir) ? 0 : 1;
     }
 }

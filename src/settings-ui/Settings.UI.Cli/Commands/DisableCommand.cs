@@ -14,14 +14,10 @@ internal sealed class DisableCommand : Command
     public DisableCommand()
         : base("disable", "Disable a PowerToys module")
     {
-        var moduleArg = new Argument<string>("module", "Module name (e.g. AlwaysOnTop, FancyZones)");
-        AddArgument(moduleArg);
+        var moduleArg = new Argument<string>("module") { Description = "Module name (e.g. AlwaysOnTop, FancyZones)" };
+        Arguments.Add(moduleArg);
 
-        this.SetHandler(context =>
-        {
-            var module = context.ParseResult.GetValueForArgument(moduleArg);
-            context.ExitCode = Execute(module);
-        });
+        SetAction(parseResult => Execute(parseResult.GetValue(moduleArg)!));
     }
 
     private static int Execute(string module)

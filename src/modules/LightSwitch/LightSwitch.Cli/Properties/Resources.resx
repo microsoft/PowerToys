@@ -126,6 +126,10 @@ JSON help/version output is local: version, success, and help or cliVersion.</va
     <value>Unknown schedule mode. Use fixed-hours, sunset-to-sunrise, or follow-night-light.</value>
     <comment>Do not translate the literal mode values fixed-hours, sunset-to-sunrise, or follow-night-light.</comment>
   </data>
+  <data name="Error_UnrecognizedArgument" xml:space="preserve">
+    <value>Unrecognized command or argument '{0}'.</value>
+    <comment>{0} is the command-line token exactly as the user typed it.</comment>
+  </data>
   <data name="Error_CommandRequired" xml:space="preserve">
     <value>Specify a command. The schedule command requires enable or disable.</value>
     <comment>schedule, enable, and disable are literal command names and must not be translated.</comment>
