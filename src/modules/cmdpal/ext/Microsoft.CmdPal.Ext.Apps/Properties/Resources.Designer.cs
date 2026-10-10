@@ -637,6 +637,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Scan custom shortcut folders beyond {0} levels.
+        /// </summary>
+        internal static string scan_all_custom_shortcut_subfolders {
+            get {
+                return ResourceManager.GetString("scan_all_custom_shortcut_subfolders", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Scan desktop folders beyond {0} levels.
+        /// </summary>
+        internal static string scan_all_desktop_subfolders {
+            get {
+                return ResourceManager.GetString("scan_all_desktop_subfolders", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Search apps....
         /// </summary>
         internal static string search_installed_apps_placeholder {

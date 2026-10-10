@@ -20,6 +20,9 @@ internal sealed class DesktopAppSource : DirectoryWin32ProgramSource
         => Win32ProgramSourceProfile.RecurseSubdirectories
             | (_settings.IncludeNonAppsOnDesktop ? Win32ProgramSourceProfile.IncludeNonApplications : 0);
 
+    /// <inheritdoc />
+    public override int MaximumDepth { get; }
+
     /// <summary>Initializes a new instance of the <see cref="DesktopAppSource"/> class. Creates discovery over the current user and shared Desktop folders.</summary>
     public DesktopAppSource(AllAppsSettings settings)
         : base(
@@ -30,5 +33,6 @@ internal sealed class DesktopAppSource : DirectoryWin32ProgramSource
             settings.ProgramSuffixes)
     {
         _settings = settings;
+        MaximumDepth = settings.DesktopMaximumDepth;
     }
 }

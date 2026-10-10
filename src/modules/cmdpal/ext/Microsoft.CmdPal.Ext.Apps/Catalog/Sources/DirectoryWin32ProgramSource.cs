@@ -133,60 +133,60 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
             yield break;
         }
 
-        FileAttributes attributes;
-        try
-        {
-            attributes = File.GetAttributes(normalizedPath);
-        }
-        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
-        {
-            onMissing?.Invoke(normalizedPath);
-            yield break;
-        }
-        catch (Exception ex)
-        {
-            onError?.Invoke(normalizedPath, ex);
-            yield break;
-        }
-
-        if ((attributes & FileAttributes.Directory) == 0)
-        {
-            if (HasSupportedSuffix(normalizedPath) && IsCandidateFileInSource(normalizedPath))
-            {
-                yield return normalizedPath;
-            }
-
-            yield break;
-        }
-
         var emittedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var configuredDirectory in _directories)
         {
             var sourceRoot = PathHelpers.NormalizePath(configuredDirectory);
-            string enumerationRoot;
-            int maximumDepth;
-            if (TryGetDirectoryDepth(sourceRoot, normalizedPath, out var dirtyDirectoryDepth))
+            var isWithinSource = TryGetDirectoryDepth(sourceRoot, normalizedPath, out var dirtyPathDepth);
+            if (isWithinSource)
             {
-                if (dirtyDirectoryDepth > MaximumDepth)
+                if (dirtyPathDepth > 0
+                    && (dirtyPathDepth - 1 > MaximumDepth
+                        || !CanEnumerateDirectory(sourceRoot, Path.GetDirectoryName(normalizedPath)!, onError, onMissing, cancellationToken)))
                 {
                     continue;
                 }
-
-                enumerationRoot = normalizedPath;
-                maximumDepth = MaximumDepth == int.MaxValue
-                    ? int.MaxValue
-                    : MaximumDepth - dirtyDirectoryDepth;
             }
-            else if (TryGetDirectoryDepth(normalizedPath, sourceRoot, out _))
-            {
-                enumerationRoot = sourceRoot;
-                maximumDepth = MaximumDepth;
-            }
-            else
+            else if (!TryGetDirectoryDepth(normalizedPath, sourceRoot, out _))
             {
                 continue;
             }
 
+            FileAttributes attributes;
+            try
+            {
+                attributes = Win32FileEnumerator.FileWrapper.GetAttributes(normalizedPath);
+                if (isWithinSource && dirtyPathDepth > 0 && (attributes & FileAttributes.Directory) != 0
+                    && (dirtyPathDepth > MaximumDepth || Win32FileEnumerator.ShouldSkipSubdirectory(normalizedPath, attributes)))
+                {
+                    continue;
+                }
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                onMissing?.Invoke(normalizedPath);
+                yield break;
+            }
+            catch (Exception ex)
+            {
+                onError?.Invoke(normalizedPath, ex);
+                yield break;
+            }
+
+            if ((attributes & FileAttributes.Directory) == 0)
+            {
+                if (isWithinSource && HasSupportedSuffix(normalizedPath))
+                {
+                    yield return normalizedPath;
+                }
+
+                yield break;
+            }
+
+            var enumerationRoot = isWithinSource ? normalizedPath : sourceRoot;
+            var maximumDepth = isWithinSource && MaximumDepth != int.MaxValue
+                ? MaximumDepth - dirtyPathDepth
+                : MaximumDepth;
             foreach (var candidatePath in Win32FileEnumerator.EnumerateFiles(enumerationRoot, _suffixes, maximumDepth, onError, IsExcludedPath, cancellationToken))
             {
                 if (!IsExcludedPath(candidatePath) && emittedPaths.Add(candidatePath))
@@ -198,6 +198,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
     }
 
     /// <inheritdoc />
+    /// <remarks>Excluded folders still invalidate existing items so reconciliation can remove them.</remarks>
     public bool IsRelevantPath(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -257,24 +258,43 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         return false;
     }
 
-    private bool IsCandidateFileInSource(string path)
+    private static bool CanEnumerateDirectory(
+        string sourceRoot,
+        string directory,
+        Action<string, Exception>? onError,
+        Action<string>? onMissing,
+        CancellationToken cancellationToken)
     {
-        var parentDirectory = Path.GetDirectoryName(path);
-        if (string.IsNullOrEmpty(parentDirectory))
+        // Explicit roots remain scannable regardless of their attributes or ancestors.
+        if (string.Equals(directory, sourceRoot, StringComparison.OrdinalIgnoreCase))
         {
-            return false;
+            return true;
         }
 
-        foreach (var configuredDirectory in _directories)
+        foreach (var segment in Path.GetRelativePath(sourceRoot, directory).Split(Path.DirectorySeparatorChar))
         {
-            if (TryGetDirectoryDepth(PathHelpers.NormalizePath(configuredDirectory), parentDirectory, out var depth)
-                && depth <= MaximumDepth)
+            cancellationToken.ThrowIfCancellationRequested();
+            sourceRoot = Path.Combine(sourceRoot, segment);
+            try
             {
-                return true;
+                if (Win32FileEnumerator.ShouldSkipSubdirectory(sourceRoot, Win32FileEnumerator.FileWrapper.GetAttributes(sourceRoot)))
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                onMissing?.Invoke(sourceRoot);
+                return false;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                onError?.Invoke(sourceRoot, ex);
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     private bool HasSupportedSuffix(string path)

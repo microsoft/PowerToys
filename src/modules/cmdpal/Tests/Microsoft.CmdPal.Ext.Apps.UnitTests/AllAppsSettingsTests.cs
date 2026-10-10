@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -20,6 +21,73 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public class AllAppsSettingsTests
 {
+    [TestMethod]
+    [DataRow("apps.ScanAllDesktopSubfolders")]
+    [DataRow("apps.ScanAllCustomShortcutSubfolders")]
+    public void ScanAllSubfolders_LabelsUseDefaultDepthWithoutSubtitles(string settingKey)
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            var settings = new AllAppsSettings(settingsPath);
+            var defaultDepth = settingKey == "apps.ScanAllDesktopSubfolders"
+                ? settings.DesktopMaximumDepth
+                : settings.CustomShortcutFolderMaximumDepth;
+            var form = (SettingsForm)settings.Settings.ToContent().Single();
+            var body = JsonNode.Parse(form.TemplateJson)!["body"]!.AsArray();
+            var toggle = body.Single(item => item?["columns"]?[0]?["items"]?[0]?["id"]?.GetValue<string>() == settingKey);
+            var labelItems = toggle!["columns"]![1]!["items"]!.AsArray();
+
+            Assert.AreEqual(1, labelItems.Count, "Depth toggles should render their label without a subtitle.");
+            var label = labelItems[0]!["text"]!.GetValue<string>();
+            StringAssert.Contains(label, defaultDepth.ToString(CultureInfo.CurrentCulture));
+            Assert.IsFalse(label.Contains("{0}", StringComparison.Ordinal));
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void ScanAllSubfolders_FormSubmissionPersistsIndependentSettings(bool scanAllDesktopSubfolders, bool scanAllCustomShortcutSubfolders)
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            var settings = new AllAppsSettings(settingsPath);
+            Assert.IsFalse(settings.ScanAllDesktopSubfolders);
+            Assert.IsFalse(settings.ScanAllCustomShortcutSubfolders);
+            Assert.AreEqual(3, settings.DesktopMaximumDepth);
+            Assert.AreEqual(3, settings.CustomShortcutFolderMaximumDepth);
+            var form = (SettingsForm)settings.Settings.ToContent().Single();
+
+            form.SubmitForm(
+                new JsonObject
+                {
+                    ["apps.ScanAllDesktopSubfolders"] = scanAllDesktopSubfolders ? "true" : "false",
+                    ["apps.ScanAllCustomShortcutSubfolders"] = scanAllCustomShortcutSubfolders ? "true" : "false",
+                }.ToJsonString(),
+                string.Empty);
+
+            var reloaded = new AllAppsSettings(settingsPath);
+            Assert.AreEqual(scanAllDesktopSubfolders, settings.ScanAllDesktopSubfolders);
+            Assert.AreEqual(scanAllCustomShortcutSubfolders, settings.ScanAllCustomShortcutSubfolders);
+            Assert.AreEqual(scanAllDesktopSubfolders, reloaded.ScanAllDesktopSubfolders);
+            Assert.AreEqual(scanAllCustomShortcutSubfolders, reloaded.ScanAllCustomShortcutSubfolders);
+            Assert.AreEqual(scanAllDesktopSubfolders ? int.MaxValue : 3, reloaded.DesktopMaximumDepth);
+            Assert.AreEqual(scanAllCustomShortcutSubfolders ? int.MaxValue : 3, reloaded.CustomShortcutFolderMaximumDepth);
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
     [TestMethod]
     [DataRow("")]
     [DataRow("unknown")]

@@ -751,7 +751,11 @@ public partial class Win32AppSourceTests
     }
 
     [TestMethod]
-    public void CreateProgramSources_UsesSeparateShortcutAndPortableProfiles()
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void CreateProgramSources_UsesSeparateShortcutAndPortableProfiles(bool scanAllDesktopSubfolders, bool scanAllCustomShortcutSubfolders)
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-settings-{Guid.NewGuid():N}.json");
         try
@@ -764,10 +768,19 @@ public partial class Win32AppSourceTests
                 """;
             File.WriteAllText(settingsPath, settingsJson);
             var settings = new AllAppsSettings(settingsPath);
+            settings.Settings.Update(new JsonObject
+            {
+                ["apps.ScanAllDesktopSubfolders"] = scanAllDesktopSubfolders ? "true" : "false",
+                ["apps.ScanAllCustomShortcutSubfolders"] = scanAllCustomShortcutSubfolders ? "true" : "false",
+            }.ToJsonString());
+
+            var sources = Win32AppSource.CreateProgramSources(settings);
+            Assert.AreEqual(int.MaxValue, sources.Single(source => source.Id == "start-menu").MaximumDepth);
+            Assert.AreEqual(scanAllDesktopSubfolders ? int.MaxValue : 3, sources.Single(source => source.Id == "desktop").MaximumDepth);
 
             IWin32ProgramSource shortcutSource = null;
             IWin32ProgramSource portableSource = null;
-            foreach (var source in Win32AppSource.CreateProgramSources(settings))
+            foreach (var source in sources)
             {
                 if (source.Id.StartsWith("custom-shortcut:", StringComparison.Ordinal))
                 {
@@ -782,7 +795,7 @@ public partial class Win32AppSourceTests
             Assert.IsNotNull(shortcutSource);
             Assert.IsTrue(HasProfileOption(shortcutSource.Profile, Win32ProgramSourceProfile.IncludeNonApplications));
             Assert.IsFalse(HasProfileOption(shortcutSource.Profile, Win32ProgramSourceProfile.IncludeRawExecutables));
-            Assert.AreEqual(int.MaxValue, shortcutSource.MaximumDepth);
+            Assert.AreEqual(scanAllCustomShortcutSubfolders ? int.MaxValue : 3, shortcutSource.MaximumDepth);
 
             Assert.IsNotNull(portableSource);
             Assert.IsTrue(HasProfileOption(portableSource.Profile, Win32ProgramSourceProfile.IncludeRawExecutables));
