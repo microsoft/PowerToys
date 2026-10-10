@@ -143,6 +143,11 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A page with rendered markdown and images",
             Icon = new IconInfo("\uee71"),
         },
+        new ListItem(new SampleChartsPage())
+        {
+            Title = "Charts and visuals",
+            Subtitle = "Live charts, gauges, progress bars, and badges in an Adaptive Card",
+        },
 
         // Settings helpers
         new ListItem(new SampleSettingsPage())

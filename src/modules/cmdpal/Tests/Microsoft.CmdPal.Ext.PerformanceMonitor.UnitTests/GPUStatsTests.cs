@@ -110,4 +110,65 @@ public class GPUStatsTests
         Assert.AreEqual(string.Empty, info.ShortName);
         Assert.AreEqual(1, info.AdapterCount);
     }
+
+    [TestMethod]
+    [DataRow("pid_1_luid_0x00000000_0x0001766D_phys_0_eng_0_engtype_3D", 0)]
+    [DataRow("pid_1_luid_0x00000000_0x0001766D_phys_0_eng_1_engtype_Copy", 1)]
+    [DataRow("pid_1_luid_0x00000000_0x0001766D_phys_0_eng_2_engtype_VideoDecode", 2)]
+    [DataRow("pid_1_luid_0x00000000_0x0001766D_phys_0_eng_3_engtype_VideoEncode", 3)]
+    [DataRow("pid_1_luid_0x00000000_0x0001766D_phys_0_eng_4_engtype_Compute_0", -1)]
+    public void GetEngineType_RecognizesTheEnginesTheCardShows(string instanceName, int expected)
+    {
+        Assert.AreEqual(expected, GPUStats.GetEngineType(instanceName));
+    }
+
+    [TestMethod]
+    public void ReduceEngineUsage_TakesTheBusiestEngineOfEachType()
+    {
+        var reduced = GPUStats.ReduceEngineUsage(new()
+        {
+            [(1, "0", 0)] = 30f,
+            [(1, "5", 0)] = 55f,
+            [(1, "1", 1)] = 4f,
+            [(2, "0", 0)] = 140f,
+        });
+
+        Assert.AreEqual(2, reduced[1].Length);
+        Assert.AreEqual(new GPUStats.EngineUsage(0, 55f), reduced[1][0]);
+        Assert.AreEqual(new GPUStats.EngineUsage(1, 4f), reduced[1][1]);
+        Assert.AreEqual(new GPUStats.EngineUsage(0, 100f), reduced[2][0]);
+    }
+
+    [TestMethod]
+    public void TryGetAdapterLuid_ReadsAdapterMemoryInstanceNames()
+    {
+        Assert.IsTrue(GPUStats.TryGetAdapterLuid("luid_0x00000001_0x0001766D_phys_0", out var luid));
+        Assert.AreEqual((1L << 32) | 0x0001766D, luid);
+        Assert.IsFalse(GPUStats.TryGetAdapterLuid("pid_1_luid_0x00000000_0x0001766D_phys_0", out _));
+        Assert.IsFalse(GPUStats.TryGetAdapterLuid("luid", out _));
+    }
+
+    [TestMethod]
+    public void GetGPUMemory_ReportsTheAdapterSizes()
+    {
+        using var stats = new GPUStats(new() { [1] = new("GPU", IsSoftware: false, DedicatedVideoMemory: 8, SharedSystemMemory: 16) }, [1]);
+
+        var memory = stats.GetGPUMemory(0);
+
+        Assert.AreEqual(8UL, memory.DedicatedTotal);
+        Assert.AreEqual(16UL, memory.SharedTotal);
+        Assert.AreEqual(default, stats.GetGPUMemory(1));
+        Assert.AreEqual(0, stats.GetGPUEngines(0).Length);
+    }
+
+    [TestMethod]
+    public void GetGPUEngineHistory_IsEmptyBeforeTheFirstSampleAndForUnknownEngines()
+    {
+        using var stats = new GPUStats(new() { [1] = new("GPU", IsSoftware: false) }, [1]);
+
+        Assert.AreEqual(0, stats.GetGPUEngineHistory(0, 0).Length);
+        Assert.AreEqual(0, stats.GetGPUEngineHistory(1, 0).Length);
+        Assert.AreEqual(0, stats.GetGPUEngineHistory(0, GPUStats.EngineTypes.Length).Length);
+        Assert.AreEqual(0, stats.GetGPUEngineHistory(-1, -1).Length);
+    }
 }

@@ -173,6 +173,66 @@
   <data name="Memory_Widget_Template.PagedPool" xml:space="preserve">
     <value>Paged pool</value>
   </data>
+  <data name="Memory_Widget_Template.InUse" xml:space="preserve">
+    <value>In use</value>
+    <comment>Label for memory that is in use</comment>
+  </data>
+  <data name="Memory_Widget_Template.Available" xml:space="preserve">
+    <value>Available</value>
+    <comment>Label for memory that is available for use</comment>
+  </data>
+  <data name="Memory_Widget_Template.UsageOfTotal" xml:space="preserve">
+    <value>{0} of {1}</value>
+    <comment>{0} is the percentage of memory in use, such as 57%; {1} is the total memory, such as 31.7 GB</comment>
+  </data>
+  <data name="Memory_Widget_Template.Chart_Y_Axis" xml:space="preserve">
+    <value>Memory usage</value>
+    <comment>Vertical axis title of the memory usage history chart</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition" xml:space="preserve">
+    <value>Memory composition</value>
+    <comment>Title of a bar that splits memory into in use, modified, standby, and free</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition_InUse" xml:space="preserve">
+    <value>In use {0}</value>
+    <comment>{0} is an amount of memory, such as 12.4 GB</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition_Modified" xml:space="preserve">
+    <value>Modified {0}</value>
+    <comment>Memory whose contents must be written to disk before reuse. {0} is an amount of memory</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition_Standby" xml:space="preserve">
+    <value>Standby {0}</value>
+    <comment>Cached memory that is available for reuse. {0} is an amount of memory</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition_Free" xml:space="preserve">
+    <value>Free {0}</value>
+    <comment>Memory that holds no data. {0} is an amount of memory</comment>
+  </data>
+  <data name="Memory_Widget_Template.Speed" xml:space="preserve">
+    <value>Speed</value>
+    <comment>Label for the memory speed, such as 5600 MT/s</comment>
+  </data>
+  <data name="Memory_Widget_Template.Slots_Used" xml:space="preserve">
+    <value>Slots used</value>
+    <comment>Label for how many memory slots have a module, such as 2 of 4</comment>
+  </data>
+  <data name="Memory_Widget_Template.Slots_Used_Value" xml:space="preserve">
+    <value>{0} of {1}</value>
+    <comment>{0} is the number of memory slots with a module; {1} is the number of slots</comment>
+  </data>
+  <data name="Memory_Widget_Template.Form_Factor" xml:space="preserve">
+    <value>Form factor</value>
+    <comment>Label for the memory module type, such as SODIMM</comment>
+  </data>
+  <data name="Memory_Widget_Template.Form_Factor_Row_Of_Chips" xml:space="preserve">
+    <value>Row of chips</value>
+    <comment>Memory form factor: chips soldered to the board, as Task Manager calls it</comment>
+  </data>
+  <data name="Memory_Widget_Template.Hardware_Reserved" xml:space="preserve">
+    <value>Hardware reserved</value>
+    <comment>Label for installed memory that the hardware reserves, such as for integrated graphics</comment>
+  </data>
   <data name="NetworkUsage_Widget_Template.Network_Usage" xml:space="preserve">
     <value>Utilization</value>
   </data>
@@ -184,6 +244,32 @@
   </data>
   <data name="NetworkUsage_Widget_Template.Network_Name" xml:space="preserve">
     <value>Name</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Chart_Y_Axis" xml:space="preserve">
+    <value>Throughput ({0})</value>
+    <comment>Vertical axis title of the network chart. {0} is a rate unit, such as Mbps or MB/s</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Link_Speed" xml:space="preserve">
+    <value>Link speed</value>
+    <comment>Label for the speed of the network connection, such as 1 Gbps</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Type_WiFi" xml:space="preserve">
+    <value>Wi-Fi</value>
+    <comment>Connection type of a wireless network adapter</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Type_Ethernet" xml:space="preserve">
+    <value>Ethernet</value>
+    <comment>Connection type of a wired network adapter</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Type_Cellular" xml:space="preserve">
+    <value>Cellular</value>
+    <comment>Connection type of a mobile broadband adapter</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.IPv4" xml:space="preserve">
+    <value>IPv4 address</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.IPv6" xml:space="preserve">
+    <value>IPv6 address</value>
   </data>
   <data name="Previous_Network_Title" xml:space="preserve">
     <value>Previous network</value>
@@ -216,6 +302,38 @@
   <data name="DiskUsage_Widget_Template.Disk_Name" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="DiskUsage_Widget_Template.Chart_Y_Axis" xml:space="preserve">
+    <value>Transfer rate ({0})</value>
+    <comment>Vertical axis title of the disk chart. {0} is a rate unit, such as MB/s</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Disk_Number" xml:space="preserve">
+    <value>Disk {0}</value>
+    <comment>{0} is the disk number</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Disk_Number_Volumes" xml:space="preserve">
+    <value>Disk {0} ({1})</value>
+    <comment>{0} is the disk number; {1} lists its drive letters, such as C: D:</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Volume_Free" xml:space="preserve">
+    <value>{0} free of {1}</value>
+    <comment>{0} is free space and {1} is total size, such as 412 GB and 953 GB</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Response_Time" xml:space="preserve">
+    <value>Response time</value>
+    <comment>Label for the average time the disk takes to complete a read or write, such as 0.4 ms</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Type_SSD" xml:space="preserve">
+    <value>SSD</value>
+    <comment>Solid-state drive</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Type_HDD" xml:space="preserve">
+    <value>HDD</value>
+    <comment>Hard disk drive</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Type_With_Bus" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>{0} is the disk type, such as SSD; {1} is how it's connected, such as NVMe</comment>
+  </data>
   <data name="Previous_Disk_Title" xml:space="preserve">
     <value>Previous disk</value>
   </data>
@@ -230,6 +348,30 @@
   </data>
   <data name="GPUUsage_Widget_Template.GPU_Temperature" xml:space="preserve">
     <value>Temperature</value>
+  </data>
+  <data name="GPUUsage_Widget_Template.Dedicated_Memory" xml:space="preserve">
+    <value>Dedicated GPU memory</value>
+    <comment>Label for memory that belongs to the graphics card, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Shared_Memory" xml:space="preserve">
+    <value>Shared GPU memory</value>
+    <comment>Label for system memory that the graphics card can use, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Engine_3D" xml:space="preserve">
+    <value>3D</value>
+    <comment>Name of the GPU engine that renders 3D graphics, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Engine_Copy" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Name of the GPU engine that copies memory, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Engine_VideoDecode" xml:space="preserve">
+    <value>Video decode</value>
+    <comment>Name of the GPU engine that decodes video, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Engine_VideoEncode" xml:space="preserve">
+    <value>Video encode</value>
+    <comment>Name of the GPU engine that encodes video, as in Task Manager</comment>
   </data>
   <data name="Previous_GPU_Title" xml:space="preserve">
     <value>Previous GPU</value>
@@ -248,6 +390,46 @@
   </data>
   <data name="CPUUsage_Widget_Template.End_Process" xml:space="preserve">
     <value>End process</value>
+  </data>
+  <data name="CPUUsage_Widget_Template.Threads" xml:space="preserve">
+    <value>Threads</value>
+    <comment>Label for the number of threads running on the system</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Handles" xml:space="preserve">
+    <value>Handles</value>
+    <comment>Label for the number of open kernel object handles on the system</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Up_Time" xml:space="preserve">
+    <value>Up time</value>
+    <comment>Label for how long the system has been running since it started</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Base_Speed" xml:space="preserve">
+    <value>Base speed</value>
+    <comment>Label for the processor's nominal clock speed</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Logical_Processors" xml:space="preserve">
+    <value>Logical processors</value>
+    <comment>Label for the number of logical processors (hardware threads)</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Cores_Chart_Title" xml:space="preserve">
+    <value>Utilization by logical processor</value>
+    <comment>Title of a bar chart with one bar per logical processor (hardware thread)</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Top_Processes" xml:space="preserve">
+    <value>Top processes</value>
+    <comment>Title of a bar chart of the processes using the most CPU</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Chart_Y_Axis" xml:space="preserve">
+    <value>% Utilization</value>
+    <comment>Vertical axis title of the CPU usage history chart</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Chart_X_Axis" xml:space="preserve">
+    <value>60 seconds</value>
+    <comment>Horizontal axis title of the CPU usage history chart; the chart shows the last 60 seconds</comment>
+  </data>
+  <data name="CPUUsage_Widget_Template.Chart_Legend" xml:space="preserve">
+    <value>Utilization</value>
+    <comment>Name of the CPU usage data series, read by screen readers</comment>
   </data>
   <data name="Widget_Template_Button.Preview" xml:space="preserve">
     <value>Preview</value>
@@ -353,9 +535,9 @@
   <data name="Disk_Usage_Title" xml:space="preserve">
     <value>Disk Usage</value>
   </data>
-  <data name="Disk_Usage_Label" xml:space="preserve">
-    <value>Disk ({0}): {1}</value>
-    <comment>{0} is the disk interface name, {1} is the usage percentage</comment>
+  <data name="Disk_Usage_Display_Label" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0} is the disk name, such as Disk 0 (C:), and {1} is the usage percentage</comment>
   </data>
   <data name="Disk_Usage_Unknown" xml:space="preserve">
     <value>???</value>
@@ -427,6 +609,44 @@
   </data>
   <data name="Battery_Widget_Template.TimeRemaining" xml:space="preserve">
     <value>Time remaining</value>
+  </data>
+  <data name="Overview_Title" xml:space="preserve">
+    <value>Overview</value>
+    <comment>Title of the page that shows every performance metric at a glance</comment>
+  </data>
+  <data name="Overview_Subtitle" xml:space="preserve">
+    <value>CPU, memory, GPU, disk, and network at a glance</value>
+  </data>
+  <data name="Overview_Widget_Template.CPU" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Overview_Widget_Template.Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Overview_Widget_Template.GPU" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Overview_Widget_Template.Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Overview_Widget_Template.Battery" xml:space="preserve">
+    <value>Battery</value>
+  </data>
+  <data name="Battery_Widget_Template.Charge_Rate" xml:space="preserve">
+    <value>Charge rate</value>
+    <comment>Label for the power flowing into the battery, such as 25 W</comment>
+  </data>
+  <data name="Battery_Widget_Template.Discharge_Rate" xml:space="preserve">
+    <value>Discharge rate</value>
+    <comment>Label for the power drawn from the battery, such as 9.5 W</comment>
+  </data>
+  <data name="Battery_Widget_Template.Health" xml:space="preserve">
+    <value>Health</value>
+    <comment>Label for the battery's full charge capacity as a percentage of its design capacity</comment>
+  </data>
+  <data name="Battery_Widget_Template.Full_Charge_Capacity" xml:space="preserve">
+    <value>Full charge capacity</value>
+    <comment>Label for the battery's energy when fully charged, such as 54 Wh</comment>
   </data>
   <data name="Open_Task_Manager_Title" xml:space="preserve">
     <value>Open Task Manager</value>

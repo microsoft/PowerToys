@@ -17,6 +17,22 @@
             <Style x:Key="Adaptive.TextBlock" TargetType="TextBlock">
                 <Setter Property="IsTextSelectionEnabled" Value="True" />
             </Style>
+
+            <!--  Used by AdaptiveContainerDecoratorRenderer for roundedCorners and showBorder.  -->
+            <Style x:Key="CmdPal.Adaptive.Container.Rounded" TargetType="Border">
+                <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+            </Style>
+            <Style x:Key="CmdPal.Adaptive.Container.Bordered" TargetType="Border">
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="8" />
+            </Style>
+            <Style
+                x:Key="CmdPal.Adaptive.Container.RoundedBordered"
+                BasedOn="{StaticResource CmdPal.Adaptive.Container.Bordered}"
+                TargetType="Border">
+                <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Border x:Name="CardHost" />

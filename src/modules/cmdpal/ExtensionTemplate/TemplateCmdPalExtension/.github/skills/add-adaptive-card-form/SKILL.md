@@ -4,7 +4,9 @@ description: >-
   Create form-based UI for your Command Palette extension using Adaptive Cards.
   Use when asked to add forms, user input fields, toggle switches, text inputs,
   dropdown menus, data entry, surveys, configuration dialogs, or interactive
-  content pages. Supports the Adaptive Cards Designer for visual form building.
+  content pages, or to show charts, graphs, gauges, sparklines, progress bars,
+  badges, or live dashboards. Supports the Adaptive Cards Designer for visual
+  form building.
 ---
 
 # Add Forms with Adaptive Cards
@@ -18,6 +20,7 @@ Create interactive forms in your Command Palette extension using Adaptive Cards.
 - Building data entry interfaces
 - Adding toggle switches or dropdown menus
 - Displaying complex layouts beyond simple lists
+- Showing charts, gauges, progress, or a live dashboard
 
 ## Prerequisites
 
@@ -137,6 +140,10 @@ public override IContent[] GetContent() => [
 ## Common Form Patterns
 
 See [form-patterns.md](references/form-patterns.md) for template JSON for common form types.
+
+## Charts and Visuals
+
+Command Palette renders `Chart.Line`, `Chart.Gauge`, `Chart.Donut`, `Chart.Pie`, the bar charts, `ProgressBar`, `Badge`, and `Icon` natively, and containers accept `roundedCorners` and `showBorder` for dashboard tiles. Update `DataJson` to update charts in place. See [charts-and-visuals.md](references/charts-and-visuals.md) for properties, colors, and examples, and always give these elements a `fallback` for hosts that don't support them.
 
 ## Documentation
 

@@ -137,4 +137,207 @@ public sealed class AdaptiveCardSemanticFingerprintTests
             AdaptiveCardSemanticFingerprint.Create(left, mappedTextBlockCount: 1, mappedInlineSvgImageCount: 0),
             AdaptiveCardSemanticFingerprint.Create(right, mappedTextBlockCount: 1, mappedInlineSvgImageCount: 0));
     }
+
+    [TestMethod]
+    public void RegisteredCustomElementDataIsPatchable()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","yMax":100,"data":[{"values":[{"y":1}]}]}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","yMax":50,"data":[{"values":[{"y":2}]}]}]}""";
+
+        Assert.AreEqual(
+            CreateWithChart(left, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void UnregisteredCustomElementDataRemainsReplacementSensitive()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":1}]}]}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":2}]}]}]}""";
+
+        Assert.AreNotEqual(
+            AdaptiveCardSemanticFingerprint.Create(left, 0, 0, 1, new IncrementalPatchableElements().Add("Chart.Gauge")),
+            AdaptiveCardSemanticFingerprint.Create(right, 0, 0, 1, new IncrementalPatchableElements().Add("Chart.Gauge")));
+    }
+
+    [TestMethod]
+    public void CustomElementHostOwnedPropertiesRemainReplacementSensitive()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","spacing":"small","data":[]}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","spacing":"large","data":[]}]}""";
+
+        Assert.AreNotEqual(
+            CreateWithChart(left, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void CustomElementDataRemainsReplacementSensitiveWhenMappingIsIncomplete()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":1}]}]}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":2}]}]}]}""";
+
+        Assert.AreNotEqual(
+            CreateWithChart(left, mappedCustomElementCount: 0),
+            CreateWithChart(right, mappedCustomElementCount: 0));
+    }
+
+    [TestMethod]
+    public void CustomElementInsideActionSubtreeRemainsReplacementSensitive()
+    {
+        var left = """{"type":"AdaptiveCard","actions":[{"type":"Action.ShowCard","card":{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":1}]}]}]}}]}""";
+        var right = """{"type":"AdaptiveCard","actions":[{"type":"Action.ShowCard","card":{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":2}]}]}]}}]}""";
+
+        Assert.AreNotEqual(
+            CreateWithChart(left, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void HostOwnedPropertiesAreNotPatchable()
+    {
+        Assert.IsFalse(IncrementalPatchableElements.IsPatchableProperty("spacing"));
+        Assert.IsFalse(IncrementalPatchableElements.IsPatchableProperty("isVisible"));
+        Assert.IsFalse(IncrementalPatchableElements.IsPatchableProperty("selectAction"));
+        Assert.IsTrue(IncrementalPatchableElements.IsPatchableProperty("data"));
+        Assert.IsTrue(IncrementalPatchableElements.IsPatchableProperty("title"));
+    }
+
+    [TestMethod]
+    public void UnusedFallbackDoesNotStopTextPatching()
+    {
+        // The chart always renders itself, so only the first TextBlock is drawn and mapped.
+        var left = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"old"},{"type":"Chart.Line","data":[],"fallback":{"type":"TextBlock","text":"old value"}}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"new"},{"type":"Chart.Line","data":[],"fallback":{"type":"TextBlock","text":"new value"}}]}""";
+
+        Assert.AreEqual(
+            CreateWithChart(left, mappedTextBlockCount: 1, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedTextBlockCount: 1, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void FallbackOfElementWithRequirementsIsStillCounted()
+    {
+        // A host that doesn't meet requires draws the fallback, here as unmapped markdown.
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","requires":{"charts":"2.0"},"data":[],"fallback":{"type":"TextBlock","text":"[old](https://example.com)"}}]}""";
+        var right = left.Replace("[old]", "[new]", StringComparison.Ordinal);
+
+        Assert.AreNotEqual(
+            CreateWithChart(left, mappedTextBlockCount: 0, mappedCustomElementCount: 0),
+            CreateWithChart(right, mappedTextBlockCount: 0, mappedCustomElementCount: 0));
+    }
+
+    [TestMethod]
+    public void ElementsInsideUnusedFallbackAreNotCounted()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":1}]}],"fallback":{"type":"Chart.Line","data":[]}}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Chart.Line","data":[{"values":[{"y":2}]}],"fallback":{"type":"Chart.Line","data":[]}}]}""";
+
+        Assert.AreEqual(
+            CreateWithChart(left, mappedTextBlockCount: 0, mappedCustomElementCount: 1),
+            CreateWithChart(right, mappedTextBlockCount: 0, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void ElementThatRendersItselfIgnoresItsFallback()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Icon","name":"Calendar","fallback":{"type":"TextBlock","text":"old"}}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Icon","name":"Clock","fallback":{"type":"TextBlock","text":"new"}}]}""";
+
+        Assert.AreEqual(
+            CreateWithIcon(left, mappedTextBlockCount: 0, mappedCustomElementCount: 1),
+            CreateWithIcon(right, mappedTextBlockCount: 0, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void ElementDrawnAsItsFallbackIsNotPatchable()
+    {
+        // Both names lack a glyph, so the renderer draws the fallback, and the icon has no control.
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Icon","name":"Missing","fallback":"drop"}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Icon","name":"AlsoMissing","fallback":"drop"}]}""";
+
+        Assert.AreNotEqual(
+            CreateWithIcon(left, mappedTextBlockCount: 0, mappedCustomElementCount: 0),
+            CreateWithIcon(right, mappedTextBlockCount: 0, mappedCustomElementCount: 0));
+    }
+
+    [TestMethod]
+    public void DrawnFallbackStaysReplacementSensitive()
+    {
+        // The renderer tags a drawn fallback with the original element, so its text isn't mapped.
+        var left = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"title"},{"type":"Icon","name":"Missing","fallback":{"type":"TextBlock","text":"old"}}]}""";
+        var right = left.Replace("\"old\"", "\"new\"", StringComparison.Ordinal);
+
+        Assert.AreNotEqual(
+            CreateWithIcon(left, mappedTextBlockCount: 1, mappedCustomElementCount: 0),
+            CreateWithIcon(right, mappedTextBlockCount: 1, mappedCustomElementCount: 0));
+    }
+
+    [TestMethod]
+    public void DrawnFallbackDoesNotStopTextPatching()
+    {
+        // Only the title is mapped: the drawn fallback's own text isn't counted, so the counts match.
+        var left = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"old"},{"type":"Icon","name":"Missing","fallback":{"type":"TextBlock","text":"Bot"}}]}""";
+        var right = left.Replace("\"old\"", "\"new\"", StringComparison.Ordinal);
+
+        Assert.AreEqual(
+            CreateWithIcon(left, mappedTextBlockCount: 1, mappedCustomElementCount: 0),
+            CreateWithIcon(right, mappedTextBlockCount: 1, mappedCustomElementCount: 0));
+    }
+
+    [TestMethod]
+    public void TextInsideADrawnFallbackIsPatchable()
+    {
+        // The elements inside a drawn fallback container keep their own tags, so they're mapped.
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Icon","name":"Missing","fallback":{"type":"Container","items":[{"type":"TextBlock","text":"old"}]}}]}""";
+        var right = left.Replace("\"old\"", "\"new\"", StringComparison.Ordinal);
+
+        Assert.AreEqual(
+            CreateWithIcon(left, mappedTextBlockCount: 1, mappedCustomElementCount: 0),
+            CreateWithIcon(right, mappedTextBlockCount: 1, mappedCustomElementCount: 0));
+    }
+
+    [TestMethod]
+    public void ElementThatStartsDrawingItsFallbackReplacesTheCard()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"Icon","name":"Calendar","fallback":"drop"}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"Icon","name":"Missing","fallback":"drop"}]}""";
+
+        Assert.AreNotEqual(
+            CreateWithIcon(left, mappedTextBlockCount: 0, mappedCustomElementCount: 1),
+            CreateWithIcon(right, mappedTextBlockCount: 0, mappedCustomElementCount: 1));
+    }
+
+    [TestMethod]
+    public void ElementDrawnAsItsFallbackDoesNotStopOtherPatching()
+    {
+        var left = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"old"},{"type":"Icon","name":"Missing","fallback":"drop"},{"type":"Icon","name":"Calendar","color":"Good"}]}""";
+        var right = """{"type":"AdaptiveCard","body":[{"type":"TextBlock","text":"new"},{"type":"Icon","name":"Missing","fallback":"drop"},{"type":"Icon","name":"Calendar","color":"Warning"}]}""";
+
+        Assert.AreEqual(
+            CreateWithIcon(left, mappedTextBlockCount: 1, mappedCustomElementCount: 1),
+            CreateWithIcon(right, mappedTextBlockCount: 1, mappedCustomElementCount: 1));
+    }
+
+    private static string CreateWithChart(string cardJson, int mappedCustomElementCount) =>
+        CreateWithChart(cardJson, mappedTextBlockCount: 0, mappedCustomElementCount);
+
+    private static string CreateWithChart(string cardJson, int mappedTextBlockCount, int mappedCustomElementCount) =>
+        AdaptiveCardSemanticFingerprint.Create(
+            cardJson,
+            mappedTextBlockCount,
+            mappedInlineSvgImageCount: 0,
+            mappedCustomElementCount,
+            new IncrementalPatchableElements().Add("Chart.Line"));
+
+    // Icons whose name contains "Missing" have no glyph, so the renderer draws their fallback.
+    private static string CreateWithIcon(string cardJson, int mappedTextBlockCount, int mappedCustomElementCount) =>
+        AdaptiveCardSemanticFingerprint.Create(
+            cardJson,
+            mappedTextBlockCount,
+            mappedInlineSvgImageCount: 0,
+            mappedCustomElementCount,
+            new IncrementalPatchableElements().Add(
+                "Icon",
+                element => !element.GetProperty("name").GetString()!.Contains("Missing", StringComparison.Ordinal)));
 }

@@ -339,6 +339,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests/Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Common.UnitTests/Microsoft.CmdPal.Common.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -438,6 +442,10 @@
   </Folder>
   <Folder Name="/modules/CommandPalette/UI/">
     <Project Path="src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering/Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Microsoft.CmdPal.AdaptiveCards.Polyfills/Microsoft.CmdPal.AdaptiveCards.Polyfills.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

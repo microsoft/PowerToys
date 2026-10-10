@@ -1821,6 +1821,50 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Browse...</value>
     <comment>Button that opens a picker for a single file or folder path.</comment>
   </data>
+  <data name="AdaptiveChart_LineChart" xml:space="preserve">
+    <value>Line chart</value>
+    <comment>Accessible name of a line chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_SeriesName" xml:space="preserve">
+    <value>Series {0}</value>
+    <comment>Name of an unnamed data series in a chart. {0} is the series number, starting at 1.</comment>
+  </data>
+  <data name="AdaptiveChart_SeriesSummary" xml:space="preserve">
+    <value>{0}: latest {1}, low {2}, high {3}.</value>
+    <comment>Screen reader summary of one chart data series. {0} is the series name; {1}, {2}, and {3} are formatted values.</comment>
+  </data>
+  <data name="AdaptiveChart_Gauge" xml:space="preserve">
+    <value>Gauge</value>
+    <comment>Accessible name of a gauge chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_CompactThousands" xml:space="preserve">
+    <value>{0}K</value>
+    <comment>A large chart value in units of 1,000, in axis labels and tooltips. For example, 12.3K is 12,300. {0} is the number of thousands. Use your language's short form.</comment>
+  </data>
+  <data name="AdaptiveChart_CompactMillions" xml:space="preserve">
+    <value>{0}M</value>
+    <comment>A large chart value in units of 1,000,000, in axis labels and tooltips. For example, 2.5M is 2,500,000. {0} is the number of millions. Use your language's short form.</comment>
+  </data>
+  <data name="AdaptiveChart_CompactBillions" xml:space="preserve">
+    <value>{0}B</value>
+    <comment>A large chart value in units of 1,000,000,000 (10^9), in axis labels and tooltips. For example, 3B is 3,000,000,000. {0} is the number of units. Use your language's short form for 10^9.</comment>
+  </data>
+  <data name="AdaptiveChart_CompactTrillions" xml:space="preserve">
+    <value>{0}T</value>
+    <comment>A large chart value in units of 1,000,000,000,000 (10^12), in axis labels and tooltips. For example, 1.2T is 1,200,000,000,000. {0} is the number of units. Use your language's short form for 10^12.</comment>
+  </data>
+  <data name="AdaptiveChart_DonutChart" xml:space="preserve">
+    <value>Donut chart</value>
+    <comment>Accessible name of a donut chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_PieChart" xml:space="preserve">
+    <value>Pie chart</value>
+    <comment>Accessible name of a pie chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_BarChart" xml:space="preserve">
+    <value>Bar chart</value>
+    <comment>Accessible name of a bar chart in a form when the chart has no title.</comment>
+  </data>
   <data name="AdaptiveFilePathInput_BrowseFor" xml:space="preserve">
     <value>Browse for {0}</value>
     <comment>Accessible label for the browse button. {0} is the name of the path field.</comment>

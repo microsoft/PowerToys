@@ -420,6 +420,7 @@ dfx
 DIALOGEX
 diffs
 digicert
+dimm
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -698,6 +699,7 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
+hdd
 HDEVNOTIFY
 hdmi
 hdr
@@ -1286,6 +1288,7 @@ NULLCURSOR
 nullonfailure
 nullref
 numberbox
+nvme
 nwc
 ocr
 Ocrsettings
@@ -1623,6 +1626,7 @@ rollups
 ROUNDSMALL
 rpcrt
 RRF
+rsmb
 rsop
 Rsp
 rstringalnum
@@ -1780,6 +1784,7 @@ SMTO
 SNAPPROCESS
 snk
 snwprintf
+sodimm
 softline
 softpub
 SOURCECLIENTAREAONLY
@@ -1787,6 +1792,7 @@ sourced
 sourcedoc
 SOURCEHEADER
 sourcesdirectory
+sparkline
 spdisp
 spdlog
 spdo
@@ -2122,6 +2128,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WDA
+wdk
 wdm
 wdp
 wdupenv

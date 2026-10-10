@@ -4,6 +4,7 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using Microsoft.CmdPal.AdaptiveCards.Polyfills;
 using Microsoft.UI.Xaml;
 using Windows.Data.Json;
 
