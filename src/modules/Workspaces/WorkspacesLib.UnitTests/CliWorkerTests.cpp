@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <WorkspacesCLI/ApprovalChannel.h>
 #include <WorkspacesCLI/ConsoleApproval.h>
+#include <WorkspacesCLI/WorkerResult.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -28,6 +29,59 @@ namespace WorkspacesLibUnitTests
                 DWORD_PTR result{};
                 SendMessageTimeoutW(window, WM_CLOSE, 0, 0, SMTO_ABORTIFHUNG, 2000, &result);
             }
+        }
+
+        static void CheckCompletion(const std::wstring& mode, bool cancelRequested, const wchar_t* expectedCode)
+        {
+            wchar_t module[32768]{};
+            Assert::IsTrue(GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), module, ARRAYSIZE(module)) != 0);
+            const auto executable = std::filesystem::path(module).parent_path() / L"WorkspacesCliApprovalFixture.exe";
+            SECURITY_ATTRIBUTES attributes{ sizeof(attributes), nullptr, TRUE };
+            wil::unique_handle read, write;
+            Assert::IsTrue(CreatePipe(read.put(), write.put(), &attributes, 4096) != FALSE);
+            Assert::IsTrue(SetHandleInformation(read.get(), HANDLE_FLAG_INHERIT, 0) != FALSE);
+            wil::unique_handle input(CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                                 &attributes, OPEN_EXISTING, 0, nullptr));
+            wil::unique_handle cancel(CreateEventW(nullptr, TRUE, cancelRequested, nullptr));
+            Assert::IsTrue(input && cancel);
+            STARTUPINFOW startup{ sizeof(startup) };
+            startup.dwFlags = STARTF_USESTDHANDLES;
+            startup.hStdInput = input.get();
+            startup.hStdOutput = startup.hStdError = write.get();
+            const auto deadline = GetTickCount64() + 500;
+            auto command = L"\"" + executable.wstring() + L"\" " + mode + L" " + std::to_wstring(deadline);
+            wil::unique_process_information process;
+            Assert::IsTrue(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW,
+                                         nullptr, nullptr, &startup, &process) != FALSE);
+            write.reset();
+            auto cleanup = wil::scope_exit([&] {
+                if (WaitForSingleObject(process.hProcess, 0) == WAIT_TIMEOUT)
+                {
+                    TerminateProcess(process.hProcess, 1);
+                    WaitForSingleObject(process.hProcess, 2000);
+                }
+            });
+            auto requests = WorkspacesCli::ApprovalPipe::Create();
+            auto replies = WorkspacesCli::ApprovalPipe::Create();
+            WorkspacesCli::ConsoleApproval console(input.get(), nullptr, {});
+            WorkspacesCli::FrontendApproval presenter(requests.read.get(), replies.write.get(), console, cancel.get());
+            int exitCode = 0;
+            const auto started = GetTickCount64();
+            try
+            {
+                const auto output = WorkspacesCli::ReadWorkerResult(process.hProcess, read.get(), cancel.get(),
+                                                                    deadline, presenter, L"operation", exitCode);
+                Assert::AreEqual(std::wstring(expectedCode), std::wstring(output.GetNamedObject(L"error").GetNamedString(L"code")));
+                Assert::AreEqual(cancelRequested ? 12 : 9, exitCode);
+            }
+            catch (const WorkspacesCli::Error& error)
+            {
+                Assert::AreEqual(std::wstring(expectedCode), error.code);
+                Assert::AreEqual(9, error.exitCode);
+            }
+            Assert::IsTrue(GetTickCount64() - started < 4000, L"Completion acknowledgement must remain bounded.");
+            Assert::IsTrue(WaitForSingleObject(cancel.get(), 0) == (cancelRequested ? WAIT_OBJECT_0 : WAIT_TIMEOUT),
+                           L"An elapsed deadline must not become an explicit cancellation.");
         }
 
         static std::pair<DWORD, json::JsonObject> Run(bool fixture, bool canceled, bool cancelAfterStart = false, bool expired = false, ULONGLONG* cancellationLatency = nullptr)
@@ -149,6 +203,28 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (FrontendAcceptsTimeoutAcknowledgedAfterDeadline)
+        {
+            CheckCompletion(L"worker-result-timeout", false, L"timeout");
+        }
+
+        TEST_METHOD (FrontendRetainsCancellationAcknowledgement)
+        {
+            CheckCompletion(L"worker-result-canceled", true, L"canceled");
+        }
+
+        TEST_METHOD (FrontendReportsUnknownWhenWorkerDoesNotAcknowledge)
+        {
+            CheckCompletion(L"worker-result-unresponsive", false, L"outcomeUnknown");
+            CheckCompletion(L"worker-result-unresponsive", true, L"outcomeUnknown");
+        }
+
+        TEST_METHOD (FrontendRejectsMissingOrMalformedFinalResult)
+        {
+            CheckCompletion(L"worker-result-missing", false, L"outcomeUnknown");
+            CheckCompletion(L"worker-result-malformed", false, L"outcomeUnknown");
+        }
+
 #ifdef _DEBUG
         TEST_METHOD (MissingApplicationProducesRealNonzeroResult)
         {

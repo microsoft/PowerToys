@@ -9,6 +9,18 @@
 
 namespace WorkspacesCli
 {
+    class ConsoleOutputCodePage
+    {
+    public:
+        explicit ConsoleOutputCodePage(bool enabled = true);
+        ~ConsoleOutputCodePage();
+        ConsoleOutputCodePage(const ConsoleOutputCodePage&) = delete;
+        ConsoleOutputCodePage& operator=(const ConsoleOutputCodePage&) = delete;
+
+    private:
+        UINT m_original = 0;
+    };
+
     std::wstring EscapeApprovalText(std::wstring_view text);
 
     struct ApprovalPromptText

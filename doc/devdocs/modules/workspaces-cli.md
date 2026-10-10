@@ -85,6 +85,10 @@ or that an application is ready for business use.
 
 - Launch waits for an explicit final arranger result. There is no accepted-only/no-wait mode.
 - The default total deadline is 120 seconds; `--timeout` accepts 1 through 600.
+- At the deadline the frontend stops confirmation input and allows up to two seconds to receive
+  the worker's final acknowledgement. An acknowledged timeout reports `timeout`; an absent,
+  malformed or unresponsive final result reports `outcomeUnknown`. This does not extend app-launch
+  or approval time, and bounded worker cleanup may take additional time.
 - Workspaces progress/editor/error windows are suppressed. Application windows and normal
   Windows UAC remain possible.
 - Both ordinary and administrator terminals use the same command. An administrator frontend
@@ -100,6 +104,8 @@ or that an application is ready for business use.
   launch is not idempotent and repeating it may open more applications.
 - The worker and arranger use the same immutable selected snapshot. Final history writes read
   the current file under a shared writer lock and do not replace it with the old launch snapshot.
+- The foreground CLI restores the console's original output code page on exit. Private workers
+  do not change it, and their result stream remains JSON-only even if localization is unavailable.
 
 ### Administrator terminal handoff
 

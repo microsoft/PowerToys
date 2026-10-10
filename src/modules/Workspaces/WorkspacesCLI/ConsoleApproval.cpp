@@ -5,6 +5,26 @@
 
 namespace WorkspacesCli
 {
+    ConsoleOutputCodePage::ConsoleOutputCodePage(bool enabled)
+    {
+        if (!enabled)
+            return;
+        const auto original = GetConsoleOutputCP();
+        if (original && original != CP_UTF8)
+        {
+            if (SetConsoleOutputCP(CP_UTF8))
+                m_original = original;
+            else
+                OutputDebugStringW(L"Workspaces CLI: could not set console output code page.\n");
+        }
+    }
+
+    ConsoleOutputCodePage::~ConsoleOutputCodePage()
+    {
+        if (m_original && GetConsoleOutputCP() == CP_UTF8 && !SetConsoleOutputCP(m_original))
+            OutputDebugStringW(L"Workspaces CLI: could not restore console output code page.\n");
+    }
+
     std::wstring EscapeApprovalText(std::wstring_view text)
     {
         static constexpr wchar_t hex[] = L"0123456789ABCDEF";

@@ -48,6 +48,7 @@
     <ClInclude Include="ConsoleApproval.h" />
     <ClInclude Include="JsonOutput.h" />
     <ClInclude Include="WorkerHandoff.h" />
+    <ClInclude Include="WorkerResult.h" />
     <None Include="resource.base.h" />
     <None Include="WorkspacesCLI.base.rc" />
     <EmbeddedResource Include="Resource.resx" />

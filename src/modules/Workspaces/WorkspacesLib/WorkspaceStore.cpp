@@ -91,6 +91,22 @@ namespace WorkspaceStore
                 }
             }
         }
+
+        json::JsonObject FindWorkspace(const json::JsonObject& data, const std::wstring& workspaceId)
+        {
+            json::JsonObject selected{ nullptr };
+            for (const auto& value : data.GetNamedArray(L"workspaces"))
+            {
+                const auto item = value.GetObjectW();
+                if (WorkspacesCli::NormalizeId(item.GetNamedString(L"id").c_str()) == WorkspacesCli::NormalizeId(workspaceId))
+                {
+                    if (selected)
+                        return nullptr;
+                    selected = item;
+                }
+            }
+            return selected;
+        }
     }
 
     bool Write(const std::filesystem::path& fileName, const json::JsonObject& data)
@@ -128,18 +144,7 @@ namespace WorkspaceStore
             const auto current = WorkspacesCli::ReadJson(fileName);
             if (!current)
                 return UpdateResult::Conflict;
-            json::JsonObject selected{ nullptr };
-            for (const auto& value : current->GetNamedArray(L"workspaces"))
-            {
-                const auto item = value.GetObjectW();
-                if (WorkspacesCli::NormalizeId(item.GetNamedString(L"id").c_str()) ==
-                    WorkspacesCli::NormalizeId(workspaceId))
-                {
-                    if (selected)
-                        return UpdateResult::Conflict;
-                    selected = item;
-                }
-            }
+            const auto selected = FindWorkspace(*current, workspaceId);
             if (!selected)
                 return UpdateResult::Conflict;
             selected.SetNamedValue(L"last-launched-time", json::value(static_cast<int64_t>(timestamp)));
@@ -158,6 +163,86 @@ namespace WorkspaceStore
         catch (const std::exception&)
         {
             Logger::warn("Workspace launch metadata could not be saved");
+        }
+        return UpdateResult::Failed;
+    }
+
+    UpdateResult UpdateApplicationMetadata(const std::filesystem::path& fileName,
+                                           const WorkspacesData::WorkspacesProject& original,
+                                           const WorkspacesData::WorkspacesProject& refreshed)
+    {
+        try
+        {
+            if (original.apps.size() != refreshed.apps.size() ||
+                WorkspacesCli::NormalizeId(original.id) != WorkspacesCli::NormalizeId(refreshed.id))
+                return UpdateResult::Conflict;
+            auto lock = Lock(fileName);
+            const auto current = WorkspacesCli::ReadJson(fileName);
+            if (!current)
+                return UpdateResult::Conflict;
+            const auto selected = FindWorkspace(*current, original.id);
+            if (!selected)
+                return UpdateResult::Conflict;
+            const auto applications = selected.GetNamedArray(L"applications");
+            bool changed = false;
+            for (size_t i = 0; i < original.apps.size(); ++i)
+            {
+                const auto& before = original.apps[i];
+                const auto& after = refreshed.apps[i];
+                if (before == after)
+                    continue;
+                auto metadataOnly = before;
+                metadataOnly.id = after.id;
+                metadataOnly.path = after.path;
+                metadataOnly.packageFullName = after.packageFullName;
+                if (metadataOnly != after || (!before.id.empty() && before.id != after.id))
+                    return UpdateResult::Conflict;
+                json::JsonObject target{ nullptr };
+                for (const auto& value : applications)
+                {
+                    const auto item = value.GetObjectW();
+                    const auto app = WorkspacesData::WorkspacesProjectJSON::ApplicationJSON::FromJson(item);
+                    if (!app)
+                        return UpdateResult::Conflict;
+                    // Legacy entries without IDs must match uniquely; never guess by array position.
+                    const bool matches = before.id.empty() ? *app == before :
+                        !app->id.empty() && WorkspacesCli::NormalizeId(app->id) == WorkspacesCli::NormalizeId(before.id);
+                    if (matches)
+                    {
+                        if (target || app->path != before.path || app->packageFullName != before.packageFullName)
+                            return UpdateResult::Conflict;
+                        target = item;
+                    }
+                    if (before.id.empty() && !app->id.empty() &&
+                        WorkspacesCli::NormalizeId(app->id) == WorkspacesCli::NormalizeId(after.id))
+                        return UpdateResult::Conflict;
+                }
+                if (!target)
+                    return UpdateResult::Conflict;
+                if (before.id != after.id)
+                    target.SetNamedValue(L"id", json::value(after.id));
+                if (before.path != after.path)
+                    target.SetNamedValue(L"application-path", json::value(after.path));
+                if (before.packageFullName != after.packageFullName)
+                    target.SetNamedValue(L"package-full-name", json::value(after.packageFullName));
+                changed = true;
+            }
+            if (changed)
+                Commit(fileName, *current);
+            return UpdateResult::Updated;
+        }
+        catch (const VerificationError&)
+        {
+            Logger::error("Workspace application metadata replacement could not be verified");
+            return UpdateResult::Unverified;
+        }
+        catch (const winrt::hresult_error&)
+        {
+            Logger::error("Workspace application metadata JSON could not be updated");
+        }
+        catch (const std::exception&)
+        {
+            Logger::error("Workspace application metadata could not be updated");
         }
         return UpdateResult::Failed;
     }

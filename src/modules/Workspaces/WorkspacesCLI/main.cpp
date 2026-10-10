@@ -25,6 +25,7 @@
 #include "ConsoleApproval.h"
 #include "JsonOutput.h"
 #include "WorkerHandoff.h"
+#include "WorkerResult.h"
 
 namespace
 {
@@ -64,16 +65,7 @@ namespace
 
     void Print(const json::JsonObject& output, bool asJson, bool workerOutput = false)
     {
-        try
-        {
-            CliResources::Localize(output);
-        }
-        catch (const WorkspacesCli::Error&)
-        {
-            if (!output.HasKey(L"error"))
-                throw;
-            std::cerr << "Workspaces CLI: localized error resources are unavailable.\n";
-        }
+        CliResources::LocalizeForOutput(output, workerOutput);
         if (asJson)
         {
             std::cout << (workerOutput ? winrt::to_string(output.Stringify()) : WorkspacesCli::FormatJson(output)) << '\n';
@@ -355,63 +347,7 @@ namespace
         WorkspacesCli::ConsoleApproval prompt(GetStdHandle(STD_INPUT_HANDLE), GetStdHandle(STD_ERROR_HANDLE),
             CliResources::ApprovalText());
         WorkspacesCli::FrontendApproval presenter(approvalRequests.read.get(), approvalResponses.write.get(), prompt, cancel.get());
-        std::string response;
-        ULONGLONG cancelDeadline = 0;
-        for (;;)
-        {
-            const auto now = GetTickCount64();
-            if (now >= deadline)
-                throw WorkspacesCli::Error(9, L"outcomeUnknown", "Wait ended without a final result. Already launched applications remain open; do not retry automatically.");
-            if (WaitForSingleObject(cancel.get(), 0) == WAIT_OBJECT_0)
-            {
-                presenter.Stop();
-                if (!cancelDeadline)
-                    cancelDeadline = now + 2000;
-                else if (now >= cancelDeadline)
-                    throw WorkspacesCli::Error(9, L"outcomeUnknown", "Cancellation was not acknowledged before the wait ended.");
-            }
-            presenter.Poll();
-            DWORD available = 0;
-            if (PeekNamedPipe(read.get(), nullptr, 0, nullptr, &available, nullptr) && available)
-            {
-                char buffer[4096];
-                DWORD received = 0;
-                Check(ReadFile(read.get(), buffer, (std::min)(available, static_cast<DWORD>(sizeof(buffer))), &received, nullptr),
-                      "Cannot read worker result.");
-                response.append(buffer, received);
-                if (response.size() > WorkspacesCli::MaxPayload)
-                    throw WorkspacesCli::Error(9, L"outcomeUnknown", "Worker returned an oversized result.");
-                continue;
-            }
-            if (WaitForSingleObject(process.hProcess, 0) == WAIT_OBJECT_0)
-            {
-                if (PeekNamedPipe(read.get(), nullptr, 0, nullptr, &available, nullptr) && available)
-                    continue;
-                break;
-            }
-            Sleep(20);
-        }
-        presenter.Stop();
-        DWORD processExit = 1;
-        Check(GetExitCodeProcess(process.hProcess, &processExit), "Cannot read worker exit status.");
-        if (response.empty())
-            throw WorkspacesCli::Error(9, L"outcomeUnknown", "Worker exited without a final result.");
-        json::JsonObject output;
-        try
-        {
-            output = json::JsonObject::Parse(winrt::to_hstring(response));
-        }
-        catch (const winrt::hresult_error&)
-        {
-            throw WorkspacesCli::Error(9, L"outcomeUnknown", "Worker returned an invalid result.");
-        }
-        if (output.GetNamedNumber(L"schemaVersion") != 1 || output.GetNamedString(L"command") != L"launch")
-            throw WorkspacesCli::Error(9, L"outcomeUnknown", "Worker result contract mismatch.");
-        exitCode = static_cast<int>(processExit);
-        if (output.HasKey(L"result") &&
-            output.GetNamedObject(L"result").GetNamedString(L"operationId") != operationId)
-            throw WorkspacesCli::Error(9, L"outcomeUnknown", "Worker returned a different operation result.");
-        return output;
+        return WorkspacesCli::ReadWorkerResult(process.hProcess, read.get(), cancel.get(), deadline, presenter, operationId, exitCode);
     }
 }
 
@@ -423,10 +359,10 @@ int wmain(int argc, wchar_t** argv)
     const bool asJson = worker || WorkspacesCli::WantsJson(args);
     std::wstring command = worker ? L"launch" : (args.empty() ? L"" : args.front());
     Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
+    WorkspacesCli::ConsoleOutputCodePage consoleCodePage(!worker);
     try
     {
         winrt::init_apartment();
-        SetConsoleOutputCP(CP_UTF8);
         if (connectedWorker)
         {
             if (args.size() != 3)

@@ -10,7 +10,7 @@ namespace WorkspacesLibUnitTests
 {
     TEST_CLASS (CliApprovalConsoleTests)
     {
-        static void Run(const std::wstring& scenario)
+        static void Run(const std::wstring& scenario, bool workerError = false)
         {
             wchar_t module[32768]{};
             Assert::IsTrue(GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), module, ARRAYSIZE(module)) > 0);
@@ -46,13 +46,29 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(ReadFile(read.get(), buffer, sizeof(buffer), &received, nullptr) != FALSE);
             const std::string output(buffer, received);
             Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(output.c_str());
-            Assert::AreEqual(DWORD{ 0 }, code, scenario.c_str());
+            Assert::AreEqual(DWORD{ workerError ? 2ul : 0ul }, code, scenario.c_str());
             const auto result = json::JsonObject::Parse(winrt::to_hstring(output));
+            if (workerError)
+            {
+                Assert::AreEqual(std::wstring(L"invalidArguments"), std::wstring(result.GetNamedObject(L"error").GetNamedString(L"code")));
+                Assert::AreEqual(4u, result.Size());
+                return;
+            }
             Assert::IsTrue(result.GetNamedBoolean(L"passed"));
             Assert::AreEqual(1u, result.Size(), L"Only final JSON, no prompt content, may reach stdout.");
         }
 
     public:
+        TEST_METHOD (WorkerResourceFailureKeepsCombinedOutputJsonOnly)
+        {
+            Run(L"worker-resource-error", true);
+        }
+
+        TEST_METHOD (ConsoleCodePageRestoredOnSuccessAndFailure)
+        {
+            Run(L"code-page");
+        }
+
         TEST_METHOD (IsolatedConsoleAllowsOnceAndSkipsByDefault)
         {
             Run(L"allow");

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <string_view>
+#include <iostream>
 #include "Generated Files/resource.h"
 #include <WorkspacesLib/CliCommands.h>
 #include "ConsoleApproval.h"
@@ -94,6 +95,23 @@ namespace CliResources
                     code == L"confirmationFailed" || code == L"skipped" || code == L"consentDenied" || code == L"canceled")
                     app.SetNamedValue(L"message", json::value(Get(ErrorMessage(code.c_str()))));
             }
+        }
+    }
+
+    inline void LocalizeForOutput(const json::JsonObject& output, bool workerOutput)
+    {
+        try
+        {
+            Localize(output);
+        }
+        catch (const WorkspacesCli::Error&)
+        {
+            if (!output.HasKey(L"error"))
+                throw;
+            if (workerOutput)
+                OutputDebugStringW(L"Workspaces CLI: localized error resources are unavailable.\n");
+            else
+                std::cerr << "Workspaces CLI: localized error resources are unavailable.\n";
         }
     }
 

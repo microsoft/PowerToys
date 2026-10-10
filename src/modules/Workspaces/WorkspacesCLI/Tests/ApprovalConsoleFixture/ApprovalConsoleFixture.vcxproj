@@ -25,6 +25,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\..\ApprovalChannel.cpp" />
     <ClCompile Include="..\..\ConsoleApproval.cpp" />
+    <ProjectReference Include="..\..\WorkspacesCLI.vcxproj">
+      <Project>{a3f4cd35-a455-41e7-bc03-1214cb841c9a}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\WorkspacesLib\WorkspacesLib.vcxproj">
       <Project>{b31fcc55-b5a4-4ea7-b414-2dceae6af332}</Project>
     </ProjectReference>

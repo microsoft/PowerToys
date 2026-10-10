@@ -4,8 +4,10 @@
 #include <algorithm>
 #include <future>
 #include <iostream>
+#include <filesystem>
 #include <WorkspacesCLI/ApprovalChannel.h>
 #include <WorkspacesCLI/ConsoleApproval.h>
+#include <WorkspacesCLI/Resources.h>
 #include <WorkspacesLib/CliCommands.h>
 
 namespace
@@ -49,8 +51,69 @@ namespace
         return result;
     }
 
+    void CheckCodePage()
+    {
+        const auto original = GetConsoleOutputCP();
+        Check(original != 0);
+        auto restore = wil::scope_exit([&] { SetConsoleOutputCP(original); });
+        Check(SetConsoleOutputCP(437) != FALSE);
+        {
+            WorkspacesCli::ConsoleOutputCodePage codePage;
+            Check(GetConsoleOutputCP() == CP_UTF8);
+        }
+        Check(GetConsoleOutputCP() == 437);
+        try
+        {
+            WorkspacesCli::ConsoleOutputCodePage codePage;
+            Check(GetConsoleOutputCP() == CP_UTF8);
+            throw std::runtime_error("Exercise exceptional scope exit");
+        }
+        catch (const std::runtime_error&)
+        {
+            Check(GetConsoleOutputCP() == 437);
+        }
+        {
+            WorkspacesCli::ConsoleOutputCodePage codePage(false);
+            Check(GetConsoleOutputCP() == 437);
+        }
+
+        wchar_t module[32768]{};
+        Check(GetModuleFileNameW(nullptr, module, ARRAYSIZE(module)) != 0);
+        const auto executable = std::filesystem::path(module).parent_path().parent_path().parent_path() / L"PowerToys.WorkspacesCLI.exe";
+        for (const auto argument : { L"--version", L"--invalid", L"--launch-worker" })
+        {
+            SECURITY_ATTRIBUTES attributes{ sizeof(attributes), nullptr, TRUE };
+            wil::unique_handle nul(CreateFileW(L"NUL", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                               &attributes, OPEN_EXISTING, 0, nullptr));
+            Check(static_cast<bool>(nul));
+            STARTUPINFOW startup{ sizeof(startup) };
+            startup.dwFlags = STARTF_USESTDHANDLES;
+            startup.hStdInput = startup.hStdOutput = startup.hStdError = nul.get();
+            auto command = L"\"" + executable.wstring() + L"\" " + argument;
+            wil::unique_process_information process;
+            Check(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &startup, &process) != FALSE);
+            auto cleanup = wil::scope_exit([&] {
+                if (WaitForSingleObject(process.hProcess, 0) == WAIT_TIMEOUT)
+                {
+                    TerminateProcess(process.hProcess, 1);
+                    WaitForSingleObject(process.hProcess, 2000);
+                }
+            });
+            Check(WaitForSingleObject(process.hProcess, 5000) == WAIT_OBJECT_0);
+            DWORD exitCode{};
+            Check(GetExitCodeProcess(process.hProcess, &exitCode) != FALSE);
+            Check(exitCode == (std::wstring_view(argument) == L"--version" ? 0ul : 2ul));
+            Check(GetConsoleOutputCP() == 437, "CLI left the shared console output code page changed.");
+        }
+    }
+
     void Run(std::wstring_view scenario)
     {
+        if (scenario == L"code-page")
+        {
+            CheckCodePage();
+            return;
+        }
         wil::unique_handle input(CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr));
         wil::unique_handle output(CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE,
                                                             FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -177,7 +240,42 @@ int wmain(int argc, wchar_t** argv)
     try
     {
         winrt::init_apartment();
+        if (argc == 3 && std::wstring_view(argv[1]).starts_with(L"worker-result-"))
+        {
+            const std::wstring_view mode(argv[1]);
+            const auto deadline = std::stoull(argv[2]);
+            while (GetTickCount64() < deadline + (mode == L"worker-result-unresponsive" ? 10000 : 100))
+                Sleep(5);
+            if (mode == L"worker-result-missing")
+                return 1;
+            if (mode == L"worker-result-malformed")
+            {
+                std::cout << "{not-json}\n";
+                return 1;
+            }
+            const bool canceled = mode == L"worker-result-canceled";
+            const auto output = WorkspacesCli::Failure(L"launch", { canceled ? 12 : 9, canceled ? L"canceled" : L"timeout", "Controlled worker completion." });
+            std::cout << winrt::to_string(output.Stringify()) << '\n';
+            return canceled ? 12 : 9;
+        }
         Check(argc == 2);
+        if (std::wstring_view(argv[1]) == L"worker-resource-error")
+        {
+            bool missingResources = false;
+            try
+            {
+                CliResources::Get(IDS_CLIINVALIDARGUMENTS);
+            }
+            catch (const WorkspacesCli::Error&)
+            {
+                missingResources = true;
+            }
+            Check(missingResources, "Fixture must not contain CLI localization resources.");
+            const auto output = WorkspacesCli::Failure(L"launch", { 2, L"invalidArguments", "Controlled worker error." });
+            CliResources::LocalizeForOutput(output, true);
+            std::cout << winrt::to_string(output.Stringify()) << '\n';
+            return 2;
+        }
         Run(argv[1]);
         std::cout << "{\"passed\":true}\n";
         return 0;
