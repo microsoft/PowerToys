@@ -11,6 +11,15 @@ namespace MouseWithoutBorders.UnitTests;
 [TestClass]
 public sealed class GuestUiDiagnosticsTests
 {
+    private static readonly string[] AllowedSnapshotProperties =
+    [
+        "QueryStatus", "SettingsQueryStatus", "CoordinationQueryStatus", "WorkflowConfigured",
+        "OwnerMatchesWorkflow", "ChildOwnsTurn", "ChildWaitingForTurn", "RecordingOwnsTurn",
+        "ChildCpuSeconds", "SettingsCpuSeconds", "SettingsResponding", "SettingsProcessId",
+        "SettingsStartTimeUtc", "SettingsHwnd", "SettingsThreadCount", "SettingsWorkingSetBytes",
+        "SettingsPrivateMemoryBytes", "QueryErrorHResult",
+    ];
+
     [TestMethod]
     [DataRow(true, true)]
     [DataRow(false, true)]
@@ -59,6 +68,8 @@ public sealed class GuestUiDiagnosticsTests
             using var document = JsonDocument.Parse(output);
             var snapshot = document.RootElement;
             Assert.AreEqual("Succeeded", snapshot.GetProperty("QueryStatus").GetString());
+            Assert.AreEqual("Succeeded", snapshot.GetProperty("SettingsQueryStatus").GetString());
+            Assert.AreEqual("Succeeded", snapshot.GetProperty("CoordinationQueryStatus").GetString());
             Assert.IsTrue(snapshot.GetProperty("WorkflowConfigured").GetBoolean());
             Assert.AreEqual(matchingWorkflow, snapshot.GetProperty("OwnerMatchesWorkflow").GetBoolean());
             Assert.AreEqual(ownsTurn, snapshot.GetProperty("ChildOwnsTurn").GetBoolean());
@@ -66,7 +77,14 @@ public sealed class GuestUiDiagnosticsTests
             Assert.IsTrue(snapshot.GetProperty("RecordingOwnsTurn").GetBoolean());
             Assert.IsFalse(output.Contains("private-", StringComparison.Ordinal));
             Assert.AreEqual(JsonValueKind.Null, snapshot.GetProperty("QueryErrorHResult").ValueKind);
-            Assert.AreEqual(10, snapshot.EnumerateObject().Count(), "Diagnostics must contain only the fixed allowlisted fields.");
+            CollectionAssert.AreEquivalent(
+                AllowedSnapshotProperties,
+                snapshot.EnumerateObject().Select(property => property.Name).ToArray(),
+                "Diagnostics must contain exactly the fixed allowlisted fields.");
+            Assert.IsTrue(snapshot.GetProperty("SettingsProcessId").GetInt32() > 0);
+            Assert.IsTrue(snapshot.GetProperty("SettingsThreadCount").GetInt32() > 0);
+            Assert.IsTrue(snapshot.GetProperty("SettingsWorkingSetBytes").GetInt64() > 0);
+            Assert.IsTrue(snapshot.GetProperty("SettingsPrivateMemoryBytes").GetInt64() > 0);
         }
         finally
         {
