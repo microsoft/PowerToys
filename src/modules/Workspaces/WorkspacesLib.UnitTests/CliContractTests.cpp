@@ -26,6 +26,34 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (PreliminaryLaunchValidationAllowsOnlyMissingIds)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            project.monitors.push_back({ .number = 1, .dpi = 96 });
+            project.apps[0].monitor = 1;
+            project.apps[0].position = { 10, 20, 640, 400 };
+            project.apps[0].id.clear();
+            WorkspacesCli::ValidateLaunch(project, true);
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ValidateLaunch(project); });
+            project.apps[0].id = L"malformed";
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ValidateLaunch(project, true); });
+            project.apps[0].id.clear();
+            project.apps[0].position.width = 0;
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ValidateLaunch(project, true); });
+        }
+
+        TEST_METHOD (ListingLegacyApplicationsDoesNotAssignIds)
+        {
+            auto project = Project();
+            project.apps[0].id.clear();
+            const auto before = std::wstring(WorkspacesData::WorkspacesProjectJSON::ToJson(project).Stringify());
+            for (const bool details : { false, true })
+                WorkspacesCli::ListResult({ project }, details);
+            Assert::AreEqual(before, std::wstring(WorkspacesData::WorkspacesProjectJSON::ToJson(project).Stringify()));
+            Assert::IsTrue(project.apps[0].id.empty());
+        }
+
         TEST_METHOD (ListResponsesContainOnlyViewAndWorkspaces)
         {
             for (const bool details : { false, true })

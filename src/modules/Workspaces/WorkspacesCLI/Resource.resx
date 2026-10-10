@@ -13,6 +13,8 @@
   <data name="CliPolicyError" xml:space="preserve"><value>The Workspaces policy could not be determined.</value></data>
   <data name="CliInvalidData" xml:space="preserve"><value>The saved workspace configuration is invalid or exceeds supported limits.</value></data>
   <data name="CliStorageError" xml:space="preserve"><value>The workspace configuration could not be read. Check file access and try again.</value></data>
+  <data name="CliWorkspaceChanged" xml:space="preserve"><value>The saved workspace changed before missing application IDs could be initialized. No applications were launched. Read the workspace again before retrying.</value></data>
+  <data name="CliApplicationIdSaveFailed" xml:space="preserve"><value>Missing application IDs could not be saved. No applications were launched. Check file access and try again.</value></data>
   <data name="CliNotFound" xml:space="preserve"><value>No saved workspace matches the selector.</value></data>
   <data name="CliAmbiguousName" xml:space="preserve"><value>More than one workspace matches this name. Select a workspace by ID.</value></data>
   <data name="CliBusy" xml:space="preserve"><value>Another workspace launch is in progress.</value></data>
@@ -26,6 +28,7 @@
   <data name="CliCanceled" xml:space="preserve"><value>Further application launches were canceled. Applications already started remain open.</value></data>
   <data name="CliInternalError" xml:space="preserve"><value>The Workspaces command could not complete because of an unexpected error.</value></data>
   <data name="CliMetadataWarning" xml:space="preserve"><value>The launch result is available, but launch history could not be saved. Do not relaunch solely to update history.</value></data>
+  <data name="CliLoggingWarning" xml:space="preserve"><value>File logging is unavailable for this operation. The launch result is unaffected.</value></data>
   <data name="CliPersistenceUnverified" xml:space="preserve"><value>The workspace file was replaced but its contents could not be verified. The application results are reported separately. Check the saved workspace before retrying.</value></data>
   <data name="CliCompleted" xml:space="preserve"><value>Completed</value></data>
   <data name="CliPartial" xml:space="preserve"><value>Completed with application failures</value></data>

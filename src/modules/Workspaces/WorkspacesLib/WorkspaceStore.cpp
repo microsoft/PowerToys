@@ -184,6 +184,15 @@ namespace WorkspaceStore
             if (!selected)
                 return UpdateResult::Conflict;
             const auto applications = selected.GetNamedArray(L"applications");
+            std::vector<WorkspacesData::WorkspacesProject::Application> currentApps;
+            for (const auto& value : applications)
+            {
+                const auto app = WorkspacesData::WorkspacesProjectJSON::ApplicationJSON::FromJson(value.GetObjectW());
+                if (!app)
+                    return UpdateResult::Conflict;
+                currentApps.push_back(*app);
+            }
+            const bool unchangedApplicationList = currentApps == original.apps;
             bool changed = false;
             for (size_t i = 0; i < original.apps.size(); ++i)
             {
@@ -198,14 +207,14 @@ namespace WorkspaceStore
                 if (metadataOnly != after || (!before.id.empty() && before.id != after.id))
                     return UpdateResult::Conflict;
                 json::JsonObject target{ nullptr };
-                for (const auto& value : applications)
+                for (uint32_t index = 0; index < applications.Size(); ++index)
                 {
-                    const auto item = value.GetObjectW();
+                    const auto item = applications.GetObjectAt(index);
                     const auto app = WorkspacesData::WorkspacesProjectJSON::ApplicationJSON::FromJson(item);
                     if (!app)
                         return UpdateResult::Conflict;
-                    // Legacy entries without IDs must match uniquely; never guess by array position.
-                    const bool matches = before.id.empty() ? *app == before :
+                    // Position is safe for legacy duplicates only when the complete list still matches the snapshot.
+                    const bool matches = before.id.empty() ? (unchangedApplicationList ? index == i : *app == before) :
                         !app->id.empty() && WorkspacesCli::NormalizeId(app->id) == WorkspacesCli::NormalizeId(before.id);
                     if (matches)
                     {

@@ -35,6 +35,8 @@ namespace WorkspacesCli
     Options Parse(const std::vector<std::wstring>& arguments);
     bool WantsJson(const std::vector<std::wstring>& arguments);
     std::wstring NormalizeId(const std::wstring& id);
+    void ValidateLaunch(const WorkspacesData::WorkspacesProject& project, bool allowMissingIds = false);
+    void EnsureApplicationIds(const std::filesystem::path& fileName, WorkspacesData::WorkspacesProject& project);
     std::filesystem::path SettingsRoot();
     std::optional<json::JsonObject> ReadJson(const std::filesystem::path& path);
     void CheckEnabled();

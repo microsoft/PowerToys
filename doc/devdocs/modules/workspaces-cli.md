@@ -104,8 +104,14 @@ or that an application is ready for business use.
   launch is not idempotent and repeating it may open more applications.
 - The worker and arranger use the same immutable selected snapshot. Final history writes read
   the current file under a shared writer lock and do not replace it with the old launch snapshot.
+- Before launching legacy workspaces, the non-elevated worker assigns and safely persists only
+  missing application IDs. Existing IDs are preserved; malformed or duplicate existing IDs are
+  errors. Concurrent edits or failed ID persistence stop the launch before applications start.
+  Listing remains read-only, and a later canceled/timed-out launch does not undo completed ID initialization.
 - The foreground CLI restores the console's original output code page on exit. Private workers
   do not change it, and their result stream remains JSON-only even if localization is unavailable.
+- File logging is best-effort. An unavailable log directory/file does not prevent launching;
+  the final launch result includes a `loggingUnavailable` warning without changing application outcomes.
 
 ### Administrator terminal handoff
 
@@ -176,7 +182,7 @@ and polled reads keep waits cancellable; no public approval service is exposed.
 | 5 | Another launch owns the session |
 | 6 | Disabled by user/policy, policy lookup failure or component unavailable; inspect `error.code` |
 | 7 | Unsupported caller context, failed de-elevation, arranger startup failure or required consent declined |
-| 8 | Invalid or unreadable saved configuration |
+| 8 | Invalid/unreadable saved configuration, conflicting legacy ID initialization or failed ID persistence |
 | 9 | Deadline or unknown outcome |
 | 10 | One or more applications failed, were skipped, or could not obtain required confirmation |
 | 11 | Persistence replacement could not be verified; app results remain separate |

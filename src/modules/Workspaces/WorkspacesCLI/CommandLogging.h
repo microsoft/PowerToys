@@ -41,10 +41,27 @@ namespace CliLogging
         std::shared_ptr<spdlog::sinks::basic_file_sink_mt> m_file;
     };
 
-    inline void Initialize()
+    inline bool Initialize(const std::filesystem::path& folder)
     {
-        const auto folder = WorkspacesCli::SettingsRoot() / L"Workspaces" / L"Logs";
-        std::filesystem::create_directories(folder);
-        Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<CommandSink>(folder / L"cli.log") });
+        try
+        {
+            std::filesystem::create_directories(folder);
+            Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<CommandSink>(folder / L"cli.log") });
+            return true;
+        }
+        catch (const std::filesystem::filesystem_error&)
+        {
+            OutputDebugStringW(L"Workspaces CLI: file logging is unavailable; continuing without a file log.\n");
+        }
+        catch (const spdlog::spdlog_ex&)
+        {
+            OutputDebugStringW(L"Workspaces CLI: file logging is unavailable; continuing without a file log.\n");
+        }
+        return false;
+    }
+
+    inline bool Initialize()
+    {
+        return Initialize(WorkspacesCli::SettingsRoot() / L"Workspaces" / L"Logs");
     }
 }

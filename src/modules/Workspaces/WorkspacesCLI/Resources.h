@@ -33,6 +33,10 @@ namespace CliResources
             return IDS_CLIINVALIDDATA;
         if (code == L"storageError")
             return IDS_CLISTORAGEERROR;
+        if (code == L"workspaceChanged")
+            return IDS_CLIWORKSPACECHANGED;
+        if (code == L"applicationIdSaveFailed")
+            return IDS_CLIAPPLICATIONIDSAVEFAILED;
         if (code == L"workspaceNotFound")
             return IDS_CLINOTFOUND;
         if (code == L"ambiguousName")
@@ -83,6 +87,8 @@ namespace CliResources
                 const auto code = warning.GetNamedString(L"code");
                 if (code == L"metadataSaveFailed" || code == L"metadataSaveConflict")
                     warning.SetNamedValue(L"message", json::value(Get(IDS_CLIMETADATAWARNING)));
+                else if (code == L"loggingUnavailable")
+                    warning.SetNamedValue(L"message", json::value(Get(IDS_CLILOGGINGWARNING)));
             }
         }
         if (output.GetNamedString(L"command", L"") == L"launch" && output.HasKey(L"result"))

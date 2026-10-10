@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <atomic>
 #include <iostream>
-#include <set>
 #include <shellapi.h>
 #include <spdlog/sinks/null_sink.h>
 #include <wil/resource.h>
@@ -112,34 +111,6 @@ namespace
         }
     }
 
-    void ValidateLaunch(const WorkspacesData::WorkspacesProject& project)
-    {
-        if (project.apps.empty())
-            throw WorkspacesCli::Error(8, L"invalidData", "Workspace has no applications.");
-        std::set<std::wstring> appIds;
-        std::set<unsigned int> monitors;
-        for (const auto& monitor : project.monitors)
-        {
-            if (!monitor.dpi || !monitors.insert(monitor.number).second)
-                throw WorkspacesCli::Error(8, L"invalidData", "Workspace has invalid monitors.");
-        }
-        for (const auto& app : project.apps)
-        {
-            std::wstring id;
-            try
-            {
-                id = WorkspacesCli::NormalizeId(app.id);
-            }
-            catch (const WorkspacesCli::Error&)
-            {
-                throw WorkspacesCli::Error(8, L"invalidData", "Workspace has an invalid application ID.");
-            }
-            if (!appIds.insert(id).second ||
-                !monitors.contains(app.monitor) || app.position.width <= 0 || app.position.height <= 0)
-                throw WorkspacesCli::Error(8, L"invalidData", "Workspace has invalid application IDs or placement.");
-        }
-    }
-
     int Worker(const std::vector<std::wstring>& args, HANDLE ownerLifetime = nullptr)
     {
         if (args.size() != 4 && args.size() != 6)
@@ -189,8 +160,7 @@ namespace
         auto project = WorkspacesData::WorkspacesProjectJSON::FromJson(request.GetNamedObject(L"workspace"));
         if (!project)
             throw WorkspacesCli::Error(8, L"invalidData", "Invalid operation snapshot.");
-        Utils::Apps::UpdateWorkspacesApps(*project, Utils::Apps::GetAppsList());
-        ValidateLaunch(*project);
+        WorkspacesCli::ValidateLaunch(*project, true);
         wil::unique_mutex_nothrow mutex(CreateMutexW(nullptr, TRUE, L"Local\\PowerToys_WorkspacesLauncher_InstanceMutex"));
         const auto mutexError = GetLastError();
         if (!mutex)
@@ -200,7 +170,16 @@ namespace
         auto release = wil::scope_exit([&] { ReleaseMutex(mutex.get()); });
         if (WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0)
             throw WorkspacesCli::Error(12, L"canceled", "Operation canceled before starting applications.");
-        CliLogging::Initialize();
+        if (GetTickCount64() >= options.deadline)
+            throw WorkspacesCli::Error(9, L"timeout", "Operation deadline expired before application preparation.");
+        WorkspacesCli::EnsureApplicationIds(WorkspacesCli::SettingsRoot() / L"Workspaces" / L"workspaces.json", *project);
+        Utils::Apps::UpdateWorkspacesApps(*project, Utils::Apps::GetAppsList());
+        WorkspacesCli::ValidateLaunch(*project);
+        if (WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0)
+            throw WorkspacesCli::Error(12, L"canceled", "Operation canceled before starting applications.");
+        if (GetTickCount64() >= options.deadline)
+            throw WorkspacesCli::Error(9, L"timeout", "Operation deadline expired before starting applications.");
+        const bool loggingReady = CliLogging::Initialize();
         Logger::info("Workspaces CLI: launch worker started");
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
         std::vector<WorkspacesData::WorkspacesProject> unusedStore;
@@ -218,6 +197,13 @@ namespace
                 throw WorkspacesCli::Error(9, L"outcomeUnknown", "Arranger exited without its final result.");
             result = WorkspacesCli::LaunchResult(*project, launcher.GetResult(), options.operationId, exitCode,
                                                 launcher.GetApplicationErrors(), launcher.GetApprovalDecisions());
+        }
+        if (!loggingReady)
+        {
+            json::JsonObject warning;
+            warning.SetNamedValue(L"code", json::value(L"loggingUnavailable"));
+            warning.SetNamedValue(L"message", json::value(L"File logging is unavailable for this operation. The launch result is unaffected."));
+            result.GetNamedArray(L"warnings").Append(warning);
         }
         const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         const auto saved = WorkspaceStore::UpdateLastLaunched(WorkspacesCli::SettingsRoot() / L"Workspaces" / L"workspaces.json", project->id, now);
@@ -252,7 +238,7 @@ namespace
         const auto arranger = std::filesystem::path(ExePath()).parent_path() / L"PowerToys.WorkspacesWindowArranger.exe";
         if (!std::filesystem::is_regular_file(arranger))
             throw WorkspacesCli::Error(6, L"unavailable", "The matching window arranger is unavailable.");
-        ValidateLaunch(project);
+        WorkspacesCli::ValidateLaunch(project, true);
         GUID guid{};
         winrt::check_hresult(CoCreateGuid(&guid));
         wchar_t guidText[40]{};

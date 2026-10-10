@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 #include "pch.h"
 #include "CliCommands.h"
+#include "WorkspaceStore.h"
 
 #include <algorithm>
 #include <cwctype>
@@ -14,6 +15,74 @@ namespace WorkspacesCli
     Error::Error(int exitCode, std::wstring code, const char* message) :
         std::runtime_error(message), exitCode(exitCode), code(std::move(code))
     {
+    }
+
+    void ValidateLaunch(const WorkspacesData::WorkspacesProject& project, bool allowMissingIds)
+    {
+        if (project.apps.empty())
+            throw Error(8, L"invalidData", "Workspace has no applications.");
+        std::set<std::wstring> appIds;
+        std::set<unsigned int> monitors;
+        for (const auto& monitor : project.monitors)
+        {
+            if (!monitor.dpi || !monitors.insert(monitor.number).second)
+                throw Error(8, L"invalidData", "Workspace has invalid monitors.");
+        }
+        for (const auto& app : project.apps)
+        {
+            if (!monitors.contains(app.monitor) || app.position.width <= 0 || app.position.height <= 0)
+                throw Error(8, L"invalidData", "Workspace has invalid application placement.");
+            if (allowMissingIds && app.id.empty())
+                continue;
+            std::wstring id;
+            try
+            {
+                id = NormalizeId(app.id);
+            }
+            catch (const Error&)
+            {
+                throw Error(8, L"invalidData", "Workspace has an invalid application ID.");
+            }
+            if (!appIds.insert(id).second)
+                throw Error(8, L"invalidData", "Workspace has duplicate application IDs.");
+        }
+    }
+
+    void EnsureApplicationIds(const std::filesystem::path& fileName, WorkspacesData::WorkspacesProject& project)
+    {
+        ValidateLaunch(project, true);
+        if (std::none_of(project.apps.begin(), project.apps.end(), [](const auto& app) { return app.id.empty(); }))
+            return;
+        auto prepared = project;
+        std::set<std::wstring> ids;
+        for (const auto& app : prepared.apps)
+        {
+            if (!app.id.empty())
+                ids.insert(NormalizeId(app.id));
+        }
+        for (auto& app : prepared.apps)
+        {
+            if (!app.id.empty())
+                continue;
+            do
+            {
+                GUID guid{};
+                winrt::check_hresult(CoCreateGuid(&guid));
+                wchar_t text[40]{};
+                if (!StringFromGUID2(guid, text, ARRAYSIZE(text)))
+                    throw Error(1, L"internalError", "Cannot format a new application ID.");
+                app.id = text;
+            } while (!ids.insert(NormalizeId(app.id)).second);
+        }
+        ValidateLaunch(prepared);
+        const auto saved = WorkspaceStore::UpdateApplicationMetadata(fileName, project, prepared);
+        if (saved == WorkspaceStore::UpdateResult::Conflict)
+            throw Error(8, L"workspaceChanged", "The saved workspace changed before application IDs could be initialized. No applications were launched.");
+        if (saved == WorkspaceStore::UpdateResult::Unverified)
+            throw Error(11, L"persistenceUnverified", "Application ID persistence could not be verified.");
+        if (saved != WorkspaceStore::UpdateResult::Updated)
+            throw Error(8, L"applicationIdSaveFailed", "Missing application IDs could not be saved. No applications were launched.");
+        project = std::move(prepared);
     }
 
     std::wstring NormalizeId(const std::wstring& id)

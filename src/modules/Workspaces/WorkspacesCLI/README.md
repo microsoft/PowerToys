@@ -70,6 +70,11 @@ The GUI launcher's pre-launch refresh merges only changed application IDs, packa
 paths into a fresh selected workspace under that lock. Concurrent workspace edits/additions/deletions
 and unknown fields are preserved. Missing/ambiguous apps or changed target metadata cause a conflict;
 the launcher stops rather than overwriting newer data or giving the arranger stale metadata.
+For legacy ID-less applications, ordinal matching is allowed only when the complete current
+application list matches the original snapshot; otherwise a unique unchanged match is required.
+The CLI initializes missing IDs through this same transaction before launching, keeps existing IDs
+unchanged, and rejects malformed/duplicate IDs. Failed persistence leaves the in-memory snapshot
+unchanged and prevents application startup. Lists do not initialize IDs or write configuration.
 
 Nonessential metadata failure is a warning after otherwise successful arrangement. A replaced
 file that cannot be verified remains a distinct nonzero integrity failure, not a warning or an
@@ -78,6 +83,8 @@ asserted rollback. Editors keep edits and display a localized error when saving 
 CLI diagnostics in `Workspaces\Logs\cli.log` include only fixed command metadata. Shared domain
 messages that could contain app names, titles or arguments are not forwarded verbatim. Public
 errors are structured in JSON or emitted on stderr.
+File-log initialization is optional: filesystem/sink failures retain the installed logger, emit
+debugger diagnostics and add `loggingUnavailable` to completed launch results instead of aborting startup.
 Private worker error fallbacks use debugger diagnostics, never text mixed into the JSON result pipe.
 The frontend restores its console output code page after success or failure and allows a bounded
 two-second completion acknowledgement after a launch deadline without extending approval time.

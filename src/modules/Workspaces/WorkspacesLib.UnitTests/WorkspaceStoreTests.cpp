@@ -2,6 +2,11 @@
 #include "pch.h"
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/WorkspaceStore.h>
+#include <WorkspacesCLI/CommandLogging.h>
+#include <fstream>
+#include <sstream>
+#include <spdlog/sinks/null_sink.h>
+#include <spdlog/sinks/ostream_sink.h>
 #include <wil/resource.h>
 #include <objbase.h>
 
@@ -56,6 +61,7 @@ namespace WorkspacesLibUnitTests
             app.position = { 10, 20, 640, 400 };
             app.monitor = 1;
             project.apps.push_back(app);
+            project.monitors.push_back({ .number = 1, .dpi = 96 });
             return project;
         }
 
@@ -70,6 +76,183 @@ namespace WorkspacesLibUnitTests
     TEST_CLASS (WorkspaceStoreTests)
     {
     public:
+        TEST_METHOD (OptionalLoggingFailureKeepsTheExistingLogger)
+        {
+            StoreFixture fixture;
+            for (const bool directoryFailure : { false, true })
+            {
+                const auto folder = fixture.directory / (directoryFailure ? L"blocked" : L"logs");
+                if (directoryFailure)
+                {
+                    std::ofstream file(folder);
+                    file << "not a directory";
+                }
+                else
+                {
+                    std::filesystem::create_directories(folder / L"cli.log");
+                }
+                std::ostringstream captured;
+                ::Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::ostream_sink_mt>(captured) });
+                auto restore = wil::scope_exit([] {
+                    ::Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
+                });
+                Assert::IsFalse(CliLogging::Initialize(folder));
+                ::Logger::info("Workspaces CLI: existing logger remains usable");
+                ::Logger::flush();
+                Assert::IsTrue(captured.str().find("existing logger remains usable") != std::string::npos);
+            }
+        }
+
+        TEST_METHOD (OptionalLoggingSuccessRetainsSanitization)
+        {
+            StoreFixture fixture;
+            const auto folder = fixture.directory / L"logs";
+            auto restore = wil::scope_exit([] {
+                ::Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
+            });
+            Assert::IsTrue(CliLogging::Initialize(folder));
+            ::Logger::info("Workspaces CLI: started");
+            ::Logger::warn("private application arguments");
+            ::Logger::flush();
+            std::ifstream stream(folder / L"cli.log");
+            const std::string text{ std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>() };
+            Assert::IsTrue(text.find("Workspaces CLI: started") != std::string::npos);
+            Assert::IsTrue(text.find("consult the CLI result") != std::string::npos);
+            Assert::IsTrue(text.find("private application arguments") == std::string::npos);
+        }
+
+        TEST_METHOD (LegacyIdInitializationPreservesFreshDataAndExistingIds)
+        {
+            StoreFixture fixture;
+            auto original = MetadataProject();
+            auto legacy = original.apps[0];
+            legacy.id.clear();
+            original.apps.push_back(legacy);
+            auto current = WorkspacesData::WorkspacesListJSON::ToJson({ original });
+            auto selected = current.GetNamedArray(L"workspaces").GetObjectAt(0);
+            selected.SetNamedValue(L"name", json::value(L"Concurrent rename"));
+            selected.SetNamedValue(L"last-launched-time", json::value(500));
+            selected.GetNamedArray(L"applications").GetObjectAt(1).Remove(L"id");
+            selected.GetNamedArray(L"applications").GetObjectAt(1).SetNamedValue(L"future", json::value(true));
+            auto added = MetadataProject();
+            added.id = L"{22222222-2222-2222-2222-222222222222}";
+            current.GetNamedArray(L"workspaces").Append(WorkspacesData::WorkspacesProjectJSON::ToJson(added));
+            current.SetNamedValue(L"extra", json::value(42));
+            Assert::IsTrue(WorkspaceStore::Write(fixture.file, current));
+
+            WorkspacesCli::EnsureApplicationIds(fixture.file, original);
+            WorkspacesCli::ValidateLaunch(original);
+            Assert::AreEqual(MetadataProject().apps[0].id, original.apps[0].id);
+            Assert::IsFalse(original.apps[1].id.empty());
+            auto saved = *WorkspacesCli::ReadJson(fixture.file);
+            Assert::AreEqual(original.apps[1].id,
+                             std::wstring(saved.GetNamedArray(L"workspaces").GetObjectAt(0).GetNamedArray(L"applications").GetObjectAt(1).GetNamedString(L"id")));
+            saved.GetNamedArray(L"workspaces").GetObjectAt(0).GetNamedArray(L"applications").GetObjectAt(1).Remove(L"id");
+            Assert::AreEqual(std::wstring(current.Stringify()), std::wstring(saved.Stringify()));
+            const auto stableId = original.apps[1].id;
+            Assert::IsTrue(SetFileAttributesW(fixture.file.c_str(), FILE_ATTRIBUTE_READONLY) != FALSE);
+            WorkspacesCli::EnsureApplicationIds(fixture.file, original);
+            Assert::AreEqual(stableId, original.apps[1].id, L"Complete IDs must not trigger a rewrite.");
+        }
+
+        TEST_METHOD (IdenticalLegacyApplicationsReceiveDistinctPersistentIds)
+        {
+            StoreFixture fixture;
+            auto project = MetadataProject();
+            project.apps[0].id.clear();
+            project.apps.push_back(project.apps[0]);
+            Assert::IsTrue(WorkspaceStore::Write(fixture.file, WorkspacesData::WorkspacesListJSON::ToJson({ project })));
+            WorkspacesCli::EnsureApplicationIds(fixture.file, project);
+            WorkspacesCli::ValidateLaunch(project);
+            Assert::AreEqual(size_t{ 2 }, project.apps.size());
+            Assert::IsTrue(project.apps[0].id != project.apps[1].id);
+            const auto saved = WorkspacesCli::ReadJson(fixture.file)->GetNamedArray(L"workspaces").GetObjectAt(0).GetNamedArray(L"applications");
+            Assert::AreEqual(project.apps[0].id, std::wstring(saved.GetObjectAt(0).GetNamedString(L"id")));
+            Assert::AreEqual(project.apps[1].id, std::wstring(saved.GetObjectAt(1).GetNamedString(L"id")));
+        }
+
+        TEST_METHOD (LegacyIdInitializationCannotResurrectADeletedWorkspace)
+        {
+            StoreFixture fixture;
+            auto project = MetadataProject();
+            project.apps[0].id.clear();
+            Assert::IsTrue(WorkspaceStore::Write(fixture.file, json::JsonObject::Parse(LR"({"workspaces":[]})")));
+            try
+            {
+                WorkspacesCli::EnsureApplicationIds(fixture.file, project);
+                Assert::Fail(L"Missing workspace must cause a conflict.");
+            }
+            catch (const WorkspacesCli::Error& error)
+            {
+                Assert::AreEqual(std::wstring(L"workspaceChanged"), error.code);
+            }
+            Assert::IsTrue(project.apps[0].id.empty());
+            Assert::AreEqual(0u, WorkspacesCli::ReadJson(fixture.file)->GetNamedArray(L"workspaces").Size());
+        }
+
+        TEST_METHOD (LegacyIdInitializationFailurePreservesSnapshotAndStoredData)
+        {
+            StoreFixture fixture;
+            auto project = MetadataProject();
+            project.apps[0].id.clear();
+            const auto original = WorkspacesData::WorkspacesListJSON::ToJson({ project });
+            Assert::IsTrue(WorkspaceStore::Write(fixture.file, original));
+            Assert::IsTrue(SetFileAttributesW(fixture.file.c_str(), FILE_ATTRIBUTE_READONLY) != FALSE);
+            try
+            {
+                WorkspacesCli::EnsureApplicationIds(fixture.file, project);
+                Assert::Fail(L"Failed ID persistence must stop launch preparation.");
+            }
+            catch (const WorkspacesCli::Error& error)
+            {
+                Assert::AreEqual(std::wstring(L"applicationIdSaveFailed"), error.code);
+            }
+            Assert::IsTrue(project.apps[0].id.empty());
+            Assert::AreEqual(std::wstring(original.Stringify()), std::wstring(WorkspacesCli::ReadJson(fixture.file)->Stringify()));
+        }
+
+        TEST_METHOD (LegacyIdInitializationRejectsConcurrentApplicationEdits)
+        {
+            StoreFixture fixture;
+            auto project = MetadataProject();
+            project.apps[0].id.clear();
+            auto edited = project;
+            edited.apps[0].commandLineArgs = L"--concurrent-change";
+            const auto data = WorkspacesData::WorkspacesListJSON::ToJson({ edited });
+            Assert::IsTrue(WorkspaceStore::Write(fixture.file, data));
+            try
+            {
+                WorkspacesCli::EnsureApplicationIds(fixture.file, project);
+                Assert::Fail(L"An edited ID-less application must not be guessed.");
+            }
+            catch (const WorkspacesCli::Error& error)
+            {
+                Assert::AreEqual(std::wstring(L"workspaceChanged"), error.code);
+            }
+            Assert::IsTrue(project.apps[0].id.empty());
+            Assert::AreEqual(std::wstring(data.Stringify()), std::wstring(WorkspacesCli::ReadJson(fixture.file)->Stringify()));
+        }
+
+        TEST_METHOD (LegacyIdInitializationRejectsMalformedAndDuplicateExistingIds)
+        {
+            StoreFixture fixture;
+            for (const bool duplicate : { false, true })
+            {
+                auto project = MetadataProject();
+                if (duplicate)
+                    project.apps.push_back(project.apps[0]);
+                else
+                    project.apps[0].id = L"not-a-guid";
+                auto legacy = MetadataProject().apps[0];
+                legacy.id.clear();
+                project.apps.push_back(legacy);
+                const auto data = WorkspacesData::WorkspacesListJSON::ToJson({ project });
+                Assert::IsTrue(WorkspaceStore::Write(fixture.file, data));
+                Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::EnsureApplicationIds(fixture.file, project); });
+                Assert::AreEqual(std::wstring(data.Stringify()), std::wstring(WorkspacesCli::ReadJson(fixture.file)->Stringify()));
+            }
+        }
+
         TEST_METHOD (ApplicationMetadataRefreshPreservesConcurrentListAndConfigurationChanges)
         {
             StoreFixture fixture;
