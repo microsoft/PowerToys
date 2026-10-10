@@ -88,6 +88,8 @@ namespace Peek.FilePreviewer.Previewers
 
         public bool IsPreviewLoaded => Preview != null;
 
+        public bool AllowExternalImages => false;
+
         private DispatcherQueue Dispatcher { get; }
 
         private Task<bool>? DisplayInfoTask { get; set; }
