@@ -29,9 +29,10 @@ steps:
     displayName: Prepare Installer variables
 
   # This dll needs to be built and signed before building the MSI.
-  # The Custom Actions project contains a pre-build event that prepares the .wxs files
-  # by filling them out with all our components. We pass RunBuildEvents=true to force
-  # that logic to run.
+  # The Custom Actions project contains a pre-build event that runs generateAllFileComponents.ps1,
+  # which populates copies of the template .wxs files with all our components under
+  # installer\PowerToysSetupVNext\obj\<platform>\Generated (the checked-in .wxs are not modified).
+  # We pass RunBuildEvents=true to force that logic to run.
   - task: VSBuild@1
     displayName: Build Shared Support DLLs
     inputs:
@@ -61,12 +62,6 @@ steps:
 
   ## INSTALLER START
   #### MSI BUILDING AND SIGNING
-  #
-  # The MSI build contains code that reverts the .wxs files to their in-tree versions.
-  # This is only supposed to happen during local builds. Since this build system is
-  # supposed to run side by side--machine and then user--we do NOT want to destroy
-  # the .wxs files. Therefore, we pass RunBuildEvents=false to suppress all of that
-  # logic.
   #
   # We pass BuildProjectReferences=false so that it does not recompile the DLLs we just built.
   # We only pass -restore on the first one because the second run should already have all
