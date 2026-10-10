@@ -116,6 +116,7 @@ namespace KeyboardManagerEditorUI.Pages
         private CompositeFormat? _deleteSelectedFormat;
         private CompositeFormat? _bulkDeleteConfirmationFormat;
         private CompositeFormat? _orphanedKeysWarningFormat;
+        private CompositeFormat? _orphanedKeysWarningPluralFormat;
 
         // Options shown in the app-filter combo box: [All apps], [Global only], then each distinct app name.
         public ObservableCollection<string> AppFilterOptions { get; } = new();
@@ -592,8 +593,10 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             string orphanedKeyNames = string.Join(", ", orphanedKeys.Select(key => _mappingService.GetKeyDisplayName(key)));
-            _orphanedKeysWarningFormat ??= CompositeFormat.Parse(ResourceHelper.GetString("OrphanedKeysWarning_Message"));
-            return string.Format(CultureInfo.CurrentCulture, _orphanedKeysWarningFormat, orphanedKeyNames);
+            CompositeFormat format = orphanedKeys.Count == 1
+                ? _orphanedKeysWarningFormat ??= CompositeFormat.Parse(ResourceHelper.GetString("OrphanedKeysWarning_Message"))
+                : _orphanedKeysWarningPluralFormat ??= CompositeFormat.Parse(ResourceHelper.GetString("OrphanedKeysWarning_Message_Plural"));
+            return string.Format(CultureInfo.CurrentCulture, format, orphanedKeyNames);
         }
 
         private bool TryGetEditingContext(out string? replacingId, out bool exactMatch, out ShortcutSettings? existingSettings)
