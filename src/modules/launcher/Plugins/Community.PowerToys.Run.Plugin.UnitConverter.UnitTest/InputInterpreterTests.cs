@@ -102,6 +102,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
         [DataRow(new string[] { "7", "cm/sqs", "in", "m/s^2" }, new string[] { "7", "cm/s²", "in", "m/s^2" })]
         [DataRow(new string[] { "7", "sqft", "in", "sqcm" }, new string[] { "7", "ft²", "in", "cm²" })]
         [DataRow(new string[] { "7", "BTU/s·sqin", "in", "cal/h·sqcm" }, new string[] { "7", "BTU/s·in²", "in", "cal/h·cm²" })]
+        [DataRow(new string[] { "7", "sqmi", "in", "sqkm" }, new string[] { "7", "mi²", "in", "km²" })]
+        [DataRow(new string[] { "7", "sqmil", "in", "sqnmi" }, new string[] { "7", "mil²", "in", "nmi²" })]
 #pragma warning restore CA1861 // Avoid constant arrays as arguments
         public void HandlesSquareNotation(string[] input, string[] expectedResult)
         {
