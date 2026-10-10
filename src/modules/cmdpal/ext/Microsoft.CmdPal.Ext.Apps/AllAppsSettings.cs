@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,15 +7,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
+public class AllAppsSettings : JsonSettingsManager
 {
+    private const int DefaultSearchResultLimit = 10;
+    private const ExecutableNameMatchMode DefaultExecutableNameMatchMode = ExecutableNameMatchMode.FilenameOnly;
+
     // "none" instead of "0": the original default was accidentally "0", so existing
     // users may have "0" stored. Using "none" lets us distinguish intentional "show
     // no results" from the old accidental default (which is now treated as "use default").
@@ -25,11 +26,9 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
     private static readonly string DefaultLimitItemTitle = string.Format(
         CultureInfo.CurrentCulture,
         DefaultLimitItemTitleFormat.Format,
-        AllAppsCommandProvider.DefaultResultLimit);
+        DefaultSearchResultLimit);
 
     private static readonly string _namespace = "apps";
-
-    private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
     private static readonly List<ChoiceSetSetting.Choice> _searchResultLimitChoices =
     [
@@ -40,33 +39,7 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         new(Resources.limit_10, "10"),
     ];
 
-#pragma warning disable SA1401 // Fields should be private
-    internal static AllAppsSettings Instance = new();
-#pragma warning restore SA1401 // Fields should be private
-
-    public DateTime LastIndexTime { get; set; }
-
-    public List<ProgramSource> ProgramSources { get; set; } = [];
-
-    public List<DisabledProgramSource> DisabledProgramSources { get; set; } = [];
-
-    public List<string> ProgramSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url"];
-
-    public List<string> RunCommandSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc"];
-
-    public bool EnableStartMenuSource => _enableStartMenuSource.Value;
-
-    public bool EnableDesktopSource => _enableDesktopSource.Value;
-
-    public bool EnableRegistrySource => _enableRegistrySource.Value;
-
-    public bool EnablePathEnvironmentVariableSource => _enablePathEnvironmentVariableSource.Value;
-
-    public bool IncludeNonAppsOnDesktop => _includeNonAppsOnDesktop.Value;
-
-    public bool IncludeNonAppsInStartMenu => _includeNonAppsInStartMenu.Value;
-
-    public bool HideAppDescriptions => _hideAppDescriptions.Value;
+    internal const char SuffixSeparator = ';';
 
     private readonly ChoiceSetSetting _searchResultLimitSource = new(
         Namespaced(nameof(SearchResultLimit)),
@@ -77,31 +50,19 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         IgnoreUnknownValue = true,
     };
 
-    /// <summary>
-    /// Gets the parsed search result limit. Returns <see langword="null"/> when the caller should
-    /// use its own default (unrecognized value, empty, or old stored "0").
-    /// </summary>
-    public int? SearchResultLimit
+    private readonly ChoiceSetSetting _executableNameMatchMode = new(
+        Namespaced(nameof(ExecutableNameMatchMode)),
+        Resources.executable_name_match_mode,
+        Resources.executable_name_match_mode_description,
+        [
+            new(Resources.executable_name_match_mode_default, "default"),
+            new(Resources.executable_name_match_mode_filename_and_stem, "filenameAndStem"),
+            new(Resources.executable_name_match_mode_filename_only, "filenameOnly"),
+            new(Resources.executable_name_match_mode_disabled, "disabled"),
+        ])
     {
-        get
-        {
-            var raw = _searchResultLimitSource.Value ?? string.Empty;
-
-            if (string.Equals(raw, NoneResultLimitValue, StringComparison.Ordinal))
-            {
-                return 0;
-            }
-
-            if (string.IsNullOrWhiteSpace(raw)
-                || !int.TryParse(raw, out var result)
-                || result <= 0) //// <= 0: treats old stored "0" as "use default"
-            {
-                return null;
-            }
-
-            return result;
-        }
-    }
+        IgnoreUnknownValue = true,
+    };
 
     private readonly ToggleSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),
@@ -145,21 +106,133 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         Resources.hide_app_descriptions_description,
         false);
 
-    public double MinScoreThreshold { get; set; } = 0.75;
+    private readonly ToggleSetting _hideUninstallers = new(
+        Namespaced(nameof(HideUninstallers)),
+        Resources.hide_uninstallers,
+        Resources.hide_uninstallers_description,
+        false);
 
-    internal const char SuffixSeparator = ';';
+    private readonly ToggleSetting _enableCatalogDiagnostics = new(
+        Namespaced(nameof(EnableCatalogDiagnostics)),
+        Resources.enable_catalog_diagnostics,
+        Resources.enable_catalog_diagnostics_description,
+        false);
 
-    internal static string SettingsJsonPath()
+    private readonly StringListSetting _excludedAppNames = new(
+        Namespaced(nameof(ExcludedAppNames)),
+        Resources.excluded_app_names,
+        Resources.excluded_app_names_description,
+        []);
+
+    private readonly StringListSetting _excludedAppPaths = new(
+        Namespaced(nameof(ExcludedAppPaths)),
+        Resources.excluded_app_paths,
+        Resources.excluded_app_paths_description,
+        []);
+
+    private readonly FilePathListSetting _customShortcutFolders = new(
+        Namespaced(nameof(CustomShortcutFolders)),
+        Resources.custom_shortcut_folders,
+        Resources.custom_shortcut_folders_description,
+        [],
+        FilePathListItemType.Folders)
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
+        PreventDuplicates = true,
+        DuplicateItemErrorMessage = Resources.custom_app_folder_duplicate,
+    };
 
-        return Path.Combine(directory, $"{_namespace}.settings.json");
+    private readonly FilePathListSetting _portableAppFolders = new(
+        Namespaced(nameof(PortableAppFolders)),
+        Resources.portable_app_folders,
+        Resources.portable_app_folders_description,
+        [],
+        FilePathListItemType.Folders)
+    {
+        PreventDuplicates = true,
+        DuplicateItemErrorMessage = Resources.custom_app_folder_duplicate,
+    };
+
+    public List<string> ProgramSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url"];
+
+    public List<string> RunCommandSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc"];
+
+    public bool EnableStartMenuSource => _enableStartMenuSource.Value;
+
+    public bool EnableDesktopSource => _enableDesktopSource.Value;
+
+    public bool EnableRegistrySource => _enableRegistrySource.Value;
+
+    public bool EnablePathEnvironmentVariableSource => _enablePathEnvironmentVariableSource.Value;
+
+    public bool IncludeNonAppsOnDesktop => _includeNonAppsOnDesktop.Value;
+
+    public bool IncludeNonAppsInStartMenu => _includeNonAppsInStartMenu.Value;
+
+    public bool HideAppDescriptions => _hideAppDescriptions.Value;
+
+    public bool HideUninstallers => _hideUninstallers.Value;
+
+    public bool EnableCatalogDiagnostics => _enableCatalogDiagnostics.Value;
+
+    /// <summary>Gets when exact executable names receive priority in All Apps and Home search, resolving the default policy.</summary>
+    public ExecutableNameMatchMode ExecutableNameMatchMode => _executableNameMatchMode.Value switch
+    {
+        "default" => DefaultExecutableNameMatchMode,
+        "disabled" => ExecutableNameMatchMode.Disabled,
+        "filenameOnly" => ExecutableNameMatchMode.FilenameOnly,
+        "filenameAndStem" => ExecutableNameMatchMode.FilenameAndStem,
+        _ => DefaultExecutableNameMatchMode,
+    };
+
+    public IReadOnlyList<string> ExcludedAppNames => _excludedAppNames.Value ?? [];
+
+    public IReadOnlyList<string> ExcludedAppPaths => _excludedAppPaths.Value ?? [];
+
+    /// <summary>Gets user-selected folders whose application shortcuts should be indexed recursively.</summary>
+    public IReadOnlyList<string> CustomShortcutFolders => _customShortcutFolders.Value ?? [];
+
+    /// <summary>Gets user-selected folders whose portable executable applications should be indexed.</summary>
+    public IReadOnlyList<string> PortableAppFolders => _portableAppFolders.Value ?? [];
+
+    /// <summary>
+    /// Gets the parsed search result limit. Returns <see langword="null"/> when the caller should
+    /// use its own default (unrecognized value, empty, or old stored "0").
+    /// </summary>
+    public int? SearchResultLimit
+    {
+        get
+        {
+            var raw = _searchResultLimitSource.Value ?? string.Empty;
+
+            if (string.Equals(raw, NoneResultLimitValue, StringComparison.Ordinal))
+            {
+                return 0;
+            }
+
+            if (string.IsNullOrWhiteSpace(raw)
+                || !int.TryParse(raw, out var result)
+                || result <= 0) //// <= 0: treats old stored "0" as "use default"
+            {
+                return null;
+            }
+
+            return result;
+        }
     }
 
+    /// <summary>Gets the configured result limit, or the built-in default when no override is set.</summary>
+    public int EffectiveSearchResultLimit => SearchResultLimit ?? DefaultSearchResultLimit;
+
+    /// <summary>Initializes Apps preferences from the default settings path.</summary>
     public AllAppsSettings()
+        : this(SettingsJsonPath())
     {
-        FilePath = SettingsJsonPath();
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="AllAppsSettings"/> class. Registers Apps preferences, loads the supplied settings file, and saves subsequent preference changes.</summary>
+    internal AllAppsSettings(string filePath)
+    {
+        FilePath = filePath;
 
         Settings.Add(_enableStartMenuSource);
         Settings.Add(_includeNonAppsInStartMenu);
@@ -167,11 +240,31 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         Settings.Add(_includeNonAppsOnDesktop);
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
+        Settings.Add(_customShortcutFolders);
+        Settings.Add(_portableAppFolders);
         Settings.Add(_searchResultLimitSource);
+        Settings.Add(_executableNameMatchMode);
         Settings.Add(_hideAppDescriptions);
+        Settings.Add(_hideUninstallers);
+        Settings.Add(_excludedAppNames);
+        Settings.Add(_excludedAppPaths);
+        Settings.Add(_enableCatalogDiagnostics);
 
         LoadSettings();
 
         Settings.SettingsChanged += (s, a) => this.SaveSettings();
+    }
+
+    private static string Namespaced(string propertyName)
+    {
+        return $"{_namespace}.{propertyName}";
+    }
+
+    internal static string SettingsJsonPath()
+    {
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        Directory.CreateDirectory(directory);
+
+        return Path.Combine(directory, $"{_namespace}.settings.json");
     }
 }

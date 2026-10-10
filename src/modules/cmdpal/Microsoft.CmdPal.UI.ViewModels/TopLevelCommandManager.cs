@@ -27,6 +27,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     IRecipient<PinToDockMessage>,
     IDisposable
 {
+    internal event EventHandler? PinnedCommandsChanged;
+
     private static readonly TimeSpan CommandLoadTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan BackgroundCommandLoadTimeout = TimeSpan.FromSeconds(60);
 
@@ -37,6 +39,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _commandProviders = [];
     private readonly Lock _commandProvidersLock = new();
     private readonly Lock _pinnedCommandsUpdateLock = new();
+    private readonly Dictionary<CommandProviderWrapper, bool> _providerReloads = new(ReferenceEqualityComparer.Instance);
 
     // watch out: if you add code that locks CommandProviders, be sure to always
     // lock CommandProviders before locking DockBands, or you will cause a
@@ -46,29 +49,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
     private IReadOnlyList<PinnedCommandSettings> _pinnedCommands = [];
-
-    internal event EventHandler? PinnedCommandsChanged;
-
-    public TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices)
-    {
-        _serviceProvider = serviceProvider;
-        _extensionServices = extensionServices;
-        _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
-        _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
-        WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
-        WeakReferenceMessenger.Default.Register<ProviderEnabledStateChangedMessage>(this);
-        WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
-        _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
-        RebuildPinnedCache();
-
-        foreach (var service in _extensionServices)
-        {
-            service.OnProviderAdded += ExtensionService_OnProviderAdded;
-            service.OnProviderRemoved += ExtensionService_OnProviderRemoved;
-        }
-    }
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
@@ -93,7 +73,31 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    internal IReadOnlyList<PinnedCommandSettings> GetPinnedCommandsSnapshot() => Volatile.Read(ref _pinnedCommands);
+    public TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices)
+    {
+        _serviceProvider = serviceProvider;
+        _extensionServices = extensionServices;
+        _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
+        _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
+        WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+        WeakReferenceMessenger.Default.Register<ProviderEnabledStateChangedMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
+        _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
+        RebuildPinnedCache();
+
+        foreach (var service in _extensionServices)
+        {
+            service.OnProviderAdded += ExtensionService_OnProviderAdded;
+            service.OnProviderRemoved += ExtensionService_OnProviderRemoved;
+        }
+    }
+
+    internal IReadOnlyList<PinnedCommandSettings> GetPinnedCommandsSnapshot()
+    {
+        return Volatile.Read(ref _pinnedCommands);
+    }
 
     internal void RebuildPinnedCache()
     {
@@ -150,9 +154,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             TaskCreationOptions.None,
             _taskScheduler);
 
-        commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
-        commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
-
         return commands;
     }
 
@@ -161,7 +162,57 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     // be sure we don't block the caller, hop off this thread
     private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
-        _ = Task.Run(async () => await UpdateCommandsForProvider(sender, args));
+        lock (_commandProvidersLock)
+        {
+            if (!_commandProviders.Any(provider => ReferenceEquals(provider, sender)))
+            {
+                return;
+            }
+
+            if (_providerReloads.ContainsKey(sender))
+            {
+                _providerReloads[sender] = true;
+                return;
+            }
+
+            _providerReloads.Add(sender, false);
+        }
+
+        ReloadProviderInBackground(sender);
+    }
+
+    private void ReloadProviderInBackground(CommandProviderWrapper provider)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await UpdateCommandsForProvider(provider);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to reload commands for {provider.ProviderId}", ex);
+            }
+            finally
+            {
+                CompleteProviderLoad(provider);
+            }
+        });
+    }
+
+    private void CompleteProviderLoad(CommandProviderWrapper provider)
+    {
+        lock (_commandProvidersLock)
+        {
+            if (!_providerReloads.Remove(provider, out var reloadRequested) || !reloadRequested)
+            {
+                return;
+            }
+
+            _providerReloads.Add(provider, false);
+        }
+
+        ReloadProviderInBackground(provider);
     }
 
     /// <summary>
@@ -170,11 +221,18 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     /// ones in the same place in the list.
     /// </summary>
     /// <param name="sender">The provider who's commands changed</param>
-    /// <param name="args">the ItemsChangedEvent the provider raised</param>
     /// <returns>an awaitable task</returns>
-    private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
+    private async Task UpdateCommandsForProvider(CommandProviderWrapper sender)
     {
         await sender.LoadTopLevelCommands(_serviceProvider);
+
+        lock (_commandProvidersLock)
+        {
+            if (!_providerReloads.ContainsKey(sender))
+            {
+                return;
+            }
+        }
 
         List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
@@ -193,6 +251,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         List<TopLevelViewModel> removedTopLevel;
         lock (TopLevelCommands)
         {
+            // A disabled wrapper can retain old items, or finish a load started before disablement.
+            // Check the current settings under the same lock used to remove disabled commands.
+            var isEnabled = IsProviderEnabled(sender.ProviderId);
+
             // Work on a clone of the list, so that we can just do one atomic
             // update to the actual observable list at the end
             // TODO: just added a lock around all of this anyway, but keeping the clone
@@ -201,26 +263,42 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
             var startIndex = FindIndexForFirstProviderItem(clone, sender.ProviderId);
             clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
-            clone.InsertRange(startIndex, newItems);
+            if (isEnabled)
+            {
+                clone.InsertRange(startIndex, newItems);
+            }
 
             ListHelpers.InPlaceUpdateList(TopLevelCommands, clone, out removedTopLevel);
+            if (!isEnabled)
+            {
+                removedTopLevel.AddRange(newItems.Except(removedTopLevel));
+            }
         }
 
         List<TopLevelViewModel> removedDockBands;
         lock (_dockBandsLock)
         {
+            var isEnabled = IsProviderEnabled(sender.ProviderId);
+
             // Same idea as TopLevelCommands above, but we deliberately use
             // ReplaceWith so the dock only sees one CollectionChanged event
             // for the whole rewrite instead of one per item.
             List<TopLevelViewModel> dockClone = [.. DockBands];
             var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
             dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
-            dockClone.InsertRange(dockStartIndex, newBands);
+            if (isEnabled)
+            {
+                dockClone.InsertRange(dockStartIndex, newBands);
+            }
 
             // ReplaceWith doesn't report what it dropped, so diff the current
             // contents against the new ones before we overwrite them. Bands
             // that get re-inserted from newBands are correctly not reported.
             removedDockBands = [.. DockBands.Except(dockClone)];
+            if (!isEnabled)
+            {
+                removedDockBands.AddRange(newBands.Except(removedDockBands));
+            }
 
             DockBands.ReplaceWith(dockClone);
         }
@@ -341,6 +419,12 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
             lock (_commandProvidersLock)
             {
+                foreach (var provider in _commandProviders)
+                {
+                    provider.CommandsChanged -= CommandProvider_CommandsChanged;
+                }
+
+                _providerReloads.Clear();
                 _commandProviders.Clear();
             }
 
@@ -473,6 +557,13 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         lock (_commandProvidersLock)
         {
             _commandProviders.AddRange(wrapperList);
+            foreach (var wrapper in wrapperList)
+            {
+                // Keep changes pending until the initial commands have been published.
+                _providerReloads[wrapper] = false;
+                wrapper.CommandsChanged -= CommandProvider_CommandsChanged;
+                wrapper.CommandsChanged += CommandProvider_CommandsChanged;
+            }
         }
 
         // Load the commands from the providers in parallel
@@ -536,6 +627,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             if (r.IsTimedOut)
             {
                 _ = AppendCommandsWhenReadyAsync(r.Wrapper, r.PendingLoadTask, r.Stopwatch, ct);
+            }
+        }
+
+        foreach (var result in loadResults)
+        {
+            if (!result.IsTimedOut)
+            {
+                CompleteProviderLoad(result.Wrapper);
             }
         }
 
@@ -615,6 +714,19 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             Logger.LogError($"Background loading of commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName ?? wrapper.DisplayName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
         }
+        finally
+        {
+            // A timeout does not stop the provider call. Wait for it to finish before reloading.
+            _ = loadTask.ContinueWith(
+                completed =>
+                {
+                    _ = completed.Exception;
+                    CompleteProviderLoad(wrapper);
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
     }
 
     private void ExtensionService_OnProviderAdded(IExtensionService sender, IEnumerable<CommandProviderWrapper> wrappers)
@@ -664,6 +776,12 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
                 lock (_commandProvidersLock)
                 {
+                    foreach (var provider in _commandProviders.Where(w => removedProviderIds.Contains(w.ProviderId)))
+                    {
+                        provider.CommandsChanged -= CommandProvider_CommandsChanged;
+                        _providerReloads.Remove(provider);
+                    }
+
                     _commandProviders.RemoveAll(w => removedProviderIds.Contains(w.ProviderId));
                 }
 
@@ -905,11 +1023,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    public void Receive(ReloadCommandsMessage message) =>
+    public void Receive(ReloadCommandsMessage message)
+    {
         _ = ReloadAllCommandsAsync();
+    }
 
-    public void Receive(ProviderEnabledStateChangedMessage message) =>
+    public void Receive(ProviderEnabledStateChangedMessage message)
+    {
         _ = UpdateProviderEnabledStateAsyncCore(message.ProviderId, message.IsEnabled);
+    }
 
     public void Receive(PinCommandItemMessage message)
     {
@@ -1009,6 +1131,17 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     public void Dispose()
     {
+        lock (_commandProvidersLock)
+        {
+            foreach (var provider in _commandProviders)
+            {
+                provider.CommandsChanged -= CommandProvider_CommandsChanged;
+            }
+
+            _providerReloads.Clear();
+            _commandProviders.Clear();
+        }
+
         foreach (var service in _extensionServices)
         {
             service.OnProviderAdded -= ExtensionService_OnProviderAdded;

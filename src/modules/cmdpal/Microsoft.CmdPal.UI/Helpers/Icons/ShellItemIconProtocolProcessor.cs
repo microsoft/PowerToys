@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Xaml;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -21,14 +20,12 @@ internal sealed class ShellItemIconProtocolProcessor : IIconProtocolProcessor
 
     public string GetCacheIdentity(string value) => value;
 
-    public ElementTheme GetCacheTheme(string value, ElementTheme theme) => ElementTheme.Default;
-
     public IconLoadInputKind ClassifyInput(string value) => IconLoadInputKind.ShellItemIcon;
 
     public bool TryPrepareSynchronously(
         string value,
         int targetSize,
-        ElementTheme theme,
+        IconRenderContext context,
         out IconPathConverter.PreparedIcon preparedIcon)
     {
         preparedIcon = null!;
@@ -38,11 +35,11 @@ internal sealed class ShellItemIconProtocolProcessor : IIconProtocolProcessor
     public ValueTask<IconProtocolProcessingResult> PrepareAsync(
         string value,
         int targetSize,
-        ElementTheme theme)
+        IconRenderContext context)
     {
         _ = value;
         _ = targetSize;
-        _ = theme;
+        _ = context;
         return ValueTask.FromResult(IconProtocolProcessingResult.Empty());
     }
 }

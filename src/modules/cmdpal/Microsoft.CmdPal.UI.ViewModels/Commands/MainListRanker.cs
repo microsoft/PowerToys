@@ -15,7 +15,7 @@ internal static class MainListRanker
 {
     // Each tier occupies a band of this width in the packed score. The within-tier score
     // is clamped to this range so it can never spill into an adjacent tier's band. With a
-    // 10M stride and 6 real tiers the maximum packed value (~63M) is far below int.MaxValue.
+    // 10M stride and 8 real tiers the maximum packed value (~90M) is far below int.MaxValue.
     internal const int TierStride = 10_000_000;
 
     // Scale factors that turn signals into within-tier points. These deliberately mirror
@@ -80,8 +80,8 @@ internal static class MainListRanker
     }
 
     /// <summary>
-    /// Classifies an item into a relevance tier based purely on the textual relationship
-    /// between the raw query and the title. Frecency/provider signals are intentionally
+    /// Classifies an item into a relevance tier based on its title and prioritized metadata
+    /// matches. Frecency/provider weight signals are intentionally
     /// not considered here - they only affect the within-tier score.
     /// </summary>
     /// <param name="query">The raw query text.</param>
@@ -95,13 +95,17 @@ internal static class MainListRanker
     /// least <see cref="RankTier.Fuzzy"/> even when no lexical signal matched - otherwise
     /// such items would be classified <see cref="RankTier.None"/> and silently dropped.</param>
     /// <param name="matchedLexically">Whether any fuzzy signal (title/subtitle/extension) matched.</param>
+    /// <param name="isPrioritizedMetadataExact">Whether the query exactly matches metadata that the item contributor prioritizes.</param>
+    /// <param name="isPreferredExecutionAliasMatch">Whether the query exactly matches the current user's selected app execution alias.</param>
     public static RankTier ClassifyTier(
         string query,
         string title,
         bool isFallback,
         bool isAliasExact,
         bool isAliasSubstringMatch,
-        bool matchedLexically)
+        bool matchedLexically,
+        bool isPrioritizedMetadataExact = false,
+        bool isPreferredExecutionAliasMatch = false)
     {
         if (isAliasExact)
         {
@@ -109,6 +113,15 @@ internal static class MainListRanker
         }
 
         var lexicalTier = ClassifyLexicalTier(query, title, isAliasSubstringMatch, matchedLexically);
+        if (isPrioritizedMetadataExact && lexicalTier < RankTier.ExactMetadata)
+        {
+            lexicalTier = RankTier.ExactMetadata;
+        }
+
+        if (isPreferredExecutionAliasMatch && lexicalTier < RankTier.PreferredExecutionAlias)
+        {
+            lexicalTier = RankTier.PreferredExecutionAlias;
+        }
 
         // A fallback's title reflects the query, so tier it like anything else. Floor a non-match
         // instead of dropping it, so handlers like Run command and web search keep showing.
@@ -282,10 +295,16 @@ public enum RankTier
     /// <summary>The title starts with the query.</summary>
     Prefix = 4,
 
+    /// <summary>The query exactly matches prioritized metadata, such as an argument-free app's executable filename or stem.</summary>
+    ExactMetadata = 5,
+
+    /// <summary>The query exactly matches the app execution alias selected by the current user in Windows.</summary>
+    PreferredExecutionAlias = 6,
+
     /// <summary>The title equals the query (case-insensitive).</summary>
-    ExactTitle = 5,
+    ExactTitle = 7,
 
     /// <summary>The query exactly equals a user-assigned alias. This is the strongest,
     /// most explicit signal of intent.</summary>
-    AliasExact = 6,
+    AliasExact = 8,
 }

@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Management.Deployment;
@@ -23,31 +22,40 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
     // https://learn.microsoft.com/en-us/windows/apps/develop/launch/launch-settings-app#apps
     private const string AppsFeaturesUri = "ms-settings:appsfeatures";
 
-    private readonly UWPApplication? _uwpTarget;
-    private readonly Win32Program? _win32Target;
+    private readonly string? _win32DisplayName;
+    private readonly string? _packagedDisplayName;
+    private readonly string? _packageFullName;
 
-    public UninstallApplicationCommand(UWPApplication target)
+    /// <summary>Initializes a new instance of the <see cref="UninstallApplicationCommand"/> class. Creates an uninstall command that opens Windows settings for the supplied desktop app.</summary>
+    public UninstallApplicationCommand(string win32DisplayName)
     {
+        ArgumentNullException.ThrowIfNull(win32DisplayName);
+
         Name = Resources.uninstall_application;
         Icon = Icons.UninstallApplicationIcon;
-        _uwpTarget = target ?? throw new ArgumentNullException(nameof(target));
+        _win32DisplayName = win32DisplayName;
     }
 
-    public UninstallApplicationCommand(Win32Program target)
+    /// <summary>Initializes a new instance of the <see cref="UninstallApplicationCommand"/> class. Creates an uninstall command for the supplied packaged app and its full package identity.</summary>
+    public UninstallApplicationCommand(string displayName, string packageFullName)
     {
+        ArgumentNullException.ThrowIfNull(displayName);
+        ArgumentNullException.ThrowIfNull(packageFullName);
+
         Name = Resources.uninstall_application;
         Icon = Icons.UninstallApplicationIcon;
-        _win32Target = target ?? throw new ArgumentNullException(nameof(target));
+        _packagedDisplayName = displayName;
+        _packageFullName = packageFullName;
     }
 
-    private async Task<CommandResult> UninstallUwpAppAsync(UWPApplication app)
+    private async Task<CommandResult> UninstallPackagedAppAsync(string displayName, string packageFullName)
     {
-        if (string.IsNullOrWhiteSpace(app.Package.FullName))
+        if (string.IsNullOrWhiteSpace(packageFullName))
         {
             Logger.LogError($"Critical error while uninstalling: packageFullName cannot be null or empty.");
             return CommandResult.ShowToast(new ToastArgs()
             {
-                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), app.DisplayName),
+                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), displayName),
                 Result = CommandResult.KeepOpen(),
             });
         }
@@ -58,14 +66,14 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
             using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60)))
             {
                 var packageManager = new PackageManager();
-                var result = await packageManager.RemovePackageAsync(app.Package.FullName).AsTask(cts.Token);
+                var result = await packageManager.RemovePackageAsync(packageFullName).AsTask(cts.Token);
 
                 if (result.ErrorText is not null && result.ErrorText.Length > 0)
                 {
-                    Logger.LogError($"Failed to uninstall {app.Package.FullName}: {result.ErrorText}");
+                    Logger.LogError($"Failed to uninstall {packageFullName}: {result.ErrorText}");
                     return CommandResult.ShowToast(new ToastArgs()
                     {
-                        Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), app.DisplayName),
+                        Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), displayName),
                         Result = CommandResult.KeepOpen(),
                     });
                 }
@@ -74,34 +82,34 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
             // TODO: Update the Search results after uninstalling the app - unsure how to do this yet.
             return CommandResult.ShowToast(new ToastArgs()
             {
-                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_successful), app.DisplayName),
+                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_successful), displayName),
                 Result = CommandResult.GoHome(),
             });
         }
         catch (OperationCanceledException)
         {
-            Logger.LogError($"Timeout exceeded while uninstalling {app.Package.FullName}");
+            Logger.LogError($"Timeout exceeded while uninstalling {packageFullName}");
             return CommandResult.ShowToast(new ToastArgs()
             {
-                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), app.DisplayName),
+                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), displayName),
                 Result = CommandResult.KeepOpen(),
             });
         }
         catch (UnauthorizedAccessException ex)
         {
-            Logger.LogError($"Permission denied to uninstall {app.Package.FullName}. Elevated privileges may be required. Error: {ex.Message}");
+            Logger.LogError($"Permission denied to uninstall {packageFullName}. Elevated privileges may be required. Error: {ex.Message}");
             return CommandResult.ShowToast(new ToastArgs()
             {
-                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), app.DisplayName),
+                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), displayName),
                 Result = CommandResult.KeepOpen(),
             });
         }
         catch (Exception ex)
         {
-            Logger.LogError($"An unexpected error occurred during uninstallation of {app.Package.FullName}: {ex.Message}");
+            Logger.LogError($"An unexpected error occurred during uninstallation of {packageFullName}: {ex.Message}");
             return CommandResult.ShowToast(new ToastArgs()
             {
-                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), app.DisplayName),
+                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), displayName),
                 Result = CommandResult.KeepOpen(),
             });
         }
@@ -109,12 +117,12 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        if (_uwpTarget is not null)
+        if (_packagedDisplayName is not null && _packageFullName is not null)
         {
-            return UninstallUwpAppAsync(_uwpTarget).ConfigureAwait(false).GetAwaiter().GetResult();
+            return UninstallPackagedAppAsync(_packagedDisplayName, _packageFullName).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        if (_win32Target is not null)
+        if (_win32DisplayName is not null)
         {
             Process.Start(new ProcessStartInfo
             {

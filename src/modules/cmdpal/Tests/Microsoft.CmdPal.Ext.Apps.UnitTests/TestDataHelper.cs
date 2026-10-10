@@ -2,7 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using System.Collections.Frozen;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json.Nodes;
+using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CmdPal.Ext.Apps.Packaged;
+using Microsoft.CmdPal.Ext.Apps.Persistence;
+using Microsoft.CmdPal.Ext.Apps.Win32;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
@@ -11,83 +19,147 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 /// </summary>
 public static class TestDataHelper
 {
+    internal static FuzzyMatcherProvider CreateFuzzyMatcherProvider()
+    {
+        return new(new(), new());
+    }
+
+    internal static FrozenDictionary<string, string> RetainCommandAliases(AppCommandAliasStore store, IEnumerable<AppItem> apps)
+    {
+        var aliases = AppCatalogCommandAliases.Retain(store.GetSnapshot(), apps);
+        store.SetSnapshot(aliases);
+        return aliases;
+    }
+
+    internal static AppVisibility GetVisibility(
+        IAppVisibilityStore store,
+        AppCatalogItem item,
+        AllAppsSettings settings = null,
+        AppCommandAliasStore aliases = null)
+    {
+        var rules = new AppCatalogVisibility(settings?.ExcludedAppNames ?? [], settings?.ExcludedAppPaths ?? []);
+        var hiddenIdentities = store.GetSnapshot();
+        var hiddenCommands = AppCatalogVisibility.ResolveHiddenCommandIds(
+            hiddenIdentities, aliases?.GetSnapshot() ?? FrozenDictionary<string, string>.Empty);
+        return rules.GetVisibility(item, hiddenIdentities, hiddenCommands);
+    }
+
+    internal static bool SetHidden(
+        IAppVisibilityStore store,
+        AppCatalogItem item,
+        bool hidden,
+        AppCommandAliasStore aliases = null)
+    {
+        return store.SetSnapshot(AppCatalogVisibility.UpdateHiddenIdentities(
+            store.GetSnapshot(), item, hidden, aliases?.GetSnapshot() ?? FrozenDictionary<string, string>.Empty));
+    }
+
+    internal static string GetAliasesPath(string settingsPath)
+    {
+        return Path.ChangeExtension(settingsPath, "aliases.json");
+    }
+
+    internal static string GetVisibilityPath(string settingsPath)
+    {
+        return Path.ChangeExtension(settingsPath, "visibility.json");
+    }
+
+    internal static void WriteHiddenIdentities(string settingsPath, params string[] identities)
+    {
+        var values = new JsonArray();
+        foreach (var identity in identities)
+        {
+            values.Add((JsonNode)JsonValue.Create(identity)!);
+        }
+
+        File.WriteAllText(GetVisibilityPath(settingsPath), new JsonObject { ["HiddenAppIdentities"] = values }.ToJsonString());
+    }
+
+    internal static void DeleteSettingsFiles(string settingsPath)
+    {
+        File.Delete(settingsPath);
+        File.Delete(GetAliasesPath(settingsPath));
+        File.Delete(GetVisibilityPath(settingsPath));
+    }
+
     /// <summary>
-    /// Creates a test Win32 program with the specified parameters.
+    /// Creates transient Win32 metadata for catalog indexing tests.
     /// </summary>
     /// <param name="name">The name of the application.</param>
     /// <param name="fullPath">The full path to the application executable.</param>
-    /// <param name="enabled">A value indicating whether the application is enabled.</param>
     /// <param name="valid">A value indicating whether the application is valid.</param>
-    /// <returns>A new Win32Program instance with the specified parameters.</returns>
-    public static Win32Program CreateTestWin32Program(
+    /// <returns>A new Win32AppMetadata instance with the specified parameters.</returns>
+    internal static Win32AppMetadata CreateTestWin32Metadata(
         string name = "Test App",
         string fullPath = "C:\\TestApp\\app.exe",
-        bool enabled = true,
         bool valid = true)
     {
-        return new Win32Program
+        return new Win32AppMetadata
         {
             Name = name,
-            FullPath = fullPath,
-            Enabled = enabled,
+            TargetPath = fullPath,
             Valid = valid,
-            UniqueIdentifier = $"win32_{name}",
             Description = $"Test description for {name}",
-            ExecutableName = "app.exe",
+            SourceFilename = "app.exe",
             ParentDirectory = "C:\\TestApp",
-            AppType = Win32Program.ApplicationType.Win32Application,
+            AppType = Win32AppType.Win32Application,
         };
     }
 
     /// <summary>
-    /// Creates a test UWP application with the specified parameters.
+    /// Creates transient packaged metadata for catalog indexing tests.
     /// </summary>
     /// <param name="displayName">The display name of the application.</param>
     /// <param name="userModelId">The user model ID of the application.</param>
-    /// <param name="enabled">A value indicating whether the application is enabled.</param>
-    /// <returns>A new IUWPApplication instance with the specified parameters.</returns>
-    public static IUWPApplication CreateTestUWPApplication(
+    /// <param name="packageLocation">The package installation directory.</param>
+    /// <returns>A new PackagedAppMetadata instance with the specified parameters.</returns>
+    internal static PackagedAppMetadata CreateTestPackagedMetadata(
         string displayName = "Test UWP App",
         string userModelId = "TestPublisher.TestUWPApp_1.0.0.0_neutral__8wekyb3d8bbwe",
-        bool enabled = true)
+        string packageLocation = null)
     {
-        return new MockUWPApplication
+        return new PackagedAppMetadata
         {
-            DisplayName = displayName,
-            UserModelId = userModelId,
-            Enabled = enabled,
-            UniqueIdentifier = $"uwp_{userModelId}",
+            Name = displayName,
+            AppUserModelId = userModelId,
             Description = $"Test UWP description for {displayName}",
-            AppListEntry = "default",
-            BackgroundColor = "#000000",
-            EntryPoint = "TestApp.App",
             CanRunElevated = false,
-            LogoPath = string.Empty,
-            Package = CreateMockUWPPackage(displayName, userModelId),
+            Package = CreateMockPackageMetadata(displayName, userModelId, packageLocation),
+        };
+    }
+
+    internal static EdgePwaLaunchInfo CreateEdgePwaLaunchInfo()
+    {
+        const string parameters = "--app-id=agimnkijcaahngcdmfeangaknmldooml --ip-edge-aumid=Microsoft.MicrosoftEdge.Dev_8wekyb3d8bbwe!MSEDGE";
+        return new EdgePwaLaunchInfo
+        {
+            PackagePublisher = "CN=www.youtube.com, OID.2.25.311729368913984317654407730594956997722=1",
+            HostPackageName = "Microsoft.MicrosoftEdge.Dev",
+            HostPackagePublisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+            HostId = "PWA",
+            Parameters = parameters,
+            LaunchContext = $"parameters?{parameters};profile-directory?Default;start-url?https://www.youtube.com/?feature=ytca",
         };
     }
 
     /// <summary>
-    /// Creates a mock UWP package for testing purposes.
+    /// Creates package metadata for testing purposes.
     /// </summary>
     /// <param name="displayName">The display name of the package.</param>
     /// <param name="userModelId">The user model ID of the package.</param>
-    /// <returns>A new UWP package instance.</returns>
-    private static UWP CreateMockUWPPackage(string displayName, string userModelId)
+    /// <param name="packageLocation">An optional package installation directory.</param>
+    /// <returns>New package metadata.</returns>
+    private static PackageMetadata CreateMockPackageMetadata(string displayName, string userModelId, string packageLocation)
     {
         var mockPackage = new MockPackage
         {
             Name = displayName,
             FullName = userModelId,
             FamilyName = $"{displayName}_8wekyb3d8bbwe",
-            InstalledLocation = $"C:\\Program Files\\WindowsApps\\{displayName}",
+            InstalledLocation = packageLocation ?? $"C:\\Program Files\\WindowsApps\\{displayName}",
         };
 
-        return new UWP(mockPackage)
-        {
-            Location = mockPackage.InstalledLocation,
-            LocationLocalized = mockPackage.InstalledLocation,
-        };
+        return new PackageMetadata(mockPackage);
     }
 
     /// <summary>

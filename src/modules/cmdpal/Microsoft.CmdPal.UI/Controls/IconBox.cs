@@ -50,6 +50,8 @@ public partial class IconBox : ContentControl
     private long _diagnosticId;
     private IconRequestSite _derivedRequestSite;
     private bool _hasDerivedRequestSite;
+    private bool _subscribedContrastChanges;
+    private IconContrast _lastContrast;
 
     /// <summary>
     /// Gets or sets the semantic UI surface used to group this control's diagnostic measurements.
@@ -222,6 +224,16 @@ public partial class IconBox : ContentControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         _unloadController.Loaded();
+        if (!_subscribedContrastChanges)
+        {
+            IconContrastSettings.Changed += OnContrastChanged;
+            _subscribedContrastChanges = true;
+        }
+
+        if (SourceKey is not null && _lastContrast != IconContrastSettings.Current)
+        {
+            MarkRefreshPending(IconRequestReason.ThemeChanged);
+        }
 
         // Handler attachment can request an icon before this control enters the visual tree.
         // Recompute any derived diagnostic placement now that its parent chain is available.
@@ -289,7 +301,25 @@ public partial class IconBox : ContentControl
         }
         finally
         {
+            if (_subscribedContrastChanges)
+            {
+                IconContrastSettings.Changed -= OnContrastChanged;
+                _subscribedContrastChanges = false;
+            }
+
             UpdateXamlRootSubscription(null);
+        }
+    }
+
+    private void OnContrastChanged()
+    {
+        try
+        {
+            _dispatcherQueue.TryEnqueue(() => RequestRefresh(IconRequestReason.ThemeChanged));
+        }
+        catch (Exception ex)
+        {
+            _unloadController.ReportFailure(ex);
         }
     }
 
@@ -761,7 +791,8 @@ public partial class IconBox : ContentControl
             diagnostics = IconLoadDiagnostics.IsRecording
                 ? IconLoadDiagnostics.BeginRequest(reason, scale, iconBox.GetDiagnosticOrigin())
                 : default;
-            var requestArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale)
+            iconBox._lastContrast = IconContrastSettings.Current;
+            var requestArgs = new SourceRequestedEventArgs(sourceKey, new(iconBox._lastTheme, iconBox._lastContrast), scale)
             {
                 Diagnostics = diagnostics,
             };

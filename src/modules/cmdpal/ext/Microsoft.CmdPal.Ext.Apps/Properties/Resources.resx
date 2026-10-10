@@ -163,6 +163,15 @@
   <data name="copy_path" xml:space="preserve">
     <value>Copy path</value>
   </data>
+  <data name="custom_app_folder_duplicate" xml:space="preserve">
+    <value>Each folder can be added only once.</value>
+  </data>
+  <data name="custom_shortcut_folders" xml:space="preserve">
+    <value>Additional shortcut folders</value>
+  </data>
+  <data name="custom_shortcut_folders_description" xml:space="preserve">
+    <value>Search these folders and their subfolders for application shortcuts.</value>
+  </data>
   <data name="run_as_administrator" xml:space="preserve">
     <value>Run as administrator</value>
   </data>
@@ -175,11 +184,32 @@
   <data name="enable_desktop_source" xml:space="preserve">
     <value>Include apps found on the desktop</value>
   </data>
+  <data name="enable_catalog_diagnostics" xml:space="preserve">
+    <value>Enable app catalog diagnostics</value>
+  </data>
+  <data name="enable_catalog_diagnostics_description" xml:space="preserve">
+    <value>Write detailed application indexing and file watcher activity to the Command Palette log.</value>
+  </data>
   <data name="enable_registry_source" xml:space="preserve">
     <value>Include apps registered in the Windows Registry</value>
   </data>
   <data name="enable_path_environment_variable_source" xml:space="preserve">
     <value>Include apps anywhere on the %PATH%</value>
+  </data>
+  <data name="filter_all_apps" xml:space="preserve">
+    <value>All apps</value>
+  </data>
+  <data name="filter_win32_apps" xml:space="preserve">
+    <value>Win32</value>
+  </data>
+  <data name="filter_packaged_apps" xml:space="preserve">
+    <value>Packaged</value>
+  </data>
+  <data name="filter_web_apps" xml:space="preserve">
+    <value>Web apps</value>
+  </data>
+  <data name="filter_hidden_apps" xml:space="preserve">
+    <value>Hidden</value>
   </data>
   <data name="use_thumbnails_setting_label" xml:space="preserve">
     <value>Use thumbnails for apps</value>
@@ -191,6 +221,12 @@
   </data>
   <data name="pin_app" xml:space="preserve">
     <value>Pin</value>
+  </data>
+  <data name="portable_app_folders" xml:space="preserve">
+    <value>Portable app folders</value>
+  </data>
+  <data name="portable_app_folders_description" xml:space="preserve">
+    <value>Index executable applications in these folders and their immediate subfolders.</value>
   </data>
   <data name="unpin_app" xml:space="preserve">
     <value>Unpin</value>
@@ -238,6 +274,19 @@
     <value>Default ({0})</value>
     <comment>default option; {0} = number of items</comment>
   </data>
+  <data name="refreshing_app_list" xml:space="preserve">
+    <value>Refreshing app list...</value>
+  </data>
+  <data name="refreshing_page_title_suffix" xml:space="preserve">
+    <value>refreshing...</value>
+    <comment>Suffix appended to the All Apps page title while its app list is refreshing.</comment>
+  </data>
+  <data name="refresh_app_list" xml:space="preserve">
+    <value>Refresh app list</value>
+  </data>
+  <data name="no_apps_found" xml:space="preserve">
+    <value>No apps found</value>
+  </data>
   <data name="include_non_apps_on_desktop" xml:space="preserve">
     <value>Also include non-app shortcuts from the desktop</value>
   </data>
@@ -247,7 +296,58 @@
   <data name="hide_app_descriptions" xml:space="preserve">
     <value>Hide app description in search results</value>
   </data>
+  <data name="hide_app" xml:space="preserve">
+    <value>Hide app</value>
+  </data>
   <data name="hide_app_descriptions_description" xml:space="preserve">
     <value>Hide description text next to app results for a cleaner look</value>
+  </data>
+  <data name="hide_uninstallers" xml:space="preserve">
+    <value>Hide uninstallers</value>
+  </data>
+  <data name="hide_uninstallers_description" xml:space="preserve">
+    <value>Hide common uninstaller shortcuts and executables from the app list</value>
+  </data>
+  <data name="unhide_app" xml:space="preserve">
+    <value>Unhide app</value>
+  </data>
+  <data name="excluded_app_names" xml:space="preserve">
+    <value>Hide apps by name</value>
+  </data>
+  <data name="excluded_app_names_description" xml:space="preserve">
+    <value>Hide apps whose names match any pattern, ignoring case. Use * for any text and ? for one character, for example *Updater*. Matching apps appear in Hidden apps.</value>
+  </data>
+  <data name="excluded_app_paths" xml:space="preserve">
+    <value>Hide apps by path</value>
+  </data>
+  <data name="excluded_app_paths_description" xml:space="preserve">
+    <value>Hide apps by executable, shortcut, or package folder path, ignoring case. Use * for any text and ? for one character, for example C:\Tools\*. Matching apps appear in Hidden apps.</value>
+  </data>
+  <data name="hidden_manually" xml:space="preserve">
+    <value>Hidden manually</value>
+  </data>
+  <data name="hidden_by_exclusion_patterns" xml:space="preserve">
+    <value>Hidden by exclusion patterns</value>
+  </data>
+  <data name="edit_exclusion_patterns" xml:space="preserve">
+    <value>Edit exclusion patterns</value>
+  </data>
+  <data name="executable_name_match_mode" xml:space="preserve">
+    <value>Prioritize exact executable names</value>
+  </data>
+  <data name="executable_name_match_mode_description" xml:space="preserve">
+    <value>Choose when exact executable names, such as cmd or cmd.exe, receive priority in All Apps and Home. Other search matches remain available.</value>
+  </data>
+  <data name="executable_name_match_mode_default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="executable_name_match_mode_filename_and_stem" xml:space="preserve">
+    <value>With or without extension</value>
+  </data>
+  <data name="executable_name_match_mode_filename_only" xml:space="preserve">
+    <value>Only with extension</value>
+  </data>
+  <data name="executable_name_match_mode_disabled" xml:space="preserve">
+    <value>Disabled</value>
   </data>
 </root>

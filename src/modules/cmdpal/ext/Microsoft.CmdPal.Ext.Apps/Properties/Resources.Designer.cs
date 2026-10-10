@@ -86,7 +86,61 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("copy_path", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Each folder can be added only once..
+        /// </summary>
+        internal static string custom_app_folder_duplicate {
+            get {
+                return ResourceManager.GetString("custom_app_folder_duplicate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Additional shortcut folders.
+        /// </summary>
+        internal static string custom_shortcut_folders {
+            get {
+                return ResourceManager.GetString("custom_shortcut_folders", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Search these folders and their subfolders for application shortcuts..
+        /// </summary>
+        internal static string custom_shortcut_folders_description {
+            get {
+                return ResourceManager.GetString("custom_shortcut_folders_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Edit exclusion patterns.
+        /// </summary>
+        internal static string edit_exclusion_patterns {
+            get {
+                return ResourceManager.GetString("edit_exclusion_patterns", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Enable app catalog diagnostics.
+        /// </summary>
+        internal static string enable_catalog_diagnostics {
+            get {
+                return ResourceManager.GetString("enable_catalog_diagnostics", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Write detailed application indexing and file watcher activity to the Command Palette log..
+        /// </summary>
+        internal static string enable_catalog_diagnostics_description {
+            get {
+                return ResourceManager.GetString("enable_catalog_diagnostics_description", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Include apps found on the desktop.
         /// </summary>
@@ -124,11 +178,146 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide apps by name.
+        /// </summary>
+        internal static string excluded_app_names {
+            get {
+                return ResourceManager.GetString("excluded_app_names", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide apps whose names match any pattern, ignoring case. Use * for any text and ? for one character, for example *Updater*. Matching apps appear in Hidden apps..
+        /// </summary>
+        internal static string excluded_app_names_description {
+            get {
+                return ResourceManager.GetString("excluded_app_names_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide apps by path.
+        /// </summary>
+        internal static string excluded_app_paths {
+            get {
+                return ResourceManager.GetString("excluded_app_paths", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide apps by executable, shortcut, or package folder path, ignoring case. Use * for any text and ? for one character, for example C:\Tools\*. Matching apps appear in Hidden apps..
+        /// </summary>
+        internal static string excluded_app_paths_description {
+            get {
+                return ResourceManager.GetString("excluded_app_paths_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Prioritize exact executable names.
+        /// </summary>
+        internal static string executable_name_match_mode {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Default.
+        /// </summary>
+        internal static string executable_name_match_mode_default {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_default", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Choose when exact executable names, such as cmd or cmd.exe, receive priority in All Apps and Home. Other search matches remain available..
+        /// </summary>
+        internal static string executable_name_match_mode_description {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        internal static string executable_name_match_mode_disabled {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_disabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to With or without extension.
+        /// </summary>
+        internal static string executable_name_match_mode_filename_and_stem {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_filename_and_stem", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Only with extension.
+        /// </summary>
+        internal static string executable_name_match_mode_filename_only {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_filename_only", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to File.
         /// </summary>
         internal static string file {
             get {
                 return ResourceManager.GetString("file", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to All apps.
+        /// </summary>
+        internal static string filter_all_apps {
+            get {
+                return ResourceManager.GetString("filter_all_apps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden.
+        /// </summary>
+        internal static string filter_hidden_apps {
+            get {
+                return ResourceManager.GetString("filter_hidden_apps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Packaged.
+        /// </summary>
+        internal static string filter_packaged_apps {
+            get {
+                return ResourceManager.GetString("filter_packaged_apps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Web apps.
+        /// </summary>
+        internal static string filter_web_apps {
+            get {
+                return ResourceManager.GetString("filter_web_apps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Win32.
+        /// </summary>
+        internal static string filter_win32_apps {
+            get {
+                return ResourceManager.GetString("filter_win32_apps", resourceCulture);
             }
         }
         
@@ -138,6 +327,33 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string folder {
             get {
                 return ResourceManager.GetString("folder", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden by exclusion patterns.
+        /// </summary>
+        internal static string hidden_by_exclusion_patterns {
+            get {
+                return ResourceManager.GetString("hidden_by_exclusion_patterns", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden manually.
+        /// </summary>
+        internal static string hidden_manually {
+            get {
+                return ResourceManager.GetString("hidden_manually", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide app.
+        /// </summary>
+        internal static string hide_app {
+            get {
+                return ResourceManager.GetString("hide_app", resourceCulture);
             }
         }
         
@@ -159,6 +375,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Hide uninstallers.
+        /// </summary>
+        internal static string hide_uninstallers {
+            get {
+                return ResourceManager.GetString("hide_uninstallers", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide common uninstaller shortcuts and executables from the app list.
+        /// </summary>
+        internal static string hide_uninstallers_description {
+            get {
+                return ResourceManager.GetString("hide_uninstallers_description", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Also include non-app shortcuts from the Start menu.
         /// </summary>
@@ -275,6 +509,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("limit_none", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No apps found.
+        /// </summary>
+        internal static string no_apps_found {
+            get {
+                return ResourceManager.GetString("no_apps_found", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Open containing folder.
@@ -320,7 +563,52 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("pin_app", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Portable app folders.
+        /// </summary>
+        internal static string portable_app_folders {
+            get {
+                return ResourceManager.GetString("portable_app_folders", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Index executable applications in these folders and their immediate subfolders..
+        /// </summary>
+        internal static string portable_app_folders_description {
+            get {
+                return ResourceManager.GetString("portable_app_folders_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh app list.
+        /// </summary>
+        internal static string refresh_app_list {
+            get {
+                return ResourceManager.GetString("refresh_app_list", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Refreshing app list....
+        /// </summary>
+        internal static string refreshing_app_list {
+            get {
+                return ResourceManager.GetString("refreshing_app_list", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to refreshing....
+        /// </summary>
+        internal static string refreshing_page_title_suffix {
+            get {
+                return ResourceManager.GetString("refreshing_page_title_suffix", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Run as administrator.
         /// </summary>
@@ -366,6 +654,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Unhide app.
+        /// </summary>
+        internal static string unhide_app {
+            get {
+                return ResourceManager.GetString("unhide_app", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Uninstall.
         /// </summary>

@@ -139,13 +139,14 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         };
     }
 
+    /// <inheritdoc />
     public bool TryEnqueueLoad(
         string? iconString,
         string? fontFamily,
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
         double scale,
-        ElementTheme theme,
+        IconRenderContext context,
         TaskCompletionSource<IconSource?> tcs,
         IconLoadPriority priority = IconLoadPriority.Low,
         IconLoadMeasurement? diagnostics = null,
@@ -159,7 +160,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             streamRef,
             iconSize,
             scale,
-            theme,
+            context,
             tcs,
             diagnostics);
         if (_queue.TryEnqueue(operation, priority, demand, out var actualPriority))
@@ -245,7 +246,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
         double scale,
-        ElementTheme theme,
+        IconRenderContext context,
         TaskCompletionSource<IconSource?> tcs,
         IconLoadMeasurement? diagnostics)
     {
@@ -257,7 +258,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                 diagnostics = null;
             }
 
-            var result = await LoadIconCoreAsync(iconString, fontFamily, streamRef, iconSize, scale, theme, diagnostics).ConfigureAwait(false);
+            var result = await LoadIconCoreAsync(iconString, fontFamily, streamRef, iconSize, scale, context, diagnostics).ConfigureAwait(false);
             diagnostics?.Complete();
             tcs.TrySetResult(result);
         }
@@ -461,7 +462,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
         double scale,
-        ElementTheme theme,
+        IconRenderContext context,
         IconLoadMeasurement? diagnostics)
     {
         var scaledSize = iconSize.IsEmpty
@@ -481,11 +482,11 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             {
                 if (IconProtocolRegistry.Find(iconString) is not { } protocolProcessor)
                 {
-                    preparedIcon = IconPathConverter.Prepare(iconString, fontFamily, targetSize, theme);
+                    preparedIcon = IconPathConverter.Prepare(iconString, fontFamily, targetSize, context);
                 }
-                else if (!protocolProcessor.TryPrepareSynchronously(iconString, targetSize, theme, out preparedIcon))
+                else if (!protocolProcessor.TryPrepareSynchronously(iconString, targetSize, context, out preparedIcon))
                 {
-                    protocolResult = await protocolProcessor.PrepareAsync(iconString, targetSize, theme).ConfigureAwait(false);
+                    protocolResult = await protocolProcessor.PrepareAsync(iconString, targetSize, context).ConfigureAwait(false);
                     if (protocolResult.BitmapStream is { } bitmapStream)
                     {
                         diagnostics?.CompleteBackgroundPreparation(preparationStartedAt);
@@ -495,7 +496,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                     preparedIcon = protocolResult.TakePreparedIcon();
                     if (preparedIcon is null && protocolResult.FallbackIconStrings is { } fallbackIconStrings)
                     {
-                        preparedIcon = IconPathConverter.PrepareFirstAvailable(fallbackIconStrings, fontFamily, targetSize, theme);
+                        preparedIcon = IconPathConverter.PrepareFirstAvailable(fallbackIconStrings, fontFamily, targetSize, context);
                     }
                 }
 
@@ -835,10 +836,11 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         private readonly IRandomAccessStreamReference? _streamRef;
         private readonly Size _iconSize;
         private readonly double _scale;
-        private readonly ElementTheme _theme;
+        private readonly IconRenderContext _context;
         private readonly TaskCompletionSource<IconSource?> _completion;
         private readonly IconLoadMeasurement? _diagnostics;
 
+        /// <summary>Initializes a new instance of the <see cref="IconLoadOperation"/> class. Captures queued icon work, its rendering context, and the completion and diagnostic targets.</summary>
         public IconLoadOperation(
             IconLoaderService owner,
             string? iconString,
@@ -846,7 +848,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             IRandomAccessStreamReference? streamRef,
             Size iconSize,
             double scale,
-            ElementTheme theme,
+            IconRenderContext context,
             TaskCompletionSource<IconSource?> completion,
             IconLoadMeasurement? diagnostics)
         {
@@ -856,7 +858,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             _streamRef = streamRef;
             _iconSize = iconSize;
             _scale = scale;
-            _theme = theme;
+            _context = context;
             _completion = completion;
             _diagnostics = diagnostics;
         }
@@ -874,16 +876,18 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             }
         }
 
-        public override Task ExecuteAsync() =>
-            _owner.LoadAndCompleteAsync(
+        public override Task ExecuteAsync()
+        {
+            return _owner.LoadAndCompleteAsync(
                 _iconString,
                 _fontFamily,
                 _streamRef,
                 _iconSize,
                 _scale,
-                _theme,
+                _context,
                 _completion,
                 _diagnostics);
+        }
 
         public override void Fail(Exception failure)
         {

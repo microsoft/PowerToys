@@ -12,6 +12,7 @@ internal static class IconProtocolRegistry
     private static readonly IIconProtocolProcessor[] Processors =
     [
         AppIconProtocolProcessor.Instance,
+        PackagedAppIconProtocolProcessor.Instance,
         ShellItemIconProtocolProcessor.Instance,
         GeneratedIconProtocolProcessor.Instance,
         SvgIconProtocolProcessor.Instance,

@@ -52,10 +52,10 @@ public static partial class IconProvider
             var iconData = args.Key switch
             {
                 IconDataViewModel value => value,
-                IconInfoViewModel value => value.IconForTheme(args.Theme == ElementTheme.Light),
+                IconInfoViewModel value => value.IconForTheme(args.Context.Theme == ElementTheme.Light),
                 _ => null,
             };
-            if (iconData is not null && AppIconProtocol.IsProtocol(iconData.Icon))
+            if (iconData is not null && IconProtocolRegistry.Find(iconData.Icon) is AppIconProtocolProcessor or PackagedAppIconProtocolProcessor)
             {
                 args.FallbackSource = _appIconFallbackSource ??= new ImageIconSource
                 {
@@ -69,9 +69,9 @@ public static partial class IconProvider
                 : await service.GetIconSource(
                     iconData,
                     args.Scale,
+                    args.Context,
                     args.Diagnostics,
-                    args,
-                    args.Theme);
+                    args);
         }
         catch (Exception ex)
         {

@@ -6,6 +6,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -110,7 +112,7 @@ public sealed class MainListPageCacheTests
             fuzzyMatcherProvider.Object,
             settingsService.Object,
             appStateService.Object,
-            new ListPage());
+            CreateEmptyAppListItemSource());
 
         try
         {
@@ -174,7 +176,7 @@ public sealed class MainListPageCacheTests
             fuzzyMatcherProvider.Object,
             settingsService.Object,
             appStateService.Object,
-            new ListPage());
+            CreateEmptyAppListItemSource());
 
         try
         {
@@ -212,6 +214,13 @@ public sealed class MainListPageCacheTests
         {
             command.Cleanup();
         }
+    }
+
+    private static IAppListItemSource CreateEmptyAppListItemSource()
+    {
+        var source = new Mock<IAppListItemSource>();
+        source.Setup(itemSource => itemSource.GetSnapshot()).Returns(new AppListItemSnapshot([], []));
+        return source.Object;
     }
 
     private static TopLevelViewModel CreateTopLevelCommand(

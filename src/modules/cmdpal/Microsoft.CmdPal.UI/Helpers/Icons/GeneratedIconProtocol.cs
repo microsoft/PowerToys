@@ -222,17 +222,17 @@ internal static class GeneratedIconProtocol
         return Kind.None;
     }
 
-    public static ElementTheme GetCacheTheme(string? value, ElementTheme theme)
+    /// <summary>Captures the theme when colors vary by theme, and contrast colors when high contrast is active.</summary>
+    public static IconRenderContext GetCacheContext(string? value, IconRenderContext context)
     {
-        if (!IsThemeDependent(value))
-        {
-            return ElementTheme.Default;
-        }
-
-        return theme == ElementTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
+        var theme = IsThemeDependent(value)
+            ? context.Theme == ElementTheme.Dark ? ElementTheme.Dark : ElementTheme.Light
+            : ElementTheme.Default;
+        return new(theme, context.Contrast.IsHighContrast ? context.Contrast : default);
     }
 
-    public static bool TryCreateSwatchSvg(string? value, ElementTheme theme, out byte[] svg)
+    /// <summary>Creates swatch SVG bytes for the captured theme and contrast, returning false for an invalid request.</summary>
+    public static bool TryCreateSwatchSvg(string? value, IconRenderContext context, out byte[] svg)
     {
         svg = [];
 
@@ -249,7 +249,7 @@ internal static class GeneratedIconProtocol
                 return false;
             }
 
-            svg = CreateSwatchSvg(SelectColor(light, dark, theme), shape);
+            svg = CreateSwatchSvg(SelectColor(light, dark, context.Theme), shape, context.Contrast);
             return true;
         }
         catch
@@ -259,17 +259,19 @@ internal static class GeneratedIconProtocol
         }
     }
 
-    public static bool TryCreateInitialsSvg(string? value, ElementTheme theme, out byte[] svg)
+    /// <summary>Creates initials SVG bytes using the captured rendering context and production text renderer.</summary>
+    public static bool TryCreateInitialsSvg(string? value, IconRenderContext context, out byte[] svg)
     {
         return TryCreateInitialsSvg(
             value,
-            theme,
+            context,
             InitialsTextRenderer.TryCreatePathData,
             out svg);
     }
 
+    /// <summary>Creates initials SVG bytes using an injected glyph-path renderer and the captured rendering context.</summary>
     internal static bool TryCreateInitialsSvg(
-        string? value, ElementTheme theme, InitialsPathFactory createPathData, out byte[] svg)
+        string? value, IconRenderContext context, InitialsPathFactory createPathData, out byte[] svg)
     {
         svg = [];
 
@@ -294,8 +296,8 @@ internal static class GeneratedIconProtocol
             svg = CreateInitialsSvg(
                 hasGlyph ? pathData : null,
                 useEvenOddFill,
-                SelectColor(light, dark, theme),
-                theme,
+                SelectColor(light, dark, context.Theme),
+                context,
                 shape);
             return true;
         }
@@ -725,13 +727,13 @@ internal static class GeneratedIconProtocol
     private static RgbaColor SelectColor(RgbaColor light, RgbaColor dark, ElementTheme theme) =>
         theme == ElementTheme.Dark ? dark : light;
 
-    private static byte[] CreateSwatchSvg(RgbaColor color, BackgroundShape shape)
+    private static byte[] CreateSwatchSvg(RgbaColor color, BackgroundShape shape, IconContrast contrast)
     {
         using var stream = new MemoryStream();
         using (var writer = CreateSvgWriter(stream))
         {
             WriteSvgStart(writer);
-            WriteBackground(writer, color, shape);
+            WriteBackground(writer, color, shape, contrast);
             writer.WriteEndElement();
         }
 
@@ -742,14 +744,14 @@ internal static class GeneratedIconProtocol
         string? pathData,
         bool useEvenOddFill,
         RgbaColor background,
-        ElementTheme theme,
+        IconRenderContext context,
         BackgroundShape shape)
     {
         using var stream = new MemoryStream();
         using (var writer = CreateSvgWriter(stream))
         {
             WriteSvgStart(writer);
-            WriteBackground(writer, background, shape);
+            WriteBackground(writer, background, shape, context.Contrast);
 
             if (!string.IsNullOrEmpty(pathData))
             {
@@ -760,7 +762,7 @@ internal static class GeneratedIconProtocol
                     writer.WriteAttributeString("fill-rule", "evenodd");
                 }
 
-                WriteFill(writer, GetContrastingForeground(background, theme));
+                WriteFill(writer, GetContrastingForeground(background, context));
                 writer.WriteEndElement();
             }
 
@@ -770,7 +772,7 @@ internal static class GeneratedIconProtocol
         return stream.ToArray();
     }
 
-    private static void WriteBackground(XmlWriter writer, RgbaColor color, BackgroundShape shape)
+    private static void WriteBackground(XmlWriter writer, RgbaColor color, BackgroundShape shape, IconContrast contrast)
     {
         // The generated background is the icon, so it fills 31 of the 32 view-box
         // units. The 0.5-unit guard on each edge keeps antialiased pixels in bounds.
@@ -792,6 +794,12 @@ internal static class GeneratedIconProtocol
         }
 
         WriteFill(writer, color);
+        if (contrast.IsHighContrast)
+        {
+            writer.WriteAttributeString("stroke", FormattableString.Invariant($"#{contrast.ForegroundArgb & 0xFFFFFF:X6}"));
+            writer.WriteAttributeString("stroke-width", "1");
+        }
+
         writer.WriteEndElement();
     }
 
@@ -826,16 +834,28 @@ internal static class GeneratedIconProtocol
         }
     }
 
-    private static RgbaColor GetContrastingForeground(RgbaColor background, ElementTheme theme)
+    private static RgbaColor GetContrastingForeground(RgbaColor background, IconRenderContext context)
     {
-        var surface = theme == ElementTheme.Dark ? (byte)32 : byte.MaxValue;
-        var red = Composite(background.R, background.A, surface);
-        var green = Composite(background.G, background.A, surface);
-        var blue = Composite(background.B, background.A, surface);
+        var contrast = context.Contrast;
+        if (contrast.IsHighContrast && background.A == 0)
+        {
+            return FromArgb(contrast.ForegroundArgb);
+        }
+
+        var surface = context.Theme == ElementTheme.Dark ? (byte)32 : byte.MaxValue;
+        var surfaceColor = contrast.IsHighContrast ? FromArgb(contrast.BackgroundArgb) : new RgbaColor(255, surface, surface, surface);
+        var red = Composite(background.R, background.A, surfaceColor.R);
+        var green = Composite(background.G, background.A, surfaceColor.G);
+        var blue = Composite(background.B, background.A, surfaceColor.B);
         var luminance = (0.2126 * ToLinear(red)) + (0.7152 * ToLinear(green)) + (0.0722 * ToLinear(blue));
         return luminance > 0.179
             ? new RgbaColor(255, 0, 0, 0)
             : new RgbaColor(255, 255, 255, 255);
+    }
+
+    private static RgbaColor FromArgb(uint color)
+    {
+        return new((byte)(color >> 24), (byte)(color >> 16), (byte)(color >> 8), (byte)color);
     }
 
     private static byte Composite(byte foreground, byte alpha, byte background) =>

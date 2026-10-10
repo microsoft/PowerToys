@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Xaml;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 
@@ -38,14 +37,12 @@ internal sealed class AppIconProtocolProcessor : IIconProtocolProcessor
 
     public string GetCacheIdentity(string value) => value;
 
-    public ElementTheme GetCacheTheme(string value, ElementTheme theme) => ElementTheme.Default;
-
     public IconLoadInputKind ClassifyInput(string value) => IconLoadInputKind.SpecializedAppIcon;
 
     public bool TryPrepareSynchronously(
         string value,
         int targetSize,
-        ElementTheme theme,
+        IconRenderContext context,
         out IconPathConverter.PreparedIcon preparedIcon)
     {
         preparedIcon = null!;
@@ -55,9 +52,9 @@ internal sealed class AppIconProtocolProcessor : IIconProtocolProcessor
     public async ValueTask<IconProtocolProcessingResult> PrepareAsync(
         string value,
         int targetSize,
-        ElementTheme theme)
+        IconRenderContext context)
     {
-        _ = theme;
+        _ = context;
 
         if (!AppIconProtocol.TryParse(value, out var candidates, out var jumbo))
         {

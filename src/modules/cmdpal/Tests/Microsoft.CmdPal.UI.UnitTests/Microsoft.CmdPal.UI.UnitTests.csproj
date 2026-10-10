@@ -51,6 +51,10 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ItemActionController.cs" Link="Services\ItemActionController.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRefreshState.cs" Link="Controls\IconRefreshState.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconUnloadController.cs" Link="Controls\IconUnloadController.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconContrast.cs" Link="Helpers\Icons\IconContrast.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconContrastSettings.cs" Link="Helpers\Icons\IconContrastSettings.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRenderContext.cs" Link="Helpers\Icons\IconRenderContext.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\PackagedAppIconProtocolProcessor.cs" Link="Helpers\Icons\PackagedAppIconProtocolProcessor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\AppIconProtocolProcessor.cs" Link="Helpers\Icons\AppIconProtocolProcessor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemImageFactoryIconExtractor.cs" Link="Helpers\Icons\ShellItemImageFactoryIconExtractor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />

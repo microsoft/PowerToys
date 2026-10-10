@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,110 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public partial class TopLevelCommandManagerTests
 {
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ProviderReload_DoesNotRepublishCommandsOrBandsAfterDisable(bool disableDuringReload)
+    {
+        Action? onSettingsUpdated = null;
+        using var services = CreateServices(() => onSettingsUpdated?.Invoke());
+        var settingsService = services.GetRequiredService<ISettingsService>();
+        using var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId)
+        {
+            IncludeTopLevelCommand = true,
+            IncludeDockBand = true,
+        };
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
+        using var releaseFollowup = new ManualResetEventSlim();
+        try
+        {
+            await manager.LoadExternalProvidersAsync();
+            Assert.AreEqual(1, manager.TopLevelCommands.Count);
+            Assert.AreEqual(1, manager.DockBands.Count);
+            var providerSettings = new ProviderSettingsViewModel(wrapper, settingsService.Settings.ProviderSettings[provider.Id], settingsService);
+            if (disableDuringReload)
+            {
+                provider.OnLoad = () => providerSettings.IsEnabled = false;
+            }
+            else
+            {
+                providerSettings.IsEnabled = false;
+            }
+
+            var followupStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var disabledUpdates = 0;
+            onSettingsUpdated = () =>
+            {
+                if (manager.IsProviderEnabled(provider.Id))
+                {
+                    return;
+                }
+
+                if (Interlocked.Increment(ref disabledUpdates) == 1)
+                {
+                    provider.NotifyItemsChanged();
+                }
+                else
+                {
+                    // A coalesced follow-up starts only after the first reload has finished publishing.
+                    followupStarted.TrySetResult();
+                    Assert.IsTrue(releaseFollowup.Wait(TimeSpan.FromSeconds(5)));
+                }
+            };
+
+            provider.NotifyItemsChanged();
+            await followupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.IsFalse(manager.IsProviderEnabled(provider.Id));
+            Assert.AreEqual(0, manager.TopLevelCommands.Count);
+            Assert.AreEqual(0, manager.DockBands.Count);
+        }
+        finally
+        {
+            manager.Dispose();
+            releaseFollowup.Set();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task InitialPublication_ReplaysChangesAndResolvesPins(bool dockBand, bool notifyDuringPublication)
+    {
+        using var services = CreateServices();
+        using var provider = new DeferredPinProvider { NotifyDuringLookup = !notifyDuringPublication };
+        var settingsService = services.GetRequiredService<ISettingsService>();
+        settingsService.UpdateSettings(settings => dockBand
+            ? settings with
+            {
+                DockSettings = settings.DockSettings with
+                {
+                    StartBands = [new DockBandSettings { ProviderId = provider.Id, CommandId = DeferredPinProvider.PinId }],
+                },
+            }
+            : settings.TryPinCommand(provider.Id, DeferredPinProvider.PinId));
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
+        if (notifyDuringPublication)
+        {
+            manager.TopLevelCommands.CollectionChanged += (_, _) => provider.MakeAvailable();
+        }
+
+        await manager.LoadExternalProvidersAsync();
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while ((dockBand ? manager.LookupDockBand(DeferredPinProvider.PinId) : manager.LookupCommand(provider.Id, DeferredPinProvider.PinId)) is null
+            && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(10);
+        }
+
+        Assert.IsNotNull(dockBand ? manager.LookupDockBand(DeferredPinProvider.PinId) : manager.LookupCommand(provider.Id, DeferredPinProvider.PinId));
+        Assert.AreEqual(2, provider.LoadCount);
+    }
+
     [TestMethod]
     public async Task WaitForCurrentLoadAsync_CompletesWhenCurrentLoadingPhaseFinishes()
     {
@@ -281,13 +386,17 @@ public partial class TopLevelCommandManagerTests
         Assert.AreEqual(extensionProviderId, viewModel.ProviderId);
     }
 
-    private static ServiceProvider CreateServices()
+    private static ServiceProvider CreateServices(Action? onSettingsUpdated = null)
     {
         var settings = new SettingsModel();
         var settingsService = new Mock<ISettingsService>();
         settingsService.SetupGet(service => service.Settings).Returns(() => settings);
         settingsService.Setup(service => service.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()))
-            .Callback<Func<SettingsModel, SettingsModel>, bool>((update, _) => settings = update(settings));
+            .Callback<Func<SettingsModel, SettingsModel>, bool>((update, _) =>
+            {
+                settings = update(settings);
+                onSettingsUpdated?.Invoke();
+            });
 
         return new ServiceCollection()
             .AddSingleton(TaskScheduler.Default)
@@ -315,6 +424,10 @@ public partial class TopLevelCommandManagerTests
 
         public bool IncludeTopLevelCommand { get; init; }
 
+        public bool IncludeDockBand { get; init; }
+
+        public Action? OnLoad { get; set; }
+
         public Action? OnLookup { get; set; }
 
         public TestCommandProvider(string resolvedCommandId, ICommandItem? resolvedItem = null)
@@ -328,7 +441,21 @@ public partial class TopLevelCommandManagerTests
             });
         }
 
-        public override ICommandItem[] TopLevelCommands() => IncludeTopLevelCommand ? [_resolvedItem] : [];
+        public override ICommandItem[] TopLevelCommands()
+        {
+            OnLoad?.Invoke();
+            return IncludeTopLevelCommand ? [_resolvedItem] : [];
+        }
+
+        public override ICommandItem[] GetDockBands()
+        {
+            return IncludeDockBand ? [_resolvedItem] : [];
+        }
+
+        public void NotifyItemsChanged()
+        {
+            RaiseItemsChanged();
+        }
 
         public override ICommandItem? GetCommandItem(string id)
         {
@@ -338,9 +465,62 @@ public partial class TopLevelCommandManagerTests
         }
     }
 
+    private sealed partial class DeferredPinProvider : CommandProvider
+    {
+        public const string PinId = "deferred-pin";
+
+        private readonly CommandItem _pin = new(new NoOpCommand { Id = PinId, Name = "Pinned app" });
+        private bool _available;
+        private int _loadCount;
+
+        public bool NotifyDuringLookup { get; init; }
+
+        public int LoadCount => Volatile.Read(ref _loadCount);
+
+        public DeferredPinProvider()
+        {
+            Id = "deferred-provider";
+            DisplayName = "Deferred provider";
+        }
+
+        public override ICommandItem[] TopLevelCommands()
+        {
+            Interlocked.Increment(ref _loadCount);
+            return [new CommandItem(new NoOpCommand { Id = "all-apps", Name = "All apps" })];
+        }
+
+        public override ICommandItem? GetCommandItem(string id)
+        {
+            if (_available)
+            {
+                return id == PinId ? _pin : null;
+            }
+
+            if (NotifyDuringLookup)
+            {
+                MakeAvailable();
+            }
+
+            return null;
+        }
+
+        public void MakeAvailable()
+        {
+            if (!_available)
+            {
+                _available = true;
+                RaiseItemsChanged();
+                RaiseItemsChanged();
+            }
+        }
+    }
+
     private sealed partial class TestExtension(ICommandProvider provider) : IExtension
     {
-        public object GetProvider(ProviderType providerType) => provider;
+        public object GetProvider(ProviderType providerType)
+        {
+            return provider;
+        }
 
         public void Dispose()
         {

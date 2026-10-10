@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -20,6 +21,51 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 [TestClass]
 public partial class CachedIconSourceProviderTests
 {
+    [DataTestMethod]
+    [DataRow("|ThemedSvg|<svg />", true)]
+    [DataRow("|Swatch|#123456|", true)]
+    [DataRow("|packaged-app-icon|a|C%3A%5CApps|Logo.png|", false)]
+    public async Task ContrastAwareProtocolsSeparateRequestsAndReuseRelevantPalette(string value, bool usesPalette)
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var icon = CreateIcon(value);
+        var black = new IconContrast(IconContrastMode.Black, 0xFFFFFFFF, 0xFF000000);
+        var first = provider.GetIconSource(icon, 1, new IconRenderContext(ElementTheme.Light, black));
+        Assert.AreEqual(new IconRenderContext(ElementTheme.Light, black), loader.LastContext);
+        Assert.AreSame(first, provider.GetIconSource(icon, 1, new IconRenderContext(ElementTheme.Light, black)));
+
+        var white = provider.GetIconSource(icon, 1, new IconRenderContext(ElementTheme.Light, new(IconContrastMode.White)));
+        Assert.AreNotSame(first, white);
+        var paletteChange = provider.GetIconSource(icon, 1, new IconRenderContext(ElementTheme.Light, black with { Foreground = 0xFF00FF00 }));
+        Assert.AreEqual(usesPalette, !ReferenceEquals(first, paletteChange));
+        Assert.AreEqual(usesPalette ? 3 : 2, loader.EnqueueCount);
+        for (var i = 0; i < loader.EnqueueCount; i++)
+        {
+            loader.CompleteNext(null);
+        }
+
+        await Task.WhenAll(first, white, paletteChange);
+        Assert.AreSame(first, provider.GetIconSource(icon, 1, new IconRenderContext(ElementTheme.Light, black)));
+    }
+
+    [DataTestMethod]
+    [DataRow("|Svg|<svg />")]
+    [DataRow("|appicon|C:\\Apps\\app.exe|")]
+    [DataRow("\uE700")]
+    public async Task ContrastIndependentIconsShareCacheAcrossContrastChanges(string value)
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var icon = CreateIcon(value);
+        var first = provider.GetIconSource(icon, 1, new IconRenderContext(ElementTheme.Default, new(IconContrastMode.Black)));
+        var second = provider.GetIconSource(icon, 1, new IconRenderContext(ElementTheme.Default, new(IconContrastMode.White)));
+        Assert.AreSame(first, second);
+        Assert.AreEqual(1, loader.EnqueueCount);
+        loader.CompleteNext(null);
+        await first;
+    }
+
     [TestMethod]
     [Timeout(5_000)]
     public async Task ConcurrentRequestsShareOneInFlightLoad()
@@ -29,7 +75,7 @@ public partial class CachedIconSourceProviderTests
         var icon = CreateIcon();
         var requests = new ConcurrentBag<Task<IconSource?>>();
 
-        Parallel.For(0, 32, _ => requests.Add(provider.GetIconSource(icon, 1.0)));
+        Parallel.For(0, 32, _ => requests.Add(provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default))));
 
         var requestArray = requests.ToArray();
         Assert.HasCount(32, requestArray);
@@ -51,7 +97,7 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon();
 
-        var first = provider.GetIconSource(icon, 1.0);
+        var first = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.CompleteNext(null);
         await first;
 
@@ -59,7 +105,7 @@ public partial class CachedIconSourceProviderTests
             SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)),
             "The completed load was not retired from the in-flight dictionary.");
 
-        var cached = provider.GetIconSource(icon, 1.0);
+        var cached = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreSame(first, cached);
         Assert.AreEqual(1, loader.EnqueueCount);
@@ -75,8 +121,8 @@ public partial class CachedIconSourceProviderTests
         var firstDemand = new IconRequestDemand();
         var secondDemand = new IconRequestDemand();
 
-        var first = provider.GetIconSource(icon, 1.0, demand: firstDemand);
-        var second = provider.GetIconSource(icon, 1.0, demand: secondDemand);
+        var first = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default), demand: firstDemand);
+        var second = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default), demand: secondDemand);
 
         Assert.AreSame(first, second);
         Assert.IsNotNull(loader.LastDemand);
@@ -89,7 +135,7 @@ public partial class CachedIconSourceProviderTests
         Assert.IsFalse(loader.LastDemand.IsDemanded);
 
         var returnedDemand = new IconRequestDemand();
-        var returned = provider.GetIconSource(icon, 1.0, demand: returnedDemand);
+        var returned = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default), demand: returnedDemand);
         Assert.AreSame(first, returned);
         Assert.IsTrue(loader.LastDemand.IsDemanded);
 
@@ -113,14 +159,14 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon("\uE700");
 
-        var first = provider.GetIconSource(icon, 1.0);
+        var first = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         var firstResult = await first;
 
         Assert.IsTrue(
             SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)),
             "The direct glyph load was not retired from the in-flight dictionary.");
 
-        var cached = provider.GetIconSource(icon, 1.0);
+        var cached = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreSame(glyph, firstResult);
         Assert.AreSame(first, cached);
@@ -135,7 +181,7 @@ public partial class CachedIconSourceProviderTests
         var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
         var provider = CreateProvider(loader);
 
-        var result = provider.GetIconSource(CreateIcon("glyph"), 1.0);
+        var result = provider.GetIconSource(CreateIcon("glyph"), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(1, loader.GlyphAttemptCount);
         Assert.AreEqual(1, loader.EnqueueCount);
@@ -157,11 +203,11 @@ public partial class CachedIconSourceProviderTests
         var glyph = CreateIcon("\uE700");
         var other = CreateIcon("bitmap.png");
 
-        var glyphLoad = provider.GetIconSource(glyph, 1.0);
+        var glyphLoad = provider.GetIconSource(glyph, 1.0, new IconRenderContext(ElementTheme.Default, default));
         await glyphLoad;
 
         loader.ReturnDirectGlyph = false;
-        var otherLoad = provider.GetIconSource(other, 1.0);
+        var otherLoad = provider.GetIconSource(other, 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.CompleteNext(null);
         await otherLoad;
 
@@ -173,8 +219,8 @@ public partial class CachedIconSourceProviderTests
                 TimeSpan.FromSeconds(2)),
             "The completed entries were not added to their independent caches.");
 
-        Assert.AreSame(glyphLoad, provider.GetIconSource(glyph, 1.0));
-        Assert.AreSame(otherLoad, provider.GetIconSource(other, 1.0));
+        Assert.AreSame(glyphLoad, provider.GetIconSource(glyph, 1.0, new IconRenderContext(ElementTheme.Default, default)));
+        Assert.AreSame(otherLoad, provider.GetIconSource(other, 1.0, new IconRenderContext(ElementTheme.Default, default)));
         Assert.AreEqual(1, loader.EnqueueCount);
     }
 
@@ -198,8 +244,8 @@ public partial class CachedIconSourceProviderTests
         var firstIcon = CreateIcon(string.Empty, firstStream);
         var secondIcon = CreateIcon(string.Empty, secondStream);
 
-        var first = provider.GetIconSource(firstIcon, 1.0);
-        var second = provider.GetIconSource(secondIcon, 1.0);
+        var first = provider.GetIconSource(firstIcon, 1.0, new IconRenderContext(ElementTheme.Default, default));
+        var second = provider.GetIconSource(secondIcon, 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreNotSame(first, second);
         Assert.AreEqual(2, loader.EnqueueCount);
@@ -219,13 +265,13 @@ public partial class CachedIconSourceProviderTests
         var decomposed = CreateIcon("|Initials|A\u030A|#0067C0|circle|");
         var percentEncoded = CreateIcon("|Initials|%C3%85|#0067C0|circle|");
 
-        var first = provider.GetIconSource(precomposed, 1.0, theme: ElementTheme.Light);
+        var first = provider.GetIconSource(precomposed, 1.0, new IconRenderContext(ElementTheme.Light, default));
         loader.CompleteNext(null);
         await first;
         Assert.IsTrue(SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
 
-        Assert.AreSame(first, provider.GetIconSource(decomposed, 1.0, theme: ElementTheme.Light));
-        Assert.AreSame(first, provider.GetIconSource(percentEncoded, 1.0, theme: ElementTheme.Light));
+        Assert.AreSame(first, provider.GetIconSource(decomposed, 1.0, new IconRenderContext(ElementTheme.Light, default)));
+        Assert.AreSame(first, provider.GetIconSource(percentEncoded, 1.0, new IconRenderContext(ElementTheme.Light, default)));
         Assert.AreEqual(1, loader.EnqueueCount);
     }
 
@@ -237,12 +283,12 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon("|ThemedSvg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"{{ThemeColor}}\"/></svg>");
 
-        var light = provider.GetIconSource(icon, 1.0, theme: ElementTheme.Light);
+        var light = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Light, default));
         loader.CompleteNext(null);
         await light;
         Assert.IsTrue(SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
 
-        var dark = provider.GetIconSource(icon, 1.0, theme: ElementTheme.Dark);
+        var dark = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Dark, default));
         Assert.AreNotSame(light, dark);
         loader.CompleteNext(null);
         await dark;
@@ -251,8 +297,8 @@ public partial class CachedIconSourceProviderTests
                 () => GetInFlightCount(provider) == 0 && GetCacheCount(provider, "_otherCache") == 2,
                 TimeSpan.FromSeconds(2)));
 
-        Assert.AreSame(light, provider.GetIconSource(icon, 1.0, theme: ElementTheme.Light));
-        Assert.AreSame(dark, provider.GetIconSource(icon, 1.0, theme: ElementTheme.Dark));
+        Assert.AreSame(light, provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Light, default)));
+        Assert.AreSame(dark, provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Dark, default)));
         Assert.AreEqual(2, loader.EnqueueCount);
     }
 
@@ -264,12 +310,12 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon("|Svg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"#0067C0\"/></svg>");
 
-        var light = provider.GetIconSource(icon, 1.0, theme: ElementTheme.Light);
+        var light = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Light, default));
         loader.CompleteNext(null);
         await light;
         Assert.IsTrue(SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
 
-        Assert.AreSame(light, provider.GetIconSource(icon, 1.0, theme: ElementTheme.Dark));
+        Assert.AreSame(light, provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Dark, default)));
         Assert.AreEqual(1, loader.EnqueueCount);
     }
 
@@ -282,8 +328,8 @@ public partial class CachedIconSourceProviderTests
         var firstIcon = CreateIcon("C:\\Files\\first.txt");
         var secondIcon = CreateIcon("C:\\Files\\second.txt");
 
-        var first = provider.GetIconSource(firstIcon, 1.0);
-        var second = provider.GetIconSource(secondIcon, 1.0);
+        var first = provider.GetIconSource(firstIcon, 1.0, new IconRenderContext(ElementTheme.Default, default));
+        var second = provider.GetIconSource(secondIcon, 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(2, loader.ShellEnqueueCount);
         Assert.AreEqual(0, loader.EnqueueCount);
@@ -301,13 +347,11 @@ public partial class CachedIconSourceProviderTests
                 () => GetInFlightCount(provider) == 0 && GetCacheCount(provider, "_otherCache") == 1,
                 TimeSpan.FromSeconds(2)));
 
-        var repeated = provider.GetIconSource(firstIcon, 1.0);
+        var repeated = provider.GetIconSource(firstIcon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         Assert.AreSame(first, repeated);
         Assert.AreEqual(2, loader.ShellEnqueueCount);
 
-        var third = provider.GetIconSource(
-            CreateIcon("C:\\Files\\third.txt"),
-            1.0);
+        var third = provider.GetIconSource(CreateIcon("C:\\Files\\third.txt"), 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.LocateNextShellItem(systemImageListIndex: 42);
         Assert.AreSame(source, await third);
         Assert.AreEqual(3, loader.ShellEnqueueCount);
@@ -323,7 +367,7 @@ public partial class CachedIconSourceProviderTests
         var progress = new ProgressiveIconRequest();
         var icon = CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\first.dll"));
 
-        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        var finalTask = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default), demand: progress);
 
         Assert.IsTrue(SpinWait.SpinUntil(
             () => loader.ShellEnqueueCount == 1,
@@ -352,7 +396,7 @@ public partial class CachedIconSourceProviderTests
         var progress = new ProgressiveIconRequest();
         var icon = CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\custom.exe"));
 
-        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        var finalTask = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default), demand: progress);
         Assert.IsTrue(SpinWait.SpinUntil(
             () => loader.ShellEnqueueCount == 1,
             TimeSpan.FromSeconds(2)));
@@ -382,7 +426,7 @@ public partial class CachedIconSourceProviderTests
         var progress = new ProgressiveIconRequest();
         var icon = CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\custom.exe"));
 
-        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        var finalTask = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default), demand: progress);
         Assert.IsTrue(SpinWait.SpinUntil(
             () => loader.ShellEnqueueCount == 1,
             TimeSpan.FromSeconds(2)));
@@ -409,7 +453,7 @@ public partial class CachedIconSourceProviderTests
         var progress = new ProgressiveIconRequest { ThrowOnIntermediate = true };
         var icon = CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\custom.exe"));
 
-        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        var finalTask = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default), demand: progress);
         Assert.IsTrue(SpinWait.SpinUntil(
             () => loader.ShellEnqueueCount == 1,
             TimeSpan.FromSeconds(2)));
@@ -436,7 +480,7 @@ public partial class CachedIconSourceProviderTests
         var progress = new ProgressiveIconRequest();
         var icon = CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\custom.exe"));
 
-        var finalTask = provider.GetIconSource(icon, 1.0, demand: progress);
+        var finalTask = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default), demand: progress);
         progress.Release();
         Assert.IsTrue(SpinWait.SpinUntil(
             () => loader.ShellEnqueueCount == 1,
@@ -464,10 +508,7 @@ public partial class CachedIconSourceProviderTests
         var progress = new ProgressiveIconRequest();
         var callingThreadId = Environment.CurrentManagedThreadId;
 
-        var result = provider.GetIconSource(
-            CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\first.dll")),
-            1.0,
-            demand: progress);
+        var result = provider.GetIconSource(CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\first.dll")), 1.0, new IconRenderContext(ElementTheme.Default, default), demand: progress);
 
         Assert.IsTrue(SpinWait.SpinUntil(
             () => loader.ShellEnqueueCount == 1,
@@ -492,10 +533,7 @@ public partial class CachedIconSourceProviderTests
         var loader = new ControllableIconLoader();
         var provider = CreateProvider(loader);
         var firstProgress = new ProgressiveIconRequest();
-        var first = provider.GetIconSource(
-            CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\first.dll")),
-            1.0,
-            demand: firstProgress);
+        var first = provider.GetIconSource(CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\first.dll")), 1.0, new IconRenderContext(ElementTheme.Default, default), demand: firstProgress);
 
         Assert.IsTrue(SpinWait.SpinUntil(
             () => loader.ShellEnqueueCount == 1,
@@ -517,10 +555,7 @@ public partial class CachedIconSourceProviderTests
         SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         try
         {
-            second = provider.GetIconSource(
-                CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\second.dll")),
-                1.0,
-                demand: secondProgress);
+            second = provider.GetIconSource(CreateIcon(ShellItemIconProtocol.Create(@"C:\Windows\System32\second.dll")), 1.0, new IconRenderContext(ElementTheme.Default, default), demand: secondProgress);
         }
         finally
         {
@@ -545,15 +580,9 @@ public partial class CachedIconSourceProviderTests
         var firstRequestDemand = new IconRequestDemand();
         var secondRequestDemand = new IconRequestDemand();
 
-        var first = provider.GetIconSource(
-            CreateIcon("C:\\Files\\first.txt"),
-            1.0,
-            demand: firstRequestDemand);
+        var first = provider.GetIconSource(CreateIcon("C:\\Files\\first.txt"), 1.0, new IconRenderContext(ElementTheme.Default, default), demand: firstRequestDemand);
         var canonicalDemand = loader.LastDemand!;
-        var second = provider.GetIconSource(
-            CreateIcon("C:\\Files\\second.txt"),
-            1.0,
-            demand: secondRequestDemand);
+        var second = provider.GetIconSource(CreateIcon("C:\\Files\\second.txt"), 1.0, new IconRenderContext(ElementTheme.Default, default), demand: secondRequestDemand);
 
         loader.LocateNextShellItem(systemImageListIndex: 42);
         loader.LocateNextShellItem(systemImageListIndex: 42);
@@ -576,7 +605,7 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon("C:\\Files\\report.txt");
 
-        var first = provider.GetIconSource(icon, 1.0);
+        var first = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.LocateNextShellItem(systemImageListIndex: 42);
         loader.CompleteNextShellOwner(null);
         Assert.IsNull(await first);
@@ -584,7 +613,7 @@ public partial class CachedIconSourceProviderTests
             SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
         Assert.AreEqual(0, GetCacheCount(provider, "_otherCache"));
 
-        var retry = provider.GetIconSource(icon, 1.0);
+        var retry = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         Assert.AreEqual(2, loader.ShellExtractionCount);
         loader.CompleteNextShellOwner(CreateTestIconSource());
         await retry;
@@ -607,7 +636,7 @@ public partial class CachedIconSourceProviderTests
             var provider = CreateProvider(loader);
             var icon = CreateIcon("C:\\Files\\report.txt");
 
-            var first = provider.GetIconSource(icon, 1.0);
+            var first = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
             loader.LocateNextShellItem(systemImageListIndex: 42);
             loader.CompleteNextShellOwner(fallback);
             Assert.AreSame(fallback, await first);
@@ -615,7 +644,7 @@ public partial class CachedIconSourceProviderTests
                 SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
             Assert.AreEqual(0, GetCacheCount(provider, "_otherCache"));
 
-            var retry = provider.GetIconSource(icon, 1.0);
+            var retry = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
             Assert.AreEqual(2, loader.ShellExtractionCount);
             loader.CompleteNextShellOwner(CreateTestIconSource());
             await retry;
@@ -636,7 +665,7 @@ public partial class CachedIconSourceProviderTests
         var loader = new ControllableIconLoader();
         var provider = CreateProvider(loader);
 
-        var load = provider.GetIconSource(CreateIcon(imagePath), 1.0);
+        var load = provider.GetIconSource(CreateIcon(imagePath), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(1, loader.EnqueueCount);
         Assert.AreEqual(0, loader.ShellEnqueueCount);
@@ -650,12 +679,8 @@ public partial class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = CreateProvider(loader);
-        var legacy = provider.GetIconSource(
-            CreateIcon("C:\\Files\\legacy.txt"),
-            1.0);
-        var explicitRequest = provider.GetIconSource(
-            CreateIcon(ShellItemIconProtocol.Create("C:\\Files\\explicit.txt")),
-            1.0);
+        var legacy = provider.GetIconSource(CreateIcon("C:\\Files\\legacy.txt"), 1.0, new IconRenderContext(ElementTheme.Default, default));
+        var explicitRequest = provider.GetIconSource(CreateIcon(ShellItemIconProtocol.Create("C:\\Files\\explicit.txt")), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         loader.LocateNextShellItem(systemImageListIndex: 73);
         loader.LocateNextShellItem(systemImageListIndex: 73);
@@ -673,9 +698,7 @@ public partial class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = CreateProvider(loader);
-        var load = provider.GetIconSource(
-            CreateIcon(ShellItemIconProtocol.Create("C:\\Files\\report.txt"), new TestStreamReference()),
-            1.0);
+        var load = provider.GetIconSource(CreateIcon(ShellItemIconProtocol.Create("C:\\Files\\report.txt"), new TestStreamReference()), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(0, loader.EnqueueCount);
         Assert.AreEqual(1, loader.ShellEnqueueCount);
@@ -692,12 +715,8 @@ public partial class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = CreateProvider(loader);
-        var first = provider.GetIconSource(
-            CreateIcon("C:\\Files\\first.txt"),
-            1.0);
-        var second = provider.GetIconSource(
-            CreateIcon("C:\\Files\\second.custom"),
-            1.0);
+        var first = provider.GetIconSource(CreateIcon("C:\\Files\\first.txt"), 1.0, new IconRenderContext(ElementTheme.Default, default));
+        var second = provider.GetIconSource(CreateIcon("C:\\Files\\second.custom"), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         loader.LocateNextShellItem(systemImageListIndex: 42);
         loader.LocateNextShellItem(systemImageListIndex: 99);
@@ -719,13 +738,13 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon("C:\\Files\\report.txt");
 
-        var failed = provider.GetIconSource(icon, 1.0);
+        var failed = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.LocateNextShellItem(systemImageListIndex: 42);
         loader.FailNextShellOwner(new IOException("Extraction failed."));
         await Assert.ThrowsExactlyAsync<IOException>(async () => await failed);
         Assert.IsTrue(SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
 
-        var retry = provider.GetIconSource(icon, 1.0);
+        var retry = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         Assert.AreEqual(1, loader.ShellLocationCount);
         Assert.AreEqual(2, loader.ShellExtractionCount);
 
@@ -751,12 +770,12 @@ public partial class CachedIconSourceProviderTests
             otherCacheSize: 16);
         var icon = CreateIcon("C:\\Files\\report.txt");
 
-        var small = provider20.GetIconSource(icon, 1.0);
+        var small = provider20.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.LocateNextShellItem(systemImageListIndex: 42);
         loader.CompleteNextShellOwner(CreateTestIconSource());
         await small;
 
-        var large = provider64.GetIconSource(icon, 1.0);
+        var large = provider64.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         Assert.AreEqual(1, loader.ShellLocationCount);
         Assert.AreEqual(2, loader.ShellExtractionCount);
         loader.CompleteNextShellOwner(CreateTestIconSource());
@@ -771,7 +790,7 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon("C:\\Files\\report.txt");
 
-        var first = provider.GetIconSource(icon, 1.0);
+        var first = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.LocateNextShellItem(systemImageListIndex: 42);
         var firstSource = CreateTestIconSource();
         loader.CompleteNextShellOwner(firstSource);
@@ -781,7 +800,7 @@ public partial class CachedIconSourceProviderTests
 
         loader.ShellIconLocations.Clear();
 
-        var refreshed = provider.GetIconSource(icon, 1.0);
+        var refreshed = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.LocateNextShellItem(systemImageListIndex: 42);
         Assert.AreEqual(2, loader.ShellExtractionCount);
         var refreshedSource = CreateTestIconSource();
@@ -798,7 +817,7 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon();
 
-        var failed = provider.GetIconSource(icon, 1.0);
+        var failed = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
         loader.FailNext(new InvalidOperationException("Icon load failed."));
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await failed);
@@ -806,7 +825,7 @@ public partial class CachedIconSourceProviderTests
             SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)),
             "The failed load was not retired from the in-flight dictionary.");
 
-        var retry = provider.GetIconSource(icon, 1.0);
+        var retry = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreNotSame(failed, retry);
         Assert.AreEqual(2, loader.EnqueueCount);
@@ -823,7 +842,7 @@ public partial class CachedIconSourceProviderTests
         var provider = CreateProvider(loader);
         var icon = CreateIcon();
 
-        var rejected = provider.GetIconSource(icon, 1.0);
+        var rejected = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await rejected);
         Assert.IsTrue(
@@ -831,7 +850,7 @@ public partial class CachedIconSourceProviderTests
             "The rejected load was not retired from the in-flight dictionary.");
 
         loader.AcceptLoads = true;
-        var retry = provider.GetIconSource(icon, 1.0);
+        var retry = provider.GetIconSource(icon, 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreNotSame(rejected, retry);
         Assert.AreEqual(2, loader.EnqueueCount);
@@ -847,7 +866,7 @@ public partial class CachedIconSourceProviderTests
         var loader = new ControllableIconLoader { AcceptLoads = false };
         var provider = new IconSourceProvider(loader, new Size(16, 16));
 
-        var rejected = provider.GetIconSource(CreateIcon(), 1.0);
+        var rejected = provider.GetIconSource(CreateIcon(), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await rejected);
         Assert.AreEqual(1, loader.EnqueueCount);
@@ -865,7 +884,7 @@ public partial class CachedIconSourceProviderTests
         };
         var provider = new IconSourceProvider(loader, new Size(16, 16));
 
-        var result = await provider.GetIconSource(CreateIcon("\uE700"), 1.0);
+        var result = await provider.GetIconSource(CreateIcon("\uE700"), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreSame(glyph, result);
         Assert.AreEqual(1, loader.GlyphAttemptCount);
@@ -879,9 +898,7 @@ public partial class CachedIconSourceProviderTests
         var loader = new ControllableIconLoader();
         var provider = new IconSourceProvider(loader, new Size(16, 16));
 
-        var load = provider.GetIconSource(
-            CreateIcon("C:\\Files\\report.txt"),
-            1.0);
+        var load = provider.GetIconSource(CreateIcon("C:\\Files\\report.txt"), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(0, loader.EnqueueCount);
         Assert.AreEqual(1, loader.ShellEnqueueCount);
@@ -898,9 +915,7 @@ public partial class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = new IconSourceProvider(loader, new Size(16, 16));
-        var load = provider.GetIconSource(
-            CreateIcon(ShellItemIconProtocol.Create("C:\\Files\\report.txt"), new TestStreamReference()),
-            1.0);
+        var load = provider.GetIconSource(CreateIcon(ShellItemIconProtocol.Create("C:\\Files\\report.txt"), new TestStreamReference()), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(0, loader.EnqueueCount);
         Assert.AreEqual(1, loader.ShellEnqueueCount);
@@ -945,7 +960,7 @@ public partial class CachedIconSourceProviderTests
         var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
         var provider = new IconSourceProvider(loader, new Size(16, 16));
 
-        var result = provider.GetIconSource(CreateIcon("glyph"), 1.0);
+        var result = provider.GetIconSource(CreateIcon("glyph"), 1.0, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(1, loader.GlyphAttemptCount);
         Assert.AreEqual(1, loader.EnqueueCount);
@@ -1050,6 +1065,8 @@ public partial class CachedIconSourceProviderTests
 
         public IconLoadDemand? LastDemand { get; private set; }
 
+        public IconRenderContext LastContext { get; private set; }
+
         public ShellIconLocationCache ShellIconLocations { get; } = new();
 
         public bool TryLoadGlyph(
@@ -1070,15 +1087,15 @@ public partial class CachedIconSourceProviderTests
             IRandomAccessStreamReference? streamRef,
             Size iconSize,
             double scale,
-            ElementTheme theme,
+            IconRenderContext context,
             TaskCompletionSource<IconSource?> tcs,
             IconLoadPriority priority,
             IconLoadMeasurement? diagnostics = null,
             IconLoadDemand? demand = null)
         {
-            _ = theme;
             Interlocked.Increment(ref _enqueueCount);
             LastDemand = demand;
+            LastContext = context;
             if (!AcceptLoads)
             {
                 return false;

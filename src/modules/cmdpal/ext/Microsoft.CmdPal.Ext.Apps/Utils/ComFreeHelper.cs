@@ -4,7 +4,6 @@
 
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.System.Com;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
@@ -12,23 +11,14 @@ public static class ComFreeHelper
 {
     internal static unsafe string GetStringAndFree(HRESULT hr, PWSTR ptr)
     {
-        hr.ThrowOnFailure();
         try
         {
-            return ptr.ToString();
+            hr.ThrowOnFailure();
+            return ptr.ToString() ?? string.Empty;
         }
         finally
         {
             PInvoke.CoTaskMemFree(ptr);
-        }
-    }
-
-    public static unsafe void ComObjectRelease<T>(T* comPtr)
-        where T : unmanaged
-    {
-        if (comPtr is not null)
-        {
-            ((IUnknown*)comPtr)->Release();
         }
     }
 }

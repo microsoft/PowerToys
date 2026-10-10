@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
@@ -39,9 +42,12 @@ public sealed partial class ScoringParallelEquivalenceTests
 
     private static ScoringFunction<IListItem> BuildScoringFunction(
         IRecentCommandsManager history,
-        IPrecomputedFuzzyMatcher matcher)
-        => (in FuzzyQuery query, IListItem item) =>
-            MainListPage.ScoreTopLevelItem(query, item, history, matcher, null);
+        IPrecomputedFuzzyMatcher matcher,
+        string query)
+    {
+        var search = new AppSearch(query, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        return (in FuzzyQuery q, IListItem item) => MainListPage.ScoreTopLevelItem(q, item, history, matcher, search);
+    }
 
     private static void AssertOrderedResultsIdentical(
         string context,
@@ -74,10 +80,9 @@ public sealed partial class ScoringParallelEquivalenceTests
     [TestMethod]
     public void ParallelScoring_FullCatalog_MatchesSequentialForEveryQuery()
     {
-        var apps = BuildCatalog(AppCount, "app");
+        var apps = BuildAppCatalog(AppCount);
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
-        var scoringFn = BuildScoringFunction(history, matcher);
         var source = apps.Cast<IListItem>().ToArray();
 
         // Mirror the product: build the frecency index once before the parallel pass reads it.
@@ -86,6 +91,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         foreach (var raw in Queries)
         {
             var query = matcher.PrecomputeQuery(raw);
+            var scoringFn = BuildScoringFunction(history, matcher, raw);
 
             var sequential = InternalListHelpers.FilterListWithScores(source, query, scoringFn);
             var parallel = InternalListHelpers.FilterListWithScoresParallel(source, query, scoringFn);
@@ -95,41 +101,41 @@ public sealed partial class ScoringParallelEquivalenceTests
         }
     }
 
-    /// <summary>
-    /// The extend path: score the whole catalog for a 1-char query, keep the matched subset in the
-    /// order it came back, then re-score that subset for the extending query.
-    /// </summary>
     [TestMethod]
-    public void ParallelScoring_ExtendPath_MatchesSequentialOverRetainedSubset()
+    [DataRow(16)]
+    [DataRow(1024)]
+    public void ParallelScoring_UsesCustomTieBreakOnBothPaths(int count)
     {
-        var apps = BuildCatalog(AppCount, "app");
+        var source = BuildAppCatalog(count).Cast<IListItem>().Reverse().ToArray();
+        var query = CreateMatcher().PrecomputeQuery("cmd.exe");
+        ScoringFunction<IListItem> scorer = (in FuzzyQuery _, IListItem _) => 1;
+        var comparer = Comparer<RoScored<IListItem>>.Create(static (left, right) => StringComparer.Ordinal.Compare(left.Item.Title, right.Item.Title));
+        var sequential = InternalListHelpers.FilterListWithScores(source, query, scorer, comparer);
+        var parallel = InternalListHelpers.FilterListWithScoresParallel(source, query, scorer, comparer);
+
+        AssertOrderedResultsIdentical("custom comparer", sequential, parallel);
+        CollectionAssert.AreEqual(source.OrderBy(item => item.Title, StringComparer.Ordinal).ToArray(), parallel.Select(result => result.Item).ToArray());
+    }
+
+    /// <summary>Query growth still scores all apps because metadata admission can gain matches.</summary>
+    [TestMethod]
+    public void ParallelScoring_QueryGrowth_MatchesSequentialOverFullCatalog()
+    {
+        var apps = BuildAppCatalog(AppCount);
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
-        var scoringFn = BuildScoringFunction(history, matcher);
         var source = apps.Cast<IListItem>().ToArray();
-
         history.PrewarmIndex();
 
-        // Each step narrows the previous result.
-        var chain = new[] { "c", "ca", "cal", "calc" };
-
-        var retained = source;
-        for (var step = 1; step < chain.Length; step++)
+        foreach (var raw in new[] { "c", "ca", "cal", "calc", "alias", "alias42" })
         {
-            // This is exactly what the product feeds the next keystroke: the previous result's
-            // items, in the previous result's order.
-            var prevQuery = matcher.PrecomputeQuery(chain[step - 1]);
-            var prev = InternalListHelpers.FilterListWithScores(retained, prevQuery, scoringFn);
-            retained = prev.Select(s => s.Item).ToArray();
+            var query = matcher.PrecomputeQuery(raw);
+            var scoringFn = BuildScoringFunction(history, matcher, raw);
+            var sequential = InternalListHelpers.FilterListWithScores(source, query, scoringFn);
+            var parallel = InternalListHelpers.FilterListWithScoresParallel(source, query, scoringFn);
 
-            var query = matcher.PrecomputeQuery(chain[step]);
-            var sequential = InternalListHelpers.FilterListWithScores(retained, query, scoringFn);
-            var parallel = InternalListHelpers.FilterListWithScoresParallel(retained, query, scoringFn);
-
-            TestContext.WriteLine($"extend '{chain[step - 1]}' -> '{chain[step]}': retained {retained.Length}, kept {sequential.Length}.");
-            AssertOrderedResultsIdentical($"extend '{chain[step - 1]}'->'{chain[step]}'", sequential, parallel);
-
-            Assert.IsTrue(sequential.Length <= retained.Length, "Extending a query cannot add matches beyond the retained set.");
+            TestContext.WriteLine($"query growth '{raw}': reconsidered {source.Length}, kept {sequential.Length}.");
+            AssertOrderedResultsIdentical($"growth '{raw}'", sequential, parallel);
         }
     }
 
@@ -140,10 +146,9 @@ public sealed partial class ScoringParallelEquivalenceTests
     [TestMethod]
     public void ParallelScoring_RetypeRebuild_MatchesSequential()
     {
-        var apps = BuildCatalog(AppCount, "app");
+        var apps = BuildAppCatalog(AppCount);
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
-        var scoringFn = BuildScoringFunction(history, matcher);
         var source = apps.Cast<IListItem>().ToArray();
 
         history.PrewarmIndex();
@@ -152,6 +157,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         foreach (var raw in new[] { "calc", "term", "vs code", "settings", "e" })
         {
             var query = matcher.PrecomputeQuery(raw);
+            var scoringFn = BuildScoringFunction(history, matcher, raw);
             var sequential = InternalListHelpers.FilterListWithScores(source, query, scoringFn);
             var parallel = InternalListHelpers.FilterListWithScoresParallel(source, query, scoringFn);
 
@@ -169,7 +175,6 @@ public sealed partial class ScoringParallelEquivalenceTests
         var commands = BuildCatalog(CommandCount, "cmd");
         var matcher = CreateMatcher();
         var history = SeedHistory(commands, HistorySeedCount);
-        var scoringFn = BuildScoringFunction(history, matcher);
         var source = commands.Cast<IListItem>().ToArray();
 
         history.PrewarmIndex();
@@ -177,6 +182,7 @@ public sealed partial class ScoringParallelEquivalenceTests
         foreach (var raw in Queries)
         {
             var query = matcher.PrecomputeQuery(raw);
+            var scoringFn = BuildScoringFunction(history, matcher, raw);
             var sequential = InternalListHelpers.FilterListWithScores(source, query, scoringFn);
             var parallel = InternalListHelpers.FilterListWithScoresParallel(source, query, scoringFn);
 
@@ -191,15 +197,15 @@ public sealed partial class ScoringParallelEquivalenceTests
     [TestMethod]
     public void ParallelScoring_IsDeterministicAcrossRuns()
     {
-        var apps = BuildCatalog(AppCount, "app");
+        var apps = BuildAppCatalog(AppCount);
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
-        var scoringFn = BuildScoringFunction(history, matcher);
         var source = apps.Cast<IListItem>().ToArray();
 
         history.PrewarmIndex();
 
         var query = matcher.PrecomputeQuery("c");
+        var scoringFn = BuildScoringFunction(history, matcher, query.Original);
         var first = InternalListHelpers.FilterListWithScoresParallel(source, query, scoringFn);
 
         for (var run = 0; run < 8; run++)
@@ -217,7 +223,7 @@ public sealed partial class ScoringParallelEquivalenceTests
     [TestMethod]
     public void CapturedContext_ConstantWeightAndFixedNow_MatchesPerItemLiveRead()
     {
-        var apps = BuildCatalog(AppCount, "app");
+        var apps = BuildAppCatalog(AppCount);
         var matcher = CreateMatcher();
         var history = SeedHistory(apps, HistorySeedCount);
         var source = apps.Cast<IListItem>().ToArray();
@@ -233,14 +239,14 @@ public sealed partial class ScoringParallelEquivalenceTests
         // path below omits it, so it reads the current time per call.
         var capturedNow = DateTimeOffset.UtcNow;
 
-        ScoringFunction<IListItem> liveReadScorer = (in FuzzyQuery query, IListItem item) =>
-            MainListPage.ScoreTopLevelItem(query, item, history, matcher, perItemLookup);
-        ScoringFunction<IListItem> capturedContextScorer = (in FuzzyQuery query, IListItem item) =>
-            MainListPage.ScoreTopLevelItem(query, item, history, matcher, constantLookup, capturedNow);
-
         foreach (var raw in Queries)
         {
             var query = matcher.PrecomputeQuery(raw);
+            var search = new AppSearch(raw, matcher, ExecutableNameMatchMode.FilenameAndStem);
+            ScoringFunction<IListItem> liveReadScorer = (in FuzzyQuery q, IListItem item) =>
+                MainListPage.ScoreTopLevelItem(q, item, history, matcher, search, perItemLookup);
+            ScoringFunction<IListItem> capturedContextScorer = (in FuzzyQuery q, IListItem item) =>
+                MainListPage.ScoreTopLevelItem(q, item, history, matcher, search, constantLookup, capturedNow);
 
             var reference = InternalListHelpers.FilterListWithScores(source, query, liveReadScorer);
             var candidate = InternalListHelpers.FilterListWithScoresParallel(source, query, capturedContextScorer);

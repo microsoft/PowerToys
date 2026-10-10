@@ -358,6 +358,34 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
+    public void CanonicalCommandIds_CombineHistoryWithoutChangingOriginalOrUnknownEntries()
+    {
+        var now = new DateTimeOffset(2026, 9, 30, 12, 0, 0, TimeSpan.Zero);
+        var original = new RecentCommandsManager()
+            .WithHistoryItem("legacy", now.AddDays(-2))
+            .WithHistoryItem("legacy", now.AddDays(-2))
+            .WithHistoryItem("old-primary", now.AddDays(-1))
+            .WithHistoryItem("current", now)
+            .WithHistoryItem("unknown", now);
+        original.PrewarmIndex();
+        static string CanonicalId(string id) => id is "legacy" or "old-primary" ? "current" : id;
+        var migrated = original.WithCanonicalCommandIds(CanonicalId);
+        var current = migrated.History.Single(item => item.CommandId == "current");
+        Assert.AreEqual(4, current.Uses);
+        Assert.AreEqual(now, current.LastUsed);
+        Assert.AreEqual(2, migrated.History.Count);
+        Assert.AreEqual(original.History.Single(item => item.CommandId == "unknown"), migrated.History.Single(item => item.CommandId == "unknown"));
+        Assert.AreEqual(0, migrated.GetCommandHistoryWeight("legacy", now));
+        Assert.IsTrue(migrated.GetCommandHistoryWeight("current", now) > original.GetCommandHistoryWeight("current", now));
+        Assert.IsTrue(original.GetCommandHistoryWeight("legacy", now) > 0);
+        Assert.AreEqual(2, original.History.Single(item => item.CommandId == "legacy").Uses);
+        Assert.AreSame(migrated, migrated.WithCanonicalCommandIds(CanonicalId), "Migration must be idempotent.");
+        var json = JsonSerializer.Serialize(migrated, JsonSerializationContext.Default.RecentCommandsManager);
+        var restored = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.RecentCommandsManager)!;
+        Assert.AreEqual(current, restored.History.Single(item => item.CommandId == "current"));
+    }
+
+    [TestMethod]
     public void ValidateHistorySerializationRoundTrips()
     {
         // The persisted history (see SettingsModel's JsonSerializable context) must round-trip,
@@ -399,9 +427,9 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
         var q = fuzzyMatcher.PrecomputeQuery("C");
 
-        var scoreA = MainListPage.ScoreTopLevelItem(q, items[0], history, fuzzyMatcher);
-        var scoreB = MainListPage.ScoreTopLevelItem(q, items[1], history, fuzzyMatcher);
-        var scoreC = MainListPage.ScoreTopLevelItem(q, items[2], history, fuzzyMatcher);
+        var scoreA = MainListPage.ScoreTopLevelItem(q, items[0], history, fuzzyMatcher, null);
+        var scoreB = MainListPage.ScoreTopLevelItem(q, items[1], history, fuzzyMatcher, null);
+        var scoreC = MainListPage.ScoreTopLevelItem(q, items[2], history, fuzzyMatcher, null);
 
         // Assert
         // All of these equally match the query, and they're all in the same bucket,
@@ -480,8 +508,8 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
 
         var q = fuzzyMatcher.PrecomputeQuery("C");
-        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, emptyHistory, fuzzyMatcher)).ToList();
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, emptyHistory, fuzzyMatcher, null)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher, null)).ToList();
         Assert.AreEqual(unweightedScores.Count, weightedScores.Count, "Both score lists should have the same number of items");
         for (var i = 0; i < unweightedScores.Count; i++)
         {
@@ -525,7 +553,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
         var q = fuzzyMatcher.PrecomputeQuery("te");
 
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher, null)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -552,7 +580,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             history = history.WithHistoryItem(items[1].Id);
         }
 
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher, null)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -581,7 +609,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         {
             history = history.WithHistoryItem(vsCodeId);
 
-            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher, null)).ToList();
             var weightedMatches = GetMatches(items, weightedScores).ToList();
             Assert.AreEqual(4, weightedMatches.Count);
 
@@ -612,7 +640,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             history = history.WithHistoryItem("vscode");
         }
 
-        var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+        var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher, null)).ToList();
 
         // Same tier for both, so the frequently-used one should not be below the other.
         Assert.IsTrue(
