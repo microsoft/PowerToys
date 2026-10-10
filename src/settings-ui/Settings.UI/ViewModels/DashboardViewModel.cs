@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = moduleType == ModuleType.AltWindowCycle,
+                    IsNew = moduleType == ModuleType.AutoHideCursor,
                     DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };

@@ -100,11 +100,11 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.AlwaysOnTop_PinWindow | Occurs when a window is pinned to stay on top of other windows. |
 | Microsoft.PowerToys.AlwaysOnTop_UnpinWindow | Triggered when a pinned window is unpinned, allowing it to be behind other windows. |
 
-### Auto Hide Cursor
+### CursorHide
 
 | Event Name | Description |
 | --- | --- |
-| Microsoft.PowerToys.AutoHideCursor_EnableAutoHideCursor | Records whether Auto Hide Cursor is enabled or disabled (`Enabled` boolean) to understand utility usage. Does not include keystrokes, typed text, or cursor positions. |
+| Microsoft.PowerToys.AutoHideCursor_EnableAutoHideCursor | Records whether CursorHide is enabled or disabled (`Enabled` boolean) to understand utility usage. Does not include keystrokes, typed text, or cursor positions. |
 
 ### Awake
 
