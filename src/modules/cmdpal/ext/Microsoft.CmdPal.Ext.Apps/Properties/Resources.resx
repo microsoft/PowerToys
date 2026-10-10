@@ -207,6 +207,10 @@
   <data name="filter_all_apps" xml:space="preserve">
     <value>All apps</value>
   </data>
+  <data name="filter_windows_apps" xml:space="preserve">
+    <value>Windows apps</value>
+    <comment>Filter for all applications that are not browser-hosted web apps, whether packaged or unpackaged.</comment>
+  </data>
   <data name="filter_win32_apps" xml:space="preserve">
     <value>Win32</value>
   </data>

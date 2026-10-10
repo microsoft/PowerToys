@@ -374,13 +374,13 @@ order solely to improve time to first rows.
 
 | Condition           | Behavior                                           |
 | ------------------- | -------------------------------------------------- |
-| Filters             | All, Win32, Packaged, Web apps and Hidden.          |
+| Filters             | All, Windows apps, Web apps and Hidden.             |
 | Empty query         | Culture-aware alphabetical/numeric ordering.       |
 | Matching query      | Exact title, exact executable, then score/title.    |
 | Descriptions hidden | Presentation only; descriptions remain searchable. |
 
 The Web apps filter includes recognized Chromium PWA shortcuts, Firefox `-taskbar-tab` shortcuts and packaged apps that declare `uap10:HostId="PWA"`.
-It overlaps Win32 and Packaged because browser hosting and packaged activation are independent.
+The Windows apps filter includes every non-web app, whether packaged or Win32, so these two categories do not overlap.
 The classification comes from cached payload metadata, so selecting a filter does not reread
 shortcuts or manifests. Hidden web apps remain in the Hidden filter.
 Packaged web-app classification does not require Edge's private launch format; deduplication still requires
