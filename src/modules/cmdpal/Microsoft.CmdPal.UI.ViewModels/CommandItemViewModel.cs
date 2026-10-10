@@ -32,6 +32,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
     private CommandContextItemViewModel? _defaultCommandContextItemViewModel;
+    private CommandItemViewModel? _primaryCommandOverride;
 
     private FuzzyTargetCache _titleCache;
     private FuzzyTargetCache _subtitleCache;
@@ -109,7 +110,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public string SecondaryCommandName => _snapshot.SecondaryCommand?.Name ?? string.Empty;
 
-    public CommandItemViewModel? PrimaryCommand => this;
+    public CommandItemViewModel? PrimaryCommand => _primaryCommandOverride ?? this;
 
     // Nested menus do not inherit the root primary action's Enter hint.
     internal CommandContextItemViewModel? PrimaryMenuItem => IsContextMenuItem ? null : _defaultCommandContextItemViewModel;
@@ -174,7 +175,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Subtitle = model.Subtitle;
         _titleCache.Invalidate();
         _subtitleCache.Invalidate();
-        TryCreateDefaultCommandContextItem(command);
+        TryCreateDefaultCommandContextItem();
 
         Initialized |= InitializedState.FastInitialized;
     }
@@ -253,7 +254,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         BuildAndInitContextMenu();
 
-        TryCreateDefaultCommandContextItem(model.Command);
+        TryCreateDefaultCommandContextItem();
 
         lock (_contextItemsLock)
         {
@@ -393,16 +394,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
                 _itemTitle = model.Title;
 
-                if (_defaultCommandContextItemViewModel is not null)
-                {
-                    _defaultCommandContextItemViewModel.BorrowCommand(Command);
-                    _defaultCommandContextItemViewModel.UpdateTitle(_itemTitle);
-                    UpdateDefaultContextItemIcon();
-                }
-                else
-                {
-                    TryCreateDefaultCommandContextItem(command);
-                }
+                RefreshPrimaryCommand();
 
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
@@ -477,14 +469,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Title), nameof(Name));
                 UpdateProperty(nameof(CanOpenContextMenu));
 
-                if (_defaultCommandContextItemViewModel is not null)
-                {
-                    _defaultCommandContextItemViewModel.UpdateTitle(model.Command.Name);
-                }
-                else
-                {
-                    TryCreateDefaultCommandContextItem(model.Command);
-                }
+                RefreshPrimaryCommand();
 
                 break;
 
@@ -503,7 +488,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     /// When a new instance is created, the snapshot is refreshed and
     /// <see cref="AllCommands"/> is notified.
     /// </summary>
-    private void TryCreateDefaultCommandContextItem(ICommand? commandModel)
+    private void TryCreateDefaultCommandContextItem()
     {
         if (IsCleanedUp || _defaultCommandContextItemViewModel is not null)
         {
@@ -513,15 +498,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // We only synthesize the primary entry when the command is already
         // usable; a null/empty primary must still fall back to late
         // menu opening through child actions.
-        var command = Command;
-        if (string.IsNullOrEmpty(command.Name) || commandModel is null)
+        var command = PrimaryCommand?.Command;
+        var commandModel = command?.Model.Unsafe;
+        if (command is null || string.IsNullOrEmpty(command.Name) || commandModel is null)
         {
             return;
         }
 
         var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
         {
-            _itemTitle = Name,
+            _itemTitle = command.Name,
             Subtitle = Subtitle,
 
             // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
@@ -536,7 +522,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         var published = false;
         lock (_contextItemsLock)
         {
-            if (!IsCleanedUp && _defaultCommandContextItemViewModel is null && ReferenceEquals(command, Command))
+            if (!IsCleanedUp && _defaultCommandContextItemViewModel is null && ReferenceEquals(command, PrimaryCommand?.Command))
             {
                 _defaultCommandContextItemViewModel = defaultContextItem;
                 RefreshContextMenuSnapshotUnsafe();
@@ -554,10 +540,71 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         UpdateProperty(nameof(AllCommands));
     }
 
-    private void UpdateDefaultContextItemIcon() =>
+    private void UpdateDefaultContextItemIcon()
+    {
+        var commandIcon = PrimaryCommand?.Command.Icon;
+        _defaultCommandContextItemViewModel?.UpdateIcon(commandIcon?.IsSet == true ? commandIcon : _icon);
+    }
 
-        // Command icon takes precedence over our icon on the primary command
-        _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.IsSet ? Command.Icon : _icon);
+    protected void SetPrimaryCommandOverride(CommandViewModel? command)
+    {
+        // The list API uses a null Command to distinguish headers from items. Expose SectionCommand
+        // separately as the primary action for the command bar and context menu.
+        if (IsCleanedUp || (command is null && _primaryCommandOverride is null))
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(_primaryCommandOverride?.Command, command))
+        {
+            // Keep the header model as the invocation context while borrowing its section action.
+            var replacement = command is null ? null : new CommandItemViewModel(Model, PageContext, contextMenuFactory: null);
+            if (replacement is not null)
+            {
+                replacement.BorrowCommand(command!);
+            }
+
+            CommandItemViewModel? previous;
+            lock (_contextItemsLock)
+            {
+                if (IsCleanedUp)
+                {
+                    replacement?.SafeCleanup();
+                    return;
+                }
+
+                previous = _primaryCommandOverride;
+                _primaryCommandOverride = replacement;
+            }
+
+            previous?.SafeCleanup();
+        }
+
+        // Forward action changes without hydrating a second context menu on the borrowed wrapper.
+        _primaryCommandOverride?.UpdateProperty(nameof(Name), nameof(Title), nameof(Icon), nameof(ShouldBeVisible));
+        RefreshPrimaryCommand();
+    }
+
+    private void RefreshPrimaryCommand()
+    {
+        if (_defaultCommandContextItemViewModel is not null && PrimaryCommand is { } primary)
+        {
+            _defaultCommandContextItemViewModel.BorrowCommand(primary.Command);
+            _defaultCommandContextItemViewModel.UpdateTitle(primary.Name);
+            UpdateDefaultContextItemIcon();
+        }
+        else
+        {
+            TryCreateDefaultCommandContextItem();
+        }
+
+        lock (_contextItemsLock)
+        {
+            RefreshContextMenuSnapshotUnsafe();
+        }
+
+        NotifyContextMenuChanged();
+    }
 
     private void UpdateTitle(string? title)
     {
@@ -749,6 +796,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
         freedDefault?.SafeCleanup();
+        _primaryCommandOverride?.SafeCleanup();
+        _primaryCommandOverride = null;
 
         // _listItemIcon.SafeCleanup();
         _icon = new(null); // necessary?
@@ -876,7 +925,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         if (ReferenceEquals(allCommands, _snapshot.AllCommands) &&
-            ReferenceEquals(this, _snapshot.PrimaryCommand) &&
+            ReferenceEquals(PrimaryCommand, _snapshot.PrimaryCommand) &&
             ReferenceEquals(secondary, _snapshot.SecondaryCommand) &&
             hasOverflowCommands == _snapshot.HasOverflowCommands &&
             hasSubmenu == _snapshot.HasSubmenu)
@@ -884,12 +933,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        _snapshot = new(allCommands, this, secondary, hasOverflowCommands, hasSubmenu);
+        _snapshot = new(allCommands, PrimaryCommand, secondary, hasOverflowCommands, hasSubmenu);
     }
 
     protected void NotifyContextMenuChanged() =>
         UpdateProperty(
             nameof(AllCommands),
+            nameof(PrimaryCommand),
             nameof(SecondaryCommand),
             nameof(SecondaryCommandName),
             nameof(HasSubmenu),

@@ -11,21 +11,23 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed class GridNavigationLayout
 {
     private readonly List<GroupLayout> _groups = [];
+    private readonly Dictionary<GridItemGroupViewModel, double> _headerOffsets = [];
     private readonly int _columns;
     private readonly double _itemHeight;
     private readonly int _itemCount;
 
     public GridNavigationLayout(IReadOnlyList<GridItemGroupViewModel> groups, int columns, double itemHeight, double headerHeight)
+        : this(groups, columns, itemHeight, CreateHeaderHeightProvider(headerHeight))
     {
+    }
+
+    public GridNavigationLayout(IReadOnlyList<GridItemGroupViewModel> groups, int columns, double itemHeight, Func<GridItemGroupViewModel, double> getHeaderHeight)
+    {
+        ArgumentNullException.ThrowIfNull(getHeaderHeight);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(columns);
         if (!double.IsFinite(itemHeight) || itemHeight <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(itemHeight));
-        }
-
-        if (!double.IsFinite(headerHeight) || headerHeight < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(headerHeight));
         }
 
         _columns = columns;
@@ -36,6 +38,13 @@ public sealed class GridNavigationLayout
             var itemCount = group.Items.Count;
             if (group.HasHeader)
             {
+                var headerHeight = getHeaderHeight(group);
+                if (!double.IsFinite(headerHeight) || headerHeight < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(getHeaderHeight));
+                }
+
+                _headerOffsets.Add(group, top);
                 top += headerHeight;
             }
 
@@ -50,6 +59,9 @@ public sealed class GridNavigationLayout
             top += rows * itemHeight;
         }
     }
+
+    public bool TryGetHeaderOffset(GridItemGroupViewModel group, out double offset)
+        => _headerOffsets.TryGetValue(group, out offset);
 
     public int GetColumn(int index)
     {
@@ -177,6 +189,16 @@ public sealed class GridNavigationLayout
         }
 
         return low - 1;
+    }
+
+    private static Func<GridItemGroupViewModel, double> CreateHeaderHeightProvider(double headerHeight)
+    {
+        if (!double.IsFinite(headerHeight) || headerHeight < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(headerHeight));
+        }
+
+        return _ => headerHeight;
     }
 
     private readonly record struct GroupLayout(int FirstIndex, int Count, int Rows, double Top);

@@ -912,8 +912,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         if (item is not null)
         {
-            var message = new PerformCommandMessage(item.Command.Model, item.Model, this);
-            WeakReferenceMessenger.Default.Send(message);
+            if (item.PrimaryCommand is { Command.IsSet: true } primaryCommand)
+            {
+                var message = new PerformCommandMessage(primaryCommand.Command.Model, item.Model, this);
+                WeakReferenceMessenger.Default.Send(message);
+            }
         }
         else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
         {
@@ -1002,7 +1005,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void UpdateSelectionPosition()
         => _selectionIsFirstOrAbsent = _awaitingFirstSelection || _lastSelectedItem is null ||
-            ReferenceEquals(_lastSelectedItem, FilteredItems.FirstOrDefault(item => item.IsInteractive));
+            ReferenceEquals(
+                _lastSelectedItem,
+                FilteredItems.FirstOrDefault(item => item.IsInteractive) ?? FilteredItems.FirstOrDefault(item => item.IsSectionCommandTarget));
 
     private void SetSelectedItem(ListItemViewModel item)
     {

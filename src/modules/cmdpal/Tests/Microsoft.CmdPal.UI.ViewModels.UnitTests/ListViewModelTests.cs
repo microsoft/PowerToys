@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,6 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 [TestClass]
+[DoNotParallelize]
 public partial class ListViewModelTests
 {
     private sealed partial class TestAppExtensionHost : AppExtensionHost
@@ -268,6 +272,41 @@ public partial class ListViewModelTests
     }
 
     [TestMethod]
+    [DataRow(false, 0, true)]
+    [DataRow(false, 1, false)]
+    [DataRow(true, 0, false)]
+    [DataRow(true, 1, false)]
+    [DataRow(true, 2, true)]
+    public async Task SubpageRefreshWithSectionCommands_ResetsOnlyFromDefaultSelection(bool hasOrdinaryItem, int selectedIndex, bool forceFirst)
+    {
+        var recent = new Separator("Recent", new NoOpCommand { Name = "Open recent" });
+        var favorites = new Separator("Favorites", new NoOpCommand { Name = "Open favorites" });
+        var page = new SearchableDynamicPage
+        {
+            Items = hasOrdinaryItem
+                ? [recent, favorites, new ListItem(new NoOpCommand { Name = "Open item" })]
+                : [recent, favorites],
+        };
+        var viewModel = CreateViewModel(page);
+        viewModel.IsRootPage = false;
+
+        try
+        {
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+            viewModel.AcknowledgeSelection(viewModel.FilteredItems[selectedIndex]);
+
+            var update = await ObserveNextItemsUpdateAsync(viewModel, () => page.TriggerItemsChanged(0));
+
+            Assert.AreEqual(forceFirst, update.ForceFirstItem);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task UnknownFilter_ShowsPageErrorAndPreventsInitialFetch()
     {
         var page = new SearchableStaticPage
@@ -302,6 +341,54 @@ public partial class ListViewModelTests
             viewModel.SafeCleanup();
             viewModel.Dispose();
         }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void InvokeItem_VisiblePrimaryCommand_SendsCommandWithItemContext(bool sectionHeader)
+    {
+        var command = new NoOpCommand { Name = "Open" };
+        IListItem item = sectionHeader ? new Separator("Recent", command) : new ListItem(command);
+
+        var messages = InvokeItemAndCaptureMessages(item);
+
+        Assert.AreEqual(1, messages.Count);
+        Assert.AreSame(command, messages[0].Command.Unsafe);
+        Assert.AreSame(item, messages[0].CommandContext);
+    }
+
+    [TestMethod]
+    public void InvokeItem_UnnamedPrimaryCommand_SendsCommandWithItemContext()
+    {
+        var command = new NoOpCommand { Name = string.Empty };
+        var item = new ListItem(command) { Title = "Open an unnamed command" };
+
+        var messages = InvokeItemAndCaptureMessages(item);
+
+        Assert.AreEqual(1, messages.Count);
+        Assert.AreSame(command, messages[0].Command.Unsafe);
+        Assert.AreSame(item, messages[0].CommandContext);
+    }
+
+    [TestMethod]
+    public void InvokeItem_UnnamedSectionCommand_DoesNotSendCommand()
+    {
+        var item = new Separator("Recent", new NoOpCommand { Name = string.Empty });
+
+        var messages = InvokeItemAndCaptureMessages(item);
+
+        Assert.AreEqual(0, messages.Count);
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("Recent")]
+    public void InvokeItem_StructuralRowWithoutCommand_DoesNotSendCommand(string section)
+    {
+        var messages = InvokeItemAndCaptureMessages(new Separator(section));
+
+        Assert.AreEqual(0, messages.Count);
     }
 
     [TestMethod]
@@ -364,6 +451,33 @@ public partial class ListViewModelTests
         {
             viewModel.SafeCleanup();
             viewModel.Dispose();
+        }
+    }
+
+    private static List<PerformCommandMessage> InvokeItemAndCaptureMessages(IListItem item)
+    {
+        var listViewModel = CreateViewModel(new RecursiveItemsChangedPage());
+        var itemViewModel = new ListItemViewModel(item, listViewModel.PageContext, DefaultContextMenuFactory.Instance);
+        var messages = new List<PerformCommandMessage>();
+        WeakReferenceMessenger.Default.Register<List<PerformCommandMessage>, PerformCommandMessage>(messages, static (recipient, message) => recipient.Add(message));
+
+        try
+        {
+            itemViewModel.InitializeProperties();
+            listViewModel.InvokeItemCommand.Execute(itemViewModel);
+            foreach (var message in messages)
+            {
+                Assert.AreSame(listViewModel, message.Context?.Page);
+            }
+
+            return messages;
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(messages);
+            itemViewModel.SafeCleanup();
+            listViewModel.SafeCleanup();
+            listViewModel.Dispose();
         }
     }
 
