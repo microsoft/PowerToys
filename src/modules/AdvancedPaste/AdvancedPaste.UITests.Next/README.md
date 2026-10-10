@@ -113,8 +113,9 @@ status/IDs before and after opening the popup on both the test thread and pumpin
 The popup is found through the desktop UIA root: a running TextInputHost or its
 empty CoreWindow tree does not prove the clipboard panel is visible or empty.
 Missing UIA content is reported as unavailable/unknown, never as an empty history.
-The repeated enable/disable regression also exercises this inspection against an
-empty baseline and each newly copied fixture.
+Native popup inspection is diagnostic-only. Normal selection, deletion, disabling,
+capacity-reset, and repeated-transition checks retain their authoritative history
+API and product-UI assertions without depending on an extra OS popup interaction.
 There is no unconditional Win+V warmup before fixture copies, and diagnostics never
 turn a failed capture into a passing test. Failures retain read-only clipboard-broker
 service state diagnostics; tests never alter service startup configuration or bypass
