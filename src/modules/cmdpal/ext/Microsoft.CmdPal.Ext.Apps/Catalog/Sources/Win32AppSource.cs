@@ -734,7 +734,7 @@ internal sealed partial class Win32AppSource : IAppSource
             "custom-shortcut",
             settings.ProgramSuffixes,
             Win32ProgramSourceProfile.IncludeNonApplications | Win32ProgramSourceProfile.RecurseSubdirectories,
-            int.MaxValue);
+            settings.CustomShortcutFolderMaximumDepth);
         AddCustomSources(
             sources,
             settings.PortableAppFolders,

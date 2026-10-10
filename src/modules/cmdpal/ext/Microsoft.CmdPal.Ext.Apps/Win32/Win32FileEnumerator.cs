@@ -15,6 +15,9 @@ namespace Microsoft.CmdPal.Ext.Apps.Win32;
 /// <summary>Enumerates supported files with bounded depth, cancellation and per-directory failure reporting.</summary>
 internal static class Win32FileEnumerator
 {
+    /// <summary>Attributes that unconditionally exclude a subfolder.</summary>
+    internal const FileAttributes SkippedSubdirectoryAttributes = FileAttributes.Hidden | FileAttributes.System;
+
     private static readonly IFileSystem FileSystem = new FileSystem();
 
     internal static IFile FileWrapper { get; set; } = FileSystem.File;
@@ -108,17 +111,32 @@ internal static class Win32FileEnumerator
 
                 foreach (var childDirectory in DirectoryWrapper.EnumerateDirectories(currentDirectory, "*", new EnumerationOptions()
                 {
-                    // https://learn.microsoft.com/dotnet/api/system.io.enumerationoptions?view=net-6.0
-                    // Exclude directories with the Reparse Point file attribute, to avoid loops due to symbolic links / directory junction / mount points.
-                    AttributesToSkip = FileAttributes.Hidden | FileAttributes.System | FileAttributes.ReparsePoint,
+                    AttributesToSkip = SkippedSubdirectoryAttributes,
                     RecurseSubdirectories = false,
                     IgnoreInaccessible = false,
                 }))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    if (excludeDirectory?.Invoke(childDirectory) != true)
+                    if (excludeDirectory?.Invoke(childDirectory) == true)
                     {
-                        folderQueue.Enqueue((childDirectory, current.Depth + 1));
+                        continue;
+                    }
+
+                    try
+                    {
+                        if (!ShouldSkipSubdirectory(childDirectory, FileWrapper.GetAttributes(childDirectory)))
+                        {
+                            folderQueue.Enqueue((childDirectory, current.Depth + 1));
+                        }
+                    }
+                    catch (Exception ex) when (PathHelpers.IsMissingOrInvalidPath(ex))
+                    {
+                        continue;
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        onError?.Invoke(childDirectory, ex);
+                        Logger.LogError(ex.Message);
                     }
                 }
             }
@@ -135,5 +153,13 @@ internal static class Win32FileEnumerator
         while (folderQueue.Count > 0);
 
         return files;
+    }
+
+    /// <summary>Excludes hidden and system subfolders and directory links while allowing cloud placeholders.</summary>
+    internal static bool ShouldSkipSubdirectory(string path, FileAttributes attributes)
+    {
+        // Cloud placeholders have no link target; resolve only the immediate target to avoid following links.
+        return (attributes & SkippedSubdirectoryAttributes) != 0
+            || ((attributes & FileAttributes.ReparsePoint) != 0 && DirectoryWrapper.ResolveLinkTarget(path, returnFinalTarget: false) is not null);
     }
 }

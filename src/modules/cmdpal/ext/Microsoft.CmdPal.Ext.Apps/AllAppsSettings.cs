@@ -15,6 +15,7 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public class AllAppsSettings : JsonSettingsManager
 {
     private const int DefaultSearchResultLimit = 10;
+    private const int DefaultShortcutFolderMaximumDepth = 3;
     private const ExecutableNameMatchMode DefaultExecutableNameMatchMode = ExecutableNameMatchMode.FilenameOnly;
 
     // "none" instead of "0": the original default was accidentally "0", so existing
@@ -27,6 +28,9 @@ public class AllAppsSettings : JsonSettingsManager
         CultureInfo.CurrentCulture,
         DefaultLimitItemTitleFormat.Format,
         DefaultSearchResultLimit);
+
+    private static readonly CompositeFormat ScanAllDesktopSubfoldersLabelFormat = CompositeFormat.Parse(Resources.scan_all_desktop_subfolders);
+    private static readonly CompositeFormat ScanAllCustomShortcutSubfoldersLabelFormat = CompositeFormat.Parse(Resources.scan_all_custom_shortcut_subfolders);
 
     private static readonly string _namespace = "apps";
 
@@ -91,6 +95,18 @@ public class AllAppsSettings : JsonSettingsManager
     private readonly ToggleSetting _includeNonAppsOnDesktop = new(
         Namespaced(nameof(IncludeNonAppsOnDesktop)),
         Resources.include_non_apps_on_desktop,
+        string.Empty,
+        false);
+
+    private readonly ToggleSetting _scanAllDesktopSubfolders = new(
+        Namespaced(nameof(ScanAllDesktopSubfolders)),
+        string.Format(CultureInfo.CurrentCulture, ScanAllDesktopSubfoldersLabelFormat, DefaultShortcutFolderMaximumDepth),
+        string.Empty,
+        false);
+
+    private readonly ToggleSetting _scanAllCustomShortcutSubfolders = new(
+        Namespaced(nameof(ScanAllCustomShortcutSubfolders)),
+        string.Format(CultureInfo.CurrentCulture, ScanAllCustomShortcutSubfoldersLabelFormat, DefaultShortcutFolderMaximumDepth),
         string.Empty,
         false);
 
@@ -166,6 +182,18 @@ public class AllAppsSettings : JsonSettingsManager
 
     public bool IncludeNonAppsOnDesktop => _includeNonAppsOnDesktop.Value;
 
+    /// <summary>Gets a value indicating whether Desktop folders are scanned at every subfolder level.</summary>
+    public bool ScanAllDesktopSubfolders => _scanAllDesktopSubfolders.Value;
+
+    /// <summary>Gets the greatest depth below Desktop roots, or <see cref="int.MaxValue"/> when <see cref="ScanAllDesktopSubfolders"/> is enabled.</summary>
+    internal int DesktopMaximumDepth => ScanAllDesktopSubfolders ? int.MaxValue : DefaultShortcutFolderMaximumDepth;
+
+    /// <summary>Gets a value indicating whether custom shortcut folders are scanned at every subfolder level.</summary>
+    public bool ScanAllCustomShortcutSubfolders => _scanAllCustomShortcutSubfolders.Value;
+
+    /// <summary>Gets the greatest depth below custom shortcut roots, or <see cref="int.MaxValue"/> when <see cref="ScanAllCustomShortcutSubfolders"/> is enabled.</summary>
+    internal int CustomShortcutFolderMaximumDepth => ScanAllCustomShortcutSubfolders ? int.MaxValue : DefaultShortcutFolderMaximumDepth;
+
     public bool IncludeNonAppsInStartMenu => _includeNonAppsInStartMenu.Value;
 
     public bool HideAppDescriptions => _hideAppDescriptions.Value;
@@ -238,9 +266,11 @@ public class AllAppsSettings : JsonSettingsManager
         Settings.Add(_includeNonAppsInStartMenu);
         Settings.Add(_enableDesktopSource);
         Settings.Add(_includeNonAppsOnDesktop);
+        Settings.Add(_scanAllDesktopSubfolders);
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
         Settings.Add(_customShortcutFolders);
+        Settings.Add(_scanAllCustomShortcutSubfolders);
         Settings.Add(_portableAppFolders);
         Settings.Add(_searchResultLimitSource);
         Settings.Add(_executableNameMatchMode);
