@@ -99,12 +99,15 @@ startup HWND cannot invalidate an otherwise healthy Settings window. Physical
 keyboard interactions reacquire the current main HWND and still require foreground.
 
 History fixtures activate the feature through Windows' real clipboard Settings
-toggle, then copy text with Ctrl+C from the foreground editor. A registry write
+toggle, initialize the native Win+V history surface, then copy text with Ctrl+C
+from the foreground editor. A registry write
 and a successful current-clipboard write do not establish the Windows capture
 service's readiness. Every copy still requires its exact Windows history ID before
 the next copy, and an additional regression covers three enable/disable cycles.
 Restoration drives the OS toggle before restoring the original registry value,
 including its presence and type.
+History failures include read-only clipboard-broker service state diagnostics;
+tests never alter service startup configuration or bypass clipboard policy.
 
 History tests use a fresh process per case so restoring the OS history preference
 does not carry an old ItemsView and pending notifications into the next fixture.

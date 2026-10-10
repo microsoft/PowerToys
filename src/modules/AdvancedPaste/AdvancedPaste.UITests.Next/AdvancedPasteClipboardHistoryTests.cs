@@ -230,6 +230,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         {
             Step("Enabling OS history through Windows Settings; a registry preference alone does not activate history capture");
             EnableHistoryFixture();
+            InitializeWindowsHistorySurface();
             var originalItems = await EnsureHistorySpaceAsync(entryCount, requiresEmptyHistory);
             originalHistoryIds.UnionWith(originalItems.Select(item => item.Id));
 
@@ -242,6 +243,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         }
         catch
         {
+            LogHistoryServiceDiagnostics();
             await CaptureFailureArtifactsAsync();
             throw;
         }
@@ -284,6 +286,59 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     private CheckBox HistoryCheckbox() => AdvancedPasteUi.CardControl<CheckBox>(SettingsSession, HistoryCard, "CheckBox");
 
     private void EnableHistoryFixture() => SetWindowsHistoryEnabled(true);
+
+    private void InitializeWindowsHistorySurface()
+    {
+        Step("Initializing the native Windows clipboard-history surface through Win+V before copying");
+        Target.Focus();
+        Target.Invoke(() => KeyboardHelper.SendKeys(Key.LWin, Key.V));
+        try
+        {
+            var ready = WaitHelper.WaitForStable(
+                () => WindowsFinder.ListAll().Where(window =>
+                    window.ProcessName is "TextInputHost" or "InputApp").ToArray(),
+                windows => windows is { Length: > 0 },
+                timeoutMS: 20_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(ready.Succeeded, "The native Windows clipboard-history surface did not initialize after Win+V.");
+            Assert.IsTrue(Target.Invoke(WinClipboard.IsHistoryEnabled), "Opening the native history surface did not preserve enabled clipboard history.");
+        }
+        finally
+        {
+            SendShortcut(Key.Esc);
+            Target.Focus();
+        }
+    }
+
+    private void LogHistoryServiceDiagnostics()
+    {
+        using var services = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services");
+        Assert.IsNotNull(services, "Clipboard-history service diagnostics could not read the service registry.");
+        foreach (var name in services.GetSubKeyNames().Where(name => name.StartsWith("cbdhsvc", StringComparison.OrdinalIgnoreCase)))
+        {
+            var start = new ProcessStartInfo("sc.exe")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            start.ArgumentList.Add("query");
+            start.ArgumentList.Add(name);
+            using var process = Process.Start(start);
+            Assert.IsNotNull(process, "The clipboard-history service diagnostic process could not start.");
+            var stdout = process.StandardOutput.ReadToEndAsync();
+            var stderr = process.StandardError.ReadToEndAsync();
+            if (!process.WaitForExit(10_000))
+            {
+                process.Kill();
+                Step($"Clipboard-history service diagnostic timed out for {name}.");
+                continue;
+            }
+
+            Step($"Clipboard-history service {name}, exit {process.ExitCode}: {stdout.GetAwaiter().GetResult()}; {stderr.GetAwaiter().GetResult()}");
+        }
+    }
 
     private void SetWindowsHistoryEnabled(bool enabled)
     {
