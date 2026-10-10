@@ -10,17 +10,19 @@
 
 #include <AppLauncher.h>
 
-WindowArrangerHelper::WindowArrangerHelper(std::function<void(const std::wstring&)> ipcCallback) :
+WindowArrangerHelper::WindowArrangerHelper(std::function<void(const std::wstring&)> ipcCallback, std::wstring operationId) :
     m_processId{},
-    m_ipcHelper(IPCHelperStrings::LauncherArrangerPipeName, IPCHelperStrings::WindowArrangerPipeName, ipcCallback)
+    m_operationId(operationId),
+    m_ipcHelper(IPCHelperStrings::LauncherArrangerPipeName + operationId, IPCHelperStrings::WindowArrangerPipeName + operationId, ipcCallback, operationId.empty() ? interop_auth::CallerPolicy{} : IPCHelper::ModulePeer(L"PowerToys.WorkspacesWindowArranger.exe"))
 {
 }
 
 WindowArrangerHelper::~WindowArrangerHelper()
 {
+    if (!m_process)
+        return;
     Logger::info(L"Stopping WorkspacesWindowArranger with pid {}", m_processId);
-    
-    if (m_process && WaitForSingleObject(m_process.get(), 0) == WAIT_TIMEOUT)
+    if (WaitForSingleObject(m_process.get(), 0) == WAIT_TIMEOUT)
     {
         bool res = TerminateProcess(m_process.get(), 0);
         if (!res)
@@ -30,7 +32,7 @@ WindowArrangerHelper::~WindowArrangerHelper()
     }
 }
 
-void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback)
+DWORD WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback, DWORD timeoutSeconds)
 {
     Logger::trace(L"Starting WorkspacesWindowArranger");
 
@@ -38,7 +40,10 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring path = std::filesystem::path(buffer).parent_path();
 
-    auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", projectId, elevated);
+    std::wstring arguments = projectId;
+    if (!m_operationId.empty())
+        arguments += L" --cli-worker " + m_operationId + L" " + std::to_wstring(GetCurrentProcessId()) + L" " + std::to_wstring(timeoutSeconds);
+    auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", arguments, elevated);
     if (res.isOk())
     {
         auto value = res.value();
@@ -60,11 +65,27 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
             }}).wait();
 
         timeoutExpired = true;
+        return ERROR_SUCCESS;
     }
     else
     {
         Logger::error(L"Failed to launch PowerToys.WorkspacesWindowArranger: {}", res.error().message);
+        return res.error().code;
     }
+}
+
+void WindowArrangerHelper::SendSnapshot(const WorkspacesData::WorkspacesProject& project) const
+{
+    json::JsonObject snapshot;
+    snapshot.SetNamedValue(L"protocolVersion", json::value(1));
+    snapshot.SetNamedValue(L"operationId", json::value(m_operationId));
+    snapshot.SetNamedValue(L"workspace", WorkspacesData::WorkspacesProjectJSON::ToJson(project));
+    m_ipcHelper.send(snapshot.Stringify().c_str());
+}
+
+void WindowArrangerHelper::AcknowledgeResult() const
+{
+    m_ipcHelper.send(L"result-ack");
 }
 
 void WindowArrangerHelper::UpdateLaunchStatus(const WorkspacesData::LaunchingAppState& appState) const

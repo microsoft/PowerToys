@@ -17,6 +17,12 @@
         </RegistryKey>
         <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.FancyZones.CLI.exe" Id="CliShim_PowerToys.FancyZones.CLI.exe" Checksum="yes" />
       </Component>
+      <Component Id="CliShim_PowerToys_Workspaces_CLI_exe" Guid="B596F847-6C18-4C9E-9574-F00CA7C72F2D" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_PowerToys_Workspaces_CLI_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.Workspaces.CLI.exe" Id="CliShim_PowerToys.Workspaces.CLI.exe" Checksum="yes" />
+      </Component>
       <Component Id="CliShim_PowerToys_ImageResizer_CLI_exe" Guid="2BC274AA-FECD-4A85-BF70-06670A6B99A5" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="CliShim_PowerToys_ImageResizer_CLI_exe" Value="" KeyPath="yes" />
@@ -84,6 +90,7 @@
         <RemoveFolder Id="RemoveFolderCliFolder" Directory="CliFolder" On="uninstall" />
       </Component>
       <ComponentRef Id="CliShim_PowerToys_FancyZones_CLI_exe" />
+      <ComponentRef Id="CliShim_PowerToys_Workspaces_CLI_exe" />
       <ComponentRef Id="CliShim_PowerToys_ImageResizer_CLI_exe" />
       <ComponentRef Id="CliShim_PowerToys_FileLocksmith_CLI_exe" />
       <ComponentRef Id="CliShim_PowerToys_PowerDisplay_CLI_exe" />

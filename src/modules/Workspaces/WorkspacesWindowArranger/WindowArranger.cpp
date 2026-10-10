@@ -150,7 +150,7 @@ bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
     auto updatedState = m_launchingStatus.Get(app);
     if (updatedState.has_value())
     {
-        m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson(updatedState.value()).ToString().c_str());
+        m_ipcHelper->send(WorkspacesData::AppLaunchInfoJSON::ToJson(updatedState.value()).ToString().c_str());
     }
 
     return success;
@@ -271,14 +271,21 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
     return std::nullopt;
 }
-WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
+WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, std::unique_ptr<IPCHelper> cliPipe, std::wstring operationId) :
     m_project(project),
+    m_operationId(std::move(operationId)),
     m_windowsBefore(WindowEnumerator::Enumerate(WindowFilter::Filter)),
     m_monitors(MonitorUtils::IdentifyMonitors()),
     m_installedApps(Utils::Apps::GetAppsList()),
-    m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),
+    m_ipcHelper(cliPipe ? nullptr : std::make_unique<IPCHelper>(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1))),
     m_launchingStatus(m_project)
 {
+    const bool cliMode = cliPipe != nullptr;
+    if (cliMode)
+    {
+        m_ipcHelper = std::move(cliPipe);
+        m_ipcHelper->SetCallback(std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1));
+    }
     if (project.moveExistingWindows)
     {
         Logger::info(L"Moving existing windows");
@@ -341,7 +348,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
         Logger::info(L"Finished moving existing windows");
     }
 
-    m_ipcHelper.send(L"ready");
+    m_ipcHelper->send(L"ready");
 
     const long maxLaunchingWaitingTime = 10000, maxRepositionWaitingTime = 3000, ms = 300;
     long waitingTime{ 0 };
@@ -378,6 +385,21 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     if (waitingTime >= maxRepositionWaitingTime)
     {
         Logger::info(L"Repositioning timeout expired");
+    }
+    if (cliMode)
+    {
+        json::JsonObject result;
+        result.SetNamedValue(L"kind", json::value(L"arranger-result"));
+        result.SetNamedValue(L"protocolVersion", json::value(1));
+        result.SetNamedValue(L"operationId", json::value(m_operationId));
+        json::JsonArray states;
+        for (const auto& [app, state] : m_launchingStatus.Get())
+            states.Append(WorkspacesData::AppLaunchInfoJSON::ToJson(state));
+        result.SetNamedValue(L"applications", states);
+        m_ipcHelper->send(result.Stringify().c_str());
+        const auto deadline = GetTickCount64() + 5000;
+        while (!m_resultAcknowledged && GetTickCount64() < deadline)
+            Sleep(20);
     }
 }
 
@@ -523,6 +545,11 @@ void WindowArranger::receiveIpcMessage(const std::wstring& message)
         m_launchHeartbeat = GetTickCount64();
         return;
     }
+    if (message == L"result-ack")
+    {
+        m_resultAcknowledged = true;
+        return;
+    }
     try
     {
         auto data = WorkspacesData::AppLaunchInfoJSON::FromJson(json::JsonValue::Parse(message).GetObjectW());
@@ -543,5 +570,5 @@ void WindowArranger::receiveIpcMessage(const std::wstring& message)
 
 void WindowArranger::sendUpdatedState(const WorkspacesData::LaunchingAppState& data) const
 {
-    m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ data.application, nullptr, data.state }).ToString().c_str());
+    m_ipcHelper->send(WorkspacesData::AppLaunchInfoJSON::ToJson({ data.application, nullptr, data.state }).ToString().c_str());
 }

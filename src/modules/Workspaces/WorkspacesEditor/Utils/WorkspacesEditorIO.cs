@@ -73,7 +73,7 @@ namespace WorkspacesEditor.Utils
             }
         }
 
-        public void SerializeWorkspaces(List<Project> workspaces, bool useTempFile = false)
+        public bool SerializeWorkspaces(List<Project> workspaces, bool useTempFile = false)
         {
             WorkspacesData serializer = new();
             WorkspacesData.WorkspacesListWrapper workspacesWrapper = new()
@@ -155,11 +155,13 @@ namespace WorkspacesEditor.Utils
             {
                 IOUtils ioUtils = new();
                 ioUtils.WriteFile(useTempFile ? TempProjectData.File : serializer.File, serializer.Serialize(workspacesWrapper));
+                return true;
             }
             catch (Exception e)
             {
-                // TODO: show error
-                Logger.LogError($"Exception while writing storage file: {e.Message}");
+                Logger.LogError("Workspaces could not be saved.", e);
+                System.Windows.MessageBox.Show(WorkspacesEditor.Properties.Resources.Error_Save_Message);
+                return false;
             }
         }
 
@@ -180,9 +182,9 @@ namespace WorkspacesEditor.Utils
             return AddWorkspaces(mainViewModel, workspaces);
         }
 
-        internal void SerializeTempProject(Project project)
+        internal bool SerializeTempProject(Project project)
         {
-            SerializeWorkspaces([project], true);
+            return SerializeWorkspaces([project], true);
         }
     }
 }

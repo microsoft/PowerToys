@@ -16,6 +16,7 @@
 
 #include <Generated Files/resource.h>
 #include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/WorkspaceStore.h>
 #include <WorkspacesLib/trace.h>
 
 const std::wstring moduleName = L"Workspaces\\WorkspacesLauncher";
@@ -175,6 +176,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     // prepare project in advance
+    const auto originalProject = projectToLaunch;
     auto installedApps = Utils::Apps::GetAppsList();
     bool updatedApps = Utils::Apps::UpdateWorkspacesApps(projectToLaunch, installedApps);
     bool updatedIds = false;
@@ -192,16 +194,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     // update the file before launching, so WorkspacesWindowArranger and WorkspacesLauncherUI could get updated app paths
     if (updatedApps || updatedIds)
     {
-        for (int i = 0; i < workspaces.size(); i++)
+        const auto saved = WorkspaceStore::UpdateApplicationMetadata(WorkspacesData::WorkspacesFile(), originalProject, projectToLaunch);
+        if (saved != WorkspaceStore::UpdateResult::Updated)
         {
-            if (workspaces[i].id == projectToLaunch.id)
-            {
-                workspaces[i] = projectToLaunch;
-                break;
-            }
+            Logger::error("Workspace application metadata could not be committed; launch stopped to avoid inconsistent launcher and arranger data.");
+            return 1;
         }
-
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
     }
 
     // launch

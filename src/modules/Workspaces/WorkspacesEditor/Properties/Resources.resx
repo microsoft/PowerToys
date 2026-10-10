@@ -187,6 +187,9 @@
   <data name="Error_Parsing_Message" xml:space="preserve">
     <value>Error parsing Workspaces data.</value>
   </data>
+  <data name="Error_Save_Message" xml:space="preserve">
+    <value>Workspaces changes could not be confirmed. Your edits have been kept. Check file access or wait for another operation to finish, then try again.</value>
+  </data>
   <data name="Height" xml:space="preserve">
     <value>Height</value>
   </data>

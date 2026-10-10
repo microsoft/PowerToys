@@ -33,6 +33,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AppUtils.h" />
+    <ClInclude Include="CliCommands.h" />
+    <ClInclude Include="OperationLifetime.h" />
+    <ClInclude Include="WorkspaceStore.h" />
     <ClInclude Include="CommandLineArgsHelper.h" />
     <ClInclude Include="IPCHelper.h" />
     <ClInclude Include="JsonUtils.h" />
@@ -55,6 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AppUtils.cpp" />
+    <ClCompile Include="CliCommands.cpp" />
+    <ClCompile Include="WorkspaceStore.cpp" />
     <ClCompile Include="CommandLineArgsHelper.cpp" />
     <ClCompile Include="IPCHelper.cpp" />
     <ClCompile Include="JsonUtils.cpp" />
@@ -67,6 +72,9 @@
     <ClCompile Include="SteamGameHelper.cpp" />
     <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="$(RepoRoot)src\common\interop\pipe_caller_auth.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="WbemHelper.cpp" />
     <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="WorkspacesData.cpp" />

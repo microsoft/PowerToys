@@ -1229,6 +1229,7 @@
     <Project Path="src/modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.vcxproj" Id="e487304a-b1fb-4e6b-8e70-014051af5b99" />
   </Folder>
   <Folder Name="/modules/Workspaces/">
+    <Project Path="src/modules/Workspaces/WorkspacesCLI/WorkspacesCLI.vcxproj" Id="a3f4cd35-a455-41e7-bc03-1214cb841c9a" />
     <Project Path="src/modules/Workspaces/Workspaces.ModuleServices/Workspaces.ModuleServices.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1257,6 +1258,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/Workspaces/Tests/Workspaces.UITests.Next/Workspaces.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesCsharpLibrary.UnitTests/WorkspacesCsharpLibrary.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

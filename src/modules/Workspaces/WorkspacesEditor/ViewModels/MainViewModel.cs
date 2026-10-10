@@ -171,8 +171,24 @@ namespace WorkspacesEditor.ViewModels
             this.editedProject = editedProject;
         }
 
-        public void SaveProject(Project projectToSave)
+        public bool SaveProject(Project projectToSave)
         {
+            var updated = Workspaces.ToList();
+            int index = updated.IndexOf(editedProject);
+            if (index < 0)
+            {
+                MessageBox.Show(Properties.Resources.Error_Save_Message);
+                return false;
+            }
+
+            var candidate = new Project(editedProject);
+            CopyEditableConfiguration(candidate, projectToSave);
+            updated[index] = candidate;
+            if (!_workspacesEditorIO.SerializeWorkspaces(updated))
+            {
+                return false;
+            }
+
             SendEditTelemetryEvent(projectToSave, editedProject);
 
             if (editedProject.Name != projectToSave.Name)
@@ -180,17 +196,27 @@ namespace WorkspacesEditor.ViewModels
                 RemoveShortcut(editedProject);
             }
 
-            editedProject.Name = projectToSave.Name;
-            editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
-            editedProject.MoveExistingWindows = projectToSave.MoveExistingWindows;
-            editedProject.PreviewIcons = projectToSave.PreviewIcons;
-            editedProject.PreviewImage = projectToSave.PreviewImage;
-            editedProject.Applications = projectToSave.Applications.Where(x => x.IsIncluded).ToList();
+            CopyEditableConfiguration(editedProject, projectToSave);
 
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));
             editedProject.Initialize(App.GetCurrentTheme());
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             ApplyShortcut(editedProject);
+            return true;
+        }
+
+        private static void CopyEditableConfiguration(Project target, Project source)
+        {
+            target.Name = source.Name;
+            target.IsShortcutNeeded = source.IsShortcutNeeded;
+            target.MoveExistingWindows = source.MoveExistingWindows;
+            target.PreviewIcons = source.PreviewIcons;
+            target.PreviewImage = source.PreviewImage;
+            target.Applications = source.Applications.Where(app => app.IsIncluded).ToList();
+            if (!ReferenceEquals(target.Monitors, source.Monitors))
+            {
+                target.Monitors.Clear();
+                target.Monitors.AddRange(source.Monitors);
+            }
         }
 
         private string GetDesktopShortcutAddress(Project project) => Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
@@ -339,22 +365,45 @@ namespace WorkspacesEditor.ViewModels
             project.IsShortcutNeeded = File.Exists(shortcutAddress);
         }
 
-        public void AddNewProject(Project project)
+        public bool AddNewProject(Project project)
         {
-            project.Applications.RemoveAll(app => !app.IsIncluded);
+            if (!TryPersistNewProject(project, Workspaces, projects => _workspacesEditorIO.SerializeWorkspaces(projects)))
+            {
+                return false;
+            }
+
             project.Initialize(App.GetCurrentTheme());
             Workspaces.Add(project);
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             TempProjectData.DeleteTempFile();
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             ApplyShortcut(project);
             SendCreateTelemetryEvent(project);
+            return true;
+        }
+
+        internal static bool TryPersistNewProject(Project project, IEnumerable<Project> workspaces, Func<List<Project>, bool> serializeWorkspaces)
+        {
+            var updated = workspaces.ToList();
+            updated.Add(project);
+            if (!serializeWorkspaces(updated))
+            {
+                return false;
+            }
+
+            project.Applications.RemoveAll(app => !app.IsIncluded);
+            return true;
         }
 
         public void DeleteProject(Project selectedProject)
         {
+            var updated = Workspaces.ToList();
+            updated.Remove(selectedProject);
+            if (!_workspacesEditorIO.SerializeWorkspaces(updated))
+            {
+                return;
+            }
+
             Workspaces.Remove(selectedProject);
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             RemoveShortcut(selectedProject);
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             SendDeleteTelemetryEvent();

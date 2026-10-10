@@ -234,6 +234,7 @@
 
             "PowerToys.WorkspacesSnapshotTool.exe",
             "PowerToys.WorkspacesLauncher.exe",
+            "PowerToys.WorkspacesCLI.exe",
             "PowerToys.WorkspacesWindowArranger.exe",
             "PowerToys.WorkspacesEditor.exe",
             "PowerToys.WorkspacesEditor.dll",

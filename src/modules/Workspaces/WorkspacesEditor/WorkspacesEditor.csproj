@@ -66,6 +66,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
+    <InternalsVisibleTo Include="WorkspacesCsharpLibrary.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
