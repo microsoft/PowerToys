@@ -229,6 +229,7 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
     {
         return filterId switch
         {
+            AllAppsFilters.WindowsFilterId => !item.App.IsWebApp,
             AllAppsFilters.Win32FilterId => !item.App.IsPackaged,
             AllAppsFilters.PackagedFilterId => item.App.IsPackaged,
             AllAppsFilters.WebFilterId => item.App.IsWebApp,

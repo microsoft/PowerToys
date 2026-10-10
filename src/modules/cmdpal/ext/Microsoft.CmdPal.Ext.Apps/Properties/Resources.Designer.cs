@@ -320,6 +320,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("filter_win32_apps", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Windows apps.
+        /// </summary>
+        internal static string filter_windows_apps {
+            get {
+                return ResourceManager.GetString("filter_windows_apps", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Folder.

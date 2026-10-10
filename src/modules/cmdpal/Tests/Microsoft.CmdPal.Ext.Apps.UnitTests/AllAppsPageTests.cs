@@ -673,15 +673,16 @@ public class AllAppsPageTests : AppsTestBase
         Assert.IsInstanceOfType<DynamicListPage>(Page);
 
         var filters = Page.Filters!.GetFilters();
-        Assert.AreEqual(7, filters.Length);
+        Assert.AreEqual(6, filters.Length);
         Assert.AreEqual(AllAppsFilters.AllFilterId, ((IFilter)filters[0]).Id);
         Assert.IsInstanceOfType<Separator>(filters[1]);
-        Assert.AreEqual(AllAppsFilters.Win32FilterId, ((IFilter)filters[2]).Id);
-        Assert.AreEqual(AllAppsFilters.PackagedFilterId, ((IFilter)filters[3]).Id);
-        Assert.AreEqual(AllAppsFilters.WebFilterId, ((IFilter)filters[4]).Id);
-        Assert.IsNotNull(((IFilter)filters[4]).Icon);
-        Assert.IsInstanceOfType<Separator>(filters[5]);
-        Assert.AreEqual(AllAppsFilters.HiddenFilterId, ((IFilter)filters[6]).Id);
+        Assert.AreEqual(AllAppsFilters.WindowsFilterId, ((IFilter)filters[2]).Id);
+        Assert.AreEqual(Properties.Resources.filter_windows_apps, ((IFilter)filters[2]).Name);
+        Assert.IsNotNull(((IFilter)filters[2]).Icon);
+        Assert.AreEqual(AllAppsFilters.WebFilterId, ((IFilter)filters[3]).Id);
+        Assert.IsNotNull(((IFilter)filters[3]).Icon);
+        Assert.IsInstanceOfType<Separator>(filters[4]);
+        Assert.AreEqual(AllAppsFilters.HiddenFilterId, ((IFilter)filters[5]).Id);
     }
 
     [TestMethod]
@@ -795,7 +796,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     [DataRow("")]
     [DataRow("Portal")]
-    public void AllAppsPage_WebFilterReusesRowsAndOverlapsPackagingFilters(string query)
+    public void AllAppsPage_WindowsAndWebFiltersReuseRowsAndPartitionApplications(string query)
     {
         var browserApp = TestDataHelper.CreateTestWin32Metadata("Portal Chrome", @"C:\Chrome\chrome_proxy.exe");
         browserApp.AppType = Win32AppType.WebApplication;
@@ -813,8 +814,7 @@ public class AllAppsPageTests : AppsTestBase
         foreach (var (filterId, names) in new[]
         {
             (AllAppsFilters.WebFilterId, new[] { "Portal Chrome", "Portal Edge" }),
-            (AllAppsFilters.Win32FilterId, new[] { "Portal Chrome", "Portal Desktop" }),
-            (AllAppsFilters.PackagedFilterId, new[] { "Portal Edge", "Portal Packaged" }),
+            (AllAppsFilters.WindowsFilterId, new[] { "Portal Desktop", "Portal Packaged" }),
             (AllAppsFilters.AllFilterId, originalRows.Keys.ToArray()),
         })
         {
@@ -878,6 +878,8 @@ public class AllAppsPageTests : AppsTestBase
         var row = Page.GetItems().OfType<AppListItem>().Single();
         await MockCatalog.SetAppHiddenAsync(row.App.CatalogId, true);
 
+        Assert.AreEqual(Properties.Resources.no_apps_found, Page.GetItems().Single().Title);
+        Page.Filters.CurrentFilterId = AllAppsFilters.WindowsFilterId;
         Assert.AreEqual(Properties.Resources.no_apps_found, Page.GetItems().Single().Title);
         Page.Filters.CurrentFilterId = AllAppsFilters.HiddenFilterId;
         Assert.AreSame(row, Page.GetItems().OfType<AppListItem>().Single());

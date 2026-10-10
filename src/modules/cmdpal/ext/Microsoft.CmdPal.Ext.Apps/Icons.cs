@@ -12,7 +12,7 @@ internal static class Icons
 
     internal static IconInfo AllAppsFilterIcon { get; } = new("\uE71D"); // AllApps
 
-    internal static IconInfo Win32AppsFilterIcon { get; } = new("\uECAA"); // AppIconDefault
+    internal static IconInfo WindowsAppsFilterIcon { get; } = new("\uECAA"); // AppIconDefault
 
     internal static IconInfo PackagedAppsFilterIcon { get; } = new("\uE7B8"); // Package
 
