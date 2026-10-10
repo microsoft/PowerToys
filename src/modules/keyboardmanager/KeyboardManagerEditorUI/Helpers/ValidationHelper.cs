@@ -256,26 +256,103 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public static bool IsKeyOrphaned(int originalKey, KeyboardMappingService mappingService)
         {
-            // Check single key mappings
-            foreach (var mapping in mappingService.GetSingleKeyMappings())
+            if (mappingService == null)
             {
-                if (!mapping.IsShortcut && int.TryParse(mapping.TargetKey, out int targetKey) && targetKey == originalKey)
+                return false;
+            }
+
+            var mappings = mappingService.GetSingleKeyMappings()
+                .Select(mapping => new ShortcutKeyMapping
                 {
-                    return false;
+                    OperationType = ShortcutOperationType.RemapShortcut,
+                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
+                    TargetKeys = mapping.TargetKey,
+                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
+                })
+                .Concat(mappingService.GetKeyToTextMappings()
+                    .Select(mapping => new ShortcutKeyMapping
+                    {
+                        OperationType = ShortcutOperationType.RemapText,
+                        OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
+                        TargetText = mapping.TargetText,
+                    }));
+
+            return GetOrphanedKeys(mappings).Contains(originalKey);
+        }
+
+        public static IReadOnlyList<int> GetOrphanedKeys(IEnumerable<ShortcutKeyMapping> mappings)
+        {
+            if (mappings == null)
+            {
+                return Array.Empty<int>();
+            }
+
+            var originalKeys = new HashSet<int>();
+            var targetKeys = new HashSet<int>();
+
+            foreach (ShortcutKeyMapping mapping in mappings)
+            {
+                // App-specific remaps leave the key usable in every other app.
+                if (!TryGetSingleKey(mapping.OriginalKeys, out int originalKey) || originalKey == 0 ||
+                    !string.IsNullOrEmpty(mapping.TargetApp) || !HasValidSingleKeyTarget(mapping))
+                {
+                    continue;
+                }
+
+                // An "alone" remap only replaces a lone tap; the key still works when held or
+                // combined with other keys, so it remains reachable.
+                if (mapping.Condition != SingleKeyRemapCondition.Alone)
+                {
+                    originalKeys.Add(originalKey);
+                }
+
+                if (mapping.OperationType == ShortcutOperationType.RemapShortcut &&
+                    TryGetSingleKey(mapping.TargetKeys, out int targetKey) &&
+                    targetKey != 0)
+                {
+                    targetKeys.Add(targetKey);
                 }
             }
 
-            // Check shortcut mappings
-            foreach (var mapping in mappingService.GetShortcutMappings())
+            originalKeys.ExceptWith(targetKeys);
+            return originalKeys.OrderBy(key => key).ToList();
+        }
+
+        /// <summary>
+        /// Returns the keys that would have no assignment because of <paramref name="replacement"/>:
+        /// keys that become orphaned by the edit, plus the replacement's own source key if it is orphaned.
+        /// Keys that were already orphaned by other, unrelated mappings are not reported.
+        /// </summary>
+        public static IReadOnlyList<int> GetOrphanedKeysCausedBy(
+            IReadOnlyCollection<ShortcutKeyMapping> otherMappings,
+            ShortcutKeyMapping? replacedMapping,
+            ShortcutKeyMapping replacement)
+        {
+            if (otherMappings == null || replacement == null || !IsOrphanedKeyWarningCandidate(replacement))
             {
-                string[] targetKeys = mapping.TargetKeys.Split(';');
-                if (targetKeys.Length == 1 && int.TryParse(targetKeys[0], out int shortcutTargetKey) && shortcutTargetKey == originalKey)
-                {
-                    return false;
-                }
+                return Array.Empty<int>();
             }
 
-            return true;
+            IEnumerable<ShortcutKeyMapping> before = replacedMapping == null ? otherMappings : otherMappings.Append(replacedMapping);
+            var previouslyOrphaned = new HashSet<int>(GetOrphanedKeys(before));
+            TryGetSingleKey(replacement.OriginalKeys, out int replacementKey);
+
+            return GetOrphanedKeys(otherMappings.Append(replacement))
+                .Where(key => key == replacementKey || !previouslyOrphaned.Contains(key))
+                .ToList();
+        }
+
+        public static bool IsOrphanedKeyWarningCandidate(ShortcutKeyMapping mapping)
+        {
+            if (mapping == null)
+            {
+                return false;
+            }
+
+            return TryGetSingleKey(mapping.OriginalKeys, out int originalKey) &&
+                   originalKey != 0 &&
+                   string.IsNullOrEmpty(mapping.TargetApp) &&
+                   HasValidSingleKeyTarget(mapping);
         }
 
         private static ValidationErrorType ValidateProgramOrUrlMapping(
@@ -385,6 +462,34 @@ namespace KeyboardManagerEditorUI.Helpers
             const int VK_MENU = 0x12;    // Alt
             const int VK_WIN_BOTH = 0x104; // CommonSharedConstants::VK_WIN_BOTH
             return keyCode == VK_SHIFT || keyCode == VK_CONTROL || keyCode == VK_MENU || keyCode == VK_WIN_BOTH;
+        }
+
+        private static bool HasValidSingleKeyTarget(ShortcutKeyMapping mapping)
+        {
+            if (mapping.OperationType == ShortcutOperationType.RemapText)
+            {
+                return !string.IsNullOrEmpty(mapping.TargetText);
+            }
+
+            if (mapping.OperationType != ShortcutOperationType.RemapShortcut || string.IsNullOrWhiteSpace(mapping.TargetKeys))
+            {
+                return false;
+            }
+
+            string[] targetKeys = mapping.TargetKeys.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            return targetKeys.Length > 0 && targetKeys.All(key => int.TryParse(key, out int keyCode) && keyCode != 0);
+        }
+
+        private static bool TryGetSingleKey(string keyCodes, out int keyCode)
+        {
+            keyCode = 0;
+            if (string.IsNullOrWhiteSpace(keyCodes))
+            {
+                return false;
+            }
+
+            string[] keys = keyCodes.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            return keys.Length == 1 && int.TryParse(keys[0], out keyCode);
         }
 
         private static string BuildKeyCodeString(List<string> keys, KeyboardMappingService mappingService)

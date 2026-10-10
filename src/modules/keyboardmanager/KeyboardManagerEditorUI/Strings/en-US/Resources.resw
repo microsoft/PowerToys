@@ -502,6 +502,14 @@
   <data name="Warning_Title" xml:space="preserve">
     <value>Warning</value>
   </data>
+  <data name="OrphanedKeysWarning_Message" xml:space="preserve">
+    <value>You won't be able to use {0} anymore, because no other key is remapped to it.</value>
+    <comment>{0} is a single key name, e.g. "A". Shown when a remap leaves that key without any way to produce it.</comment>
+  </data>
+  <data name="OrphanedKeysWarning_Message_Plural" xml:space="preserve">
+    <value>You won't be able to use {0} anymore, because no other keys are remapped to them.</value>
+    <comment>{0} is a comma-separated list of key names, e.g. "A, C". Shown when a remap leaves those keys without any way to produce them.</comment>
+  </data>
   <data name="Error_UnknownValidation_Title" xml:space="preserve">
     <value>Validation error</value>
   </data>
