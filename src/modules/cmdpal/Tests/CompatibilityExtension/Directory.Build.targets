@@ -1,0 +1,6 @@
+<Project>
+  <!-- Do not import host SDK, output, or packaging targets into these fixtures. -->
+  <Target Name="ValidateCompatibilityPlatform" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(Platform)' != 'x64' and '$(Platform)' != 'ARM64'" Text="Build compatibility extensions with Platform=x64 or Platform=ARM64." />
+  </Target>
+</Project>
