@@ -16,6 +16,9 @@ namespace KeyboardManagerEditorUI.UnitTests
     [TestClass]
     public class RemappingHelperTests
     {
+        // Left Ctrl + Left Shift + N, the trigger from #50933.
+        private const string IssueTrigger = "162;160;78";
+
         // Test that modifier keys pressed in reverse order (Shift, Alt, Ctrl, Win)
         // are sorted into the standard display order (Win, Ctrl, Alt, Shift)
         [TestMethod]
@@ -553,6 +556,103 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEqual(new List<string> { "legacy-id" }, settings.ProfileDictionary["default"]);
         }
 
+        // Regression for #50933: a global mapping and app-specific overrides of the same trigger live in
+        // separate engine tables, so editing the global one must not be flagged as a duplicate.
+        [TestMethod]
+        public void DuplicateMapping_ShouldAllowEditingGlobalMappingWithAppSpecificOverrides()
+        {
+            var settings = CreateIssue50933Settings();
+
+            Assert.IsFalse(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, IssueTrigger, isEditMode: true, appName: string.Empty, editingId: "global-id", AreKeysEqual));
+            Assert.IsFalse(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, IssueTrigger, isEditMode: true, appName: string.Empty, editingId: null, AreKeysEqual));
+
+            var replacement = CreateScopedMapping(ShortcutOperationType.RunProgram, IssueTrigger, string.Empty);
+            Assert.IsFalse(DuplicateMappingHelper.HasDuplicateEditorMapping(
+                settings.ShortcutSettingsDictionary, replacement, "global-id", AreKeysEqual));
+        }
+
+        [TestMethod]
+        public void DuplicateMapping_ShouldAllowEditingAppSpecificOverrideAlongsideGlobalMapping()
+        {
+            var settings = CreateIssue50933Settings();
+
+            Assert.IsFalse(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, IssueTrigger, isEditMode: true, appName: "code.exe", editingId: "code-id", AreKeysEqual));
+
+            var replacement = CreateScopedMapping(ShortcutOperationType.RemapShortcut, IssueTrigger, "code.exe");
+            Assert.IsFalse(DuplicateMappingHelper.HasDuplicateEditorMapping(
+                settings.ShortcutSettingsDictionary, replacement, "code-id", AreKeysEqual));
+        }
+
+        [TestMethod]
+        [DataRow("", "code.exe", false)]
+        [DataRow("code.exe", "", false)]
+        [DataRow("code.exe", "parsecd.exe", false)]
+        [DataRow("", "", true)]
+        [DataRow(null, "", true)]
+        [DataRow("", null, true)]
+        [DataRow("code.exe", "code.exe", true)]
+        [DataRow("code.exe", "Code.EXE", true)]
+        public void DuplicateMapping_ShouldOnlyConflictWithinTheSameAppScope(string existingApp, string proposedApp, bool expectedDuplicate)
+        {
+            var existing = CreateScopedMapping(ShortcutOperationType.RemapShortcut, IssueTrigger, existingApp);
+            var settings = CreateEditorSettings(("existing-id", existing, true));
+
+            Assert.AreEqual(expectedDuplicate, DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, IssueTrigger, isEditMode: false, proposedApp, editingId: null, AreKeysEqual));
+
+            // A different action in the same scope is still a conflict; operation type is not an exemption.
+            var proposed = CreateScopedMapping(ShortcutOperationType.RunProgram, IssueTrigger, proposedApp);
+            Assert.AreEqual(expectedDuplicate, DuplicateMappingHelper.HasDuplicateEditorMapping(
+                settings.ShortcutSettingsDictionary, proposed, "new-id", AreKeysEqual));
+        }
+
+        [TestMethod]
+        public void DuplicateMapping_ShouldRejectMovingEditedMappingIntoOccupiedScope()
+        {
+            var settings = CreateIssue50933Settings();
+
+            Assert.IsTrue(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, IssueTrigger, isEditMode: true, appName: "CODE.exe", editingId: "global-id", AreKeysEqual));
+            Assert.IsTrue(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, IssueTrigger, isEditMode: true, appName: string.Empty, editingId: "code-id", AreKeysEqual));
+
+            var replacement = CreateScopedMapping(ShortcutOperationType.RunProgram, IssueTrigger, "parsecd.exe");
+            Assert.IsTrue(DuplicateMappingHelper.HasDuplicateEditorMapping(
+                settings.ShortcutSettingsDictionary, replacement, "global-id", AreKeysEqual));
+        }
+
+        [TestMethod]
+        public void DuplicateMapping_ShouldIgnoreInactiveRowsAndDifferentTriggers()
+        {
+            var inactive = CreateScopedMapping(ShortcutOperationType.RemapShortcut, IssueTrigger, string.Empty);
+            var otherTrigger = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "162;160;77", string.Empty);
+            var settings = CreateEditorSettings(("inactive-id", inactive, false), ("other-id", otherTrigger, true));
+
+            Assert.IsFalse(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, IssueTrigger, isEditMode: false, appName: string.Empty, editingId: null, AreKeysEqual));
+
+            var proposed = CreateScopedMapping(ShortcutOperationType.RemapShortcut, IssueTrigger, string.Empty);
+            Assert.IsFalse(DuplicateMappingHelper.HasDuplicateEditorMapping(
+                settings.ShortcutSettingsDictionary, proposed, null, AreKeysEqual));
+        }
+
+        [TestMethod]
+        public void HasDuplicateEditorMapping_ShouldKeepAlwaysAndAloneConditionsDistinct()
+        {
+            var always = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "20", string.Empty);
+            var settings = CreateEditorSettings(("always-id", always, true));
+
+            var alone = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "20", string.Empty);
+            alone.Condition = SingleKeyRemapCondition.Alone;
+            Assert.IsFalse(DuplicateMappingHelper.HasDuplicateEditorMapping(settings.ShortcutSettingsDictionary, alone, null, AreKeysEqual));
+
+            var secondAlways = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "20", string.Empty);
+            Assert.IsTrue(DuplicateMappingHelper.HasDuplicateEditorMapping(settings.ShortcutSettingsDictionary, secondAlways, null, AreKeysEqual));
+        }
+
         private static EditorSettings CreateEditorSettings(string mappingId, ShortcutOperationType operationType, string originalKeys, string targetKeys) =>
             CreateEditorSettings(mappingId, CreateMapping(operationType, originalKeys, targetKeys));
 
@@ -606,5 +706,21 @@ namespace KeyboardManagerEditorUI.UnitTests
                 TargetKeys = targetKeys,
                 TargetText = operationType == ShortcutOperationType.RemapText ? targetKeys : string.Empty,
             };
+
+        // Stand-in for the native KeyboardManagerInterop.AreShortcutsEqual; the fixtures use canonical key strings.
+        private static bool AreKeysEqual(string first, string second) => first == second;
+
+        private static EditorSettings CreateIssue50933Settings() =>
+            CreateEditorSettings(
+                ("global-id", CreateScopedMapping(ShortcutOperationType.RunProgram, IssueTrigger, string.Empty), true),
+                ("code-id", CreateScopedMapping(ShortcutOperationType.RemapShortcut, IssueTrigger, "code.exe"), true),
+                ("parsecd-id", CreateScopedMapping(ShortcutOperationType.RemapShortcut, IssueTrigger, "parsecd.exe"), true));
+
+        private static ShortcutKeyMapping CreateScopedMapping(ShortcutOperationType operationType, string originalKeys, string targetApp)
+        {
+            var mapping = CreateMapping(operationType, originalKeys, operationType == ShortcutOperationType.RemapShortcut ? "162;161;78" : string.Empty);
+            mapping.TargetApp = targetApp;
+            return mapping;
+        }
     }
 }
