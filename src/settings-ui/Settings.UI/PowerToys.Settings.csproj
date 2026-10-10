@@ -121,6 +121,7 @@
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Models\MouseJump.Models.csproj" />
+		<ProjectReference Include="..\..\modules\fancyzones\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
 		<ProjectReference Include="..\..\modules\poweraccent\PowerAccent.Common\PowerAccent.Common.csproj" />
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />

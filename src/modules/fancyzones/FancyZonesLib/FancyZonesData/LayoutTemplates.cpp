@@ -23,6 +23,16 @@ namespace JsonUtils
                 data.zoneCount = static_cast<int>(json.GetNamedNumber(NonLocalizable::LayoutTemplatesIds::ZoneCountID, DefaultValues::ZoneCount));
                 data.sensitivityRadius = static_cast<int>(json.GetNamedNumber(NonLocalizable::LayoutTemplatesIds::SensitivityRadiusID, DefaultValues::SensitivityRadius));
 
+                if (json.HasKey(NonLocalizable::LayoutTemplatesIds::DefaultZoneIndexSetID))
+                {
+                    ZoneIndexSet defaultZoneIndexSet{};
+                    for (const auto& value : json.GetNamedArray(NonLocalizable::LayoutTemplatesIds::DefaultZoneIndexSetID))
+                    {
+                        defaultZoneIndexSet.push_back(static_cast<ZoneIndex>(value.GetNumber()));
+                    }
+                    data.defaultZoneIndexSet = std::move(defaultZoneIndexSet);
+                }
+
                 return data;
             }
             catch (const winrt::hresult_error&)
