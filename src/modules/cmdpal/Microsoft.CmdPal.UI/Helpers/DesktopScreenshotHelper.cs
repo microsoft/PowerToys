@@ -2,16 +2,19 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
+using Windows.Foundation;
 using Windows.Graphics;
 using Windows.Graphics.Imaging;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
+using WinRT;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
-internal static class DesktopScreenshotHelper
+internal static partial class DesktopScreenshotHelper
 {
     private const int MaxCaptureWidth = 3840;
     private const int MaxCaptureHeight = 2160;
@@ -46,6 +49,7 @@ internal static class DesktopScreenshotHelper
         HDC memoryDc = default;
         HBITMAP bitmap = default;
         HGDIOBJ previousObject = default;
+        SoftwareBitmap? softwareBitmap = null;
 
         try
         {
@@ -94,7 +98,6 @@ internal static class DesktopScreenshotHelper
                 return null;
             }
 
-            var pixels = new byte[checked(captureWidth * captureHeight * 4)];
             var bitmapInfo = new BITMAPINFO
             {
                 bmiHeader = new BITMAPINFOHEADER
@@ -108,8 +111,31 @@ internal static class DesktopScreenshotHelper
                 },
             };
 
-            fixed (byte* pixelBuffer = pixels)
+            softwareBitmap = new SoftwareBitmap(
+                BitmapPixelFormat.Bgra8,
+                captureWidth,
+                captureHeight,
+                BitmapAlphaMode.Premultiplied);
+            using (var buffer = softwareBitmap.LockBuffer(BitmapBufferAccessMode.Write))
             {
+                using var reference = buffer.CreateReference();
+                GetBuffer(reference, out var data, out var capacity);
+                var plane = buffer.GetPlaneDescription(0);
+                var rowBytes = checked(captureWidth * 4);
+                var byteCount = checked(rowBytes * captureHeight);
+
+                // GetDIBits writes packed BGRA rows; reject incompatible buffer layouts.
+                if (data == null
+                    || plane.Width != captureWidth
+                    || plane.Height != captureHeight
+                    || plane.Stride != rowBytes
+                    || plane.StartIndex < 0
+                    || (long)plane.StartIndex + byteCount > capacity)
+                {
+                    return null;
+                }
+
+                var pixelBuffer = data + plane.StartIndex;
                 var copiedLines = PInvoke.GetDIBits(
                     screenDc,
                     bitmap,
@@ -118,24 +144,20 @@ internal static class DesktopScreenshotHelper
                     pixelBuffer,
                     &bitmapInfo,
                     DIB_USAGE.DIB_RGB_COLORS);
-                if (copiedLines == 0)
+                if (copiedLines != captureHeight)
                 {
                     return null;
                 }
+
+                for (var i = 3; i < byteCount; i += 4)
+                {
+                    pixelBuffer[i] = byte.MaxValue;
+                }
             }
 
-            for (var i = 3; i < pixels.Length; i += 4)
-            {
-                pixels[i] = byte.MaxValue;
-            }
-
-            var softwareBitmap = new SoftwareBitmap(
-                BitmapPixelFormat.Bgra8,
-                captureWidth,
-                captureHeight,
-                BitmapAlphaMode.Premultiplied);
-            softwareBitmap.CopyFromBuffer(pixels.AsBuffer());
-            return softwareBitmap;
+            var result = softwareBitmap;
+            softwareBitmap = null;
+            return result;
         }
         finally
         {
@@ -155,6 +177,29 @@ internal static class DesktopScreenshotHelper
             }
 
             _ = PInvoke.ReleaseDC(HWND.Null, screenDc);
+            softwareBitmap?.Dispose();
         }
+    }
+
+    private static unsafe void GetBuffer(IMemoryBufferReference reference, out byte* data, out uint capacity)
+    {
+        using var nativeReference = MarshalInspectable<IMemoryBufferReference>.CreateMarshaler(reference);
+        var byteAccess = UniqueComInterfaceMarshaller<IMemoryBufferByteAccess>.ConvertToManaged((void*)nativeReference.ThisPtr)!;
+        try
+        {
+            byteAccess.GetBuffer(out data, out capacity);
+        }
+        finally
+        {
+            ((ComObject)(object)byteAccess).FinalRelease();
+        }
+    }
+
+    [GeneratedComInterface]
+    [Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal unsafe partial interface IMemoryBufferByteAccess
+    {
+        void GetBuffer(out byte* buffer, out uint capacity);
     }
 }

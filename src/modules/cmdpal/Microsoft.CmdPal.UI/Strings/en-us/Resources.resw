@@ -529,7 +529,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Vertical search box position</value>
   </data>
   <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Description" xml:space="preserve">
-    <value>Choose where the compact search box appears on the screen.</value>
+    <value>Choose where the compact search box appears on the screen</value>
   </data>
   <data name="Settings_GeneralPage_CompactCenterHeight_Button.Content" xml:space="preserve">
     <value>Choose position</value>
@@ -541,20 +541,33 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Move the compact search box</value>
   </data>
   <data name="CompactPositionPickerWindow_Instruction.Text" xml:space="preserve">
-    <value>Drag the preview, use the mouse wheel, or press Up and Down.</value>
+    <value>Drag the preview or scroll to move.</value>
+  </data>
+  <data name="CompactPositionPickerWindow_KeyboardInstruction.Text" xml:space="preserve">
+    <value>Up/Down: move in small steps.
+Page Up/Down: move in larger steps.
+Home: highest position. End: lowest position.</value>
   </data>
   <data name="CompactPositionPickerWindow_PositionFormat" xml:space="preserve">
     <value>Position: {0:0}% from bottom</value>
-    <comment>{0} is the vertical position as a percentage from the bottom of the screen.</comment>
+    <comment>Screen reader position feedback. {0} is the vertical position as a percentage from the bottom of the work area.</comment>
+  </data>
+  <data name="CompactPositionPickerWindow_Preview.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search box position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_ExpandedPreviewHint.Text" xml:space="preserve">
+    <value>Space for search results</value>
+  </data>
+  <data name="CompactPositionPickerWindow_ReservedAreaHint.Text" xml:space="preserve">
+    <value>Hatched areas are reserved for the taskbar and toolbars.</value>
+    <comment>Explains the diagonal shading outside the usable work area in the position picker.</comment>
   </data>
   <data name="CompactPositionPickerWindow_Root.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Compact search box position picker</value>
   </data>
-  <data name="CompactPositionPickerWindow_Root.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
-    <value>Drag the preview, use the mouse wheel, or press Up and Down.</value>
-  </data>
-  <data name="CompactPositionPickerWindow_GhostPlaceholder.Text" xml:space="preserve">
-    <value>Search for a command</value>
+  <data name="CompactPositionPickerWindow_DefaultButton.Content" xml:space="preserve">
+    <value>Default</value>
+    <comment>Restores the default vertical position of the compact search box.</comment>
   </data>
   <data name="CompactPositionPickerWindow_CancelButton.Content" xml:space="preserve">
     <value>Cancel</value>
