@@ -381,3 +381,13 @@ deps/vcpkg/
 
 # Superpowers-generated docs (specs, design, plans) — local-only, not committed
 docs/superpowers/
+
+# PowerRename local planning, wiki, and verification notes - never commit
+docs/powerrename-private/
+wiki-private/
+.codex-private/
+local-notes/
+
+# Local test fixtures and generated artifacts
+test-fixtures-local/
+artifacts-local/
