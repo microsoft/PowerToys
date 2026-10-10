@@ -129,7 +129,7 @@ public class EditLayoutTests : FancyZonesEditorTestBase
         EditorUiTestHelper.EnsureEditorReady(this, Session);
 
         var gridEditor = EditorUiTestHelper.EnterZoneEditModeFromContextMenu(this, Session, GridLayoutName, EditorUiTestHelper.ElementName.GridLayoutEditor);
-    Assert.IsTrue(gridEditor.WaitForElement(By.Name(EditorUiTestHelper.ElementName.Save), 10_000));
+        Assert.IsTrue(gridEditor.WaitForElement(By.Name(EditorUiTestHelper.ElementName.Save), 10_000));
 
         EditorUiTestHelper.Step(this, "Closing the grid editor with Cancel");
         gridEditor.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Invoke();

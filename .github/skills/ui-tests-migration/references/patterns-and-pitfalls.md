@@ -220,7 +220,7 @@ named modules and **disables every other one**, so the runner boots only what yo
 // All five ScreenRuler test classes do this; ColorPicker too. The key is the settings.json
 // "enabled" name (note spaces, e.g. "Measure Tool", "PowerToys Run") — see the enabled section of
 // %LocalAppData%\Microsoft\PowerToys\settings.json or ModuleConfigData.
-public MyTests() : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "Measure Tool" }) { }
+public MyTests() : base(PowerToysModule.PowerToysSettings, enableModules: ["Measure Tool"]) { }
 ```
 
 Why it's worth doing on every per-module suite:

@@ -226,10 +226,10 @@ namespace Microsoft.Workspaces.UITests
                 throw PackagedFixturePrerequisites.MissingSigningException(packagePath, deploymentError.HResult, EnvironmentConfig.IsInPipeline);
             }
 
-            Assert.IsNull(
-                deployment.ExtendedErrorCode,
+            string deploymentMessage =
                 $"Fixture deployment failed: {deployment.ErrorText}. Activity: {deployment.ActivityId}. " +
-                "Stage a package signed by the shared UI-test signing setup and trust its public certificate in the test VM.");
+                "Stage a package signed by the shared UI-test signing setup and trust its public certificate in the test VM.";
+            Assert.IsNull(deployment.ExtendedErrorCode, deploymentMessage);
             package = RegisteredPackages().Single();
             Assert.AreEqual(Publisher, package.Id.Publisher, "Unexpected fixture publisher.");
             Assert.AreEqual(

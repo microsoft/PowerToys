@@ -30,6 +30,10 @@ public static class TestHelper
     public const string ToggleId = "Toggle___MODULE__";
     public const string ShortcutCardId = "Shortcut___MODULE__";
 
+    // Separators accepted when parsing a ShortcutControl's HelpText (e.g. "Win + Shift + M"). Hoisted
+    // to a field so the Split call below doesn't allocate an inline array literal (CA1861).
+    private static readonly string[] ShortcutSeparators = { " + ", "+", " " };
+
     // ── Navigation ────────────────────────────────────────────────────────────────────────────
 
     /// <summary>Navigate to the module's Settings page (expanding its parent nav group if needed).</summary>
@@ -88,7 +92,7 @@ public static class TestHelper
             return keys.ToArray();
         }
 
-        foreach (var raw in shortcutText.Split(new[] { " + ", "+", " " }, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var raw in shortcutText.Split(ShortcutSeparators, StringSplitOptions.RemoveEmptyEntries))
         {
             var part = raw.Trim().ToLowerInvariant();
             Key? key = part switch

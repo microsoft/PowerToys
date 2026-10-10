@@ -264,10 +264,10 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
             state => !string.IsNullOrEmpty(state.PastedText) && state.ClipboardText == state.PastedText,
             timeoutMS: 15_000,
             requiredConsecutiveMatches: 2);
-        Assert.IsTrue(
-            result.Succeeded,
+        string mismatchMessage =
             $"The clipboard and actual pasted text did not reach the same nonempty value. " +
-            $"Clipboard: '{result.LastObservation.ClipboardText}'; pasted: '{result.LastObservation.PastedText}'.");
+            $"Clipboard: '{result.LastObservation.ClipboardText}'; pasted: '{result.LastObservation.PastedText}'.";
+        Assert.IsTrue(result.Succeeded, mismatchMessage);
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste did not hide after pasting.");
     }
 

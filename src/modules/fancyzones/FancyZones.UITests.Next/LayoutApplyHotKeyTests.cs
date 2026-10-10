@@ -73,10 +73,11 @@ public class LayoutApplyHotKeyTests : UITestBase
 
         FancyZonesTestHelper.Step(this, "Applying Grid-9 as setup with Win+Ctrl+Alt+1");
         KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.Alt, Key.Num1);
-        Assert.IsTrue(
-            FancyZonesTestHelper.AppliedLayoutContains(LayoutFixtures.Grid9LayoutUuid, 15_000),
+        bool setupLayoutApplied = FancyZonesTestHelper.AppliedLayoutContains(LayoutFixtures.Grid9LayoutUuid, 15_000);
+        string setupLayoutMessage =
             $"Could not apply the setup layout {LayoutFixtures.Grid9LayoutUuid}. " +
-            $"Last content: {FancyZonesTestHelper.ReadAppliedLayouts()}");
+            $"Last content: {FancyZonesTestHelper.ReadAppliedLayouts()}";
+        Assert.IsTrue(setupLayoutApplied, setupLayoutMessage);
 
         WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
         var window = FancyZonesTestHelper.OpenExplorerWindow(this);
@@ -98,10 +99,11 @@ public class LayoutApplyHotKeyTests : UITestBase
             FancyZonesTestHelper.Step(this, "Sending Win+Ctrl+Alt+0 while the drag is active");
             KeyboardHelper.SendKeys(Key.LWin, Key.Ctrl, Key.Alt, Key.Num0);
 
-            Assert.IsTrue(
-                FancyZonesTestHelper.AppliedLayoutContains(LayoutFixtures.GridCustomLayoutUuid, 15_000),
+            bool dragLayoutApplied = FancyZonesTestHelper.AppliedLayoutContains(LayoutFixtures.GridCustomLayoutUuid, 15_000);
+            string dragLayoutMessage =
                 $"The drag-specific quick-layout chord did not apply {LayoutFixtures.GridCustomLayoutUuid}. " +
-                $"Last content: {FancyZonesTestHelper.ReadAppliedLayouts()}");
+                $"Last content: {FancyZonesTestHelper.ReadAppliedLayouts()}";
+            Assert.IsTrue(dragLayoutApplied, dragLayoutMessage);
         }
         finally
         {
@@ -385,10 +387,10 @@ public class LayoutApplyHotKeyTests : UITestBase
 
         FancyZonesTestHelper.EnsureFancyZonesRunning(this);
 
-        FancyZonesTestHelper.Step(
-            this,
+        string restartedSettings =
             $"After the restart, settings hold quickLayoutSwitch={FancyZonesSettingsSeed.ReadCurrent(Setting.QuickLayoutSwitch)}, " +
-            $"flashZonesOnQuickSwitch={FancyZonesSettingsSeed.ReadCurrent(Setting.FlashZonesOnQuickSwitch)}");
+            $"flashZonesOnQuickSwitch={FancyZonesSettingsSeed.ReadCurrent(Setting.FlashZonesOnQuickSwitch)}";
+        FancyZonesTestHelper.Step(this, restartedSettings);
     }
 
     /// <summary>Open the editor, bind the given quick key to a layout through its dropdown, and save.</summary>
