@@ -265,6 +265,24 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 
     private static void EnableHistoryFixture()
     {
+        using var launch = Process.Start(new ProcessStartInfo("ms-settings:clipboard") { UseShellExecute = true });
+        var settings = WindowsFinder.WaitForWindow(
+            window => window.Title == "Settings" &&
+                (window.ProcessName == "SystemSettings" || window.ProcessName == "ApplicationFrameHost"),
+            timeoutMS: 20_000);
+        Assert.IsNotNull(settings, "BLOCKED: Windows Clipboard Settings did not open for the activation comparison.");
+        try
+        {
+            var toggle = settings.Find<ToggleSwitch>(By.Name("Clipboard history"), 20_000);
+            Assert.IsTrue(toggle.IsEnabled, "BLOCKED: Windows Clipboard Settings history toggle is disabled.");
+            toggle.Toggle(true);
+            WaitUntil(() => toggle.IsOn, "Windows Clipboard Settings did not enable its history toggle.");
+        }
+        finally
+        {
+            Assert.IsTrue(WindowControl.TryCloseWindow(settings.WindowHandle), "Windows Clipboard Settings did not close after the activation comparison.");
+        }
+
         using (var key = Registry.CurrentUser.CreateSubKey(ClipboardRegistryPath, writable: true))
         {
             Assert.IsNotNull(key, "BLOCKED: the current user's clipboard-history preference cannot be opened.");
