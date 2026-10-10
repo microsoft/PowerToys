@@ -98,7 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         public string Query { get; set; }
 
-        public List<SettingEntry> Results { get; set; }
+        public List<SettingEntry> Results { get; }
 
         public SearchResultsNavigationParams(string query, List<SettingEntry> results)
         {
