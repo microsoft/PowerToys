@@ -901,48 +901,32 @@ namespace MouseWithoutBorders.Class
 
                 Logger.LogDebug("Connecting to: " + machineName);
 
-                if (!string.IsNullOrEmpty(Setting.Values.Name2IP))
+                // Policy-defined rules apply even when the user has no rules of their own, or is not allowed any.
+                foreach (IPAddress ip in GetMappedAddresses(Setting.Values.Name2IpPolicyList, Setting.Values.Name2IP, machineName))
                 {
-                    string combinedName2ipList = Setting.Values.Name2IpPolicyList + Separator + Setting.Values.Name2IP;
-                    string[] name2ip = combinedName2ipList.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-                    string[] nameNip;
+                    validatedAddresses.Add(ip);
+                    validAddressesSt += "[" + ip.ToString() + "]";
+                }
 
-                    if (name2ip != null)
+                if (validatedAddresses.Count > 0)
+                {
+                    useName2IP = true;
+
+                    Logger.LogDebug("Using both user-defined Name-to-IP mappings and DNS result for " + machineName);
+
+                    Common.ShowToolTip("Using both user-defined Name-to-IP mappings and DNS result for " + machineName, 3000, ToolTipIcon.Info, false);
+
+                    if (!CheckForSameSubNet(validatedAddresses, machineName))
                     {
-                        foreach (string st in name2ip)
-                        {
-                            nameNip = st.Split(BlankSeparator, StringSplitOptions.RemoveEmptyEntries);
-
-                            if (nameNip != null && nameNip.Length >= 2 && nameNip[0].Trim().Equals(machineName, StringComparison.OrdinalIgnoreCase)
-                                && IPAddress.TryParse(nameNip[1].Trim(), out IPAddress ip) && !validAddressesSt.Contains("[" + ip.ToString() + "]")
-                                )
-                            {
-                                validatedAddresses.Add(ip);
-                                validAddressesSt += "[" + ip.ToString() + "]";
-                            }
-                        }
+                        return;
                     }
 
-                    if (validatedAddresses.Count > 0)
+                    foreach (IPAddress vip in validatedAddresses)
                     {
-                        useName2IP = true;
-
-                        Logger.LogDebug("Using both user-defined Name-to-IP mappings and DNS result for " + machineName);
-
-                        Common.ShowToolTip("Using both user-defined Name-to-IP mappings and DNS result for " + machineName, 3000, ToolTipIcon.Info, false);
-
-                        if (!CheckForSameSubNet(validatedAddresses, machineName))
-                        {
-                            return;
-                        }
-
-                        foreach (IPAddress vip in validatedAddresses)
-                        {
-                            StartNewTcpClientThread(machineName, vip);
-                        }
-
-                        validatedAddresses.Clear();
+                        StartNewTcpClientThread(machineName, vip);
                     }
+
+                    validatedAddresses.Clear();
                 }
 
                 try
@@ -1060,6 +1044,31 @@ namespace MouseWithoutBorders.Class
 
             t.SetApartmentState(ApartmentState.STA);
             t.Start();
+        }
+
+        /// <summary>
+        /// Returns the addresses that the IP address mapping rules give for a machine, policy-defined rules first.
+        /// Each rule is a line with a machine name and an IP address, separated by spaces.
+        /// </summary>
+        internal static List<IPAddress> GetMappedAddresses(string name2IpPolicyList, string name2Ip, string machineName)
+        {
+            List<IPAddress> addresses = new();
+
+            // Separator is an array: adding it to a string would insert its type name instead of a line break.
+            string combinedName2ipList = name2IpPolicyList + Separator[0] + name2Ip;
+
+            foreach (string st in combinedName2ipList.Split(Separator, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] nameNip = st.Split(BlankSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+                if (nameNip.Length >= 2 && nameNip[0].Trim().Equals(machineName, StringComparison.OrdinalIgnoreCase)
+                    && IPAddress.TryParse(nameNip[1].Trim(), out IPAddress ip) && !addresses.Contains(ip))
+                {
+                    addresses.Add(ip);
+                }
+            }
+
+            return addresses;
         }
 
         private bool CheckForSameSubNet(List<IPAddress> validatedAddresses, string machineName)
