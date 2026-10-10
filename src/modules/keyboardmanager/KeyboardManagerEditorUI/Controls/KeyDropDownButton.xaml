@@ -41,6 +41,14 @@
             </Flyout>
         </DropDownButton.Flyout>
 
-        <commoncontrols:KeyCharPresenter x:Name="KeyNamePresenter" Content="{x:Bind KeyName, Mode=OneWay}" />
+        <Grid>
+            <commoncontrols:KeyCharPresenter x:Name="KeyNamePresenter" Content="{x:Bind KeyName, Mode=OneWay}" />
+            <TextBlock
+                x:Name="SelectKeyPlaceholderText"
+                x:Uid="KeyDropDownButton_SelectKeyPlaceholder"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Grid>
     </DropDownButton>
 </UserControl>

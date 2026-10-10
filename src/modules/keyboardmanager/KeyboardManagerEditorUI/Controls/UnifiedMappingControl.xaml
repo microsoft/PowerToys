@@ -82,12 +82,17 @@
                             Unchecked="TriggerKeyToggleBtn_Unchecked">
                             <ToggleButton.Content>
                                 <Grid>
-                                    <TextBlock
-                                        x:Name="TriggerKeyPlaceholder"
-                                        x:Uid="TriggerKeyPlaceholder"
+                                    <StackPanel
+                                        x:Name="TriggerEmptyKeyPickerPanel"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                                        Spacing="8">
+                                        <TextBlock
+                                            x:Uid="TriggerKeyPlaceholder"
+                                            HorizontalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                                        <local:KeyDropDownButton x:Name="TriggerEmptyKeyDropDown" />
+                                    </StackPanel>
                                     <ItemsControl x:Name="TriggerKeys" IsTabStop="False">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -259,12 +264,19 @@
                         Unchecked="ActionKeyToggleBtn_Unchecked">
                         <ToggleButton.Content>
                             <Grid>
-                                <TextBlock
-                                    x:Name="ActionKeyPlaceholder"
-                                    x:Uid="ActionKeyPlaceholder"
+                                <StackPanel
+                                    x:Name="ActionEmptyKeyPickerPanel"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                                    Spacing="8">
+                                    <TextBlock
+                                        x:Uid="ActionKeyPlaceholder"
+                                        HorizontalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                                    <local:KeyDropDownButton
+                                        x:Name="ActionEmptyKeyDropDown"
+                                        UseAccentStyle="True" />
+                                </StackPanel>
                                 <ItemsControl x:Name="ActionKeys" IsTabStop="False">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>

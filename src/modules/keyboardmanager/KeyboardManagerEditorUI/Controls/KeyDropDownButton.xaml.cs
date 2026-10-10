@@ -21,7 +21,7 @@ namespace KeyboardManagerEditorUI.Controls
                 nameof(KeyName),
                 typeof(string),
                 typeof(KeyDropDownButton),
-                new PropertyMetadata(string.Empty));
+                new PropertyMetadata(string.Empty, OnKeyNameChanged));
 
         public static readonly DependencyProperty IsShortcutProperty =
             DependencyProperty.Register(
@@ -60,6 +60,8 @@ namespace KeyboardManagerEditorUI.Controls
         public KeyDropDownButton()
         {
             this.InitializeComponent();
+            UpdateKeyVisualState();
+
             this.Loaded += (_, _) =>
             {
                 if (UseAccentStyle)
@@ -67,6 +69,21 @@ namespace KeyboardManagerEditorUI.Controls
                     KeyButton.Style = (Style)Application.Current.Resources["AccentKeyVisualDropDownButtonStyle"];
                 }
             };
+        }
+
+        private static void OnKeyNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is KeyDropDownButton dropDownButton)
+            {
+                dropDownButton.UpdateKeyVisualState();
+            }
+        }
+
+        private void UpdateKeyVisualState()
+        {
+            bool hasKeyName = !string.IsNullOrEmpty(KeyName);
+            KeyNamePresenter.Visibility = hasKeyName ? Visibility.Visible : Visibility.Collapsed;
+            SelectKeyPlaceholderText.Visibility = hasKeyName ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void KeyListView_ItemClick(object sender, ItemClickEventArgs e)
