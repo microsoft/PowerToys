@@ -30,8 +30,6 @@ public sealed partial class ContextMenu : UserControl
     private static readonly CompositeFormat _contextMenuBackFormat =
         CompositeFormat.Parse(ResourceLoaderInstance.GetString("ContextMenu_Back"));
 
-    public event EventHandler? CloseRequested;
-
     public event EventHandler? BackRequested;
 
     /// <summary>
@@ -50,13 +48,15 @@ public sealed partial class ContextMenu : UserControl
 
     public ContextMenuViewModel ViewModel { get; }
 
+    public event EventHandler? CloseRequested;
+
     public ContextMenu()
     {
         this.InitializeComponent();
 
         ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-    }
+     }
 
     internal void PrepareForOpen(IContextMenuContext context, ContextMenuFilterLocation filterLocation, CommandContextItemViewModel? initialSubmenu = null)
     {
@@ -74,7 +74,7 @@ public sealed partial class ContextMenu : UserControl
         {
             _isPreparing = false;
         }
-    }
+   }
 
     /// <summary>
     /// Fires a single consolidated Narrator announcement.
@@ -133,6 +133,11 @@ public sealed partial class ContextMenu : UserControl
 
     private void HandleShortcut(KeyRoutedEventArgs e)
     {
+        if (e.Handled)
+        {
+            return;
+        }
+
         var mods = KeyModifiers.GetCurrent();
         var chord = KeyChordHelpers.FromModifiers(mods.Ctrl, mods.Alt, mods.Shift, mods.Win, e.Key, 0);
         var item = ViewModel.FindKeybinding(chord);

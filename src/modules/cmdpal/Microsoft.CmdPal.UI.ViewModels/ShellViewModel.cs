@@ -18,9 +18,14 @@ public partial class ShellViewModel : ObservableObject,
     IDisposable,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>,
-    IRecipient<WindowHiddenMessage>,
-    IRecipient<UpdateCommandBarMessage>
+    IRecipient<WindowHiddenMessage>
 {
+    public event EventHandler<PageNavigationRequestedEventArgs>? PageNavigationRequested;
+
+    public event EventHandler<ShellNavigationRequestedEventArgs>? GoHomeRequested;
+
+    public event EventHandler<ShellNavigationRequestedEventArgs>? GoBackRequested;
+
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
@@ -42,13 +47,6 @@ public partial class ShellViewModel : ObservableObject,
 
     [ObservableProperty]
     public partial bool IsSearchBoxVisible { get; set; } = true;
-
-    // Input follows the current context without waiting for command-bar rendering.
-    public ICommandBarContext? CurrentCommandContext
-    {
-        get;
-        private set => SetProperty(ref field, value);
-    }
 
     private PageViewModel _currentPage;
 
@@ -127,12 +125,6 @@ public partial class ShellViewModel : ObservableObject,
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
         WeakReferenceMessenger.Default.Register<WindowHiddenMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
-    }
-
-    public void Receive(UpdateCommandBarMessage message)
-    {
-        CurrentCommandContext = message.ViewModel;
     }
 
     [RelayCommand]
@@ -371,9 +363,6 @@ public partial class ShellViewModel : ObservableObject,
                         new(extensionId, commandId, commandName, true, 0));
                 }
 
-                // Clear command bar, ViewModel initialization can already set new commands if it wants to
-                OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
-
                 // Kick off async loading of our ViewModel
                 LoadPageViewModelAsync(pageViewModel, navigationToken)
                     .ContinueWith(
@@ -390,8 +379,9 @@ public partial class ShellViewModel : ObservableObject,
                         _scheduler);
 
                 // While we're loading in the background, immediately move to the next page.
-                NavigateToPageMessage msg = new(pageViewModel, message.WithAnimation, navigationToken, message.TransientPage);
-                WeakReferenceMessenger.Default.Send(msg);
+                PageNavigationRequested?.Invoke(
+                    this,
+                    new(pageViewModel, message.WithAnimation, message.TransientPage, navigationToken));
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
@@ -603,7 +593,7 @@ public partial class ShellViewModel : ObservableObject,
     public void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
         _rootPageService.GoHome();
-        WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
+        GoHomeRequested?.Invoke(this, new(withAnimation, focusSearch));
     }
 
     /// <summary>
@@ -620,7 +610,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
-        WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));
+        GoBackRequested?.Invoke(this, new(withAnimation, focusSearch));
     }
 
     public void Receive(HandleCommandResultMessage message)
@@ -645,15 +635,6 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void OnUIThread(Action action)
-    {
-        _ = Task.Factory.StartNew(
-            action,
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _scheduler);
-    }
-
     public void CancelNavigation()
     {
         _navigationCts?.Cancel();
@@ -661,8 +642,6 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Dispose()
     {
-        WeakReferenceMessenger.Default.Unregister<UpdateCommandBarMessage>(this);
-        CurrentCommandContext = null;
         _handleInvokeTask?.Dispose();
         _navigationCts?.Dispose();
 

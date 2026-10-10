@@ -395,7 +395,7 @@ public partial class ShellViewModelTests
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(recipient, (_, _) => events.Add("show"));
         WeakReferenceMessenger.Default.Register<TelemetryCommandStartedMessage>(recipient, (_, _) => events.Add("started"));
         WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(recipient, (_, _) => events.Add("completed"));
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(recipient, (_, _) => events.Add("navigate"));
+        viewModel.PageNavigationRequested += OnPageNavigationRequested;
 
         try
         {
@@ -406,51 +406,12 @@ public partial class ShellViewModelTests
         }
         finally
         {
+            viewModel.PageNavigationRequested -= OnPageNavigationRequested;
             WeakReferenceMessenger.Default.UnregisterAll(recipient);
             WeakReferenceMessenger.Default.UnregisterAll(viewModel);
         }
-    }
 
-    [TestMethod]
-    public void CommandContext_FollowsSelectionImmediatelyWithoutACommandBar()
-    {
-        using var viewModel = CreateViewModel();
-        var first = Mock.Of<ICommandBarContext>();
-        var second = Mock.Of<ICommandBarContext>();
-        List<ICommandBarContext?> observedContexts = [];
-        viewModel.PropertyChanged += (_, args) =>
-        {
-            if (args.PropertyName == nameof(ShellViewModel.CurrentCommandContext))
-            {
-                observedContexts.Add(viewModel.CurrentCommandContext);
-            }
-        };
-
-        try
-        {
-            Assert.IsNull(viewModel.CurrentCommandContext);
-
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
-            Assert.AreSame(first, viewModel.CurrentCommandContext);
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
-            Assert.HasCount(1, observedContexts, "Repeating the same context must not restart the bar's display debounce.");
-
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(second));
-            Assert.AreSame(second, viewModel.CurrentCommandContext);
-
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(null));
-            Assert.IsNull(viewModel.CurrentCommandContext);
-
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
-            viewModel.Dispose();
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(second));
-            Assert.IsNull(viewModel.CurrentCommandContext);
-            CollectionAssert.AreEqual(new ICommandBarContext?[] { first, second, null, first, null }, observedContexts);
-        }
-        finally
-        {
-            WeakReferenceMessenger.Default.UnregisterAll(viewModel);
-        }
+        void OnPageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e) => events.Add("navigate");
     }
 
     private static ShellViewModel CreateViewModel()

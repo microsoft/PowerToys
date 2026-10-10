@@ -32,15 +32,7 @@ namespace Microsoft.CmdPal.UI;
 /// empty-content branch. Hosted by both <see cref="ListPage"/> and
 /// <see cref="ParametersPage"/> so list rendering behavior stays in one place.
 /// </summary>
-public sealed partial class ListItemsView : UserControl,
-    IRecipient<NavigateNextCommand>,
-    IRecipient<NavigatePreviousCommand>,
-    IRecipient<NavigateLeftCommand>,
-    IRecipient<NavigateRightCommand>,
-    IRecipient<NavigatePageDownCommand>,
-    IRecipient<NavigatePageUpCommand>,
-    IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>
+public sealed partial class ListItemsView : UserControl
 {
     private const double ListShortcutCueHorizontalOffset = -16;
 
@@ -68,7 +60,6 @@ public sealed partial class ListItemsView : UserControl,
     private bool _forceFirstPending;
 
     private bool _isLoaded;
-    private bool _isMessengerRegistered;
     private ScrollViewer? _itemsScrollViewer;
     private ListViewBase? _itemsScrollViewerOwner;
     private bool _areNumberedShortcutCuesVisible;
@@ -90,6 +81,16 @@ public sealed partial class ListItemsView : UserControl,
     // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListItemsView), new PropertyMetadata(null, OnViewModelChanged));
+
+    public event EventHandler<ListItemsSelectionChangedEventArgs>? SelectionChanged;
+
+    public event EventHandler<ListItemsContextMenuRequestedEventArgs>? ContextMenuRequested;
+
+    public event EventHandler? ContextMenuCloseRequested;
+
+    public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
 
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
@@ -119,7 +120,6 @@ public sealed partial class ListItemsView : UserControl,
 
         _isLoaded = true;
         SynchronizeGridItems();
-        RegisterMessenger();
         RegisterExistingRealizedItems();
         _accessKeyMode.IsActiveChanged += AccessKeyMode_IsActiveChanged;
         SetNumberedShortcutCuesVisibility(_accessKeyMode.IsActive);
@@ -143,46 +143,8 @@ public sealed partial class ListItemsView : UserControl,
         // its groups from the source, which is what it does after any teardown.
         ReleaseGridProjection();
         SetItemsScrollViewer(null);
-        UnregisterMessenger();
         CancelPendingContextMenuOpen();
         ReleaseRealizedItems();
-    }
-
-    private void RegisterMessenger()
-    {
-        if (_isMessengerRegistered)
-        {
-            return;
-        }
-
-        // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigateLeftCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigateRightCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePageDownCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
-        _isMessengerRegistered = true;
-    }
-
-    private void UnregisterMessenger()
-    {
-        if (!_isMessengerRegistered)
-        {
-            return;
-        }
-
-        WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigateLeftCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigateRightCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePageDownCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
-        _isMessengerRegistered = false;
     }
 
     /// <summary>
@@ -292,7 +254,7 @@ public sealed partial class ListItemsView : UserControl,
                 _scrollOnNextSelectionChange = true;
 
                 ViewModel?.UpdateSelectedItemCommand.Execute(item);
-                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                RequestSearchFocus();
             }
         }
     }
@@ -351,6 +313,7 @@ public sealed partial class ListItemsView : UserControl,
 
         // Do not Task.Run (it reorders selection updates).
         vm?.UpdateSelectedItemCommand.Execute(li);
+        SelectionChanged?.Invoke(this, new(li));
 
         // Only scroll when explicitly requested by navigation/click handlers.
         if (_scrollOnNextSelectionChange)
@@ -588,7 +551,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    // Message-driven navigation should count as keyboard.
+    // Navigation requested by the owner should count as keyboard input.
     private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
 
     private void PushSelectionToVm(bool force = false)
@@ -613,6 +576,17 @@ public sealed partial class ListItemsView : UserControl,
         {
             li = null;
             _lastPushedToVm = null;
+            if (force)
+            {
+                ViewModel.AcknowledgeSelection(li);
+            }
+            else
+            {
+                ViewModel.UpdateSelectedItemCommand.Execute(li);
+            }
+
+            SelectionChanged?.Invoke(this, new(ViewModel.ShowEmptyContent ? ViewModel.EmptyContent : null));
+            return;
         }
 
         if (force)
@@ -623,9 +597,11 @@ public sealed partial class ListItemsView : UserControl,
         {
             ViewModel.UpdateSelectedItemCommand.Execute(li);
         }
+
+        SelectionChanged?.Invoke(this, new(li));
     }
 
-    public void Receive(NavigateNextCommand message)
+    public void NavigateNext()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -644,7 +620,7 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
     }
 
-    public void Receive(NavigatePreviousCommand message)
+    public void NavigatePrevious()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -662,7 +638,7 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
     }
 
-    public void Receive(NavigateLeftCommand message)
+    public void NavigateLeft()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -680,7 +656,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(NavigateRightCommand message)
+    public void NavigateRight()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -698,7 +674,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(ActivateSelectedListItemMessage message)
+    public void ActivatePrimary()
     {
         if (ViewModel?.ShowEmptyContent ?? false)
         {
@@ -710,7 +686,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(ActivateSecondaryCommandMessage message)
+    public void ActivateSecondary()
     {
         if (ViewModel?.ShowEmptyContent ?? false)
         {
@@ -722,7 +698,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(NavigatePageDownCommand message)
+    public void NavigatePageDown()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -747,7 +723,7 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
     }
 
-    public void Receive(NavigatePageUpCommand message)
+    public void NavigatePageUp()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -958,6 +934,7 @@ public sealed partial class ListItemsView : UserControl,
             }
             else if (e.NewValue is null)
             {
+                @this.SelectionChanged?.Invoke(@this, new(null));
                 Logger.LogDebug("cleared view model");
             }
 
@@ -1574,7 +1551,7 @@ public sealed partial class ListItemsView : UserControl,
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
         CancelPendingContextMenuOpen();
-        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<ClosePaletteContextMenuMessage>());
+        _ = DispatcherQueue.TryEnqueue(RequestContextMenuClose);
     }
 
     private void TrackPointerInput(object sender, PointerRoutedEventArgs e)
@@ -1648,18 +1625,18 @@ public sealed partial class ListItemsView : UserControl,
 
             DataPackageTransfer.Copy(item.DataPackage, e.Data);
 
-            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
+            DragStateChanged?.Invoke(this, new(true));
         }
         catch (Exception ex)
         {
-            WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+            DragStateChanged?.Invoke(this, new(false));
             Logger.LogError("Failed to start dragging an item", ex);
         }
     }
 
     private void Items_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
     {
-        WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+        DragStateChanged?.Invoke(this, new(false));
     }
 
     /// <summary>
@@ -1773,16 +1750,14 @@ public sealed partial class ListItemsView : UserControl,
                     return;
                 }
 
-                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
-                    new OpenContextMenuMessage(
-                        new ContextMenuRequest(item)
-                        {
-                            Anchor = new ContextMenuAnchor(
-                                element,
-                                pos,
-                                FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                                ContextMenuFilterLocation.Top),
-                        }));
+                ContextMenuRequested?.Invoke(
+                    this,
+                    new(
+                        item,
+                        element,
+                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
             });
 
         return true;
@@ -1829,6 +1804,16 @@ public sealed partial class ListItemsView : UserControl,
         Interlocked.Increment(ref _pendingContextMenuOpenRequestId);
         _cancelPendingContextMenuOpen?.Invoke();
         _cancelPendingContextMenuOpen = null;
+    }
+
+    private void RequestSearchFocus()
+    {
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void RequestContextMenuClose()
+    {
+        ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private IDisposable SuppressSelectionChangedScope()

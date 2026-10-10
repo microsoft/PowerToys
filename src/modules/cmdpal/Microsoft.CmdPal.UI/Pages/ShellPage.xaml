@@ -846,7 +846,7 @@
             BorderThickness="0,1,0,0"
             Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
             <cpcontrols:CommandBar
-                CommandContext="{x:Bind ViewModel.CurrentCommandContext, Mode=OneWay}"
+                x:Name="MainCommandBar"
                 CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 

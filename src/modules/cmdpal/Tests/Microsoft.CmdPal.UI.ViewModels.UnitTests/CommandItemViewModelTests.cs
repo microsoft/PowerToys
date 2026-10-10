@@ -857,7 +857,7 @@ public partial class CommandItemViewModelTests
     }
 
     [TestMethod]
-    public void CommandBarMessages_DoNotPrepareOrRetargetMenu()
+    public void ContextMenu_PreparesOnlyOnExplicitOpen()
     {
         var pageContext = new TestPageContext();
         var parent = new CommandContextItem(new NoOpCommand { Name = "Submenu" })
@@ -872,7 +872,6 @@ public partial class CommandItemViewModelTests
 
         try
         {
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(viewModel));
             Assert.IsNull(menu.SelectedItem);
             Assert.AreEqual(0, menu.FilteredItems.Count);
             menu.PrepareForOpen(viewModel, parentViewModel);
@@ -881,8 +880,6 @@ public partial class CommandItemViewModelTests
             Assert.AreEqual(2, filteredItems.Length);
             Assert.IsInstanceOfType<ContextMenuBackItemViewModel>(filteredItems[0]);
 
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(viewModel));
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(null));
             Assert.AreSame(viewModel, menu.SelectedItem);
             Assert.IsTrue(menu.CanPopContextStack());
             CollectionAssert.AreEqual(filteredItems, menu.FilteredItems.ToArray());
@@ -1263,7 +1260,6 @@ public partial class CommandItemViewModelTests
             Assert.AreSame(commands[0], menu.SecondaryCommand);
             first.Name = string.Empty;
             await secondaryChanged.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(viewModel));
             Assert.AreSame(snapshot, viewModel.AllCommands);
             Assert.AreSame(commands[1], menu.SecondaryCommand, "Renaming a row must update the role even when the menu list is unchanged.");
 

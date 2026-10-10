@@ -77,7 +77,7 @@ internal sealed partial class ItemActionController :
     }
 
     /// <summary>
-    /// Handles Enter, Ctrl+Enter, and Ctrl+K during normal key routing.
+    /// Handles Ctrl+K during normal key routing. Page interaction targets handle Enter and Ctrl+Enter.
     /// </summary>
     /// <returns>True when the key is consumed, even if no applicable action or menu exists.</returns>
     public bool TryHandleKey(KeyChord chord)
@@ -89,12 +89,6 @@ internal sealed partial class ItemActionController :
 
         switch ((VirtualKey)chord.Vkey)
         {
-            case VirtualKey.Enter when chord.Modifiers == VirtualKeyModifiers.Control:
-                _messenger.Send<ActivateSecondaryCommandMessage>();
-                break;
-            case VirtualKey.Enter when chord.Modifiers == VirtualKeyModifiers.None:
-                _messenger.Send<ActivateSelectedListItemMessage>();
-                break;
             case VirtualKey.K when chord.Modifiers == VirtualKeyModifiers.Control:
                 if (_currentContext() is { } context)
                 {
