@@ -1134,6 +1134,17 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        internal bool AllowNonConsoleSessions
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.AllowNonConsoleSessions.Value;
+                }
+            }
+        }
+
         // If starting the service fails, work in not service mode.
         internal bool UseService
         {

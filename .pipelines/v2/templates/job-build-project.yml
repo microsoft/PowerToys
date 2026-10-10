@@ -59,6 +59,12 @@ parameters:
   - name: buildTests
     type: boolean
     default: true
+  - name: buildInstallers
+    type: boolean
+    default: true
+  - name: mwbSandboxExperiment
+    type: boolean
+    default: false
   - name: useVSPreview
     type: boolean
     default: false
@@ -171,6 +177,15 @@ jobs:
       targetPath: $(LogOutputDirectory)
       condition: or(failed(), canceled())
   steps:
+  - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
+    - pwsh: |
+        if ('$(BuildPlatform)' -cne 'x64' -or '$(BuildConfiguration)' -cne 'Release' -or
+            '${{ parameters.buildTests }}' -ne 'True' -or
+            '${{ parameters.artifactStem }}' -ne '') {
+          throw 'MWB CI preparation requires the shared build-x64-Release artifact and buildTests=true. ARM64 builds remain normal; only their MWB Sandbox execution is skipped.'
+        }
+      displayName: Validate gated MWB build preparation
+
   - checkout: self
     clean: true
     submodules: true
@@ -611,12 +626,13 @@ jobs:
 
 
 
-  - template: steps-build-installer-vnext.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: $(EffectiveVersionNumber)
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+  - ${{ if eq(parameters.buildInstallers, true) }}:
+    - template: steps-build-installer-vnext.yml
+      parameters:
+        codeSign: ${{ parameters.codeSign }}
+        signingIdentity: ${{ parameters.signingIdentity }}
+        versionNumber: $(EffectiveVersionNumber)
+        additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
@@ -633,14 +649,15 @@ jobs:
     displayName: Clean up static libs PDBs
     errorActionPreference: silentlyContinue # It's OK if this silently fails
 
-  - task: CopyFiles@2
-    displayName: Stage Installers
-    inputs:
-      contents: |-
-        **/PowerToys*Setup-*.exe
-        !**/PowerToysSetupVNext/obj/**
-      flattenFolders: True
-      targetFolder: $(JobOutputDirectory)
+  - ${{ if eq(parameters.buildInstallers, true) }}:
+    - task: CopyFiles@2
+      displayName: Stage Installers
+      inputs:
+        contents: |-
+          **/PowerToys*Setup-*.exe
+          !**/PowerToysSetupVNext/obj/**
+        flattenFolders: True
+        targetFolder: $(JobOutputDirectory)
 
   - pwsh: |-
       $Symbols = Get-ChildItem "$(BuildPlatform)" -Recurse -Filter *.pdb -Exclude "vc143.pdb","*test*.pdb" |
@@ -653,29 +670,30 @@ jobs:
       }
     displayName: Stage Unique Symbols (as hard links)
 
-  - pwsh: |-
-      $p = "$(JobOutputDirectory)\"
-      
-      # Calculate hashes for installers
-      $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe"
-      $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
-      
-      if ($userSetupFiles.Count -gt 0) {
-          $userHash = ($userSetupFiles[0] | Get-FileHash).Hash;
-          $userPlat = "hash_user_$(BuildPlatform).txt";
-          $combinedUserPath = $p + $userPlat;
-          echo "User: $userHash"
-          $userHash | out-file -filepath $combinedUserPath
-      }
-      
-      if ($machineSetupFiles.Count -gt 0) {
-          $machineHash = ($machineSetupFiles[0] | Get-FileHash).Hash;
-          $machinePlat = "hash_machine_$(BuildPlatform).txt";
-          $combinedMachinePath = $p + $machinePlat;
-          echo "Machine: $machineHash"
-          $machineHash | out-file -filepath $combinedMachinePath
-      }
-    displayName: Calculate file hashes for all installers
+  - ${{ if eq(parameters.buildInstallers, true) }}:
+    - pwsh: |-
+        $p = "$(JobOutputDirectory)\"
+
+        # Calculate hashes for installers
+        $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe"
+        $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
+
+        if ($userSetupFiles.Count -gt 0) {
+            $userHash = ($userSetupFiles[0] | Get-FileHash).Hash;
+            $userPlat = "hash_user_$(BuildPlatform).txt";
+            $combinedUserPath = $p + $userPlat;
+            echo "User: $userHash"
+            $userHash | out-file -filepath $combinedUserPath
+        }
+
+        if ($machineSetupFiles.Count -gt 0) {
+            $machineHash = ($machineSetupFiles[0] | Get-FileHash).Hash;
+            $machinePlat = "hash_machine_$(BuildPlatform).txt";
+            $combinedMachinePath = $p + $machinePlat;
+            echo "Machine: $machineHash"
+            $machineHash | out-file -filepath $combinedMachinePath
+        }
+      displayName: Calculate file hashes for all installers
 
   # Publishing the GPO files
   - pwsh: |-
@@ -695,6 +713,31 @@ jobs:
         New-Item -Type Directory $FinalOutputRoot -EA:Ignore
         Move-Item $ProjectBuildDirectory $FinalOutputRoot
       displayName: Move entire output directory into artifacts
+
+  - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
+    - pwsh: |
+        $work = "$(Pipeline.Workspace)\mwb-ci-build-$(System.JobId)"
+        try {
+          & "$(Build.SourcesDirectory)\.pipelines\New-MwbSandboxCiArtifact.ps1" `
+            -ProductRoot "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)\$(BuildConfiguration)" `
+            -OutputRoot "$(JobOutputDirectory)\mwb-sandbox-ci" `
+            -WorkRoot $work `
+            -DotNetPath "$(DOTNET_ROOT)\dotnet.exe" `
+            -Platform "$(BuildPlatform)" `
+            -Configuration "$(BuildConfiguration)" `
+            -SourceRevision "$(Build.SourceVersion)" -ReadyToRun
+        } finally {
+          # Preserve preparation diagnostics, never downloaded tools or the package cache.
+          if (Test-Path -LiteralPath $work) {
+            foreach ($log in Get-ChildItem -LiteralPath $work -Filter '*.log' -File -Recurse) {
+              $destination = Join-Path "$(LogOutputDirectory)\mwb-ci" ([IO.Path]::GetRelativePath($work, $log.FullName))
+              $null = New-Item -ItemType Directory -Path (Split-Path $destination) -Force
+              Copy-Item -LiteralPath $log.FullName -Destination $destination
+            }
+          }
+        }
+      displayName: Prepare coherent lean MWB runtime and official winapp CLI release
+      timeoutInMinutes: 35
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)

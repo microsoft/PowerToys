@@ -103,7 +103,7 @@ namespace MouseWithoutBorders
             MachineStuff.MachineMatrix = st;
             Setting.Values.MatrixOneRow = matrixOneRow = !checkBoxTwoRow.Checked;
 
-            if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+            if (!WinAPI.IsCurrentSessionAllowed())
             {
                 Program.StartService();
                 Common.ShowToolTip("New settings applied on the physical console session!", 3000, ToolTipIcon.Warning, false);

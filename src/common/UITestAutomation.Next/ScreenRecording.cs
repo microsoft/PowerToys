@@ -9,13 +9,13 @@ using ScreenRecorderLib;
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// Records the desktop to an MP4 during a UI test using ScreenRecorderLib, which encodes in realtime
-/// with native Microsoft Media Foundation (H.264). Used only by the pipeline path of
-/// <see cref="UITestBase"/>. Unlike the old GDI + FFmpeg path there is nothing to probe for on PATH;
+/// Records a desktop or window to an MP4 during a UI test using ScreenRecorderLib, which encodes in realtime
+/// with native Microsoft Media Foundation (H.264). Used by <see cref="UITestBase"/> and custom fixtures.
+/// Unlike the old GDI + FFmpeg path there is nothing to probe for on PATH;
 /// any runtime problem is surfaced through <c>OnRecordingFailed</c> and handled gracefully so the
 /// failing test is never blocked — screenshots still cover the failure.
 /// </summary>
-internal sealed class ScreenRecording : IDisposable
+public sealed class ScreenRecording : IDisposable
 {
     // Deliberately light capture settings: on CI runners without a GPU, ScreenRecorderLib falls back
     // to software H.264, and a full 1080p/30fps realtime encode competes with the test for CPU. 15 fps
@@ -30,6 +30,7 @@ internal sealed class ScreenRecording : IDisposable
 
     private readonly string outputDirectory;
     private readonly string outputFilePath;
+    private readonly IntPtr windowHandle;
     private readonly object syncRoot = new();
 
     private Recorder? recorder;
@@ -37,10 +38,35 @@ internal sealed class ScreenRecording : IDisposable
     private bool isRecording;
 
     public ScreenRecording(string outputDirectory)
+        : this(outputDirectory, IntPtr.Zero)
     {
+    }
+
+    /// <summary>Records a specific window, or the main display when the handle is zero.</summary>
+    public ScreenRecording(string outputDirectory, IntPtr windowHandle)
+        : this(outputDirectory, windowHandle, TargetFps, OutputWidth, OutputHeight)
+    {
+    }
+
+    /// <summary>Records with an explicitly bounded video profile for resource-constrained test workloads.</summary>
+    public ScreenRecording(string outputDirectory, IntPtr windowHandle, int frameRate, int frameWidth, int frameHeight)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(frameRate, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(frameRate, 60);
+        ArgumentOutOfRangeException.ThrowIfLessThan(frameWidth, 2);
+        ArgumentOutOfRangeException.ThrowIfLessThan(frameHeight, 2);
+        if ((frameWidth & 1) != 0 || (frameHeight & 1) != 0)
+        {
+            throw new ArgumentException("H.264 frame dimensions must be even.");
+        }
+
         this.outputDirectory = outputDirectory;
+        this.windowHandle = windowHandle;
+        FrameRate = frameRate;
+        FrameWidth = frameWidth;
+        FrameHeight = frameHeight;
         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
-        outputFilePath = Path.Combine(outputDirectory, $"recording_{timestamp}.mp4");
+        outputFilePath = Path.Combine(outputDirectory, $"recording_{timestamp}_{Guid.NewGuid():N}.mp4");
     }
 
     /// <summary>
@@ -78,7 +104,25 @@ internal sealed class ScreenRecording : IDisposable
     /// <summary>Directory containing the recording output.</summary>
     public string OutputDirectory => outputDirectory;
 
-    /// <summary>Start recording the main display. Best-effort and non-blocking.</summary>
+    /// <summary>Requested fixed recording frame rate.</summary>
+    public int FrameRate { get; }
+
+    /// <summary>Requested encoded frame width.</summary>
+    public int FrameWidth { get; }
+
+    /// <summary>Requested encoded frame height.</summary>
+    public int FrameHeight { get; }
+
+    /// <summary>Whether the recorder accepted a start request.</summary>
+    public bool WasStarted { get; private set; }
+
+    /// <summary>Whether the encoder finalized a nonempty MP4 successfully.</summary>
+    public bool CompletedSuccessfully { get; private set; }
+
+    /// <summary>The recording failure, if one occurred.</summary>
+    public string? FailureReason { get; private set; }
+
+    /// <summary>Start recording the selected display or window. Best-effort and non-blocking.</summary>
     public Task StartRecordingAsync()
     {
         lock (syncRoot)
@@ -90,6 +134,9 @@ internal sealed class ScreenRecording : IDisposable
 
             try
             {
+                WasStarted = false;
+                CompletedSuccessfully = false;
+                FailureReason = null;
                 Directory.CreateDirectory(outputDirectory);
 
                 var options = new RecorderOptions
@@ -98,15 +145,14 @@ internal sealed class ScreenRecording : IDisposable
                     {
                         RecorderMode = RecorderMode.Video,
 
-                        // Downscale from the test desktop (normalized to 1080p) to 720p. Both are 16:9 so
-                        // Uniform is a clean scale with no letterboxing, and encoding ~2.25x fewer pixels
-                        // is the single biggest CPU saving when the runner falls back to software H.264.
-                        OutputFrameSize = new ScreenSize(OutputWidth, OutputHeight),
+                        // The default profile downscales 1080p to 720p; callers with
+                        // nested workloads can reduce it further without changing capture semantics.
+                        OutputFrameSize = new ScreenSize(FrameWidth, FrameHeight),
                         Stretch = StretchMode.Uniform,
                     },
                     VideoEncoderOptions = new VideoEncoderOptions
                     {
-                        Framerate = TargetFps,
+                        Framerate = FrameRate,
 
                         // Baseline is the cheapest H.264 profile to encode (no B-frames/CABAC); the
                         // library's own docs note lesser profiles "use less resources" — ideal for a
@@ -142,6 +188,14 @@ internal sealed class ScreenRecording : IDisposable
                     },
                 };
 
+                if (windowHandle != IntPtr.Zero)
+                {
+                    options.SourceOptions = new SourceOptions
+                    {
+                        RecordingSources = [new WindowRecordingSource(windowHandle)],
+                    };
+                }
+
                 recordingFinished = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 recorder = Recorder.CreateRecorder(options);
@@ -149,11 +203,13 @@ internal sealed class ScreenRecording : IDisposable
                 recorder.OnRecordingFailed += OnRecordingFailed;
                 recorder.Record(outputFilePath);
 
+                WasStarted = true;
                 isRecording = true;
-                Console.WriteLine($"Started screen recording at {TargetFps} FPS to {outputFilePath}");
+                Console.WriteLine($"Started screen recording at {FrameRate} FPS to {outputFilePath}");
             }
             catch (Exception ex)
             {
+                FailureReason = $"{ex.GetType().Name}: {ex.Message}";
                 Console.WriteLine($"Failed to start recording: {ex.Message}");
                 DisposeRecorder();
                 isRecording = false;
@@ -191,18 +247,28 @@ internal sealed class ScreenRecording : IDisposable
                 var completed = await Task.WhenAny(finished.Task, Task.Delay(FinalizeTimeout)).ConfigureAwait(false);
                 if (completed != finished.Task)
                 {
+                    FailureReason = "Timed out waiting for the recording to finalize.";
                     Console.WriteLine("Timed out waiting for the recording to finalize.");
+                }
+                else if (await finished.Task.ConfigureAwait(false) && File.Exists(outputFilePath) && new FileInfo(outputFilePath).Length > 0)
+                {
+                    CompletedSuccessfully = true;
                 }
             }
 
-            if (File.Exists(outputFilePath))
+            if (CompletedSuccessfully)
             {
                 var fileInfo = new FileInfo(outputFilePath);
                 Console.WriteLine($"Video created: {outputFilePath} ({fileInfo.Length / 1024.0 / 1024.0:F1} MB)");
             }
+            else
+            {
+                FailureReason ??= "The encoder did not produce a finalized nonempty MP4.";
+            }
         }
         catch (Exception ex)
         {
+            FailureReason = $"{ex.GetType().Name}: {ex.Message}";
             Console.WriteLine($"Error stopping recording: {ex.Message}");
         }
         finally
@@ -229,6 +295,7 @@ internal sealed class ScreenRecording : IDisposable
 
     private void OnRecordingFailed(object? sender, RecordingFailedEventArgs e)
     {
+        FailureReason = e.Error;
         Console.WriteLine($"Screen recording failed: {e.Error}");
         recordingFinished?.TrySetResult(false);
     }
@@ -251,6 +318,7 @@ internal sealed class ScreenRecording : IDisposable
             }
             catch (Exception ex)
             {
+                FailureReason = $"{ex.GetType().Name}: {ex.Message}";
                 Console.WriteLine($"Failed to dispose recorder: {ex.Message}");
             }
 

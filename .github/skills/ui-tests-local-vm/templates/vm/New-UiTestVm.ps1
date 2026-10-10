@@ -74,6 +74,23 @@ function ConvertTo-UnattendPassword {
     return [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($Password + $Element))
 }
 
+function Get-ProvisionArguments {
+    param([Parameter(Mandatory)][hashtable]$Configuration)
+
+    foreach ($key in 'AdminUserName', 'StandardUser') {
+        $userName = [string]$Configuration[$key]
+        if ([string]::IsNullOrWhiteSpace($userName) -or $userName -match '["\\/\x00-\x1f]') {
+            throw "$key must be an unqualified local account name without double quotes or control characters."
+        }
+    }
+    if ($Configuration.AdminUserName -eq $Configuration.StandardUser) {
+        throw 'AdminUserName and StandardUser must refer to different local accounts.'
+    }
+
+    # Windows Setup launches powershell.exe -File directly, not through cmd.exe or -Command.
+    return '-AdminUserName "{0}" -StandardUser "{1}"' -f $Configuration.AdminUserName, $Configuration.StandardUser
+}
+
 function Assert-SupportedVmVolume {
     <#
     .SYNOPSIS
@@ -236,10 +253,10 @@ function New-UnattendContent {
         '{{COMPUTERNAME}}' = $Configuration.ComputerName
         '{{LOCALE}}' = $Configuration.Locale
         '{{TIMEZONE}}' = $Configuration.TimeZone
-        '{{ADMINUSER}}' = $Configuration.AdminUserName
+        '{{ADMINUSER}}' = [Security.SecurityElement]::Escape($Configuration.AdminUserName)
         '{{ADMINPASSWORD}}' = $ObfuscatedPassword
         '{{IMAGENAME}}' = [Security.SecurityElement]::Escape($SelectedImageName)
-        '{{PROVISIONARGUMENTS}}' = $ProvisionArguments
+        '{{PROVISIONARGUMENTS}}' = [Security.SecurityElement]::Escape($ProvisionArguments)
     }
     $content = Get-Content $TemplatePath -Raw
     foreach ($token in $tokens.GetEnumerator()) {
@@ -325,6 +342,7 @@ foreach ($key in 'VmName', 'ComputerName', 'VmPath', 'VhdPath', 'DiskSizeGB', 'M
 if ($configuration.ProcessorArchitecture -notin @('amd64', 'arm64')) {
     throw "ProcessorArchitecture must be amd64 or arm64, not '$($configuration.ProcessorArchitecture)'."
 }
+$provisionArguments = Get-ProvisionArguments -Configuration $configuration
 $hostArchitecture = switch ($env:PROCESSOR_ARCHITECTURE) {
     'AMD64' { 'amd64' }
     'ARM64' { 'arm64' }
@@ -360,7 +378,7 @@ if ($PlanOnly) {
     $preview = New-UnattendContent -Configuration $configuration `
         -ObfuscatedPassword (ConvertTo-UnattendPassword -Password 'preview' -Element 'Password') `
         -SelectedImageName $ImageName `
-        -ProvisionArguments "-StandardUser $($configuration.StandardUser)" `
+        -ProvisionArguments $provisionArguments `
         -TemplatePath $answerTemplatePath
     $plan.AnswerFileBytes = $preview.Length
     $plan.AnswerFileIsWellFormed = $true
@@ -447,7 +465,7 @@ try {
     $unattend = New-UnattendContent -Configuration $configuration `
         -ObfuscatedPassword (ConvertTo-UnattendPassword -Password $credential.GetNetworkCredential().Password -Element 'Password') `
         -SelectedImageName $selected.ImageName `
-        -ProvisionArguments "-StandardUser $($configuration.StandardUser)" `
+        -ProvisionArguments $provisionArguments `
         -TemplatePath $answerTemplatePath
     Set-Content (Join-Path $stagingRoot 'autounattend.xml') -Value $unattend -Encoding utf8
     $unattend = $null
