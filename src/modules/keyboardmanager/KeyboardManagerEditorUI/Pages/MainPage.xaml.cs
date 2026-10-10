@@ -43,7 +43,6 @@ namespace KeyboardManagerEditorUI.Pages
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
         private bool _isUpdatingToggle;
-        private string? _pendingOrphanedWarningSignature;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -444,14 +443,12 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async System.Threading.Tasks.Task ShowRemappingDialog()
         {
-            _pendingOrphanedWarningSignature = null;
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
-            RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
+            UnifiedMappingControl_ValidationStateChanged(UnifiedMappingControl, EventArgs.Empty);
 
             await RemappingDialog.ShowAsync();
 
-            _pendingOrphanedWarningSignature = null;
             RemappingDialog.PrimaryButtonClick -= RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
             _isEditMode = false;
@@ -461,30 +458,28 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
         {
-            _pendingOrphanedWarningSignature = null;
-
             if (!UnifiedMappingControl.IsInputComplete())
             {
+                UnifiedMappingControl.SetAdvisoryWarning(null);
                 RemappingDialog.IsPrimaryButtonEnabled = false;
                 return;
             }
 
-            if (_mappingService != null)
+            List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
+            if (_mappingService != null && triggerKeys?.Count > 0)
             {
-                List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
-                if (triggerKeys?.Count > 0)
+                ValidationErrorType error = ValidateMapping(UnifiedMappingControl.CurrentActionType, triggerKeys);
+                if (error != ValidationErrorType.NoError)
                 {
-                    ValidationErrorType error = ValidateMapping(UnifiedMappingControl.CurrentActionType, triggerKeys);
-                    if (error != ValidationErrorType.NoError)
-                    {
-                        UnifiedMappingControl.ShowValidationErrorFromType(error);
-                        RemappingDialog.IsPrimaryButtonEnabled = false;
-                        return;
-                    }
+                    UnifiedMappingControl.SetAdvisoryWarning(null);
+                    UnifiedMappingControl.ShowValidationErrorFromType(error);
+                    RemappingDialog.IsPrimaryButtonEnabled = false;
+                    return;
                 }
             }
 
             UnifiedMappingControl.HideValidationMessage();
+            UnifiedMappingControl.SetAdvisoryWarning(triggerKeys?.Count > 0 ? GetOrphanedKeysWarning(triggerKeys) : null);
             RemappingDialog.IsPrimaryButtonEnabled = true;
         }
 
@@ -523,23 +518,14 @@ namespace KeyboardManagerEditorUI.Pages
                     return;
                 }
 
-                if (ShouldShowOrphanedKeysWarning(triggerKeys, out string orphanedKeysWarning))
-                {
-                    UnifiedMappingControl.ShowNotificationTip(orphanedKeysWarning);
-                    args.Cancel = true;
-                    return;
-                }
-
                 bool saved = SaveMappingTransaction(triggerKeys);
 
                 if (saved)
                 {
-                    _pendingOrphanedWarningSignature = null;
                     LoadAllMappings();
                 }
                 else
                 {
-                    _pendingOrphanedWarningSignature = null;
                     UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
                     args.Cancel = true;
                 }
@@ -582,58 +568,33 @@ namespace KeyboardManagerEditorUI.Pages
             };
         }
 
-        private bool ShouldShowOrphanedKeysWarning(List<string> triggerKeys, out string warningMessage)
+        private string? GetOrphanedKeysWarning(List<string> triggerKeys)
         {
-            warningMessage = string.Empty;
-            if (_mappingService == null ||
-                !TryGetEditingContext(out string? replacingId, out bool exactMatch, out _) ||
-                CreateShortcutKeyMapping(_mappingService, triggerKeys, exactMatch) is not ShortcutKeyMapping replacementMapping ||
-                !ValidationHelper.IsOrphanedKeyWarningCandidate(replacementMapping))
+            // Only single-key remaps (to a key, text or Disable) can leave a key without an assignment.
+            if (UnifiedMappingControl.CurrentActionType is not (UnifiedMappingControl.ActionType.KeyOrShortcut or UnifiedMappingControl.ActionType.Text or UnifiedMappingControl.ActionType.Disable) ||
+                _mappingService == null ||
+                !TryGetEditingContext(out string? replacingId, out bool exactMatch, out ShortcutSettings? existingSettings) ||
+                CreateShortcutKeyMapping(_mappingService, triggerKeys, exactMatch) is not ShortcutKeyMapping replacementMapping)
             {
-                _pendingOrphanedWarningSignature = null;
-                return false;
+                return null;
             }
 
-            var candidateMappings = SettingsManager.EditorSettings.ShortcutSettingsDictionary
+            var otherMappings = SettingsManager.EditorSettings.ShortcutSettingsDictionary
                 .Where(entry => entry.Value.IsActive && !entry.Key.Equals(replacingId, StringComparison.OrdinalIgnoreCase))
                 .Select(entry => entry.Value.Shortcut)
-                .Append(replacementMapping);
+                .ToList();
+            ShortcutKeyMapping? replacedMapping = existingSettings?.IsActive == true ? existingSettings.Shortcut : null;
 
-            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeys(candidateMappings);
+            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeysCausedBy(otherMappings, replacedMapping, replacementMapping);
             if (orphanedKeys.Count == 0)
             {
-                _pendingOrphanedWarningSignature = null;
-                return false;
+                return null;
             }
 
-            string warningSignature = BuildOrphanedKeysWarningSignature(replacingId, replacementMapping, orphanedKeys);
-            if (string.Equals(_pendingOrphanedWarningSignature, warningSignature, StringComparison.Ordinal))
-            {
-                _pendingOrphanedWarningSignature = null;
-                return false;
-            }
-
-            _pendingOrphanedWarningSignature = warningSignature;
             string orphanedKeyNames = string.Join(", ", orphanedKeys.Select(key => _mappingService.GetKeyDisplayName(key)));
             _orphanedKeysWarningFormat ??= CompositeFormat.Parse(ResourceHelper.GetString("OrphanedKeysWarning_Message"));
-            warningMessage = string.Format(
-                CultureInfo.CurrentCulture,
-                _orphanedKeysWarningFormat,
-                orphanedKeyNames);
-            return true;
+            return string.Format(CultureInfo.CurrentCulture, _orphanedKeysWarningFormat, orphanedKeyNames);
         }
-
-        private static string BuildOrphanedKeysWarningSignature(string? replacingId, ShortcutKeyMapping replacementMapping, IEnumerable<int> orphanedKeys) =>
-            string.Join(
-                "|",
-                replacingId ?? string.Empty,
-                replacementMapping.OperationType.ToString(),
-                replacementMapping.OriginalKeys,
-                replacementMapping.TargetKeys,
-                replacementMapping.TargetText,
-                replacementMapping.Condition.ToString(),
-                replacementMapping.TargetApp ?? string.Empty,
-                string.Join(",", orphanedKeys));
 
         private bool TryGetEditingContext(out string? replacingId, out bool exactMatch, out ShortcutSettings? existingSettings)
         {

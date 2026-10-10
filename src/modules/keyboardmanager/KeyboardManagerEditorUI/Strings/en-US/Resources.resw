@@ -503,7 +503,7 @@
     <value>Warning</value>
   </data>
   <data name="OrphanedKeysWarning_Message" xml:space="preserve">
-    <value>The following keys do not have assignments: {0}. Select Save again to continue.</value>
+    <value>After saving, no key will produce {0}.</value>
     <comment>{0} is a comma-separated list of key names.</comment>
   </data>
   <data name="Error_UnknownValidation_Title" xml:space="preserve">

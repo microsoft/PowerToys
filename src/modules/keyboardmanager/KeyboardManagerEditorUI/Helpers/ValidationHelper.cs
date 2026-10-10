@@ -292,7 +292,9 @@ namespace KeyboardManagerEditorUI.Helpers
 
             foreach (ShortcutKeyMapping mapping in mappings)
             {
-                if (!TryGetSingleKey(mapping.OriginalKeys, out int originalKey) || originalKey == 0 || !HasValidSingleKeyTarget(mapping))
+                // App-specific remaps leave the key usable in every other app.
+                if (!TryGetSingleKey(mapping.OriginalKeys, out int originalKey) || originalKey == 0 ||
+                    !string.IsNullOrEmpty(mapping.TargetApp) || !HasValidSingleKeyTarget(mapping))
                 {
                     continue;
                 }
@@ -316,6 +318,30 @@ namespace KeyboardManagerEditorUI.Helpers
             return originalKeys.OrderBy(key => key).ToList();
         }
 
+        /// <summary>
+        /// Returns the keys that would have no assignment because of <paramref name="replacement"/>:
+        /// keys that become orphaned by the edit, plus the replacement's own source key if it is orphaned.
+        /// Keys that were already orphaned by other, unrelated mappings are not reported.
+        /// </summary>
+        public static IReadOnlyList<int> GetOrphanedKeysCausedBy(
+            IReadOnlyCollection<ShortcutKeyMapping> otherMappings,
+            ShortcutKeyMapping? replacedMapping,
+            ShortcutKeyMapping replacement)
+        {
+            if (otherMappings == null || replacement == null || !IsOrphanedKeyWarningCandidate(replacement))
+            {
+                return Array.Empty<int>();
+            }
+
+            IEnumerable<ShortcutKeyMapping> before = replacedMapping == null ? otherMappings : otherMappings.Append(replacedMapping);
+            var previouslyOrphaned = new HashSet<int>(GetOrphanedKeys(before));
+            TryGetSingleKey(replacement.OriginalKeys, out int replacementKey);
+
+            return GetOrphanedKeys(otherMappings.Append(replacement))
+                .Where(key => key == replacementKey || !previouslyOrphaned.Contains(key))
+                .ToList();
+        }
+
         public static bool IsOrphanedKeyWarningCandidate(ShortcutKeyMapping mapping)
         {
             if (mapping == null)
@@ -325,6 +351,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
             return TryGetSingleKey(mapping.OriginalKeys, out int originalKey) &&
                    originalKey != 0 &&
+                   string.IsNullOrEmpty(mapping.TargetApp) &&
                    HasValidSingleKeyTarget(mapping);
         }
 
