@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <functional>
 #include "pipe_caller_auth.h"
 
@@ -33,6 +34,7 @@ public:
         callback_function p_func);
     ~TwoWayPipeMessageIPC();
     void send(std::wstring msg);
+    bool send_and_wait(std::wstring msg, std::chrono::milliseconds timeout);
     void start(HANDLE _restricted_pipe_token);
     // Overload that authenticates every connecting client before dispatch (fail-closed). Used by the
     // Runner for its privileged server pipes; the existing start(HANDLE) keeps the gate disabled.

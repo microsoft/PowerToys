@@ -1,7 +1,10 @@
 #pragma once
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <memory>
+#include <optional>
+#include <queue>
 #include <utility>
 #include <Windows.h>
 #include "async_message_queue.h"
@@ -15,6 +18,7 @@ class TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl
 {
 public:
     void send(std::wstring msg);
+    bool send_and_wait(std::wstring msg, std::chrono::milliseconds timeout);
     TwoWayPipeMessageIPCImpl(std::wstring _input_pipe_name, std::wstring _output_pipe_name, callback_function p_func);
     void start(HANDLE _restricted_pipe_token);
     void start(HANDLE _restricted_pipe_token, const interop_auth::CallerPolicy& _caller_policy);
@@ -119,7 +123,33 @@ private:
     };
 
     AsyncMessageQueue input_queue;
-    AsyncMessageQueue output_queue;
+    struct SendCompletion
+    {
+        OwnedPipeHandle event;
+        std::atomic_bool result = false;
+    };
+    struct PendingWriteContext
+    {
+        OVERLAPPED overlapped{};
+        OwnedPipeHandle completed_event;
+    };
+    struct OutputMessage
+    {
+        std::wstring message;
+        std::shared_ptr<SendCompletion> completion;
+        std::optional<std::chrono::steady_clock::time_point> deadline;
+    };
+    struct CanceledWriteCleanup
+    {
+        OwnedPipeHandle pipe_handle;
+        std::shared_ptr<PendingWriteContext> pending_write;
+    };
+    std::mutex output_queue_mutex;
+    std::condition_variable output_queue_ready;
+    std::queue<OutputMessage> output_queue;
+    bool output_queue_interrupted = false;
+    std::mutex canceled_writes_mutex;
+    std::vector<CanceledWriteCleanup> canceled_writes;
     std::wstring output_pipe_name;
     std::wstring input_pipe_name;
     std::thread input_queue_thread;
@@ -142,8 +172,13 @@ private:
     interop_auth::CallerPolicy caller_policy;
     interop_auth::VerificationCache caller_cache;
 
-    void send_pipe_message(std::wstring message);
+    bool send_pipe_message(const OutputMessage& message);
     void consume_output_queue_thread();
+    void queue_output_message(OutputMessage&& message);
+    bool pop_output_message(OutputMessage& message);
+    void interrupt_output_queue();
+    void queue_canceled_write_cleanup(HANDLE pipe_handle, const std::shared_ptr<PendingWriteContext>& pending_write);
+    void reap_canceled_write_cleanups(bool wait_for_completion);
     BOOL GetLogonSID(HANDLE hToken, PSID* ppsid);
     VOID FreeLogonSID(PSID* ppsid);
     bool create_pipe_security_attributes(HANDLE token, PipeSecurityAttributes& security_attributes);
