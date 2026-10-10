@@ -56,7 +56,7 @@ IFACEMETHODIMP shell_context_sub_menu::Next(ULONG celt, __out_ecount_part(celt, 
 
     for (ULONG i = 0; (i < celt) && (current_command != explorer_menu_item_commands.cend()); i++)
     {
-        current_command->CopyTo(&apUICommand[0]);
+        current_command->CopyTo(&apUICommand[i]);
         current_command++;
         fetched++;
     }
