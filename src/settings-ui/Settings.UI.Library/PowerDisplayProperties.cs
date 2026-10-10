@@ -79,6 +79,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("max_compatibility_mode")]
         public bool MaxCompatibilityMode { get; set; }
 
+        private bool _legacyBatteryRefreshRateEnabled;
+        private BatteryRefreshRateMode? _batteryRefreshRateMode;
+
+        // Read the original toggle without writing it back. An explicit mode takes precedence.
+        [JsonPropertyName("battery_refresh_rate_enabled")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public bool BatteryRefreshRateEnabled
+        {
+            get => false;
+            set => _legacyBatteryRefreshRateEnabled = value;
+        }
+
+        [JsonPropertyName("battery_refresh_rate_mode")]
+        public BatteryRefreshRateMode BatteryRefreshRateMode
+        {
+            get => _batteryRefreshRateMode ?? (_legacyBatteryRefreshRateEnabled ? BatteryRefreshRateMode.OnBattery : BatteryRefreshRateMode.Off);
+            set => _batteryRefreshRateMode = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the battery refresh rate in Hz. Zero selects the lowest supported rate.
+        /// </summary>
+        [JsonPropertyName("battery_refresh_rate")]
+        public int BatteryRefreshRate { get; set; }
+
+        /// <summary>
+        /// Gets or sets supported rates shared by currently detected built-in displays.
+        /// Published by PowerDisplay for the Settings UI; empty when none are detected.
+        /// </summary>
+        [JsonPropertyName("internal_display_refresh_rates")]
+        public List<int> InternalDisplayRefreshRates { get; set; } = new List<int>();
+
         [JsonPropertyName("show_system_tray_icon")]
         public bool ShowSystemTrayIcon { get; set; }
 

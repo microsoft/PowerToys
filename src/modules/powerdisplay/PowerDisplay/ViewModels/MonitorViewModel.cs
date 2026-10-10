@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -69,6 +70,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial bool ShowRotation { get; set; }
+
+    [ObservableProperty]
+    public partial bool ShowRefreshRate { get; set; }
 
     private bool _showPowerState;
 
@@ -243,6 +247,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         ShowContrast = monitor.SupportsContrast;
         ShowVolume = monitor.SupportsVolume;
         ShowInputSource = false;
+        ShowRefreshRate = monitor.SupportsRefreshRate;
+        UpdateRefreshRateOptions();
         _showPowerState = false;
         _showColorTemperature = false;
 
@@ -425,6 +431,57 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// Gets the current rotation/orientation of the monitor (0=normal, 1=90°, 2=180°, 3=270°)
     /// </summary>
     public int CurrentRotation => _monitor.Orientation;
+
+    public int CurrentRefreshRate => _monitor.CurrentRefreshRate;
+
+    public IReadOnlyList<int> AvailableRefreshRates => _monitor.AvailableRefreshRates;
+
+    public ObservableCollection<RefreshRateOption> RefreshRateOptions { get; } = new();
+
+    private void UpdateRefreshRateOptions()
+    {
+        RefreshRateOptions.Clear();
+        foreach (var rate in AvailableRefreshRates)
+        {
+            RefreshRateOptions.Add(new RefreshRateOption(rate, rate == CurrentRefreshRate, SelectRefreshRateCommand));
+        }
+    }
+
+    public bool SupportsRefreshRate => _monitor.SupportsRefreshRate;
+
+    public int SelectedRefreshRate
+    {
+        get => CurrentRefreshRate;
+        set => _ = SetRefreshRateAsync(value);
+    }
+
+    [RelayCommand]
+    private Task SelectRefreshRate(int refreshRate) => SetRefreshRateAsync(refreshRate);
+
+    public async Task SetRefreshRateAsync(int refreshRate)
+    {
+        if (!AvailableRefreshRates.Contains(refreshRate) || CurrentRefreshRate == refreshRate)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await _monitorManager.SetRefreshRateAsync(Id, refreshRate);
+            if (!result.IsSuccess)
+            {
+                Logger.LogWarning($"[{Id}] Failed to set refresh rate: {result.ErrorMessage}");
+            }
+            else
+            {
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, "RefreshRate", refreshRate);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{Id}] Exception setting refresh rate: {ex.Message}");
+        }
+    }
 
     /// <summary>
     /// Gets a value indicating whether the current rotation is 0° (normal/default).
@@ -909,6 +966,16 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(IsRotation2));
             OnPropertyChanged(nameof(IsRotation3));
             OnPropertyChanged(nameof(SelectedRotationIndex));
+        }
+        else if (e.PropertyName == nameof(Monitor.CurrentRefreshRate) ||
+                 e.PropertyName == nameof(Monitor.AvailableRefreshRates) ||
+                 e.PropertyName == nameof(Monitor.SupportsRefreshRate))
+        {
+            OnPropertyChanged(nameof(CurrentRefreshRate));
+            OnPropertyChanged(nameof(AvailableRefreshRates));
+            UpdateRefreshRateOptions();
+            OnPropertyChanged(nameof(SupportsRefreshRate));
+            OnPropertyChanged(nameof(SelectedRefreshRate));
         }
     }
 

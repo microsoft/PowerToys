@@ -22,6 +22,87 @@ namespace ViewModelTests;
 public class PowerDisplay
 {
     [TestMethod]
+    public void BatteryRefreshRate_OldSettingsDefaultToDisabledAndLowest()
+    {
+        var settings = JsonSerializer.Deserialize<PowerDisplaySettings>("{\"properties\":{}}", SettingsSerializationContext.Default.PowerDisplaySettings);
+        Assert.AreEqual(BatteryRefreshRateMode.Off, settings.Properties.BatteryRefreshRateMode);
+        Assert.AreEqual(0, settings.Properties.BatteryRefreshRate);
+        Assert.AreEqual(0, settings.Properties.InternalDisplayRefreshRates.Count);
+    }
+
+    [TestMethod]
+    public void BatteryRefreshRate_CannotEnableWithoutBuiltInDisplay()
+    {
+        using var viewModel = CreateViewModel(out var settings);
+        viewModel.BatteryRefreshRateModeIndex = (int)BatteryRefreshRateMode.OnBattery;
+        Assert.IsFalse(viewModel.CanUseBatteryRefreshRate);
+        Assert.AreEqual(BatteryRefreshRateMode.Off, settings.Properties.BatteryRefreshRateMode);
+    }
+
+    [TestMethod]
+    [DataRow(BatteryRefreshRateMode.OnEnergySaverMode)]
+    [DataRow(BatteryRefreshRateMode.OnBatteryAndEnergySaver)]
+    public void BatteryRefreshRate_DefaultPresetAndChangesPersistAndSignal(BatteryRefreshRateMode mode)
+    {
+        var events = new List<string>();
+        using var viewModel = CreateViewModel(out var settings, out _, out _, namedEvents: events);
+        settings.Properties.InternalDisplayRefreshRates = new List<int> { 60, 120, 144 };
+        Assert.IsTrue(viewModel.CanUseBatteryRefreshRate);
+        Assert.AreEqual(0, viewModel.BatteryRefreshRateIndex);
+
+        viewModel.BatteryRefreshRateModeIndex = (int)mode;
+        viewModel.BatteryRefreshRateIndex = 1;
+        viewModel.BatteryRefreshRateIndex = -1;
+        Assert.AreEqual(1, viewModel.BatteryRefreshRateIndex);
+
+        var reloaded = JsonSerializer.Deserialize(
+            JsonSerializer.Serialize(settings, SettingsSerializationContext.Default.PowerDisplaySettings),
+            SettingsSerializationContext.Default.PowerDisplaySettings);
+        Assert.AreEqual(mode, reloaded.Properties.BatteryRefreshRateMode);
+        Assert.AreEqual(120, reloaded.Properties.BatteryRefreshRate);
+        Assert.AreEqual(2, events.Count);
+    }
+
+    [TestMethod]
+    public void BatteryRefreshRate_UnsetOrUnsupportedPresetSelectsLowestIndex()
+    {
+        using var viewModel = CreateViewModel(out var settings);
+        settings.Properties.InternalDisplayRefreshRates = new List<int> { 144, 60, 120 };
+        Assert.AreEqual(1, viewModel.BatteryRefreshRateIndex);
+        settings.Properties.BatteryRefreshRate = 240;
+        Assert.AreEqual(1, viewModel.BatteryRefreshRateIndex);
+        settings.Properties.BatteryRefreshRate = 120;
+        Assert.AreEqual(2, viewModel.BatteryRefreshRateIndex);
+    }
+
+    [TestMethod]
+    [DataRow(BatteryRefreshRateMode.OnBattery)]
+    [DataRow(BatteryRefreshRateMode.OnEnergySaverMode)]
+    [DataRow(BatteryRefreshRateMode.OnBatteryAndEnergySaver)]
+    public void BatteryRefreshRate_PresetEnabledOnlyForActiveModeWithBuiltInDisplay(BatteryRefreshRateMode mode)
+    {
+        using var viewModel = CreateViewModel(out var settings);
+        settings.Properties.InternalDisplayRefreshRates = new List<int> { 60, 120 };
+        settings.Properties.BatteryRefreshRate = 120;
+        Assert.IsFalse(viewModel.CanSetBatteryRefreshRate);
+        var changedProperties = new List<string>();
+        viewModel.PropertyChanged += (_, args) => changedProperties.Add(args.PropertyName);
+
+        viewModel.BatteryRefreshRateModeIndex = (int)mode;
+        Assert.IsTrue(viewModel.CanSetBatteryRefreshRate);
+        CollectionAssert.Contains(changedProperties, nameof(PowerDisplayViewModel.CanSetBatteryRefreshRate));
+        changedProperties.Clear();
+        viewModel.BatteryRefreshRateModeIndex = (int)BatteryRefreshRateMode.Off;
+        Assert.IsFalse(viewModel.CanSetBatteryRefreshRate);
+        CollectionAssert.Contains(changedProperties, nameof(PowerDisplayViewModel.CanSetBatteryRefreshRate));
+        Assert.AreEqual(120, settings.Properties.BatteryRefreshRate);
+
+        viewModel.BatteryRefreshRateModeIndex = (int)mode;
+        settings.Properties.InternalDisplayRefreshRates.Clear();
+        Assert.IsFalse(viewModel.CanSetBatteryRefreshRate);
+    }
+
+    [TestMethod]
     public void MouseWheelMode_DefaultsToDisabled()
     {
         using var viewModel = CreateViewModel(out _);
@@ -94,6 +175,7 @@ public class PowerDisplay
     [DataRow(nameof(MonitorInfo.EnableVolume))]
     [DataRow(nameof(MonitorInfo.EnableInputSource))]
     [DataRow(nameof(MonitorInfo.EnableRotation))]
+    [DataRow(nameof(MonitorInfo.EnableRefreshRate))]
     [DataRow(nameof(MonitorInfo.EnableColorTemperature))]
     [DataRow(nameof(MonitorInfo.EnablePowerState))]
     [DataRow(nameof(MonitorInfo.IsHidden))]

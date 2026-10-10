@@ -6224,6 +6224,9 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Monitor_EnableRotation.Content" xml:space="preserve">
     <value>Show rotation control</value>
   </data>
+  <data name="PowerDisplay_Monitor_EnableRefreshRate.Content" xml:space="preserve">
+    <value>Show refresh-rate control</value>
+  </data>
   <data name="PowerDisplay_Monitor_EnableColorTemperature.Content" xml:space="preserve">
     <value>Show color temperature switcher</value>
   </data>
@@ -6885,5 +6888,32 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeAppsForModifier_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: game.exe</value>
     <comment>{Locked="game.exe"}</comment>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRate.Header" xml:space="preserve">
+    <value>Lower Refresh Rate on Battery</value>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRate.Description" xml:space="preserve">
+    <value>Lower refresh rate when running on battery power/energy saving mode. Requires a detected built-in display.</value>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRateMode.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>When to lower refresh rate</value>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRateMode_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRateMode_OnBattery.Content" xml:space="preserve">
+    <value>On Battery</value>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRateMode_OnEnergySaverMode.Content" xml:space="preserve">
+    <value>On Energy Saver Mode</value>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRateMode_OnBatteryAndEnergySaver.Content" xml:space="preserve">
+    <value>On Battery w/ Energy Saver</value>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRatePreset.Header" xml:space="preserve">
+    <value>Battery/Energy Saving Refresh Rate</value>
+  </data>
+  <data name="PowerDisplay_BatteryRefreshRateComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Battery/Energy Saving Refresh Rate</value>
   </data>
 </root>

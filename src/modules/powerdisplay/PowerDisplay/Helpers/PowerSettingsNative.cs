@@ -22,6 +22,11 @@ internal static partial class PowerSettingsNative
     internal static readonly Guid GuidConsoleDisplayState =
         new("6fe69556-704a-47a0-8f24-c28d936fda47");
 
+    // Windows 11 Energy Saver: DWORD 0 = off, 1 = standard, 2 = high savings.
+    // Older systems continue using Windows.System.Power's Battery Saver notification.
+    internal static readonly Guid GuidEnergySaverStatus =
+        new("550e8400-e29b-41d4-a716-446655440000");
+
     internal const uint DisplayStateOff = 0;
     internal const uint DisplayStateOn = 1;
     internal const uint DisplayStateDimmed = 2;
