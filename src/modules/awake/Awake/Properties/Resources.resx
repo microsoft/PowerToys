@@ -120,6 +120,22 @@
   <data name="AWAKE_EXIT" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="AWAKE_EXPIRATION_DIALOG_CANCEL" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button that closes the expiration dialog without changes.</comment>
+  </data>
+  <data name="AWAKE_EXPIRATION_DIALOG_LABEL" xml:space="preserve">
+    <value>Keep awake until:</value>
+    <comment>Label above the date and time pickers in the expiration dialog opened from the tray menu.</comment>
+  </data>
+  <data name="AWAKE_EXPIRATION_DIALOG_OK" xml:space="preserve">
+    <value>OK</value>
+    <comment>Button that confirms the expiration date and time.</comment>
+  </data>
+  <data name="AWAKE_EXPIRATION_DIALOG_PAST" xml:space="preserve">
+    <value>The expiration date and time must be in the future.</value>
+    <comment>Warning shown when the picked expiration date and time has already passed.</comment>
+  </data>
   <data name="AWAKE_HOUR" xml:space="preserve">
     <value>{0} hour</value>
     <comment>{0} shouldn't be removed. It will be replaced by the number 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
