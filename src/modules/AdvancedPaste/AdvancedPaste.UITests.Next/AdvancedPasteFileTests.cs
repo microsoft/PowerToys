@@ -199,6 +199,8 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
 
     private void FocusExplorerItemsView(Session explorer)
     {
+        // A cold Shell UIA lookup can consume a minute on a single-core guest.
+        // Leave time to re-query after a transient stale-element response.
         var handle = new IntPtr(explorer.WindowHandle);
         (bool Visible, bool Foreground, bool ShellReady, bool EmptySelection, bool KeyboardFocus)? lastState = null;
         var ready = WaitHelper.WaitForStable(
@@ -222,7 +224,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
                 lastState = state;
                 return state.Visible && state.Foreground && state.ShellReady && state.EmptySelection && state.KeyboardFocus;
             },
-            timeoutMS: 30_000,
+            timeoutMS: 90_000,
             requiredConsecutiveMatches: 3,
             recover: view =>
             {

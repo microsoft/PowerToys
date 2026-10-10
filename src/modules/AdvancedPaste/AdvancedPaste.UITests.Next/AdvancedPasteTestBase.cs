@@ -44,6 +44,15 @@ public abstract class AdvancedPasteTestBase : UITestBase
 
     protected string TestDirectory => testDirectory?.FullName ?? throw new InvalidOperationException("The fixture directory has not been created.");
 
+    protected Session SettingsSession { get; private set; } = null!;
+
+    protected Session SettingsWindow()
+    {
+        var window = WindowsFinder.WaitForWindowByApp("PowerToys.Settings", window => window.Width > 500 && window.Height > 300, timeoutMS: 30_000);
+        Assert.IsNotNull(window, "Settings did not expose a live main window.");
+        return window;
+    }
+
     protected override void PrepareTestState()
     {
         Assert.IsTrue(WindowControl.TryKillProcessTreeByNameAndWait(ProcessName), "Advanced Paste did not stop before preparing settings.");
@@ -74,22 +83,19 @@ public abstract class AdvancedPasteTestBase : UITestBase
             Assert.IsTrue(process.SessionId > 0, "Advanced Paste UI tests cannot access the interactive clipboard from session 0.");
 
             Step("Waiting for the Settings navigation tree before preparing the paste destination");
-            var settingsHandle = new IntPtr(Session.WindowHandle);
+            SettingsSession = Microsoft.PowerToys.UITest.Next.Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
             var settingsReady = WaitHelper.WaitForStable(
-                () => Session.Has(By.AccessibilityId("GeneralNavItem"), 0),
+                () => SettingsSession.Has(By.AccessibilityId("GeneralNavItem"), 0),
                 visible => visible,
                 timeoutMS: 30_000,
                 requiredConsecutiveMatches: 2,
-                shouldRetryException: exception =>
-                    AdvancedPasteUi.IsStaleElement(exception) ||
-                    (exception is AssertFailedException &&
-                        exception.Message.Contains($"Window HWND {Session.WindowHandle} not found or not accessible.", StringComparison.Ordinal) &&
-                        WindowControl.EnumerateProcessWindows([Session.ProcessId]).Any(window => window.Hwnd == settingsHandle)));
+                shouldRetryException: AdvancedPasteUi.IsStaleElement);
             Assert.IsTrue(
                 settingsReady.Succeeded,
                 $"Settings did not finish initializing its navigation tree. Last exception: {settingsReady.LastException}");
+            var settingsHandle = new IntPtr(SettingsWindow().WindowHandle);
             WindowHelper.MaximizeWindow(settingsHandle);
-            WaitUntil(() => WindowHelper.IsWindowMaximized(settingsHandle), "Settings did not retain its initialized maximized layout.");
+            WaitUntil(() => WindowHelper.IsWindowMaximized(new IntPtr(SettingsWindow().WindowHandle)), "Settings did not retain its initialized maximized layout.");
 
             Step("Preparing the clipboard and a real rich-text paste destination");
             target = new PasteTarget();
@@ -174,21 +180,21 @@ public abstract class AdvancedPasteTestBase : UITestBase
     protected void NavigateToSettings()
     {
         Step("Navigating to Advanced Paste settings");
-        if (!Session.Has(By.AccessibilityId("AdvancedPasteNavItem"), 500))
+        if (!SettingsSession.Has(By.AccessibilityId("AdvancedPasteNavItem"), 500))
         {
-            Session.Find<NavigationViewItem>(By.AccessibilityId("SystemToolsNavItem"), 10_000).Invoke(msPostAction: 0);
+            SettingsSession.Find<NavigationViewItem>(By.AccessibilityId("SystemToolsNavItem"), 10_000).Invoke(msPostAction: 0);
         }
 
-        Session.Find<NavigationViewItem>(By.AccessibilityId("AdvancedPasteNavItem"), 10_000).Invoke(msPostAction: 0);
-        Session.Find(By.AccessibilityId("AdvancedPasteEnableToggleControlHeaderText"), 15_000);
+        SettingsSession.Find<NavigationViewItem>(By.AccessibilityId("AdvancedPasteNavItem"), 10_000).Invoke(msPostAction: 0);
+        SettingsSession.Find(By.AccessibilityId("AdvancedPasteEnableToggleControlHeaderText"), 15_000);
     }
 
     protected void NavigateToGeneralSettings()
     {
         Step("Navigating to General settings and waiting for its loaded page");
-        Session.Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem"), 10_000).Invoke(msPostAction: 0);
+        SettingsSession.Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem"), 10_000).Invoke(msPostAction: 0);
         WaitUntil(
-            () => Session.Has(By.AccessibilityId("GeneralOpenUpdateSurfaceButton"), 0),
+            () => SettingsSession.Has(By.AccessibilityId("GeneralOpenUpdateSurfaceButton"), 0),
             "The General settings page did not finish loading.",
             timeoutMS: 30_000);
     }

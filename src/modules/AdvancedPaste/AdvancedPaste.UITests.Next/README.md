@@ -87,9 +87,24 @@ Asynchronous snapshot reads stay on that thread across awaits, including when Te
 starts the test on an MTA worker with a nonempty desktop clipboard.
 Snapshots retry only the transient clipboard-busy HRESULT, asynchronously on the
 same STA and within a bounded deadline; no format is dropped to make a snapshot succeed.
+The backup regression uses the verified text fixture for text-only input and a
+desktop data object for HTML/RTF, with a bounded five-second native write retry
+budget. It does not retry the backup assertion or non-contention errors.
 Read errors are reported rather than converted to an empty string. RTF fixtures
 are copied from the real editor with Ctrl+C, and both text and RTF formats are
 verified before the formatting-removal scenarios start.
+
+Settings navigation and controls use a process-scoped session so a discarded
+startup HWND cannot invalidate an otherwise healthy Settings window. Physical
+keyboard interactions reacquire the current main HWND and still require foreground.
+
+History fixtures activate the feature through Windows' real clipboard Settings
+toggle, then copy text with Ctrl+C from the foreground editor. A registry write
+and a successful current-clipboard write do not establish the Windows capture
+service's readiness. Every copy still requires its exact Windows history ID before
+the next copy, and an additional regression covers three enable/disable cycles.
+Restoration drives the OS toggle before restoring the original registry value,
+including its presence and type.
 
 History tests use a fresh process per case so restoring the OS history preference
 does not carry an old ItemsView and pending notifications into the next fixture.

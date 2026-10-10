@@ -484,7 +484,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         finally
         {
             Step("Restoring this scenario's Settings UI changes");
-            if (shortcutDialogOpened && Session.Has(By.AccessibilityId("ResetBtn"), 0))
+            if (shortcutDialogOpened && SettingsSession.Has(By.AccessibilityId("ResetBtn"), 0))
             {
                 CloseShortcutDialog("CloseButton");
             }
@@ -494,11 +494,11 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
     }
 
-    private ToggleSwitch ModuleToggle() => AdvancedPasteUi.CardControl<ToggleSwitch>(Session, EnableCard, "Button", className: "ToggleSwitch");
+    private ToggleSwitch ModuleToggle() => AdvancedPasteUi.CardControl<ToggleSwitch>(SettingsSession, EnableCard, "Button", className: "ToggleSwitch");
 
-    private CheckBox Preference(string card) => AdvancedPasteUi.CardControl<CheckBox>(Session, card, "CheckBox");
+    private CheckBox Preference(string card) => AdvancedPasteUi.CardControl<CheckBox>(SettingsSession, card, "CheckBox");
 
-    private Button ShortcutButton(string card) => AdvancedPasteUi.CardControl<Button>(Session, card, "Button", automationId: "EditButton");
+    private Button ShortcutButton(string card) => AdvancedPasteUi.CardControl<Button>(SettingsSession, card, "Button", automationId: "EditButton");
 
     private static bool ReadBoolean(string property) => ReadProperties()[property]!["value"]!.GetValue<bool>();
 
@@ -559,7 +559,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     private void SetAIEnabled(bool enabled)
     {
         Step($"Setting IsAIEnabled={enabled} without configuring a provider");
-        var toggle = Session.Find<ToggleSwitch>(By.AccessibilityId("AdvancedPaste_EnableAIToggle"));
+        var toggle = SettingsSession.Find<ToggleSwitch>(By.AccessibilityId("AdvancedPaste_EnableAIToggle"));
         Assert.IsTrue(toggle.IsEnabled, "BLOCKED: policy or module state prevents exercising the AI Settings toggle.");
         if (toggle.IsOn != enabled)
         {
@@ -567,7 +567,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
 
         Assert.IsTrue(
-            Session.Find<ToggleSwitch>(By.AccessibilityId("AdvancedPaste_EnableAIToggle")).WaitForProperty("ToggleState", enabled ? "On" : "Off", 10_000),
+            SettingsSession.Find<ToggleSwitch>(By.AccessibilityId("AdvancedPaste_EnableAIToggle")).WaitForProperty("ToggleState", enabled ? "On" : "Off", 10_000),
             "The AI toggle did not reach the requested state.");
         WaitForSetting(p => p["IsAIEnabled"]!["value"]!.GetValue<bool>() == enabled, "The AI enabled setting was not persisted.");
     }
@@ -591,28 +591,28 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         Step($"Opening the shortcut editor for {card}");
         shortcutDialogOpened = true;
         ShortcutButton(card).Invoke(msPostAction: 0);
-        Session.Find(By.AccessibilityId("ResetBtn"), 10_000);
+        SettingsSession.Find(By.AccessibilityId("ResetBtn"), 10_000);
     }
 
     private void EnterShortcut(Key[] keys)
     {
         Step($"Entering shortcut {string.Join(" + ", keys)}");
-        RequireForeground(Session);
+        RequireForeground(SettingsWindow());
 
         // The shortcut hook ignores keyboard input when a ContentDialog Button has focus.
         // Its Reset hyperlink is focusable without invoking it, and remains inside the editor.
-        var captureFocus = Session.Find(By.AccessibilityId("ResetBtn"));
+        var captureFocus = SettingsSession.Find(By.AccessibilityId("ResetBtn"));
         captureFocus.Focus();
         Assert.IsTrue(captureFocus.WaitForProperty("HasKeyboardFocus", "true", 5_000), "The shortcut editor did not receive keyboard focus.");
         SendShortcut(keys);
-        WaitUntil(() => Session.Find<Button>(By.AccessibilityId("PrimaryButton")).IsEnabled, "The shortcut editor did not accept a valid chord.");
+        WaitUntil(() => SettingsSession.Find<Button>(By.AccessibilityId("PrimaryButton")).IsEnabled, "The shortcut editor did not accept a valid chord.");
     }
 
     private void CloseShortcutDialog(string buttonId)
     {
         Step($"Invoking {buttonId} in the shortcut dialog");
-        Session.Find(By.AccessibilityId(buttonId)).Invoke(msPostAction: 0);
-        WaitUntil(() => !Session.Has(By.AccessibilityId("ResetBtn"), 0), "The shortcut dialog did not close.");
+        SettingsSession.Find(By.AccessibilityId(buttonId)).Invoke(msPostAction: 0);
+        WaitUntil(() => !SettingsSession.Has(By.AccessibilityId("ResetBtn"), 0), "The shortcut dialog did not close.");
         shortcutDialogOpened = false;
     }
 
@@ -793,7 +793,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     private void SetActionShown(string card, string propertyPath, bool shown)
     {
         Step($"Setting {propertyPath}.isShown={shown} through Settings");
-        var toggle = AdvancedPasteUi.CardControl<ToggleSwitch>(Session, card, "Button", className: "ToggleSwitch");
+        var toggle = AdvancedPasteUi.CardControl<ToggleSwitch>(SettingsSession, card, "Button", className: "ToggleSwitch");
         Assert.IsTrue(toggle.IsEnabled, $"The {card} visibility switch is not enabled.");
         if (toggle.IsOn != shown)
         {
@@ -801,7 +801,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
 
         Assert.IsTrue(
-            AdvancedPasteUi.CardControl<ToggleSwitch>(Session, card, "Button", className: "ToggleSwitch").WaitForProperty("ToggleState", shown ? "On" : "Off", 10_000),
+            AdvancedPasteUi.CardControl<ToggleSwitch>(SettingsSession, card, "Button", className: "ToggleSwitch").WaitForProperty("ToggleState", shown ? "On" : "Off", 10_000),
             $"The {card} visibility switch did not change.");
         WaitForSetting(p => AdditionalAction(p, propertyPath)["isShown"]!.GetValue<bool>() == shown, $"The {propertyPath} visibility was not persisted.");
     }
