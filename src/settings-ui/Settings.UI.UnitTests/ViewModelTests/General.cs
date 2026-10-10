@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -48,6 +50,87 @@ namespace ViewModelTests
             {
                 return null;
             }
+        }
+
+        [TestMethod]
+        public void BackupStatusRefreshNotifiesUiWithoutSendingCachedGeneralSettings()
+        {
+            var settings = new GeneralSettings();
+            settings.Enabled.PowerLauncher = true;
+            settings.Enabled.ColorPicker = false;
+            var repository = new Mock<ISettingsRepository<GeneralSettings>>();
+            repository.SetupGet(x => x.SettingsConfig).Returns(settings);
+            var sentMessages = new List<string>();
+            using var viewModel = new TestGeneralViewModel(
+                repository.Object,
+                string.Empty,
+                string.Empty,
+                false,
+                false,
+                msg =>
+                {
+                    sentMessages.Add(msg);
+                    return 0;
+                },
+                _ => 0,
+                () => { });
+            var before = settings.ToJsonString();
+            var notifications = new List<string>();
+            viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+            sentMessages.Clear();
+
+            viewModel.NotifyAllBackupAndRestoreProperties();
+
+            CollectionAssert.AreEquivalent(
+                new[]
+                {
+                    nameof(GeneralViewModel.LastSettingsBackupDate),
+                    nameof(GeneralViewModel.LastSettingsBackupSource),
+                    nameof(GeneralViewModel.LastSettingsBackupFileName),
+                    nameof(GeneralViewModel.CurrentSettingMatchText),
+                    nameof(GeneralViewModel.SettingsBackupMessage),
+                    nameof(GeneralViewModel.BackupRestoreMessageSeverity),
+                    nameof(GeneralViewModel.SettingsBackupRestoreMessageVisible),
+                },
+                notifications);
+            Assert.AreEqual(0, sentMessages.Count);
+            Assert.AreEqual(before, settings.ToJsonString());
+        }
+
+        [TestMethod]
+        public void ReadOnlyStatusChangesDoNotSendCachedGeneralSettings()
+        {
+            var settings = new GeneralSettings();
+            settings.Enabled.PowerLauncher = true;
+            settings.Enabled.ColorPicker = false;
+            var repository = new Mock<ISettingsRepository<GeneralSettings>>();
+            repository.SetupGet(x => x.SettingsConfig).Returns(settings);
+            var sentMessages = new List<string>();
+            using var viewModel = new TestGeneralViewModel(
+                repository.Object,
+                string.Empty,
+                string.Empty,
+                false,
+                false,
+                msg =>
+                {
+                    sentMessages.Add(msg);
+                    return 0;
+                },
+                _ => 0,
+                () => { });
+            var before = settings.ToJsonString();
+            var notifications = new List<string>();
+            viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+            sentMessages.Clear();
+
+            viewModel.IsBugReportRunning = true;
+            viewModel.HideBackupAndRestoreMessageArea();
+
+            CollectionAssert.Contains(notifications, nameof(GeneralViewModel.IsBugReportRunning));
+            CollectionAssert.Contains(notifications, nameof(GeneralViewModel.SettingsBackupRestoreMessageVisible));
+            Assert.AreEqual(0, sentMessages.Count);
+            Assert.AreEqual(before, settings.ToJsonString());
         }
 
         [TestMethod]

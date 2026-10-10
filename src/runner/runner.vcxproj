@@ -101,6 +101,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="restart_elevated.h" />
     <ClInclude Include="settings_window.h" />
+    <ClInclude Include="settings_window_startup.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="tray_icon.h" />
     <ClInclude Include="unhandled_exception_handler.h" />

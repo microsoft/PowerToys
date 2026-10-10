@@ -28,15 +28,22 @@
 #include <common/updating/updateState.h>
 #include <common/themes/windows_colors.h>
 #include "settings_window.h"
+#include "settings_window_startup.h"
 #include "bug_report.h"
 
 #define BUFSIZE 1024
 
 TwoWayPipeMessageIPC* current_settings_ipc = NULL;
 std::mutex ipc_mutex;
-std::atomic_bool g_isLaunchInProgress = false;
+bool g_isLaunchInProgress = false; // Protected by ipc_mutex.
 std::atomic_bool isUpdateCheckThreadRunning = false;
+std::atomic<DWORD> g_settings_process_id = 0;
 HANDLE g_terminateSettingsEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::TERMINATE_SETTINGS_SHARED_EVENT);
+
+namespace
+{
+    SettingsWindowStartup settings_window_startup;
+}
 
 json::JsonObject get_power_toys_settings()
 {
@@ -426,16 +433,11 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
                                           nullptr,
                                           &siex.StartupInfo,
                                           process_info);
-    g_isLaunchInProgress = false;
     return process_created;
 }
 
-DWORD g_settings_process_id = 0;
-
 void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
 {
-    g_isLaunchInProgress = true;
-
     PROCESS_INFORMATION process_info = { 0 };
     HANDLE hToken = nullptr;
 
@@ -544,7 +546,6 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     //    {
     //        process_info.dwProcessId = res->processID;
     //        process_info.hProcess = res->processHandle.release();
-    //        g_isLaunchInProgress = false;
     //    }
     //}
 
@@ -567,10 +568,6 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
                             &process_info))
         {
             goto LExit;
-        }
-        else
-        {
-            g_isLaunchInProgress = false;
         }
     }
 
@@ -610,9 +607,10 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
             if (current_settings_ipc)
                 current_settings_ipc->send(result.Stringify().c_str());
         });
-    }
 
-    g_settings_process_id = process_info.dwProcessId;
+        g_settings_process_id = process_info.dwProcessId;
+        g_isLaunchInProgress = false;
+    }
 
     if (process_info.hProcess)
     {
@@ -647,14 +645,14 @@ LExit:
             delete current_settings_ipc;
             current_settings_ipc = nullptr;
         }
+        g_settings_process_id = 0;
+        g_isLaunchInProgress = false;
     }
 
     if (hToken)
     {
         CloseHandle(hToken);
     }
-
-    g_settings_process_id = 0;
 }
 
 #define MAX_TITLE_LENGTH 100
@@ -696,34 +694,67 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
+namespace
+{
+    bool launch_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> page)
+    {
+        {
+            std::unique_lock lock{ ipc_mutex };
+            if (g_settings_process_id != 0 || g_isLaunchInProgress)
+            {
+                return false;
+            }
+            g_isLaunchInProgress = true;
+        }
+
+        // Claim the launch before creating the worker so concurrent requests cannot
+        // create multiple Settings processes. Do not wait on the Runner thread.
+        try
+        {
+            std::thread([show_oobe_window, show_scoobe_window, page = std::move(page)]() {
+                run_settings_window(show_oobe_window, show_scoobe_window, page);
+            }).detach();
+            return true;
+        }
+        catch (...)
+        {
+            std::unique_lock lock{ ipc_mutex };
+            g_isLaunchInProgress = false;
+            throw;
+        }
+    }
+}
+
 void open_settings_window(std::optional<std::wstring> settings_window)
 {
-    if (g_settings_process_id != 0)
+    if (settings_window_startup.DeferOrCancel(settings_window))
     {
-        // nl instead of showing the window, send message to it (flyout might need to be hidden, main setting window activated)
-        // bring_settings_to_front();
-        if (current_settings_ipc)
+        return;
+    }
+
+    {
+        std::unique_lock lock{ ipc_mutex };
+        if (g_settings_process_id != 0)
         {
-            if (settings_window.has_value())
+            if (current_settings_ipc)
             {
-                std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value() + L"\"}";
+                std::wstring msg = L"{\"ShowYourself\":\"" + settings_window.value_or(L"Dashboard") + L"\"}";
                 current_settings_ipc->send(msg);
             }
-            else
-            {
-                current_settings_ipc->send(L"{\"ShowYourself\":\"Dashboard\"}");
-            }
+            return;
         }
     }
-    else
-    {
-        if (!g_isLaunchInProgress)
-        {
-            std::thread([settings_window]() {
-                run_settings_window(false, false, settings_window);
-            }).detach();
-        }
-    }
+    launch_settings_window(false, false, std::move(settings_window));
+}
+
+SettingsWindowStartup::Completion complete_settings_window_startup(bool openSettings, std::optional<std::wstring> settings_window)
+{
+    return settings_window_startup.CompleteStartup(openSettings, std::move(settings_window));
+}
+
+void cancel_settings_window_startup()
+{
+    settings_window_startup.Stop();
 }
 
 void close_settings_window()
@@ -740,18 +771,14 @@ void close_settings_window()
     }
 }
 
-void open_oobe_window()
+bool open_oobe_window()
 {
-    std::thread([]() {
-        run_settings_window(true, false, std::nullopt);
-    }).detach();
+    return launch_settings_window(true, false, std::nullopt);
 }
 
 void open_scoobe_window()
 {
-    std::thread([]() {
-        run_settings_window(false, true, std::nullopt);
-    }).detach();
+    launch_settings_window(false, true, std::nullopt);
 }
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)

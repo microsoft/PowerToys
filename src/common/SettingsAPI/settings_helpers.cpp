@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "settings_helpers.h"
 
+#include <common/utils/atomic_file.h>
+
 namespace PTSettingsHelper
 {
     constexpr inline const wchar_t* settings_filename = L"\\settings.json";
@@ -82,7 +84,23 @@ namespace PTSettingsHelper
     void save_general_settings(const json::JsonObject& settings)
     {
         const std::wstring save_file_location = get_powertoys_general_save_file_location();
-        json::to_file(save_file_location, settings);
+        try
+        {
+            const auto contents = winrt::to_string(settings.Stringify());
+            const auto error = atomic_file::write(save_file_location, contents);
+            if (error != ERROR_SUCCESS)
+            {
+                Logger::error(L"Failed to save general settings to {}: {}", save_file_location, error);
+            }
+        }
+        catch (const winrt::hresult_error& error)
+        {
+            Logger::error(L"Failed to serialize or save general settings: {}", error.message().c_str());
+        }
+        catch (const std::exception& error)
+        {
+            Logger::error("Failed to serialize or save general settings: {}", error.what());
+        }
     }
 
     json::JsonObject load_general_settings()
