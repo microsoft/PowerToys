@@ -910,6 +910,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsRepository.SettingsChanged -= OnSettingsChanged;
             }
 
+            _quickAccessViewModel?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

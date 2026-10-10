@@ -14,7 +14,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public partial class QuickAccessViewModel : Observable
+    public partial class QuickAccessViewModel : Observable, IDisposable
     {
         private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
 
@@ -27,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly ResourceLoader _resourceLoader;
         private readonly DispatcherQueue _dispatcherQueue;
         private GeneralSettings _generalSettings;
+        private bool _disposed;
 
         public ObservableCollection<QuickAccessItem> Items { get; } = new();
 
@@ -54,12 +55,30 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             InitializeItems();
         }
 
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            _kbmSettingsRepository.SettingsChanged -= OnKbmSettingsChanged;
+            GC.SuppressFinalize(this);
+        }
+
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
             if (_dispatcherQueue != null)
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     _generalSettings = newSettings;
                     _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
                     RefreshItemsVisibility();
@@ -111,6 +130,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     _generalSettings = _settingsRepository.SettingsConfig;
                     _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
                     RefreshItemsVisibility();
