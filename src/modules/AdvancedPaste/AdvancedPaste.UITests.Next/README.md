@@ -105,6 +105,10 @@ do not enable services, override policy, or replace the exact Windows history-ID
 The temporary diagnostic activation comparison first opens Windows Clipboard Settings and
 enables its real history toggle before the existing registry/API checks. This is an
 investigation experiment, not a merge-ready fix; restoration and all four assertions remain active.
+The final diagnostic revision limits that Settings comparison to Windows 11 and
+compares a Windows Forms Unicode-text clipboard write with the original WinRT writer.
+It also records the clipboard-service binary version and clipboard-storage directory
+availability, without logging stored contents. These temporary experiments are not proposed fixes.
 
 ## HTML-only conversion regression
 

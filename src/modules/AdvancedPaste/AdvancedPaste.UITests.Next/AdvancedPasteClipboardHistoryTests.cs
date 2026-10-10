@@ -265,22 +265,25 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 
     private static void EnableHistoryFixture()
     {
-        using var launch = Process.Start(new ProcessStartInfo("ms-settings:clipboard") { UseShellExecute = true });
-        var settings = WindowsFinder.WaitForWindow(
-            window => window.Title == "Settings" &&
-                (window.ProcessName == "SystemSettings" || window.ProcessName == "ApplicationFrameHost"),
-            timeoutMS: 20_000);
-        Assert.IsNotNull(settings, "BLOCKED: Windows Clipboard Settings did not open for the activation comparison.");
-        try
+        if (Environment.OSVersion.Version.Build >= 22000)
         {
-            var toggle = settings.Find<ToggleSwitch>(By.Name("Clipboard history"), 20_000);
-            Assert.IsTrue(toggle.IsEnabled, "BLOCKED: Windows Clipboard Settings history toggle is disabled.");
-            toggle.Toggle(true);
-            WaitUntil(() => toggle.IsOn, "Windows Clipboard Settings did not enable its history toggle.");
-        }
-        finally
-        {
-            Assert.IsTrue(WindowControl.TryCloseWindow(settings.WindowHandle), "Windows Clipboard Settings did not close after the activation comparison.");
+            using var launch = Process.Start(new ProcessStartInfo("ms-settings:clipboard") { UseShellExecute = true });
+            var settings = WindowsFinder.WaitForWindow(
+                window => window.Title == "Settings" &&
+                    (window.ProcessName == "SystemSettings" || window.ProcessName == "ApplicationFrameHost"),
+                timeoutMS: 20_000);
+            Assert.IsNotNull(settings, "BLOCKED: Windows Clipboard Settings did not open for the activation comparison.");
+            try
+            {
+                var toggle = settings.Find<ToggleSwitch>(By.Name("Clipboard history"), 20_000);
+                Assert.IsTrue(toggle.IsEnabled, "BLOCKED: Windows Clipboard Settings history toggle is disabled.");
+                toggle.Toggle(true);
+                WaitUntil(() => toggle.IsOn, "Windows Clipboard Settings did not enable its history toggle.");
+            }
+            finally
+            {
+                Assert.IsTrue(WindowControl.TryCloseWindow(settings.WindowHandle), "Windows Clipboard Settings did not close after the activation comparison.");
+            }
         }
 
         using (var key = Registry.CurrentUser.CreateSubKey(ClipboardRegistryPath, writable: true))
@@ -308,14 +311,10 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         var content = $"{historyPrefix}.{name}";
         fixtureContents.Add(content);
         Step($"Copying the '{name}' history fixture and waiting for its exact Windows history ID");
-        var package = new DataPackage();
-        package.SetText(content);
+        Step("Diagnostic comparison: writing Unicode text through Windows Forms instead of WinRT SetContentWithOptions");
         Target.Invoke(() =>
         {
-            Assert.IsTrue(
-                WinClipboard.SetContentWithOptions(package, new ClipboardContentOptions { IsAllowedInHistory = true, IsRoamable = false }),
-                "Windows rejected the test clipboard content.");
-            WinClipboard.Flush();
+            System.Windows.Forms.Clipboard.SetDataObject(content, copy: true, retryTimes: 10, retryDelay: 100);
         });
         Assert.AreEqual(content, ReadClipboardText(), "The test history content did not reach the current clipboard.");
         Step($"The '{name}' fixture reached the current clipboard; waiting for Windows history capture");
@@ -411,8 +410,13 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         using var serviceTemplate = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\cbdhsvc");
         using var windows = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows NT\CurrentVersion");
         var build = $"{windows?.GetValue("CurrentBuildNumber")}.{windows?.GetValue("UBR")}";
+        var clipboardStorage = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Windows", "Clipboard");
+        var serviceBinary = FileVersionInfo.GetVersionInfo(Path.Combine(Environment.SystemDirectory, "cbdhsvc.dll"));
+        using var currentProcess = Process.GetCurrentProcess();
 
         return $"Clipboard history diagnostics: OS={windows?.GetValue("ProductName")} {windows?.GetValue("DisplayVersion")} build={build}; " +
+            $"cbdhsvc.dll version={serviceBinary.FileVersion}; session={currentProcess.SessionId}; SESSIONNAME={Environment.GetEnvironmentVariable("SESSIONNAME") ?? "unset"}; " +
+            $"clipboard storage exists={Directory.Exists(clipboardStorage)}, HistoryData exists={Directory.Exists(Path.Combine(clipboardStorage, "HistoryData"))}, Pinned exists={Directory.Exists(Path.Combine(clipboardStorage, "Pinned"))}; " +
             $"IsHistoryEnabled={WinClipboard.IsHistoryEnabled()}; " +
             $"HKCU EnableClipboardHistory={DescribeRegistryValue(userSettings, ClipboardRegistryValue)}; " +
             $"HKLM AllowClipboardHistory={DescribeRegistryValue(policy, "AllowClipboardHistory")}; " +
