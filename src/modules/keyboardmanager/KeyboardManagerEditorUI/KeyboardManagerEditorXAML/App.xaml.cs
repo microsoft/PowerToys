@@ -47,6 +47,8 @@ namespace KeyboardManagerEditorUI
             this.InitializeComponent();
 
             UnhandledException += App_UnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += AppDomain_UnhandledException;
+            AppDomain.CurrentDomain.ProcessExit += AppDomain_ProcessExit;
 
             SettingsManager.CorrelateServiceAndEditorMappings();
         }
@@ -78,7 +80,18 @@ namespace KeyboardManagerEditorUI
         /// </summary>
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
+            EngineSuspendHelper.Release();
             Logger.LogError("Unhandled exception", e.Exception);
+        }
+
+        private void AppDomain_UnhandledException(object? sender, System.UnhandledExceptionEventArgs e)
+        {
+            EngineSuspendHelper.Release();
+        }
+
+        private void AppDomain_ProcessExit(object? sender, EventArgs e)
+        {
+            EngineSuspendHelper.Release();
         }
 
         internal static MainWindow MainWindow { get; private set; } = null!;
