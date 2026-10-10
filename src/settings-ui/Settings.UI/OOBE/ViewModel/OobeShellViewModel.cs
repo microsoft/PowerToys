@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             (PowerToysModules.PowerRename, false),
             (PowerToysModules.Run, false),
             (PowerToysModules.QuickAccent, false),
+            (PowerToysModules.TextExpander, false),
             (PowerToysModules.ShortcutGuide, false),
             (PowerToysModules.TextExtractor, false),
             (PowerToysModules.MeasureTool, false),

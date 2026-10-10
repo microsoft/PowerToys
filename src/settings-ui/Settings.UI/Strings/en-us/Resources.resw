@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -6885,5 +6885,169 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeAppsForModifier_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: game.exe</value>
     <comment>{Locked="game.exe"}</comment>
+  </data>
+  <data name="TextExpander.ModuleTitle" xml:space="preserve">
+    <value>Text Expander</value>
+  </data>
+  <data name="TextExpander.ModuleDescription" xml:space="preserve">
+    <value>Expands short triggers you type into longer snippets. Type a trigger anywhere and it is replaced as you go.</value>
+  </data>
+  <data name="Shell_TextExpander.Content" xml:space="preserve">
+    <value>Text Expander</value>
+  </data>
+  <data name="TextExpander_Enable.Header" xml:space="preserve">
+    <value>Enable Text Expander</value>
+  </data>
+  <data name="TextExpander_Snippets_GroupSettings.Header" xml:space="preserve">
+    <value>Snippets</value>
+  </data>
+  <data name="TextExpander_SnippetsPath.Header" xml:space="preserve">
+    <value>Snippet folder</value>
+  </data>
+  <data name="TextExpander_SnippetsPath.Description" xml:space="preserve">
+    <value>Leave empty to keep them with PowerToys. Point this at OneDrive or a repo to sync or version them. The file reloads automatically when you save it.</value>
+  </data>
+  <data name="TextExpander_SnippetsPath_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="TextExpander_SnippetsPath_BrowseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Choose the folder that holds snippets.txt</value>
+  </data>
+  <data name="TextExpander_Injection_GroupSettings.Header" xml:space="preserve">
+    <value>How text is inserted</value>
+  </data>
+  <data name="TextExpander_InjectionBackend.Header" xml:space="preserve">
+    <value>Insertion method</value>
+  </data>
+  <data name="TextExpander_InjectionBackend.Description" xml:space="preserve">
+    <value>Automatic pastes longer snippets and types short ones. Choose Always type if an app blocks pasting, or to keep snippets off your clipboard.</value>
+  </data>
+  <data name="TextExpander_Backend_Auto.Content" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="TextExpander_Backend_Clipboard.Content" xml:space="preserve">
+    <value>Always paste</value>
+  </data>
+  <data name="TextExpander_Backend_Type.Content" xml:space="preserve">
+    <value>Always type</value>
+  </data>
+  <data name="TextExpander_ClipboardThreshold.Header" xml:space="preserve">
+    <value>Minimum length to paste</value>
+  </data>
+  <data name="TextExpander_ClipboardThreshold.Description" xml:space="preserve">
+    <value>Shorter snippets are typed. Automatic only.</value>
+  </data>
+  <data name="TextExpander_Advanced_GroupSettings.Header" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="TextExpander_TreatRemapsAsTyping.Header" xml:space="preserve">
+    <value>Include keys changed by Keyboard Manager</value>
+  </data>
+  <data name="TextExpander_TreatRemapsAsTyping.Description" xml:space="preserve">
+    <value>Let keys you remapped in Keyboard Manager type triggers. Turn off to match only the physical keys you press.</value>
+  </data>
+  <data name="Oobe_TextExpander.Title" xml:space="preserve">
+    <value>Text Expander</value>
+  </data>
+  <data name="Oobe_TextExpander.Description" xml:space="preserve">
+    <value>Type a short trigger and it is replaced with a longer snippet, in any app.</value>
+  </data>
+  <data name="Oobe_TextExpander_HowToUse.Text" xml:space="preserve">
+    <value>Put your snippets in `snippets.txt`, one per line, as `trigger=replacement`. Multi-line snippets use `trigger&lt;&lt;&lt;` and `&gt;&gt;&gt;` on their own lines.
+
+The file reloads whenever you save it, so there is nothing to restart. Start triggers with a character you would not normally type, such as `#`, so they cannot fire by accident.</value>
+  </data>
+  <data name="TextExpander_AddSnippet.Header" xml:space="preserve">
+    <value>Add a snippet</value>
+  </data>
+  <data name="TextExpander_AddSnippet.Description" xml:space="preserve">
+    <value>Give it a trigger to type and the text it should expand into.</value>
+  </data>
+  <data name="TextExpander_AddSnippetButton.Content" xml:space="preserve">
+    <value>New snippet</value>
+  </data>
+  <data name="TextExpander_NoSnippets.Header" xml:space="preserve">
+    <value>No snippets yet</value>
+  </data>
+  <data name="TextExpander_NoSnippets.Description" xml:space="preserve">
+    <value>Add one above and it starts working straight away — nothing to restart.</value>
+  </data>
+  <data name="TextExpander_SnippetError.Title" xml:space="preserve">
+    <value>Could not read your snippets</value>
+  </data>
+  <data name="TextExpander_DuplicateSnippet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="TextExpander_DeleteSnippet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TextExpander_DuplicateSnippet.Text" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="TextExpander_DeleteSnippet.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TextExpander_DeleteSnippetDialog_Title" xml:space="preserve">
+    <value>Delete snippet?</value>
+  </data>
+  <data name="TextExpander_DeleteSnippetDialog_Content" xml:space="preserve">
+    <value>'{0}' will stop expanding. This cannot be undone.</value>
+  </data>
+  <data name="TextExpander_DeleteSnippetDialog_PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TextExpander_DeleteSnippetDialog_CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextExpander_SaveSnippetsErrorDialog_Title" xml:space="preserve">
+    <value>Could not save snippets</value>
+  </data>
+  <data name="TextExpander_SaveSnippetsErrorDialog_CloseButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="TextExpander_SnippetDialog.Title" xml:space="preserve">
+    <value>Snippet</value>
+  </data>
+  <data name="TextExpander_SnippetDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="TextExpander_SnippetDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextExpander_Dialog_Trigger.Text" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+  <data name="TextExpander_Dialog_TriggerBox.PlaceholderText" xml:space="preserve">
+    <value>#sig</value>
+  </data>
+  <data name="TextExpander_Dialog_TriggerHint.Text" xml:space="preserve">
+    <value>Start with a character you would not normally type, such as #, so it cannot fire in the middle of a word.</value>
+  </data>
+  <data name="TextExpander_Dialog_Replacement.Text" xml:space="preserve">
+    <value>Replacement</value>
+  </data>
+  <data name="TextExpander_Dialog_ReplacementBox.PlaceholderText" xml:space="preserve">
+    <value>The text this expands into. Press Shift + Enter for a new line.</value>
+  </data>
+  <data name="TextExpander_Dialog_InsertVariable.Content" xml:space="preserve">
+    <value>Insert variable</value>
+  </data>
+  <data name="TextExpander_Dialog_Preview.Text" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="TextExpander_Dialog_TriggerBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+  <data name="TextExpander_Dialog_ReplacementBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Replacement</value>
+  </data>
+  <data name="TextExpander_RequireWordBoundary.Header" xml:space="preserve">
+    <value>Wait for the whole word</value>
+  </data>
+  <data name="TextExpander_RequireWordBoundary.Description" xml:space="preserve">
+    <value>Expand after you type a space or punctuation, so a trigger does not fire inside a longer word. The space or punctuation stays in place.</value>
+  </data>
+  <data name="TextExpander_SnippetsPath_TextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Snippet folder</value>
   </data>
 </root>

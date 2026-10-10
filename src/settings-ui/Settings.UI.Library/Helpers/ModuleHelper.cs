@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 ModuleType.Workspaces => "Workspaces/ModuleTitle",
                 ModuleType.PowerAccent => "QuickAccent/ModuleTitle",
+                ModuleType.TextExpander => "TextExpander/ModuleTitle",
                 ModuleType.PowerOCR => "TextExtractor/ModuleTitle",
                 ModuleType.AutoHideCursor => "MouseUtils_AutoHideCursor/Header",
                 ModuleType.FindMyMouse => "MouseUtils_FindMyMouse/Header",
@@ -37,6 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 ModuleType.PowerOCR => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
                 ModuleType.PowerAccent => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",
+                ModuleType.TextExpander => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",
                 ModuleType.MousePointerCrosshairs => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
                 ModuleType.MeasureTool => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
                 ModuleType.PowerLauncher => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
@@ -76,6 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerRename => generalSettingsConfig.Enabled.PowerRename,
                 ModuleType.PowerLauncher => generalSettingsConfig.Enabled.PowerLauncher,
                 ModuleType.PowerAccent => generalSettingsConfig.Enabled.PowerAccent,
+                ModuleType.TextExpander => generalSettingsConfig.Enabled.TextExpander,
                 ModuleType.RegistryPreview => generalSettingsConfig.Enabled.RegistryPreview,
                 ModuleType.MeasureTool => generalSettingsConfig.Enabled.MeasureTool,
                 ModuleType.ShortcutGuide => generalSettingsConfig.Enabled.ShortcutGuide,
@@ -120,6 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.PowerRename: generalSettingsConfig.Enabled.PowerRename = isEnabled; break;
                 case ModuleType.PowerLauncher: generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
                 case ModuleType.PowerAccent: generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
+                case ModuleType.TextExpander: generalSettingsConfig.Enabled.TextExpander = isEnabled; break;
                 case ModuleType.RegistryPreview: generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
@@ -167,6 +171,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerRename => PowerRenameSettings.ModuleName,
                 ModuleType.PowerLauncher => PowerLauncherSettings.ModuleName,
                 ModuleType.PowerAccent => PowerAccentSettings.ModuleName,
+                ModuleType.TextExpander => TextExpanderSettings.ModuleName,
                 ModuleType.PowerDisplay => PowerDisplaySettings.ModuleName,
                 ModuleType.RegistryPreview => RegistryPreviewSettings.ModuleName,
                 ModuleType.MeasureTool => MeasureToolSettings.ModuleName,
