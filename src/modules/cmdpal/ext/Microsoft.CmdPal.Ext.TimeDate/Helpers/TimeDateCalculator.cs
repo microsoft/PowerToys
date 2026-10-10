@@ -45,16 +45,14 @@ public sealed partial class TimeDateCalculator
         {
             // Search for specified format with specified time/date value
             var userInput = query.Split(InputDelimiter);
-            if (DateTimeInputParser.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out lastInputParsingErrorMsg))
+            if (TryGetResultsForInput(userInput[1], isKeywordSearch, settings, currentTime, availableFormats, out lastInputParsingErrorMsg))
             {
-                availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
                 query = userInput[0];
             }
         }
-        else if (DateTimeInputParser.ParseStringAsDateTime(query, out DateTime timestamp, out lastInputParsingErrorMsg))
+        else if (TryGetResultsForInput(query, isKeywordSearch, settings, currentTime, availableFormats, out lastInputParsingErrorMsg))
         {
-            // Return all formats for specified time/date value
-            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
+            // Return all formats for specified time/date value or calculation
             query = string.Empty;
         }
         else
@@ -104,5 +102,35 @@ public sealed partial class TimeDateCalculator
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Adds the results for a date/time value, or for a date calculation like "today + 3d" or "2025-12-25 - today".
+    /// </summary>
+    /// <returns>True if the input could be parsed; otherwise, false.</returns>
+    private static bool TryGetResultsForInput(string input, bool isKeywordSearch, ISettingsInterface settings, DateTimeOffset? currentTime, List<AvailableResult> availableFormats, out string inputParsingErrorMsg)
+    {
+        // Plain date/time values go first, so input that already parses keeps its meaning.
+        if (DateTimeInputParser.ParseStringAsDateTime(input, out DateTime timestamp, out inputParsingErrorMsg))
+        {
+            availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
+            return true;
+        }
+
+        var now = currentTime?.DateTime ?? DateTime.Now;
+        if (DateCalculationParser.TryEvaluate(input, now, out var calculation, out var calculationErrorMsg))
+        {
+            availableFormats.AddRange(calculation!.IsDifference
+                ? AvailableResultsList.GetDifferenceList(calculation.From!.Value, calculation.To!.Value)
+                : AvailableResultsList.GetList(isKeywordSearch, settings, null, null, calculation.Timestamp));
+            return true;
+        }
+
+        if (!string.IsNullOrEmpty(calculationErrorMsg))
+        {
+            inputParsingErrorMsg = calculationErrorMsg;
+        }
+
+        return false;
     }
 }

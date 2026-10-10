@@ -381,4 +381,115 @@ internal static class AvailableResultsList
         // This can happen, for example, when we can't read the 'era' or when 'era == era abbreviation' and we set value explicitly to an empty string.
         return results.Where(x => !string.IsNullOrEmpty(x.Value)).ToList();
     }
+
+    /// <summary>
+    /// Returns the results for the difference between two dates ("to - from").
+    /// </summary>
+    /// <param name="from">The date that is subtracted.</param>
+    /// <param name="to">The date that is subtracted from.</param>
+    /// <returns>List of results</returns>
+    internal static List<AvailableResult> GetDifferenceList(DateTime from, DateTime to)
+    {
+        const string totalFormat = "#,##0.##";
+        var span = to - from;
+
+        return
+        [
+            new AvailableResult()
+            {
+                Value = FormatCalendarDifference(from, to),
+                Label = Resources.Microsoft_plugin_timedate_Difference,
+                AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagDifference,
+                IconType = ResultIconType.Date,
+            },
+            new AvailableResult()
+            {
+                Value = span.TotalDays.ToString(totalFormat, CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_TotalDays,
+                AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagDifference,
+                IconType = ResultIconType.Date,
+            },
+            new AvailableResult()
+            {
+                Value = (span.TotalDays / 7).ToString(totalFormat, CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_TotalWeeks,
+                AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagDifference,
+                IconType = ResultIconType.Date,
+            },
+            new AvailableResult()
+            {
+                Value = span.TotalHours.ToString(totalFormat, CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_TotalHours,
+                AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagDifference,
+                IconType = ResultIconType.Time,
+            },
+            new AvailableResult()
+            {
+                Value = span.TotalMinutes.ToString(totalFormat, CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_TotalMinutes,
+                AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagDifference,
+                IconType = ResultIconType.Time,
+            },
+            new AvailableResult()
+            {
+                Value = span.TotalSeconds.ToString(totalFormat, CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_TotalSeconds,
+                AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagDifference,
+                IconType = ResultIconType.Time,
+            },
+        ];
+    }
+
+    /// <summary>
+    /// Formats the distance between two dates in calendar units, e.g. "1 year, 2 months, 3 days".
+    /// Whole years and months are counted from the earlier date, so month lengths and leap
+    /// years are respected. The result is always positive; the totals carry the sign.
+    /// </summary>
+    internal static string FormatCalendarDifference(DateTime from, DateTime to)
+    {
+        var start = from <= to ? from : to;
+        var end = from <= to ? to : from;
+
+        var years = end.Year - start.Year;
+        if (start.AddYears(years) > end)
+        {
+            years--;
+        }
+
+        var afterYears = start.AddYears(years);
+        var months = ((end.Year - afterYears.Year) * 12) + end.Month - afterYears.Month;
+        if (afterYears.AddMonths(months) > end)
+        {
+            months--;
+        }
+
+        var rest = end - afterYears.AddMonths(months);
+
+        var parts = new List<string>();
+        AddPart(parts, years, Resources.Microsoft_plugin_timedate_DifferenceYear, Resources.Microsoft_plugin_timedate_DifferenceYears);
+        AddPart(parts, months, Resources.Microsoft_plugin_timedate_DifferenceMonth, Resources.Microsoft_plugin_timedate_DifferenceMonths);
+        AddPart(parts, rest.Days, Resources.Microsoft_plugin_timedate_DifferenceDay, Resources.Microsoft_plugin_timedate_DifferenceDays);
+        AddPart(parts, rest.Hours, Resources.Microsoft_plugin_timedate_DifferenceHour, Resources.Microsoft_plugin_timedate_DifferenceHours);
+        AddPart(parts, rest.Minutes, Resources.Microsoft_plugin_timedate_DifferenceMinute, Resources.Microsoft_plugin_timedate_DifferenceMinutes);
+        AddPart(parts, rest.Seconds, Resources.Microsoft_plugin_timedate_DifferenceSecond, Resources.Microsoft_plugin_timedate_DifferenceSeconds);
+
+        if (parts.Count == 0)
+        {
+            // Same moment (or less than a second apart).
+            AddPart(parts, 0, Resources.Microsoft_plugin_timedate_DifferenceDay, Resources.Microsoft_plugin_timedate_DifferenceDays, force: true);
+        }
+
+        return string.Join(Resources.Microsoft_plugin_timedate_DifferenceSeparator, parts);
+    }
+
+#pragma warning disable CA1863 // Use 'CompositeFormat'
+    private static void AddPart(List<string> parts, int value, string singularFormat, string pluralFormat, bool force = false)
+    {
+        if (value != 0 || force)
+        {
+            // Because of translation we can't use 'CompositeFormat'.
+            parts.Add(string.Format(CultureInfo.CurrentCulture, value == 1 ? singularFormat : pluralFormat, value));
+        }
+    }
+#pragma warning restore CA1863 // Use 'CompositeFormat'
 }
