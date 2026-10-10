@@ -203,7 +203,23 @@ namespace AdvancedPaste
                 }
                 else
                 {
-                    await ShowWindow();
+                    bool isTextCaseFormat = pasteFormat is
+                        PasteFormats.LowerCase or
+                        PasteFormats.UpperCase or
+                        PasteFormats.TitleCase or
+                        PasteFormats.SentenceCase or
+                        PasteFormats.ToggleCase or
+                        PasteFormats.CamelCase or
+                        PasteFormats.PascalCase or
+                        PasteFormats.SnakeCase or
+                        PasteFormats.ScreamingSnakeCase or
+                        PasteFormats.KebabCase;
+
+                    if (!isTextCaseFormat)
+                    {
+                        await ShowWindow();
+                    }
+
                     await viewModel.ExecutePasteFormatAsync(pasteFormat, PasteActionSource.GlobalKeyboardShortcut, forceCoaching);
                 }
             }
