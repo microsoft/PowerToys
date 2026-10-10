@@ -10,6 +10,12 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring GetProductVersion();
         static hstring GetProductVersionChannel();
         static hstring GetProductVersionSourceCommit();
+        static bool AuthenticateNamedPipeServer(
+            uint64_t pipeHandle,
+            hstring const& expectedProcessName,
+            hstring const& trustedDirectory,
+            hstring const& referenceBinaryPath,
+            winrt::PowerToys::Interop::NamedPipePeerValidation validation);
     };
 }
 namespace winrt::PowerToys::Interop::factory_implementation

@@ -72,6 +72,50 @@ namespace Microsoft.Interop.Tests
             }
         }
 
+        [TestMethod]
+        public void TestBidirectionalSend()
+        {
+            var suffix = $"{Environment.ProcessId}_{Guid.NewGuid():N}";
+            var leftPipeName = $"{PipePrefix}left_{suffix}";
+            var rightPipeName = $"{PipePrefix}right_{suffix}";
+            var leftMessage = "left-to-right";
+            var rightMessage = "right-to-left";
+
+            using var leftReceived = new AutoResetEvent(false);
+            using var rightReceived = new AutoResetEvent(false);
+            using var left = new TwoWayPipeMessageIPCManaged(
+                leftPipeName,
+                rightPipeName,
+                (string msg) =>
+                {
+                    Assert.AreEqual(rightMessage, msg);
+                    leftReceived.Set();
+                });
+            using var right = new TwoWayPipeMessageIPCManaged(
+                rightPipeName,
+                leftPipeName,
+                (string msg) =>
+                {
+                    Assert.AreEqual(leftMessage, msg);
+                    rightReceived.Set();
+                });
+
+            left.Start();
+            right.Start();
+
+            // Start() preserves the legacy asynchronous listener startup contract.
+            Thread.Sleep(500);
+
+            left.Send(leftMessage);
+            right.Send(rightMessage);
+
+            Assert.IsTrue(leftReceived.WaitOne(MessageWaitTimeout), "Left endpoint did not receive the right endpoint's message.");
+            Assert.IsTrue(rightReceived.WaitOne(MessageWaitTimeout), "Right endpoint did not receive the left endpoint's message.");
+
+            left.End();
+            right.End();
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
