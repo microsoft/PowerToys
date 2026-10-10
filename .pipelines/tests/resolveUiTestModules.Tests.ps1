@@ -69,12 +69,16 @@ Describe 'resolveUiTestModules' {
         @($result.UiTestModules).Count | Should Be 0
     }
 
-    It 'never automatically selects the opt-in Debug MWB Sandbox pilot' {
+    It 'selects MWB alongside other affected Release suites' {
         New-UITestProject 'src\modules\MouseWithoutBorders\Tests\MouseWithoutBorders.UITests\MouseWithoutBorders.UITests.csproj'
+        New-UITestProject 'src\modules\FileLocksmith\Tests\FileLocksmith.UITests\FileLocksmith.UITests.csproj'
 
-        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile 'src/modules/MouseWithoutBorders/App/Main.cs'
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
+            'src/modules/MouseWithoutBorders/App/Main.cs',
+            'src/modules/FileLocksmith/FileLocksmithUI/MainWindow.xaml.cs'
+        )
 
-        $result.TouchedModules | Should Be @('MouseWithoutBorders')
-        @($result.UiTestModules).Count | Should Be 0
+        $result.TouchedModules | Should Be @('FileLocksmith', 'MouseWithoutBorders')
+        $result.UiTestModules | Should Be @('FileLocksmith.UITests', 'MouseWithoutBorders.UITests')
     }
 }

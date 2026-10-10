@@ -152,7 +152,7 @@ Describe 'MWB native compiler image validation' {
     }
 }
 
-Describe 'MWB Debug runtime/compiler coherence' {
+Describe 'MWB expected-configuration runtime/compiler coherence' {
     BeforeAll {
         $script:debugAssembly = Join-Path $TestDrive 'debug-fixture.dll'
         $script:releaseAssembly = Join-Path $TestDrive 'release-fixture.dll'
@@ -224,6 +224,19 @@ Describe 'MWB Debug runtime/compiler coherence' {
         $before = (Get-FileHash $path).Hash
         { Get-MwbReadyToRunRuntime $stage $compiler } | Should Throw 'Debug assembly'
         (Get-FileHash $path).Hash | Should Be $before
+    }
+
+    It 'accepts a coherent Release cohort only when Release is explicitly expected' {
+        New-ReadyToRunFixtureProduct $stage $script:releaseAssembly
+        $result = Get-MwbReadyToRunRuntime $stage $compiler -Configuration Release
+        $result.Version | Should Be '10.0.12'
+        $result.Files.Count | Should Be 10
+    }
+
+    It 'rejects a Debug cohort when Release is expected instead of changing metadata' {
+        $before = (Get-FileHash (Join-Path $stage 'PowerToys.MouseWithoutBorders.dll')).Hash
+        { Get-MwbReadyToRunRuntime $stage $compiler -Configuration Release } | Should Throw 'Release assembly'
+        (Get-FileHash (Join-Path $stage 'PowerToys.MouseWithoutBorders.dll')).Hash | Should Be $before
     }
 
     It 'rejects different native CLR builds despite matching declared framework versions' {
@@ -337,7 +350,7 @@ Describe 'MWB optional archive publication and failure cleanup' {
             $_.Extent.Text -eq '$stageOwned = $false'
         }
         $script:publishFixture = [scriptblock]::Create(
-            'param($root,$archive,$stage,$files,$ReadyToRun,$Crossgen2Path,$ReadyToRunParallelism,$ReadyToRunTimeoutSeconds,$Platform = ''x64'', $externalRuntimeFiles = @{})' +
+            'param($root,$archive,$stage,$files,$ReadyToRun,$Crossgen2Path,$ReadyToRunParallelism,$ReadyToRunTimeoutSeconds,$Platform = ''x64'', $externalRuntimeFiles = @{}, $Configuration = ''Debug'', $runnerModules = $null)' +
             "`n`$ErrorActionPreference = 'Stop'`n" + $script:archiveAst.Extent.Text.Substring($start.Extent.StartOffset))
         $pathFunction = $script:archiveAst.Find({
             param($node)
@@ -519,18 +532,20 @@ Describe 'MWB optional archive publication and failure cleanup' {
 }
 
 Describe 'MWB explicit native SDK compiler integration' {
-    It 'preserves tiny-fixture Debug IL and identical copies with <PathKind> staging' -TestCases @(
-        @{ PathKind = 'native' }
-        @{ PathKind = 'PSDrive' }
+    It 'preserves tiny-fixture <Configuration> IL and identical copies with <PathKind> staging' -TestCases @(
+        @{ PathKind = 'native'; Configuration = 'Debug' }
+        @{ PathKind = 'PSDrive'; Configuration = 'Debug' }
+        @{ PathKind = 'native'; Configuration = 'Release' }
+        @{ PathKind = 'PSDrive'; Configuration = 'Release' }
     ) -Skip:(
         -not $env:POWERTOYS_TEST_CROSSGEN2_PATH -or -not $env:POWERTOYS_TEST_RUNTIME_REFERENCE_ROOT
     ) {
-        param($PathKind)
-        $stage = Join-Path $TestDrive ("tiny-stage-$PathKind")
+        param($PathKind, $Configuration)
+        $stage = Join-Path $TestDrive ("tiny-stage-$Configuration-$PathKind")
         $null = New-Item -ItemType Directory (Join-Path $stage 'WinUI3Apps') -Force
         $assemblyPath = Join-Path $stage 'Fixture.dll'
-        New-ReadyToRunFixtureAssembly $assemblyPath
-        $original = Join-Path $TestDrive ("original-$PathKind.dll")
+        New-ReadyToRunFixtureAssembly $assemblyPath $Configuration
+        $original = Join-Path $TestDrive ("original-$Configuration-$PathKind.dll")
         Copy-Item $assemblyPath $original
         Copy-Item $assemblyPath (Join-Path $stage 'WinUI3Apps\Fixture.dll')
         foreach ($name in @('System.Private.CoreLib.dll', 'System.Runtime.dll')) {
@@ -545,13 +560,15 @@ Describe 'MWB explicit native SDK compiler integration' {
                 $null = New-PSDrive -Name $driveName -PSProvider FileSystem -Root $stage
                 $stagingPath = "${driveName}:\"
             }
-            $result = Convert-MwbStagedRuntimeToReadyToRun $stagingPath $env:POWERTOYS_TEST_CROSSGEN2_PATH -TimeoutSeconds 120
+            $result = Convert-MwbStagedRuntimeToReadyToRun $stagingPath $env:POWERTOYS_TEST_CROSSGEN2_PATH `
+                -Configuration $Configuration -TimeoutSeconds 120
         }
         finally { if ($driveName) { Remove-PSDrive -Name $driveName } }
         $result.ManagedILAndAttributesUnchanged | Should Be $true
         ($result.VerifiedMethods -gt 0) | Should Be $true
         (Get-FileHash $assemblyPath).Hash | Should Be ((Get-FileHash (Join-Path $stage 'WinUI3Apps\Fixture.dll')).Hash)
-        [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Read($assemblyPath).Configuration | Should Be 'Debug'
+        [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Read($assemblyPath).Configuration | Should Be $Configuration
+        $result.Configuration | Should Be $Configuration
         [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Verify($original, $assemblyPath) | Should BeGreaterThan 0
         @(Get-ChildItem $stage -Filter '*.ni.dll' -Recurse).Count | Should Be 0
         @(Get-ChildItem $stage -Filter '.readytorun-*' -Directory).Count | Should Be 0
@@ -563,7 +580,7 @@ Describe 'MWB explicit native SDK compiler integration' {
             $end = $start + $image.PEHeaders.MetadataSize
         }
         finally { $image.Dispose() }
-        $pattern = [byte[]]@(1, 0, 5, 68, 101, 98, 117, 103, 0, 0)
+        $pattern = [byte[]](@(1, 0, $Configuration.Length) + [Text.Encoding]::UTF8.GetBytes($Configuration) + @(0, 0))
         $found = -1
         for ($index = $start; $index -le $end - $pattern.Length; $index++) {
             $matches = $true
@@ -573,7 +590,7 @@ Describe 'MWB explicit native SDK compiler integration' {
             if ($matches) { $found = $index; break }
         }
         ($found -ge 0) | Should Be $true
-        $bytes[$found + 3] = 82
+        $bytes[$found + 3] = $(if ($Configuration -eq 'Debug') { 82 } else { 68 })
         $altered = Join-Path $TestDrive ("altered-attribute-$PathKind.dll")
         [IO.File]::WriteAllBytes($altered, $bytes)
         { [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Verify($original, $altered) } |

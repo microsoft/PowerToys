@@ -26,6 +26,38 @@ function Get-MwbCiArchitecture {
     throw "BLOCKED_INFRASTRUCTURE: unrecognized MWB test platform $Platform."
 }
 
+function Get-MwbUiTestSelection {
+    param(
+        [string[]] $Modules = @(),
+        [bool] $AutoSelect = $false,
+        [bool] $Enabled = $true,
+        [string] $Platform,
+        [string] $BuildSource,
+        [string] $Configuration = 'Release'
+    )
+
+    $selected = @($Modules | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $all = $selected.Count -eq 0 -and -not $AutoSelect
+    $mwb = $all -or $selected -contains 'MouseWithoutBorders.UITests'
+    $generic = $all -or @($selected | Where-Object { $_ -ne 'MouseWithoutBorders.UITests' }).Count -gt 0
+    $reason = if (-not $mwb) { 'NotSelected' }
+        elseif (-not $Enabled) { 'ExplicitlyDisabled' }
+        elseif ($Platform -ieq 'arm64') { 'Arm64SandboxImageUnavailable' }
+        elseif ($Platform -cnotin @('x64Win10', 'x64Win11')) { 'UnsupportedPlatform' }
+        elseif ($Configuration -cne 'Release') { 'RequiresReleaseArtifact' }
+        elseif ($BuildSource -cnotin @('buildNow', 'buildNowSlim')) { 'RequiresCurrentBuildBundle' }
+        else { 'Selected' }
+    [pscustomobject]@{
+        Selected = $mwb
+        Run = $reason -ceq 'Selected'
+        RunGeneric = $generic
+        Blocked = $reason -cin @('UnsupportedPlatform', 'RequiresReleaseArtifact', 'RequiresCurrentBuildBundle')
+        Reason = $reason
+        Platform = $Platform
+        Configuration = $Configuration
+    }
+}
+
 function Resolve-MwbCiFileSystemPath {
     param([string] $Path, [switch] $AllowMissing)
 
@@ -97,13 +129,14 @@ function Get-MwbCiRelativePath {
 }
 
 function Get-MwbCiBundle {
-    param([string] $Root, [string] $SourceRevision, [ValidateSet('x64', 'arm64')][string] $Platform = 'x64')
+    param([string] $Root, [string] $SourceRevision, [ValidateSet('x64', 'arm64')][string] $Platform = 'x64',
+        [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release')
 
     $bundle = Join-Path $Root 'mwb-sandbox-ci'
     $manifestPath = Join-Path $bundle 'manifest.json'
     Assert-MwbCiPlainPath $manifestPath
     if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
-        throw "BLOCKED_INFRASTRUCTURE: build-$Platform-Debug lacks the build-job MWB CI bundle. Rebuild the gated pilot; MWB test preparation never builds or downloads CLI/compiler bits."
+        throw "BLOCKED_INFRASTRUCTURE: build-$Platform-$Configuration lacks the build-job MWB CI bundle. Rebuild this revision with MWB preparation; no different product build or installed fallback is allowed."
     }
     $manifestBytes = [IO.File]::ReadAllBytes($manifestPath)
     $manifest = [Text.Encoding]::UTF8.GetString($manifestBytes).TrimStart([char]0xFEFF) | ConvertFrom-Json
@@ -111,18 +144,19 @@ function Get-MwbCiBundle {
     $pin = Get-WinAppCliRelease -Platform $Platform
     if ($SourceRevision -notmatch '^[0-9a-fA-F]{40}$' -or
         $manifest.FormatVersion -ne 2 -or $manifest.Platform -cne $Platform -or
-        $manifest.Configuration -cne 'Debug' -or $manifest.SourceRevision -ine $SourceRevision -or
+        $manifest.Configuration -cne $Configuration -or $manifest.SourceRevision -ine $SourceRevision -or
         $manifest.WinAppCli.Repository -cne $pin.Repository -or
         $manifest.WinAppCli.Tag -cne $pin.Tag -or
         $manifest.WinAppCli.Version -cne $pin.Version -or
         $manifest.WinAppCli.Asset -cne $pin.Asset -or
         $manifest.WinAppCli.Sha256 -ine $pin.Sha256) {
-        throw 'MWB CI bundle provenance does not match the selected Debug revision and official winapp CLI release.'
+        throw 'MWB CI bundle provenance does not match the selected configuration/revision and official winapp CLI release.'
     }
     Assert-MwbCiHash (Join-Path $bundle 'runtime.zip') $manifest.Runtime.Sha256
     Assert-MwbCiHash (Join-Path $bundle 'runtime.zip.manifest.json') $manifest.Runtime.ManifestSha256
     $runtime = Get-Content -LiteralPath (Join-Path $bundle 'runtime.zip.manifest.json') -Raw | ConvertFrom-Json
-    if ($runtime.Sha256 -ine $manifest.Runtime.Sha256 -or $runtime.FileCount -ne @($manifest.Runtime.Files).Count -or
+    if ($runtime.Configuration -cne $Configuration -or
+        $runtime.Sha256 -ine $manifest.Runtime.Sha256 -or $runtime.FileCount -ne @($manifest.Runtime.Files).Count -or
         $manifest.Runtime.ReadyToRun -isnot [bool] -or
         ($manifest.Runtime.ReadyToRun -and -not $runtime.PSObject.Properties['ReadyToRun'])) {
         throw 'MWB CI runtime archive provenance is inconsistent.'
@@ -140,9 +174,23 @@ function Get-MwbCiBundle {
         'WinUI3Apps\PowerToys.Settings.exe', 'WinUI3Apps\PowerToys.QuickAccess.exe')) {
         if (-not $names.Contains($required)) { throw "MWB CI runtime closure is missing $required." }
     }
+    if ($Configuration -eq 'Release') {
+        if (-not $runtime.PSObject.Properties['RunnerModules'] -or
+            $runtime.RunnerModules.SourceSha256 -notmatch '^[0-9a-fA-F]{64}$' -or
+            -not @($runtime.RunnerModules.Modules).Count) {
+            throw 'MWB Release runtime requires verified Runner module-load closure provenance.'
+        }
+        foreach ($relative in $runtime.RunnerModules.Modules) {
+            $null = Get-MwbCiRelativePath $bundle $relative
+            if (-not $names.Contains($relative)) {
+                throw "MWB Release runtime is missing a Runner-required module: $relative."
+            }
+        }
+    }
     if ($manifest.Runtime.ReadyToRun) {
         $compilation = $runtime.ReadyToRun
-        if ($compilation.FormatVersion -ne 1 -or $compilation.ManagedILAndAttributesUnchanged -cne $true -or
+        if ($compilation.FormatVersion -ne 1 -or $compilation.Configuration -cne $Configuration -or
+            $compilation.ManagedILAndAttributesUnchanged -cne $true -or
             $compilation.CompiledAssemblies -lt 1 -or $compilation.CompiledAssemblies -ne @($compilation.Assemblies).Count -or
             @($compilation.Compiler.Files).Count -ne 3) {
             throw 'MWB CI ReadyToRun verification provenance is incomplete.'
@@ -209,6 +257,75 @@ function Expand-MwbCiRuntime {
         }
     }
     finally { $zip.Dispose() }
+}
+
+function Invoke-MwbCiEndpointSigning {
+    param([string]$ProductRoot, [string]$CertificateMarkerPath, [guid]$RunId, [switch]$SkipLocalTrust)
+    & "$PSScriptRoot\signSparsePackages.ps1" -PackageRoot $ProductRoot `
+        -RequiredAuthenticodeFile @('PowerToys.exe', 'PowerToys.MouseWithoutBorders.exe',
+            'PowerToys.MouseWithoutBordersHelper.exe', 'PowerToys.Settings.exe', 'PowerToys.QuickAccess.exe') `
+        -CertificateMarkerPath $CertificateMarkerPath `
+        -CertificateFriendlyName "PowerToys MWB UI Test $RunId" `
+        -ExportCertificatePath (Join-Path $ProductRoot 'mwb-test-signer.cer') `
+        -SkipLocalTrust:$SkipLocalTrust | Out-Host
+}
+
+function New-MwbCiSignedRuntime {
+    param($Bundle, [string]$ProductRoot, [string]$ArchivePath, [string]$CertificateMarkerPath,
+        [guid]$RunId, [switch]$SkipLocalTrust)
+    $ErrorActionPreference = 'Stop'
+    $productPath = (Resolve-MwbCiFileSystemPath $ProductRoot -AllowMissing).TrimEnd('\')
+    $archive = Resolve-MwbCiFileSystemPath $ArchivePath -AllowMissing
+    Assert-MwbCiPlainPath $ArchivePath
+    if ((Test-Path -LiteralPath $ArchivePath) -or
+        $archive.StartsWith("$productPath\", [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'The signed MWB runtime archive must be new and outside the staged product.'
+    }
+    Expand-MwbCiRuntime (Join-Path $Bundle.Root 'runtime.zip') $ProductRoot $Bundle.Manifest.Runtime.Files
+    Invoke-MwbCiEndpointSigning $ProductRoot $CertificateMarkerPath $RunId -SkipLocalTrust:$SkipLocalTrust
+    $signingHelper = Join-Path $PSScriptRoot '..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\MwbTestSigning.ps1'
+    . $signingHelper
+    $certificatePath = Join-Path $ProductRoot 'mwb-test-signer.cer'
+    $certificate = if (Test-Path -LiteralPath $certificatePath) { Get-MwbTestSigningCertificate $certificatePath } else { $null }
+    $signatures = @(Assert-MwbEndpointSignatures $ProductRoot $certificate -AllowUntrustedTestCertificate:$SkipLocalTrust)
+    $signedPaths = @($signatures.Path)
+    $changes = @()
+    $files = @(
+        foreach ($entry in $Bundle.Manifest.Runtime.Files) {
+            $path = Get-MwbCiRelativePath $ProductRoot $entry.Path
+            $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+            if ($hash -ine $entry.Sha256) {
+                if ($entry.Path -cnotin $signedPaths) {
+                    throw "Signing modified a non-executable runtime dependency: $($entry.Path)."
+                }
+                $changes += [ordered]@{ Path = $entry.Path; InputSha256 = $entry.Sha256; OutputSha256 = $hash }
+            }
+            [ordered]@{ Path = $entry.Path; Sha256 = $hash }
+        }
+    )
+    if ($null -ne $certificate) {
+        $files += [ordered]@{ Path = 'mwb-test-signer.cer'; Sha256 = $certificate.Sha256 }
+    }
+    $actual = @(Get-ChildItem -LiteralPath $ProductRoot -File -Recurse -Force)
+    if ($actual.Count -ne $files.Count) { throw 'Signing created unmanifested runtime files.' }
+    foreach ($file in $actual) { Assert-MwbCiPlainPath $file.FullName }
+    [IO.Compression.ZipFile]::CreateFromDirectory($ProductRoot, $ArchivePath)
+    $runtime = Get-Content -LiteralPath (Join-Path $Bundle.Root 'runtime.zip.manifest.json') -Raw | ConvertFrom-Json
+    $runtime.ArchivePath = $ArchivePath
+    $runtime.ProductRoot = $ProductRoot
+    $runtime.Sha256 = (Get-FileHash -LiteralPath $ArchivePath -Algorithm SHA256).Hash
+    $runtime.Length = (Get-Item -LiteralPath $ArchivePath).Length
+    $runtime.FileCount = $files.Count
+    $runtime.Files = @($files.Path)
+    $runtime | Add-Member -NotePropertyName TestSigning -NotePropertyValue ([ordered]@{
+        InputBundleManifestSha256 = $Bundle.ManifestSha256
+        InputRuntimeSha256 = $Bundle.Manifest.Runtime.Sha256
+        Certificate = $certificate
+        ExecutableChanges = $changes
+        Signatures = $signatures
+        ManagedFilesUnchanged = $true
+    })
+    [pscustomobject]@{ Files = $files; RuntimeManifest = $runtime }
 }
 
 # Match the trusted family required by WinAppSandbox.AssertPrerequisites.

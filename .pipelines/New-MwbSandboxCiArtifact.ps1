@@ -11,6 +11,7 @@ param(
     [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string] $SourceRevision,
     [string] $DotNetPath,
     [ValidateSet('x64', 'arm64')][string] $Platform = 'x64',
+    [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release',
     [switch] $ReadyToRun,
     [string] $WinAppCliArchivePath
 )
@@ -128,7 +129,9 @@ function Get-MwbCiCrossgen2 {
 }
 
 function Get-MwbCiPreparationPaths {
-    param([string] $ProductRoot, [string] $OutputRoot, [string] $WorkRoot, [string] $SourceRoot)
+    param([string] $ProductRoot, [string] $OutputRoot, [string] $WorkRoot, [string] $SourceRoot,
+        [ValidateSet('x64', 'arm64')][string] $Platform = 'x64',
+        [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release')
 
     $product = (Resolve-MwbCiFileSystemPath $ProductRoot).TrimEnd('\')
     $source = (Resolve-MwbCiFileSystemPath $SourceRoot).TrimEnd('\')
@@ -156,9 +159,9 @@ function Get-MwbCiPreparationPaths {
         $output.StartsWith("$work\", [StringComparison]::OrdinalIgnoreCase)) {
         throw 'MWB preparation work must be outside the source checkout and published bundle.'
     }
-    if ($product -notmatch "\\$Platform\\Debug`$" -or
+    if ($product -notmatch "\\$Platform\\$Configuration`$" -or
         -not (Test-Path -LiteralPath (Join-Path $product 'PowerToys.MouseWithoutBorders.dll') -PathType Leaf)) {
-        throw "MWB CI preparation accepts only the built $Platform Debug product."
+        throw "MWB CI preparation accepts only the built $Platform $Configuration product."
     }
     [pscustomobject]@{ ProductRoot = $product; SourceRoot = $source; OutputRoot = $output; WorkRoot = $work }
 }
@@ -189,7 +192,8 @@ function Get-MwbCiWindowsTargetVersion {
     $versions[0]
 }
 
-$paths = Get-MwbCiPreparationPaths $ProductRoot $OutputRoot $WorkRoot (Join-Path $PSScriptRoot '..')
+$paths = Get-MwbCiPreparationPaths $ProductRoot $OutputRoot $WorkRoot (Join-Path $PSScriptRoot '..') `
+    -Platform $Platform -Configuration $Configuration
 $product = $paths.ProductRoot
 $sourceRoot = $paths.SourceRoot
 $output = $paths.OutputRoot
@@ -199,16 +203,19 @@ $null = New-Item -ItemType Directory -Path $output, $work, (Join-Path $work 'scr
 $experiment = Join-Path $sourceRoot 'src\modules\MouseWithoutBorders\Tests\SandboxExperiment'
 $archive = Join-Path $output 'runtime.zip'
 $options = @{}
-$sdkRoot = (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots' -Name KitsRoot10).KitsRoot10
-[xml]$cppProps = Get-Content -LiteralPath (Join-Path $sourceRoot 'Cpp.Build.props') -Raw
-$options.DebugUcrtPath = Get-MwbCiDebugUcrtPath -SdkRoot $sdkRoot -TargetVersion (Get-MwbCiWindowsTargetVersion $cppProps) -Platform $Platform
+if ($Configuration -eq 'Debug') {
+    $sdkRoot = (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots' -Name KitsRoot10).KitsRoot10
+    [xml]$cppProps = Get-Content -LiteralPath (Join-Path $sourceRoot 'Cpp.Build.props') -Raw
+    $options.DebugUcrtPath = Get-MwbCiDebugUcrtPath -SdkRoot $sdkRoot -TargetVersion (Get-MwbCiWindowsTargetVersion $cppProps) -Platform $Platform
+}
 if ($ReadyToRun) {
     if (-not $DotNetPath) { $DotNetPath = (Get-Command dotnet.exe -ErrorAction Stop).Source }
     $runtimeVersion = Get-MwbCiRuntimeVersion $product
     $options.ReadyToRun = $true
     $options.Crossgen2Path = Get-MwbCiCrossgen2 $runtimeVersion (Join-Path $work 'compiler') -TargetArchitecture $Platform
 }
-& (Join-Path $experiment 'New-MwbRuntimeArchive.ps1') -ProductRoot $product -ArchivePath $archive -Platform $Platform @options | Out-Null
+& (Join-Path $experiment 'New-MwbRuntimeArchive.ps1') -ProductRoot $product -ArchivePath $archive `
+    -Platform $Platform -Configuration $Configuration @options | Out-Null
 $runtime = Get-Content -LiteralPath "$archive.manifest.json" -Raw | ConvertFrom-Json
 $files = foreach ($relative in $runtime.Files) {
     $path = Get-MwbCiRelativePath "$archive.staging" $relative
@@ -220,7 +227,7 @@ $cli = Save-WinAppCliRelease -WorkRoot (Join-Path $work 'winapp-cli') -Destinati
     -Platform $Platform -ArchivePath $WinAppCliArchivePath
 [ordered]@{
     FormatVersion = 2; SourceRevision = $SourceRevision.ToLowerInvariant()
-    Platform = $Platform; Configuration = 'Debug'
+    Platform = $Platform; Configuration = $Configuration
     Runtime = [ordered]@{
         Sha256 = $runtime.Sha256
         ManifestSha256 = (Get-FileHash -LiteralPath "$archive.manifest.json" -Algorithm SHA256).Hash
@@ -229,4 +236,4 @@ $cli = Save-WinAppCliRelease -WorkRoot (Join-Path $work 'winapp-cli') -Destinati
     }
     WinAppCli = $cli
 } | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $output 'manifest.json')
-Write-Host "Prepared private MWB $Platform Debug bundle with official winapp CLI $($cli.Tag) (ReadyToRun=$([bool]$ReadyToRun)); original product files were not modified."
+Write-Host "Prepared private MWB $Platform $Configuration bundle with official winapp CLI $($cli.Tag) (ReadyToRun=$([bool]$ReadyToRun)); original product files were not modified."

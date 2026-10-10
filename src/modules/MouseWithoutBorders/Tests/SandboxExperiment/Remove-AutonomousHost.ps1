@@ -11,6 +11,7 @@ param([string]$StateRoot = 'C:\ProgramData\PowerToysMwbExperiment')
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
+. "$PSScriptRoot\MwbTestSigning.ps1"
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 try {
     if (-not (New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole(
@@ -43,6 +44,9 @@ if ($rule) {
     Remove-NetFirewallRule -Name $state.RuleName -ErrorAction Stop
 }
 if (Get-NetFirewallRule -Name $state.RuleName -ErrorAction SilentlyContinue) { throw 'The owned rule still exists.' }
+if ($state.PSObject.Properties['TestSigningTrust'] -and $null -ne $state.TestSigningTrust) {
+    Remove-MwbTestSigningTrust $state.TestSigningTrust
+}
 $state.Status = 'Removed'
 [IO.File]::WriteAllText($marker, ($state | ConvertTo-Json -Depth 5), [Text.UTF8Encoding]::new($false))
 [pscustomobject]@{ Status = 'Removed'; RuleName = $state.RuleName }

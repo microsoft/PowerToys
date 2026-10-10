@@ -71,7 +71,7 @@ internal sealed class TwoEndpointFixture : IDisposable
     {
         Phase("Preflight and protected provisioning identity", Prepare);
         Phase("Sandbox and correlated desktop readiness", StartWorkers);
-        Phase("Matching Debug endpoints", StartPeers);
+        Phase("Matching configured endpoints", StartPeers);
         Phase("Settings New key and Connect", Pair);
         Phase("Bidirectional owned MWB transport", VerifyTransport);
         Phase("Local keyboard negative control", VerifyLocalInput);
@@ -235,7 +235,7 @@ internal sealed class TwoEndpointFixture : IDisposable
             RuntimeInformation.OSArchitecture,
             "BLOCKED_INFRASTRUCTURE: refusing an emulated process; the OS architecture must match the native target.");
         productRoot = Path.GetFullPath(Environment.GetEnvironmentVariable("POWERTOYS_INSTALL_DIR")
-            ?? throw new InvalidOperationException("Set POWERTOYS_INSTALL_DIR to the coherently staged Debug product."));
+            ?? throw new InvalidOperationException("Set POWERTOYS_INSTALL_DIR to the coherently staged product."));
         productRoot = productRoot.TrimEnd('\\');
         using var identity = WindowsIdentity.GetCurrent();
         userSid = identity.User!.Value;
@@ -294,6 +294,9 @@ internal sealed class TwoEndpointFixture : IDisposable
             {
                 RunId = runId,
                 Role = endpoint == host ? "Host" : "Guest",
+                Configuration = provision["Configuration"]!.GetValue<string>(),
+                TestSigningCertificateSha256 = provision["TestSigningTrust"]?["Sha256"]?.GetValue<string>(),
+                TestSigningCertificateThumbprint = provision["TestSigningTrust"]?["Thumbprint"]?.GetValue<string>(),
                 HardDeadlineUtc = hardDeadlineUtc,
                 Manifest = manifest,
                 GuestArchiveSha256 = provision["GuestArchiveSha256"]!.GetValue<string>(),
@@ -354,6 +357,11 @@ internal sealed class TwoEndpointFixture : IDisposable
             @"WinUI3Apps\Microsoft.DirectManipulation.dll",
             @"WinUI3Apps\Microsoft.Graphics.Display.dll",
         ];
+        if (provision["TestSigningTrust"] is not null)
+        {
+            files = [.. files, "mwb-test-signer.cer"];
+        }
+
         var hashes = files.ToDictionary(path => path, path =>
         {
             using var stream = File.OpenRead(Path.Combine(productRoot, path));
@@ -361,9 +369,15 @@ internal sealed class TwoEndpointFixture : IDisposable
         });
         Assert.AreEqual(hashes["PowerToys.Settings.UI.Lib.dll"], hashes[@"WinUI3Apps\PowerToys.Settings.UI.Lib.dll"],
             "Root and WinUI3Apps settings-library builds differ.");
+        if (provision["TestSigningTrust"] is not null)
+        {
+            Assert.AreEqual(provision["TestSigningTrust"]!["Sha256"]!.GetValue<string>(), hashes["mwb-test-signer.cer"], true,
+                "The public test certificate changed after protected provisioning.");
+        }
         foreach (var path in new[] { "PowerToys.MouseWithoutBorders.dll", "PowerToys.MouseWithoutBordersHelper.dll", @"WinUI3Apps\PowerToys.Settings.dll" })
         {
-            AssertDebugAssembly(Path.Combine(productRoot, path));
+            AssertConfiguredAssembly(Path.Combine(productRoot, path), provision["Configuration"]?.GetValue<string>()
+                ?? throw new InvalidDataException("Protected provisioning must identify the payload configuration."));
         }
 
         if (provision["Status"]?.GetValue<string>() == "Ready" ||
@@ -377,10 +391,6 @@ internal sealed class TwoEndpointFixture : IDisposable
                 "MWB assembly changed after privileged provisioning.");
         }
 
-        var assembly = File.ReadAllBytes(Path.Combine(productRoot, "PowerToys.MouseWithoutBorders.dll"));
-        Assert.IsTrue(Encoding.Unicode.GetString(assembly).Contains("POWERTOYS_MWB_ALLOW_NONCONSOLE", StringComparison.Ordinal) ||
-            Encoding.Unicode.GetString(assembly, 1, assembly.Length - 1).Contains("POWERTOYS_MWB_ALLOW_NONCONSOLE", StringComparison.Ordinal),
-            "MWB Debug payload is missing the approved non-console experiment flag.");
         return hashes.Select(pair => (object)new { Path = pair.Key, Sha256 = pair.Value }).ToArray();
     }
 
@@ -727,8 +737,44 @@ internal sealed class TwoEndpointFixture : IDisposable
 
     private void WaitClipboard(EndpointChannel destination, string sourceDigest)
     {
-        RunFiles.Wait(() => Observe(destination)["ClipboardDigest"]!.GetValue<string>() == sourceDigest,
-            TimeSpan.FromSeconds(15), "Synthetic clipboard did not arrive over MWB.");
+        var startedUtc = DateTime.UtcNow;
+        var watch = Stopwatch.StartNew();
+        var direction = ReferenceEquals(destination, guest) ? "HostToGuest" : "GuestToHost";
+        var observations = 0;
+        var matched = false;
+        try
+        {
+            RunFiles.Wait(
+                () =>
+                {
+                    observations++;
+                    matched = Observe(destination)["ClipboardDigest"]!.GetValue<string>() == sourceDigest;
+                    return matched;
+                },
+                TimeSpan.FromSeconds(15),
+                "Synthetic clipboard did not arrive over MWB.");
+        }
+        finally
+        {
+            try
+            {
+                RunFiles.Write(Path.Combine(runRoot, $"clipboard-transfer-{direction}.json"), new
+                {
+                    RunId = runId,
+                    Direction = direction,
+                    StartedUtc = startedUtc,
+                    CompletedUtc = DateTime.UtcNow,
+                    ElapsedMilliseconds = watch.Elapsed.TotalMilliseconds,
+                    TimeoutMilliseconds = 15_000,
+                    Observations = observations,
+                    Matched = matched,
+                });
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            {
+                context.WriteLine($"Clipboard transfer diagnostics could not be published (0x{error.HResult:X8}); the transfer result is unchanged.");
+            }
+        }
     }
 
     private JsonObject Observe(EndpointChannel endpoint)
@@ -809,17 +855,28 @@ internal sealed class TwoEndpointFixture : IDisposable
         context.WriteLine(name);
         SaveJournal();
         var started = DateTime.UtcNow;
+        var timer = Stopwatch.StartNew();
         try
         {
             CheckLeasePublishers();
 
             action();
-            phases.Add(new { Name = name, Status = "PASS", StartedUtc = started, CompletedUtc = DateTime.UtcNow });
+            phases.Add(new
+            {
+                Name = name, Status = "PASS", StartedUtc = started, CompletedUtc = DateTime.UtcNow,
+                ElapsedMilliseconds = timer.Elapsed.TotalMilliseconds,
+                WallElapsedMilliseconds = (DateTime.UtcNow - started).TotalMilliseconds,
+            });
         }
         catch (Exception error)
         {
             status = "Failed";
-            phases.Add(new { Name = name, Status = "FAIL", StartedUtc = started, CompletedUtc = DateTime.UtcNow, Error = error.Message });
+            phases.Add(new
+            {
+                Name = name, Status = "FAIL", StartedUtc = started, CompletedUtc = DateTime.UtcNow, Error = error.Message,
+                ElapsedMilliseconds = timer.Elapsed.TotalMilliseconds,
+                WallElapsedMilliseconds = (DateTime.UtcNow - started).TotalMilliseconds,
+            });
             throw;
         }
         finally
@@ -907,8 +964,9 @@ internal sealed class TwoEndpointFixture : IDisposable
         return true;
     }
 
-    internal static void AssertDebugAssembly(string path)
+    internal static void AssertConfiguredAssembly(string path, string configuration)
     {
+        Assert.IsTrue(configuration is "Debug" or "Release", "Unsupported protected payload configuration.");
         using var stream = File.OpenRead(path);
         using var pe = new PEReader(stream);
         var metadata = pe.GetMetadataReader();
@@ -934,10 +992,10 @@ internal sealed class TwoEndpointFixture : IDisposable
 
             var value = metadata.GetBlobReader(attribute.Value);
             Assert.AreEqual((ushort)1, value.ReadUInt16(), "Invalid assembly configuration metadata.");
-            Assert.AreEqual("Debug", value.ReadSerializedString(), $"Pilot rejects non-Debug payload: {Path.GetFileName(path)}");
+            Assert.AreEqual(configuration, value.ReadSerializedString(), $"Payload configuration differs: {Path.GetFileName(path)}");
             return;
         }
 
-        Assert.Fail($"Debug assembly configuration metadata is missing: {Path.GetFileName(path)}");
+        Assert.Fail($"Assembly configuration metadata is missing: {Path.GetFileName(path)}");
     }
 }

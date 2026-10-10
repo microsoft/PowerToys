@@ -175,10 +175,14 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
-                SessionPolicy.Initialize(serviceMode, runningAsSystem, WinAPI.GetMyDesktop());
+                SessionPolicy.Initialize(
+                    serviceMode,
+                    runningAsSystem,
+                    WinAPI.GetMyDesktop(),
+                    Setting.Values.AllowNonConsoleSessions);
                 if (SessionPolicy.Current.AllowNonConsole)
                 {
-                    Logger.Log("Experimental Debug non-console session support enabled. An active user desktop is still required; service and secure-desktop scenarios are not supported.");
+                    Logger.Log("Non-console session support enabled. An active user Default desktop is still required; service, System, and secure-desktop scenarios are not supported.");
                 }
 
                 PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersStartedEvent());

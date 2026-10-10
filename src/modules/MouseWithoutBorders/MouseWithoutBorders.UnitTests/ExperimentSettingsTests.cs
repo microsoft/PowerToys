@@ -22,6 +22,7 @@ public sealed class ExperimentSettingsTests
         Assert.IsNotNull(settings);
         Assert.AreEqual("1.1", settings.Version);
         Assert.IsFalse(settings.Properties.UseService);
+        Assert.IsTrue(settings.Properties.AllowNonConsoleSessions.Value);
         Assert.IsFalse(settings.Properties.ShowOriginalUI);
         Assert.IsFalse(settings.Properties.WrapMouse);
         Assert.IsFalse(settings.Properties.ShareClipboard);

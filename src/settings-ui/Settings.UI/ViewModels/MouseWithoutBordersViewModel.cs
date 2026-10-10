@@ -630,29 +630,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     availableMachines.Add(availableMachineName);
                 }
 
-                // Start by removing the machines from the matrix that are no longer available to pick.
-                for (int i = 0; i < loadMachineMatrixString.Count; i++)
-                {
-                    if (!availableMachines.Contains(loadMachineMatrixString[i]))
-                    {
-                        editedTheMatrix = true;
-                        loadMachineMatrixString[i] = string.Empty;
-                    }
-                }
-
-                // If an available machine is not in the matrix already, fill it in the first available spot.
-                foreach (string availableMachineName in availableMachines)
-                {
-                    if (!loadMachineMatrixString.Contains(availableMachineName))
-                    {
-                        int availableIndex = loadMachineMatrixString.FindIndex(name => string.IsNullOrEmpty(name));
-                        if (availableIndex >= 0)
-                        {
-                            loadMachineMatrixString[availableIndex] = availableMachineName;
-                            editedTheMatrix = true;
-                        }
-                    }
-                }
+                editedTheMatrix = MouseWithoutBordersMachineMatrix.Reconcile(loadMachineMatrixString, availableMachines);
             }
 
             // Dragging while elevated crashes on WinUI3: https://github.com/microsoft/microsoft-ui-xaml/issues/7690

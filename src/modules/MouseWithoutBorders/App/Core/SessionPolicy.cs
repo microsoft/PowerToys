@@ -19,25 +19,32 @@ internal sealed class SessionPolicy
 
     internal bool AllowNonConsole { get; }
 
-    internal static void Initialize(bool serviceMode, bool runningAsSystem, string desktopName)
+    internal static void Initialize(bool serviceMode, bool runningAsSystem, string desktopName, bool allowNonConsoleSessions = false)
     {
+        string flagValue = null;
+#if DEBUG
+        flagValue = Environment.GetEnvironmentVariable(AllowNonConsoleEnvironmentVariable);
+#endif
+
         Current = FromConfiguration(
-            Environment.GetEnvironmentVariable(AllowNonConsoleEnvironmentVariable),
+            flagValue,
             serviceMode,
             runningAsSystem,
-            desktopName);
+            desktopName,
+            allowNonConsoleSessions);
     }
 
-    internal static SessionPolicy FromConfiguration(string flagValue, bool serviceMode, bool runningAsSystem, string desktopName)
+    internal static SessionPolicy FromConfiguration(string flagValue, bool serviceMode, bool runningAsSystem, string desktopName, bool allowNonConsoleSessions = false)
     {
+        var optedIn = allowNonConsoleSessions;
 #if DEBUG
-        var allowNonConsole = string.Equals(flagValue, "1", StringComparison.Ordinal) &&
+        optedIn |= string.Equals(flagValue, "1", StringComparison.Ordinal);
+#endif
+
+        var allowNonConsole = optedIn &&
             !serviceMode &&
             !runningAsSystem &&
             string.Equals(desktopName, "default", StringComparison.OrdinalIgnoreCase);
-#else
-        const bool allowNonConsole = false;
-#endif
 
         return new SessionPolicy(allowNonConsole);
     }

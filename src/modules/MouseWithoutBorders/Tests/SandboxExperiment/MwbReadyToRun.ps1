@@ -71,7 +71,7 @@ function Get-MwbReadyToRunCompiler {
 }
 
 function Get-MwbReadyToRunRuntime {
-    param([string]$StageRoot, $Compiler)
+    param([string]$StageRoot, $Compiler, [ValidateSet('Debug', 'Release')][string]$Configuration = 'Debug')
     $ErrorActionPreference = 'Stop'
     $targetArchitecture = if ($Compiler.PSObject.Properties['TargetArchitecture']) { $Compiler.TargetArchitecture } else { 'x64' }
     $runtimeVersion = [regex]::Match($Compiler.ProductVersion, '^\d+\.\d+\.\d+').Value
@@ -82,8 +82,8 @@ function Get-MwbReadyToRunRuntime {
         'WinUI3Apps\PowerToys.Settings', 'WinUI3Apps\PowerToys.QuickAccess'
     )) {
         $base = Join-Path $StageRoot $application
-        $configuration = Get-Content -LiteralPath "$base.runtimeconfig.json" -Raw | ConvertFrom-Json
-        $frameworks = @($configuration.runtimeOptions.includedFrameworks)
+        $runtimeConfiguration = Get-Content -LiteralPath "$base.runtimeconfig.json" -Raw | ConvertFrom-Json
+        $frameworks = @($runtimeConfiguration.runtimeOptions.includedFrameworks)
         $core = @($frameworks | Where-Object name -eq 'Microsoft.NETCore.App')
         $desktop = @($frameworks | Where-Object name -eq 'Microsoft.WindowsDesktop.App')
         if ($core.Count -ne 1 -or $desktop.Count -ne 1 -or
@@ -105,8 +105,8 @@ function Get-MwbReadyToRunRuntime {
             RuntimeConfigSha256 = (Get-FileHash -LiteralPath "$base.runtimeconfig.json" -Algorithm SHA256).Hash
         }
         $assembly = [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Read("$base.dll")
-        if ($null -eq $assembly -or $assembly.Configuration -cne 'Debug') {
-            throw "ReadyToRun preparation requires the existing Debug assembly: $application"
+        if ($null -eq $assembly -or $assembly.Configuration -cne $Configuration) {
+            throw "ReadyToRun preparation requires the existing $Configuration assembly: $application"
         }
     }
     $files = @()
@@ -189,6 +189,7 @@ function Convert-MwbStagedRuntimeToReadyToRun {
         [string]$StageRoot,
         [string]$Crossgen2Path,
         [ValidateSet('x64', 'arm64')][string]$TargetArchitecture = 'x64',
+        [ValidateSet('Debug', 'Release')][string]$Configuration = 'Debug',
         [ValidateRange(1, 16)][int]$Parallelism = 2,
         [ValidateRange(1, 3600)][int]$TimeoutSeconds = 600
     )
@@ -200,7 +201,7 @@ function Convert-MwbStagedRuntimeToReadyToRun {
     }
     $root = $stage.FullName.TrimEnd('\')
     $compiler = Get-MwbReadyToRunCompiler $Crossgen2Path -TargetArchitecture $TargetArchitecture
-    $runtime = Get-MwbReadyToRunRuntime $root $compiler
+    $runtime = Get-MwbReadyToRunRuntime $root $compiler -Configuration $Configuration
     $assemblies = @(Get-MwbReadyToRunAssemblies $root)
     $references = @()
     foreach ($group in $assemblies | Where-Object { $_.Metadata.Name -notlike '*.resources' } | Group-Object { $_.Metadata.Name } | Sort-Object Name) {
@@ -268,7 +269,7 @@ function Convert-MwbStagedRuntimeToReadyToRun {
         }
         [pscustomobject]@{
             FormatVersion = 1; RuntimeVersion = $runtime.Version; Compiler = $compiler
-            TargetArchitecture = $TargetArchitecture
+            TargetArchitecture = $TargetArchitecture; Configuration = $Configuration
             RuntimeFiles = $runtime.Files; DeclaredFrameworks = $runtime.DeclaredFrameworks
             Options = $options; CompiledAssemblies = $inputs.Count; ElapsedSeconds = $watch.Elapsed.TotalSeconds
             VerifiedAssemblyCopies = ($verified | ForEach-Object { $_.Paths.Count } | Measure-Object -Sum).Sum

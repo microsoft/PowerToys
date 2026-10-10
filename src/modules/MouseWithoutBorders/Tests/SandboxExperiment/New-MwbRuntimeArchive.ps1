@@ -23,6 +23,8 @@ param(
     [string]$Crossgen2Path,
     [string]$DebugUcrtPath,
     [ValidateSet('x64', 'arm64')][string]$Platform = 'x64',
+    [ValidateSet('Debug', 'Release')][string]$Configuration = 'Debug',
+    [string]$RunnerSourcePath = (Join-Path $PSScriptRoot '..\..\..\..\runner\main.cpp'),
     [ValidateRange(1, 16)][int]$ReadyToRunParallelism = 2,
     [ValidateRange(1, 3600)][int]$ReadyToRunTimeoutSeconds = 600
 )
@@ -157,6 +159,9 @@ function Add-RuntimeFile {
 
 $externalRuntimeFiles = @{}
 if (-not [string]::IsNullOrWhiteSpace($DebugUcrtPath)) {
+    if ($Configuration -ne 'Debug') {
+        throw 'DebugUcrtPath is not a Release runtime dependency.'
+    }
     $debugUcrt = Resolve-MwbArchiveFileSystemPath $DebugUcrtPath
     if ([IO.Path]::GetFileName($debugUcrt) -ine 'ucrtbased.dll') {
         throw 'DebugUcrtPath must identify the SDK ucrtbased.dll.'
@@ -211,6 +216,13 @@ foreach ($application in @(
 foreach ($name in @('PowerToys.exe', 'PowerToys.MouseWithoutBordersModuleInterface.dll',
     'PowerToys.GPOWrapper.dll', 'PowerToys.Interop.dll')) {
     Add-RuntimeFile (Join-Path $root $name)
+}
+$runnerModules = $null
+if ($Configuration -eq 'Release') {
+    # Release Runner eagerly loads every interface, even for disabled utilities.
+    . "$PSScriptRoot\MwbRunnerModules.ps1"
+    $runnerModules = Get-MwbRunnerModules $RunnerSourcePath
+    foreach ($relative in $runnerModules.Modules) { Add-RuntimeFile (Join-Path $root $relative) }
 }
 foreach ($name in @('PowerToys.GPOWrapper.dll', 'PowerToys.Interop.dll', 'PowerToys.ZoomItSettingsInterop.dll')) {
     Add-RuntimeFile (Join-Path $root "WinUI3Apps\$name")
@@ -309,17 +321,20 @@ try {
     $compilation = $null
     if ($ReadyToRun) {
         $compilation = Convert-MwbStagedRuntimeToReadyToRun -StageRoot $stage -Crossgen2Path $Crossgen2Path `
-            -TargetArchitecture $Platform -Parallelism $ReadyToRunParallelism -TimeoutSeconds $ReadyToRunTimeoutSeconds
+            -TargetArchitecture $Platform -Configuration $Configuration `
+            -Parallelism $ReadyToRunParallelism -TimeoutSeconds $ReadyToRunTimeoutSeconds
     }
     & tar.exe -a -cf $archiveOutput -C $stage .
     if ($LASTEXITCODE -ne 0) { throw 'Native runtime archive packaging failed.' }
     $manifest = [ordered]@{
         ProductRoot = $root; ArchivePath = $archive; FileCount = $files.Count
+        Configuration = $Configuration
         Length = (Get-Item -LiteralPath $archiveOutput).Length
         Sha256 = (Get-FileHash -LiteralPath $archiveOutput -Algorithm SHA256).Hash
         Files = @($files | Sort-Object)
     }
     if ($ReadyToRun) { $manifest.ReadyToRun = $compilation }
+    if ($null -ne $runnerModules) { $manifest.RunnerModules = $runnerModules }
     if ($externalRuntimeFiles.Count) { $manifest.ExternalRuntimeFiles = @($externalRuntimeFiles.Values) }
     $manifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $manifestOutput
     if ($ReadyToRun) {

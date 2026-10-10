@@ -423,6 +423,28 @@ function Get-ReadySettingsCandidates {
     $Candidates | Where-Object { Test-SettingsWindowReady $_.Responding $_.Windows }
 }
 
+function Get-SettingsWindowHandle {
+    param([object[]]$Windows)
+    $matches = @($Windows | Where-Object {
+        $_.Visible -and -not $_.HasOwner -and
+        $_.Title -in 'PowerToys Settings', 'Administrator: PowerToys Settings'
+    })
+    if ($matches.Count -ne 1 -or $matches[0].Handle -le 0) {
+        throw 'The owned Settings process must have exactly one initialized top-level window.'
+    }
+    [long]$matches[0].Handle
+}
+
+function Get-GuestSettingsWindow {
+    $owners = @($script:owned | Where-Object { $_.Id -eq $script:settingsPid -and $_.IsCurrent() })
+    if ($owners.Count -ne 1) { throw 'The original owned Settings process is no longer available for UI Automation.' }
+    $handle = Get-SettingsWindowHandle @([Microsoft.MouseWithoutBorders.UITests.NativeSupport]::WindowsForProcess($script:settingsPid))
+    if ([Microsoft.MouseWithoutBorders.UITests.NativeSupport]::WindowProcessId([IntPtr]$handle) -ne $script:settingsPid) {
+        throw 'The Settings window changed ownership before UI Automation.'
+    }
+    $handle
+}
+
 function New-EndpointFirewallPolicy {
     New-Object -ComObject HNetCfg.FwPolicy2
 }
@@ -675,7 +697,6 @@ function Start-Endpoint {
     $start.WorkingDirectory = $ProductRoot
     $start.Arguments = '--open-settings'
     $start.UseShellExecute = $false
-    $start.EnvironmentVariables['POWERTOYS_MWB_ALLOW_NONCONSOLE'] = '1'
     $process = [Diagnostics.Process]::Start($start)
     try { $script:owned.Add([Microsoft.MouseWithoutBorders.UITests.ProcessIdentity]::Capture($process.Id)) }
     catch {
@@ -790,23 +811,48 @@ function Stop-Endpoint {
 function Get-GuestUiWaitSnapshot {
     param([Diagnostics.Process]$Process)
     $result = @{
-        QueryStatus = 'Unavailable'; WorkflowConfigured = -not [string]::IsNullOrEmpty($env:WINAPP_UI_WORKFLOW_ID)
+        QueryStatus = 'Unavailable'; SettingsQueryStatus = 'NotChecked'; CoordinationQueryStatus = 'NotChecked'
+        WorkflowConfigured = -not [string]::IsNullOrEmpty($env:WINAPP_UI_WORKFLOW_ID)
         OwnerMatchesWorkflow = $null; ChildOwnsTurn = $null; ChildWaitingForTurn = $null; RecordingOwnsTurn = $null
         ChildCpuSeconds = $null; SettingsCpuSeconds = $null; SettingsResponding = $null
+        SettingsProcessId = $script:settingsPid; SettingsStartTimeUtc = $null; SettingsHwnd = $null
+        SettingsThreadCount = $null; SettingsWorkingSetBytes = $null; SettingsPrivateMemoryBytes = $null
         QueryErrorHResult = $null
     }
     $settingsProcess = $null
     try {
-        $Process.Refresh()
-        $result.ChildCpuSeconds = $Process.TotalProcessorTime.TotalSeconds
+        if ($null -ne $Process) {
+            $Process.Refresh()
+            $result.ChildCpuSeconds = $Process.TotalProcessorTime.TotalSeconds
+        }
+        if ($script:settingsPid -le 0) {
+            $result.SettingsQueryStatus = 'NotSelected'
+            return $result
+        }
         $settingsProcess = Get-Process -Id $script:settingsPid -ErrorAction Stop
         $result.SettingsCpuSeconds = $settingsProcess.CPU
         $result.SettingsResponding = $settingsProcess.Responding
-        $statePath = Join-Path $env:USERPROFILE ".winapp\state\ui\interactive-desktop-$($Process.SessionId).state.json"
-        if (-not (Test-Path -LiteralPath $statePath) -or (Get-Item -LiteralPath $statePath).Length -gt 65536) { return $result }
+        $result.SettingsStartTimeUtc = $settingsProcess.StartTime.ToUniversalTime().ToString('o')
+        $result.SettingsHwnd = $settingsProcess.MainWindowHandle.ToInt64()
+        $result.SettingsThreadCount = $settingsProcess.Threads.Count
+        $result.SettingsWorkingSetBytes = $settingsProcess.WorkingSet64
+        $result.SettingsPrivateMemoryBytes = $settingsProcess.PrivateMemorySize64
+        $result.SettingsQueryStatus = 'Succeeded'
+        $sessionId = if ($null -ne $Process) { $Process.SessionId } else { (Get-Process -Id $PID).SessionId }
+        $statePath = Join-Path $env:USERPROFILE ".winapp\state\ui\interactive-desktop-$sessionId.state.json"
+        if (-not (Test-Path -LiteralPath $statePath)) {
+            $result.CoordinationQueryStatus = $(if ($result.WorkflowConfigured) { 'Unavailable' } else { 'NotConfigured' })
+            return $result
+        }
+        if ((Get-Item -LiteralPath $statePath).Length -gt 65536) {
+            $result.CoordinationQueryStatus = 'Oversized'
+            return $result
+        }
         $state = Read-RunJson $statePath
-        $result.ChildOwnsTurn = @($state.OwnerCommands | Where-Object Pid -eq $Process.Id).Count -gt 0
-        $result.ChildWaitingForTurn = @($state.Waiters | Where-Object Pid -eq $Process.Id).Count -gt 0
+        if ($null -ne $Process) {
+            $result.ChildOwnsTurn = @($state.OwnerCommands | Where-Object Pid -eq $Process.Id).Count -gt 0
+            $result.ChildWaitingForTurn = @($state.Waiters | Where-Object Pid -eq $Process.Id).Count -gt 0
+        }
         $result.RecordingOwnsTurn = @($state.OwnerCommands | Where-Object Operation -eq 'ui record').Count -gt 0
         if ($result.WorkflowConfigured -and $state.Owner) {
             $hash = [Security.Cryptography.SHA256]::Create()
@@ -818,14 +864,112 @@ function Get-GuestUiWaitSnapshot {
             finally { $hash.Dispose() }
         }
         $result.QueryStatus = 'Succeeded'
+        $result.CoordinationQueryStatus = 'Succeeded'
     }
     catch {
         $result.QueryStatus = 'Failed'
+        if ($result.SettingsQueryStatus -eq 'NotChecked') { $result.SettingsQueryStatus = 'Failed' }
+        else { $result.CoordinationQueryStatus = 'Failed' }
         $result.QueryErrorHResult = '0x{0:X8}' -f ($_.Exception.HResult -band 0xffffffffL)
     }
     finally { if ($settingsProcess) { $settingsProcess.Dispose() } }
     # Never export the coordination owner key, raw workflow token, or command arguments.
     $result
+}
+
+function Save-EndpointFailureEvidence {
+    param([string]$Stage)
+    $report = [ordered]@{
+        RunId = $script:config.RunId; Role = $script:config.Role
+        Stage = $(if ($Stage -cin @('Request', 'Loop', 'Bootstrap')) { $Stage } else { 'Unknown' })
+        RequestSequence = $script:requestNumber; TimestampUtc = [DateTime]::UtcNow.ToString('o')
+        Desktop = $null; Settings = $null; Screenshot = 'NotCaptured'; CaptureErrorHResult = $null
+    }
+    try {
+        $report.Desktop = [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::Desktop()
+        $report.Settings = Get-GuestUiWaitSnapshot $null
+        if ($null -ne $script:receiver -and $report.Desktop.Ready) {
+            $script:receiver.CaptureFailureDesktop("$OutputRoot\failure-desktop.png")
+            $report.Screenshot = 'ComposedTestDesktopBeforeCleanup'
+        }
+        else { $report.Screenshot = 'UnavailableDesktopOrReceiver' }
+    }
+    catch {
+        $report.Screenshot = 'CaptureFailed'
+        $report.CaptureErrorHResult = '0x{0:X8}' -f ($_.Exception.HResult -band 0xffffffffL)
+        Write-Warning "MWB failure capture unavailable ($($report.CaptureErrorHResult)); the original failure is retained."
+    }
+    Write-RunJson "$OutputRoot\failure-context.json" $report
+}
+
+function Get-GuestUiResultDiagnostic {
+    param([string]$Verb, [int]$ExitCode, $Data, $ErrorData)
+    $diagnostic = [ordered]@{
+        Verb = $Verb; ExitCode = $ExitCode; MatchCountPresent = $false; MatchCount = $null
+        ErrorEnvelopePresent = $false; ErrorCode = $null; HResult = $null
+        DataKind = $(if ($null -eq $Data) { 'Null' } elseif ($Data -is [array]) { 'Array' } elseif ($Data -is [pscustomobject]) { 'Object' } else { 'Primitive' })
+        KnownProperties = @(); WindowsPresent = $false; WindowCount = $null; RootElementCount = $null
+        ResolvedWindowHandles = @()
+        MatchesPresent = $false; ReturnedMatchCount = $null; SuccessPresent = $false; Success = $null
+    }
+    if ($null -ne $Data) {
+        $diagnostic.KnownProperties = @($Data.PSObject.Properties.Name | Where-Object {
+            $_ -cin @('windows', 'elements', 'matches', 'matchCount', 'success', 'error', 'depth', 'value', 'property', 'hasMore')
+        })
+        $windows = $Data.PSObject.Properties['windows']
+        if ($windows) {
+            $diagnostic.WindowsPresent = $true
+            $diagnostic.WindowCount = @($windows.Value).Count
+            $diagnostic.RootElementCount = @(foreach ($window in @($windows.Value)) {
+                if ($null -ne $window -and $window.PSObject.Properties['elements']) { $window.elements }
+            }).Count
+            $diagnostic.ResolvedWindowHandles = @(foreach ($window in @($windows.Value) | Select-Object -First 4) {
+                if ($null -ne $window -and $window.PSObject.Properties['hwnd'] -and
+                    ($window.hwnd -is [int] -or $window.hwnd -is [long]) -and $window.hwnd -gt 0) { $window.hwnd }
+            })
+        }
+        $matches = $Data.PSObject.Properties['matches']
+        if ($matches) {
+            $diagnostic.MatchesPresent = $true
+            $diagnostic.ReturnedMatchCount = @($matches.Value).Count
+        }
+        $success = $Data.PSObject.Properties['success']
+        if ($success) {
+            $diagnostic.SuccessPresent = $true
+            if ($success.Value -is [bool]) { $diagnostic.Success = $success.Value }
+        }
+        $count = $Data.PSObject.Properties['matchCount']
+        $diagnostic.MatchCountPresent = $null -ne $count
+        if ($count -and ($count.Value -is [int] -or $count.Value -is [long]) -and $count.Value -ge 0) {
+            $diagnostic.MatchCount = $count.Value
+        }
+    }
+    foreach ($envelope in @($ErrorData, $Data)) {
+        if ($null -eq $envelope) { continue }
+        $errorProperty = $envelope.PSObject.Properties['error']
+        if (-not $errorProperty -or $null -eq $errorProperty.Value) { continue }
+        $diagnostic.ErrorEnvelopePresent = $true
+        $errorInfo = $errorProperty.Value
+        $code = $errorInfo.PSObject.Properties['code']
+        if ($code -and $code.Value -is [string] -and $code.Value -cin @(
+            'missing_app', 'missing_selector', 'element_not_found', 'stale_element',
+            'invalid_arguments', 'internal_error', 'zero_size_element', 'foreground_not_target',
+            'focus_not_acquired', 'no_interactive_desktop', 'target_moved', 'no_target',
+            'injection_unsupported', 'ambiguous_selector', 'output_exists', 'frame_output_failed', 'partial_output'
+        )) {
+            $diagnostic.ErrorCode = $code.Value
+        }
+        $hresult = $errorInfo.PSObject.Properties['hresult']
+        if ($hresult) {
+            if ($hresult.Value -is [int]) {
+                $diagnostic.HResult = '0x{0:X8}' -f ($hresult.Value -band 0xffffffffL)
+            }
+            elseif ($hresult.Value -is [string] -and $hresult.Value -cmatch '^0x[0-9a-fA-F]{8}$') {
+                $diagnostic.HResult = $hresult.Value
+            }
+        }
+    }
+    $diagnostic
 }
 
 function Assert-GuestUiResult {
@@ -836,7 +980,26 @@ function Assert-GuestUiResult {
     if ($Verb -eq 'search' -and $ExitCode -eq 1 -and $count -and $count.Value -eq 0) { return }
     # Error envelopes need not contain matchCount. Never echo their raw message or
     # the command arguments: a set-value command can contain the pairing key.
-    throw "Guest winapp $Verb failed (exit $ExitCode; search no-match result was not confirmed)."
+    if ($Verb -eq 'search') {
+        throw "Guest winapp search failed (exit $ExitCode; search no-match result was not confirmed)."
+    }
+    throw "Guest winapp $Verb failed (exit $ExitCode); no action was replayed."
+}
+
+function Get-GuestUiControlKind {
+    param([string[]]$Arguments)
+    if ($Arguments.Count -lt 2 -or $Arguments[1].StartsWith('-', [StringComparison]::Ordinal)) { return 'Window' }
+    switch -CaseSensitive ($Arguments[1]) {
+        'InputOutputNavItem' { 'InputOutputNavigation' }
+        'MouseWithoutBordersNavItem' { 'MwbNavigation' }
+        'MouseWithoutBordersSecurityKey' { 'SecurityKeySection' }
+        'Security key' { 'SecurityKeyHeader' }
+        'ConnectSecurityKeyTextBox' { 'ConnectKeyField' }
+        'ConnectPCNameTextBox' { 'ConnectPeerField' }
+        'MouseWithoutBordersConnectButton' { 'SubmitConnect' }
+        'MouseWithoutBordersShareClipboardToggle' { 'ClipboardToggle' }
+        default { 'Other' }
+    }
 }
 
 function Invoke-GuestUi {
@@ -851,6 +1014,8 @@ function Invoke-GuestUi {
     $start.RedirectStandardError = $true
     $start.EnvironmentVariables['WINAPP_CLI_TELEMETRY_OPTOUT'] = '1'
     $start.EnvironmentVariables['WINAPP_CLI_UPDATE_CHECK'] = '0'
+    # Keep the native identity check, but preserve the proven CLI process-target semantics.
+    $window = Get-GuestSettingsWindow
     $allArgs = @('ui') + $Arguments + @('-a', $script:settingsPid.ToString(), '--json')
     $start.Arguments = (@($allArgs | ForEach-Object {
         '"' + [regex]::Replace([regex]::Replace($_, '(\\*)"', '$1$1\"'), '(\\+)$', '$1$1') + '"'
@@ -858,7 +1023,14 @@ function Invoke-GuestUi {
     Write-EndpointCommandStage 'UiProcessStarting' $Arguments[0] $script:requestNumber
     $process = [Diagnostics.Process]::Start($start)
     $watch = [Diagnostics.Stopwatch]::StartNew()
+    $startedUtc = [DateTime]::UtcNow
+    $controlKind = Get-GuestUiControlKind $Arguments
     $waitSamples = @()
+    $responseDiagnostic = $null
+    $stdoutBytes = $null
+    $stderrBytes = $null
+    $stdoutJsonStatus = 'NotRead'
+    $before = Get-GuestUiWaitSnapshot $process
     try {
         Write-EndpointCommandStage 'UiProcessStarted' $Arguments[0] $script:requestNumber $process.Id $launchWatch.ElapsedMilliseconds
         $stdout = $process.StandardOutput.ReadToEndAsync()
@@ -880,11 +1052,36 @@ function Invoke-GuestUi {
             throw 'Guest winapp output handles did not close within five seconds of process exit.'
         }
         $raw = $stdout.GetAwaiter().GetResult()
-        $null = $stderr.GetAwaiter().GetResult()
+        $errorRaw = $stderr.GetAwaiter().GetResult()
+        $stdoutBytes = [Text.Encoding]::UTF8.GetByteCount($raw)
+        $stderrBytes = [Text.Encoding]::UTF8.GetByteCount($errorRaw)
         Write-EndpointCommandStage 'UiOutputRead' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         # Never put command arguments, UI trees, or stderr in errors: Connect contains a key.
-        try { $data = $raw | ConvertFrom-Json -ErrorAction Stop }
-        catch { throw "Guest winapp $($Arguments[0]) did not return valid JSON." }
+        try {
+            $data = $raw | ConvertFrom-Json -ErrorAction Stop
+            $stdoutJsonStatus = $(if ([string]::IsNullOrWhiteSpace($raw)) { 'Empty' } else { 'Parsed' })
+        }
+        catch {
+            $stdoutJsonStatus = 'InvalidJson'
+            throw "Guest winapp $($Arguments[0]) did not return valid JSON."
+        }
+        $errorData = $null
+        $errorJsonStatus = 'Empty'
+        if (-not [string]::IsNullOrWhiteSpace($errorRaw)) {
+            try {
+                $errorData = $errorRaw | ConvertFrom-Json -ErrorAction Stop
+                $errorJsonStatus = 'Parsed'
+            }
+            catch [ArgumentException] {
+                $errorJsonStatus = 'InvalidJson'
+            }
+        }
+        $responseDiagnostic = Get-GuestUiResultDiagnostic $Arguments[0] $process.ExitCode $data $errorData
+        $responseDiagnostic.ErrorJsonStatus = $errorJsonStatus
+        $responseDiagnostic.ControlKind = $controlKind
+        $responseDiagnostic.SettingsState = Get-GuestUiWaitSnapshot $process
+        $responseDiagnostic.TimestampUtc = [DateTime]::UtcNow.ToString('o')
+        Write-RunJson "$OutputRoot\ui-result-diagnostic.json" $responseDiagnostic
         Assert-GuestUiResult $Arguments[0] $process.ExitCode $data
         Write-EndpointCommandStage 'UiResultParsed' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         return $data
@@ -892,8 +1089,14 @@ function Invoke-GuestUi {
     finally {
         $timing = @{
             Verb = $Arguments[0]; ElapsedMilliseconds = $watch.ElapsedMilliseconds
+            ControlKind = $controlKind; StartedUtc = $startedUtc.ToString('o')
+            WallElapsedMilliseconds = ([DateTime]::UtcNow - $startedUtc).TotalMilliseconds
+            TargetMode = 'OwnedProcess'; TargetProcessId = $script:settingsPid; NativeSettingsHwnd = $window
             Exited = $process.HasExited; ExitCode = $(if ($process.HasExited) { $process.ExitCode } else { $null })
             TimestampUtc = [DateTime]::UtcNow.ToString('o'); WaitSamples = $waitSamples
+            SettingsBefore = $before; SettingsAfter = Get-GuestUiWaitSnapshot $process
+            StdoutBytes = $stdoutBytes; StderrBytes = $stderrBytes; Response = $responseDiagnostic
+            StdoutJsonStatus = $stdoutJsonStatus; RequestSequence = $script:requestNumber
         }
         Write-RunJson "$OutputRoot\last-ui-command.json" $timing
         $script:uiCommandTimings = @($script:uiCommandTimings | Select-Object -Last 63) + @($timing)
@@ -910,6 +1113,38 @@ function Find-GuestButton {
     })
     if ($matches.Count -ne 1) { throw "Expected one enabled guest '$Name' button, found $($matches.Count)." }
     $matches[0].selector
+}
+
+function Get-InspectedGuestElement {
+    param($Tree, [string]$AutomationId)
+    $windows = @(if ($null -ne $Tree -and $Tree.PSObject.Properties['windows']) { $Tree.windows })
+    $elements = @(if ($windows.Count -eq 1 -and $windows[0].PSObject.Properties['elements']) { $windows[0].elements })
+    if ($elements.Count -ne 1 -or -not $elements[0].PSObject.Properties['automationId'] -or
+        $elements[0].automationId -cne $AutomationId) {
+        throw "Direct Settings inspection did not resolve the exact control: $AutomationId."
+    }
+    $elements[0]
+}
+
+function Get-GuestElement {
+    param([string]$AutomationId)
+    # Inspect uses FindFirst for a known selector; search enumerates all matches,
+    # including an expensive whole-tree fallback when a collapsed child is absent.
+    Get-InspectedGuestElement (Invoke-GuestUi @('inspect', $AutomationId, '-d', '0')) $AutomationId
+}
+
+function Get-GuestSecurityKeyHeader {
+    param($Result)
+    if ($null -eq $Result -or -not $Result.PSObject.Properties['matches']) {
+        throw 'The security-key query did not return an explicit match collection.'
+    }
+    $headers = @($Result.matches | Where-Object {
+        $_.type -ceq 'Button' -and $_.name -ceq 'Security key' -and
+        $_.PSObject.Properties['expandState'] -and $_.expandState -in @('collapsed', 'expanded') -and
+        $_.isEnabled -and -not $_.isOffscreen
+    })
+    if ($headers.Count -ne 1) { throw 'The security-key query must expose one enabled expand/collapse header button.' }
+    $headers[0]
 }
 
 function Get-GuestConnectAcknowledgement {
@@ -951,54 +1186,27 @@ function Wait-GuestConnectAcknowledgement {
 
 function Connect-Guest {
     param([string]$Key, [string]$PeerName)
-    $deadline = [DateTime]::UtcNow.AddMinutes(3)
-    do {
-        $nav = Invoke-GuestUi @('search', 'MouseWithoutBordersNavItem')
-        $group = if ($nav.matchCount -eq 0) { Invoke-GuestUi @('search', 'InputOutputNavItem') } else { @{ matchCount = 0 } }
-        if ($nav.matchCount -gt 0 -or $group.matchCount -gt 0) { break }
-        Start-Sleep -Milliseconds 250
-    } while ([DateTime]::UtcNow -lt $deadline)
-    if ($nav.matchCount -eq 0 -and $group.matchCount -eq 0) {
-        Save-SettingsDiagnostics 'navigation-failed'
-        throw 'Guest Settings navigation did not become ready.'
+    $group = Get-GuestElement 'InputOutputNavItem'
+    if (-not $group.PSObject.Properties['expandState'] -or $group.expandState -notin @('collapsed', 'expanded')) {
+        throw 'Guest Settings input/output navigation did not expose its expansion state.'
     }
-    if ($nav.matchCount -eq 0) { $null = Invoke-GuestUi -Arguments @('invoke', 'InputOutputNavItem') -TimeoutSeconds 180 }
+    if ($group.expandState -eq 'collapsed') {
+        $null = Invoke-GuestUi -Arguments @('invoke', 'InputOutputNavItem') -TimeoutSeconds 180
+    }
     $null = Invoke-GuestUi -Arguments @('invoke', 'MouseWithoutBordersNavItem') -TimeoutSeconds 180
-    $fieldWait = [Diagnostics.Stopwatch]::StartNew()
-    do {
-        $field = Invoke-GuestUi @('search', 'ConnectPCNameTextBox')
-        if ($field.matchCount -gt 0) { break }
-        $button = Invoke-GuestUi @('search', 'Security key')
-        $expand = @($button.matches | Where-Object {
-            $_.type -eq 'Button' -and $_.name -eq 'Security key' -and
-            $_.PSObject.Properties['expandState'] -and $_.expandState -eq 'collapsed'
-        })
-        if ($expand.Count -eq 1) {
-            $null = Invoke-GuestUi @('invoke', $expand[0].selector)
-            # A nested VM can spend most of the wait budget inside the action.
-            # Always observe the resulting state, and never blindly collapse it.
-            $field = Invoke-GuestUi @('search', 'ConnectPCNameTextBox')
-            if ($field.matchCount -gt 0) { break }
-        }
-        Start-Sleep -Milliseconds 250
-    } while ($fieldWait.Elapsed.TotalSeconds -lt 180)
-    if ($field.matchCount -ne 1) { throw 'Guest Connect device field did not appear.' }
+    $expander = Get-GuestSecurityKeyHeader (Invoke-GuestUi @('search', 'Security key', '--type', 'Button'))
+    if ($expander.expandState -eq 'collapsed') {
+        $null = Invoke-GuestUi @('invoke', $expander.selector)
+    }
     $null = Invoke-GuestUi @('set-value', 'ConnectSecurityKeyTextBox', $Key)
     $null = Invoke-GuestUi @('set-value', 'ConnectPCNameTextBox', $PeerName)
-    $controls = Invoke-GuestUi @('search', 'Connect')
-    $field = @($controls.matches | Where-Object { $_.PSObject.Properties['automationId'] -and $_.automationId -eq 'ConnectPCNameTextBox' })
-    $buttons = @($controls.matches | Where-Object {
-        $_.type -eq 'Button' -and $_.name -eq 'Connect' -and $_.isEnabled -and -not $_.isOffscreen -and
-        $field.Count -eq 1 -and [Math]::Abs($_.y - $field[0].y) -le 2
-    })
-    if ($buttons.Count -ne 1) { throw 'Guest input-row Connect button was ambiguous.' }
     $mapping = Assert-PeerMapping 'before-connect'
     $before = Get-GuestConnectAcknowledgement $Key $PeerName
     Write-RunJson "$OutputRoot\pairing-before.json" @{
         KeyMatches = $before.KeyMatches; PeerConfigured = $before.PeerConfigured
         TimestampUtc = [DateTime]::UtcNow.ToString('o')
     }
-    $null = Invoke-GuestUi @('invoke', $buttons[0].selector)
+    $null = Invoke-GuestUi @('invoke', 'MouseWithoutBordersConnectButton')
     $acknowledgement = Wait-GuestConnectAcknowledgement $Key $PeerName
     @{ Submitted = $true; Acknowledged = $acknowledgement.Acknowledged; Mapping = $mapping }
 }
@@ -1022,22 +1230,9 @@ function Assert-PeerMapping {
 
 function Set-GuestClipboardSharing {
     param([bool]$Enabled)
-    $card = Invoke-GuestUi @('search', 'MouseWithoutBordersShareClipboard')
-    if ($card.matchCount -ne 1) { throw 'Guest clipboard settings card was ambiguous.' }
-    $tree = Invoke-GuestUi @('inspect', $card.matches[0].selector, '-d', '4')
-    function Find-Toggle($Node) {
-        if ($Node -is [array]) { foreach ($child in $Node) { Find-Toggle $child }; return }
-        if (-not $Node) { return }
-        if ($Node.PSObject.Properties['className'] -and $Node.className -eq 'ToggleSwitch') { $Node }
-        if ($Node.PSObject.Properties['children']) { Find-Toggle $Node.children }
-        if ($Node.PSObject.Properties['elements']) { Find-Toggle $Node.elements }
-        if ($Node.PSObject.Properties['windows']) { Find-Toggle $Node.windows }
-    }
-    $toggles = @(Find-Toggle $tree)
-    if ($toggles.Count -ne 1) { throw 'Guest clipboard toggle was ambiguous.' }
     $settings = Read-RunJson "$script:settingsRoot\MouseWithoutBorders\settings.json"
     if ([bool]$settings.properties.ShareClipboard.value -ne $Enabled) {
-        $null = Invoke-GuestUi @('invoke', $toggles[0].selector)
+        $null = Invoke-GuestUi @('invoke', 'MouseWithoutBordersShareClipboardToggle')
     }
     $deadline = [DateTime]::UtcNow.AddSeconds(10)
     do {
@@ -1094,8 +1289,114 @@ function Save-SettingsDiagnostics {
     }
 }
 
+function Get-ClipboardHelperEventKind {
+    param([string]$Message)
+    if ($Message.StartsWith('WM_DRAWCLIPBOARD:', [StringComparison]::Ordinal)) { return 'ForwardFailed' }
+    if ($Message.StartsWith('GetClipboardText: TXT = ', [StringComparison]::Ordinal)) { return 'TextObserved' }
+    if ($Message.StartsWith('GetClipboardText, Text too big:', [StringComparison]::Ordinal)) { return 'TextTooLarge' }
+    if ($Message.StartsWith('Trace: AddClipboardFormatListener:', [StringComparison]::Ordinal)) { return 'ListenerRegistration' }
+    if ($Message.StartsWith('Trace: SetClipboardViewer:', [StringComparison]::Ordinal)) { return 'LegacyListenerRegistration' }
+    if ($Message.StartsWith('Trace: Clipboard monitor method ', [StringComparison]::Ordinal)) { return 'MonitorSelected' }
+    if ($Message -ceq 'ClipboardMMHelper does not have text/image/file data.') { return 'NoSupportedFormat' }
+    if ($Message -ceq 'Null clipboard data returned. See previous messages (if any) for more information.') { return 'EmptyData' }
+    if ($Message.EndsWith(' cannot be used in a remote desktop or virtual machine session.', [StringComparison]::Ordinal)) {
+        return 'DisconnectedNonConsoleHelper'
+    }
+    return 'Other'
+}
+
+function Get-ClipboardHelperEvents {
+    $report = [ordered]@{
+        QueryStatus = 'NotChecked'; QueryErrorHResult = $null; EventLimitReached = $false
+        Events = @()
+    }
+    $reader = $null
+    try {
+        $query = [Diagnostics.Eventing.Reader.EventLogQuery]::new('Application',
+            [Diagnostics.Eventing.Reader.PathType]::LogName,
+            "*[System[Provider[@Name='MouseWithoutBordersHelper']]]")
+        $query.ReverseDirection = $true
+        $reader = [Diagnostics.Eventing.Reader.EventLogReader]::new($query)
+        for ($index = 0; $index -lt 32; $index++) {
+            $event = $reader.ReadEvent()
+            if ($null -eq $event) { break }
+            try {
+                if ($event.TimeCreated.ToUniversalTime() -lt $script:startedUtc) { break }
+                $report.Events += @{
+                    EventId = $event.Id; Level = $event.Level
+                    TimestampUtc = $event.TimeCreated.ToUniversalTime().ToString('o')
+                    Kind = Get-ClipboardHelperEventKind $event.FormatDescription()
+                }
+                $report.EventLimitReached = $index -eq 31
+            }
+            finally { $event.Dispose() }
+        }
+        $report.QueryStatus = 'Succeeded'
+    }
+    catch {
+        $report.QueryStatus = 'Failed'
+        $report.QueryErrorHResult = '0x{0:X8}' -f ($_.Exception.HResult -band 0xffffffffL)
+    }
+    finally { if ($reader) { $reader.Dispose() } }
+    # Event messages can contain clipboard contents or file paths; publish only fixed classifications.
+    $report
+}
+
+function Save-ClipboardDiagnostics {
+    $report = [ordered]@{
+        RunId = $script:config.RunId; Role = $script:config.Role
+        TimestampUtc = [DateTime]::UtcNow.ToString('o'); LogicalProcessors = [Environment]::ProcessorCount
+        SettingsQueryStatus = 'NotChecked'; SettingsQueryErrorHResult = $null
+        ShareClipboard = $null; UseService = $null; AllowNonConsoleSessions = $null
+        Processes = @(); HelperEvents = Get-ClipboardHelperEvents
+    }
+    try {
+        $settings = Read-RunJson "$script:settingsRoot\MouseWithoutBorders\settings.json"
+        foreach ($name in @('ShareClipboard', 'UseService', 'AllowNonConsoleSessions')) {
+            $property = $settings.properties.PSObject.Properties[$name]
+            if ($property -and $property.Value.PSObject.Properties['value'] -and $property.Value.value -is [bool]) {
+                $report[$name] = $property.Value.value
+            }
+        }
+        $report.SettingsQueryStatus = 'Succeeded'
+    }
+    catch {
+        $report.SettingsQueryStatus = 'Failed'
+        $report.SettingsQueryErrorHResult = '0x{0:X8}' -f ($_.Exception.HResult -band 0xffffffffL)
+    }
+    foreach ($record in $script:owned) {
+        $name = [IO.Path]::GetFileName($record.Path)
+        if ($name -cnotin @('PowerToys.MouseWithoutBorders.exe', 'PowerToys.MouseWithoutBordersHelper.exe')) { continue }
+        $state = [ordered]@{
+            Name = $name; ProcessId = $record.Id; StartTimeUtc = $record.StartTimeUtc
+            QueryStatus = 'NotChecked'; QueryErrorHResult = $null
+            CpuSeconds = $null; PriorityClass = $null; Responding = $null; WindowCount = $null
+        }
+        $process = $null
+        try {
+            if (-not $record.IsCurrent()) { $state.QueryStatus = 'Exited' }
+            else {
+                $process = Get-Process -Id $record.Id -ErrorAction Stop
+                $state.CpuSeconds = $process.CPU
+                $state.PriorityClass = $process.PriorityClass.ToString()
+                $state.Responding = $process.Responding
+                $state.WindowCount = @([Microsoft.MouseWithoutBorders.UITests.NativeSupport]::WindowsForProcess($record.Id)).Count
+                $state.QueryStatus = 'Succeeded'
+            }
+        }
+        catch {
+            $state.QueryStatus = 'Failed'
+            $state.QueryErrorHResult = '0x{0:X8}' -f ($_.Exception.HResult -band 0xffffffffL)
+        }
+        finally { if ($process) { $process.Dispose() } }
+        $report.Processes += $state
+    }
+    Write-RunJson "$OutputRoot\clipboard-diagnostic.json" $report
+}
+
 function Save-EndpointEvidence {
     $script:receiver.CaptureDesktop("$OutputRoot\desktop.png")
+    Save-ClipboardDiagnostics
     if ($script:config.Role -eq 'Guest') {
         $query = [Diagnostics.Eventing.Reader.EventLogQuery]::new('Application',
             [Diagnostics.Eventing.Reader.PathType]::LogName,

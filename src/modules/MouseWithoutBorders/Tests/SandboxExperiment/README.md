@@ -45,12 +45,14 @@ fixture and a scoped CI pilot. The current scripts are not yet the Win10 adapter
   runtime dependencies may still block the experiment. No connection or remote
   input success is claimed by merely starting endpoints.
 
-The flag is off by default, **Debug only**, and inherited from Runner by MWB.
+The manual launcher's environment flag is off by default, **Debug only**, and inherited from Runner by MWB.
 Launchers set it only in Runner's `ProcessStartInfo.EnvironmentVariables`; they
 never set a User/Machine environment variable or change the caller's environment.
 Release ignores it. It relaxes console-session eligibility only; active/unlocked
-default desktop and non-service restrictions remain. No settings schema/UI switch
-is added.
+default desktop and non-service restrictions remain. No Settings UI control
+is exposed. The maintained autonomous suite uses the hidden, default-false
+`AllowNonConsoleSessions` JSON property available in Debug and Release; see the
+[module documentation](../../../../../doc/devdocs/modules/mousewithoutborders.md#experimental-non-console-sessions).
 
 ## Autonomous Win10 VM path
 
@@ -88,6 +90,7 @@ The local wrapper uses the existing PowerShell Direct/standard-user VM controlle
     -VmName PowerToysUiTest-Win10 `
     -ConfigurationPath C:\PowerToysUiTestVm\vm.config.win10.psd1 `
     -ExchangeRoot C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders `
+    -Configuration Debug `
     -PlanOnly
 ```
 
@@ -101,6 +104,13 @@ through a protected, bounded scheduled task, runs MSTest in the already logged-o
 standard-user desktop, and performs firewall cleanup in `finally`. No provisioning
 occurs during `-PlanOnly`. It does not enable nesting or restore a VM checkpoint
 implicitly; image provisioning and clean-baseline selection remain explicit.
+
+When the product archive changes, the wrapper extracts into a new run-scoped
+directory before replacing the stopped product. It never overlays a different
+cohort onto existing files: Windows `tar` can refuse an existing file as an archive
+overwrite, leaving a partially replaced payload. Extraction failure preserves the
+previous product, and a failure before provisioning task registration leaves an
+older unrelated marker untouched rather than masking the original error.
 
 ### Optional ReadyToRun preparation
 
@@ -124,16 +134,18 @@ provenance. Failed opt-in attempts remove their partial archive and staging.
 Without `-ReadyToRun`, packaging is unchanged. For a coherent comparison, select
 the same prepared archive as both `-ProductArchive` and `-GuestRuntimeArchive`.
 
-The complete Win10 autonomous smoke has now **passed unattended**, but is not
-full-module or CI sign-off. A later repeat stalled in guest Settings initialization,
-so repeat reliability remains unresolved.
-The first-line name-to-IP parsing and incomplete WinUI payload defects are
-corrected. The updated fixture has completed real pairing, peer TCP transport,
-local/remote input assertions and bidirectional clipboard checks.
-See the implementation checkpoint in [CONTINUATION-PLAN.md](CONTINUATION-PLAN.md)
-and the new test project's README before attempting another run. CI remains
-default-off. Its Debug run-in-place path omits installer packaging; normal Release
-and installer-based runs retain their existing behavior.
+These scripts preserve the early autonomous experiment and its investigation
+history; [CONTINUATION-PLAN.md](CONTINUATION-PLAN.md) is a historical checkpoint.
+The maintained suite and current evidence are documented in
+[MouseWithoutBorders.UITests/README.md](../../MouseWithoutBorders.UITests/README.md).
+Its complete eleven-case x64 Debug flow has passed on both OSes in fresh CI.
+The maintained flow now uses the same Release artifact as other selected modules
+in `buildNow`/`buildNowSlim`, including all/mixed/affected selections. The hidden
+JSON opt-in replaces environment injection. Release authentication is retained:
+private lean copies use one disposable test signer and approved public-certificate
+trust on both endpoints. Only MWB is skipped on ARM64 while its image lacks Sandbox.
+The historical Debug results do not establish Release, installed/service,
+physical-PC or full-module sign-off.
 
 ## 1. Prepare only (safe to do before disconnecting)
 

@@ -179,10 +179,10 @@ jobs:
   steps:
   - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
     - pwsh: |
-        if (('$(BuildPlatform)' -cne 'x64' -and '$(BuildPlatform)' -cne 'arm64') -or '$(BuildConfiguration)' -cne 'Debug' -or
-            '${{ parameters.buildInstallers }}' -ne 'False' -or '${{ parameters.buildTests }}' -ne 'True' -or
+        if ('$(BuildPlatform)' -cne 'x64' -or '$(BuildConfiguration)' -cne 'Release' -or
+            '${{ parameters.buildTests }}' -ne 'True' -or
             '${{ parameters.artifactStem }}' -ne '') {
-          throw 'MWB CI preparation requires the unmodified build-x64-Debug or build-arm64-Debug artifact, buildTests=true and buildInstallers=false.'
+          throw 'MWB CI preparation requires the shared build-x64-Release artifact and buildTests=true. ARM64 builds remain normal; only their MWB Sandbox execution is skipped.'
         }
       displayName: Validate gated MWB build preparation
 
@@ -724,6 +724,7 @@ jobs:
             -WorkRoot $work `
             -DotNetPath "$(DOTNET_ROOT)\dotnet.exe" `
             -Platform "$(BuildPlatform)" `
+            -Configuration "$(BuildConfiguration)" `
             -SourceRevision "$(Build.SourceVersion)" -ReadyToRun
         } finally {
           # Preserve preparation diagnostics, never downloaded tools or the package cache.

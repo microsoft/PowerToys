@@ -28,6 +28,7 @@
     <None Include="Payload\*.cs" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Payload\*.ps1" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\Tests\SandboxExperiment\MwbSettings.template.json" Link="Payload\MwbSettings.template.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Tests\SandboxExperiment\MwbTestSigning.ps1" Link="Payload\MwbTestSigning.ps1" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\..\settings-ui\Settings.UI.Library\EnabledModules.cs" Link="Payload\EnabledModules.source.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

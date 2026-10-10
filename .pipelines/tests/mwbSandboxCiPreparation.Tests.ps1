@@ -26,7 +26,8 @@ function New-CiBundleFixture {
     $null = New-Item -ItemType Directory -Path (Join-Path $bundle 'winapp-cli')
     $runtimeFiles = @('PowerToys.exe', 'PowerToys.MouseWithoutBorders.exe',
         'PowerToys.MouseWithoutBorders.dll', 'PowerToys.MouseWithoutBordersHelper.exe',
-        'WinUI3Apps\PowerToys.Settings.exe', 'WinUI3Apps\PowerToys.QuickAccess.exe')
+        'WinUI3Apps\PowerToys.Settings.exe', 'WinUI3Apps\PowerToys.QuickAccess.exe',
+        'PowerToys.FancyZonesModuleInterface.dll', 'PowerToys.MouseWithoutBordersModuleInterface.dll')
     $stage = Join-Path $Root 'fixture-files'
     $entries = foreach ($name in $runtimeFiles) {
         $file = Join-Path $stage $name
@@ -37,8 +38,10 @@ function New-CiBundleFixture {
     $archive = Join-Path $bundle 'runtime.zip'
     [IO.Compression.ZipFile]::CreateFromDirectory($stage, $archive)
     $archiveHash = (Get-FileHash -LiteralPath $archive).Hash
-    @{ Sha256 = $archiveHash; FileCount = $runtimeFiles.Count; Files = $runtimeFiles } |
-        ConvertTo-Json -Depth 3 | Set-Content -LiteralPath "$archive.manifest.json"
+    @{ Sha256 = $archiveHash; FileCount = $runtimeFiles.Count; Files = $runtimeFiles
+        Configuration = 'Release'; ArchivePath = $archive; ProductRoot = $stage; Length = (Get-Item $archive).Length
+        RunnerModules = @{ SourceSha256 = 'b' * 64; Modules = @('PowerToys.FancyZonesModuleInterface.dll', 'PowerToys.MouseWithoutBordersModuleInterface.dll') } } |
+        ConvertTo-Json -Depth 5 | Set-Content -LiteralPath "$archive.manifest.json"
     $pin = Get-WinAppCliRelease
     $cli = foreach ($name in $pin.Files) {
         $file = Join-Path $bundle "winapp-cli\$name"
@@ -46,7 +49,7 @@ function New-CiBundleFixture {
         @{ Path = $name; Sha256 = (Get-FileHash -LiteralPath $file).Hash }
     }
     $manifest = @{
-        FormatVersion = 2; SourceRevision = 'a' * 40; Platform = 'x64'; Configuration = 'Debug'
+        FormatVersion = 2; SourceRevision = 'a' * 40; Platform = 'x64'; Configuration = 'Release'
         Runtime = @{
             Sha256 = $archiveHash; ManifestSha256 = (Get-FileHash -LiteralPath "$archive.manifest.json").Hash
             ReadyToRun = $false; Files = @($entries)
@@ -138,7 +141,8 @@ Describe 'Pinned Windows SDK debug UCRT preparation' {
         $source = Get-Content -LiteralPath $buildPath -Raw
         $source | Should Match 'Cpp.Build.props'
         $source | Should Match '\$options.DebugUcrtPath = Get-MwbCiDebugUcrtPath'
-        $source | Should Match '-Platform \$Platform @options'
+        $source | Should Match '-Platform \$Platform -Configuration \$Configuration @options'
+        $source | Should Match "if \(\`$Configuration -eq 'Debug'\)"
         $source | Should Not Match 'Copy-Item.*\$product.*ucrtbased'
     }
 }
@@ -147,7 +151,7 @@ Describe 'Canonical CI preparation path containment' {
     BeforeEach {
         $fixtureRoot = (New-Item -ItemType Directory -Path (Join-Path $TestDrive ([guid]::NewGuid().ToString('N')))).FullName
         $sourceRoot = Join-Path $fixtureRoot 'source'
-        $productRoot = Join-Path $sourceRoot 'x64\Debug'
+        $productRoot = Join-Path $sourceRoot 'x64\Release'
         $outputRoot = Join-Path $fixtureRoot 'output\bundle'
         $workRoot = Join-Path $fixtureRoot 'work\audit'
         $Platform = 'x64'
@@ -192,7 +196,7 @@ Describe 'Canonical CI preparation path containment' {
         $driveName = 'MwbCi' + [guid]::NewGuid().ToString('N')
         $null = New-PSDrive -Name $driveName -PSProvider FileSystem -Root $fixtureRoot
         try {
-            $result = Get-MwbCiPreparationPaths "${driveName}:\source\x64\Debug" "${driveName}:\output\bundle" `
+            $result = Get-MwbCiPreparationPaths "${driveName}:\source\x64\Release" "${driveName}:\output\bundle" `
                 "${driveName}:\work\audit" "${driveName}:\source"
             $result.ProductRoot | Should Be $productRoot
             $result.SourceRoot | Should Be $sourceRoot
@@ -572,7 +576,7 @@ Describe 'MWB CI bundle provenance and coherent host staging' {
         $manifestPath = Join-Path $bundleRoot 'manifest.json'
     }
 
-    It 'accepts the pinned Debug build and extracts host files from the exact guest archive' {
+    It 'accepts the pinned Release build and extracts host files from the exact guest archive' {
         $bundle = Get-MwbCiBundle $root ('a' * 40)
         $hostRoot = Join-Path $root 'private-host'
         Expand-MwbCiRuntime (Join-Path $bundle.Root 'runtime.zip') $hostRoot $bundle.Manifest.Runtime.Files
@@ -623,8 +627,8 @@ Describe 'MWB CI bundle provenance and coherent host staging' {
         { Get-MwbCiBundle $root ('b' * 40) } | Should Throw 'provenance'
     }
 
-    It 'rejects Release or ARM artifacts even when their contents hash correctly' -TestCases @(
-        @{ Field = 'Configuration'; Value = 'Release' }
+    It 'rejects the wrong configuration or architecture even when their contents hash correctly' -TestCases @(
+        @{ Field = 'Configuration'; Value = 'Debug' }
         @{ Field = 'Platform'; Value = 'arm64' }
     ) {
         param($Field, $Value)
@@ -663,6 +667,16 @@ Describe 'MWB CI bundle provenance and coherent host staging' {
         { Get-MwbCiBundle $root ('a' * 40) } | Should Throw 'runtime archive provenance'
     }
 
+    It 'rejects a Release bundle missing the eagerly loaded native-module closure' {
+        $runtimePath = Join-Path $bundleRoot 'runtime.zip.manifest.json'
+        $runtime = Get-Content -LiteralPath $runtimePath -Raw | ConvertFrom-Json
+        $runtime.RunnerModules.Modules += 'PowerToys.MissingModule.dll'
+        $runtime | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $runtimePath
+        $fixture.Runtime.ManifestSha256 = (Get-FileHash -LiteralPath $runtimePath).Hash
+        $fixture | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath
+        { Get-MwbCiBundle $root ('a' * 40) } | Should Throw 'Runner-required module'
+    }
+
     It 'requires verified R2R output hashes to agree with every identical staged copy' -TestCases @(
         @{ Tampered = $false }; @{ Tampered = $true }
     ) {
@@ -671,7 +685,7 @@ Describe 'MWB CI bundle provenance and coherent host staging' {
         $runtime = Get-Content -LiteralPath $runtimePath -Raw | ConvertFrom-Json
         $entry = @($fixture.Runtime.Files | Where-Object Path -EQ 'PowerToys.MouseWithoutBorders.dll')[0]
         $verification = @{
-            FormatVersion = 1; ManagedILAndAttributesUnchanged = $true; CompiledAssemblies = 1
+            FormatVersion = 1; Configuration = 'Release'; ManagedILAndAttributesUnchanged = $true; CompiledAssemblies = 1
             Compiler = @{ Files = @('crossgen2', 'jitinterface', 'clrjit') }
             Assemblies = @(@{
                 Paths = @($entry.Path); OutputSha256 = $(if ($Tampered) { '0' * 64 } else { $entry.Sha256 })
@@ -757,12 +771,12 @@ Describe 'MWB gated preparation source contracts' {
     }
 
     It 'uses the same lean archive for a protected host and guest without modifying original outputs' {
-        $script | Should Match 'Copy-Item -LiteralPath \(Join-Path \$bundle.Root ''runtime.zip''\) -Destination \$guestArchive'
-        $script | Should Match 'Expand-MwbCiRuntime -Archive \$guestArchive -Destination \$hostProductRoot'
+        $script | Should Match 'New-MwbCiSignedRuntime \$bundle \$hostProductRoot \$guestArchive'
+        $script | Should Match 'RuntimeFiles = @\(\$runtimeFiles\)'
         $script | Should Match 'Assert-MwbProtectedDirectory \$hostProductRoot'
         $script | Should Match 'Protect-MwbCiPayloadTree \$hostProductRoot'
         $script | Should Match "\`$acl.SetOwner\(\`$owner\)"
-        $script | Should Match 'SourceProductRoot = \$payload.ProductRoot'
+        $script | Should Match 'SourceArtifactRoot = \$payload.ArtifactRoot'
         $script | Should Match '\$env:POWERTOYS_INSTALL_DIR = \$manifest.HostProductRoot'
         $script | Should Match 'Read-MwbProvisioningMarker \$manifest.HostProductRoot'
     }
@@ -783,7 +797,7 @@ Describe 'MWB gated preparation source contracts' {
         $script | Should Match 'BLOCKED_INFRASTRUCTURE: Sandbox feature'
         $script | Should Match 'Enabled feature state alone is not readiness'
         $script | Should Not Match '(?m)^\s*(Enable-WindowsOptionalFeature|Restart-Computer|Set-ExecutionPolicy)\b|Start-Process.*-Verb RunAs'
-        $testJob | Should Match "parameters.useLatestWebView2 \}\}' -ne 'False'"
+        $testJob | Should Match "eq\(variables\['RunMwbSandbox'\], 'true'\)"
         $backend = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\WinAppSandbox.cs') -Raw
         $backend | Should Match 'FindPackagesForUser\(string.Empty, SandboxPackageFamily\)'
         $backend | Should Match '\["--version"\]'
@@ -814,9 +828,9 @@ Describe 'MWB gated preparation source contracts' {
 
     It 'always publishes the prerequisite report artifact even when Prepare never runs' {
         $steps = Get-Content -LiteralPath (Join-Path $templates 'steps-mwb-sandbox-experiment.yml') -Raw
-        $steps | Should Match 'displayName: Collect allowlisted MWB prerequisite diagnostics even without TRX\r?\n\s*condition: always\(\)'
+        $steps | Should Match "displayName: Collect allowlisted MWB prerequisite diagnostics even without TRX\r?\n\s*condition: and\(always\(\), eq\(variables\['RunMwbSandbox'\], 'true'\)\)"
         $steps | Should Match 'Export-MwbSandboxPrerequisites.ps1'
-        $steps | Should Match 'task: PublishPipelineArtifact@1\r?\n\s*displayName: Publish MWB Sandbox prerequisite report\r?\n\s*condition: always\(\)'
+        $steps | Should Match "task: PublishPipelineArtifact@1\r?\n\s*displayName: Publish MWB Sandbox prerequisite report\r?\n\s*condition: and\(always\(\), eq\(variables\['RunMwbSandbox'\], 'true'\)\)"
         $steps | Should Match 'targetPath: ''\$\(Common.TestResultsDirectory\)\\mwb-prerequisites-\$\(System.JobId\)'''
     }
 }

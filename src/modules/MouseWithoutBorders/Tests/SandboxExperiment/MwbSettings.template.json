@@ -4,6 +4,7 @@
   "properties": {
     "SecurityKey": { "value": "" },
     "UseService": { "value": false },
+    "AllowNonConsoleSessions": { "value": true },
     "ShowOriginalUI": { "value": false },
     "WrapMouse": { "value": false },
     "ShareClipboard": { "value": false },

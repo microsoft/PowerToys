@@ -91,6 +91,27 @@ try {
         }
     }
     Write-BootstrapStage 'ManifestValidated'
+    if ($script:config.Configuration -eq 'Release') {
+        . "$PSScriptRoot\MwbTestSigning.ps1"
+        $testCertificate = $null
+        if ($script:config.TestSigningCertificateSha256) {
+            $certificatePath = Join-Path $ProductRoot 'mwb-test-signer.cer'
+            $testCertificate = Get-MwbTestSigningCertificate $certificatePath
+            if ($testCertificate.Sha256 -ine $script:config.TestSigningCertificateSha256 -or
+                $testCertificate.Thumbprint -cne $script:config.TestSigningCertificateThumbprint) {
+                throw 'The endpoint public certificate does not match protected provisioning.'
+            }
+            if ($script:config.Role -eq 'Guest') {
+                # This elevated guest is disposable; host trust is installed only by its protected provisioner.
+                Install-MwbTestSigningTrust (Get-MwbTestSigningTrust $certificatePath)
+            }
+        }
+        $signatures = @(Assert-MwbEndpointSignatures $ProductRoot $testCertificate)
+        Write-RunJson "$OutputRoot\release-signatures.json" @{
+            Configuration = 'Release'; Signatures = $signatures; TrustedBeforeProductStartup = $true
+        }
+        Write-BootstrapStage 'ReleaseSignaturesVerified'
+    }
     if ($script:config.Role -eq 'Guest') {
         # Avoid repeatedly loading the CLI across redirected storage while the
         # nested VM is also loading the product. Keep the staging source read-only.
@@ -247,6 +268,10 @@ try {
                 }
                 $response.ScriptStackTrace = $_.ScriptStackTrace
                 Write-EndpointCommandStage 'RequestFailed' $request.Action $next
+                try { Save-EndpointFailureEvidence 'Request' }
+                catch {
+                    Write-Warning ('MWB failure evidence publication failed (0x{0:X8}); the request error is retained.' -f ($_.Exception.HResult -band 0xffffffffL))
+                }
             }
             Write-EndpointCommandStage 'ResponsePublishing' $request.Action $next
             Write-RunJson (Join-Path $OutputRoot ("{0:D4}.json" -f $next)) $response
@@ -254,8 +279,13 @@ try {
             if ($script:stopping) { $script:receiver.Close() }
         }
         catch {
+            $failure = $_
+            try { Save-EndpointFailureEvidence 'Loop' }
+            catch {
+                Write-Warning ('MWB loop failure evidence unavailable (0x{0:X8}).' -f ($_.Exception.HResult -band 0xffffffffL))
+            }
             Write-RunJson "$OutputRoot\failed.json" @{
-                RunId = $script:config.RunId; Error = $_.Exception.Message; ScriptStackTrace = $_.ScriptStackTrace
+                RunId = $script:config.RunId; Error = $failure.Exception.Message; ScriptStackTrace = $failure.ScriptStackTrace
             }
             $script:stopping = $true
             $script:receiver.Close()
@@ -264,8 +294,13 @@ try {
     }
 }
 catch {
+    $failure = $_
+    try { Save-EndpointFailureEvidence 'Bootstrap' }
+    catch {
+        Write-Warning ('MWB bootstrap failure evidence unavailable (0x{0:X8}).' -f ($_.Exception.HResult -band 0xffffffffL))
+    }
     Write-RunJson "$OutputRoot\failed.json" @{
-        RunId = $script:config.RunId; Error = $_.Exception.Message; ScriptStackTrace = $_.ScriptStackTrace
+        RunId = $script:config.RunId; Error = $failure.Exception.Message; ScriptStackTrace = $failure.ScriptStackTrace
     }
     throw
 }

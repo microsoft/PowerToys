@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Drawing;
+using System.Windows.Forms;
+
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UiTextBox = Microsoft.PowerToys.UITest.Next.TextBox;
@@ -47,6 +50,15 @@ public sealed class RecordingInfrastructureTests
                 cover.FocusInput();
                 Assert.AreEqual(cover.Handle, NativeSupport.GetForegroundWindow());
                 Thread.Sleep(TimeSpan.FromSeconds(3));
+                var screenshot = Path.Combine(directory, "simulated-failure-desktop.png");
+                Receiver.CaptureFailureDesktop(screenshot);
+                Assert.AreEqual(cover.Handle, NativeSupport.GetForegroundWindow(), "Failure capture must not change foreground.");
+                using (var image = new Bitmap(screenshot))
+                {
+                    Assert.AreEqual(SystemInformation.VirtualScreen.Width, image.Width);
+                    Assert.AreEqual(SystemInformation.VirtualScreen.Height, image.Height);
+                }
+                TestContext.AddResultFile(screenshot);
                 throw expected;
             }
             finally

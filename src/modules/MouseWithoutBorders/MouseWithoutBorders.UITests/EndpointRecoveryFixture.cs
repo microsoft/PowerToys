@@ -53,6 +53,9 @@ internal sealed class EndpointRecoveryFixture : IDisposable
         RunFiles.Write(Path.Combine(host.InputRoot, "bootstrap.json"), new
         {
             RunId, Role = "Host", HardDeadlineUtc = deadline,
+            Configuration = provision["Configuration"]!.GetValue<string>(),
+            TestSigningCertificateSha256 = provision["TestSigningTrust"]?["Sha256"]?.GetValue<string>(),
+            TestSigningCertificateThumbprint = provision["TestSigningTrust"]?["Thumbprint"]?.GetValue<string>(),
             Manifest = new[] { new { Path = "PowerToys.MouseWithoutBorders.dll", Sha256 = Hash(Path.Combine(ProductRoot, "PowerToys.MouseWithoutBorders.dll")) } },
         });
         host.BeginBootstrap();
@@ -92,11 +95,12 @@ internal sealed class EndpointRecoveryFixture : IDisposable
         Assert.AreEqual(identity.User!.Value, provision["TestUserSid"]?.GetValue<string>());
         Assert.IsTrue(provision["Status"]?.GetValue<string>() is "Ready" or "WaitingForSandbox");
         var product = Path.GetFullPath(Environment.GetEnvironmentVariable("POWERTOYS_INSTALL_DIR")
-            ?? throw new InvalidOperationException("Missing protected Debug product staging.")).TrimEnd('\\');
+            ?? throw new InvalidOperationException("Missing protected product staging.")).TrimEnd('\\');
         Assert.IsTrue(string.Equals(product, provision[nameof(ProductRoot)]!.GetValue<string>().TrimEnd('\\'), StringComparison.OrdinalIgnoreCase));
         foreach (var path in new[] { "PowerToys.MouseWithoutBorders.dll", @"WinUI3Apps\PowerToys.Settings.dll" })
         {
-            TwoEndpointFixture.AssertDebugAssembly(Path.Combine(product, path));
+            TwoEndpointFixture.AssertConfiguredAssembly(Path.Combine(product, path), provision["Configuration"]?.GetValue<string>()
+                ?? throw new InvalidDataException("Protected provisioning must identify the payload configuration."));
         }
 
         foreach (var (field, file) in new[] { ("ExecutableSha256", "PowerToys.MouseWithoutBorders.exe"), ("LibrarySha256", "PowerToys.MouseWithoutBorders.dll") })
@@ -377,6 +381,9 @@ internal sealed class EndpointRecoveryFixture : IDisposable
         RunFiles.Write(Path.Combine(guest.InputRoot, "bootstrap.json"), new
         {
             RunId, Role = "Guest", HardDeadlineUtc = DateTime.UtcNow + Budget(180),
+            Configuration = provision["Configuration"]!.GetValue<string>(),
+            TestSigningCertificateSha256 = provision["TestSigningTrust"]?["Sha256"]?.GetValue<string>(),
+            TestSigningCertificateThumbprint = provision["TestSigningTrust"]?["Thumbprint"]?.GetValue<string>(),
             GuestArchiveSha256 = provision["GuestArchiveSha256"]!.GetValue<string>(), Manifest = Array.Empty<object>(),
         });
         guest.BeginBootstrap(modern: true);

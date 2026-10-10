@@ -21,10 +21,9 @@ parameters:
     default: []
   - name: mwbSandboxExperiment
     type: boolean
-    default: false
+    default: true
 
 stages:
-  # Stage 1: Build full PowerToys project
   - stage: Build_${{ parameters.platform }}
     displayName: Build PowerToys ${{ parameters.platform }}
     dependsOn: []
@@ -42,20 +41,15 @@ stages:
               demands: ImageOverride -equals SHINE-VS18-Latest
           buildPlatforms:
             - ${{ parameters.platform }}
-          ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
-            buildConfigurations: [Debug]
-            buildInstallers: false
-          ${{ else }}:
-            buildConfigurations: [Release]
+          buildConfigurations: [Release]
           enablePackageCaching: true
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: false
           buildTests: true
-          mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
+          mwbSandboxExperiment: ${{ and(parameters.mwbSandboxExperiment, eq(parameters.platform, 'x64'), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'))) }}
           useVSPreview: ${{ parameters.useVSPreview }}
           timeoutInMinutes: 90
 
-  # Stage 2: Run UI Tests
   - ${{ if eq(parameters.platform, 'x64') }}:
     - stage: Test_x64Win10_FullBuild
       displayName: Test x64Win10 (Full Build)
@@ -64,7 +58,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win10
-            configuration: ${{ iif(parameters.mwbSandboxExperiment, 'Debug', 'Release') }}
+            configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
@@ -77,7 +71,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win11
-            configuration: ${{ iif(parameters.mwbSandboxExperiment, 'Debug', 'Release') }}
+            configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
@@ -91,7 +85,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: ${{ parameters.platform }}
-            configuration: ${{ iif(parameters.mwbSandboxExperiment, 'Debug', 'Release') }}
+            configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}

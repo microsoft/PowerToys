@@ -1,28 +1,33 @@
-# Debug-only pilot. Do not retry the suite or suppress Win11 infrastructure failures.
+# Shared Release artifact. Do not retry the suite or suppress supported-image failures.
 steps:
   - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\Install-MwbSandboxClient.ps1" `
         -RunId "$(System.JobId)" -Platform "$(TestPlatform)" `
         -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Complete modern Sandbox client installation as the Limited interactive user
-    condition: and(succeeded(), ne(variables['TestPlatform'], 'x64Win10'))
+    condition: and(succeeded(), eq(variables['RunMwbSandbox'], 'true'), ne(variables['TestPlatform'], 'x64Win10'))
     timeoutInMinutes: 12
 
   - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Prepare `
         -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
         -Platform "$(TestPlatform)" -SourceRevision "$(Build.SourceVersion)" `
+        -Configuration "$(BuildConfiguration)" `
+        -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt" `
         -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Prepare asynchronous privileged MWB Sandbox prerequisite
+    condition: and(succeeded(), eq(variables['RunMwbSandbox'], 'true'))
     timeoutInMinutes: 15
 
   - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Run `
         -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
         -Platform "$(TestPlatform)" -SourceRevision "$(Build.SourceVersion)" `
+        -Configuration "$(BuildConfiguration)" `
         -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Run the complete MWB pilot suite once on the standard-user desktop
     timeoutInMinutes: 83
+    condition: and(succeeded(), eq(variables['RunMwbSandbox'], 'true'))
     env:
       platform: $(TestPlatform)
       WINAPP_CLI_PATH: $(WINAPP_CLI_PATH)
@@ -31,25 +36,25 @@ steps:
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Recover `
         -RunId "$(System.JobId)" -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Recover owned MWB desktop resources as the original standard user
-    condition: always()
+    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'))
     timeoutInMinutes: 6
 
   - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Cleanup -RunId "$(System.JobId)"
     displayName: Remove owned MWB firewall prerequisite and provisioning task
-    condition: always()
+    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'))
     timeoutInMinutes: 5
 
   - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\Export-MwbSandboxPrerequisites.ps1" `
         -ResultsDirectory "$(Common.TestResultsDirectory)" -RunId "$(System.JobId)"
     displayName: Collect allowlisted MWB prerequisite diagnostics even without TRX
-    condition: always()
+    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'))
     timeoutInMinutes: 2
 
   - task: PublishPipelineArtifact@1
     displayName: Publish MWB Sandbox prerequisite report
-    condition: always()
+    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'))
     inputs:
       targetPath: '$(Common.TestResultsDirectory)\mwb-prerequisites-$(System.JobId)'
       artifactName: mwb-prerequisite-report-$(System.JobId)

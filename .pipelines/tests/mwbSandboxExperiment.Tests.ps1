@@ -102,7 +102,7 @@ Describe 'MWB protected provisioning launcher' {
         $initializer = Join-Path $directory 'Initialize-AutonomousHost.ps1'
         $parameters = @'
 param([string] $ProductRoot, [string] $TestUser, [guid] $RunId,
-    [int] $NetworkTimeoutSeconds, [string] $GuestArchivePath)
+    [int] $NetworkTimeoutSeconds, [string] $GuestArchivePath, [string] $Configuration = 'Release')
 '@
     }
 
@@ -188,7 +188,7 @@ exit 23
         Set-Content -LiteralPath $initializer -Value @'
 param([string] $ProductRoot, [string] $TestUser, [guid] $RunId,
     [int] $NetworkTimeoutSeconds, [string] $GuestArchivePath,
-    [string] $SandboxBackend = 'Legacy', [string] $SandboxWinAppPath)
+    [string] $SandboxBackend = 'Legacy', [string] $SandboxWinAppPath, [string] $Configuration = 'Release')
 [Console]::Out.WriteLine($SandboxBackend)
 [Console]::Out.WriteLine($SandboxWinAppPath)
 '@
@@ -324,7 +324,7 @@ Describe 'MWB bounded public provisioning diagnostics' {
 
 Describe 'MWB diagnostic task ownership contract' {
     It 'stages and hashes the trusted launcher alongside the fixed initializer and cleanup scripts' {
-        $ast.Extent.Text | Should Match "foreach \(\`$name in @\('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1', 'Invoke-MwbProvisioning.ps1'\)\)"
+        $ast.Extent.Text | Should Match "foreach \(\`$name in @\('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1', 'MwbTestSigning.ps1', 'Invoke-MwbProvisioning.ps1'\)\)"
         $ast.Extent.Text | Should Match '\$hashes\[\$name\] = \$hash'
         $ast.Extent.Text | Should Match 'ScriptHashes = \$hashes'
         $ast.Extent.Text | Should Match "\`$setupPath = Join-Path \`$runRoot 'Invoke-MwbProvisioning.ps1'"
@@ -354,8 +354,8 @@ Describe 'MWB diagnostic task ownership contract' {
 
 Describe 'MWB Sandbox artifact discovery' {
     BeforeEach {
-        $artifact = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N'))\build-x64-Debug"
-        $product = Join-Path $artifact 'x64\Debug\x64\Debug'
+        $artifact = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N'))\build-x64-Release"
+        $product = Join-Path $artifact 'x64\Release\x64\Release'
         $tests = Join-Path $product 'tests\MouseWithoutBorders.UITests'
         New-Item -ItemType Directory -Path $tests -Force | Out-Null
         foreach ($name in @('PowerToys.exe', 'PowerToys.MouseWithoutBorders.exe', 'PowerToys.MouseWithoutBorders.dll')) {
@@ -365,30 +365,30 @@ Describe 'MWB Sandbox artifact discovery' {
             Set-Content -LiteralPath (Join-Path $tests $name) -Value 'test fixture'
         }
         New-Item -ItemType Directory -Path (Join-Path $tests 'Payload') -Force | Out-Null
-        foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs')) {
+        foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs', 'MwbTestSigning.ps1')) {
             Set-Content -LiteralPath (Join-Path $tests "Payload\$name") -Value 'test fixture'
         }
     }
 
-    It 'uses the product and test outputs from the same Debug artifact' {
+    It 'uses the tests and bundle identity from the same Release artifact' {
         $payload = Get-MwbSandboxPayload $artifact
-        $payload.ProductRoot | Should Be ([IO.Path]::GetFullPath($product))
+        $payload.ArtifactRoot | Should Be ([IO.Path]::GetFullPath($artifact))
         $payload.TestExecutable | Should Be ([IO.Path]::GetFullPath((Join-Path $tests 'MouseWithoutBorders.UITests.exe')))
     }
 
-    It 'rejects Release artifacts rather than falling back to an installation' {
-        $release = Join-Path $TestDrive 'build-x64-Release'
-        New-Item -ItemType Directory -Path $release -Force | Out-Null
-        { Get-MwbSandboxPayload $release } | Should Throw 'build-x64-Debug'
+    It 'rejects a different configuration rather than falling back to another build' {
+        $debug = Join-Path $TestDrive 'build-x64-Debug'
+        New-Item -ItemType Directory -Path $debug -Force | Out-Null
+        { Get-MwbSandboxPayload $debug } | Should Throw 'build-x64-Release'
     }
 
-    It 'rejects an ambiguous staged product' {
-        $duplicate = Join-Path $artifact 'duplicate\x64\Debug'
-        New-Item -ItemType Directory -Path $duplicate -Force | Out-Null
+    It 'accepts slim artifacts without using installed or raw product binaries' {
         foreach ($name in @('PowerToys.exe', 'PowerToys.MouseWithoutBorders.exe', 'PowerToys.MouseWithoutBorders.dll')) {
-            Copy-Item -LiteralPath (Join-Path $product $name) -Destination $duplicate
+            Remove-Item -LiteralPath (Join-Path $product $name)
         }
-        { Get-MwbSandboxPayload $artifact } | Should Throw 'exactly one staged Debug product'
+        $payload = Get-MwbSandboxPayload $artifact
+        $payload.ArtifactRoot | Should Be ([IO.Path]::GetFullPath($artifact))
+        $payload.TestExecutable | Should Be (Get-Item -LiteralPath (Join-Path $tests 'MouseWithoutBorders.UITests.exe')).FullName
     }
 
     It 'rejects duplicate test runners instead of running the pilot twice' {
@@ -408,6 +408,7 @@ Describe 'MWB Sandbox artifact discovery' {
         @{ Name = 'ModernSandboxRecovery.ps1' }
         @{ Name = 'EndpointSupport.ps1' }
         @{ Name = 'NativeSupport.cs' }
+        @{ Name = 'MwbTestSigning.ps1' }
     ) {
         param($Name)
         Remove-Item -LiteralPath (Join-Path $tests "Payload\$Name")
@@ -415,8 +416,8 @@ Describe 'MWB Sandbox artifact discovery' {
     }
 
     It 'rejects relative or network paths before discovery' -TestCases @(
-        @{ Path = 'build-x64-Debug' }
-        @{ Path = '\\server\build-x64-Debug' }
+        @{ Path = 'build-x64-Release' }
+        @{ Path = '\\server\build-x64-Release' }
         @{ Path = 'C:\payload" -Command something' }
     ) {
         param($Path)
@@ -426,8 +427,8 @@ Describe 'MWB Sandbox artifact discovery' {
 
 Describe 'MWB Sandbox ARM64 artifact discovery' {
     BeforeEach {
-        $armArtifact = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N'))\build-arm64-Debug"
-        $armProduct = Join-Path $armArtifact 'arm64\Debug\arm64\Debug'
+        $armArtifact = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N'))\build-arm64-Release"
+        $armProduct = Join-Path $armArtifact 'arm64\Release\arm64\Release'
         $armTests = Join-Path $armProduct 'tests\MouseWithoutBorders.UITests'
         New-Item -ItemType Directory -Path $armTests -Force | Out-Null
         foreach ($name in @('PowerToys.exe', 'PowerToys.MouseWithoutBorders.exe', 'PowerToys.MouseWithoutBorders.dll')) {
@@ -437,25 +438,25 @@ Describe 'MWB Sandbox ARM64 artifact discovery' {
             Set-Content -LiteralPath (Join-Path $armTests $name) -Value 'test fixture'
         }
         New-Item -ItemType Directory -Path (Join-Path $armTests 'Payload') -Force | Out-Null
-        foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs')) {
+        foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs', 'MwbTestSigning.ps1')) {
             Set-Content -LiteralPath (Join-Path $armTests "Payload\$name") -Value 'test fixture'
         }
     }
 
-    It 'uses the ARM64 product and test outputs from the same Debug artifact when explicitly requested' {
+    It 'can inspect coherent ARM64 Release packaging without claiming live ARM64 support' {
         $payload = Get-MwbSandboxPayload $armArtifact -Architecture arm64
-        $payload.ProductRoot | Should Be ([IO.Path]::GetFullPath($armProduct))
+        $payload.ArtifactRoot | Should Be ([IO.Path]::GetFullPath($armArtifact))
         $payload.TestExecutable | Should Be ([IO.Path]::GetFullPath((Join-Path $armTests 'MouseWithoutBorders.UITests.exe')))
     }
 
     It 'rejects the ARM64 artifact when x64 is the default/requested architecture' {
-        { Get-MwbSandboxPayload $armArtifact } | Should Throw 'build-x64-Debug'
+        { Get-MwbSandboxPayload $armArtifact } | Should Throw 'build-x64-Release'
     }
 
     It 'rejects an x64 artifact when ARM64 is explicitly requested' {
-        $x64Artifact = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N'))\build-x64-Debug"
+        $x64Artifact = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N'))\build-x64-Release"
         New-Item -ItemType Directory -Path $x64Artifact -Force | Out-Null
-        { Get-MwbSandboxPayload $x64Artifact -Architecture arm64 } | Should Throw 'build-arm64-Debug'
+        { Get-MwbSandboxPayload $x64Artifact -Architecture arm64 } | Should Throw 'build-arm64-Release'
     }
 }
 
@@ -481,9 +482,10 @@ Describe 'MWB run-in-place build selection' {
         $buildTemplate | Should Match '(?m)^  - name: buildInstallers\r?\n    type: boolean\r?\n    default: true'
     }
 
-    It 'disables installers only in the explicit MWB Debug branch' {
-        $pipelineTemplate | Should Match '(?m)^          \$\{\{ if eq\(parameters\.mwbSandboxExperiment, true\) \}\}:\r?\n            buildConfigurations: \[Debug\]\r?\n            buildInstallers: false\r?\n          \$\{\{ else \}\}:\r?\n            buildConfigurations: \[Release\]'
-        ([regex]::Matches($pipelineTemplate, 'buildInstallers:')).Count | Should Be 1
+    It 'keeps one Release build and its normal installer for MWB and mixed suites' {
+        $pipelineTemplate | Should Match 'buildConfigurations: \[Release\]'
+        $pipelineTemplate | Should Not Match 'buildConfigurations: \[Debug\]|buildInstallers: false'
+        $pipelineTemplate | Should Match 'configuration: Release'
     }
 
     It 'guards each installer-only step group' -TestCases @(

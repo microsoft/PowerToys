@@ -996,10 +996,10 @@ Describe 'Effective pipeline setup boundaries' {
     It 'places explicit setup before Prepare only in the gated MWB step template' {
         $text = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\steps-mwb-sandbox-experiment.yml') -Raw
         ($text.IndexOf('Install-MwbSandboxClient.ps1') -lt $text.IndexOf('-Mode Prepare')) | Should Be $true
-        $text | Should Match "condition: and\(succeeded\(\), ne\(variables\['TestPlatform'\], 'x64Win10'\)\)"
+        $text | Should Match "condition: and\(succeeded\(\), eq\(variables\['RunMwbSandbox'\], 'true'\), ne\(variables\['TestPlatform'\], 'x64Win10'\)\)"
         $text | Should Match 'timeoutInMinutes: 12'
-        $text | Should Match '(?s)Collect allowlisted MWB prerequisite diagnostics.*?condition: always\(\)'
-        $text | Should Match '(?s)Publish MWB Sandbox prerequisite report.*?condition: always\(\)'
+        $text | Should Match "(?s)Collect allowlisted MWB prerequisite diagnostics.*?condition: and\(always\(\), eq\(variables\['RunMwbSandbox'\], 'true'\)\)"
+        $text | Should Match "(?s)Publish MWB Sandbox prerequisite report.*?condition: and\(always\(\), eq\(variables\['RunMwbSandbox'\], 'true'\)\)"
         $job = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
         $job | Should Match '(?s)if eq\(parameters.mwbSandboxExperiment, true\).*?steps-mwb-sandbox-experiment.yml'
     }

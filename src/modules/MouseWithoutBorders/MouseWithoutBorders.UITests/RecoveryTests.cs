@@ -17,7 +17,7 @@ public sealed class RecoveryTests
 
     [TestMethod]
     [TestCategory("MwbRecovery")]
-    [TestCategory("NestedSandboxDebugPilot")]
+    [TestCategory("NestedSandboxPilot")]
     public void ControllerExitBeforePairingRestoresOriginalSettings()
     {
         using var fixture = new EndpointRecoveryFixture(TestContext, clipboardLost: false);
@@ -28,7 +28,7 @@ public sealed class RecoveryTests
 
     [TestMethod]
     [TestCategory("MwbRecovery")]
-    [TestCategory("NestedSandboxDebugPilot")]
+    [TestCategory("NestedSandboxPilot")]
     public void KilledClipboardOwnerRequiresBaselineReset()
     {
         var (_, _, _, runId) = EndpointRecoveryFixture.ReadProvisioning();
@@ -56,7 +56,7 @@ public sealed class RecoveryTests
 
     [TestMethod]
     [TestCategory("MwbRecovery")]
-    [TestCategory("NestedSandboxDebugPilot")]
+    [TestCategory("NestedSandboxPilot")]
     public void AbortedSandboxStartupRefusesUnownedInstance()
     {
         WinAppSandboxPrerequisiteReport.CapturePersistent(
@@ -65,7 +65,7 @@ public sealed class RecoveryTests
 
     [TestMethod]
     [TestCategory("MwbRecovery")]
-    [TestCategory("NestedSandboxDebugPilot")]
+    [TestCategory("NestedSandboxPilot")]
     public void StaleRunDirectoryRefusalPreservesRecoveryJournals()
     {
         var root = Path.Combine(RunFiles.PersistentResultsRoot(TestContext.TestRunDirectory), "mwb-stale-" + Guid.NewGuid().ToString("N"));

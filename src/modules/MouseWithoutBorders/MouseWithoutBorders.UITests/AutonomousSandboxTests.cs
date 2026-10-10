@@ -15,7 +15,7 @@ public sealed class AutonomousSandboxTests
 
     [TestMethod]
     [TestCategory("MouseWithoutBorders")]
-    [TestCategory("NestedSandboxDebugPilot")]
+    [TestCategory("NestedSandboxPilot")]
     public void AutonomousSandboxSmoke()
     {
         WinAppSandboxPrerequisiteReport.CapturePersistent(

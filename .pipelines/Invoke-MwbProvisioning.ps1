@@ -9,6 +9,8 @@ param(
     [Parameter(Mandatory)][string] $TestUser,
     [Parameter(Mandatory)][guid] $RunId,
     [Parameter(Mandatory)][string] $GuestArchivePath,
+    [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release',
+    [ValidatePattern('^[0-9a-fA-F]{64}$')][string] $ExpectedTestSigningCertificateSha256,
     [ValidateSet('Legacy', 'WinApp')][string] $SandboxBackend = 'Legacy',
     [string] $SandboxWinAppPath
 )
@@ -20,11 +22,14 @@ Set-StrictMode -Version Latest
 # outside the public test results, including parser and parameter-binding failures.
 $setupPath = Join-Path $PSScriptRoot 'Initialize-AutonomousHost.ps1'
 $logRoot = Join-Path $PSScriptRoot 'provisioning-logs'
-$arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ProductRoot "{1}" -TestUser "{2}" -RunId "{3}" -NetworkTimeoutSeconds 900 -GuestArchivePath "{4}"' -f
-    $setupPath, $ProductRoot, $TestUser, $RunId, $GuestArchivePath
+$arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ProductRoot "{1}" -TestUser "{2}" -RunId "{3}" -NetworkTimeoutSeconds 900 -GuestArchivePath "{4}" -Configuration {5}' -f
+    $setupPath, $ProductRoot, $TestUser, $RunId, $GuestArchivePath, $Configuration
 if ($SandboxBackend -ne 'Legacy' -or $SandboxWinAppPath) {
     $arguments += ' -SandboxBackend "{0}"' -f $SandboxBackend
     if ($SandboxWinAppPath) { $arguments += ' -SandboxWinAppPath "{0}"' -f $SandboxWinAppPath }
+}
+if ($ExpectedTestSigningCertificateSha256) {
+    $arguments += ' -ExpectedTestSigningCertificateSha256 {0}' -f $ExpectedTestSigningCertificateSha256
 }
 
 # Start-Process drains both redirected streams concurrently to files rather than

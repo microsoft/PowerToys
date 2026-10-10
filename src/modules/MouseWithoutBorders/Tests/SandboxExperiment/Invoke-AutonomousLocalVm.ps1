@@ -17,7 +17,8 @@ param(
     [string]$VmName = 'PowerToysUiTest-Win10',
     [string]$ConfigurationPath = 'C:\PowerToysUiTestVm\vm.config.win10.psd1',
     [Parameter(Mandatory = $true)][string]$ExchangeRoot,
-    [string]$BuildLabel = 'local-mwb-debug',
+    [string]$BuildLabel = 'local-mwb-release',
+    [ValidateSet('Debug', 'Release')][string]$Configuration = 'Release',
     [string]$Filter,
     [string]$StandardUser = 'PTUser',
     [string]$GuestRuntimeArchive = 'mwb-guest-runtime.zip',
@@ -32,6 +33,71 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+function ConvertTo-MwbHostPowerEvent {
+    param($Event, [DateTime]$StartedUtc, [DateTime]$CompletedUtc)
+    $StartedUtc = $StartedUtc.ToUniversalTime()
+    $CompletedUtc = $CompletedUtc.ToUniversalTime()
+    [xml]$document = $Event.ToXml()
+    $sleepValue = @($document.Event.EventData.Data | Where-Object Name -CEQ 'SleepTime')
+    $wakeValue = @($document.Event.EventData.Data | Where-Object Name -CEQ 'WakeTime')
+    if ($sleepValue.Count -ne 1 -or $wakeValue.Count -ne 1) {
+        throw 'The host power event has no unambiguous sleep/wake timing.'
+    }
+    $sleep = [DateTime]::MinValue
+    $wake = [DateTime]::MinValue
+    if (-not [DateTime]::TryParse($sleepValue[0].InnerText, [Globalization.CultureInfo]::InvariantCulture,
+            [Globalization.DateTimeStyles]::RoundtripKind, [ref]$sleep) -or
+        -not [DateTime]::TryParse($wakeValue[0].InnerText, [Globalization.CultureInfo]::InvariantCulture,
+            [Globalization.DateTimeStyles]::RoundtripKind, [ref]$wake)) {
+        throw 'The host power event has invalid sleep/wake timing.'
+    }
+    $sleep = $sleep.ToUniversalTime()
+    $wake = $wake.ToUniversalTime()
+    if ($wake -lt $sleep) { throw 'The host power event has reversed sleep/wake timing.' }
+    $overlapStart = if ($sleep -gt $StartedUtc) { $sleep } else { $StartedUtc }
+    $overlapEnd = if ($wake -lt $CompletedUtc) { $wake } else { $CompletedUtc }
+    [ordered]@{
+        RecordId = [long]$Event.RecordId
+        SleepUtc = $sleep.ToString('o')
+        WakeUtc = $wake.ToString('o')
+        SuspensionMilliseconds = ($wake - $sleep).TotalMilliseconds
+        RunOverlapMilliseconds = [Math]::Max(0, ($overlapEnd - $overlapStart).TotalMilliseconds)
+    }
+}
+
+function Get-MwbHostPowerEvidence {
+    param([DateTime]$StartedUtc, [DateTime]$CompletedUtc)
+    $StartedUtc = $StartedUtc.ToUniversalTime()
+    $CompletedUtc = $CompletedUtc.ToUniversalTime()
+    $report = [ordered]@{
+        QueryStatus = 'NotChecked'; QueryErrorHResult = $null
+        OverlappedSuspension = $null; EventLimitReached = $false; Events = @()
+    }
+    try {
+        $events = @(Get-WinEvent -FilterHashtable @{
+            LogName = 'System'; ProviderName = 'Microsoft-Windows-Power-Troubleshooter'; Id = 1
+            StartTime = $StartedUtc.ToLocalTime(); EndTime = $CompletedUtc.ToLocalTime()
+        } -MaxEvents 8 -ErrorAction Stop)
+        $report.Events = @($events | ForEach-Object { ConvertTo-MwbHostPowerEvent $_ $StartedUtc $CompletedUtc })
+        $report.EventLimitReached = $events.Count -eq 8
+        $report.OverlappedSuspension = @($report.Events | Where-Object RunOverlapMilliseconds -GT 0).Count -gt 0
+        $report.QueryStatus = 'Succeeded'
+    }
+    catch {
+        if ($_.FullyQualifiedErrorId -like 'NoMatchingEventsFound,*') {
+            $report.QueryStatus = 'Succeeded'
+            $report.OverlappedSuspension = $false
+        }
+        else {
+            $report.QueryStatus = 'Failed'
+            $report.QueryErrorHResult = '0x{0:X8}' -f ($_.Exception.HResult -band 0xffffffffL)
+            Write-Warning "MWB host power diagnostics unavailable ($($report.QueryErrorHResult)); no absence conclusion was made."
+        }
+    }
+    $report
+}
+
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..\..\..'))
 $skillRoot = Join-Path $repoRoot '.github\skills\ui-tests-local-vm\scripts'
 $controller = Join-Path $skillRoot 'Invoke-LocalVmUiTest.ps1'
@@ -58,6 +124,7 @@ if ($Filter) { $parameters.Filter = $Filter }
 if ($PlanOnly) {
     $plan = (& $controller @parameters -PlanOnly | Out-String) | ConvertFrom-Json
     $plan | Add-Member -NotePropertyName SandboxBackend -NotePropertyValue $backend
+    $plan | Add-Member -NotePropertyName Configuration -NotePropertyValue $Configuration
     if ($backend -eq 'WinApp') {
         $sandboxCliArchive = Join-Path $ExchangeRoot $SandboxWinAppArchive
         $plan | Add-Member -NotePropertyName SandboxWinAppArchive -NotePropertyValue $SandboxWinAppArchive
@@ -66,6 +133,8 @@ if ($PlanOnly) {
     $plan | ConvertTo-Json -Depth 10
     return
 }
+$controllerStartedUtc = [DateTime]::UtcNow
+$controllerTimer = [Diagnostics.Stopwatch]::StartNew()
 & (Join-Path $skillRoot 'Initialize-LocalVmHost.ps1') -VmRoot $VmRoot -ConfigPath $ConfigurationPath -CredentialPath $CredentialPath -CheckOnly
 if ($LASTEXITCODE -ne 0) { throw 'Local-VM host readiness failed.' }
 & (Join-Path $VmRoot 'Start-LocalVm.ps1') -ConfigPath $ConfigurationPath -CredentialPath $CredentialPath -Wait -TimeoutMinutes 15
@@ -83,6 +152,18 @@ try {
     $archive = Join-Path $ExchangeRoot $ProductArchive
     $guestArchive = "C:\PowerToysUiTestExchange\MwbProvisioning\$runId\powertoys-runtime.zip"
     $archiveHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
+    $certificateHash = $null
+    $zip = [IO.Compression.ZipFile]::OpenRead($archive)
+    try {
+        $entry = $zip.GetEntry('mwb-test-signer.cer')
+        if ($null -eq $entry) { $entry = $zip.GetEntry('./mwb-test-signer.cer') }
+        if ($null -ne $entry) {
+            $stream = $entry.Open()
+            try { $certificateHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($stream)) }
+            finally { $stream.Dispose() }
+        }
+    }
+    finally { $zip.Dispose() }
     $reuseProduct = $false
     if ($ReuseStagedPayload) {
         $reuseProduct = Invoke-Command -Session $session -ScriptBlock {
@@ -105,16 +186,25 @@ try {
     Copy-VMFile -Name $VmName -SourcePath (Join-Path $ExchangeRoot $GuestRuntimeArchive) `
         -DestinationPath $sandboxArchive -FileSource Host -CreateFullPath -Force
     Invoke-Command -Session $session -ScriptBlock {
-        param($Archive, $Tools, $ReuseProduct, $User)
+        param($Archive, $Tools, $ReuseProduct, $User, $RunId)
         $ErrorActionPreference = 'Stop'
         $product = 'C:\PowerToysUiTestRun\PowerToys'
         if (@(Get-CimInstance Win32_Process | Where-Object {
             $_.ExecutablePath -and $_.ExecutablePath.StartsWith("$product\", [StringComparison]::OrdinalIgnoreCase)
         }).Count) { throw 'Staged product is running before provisioning.' }
-        $null = New-Item -ItemType Directory -Path $product, $Tools -Force
+        $null = New-Item -ItemType Directory -Path $Tools -Force
         if (-not $ReuseProduct) {
-            & tar.exe -xf $Archive -C $product
+            $stage = "$product-stage-$RunId"
+            $previous = "$product-previous-$RunId"
+            if ((Test-Path -LiteralPath $stage) -or (Test-Path -LiteralPath $previous)) {
+                throw 'Protected product replacement requires new run-scoped directories.'
+            }
+            $null = New-Item -ItemType Directory -Path $stage
+            & tar.exe -xf $Archive -C $stage
             if ($LASTEXITCODE -ne 0) { throw 'Product archive extraction failed.' }
+            if (Test-Path -LiteralPath $product) { Move-Item -LiteralPath $product -Destination $previous }
+            Move-Item -LiteralPath $stage -Destination $product
+            if (Test-Path -LiteralPath $previous) { Remove-Item -LiteralPath $previous -Recurse -Force }
         }
         $acl = New-Object Security.AccessControl.DirectorySecurity
         $acl.SetAccessRuleProtection($true, $false)
@@ -137,7 +227,7 @@ try {
                 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
         }
         Set-Acl -LiteralPath $logRoot -AclObject $logAcl
-    } -ArgumentList $guestArchive, $guestTools, $reuseProduct, $StandardUser
+    } -ArgumentList $guestArchive, $guestTools, $reuseProduct, $StandardUser, $runId
     $sandboxWinApp = ''
     if ($backend -eq 'WinApp') {
         $sandboxCliArchive = Join-Path $ExchangeRoot $SandboxWinAppArchive
@@ -162,7 +252,7 @@ try {
             $exe
         } -ArgumentList $guestTools, $sandboxCliHash
     }
-    foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1')) {
+    foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1', 'MwbTestSigning.ps1')) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -ToSession $session -Destination $guestTools
     }
     Copy-Item -LiteralPath (Join-Path $repoRoot '.pipelines\runUiTestAsUser.ps1') `
@@ -170,17 +260,19 @@ try {
     Copy-Item -LiteralPath (Join-Path $repoRoot '.pipelines\Invoke-MwbProvisioning.ps1') `
         -ToSession $session -Destination $guestTools
     Invoke-Command -Session $session -ScriptBlock {
-        param($Tools, $TaskName, $User, $RunId, $Archive, $Backend, $SandboxWinApp)
+        param($Tools, $TaskName, $User, $RunId, $Archive, $Backend, $SandboxWinApp, $Configuration, $CertificateHash)
         $ErrorActionPreference = 'Stop'
         $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}\Invoke-MwbProvisioning.ps1" -ProductRoot C:\PowerToysUiTestRun\PowerToys -TestUser "{1}\{2}" -RunId {3} -GuestArchivePath "{4}"' -f $Tools, $env:COMPUTERNAME, $User, $RunId, $Archive
         $arguments += ' -SandboxBackend {0}' -f $Backend
+        $arguments += ' -Configuration {0}' -f $Configuration
         if ($SandboxWinApp) { $arguments += ' -SandboxWinAppPath "{0}"' -f $SandboxWinApp }
+        if ($CertificateHash) { $arguments += ' -ExpectedTestSigningCertificateSha256 {0}' -f $CertificateHash }
         $action = New-ScheduledTaskAction -Execute 'C:\Program Files\PowerShell\7\pwsh.exe' -Argument $arguments
         $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
         $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 18)
         $null = Register-ScheduledTask -TaskName $TaskName -Action $action -Principal $principal -Settings $settings
         Start-ScheduledTask -TaskName $TaskName
-    } -ArgumentList $guestTools, $taskName, $StandardUser, $runId, $sandboxArchive, $backend, $sandboxWinApp
+    } -ArgumentList $guestTools, $taskName, $StandardUser, $runId, $sandboxArchive, $backend, $sandboxWinApp, $Configuration, $certificateHash
     $taskRegistered = $true
     $deadline = [DateTime]::UtcNow.AddSeconds(90)
     do {
@@ -188,7 +280,7 @@ try {
             $path = 'C:\ProgramData\PowerToysMwbExperiment\host-provisioning.json'
             if (Test-Path -LiteralPath $path) { [IO.File]::ReadAllText($path) | ConvertFrom-Json }
         }
-        if ($marker -and $marker.RunId -eq $runId) { break }
+        if ($marker -and $marker.RunId -eq $runId -and $marker.Status -ne 'PreparingTrust') { break }
         $task = Invoke-Command -Session $session -ScriptBlock {
             param($Name)
             $info = Get-ScheduledTaskInfo -TaskName $Name
@@ -247,30 +339,48 @@ finally {
             } -ArgumentList $taskName
         }
         $cleanup = Invoke-Command -Session $session -ScriptBlock {
-            param($Tools, $RunId)
+            param($Tools, $RunId, $TaskRegistered)
             $path = 'C:\ProgramData\PowerToysMwbExperiment\host-provisioning.json'
             if (Test-Path -LiteralPath $path) {
                 $state = [IO.File]::ReadAllText($path) | ConvertFrom-Json
-                if ($state.RunId -ne $RunId) { throw 'Provisioning identity changed; refusing cleanup.' }
+                if ($state.RunId -ne $RunId) {
+                    if ($TaskRegistered) { throw 'Provisioning identity changed; refusing cleanup.' }
+                    return
+                }
                 & 'C:\Program Files\PowerShell\7\pwsh.exe' -NoLogo -NoProfile -NonInteractive `
                     -ExecutionPolicy Bypass -File "$Tools\Remove-AutonomousHost.ps1" | Out-Null
                 if ($LASTEXITCODE -ne 0) { throw 'Privileged firewall cleanup failed.' }
                 [IO.File]::ReadAllText($path) | ConvertFrom-Json | Select-Object RunId, Status, RuleName
             }
-        } -ArgumentList $guestTools, $runId
+        } -ArgumentList $guestTools, $runId, $taskRegistered
         $evidenceRoot = Join-Path $ExchangeRoot 'ProvisioningResults'
         $null = New-Item -ItemType Directory -Path $evidenceRoot -Force
         @{ RunId = $runId; Provisioned = $provisioned; Cleanup = $cleanup } |
             ConvertTo-Json -Depth 6 | Set-Content (Join-Path $evidenceRoot "$runId.json")
     }
     finally {
-        if ($taskRegistered) {
-            Invoke-Command -Session $session -ScriptBlock {
-                param($Name)
-                Unregister-ScheduledTask -TaskName $Name -Confirm:$false
-            } -ArgumentList $taskName
+        try {
+            if ($taskRegistered) {
+                Invoke-Command -Session $session -ScriptBlock {
+                    param($Name)
+                    Unregister-ScheduledTask -TaskName $Name -Confirm:$false
+                } -ArgumentList $taskName
+            }
         }
-        Remove-PSSession $session
+        finally {
+            Remove-PSSession $session
+            $completedUtc = [DateTime]::UtcNow
+            $clockPath = Join-Path $ExchangeRoot "ProvisioningResults\$runId-clock.json"
+            $null = New-Item -ItemType Directory -Path (Split-Path $clockPath) -Force
+            [ordered]@{
+                RunId = $runId
+                StartedUtc = $controllerStartedUtc.ToString('o')
+                CompletedUtc = $completedUtc.ToString('o')
+                WallElapsedMilliseconds = ($completedUtc - $controllerStartedUtc).TotalMilliseconds
+                StopwatchElapsedMilliseconds = $controllerTimer.Elapsed.TotalMilliseconds
+                HostPower = Get-MwbHostPowerEvidence $controllerStartedUtc $completedUtc
+            } | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $clockPath
+        }
     }
     if ($recoveryError) { throw $recoveryError }
 }

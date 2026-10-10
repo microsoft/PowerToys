@@ -13,6 +13,8 @@ param(
     [string] $ArtifactRoot,
     [string] $ResultsDirectory,
     [string] $Platform,
+    [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release',
+    [string] $CertificateMarkerPath,
     [string] $SourceRevision = $env:BUILD_SOURCEVERSION
 )
 
@@ -38,27 +40,21 @@ function Assert-MwbLocalPath {
 }
 
 function Get-MwbSandboxPayload {
-    param([string] $Root, [ValidateSet('x64', 'arm64')][string] $Architecture = 'x64')
+    param([string] $Root, [ValidateSet('x64', 'arm64')][string] $Architecture = 'x64',
+        [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release')
 
     Assert-MwbLocalPath $Root
-    $rootPath = (Resolve-Path -LiteralPath $Root).Path.TrimEnd('\')
-    $expectedLeaf = "build-$Architecture-Debug"
+    $directory = Get-Item -LiteralPath $Root -Force
+    if (-not $directory.PSIsContainer) { throw 'MWB Sandbox requires an artifact directory.' }
+    $rootPath = $directory.FullName.TrimEnd('\')
+    $expectedLeaf = "build-$Architecture-$Configuration"
     if ((Split-Path $rootPath -Leaf) -cne $expectedLeaf) {
         throw "MWB Sandbox requires the directly downloaded $expectedLeaf artifact."
     }
-    $products = @(Get-ChildItem -LiteralPath $rootPath -Filter 'PowerToys.exe' -File -Recurse |
-        Where-Object {
-            $_.DirectoryName -match "\\$Architecture\\Debug`$" -and
-            (Test-Path -LiteralPath (Join-Path $_.DirectoryName 'PowerToys.MouseWithoutBorders.exe')) -and
-            (Test-Path -LiteralPath (Join-Path $_.DirectoryName 'PowerToys.MouseWithoutBorders.dll'))
-        })
-    if ($products.Count -ne 1) {
-        throw "Expected exactly one staged Debug product root; found $($products.Count). Installed Release is never a fallback."
-    }
-    $productRoot = $products[0].DirectoryName
-    Assert-MwbLocalPath $productRoot
-    $runners = @(Get-ChildItem -LiteralPath (Join-Path $productRoot 'tests') `
-        -Filter 'MouseWithoutBorders.UITests.runtimeconfig.json' -File -Recurse)
+    # Slim downloads contain tests and the same build's lean bundle, not the raw product.
+    $runners = @(Get-ChildItem -LiteralPath $rootPath `
+        -Filter 'MouseWithoutBorders.UITests.runtimeconfig.json' -File -Recurse |
+        Where-Object { $_.FullName -match "\\$Architecture\\$Configuration\\tests\\" })
     if ($runners.Count -ne 1) {
         throw "Expected exactly one MWB Sandbox test runner; found $($runners.Count)."
     }
@@ -67,14 +63,14 @@ function Get-MwbSandboxPayload {
     if (-not (Test-Path -LiteralPath $testExecutable -PathType Leaf)) {
         throw 'The MWB Sandbox MTP executable was not staged with its runtime configuration.'
     }
-    foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs')) {
+    foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs', 'MwbTestSigning.ps1')) {
         $path = Join-Path $runners[0].DirectoryName "Payload\$name"
         Assert-MwbLocalPath $path
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
             throw "The staged MWB recovery payload is incomplete: $name."
         }
     }
-    [pscustomobject]@{ ProductRoot = $productRoot; TestExecutable = $testExecutable }
+    [pscustomobject]@{ ArtifactRoot = $rootPath; TestExecutable = $testExecutable }
 }
 
 function Get-MwbPublicRunRoot {
@@ -148,6 +144,7 @@ function Read-MwbProvisioningMarker {
         $marker.ProductRoot -ine $ExpectedProductRoot -or
         $marker.Executable -ine (Join-Path $ExpectedProductRoot 'PowerToys.MouseWithoutBorders.exe') -or
         $marker.RuleName -cne "PowerToys.Mwb.UITest.$RunId" -or
+        $marker.Configuration -cne $Configuration -or
         $marker.TestUserSid -cne $ExpectedUserSid) {
         throw 'The privileged provisioning marker does not belong to this CI run and payload.'
     }
@@ -211,8 +208,8 @@ if ($Mode -eq 'Prepare') {
     Write-MwbSandboxPrerequisiteReport -ResultsDirectory $ResultsDirectory -RunId $RunId -Platform $Platform
 
     $architecture = Get-MwbCiArchitecture $Platform
-    $payload = Get-MwbSandboxPayload $ArtifactRoot -Architecture $architecture
-    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision -Platform $architecture
+    $payload = Get-MwbSandboxPayload $ArtifactRoot -Architecture $architecture -Configuration $Configuration
+    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision -Platform $architecture -Configuration $Configuration
     $windowsBuild = [int](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuild
     $backend = Get-MwbCiBackend $Platform $windowsBuild
     $feature = Get-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM
@@ -259,11 +256,21 @@ if ($Mode -eq 'Prepare') {
     $sourceRoot = Join-Path $PSScriptRoot '..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment'
     $guestArchive = Join-Path $runRoot 'guest-runtime\product.zip'
     $null = New-Item -ItemType Directory -Path (Split-Path $guestArchive)
-    Copy-Item -LiteralPath (Join-Path $bundle.Root 'runtime.zip') -Destination $guestArchive
-    Assert-MwbCiHash $guestArchive $bundle.Manifest.Runtime.Sha256
-    Protect-MwbCiPayloadTree (Split-Path $guestArchive)
     $hostProductRoot = Join-Path $runRoot 'host-product'
-    Expand-MwbCiRuntime -Archive $guestArchive -Destination $hostProductRoot -Files $bundle.Manifest.Runtime.Files
+    if ($Configuration -eq 'Release') {
+        if (-not $CertificateMarkerPath) { throw 'Release MWB preparation requires the owned signing-certificate cleanup marker.' }
+        $prepared = New-MwbCiSignedRuntime $bundle $hostProductRoot $guestArchive $CertificateMarkerPath $RunId
+        $runtimeManifest = $prepared.RuntimeManifest
+        $runtimeFiles = $prepared.Files
+    }
+    else {
+        Copy-Item -LiteralPath (Join-Path $bundle.Root 'runtime.zip') -Destination $guestArchive
+        Assert-MwbCiHash $guestArchive $bundle.Manifest.Runtime.Sha256
+        Expand-MwbCiRuntime -Archive $guestArchive -Destination $hostProductRoot -Files $bundle.Manifest.Runtime.Files
+        $runtimeManifest = Get-Content -LiteralPath (Join-Path $bundle.Root 'runtime.zip.manifest.json') -Raw | ConvertFrom-Json
+        $runtimeFiles = @($bundle.Manifest.Runtime.Files)
+    }
+    Protect-MwbCiPayloadTree (Split-Path $guestArchive)
     Protect-MwbCiPayloadTree $hostProductRoot
     Assert-MwbProtectedDirectory $hostProductRoot
     $previewPath = ''
@@ -278,12 +285,16 @@ if ($Mode -eq 'Prepare') {
         Protect-MwbCiPayloadTree $previewRoot
         $previewPath = Join-Path $previewRoot 'winapp.exe'
     }
-    Copy-Item -LiteralPath (Join-Path $bundle.Root 'manifest.json') -Destination (Join-Path $runRoot 'payload-manifest.json')
-    Copy-Item -LiteralPath (Join-Path $bundle.Root 'runtime.zip.manifest.json') -Destination (Join-Path $runRoot 'runtime-manifest.json')
-    Assert-MwbCiHash (Join-Path $runRoot 'payload-manifest.json') $bundle.ManifestSha256
-    Assert-MwbCiHash (Join-Path $runRoot 'runtime-manifest.json') $bundle.Manifest.Runtime.ManifestSha256
+    $runtimeManifestPath = Join-Path $runRoot 'runtime-manifest.json'
+    $runtimeManifest | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $runtimeManifestPath
+    $payloadManifest = $bundle.Manifest | ConvertTo-Json -Depth 16 | ConvertFrom-Json
+    $payloadManifest.Runtime.Sha256 = $runtimeManifest.Sha256
+    $payloadManifest.Runtime.Files = @($runtimeFiles)
+    $payloadManifest.Runtime.ManifestSha256 = (Get-FileHash -LiteralPath $runtimeManifestPath -Algorithm SHA256).Hash
+    $payloadManifest | Add-Member -NotePropertyName InputBundleManifestSha256 -NotePropertyValue $bundle.ManifestSha256
+    $payloadManifest | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath (Join-Path $runRoot 'payload-manifest.json')
     $hashes = @{}
-    foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1', 'Invoke-MwbProvisioning.ps1')) {
+    foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1', 'MwbTestSigning.ps1', 'Invoke-MwbProvisioning.ps1')) {
         $source = if ($name -ceq 'Invoke-MwbProvisioning.ps1') {
             Join-Path $PSScriptRoot $name
         } else {
@@ -297,17 +308,22 @@ if ($Mode -eq 'Prepare') {
         }
         $hashes[$name] = $hash
     }
-    $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ProductRoot "{1}" -TestUser "{2}" -RunId "{3}" -GuestArchivePath "{4}"' -f
-        $setupPath, $hostProductRoot, $interactiveUser, $RunId, $guestArchive
+    $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ProductRoot "{1}" -TestUser "{2}" -RunId "{3}" -GuestArchivePath "{4}" -Configuration {5}' -f
+        $setupPath, $hostProductRoot, $interactiveUser, $RunId, $guestArchive, $Configuration
     $arguments += ' -SandboxBackend "{0}"' -f $backend
     if ($previewPath) { $arguments += ' -SandboxWinAppPath "{0}"' -f $previewPath }
+    $certificate = @($runtimeFiles | Where-Object Path -CEQ 'mwb-test-signer.cer')
+    if ($certificate.Count) { $arguments += ' -ExpectedTestSigningCertificateSha256 {0}' -f $certificate[0].Sha256 }
     @{
         RunId = $RunId.ToString()
         ProductRoot = $hostProductRoot
         HostProductRoot = $hostProductRoot
-        SourceProductRoot = $payload.ProductRoot
+        SourceArtifactRoot = $payload.ArtifactRoot
         SourceRevision = $SourceRevision
+        Configuration = $Configuration
         BundleManifestSha256 = $bundle.ManifestSha256
+        RuntimeFiles = @($runtimeFiles)
+        GuestArchiveSha256 = $runtimeManifest.Sha256
         SandboxBackend = $backend
         SandboxWinAppPath = $previewPath
         TestExecutable = $payload.TestExecutable
@@ -334,7 +350,8 @@ if ($Mode -eq 'Prepare') {
             catch [ArgumentException] {
                 # The provisioner writes its small marker in place; retry an incomplete write.
             }
-            if ($null -eq $current -or ($current.RunId -cne $RunId.ToString() -and $current.Status -eq 'Removed')) {
+            if ($null -eq $current -or ($current.RunId -cne $RunId.ToString() -and $current.Status -eq 'Removed') -or
+                ($current.RunId -ceq $RunId.ToString() -and $current.Status -eq 'PreparingTrust')) {
                 Start-Sleep -Seconds 1
                 continue
             }
@@ -373,22 +390,26 @@ $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 if ($manifest.RunId -cne $RunId.ToString()) {
     throw 'The protected CI manifest belongs to a different run.'
 }
+if ($manifest.Configuration -cne $Configuration) {
+    throw 'The protected MWB payload configuration changed after preparation.'
+}
 
 if ($Mode -eq 'Run') {
     $architecture = Get-MwbCiArchitecture $Platform
-    $payload = Get-MwbSandboxPayload $ArtifactRoot -Architecture $architecture
-    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision -Platform $architecture
-    if ($payload.ProductRoot -ine $manifest.SourceProductRoot -or $payload.TestExecutable -ine $manifest.TestExecutable -or
+    $payload = Get-MwbSandboxPayload $ArtifactRoot -Architecture $architecture -Configuration $Configuration
+    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision -Platform $architecture -Configuration $Configuration
+    if ($payload.ArtifactRoot -ine $manifest.SourceArtifactRoot -or $payload.TestExecutable -ine $manifest.TestExecutable -or
         $manifest.SourceRevision -ine $SourceRevision -or $bundle.ManifestSha256 -ine $manifest.BundleManifestSha256 -or
         $manifest.HostProductRoot -ine (Join-Path $runRoot 'host-product') -or $manifest.ProductRoot -ine $manifest.HostProductRoot) {
         throw 'The staged MWB test or product root changed after preparation.'
     }
     Assert-MwbProtectedDirectory $manifest.HostProductRoot
-    foreach ($entry in $bundle.Manifest.Runtime.Files) {
+    foreach ($entry in $manifest.RuntimeFiles) {
         $path = Get-MwbCiRelativePath $manifest.HostProductRoot $entry.Path
         Assert-MwbProtectedDirectory $path
         Assert-MwbCiHash $path $entry.Sha256
     }
+    Assert-MwbCiHash (Join-Path $runRoot 'guest-runtime\product.zip') $manifest.GuestArchiveSha256
     $marker = Read-MwbProvisioningMarker $manifest.HostProductRoot $manifest.TestUserSid
     if ($marker.SandboxBackend -cne $manifest.SandboxBackend -or
         $marker.SandboxWinAppPath -ine $manifest.SandboxWinAppPath) {

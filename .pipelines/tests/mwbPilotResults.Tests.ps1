@@ -85,13 +85,42 @@ Describe 'MWB full-suite results gate' {
         ($source.IndexOf('$testExitCode = $LASTEXITCODE') -lt $source.IndexOf('$counts = Assert-MwbPilotTestResults')) | Should Be $true
     }
 
-    It 'limits the opt-in pipeline to the validated x64 Debug matrix' {
+    It 'enables MWB by default without restricting callers to an explicit standalone suite' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-automation.yml') -Raw
-        $source | Should Match "eq\(length\(parameters.buildPlatforms\), 1\), containsValue\(parameters.buildPlatforms, 'x64'\)"
-        $source | Should Not Match "containsValue\(parameters.buildPlatforms, 'arm64'\)"
-        $source | Should Match 'name: mwbSandboxExperiment\r?\n    type: boolean\r?\n    default: false'
+        $source | Should Match 'name: mwbSandboxExperiment\r?\n    type: boolean\r?\n    default: true'
+        $source | Should Match 'mwbSandboxExperiment: \$\{\{ parameters.mwbSandboxExperiment \}\}'
         $source | Should Match "eq\(parameters.buildSource, 'buildNow'\)"
-        $source | Should Match 'ARM64 and Release/installed builds are not supported'
+        $source | Should Not Match 'Debug|exactly uiTestModules|InvalidMwbSandboxSelection'
+    }
+
+    It 'records ARM64 as skipped without skipping its other module builds or suites' {
+        $selection = Get-MwbUiTestSelection -Platform arm64 -BuildSource buildNow -Modules @(
+            'MouseWithoutBorders.UITests', 'ColorPicker.UITests')
+        $selection.Run | Should Be $false
+        $selection.RunGeneric | Should Be $true
+        $selection.Reason | Should Be 'Arm64SandboxImageUnavailable'
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-full-build.yml') -Raw
+        $source | Should Match 'stage: Build_\$\{\{ parameters.platform \}\}'
+        $source | Should Match 'stage: Test_\$\{\{ parameters.platform \}\}_FullBuild'
+        $source | Should Not Match 'SkipMwbSandbox_arm64'
+    }
+
+    It 'keeps an explicit pilot opt-out skipped instead of failing selection' {
+        $selection = Get-MwbUiTestSelection -Enabled $false -Platform x64Win11 -BuildSource buildNow `
+            -Modules @('MouseWithoutBorders.UITests', 'ColorPicker.UITests')
+        $selection.Run | Should Be $false
+        $selection.RunGeneric | Should Be $true
+        $selection.Blocked | Should Be $false
+        $selection.Reason | Should Be 'ExplicitlyDisabled'
+    }
+
+    It 'uses one Release artifact for mixed-platform and mixed-module selections' {
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-automation.yml') -Raw
+        $source | Should Match 'each platform in parameters.buildPlatforms'
+        $source | Should Match 'uiTestModules: \$\{\{ parameters.uiTestModules \}\}'
+        $fullBuild = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-full-build.yml') -Raw
+        $fullBuild | Should Match 'buildConfigurations: \[Release\]'
+        $fullBuild | Should Not Match 'Debug|buildInstallers: false'
     }
 
     It 'requires all recovery methods and the stale-journal guard as well as the ordered smoke' {

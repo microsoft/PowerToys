@@ -90,6 +90,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public void CaptureDesktop(string path) { Invoke(delegate { receiver.CaptureDesktop(path); return true; }); }
 
+        public void CaptureFailureDesktop(string path) { Receiver.CaptureFailureDesktop(path); }
+
         public void Close()
         {
             if (thread.IsAlive && receiver != null && !receiver.IsDisposed)
@@ -295,6 +297,22 @@ namespace Microsoft.MouseWithoutBorders.UITests
             using (Bitmap bitmap = new Bitmap(Width, Height))
             {
                 DrawToBitmap(bitmap, new Rectangle(0, 0, Width, Height));
+                bitmap.Save(path, System.Drawing.Imaging.ImageFormat.Png);
+            }
+        }
+
+        public static void CaptureFailureDesktop(string path)
+        {
+            if (!NativeSupport.Desktop().Ready)
+            {
+                throw new InvalidOperationException("Failure capture requires the active test desktop.");
+            }
+            Rectangle bounds = SystemInformation.VirtualScreen;
+            using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
+            using (Graphics graphics = Graphics.FromImage(bitmap))
+            {
+                // Private failure media, like the existing recording, may show disposable pairing keys.
+                graphics.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size, CopyPixelOperation.SourceCopy);
                 bitmap.Save(path, System.Drawing.Imaging.ImageFormat.Png);
             }
         }

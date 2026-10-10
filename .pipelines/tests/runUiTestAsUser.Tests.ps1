@@ -591,8 +591,10 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         param($Modules, $AllModules, $Expected)
 
         $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $selection = [regex]::Match($template, '(?m)^\s*\$requiresAuthenticatedSettingsIpc = [^\r\n]+').Value
-        $selection | Should Not BeNullOrEmpty
+        $start = $template.IndexOf('      $newPlusModules = @(')
+        $end = $template.IndexOf('      $requiredPackages = @()', $start)
+        ($start -ge 0 -and $end -gt $start) | Should Be $true
+        $selection = $template.Substring($start, $end - $start).Replace('$(TestPlatform)', 'x64Win11')
         $selectedModules = $Modules
         $allModules = $AllModules
         . ([scriptblock]::Create($selection))

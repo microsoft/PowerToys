@@ -15,6 +15,8 @@ param(
     [Parameter(Mandatory = $true)][string]$ProductRoot,
     [Parameter(Mandatory = $true)][string]$TestUser,
     [Parameter(Mandatory = $true)][string]$GuestArchivePath,
+    [ValidateSet('Debug', 'Release')][string]$Configuration = 'Release',
+    [ValidatePattern('^[0-9a-fA-F]{64}$')][string]$ExpectedTestSigningCertificateSha256,
     [ValidateSet('Legacy', 'WinApp')][string]$SandboxBackend = 'Legacy',
     [string]$SandboxWinAppPath,
     [string]$InterfaceAlias = 'vEthernet (Default Switch)',
@@ -25,6 +27,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
+. "$PSScriptRoot\MwbTestSigning.ps1"
 $preparationWatch = [Diagnostics.Stopwatch]::StartNew()
 function Write-ProvisioningPhase {
     param([string]$Phase)
@@ -122,10 +125,25 @@ if ($conflicting.Count) {
 
 $ruleName = "PowerToys.Mwb.UITest.$RunId"
 Write-ProvisioningPhase 'Fingerprinting payload'
+$testSigningTrust = $null
+$testCertificatePath = Join-Path $product 'mwb-test-signer.cer'
+if (Test-Path -LiteralPath $testCertificatePath) {
+    if (-not $ExpectedTestSigningCertificateSha256 -or
+        ((Get-Item -LiteralPath $testCertificatePath).Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+        (Get-FileHash -LiteralPath $testCertificatePath -Algorithm SHA256).Hash -ine $ExpectedTestSigningCertificateSha256) {
+        throw 'The public signing certificate does not match the approved staged archive.'
+    }
+    $testSigningTrust = Get-MwbTestSigningTrust $testCertificatePath
+}
+elseif ($ExpectedTestSigningCertificateSha256) {
+    throw 'The approved MWB public signing certificate is missing from the staged product.'
+}
 $state = [ordered]@{
     FormatVersion = 1
     RunId = $RunId.ToString()
     ProductRoot = $product
+    Configuration = $Configuration
+    TestSigningTrust = $testSigningTrust
     Executable = $executable
     ExecutableSha256 = (Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash
     LibrarySha256 = (Get-FileHash -LiteralPath $library -Algorithm SHA256).Hash
@@ -147,7 +165,7 @@ $state = [ordered]@{
     ProvisionerStartTimeUtc = (Get-Process -Id $PID).StartTime.ToUniversalTime().ToString('o')
     ProvisionerExecutable = (Get-Process -Id $PID).Path
     PreparedUtc = [DateTime]::UtcNow.ToString('o')
-    Status = 'WaitingForSandbox'
+    Status = $(if ($Configuration -eq 'Release') { 'PreparingTrust' } else { 'WaitingForSandbox' })
 }
 # Complete the potentially slow hashes before creating a directory that requires
 # an ownership marker for recovery.
@@ -165,6 +183,17 @@ Set-Acl -LiteralPath $stateDirectory -AclObject $acl
 [IO.File]::WriteAllText($marker, ($state | ConvertTo-Json -Depth 5), [Text.UTF8Encoding]::new($false))
 Write-ProvisioningPhase 'Waiting for Sandbox network'
 try {
+    if ($null -ne $testSigningTrust) {
+        Write-ProvisioningPhase 'Importing owned public test trust'
+        Install-MwbTestSigningTrust $testSigningTrust
+    }
+    if ($Configuration -eq 'Release') {
+        $null = Assert-MwbEndpointSignatures $product $(if ($null -ne $testSigningTrust) {
+            Get-MwbTestSigningCertificate $testCertificatePath
+        } else { $null })
+        $state.Status = 'WaitingForSandbox'
+        [IO.File]::WriteAllText($marker, ($state | ConvertTo-Json -Depth 5), [Text.UTF8Encoding]::new($false))
+    }
     $deadline = [DateTime]::UtcNow.AddSeconds($NetworkTimeoutSeconds)
     do {
         $addresses = @(Get-NetIPAddress -AddressFamily IPv4 | Where-Object {

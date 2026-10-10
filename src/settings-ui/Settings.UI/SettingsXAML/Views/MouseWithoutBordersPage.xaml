@@ -62,6 +62,7 @@
                                         Width="248" />
                                     <Button
                                         x:Uid="MouseWithoutBorders_Connect"
+                                        AutomationProperties.AutomationId="MouseWithoutBordersConnectButton"
                                         Command="{x:Bind ConnectCommand, Mode=OneTime}"
                                         Style="{StaticResource AccentButtonStyle}" />
                                 </StackPanel>
@@ -263,7 +264,10 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}"
                         IsEnabled="{x:Bind ViewModel.CardForShareClipboardSettingIsEnabled, Mode=OneWay}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="MouseWithoutBorders_ShareClipboard_ToggleSwitch" IsOn="{x:Bind ViewModel.ShareClipboard, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="MouseWithoutBorders_ShareClipboard_ToggleSwitch"
+                            AutomationProperties.AutomationId="MouseWithoutBordersShareClipboardToggle"
+                            IsOn="{x:Bind ViewModel.ShareClipboard, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="MouseWithoutBordersTransferFile"

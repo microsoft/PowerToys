@@ -25,6 +25,13 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public int SessionId { get; set; }
 
+        public uint ActiveConsoleSessionId { get; set; }
+
+        public bool IsConsoleSession
+        {
+            get { return SessionId >= 0 && (uint)SessionId == ActiveConsoleSessionId; }
+        }
+
         public int WtsState { get; set; }
 
         public string InputDesktop { get; set; }
@@ -268,6 +275,9 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         [DllImport("kernel32.dll")]
         private static extern bool CloseHandle(IntPtr handle);
+
+        [DllImport("kernel32.dll")]
+        private static extern uint WTSGetActiveConsoleSessionId();
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
@@ -709,6 +719,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 return new DesktopState
                 {
                     SessionId = session,
+                    ActiveConsoleSessionId = WTSGetActiveConsoleSessionId(),
                     WtsState = state,
                     InputDesktop = name.ToString(),
                     InputAvailable = GetCursorPos(out point),

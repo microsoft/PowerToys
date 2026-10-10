@@ -25,7 +25,7 @@ parameters:
     default: false
   - name: buildSource
     type: string
-    default: "latestMainOfficialBuild"
+    default: "buildNowSlim"
     displayName: "Build Source"
     values:
       - latestMainOfficialBuild
@@ -41,49 +41,28 @@ parameters:
     default: []
   - name: mwbSandboxExperiment
     type: boolean
-    default: false
-    displayName: "Opt in to the x64 Debug Mouse Without Borders Sandbox pilot"
+    default: true
+    displayName: "Run Mouse Without Borders Sandbox tests with the shared Release build (ARM64 skipped)"
 
 stages:
-  # Keep the pilot within its validated x64 Debug matrix. Other modules retain their
-  # ordinary x64/arm64 selection, and ARM64 payload compilation remains independently available.
-  - ${{ if or(and(eq(parameters.mwbSandboxExperiment, false), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests')), and(eq(parameters.mwbSandboxExperiment, true), not(and(eq(parameters.buildSource, 'buildNow'), eq(length(parameters.buildPlatforms), 1), containsValue(parameters.buildPlatforms, 'x64'), eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'), eq(parameters.useLatestWebView2, false))))) }}:
-    - stage: InvalidMwbSandboxSelection
-      displayName: Reject unsupported MWB Sandbox selection
-      jobs:
-        - job: ValidateSelection
-          displayName: Validate MWB Sandbox opt-in
-          pool:
-            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
-              name: SHINE-INT-L
-            ${{ else }}:
-              name: SHINE-OSS-L
-            demands: ImageOverride -equals SHINE-VS18-Latest
-          steps:
-            - checkout: none
-            - pwsh: |
-                throw 'MouseWithoutBorders.UITests requires mwbSandboxExperiment=true, buildSource=buildNow, exactly buildPlatforms=[x64], exactly uiTestModules=[MouseWithoutBorders.UITests], and useLatestWebView2=false. ARM64 and Release/installed builds are not supported by this pilot.'
-              displayName: Fail before building or mutating a test host
+  - ${{ each platform in parameters.buildPlatforms }}:
+    - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
+      - template: pipeline-ui-tests-full-build.yml
+        parameters:
+          platform: ${{ platform }}
+          buildSource: ${{ parameters.buildSource }}
+          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+          useVSPreview: ${{ parameters.useVSPreview }}
+          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+          uiTestModules: ${{ parameters.uiTestModules }}
+          mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
 
-  - ${{ else }}:
-    - ${{ each platform in parameters.buildPlatforms }}:
-      # buildNow runs the full artifact in place; buildNowSlim installs from that same build.
-      - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
-        - template: pipeline-ui-tests-full-build.yml
-          parameters:
-            platform: ${{ platform }}
-            buildSource: ${{ parameters.buildSource }}
-            enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
-            useVSPreview: ${{ parameters.useVSPreview }}
-            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-            uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
-
-      - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
-        - template: pipeline-ui-tests-official-build.yml
-          parameters:
-            platform: ${{ platform }}
-            buildSource: ${{ parameters.buildSource }}
-            specificBuildId: ${{ parameters.specificBuildId }}
-            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-            uiTestModules: ${{ parameters.uiTestModules }}
+    - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
+      - template: pipeline-ui-tests-official-build.yml
+        parameters:
+          platform: ${{ platform }}
+          buildSource: ${{ parameters.buildSource }}
+          specificBuildId: ${{ parameters.specificBuildId }}
+          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+          uiTestModules: ${{ parameters.uiTestModules }}
+          mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}

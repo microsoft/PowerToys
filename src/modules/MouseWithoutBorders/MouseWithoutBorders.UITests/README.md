@@ -1,13 +1,25 @@
-# Autonomous MWB nested-Sandbox Debug pilot
+# Autonomous MWB nested-Sandbox user-desktop pilot
 
 ## Supported operating contract
 
-This is a **default-off, dedicated-VM, x64 Debug pilot**, not complete MWB module
-or physical-device sign-off. CI selects exactly
-`mwbSandboxExperiment=true`, `buildSource=buildNow`,
-`buildPlatforms=[x64]`, `uiTestModules=[MouseWithoutBorders.UITests]`,
-and `useLatestWebView2=false`. The selection expands to fresh Win10 and Win11
-jobs; invalid or unvalidated selections fail before host mutation.
+This is a **default-enabled, dedicated-VM, x64 user-desktop pilot using the shared
+Release artifact**, not complete MWB module or physical-device sign-off.
+`mwbSandboxExperiment` defaults to `true`. Current-source `buildNow` and
+`buildNowSlim` flows support all modules (`uiTestModules=[]`), explicit MWB,
+mixed-module lists and affected-module selection. Ordinary suites run through
+their existing dispatcher; MWB runs once through its separate two-endpoint flow.
+There is no second Debug product build or Debug fallback.
+The automation entry point defaults to `buildNowSlim` so its default all-module
+invocation uses a single current-source Release build and its installer, rather
+than an older official build that predates the hidden property.
+
+ARM64 skips **only MWB**, because that CI image does not have Sandbox enabled;
+other ARM64 builds and selected suites remain normal. Selection and the reason
+`Arm64SandboxImageUnavailable` are published in `mwb-selection-<job>`.
+`mwbSandboxExperiment=false` likewise disables only MWB, not other suites.
+Older official/installed sources without this revision's runtime-bundle contract
+remain an explicit provenance blocker, reported separately after ordinary suites;
+they are not substituted with another product version.
 Run the **entire test executable without a filter** for sign-off. The pipeline
 requires the current job's TRX to contain all required cases, with every test
 executed and passed. A green ordered smoke alone, an empty report, or a skipped
@@ -17,14 +29,42 @@ infrastructure case is not full-suite evidence.
 |---|---|
 | Windows 10 x64 | Legacy Sandbox backend; locally demonstrated on build 19045.6456 |
 | Windows 11 x64 | 24H2+ modern backend; locally demonstrated on build 26200.9457 |
-| Retained local resource profiles | Win10: four vCPUs/24 GB static RAM; Win11: four vCPUs/8 GB static RAM; nested virtualization enabled |
+| Current local stability profiles | Win10 and Win11: eight vCPUs/16 GB static RAM; nested virtualization enabled; constrained runs deferred until stable |
 | Modern client | `MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy`, healthy and registered to the actual interactive test user; demonstrated version 0.8.107.0 |
 | UI/Sandbox CLI | Unmodified official winappcli v0.7.0; release and native-closure hashes checked using the shared repository pin |
 | Execution identity | Unlocked English standard-user Default desktop on L1, no pre-existing PowerToys or Sandbox; run-owned guest desktop, not service mode |
-| Payload | Same coherent self-contained Debug runtime for both endpoints; private ReadyToRun compilation does not change IL/MVID or bypass product checks |
+| Payload | Same coherent self-contained Release runtime for both endpoints; private ReadyToRun compilation preserves configuration, IL/MVID and matching assembly copies |
 | Privileged boundary | Separate protected setup/cleanup; no feature enablement, reboot, GPO edit, or test-side elevation |
 
-Debug native binaries using the hybrid CRT import **`ucrtbased.dll`**, which is
+Release Runner eagerly loads every module interface before applying the enabled
+map. The archive derives that native DLL list from the current Runner source and
+includes its import closure, even though only MWB is enabled. Missing libraries
+fail packaging/provenance validation; native error dialogs are never dismissed
+or suppressed by the test. Historical Debug-only lean archives are not valid
+Release payloads.
+
+The disposable baseline explicitly sets the hidden JSON property
+`properties.AllowNonConsoleSessions.value=true` before Runner startup.
+The product default remains **false**, missing values remain false, and there
+is no Settings UI/configure-CLI control. Restart MWB after changing it. The suite
+does not inject `POWERTOYS_MWB_ALLOW_NONCONSOLE`; environment-only opt-in remains
+Debug-only. Service/System/secure-desktop and active/unlocked input checks are
+unchanged. Desktop evidence includes the active-console ID, so an active user
+desktop is not mistaken for proof of console-session identity.
+
+Release preserves native Runner/Settings and managed MWB/Settings authentication.
+The test stage extracts a private copy of the verified build bundle, reuses
+`signSparsePackages.ps1` with a run-specific disposable certificate, and signs
+Runner, Settings, MWB, helper and Quick Access as one cohort. Only executable
+signatures may change; managed files and the original artifact remain unchanged.
+That signed archive is used by **both** endpoints. Its public `.cer` is
+fingerprinted; private keys never enter a payload. Protected host provisioning
+and the disposable elevated guest import public trust before product startup.
+Both endpoints record valid signatures and matching signer/version identities.
+Host cleanup removes only newly added trust; the normal certificate-marker
+cleanup removes the test-stage key/trust in `always()`.
+
+The historical Debug pilot's hybrid CRT imports **`ucrtbased.dll`**, which is
 not an inbox dependency on a fresh Sandbox. CI takes this sidecar from the
 installed Windows SDK version pinned by `Cpp.Build.props`, verifies its native
 architecture and Microsoft signature, and fingerprints/copies it only into the
@@ -35,7 +75,10 @@ This SDK debug dependency is internal test payload, not a Release/installer
 redistribution.
 
 The one-vCPU/4-GB generic `Constrained` profile is **not signed off for nested
-Sandbox**. The resource profiles above are the demonstrated pilot baselines,
+Sandbox**. The earlier Debug results used Win10 four vCPUs/24 GB and Win11
+four vCPUs/8 GB; those historical profiles remain part of their evidence.
+The user-selected eight-vCPU/16-GB profiles are the current Release stability
+baseline, not a retroactive change to those results. Resource profiles are
 not measurements establishing the smallest possible configuration. Do not
 silently reduce resources or claim a smaller profile passed. Fresh CI images
 provide the clean-profile evidence; retained local VMs provide iteration and
@@ -89,6 +132,48 @@ operation past the enclosing hard deadline.
    leftovers. Do not restore an old generic `provisioned-baseline` that predates
    nested setup or credential servicing.
 
+### Live-failure diagnostics
+
+`ui-command-timings.json` records every CLI call, including exit-zero results:
+fixed control kind, request sequence, native target HWND, stdout/stderr byte
+counts, JSON parse status, allowlisted response-property names and window/root/
+match counts. It includes Settings CPU, thread, memory, HWND and responding state
+before and after the call. Settings-query status is independent of desktop-turn
+coordination status: an absent Legacy coordination file does not imply Settings
+was unavailable. Arguments, values, raw stderr, selectors and UI trees are not
+included in these diagnostics.
+
+`clipboard-transfer-HostToGuest.json` and `clipboard-transfer-GuestToHost.json`
+record each positive transfer's direction, observation count, UTC/Stopwatch
+timing and final match verdict. The existing 15-second deadline and digest
+assertion are unchanged; neither payloads nor clipboard digests are included.
+Pre-teardown `clipboard-diagnostic.json` records typed sharing/session flags,
+owned MWB/helper process CPU, priority and window counts, and at most 32 current-run
+helper event classifications. Raw event descriptions, clipboard contents, paths
+and pairing keys are never exported. Query failures and an exhausted event cap
+remain explicit; a successful query with no events does not prove helper readiness.
+
+`failure-context.json` and private `failure-desktop.png` are captured at the
+worker's failure boundary, before response publication or peer teardown. The
+image captures the composed active test desktop, not only the receiver control;
+capture does not focus a window, read the clipboard or attach another UIA client.
+Capture/publication failure is reported separately and does not replace the
+original error. These images have the same internal-only access restrictions as
+the existing recordings and may show disposable pairing keys.
+
+Phase and command records retain both UTC wall duration and Stopwatch duration.
+The local controller also writes `ProvisioningResults\<run-id>-clock.json` with
+an allowlisted host sleep/wake inventory and overlap with that invocation.
+Query failure is distinct from a confirmed empty inventory. Do not classify a
+long pause as product latency or extend a deadline to hide it: the October 8
+`guest_login_timeout` run overlapped host suspend from 05:28:26 to 14:24:19 UTC.
+The later unsuspended Win10 reproduction isolated a different boundary: during
+`MwbNavigation`, the same Settings PID/HWND changed from responding to
+unresponsive, used about 83 CPU seconds over an 83-second call, and still showed
+Home in the pre-cleanup image. Connect had not been submitted. An exit-zero
+navigation action or a visible window must therefore not be treated as proof
+that the MWB page finished loading; the underlying UI stall remains unresolved.
+
 **Artifact access/retention:** full recordings are internal, access-controlled
 diagnostics and may display disposable pairing keys. Keep them in the existing
 Azure Test/pipeline artifact store under its build-retention policy, or the
@@ -100,10 +185,15 @@ backups, original clipboard content, raw process dumps or Sandbox command lines.
 Public summaries may contain verdicts, timings, source SHAs and internal build
 links, not raw internal evidence.
 
-Release/installed builds, ARM64 live execution, service/secure-desktop behavior,
+Installed-path/service/firewall/upgrade behavior, ARM64 live execution, secure-desktop behavior,
 physical two-PC networking and the remainder of the manual module checklist are
 **outside this pilot's sign-off**. ARM64 payload compilation is retained for
 future image work; it is not evidence of a working ARM64 Sandbox.
+
+`buildNowSlim` preserves installer-based execution for other selected modules.
+MWB uses protected lean copies of the **same build**, not the installed path;
+this does not sign off per-user/machine installer behavior or service mode.
+The recorded Debug results below are historical evidence, not Release sign-off.
 
 ### Required recovery cases
 
@@ -132,6 +222,19 @@ is not available to an interrupted real run: `Recover-Host.ps1` still reports
 worker snapshot is lost.
 
 ## Recorded evidence
+
+**Release extension is not signed off.** The shared Release/configuration,
+coherent native-module closure, private signing and default-selection changes
+remain unpublished while their local end-to-end gate is incomplete. The best
+unfiltered Release Win10 run passed 10/11 cases; subsequent focused attempts
+identified guest Settings/UIA readiness failures before Connect was submitted.
+Win11 reached matching Release endpoints and successful navigation but scoped
+inspection returned an empty tree; the final prior-art-query discriminator
+failed modern guest login/startup. Original-user recovery restored settings and
+clipboard, protected trust/firewall cleanup completed, and both owned VMs were
+stopped. The current local profiles are eight vCPUs/16 GB; no constrained run
+was used. No new Release CI was queued, and two of the six authorized attempts
+remain. The Debug results below do not close these Release gates.
 
 **Final x64 Debug pilot: the complete eleven-case suite passed on both fresh CI
 jobs in [build 159677767](https://dev.azure.com/microsoft/Dart/_build/results?buildId=159677767).**
@@ -507,9 +610,9 @@ An external privileged controller must:
 1. Prepare an active, unlocked **standard-user** L1 desktop with Sandbox enabled,
    nested virtualization, suitable Sandbox launch rights, and no existing
    PowerToys or Sandbox instance. The pilot uses English Settings labels.
-2. Stage a coherent self-contained **Debug** Runner, Settings, MWB and companion
+2. Stage a coherent self-contained **Release** Runner, Settings, MWB and companion
    helper. Root and `WinUI3Apps` settings-library hashes must match. The fixture
-   checks managed `AssemblyConfigurationAttribute`, the experiment flag, and
+   checks managed `AssemblyConfigurationAttribute` against protected configuration, and
    fingerprints the endpoint executables, libraries and runtimes. No installation,
    elevation, firewall prompt, feature enablement, or GPO change is attempted by
    the standard-user fixture.
@@ -521,6 +624,7 @@ An external privileged controller must:
    {
      "RunId": "<guid>",
      "ProductRoot": "C:\\PowerToysUiTestRun\\PowerToys",
+     "Configuration": "Release",
      "RuleName": "PowerToys.Mwb.UITest.<guid>",
      "InnerSubnet": "<discovered-inner-subnet/prefix>",
      "HostAddress": "<L1-inner-interface-address>",
@@ -535,7 +639,8 @@ An external privileged controller must:
 
    On a cold outer-VM boot, the actual Sandbox **Default Switch** does not exist
    until L2 starts. The privileged setup may initially publish
-   `Status: "WaitingForSandbox"` with empty `HostAddress`/`InnerSubnet`, then wait
+   `Status: "PreparingTrust"` while journaling/importing approved public test
+   trust, then `Status: "WaitingForSandbox"` with empty `HostAddress`/`InnerSubnet`, and wait
    independently for that Windows-created interface. It must be a bounded setup
    process, not a broker accepting commands from the test. The fixture accepts
    this marker, boots its owned Sandbox, and waits up to three additional minutes
@@ -564,7 +669,7 @@ An external privileged controller must:
 
 ```powershell
 dotnet restore .\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\MouseWithoutBorders.UITests.csproj -p:Platform=x64
-.\tools\build\build.cmd -Path .\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests -Platform x64 -Configuration Debug
+.\tools\build\build.cmd -Path .\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests -Platform x64 -Configuration Release
 ```
 
 Run only inside the prepared L1 desktop:
@@ -585,7 +690,7 @@ MSTest deletes after success (falling back to `<working-directory>\TestResults`
 when no test-run directory exists). The provisioning marker
 environment variable is optional; the path shown above is its default.
 The built executable is under
-`x64\Debug\tests\MouseWithoutBorders.UITests\net10.0-windows10.0.26100.0`.
+`x64\Release\tests\MouseWithoutBorders.UITests\net10.0-windows10.0.26100.0`.
 
 ## What the test owns
 
@@ -788,13 +893,14 @@ interactive launcher, enclosing the respective **40-/70-minute** run deadlines.
 The pipeline Run step allows **83 minutes**; Legacy's inner limits remain unchanged.
 CI publishes TRX and the public run
 directory (including `recovery-result.json`), and separately run the administrator's
-exact-rule cleanup on every outcome. Release compilation is supported; selecting
-or executing this nested Debug pilot remains behind the pipeline's default-off
-opt-in condition, not an implicit all-suite test run.
+exact-rule/public-trust cleanup on every outcome. The shared Release flow enables
+MWB for all, mixed, explicit and affected selections; ARM64 records only MWB as
+skipped before Sandbox setup because that image lacks the feature.
 
-The MWB `buildNow` pilot sets the shared build job's `buildInstallers=false`:
-it consumes the Debug product/test directory directly, so WiX/MSI/bootstrapper
-builds, installer staging and installer hashes are not needed. Other callers keep
-the default `true`, including Release `buildNow` and `buildNowSlim` runs.
+Both `buildNow` and `buildNowSlim` retain the normal Release build and installer.
+MWB's build step adds only a lean bundle to that same artifact; no second product
+configuration is built. Test-stage signing changes private executable copies,
+not published build outputs or installers. `buildNowSlim` continues to use the
+same build's installer for other selected modules.
 After pushing a pipeline fix, queue a new run from the updated branch; retrying
 an old job continues to use that run's original source revision.
