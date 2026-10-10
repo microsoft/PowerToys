@@ -15,11 +15,13 @@ public sealed class AdvancedPastePasteAsFileAction : Observable, IAdvancedPasteA
     {
         public const string PasteAsTxtFile = "paste-as-txt-file";
         public const string PasteAsPngFile = "paste-as-png-file";
+        public const string PasteAsJpgFile = "paste-as-jpg-file";
         public const string PasteAsHtmlFile = "paste-as-html-file";
     }
 
     private AdvancedPasteAdditionalAction _pasteAsTxtFile = new();
     private AdvancedPasteAdditionalAction _pasteAsPngFile = new();
+    private AdvancedPasteAdditionalAction _pasteAsJpgFile = new();
     private AdvancedPasteAdditionalAction _pasteAsHtmlFile = new();
     private bool _isShown = true;
 
@@ -44,6 +46,13 @@ public sealed class AdvancedPastePasteAsFileAction : Observable, IAdvancedPasteA
         init => Set(ref _pasteAsPngFile, value ?? new());
     }
 
+    [JsonPropertyName(PropertyNames.PasteAsJpgFile)]
+    public AdvancedPasteAdditionalAction PasteAsJpgFile
+    {
+        get => _pasteAsJpgFile;
+        init => Set(ref _pasteAsJpgFile, value ?? new());
+    }
+
     [JsonPropertyName(PropertyNames.PasteAsHtmlFile)]
     public AdvancedPasteAdditionalAction PasteAsHtmlFile
     {
@@ -52,5 +61,5 @@ public sealed class AdvancedPastePasteAsFileAction : Observable, IAdvancedPasteA
     }
 
     [JsonIgnore]
-    public IEnumerable<IAdvancedPasteAction> SubActions => [PasteAsTxtFile, PasteAsPngFile, PasteAsHtmlFile];
+    public IEnumerable<IAdvancedPasteAction> SubActions => [PasteAsTxtFile, PasteAsPngFile, PasteAsJpgFile, PasteAsHtmlFile];
 }
