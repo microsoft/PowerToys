@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -16,26 +17,29 @@ public partial class DefaultContextMenuFactory : IContextMenuFactory
 
     public List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(
         IContextItem[] items,
-        CommandItemViewModel commandItem)
+        CommandItemViewModel commandItem,
+        ItemSurface? surface)
     {
         List<IContextItemViewModel> results = [];
-        if (items is null)
-        {
-            return results;
-        }
-
-        foreach (var item in items)
+        var hasShowDetailsCommand = false;
+        foreach (var item in items ?? [])
         {
             if (item is ICommandContextItem contextItem)
             {
                 var contextItemViewModel = new CommandContextItemViewModel(contextItem, commandItem.PageContext);
                 contextItemViewModel.SlowInitializeProperties();
                 results.Add(contextItemViewModel);
+                hasShowDetailsCommand |= contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId;
             }
             else
             {
                 results.Add(new SeparatorViewModel());
             }
+        }
+
+        if (surface?.SupportsDetailsPane == true && !hasShowDetailsCommand)
+        {
+            results.Add(ContextMenuSlot.ShowDetails);
         }
 
         return results;

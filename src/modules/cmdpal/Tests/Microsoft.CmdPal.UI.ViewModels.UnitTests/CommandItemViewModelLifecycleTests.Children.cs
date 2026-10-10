@@ -262,7 +262,7 @@ public partial class CommandItemViewModelLifecycleTests
         {
             var list = new TestListItem { ReadDerivedProperty = readDerivedProperty };
             item = list;
-            return new ListItemViewModel(list, new(context), DefaultContextMenuFactory.Instance);
+            return new ListItemViewModel(list, new(context), DefaultContextMenuFactory.Instance, ItemSurface.CommandPalette);
         }
 
         var contextItem = new TestContextItem { ReadDerivedProperty = readDerivedProperty };
