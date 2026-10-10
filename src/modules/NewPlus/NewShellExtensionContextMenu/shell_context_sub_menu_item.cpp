@@ -14,7 +14,7 @@ shell_context_sub_menu_item::shell_context_sub_menu_item()
 {
 }
 
-shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke)
+shell_context_sub_menu_item::shell_context_sub_menu_item(const std::shared_ptr<const template_item> template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke)
     : template_entry(template_entry), site_of_folder(site_of_folder), mouse_position_at_time_of_invoke(mouse_position_at_invoke)
 {
 }
@@ -71,7 +71,7 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         return HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS);
     }
 
-    return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke, activity);
+    return newplus::utilities::copy_template(template_entry.get(), site_of_folder, mouse_position_at_time_of_invoke, activity);
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)
