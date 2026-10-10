@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -10,6 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -49,6 +51,43 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
 
             Loaded += (s, e) => ViewModel.OnPageLoaded();
+
+            ViewModel.ConnectionSucceeded += (s, e) =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    ConnectPCNameTextBox.Text = string.Empty;
+                    ConnectSecurityKeyTextBox.Text = string.Empty;
+                    ClearFieldError(ConnectPCNameTextBox);
+                    ClearFieldError(ConnectSecurityKeyTextBox);
+                });
+            };
+
+            ViewModel.ConnectionFailed += (s, e) =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    var target = e.Target == ConnectFailureTarget.SecurityKey ? ConnectSecurityKeyTextBox : ConnectPCNameTextBox;
+                    SetFieldError(target, e.Message);
+                });
+            };
+
+            ConnectPCNameTextBox.TextChanged += (s, e) => ClearFieldError(ConnectPCNameTextBox);
+            ConnectSecurityKeyTextBox.TextChanged += (s, e) => ClearFieldError(ConnectSecurityKeyTextBox);
+        }
+
+        private static void SetFieldError(TextBox textBox, string message)
+        {
+            textBox.BorderBrush = new SolidColorBrush(Colors.Red);
+            textBox.BorderThickness = new Thickness(2);
+            ToolTipService.SetToolTip(textBox, message);
+        }
+
+        private static void ClearFieldError(TextBox textBox)
+        {
+            textBox.ClearValue(Control.BorderBrushProperty);
+            textBox.ClearValue(Control.BorderThicknessProperty);
+            ToolTipService.SetToolTip(textBox, null);
         }
 
         private void OnConfigFileUpdate()
@@ -138,32 +177,76 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             e.AcceptedOperation = DataPackageOperation.Move;
         }
 
-        public ICommand ShowConnectFieldsCommand => new RelayCommand(ShowConnectFields);
-
         public ICommand ConnectCommand => new AsyncCommand(Connect);
 
         public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync);
 
         public ICommand CopyPCNameCommand => new RelayCommand(ViewModel.CopyMachineNameToClipboard);
 
-        public ICommand ReconnectCommand => new AsyncCommand(ViewModel.SubmitReconnectRequestAsync);
+        public ICommand CopySecurityKeyCommand => new RelayCommand(ViewModel.CopySecurityKeyToClipboard);
 
-        private void ShowConnectFields()
-        {
-            ViewModel.ConnectFieldsVisible = true;
-        }
+        public ICommand ReconnectCommand => new AsyncCommand(ViewModel.SubmitReconnectRequestAsync);
 
         private async Task Connect()
         {
-            if (ConnectPCNameTextBox.Text.Length != 0 && ConnectSecurityKeyTextBox.Text.Length != 0)
+            var emptyFields = new List<TextBox>();
+            if (ConnectSecurityKeyTextBox.Text.Length == 0)
             {
-                string pcName = ConnectPCNameTextBox.Text;
-                string securityKey = ConnectSecurityKeyTextBox.Text.Trim();
+                emptyFields.Add(ConnectSecurityKeyTextBox);
+            }
 
-                await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
+            if (ConnectPCNameTextBox.Text.Length == 0)
+            {
+                emptyFields.Add(ConnectPCNameTextBox);
+            }
 
-                ConnectPCNameTextBox.Text = string.Empty;
-                ConnectSecurityKeyTextBox.Text = string.Empty;
+            if (emptyFields.Count != 0)
+            {
+                await FlashRequiredFieldsAsync(emptyFields);
+                return;
+            }
+
+            ClearFieldError(ConnectPCNameTextBox);
+            ClearFieldError(ConnectSecurityKeyTextBox);
+
+            string pcName = ConnectPCNameTextBox.Text;
+            string securityKey = ConnectSecurityKeyTextBox.Text.Trim();
+
+            // Fields are cleared only once ViewModel confirms the connection succeeded
+            // (ConnectionSucceeded event), so a failed attempt keeps the values and
+            // surfaces an error instead of silently wiping what the user typed.
+            await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
+        }
+
+        private static async Task FlashRequiredFieldsAsync(List<TextBox> textBoxes)
+        {
+            var flashBrush = new SolidColorBrush(Colors.Red);
+            var originalBrushes = new Brush[textBoxes.Count];
+            var originalThicknesses = new Thickness[textBoxes.Count];
+
+            for (int i = 0; i < textBoxes.Count; i++)
+            {
+                originalBrushes[i] = textBoxes[i].BorderBrush;
+                originalThicknesses[i] = textBoxes[i].BorderThickness;
+            }
+
+            for (int flash = 0; flash < 3; flash++)
+            {
+                foreach (var textBox in textBoxes)
+                {
+                    textBox.BorderBrush = flashBrush;
+                    textBox.BorderThickness = new Thickness(2);
+                }
+
+                await Task.Delay(150);
+
+                for (int i = 0; i < textBoxes.Count; i++)
+                {
+                    textBoxes[i].BorderBrush = originalBrushes[i];
+                    textBoxes[i].BorderThickness = originalThicknesses[i];
+                }
+
+                await Task.Delay(150);
             }
         }
 
