@@ -31,6 +31,7 @@
       <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
