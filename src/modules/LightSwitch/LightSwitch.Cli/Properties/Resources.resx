@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Help_Text" xml:space="preserve">
+    <value>PowerToys Light Switch
+Control the running Light Switch service. Enable Light Switch in PowerToys first.
+
+Usage:
+  PowerToys.LightSwitch.CLI.exe &lt;command&gt; [options]
+
+Commands:
+  status                         Show the current themes and scheduling state.
+  light                          Apply the light theme to the configured targets.
+  dark                           Apply the dark theme to the configured targets.
+  toggle                         Toggle the configured theme targets.
+  schedule enable [--mode MODE]  Enable scheduling, optionally selecting a mode.
+  schedule disable               Disable scheduling.
+
+Schedule modes:
+  fixed-hours, sunset-to-sunrise, follow-night-light
+
+Options:
+  --json                         Write one JSON object, including errors.
+  -h, --help                     Show help without contacting the service.
+  --version                      Show the CLI version without contacting the service.
+
+JSON command output uses the service response envelope: version, success, state or error.
+JSON help/version output is local: version, success, and help or cliVersion.</value>
+    <comment>CLI help, also returned in the JSON help field. Translate headings and descriptions. Do not translate PowerToys.LightSwitch.CLI.exe, command names (status, light, dark, toggle, schedule, enable, disable), options (--mode, --json, -h, --help, --version), mode values (fixed-hours, sunset-to-sunrise, follow-night-light), or JSON keys (version, success, state, error, help, cliVersion). Keep the example syntax and line breaks.</comment>
+  </data>
+  <data name="Description_Root" xml:space="preserve">
+    <value>Control the running PowerToys Light Switch service.</value>
+  </data>
+  <data name="Description_Schedule" xml:space="preserve">
+    <value>Enable or disable scheduling.</value>
+  </data>
+  <data name="Description_Enable" xml:space="preserve">
+    <value>Enable scheduling.</value>
+  </data>
+  <data name="Description_Disable" xml:space="preserve">
+    <value>Disable scheduling.</value>
+  </data>
+  <data name="Description_Mode" xml:space="preserve">
+    <value>fixed-hours, sunset-to-sunrise, or follow-night-light</value>
+    <comment>Do not translate the literal mode values fixed-hours, sunset-to-sunrise, or follow-night-light.</comment>
+  </data>
+  <data name="Description_Status" xml:space="preserve">
+    <value>Show themes and scheduling state.</value>
+  </data>
+  <data name="Description_Light" xml:space="preserve">
+    <value>Apply the light theme.</value>
+  </data>
+  <data name="Description_Dark" xml:space="preserve">
+    <value>Apply the dark theme.</value>
+  </data>
+  <data name="Description_Toggle" xml:space="preserve">
+    <value>Toggle the configured theme targets.</value>
+  </data>
+  <data name="Description_Json" xml:space="preserve">
+    <value>Write one JSON object.</value>
+  </data>
+  <data name="Description_Help" xml:space="preserve">
+    <value>Show help.</value>
+  </data>
+  <data name="Description_Version" xml:space="preserve">
+    <value>Show the CLI version.</value>
+  </data>
+  <data name="Error_UnknownScheduleMode" xml:space="preserve">
+    <value>Unknown schedule mode. Use fixed-hours, sunset-to-sunrise, or follow-night-light.</value>
+    <comment>Do not translate the literal mode values fixed-hours, sunset-to-sunrise, or follow-night-light.</comment>
+  </data>
+  <data name="Error_CommandRequired" xml:space="preserve">
+    <value>Specify a command. The schedule command requires enable or disable.</value>
+    <comment>schedule, enable, and disable are literal command names and must not be translated.</comment>
+  </data>
+  <data name="Error_TimedOut" xml:space="preserve">
+    <value>The request timed out or was cancelled. It may already have taken effect; run status before trying again.</value>
+    <comment>status is a literal command name and must not be translated. Preserve the warning that the command may already have taken effect.</comment>
+  </data>
+  <data name="Error_UnexpectedFailure" xml:space="preserve">
+    <value>The Light Switch command could not be completed. See the Light Switch log for details.</value>
+  </data>
+  <data name="Error_RequestTooLarge" xml:space="preserve">
+    <value>The Light Switch request exceeds the protocol limits.</value>
+  </data>
+  <data name="Error_UntrustedServer" xml:space="preserve">
+    <value>The pipe is not owned by this installation's Light Switch service.</value>
+  </data>
+  <data name="Error_ServiceUnavailable" xml:space="preserve">
+    <value>Light Switch is not available. Enable it in PowerToys and try again.</value>
+  </data>
+  <data name="Error_ConnectionClosed" xml:space="preserve">
+    <value>The connection closed before a complete response arrived. The command may already have taken effect; run status before trying again.</value>
+    <comment>status is a literal command name and must not be translated. Preserve the warning that the command may already have taken effect.</comment>
+  </data>
+  <data name="Error_InvalidUtf16" xml:space="preserve">
+    <value>Light Switch returned invalid UTF-16 data.</value>
+    <comment>UTF-16 is an encoding name and must not be translated.</comment>
+  </data>
+  <data name="Error_ResponseTooLarge" xml:space="preserve">
+    <value>The Light Switch response exceeds the protocol limit.</value>
+  </data>
+  <data name="Error_InvalidResponse" xml:space="preserve">
+    <value>Light Switch returned an invalid or incompatible response.</value>
+  </data>
+  <data name="Hint_Usage" xml:space="preserve">
+    <value>Use 'PowerToys.LightSwitch.CLI.exe --help' for usage.</value>
+    <comment>Do not translate the executable name PowerToys.LightSwitch.CLI.exe or the --help option.</comment>
+  </data>
+  <data name="Text_SystemTheme" xml:space="preserve">
+    <value>System theme: {0}</value>
+    <comment>{0} is the localized theme display name. Text output only.</comment>
+  </data>
+  <data name="Text_AppsTheme" xml:space="preserve">
+    <value>Apps theme: {0}</value>
+    <comment>{0} is the localized theme display name. Text output only.</comment>
+  </data>
+  <data name="Text_ChangeSystem" xml:space="preserve">
+    <value>System theme changes: {0}</value>
+    <comment>{0} is the localized enabled or disabled display value. Text output only.</comment>
+  </data>
+  <data name="Text_ChangeApps" xml:space="preserve">
+    <value>App theme changes: {0}</value>
+    <comment>{0} is the localized enabled or disabled display value. Text output only.</comment>
+  </data>
+  <data name="Text_ScheduleMode" xml:space="preserve">
+    <value>Schedule mode: {0}</value>
+    <comment>{0} is the localized schedule mode display name. Text output only.</comment>
+  </data>
+  <data name="Text_ManualOverride" xml:space="preserve">
+    <value>Manual override: {0}</value>
+    <comment>{0} is the localized active or inactive display value. Text output only.</comment>
+  </data>
+  <data name="Value_Light" xml:space="preserve">
+    <value>light</value>
+    <comment>Theme display name for text output. This can be translated; the JSON value remains light.</comment>
+  </data>
+  <data name="Value_Dark" xml:space="preserve">
+    <value>dark</value>
+    <comment>Theme display name for text output. This can be translated; the JSON value remains dark.</comment>
+  </data>
+  <data name="Value_Unknown" xml:space="preserve">
+    <value>unknown</value>
+    <comment>Theme display name for text output when the theme could not be read. The JSON value remains unknown.</comment>
+  </data>
+  <data name="Value_Enabled" xml:space="preserve">
+    <value>enabled</value>
+    <comment>Text output only.</comment>
+  </data>
+  <data name="Value_Disabled" xml:space="preserve">
+    <value>disabled</value>
+    <comment>Text output only.</comment>
+  </data>
+  <data name="Value_Active" xml:space="preserve">
+    <value>active</value>
+    <comment>Manual override display value for text output.</comment>
+  </data>
+  <data name="Value_Inactive" xml:space="preserve">
+    <value>inactive</value>
+    <comment>Manual override display value for text output.</comment>
+  </data>
+  <data name="Value_Off" xml:space="preserve">
+    <value>Off</value>
+    <comment>Schedule mode display name for text output: scheduling is disabled. Translate naturally; the JSON value remains Off.</comment>
+  </data>
+  <data name="Value_FixedHours" xml:space="preserve">
+    <value>FixedHours</value>
+    <comment>Schedule mode display name for text output: use fixed hours. Translate naturally; the JSON value remains FixedHours.</comment>
+  </data>
+  <data name="Value_SunsetToSunrise" xml:space="preserve">
+    <value>SunsetToSunrise</value>
+    <comment>Schedule mode display name for text output: use sunset and sunrise. Translate naturally; the JSON value remains SunsetToSunrise.</comment>
+  </data>
+  <data name="Value_FollowNightLight" xml:space="preserve">
+    <value>FollowNightLight</value>
+    <comment>Schedule mode display name for text output: follow Windows Night light. Translate naturally; the JSON value remains FollowNightLight.</comment>
+  </data>
+</root>
