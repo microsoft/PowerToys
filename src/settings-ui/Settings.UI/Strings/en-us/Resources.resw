@@ -4012,19 +4012,82 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Characters</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
-    <value>Choose character sets</value>
+    <value>Character sets</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Summary_None" xml:space="preserve">
+    <value>No character sets selected</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Summary_All" xml:space="preserve">
+    <value>All</value>
+    <comment>Shown when every character set is selected</comment>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected sets</value>
+    <value>Choose which languages and symbol sets Quick Accent shows characters for</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
-    <value>All available</value>
+  <data name="QuickAccent_EditCharacterSets_Button.Content" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="QuickAccent_EditCharacterSets_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Manage character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.Title" xml:space="preserve">
+    <value>Choose character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_Search.PlaceholderText" xml:space="preserve">
+    <value>Search character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_Search.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_SelectAll.Content" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_SelectedCount" xml:space="preserve">
+    <value>{0} of {1} selected</value>
+    <comment>{0} is the number of selected character sets, {1} is the total number of character sets</comment>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_NoResults.Text" xml:space="preserve">
+    <value>No character sets found</value>
+  </data>
+  <data name="QuickAccent_NoCharacterSets.Title" xml:space="preserve">
+    <value>No character sets added</value>
+  </data>
+  <data name="QuickAccent_NoCharacterSets.Message" xml:space="preserve">
+    <value>Quick Accent won't show any accented characters until you add at least one character set.</value>
   </data>
   <data name="QuickAccent_Group_Special" xml:space="preserve">
     <value>Special sets</value>
   </data>
   <data name="QuickAccent_Group_Language" xml:space="preserve">
     <value>Language sets</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Card.Header" xml:space="preserve">
+    <value>Character reference guide</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Card.Description" xml:space="preserve">
+    <value>View characters organised by language</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_WindowTitle" xml:space="preserve">
+    <value>Character reference guide</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_CharacterButton.CopiedMessage" xml:space="preserve">
+    <value>Copied to clipboard</value>
+    <comment>Screen reader announcement after a character is copied</comment>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Search.PlaceholderText" xml:space="preserve">
+    <value>Search for a character…</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_NoResults.Text" xml:space="preserve">
+    <value>No characters found matching your search.</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_SelectedSets" xml:space="preserve">
+    <value>Selected sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Special" xml:space="preserve">
     <value>Special Characters</value>

@@ -157,6 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _groupResourceKeys[lang.Group]);
 
                 model.Language = ResourceLoaderInstance.ResourceLoader.GetString(languageResourceId);
+                model.CharacterPreview = BuildCharacterPreview(lang);
                 return model;
             }).ToList();
 
@@ -180,6 +181,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 })
                 .OfType<PowerAccentLanguageGroupModel>()
                 .ToArray();
+        }
+
+        private const int CharacterPreviewLength = 12;
+
+        /// <summary>
+        /// Builds a short, space-separated sample of the characters provided by a
+        /// character set, used as the description of its card in the Settings UI.
+        /// </summary>
+        internal static string BuildCharacterPreview(LanguageInfo language)
+        {
+            var characters = language.Characters
+                .OrderBy(kvp => kvp.Key)
+                .SelectMany(kvp => kvp.Value)
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            string preview = string.Join(' ', characters.Take(CharacterPreviewLength));
+            return characters.Count > CharacterPreviewLength ? preview + " …" : preview;
         }
 
         public bool IsEnabled
@@ -334,16 +353,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool AllSelected => _selectedLanguageOptions.Length == Languages.Count;
 
-        private PowerAccentLanguageModel[] _selectedLanguageOptions;
+        private PowerAccentLanguageModel[] _selectedLanguageOptions = [];
 
         public PowerAccentLanguageModel[] SelectedLanguageOptions
         {
             get => _selectedLanguageOptions;
             set
             {
-                _selectedLanguageOptions = value;
-                _powerAccentSettings.Properties.SelectedLang.Value = string.Join(',', _selectedLanguageOptions.Select(l => l.LanguageCode));
+                // Normalize to the canonical (sorted) order of Languages and drop duplicates.
+                var selected = new HashSet<PowerAccentLanguageModel>(value ?? []);
+                _selectedLanguageOptions = Languages.Where(selected.Contains).ToArray();
+
+                // Persist "ALL" when everything is selected so sets added in future releases are included automatically.
+                _powerAccentSettings.Properties.SelectedLang.Value = AllSelected
+                    ? "ALL"
+                    : string.Join(',', _selectedLanguageOptions.Select(l => l.LanguageCode));
+
+                OnPropertyChanged(nameof(HasSelectedLanguages));
+                OnPropertyChanged(nameof(SelectedLanguagesSummary));
                 RaisePropertyChanged(nameof(SelectedLanguageOptions));
+            }
+        }
+
+        public bool HasSelectedLanguages => _selectedLanguageOptions.Length > 0;
+
+        /// <summary>
+        /// Gets the active character sets as display text: "All" when every set is selected,
+        /// otherwise a comma-separated list of the selected set names.
+        /// </summary>
+        public string SelectedLanguagesSummary
+        {
+            get
+            {
+                var loader = ResourceLoaderInstance.ResourceLoader;
+                if (_selectedLanguageOptions.Length == 0)
+                {
+                    return loader.GetString("QuickAccent_SelectedLanguage_Summary_None");
+                }
+
+                if (AllSelected)
+                {
+                    return loader.GetString("QuickAccent_SelectedLanguage_Summary_All");
+                }
+
+                return string.Join(", ", _selectedLanguageOptions.Select(l => l.Language));
             }
         }
 
