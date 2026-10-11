@@ -5,6 +5,7 @@
 #include <WorkspacesCLI/CommandLogging.h>
 #include <fstream>
 #include <sstream>
+#include <future>
 #include <spdlog/sinks/null_sink.h>
 #include <spdlog/sinks/ostream_sink.h>
 #include <wil/resource.h>
@@ -76,6 +77,40 @@ namespace WorkspacesLibUnitTests
     TEST_CLASS (WorkspaceStoreTests)
     {
     public:
+        TEST_METHOD (AtomicReplacementWaitsForTransientReader)
+        {
+            StoreFixture fixture;
+            Assert::IsTrue(WorkspaceStore::Write(fixture.file, Data()));
+            wil::unique_handle reader(CreateFileW(fixture.file.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                                  nullptr, OPEN_EXISTING, 0, nullptr));
+            Assert::IsTrue(static_cast<bool>(reader));
+            auto writer = std::async(std::launch::async, [&] {
+                winrt::init_apartment();
+                return WorkspaceStore::UpdateLastLaunched(fixture.file, Id, 100);
+            });
+            auto release = wil::scope_exit([&] { reader.reset(); });
+            Assert::IsTrue(writer.wait_for(std::chrono::milliseconds(200)) == std::future_status::timeout);
+            reader.reset();
+            Assert::IsTrue(writer.wait_for(std::chrono::seconds(5)) == std::future_status::ready);
+            Assert::IsTrue(writer.get() == WorkspaceStore::UpdateResult::Updated);
+            Assert::AreEqual(100.0, WorkspacesCli::ReadJson(fixture.file)->GetNamedArray(L"workspaces").GetObjectAt(0).GetNamedNumber(L"last-launched-time"));
+        }
+
+        TEST_METHOD (AtomicReplacementReaderWaitIsBounded)
+        {
+            StoreFixture fixture;
+            const auto original = Data();
+            Assert::IsTrue(WorkspaceStore::Write(fixture.file, original));
+            wil::unique_handle reader(CreateFileW(fixture.file.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                                  nullptr, OPEN_EXISTING, 0, nullptr));
+            Assert::IsTrue(static_cast<bool>(reader));
+            const auto started = GetTickCount64();
+            Assert::IsTrue(WorkspaceStore::UpdateLastLaunched(fixture.file, Id, 100) == WorkspaceStore::UpdateResult::Failed);
+            Assert::IsTrue(GetTickCount64() - started >= 1800);
+            Assert::IsTrue(GetTickCount64() - started < 5000);
+            Assert::AreEqual(std::wstring(original.Stringify()), std::wstring(WorkspacesCli::ReadJson(fixture.file)->Stringify()));
+        }
+
         TEST_METHOD (OptionalLoggingFailureKeepsTheExistingLogger)
         {
             StoreFixture fixture;

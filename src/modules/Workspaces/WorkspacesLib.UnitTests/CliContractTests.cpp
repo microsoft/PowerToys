@@ -26,6 +26,31 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (SkippedAndUnavailableAreNotUacDenial)
+        {
+            WorkspacesData::WorkspacesProject project{};
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.id = L"test-app";
+            project.apps.push_back(app);
+            WorkspacesData::LaunchingAppStateMap states;
+            states.emplace(app, WorkspacesData::LaunchingAppState{ app, nullptr, LaunchingState::Skipped });
+            int exitCode{};
+            auto result = WorkspacesCli::LaunchResult(project, states, L"test", exitCode, { { app.id, ERROR_CANCELLED } }, { { app.id, LaunchDecision::Skipped } });
+            auto item = result.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0);
+            Assert::AreEqual(std::wstring(L"skipped"), std::wstring(item.GetNamedString(L"state")));
+            Assert::AreEqual(std::wstring(L"skipped"), std::wstring(item.GetNamedString(L"code")));
+            Assert::IsFalse(item.HasKey(L"nativeError"));
+            Assert::AreEqual(10, exitCode);
+            states.at(app).state = LaunchingState::Failed;
+            result = WorkspacesCli::LaunchResult(project, states, L"test", exitCode, { { app.id, ERROR_NOT_READY } }, { { app.id, LaunchDecision::UiUnavailable } });
+            item = result.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0);
+            Assert::AreEqual(std::wstring(L"confirmationRequired"), std::wstring(item.GetNamedString(L"code")));
+            states.at(app).state = LaunchingState::Canceled;
+            result = WorkspacesCli::LaunchResult(project, states, L"test", exitCode, { { app.id, ERROR_CANCELLED } }, { { app.id, LaunchDecision::Approved } });
+            item = result.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0);
+            Assert::AreEqual(std::wstring(L"consentDenied"), std::wstring(item.GetNamedString(L"code")));
+        }
+
         TEST_METHOD (PreliminaryLaunchValidationAllowsOnlyMissingIds)
         {
             auto project = Project();
@@ -198,6 +223,44 @@ namespace WorkspacesLibUnitTests
             std::filesystem::remove(file);
         }
 
+        TEST_METHOD (LaunchedWithoutArrangementConfirmationIsNotAnArrangementFailure)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            LaunchingStatus states(project);
+            states.Update(project.apps[0], LaunchingState::Launched);
+            int exitCode = 0;
+            const auto result = WorkspacesCli::LaunchResult(project, states.Get(), L"operation", exitCode);
+            const auto app = result.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0);
+            Assert::AreEqual(project.apps[0].id, std::wstring(app.GetNamedString(L"id")));
+            Assert::AreEqual(std::wstring(L"launched"), std::wstring(app.GetNamedString(L"state")));
+            Assert::AreEqual(std::wstring(L"The application launch succeeded, but window arrangement was not confirmed."),
+                             std::wstring(app.GetNamedString(L"message")));
+            Assert::IsFalse(app.HasKey(L"code"));
+            Assert::IsFalse(app.HasKey(L"nativeError"));
+            Assert::AreEqual(10, exitCode);
+            Assert::AreEqual(std::wstring(L"failed"), std::wstring(result.GetNamedString(L"state")),
+                             L"The existing aggregate result still requires confirmed arrangement.");
+        }
+
+        TEST_METHOD (MixedArrangedAndUnconfirmedApplicationsRemainPartial)
+        {
+            auto project = Project();
+            project.apps[1].id = L"{682A3A9E-D18D-4DC6-B2AF-E6ABD92F42A9}";
+            LaunchingStatus states(project);
+            states.Update(project.apps[0], LaunchingState::Launched);
+            states.Update(project.apps[1], LaunchingState::LaunchedAndMoved);
+            int exitCode = 0;
+            const auto result = WorkspacesCli::LaunchResult(project, states.Get(), L"operation", exitCode);
+            const auto apps = result.GetNamedObject(L"result").GetNamedArray(L"applications");
+            Assert::AreEqual(std::wstring(L"launched"), std::wstring(apps.GetObjectAt(0).GetNamedString(L"state")));
+            Assert::IsTrue(apps.GetObjectAt(0).HasKey(L"message"));
+            Assert::AreEqual(std::wstring(L"arranged"), std::wstring(apps.GetObjectAt(1).GetNamedString(L"state")));
+            Assert::IsFalse(apps.GetObjectAt(1).HasKey(L"message"));
+            Assert::AreEqual(std::wstring(L"partial"), std::wstring(result.GetNamedString(L"state")));
+            Assert::AreEqual(10, exitCode);
+        }
+
         TEST_METHOD (TerminalFailureIsNotSuccessfulArrangement)
         {
             auto project = Project();
@@ -212,6 +275,11 @@ namespace WorkspacesLibUnitTests
             Assert::AreEqual(1.0, result.GetNamedNumber(L"schemaVersion"));
             Assert::AreEqual(std::wstring(L"launch"), std::wstring(result.GetNamedString(L"command")));
             Assert::AreEqual(std::wstring(L"failed"), std::wstring(result.GetNamedString(L"state")));
+            Assert::AreEqual(std::wstring(L"arrangeFailed"),
+                             std::wstring(result.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0).GetNamedString(L"state")));
+            result = WorkspacesCli::LaunchResult(project, states.Get(), L"operation", exitCode, { { project.apps[0].id, ERROR_FILE_NOT_FOUND } });
+            Assert::AreEqual(std::wstring(L"launchFailed"),
+                             std::wstring(result.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0).GetNamedString(L"state")));
             states.Update(project.apps[0], LaunchingState::LaunchedAndMoved);
             result = WorkspacesCli::LaunchResult(project, states.Get(), L"operation", exitCode);
             Assert::AreEqual(0, exitCode);

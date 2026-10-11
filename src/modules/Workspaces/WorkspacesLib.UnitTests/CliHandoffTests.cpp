@@ -4,6 +4,7 @@
 #include <WorkspacesLib/CliCommands.h>
 #include <wil/resource.h>
 #include <filesystem>
+#include <common/utils/elevation.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -13,6 +14,15 @@ namespace WorkspacesLibUnitTests
     TEST_CLASS (CliHandoffTests)
     {
     public:
+        TEST_METHOD (SharedNonElevatedHelperRejectsParentBeforeCreatingChild)
+        {
+            wil::unique_process_information process;
+            Assert::IsFalse(run_non_elevated(L"must-not-start.exe", L"", process, nullptr, false, true,
+                                             [](HANDLE) { return false; }));
+            Assert::IsNull(process.hProcess);
+            Assert::IsNull(process.hThread);
+        }
+
         TEST_METHOD (CurrentProcessIdentityMatchesItself)
         {
             Assert::IsTrue(WorkspacesCli::SameUserSession(GetCurrentProcess(), GetCurrentProcess()));
@@ -65,7 +75,7 @@ namespace WorkspacesLibUnitTests
         }
 
 #ifdef _DEBUG
-        TEST_METHOD (ExplorerWorkerReceivesOnlyExpectedCapabilitiesAndDecisions)
+        TEST_METHOD (SharedHelperWorkerReceivesOnlyExpectedCapabilities)
         {
             wchar_t module[32768]{};
             Assert::IsTrue(GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), module, ARRAYSIZE(module)) > 0);
@@ -105,7 +115,7 @@ namespace WorkspacesLibUnitTests
             const auto result = json::JsonObject::Parse(winrt::to_hstring(output));
             Assert::IsTrue(result.GetNamedBoolean(L"passed"));
             const auto cases = result.GetNamedArray(L"cases");
-            Assert::AreEqual(3u, cases.Size());
+            Assert::AreEqual(2u, cases.Size());
             for (const auto& value : cases)
             {
                 const auto item = value.GetObjectW();

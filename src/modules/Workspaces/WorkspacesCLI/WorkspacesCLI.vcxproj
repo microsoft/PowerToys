@@ -31,8 +31,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ApprovalChannel.cpp" />
-    <ClCompile Include="ConsoleApproval.cpp" />
     <ClCompile Include="WorkerHandoff.cpp" />
     <ClCompile Include="..\WorkspacesLauncher\Launcher.cpp" />
     <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp" />
@@ -44,8 +42,6 @@
     <ResourceCompile Include="Generated Files\WorkspacesCLI.rc" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="CommandLogging.h" />
-    <ClInclude Include="ApprovalChannel.h" />
-    <ClInclude Include="ConsoleApproval.h" />
     <ClInclude Include="JsonOutput.h" />
     <ClInclude Include="WorkerHandoff.h" />
     <ClInclude Include="WorkerResult.h" />
@@ -58,6 +54,11 @@
     <Error Condition="!Exists('$(MSBuildProjectDirectory)\Generated Files\resource.h') Or !Exists('$(MSBuildProjectDirectory)\Generated Files\WorkspacesCLI.rc')" Text="Workspaces CLI resource generation failed." />
   </Target>
   <ItemGroup>
+    <ProjectReference Include="..\WorkspacesLauncherUI\WorkspacesLauncherUI.csproj">
+      <Project>{9c53cc25-0623-4569-95bc-b05410675ee3}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)tools\CliShim\CliShim.vcxproj">
       <Project>{8a7fb7fa-65ea-4004-ba73-1b237435a57b}</Project>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>

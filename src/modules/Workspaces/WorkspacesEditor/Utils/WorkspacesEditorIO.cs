@@ -16,6 +16,8 @@ namespace WorkspacesEditor.Utils
 {
     public class WorkspacesEditorIO
     {
+        private string _savedWorkspaceSnapshot = "{\"workspaces\":[]}";
+
         public WorkspacesEditorIO()
         {
         }
@@ -31,7 +33,8 @@ namespace WorkspacesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                WorkspacesData.WorkspacesListWrapper workspaces = parser.Read(parser.File);
+                var source = new IOUtils().ReadFile(parser.File);
+                WorkspacesData.WorkspacesListWrapper workspaces = parser.Deserialize(source);
                 if (workspaces.Workspaces == null)
                 {
                     return new ParsingResult(true);
@@ -43,6 +46,7 @@ namespace WorkspacesEditor.Utils
                     return new ParsingResult(false, WorkspacesEditor.Properties.Resources.Error_Parsing_Message);
                 }
 
+                _savedWorkspaceSnapshot = source;
                 return new ParsingResult(true);
             }
             catch (Exception e)
@@ -154,8 +158,22 @@ namespace WorkspacesEditor.Utils
             try
             {
                 IOUtils ioUtils = new();
-                ioUtils.WriteFile(useTempFile ? TempProjectData.File : serializer.File, serializer.Serialize(workspacesWrapper));
+                var saved = ioUtils.WriteFile(
+                    useTempFile ? TempProjectData.File : serializer.File,
+                    serializer.Serialize(workspacesWrapper),
+                    useTempFile ? null : _savedWorkspaceSnapshot);
+                if (!useTempFile)
+                {
+                    _savedWorkspaceSnapshot = saved;
+                }
+
                 return true;
+            }
+            catch (WorkspaceConflictException e)
+            {
+                Logger.LogError("Workspaces changed while the editor was open.", e);
+                System.Windows.MessageBox.Show(WorkspacesEditor.Properties.Resources.Error_Save_Conflict_Message);
+                return false;
             }
             catch (Exception e)
             {

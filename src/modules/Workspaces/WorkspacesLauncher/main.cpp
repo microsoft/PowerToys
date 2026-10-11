@@ -66,7 +66,8 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
             std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(cmdArgs.invokePoint) + L" " + NonLocalizable::restartedString;
 
-            RunNonElevatedEx(exe_path.get(), cmd, modulePath);
+            if (!run_non_elevated(exe_path.get(), cmd, nullptr, modulePath.c_str()))
+                return 1;
             return 1;
         }
     }

@@ -3,12 +3,11 @@
 
 #include <algorithm>
 #include <WorkspacesLib/CliCommands.h>
-#include "ApprovalChannel.h"
 
 namespace WorkspacesCli
 {
     inline json::JsonObject ReadWorkerResult(HANDLE process, HANDLE pipe, HANDLE cancel, ULONGLONG deadline,
-                                             FrontendApproval& presenter, const std::wstring& operationId, int& exitCode)
+                                             const std::wstring& operationId, int& exitCode)
     {
         std::string response;
         const auto acknowledgementDeadline = deadline + 2000;
@@ -16,18 +15,14 @@ namespace WorkspacesCli
         for (;;)
         {
             const auto now = GetTickCount64();
-            if (now >= deadline)
-                presenter.Stop();
             if (WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0)
             {
-                presenter.Stop();
                 if (!cancelDeadline)
                     cancelDeadline = (std::min)(now + 2000, acknowledgementDeadline);
             }
             // Stop interaction at the deadline, but let the worker report its acknowledged outcome.
             if (now >= acknowledgementDeadline || (cancelDeadline && now >= cancelDeadline))
                 throw Error(9, L"outcomeUnknown", "Worker did not acknowledge completion before the wait ended. Already launched applications remain open; do not retry automatically.");
-            presenter.Poll();
             DWORD available = 0;
             if (PeekNamedPipe(pipe, nullptr, 0, nullptr, &available, nullptr) && available)
             {
@@ -48,7 +43,6 @@ namespace WorkspacesCli
             }
             Sleep(20);
         }
-        presenter.Stop();
         DWORD processExit = 1;
         if (!GetExitCodeProcess(process, &processExit))
             throw Error(9, L"outcomeUnknown", "Cannot read worker exit status.");

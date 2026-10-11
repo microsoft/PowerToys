@@ -17,8 +17,6 @@ struct CliLaunchOptions
     HANDLE cancelEvent = nullptr;
     ULONGLONG deadline = 0;
     DWORD timeoutSeconds = 120;
-    std::function<LaunchDecision(const std::wstring&, const std::wstring&, const std::wstring&,
-                                const SignatureVerification::Result&)> requestApproval;
 };
 
 class Launcher

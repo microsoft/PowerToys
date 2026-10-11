@@ -4,8 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
@@ -162,6 +165,149 @@ public class WorkspaceWriteTests
         Assert.AreEqual("Edited", workspace["name"]!.GetValue<string>());
         Assert.AreEqual(100L, workspace["last-launched-time"]!.GetValue<long>());
         Assert.AreEqual(0, Directory.GetFiles(directory, "*.tmp").Length);
+    }
+
+    [TestMethod]
+    [DataRow("application-path")]
+    [DataRow("package-full-name")]
+    [DataRow("command-line-arguments")]
+    public void EditorSnapshotRejectsConcurrentApplicationChanges(string field)
+    {
+        const string original = """{"workspaces":[{"id":"workspace","name":"Original","applications":[{"id":"app","application-path":"old.exe","package-full-name":"old-package","command-line-arguments":"old"}]}]}""";
+        var current = JsonNode.Parse(original)!;
+        current["workspaces"]![0]!["applications"]![0]![field] = "new-value";
+        var latest = current.ToJsonString();
+        new IOUtils().WriteFile(file, latest);
+        var edited = JsonNode.Parse(original)!;
+        edited["workspaces"]![0]!["name"] = "Editor rename";
+        try
+        {
+            new IOUtils().WriteFile(file, edited.ToJsonString(), original);
+            Assert.Fail("Concurrent application changes must not be overwritten.");
+        }
+        catch (WorkspaceConflictException)
+        {
+            Assert.IsTrue(JsonNode.DeepEquals(current, JsonNode.Parse(File.ReadAllText(file))));
+            Assert.AreEqual(0, Directory.GetFiles(directory, "*.tmp").Length);
+        }
+    }
+
+    [TestMethod]
+    public void EditorGeneratedLegacyIdCannotOverwriteCliInitializedId()
+    {
+        const string original = """{"workspaces":[{"id":"workspace","name":"Original","applications":[{"application":"Legacy app","application-path":"app.exe"}]}]}""";
+        var edited = JsonNode.Parse(original)!;
+        edited["workspaces"]![0]!["applications"]![0]!["id"] = "editor-generated-id";
+        var current = JsonNode.Parse(original)!;
+        current["workspaces"]![0]!["applications"]![0]!["id"] = "cli-persisted-id";
+        new IOUtils().WriteFile(file, current.ToJsonString());
+        try
+        {
+            new IOUtils().WriteFile(file, edited.ToJsonString(), original);
+            Assert.Fail("The editor must not replace an ID initialized after it loaded.");
+        }
+        catch (WorkspaceConflictException)
+        {
+            Assert.AreEqual("cli-persisted-id", JsonNode.Parse(File.ReadAllText(file))!["workspaces"]![0]!["applications"]![0]!["id"]!.GetValue<string>());
+        }
+    }
+
+    [TestMethod]
+    public void EditorSnapshotAllowsHistoryUpdatesAndReturnsCommittedBaseline()
+    {
+        const string original = """{"workspaces":[{"id":"workspace","name":"Original","last-launched-time":10,"applications":[]}]}""";
+        var current = JsonNode.Parse(original)!;
+        current["workspaces"]![0]!["last-launched-time"] = 100;
+        new IOUtils().WriteFile(file, current.ToJsonString());
+        var edited = JsonNode.Parse(original)!;
+        edited["workspaces"]![0]!["name"] = "Edited";
+        var io = new IOUtils();
+        var committed = io.WriteFile(file, edited.ToJsonString(), original);
+        Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(committed), JsonNode.Parse(File.ReadAllText(file))));
+        Assert.AreEqual(100L, JsonNode.Parse(committed)!["workspaces"]![0]!["last-launched-time"]!.GetValue<long>());
+        var next = JsonNode.Parse(committed)!;
+        next["workspaces"]![0]!["name"] = "Edited again";
+        io.WriteFile(file, next.ToJsonString(), committed);
+        Assert.AreEqual("Edited again", JsonNode.Parse(File.ReadAllText(file))!["workspaces"]![0]!["name"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void EditorSnapshotDoesNotOverwriteAddedOrDeletedWorkspaces()
+    {
+        const string original = """{"workspaces":[{"id":"workspace","name":"Original","applications":[]}]}""";
+        foreach (var current in new[] { """{"workspaces":[]}""", """{"workspaces":[{"id":"new-workspace","name":"Created elsewhere","applications":[]}]}""" })
+        {
+            new IOUtils().WriteFile(file, current);
+            try
+            {
+                new IOUtils().WriteFile(file, original, original);
+                Assert.Fail("Concurrent workspace list changes must not be overwritten.");
+            }
+            catch (WorkspaceConflictException)
+            {
+                Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(current), JsonNode.Parse(File.ReadAllText(file))));
+            }
+        }
+
+        File.Delete(file);
+        try
+        {
+            new IOUtils().WriteFile(file, original, original);
+            Assert.Fail("A deleted store must not be recreated from a cached editor snapshot.");
+        }
+        catch (WorkspaceConflictException)
+        {
+            Assert.IsFalse(File.Exists(file));
+        }
+    }
+
+    [TestMethod]
+    public async Task ReplacementWaitsForTransientReaderWithoutDeleteSharing()
+    {
+        const string original = """{"workspaces":[]}""";
+        const string updated = """{"workspaces":[{"id":"new","name":"New"}]}""";
+        new IOUtils().WriteFile(file, original);
+        using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var started = new ManualResetEventSlim();
+        var writer = Task.Run(() =>
+        {
+            started.Set();
+            new IOUtils().WriteFile(file, updated);
+        });
+        try
+        {
+            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(5)));
+            var completed = await Task.WhenAny(writer, Task.Delay(200));
+            Assert.AreNotSame(writer, completed, "The writer should wait for the short-lived reader.");
+        }
+        finally
+        {
+            reader.Dispose();
+            await writer.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(updated), JsonNode.Parse(File.ReadAllText(file))));
+    }
+
+    [TestMethod]
+    public void ReplacementWaitForReaderIsBounded()
+    {
+        const string original = """{"workspaces":[]}""";
+        new IOUtils().WriteFile(file, original);
+        using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var timer = Stopwatch.StartNew();
+        try
+        {
+            new IOUtils().WriteFile(file, """{"workspaces":[{"id":"new","name":"New"}]}""");
+            Assert.Fail("A persistent sharing conflict must not be reported as saved.");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Assert.IsTrue(timer.ElapsedMilliseconds >= 1800, "The bounded replacement retry should be exercised.");
+            Assert.IsTrue(timer.ElapsedMilliseconds < 5000);
+            Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(original), JsonNode.Parse(File.ReadAllText(file))));
+            Assert.AreEqual(0, Directory.GetFiles(directory, "*.tmp").Length);
+        }
     }
 
     [TestMethod]

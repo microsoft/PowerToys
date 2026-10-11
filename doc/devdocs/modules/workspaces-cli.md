@@ -81,18 +81,25 @@ Launch results contain the workspace and operation IDs, per-application results 
 persistence status. An observed arranged state does not certify that a document/tab has loaded
 or that an application is ready for business use.
 
+Per-application `launched` preserves the native `Launched` state: the application launch succeeded,
+but window arrangement was not confirmed. A localized `message` explains this distinction.
+`arrangeFailed` is reserved for a native failed result without a recorded application-launch error;
+recorded launch errors remain `launchFailed`. `arranged` means the engine confirmed arrangement.
+The aggregate/exit-code rules are unchanged: unconfirmed arrangement is not counted as a fully
+restored workspace, even though it is not labeled an application-level arrangement failure.
+
 ## Launch behavior
 
 - Launch waits for an explicit final arranger result. There is no accepted-only/no-wait mode.
 - The default total deadline is 120 seconds; `--timeout` accepts 1 through 600.
-- At the deadline the frontend stops confirmation input and allows up to two seconds to receive
+- At the deadline the shared launcher cancels its pending confirmation and the frontend allows up to two seconds to receive
   the worker's final acknowledgement. An acknowledged timeout reports `timeout`; an absent,
   malformed or unresponsive final result reports `outcomeUnknown`. This does not extend app-launch
   or approval time, and bounded worker cleanup may take additional time.
-- Workspaces progress/editor/error windows are suppressed. Application windows and normal
-  Windows UAC remain possible.
+- Workspaces progress/editor windows are suppressed. The existing Workspaces signature confirmation
+  dialog, application windows and normal Windows UAC remain possible.
 - Both ordinary and administrator terminals use the same command. An administrator frontend
-  starts a non-elevated worker in the same user's desktop session while keeping prompts/output
+  starts a non-elevated worker in the same user's desktop session while keeping command output
   in the original terminal. Existing saved elevation flags still determine individual app/UAC
   behavior; the administrator caller does not implicitly elevate every app.
 - Existing windows follow the saved `move-existing-windows` setting. Another launch in the same
@@ -123,13 +130,15 @@ The child receives its operation handles through a bounded, read-only bootstrap 
 frontend pins the exact created PID; both sides verify the expected module image/version and
 Microsoft signature in Release. User SID/session must match, and the child must be non-elevated.
 Only a read-only snapshot, wait-only cancellation/owner-lifetime handles and the existing
-input/result/approval endpoints are duplicated. No token handle or general administrator
+input/result endpoints are duplicated. No token handle or general administrator
 process capability is handed to the worker.
 
-This uses the same Explorer-parent mechanism as the repository's `run_non_elevated` helper,
-but retains the suspended process/handles for verification and the private transfer. It does
-not use process-name discovery or replace `RunNonElevatedEx` globally. After transfer the
-ordinary worker, approval protocol, result formatting and cancellation loop are reused.
+The existing `run_non_elevated` helper owns Explorer selection, startup attributes and process
+creation. Its owning overload supports suspended creation and parent validation; the existing
+PID-only API delegates to that implementation. Both the Workspaces GUI launcher and CLI use
+this shared helper. `WorkerHandoff` only validates the resulting identity and transfers CLI
+capabilities; it no longer implements a separate process-creation path. Other users of
+`RunNonElevatedEx` retain their existing COM-based behavior.
 
 No normal same-user Explorer, a different-user administrator, wrong session, identity mismatch
 or failed transfer yields `deElevationFailed`; the CLI never falls back to elevated execution.
@@ -141,34 +150,25 @@ Workspaces' existing shared launch gate checks eligible EXE targets configured t
 administrator. This is separate from Windows UAC and from IPC peer authentication. The CLI
 does not change the signature policy or create a permanent trust list.
 
-When the shared gate requires a decision, the foreground CLI writes a warning to its stderr
-console with the application, checked path, arguments, verification reason and status:
+When a decision is required, both GUI and CLI use `Launcher::requestApproval`,
+`PendingLaunchApproval`, `LauncherUIHelper` and the existing `SignatureWarningWindow`.
+There is no independent CLI approval state machine or terminal A/S prompt.
 
-```text
-[A] Allow once  [S] Skip (default). Type A or S and press Enter:
-```
+- The CLI lazily starts the existing launcher UI in confirmation-only mode. It shows the same
+  warning dialog without opening the launch-progress window.
+- Allow is enabled only after the existing rendered acknowledgement. It authorizes only the
+  current checked target; Windows UAC may still follow.
+- Skip, Escape or closing the dialog skips the application. Ctrl+C cancels the CLI operation.
+- The launch deadline includes decision time. Cancellation/expiry dismisses the pending warning
+  and never approves it. The confirmation host exits if its owning launch worker exits.
+- Redirecting stdin/stdout/stderr does not suppress the dialog or automatically approve anything.
+  A usable interactive desktop is still required, and unavailable UI is reported explicitly.
+- The shared launcher retains the checked file throughout confirmation and launch. Existing
+  stale/duplicate reply handling and signature/UAC policies are unchanged.
 
-- A followed by Enter allows only the current checked target/request. Normal Windows UAC may
-  still follow. S or an empty Enter skips that application, not the rest of the workspace.
-- Invalid input asks again; it never becomes approval by default. Input queued before or while
-  each warning is being written is discarded after the complete prompt is written, before
-  acknowledging display or accepting a decision.
-- Both stdin and stderr must be attached to an interactive console. Redirecting stdin or stderr,
-  EOF (Ctrl+Z/Ctrl+D), unavailable display/input, or a disconnected presenter cannot approve.
-  The per-app result reports `confirmationRequired`, distinct from an explicit `skipped` choice.
-- `--json` does not itself prevent interaction: stdout can be redirected while stdin and stderr
-  remain on the terminal. Prompt text never appears in the JSON stdout stream.
-- Ctrl+C/Escape cancel the pending wait/operation. The existing total launch deadline includes
-  decision time; expiry never approves. Already-launched applications remain open.
-- The worker retains the signature-checked file handle through the decision and launch. Replies
-  are matched to one pending request and cannot approve a later app or overwrite a decision.
-- App names/paths/arguments in the warning are terminal-escaped, not interpreted as control
-  sequences, and are not copied to diagnostic logs or telemetry.
-
-The private worker retains stdin=NUL. A separate framed request/reply pair carries confirmation;
-the final-result pipe and public workspace JSON remain unchanged. Pipe endpoints are connected
-and verified inside the parent, then only the intended handles are inherited. Overlapped writes
-and polled reads keep waits cancellable; no public approval service is exposed.
+The worker keeps stdin=NUL. Confirmation uses the existing launcher UI message protocol on
+operation-scoped pipes, separate from the CLI result stream. The native endpoint verifies the
+UI module image/version and requires its Microsoft signature in Release.
 
 ## Exit codes
 
@@ -184,7 +184,7 @@ and polled reads keep waits cancellable; no public approval service is exposed.
 | 7 | Unsupported caller context, failed de-elevation, arranger startup failure or required consent declined |
 | 8 | Invalid/unreadable saved configuration, conflicting legacy ID initialization or failed ID persistence |
 | 9 | Deadline or unknown outcome |
-| 10 | One or more applications failed, were skipped, or could not obtain required confirmation |
+| 10 | One or more applications failed, were skipped, or lack confirmed arrangement/required approval |
 | 11 | Persistence replacement could not be verified; app results remain separate |
 | 12 | Acknowledged cancellation |
 | 9009-9011 | Shared shim could not resolve/find/start its target |

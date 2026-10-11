@@ -24,8 +24,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\..\WorkerHandoff.cpp" />
-    <ClCompile Include="..\..\ApprovalChannel.cpp" />
-    <ClCompile Include="..\..\ConsoleApproval.cpp" />
     <ResourceCompile Include="version.rc" />
     <ProjectReference Include="..\..\..\WorkspacesLib\WorkspacesLib.vcxproj">
       <Project>{b31fcc55-b5a4-4ea7-b414-2dceae6af332}</Project>

@@ -48,16 +48,9 @@
     <ClCompile Include="WorkspacesDataTests.cpp" />
     <ClCompile Include="CliContractTests.cpp" />
     <ClCompile Include="CliJsonOutputTests.cpp" />
-    <ClCompile Include="CliApprovalTests.cpp" />
-    <ClCompile Include="..\WorkspacesCLI\ApprovalChannel.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\WorkspacesCLI\ConsoleApproval.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="WorkspaceStoreTests.cpp" />
     <ClCompile Include="CliWorkerTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
-    <ClCompile Include="CliApprovalConsoleTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
+    <ClCompile Include="CliRuntimeTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
     <ClCompile Include="CliHandoffTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
     <ClCompile Include="..\WorkspacesCLI\WorkerHandoff.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -75,7 +68,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WorkspacesCLI\Tests\ApprovalConsoleFixture\ApprovalConsoleFixture.vcxproj" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
+    <ProjectReference Include="..\WorkspacesCLI\Tests\RuntimeFixture\RuntimeFixture.vcxproj" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
       <Project>{122d79ac-38e7-4549-935e-8b5b58e683e4}</Project>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

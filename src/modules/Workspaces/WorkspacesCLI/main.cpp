@@ -20,8 +20,6 @@
 #include <common/version/version.h>
 #include "Resources.h"
 #include "CommandLogging.h"
-#include "ApprovalChannel.h"
-#include "ConsoleApproval.h"
 #include "JsonOutput.h"
 #include "WorkerHandoff.h"
 #include "WorkerResult.h"
@@ -113,7 +111,7 @@ namespace
 
     int Worker(const std::vector<std::wstring>& args, HANDLE ownerLifetime = nullptr)
     {
-        if (args.size() != 4 && args.size() != 6)
+        if (args.size() != 4)
             throw WorkspacesCli::Error(2, L"invalidArguments", "Invalid worker arguments.");
         const auto mapping = reinterpret_cast<HANDLE>(std::stoull(args[1]));
         const auto cancel = reinterpret_cast<HANDLE>(std::stoull(args[2]));
@@ -139,22 +137,6 @@ namespace
             options.deadline <= GetTickCount64())
             throw WorkspacesCli::Error(9, L"timeout", "Operation deadline has expired.");
         WorkspacesCli::OperationLifetime lifetime(parentPid, options.timeoutSeconds * 1000 + 5000, ownerLifetime);
-        std::optional<WorkspacesCli::WorkerApproval> approval;
-        if (args.size() == 6)
-        {
-            const auto requestWrite = reinterpret_cast<HANDLE>(std::stoull(args[4]));
-            const auto responseRead = reinterpret_cast<HANDLE>(std::stoull(args[5]));
-            if (GetFileType(requestWrite) != FILE_TYPE_PIPE || GetFileType(responseRead) != FILE_TYPE_PIPE)
-                throw WorkspacesCli::Error(8, L"invalidData", "Invalid confirmation handles.");
-            Check(SetHandleInformation(requestWrite, HANDLE_FLAG_INHERIT, 0), "Cannot isolate approval request handle.");
-            Check(SetHandleInformation(responseRead, HANDLE_FLAG_INHERIT, 0), "Cannot isolate approval response handle.");
-            approval.emplace(requestWrite, responseRead, [&] {
-                return WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0 || GetTickCount64() >= options.deadline;
-            });
-            options.requestApproval = [&](const auto& name, const auto& path, const auto& arguments, const auto& verification) {
-                return approval->Request(name, path, arguments, verification);
-            };
-        }
         WorkspacesCli::CheckEnabled();
         CheckLaunchContext();
         auto project = WorkspacesData::WorkspacesProjectJSON::FromJson(request.GetNamedObject(L"workspace"));
@@ -274,19 +256,13 @@ namespace
         wil::unique_handle write;
         Check(CreatePipe(read.put(), write.put(), &attributes, 0), "Cannot create result pipe.");
         Check(SetHandleInformation(read.get(), HANDLE_FLAG_INHERIT, 0), "Cannot restrict result handle inheritance.");
-        auto approvalRequests = WorkspacesCli::ApprovalPipe::Create();
-        auto approvalResponses = WorkspacesCli::ApprovalPipe::Create();
-        Check(SetHandleInformation(approvalRequests.write.get(), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT),
-              "Cannot inherit confirmation requests.");
-        Check(SetHandleInformation(approvalResponses.read.get(), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT),
-              "Cannot inherit confirmation replies.");
         wil::unique_handle input(CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &attributes, OPEN_EXISTING, 0, nullptr));
         const auto executable = ExePath();
         wil::unique_process_information process;
         if (elevatedCaller)
         {
             process = WorkspacesCli::StartMediumWorker(executable, operationId,
-                {mapping.get(), cancel.get(), input.get(), write.get(), approvalRequests.write.get(), approvalResponses.read.get()}, deadline);
+                {mapping.get(), cancel.get(), input.get(), write.get()}, deadline);
         }
         else
         {
@@ -296,8 +272,7 @@ namespace
             auto list = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(attributeStorage.data());
             Check(InitializeProcThreadAttributeList(list, 1, 0, &attributeBytes), "Cannot initialize handle inheritance.");
             auto deleteList = wil::scope_exit([&] { DeleteProcThreadAttributeList(list); });
-            HANDLE inherited[] = { mapping.get(), cancel.get(), write.get(), input.get(),
-                                   approvalRequests.write.get(), approvalResponses.read.get() };
+            HANDLE inherited[] = { mapping.get(), cancel.get(), write.get(), input.get() };
             Check(UpdateProcThreadAttribute(list, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST, inherited, sizeof(inherited), nullptr, nullptr),
                   "Cannot restrict inherited operation handles.");
             STARTUPINFOEXW startup{};
@@ -309,16 +284,12 @@ namespace
             startup.lpAttributeList = list;
             std::wstring command = L"\"" + executable + L"\" --launch-worker " +
                 std::to_wstring(reinterpret_cast<uintptr_t>(mapping.get())) + L" " +
-                std::to_wstring(reinterpret_cast<uintptr_t>(cancel.get())) + L" " + std::to_wstring(GetCurrentProcessId()) + L" " +
-                std::to_wstring(reinterpret_cast<uintptr_t>(approvalRequests.write.get())) + L" " +
-                std::to_wstring(reinterpret_cast<uintptr_t>(approvalResponses.read.get()));
+                std::to_wstring(reinterpret_cast<uintptr_t>(cancel.get())) + L" " + std::to_wstring(GetCurrentProcessId());
             Check(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE,
                 EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW, nullptr, nullptr, &startup.StartupInfo, &process),
                 "Cannot start launch worker.");
         }
         write.reset();
-        approvalRequests.write.reset();
-        approvalResponses.read.reset();
         auto cleanup = wil::scope_exit([&] {
             if (WaitForSingleObject(process.hProcess, 0) == WAIT_TIMEOUT)
             {
@@ -330,10 +301,7 @@ namespace
                 }
             }
         });
-        WorkspacesCli::ConsoleApproval prompt(GetStdHandle(STD_INPUT_HANDLE), GetStdHandle(STD_ERROR_HANDLE),
-            CliResources::ApprovalText());
-        WorkspacesCli::FrontendApproval presenter(approvalRequests.read.get(), approvalResponses.write.get(), prompt, cancel.get());
-        return WorkspacesCli::ReadWorkerResult(process.hProcess, read.get(), cancel.get(), deadline, presenter, operationId, exitCode);
+        return WorkspacesCli::ReadWorkerResult(process.hProcess, read.get(), cancel.get(), deadline, operationId, exitCode);
     }
 }
 
@@ -360,8 +328,6 @@ int wmain(int argc, wchar_t** argv)
                 std::to_wstring(reinterpret_cast<uintptr_t>(handles.snapshot.get())),
                 std::to_wstring(reinterpret_cast<uintptr_t>(handles.cancel.get())),
                 std::to_wstring(handles.ownerPid),
-                std::to_wstring(reinterpret_cast<uintptr_t>(handles.approvalRequests.get())),
-                std::to_wstring(reinterpret_cast<uintptr_t>(handles.approvalReplies.get())),
             };
             return Worker(workerArguments, handles.ownerLifetime.get());
         }

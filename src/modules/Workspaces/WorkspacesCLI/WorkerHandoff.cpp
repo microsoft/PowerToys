@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 #include <common/interop/pipe_caller_auth.h>
+#include <common/utils/elevation.h>
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/IPCHelper.h>
 #include "WorkerHandoff.h"
@@ -30,11 +31,11 @@ namespace WorkspacesCli
 
         struct Packet
         {
-            uint32_t version = 1;
+            uint32_t version = 2;
             uint32_t ownerPid = 0;
-            std::array<uint64_t, 7> handles{};
+            std::array<uint64_t, 5> handles{};
         };
-        static_assert(sizeof(Packet) == 64);
+        static_assert(sizeof(Packet) == 48);
 
         [[noreturn]] void Fail(const char* message)
         {
@@ -191,13 +192,6 @@ namespace WorkspacesCli
         if (!self.session || self.integrity < SECURITY_MANDATORY_MEDIUM_RID ||
             self.integrity > SECURITY_MANDATORY_HIGH_RID)
             Fail("Unsupported caller context.");
-        const auto shellWindow = GetShellWindow();
-        DWORD shellPid = 0;
-        if (!shellWindow || !GetWindowThreadProcessId(shellWindow, &shellPid) || !shellPid)
-            Fail("No desktop shell is available for de-elevation.");
-        wil::unique_handle shell(OpenProcess(PROCESS_CREATE_PROCESS | PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE, shellPid));
-        if (!shell || !SameContext(self, Context(shell.get())) || !IsMediumProcess(shell.get()))
-            Fail("The desktop shell is not a same-user non-elevated process.");
 
         wil::unique_hlocal_string sid;
         if (!ConvertSidToStringSidW(self.sid.data(), sid.put()))
@@ -236,24 +230,11 @@ namespace WorkspacesCli
             }
         });
 
-        SIZE_T size = 0;
-        InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
-        std::vector<BYTE> storage(size);
-        auto attributeList = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(storage.data());
-        if (!InitializeProcThreadAttributeList(attributeList, 1, 0, &size))
-            Fail("Cannot prepare the medium worker process.");
-        auto releaseAttributes = wil::scope_exit([&] { DeleteProcThreadAttributeList(attributeList); });
-        HANDLE parent = shell.get();
-        if (!UpdateProcThreadAttribute(attributeList, 0, PROC_THREAD_ATTRIBUTE_PARENT_PROCESS, &parent, sizeof(parent), nullptr, nullptr))
-            Fail("Cannot select the non-elevated process context.");
-        STARTUPINFOEXW startup{};
-        startup.StartupInfo.cb = sizeof(startup);
-        startup.lpAttributeList = attributeList;
-        auto command = L"\"" + executable + L"\" --launch-connect " + NormalizeId(operationId) +
-                       L" " + std::to_wstring(GetCurrentProcessId());
+        const auto arguments = L"--launch-connect " + NormalizeId(operationId) + L" " + std::to_wstring(GetCurrentProcessId());
         const auto directory = std::filesystem::path(executable).parent_path().wstring();
         wil::unique_process_information process;
-        if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, EXTENDED_STARTUPINFO_PRESENT | CREATE_SUSPENDED | CREATE_NO_WINDOW, nullptr, directory.c_str(), &startup.StartupInfo, &process))
+        if (!run_non_elevated(executable, arguments, process, directory.c_str(), false, true,
+                             [&](HANDLE parent) { return SameContext(self, Context(parent)) && IsMediumProcess(parent); }))
             Fail("Cannot create a non-elevated worker.");
         bool delivered = false;
         auto stopUndelivered = wil::scope_exit([&] {
@@ -286,8 +267,6 @@ namespace WorkspacesCli
             DuplicateFor(process.hProcess, handles.cancel, SYNCHRONIZE),
             DuplicateFor(process.hProcess, handles.input, 0, true),
             DuplicateFor(process.hProcess, handles.result, 0, true),
-            DuplicateFor(process.hProcess, handles.approvalRequests, 0, true),
-            DuplicateFor(process.hProcess, handles.approvalReplies, 0, true),
             DuplicateFor(process.hProcess, GetCurrentProcess(), SYNCHRONIZE),
         };
         Transfer(pipe.get(), &packet, sizeof(packet), true, process.hProcess, handles.cancel, handoffDeadline);
@@ -318,7 +297,7 @@ namespace WorkspacesCli
         ValidatePeer(pipe.get(), ownerPid, true);
         Packet packet{};
         Transfer(pipe.get(), &packet, sizeof(packet), false, nullptr, nullptr, deadline);
-        if (packet.version != 1 || packet.ownerPid != ownerPid)
+        if (packet.version != 2 || packet.ownerPid != ownerPid)
             Fail("Invalid worker handoff protocol.");
         for (const auto value : packet.handles)
         {
@@ -331,9 +310,7 @@ namespace WorkspacesCli
         result.cancel.reset(reinterpret_cast<HANDLE>(packet.handles[1]));
         result.input.reset(reinterpret_cast<HANDLE>(packet.handles[2]));
         result.result.reset(reinterpret_cast<HANDLE>(packet.handles[3]));
-        result.approvalRequests.reset(reinterpret_cast<HANDLE>(packet.handles[4]));
-        result.approvalReplies.reset(reinterpret_cast<HANDLE>(packet.handles[5]));
-        result.ownerLifetime.reset(reinterpret_cast<HANDLE>(packet.handles[6]));
+        result.ownerLifetime.reset(reinterpret_cast<HANDLE>(packet.handles[4]));
         return result;
     }
 

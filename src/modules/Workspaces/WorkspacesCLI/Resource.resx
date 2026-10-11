@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
-  <data name="CliHelp" xml:space="preserve"><value>PowerToys Workspaces CLI\n  list [--id GUID | --name NAME] [--details] [--json]\n  launch (--id GUID | --name NAME) [--timeout 1..600] [--json]\nDetails require a selector. Launch waits for window arrangement and permits normal Windows UAC.\nUnverified elevated EXEs require one-time confirmation on the terminal (stderr); Enter skips. Redirected input or stderr cannot approve.\nAdministrator terminals automatically use a non-elevated worker in the same user's desktop session.\nCtrl+C stops further launches when acknowledged; existing applications are not closed.\n</value><comment>Do not translate executable names, commands or options beginning with --.</comment></data>
+  <data name="CliHelp" xml:space="preserve"><value>PowerToys Workspaces CLI\n  list [--id GUID | --name NAME] [--details] [--json]\n  launch (--id GUID | --name NAME) [--timeout 1..600] [--json]\nDetails require a selector. Launch waits for window arrangement and permits normal Windows UAC.\nUnverified elevated EXEs use the existing Workspaces confirmation dialog. Closing it or choosing Skip does not approve the application.\nAdministrator terminals use the shared non-elevated process helper in the same user's desktop session.\nCtrl+C stops further launches when acknowledged; existing applications are not closed.\n</value><comment>Do not translate executable names, commands or options beginning with --.</comment></data>
   <data name="CliTableHeader" xml:space="preserve"><value>ID\tNAME\tAPPLICATIONS\n</value></data>
   <data name="CliWarningPrefix" xml:space="preserve"><value>Warning: </value></data>
   <data name="CliInvalidArguments" xml:space="preserve"><value>Invalid command or arguments. Run --help for supported commands, selectors and timeout values.</value></data>
@@ -33,16 +33,9 @@
   <data name="CliCompleted" xml:space="preserve"><value>Completed</value></data>
   <data name="CliPartial" xml:space="preserve"><value>Completed with application failures</value></data>
   <data name="CliFailed" xml:space="preserve"><value>Failed</value></data>
-  <data name="CliConfirmationRequired" xml:space="preserve"><value>This application requires one-time confirmation, but an interactive terminal is unavailable. It was not launched.</value></data>
+  <data name="CliConfirmationRequired" xml:space="preserve"><value>This application requires one-time confirmation, but the Workspaces confirmation dialog is unavailable. It was not launched.</value></data>
   <data name="CliConfirmationTimedOut" xml:space="preserve"><value>The confirmation could not be displayed in time. This application was not launched.</value></data>
   <data name="CliConfirmationFailed" xml:space="preserve"><value>The confirmation exchange failed. This application was not approved.</value></data>
   <data name="CliSkipped" xml:space="preserve"><value>This application was skipped by your choice.</value></data>
-  <data name="CliApprovalIntroduction" xml:space="preserve"><value>Warning: Workspaces could not verify this executable's signature. It is configured to run as administrator. Only allow it if you trust the target and its arguments.</value></data>
-  <data name="CliApprovalApp" xml:space="preserve"><value>Application: </value></data>
-  <data name="CliApprovalPath" xml:space="preserve"><value>Checked path: </value></data>
-  <data name="CliApprovalArguments" xml:space="preserve"><value>Arguments: </value></data>
-  <data name="CliApprovalReason" xml:space="preserve"><value>Verification: </value></data>
-  <data name="CliApprovalStatus" xml:space="preserve"><value>Status: </value></data>
-  <data name="CliApprovalChoices" xml:space="preserve"><value>[A] Allow once  [S] Skip (default). Type A or S and press Enter: </value><comment>A and S are fixed input keys and must remain unchanged. This approval never replaces Windows UAC.</comment></data>
-  <data name="CliApprovalInvalidChoice" xml:space="preserve"><value>Invalid choice. Enter A to allow once, S to skip, or press Enter to skip.</value><comment>A and S are fixed input keys.</comment></data>
+  <data name="CliArrangementUnconfirmed" xml:space="preserve"><value>The application launch succeeded, but window arrangement was not confirmed.</value></data>
 </root>

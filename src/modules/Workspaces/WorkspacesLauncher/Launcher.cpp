@@ -21,7 +21,8 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_workspaces(workspaces),
     m_invokePoint(invokePoint),
     m_start(std::chrono::high_resolution_clock::now()),
-    m_uiHelper(cliOptions ? nullptr : std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1))),
+    m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1),
+                                                cliOptions ? cliOptions->operationId : L"")),
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(
         std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1),
         cliOptions ? cliOptions->operationId : L"")),
@@ -31,11 +32,11 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     // main thread
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
 
-    if (m_uiHelper && m_uiHelper->LaunchUI())
+    if (!m_cliOptions && m_uiHelper->LaunchUI())
     {
         m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
     }
-    else if (m_uiHelper)
+    else if (!m_cliOptions)
     {
         Logger::error(L"Workspaces UI is unavailable; unverified elevated applications will not launch");
     }
@@ -363,15 +364,10 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
     {
         return LaunchDecision::Canceled;
     }
-    if (m_cliOptions)
-    {
-        return m_cliOptions->requestApproval ?
-            m_cliOptions->requestApproval(name, path, arguments, result) : LaunchDecision::UiUnavailable;
-    }
-    if (!m_uiHelper || !m_uiHelper->IsRunning())
+    if (!m_uiHelper || !m_uiHelper->LaunchUI([&] { return m_approval.IsCanceled() || ShouldStop(); }))
     {
         Logger::error(L"Cannot request elevation confirmation: Workspaces UI is unavailable");
-        return LaunchDecision::UiUnavailable;
+        return m_approval.IsCanceled() || ShouldStop() ? LaunchDecision::Canceled : LaunchDecision::UiUnavailable;
     }
     const std::wstring requestId = CreateGuidString();
     if (!m_approval.Begin(requestId))
@@ -393,8 +389,12 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
     }
     for (;;)
     {
+        if (ShouldStop())
+            m_approval.Cancel();
         if (const auto decision = m_approval.WaitFor(std::chrono::milliseconds(250)); decision.has_value())
         {
+            if (ShouldStop())
+                return LaunchDecision::Canceled;
             return decision.value();
         }
         if (!m_uiHelper->IsRunning())

@@ -3,8 +3,6 @@
 #include <WorkspacesLib/CliCommands.h>
 #include <wil/resource.h>
 #include <algorithm>
-#include <WorkspacesCLI/ApprovalChannel.h>
-#include <WorkspacesCLI/ConsoleApproval.h>
 #include <WorkspacesCLI/WorkerResult.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -35,7 +33,7 @@ namespace WorkspacesLibUnitTests
         {
             wchar_t module[32768]{};
             Assert::IsTrue(GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), module, ARRAYSIZE(module)) != 0);
-            const auto executable = std::filesystem::path(module).parent_path() / L"WorkspacesCliApprovalFixture.exe";
+            const auto executable = std::filesystem::path(module).parent_path() / L"WorkspacesCliRuntimeFixture.exe";
             SECURITY_ATTRIBUTES attributes{ sizeof(attributes), nullptr, TRUE };
             wil::unique_handle read, write;
             Assert::IsTrue(CreatePipe(read.put(), write.put(), &attributes, 4096) != FALSE);
@@ -61,16 +59,12 @@ namespace WorkspacesLibUnitTests
                     WaitForSingleObject(process.hProcess, 2000);
                 }
             });
-            auto requests = WorkspacesCli::ApprovalPipe::Create();
-            auto replies = WorkspacesCli::ApprovalPipe::Create();
-            WorkspacesCli::ConsoleApproval console(input.get(), nullptr, {});
-            WorkspacesCli::FrontendApproval presenter(requests.read.get(), replies.write.get(), console, cancel.get());
             int exitCode = 0;
             const auto started = GetTickCount64();
             try
             {
                 const auto output = WorkspacesCli::ReadWorkerResult(process.hProcess, read.get(), cancel.get(),
-                                                                    deadline, presenter, L"operation", exitCode);
+                                                                    deadline, L"operation", exitCode);
                 Assert::AreEqual(std::wstring(expectedCode), std::wstring(output.GetNamedObject(L"error").GetNamedString(L"code")));
                 Assert::AreEqual(cancelRequested ? 12 : 9, exitCode);
             }
@@ -133,10 +127,6 @@ namespace WorkspacesLibUnitTests
             wil::unique_handle read, write;
             Assert::IsTrue(CreatePipe(read.put(), write.put(), &sa, 0) != FALSE);
             Assert::IsTrue(SetHandleInformation(read.get(), HANDLE_FLAG_INHERIT, 0) != FALSE);
-            auto approvalRequests = WorkspacesCli::ApprovalPipe::Create();
-            auto approvalReplies = WorkspacesCli::ApprovalPipe::Create();
-            Assert::IsTrue(SetHandleInformation(approvalRequests.write.get(), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT) != FALSE);
-            Assert::IsTrue(SetHandleInformation(approvalReplies.read.get(), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT) != FALSE);
             wil::unique_handle input(CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_EXISTING, 0, nullptr));
             STARTUPINFOW startup{ sizeof(startup) };
             startup.dwFlags = STARTF_USESTDHANDLES;
@@ -145,14 +135,10 @@ namespace WorkspacesLibUnitTests
             startup.hStdError = write.get();
             std::wstring command = L"\"" + executable.wstring() + L"\" --launch-worker " +
                                    std::to_wstring(reinterpret_cast<uintptr_t>(mapping.get())) + L" " +
-                                   std::to_wstring(reinterpret_cast<uintptr_t>(cancel.get())) + L" " + std::to_wstring(GetCurrentProcessId()) + L" " +
-                                   std::to_wstring(reinterpret_cast<uintptr_t>(approvalRequests.write.get())) + L" " +
-                                   std::to_wstring(reinterpret_cast<uintptr_t>(approvalReplies.read.get()));
+                                   std::to_wstring(reinterpret_cast<uintptr_t>(cancel.get())) + L" " + std::to_wstring(GetCurrentProcessId());
             wil::unique_process_information process;
             Assert::IsTrue(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, root.c_str(), &startup, &process) != FALSE);
             write.reset();
-            approvalRequests.write.reset();
-            approvalReplies.read.reset();
             auto cleanup = wil::scope_exit([&] {
                 if (WaitForSingleObject(process.hProcess, 0) == WAIT_TIMEOUT)
                 {
@@ -161,13 +147,10 @@ namespace WorkspacesLibUnitTests
                 }
             });
             std::string output;
-            WorkspacesCli::ConsoleApproval console(input.get(), nullptr, {});
-            WorkspacesCli::FrontendApproval presenter(approvalRequests.read.get(), approvalReplies.write.get(), console, cancel.get());
             ULONGLONG cancellationAt = 0;
             const auto deadline = GetTickCount64() + 25000;
             while (GetTickCount64() < deadline)
             {
-                presenter.Poll();
                 if (cancelAfterStart && !cancellationAt && WaitForSingleObject(started.get(), 0) == WAIT_OBJECT_0)
                 {
                     cancellationAt = GetTickCount64();

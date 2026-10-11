@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
@@ -26,6 +27,7 @@ namespace WorkspacesLauncherUI
         private StatusWindow _mainWindow;
 
         private MainViewModel _mainViewModel;
+        private Process _ownerProcess;
 
         private bool _isDisposed;
 
@@ -62,7 +64,42 @@ namespace WorkspacesLauncherUI
                 }
             }
 
-            const string appName = "Local\\PowerToys_Workspaces_LauncherUI_InstanceMutex";
+            var confirmationOnly = e.Args.Length != 0;
+            var operationId = string.Empty;
+            int ownerPid = 0;
+            if (confirmationOnly)
+            {
+                if (e.Args.Length != 3 || e.Args[0] != "--confirmation-only" ||
+                    !Guid.TryParse(e.Args[1], out var id) || id == Guid.Empty ||
+                    !int.TryParse(e.Args[2], NumberStyles.None, CultureInfo.InvariantCulture, out ownerPid) || ownerPid <= 0)
+                {
+                    Logger.LogError("Invalid Workspaces confirmation host arguments.");
+                    Shutdown(1);
+                    return;
+                }
+
+                operationId = id.ToString("D");
+                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                try
+                {
+                    _ownerProcess = Process.GetProcessById(ownerPid);
+                    _ownerProcess.EnableRaisingEvents = true;
+                    _ownerProcess.Exited += (_, _) => Dispatcher.BeginInvoke(new Action(() => Shutdown()));
+                    if (_ownerProcess.HasExited)
+                    {
+                        Shutdown(1);
+                        return;
+                    }
+                }
+                catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+                {
+                    Logger.LogError("Workspaces confirmation owner is unavailable.", exception);
+                    Shutdown(1);
+                    return;
+                }
+            }
+
+            var appName = "Local\\PowerToys_Workspaces_LauncherUI_InstanceMutex" + operationId;
             bool createdNew;
             _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)
@@ -80,7 +117,8 @@ namespace WorkspacesLauncherUI
                 return;
             }
 
-            ipcmanager = new TwoWayPipeMessageIPCManaged("\\\\.\\pipe\\powertoys_workspaces_ui_", "\\\\.\\pipe\\powertoys_workspaces_launcher_ui_", (string message) =>
+            _mainViewModel = new MainViewModel(confirmationOnly);
+            ipcmanager = new TwoWayPipeMessageIPCManaged("\\\\.\\pipe\\powertoys_workspaces_ui_" + operationId, "\\\\.\\pipe\\powertoys_workspaces_launcher_ui_" + operationId, (string message) =>
             {
                 if (message.Length > 0)
                 {
@@ -89,9 +127,9 @@ namespace WorkspacesLauncherUI
             });
             ipcmanager.Start();
 
-            if (_mainViewModel == null)
+            if (confirmationOnly)
             {
-                _mainViewModel = new MainViewModel();
+                return;
             }
 
             // normal start of editor
@@ -132,6 +170,7 @@ namespace WorkspacesLauncherUI
                     ipcmanager?.Dispose();
 
                     _instanceMutex?.Dispose();
+                    _ownerProcess?.Dispose();
                 }
 
                 _isDisposed = true;

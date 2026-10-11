@@ -2,10 +2,41 @@
 #pragma once
 
 #include <string>
+#include <windows.h>
 #include <common/utils/json.h>
 
 namespace WorkspacesCli
 {
+    class ConsoleOutputCodePage
+    {
+    public:
+        explicit ConsoleOutputCodePage(bool enabled = true)
+        {
+            if (!enabled)
+                return;
+            const auto original = GetConsoleOutputCP();
+            if (original && original != CP_UTF8)
+            {
+                if (SetConsoleOutputCP(CP_UTF8))
+                    m_original = original;
+                else
+                    OutputDebugStringW(L"Workspaces CLI: could not set console output code page.\n");
+            }
+        }
+
+        ~ConsoleOutputCodePage()
+        {
+            if (m_original && GetConsoleOutputCP() == CP_UTF8 && !SetConsoleOutputCP(m_original))
+                OutputDebugStringW(L"Workspaces CLI: could not restore console output code page.\n");
+        }
+
+        ConsoleOutputCodePage(const ConsoleOutputCodePage&) = delete;
+        ConsoleOutputCodePage& operator=(const ConsoleOutputCodePage&) = delete;
+
+    private:
+        UINT m_original = 0;
+    };
+
     inline std::string FormatJson(const json::JsonObject& value)
     {
         // Keep the native serializer's tokens, ordering and escaping; add only insignificant whitespace.

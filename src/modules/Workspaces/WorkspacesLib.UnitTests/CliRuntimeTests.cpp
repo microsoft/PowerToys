@@ -8,14 +8,30 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace WorkspacesLibUnitTests
 {
-    TEST_CLASS (CliApprovalConsoleTests)
+    TEST_CLASS (CliRuntimeTests)
     {
         static void Run(const std::wstring& scenario, bool workerError = false)
         {
             wchar_t module[32768]{};
             Assert::IsTrue(GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), module, ARRAYSIZE(module)) > 0);
-            const auto executable = std::filesystem::path(module).parent_path() / L"WorkspacesCliApprovalFixture.exe";
+            auto executable = std::filesystem::path(module).parent_path() / L"WorkspacesCliRuntimeFixture.exe";
             Assert::IsTrue(std::filesystem::is_regular_file(executable));
+            std::filesystem::path staged;
+            auto removeStaged = wil::scope_exit([&] {
+                if (!staged.empty())
+                    DeleteFileW(staged.c_str());
+            });
+            if (scenario.starts_with(L"ui-startup"))
+            {
+                GUID guid{};
+                Assert::IsTrue(SUCCEEDED(CoCreateGuid(&guid)));
+                wchar_t id[40]{};
+                StringFromGUID2(guid, id, ARRAYSIZE(id));
+                // The real helper resolves the UI beside its executable, as it does in the CLI worker.
+                staged = executable.parent_path().parent_path().parent_path() / (std::wstring(L"WorkspacesUiStartupTest-") + id + L".exe");
+                Assert::IsTrue(CopyFileW(executable.c_str(), staged.c_str(), TRUE) != FALSE);
+                executable = staged;
+            }
             SECURITY_ATTRIBUTES sa{ sizeof(sa), nullptr, TRUE };
             wil::unique_handle read, write;
             Assert::IsTrue(CreatePipe(read.put(), write.put(), &sa, 4096) != FALSE);
@@ -38,7 +54,7 @@ namespace WorkspacesLibUnitTests
                     WaitForSingleObject(process.hProcess, 2000);
                 }
             });
-            Assert::AreEqual(DWORD{ WAIT_OBJECT_0 }, WaitForSingleObject(process.hProcess, 12000), scenario.c_str());
+            Assert::AreEqual(DWORD{ WAIT_OBJECT_0 }, WaitForSingleObject(process.hProcess, scenario.starts_with(L"ui-startup") ? 25000 : 12000), scenario.c_str());
             DWORD code{};
             GetExitCodeProcess(process.hProcess, &code);
             char buffer[4096]{};
@@ -59,6 +75,21 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (UnconfirmedArrangementExplanationUsesLocalizedResources)
+        {
+            Run(L"launched-localization");
+        }
+
+        TEST_METHOD (SharedUiHelperDeliversFirstWarningAfterColdStartup)
+        {
+            Run(L"ui-startup");
+        }
+
+        TEST_METHOD (SharedUiHelperStartupCanBeCanceledWithoutAWarning)
+        {
+            Run(L"ui-startup-canceled");
+        }
+
         TEST_METHOD (WorkerResourceFailureKeepsCombinedOutputJsonOnly)
         {
             Run(L"worker-resource-error", true);
@@ -69,46 +100,5 @@ namespace WorkspacesLibUnitTests
             Run(L"code-page");
         }
 
-        TEST_METHOD (IsolatedConsoleAllowsOnceAndSkipsByDefault)
-        {
-            Run(L"allow");
-            Run(L"skip");
-            Run(L"default");
-        }
-        TEST_METHOD (IsolatedConsoleRejectsInvalidInputAndRestoresMode)
-        {
-            Run(L"invalid");
-        }
-        TEST_METHOD (IsolatedConsoleHandlesEofAndRedirection)
-        {
-            Run(L"eof");
-            Run(L"redirected-input");
-            Run(L"redirected-error");
-        }
-        TEST_METHOD (IsolatedConsoleRespondsToCancellationAndDeadline)
-        {
-            Run(L"cancel");
-            Run(L"timeout");
-        }
-        TEST_METHOD (IsolatedConsoleDoesNotReuseApprovalOrTypeahead)
-        {
-            Run(L"two-requests");
-            Run(L"typeahead");
-        }
-
-        TEST_METHOD (InputDuringPromptOutputCannotApproveWithoutFreshInput)
-        {
-            Run(L"during-output-timeout");
-        }
-
-        TEST_METHOD (InputDuringPromptOutputDoesNotOverrideFreshSkip)
-        {
-            Run(L"during-output-skip");
-        }
-
-        TEST_METHOD (InputDuringPromptOutputRequiresFreshAllow)
-        {
-            Run(L"during-output-allow");
-        }
     };
 }

@@ -374,10 +374,12 @@ namespace WorkspacesCli
             else if (state == LaunchingState::Skipped)
                 name = L"skipped";
             else if (state == LaunchingState::Launched)
-                name = L"arrangeFailed";
+                name = L"launched";
             json::JsonObject item;
             item.SetNamedValue(L"id", json::value(app.id));
             item.SetNamedValue(L"state", json::value(name));
+            if (state == LaunchingState::Launched)
+                item.SetNamedValue(L"message", json::value(L"The application launch succeeded, but window arrangement was not confirmed."));
             const auto approval = approvals.find(app.id);
             if (state == LaunchingState::Skipped)
             {

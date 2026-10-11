@@ -5,6 +5,8 @@ See [the command contract](..\..\..\..\doc\devdocs\modules\workspaces-cli.md).
 
 Successful `list --json` responses expose `view` and `workspaces` directly at the top level.
 Launch results and errors retain their existing envelopes; human-readable list output is unchanged.
+Launch results preserve native `Launched` as `launched`, with a localized explanation that arrangement
+is unconfirmed. Only explicit arrangement failures use `arrangeFailed`; aggregate exit rules are unchanged.
 
 ## Entry point and dependencies
 
@@ -27,18 +29,20 @@ bidirectional peer image/version validation, same-session checks, and Microsoft 
 verification in Release. No privileged Runner endpoint or permanent service is added.
 
 Administrator frontends use `WorkerHandoff` instead of inheriting their elevated token into the
-worker. It creates a hidden suspended child with Explorer as its process-creation parent,
+worker. The common `run_non_elevated` helper creates a hidden suspended child with Explorer as its parent,
 verifies same-user/session and medium integrity, then duplicates only operation capabilities
 through a read-only, PID/image-authenticated bootstrap pipe. The snapshot is read-only and the
-owner/cancel handles permit waiting only. The existing result/approval paths are retained.
+owner/cancel handles permit waiting only. The existing result path is retained.
 No medium context or identity mismatch means a clear error, never an elevated fallback.
 
-Unverified elevated EXE confirmation uses the same signature gate as the GUI. A narrow CLI
-presenter sends a per-request warning from the worker to the foreground process using private
-framed pipes. The foreground uses stderr/console input for A+Enter or S/Enter, with default Skip.
-`PendingLaunchApproval` enforces shown acknowledgment, matching IDs and one-time decisions.
-Redirected input/stderr and EOF fail closed; Ctrl+C/deadline never approve. Final JSON stdout
-remains separate. See the command contract for skipped versus unavailable/denied outcomes.
+Unverified elevated EXEs use the existing GUI confirmation flow end-to-end:
+`Launcher::requestApproval` owns the single pending request and talks through `LauncherUIHelper`
+to `SignatureWarningWindow`. CLI mode starts that UI lazily without the progress window.
+The same rendered acknowledgement, default Skip, file pin and reply validation apply; there
+is no CLI-specific approval channel or input state machine. Ctrl+C/deadline cancel the shared
+request. Final JSON stdout remains separate from the dialog.
+The shared UI helper waits for its receiver pipe to become available before accepting the first
+warning. Startup remains bounded and honors cancellation; process existence alone is not readiness.
 
 ## Local build
 
@@ -75,6 +79,13 @@ application list matches the original snapshot; otherwise a unique unchanged mat
 The CLI initializes missing IDs through this same transaction before launching, keeps existing IDs
 unchanged, and rejects malformed/duplicate IDs. Failed persistence leaves the in-memory snapshot
 unchanged and prevents application startup. Lists do not initialize IDs or write configuration.
+Editor saves compare the last loaded/successfully saved snapshot with the current file under the
+same lock, ignoring only launch-history changes. Concurrent configuration or application-metadata
+changes reject the save and retain the open edits rather than overwriting newer IDs or package paths.
+Readers share deletion, and native/managed atomic replacement retries sharing/lock violations and
+access-denied replacement errors for up to two seconds to tolerate older short-lived readers.
+Windows can report an open destination without delete sharing as access denied; persistent permission
+or sharing failures still fail without replacing the original file.
 
 Nonessential metadata failure is a warning after otherwise successful arrangement. A replaced
 file that cannot be verified remains a distinct nonzero integrity failure, not a warning or an
@@ -91,15 +102,12 @@ two-second completion acknowledgement after a launch deadline without extending 
 
 ## Tests and release gates
 
-`CliApprovalTests`, `CliContractTests`, `WorkspaceStoreTests`, managed `WorkspaceWriteTests`, shared `PipeCallerAuthTests`
+`SignatureVerificationTests`, `CliContractTests`, `WorkspaceStoreTests`, managed `WorkspaceWriteTests`, shared `PipeCallerAuthTests`
 and manifest-driven `CliShim` tests cover their respective boundaries.
-Opt-in `CliApprovalConsoleTests` builds `Tests\ApprovalConsoleFixture` and runs the real presenter
-in separate hidden consoles. Inputs target only those fixture consoles; the fixture exchanges
-decisions but never executes a target or requests UAC. It checks Allow, default/explicit Skip,
-EOF, redirection, cancellation/deadline, mode restoration, control-character escaping, fresh
-approval per app, discarded type-ahead and uncontaminated JSON stdout. During-output tests inject
-`A` + Enter between writes of a multi-chunk warning and require fresh input after the full prompt;
-without fresh input the request times out without approval.
+`WorkspacesLauncherUI.UnitTests` covers the existing dialog, rendered acknowledgement, Allow/Skip,
+dismissal and replay rules, including confirmation-only mode without a visible status owner.
+Opt-in `CliRuntimeTests` builds `Tests\RuntimeFixture` to verify code-page restoration and JSON-only
+worker errors. `CliWorkerTests` retains bounded completion and timeout acknowledgement coverage.
 
 Real worker tests use synthetic snapshots and a disposable window fixture, not saved user launch
 configurations. They are opt-in:
@@ -113,11 +121,11 @@ $root = (Get-Location).Path
     -ExtraArgs @("/p:SolutionDir=$root\", "/p:WorkspacesCliLiveTests=true")
 $env:WORKSPACES_CLI_LIVE_TESTS = '1'
 vstest.console.exe "$root\x64\Debug\tests\Workspaces\Workspaces.Lib.UnitTests.dll" `
-    "/TestCaseFilter:FullyQualifiedName~CliApprovalTests|FullyQualifiedName~CliApprovalConsoleTests|FullyQualifiedName~CliContractTests|FullyQualifiedName~CliWorkerTests|FullyQualifiedName~WorkspaceStoreTests"
+    "/TestCaseFilter:FullyQualifiedName~CliRuntimeTests|FullyQualifiedName~CliContractTests|FullyQualifiedName~CliWorkerTests|FullyQualifiedName~WorkspaceStoreTests|FullyQualifiedName~CliHandoffTests"
 ```
 
 `CliHandoffTests` additionally builds `Tests\HandoffFixture`, which checks Explorer-mediated
-creation, token identity, restricted handles and Allow/Skip/cancel round-trips without launching
+creation through the common helper, token identity, restricted handles and cancellation without launching
 workspace apps. A separate run under normal Windows elevation verifies an actual high-integrity
 frontend and medium-integrity child; it does not bypass UAC or change machine policy.
 

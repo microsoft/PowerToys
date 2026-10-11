@@ -52,8 +52,15 @@ namespace WorkspaceStore
                 written != bytes.size() || !FlushFileBuffers(file.get()))
                 throw std::runtime_error("Workspace write failed");
             file.reset();
-            if (!MoveFileExW(temporary.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
-                throw std::runtime_error("Workspace replacement failed");
+            const auto replacementDeadline = GetTickCount64() + 2000;
+            while (!MoveFileExW(temporary.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            {
+                const auto error = GetLastError();
+                if ((error != ERROR_SHARING_VIOLATION && error != ERROR_LOCK_VIOLATION && error != ERROR_ACCESS_DENIED) ||
+                    GetTickCount64() >= replacementDeadline)
+                    throw std::runtime_error("Workspace replacement failed");
+                Sleep(20);
+            }
             try
             {
                 const auto actual = WorkspacesCli::ReadJson(path);

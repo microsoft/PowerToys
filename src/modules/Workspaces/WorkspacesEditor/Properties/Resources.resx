@@ -190,6 +190,9 @@
   <data name="Error_Save_Message" xml:space="preserve">
     <value>Workspaces changes could not be confirmed. Your edits have been kept. Check file access or wait for another operation to finish, then try again.</value>
   </data>
+  <data name="Error_Save_Conflict_Message" xml:space="preserve">
+    <value>The saved Workspaces configuration changed in another operation. Your edits are still open, but were not saved. Keep a copy of any changes you need, then reopen the editor to load the latest configuration before saving again.</value>
+  </data>
   <data name="Height" xml:space="preserve">
     <value>Height</value>
   </data>
