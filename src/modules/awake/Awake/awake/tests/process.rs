@@ -3,7 +3,9 @@
 
 mod support;
 
-use std::fs;
+use std::fs::{self, OpenOptions};
+use std::os::windows::fs::OpenOptionsExt;
+use std::os::windows::process::CommandExt;
 use std::process::Command;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::{Duration, Instant};
@@ -13,8 +15,9 @@ use awake_core::settings::{ModeSetting, SettingsDocument};
 use awake_core::time::FixedZone;
 use support::runner::{console_hosts, thread_names};
 use support::*;
+use windows_sys::Win32::Storage::FileSystem::{FILE_SHARE_READ, FILE_SHARE_WRITE};
 use windows_sys::Win32::System::Console::GetConsoleProcessList;
-use windows_sys::Win32::System::Threading::{CREATE_NO_WINDOW, DETACHED_PROCESS};
+use windows_sys::Win32::System::Threading::{CREATE_NEW_PROCESS_GROUP, CREATE_NO_WINDOW, DETACHED_PROCESS};
 
 const SECOND: Duration = Duration::from_secs(1);
 /// How long a command that should return promptly may take before the test fails instead of
@@ -343,6 +346,79 @@ fn a_removed_settings_file_keeps_the_mode_until_it_is_written_again() {
     assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
 }
 
+/// A session that ends while another program holds the settings file waits to save that. Exiting
+/// meanwhile must not drop the save: the next start would read a session that already ended.
+#[test]
+fn a_save_still_waiting_on_a_busy_file_is_tried_again_on_exit() {
+    let _serial = serial();
+    // Readable, but not replaceable, as while another program has it open.
+    let hold = |sandbox: &Sandbox| {
+        OpenOptions::new()
+            .read(true)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+            .open(sandbox.settings_path())
+            .unwrap()
+    };
+    let start = |name: &str| {
+        let sandbox = Sandbox::new(name);
+        sandbox.write_settings(&settings_json(3, false, 0, 1, &utc_in(3)));
+        let awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
+        assert!(sandbox.wait_for_log("Entered Expirable.", 1, 5 * SECOND));
+        (sandbox, awake)
+    };
+
+    // The file comes free just as Awake is asked to exit.
+    let (sandbox, mut awake) = start("busy-exit");
+    let busy = hold(&sandbox);
+    assert!(sandbox.wait_for_log("Entered Passive.", 1, 10 * SECOND));
+    std::thread::sleep(Duration::from_millis(300));
+    assert!(!sandbox.log().contains("Saved"), "{}", sandbox.log());
+    drop(busy);
+    sandbox.signal_exit();
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(
+        read_settings(&sandbox).mode,
+        ModeSetting::Known(Mode::Passive),
+        "{}",
+        sandbox.log()
+    );
+
+    // Still busy at exit: the save is given up on visibly, not dropped in silence.
+    let (sandbox, mut awake) = start("busy-gone");
+    let busy = hold(&sandbox);
+    assert!(sandbox.wait_for_log("Entered Passive.", 1, 10 * SECOND));
+    sandbox.signal_exit();
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    let log = sandbox.log();
+    let exit = log.find("Exit event signaled.").expect("exit logged");
+    assert!(log[exit..].contains("Could not save settings"), "{log}");
+    drop(busy);
+}
+
+/// The runner sets the exit event to stop the Awake it started and keeps it for a few seconds.
+/// A command-line session that starts in that window must not take the signal for itself.
+#[test]
+fn a_command_line_start_ignores_a_stop_meant_for_the_previous_instance() {
+    let _serial = serial();
+    let sandbox = Sandbox::new("stale-exit");
+    let stale = sandbox.signaled_exit_event();
+    let mut awake = sandbox.spawn(&["for", "1m"]);
+    assert!(sandbox.wait_for_log("Entered Timed.", 1, 5 * SECOND));
+    std::thread::sleep(Duration::from_millis(500));
+    assert_eq!(awake.try_wait().unwrap(), None, "{}", sandbox.log());
+    sandbox.signal_exit();
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    drop(stale);
+
+    // A PowerToys start keeps the signal: the runner may stop it before it gets that far.
+    let sandbox = Sandbox::new("early-exit");
+    let early = sandbox.signaled_exit_event();
+    let mut awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0), "{}", sandbox.log());
+    assert!(sandbox.log().contains("Exit event signaled."));
+    drop(early);
+}
+
 /// Started exactly as the runner starts it, Awake carries nothing the runner cannot see: no
 /// console host and no thread drawing a live status into a console nobody reads. That holds for
 /// `DETACHED_PROCESS`, which the runner and bound hand-offs use, and for `CREATE_NO_WINDOW`,
@@ -381,6 +457,44 @@ fn a_start_without_a_console_window_keeps_no_console() {
             assert_eq!(awake.wait_exit(5 * SECOND), Some(0), "{}", sandbox.log());
         }
     }
+}
+
+/// Ctrl+C and Ctrl+Break end a session cleanly. The handler keeps Windows from ending the
+/// process, so its own watchdog is what ends one whose window thread hangs.
+#[test]
+fn ctrl_break_ends_the_session_and_the_watchdog_backs_it_up() {
+    let _serial = serial();
+    assert_running_in_a_console();
+    let start = |sandbox: &Sandbox, hang: bool| {
+        let mut command = sandbox.command_in_callers_console(&["for", "1m"]);
+        command.creation_flags(CREATE_NEW_PROCESS_GROUP);
+        if hang {
+            command
+                .env("POWERTOYS_AWAKE_TEST_HANG_ON_EXIT", "1")
+                .env("POWERTOYS_AWAKE_TEST_WATCHDOG_MS", "1000");
+        }
+        let awake = Running::new(command.spawn().unwrap());
+        assert!(
+            sandbox.wait_for_log("Entered Timed.", 1, 5 * SECOND),
+            "{}",
+            sandbox.log()
+        );
+        awake
+    };
+
+    let sandbox = Sandbox::new("ctrl-break");
+    let mut awake = start(&sandbox, false);
+    ctrl_break(awake.id());
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0), "{}", sandbox.log());
+    let log = sandbox.log();
+    assert!(log.contains("Console control event 1."), "{log}");
+    assert!(log.contains("Exiting with code 0."), "{log}");
+
+    let sandbox = Sandbox::new("ctrl-break-hung");
+    let mut awake = start(&sandbox, true);
+    ctrl_break(awake.id());
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(1), "{}", sandbox.log());
+    assert!(sandbox.log().contains("ending the process"), "{}", sandbox.log());
 }
 
 fn wait_until(timeout: Duration, mut done: impl FnMut() -> bool) -> bool {

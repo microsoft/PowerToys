@@ -140,6 +140,9 @@ pub struct Tray<S: Shell = Win32Shell> {
     /// The state whose image Explorer displays, at any scale, or `None` when it has no image.
     image: Option<IconKind>,
     added: bool,
+    /// `remove` deleted the icon and nothing has been sent to Explorer since, so another
+    /// delete would only be a wasted shell call on the way out.
+    removed: bool,
     retries: u32,
     /// A retry timer is pending, or retries ran out; changes are only recorded until then.
     waiting: bool,
@@ -161,6 +164,7 @@ impl<S: Shell> Tray<S> {
             shown: None,
             image: None,
             added: false,
+            removed: false,
             retries: 0,
             waiting: false,
         }
@@ -215,8 +219,13 @@ impl<S: Shell> Tray<S> {
     }
 
     pub fn remove(&mut self) {
-        // Deleting an icon that is not there is harmless; leaving one behind is not.
+        if self.removed {
+            return;
+        }
+        // Deleting an icon that is not there is harmless; leaving one behind is not, and a failed
+        // add can leave Explorer holding one while `added` says otherwise.
         self.notify(NIM_DELETE);
+        self.removed = true;
         self.added = false;
         self.shown = None;
         self.shell.kill_retry_timer();
@@ -268,6 +277,9 @@ impl<S: Shell> Tray<S> {
         data.hWnd = self.window;
         data.uID = ICON_ID;
         let mut showing = None;
+        if message == NIM_ADD || message == NIM_MODIFY {
+            self.removed = false;
+        }
         if message == NIM_DELETE {
             self.shown = None;
             self.image = None;
@@ -633,6 +645,29 @@ mod tests {
         drop(tray);
         assert_eq!(take_calls(&record), [Call(NIM_DELETE, 0, false)]);
         assert_eq!(record.borrow().destroyed, 2);
+    }
+
+    // On the way out the window closes, then the app holding the tray drops; one delete covers both.
+    #[test]
+    fn the_icon_is_deleted_once_on_exit() {
+        let (mut tray, record) = tray();
+        tray.show(IconKind::Indefinite, "On");
+        take_calls(&record);
+        tray.remove();
+        tray.remove();
+        drop(tray);
+        assert_eq!(take_calls(&record), [Call(NIM_DELETE, 0, false)]);
+    }
+
+    #[test]
+    fn showing_after_a_removal_deletes_again_later() {
+        let (mut tray, record) = tray();
+        tray.show(IconKind::Indefinite, "On");
+        tray.remove();
+        tray.show(IconKind::Passive, "Off");
+        take_calls(&record);
+        tray.remove();
+        assert_eq!(take_calls(&record), [Call(NIM_DELETE, 0, false)]);
     }
 
     #[test]

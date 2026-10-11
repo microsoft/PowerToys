@@ -10,7 +10,7 @@ mod platform;
 use std::process::ExitCode;
 use std::time::Duration;
 
-/// `v0.97.1`, from src/Version.props.
+/// The PowerToys version from src/Version.props, shaped like `v0.97.1`.
 pub const VERSION: &str = env!("AWAKE_PRODUCT_VERSION");
 
 /// Awake's own build codename, logged to pinpoint issues beyond the PowerToys version.
@@ -19,14 +19,14 @@ pub const BUILD_ID: &str = "MENDICANT_10112026";
 
 fn main() -> ExitCode {
     std::panic::set_hook(Box::new(|info| {
-        // The process ends right after this (release builds abort on panic), and Windows then
-        // drops the keep-awake request, so the computer is never held awake by a crashed Awake.
-        // Awake's code takes no lock on the log path. The log channel's own wake-up lock is held
-        // only briefly inside std, by code that cannot panic, so a panic raised inside a log call
-        // cannot re-enter it and deadlock the hook before the process ends.
+        // Release builds abort right after this, and Windows drops the keep-awake request with the
+        // process, so a crashed Awake never holds the computer awake. Logging from the hook cannot
+        // deadlock; see the logging module docs.
         let message = format!("Awake stopped unexpectedly: {info}");
         logging::emergency(&message);
         log::error!("{message}");
+        // The panic never reaches the end of `app::run`, which hands the shell its console mode back.
+        platform::console::restore_mode();
         logging::flush(Duration::from_millis(500));
     }));
     ExitCode::from(u8::try_from(app::run()).unwrap_or(1))

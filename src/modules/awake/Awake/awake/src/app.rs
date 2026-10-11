@@ -23,7 +23,7 @@ use awake_core::time::{CivilDateTime, DateTimeOffset, LocalZone, ParsedTime, Tim
 use awake_core::tray_model;
 use windows_sys::Win32::Foundation::WAIT_OBJECT_0;
 use windows_sys::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
-use windows_sys::Win32::System::Threading::{GetExitCodeProcess, WaitForMultipleObjects};
+use windows_sys::Win32::System::Threading::{GetExitCodeProcess, ResetEvent, WaitForMultipleObjects};
 use windows_sys::Win32::UI::Shell::NIN_SELECT;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     DefWindowProcW, DestroyWindow, ENDSESSION_CLOSEAPP, PBT_APMRESUMEAUTOMATIC, PBT_APMRESUMESUSPEND,
@@ -255,8 +255,16 @@ impl Launcher {
             Ok(prepared) => prepared,
             Err(code) => return code,
         };
+        let summary = (!invocation.legacy && matches!(self.output, Output::Console(_)))
+            .then(|| session_summary(self.strings, SystemClock, &prepared, invocation.display_on));
+        let Prepared {
+            instance,
+            source,
+            activity,
+            bound,
+        } = prepared;
         let mut args: Vec<String> = Vec::new();
-        match prepared.activity {
+        match activity {
             None => args.push("--use-pt-config".into()),
             Some(Activity::Timed { seconds, .. }) => args.extend(["for".into(), format!("{seconds}s")]),
             Some(Activity::Expirable { until }) => args.extend(["until".into(), until.to_json_string()]),
@@ -265,15 +273,13 @@ impl Launcher {
         if invocation.display_on {
             args.push("--display-on".into());
         }
-        if let Some(bound) = &prepared.bound {
+        if let Some(bound) = &bound {
             args.extend(["--pid".into(), bound.target.pid.to_string()]);
         }
-        let new_console = prepared.bound.is_none() && prepared.source == Source::CommandLine;
-        let summary = (!invocation.legacy && matches!(self.output, Output::Console(_)))
-            .then(|| session_summary(self.strings, SystemClock, &prepared, invocation.display_on));
+        let new_console = bound.is_none() && source == Source::CommandLine;
 
-        // The new process confirms through this event once it has started, so the caller's exit
-        // code still tells the truth.
+        // The new process confirms through this event once its session runs, so the caller's
+        // exit code still tells the truth.
         let ready_name = format!(
             "Local\\PowerToysAwakeHandoff-{}-{}{}",
             std::process::id(),
@@ -288,7 +294,7 @@ impl Launcher {
         };
         args.extend(["--handoff".into(), ready_name]);
         // Let the new process take the single-instance lock.
-        drop(prepared);
+        drop(instance);
         let child = match console::hand_off(&args, new_console) {
             Ok(child) => child,
             Err(error) => {
@@ -296,7 +302,11 @@ impl Launcher {
             }
         };
         log::info!("Continuing detached: {args:?}");
-        match wait_for_handoff(&ready, &child) {
+        let result = wait_for_handoff(&ready, &child);
+        // Held until the new process has opened the target itself, so no other process can take
+        // over the PID it was given in between.
+        drop(bound);
+        match result {
             HandoffResult::Started | HandoffResult::Unknown => {
                 if let Some(summary) = summary {
                     console::write_stdout(&text::session_header(self.strings, self.style, VERSION, &summary));
@@ -327,9 +337,6 @@ impl Launcher {
             Ok(prepared) => prepared,
             Err(code) => return code,
         };
-        if let Some(name) = &invocation.handoff_event {
-            event::signal_named(name);
-        }
 
         let exit_name = self.paths.exit_event_name(&bridge::exit_event_name());
         // Opens the runner's event when it created it first.
@@ -339,6 +346,14 @@ impl Launcher {
                 return self.refuse(&self.strings.format(StringId::CliErrStart, &error.to_string()));
             }
         };
+        if source == Source::CommandLine {
+            // A signal already set was meant for an Awake that has since exited: the runner sets
+            // the event to stop the instance it started and keeps it open for a few seconds, and
+            // this one could only take the lock once that instance let go. A PowerToys start keeps
+            // the signal, because the runner may set it before Awake gets this far.
+            // SAFETY: valid event handle.
+            unsafe { ResetEvent(exit_event.as_raw_handle()) };
+        }
 
         let window = match window::create(Some(window_proc)) {
             Ok(window) => window,
@@ -428,6 +443,10 @@ impl Launcher {
         if outcome == Outcome::Destroy {
             // SAFETY: our own window.
             unsafe { DestroyWindow(window) };
+        } else if let Some(name) = &invocation.handoff_event {
+            // Only now is there a session to report; a start that failed on the way exits with
+            // code 1, which the waiting caller relays.
+            event::signal_named(name);
         }
         window::run_message_loop();
         // SAFETY: clearing the pointer set above; the window is already destroyed.
@@ -746,7 +765,7 @@ impl App {
                     log::info!("Windows is signing out or shutting down.");
                 }
                 // Windows may end the process as soon as this returns, so clean up right here.
-                power::set_execution_state(RELEASED);
+                release_request();
                 self.tray.remove();
                 logging::flush(Duration::from_millis(500));
                 self.request_exit(0, Farewell::Stopped)
@@ -1097,9 +1116,13 @@ impl App {
         }
         // The request ends with this thread anyway; releasing it explicitly makes that visible
         // in the log and to anyone inspecting `powercfg /requests` during shutdown.
-        power::set_execution_state(RELEASED);
-        // Normally gone already (WM_DESTROY); this covers a window that never got that far.
-        self.tray.remove();
+        release_request();
+        if !self.pending_changes.is_empty() {
+            // A save waiting out a busy file would die with the window's retry timer, and the next
+            // start would read a session that has already ended. One last try, without retries.
+            self.write_retries = MAX_WRITE_RETRIES;
+            self.write_pending();
+        }
         let exit = self.exit.unwrap_or(ExitPlan {
             code: 0,
             reason: Farewell::Stopped,
@@ -1127,6 +1150,15 @@ impl App {
         // `run` flushes this line before letting a console close end the process.
         log::info!("Exiting with code {}.", exit.code);
         exit.code
+    }
+}
+
+/// Drops whatever this thread asked Windows for, and says so in the log.
+fn release_request() {
+    if power::set_execution_state(RELEASED) {
+        log::info!("Execution state released.");
+    } else {
+        log::error!("Could not release the execution state: {}", last_error());
     }
 }
 
@@ -1265,7 +1297,7 @@ fn reentered(window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> LRES
         // Windows may end the process as soon as this returns, so clean up right here, then
         // close once the app is free: after a Restart Manager request the session goes on.
         WM_ENDSESSION if wparam != 0 => {
-            power::set_execution_state(RELEASED);
+            release_request();
             crate::platform::tray::remove_icon(window);
             logging::flush(Duration::from_millis(500));
             // SAFETY: posting to our own window.
