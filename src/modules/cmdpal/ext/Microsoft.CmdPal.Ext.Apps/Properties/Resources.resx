@@ -299,6 +299,22 @@
   <data name="no_apps_found" xml:space="preserve">
     <value>No apps found</value>
   </data>
+  <data name="no_apps_found_filter_hint" xml:space="preserve">
+    <value>Try selecting All apps.</value>
+    <comment>Hint shown when no results match the selected application filter.</comment>
+  </data>
+  <data name="no_apps_found_hidden_matches" xml:space="preserve">
+    <value>Matching hidden apps: {0}.</value>
+    <comment>{0} is the number of manually hidden or excluded apps matching the current search and application filter.</comment>
+  </data>
+  <data name="clear_filter" xml:space="preserve">
+    <value>Clear filter</value>
+    <comment>Action on an empty application result that selects the All apps filter and keeps the current search.</comment>
+  </data>
+  <data name="show_hidden_apps" xml:space="preserve">
+    <value>Show hidden apps</value>
+    <comment>Action on an empty application result that selects the Hidden filter and keeps the current search.</comment>
+  </data>
   <data name="include_non_apps_on_desktop" xml:space="preserve">
     <value>Also include non-app shortcuts from the desktop</value>
   </data>

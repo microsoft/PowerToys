@@ -79,6 +79,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clear filter.
+        /// </summary>
+        internal static string clear_filter {
+            get {
+                return ResourceManager.GetString("clear_filter", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Copy path.
         /// </summary>
         internal static string copy_path {
@@ -527,6 +536,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("no_apps_found", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Try selecting All apps.
+        /// </summary>
+        internal static string no_apps_found_filter_hint {
+            get {
+                return ResourceManager.GetString("no_apps_found_filter_hint", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Matching hidden apps: {0}..
+        /// </summary>
+        internal static string no_apps_found_hidden_matches {
+            get {
+                return ResourceManager.GetString("no_apps_found_hidden_matches", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Open containing folder.
@@ -687,6 +714,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string shortcut_also_listed_as {
             get {
                 return ResourceManager.GetString("shortcut_also_listed_as", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Show hidden apps.
+        /// </summary>
+        internal static string show_hidden_apps {
+            get {
+                return ResourceManager.GetString("show_hidden_apps", resourceCulture);
             }
         }
 
