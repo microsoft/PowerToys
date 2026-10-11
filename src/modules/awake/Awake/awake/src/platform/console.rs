@@ -17,11 +17,11 @@ use windows_sys::Win32::Storage::FileSystem::WriteFile;
 use windows_sys::Win32::System::Console::{
     CTRL_BREAK_EVENT, CTRL_C_EVENT, CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT, CTRL_SHUTDOWN_EVENT,
     ENABLE_PROCESSED_OUTPUT, ENABLE_VIRTUAL_TERMINAL_PROCESSING, FreeConsole, GetConsoleMode,
-    GetConsoleProcessList, GetConsoleWindow, GetStdHandle, STD_ERROR_HANDLE, STD_OUTPUT_HANDLE,
-    SetConsoleCtrlHandler, SetConsoleMode, WriteConsoleW,
+    GetConsoleProcessList, GetStdHandle, STD_ERROR_HANDLE, STD_OUTPUT_HANDLE, SetConsoleCtrlHandler,
+    SetConsoleMode, WriteConsoleW,
 };
 use windows_sys::Win32::System::Threading::{
-    CREATE_NEW_CONSOLE, CREATE_NO_WINDOW, CreateProcessW, PROCESS_INFORMATION, STARTUPINFOW, SetEvent,
+    CREATE_NEW_CONSOLE, CreateProcessW, DETACHED_PROCESS, PROCESS_INFORMATION, STARTUPINFOW, SetEvent,
     WaitForSingleObject,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::PostMessageW;
@@ -87,7 +87,9 @@ pub fn restore_mode() {
     unsafe { SetConsoleMode(handle, saved as u32) };
 }
 
-/// The processes attached to this console, Awake included; empty without a console.
+/// The processes attached to this console, Awake included; empty without a console. Unlike
+/// `GetConsoleWindow`, this also sees a console created with `CREATE_NO_WINDOW`, which has no
+/// window at all.
 pub fn attached_processes() -> Vec<u32> {
     let mut ids = vec![0u32; 64];
     loop {
@@ -102,12 +104,6 @@ pub fn attached_processes() -> Vec<u32> {
         ids.truncate(count);
         return ids;
     }
-}
-
-/// Whether this process has a console window, visible or not.
-pub fn has_console() -> bool {
-    // SAFETY: plain call.
-    !unsafe { GetConsoleWindow() }.is_null()
 }
 
 pub fn write_stdout(text: &str) {
@@ -349,7 +345,7 @@ unsafe extern "system" fn ctrl_handler(kind: u32) -> i32 {
 /// Starts Awake again with `args`, detached from the calling console, and returns at once. The
 /// original Awake options never blocked the shell that started them, and scripts rely on that.
 /// `new_console` gives the new process a console window of its own, as unbound sessions had;
-/// bound sessions run without one, as before.
+/// bound sessions run without any console, as before, so no console host runs alongside them.
 pub fn hand_off(args: &[String], new_console: bool) -> io::Result<OwnedHandle> {
     let exe = std::env::current_exe()?;
     let mut command_line: Vec<u16> = std::iter::once(quote(&exe.to_string_lossy()))
@@ -368,7 +364,7 @@ pub fn hand_off(args: &[String], new_console: bool) -> io::Result<OwnedHandle> {
     let flags = if new_console {
         CREATE_NEW_CONSOLE
     } else {
-        CREATE_NO_WINDOW
+        DETACHED_PROCESS
     };
     // SAFETY: all pointers are valid; the command line buffer is writable as required. No
     // handles are inherited and no standard handles are passed, so the child uses its own.

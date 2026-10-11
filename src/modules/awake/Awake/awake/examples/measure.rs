@@ -5,14 +5,19 @@
 //! ```
 //!
 //! `{pid}` in the arguments is replaced with this process's id, so both implementations can be
-//! bound to the measuring process. Reports startup time until the tray window exists, the
-//! footprint after settling, and CPU time used while idle.
+//! bound to the measuring process. Each run starts the program exactly as the PowerToys runner
+//! starts Awake. Reports startup time until the tray window exists, the footprint after
+//! settling, CPU time used while idle, and any console host that runs alongside, whose memory
+//! the program's own numbers leave out.
 
-use std::os::windows::io::AsRawHandle;
-use std::os::windows::process::CommandExt;
-use std::process::{Child, Command, Stdio};
+#[path = "../tests/support/runner.rs"]
+mod runner;
+
+use std::ffi::OsString;
 use std::time::{Duration, Instant};
 use std::{mem, ptr};
+
+use runner::Launched;
 
 use windows_sys::Win32::Foundation::{FILETIME, HWND};
 use windows_sys::Win32::System::Diagnostics::ToolHelp::{
@@ -20,7 +25,7 @@ use windows_sys::Win32::System::Diagnostics::ToolHelp::{
 };
 use windows_sys::Win32::System::ProcessStatus::{K32GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS_EX};
 use windows_sys::Win32::System::Threading::{
-    CREATE_NO_WINDOW, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources, GetProcessHandleCount, GetProcessTimes,
+    DETACHED_PROCESS, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources, GetProcessHandleCount, GetProcessTimes,
 };
 use windows_sys::Win32::System::WindowsProgramming::QueryProcessCycleTime;
 use windows_sys::Win32::UI::WindowsAndMessaging::{FindWindowExW, GetWindowThreadProcessId};
@@ -39,18 +44,17 @@ fn main() {
     let mut startups = Vec::new();
     let mut last = None;
     for run in 0..RUNS {
-        let (mut child, startup) = start(&exe, &rest);
+        let (child, startup) = start(&exe, &rest);
         startups.push(startup);
         if run + 1 < RUNS {
-            child.kill().ok();
-            child.wait().ok();
+            child.kill();
         } else {
             last = Some(child);
         }
         std::thread::sleep(Duration::from_millis(300));
     }
     startups.sort();
-    let mut child = last.expect("last run");
+    let child = last.expect("last run");
 
     std::thread::sleep(SETTLE);
     let cpu_before = cpu_time(&child);
@@ -59,8 +63,9 @@ fn main() {
     let cpu_after = cpu_time(&child);
     let cycles_after = cycles(&child);
     let footprint = footprint(&child);
-    child.kill().ok();
-    child.wait().ok();
+    let hosts = runner::console_hosts(child.pid);
+    let host_memory: usize = hosts.iter().filter_map(|&host| runner::working_set(host)).sum();
+    child.kill();
 
     println!(
         "{label}: startup median {:.1} ms (min {:.1}, max {:.1}); private {:.1} MB; working set {:.1} MB; handles {}; threads {}; GDI {}; USER {}; idle CPU {:.2} ms and {:.1} M cycles over {}s",
@@ -77,6 +82,13 @@ fn main() {
         scaled(cycles_after - cycles_before, 1_000_000.0),
         IDLE_WINDOW.as_secs(),
     );
+    if !hosts.is_empty() {
+        println!(
+            "{label}: {} console host(s) alongside, working set {:.1} MB",
+            hosts.len(),
+            scaled(host_memory as u64, 1_048_576.0),
+        );
+    }
 }
 
 fn ms(duration: Duration) -> f64 {
@@ -93,30 +105,18 @@ fn scaled(value: u64, unit: f64) -> f64 {
 
 /// Starts the program and waits for its tray window, which both implementations create with
 /// the class `Awake.MessageWindow` once they are ready.
-#[allow(
-    clippy::zombie_processes,
-    reason = "the timeout path kills and waits before panicking"
-)]
-fn start(exe: &str, args: &[String]) -> (Child, Duration) {
+fn start(exe: &str, args: &[String]) -> (Launched, Duration) {
     let started = Instant::now();
     // Keep logs and settings out of the real profile; harmless for builds that ignore it.
     let data_dir = std::env::temp_dir().join(format!("awake-measure-{}", std::process::id()));
-    let mut child = Command::new(exe)
-        .args(args)
-        .env("POWERTOYS_AWAKE_DATA_DIR", &data_dir)
-        .env("POWERTOYS_AWAKE_OBJECT_SUFFIX", "-measure")
-        // Like the PowerToys runner: no console of its own and none shared with this harness.
-        .creation_flags(CREATE_NO_WINDOW)
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
-        .expect("start");
+    let env = [
+        ("POWERTOYS_AWAKE_DATA_DIR", data_dir.into_os_string()),
+        ("POWERTOYS_AWAKE_OBJECT_SUFFIX", OsString::from("-measure")),
+    ];
+    let args: Vec<&str> = args.iter().map(String::as_str).collect();
+    // The runner's flags; the launcher passes no standard handles, as the runner does not.
+    let child = runner::launch(exe, &args, &env, DETACHED_PROCESS).expect("start");
     let class: Vec<u16> = "Awake.MessageWindow".encode_utf16().chain(Some(0)).collect();
-    #[allow(
-        clippy::zombie_processes,
-        reason = "the timeout path kills and waits before panicking"
-    )]
     loop {
         let mut window: HWND = ptr::null_mut();
         loop {
@@ -128,36 +128,36 @@ fn start(exe: &str, args: &[String]) -> (Child, Duration) {
             let mut owner = 0;
             // SAFETY: valid window handle.
             unsafe { GetWindowThreadProcessId(window, &mut owner) };
-            if owner == child.id() {
+            if owner == child.pid {
                 return (child, started.elapsed());
             }
         }
-        if started.elapsed() > Duration::from_secs(30) {
-            child.kill().ok();
-            child.wait().ok();
-            panic!("no window from {exe}");
-        }
+        // Dropping the child ends it.
+        assert!(
+            started.elapsed() <= Duration::from_secs(30),
+            "no window from {exe}"
+        );
         std::thread::sleep(Duration::from_millis(1));
     }
 }
 
-fn cpu_time(child: &Child) -> u64 {
+fn cpu_time(child: &Launched) -> u64 {
     let mut times = [FILETIME {
         dwLowDateTime: 0,
         dwHighDateTime: 0,
     }; 4];
     let [created, exited, kernel, user] = &mut times;
     // SAFETY: valid process handle and out-pointers.
-    unsafe { GetProcessTimes(child.as_raw_handle(), created, exited, kernel, user) };
+    unsafe { GetProcessTimes(child.handle(), created, exited, kernel, user) };
     let ticks = |t: &FILETIME| (u64::from(t.dwHighDateTime) << 32) | u64::from(t.dwLowDateTime);
     ticks(kernel) + ticks(user)
 }
 
 /// Exact CPU cycles used by all threads, unlike the 15.6 ms granularity of process times.
-fn cycles(child: &Child) -> u64 {
+fn cycles(child: &Launched) -> u64 {
     let mut cycles = 0;
     // SAFETY: valid process handle and out-pointer.
-    unsafe { QueryProcessCycleTime(child.as_raw_handle(), &mut cycles) };
+    unsafe { QueryProcessCycleTime(child.handle(), &mut cycles) };
     cycles
 }
 
@@ -170,8 +170,8 @@ struct Footprint {
     user: u32,
 }
 
-fn footprint(child: &Child) -> Footprint {
-    let process = child.as_raw_handle();
+fn footprint(child: &Launched) -> Footprint {
+    let process = child.handle();
     // SAFETY: plain data and a valid process handle we own.
     unsafe {
         let mut memory: PROCESS_MEMORY_COUNTERS_EX = mem::zeroed();
@@ -183,7 +183,7 @@ fn footprint(child: &Child) -> Footprint {
             private_bytes: memory.PrivateUsage,
             working_set: memory.WorkingSetSize,
             handles,
-            threads: threads(child.id()),
+            threads: threads(child.pid),
             gdi: GetGuiResources(process, GR_GDIOBJECTS),
             user: GetGuiResources(process, GR_USEROBJECTS),
         }

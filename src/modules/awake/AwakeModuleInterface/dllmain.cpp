@@ -80,9 +80,10 @@ private:
 
         STARTUPINFO startup_info = { sizeof(startup_info) };
         PROCESS_INFORMATION process_info = {};
-        // Awake is a console program for its command line; it runs here without a console window
-        // and inherits none of the runner's handles.
-        if (!CreateProcess(executable.c_str(), command_line.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &startup_info, &process_info))
+        // Awake is a console program for its command line. Here it gets no console at all:
+        // CREATE_NO_WINDOW would still start a hidden console host that lives as long as Awake.
+        // It inherits none of the runner's handles.
+        if (!CreateProcess(executable.c_str(), command_line.data(), nullptr, nullptr, FALSE, DETACHED_PROCESS, nullptr, nullptr, &startup_info, &process_info))
         {
             Logger::error(L"PowerToys Awake failed to start. {}", get_last_error_or_default(GetLastError()));
             return false;

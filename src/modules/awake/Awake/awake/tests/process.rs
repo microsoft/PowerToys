@@ -11,8 +11,10 @@ use std::time::{Duration, Instant};
 use awake_core::mode::Mode;
 use awake_core::settings::{ModeSetting, SettingsDocument};
 use awake_core::time::FixedZone;
+use support::runner::{console_hosts, thread_names};
 use support::*;
 use windows_sys::Win32::System::Console::GetConsoleProcessList;
+use windows_sys::Win32::System::Threading::{CREATE_NO_WINDOW, DETACHED_PROCESS};
 
 const SECOND: Duration = Duration::from_secs(1);
 /// How long a command that should return promptly may take before the test fails instead of
@@ -281,6 +283,57 @@ fn corrupt_settings_are_reported_and_left_alone() {
     assert!(sandbox.wait_for_log("Entered Passive.", 1, 5 * SECOND));
     sandbox.signal_exit();
     assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+}
+
+/// Started exactly as the runner starts it, Awake carries nothing the runner cannot see: no
+/// console host and no thread drawing a live status into a console nobody reads. That holds for
+/// `DETACHED_PROCESS`, which the runner and bound hand-offs use, and for `CREATE_NO_WINDOW`,
+/// whose hidden console Awake has to leave.
+#[test]
+fn a_start_without_a_console_window_keeps_no_console() {
+    let _serial = serial();
+    // The probe itself: a hidden console's host shows up as a child of the process it serves.
+    let cmd = std::env::var("ComSpec").unwrap_or_else(|_| r"C:\Windows\System32\cmd.exe".into());
+    let probe = support::runner::launch(&cmd, &["/c", "ping -n 5 127.0.0.1"], &[], CREATE_NO_WINDOW).unwrap();
+    assert!(
+        wait_until(5 * SECOND, || !console_hosts(probe.pid).is_empty()),
+        "a hidden console's host is visible"
+    );
+    drop(probe);
+
+    let pid = own_pid();
+    for (name, flags) in [("detached", DETACHED_PROCESS), ("no-window", CREATE_NO_WINDOW)] {
+        for (session, args) in [
+            ("runner", ["--use-pt-config", "--pid", pid.as_str()].as_slice()),
+            ("bound", ["for", "1m", "--pid", pid.as_str()].as_slice()),
+        ] {
+            let sandbox = Sandbox::new(&format!("console-{name}-{session}"));
+            let awake = sandbox.launch_like_runner(args, flags);
+            find_window(awake.pid, 5 * SECOND).expect("the session starts");
+            assert!(
+                wait_until(3 * SECOND, || console_hosts(awake.pid).is_empty()),
+                "{name} {session}: a console host stayed with Awake"
+            );
+            let threads = thread_names(awake.pid);
+            assert!(
+                !threads.iter().any(|thread| thread == "awake-console"),
+                "{name} {session}: live output into a console nobody sees: {threads:?}"
+            );
+            sandbox.signal_exit();
+            assert_eq!(awake.wait_exit(5 * SECOND), Some(0), "{}", sandbox.log());
+        }
+    }
+}
+
+fn wait_until(timeout: Duration, mut done: impl FnMut() -> bool) -> bool {
+    let deadline = Instant::now() + timeout;
+    while Instant::now() < deadline {
+        if done() {
+            return true;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    done()
 }
 
 #[test]

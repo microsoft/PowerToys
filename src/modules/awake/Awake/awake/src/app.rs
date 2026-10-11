@@ -146,13 +146,16 @@ fn start() -> i32 {
     let attached = console::attached_processes();
     let shell_waits = attached.len() > 1;
     // A console made just for Awake by a program without one: drop it for sessions that are
-    // bound to a process or run under PowerToys, which never showed a window.
-    if !shell_waits
-        && console::has_console()
-        && (invocation.binding != Binding::None || invocation.plan == Plan::PowerToys)
-    {
+    // bound to a process or run under PowerToys, which never showed a window. Its host process
+    // would otherwise live as long as Awake, and a live status line would be drawn into it
+    // every second. Only Awake being attached is the test: a console created with
+    // CREATE_NO_WINDOW has no window, so GetConsoleWindow cannot see it.
+    if attached.len() == 1 && (invocation.binding != Binding::None || invocation.plan == Plan::PowerToys) {
         console::detach();
-        launcher.output = Output::None;
+        // Output redirected to a pipe or a file still reaches whoever reads it.
+        if matches!(launcher.output, Output::Console(_)) {
+            launcher.output = Output::None;
+        }
     }
 
     // Waiting in the foreground for a process that is itself waiting for Awake (a script

@@ -2,9 +2,12 @@
 
 #![allow(dead_code)]
 
+pub mod runner;
+
+use std::ffi::OsString;
 use std::io::Read;
 use std::ops::{Deref, DerefMut};
-use std::os::windows::io::AsRawHandle;
+use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Output, Stdio};
@@ -13,13 +16,14 @@ use std::time::{Duration, Instant};
 use std::{fs, mem, ptr};
 
 use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, HWND};
+use windows_sys::Win32::System::Console::{CTRL_BREAK_EVENT, GenerateConsoleCtrlEvent};
 use windows_sys::Win32::System::Diagnostics::ToolHelp::{
     CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW, TH32CS_SNAPPROCESS,
 };
 use windows_sys::Win32::System::Power::{CallNtPowerInformation, SystemExecutionState};
 use windows_sys::Win32::System::ProcessStatus::{K32GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS_EX};
 use windows_sys::Win32::System::Threading::{
-    CREATE_NO_WINDOW, EVENT_MODIFY_STATE, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources,
+    CreateEventW, DETACHED_PROCESS, EVENT_MODIFY_STATE, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources,
     GetProcessHandleCount, OpenEventW, SetEvent,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{
@@ -54,12 +58,26 @@ impl Sandbox {
         self.root.join("Awake").join("settings.json")
     }
 
-    /// Starts Awake the way the PowerToys runner does: without a console window of its own and
-    /// without sharing the caller's console.
+    /// Starts Awake without a console, as the PowerToys runner does, but with its output piped
+    /// to the test. The runner passes no standard handles at all; [`Sandbox::launch_like_runner`]
+    /// starts it exactly that way.
     pub fn command(&self, args: &[&str]) -> Command {
         let mut command = self.command_in_callers_console(args);
-        command.creation_flags(CREATE_NO_WINDOW);
+        command.creation_flags(DETACHED_PROCESS);
         command
+    }
+
+    /// Starts Awake exactly as the runner does: `flags` for creation, no standard handles and no
+    /// inherited handles.
+    pub fn launch_like_runner(&self, args: &[&str], flags: u32) -> runner::Launched {
+        let env = [
+            ("POWERTOYS_AWAKE_DATA_DIR", self.root.clone().into_os_string()),
+            (
+                "POWERTOYS_AWAKE_OBJECT_SUFFIX",
+                OsString::from(self.object_suffix()),
+            ),
+        ];
+        runner::launch(EXE, args, &env, flags).expect("start awake")
     }
 
     /// Starts Awake in the test's own console, the way a shell would.
@@ -112,6 +130,20 @@ impl Sandbox {
 
     pub fn signal_exit(&self) {
         assert!(self.try_signal_exit(), "exit event exists while Awake runs");
+    }
+
+    /// Creates the exit event already set, as the runner leaves it for a few seconds after
+    /// stopping the Awake it started. It lasts as long as the returned handle.
+    pub fn signaled_exit_event(&self) -> OwnedHandle {
+        let name = wide(&self.exit_event_name());
+        // SAFETY: NUL-terminated name; a manual-reset event created set, like the runner's.
+        let event = unsafe { CreateEventW(ptr::null(), 1, 1, name.as_ptr()) };
+        assert!(!event.is_null(), "{}", std::io::Error::last_os_error());
+        // SAFETY: a fresh handle we own.
+        let event = unsafe { OwnedHandle::from_raw_handle(event) };
+        // SAFETY: valid event handle; it may have existed unset already.
+        unsafe { SetEvent(event.as_raw_handle()) };
+        event
     }
 
     /// Sets the exit event if an Awake in this sandbox has created it.
@@ -371,6 +403,24 @@ pub fn system_execution_state() -> u32 {
         CallNtPowerInformation(SystemExecutionState, ptr::null(), 0, (&raw mut state).cast(), 4);
     }
     state
+}
+
+/// Sends Ctrl+Break to a process started with `CREATE_NEW_PROCESS_GROUP` in this console.
+pub fn ctrl_break(pid: u32) {
+    // SAFETY: plain call; the group id is the process id of the group's first process.
+    let sent = unsafe { GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid) } != 0;
+    assert!(sent, "{}", std::io::Error::last_os_error());
+}
+
+/// A time `seconds` from now, as the settings file stores it.
+pub fn utc_in(seconds: u64) -> String {
+    let unix = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+        + seconds;
+    let ticks = (unix as i64 + 11_644_473_600) * 10_000_000;
+    awake_core::time::DateTimeOffset::new(awake_core::time::Timestamp::from_ticks(ticks), 0).to_json_string()
 }
 
 pub fn path_text(path: &Path) -> String {
