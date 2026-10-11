@@ -180,6 +180,39 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual(0, orphanedKeys.Count);
         }
 
+        [TestMethod]
+        public void GetOrphanedKeys_ShouldReturnSourceKey_ForKeyToTextRemap()
+        {
+            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeys(new[]
+            {
+                CreateTextRemap(VkA, "hello"),
+            });
+
+            CollectionAssert.AreEqual(new List<int> { VkA }, new List<int>(orphanedKeys));
+        }
+
+        [TestMethod]
+        public void GetOrphanedKeys_ShouldIgnoreKeyToTextRemap_WithEmptyText()
+        {
+            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeys(new[]
+            {
+                CreateTextRemap(VkA, string.Empty),
+            });
+
+            Assert.AreEqual(0, orphanedKeys.Count);
+        }
+
+        [TestMethod]
+        public void GetOrphanedKeysCausedBy_ShouldReturnSourceKey_ForNewKeyToTextRemap()
+        {
+            IReadOnlyList<int> orphanedKeys = ValidationHelper.GetOrphanedKeysCausedBy(
+                new List<ShortcutKeyMapping>(),
+                null,
+                CreateTextRemap(VkA, "hello"));
+
+            CollectionAssert.AreEqual(new List<int> { VkA }, new List<int>(orphanedKeys));
+        }
+
         private static ShortcutKeyMapping CreateKeyRemap(int originalKey, int targetKey, SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always) =>
             new()
             {
@@ -195,6 +228,14 @@ namespace KeyboardManagerEditorUI.UnitTests
                 OperationType = ShortcutOperationType.RemapShortcut,
                 OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
                 TargetKeys = string.Join(";", targetKeys),
+            };
+
+        private static ShortcutKeyMapping CreateTextRemap(int originalKey, string text) =>
+            new()
+            {
+                OperationType = ShortcutOperationType.RemapText,
+                OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
+                TargetText = text,
             };
     }
 }
