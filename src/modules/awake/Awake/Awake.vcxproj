@@ -120,10 +120,14 @@
         XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
         const string unitTestType = "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b";
         const string allResultsList = "19431567-8539-422a-85d7-44ee4e166bda";
-        var testLine = new Regex(@"^test (\S+) \.\.\. (ok|FAILED|ignored)\b");
+        // libtest appends " - should panic", " - compile fail" or " - compile" for those kinds of
+        // test, and doc test names contain spaces ("src\lib.rs - item (line 3)"), so a name runs
+        // up to that suffix or to " ... ".
+        var testLine = new Regex(@"^test (.+?)(?: - (?:should panic|compile fail|compile))? \.\.\. (ok|FAILED|ignored)\b");
+        var summaryLine = new Regex(@"^test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored;");
         var runningLine = new Regex(@"^\s*Running (?:unittests )?(\S+)");
         var docTestsLine = new Regex(@"^\s*Doc-tests (\S+)");
-        var captureLine = new Regex(@"^---- (\S+) std(?:out|err) ----$");
+        var captureLine = new Regex(@"^---- (.+) std(?:out|err) ----$");
         var lines = (Lines ?? new ITaskItem[0]).Select(l => l.ItemSpec).ToList();
 
         // What libtest prints for each failed test, by test name.
@@ -150,11 +154,14 @@
             }
         }
 
-        var results = new XElement(ns + "Results");
-        var definitions = new XElement(ns + "TestDefinitions");
-        var entries = new XElement(ns + "TestEntries");
-        int passed = 0, failed = 0, skipped = 0;
+        // Each test once, by binary and name, keeping the last line: the contract test is listed
+        // as ignored by the full run and then run on its own, and only the run that executed it
+        // counts.
+        var tests = new Dictionary<string, Tuple<string, string, string, bool>>();
+        var order = new List<string>();
+        int parsed = 0, reported = 0;
         string binary = "awake";
+        bool docTests = false;
         foreach (var line in lines)
         {
             // "Running unittests src\main.rs (...)", "Running tests\process.rs (...)", "Doc-tests awake_core".
@@ -162,12 +169,20 @@
             if (running.Success)
             {
                 binary = running.Groups[1].Value.Replace('\\', '/');
+                docTests = false;
                 continue;
             }
             var doc = docTestsLine.Match(line);
             if (doc.Success)
             {
                 binary = doc.Groups[1].Value + " (doc)";
+                docTests = true;
+                continue;
+            }
+            var summary = summaryLine.Match(line);
+            if (summary.Success)
+            {
+                reported += int.Parse(summary.Groups[1].Value) + int.Parse(summary.Groups[2].Value) + int.Parse(summary.Groups[3].Value);
                 continue;
             }
             var m = testLine.Match(line);
@@ -175,8 +190,29 @@
             {
                 continue;
             }
-            string name = m.Groups[1].Value;
+            parsed++;
+            string key = binary + "\n" + m.Groups[1].Value;
+            if (!tests.ContainsKey(key))
+            {
+                order.Add(key);
+            }
             string outcome = m.Groups[2].Value == "ok" ? "Passed" : m.Groups[2].Value == "FAILED" ? "Failed" : "NotExecuted";
+            tests[key] = Tuple.Create(binary, m.Groups[1].Value, outcome, docTests);
+        }
+        if (parsed != reported)
+        {
+            Log.LogWarning("libtest reported {0} test results but {1} test lines were recognised, so {2} may not match what ran. Check the patterns in Awake.vcxproj against libtest's output.", reported, parsed, OutputFile);
+        }
+
+        var results = new XElement(ns + "Results");
+        var definitions = new XElement(ns + "TestDefinitions");
+        var entries = new XElement(ns + "TestEntries");
+        int passed = 0, failed = 0, skipped = 0;
+        foreach (var key in order)
+        {
+            string testBinary = tests[key].Item1;
+            string name = tests[key].Item2;
+            string outcome = tests[key].Item3;
             if (outcome == "Passed") { passed++; } else if (outcome == "Failed") { failed++; } else { skipped++; }
             string testId = Guid.NewGuid().ToString();
             string executionId = Guid.NewGuid().ToString();
@@ -197,16 +233,17 @@
                         new XElement(ns + "Message", string.Join(Environment.NewLine, output).Trim()))));
             }
             results.Add(result);
-            int split = name.LastIndexOf("::", StringComparison.Ordinal);
+            // Doc test names hold a file path and an item, not a module path to split.
+            int split = tests[key].Item4 ? -1 : name.LastIndexOf("::", StringComparison.Ordinal);
             definitions.Add(new XElement(ns + "UnitTest",
                 new XAttribute("name", name),
-                new XAttribute("storage", binary),
+                new XAttribute("storage", testBinary),
                 new XAttribute("id", testId),
                 new XElement(ns + "Execution", new XAttribute("id", executionId)),
                 new XElement(ns + "TestMethod",
-                    new XAttribute("codeBase", binary),
+                    new XAttribute("codeBase", testBinary),
                     new XAttribute("adapterTypeName", "executor://cargo-test"),
-                    new XAttribute("className", split < 0 ? binary : binary + "::" + name.Substring(0, split)),
+                    new XAttribute("className", split < 0 ? testBinary : testBinary + "::" + name.Substring(0, split)),
                     new XAttribute("name", split < 0 ? name : name.Substring(split + 2)))));
             entries.Add(new XElement(ns + "TestEntry",
                 new XAttribute("testId", testId),
