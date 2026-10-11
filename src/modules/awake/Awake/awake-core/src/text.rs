@@ -3,7 +3,7 @@
 //! The look: an accented title, `●` for what is happening, `⎿` for details,
 //! and one dim status line that updates in place.
 
-use crate::cli::{CliError, PROGRAM};
+use crate::cli::{CliError, Expected, PROGRAM};
 use crate::duration::{Countdown, DurationError};
 use crate::strings::{StringId, Strings};
 
@@ -183,7 +183,25 @@ pub fn cli_error_message(strings: Strings, error: &CliError) -> String {
         }
         CliError::Duration { input, .. } => strings.format(StringId::CliErrDuration, input),
         CliError::Time { input } => strings.format(StringId::CliErrTime, input),
+        // A number too large for any process reads like one no process has.
+        CliError::Pid { input } if is_integer(input) => {
+            strings.format(StringId::CliErrPidNotFound, input.trim())
+        }
+        CliError::Pid { input } => strings.format(StringId::CliErrPidInvalid, input),
+        CliError::MissingValue { name, expected } => strings.format(
+            match expected {
+                Expected::Duration => StringId::CliErrNeedsDuration,
+                Expected::Time => StringId::CliErrNeedsTime,
+                Expected::ProcessId => StringId::CliErrNeedsPid,
+            },
+            name,
+        ),
     }
+}
+
+fn is_integer(text: &str) -> bool {
+    let digits = text.trim().trim_start_matches(['-', '+']);
+    !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit())
 }
 
 /// What the terminal shows for a running session.
@@ -338,6 +356,49 @@ mod tests {
             },
         );
         assert_eq!(message, "\"90\" isn't a duration. Try 45m, 2h or 1h30m.");
+    }
+
+    #[test]
+    fn missing_values_name_the_command_or_option() {
+        let message = |name: &str, expected| {
+            cli_error_message(
+                Strings::ENGLISH,
+                &CliError::MissingValue {
+                    name: name.into(),
+                    expected,
+                },
+            )
+        };
+        assert_eq!(
+            message("for", Expected::Duration),
+            "for needs a duration, like 45m or 1h30m."
+        );
+        assert_eq!(
+            message("until", Expected::Time),
+            "until needs a time, like 17:30 or 2026-12-24T18:00."
+        );
+        assert_eq!(
+            message("-e", Expected::Time),
+            "-e needs a time, like 17:30 or 2026-12-24T18:00."
+        );
+        assert_eq!(
+            message("--pid", Expected::ProcessId),
+            "--pid needs a process ID, like --pid 1234."
+        );
+    }
+
+    #[test]
+    fn bad_process_ids_are_sentences() {
+        let message =
+            |input: &str| cli_error_message(Strings::ENGLISH, &CliError::Pid { input: input.into() });
+        assert_eq!(
+            message("abc"),
+            "\"abc\" isn't a process ID. Try a number like 1234."
+        );
+        assert_eq!(
+            message("99999999999999999999"),
+            "No running process has the ID 99999999999999999999."
+        );
     }
 
     #[test]

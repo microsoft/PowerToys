@@ -307,6 +307,22 @@
     <value>"{0}" isn't a time Awake understands. Try 17:30 or 2026-12-24T18:00.</value>
     <comment>Do not translate the example times.</comment>
   </data>
+  <data name="AWAKE_CLI_ERR_PID_INVALID" xml:space="preserve">
+    <value>"{0}" isn't a process ID. Try a number like 1234.</value>
+    <comment>{0} is the text typed after --pid.</comment>
+  </data>
+  <data name="AWAKE_CLI_ERR_NEEDS_DURATION" xml:space="preserve">
+    <value>{0} needs a duration, like 45m or 1h30m.</value>
+    <comment>{0} is the command as typed, such as "for"; do not translate it. Do not translate 45m and 1h30m.</comment>
+  </data>
+  <data name="AWAKE_CLI_ERR_NEEDS_TIME" xml:space="preserve">
+    <value>{0} needs a time, like 17:30 or 2026-12-24T18:00.</value>
+    <comment>{0} is the command or option as typed, such as "until" or "--expire-at"; do not translate it. Do not translate the example times.</comment>
+  </data>
+  <data name="AWAKE_CLI_ERR_NEEDS_PID" xml:space="preserve">
+    <value>{0} needs a process ID, like {0} 1234.</value>
+    <comment>{0} is the option as typed, such as "--pid"; do not translate it.</comment>
+  </data>
   <data name="AWAKE_CLI_ERR_PAST" xml:space="preserve">
     <value>That time has already passed.</value>
   </data>

@@ -7,6 +7,7 @@
 use std::ffi::OsString;
 use std::fmt;
 
+use clap::error::{ContextKind, ContextValue, ErrorKind};
 use clap::{ArgAction, Parser, Subcommand};
 
 use crate::duration::{DurationError, parse_duration};
@@ -96,6 +97,29 @@ pub enum CliError {
         /// The text as typed, arguments joined by spaces.
         input: String,
     },
+    /// The value of `--pid` is not a number that fits a process ID.
+    Pid {
+        /// The text as typed.
+        input: String,
+    },
+    /// A command or option that takes a value was given none.
+    MissingValue {
+        /// The command or option as typed, such as `for` or `-e`.
+        name: String,
+        /// What it needs.
+        expected: Expected,
+    },
+}
+
+/// The kind of value a command or option needs.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Expected {
+    /// A duration, for `for`.
+    Duration,
+    /// A time, for `until` and `--expire-at`.
+    Time,
+    /// A process ID, for `--pid`.
+    ProcessId,
 }
 
 impl fmt::Display for CliError {
@@ -104,6 +128,15 @@ impl fmt::Display for CliError {
             CliError::Usage(text) => f.write_str(text),
             CliError::Duration { input, error } => write!(f, "'{input}' is not a valid duration: {error}"),
             CliError::Time { input } => write!(f, "'{input}' is not a valid time"),
+            CliError::Pid { input } => write!(f, "'{input}' is not a valid process ID"),
+            CliError::MissingValue { name, expected } => {
+                let what = match expected {
+                    Expected::Duration => "a duration",
+                    Expected::Time => "a time",
+                    Expected::ProcessId => "a process ID",
+                };
+                write!(f, "{name} needs {what}")
+            }
         }
     }
 }
@@ -112,7 +145,10 @@ impl std::error::Error for CliError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             CliError::Duration { error, .. } => Some(error),
-            CliError::Usage(_) | CliError::Time { .. } => None,
+            CliError::Usage(_)
+            | CliError::Time { .. }
+            | CliError::Pid { .. }
+            | CliError::MissingValue { .. } => None,
         }
     }
 }
@@ -133,12 +169,9 @@ struct Args {
           default_missing_value = "true", value_parser = parse_bool, global = true)]
     display_on: Option<bool>,
 
-    #[allow(
-        clippy::option_option,
-        reason = "clap's shape for absent, given bare, or given a value"
-    )]
-    #[arg(short = 'p', long = "pid", num_args = 0..=1, allow_negative_numbers = true, global = true)]
-    pid: Option<Option<i64>>,
+    // Text, so a value that is not a number gets Awake's own message rather than clap's.
+    #[arg(short = 'p', long = "pid", allow_negative_numbers = true, global = true)]
+    pid: Option<String>,
 
     #[arg(long = "parent", action = ArgAction::SetTrue, global = true)]
     parent: bool,
@@ -153,12 +186,8 @@ struct Args {
     #[arg(short = 't', long = "time-limit", hide = true)]
     time_limit: Option<u32>,
 
-    #[allow(
-        clippy::option_option,
-        reason = "clap's shape for absent, given bare, or given a value"
-    )]
-    #[arg(short = 'e', long = "expire-at", num_args = 0..=1, hide = true)]
-    expire_at: Option<Option<String>>,
+    #[arg(short = 'e', long = "expire-at", hide = true)]
+    expire_at: Option<String>,
 
     #[arg(short = 'u', long = "use-parent-pid", num_args = 0..=1, require_equals = true,
           default_missing_value = "true", value_parser = parse_bool, hide = true)]
@@ -169,14 +198,16 @@ struct Args {
     handoff: Option<String>,
 }
 
+// The arguments are optional to clap so that leaving one out gets a localized sentence naming
+// the command; clap's own message for it ends in a list of arguments Awake does not show.
 #[derive(Subcommand, Debug)]
 enum Command {
     For {
-        #[arg(required = true, num_args = 1..)]
+        #[arg(num_args = 0..)]
         duration: Vec<String>,
     },
     Until {
-        #[arg(required = true, num_args = 1..)]
+        #[arg(num_args = 0..)]
         time: Vec<String>,
     },
 }
@@ -196,8 +227,12 @@ where
     if tokens.iter().skip(1).any(is_help_token) {
         return Ok(Request::Help);
     }
-    let args =
-        Args::try_parse_from(join_legacy_booleans(tokens)).map_err(|e| CliError::Usage(summarize(&e)))?;
+    let tokens = normalize_legacy(tokens);
+    if let Some(error) = missing_option_value(&tokens) {
+        return Err(error);
+    }
+    let args = Args::try_parse_from(&tokens)
+        .map_err(|e| signed_value(&e, &tokens).unwrap_or_else(|| CliError::Usage(summarize(&e))))?;
     if args.version {
         return Ok(Request::Version);
     }
@@ -206,7 +241,15 @@ where
         || args.time_limit.is_some()
         || args.expire_at.is_some()
         || args.use_parent_pid.is_some();
-    let pid = args.pid.flatten().filter(|pid| *pid != 0);
+    // `--pid 0` is how a caller says "no process", as the .NET version allowed.
+    let pid = match args.pid {
+        Some(text) => match text.trim().parse::<i64>() {
+            Ok(0) => None,
+            Ok(pid) => Some(pid),
+            Err(_) => return Err(CliError::Pid { input: text }),
+        },
+        None => None,
+    };
 
     if args.use_pt_config == Some(true) {
         // Settings come from the file; only --pid still applies.
@@ -227,6 +270,18 @@ where
     };
 
     let plan = match args.command {
+        Some(Command::For { duration }) if duration.is_empty() => {
+            return Err(CliError::MissingValue {
+                name: "for".into(),
+                expected: Expected::Duration,
+            });
+        }
+        Some(Command::Until { time }) if time.is_empty() => {
+            return Err(CliError::MissingValue {
+                name: "until".into(),
+                expected: Expected::Time,
+            });
+        }
         Some(Command::For { duration }) => {
             let input = duration.join(" ");
             match parse_duration(&input) {
@@ -241,10 +296,7 @@ where
                 None => return Err(CliError::Time { input }),
             }
         }
-        None => match (
-            args.expire_at.flatten().filter(|text| !text.trim().is_empty()),
-            args.time_limit,
-        ) {
+        None => match (args.expire_at, args.time_limit) {
             (Some(text), _) => {
                 Plan::Until(parse_time(&text).map_or(UntilSpec::Text(text), UntilSpec::Parsed))
             }
@@ -272,8 +324,26 @@ fn is_help_token(token: &OsString) -> bool {
     })
 }
 
-/// The original parser accepted `-c true`; clap needs `-c=true` to tell values from commands.
-fn join_legacy_booleans(tokens: Vec<OsString>) -> Vec<OsString> {
+/// Options the .NET version took; it accepted `-t:60` as well as `-t=60` and `-t 60`.
+const LEGACY_OPTIONS: [&str; 12] = [
+    "-c",
+    "--use-pt-config",
+    "-d",
+    "--display-on",
+    "-t",
+    "--time-limit",
+    "-p",
+    "--pid",
+    "-e",
+    "--expire-at",
+    "-u",
+    "--use-parent-pid",
+];
+
+/// Rewrites the spellings the .NET parser accepted into ones clap understands: `-t:60` becomes
+/// `-t=60`, and `-c true` becomes `-c=true`, since clap needs the `=` to tell a boolean's value
+/// from a command.
+fn normalize_legacy(tokens: Vec<OsString>) -> Vec<OsString> {
     const FLAGS: [&str; 6] = [
         "-c",
         "--use-pt-config",
@@ -283,7 +353,7 @@ fn join_legacy_booleans(tokens: Vec<OsString>) -> Vec<OsString> {
         "--use-parent-pid",
     ];
     let mut joined = Vec::with_capacity(tokens.len());
-    let mut iter = tokens.into_iter().peekable();
+    let mut iter = tokens.into_iter().map(colon_to_equals).peekable();
     while let Some(token) = iter.next() {
         let is_flag = token.to_str().is_some_and(|t| FLAGS.contains(&t));
         let next_is_bool = iter
@@ -300,6 +370,84 @@ fn join_legacy_booleans(tokens: Vec<OsString>) -> Vec<OsString> {
         }
     }
     joined
+}
+
+fn colon_to_equals(token: OsString) -> OsString {
+    let rewritten = token.to_str().and_then(|text| {
+        LEGACY_OPTIONS.iter().find_map(|name| {
+            let value = text.strip_prefix(name)?.strip_prefix(':')?;
+            Some(OsString::from(format!("{name}={value}")))
+        })
+    });
+    rewritten.unwrap_or(token)
+}
+
+/// `--pid` or `--expire-at` with nothing usable after it. Checked before clap sees the tokens,
+/// because clap would take a following `for` as the value and then report the duration as an
+/// unknown command.
+fn missing_option_value(tokens: &[OsString]) -> Option<CliError> {
+    let mut iter = tokens.iter().skip(1).map(|token| token.to_str());
+    while let Some(token) = iter.next() {
+        let Some(token) = token else { continue };
+        let (name, inline) = match token.split_once('=') {
+            Some((name, value)) => (name, Some(value)),
+            None => (token, None),
+        };
+        let expected = match name {
+            "-p" | "--pid" => Expected::ProcessId,
+            "-e" | "--expire-at" => Expected::Time,
+            _ => continue,
+        };
+        let value = match inline {
+            Some(value) => Some(value),
+            None => iter.clone().next().flatten(),
+        };
+        let usable = value.is_some_and(|value| {
+            // Negative IDs are let through so the platform layer can say no process has them.
+            let negative_number = value
+                .strip_prefix('-')
+                .is_some_and(|digits| !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit()));
+            !value.trim().is_empty()
+                && !matches!(value, "for" | "until")
+                && (!value.starts_with('-') || (negative_number && expected == Expected::ProcessId))
+        });
+        if !usable {
+            return Some(CliError::MissingValue {
+                name: name.to_owned(),
+                expected,
+            });
+        }
+    }
+    None
+}
+
+/// clap reads `for -5m` as an unknown option `-5`. No Awake option starts with a digit, so it is
+/// a signed value meant for `for` or `until`, and gets the same message as any other bad value.
+fn signed_value(error: &clap::Error, tokens: &[OsString]) -> Option<CliError> {
+    if error.kind() != ErrorKind::UnknownArgument {
+        return None;
+    }
+    let Some(ContextValue::String(unknown)) = error.get(ContextKind::InvalidArg) else {
+        return None;
+    };
+    if !unknown
+        .strip_prefix('-')?
+        .starts_with(|c: char| c.is_ascii_digit())
+    {
+        return None;
+    }
+    let mut rest = tokens.iter().skip(1).filter_map(|token| token.to_str());
+    let command = rest.find(|token| matches!(*token, "for" | "until"))?;
+    let input = rest.find(|token| token.starts_with(unknown.as_str()))?.to_owned();
+    Some(if command == "for" {
+        // A leading minus is never part of a duration.
+        CliError::Duration {
+            input,
+            error: DurationError::Invalid,
+        }
+    } else {
+        CliError::Time { input }
+    })
 }
 
 fn parse_bool(text: &str) -> Result<bool, String> {
@@ -423,9 +571,44 @@ mod tests {
     }
 
     #[test]
-    fn bare_or_zero_pid_means_unbound() {
-        assert_eq!(run(&["--pid"]).binding, Binding::None);
+    fn legacy_colon_separator_still_works() {
+        assert_eq!(run(&["-t:60"]).plan, Plan::For { seconds: 60 });
+        assert_eq!(run(&["--time-limit:60"]).plan, Plan::For { seconds: 60 });
+        assert_eq!(run(&["-c:true"]).plan, Plan::PowerToys);
+        assert_eq!(
+            run(&["--use-pt-config:false", "-t:5"]).plan,
+            Plan::For { seconds: 5 }
+        );
+        assert!(run(&["-d:true"]).display_on);
+        assert!(!run(&["--display-on:false"]).display_on);
+        assert_eq!(run(&["-u:true"]).binding, Binding::Parent);
+        assert_eq!(run(&["--use-parent-pid:false"]).binding, Binding::None);
+        assert_eq!(run(&["-p:77"]).binding, Binding::Pid(77));
+        assert_eq!(run(&["--pid:77"]).binding, Binding::Pid(77));
+        // Only the first colon separates; the rest belong to the time.
+        assert!(matches!(
+            run(&["-e:2026-12-24T18:00:00+01:00"]).plan,
+            Plan::Until(UntilSpec::Parsed(ParsedTime::Absolute(_)))
+        ));
+        assert!(matches!(
+            run(&["--expire-at:18:00"]).plan,
+            Plan::Until(UntilSpec::Parsed(ParsedTime::TimeOfDay { hour: 18, .. }))
+        ));
+    }
+
+    #[test]
+    fn colons_elsewhere_are_left_alone() {
+        assert!(matches!(
+            run(&["until", "17:30"]).plan,
+            Plan::Until(UntilSpec::Parsed(ParsedTime::TimeOfDay { .. }))
+        ));
+        assert!(matches!(error(&["--parent:true"]), CliError::Usage(_)));
+    }
+
+    #[test]
+    fn zero_pid_means_unbound() {
         assert_eq!(run(&["--pid", "0"]).binding, Binding::None);
+        assert_eq!(run(&["-c", "--pid=0"]).binding, Binding::None);
         assert_eq!(
             run(&["--pid", "-5"]).binding,
             Binding::Pid(-5),
@@ -467,7 +650,6 @@ mod tests {
         assert!(matches!(error(&["--time-limit", "abc"]), CliError::Usage(_)));
         assert!(matches!(error(&["-t"]), CliError::Usage(_)));
         assert!(matches!(error(&["--bogus"]), CliError::Usage(_)));
-        assert!(matches!(error(&["for"]), CliError::Usage(_)));
         assert_eq!(
             error(&["for", "90"]),
             CliError::Duration {
@@ -476,6 +658,94 @@ mod tests {
             }
         );
         assert_eq!(error(&["until", "soon"]), CliError::Time { input: "soon".into() });
+    }
+
+    fn missing(name: &str, expected: Expected) -> CliError {
+        CliError::MissingValue {
+            name: name.into(),
+            expected,
+        }
+    }
+
+    #[test]
+    fn commands_without_a_value_name_what_is_missing() {
+        assert_eq!(error(&["for"]), missing("for", Expected::Duration));
+        assert_eq!(error(&["for", "-d"]), missing("for", Expected::Duration));
+        assert_eq!(error(&["until"]), missing("until", Expected::Time));
+        assert_eq!(error(&["until", "--parent"]), missing("until", Expected::Time));
+    }
+
+    #[test]
+    fn bare_expire_at_is_an_error_not_an_indefinite_session() {
+        assert_eq!(error(&["-e"]), missing("-e", Expected::Time));
+        assert_eq!(error(&["--expire-at"]), missing("--expire-at", Expected::Time));
+        assert_eq!(error(&["-e", "-d"]), missing("-e", Expected::Time));
+        assert_eq!(error(&["-e="]), missing("-e", Expected::Time));
+        assert_eq!(error(&["-e:"]), missing("-e", Expected::Time));
+        assert_eq!(
+            error(&["--expire-at", "  "]),
+            missing("--expire-at", Expected::Time)
+        );
+    }
+
+    #[test]
+    fn bare_pid_is_an_error_and_keeps_the_command() {
+        assert_eq!(error(&["--pid"]), missing("--pid", Expected::ProcessId));
+        assert_eq!(error(&["-p"]), missing("-p", Expected::ProcessId));
+        assert_eq!(error(&["--pid="]), missing("--pid", Expected::ProcessId));
+        assert_eq!(
+            error(&["--pid", "--parent"]),
+            missing("--pid", Expected::ProcessId)
+        );
+        // Not "unrecognized subcommand '2s'": `for` is the command, not the ID.
+        assert_eq!(
+            error(&["--pid", "for", "2s"]),
+            missing("--pid", Expected::ProcessId)
+        );
+        assert_eq!(
+            error(&["-p", "until", "18:00"]),
+            missing("-p", Expected::ProcessId)
+        );
+        assert_eq!(
+            error(&["for", "2s", "--pid"]),
+            missing("--pid", Expected::ProcessId)
+        );
+    }
+
+    #[test]
+    fn process_ids_that_are_not_numbers_get_their_own_error() {
+        assert_eq!(error(&["--pid", "abc"]), CliError::Pid { input: "abc".into() });
+        assert_eq!(
+            error(&["--pid", "99999999999999999999"]),
+            CliError::Pid {
+                input: "99999999999999999999".into()
+            }
+        );
+        assert_eq!(
+            error(&["-c", "--pid", "1.5"]),
+            CliError::Pid { input: "1.5".into() }
+        );
+    }
+
+    #[test]
+    fn signed_values_get_the_value_error_not_an_unknown_option() {
+        assert_eq!(
+            error(&["for", "-5m"]),
+            CliError::Duration {
+                input: "-5m".into(),
+                error: DurationError::Invalid
+            }
+        );
+        assert_eq!(
+            error(&["-d", "for", "-5m", "--parent"]),
+            CliError::Duration {
+                input: "-5m".into(),
+                error: DurationError::Invalid
+            }
+        );
+        assert_eq!(error(&["until", "-5"]), CliError::Time { input: "-5".into() });
+        // Without a command it is still an unknown option.
+        assert!(matches!(error(&["-5m"]), CliError::Usage(_)));
     }
 
     #[test]
@@ -506,5 +776,13 @@ mod tests {
         assert!(time.source().is_none());
         let boxed: Box<dyn std::error::Error> = Box::new(CliError::Usage("bad".into()));
         assert_eq!(boxed.to_string(), "bad");
+        assert_eq!(
+            missing("for", Expected::Duration).to_string(),
+            "for needs a duration"
+        );
+        assert_eq!(
+            CliError::Pid { input: "abc".into() }.to_string(),
+            "'abc' is not a valid process ID"
+        );
     }
 }
