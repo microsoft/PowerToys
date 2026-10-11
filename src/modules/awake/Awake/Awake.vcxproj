@@ -54,13 +54,23 @@
     <None Include="tools\*.ps1" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="CargoBuild" AfterTargets="Build">
+  <!-- Without a Rust toolchain the first cargo call fails with MSB3073 around "'cargo' is not
+       recognized", which does not say what to install. 9009 is cmd's exit code for an unknown
+       command; any other failure is the toolchain's own, explained in the output above it. -->
+  <Target Name="CargoCheckToolchain">
+    <Exec Command="cargo --version" WorkingDirectory="$(MSBuildThisFileDirectory)" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true">
+      <Output TaskParameter="ExitCode" PropertyName="CargoVersionExitCode" />
+    </Exec>
+    <Error Condition="'$(CargoVersionExitCode)' == '9009'" Text="Awake needs the Rust toolchain: install rustup (https://rustup.rs) and rerun the build. See src/modules/awake/README.md." />
+    <Error Condition="'$(CargoVersionExitCode)' != '0' and '$(CargoVersionExitCode)' != '9009'" Text="cargo --version failed with exit code $(CargoVersionExitCode), so Awake's Rust toolchain is not usable; the output above says why." />
+  </Target>
+  <Target Name="CargoBuild" AfterTargets="Build" DependsOnTargets="CargoCheckToolchain">
     <Exec Command="cargo build $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTargetDir)&quot; --profile $(CargoProfile) -p awake" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
     <Copy SourceFiles="$(CargoOutputDir)awake.exe" DestinationFiles="$(OutDir)PowerToys.Awake.exe" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(CargoOutputDir)awake.pdb" DestinationFiles="$(OutDir)PowerToys.Awake.pdb" SkipUnchangedFiles="true" Condition="Exists('$(CargoOutputDir)awake.pdb')" />
   </Target>
   <!-- There are no ARM64 test agents, matching the other test projects. -->
-  <Target Name="Test" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
+  <Target Name="Test" DependsOnTargets="CargoCheckToolchain" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
     <Exec Command="cargo fmt --all --check" WorkingDirectory="$(MSBuildThisFileDirectory)" />
     <Exec Command="cargo lint $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTestTargetDir)&quot; --profile $(CargoProfile) -- -D warnings" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
     <Delete Files="$(CargoTestResults)" />
