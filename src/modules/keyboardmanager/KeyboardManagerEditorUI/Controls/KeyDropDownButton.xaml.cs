@@ -90,10 +90,15 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (e.ClickedItem is KeyNameEntry entry)
             {
-                string oldKeyName = KeyName;
-                KeyListFlyout.Hide();
-                KeyChanged?.Invoke(this, new KeyChangedEventArgs(oldKeyName, entry.DisplayName, entry.KeyCode));
+                SelectEntry(entry);
             }
+        }
+
+        private void SelectEntry(KeyNameEntry entry)
+        {
+            string oldKeyName = KeyName;
+            KeyListFlyout.Hide();
+            KeyChanged?.Invoke(this, new KeyChangedEventArgs(oldKeyName, entry.DisplayName, entry.KeyCode));
         }
 
         private void KeyListFlyout_Closed(object sender, object e)
@@ -104,7 +109,26 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void KeyListFlyout_Opening(object sender, object e)
         {
+            KeySearchBox.Text = string.Empty;
             RefreshKeyList();
+        }
+
+        private void KeyListFlyout_Opened(object sender, object e)
+        {
+            KeySearchBox.Focus(FocusState.Programmatic);
+        }
+
+        private void KeySearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            RefreshKeyList();
+        }
+
+        private void KeySearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (KeyListView.ItemsSource is List<KeyNameEntry> { Count: > 0 } filtered)
+            {
+                SelectEntry(filtered[0]);
+            }
         }
 
         private List<KeyNameEntry> GetKeyList()
@@ -136,10 +160,15 @@ namespace KeyboardManagerEditorUI.Controls
 
         internal void RefreshKeyList()
         {
-            KeyListView.ItemsSource = GetKeyList();
+            string query = KeySearchBox.Text?.Trim() ?? string.Empty;
+            var list = query.Length == 0
+                ? GetKeyList()
+                : GetKeyList().Where(k => k.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            KeyListView.ItemsSource = list;
+            NoResultsText.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
             // Scroll to current key if possible
-            var list = GetKeyList();
             for (int i = 0; i < list.Count; i++)
             {
                 if (string.Equals(list[i].DisplayName, KeyName, StringComparison.Ordinal))

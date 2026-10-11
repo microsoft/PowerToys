@@ -90,7 +90,8 @@
                                         <TextBlock
                                             x:Uid="TriggerKeyPlaceholder"
                                             HorizontalAlignment="Center"
-                                            Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                                            Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}" />
                                         <local:KeyDropDownButton x:Name="TriggerEmptyKeyDropDown" />
                                     </StackPanel>
                                     <ItemsControl x:Name="TriggerKeys" IsTabStop="False">
@@ -272,7 +273,8 @@
                                     <TextBlock
                                         x:Uid="ActionKeyPlaceholder"
                                         HorizontalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                                        Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}" />
                                     <local:KeyDropDownButton
                                         x:Name="ActionEmptyKeyDropDown"
                                         UseAccentStyle="True" />
