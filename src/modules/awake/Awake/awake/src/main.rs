@@ -21,8 +21,9 @@ fn main() -> ExitCode {
     std::panic::set_hook(Box::new(|info| {
         // The process ends right after this (release builds abort on panic), and Windows then
         // drops the keep-awake request, so the computer is never held awake by a crashed Awake.
-        // Nothing here takes a lock: logging is lock-free, so a panic raised inside a log call
-        // cannot deadlock the hook before the process ends.
+        // Awake's code takes no lock on the log path. The log channel's own wake-up lock is held
+        // only briefly inside std, by code that cannot panic, so a panic raised inside a log call
+        // cannot re-enter it and deadlock the hook before the process ends.
         let message = format!("Awake stopped unexpectedly: {info}");
         logging::emergency(&message);
         log::error!("{message}");

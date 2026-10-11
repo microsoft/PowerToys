@@ -4,9 +4,12 @@
 //! never stalls the thread that holds the keep-awake request: when the queue is full, lines are
 //! dropped and counted instead. Each day's file is capped in size and old files are removed.
 //!
-//! Logging takes no locks. The queue's sender is shared directly (it is `Sync`), so a log call,
-//! including one from the panic hook, never waits on another thread or on itself. Callers only
-//! read the UTC clock; the writer thread works out each line's local time.
+//! Awake's code takes no lock on the log path: the queue's sender is shared directly (it is
+//! `Sync`) and lines are sent with `try_send`, so a log call never blocks on a full queue. The
+//! channel does hold an internal wake-up lock for a moment inside std when the writer is idle,
+//! but that code cannot panic, so a panic raised in a log call cannot re-enter it and deadlock
+//! the panic hook. Callers only read the UTC clock; the writer thread works out each line's
+//! local time.
 //!
 //! Layout, as before: `Awake\Logs\<version>\Log_yyyy-MM-dd.log`.
 

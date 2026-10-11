@@ -121,6 +121,13 @@ fn retry_delay(retries: u32) -> Option<u32> {
     (retries < MAX_RETRIES).then(|| (500u32 << retries.min(2)).min(2000))
 }
 
+/// Whether updating the entry in place would leave Explorer showing another state's image.
+/// A modify without `NIF_ICON` keeps the old image, so when the new state's icon is missing and
+/// Explorer holds a different one, the entry has to be re-created without an image instead.
+fn leaves_stale_image(image: Option<IconKind>, kind: IconKind, have_icon: bool) -> bool {
+    !have_icon && image.is_some_and(|image| image != kind)
+}
+
 #[derive(Debug)]
 pub struct Tray<S: Shell = Win32Shell> {
     window: HWND,
@@ -130,6 +137,8 @@ pub struct Tray<S: Shell = Win32Shell> {
     /// The icon Explorer has. While it matches, updates send only the tooltip: the countdown
     /// changes it every second, and sending the icon makes Explorer copy it each time.
     shown: Option<IconKind>,
+    /// The state whose image Explorer displays, at any scale, or `None` when it has no image.
+    image: Option<IconKind>,
     added: bool,
     retries: u32,
     /// A retry timer is pending, or retries ran out; changes are only recorded until then.
@@ -150,6 +159,7 @@ impl<S: Shell> Tray<S> {
             icons: [IconSlot::Unloaded; 4],
             current: None,
             shown: None,
+            image: None,
             added: false,
             retries: 0,
             waiting: false,
@@ -186,8 +196,8 @@ impl<S: Shell> Tray<S> {
     pub fn display_changed(&mut self) {
         self.release_icons();
         self.shown = None;
-        if self.added {
-            self.added = self.notify(NIM_MODIFY);
+        if self.added && !self.waiting {
+            self.sync();
         }
     }
 
@@ -213,8 +223,17 @@ impl<S: Shell> Tray<S> {
     }
 
     fn sync(&mut self) {
-        if self.current.is_none() {
+        let Some(kind) = self.current.as_ref().map(|(kind, _)| *kind) else {
             return;
+        };
+        if self.added && self.shown != Some(kind) {
+            let have_icon = self.icon(kind).is_some();
+            if leaves_stale_image(self.image, kind, have_icon) {
+                // For example, kept awake to off with the off icon failing to load: the entry
+                // would go on showing the kept-awake image.
+                self.notify(NIM_DELETE);
+                self.added = false;
+            }
         }
         if self.added && self.notify(NIM_MODIFY) {
             return;
@@ -246,7 +265,10 @@ impl<S: Shell> Tray<S> {
         data.hWnd = self.window;
         data.uID = ICON_ID;
         let mut showing = None;
-        if message == NIM_SETVERSION {
+        if message == NIM_DELETE {
+            self.shown = None;
+            self.image = None;
+        } else if message == NIM_SETVERSION {
             data.Anonymous.uVersion = NOTIFYICON_VERSION_4;
         } else if (message == NIM_ADD || message == NIM_MODIFY)
             && let Some((kind, tooltip)) = &self.current
@@ -270,6 +292,11 @@ impl<S: Shell> Tray<S> {
         if showing.is_some() {
             // After a failure, the next update sends the icon again.
             self.shown = showing.filter(|_| ok);
+            if ok && data.uFlags & NIF_ICON != 0 {
+                self.image = showing;
+            } else if ok && message == NIM_ADD {
+                self.image = None;
+            }
         }
         ok
     }
@@ -343,6 +370,8 @@ mod tests {
         destroyed: u32,
         timers: Vec<u32>,
         kills: u32,
+        /// The image Explorer would display, as a modify without `NIF_ICON` keeps it.
+        image: Option<HICON>,
     }
 
     #[derive(Debug, Default)]
@@ -354,7 +383,14 @@ mod tests {
             record
                 .calls
                 .push(Call(message, data.uFlags, !data.hIcon.is_null()));
-            record.results.pop_front().unwrap_or(true)
+            let ok = record.results.pop_front().unwrap_or(true);
+            if message == NIM_DELETE || (ok && message == NIM_ADD) {
+                record.image = None;
+            }
+            if ok && data.uFlags & NIF_ICON != 0 {
+                record.image = Some(data.hIcon);
+            }
+            ok
         }
 
         fn load_icon(&mut self, kind: IconKind) -> Result<HICON, i32> {
@@ -540,6 +576,46 @@ mod tests {
         tray.display_changed();
         assert_eq!(record.borrow().loads, 2);
         assert_eq!(take_calls(&record).last(), Some(&Call(NIM_MODIFY, FULL, true)));
+    }
+
+    #[test]
+    fn a_state_change_whose_icon_fails_does_not_keep_the_old_image() {
+        let (mut tray, record) = tray();
+        tray.show(IconKind::Indefinite, "On");
+        assert!(record.borrow().image.is_some());
+        take_calls(&record);
+
+        record.borrow_mut().icons_fail = true;
+        tray.show(IconKind::Passive, "Off");
+        assert_eq!(
+            take_calls(&record),
+            [
+                Call(NIM_DELETE, 0, false),
+                Call(NIM_ADD, TIP | NIF_MESSAGE, false),
+                Call(NIM_SETVERSION, 0, false)
+            ],
+            "the entry is re-created without an image"
+        );
+        assert_eq!(record.borrow().image, None, "the kept-awake image is gone");
+        assert!(tray.added);
+
+        // Further updates of the same state change only the tooltip.
+        tray.show(IconKind::Passive, "Still off");
+        assert_eq!(take_calls(&record), [Call(NIM_MODIFY, TIP, false)]);
+
+        // Back to a state whose icon loaded: it is shown again in place.
+        tray.show(IconKind::Indefinite, "On");
+        assert_eq!(take_calls(&record), [Call(NIM_MODIFY, FULL, true)]);
+        assert!(record.borrow().image.is_some());
+    }
+
+    #[test]
+    fn only_a_missing_icon_for_another_state_needs_a_fresh_entry() {
+        use IconKind::{Indefinite, Passive};
+        assert!(leaves_stale_image(Some(Indefinite), Passive, false));
+        assert!(!leaves_stale_image(Some(Indefinite), Passive, true));
+        assert!(!leaves_stale_image(Some(Passive), Passive, false));
+        assert!(!leaves_stale_image(None, Passive, false));
     }
 
     #[test]
