@@ -3,7 +3,6 @@ name = "awake-core"
 description = "Platform-independent logic for PowerToys Awake: settings, keep-awake state machine, command line and text."
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 authors.workspace = true
 homepage.workspace = true
 repository.workspace = true

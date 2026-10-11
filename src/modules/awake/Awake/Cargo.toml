@@ -6,8 +6,6 @@ members = ["awake-core", "awake"]
 # The product version comes from src/Version.props at build time; this one is for Cargo only.
 version = "0.0.0"
 edition = "2024"
-# Let chains need 1.88; checked with `cargo +1.88.0 check --workspace --all-targets`.
-rust-version = "1.88"
 authors = ["Den Delimarsky"]
 homepage = "https://awake.den.dev"
 repository = "https://github.com/microsoft/PowerToys"
@@ -51,6 +49,10 @@ single_match_else = "allow"
 # The window procedure, the startup sequence and the build script's resx parser each read best
 # as one ordered list; splitting them would scatter steps that only make sense in sequence.
 too_many_lines = "allow"
+# Without a declared rust-version Clippy assumes the pinned toolchain, which has
+# Duration::from_mins and from_hours; the log retention and hook timings in logging.rs and
+# hooks.rs still count in seconds. Rewrite those and drop this line.
+duration_suboptimal_units = "allow"
 
 [profile.release]
 opt-level = 3
