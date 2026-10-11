@@ -2,14 +2,17 @@
 
 #![allow(dead_code)]
 
+use std::io::Read;
+use std::ops::{Deref, DerefMut};
 use std::os::windows::io::AsRawHandle;
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command, Output, Stdio};
+use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use std::{fs, mem, ptr};
 
-use windows_sys::Win32::Foundation::{HANDLE, HWND};
+use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, HWND};
 use windows_sys::Win32::System::Diagnostics::ToolHelp::{
     CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW, TH32CS_SNAPPROCESS,
 };
@@ -41,6 +44,9 @@ impl Sandbox {
         let root = std::env::temp_dir().join(format!("awake-it-{name}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).unwrap();
+        // Tests match English messages; without this file Awake would follow the machine's
+        // Windows UI language once localized resources ship.
+        fs::write(root.join("language.json"), br#"{"language":"en-US"}"#).unwrap();
         Sandbox { root }
     }
 
@@ -69,8 +75,8 @@ impl Sandbox {
         command
     }
 
-    pub fn spawn(&self, args: &[&str]) -> Child {
-        self.command(args).spawn().expect("start awake")
+    pub fn spawn(&self, args: &[&str]) -> Running {
+        Running::new(self.command(args).spawn().expect("start awake"))
     }
 
     pub fn log(&self) -> String {
@@ -105,12 +111,21 @@ impl Sandbox {
     }
 
     pub fn signal_exit(&self) {
+        assert!(self.try_signal_exit(), "exit event exists while Awake runs");
+    }
+
+    /// Sets the exit event if an Awake in this sandbox has created it.
+    fn try_signal_exit(&self) -> bool {
         let name = wide(&self.exit_event_name());
-        // SAFETY: NUL-terminated name; the handle is intentionally leaked for the test's life.
+        // SAFETY: NUL-terminated name; our handle is closed after use, while Awake keeps its own.
         unsafe {
             let event = OpenEventW(EVENT_MODIFY_STATE, 0, name.as_ptr());
-            assert!(!event.is_null(), "exit event exists while Awake runs");
+            if event.is_null() {
+                return false;
+            }
             SetEvent(event);
+            CloseHandle(event);
+            true
         }
     }
 
@@ -129,9 +144,98 @@ impl Sandbox {
 }
 
 impl Drop for Sandbox {
+    /// Stops a detached Awake that a failed hand-off test left behind (children are killed by
+    /// [`Running`]), then gives it a moment to release its log file before removing the folder.
     fn drop(&mut self) {
-        let _ = fs::remove_dir_all(&self.root);
+        self.try_signal_exit();
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while fs::remove_dir_all(&self.root).is_err() && self.root.exists() && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(50));
+        }
     }
+}
+
+/// A child process that is killed when dropped, so a failed assertion never leaves Awake holding
+/// the machine awake, its single-instance mutex taken, or the sandbox's log file open. After a
+/// clean exit, dropping it only reaps the process.
+pub struct Running(Option<Child>);
+
+impl Running {
+    pub fn new(child: Child) -> Running {
+        Running(Some(child))
+    }
+
+    /// Collects the remaining output; call it once the process has exited (see [`wait_exit`]).
+    pub fn wait_with_output(mut self) -> std::io::Result<Output> {
+        self.0.take().expect("running child").wait_with_output()
+    }
+}
+
+impl Deref for Running {
+    type Target = Child;
+
+    fn deref(&self) -> &Child {
+        self.0.as_ref().expect("running child")
+    }
+}
+
+impl DerefMut for Running {
+    fn deref_mut(&mut self) -> &mut Child {
+        self.0.as_mut().expect("running child")
+    }
+}
+
+impl Drop for Running {
+    fn drop(&mut self) {
+        if let Some(child) = &mut self.0 {
+            if matches!(child.try_wait(), Ok(None)) {
+                let _ = child.kill();
+            }
+            let _ = child.wait();
+        }
+    }
+}
+
+/// Like [`Command::output`], but fails the test after `timeout` instead of hanging it, and kills
+/// the process. Use it wherever a regression could make Awake wait on the test that waits on it.
+pub fn output_within(command: &mut Command, timeout: Duration) -> Output {
+    let deadline = Instant::now() + timeout;
+    let mut child = Running::new(command.spawn().expect("start awake"));
+    // Drain both pipes while waiting, so a chatty process cannot block on a full pipe.
+    let stdout = read_in_background(child.stdout.take());
+    let stderr = read_in_background(child.stderr.take());
+    let status = loop {
+        if let Some(status) = child.try_wait().unwrap() {
+            break status;
+        }
+        assert!(
+            Instant::now() < deadline,
+            "{command:?} did not exit within {timeout:?}"
+        );
+        std::thread::sleep(Duration::from_millis(20));
+    };
+    // The pipes close at exit unless a process that inherited them is still running.
+    let drained = |pipe: mpsc::Receiver<Vec<u8>>, name: &str| {
+        pipe.recv_timeout(Duration::from_secs(5))
+            .unwrap_or_else(|_| panic!("the {name} of {command:?} stayed open after it exited"))
+    };
+    Output {
+        status,
+        stdout: drained(stdout, "stdout"),
+        stderr: drained(stderr, "stderr"),
+    }
+}
+
+fn read_in_background(pipe: Option<impl Read + Send + 'static>) -> mpsc::Receiver<Vec<u8>> {
+    let (sender, receiver) = mpsc::channel();
+    std::thread::spawn(move || {
+        let mut bytes = Vec::new();
+        if let Some(mut pipe) = pipe {
+            let _ = pipe.read_to_end(&mut bytes);
+        }
+        let _ = sender.send(bytes);
+    });
+    receiver
 }
 
 pub fn settings_json(mode: i64, display: bool, hours: u32, minutes: u32, expiration: &str) -> String {

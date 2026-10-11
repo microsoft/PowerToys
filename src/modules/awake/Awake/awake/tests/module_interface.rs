@@ -11,14 +11,21 @@
 mod support;
 
 use std::ffi::c_void;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
-use std::{fs, ptr};
+use std::{fs, mem, ptr};
 
 use support::*;
+use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, HWND, WAIT_OBJECT_0};
+use windows_sys::Win32::System::Diagnostics::ToolHelp::{
+    CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW, TH32CS_SNAPPROCESS,
+};
 use windows_sys::Win32::System::LibraryLoader::{GetProcAddress, LoadLibraryW};
-use windows_sys::Win32::System::Threading::{OpenProcess, PROCESS_SYNCHRONIZE, WaitForSingleObject};
-use windows_sys::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId;
+use windows_sys::Win32::System::Threading::{
+    OpenProcess, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE,
+    PROCESS_TERMINATE, QueryFullProcessImageNameW, TerminateProcess, WaitForSingleObject,
+};
+use windows_sys::Win32::UI::WindowsAndMessaging::FindWindowExW;
 
 /// Slots of `PowertoyModuleIface`, in declaration order (there is no virtual destructor).
 const SET_CONFIG: usize = 3;
@@ -58,8 +65,26 @@ impl Module {
     }
 }
 
+/// The PowerToys output folder that matches this build. Through Awake.vcxproj, Cargo's target
+/// folder is `<OutDir>\obj\Awake-test`, so the DLL built alongside is in `<OutDir>`. A plain
+/// `cargo test` uses the conventional `<repo>\x64\<configuration>` for its profile.
 fn repo_output_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../../../x64/Debug")
+    let built_by_msbuild = Path::new(EXE).ancestors().find_map(|dir| {
+        let target = dir.file_name()?.to_str()?;
+        let obj = dir.parent()?;
+        (target.starts_with("Awake") && obj.file_name()?.eq_ignore_ascii_case("obj")).then(|| obj.parent())?
+    });
+    if let Some(out_dir) = built_by_msbuild {
+        return out_dir.to_path_buf();
+    }
+    let configuration = if cfg!(debug_assertions) {
+        "Debug"
+    } else {
+        "Release"
+    };
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../../../x64")
+        .join(configuration)
 }
 
 #[test]
@@ -68,8 +93,14 @@ fn the_runner_contract_still_holds() {
     let built_dll = repo_output_dir().join("PowerToys.AwakeModuleInterface.dll");
     assert!(
         built_dll.exists(),
-        "build AwakeModuleInterface (Debug x64) first: {}",
+        "build AwakeModuleInterface for this configuration first: {}",
         built_dll.display()
+    );
+    // The test uses the real kernel object names, so another Awake would win the single-instance
+    // mutex and this build would refuse to start.
+    assert!(
+        any_awake_window().is_none(),
+        "another Awake is running (an installed PowerToys?); exit it first"
     );
 
     // The DLL launches PowerToys.Awake.exe from its own folder, so stage both side by side.
@@ -99,10 +130,8 @@ fn the_runner_contract_still_holds() {
 
     module.call(ENABLE);
     assert!(module.is_enabled(), "is_enabled() reports the user's choice");
-    let window = find_awake_window(Duration::from_secs(10)).expect("Awake started and created its window");
-    let mut pid = 0;
-    // SAFETY: valid window handle.
-    unsafe { GetWindowThreadProcessId(window, &mut pid) };
+    let awake = find_staged_awake(&stage.join("PowerToys.Awake.exe"), Duration::from_secs(10))
+        .expect("Awake started from the staged folder and created its window");
 
     // The Settings app reaches Awake through set_config, which writes settings.json.
     module.set_config(r#"{"name":"Awake","version":"1.0","properties":{"keepDisplayOn":false,"mode":1,"intervalHours":0,"intervalMinutes":1,"expirationDateTime":"2026-01-01T00:00:00+00:00","customTrayTimes":{}}}"#);
@@ -114,12 +143,7 @@ fn the_runner_contract_still_holds() {
     let started = Instant::now();
     module.call(DISABLE);
     assert!(!module.is_enabled());
-    // SAFETY: querying a pid for SYNCHRONIZE; a null handle means it is already gone.
-    let gone = unsafe {
-        let process = OpenProcess(PROCESS_SYNCHRONIZE, 0, pid);
-        process.is_null() || WaitForSingleObject(process, 0) == 0
-    };
-    assert!(gone, "disable() returns only after Awake exited");
+    assert!(awake.exited(), "disable() returns only after Awake exited");
     assert!(
         started.elapsed() < Duration::from_secs(3),
         "Awake exited on the signal, not on the timeout: {:?}",
@@ -134,25 +158,102 @@ fn the_runner_contract_still_holds() {
     let _ = fs::remove_dir_all(&stage);
 }
 
-fn find_awake_window(timeout: Duration) -> Option<windows_sys::Win32::Foundation::HWND> {
-    let class = wide("Awake.MessageWindow");
+/// The Awake the module started, held open so its exit can be checked without a pid lookup, and
+/// ended when dropped so a failed assertion never leaves it holding the machine awake.
+struct StagedAwake {
+    process: HANDLE,
+}
+
+impl StagedAwake {
+    fn exited(&self) -> bool {
+        // SAFETY: `process` is an open handle with SYNCHRONIZE access.
+        unsafe { WaitForSingleObject(self.process, 0) == WAIT_OBJECT_0 }
+    }
+}
+
+impl Drop for StagedAwake {
+    fn drop(&mut self) {
+        // SAFETY: `process` is an open handle with PROCESS_TERMINATE access, closed exactly once.
+        unsafe {
+            if !self.exited() {
+                TerminateProcess(self.process, 1);
+            }
+            CloseHandle(self.process);
+        }
+    }
+}
+
+/// Waits for the Awake running from `exe` to create its window. Matching the image path, not just
+/// the window class, keeps the test from picking up any other Awake on the machine.
+fn find_staged_awake(exe: &Path, timeout: Duration) -> Option<StagedAwake> {
+    let exe = fs::canonicalize(exe).ok()?;
     let deadline = Instant::now() + timeout;
     while Instant::now() < deadline {
-        // SAFETY: looking up a top-level window by class.
-        let window = unsafe {
-            windows_sys::Win32::UI::WindowsAndMessaging::FindWindowExW(
-                ptr::null_mut(),
-                ptr::null_mut(),
-                class.as_ptr(),
-                ptr::null(),
-            )
-        };
-        if !window.is_null() {
-            return Some(window);
+        for pid in process_ids_named("PowerToys.Awake.exe") {
+            // SAFETY: plain call; a null handle means the process is gone or inaccessible.
+            let process = unsafe {
+                OpenProcess(
+                    PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SYNCHRONIZE | PROCESS_TERMINATE,
+                    0,
+                    pid,
+                )
+            };
+            if process.is_null() {
+                continue;
+            }
+            let ours = image_path(process)
+                .and_then(|path| fs::canonicalize(path).ok())
+                .is_some_and(|path| path.as_os_str().eq_ignore_ascii_case(exe.as_os_str()));
+            if ours && find_window(pid, Duration::from_millis(100)).is_some() {
+                return Some(StagedAwake { process });
+            }
+            // SAFETY: the handle opened above, not used afterwards.
+            unsafe { CloseHandle(process) };
         }
         std::thread::sleep(Duration::from_millis(50));
     }
     None
+}
+
+fn process_ids_named(name: &str) -> Vec<u32> {
+    let mut ids = Vec::new();
+    // SAFETY: the snapshot handle is closed below; the entry is sized as the API requires.
+    unsafe {
+        let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        let mut entry: PROCESSENTRY32W = mem::zeroed();
+        entry.dwSize = mem::size_of::<PROCESSENTRY32W>() as u32;
+        let mut more = Process32FirstW(snapshot, &mut entry) != 0;
+        while more {
+            let len = entry
+                .szExeFile
+                .iter()
+                .position(|&c| c == 0)
+                .unwrap_or(entry.szExeFile.len());
+            if String::from_utf16_lossy(&entry.szExeFile[..len]).eq_ignore_ascii_case(name) {
+                ids.push(entry.th32ProcessID);
+            }
+            more = Process32NextW(snapshot, &mut entry) != 0;
+        }
+        CloseHandle(snapshot);
+    }
+    ids
+}
+
+fn image_path(process: HANDLE) -> Option<PathBuf> {
+    let mut buffer = [0u16; 1024];
+    let mut len = buffer.len() as u32;
+    // SAFETY: `buffer` holds `len` units; on success `len` is the length written.
+    let ok =
+        unsafe { QueryFullProcessImageNameW(process, PROCESS_NAME_WIN32, buffer.as_mut_ptr(), &mut len) };
+    (ok != 0).then(|| PathBuf::from(String::from_utf16_lossy(&buffer[..len as usize])))
+}
+
+/// Any Awake tray window, whoever owns it.
+fn any_awake_window() -> Option<HWND> {
+    let class = wide("Awake.MessageWindow");
+    // SAFETY: looking up a top-level window by class.
+    let window = unsafe { FindWindowExW(ptr::null_mut(), ptr::null_mut(), class.as_ptr(), ptr::null()) };
+    (!window.is_null()).then_some(window)
 }
 
 fn real_log() -> String {

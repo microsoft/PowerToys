@@ -12,8 +12,12 @@ use awake_core::mode::Mode;
 use awake_core::settings::{ModeSetting, SettingsDocument};
 use awake_core::time::FixedZone;
 use support::*;
+use windows_sys::Win32::System::Console::GetConsoleProcessList;
 
 const SECOND: Duration = Duration::from_secs(1);
+/// How long a command that should return promptly may take before the test fails instead of
+/// hanging; generous for a loaded build agent.
+const PROMPTLY: Duration = Duration::from_secs(15);
 
 fn serial() -> MutexGuard<'static, ()> {
     static LOCK: Mutex<()> = Mutex::new(());
@@ -22,6 +26,19 @@ fn serial() -> MutexGuard<'static, ()> {
 
 fn own_pid() -> String {
     std::process::id().to_string()
+}
+
+/// The hand-off tests start Awake in the test's console, as a shell would. Without a console Awake
+/// cannot see that its caller waits, so it would stay in the foreground and the test would fail
+/// for a reason unrelated to the product.
+fn assert_running_in_a_console() {
+    let mut pids = [0u32; 8];
+    // SAFETY: the buffer holds `pids.len()` entries; a larger count is returned, not written.
+    let attached = unsafe { GetConsoleProcessList(pids.as_mut_ptr(), pids.len() as u32) };
+    assert!(
+        attached > 0,
+        "these tests need a console, as a shell provides; run them from a terminal"
+    );
 }
 
 fn read_settings(sandbox: &Sandbox) -> awake_core::settings::AwakeSettings {
@@ -99,10 +116,12 @@ fn powertoys_mode_follows_the_settings_file() {
 fn exits_when_the_bound_process_ends() {
     let _serial = serial();
     let sandbox = Sandbox::new("bound");
-    let mut target = Command::new("cmd.exe")
-        .args(["/c", "ping -n 60 127.0.0.1 >nul"])
-        .spawn()
-        .unwrap();
+    let mut target = Running::new(
+        Command::new("cmd.exe")
+            .args(["/c", "ping -n 60 127.0.0.1 >nul"])
+            .spawn()
+            .unwrap(),
+    );
     let mut awake = sandbox.spawn(&["--pid", &target.id().to_string()]);
     assert!(
         sandbox.wait_for_log("Entered Indefinite.", 1, 5 * SECOND),
@@ -125,7 +144,7 @@ fn a_second_instance_is_refused() {
     assert!(sandbox.wait_for_log("Entered Timed.", 1, 5 * SECOND));
 
     let started = Instant::now();
-    let second = sandbox.command(&["for", "1m"]).output().unwrap();
+    let second = output_within(&mut sandbox.command(&["for", "1m"]), PROMPTLY);
     assert_eq!(second.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&second.stderr).contains("already running"));
     assert!(started.elapsed() < 3 * SECOND, "refused promptly");
@@ -146,11 +165,12 @@ fn a_powertoys_start_waits_for_the_previous_instance() {
     let mut first = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
     let first_window = find_window(first.id(), 5 * SECOND).expect("the first instance starts");
 
-    let refused = sandbox
-        .command(&["--use-pt-config", "--pid", &own_pid()])
-        .env("POWERTOYS_AWAKE_TEST_HANDOVER_MS", "500")
-        .output()
-        .unwrap();
+    let refused = output_within(
+        sandbox
+            .command(&["--use-pt-config", "--pid", &own_pid()])
+            .env("POWERTOYS_AWAKE_TEST_HANDOVER_MS", "500"),
+        PROMPTLY,
+    );
     assert_eq!(
         refused.status.code(),
         Some(1),
@@ -173,12 +193,14 @@ fn a_powertoys_start_waits_for_the_previous_instance() {
 fn the_watchdog_ends_a_hung_awake() {
     let _serial = serial();
     let hung = |sandbox: &Sandbox, args: &[&str]| {
-        sandbox
-            .command(args)
-            .env("POWERTOYS_AWAKE_TEST_HANG_ON_EXIT", "1")
-            .env("POWERTOYS_AWAKE_TEST_WATCHDOG_MS", "1000")
-            .spawn()
-            .unwrap()
+        Running::new(
+            sandbox
+                .command(args)
+                .env("POWERTOYS_AWAKE_TEST_HANG_ON_EXIT", "1")
+                .env("POWERTOYS_AWAKE_TEST_WATCHDOG_MS", "1000")
+                .spawn()
+                .unwrap(),
+        )
     };
 
     // Stopped by the runner's exit event.
@@ -201,7 +223,7 @@ fn a_command_line_session_ends_on_time() {
     let _serial = serial();
     let sandbox = Sandbox::new("timed");
     let started = Instant::now();
-    let output = sandbox.command(&["for", "2s"]).output().unwrap();
+    let output = output_within(&mut sandbox.command(&["for", "2s"]), PROMPTLY);
     let elapsed = started.elapsed();
     assert_eq!(output.status.code(), Some(0));
     assert!(
@@ -221,7 +243,7 @@ fn invalid_requests_fail_fast_with_a_message() {
         (vec!["for", "soon"], "isn't a duration"),
         (vec!["--bogus"], "unexpected argument"),
     ] {
-        let output = sandbox.command(&args).output().unwrap();
+        let output = output_within(&mut sandbox.command(&args), PROMPTLY);
         assert_eq!(output.status.code(), Some(1), "{args:?}");
         assert!(
             String::from_utf8_lossy(&output.stderr).contains(needle),
@@ -304,6 +326,10 @@ fn failing_writes_degrade_gracefully() {
     assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
 }
 
+/// Rapid mode switches through the settings file, as a user clicking through the Settings app
+/// would cause. It takes about half a minute, which is acceptable in the default run: it is the
+/// only test of the reload path under load and of resource leaks, and its checks are relative to
+/// the process itself, so a slow machine makes it slower rather than red.
 #[test]
 fn mode_switches_do_not_leak_or_hang() {
     let _serial = serial();
@@ -346,55 +372,80 @@ fn mode_switches_do_not_leak_or_hang() {
     };
     let first = phase("phase 1");
     let second = phase("phase 2");
-    let transitions = sandbox.log().matches("Entered ").count() - entered_before;
-
+    let log = sandbox.log();
+    let transitions = log.matches("Entered ").count() - entered_before;
     println!(
         "after phase 1: {first:?}
 after phase 2: {second:?}
 transitions applied: {transitions} of 400"
     );
-    assert!(transitions >= 300, "most switches were applied: {transitions}");
+
+    // How many writes Windows merges into one change notification depends on the machine's
+    // load, so the count only has to show that reloads kept flowing; a stalled reload path
+    // applies almost none. What must hold on any machine is that the last write wins.
+    assert!(transitions >= 100, "reloads kept up: {transitions} of 400");
+    let last = log.lines().rfind(|line| line.contains("Entered "));
     assert!(
-        second.handles <= first.handles + 2,
-        "handles {} -> {}",
-        first.handles,
-        second.handles
+        last.is_some_and(|line| line.ends_with("Entered Passive.")),
+        "the last switch (Passive) was applied: {last:?}"
     );
-    assert!(
-        second.gdi_objects <= first.gdi_objects,
-        "GDI {} -> {}",
-        first.gdi_objects,
-        second.gdi_objects
-    );
-    assert!(
-        second.user_objects <= first.user_objects,
-        "USER {} -> {}",
-        first.user_objects,
-        second.user_objects
-    );
-    // Awake owns three threads; Windows adds and retires thread-pool workers on its own.
-    assert!(second.threads <= 8, "threads {}", second.threads);
-    assert!(
-        second.private_bytes <= first.private_bytes + 64 * 1024,
-        "private bytes {} -> {}",
-        first.private_bytes,
-        second.private_bytes
-    );
+
+    let growth = grown(&first, &second);
+    if !growth.is_empty() {
+        // A one-off step (a new heap segment, a log file rolling over) does not repeat; a leak
+        // grows again by about as much in the next equal phase.
+        let third = phase("phase 3");
+        println!("after phase 3: {third:?}");
+        let again = grown(&second, &third);
+        assert!(
+            again.is_empty(),
+            "kept growing: {} then {}",
+            growth.join(", "),
+            again.join(", ")
+        );
+    }
 
     sandbox.signal_exit();
     assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
 }
 
+/// What grew from one soak phase to the next by more than noise allows. The handle margin covers
+/// Windows' own thread-pool and ETW handles; private bytes allow one heap segment.
+fn grown(before: &Resources, after: &Resources) -> Vec<String> {
+    let mut grown = Vec::new();
+    if after.handles > before.handles + 2 {
+        grown.push(format!("handles {} -> {}", before.handles, after.handles));
+    }
+    if after.gdi_objects > before.gdi_objects {
+        grown.push(format!("GDI {} -> {}", before.gdi_objects, after.gdi_objects));
+    }
+    if after.user_objects > before.user_objects {
+        grown.push(format!("USER {} -> {}", before.user_objects, after.user_objects));
+    }
+    // Awake owns three threads; Windows adds and retires thread-pool workers on its own.
+    if after.threads > 8 {
+        grown.push(format!("threads {}", after.threads));
+    }
+    if after.private_bytes > before.private_bytes + 64 * 1024 {
+        grown.push(format!(
+            "private bytes {} -> {}",
+            before.private_bytes, after.private_bytes
+        ));
+    }
+    grown
+}
+
 #[test]
 fn legacy_options_hand_off_and_keep_the_parent_binding() {
     let _serial = serial();
+    assert_running_in_a_console();
     let sandbox = Sandbox::new("handoff");
     // From a shell, the original options return at once and continue in a detached process.
     let started = Instant::now();
-    let caller = sandbox
-        .command_in_callers_console(&["-t", "60", "-u"])
-        .output()
-        .unwrap();
+    let caller = output_within(
+        &mut sandbox.command_in_callers_console(&["-t", "60", "-u"]),
+        PROMPTLY,
+    );
     assert_eq!(caller.status.code(), Some(0));
     assert!(started.elapsed() < 5 * SECOND);
     let expected = format!(
@@ -418,11 +469,12 @@ fn legacy_options_hand_off_and_keep_the_parent_binding() {
 #[test]
 fn legacy_validation_errors_reach_the_caller() {
     let _serial = serial();
+    assert_running_in_a_console();
     let sandbox = Sandbox::new("handoff-error");
-    let caller = sandbox
-        .command_in_callers_console(&["-t", "60", "--pid", "999999"])
-        .output()
-        .unwrap();
+    let caller = output_within(
+        &mut sandbox.command_in_callers_console(&["-t", "60", "--pid", "999999"]),
+        PROMPTLY,
+    );
     assert_eq!(caller.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&caller.stderr).contains("No running process"));
     assert!(!sandbox.log().contains("Continuing detached"));
@@ -431,13 +483,15 @@ fn legacy_validation_errors_reach_the_caller() {
 #[test]
 fn binding_to_the_waiting_caller_detaches_instead_of_deadlocking() {
     let _serial = serial();
+    assert_running_in_a_console();
     let sandbox = Sandbox::new("caller-pid");
-    // A script running `PowerToys.Awake --pid $PID` waits for Awake while Awake waits for it.
+    // A script running `PowerToys.Awake --pid $PID` waits for Awake while Awake waits for it. A
+    // regression would be that deadlock, so the wait is bounded and the caller killed.
     let started = Instant::now();
-    let caller = sandbox
-        .command_in_callers_console(&["for", "1m", "--pid", &own_pid()])
-        .output()
-        .unwrap();
+    let caller = output_within(
+        &mut sandbox.command_in_callers_console(&["for", "1m", "--pid", &own_pid()]),
+        PROMPTLY,
+    );
     assert_eq!(caller.status.code(), Some(0));
     assert!(
         started.elapsed() < 10 * SECOND,
