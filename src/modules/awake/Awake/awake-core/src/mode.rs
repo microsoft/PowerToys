@@ -1,10 +1,12 @@
 //! The four keep-awake modes and their integer values in `settings.json`.
 
+/// A keep-awake mode, as the Settings app, Command Palette and DSC know it.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub enum Mode {
     /// Off: the active power plan decides.
     #[default]
     Passive,
+    /// Until changed.
     Indefinite,
     /// For a fixed duration from when it was chosen.
     Timed,
@@ -13,6 +15,7 @@ pub enum Mode {
 }
 
 impl Mode {
+    /// The integer stored in `settings.json`.
     pub const fn value(self) -> i64 {
         match self {
             Mode::Passive => 0,
@@ -22,6 +25,7 @@ impl Mode {
         }
     }
 
+    /// The mode for a `settings.json` integer, or `None` for a value Awake does not know.
     pub const fn from_value(value: i64) -> Option<Mode> {
         match value {
             0 => Some(Mode::Passive),

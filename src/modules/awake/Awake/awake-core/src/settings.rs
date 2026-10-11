@@ -9,7 +9,9 @@ use serde_json::{Map, Value};
 use crate::mode::Mode;
 use crate::time::{DateTimeOffset, LocalZone, ParsedTime, parse_time};
 
+/// The module's folder under `%LOCALAPPDATA%\Microsoft\PowerToys` and the file's `name` key.
 pub const MODULE_NAME: &str = "Awake";
+/// The file inside the module folder.
 pub const FILE_NAME: &str = "settings.json";
 /// The `version` the runner stamps when it writes the file.
 const SCAFFOLD_VERSION: &str = "1.0";
@@ -21,7 +23,9 @@ pub const MAX_PRESETS: usize = 64;
 /// A "Keep awake on interval" entry: menu label and duration in seconds.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Preset {
+    /// Shown as is in the menu; the key in `customTrayTimes`.
     pub label: String,
+    /// Always more than zero.
     pub seconds: u32,
 }
 
@@ -34,16 +38,22 @@ pub fn round_up_to_minute(seconds: u32) -> u64 {
 /// The `mode` value, kept even when it is not one Awake knows.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ModeSetting {
+    /// One of the four modes.
     Known(Mode),
+    /// Another integer, perhaps from a newer writer; the running session is left alone.
     Unknown(i64),
 }
 
 /// The values Awake acts on, with the defaults System.Text.Json applies to missing keys.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AwakeSettings {
+    /// `keepDisplayOn`.
     pub keep_display_on: bool,
+    /// `mode`.
     pub mode: ModeSetting,
+    /// `intervalHours`, the hours part of a timed session.
     pub interval_hours: u32,
+    /// `intervalMinutes`, the minutes part of a timed session.
     pub interval_minutes: u32,
     /// `None` when missing, unreadable or a placeholder such as `0001-01-01`.
     pub expiration: Option<DateTimeOffset>,
@@ -52,6 +62,7 @@ pub struct AwakeSettings {
 }
 
 impl AwakeSettings {
+    /// The length of a timed session; zero when both parts are zero.
     pub fn timed_seconds(&self) -> u64 {
         u64::from(self.interval_hours) * 3600 + u64::from(self.interval_minutes) * 60
     }
@@ -73,17 +84,31 @@ impl Default for AwakeSettings {
 /// One field Awake writes back.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SettingsChange {
+    /// `mode`.
     Mode(Mode),
+    /// `keepDisplayOn`.
     KeepDisplayOn(bool),
-    Interval { hours: u32, minutes: u32 },
+    /// `intervalHours` and `intervalMinutes`, always written together.
+    Interval {
+        /// Whole hours.
+        hours: u32,
+        /// Minutes past the hours.
+        minutes: u32,
+    },
+    /// `expirationDateTime`, in the format .NET writes.
     Expiration(DateTimeOffset),
 }
 
+/// Why the settings file could not be used.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SettingsError {
+    /// Larger than [`MAX_FILE_BYTES`].
     TooLarge,
+    /// Not JSON at all; carries the parser's message.
     NotJson(String),
+    /// JSON, but not an object.
     NotAnObject,
+    /// A field Awake reads has the wrong type; carries its key.
     InvalidField(&'static str),
 }
 
@@ -189,15 +214,12 @@ impl SettingsDocument {
 
     /// Applies `changes`; returns whether anything in the document actually changed.
     pub fn apply(&mut self, changes: &[SettingsChange]) -> bool {
-        let properties = match self.root.get_mut("properties") {
-            Some(Value::Object(properties)) => properties,
-            _ => {
-                self.root.insert("properties".into(), Value::Object(Map::new()));
-                match self.root.get_mut("properties") {
-                    Some(Value::Object(properties)) => properties,
-                    _ => unreachable!("just inserted an object"),
-                }
-            }
+        // Taken out of its slot and put back below, so the key keeps its place in the file.
+        // `settings` rejects a "properties" that is not an object, so replacing one loses nothing.
+        let slot = self.root.entry("properties").or_insert(Value::Null);
+        let mut properties = match std::mem::take(slot) {
+            Value::Object(properties) => properties,
+            _ => Map::new(),
         };
         let mut changed = false;
         let mut set = |key: &str, value: Value| {
@@ -219,12 +241,17 @@ impl SettingsDocument {
                 }
             }
         }
+        *slot = Value::Object(properties);
         changed
     }
 
     /// Compact JSON, like the other writers produce.
+    ///
+    /// The document only ever holds parsed or constructed `serde_json` values with string keys,
+    /// which always serialize. Should that ever stop being true, panicking is far better than
+    /// the alternative of handing back an empty buffer that would replace every key in the file.
     pub fn to_bytes(&self) -> Vec<u8> {
-        serde_json::to_vec(&self.root).unwrap_or_default()
+        serde_json::to_vec(&self.root).expect("a JSON object with string keys always serializes")
     }
 }
 
@@ -245,7 +272,7 @@ fn trim_bytes(bytes: &[u8], is_trim: impl Fn(u8) -> bool) -> &[u8] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::time::{FixedZone, Timestamp};
+    use crate::time::{CivilDateTime, FixedZone, Timestamp};
 
     const SAMPLE: &str = r#"{"name":"Awake","version":"1.0","properties":{"keepDisplayOn":true,"mode":2,"intervalHours":1,"intervalMinutes":30,"expirationDateTime":"2026-10-10T09:15:32.1234567+02:00","customTrayTimes":{"30 minutes":1800,"1 hour":3600,"2 hours":7200}},"unknownTopLevel":[1,2]}"#;
 
@@ -424,6 +451,48 @@ mod tests {
         let mut doc = SettingsDocument::parse(br#"{"name":"Awake"}"#).unwrap();
         assert!(doc.apply(&[SettingsChange::KeepDisplayOn(true)]));
         assert!(doc.settings(&FixedZone(-420)).unwrap().keep_display_on);
+    }
+
+    #[test]
+    fn apply_replaces_unusable_properties_in_place() {
+        for body in [
+            r#"{"name":"Awake","properties":5,"version":"1.0"}"#,
+            r#"{"name":"Awake","properties":null,"version":"1.0"}"#,
+        ] {
+            let mut doc = SettingsDocument::parse(body.as_bytes()).unwrap();
+            assert!(doc.apply(&[SettingsChange::Mode(Mode::Indefinite)]), "{body}");
+            assert_eq!(
+                String::from_utf8(doc.to_bytes()).unwrap(),
+                r#"{"name":"Awake","properties":{"mode":1},"version":"1.0"}"#,
+                "the key keeps its place: {body}"
+            );
+        }
+    }
+
+    #[test]
+    fn apply_writes_expirations_in_dotnet_format() {
+        let mut doc = SettingsDocument::parse(SAMPLE.as_bytes()).unwrap();
+        let civil = CivilDateTime::new(2026, 10, 11, 18, 30, 0).unwrap();
+        let at = FixedZone(120).resolve(civil).unwrap();
+        assert!(doc.apply(&[SettingsChange::Expiration(at)]));
+        let text = String::from_utf8(doc.to_bytes()).unwrap();
+        assert!(
+            text.contains(r#""expirationDateTime":"2026-10-11T18:30:00+02:00""#),
+            "{text}"
+        );
+        assert_eq!(
+            SettingsDocument::parse(text.as_bytes())
+                .unwrap()
+                .settings(&FixedZone(-420))
+                .unwrap()
+                .expiration,
+            Some(at),
+            "Awake reads back exactly what it wrote"
+        );
+        assert!(
+            !doc.apply(&[SettingsChange::Expiration(at)]),
+            "rewriting it is a no-op"
+        );
     }
 
     #[test]

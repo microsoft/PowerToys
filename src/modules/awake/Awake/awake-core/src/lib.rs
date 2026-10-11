@@ -5,6 +5,8 @@
 //! fully unit-testable.
 
 #![forbid(unsafe_code)]
+// The platform layer programs against this crate alone, so its rustdoc is the contract.
+#![warn(missing_docs)]
 
 pub mod cli;
 pub mod console;

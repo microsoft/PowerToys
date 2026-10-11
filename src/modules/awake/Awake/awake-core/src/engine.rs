@@ -23,15 +23,29 @@ pub enum Source {
     CommandLine,
 }
 
+/// The running session.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Activity {
+    /// Nothing is held.
     Passive,
+    /// Held until something changes it.
     Indefinite,
-    Timed { seconds: u64, deadline: Timestamp },
-    Expirable { until: DateTimeOffset },
+    /// Held for a fixed time, with a countdown in the tooltip.
+    Timed {
+        /// The length chosen, kept so re-reading the same setting does not restart the countdown.
+        seconds: u64,
+        /// When the session ends.
+        deadline: Timestamp,
+    },
+    /// Held until a point in time.
+    Expirable {
+        /// When the session ends, with the offset it was given in.
+        until: DateTimeOffset,
+    },
 }
 
 impl Activity {
+    /// The settings-file mode this activity corresponds to.
     pub fn mode(&self) -> Mode {
         match self {
             Activity::Passive => Mode::Passive,
@@ -41,6 +55,7 @@ impl Activity {
         }
     }
 
+    /// When the session ends on its own, if it does.
     pub fn deadline(&self) -> Option<Timestamp> {
         match self {
             Activity::Timed { deadline, .. } => Some(*deadline),
@@ -50,22 +65,36 @@ impl Activity {
     }
 }
 
+/// A choice from the tray menu.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TrayCommand {
+    /// Stop keeping awake.
     Off,
+    /// Keep awake until changed.
     Indefinite,
-    Interval { seconds: u32 },
+    /// Keep awake for a preset's duration.
+    Interval {
+        /// The preset's length; rounded up to whole minutes when applied.
+        seconds: u32,
+    },
+    /// Flip "Keep screen on".
     ToggleDisplay,
+    /// Quit Awake.
     Exit,
 }
 
+/// Why the process is asked to exit.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ExitReason {
+    /// The user chose Exit.
     Requested,
+    /// A command-line session reached its end.
     TimeUp,
+    /// Windows refused the keep-awake request of a command-line session.
     PowerRequestFailed,
 }
 
+/// Something the Windows layer must do, in the order given.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Effect {
     /// Call `SetThreadExecutionState` with these flags.
@@ -80,9 +109,11 @@ pub enum Effect {
     Persist(Vec<SettingsChange>),
     /// The session entered a mode; reported to telemetry.
     ModeEntered(Mode),
+    /// End the process.
     Exit(ExitReason),
 }
 
+/// The keep-awake state machine; one per process, driven from the window thread.
 #[derive(Debug)]
 pub struct Engine {
     source: Source,
@@ -96,6 +127,8 @@ pub struct Engine {
 }
 
 impl Engine {
+    /// A passive engine that holds nothing yet. `default_presets` fill the menu whenever the
+    /// settings file has no custom ones.
     pub fn new(source: Source, default_presets: Vec<Preset>, screen_locked: bool) -> Self {
         Engine {
             source,
@@ -108,18 +141,22 @@ impl Engine {
         }
     }
 
+    /// Where this session's instructions come from.
     pub fn source(&self) -> Source {
         self.source
     }
 
+    /// The running session.
     pub fn activity(&self) -> Activity {
         self.activity
     }
 
+    /// Whether the user wants the display kept on; while locked it is still released.
     pub fn keep_display_on(&self) -> bool {
         self.keep_display_on
     }
 
+    /// Whether the session is locked, as last reported.
     pub fn screen_locked(&self) -> bool {
         self.screen_locked
     }
@@ -260,6 +297,7 @@ impl Engine {
         }
     }
 
+    /// The session was locked or unlocked; the display request follows, the system one stays.
     pub fn set_screen_locked(&mut self, locked: bool) -> Vec<Effect> {
         let mut effects = Vec::new();
         if locked != self.screen_locked {
@@ -487,6 +525,67 @@ mod tests {
             Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)]))
         );
         assert_eq!(engine.tick(at(61)), [], "it completes exactly once");
+    }
+
+    #[test]
+    fn expirable_session_ends_when_the_time_comes() {
+        let mut engine = powertoys();
+        let until = at(100);
+        engine.apply_settings(
+            &AwakeSettings {
+                expiration: Some(until),
+                ..settings(Mode::Expirable)
+            },
+            at(0),
+        );
+        assert_eq!(engine.tick(at(99)), [], "expirable sessions show no countdown");
+        let effects = engine.tick(at(100));
+        assert_eq!(flags(&effects), [ES_CONTINUOUS]);
+        assert!(effects.contains(&Effect::ScheduleDeadline(None)));
+        assert!(
+            !effects.iter().any(|e| matches!(e, Effect::Countdown(_))),
+            "no countdown was running"
+        );
+        assert_eq!(
+            effects.last(),
+            Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)]))
+        );
+        assert_eq!(engine.tick(at(101)), [], "it completes exactly once");
+    }
+
+    #[test]
+    fn command_line_expirable_session_exits_when_the_time_comes() {
+        let mut engine = Engine::new(Source::CommandLine, defaults(), false);
+        engine.start(Activity::Expirable { until: at(100) }, false);
+        assert_eq!(engine.tick(at(99)), []);
+        let effects = engine.tick(at(100));
+        assert_eq!(effects.last(), Some(&Effect::Exit(ExitReason::TimeUp)));
+        assert!(!effects.iter().any(|e| matches!(e, Effect::Persist(_))));
+    }
+
+    // The Settings app can save 0 hours and 0 minutes. That session is due the moment it starts
+    // and must end on the first tick, once, rather than holding the system awake.
+    #[test]
+    fn zero_length_timed_settings_end_on_the_first_tick() {
+        let mut engine = powertoys();
+        let effects = engine.apply_settings(&timed(0, 0), at(0));
+        assert!(effects.contains(&Effect::ScheduleDeadline(Some(at(0).utc))));
+        let effects = engine.tick(at(0));
+        assert_eq!(engine.activity(), Activity::Passive);
+        assert_eq!(flags(&effects), [ES_CONTINUOUS]);
+        assert_eq!(
+            effects
+                .iter()
+                .filter(|e| matches!(e, Effect::Persist(_)))
+                .collect::<Vec<_>>(),
+            [&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)])]
+        );
+        assert_eq!(engine.tick(at(1)), []);
+        assert_eq!(
+            engine.apply_settings(&settings(Mode::Passive), at(1)),
+            [],
+            "the echo of the write is a no-op"
+        );
     }
 
     #[test]

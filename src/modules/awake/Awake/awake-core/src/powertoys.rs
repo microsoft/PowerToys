@@ -10,12 +10,19 @@ pub fn language_tag(bytes: &[u8]) -> Option<String> {
     (!tag.is_empty()).then(|| tag.to_owned())
 }
 
+/// The least severe log level PowerToys asks modules to record, ordered from most to least
+/// verbose.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum LogLevel {
+    /// Everything, including per-event detail.
     Trace,
+    /// Diagnostic detail.
     Debug,
+    /// Normal operation.
     Info,
+    /// Recoverable problems.
     Warn,
+    /// Failures only.
     Error,
 }
 

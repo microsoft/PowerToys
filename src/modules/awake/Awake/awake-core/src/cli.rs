@@ -5,25 +5,35 @@
 //! from help, because the PowerToys runner and existing scripts use them.
 
 use std::ffi::OsString;
+use std::fmt;
 
 use clap::{ArgAction, Parser, Subcommand};
 
 use crate::duration::{DurationError, parse_duration};
 use crate::time::{ParsedTime, parse_time};
 
+/// The executable name, as shown in help and error text.
 pub const PROGRAM: &str = "PowerToys.Awake";
 
+/// What the command line asks for.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Request {
+    /// Print help and exit.
     Help,
+    /// Print the version and exit.
     Version,
+    /// Start a keep-awake session.
     Run(Invocation),
 }
 
+/// A keep-awake session as the command line describes it.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Invocation {
+    /// How long to keep the system awake.
     pub plan: Plan,
+    /// Keep the display on as well as the system.
     pub display_on: bool,
+    /// Which process, if any, the session ends with.
     pub binding: Binding,
     /// Started with the original options, which ran detached from the calling console.
     pub legacy: bool,
@@ -31,43 +41,80 @@ pub struct Invocation {
     pub handoff_event: Option<String>,
 }
 
+/// How long a command-line session lasts.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Plan {
     /// Follow `settings.json` (`--use-pt-config`).
     PowerToys,
+    /// Until stopped (no command, or `-t 0`).
     Indefinite,
+    /// `for <duration>` or `--time-limit`.
     For {
+        /// Length of the session, at most [`crate::duration::MAX_SECONDS`].
         seconds: u64,
     },
+    /// `until <time>` or `--expire-at`.
     Until(UntilSpec),
 }
 
+/// The end of an `until` session, before it is resolved against the local time zone.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UntilSpec {
+    /// A time Awake parsed itself.
     Parsed(ParsedTime),
     /// `--expire-at` text that is not ISO 8601, such as `10/11/2026 5:00 PM`; the platform layer
     /// parses it with the user's regional format, as the .NET version did.
     Text(String),
 }
 
+/// A process whose exit ends the session.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Binding {
+    /// The session ends on its own terms.
     None,
+    /// `--pid`: this process. Kept signed so negative input can be rejected with a clear message.
     Pid(i64),
+    /// `--parent`: the process that started Awake.
     Parent,
 }
 
+/// Why the command line was rejected. People see the localized text from
+/// `console::cli_error_message`; `Display` gives a neutral English message for logs.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CliError {
     /// Unknown options, missing values and similar; the text comes from clap.
     Usage(String),
+    /// The argument of `for` is not a duration.
     Duration {
+        /// The text as typed, arguments joined by spaces.
         input: String,
+        /// What is wrong with it.
         error: DurationError,
     },
+    /// The argument of `until` is not a time Awake understands.
     Time {
+        /// The text as typed, arguments joined by spaces.
         input: String,
     },
+}
+
+impl fmt::Display for CliError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            CliError::Usage(text) => f.write_str(text),
+            CliError::Duration { input, error } => write!(f, "'{input}' is not a valid duration: {error}"),
+            CliError::Time { input } => write!(f, "'{input}' is not a valid time"),
+        }
+    }
+}
+
+impl std::error::Error for CliError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            CliError::Duration { error, .. } => Some(error),
+            CliError::Usage(_) | CliError::Time { .. } => None,
+        }
+    }
 }
 
 #[derive(Parser, Debug)]
@@ -427,5 +474,25 @@ mod tests {
         assert!(!text.contains("Usage:"), "{text}");
         assert!(!text.starts_with("error:"), "{text}");
         assert!(text.contains("--display-on"), "suggests the right option: {text}");
+    }
+
+    #[test]
+    fn errors_work_as_standard_errors() {
+        use std::error::Error as _;
+
+        let duration = error(&["for", "90"]);
+        assert_eq!(
+            duration.to_string(),
+            "'90' is not a valid duration: the duration needs a unit: d, h, m or s"
+        );
+        assert_eq!(
+            duration.source().map(ToString::to_string),
+            Some(DurationError::MissingUnit.to_string())
+        );
+        let time = error(&["until", "soon"]);
+        assert_eq!(time.to_string(), "'soon' is not a valid time");
+        assert!(time.source().is_none());
+        let boxed: Box<dyn std::error::Error> = Box::new(CliError::Usage("bad".into()));
+        assert_eq!(boxed.to_string(), "bad");
     }
 }
