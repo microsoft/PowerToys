@@ -1,5 +1,6 @@
 //! Runs Awake inside a Windows job object that caps its committed memory, to check that a
-//! starved process fails fast instead of hanging, and that a modest budget is plenty.
+//! modest budget is plenty. A second test is the control: it shows the cap is really applied,
+//! so the budget test cannot pass because the limit silently failed to take effect.
 
 mod support;
 
@@ -110,12 +111,20 @@ fn a_modest_memory_budget_is_enough() {
     );
 }
 
+/// Far below what any process needs to load, so Windows ends Awake before its own code runs: an
+/// NTSTATUS instead of one of Awake's exit codes, and no log. This proves the limit applies, not
+/// how Awake copes with failed allocations; with a little more memory, whether Awake gets far
+/// enough to fail varies from run to run, so no budget tests that reliably.
 #[test]
-fn starving_memory_fails_fast_instead_of_hanging() {
+fn the_memory_limit_is_enforced() {
     let sandbox = Sandbox::new("starved");
     let outcome = run_with_memory_limit(&sandbox, 512 * 1024, Duration::from_secs(15));
     let code = outcome
         .exit_code
         .expect("the process ended on its own instead of hanging");
-    assert_ne!(code, 0, "it cannot succeed without memory");
+    assert!(
+        code >= 0xC000_0000,
+        "the system stopped the process with an error status, not Awake: {code:#x}"
+    );
+    assert!(sandbox.log().is_empty(), "Awake's code never ran");
 }
