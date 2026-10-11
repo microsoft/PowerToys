@@ -83,7 +83,8 @@ impl Paths {
     }
 }
 
-fn local_app_data() -> io::Result<PathBuf> {
+/// `%LOCALAPPDATA%`, from the shell rather than the environment.
+pub fn local_app_data() -> io::Result<PathBuf> {
     let mut path = ptr::null_mut();
     // SAFETY: the folder id is a valid static GUID and `path` receives a CoTaskMem string that
     // is freed below on every path.

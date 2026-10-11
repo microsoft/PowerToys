@@ -6,10 +6,11 @@
 //!
 //! Old files are removed once the queue has gone quiet after the first line of each day, so the
 //! lines of a short run, such as a refused start, reach the disk first and a process that runs
-//! for weeks still keeps only the retention period. The cleanup yields to any new line and
-//! never follows a link out of the log folder: Awake may run elevated, and the folder is
-//! writable by the user. If the log folder is deleted while Awake runs, today's file is created
-//! again with the next line.
+//! for weeks still keeps only the retention period. The cleanup yields to any new line. Awake may
+//! run elevated while every folder under `%LOCALAPPDATA%` is the user's to change, so the cleanup
+//! runs only when no folder from there down to the log folder is a link, holds those folders
+//! open so none can be swapped for a link meanwhile, and skips linked version folders. If the
+//! log folder is deleted while Awake runs, today's file is created again with the next line.
 //!
 //! Awake's code takes no lock on the log path: the queue's sender is shared directly (it is
 //! `Sync`) and lines are sent with `try_send`, so a log call never blocks on a full queue. The
@@ -20,9 +21,12 @@
 //!
 //! Layout, as before: `Awake\Logs\<version>\Log_yyyy-MM-dd.log`.
 
+use std::ffi::OsString;
 use std::fs::{self, File, Metadata, OpenOptions};
-use std::io::Write;
-use std::os::windows::fs::MetadataExt;
+use std::io::{self, Write};
+use std::os::windows::ffi::OsStringExt;
+use std::os::windows::fs::{MetadataExt, OpenOptionsExt};
+use std::os::windows::io::AsRawHandle;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -32,9 +36,14 @@ use std::time::{Duration, Instant, SystemTime};
 use awake_core::powertoys::LogLevel;
 use awake_core::time::{DateTimeOffset, Timestamp};
 use log::{Level, LevelFilter, Log, Record};
-use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_REPARSE_POINT;
+use windows_sys::Win32::Storage::FileSystem::{
+    FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_REPARSE_POINT, FILE_FLAG_BACKUP_SEMANTICS,
+    FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
+    GetFinalPathNameByHandleW,
+};
 
 use crate::platform::clock::SystemClock;
+use crate::platform::paths;
 
 const QUEUE_LINES: usize = 1024;
 const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
@@ -73,7 +82,16 @@ pub fn init(log_dir: &Path, version: &str, level: Option<LogLevel>) {
     };
     let (sender, receiver) = sync_channel(QUEUE_LINES);
     let writer_dir = directory.clone();
-    let root = log_dir.to_owned();
+    let root = LogRoot {
+        // Folders above `%LOCALAPPDATA%` belong to the profile, not to anything the user can
+        // rearrange while signed in. Under the test hooks the data folder may be elsewhere.
+        anchor: paths::local_app_data()
+            .ok()
+            .filter(|base| log_dir.starts_with(base))
+            .or_else(|| log_dir.ancestors().nth(2).map(Path::to_owned))
+            .unwrap_or_else(|| log_dir.to_owned()),
+        path: log_dir.to_owned(),
+    };
     if std::thread::Builder::new()
         .name("awake-log".into())
         .spawn(move || write_lines(&root, &writer_dir, &receiver, &DROPPED, CLEANUP_AFTER_IDLE))
@@ -153,7 +171,7 @@ impl Log for FileLogger {
 /// Writes queued lines until every sender is gone. Old logs are cleaned up once the queue has
 /// been empty for `cleanup_after` after a new day's first line.
 fn write_lines(
-    root: &Path,
+    root: &LogRoot,
     directory: &Path,
     receiver: &Receiver<Message>,
     dropped: &AtomicU64,
@@ -299,17 +317,88 @@ enum Cleanup {
     Interrupted,
 }
 
-/// Junctions and symbolic links are reparse points; the cleanup never enters one.
-fn is_reparse_point(metadata: &Metadata) -> bool {
-    metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0
+/// The folder old logs are cleaned from, and the folder above it from which no folder on the way
+/// down may be a link.
+struct LogRoot {
+    anchor: PathBuf,
+    path: PathBuf,
+}
+
+/// A real folder, not a junction or symbolic link to one.
+fn is_plain_directory(metadata: &Metadata) -> bool {
+    let attributes = metadata.file_attributes();
+    attributes & FILE_ATTRIBUTE_DIRECTORY != 0 && attributes & FILE_ATTRIBUTE_REPARSE_POINT == 0
+}
+
+/// Opens a directory, or with `follow_links` false the link itself, and holds it: without delete
+/// sharing, neither it nor any folder above it can be renamed or deleted, and so none can be
+/// replaced by a link, until the handle is closed.
+fn hold_directory(path: &Path, follow_links: bool) -> io::Result<File> {
+    let flags = if follow_links {
+        FILE_FLAG_BACKUP_SEMANTICS
+    } else {
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT
+    };
+    OpenOptions::new()
+        .read(true)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+        .custom_flags(flags)
+        .open(path)
+}
+
+/// Where an open file or folder really is, with every link resolved.
+fn final_path(file: &File) -> io::Result<PathBuf> {
+    let mut buffer = vec![0u16; 260];
+    loop {
+        let capacity = u32::try_from(buffer.len()).unwrap_or(u32::MAX);
+        // SAFETY: the handle is open and `buffer` holds `capacity` characters.
+        let length =
+            unsafe { GetFinalPathNameByHandleW(file.as_raw_handle(), buffer.as_mut_ptr(), capacity, 0) };
+        match length as usize {
+            0 => return Err(io::Error::last_os_error()),
+            // On success the length leaves out the NUL; when too small, it is the size needed.
+            written if written < buffer.len() => {
+                buffer.truncate(written);
+                return Ok(PathBuf::from(OsString::from_wide(&buffer)));
+            }
+            needed => buffer.resize(needed, 0),
+        }
+    }
+}
+
+/// Holds the log root open and returns its resolved path, if resolving it leads exactly where
+/// resolving the anchor and walking down by name does, which means no folder in between is a
+/// link.
+fn confined_root(root: &LogRoot) -> Option<(File, PathBuf)> {
+    let below = root.path.strip_prefix(&root.anchor).ok()?;
+    let held = hold_directory(&root.path, true).ok()?;
+    let actual = final_path(&held).ok()?;
+    // The anchor is only looked up, so it is opened with full sharing.
+    let anchor = OpenOptions::new()
+        .read(true)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+        .open(&root.anchor)
+        .ok()?;
+    let expected = final_path(&anchor).ok()?.join(below);
+    // File names compare without regard to case, and `below` is spelled as the caller wrote it.
+    if actual.to_string_lossy().to_lowercase() != expected.to_string_lossy().to_lowercase() {
+        log::warn!(
+            "Not cleaning up old logs: {} leads to {}.",
+            root.path.display(),
+            actual.display()
+        );
+        return None;
+    }
+    Some((held, actual))
 }
 
 /// Deletes `.log` files last written before the retention period, then any version folder
 /// other than `current` that this leaves empty. Stops once `budget` has been spent, so a huge
 /// folder cannot keep today's lines waiting, and as soon as `interrupted` says a line is waiting.
-/// Linked folders are skipped: through one, an elevated Awake would delete files elsewhere.
+/// Linked folders are never entered: through one, an elevated Awake would delete files elsewhere.
 fn remove_old_logs(
-    root: &Path,
+    root: &LogRoot,
     current: &Path,
     now: SystemTime,
     budget: Duration,
@@ -317,18 +406,23 @@ fn remove_old_logs(
 ) -> Cleanup {
     let cutoff = now.checked_sub(RETENTION).unwrap_or(SystemTime::UNIX_EPOCH);
     let started = Instant::now();
-    if fs::symlink_metadata(root).is_ok_and(|m| is_reparse_point(&m)) {
-        return Cleanup::Done;
-    }
-    let Ok(versions) = fs::read_dir(root) else {
+    // Held until the cleanup ends, so no folder from the anchor down can change under it.
+    let Some((_held, resolved)) = confined_root(root) else {
         return Cleanup::Done;
     };
-    // A directory entry describes the entry itself, never what a link points to.
-    let versions = versions
-        .flatten()
-        .filter(|e| e.metadata().is_ok_and(|m| m.is_dir() && !is_reparse_point(&m)))
-        .map(|e| e.path());
-    for version in versions {
+    let Ok(versions) = fs::read_dir(&resolved) else {
+        return Cleanup::Done;
+    };
+    for entry in versions.flatten() {
+        let version = entry.path();
+        // Checked through a handle on the entry itself, held while its files are listed, so the
+        // folder listed is the one checked.
+        let Ok(held) = hold_directory(&version, false) else {
+            continue;
+        };
+        if !held.metadata().is_ok_and(|m| is_plain_directory(&m)) {
+            continue;
+        }
         let mut remaining = 0;
         for file in fs::read_dir(&version).into_iter().flatten().flatten() {
             if interrupted() {
@@ -347,7 +441,10 @@ fn remove_old_logs(
                 remaining += 1;
             }
         }
-        if remaining == 0 && version != current {
+        // The folder cannot be removed while held. Should it become a link in between,
+        // removing it removes only the link.
+        drop(held);
+        if remaining == 0 && current.file_name() != Some(entry.file_name().as_os_str()) {
             let _ = fs::remove_dir(&version);
         }
     }
@@ -363,6 +460,14 @@ mod tests {
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         dir
+    }
+
+    /// A log root whose only unchecked folder is its parent.
+    fn log_root(path: &Path) -> LogRoot {
+        LogRoot {
+            anchor: path.parent().unwrap().to_owned(),
+            path: path.to_owned(),
+        }
     }
 
     #[test]
@@ -411,7 +516,7 @@ mod tests {
         file_written_at(&root.join("Log_at_root.log"), old);
 
         assert_eq!(
-            remove_old_logs(&root, &current, now, Duration::from_secs(60), || false),
+            remove_old_logs(&log_root(&root), &current, now, Duration::from_secs(60), || false),
             Cleanup::Done
         );
 
@@ -435,7 +540,7 @@ mod tests {
 
         // The current folder survives even when nothing is left in it.
         fs::remove_file(current.join("Log_today.log")).unwrap();
-        remove_old_logs(&root, &current, now, Duration::from_secs(60), || false);
+        remove_old_logs(&log_root(&root), &current, now, Duration::from_secs(60), || false);
         assert!(current.is_dir());
         fs::remove_dir_all(root).ok();
     }
@@ -444,9 +549,13 @@ mod tests {
     fn cleanup_without_a_log_folder_does_nothing() {
         let root = std::env::temp_dir().join(format!("awake-log-none-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
-        let outcome = remove_old_logs(&root, &root.join("v1"), SystemTime::now(), CLEANUP_BUDGET, || {
-            false
-        });
+        let outcome = remove_old_logs(
+            &log_root(&root),
+            &root.join("v1"),
+            SystemTime::now(),
+            CLEANUP_BUDGET,
+            || false,
+        );
         assert_eq!(outcome, Cleanup::Done);
         assert!(!root.exists());
     }
@@ -475,9 +584,13 @@ mod tests {
         fs::create_dir_all(&root).unwrap();
         junction(&root.join("v0"), &elsewhere);
 
-        remove_old_logs(&root, &root.join("v1"), SystemTime::now(), CLEANUP_BUDGET, || {
-            false
-        });
+        remove_old_logs(
+            &log_root(&root),
+            &root.join("v1"),
+            SystemTime::now(),
+            CLEANUP_BUDGET,
+            || false,
+        );
         assert!(
             elsewhere.join("Log_old.log").exists(),
             "a linked version folder is skipped"
@@ -488,7 +601,7 @@ mod tests {
         let linked_root = root.join("linked-root");
         junction(&linked_root, &elsewhere);
         remove_old_logs(
-            &linked_root,
+            &log_root(&linked_root),
             &linked_root.join("v1"),
             SystemTime::now(),
             CLEANUP_BUDGET,
@@ -504,14 +617,77 @@ mod tests {
     }
 
     #[test]
+    fn cleanup_does_not_run_through_a_linked_folder_above_the_log_folder() {
+        let base = temp_dir("linked-parent");
+        let elsewhere = temp_dir("linked-parent-target");
+        let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
+        // A junction in place of a folder between the anchor and the log folder, leading to a
+        // real `Logs` folder somewhere else, as `C:\Windows\Logs` would be.
+        let protected = elsewhere.join("Logs").join("CBS").join("Log_old.log");
+        file_written_at(&protected, old);
+        junction(&base.join("Awake"), &elsewhere);
+        let through_link = LogRoot {
+            anchor: base.clone(),
+            path: base.join("Awake").join("Logs"),
+        };
+        assert!(through_link.path.is_dir(), "the log folder resolves");
+        remove_old_logs(
+            &through_link,
+            &through_link.path.join("v1"),
+            SystemTime::now(),
+            CLEANUP_BUDGET,
+            || false,
+        );
+        assert!(protected.exists(), "nothing is deleted through the link");
+
+        // The same layout with real folders is cleaned up.
+        let real = base.join("Real").join("Logs");
+        let stale = real.join("v0").join("Log_old.log");
+        file_written_at(&stale, old);
+        let direct = LogRoot {
+            anchor: base.clone(),
+            path: real.clone(),
+        };
+        remove_old_logs(
+            &direct,
+            &real.join("v1"),
+            SystemTime::now(),
+            CLEANUP_BUDGET,
+            || false,
+        );
+        assert!(!stale.exists());
+
+        fs::remove_dir(base.join("Awake")).unwrap();
+        fs::remove_dir_all(base).ok();
+        fs::remove_dir_all(elsewhere).ok();
+    }
+
+    #[test]
+    fn a_held_folder_keeps_every_folder_above_it_in_place() {
+        let base = temp_dir("held");
+        let inner = base.join("a").join("b");
+        fs::create_dir_all(&inner).unwrap();
+        let held = hold_directory(&inner, true).unwrap();
+        assert!(fs::rename(base.join("a"), base.join("moved")).is_err());
+        assert!(fs::rename(&inner, base.join("a").join("moved")).is_err());
+        drop(held);
+        fs::rename(base.join("a"), base.join("moved")).unwrap();
+        fs::remove_dir_all(base).ok();
+    }
+
+    #[test]
     fn cleanup_stops_as_soon_as_a_line_is_waiting() {
         let root = temp_dir("interrupted");
         let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
         file_written_at(&root.join("v0").join("Log_a.log"), old);
         file_written_at(&root.join("v0").join("Log_b.log"), old);
-        let outcome = remove_old_logs(&root, &root.join("v1"), SystemTime::now(), CLEANUP_BUDGET, || {
-            true
-        });
+        let outcome = remove_old_logs(
+            &log_root(&root),
+            &root.join("v1"),
+            SystemTime::now(),
+            CLEANUP_BUDGET,
+            || true,
+        );
         assert_eq!(outcome, Cleanup::Interrupted);
         assert!(root.join("v0").join("Log_a.log").exists() && root.join("v0").join("Log_b.log").exists());
         fs::remove_dir_all(root).ok();
@@ -567,7 +743,7 @@ mod tests {
             std::thread::spawn(move || {
                 static NONE_DROPPED: AtomicU64 = AtomicU64::new(0);
                 write_lines(
-                    &root,
+                    &log_root(&root),
                     &directory,
                     &receiver,
                     &NONE_DROPPED,
@@ -601,7 +777,7 @@ mod tests {
             std::thread::spawn(move || {
                 static NONE_DROPPED: AtomicU64 = AtomicU64::new(0);
                 write_lines(
-                    &root,
+                    &log_root(&root),
                     &directory,
                     &receiver,
                     &NONE_DROPPED,
@@ -635,7 +811,13 @@ mod tests {
         let writer = {
             let (root, directory) = (root.clone(), directory.clone());
             std::thread::spawn(move || {
-                write_lines(&root, &directory, &receiver, &WRITER_DROPPED, CLEANUP_AFTER_IDLE);
+                write_lines(
+                    &log_root(&root),
+                    &directory,
+                    &receiver,
+                    &WRITER_DROPPED,
+                    CLEANUP_AFTER_IDLE,
+                );
             })
         };
         let logger = FileLogger {
