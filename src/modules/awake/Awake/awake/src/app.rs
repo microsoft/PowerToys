@@ -667,6 +667,10 @@ impl App {
                     log::info!("Session {}.", if locked { "locked" } else { "unlocked" });
                     let effects = self.engine.set_screen_locked(locked);
                     self.apply(effects);
+                    if !locked {
+                        // Countdown redraws were skipped while locked.
+                        self.refresh_icon();
+                    }
                 }
                 Outcome::Handled(0)
             }
@@ -788,10 +792,12 @@ impl App {
 
     fn tick(&mut self, input: fn(&mut Engine, Timestamp) -> Vec<Effect>) -> Outcome {
         let mut effects = input(&mut self.engine, self.clock.now_utc());
-        if self.session_registered && self.engine.screen_locked() {
-            // Nobody sees the notification area on the lock screen; the next tick after unlocking
-            // brings the countdown up to date.
-            effects.retain(|effect| *effect != Effect::RefreshIcon);
+        if self.session_registered
+            && self.engine.screen_locked()
+            && suppress_while_locked(&effects, self.engine.activity())
+        {
+            // Nobody sees the notification area on the lock screen; unlocking redraws the icon.
+            effects.clear();
         }
         let outcome = self.apply(effects);
         self.update_status();
@@ -1267,6 +1273,12 @@ fn show_menu(cell: &RefCell<App>, window: HWND, x: i32, y: i32) {
     }
 }
 
+/// Whether a timer's effects are only the countdown redraw, which can wait until unlock. Anything
+/// else (a session ending at its deadline, say) changes the icon for good and must go through.
+fn suppress_while_locked(effects: &[Effect], activity: Activity) -> bool {
+    matches!(activity, Activity::Timed { .. }) && effects == [Effect::RefreshIcon]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1349,5 +1361,37 @@ mod tests {
         )
         .unwrap_err();
         assert!(error.contains("soonish"));
+    }
+
+    #[test]
+    fn a_plain_countdown_tick_waits_for_unlock() {
+        let mut engine = Engine::new(Source::PowerToys, Vec::new(), true);
+        let deadline = Timestamp::from_ticks(0).saturating_add_secs(60);
+        engine.start(
+            Activity::Timed {
+                seconds: 60,
+                deadline,
+            },
+            false,
+        );
+        let effects = engine.tick(Timestamp::from_ticks(0).saturating_add_secs(30));
+        assert!(suppress_while_locked(&effects, engine.activity()));
+    }
+
+    #[test]
+    fn an_expiry_while_locked_still_redraws_the_icon() {
+        let mut engine = Engine::new(Source::PowerToys, Vec::new(), true);
+        let deadline = Timestamp::from_ticks(0).saturating_add_secs(60);
+        engine.start(
+            Activity::Timed {
+                seconds: 60,
+                deadline,
+            },
+            false,
+        );
+        let effects = engine.deadline_fired(deadline);
+        assert!(effects.contains(&Effect::RefreshIcon));
+        assert_eq!(engine.activity(), Activity::Passive);
+        assert!(!suppress_while_locked(&effects, engine.activity()));
     }
 }

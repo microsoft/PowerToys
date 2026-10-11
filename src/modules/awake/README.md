@@ -104,7 +104,8 @@ and reporting any error with exit code 1:
   seconds, the process is ended. A crash ends the process too, and Windows drops the request
   with it. A Restart Manager request to close (from an installer) ends Awake like any other stop.
 - **Quiet while idle.** Nothing polls. A timed session redraws its countdown once a second on a
-  timer Windows may batch with others, and skips the tray update while the session is locked.
+  timer Windows may batch with others, and skips that redraw while the session is locked (a session
+  that ends while locked still updates the icon, and unlocking redraws it).
   Power broadcasts only matter on resume. If lock notifications are not available yet early in a
   logon, Awake retries for about a minute, then catches up with the current lock state.
 
