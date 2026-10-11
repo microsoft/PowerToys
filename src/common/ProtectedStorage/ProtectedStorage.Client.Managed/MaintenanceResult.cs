@@ -9,6 +9,8 @@ namespace PowerToys.ProtectedStorage;
 /// <summary>A maintenance observation for presentation, never storage authority or a command description.</summary>
 public sealed record MaintenanceResult(Guid OperationId, string State, uint NativeCode, string RetryKind, bool CleanupPending, bool DataRetained, string ProductCode = "", string InstalledVersion = "")
 {
+    public bool DiagnosticsRetained { get; init; }
+
     public bool Succeeded => NativeCode is 0 or 3010 or 1641;
 
     public bool RequiresRestart => NativeCode is 3010 or 1641;
@@ -67,6 +69,9 @@ public sealed record MaintenanceResult(Guid OperationId, string State, uint Nati
             value.GetProperty("cleanupPending").GetBoolean(),
             value.GetProperty("dataRetained").GetBoolean(),
             value.TryGetProperty("productCode", out var product) ? product.GetString() ?? string.Empty : string.Empty,
-            value.TryGetProperty("installedVersion", out var version) ? version.GetString() ?? string.Empty : string.Empty);
+            value.TryGetProperty("installedVersion", out var version) ? version.GetString() ?? string.Empty : string.Empty)
+        {
+            DiagnosticsRetained = value.TryGetProperty("diagnosticsRetained", out var diagnostics) && diagnostics.GetBoolean(),
+        };
     }
 }

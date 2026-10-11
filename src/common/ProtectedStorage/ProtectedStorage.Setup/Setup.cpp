@@ -7,6 +7,7 @@
 namespace
 {
     bool maintenanceCleanupPending = false;
+    bool maintenanceDiagnosticsRetained = false;
     std::wstring observedProductCode;
     std::wstring observedVersion;
     std::wstring syncState;
@@ -370,7 +371,6 @@ namespace
     }
     UINT authorized_msi(const std::wstring& verb, const std::wstring& selectedCode)
     {
-        maintenanceCleanupPending = true;
         const auto owner = PowerToysProtectedStorage::canonical_owner(PowerToysProtectedStorage::actor_sid());
         const DWORD pid = GetCurrentProcessId();
         const ULONGLONG birth = product::process_birth(GetCurrentProcess());
@@ -425,6 +425,7 @@ namespace
             throw PowerToysProtectedStorage::failure("authorized finalization pending; owner MSI result already recorded", WAIT_TIMEOUT);
         DWORD helperResult = 0;
         PowerToysProtectedStorage::check(GetExitCodeProcess(helper.value, &helperResult) != FALSE, "authorized finalization result");
+        maintenanceDiagnosticsRetained = true;
         if (!setup::success(helperResult))
             PowerToysProtectedStorage::result(helperResult, "authorized protected finalization failed");
         return setup::success(msiResult) && helperResult == ERROR_SUCCESS_REBOOT_REQUIRED ? helperResult : msiResult;
@@ -668,7 +669,7 @@ int wmain(int argc, wchar_t** argv)
         result = ERROR_INSTALL_FAILURE;
     }
     const auto text = ResultJson(operation, state, result, maintenanceCleanupPending || result == ERROR_SUCCESS_REBOOT_REQUIRED, retained,
-        observedProductCode, observedVersion);
+        observedProductCode, observedVersion, maintenanceDiagnosticsRetained);
     const std::string bytes = ToUtf8(text);
     DWORD written = 0;
     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), bytes.data(), static_cast<DWORD>(bytes.size()), &written, nullptr);

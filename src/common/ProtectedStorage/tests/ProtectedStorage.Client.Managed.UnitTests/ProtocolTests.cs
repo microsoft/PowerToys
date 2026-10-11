@@ -14,6 +14,18 @@ namespace ProtectedStorage.Client.Managed.UnitTests;
 public sealed class ProtocolTests
 {
     [TestMethod]
+    public void ClosedResponseIsNotReportedAsTimeout()
+    {
+        var closed = NamedPipeTransport.TransportFailure(new EndOfStreamException(), true);
+        Assert.AreEqual("ConnectionClosed", closed.ErrorCode);
+        Assert.AreEqual(109, closed.NativeCode);
+        Assert.AreEqual("Timeout", NamedPipeTransport.TransportFailure(new TimeoutException(), true).ErrorCode);
+        Assert.AreEqual("InvalidPayload", NamedPipeTransport.TransportFailure(new InvalidDataException(), true).ErrorCode);
+        Assert.AreEqual("NotProvisioned", NamedPipeTransport.TransportFailure(new System.ComponentModel.Win32Exception(2), false).ErrorCode);
+        Assert.AreEqual("Unauthorized", NamedPipeTransport.TransportFailure(new System.ComponentModel.Win32Exception(5), false).ErrorCode);
+    }
+
+    [TestMethod]
     public async Task UninitializedStateRequiresExplicitMigrationSuppressionPolicy()
     {
         var client = new ProtectedStoreClient(new StateTransport("""

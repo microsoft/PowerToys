@@ -9,4 +9,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="ProtectedStorage.Client.Managed.UnitTests" />
+  </ItemGroup>
 </Project>

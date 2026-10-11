@@ -1,0 +1,18 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\ProtectedStorage.Native.props" />
+  <PropertyGroup>
+    <LocalTestRoot>$(RepoRoot)artifacts\ProtectedStorageLocalTest\$(Platform)\$(Configuration)\</LocalTestRoot>
+    <OutDir>$(LocalTestRoot)Native\</OutDir>
+    <IntDir>$(LocalTestRoot)obj\$(MSBuildProjectName)\</IntDir>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ForcedIncludeFiles>$(MSBuildThisFileDirectory)..\Identity\ProtectedStorageIdentity.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>$(LocalTestRoot)Generated;$(MSBuildThisFileDirectory)..\..\..\ProtectedStorage.Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Target Name="RequireLocalTestSigner" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(LocalTestRoot)Generated\LocalTestSigner.h')" Text="Use Test-ProtectedStorageLocal.ps1 to generate the ephemeral local-test signer first." />
+  </Target>
+</Project>

@@ -41,7 +41,7 @@ internal static class ClientIdentity
         SecurityIdentifier service;
         try
         {
-            service = (SecurityIdentifier)new NTAccount($@"NT SERVICE\PowerToysProtectedStorage_{owner}").Translate(typeof(SecurityIdentifier));
+            service = (SecurityIdentifier)new NTAccount($@"NT SERVICE\{StorageIdentity.ProductName}_{owner}").Translate(typeof(SecurityIdentifier));
         }
         catch (IdentityNotMappedException exception)
         {

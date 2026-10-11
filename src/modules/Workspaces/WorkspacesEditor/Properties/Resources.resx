@@ -336,7 +336,12 @@
   <data name="ProtectedStorageTitle" xml:space="preserve"><value>Workspaces protected storage</value></data>
   <data name="ProtectedStorageRetry" xml:space="preserve"><value>Retry</value></data>
   <data name="ProtectedStorageSetup" xml:space="preserve"><value>Set up / repair</value></data>
-  <data name="ProtectedStorageUnavailable" xml:space="preserve"><value>Protected storage is unavailable. Your draft has not been discarded. Complete setup or repair, then retry this operation. Other PowerToys modules are not affected.</value></data>
+  <data name="ProtectedStorageSetUpOnly" xml:space="preserve"><value>Set up</value></data>
+  <data name="ProtectedStorageUnavailable" xml:space="preserve"><value>The protected storage operation could not be completed. Retry the operation, or cancel and keep the Workspaces logs for diagnosis. Other PowerToys modules are not affected.</value></data>
+  <data name="ProtectedStorageNotProvisioned" xml:space="preserve"><value>Workspaces needs a one-time setup to protect your saved workspaces. Choose Set up and approve the administrator authorization. Existing workspace files will be migrated only after setup succeeds.</value></data>
+  <data name="ProtectedStorageConnectionClosed" xml:space="preserve"><value>The protected storage connection closed before a complete response was received. Retry this operation. If it happens again, keep the Workspaces logs for diagnosis; repeating setup is not the next step.</value></data>
+  <data name="ProtectedStorageTimedOut" xml:space="preserve"><value>The protected storage service did not respond in time. Retry this operation. If it happens again, keep the Workspaces logs for diagnosis.</value></data>
+  <data name="ProtectedStorageAccessDenied" xml:space="preserve"><value>The protected storage service could not authorize this application or operation. Check that the Workspaces components belong to the expected PowerToys release and keep the logs for diagnosis. Repeating first-time setup will not resolve an authorization mismatch.</value></data>
   <data name="ProtectedStorageConflict" xml:space="preserve"><value>Another process changed your workspaces. Your draft has not been saved or discarded. Cancel this operation and reload the latest workspaces before applying your changes.</value></data>
   <data name="ProtectedStorageUnknown" xml:space="preserve"><value>The save result could not be confirmed. Retry checks the same operation without overwriting newer changes. Do not assume the save failed or import the legacy file again.</value></data>
   <data name="ProtectedStorageInvalid" xml:space="preserve"><value>The operation could not be completed. Check the input and retry. No partial workspace document was imported or saved, and your current draft is retained.</value></data>
@@ -354,6 +359,6 @@
   <data name="ProtectedStorageRestart" xml:space="preserve"><value>Protected storage maintenance requires a Windows restart. Restart before retrying this operation.</value></data>
   <data name="ProtectedStorageSetupUnknown" xml:space="preserve"><value>The maintenance result needs inspection or recovery. Retry checks the recorded operation; it does not reinstall PowerToys or repeat an unknown commit. Resolve the reported setup state before retrying Workspaces.</value></data>
   <data name="ProtectedStorageInspect" xml:space="preserve"><value>Inspect</value></data>
-  <data name="ProtectedStorageMaintenanceCleanup" xml:space="preserve"><value>Protected storage maintenance completed. Some cleanup remains pending; inspect its status before retrying cleanup. Your workspace data was not rolled back.</value></data>
+  <data name="ProtectedStorageMaintenanceCleanup" xml:space="preserve"><value>Workspaces is available. Some maintenance cleanup remains pending. Inspect the recorded maintenance operation before retrying cleanup; do not reinstall or delete protected data.</value></data>
   <data name="ProtectedStorageConfirmBootstrapRepair" xml:space="preserve"><value>Repair the protected storage service startup components with administrator authorization? This preserves workspace data and does not repair a damaged workspace record. Continue only if service startup repair is required.</value></data>
 </root>

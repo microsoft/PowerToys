@@ -12,7 +12,7 @@ internal static class ServiceIdentity
     internal static void VerifyRuntime(SafeProcessHandle runtime, string owner, string image)
     {
         using var manager = OpenSCManager(null, null, 1);
-        using var service = OpenService(manager, $"PowerToysProtectedStorage_{owner}", 5);
+        using var service = OpenService(manager, $"{StorageIdentity.ProductName}_{owner}", 5);
         if (manager.IsInvalid || service.IsInvalid)
         {
             throw new ProtectedStorageException("Unauthorized");
@@ -37,7 +37,7 @@ internal static class ServiceIdentity
             string expected = $"\"{bootstrap}\" --service \"{owner}\"";
             if (config.ServiceType != 0x10 ||
                 !string.Equals(Marshal.PtrToStringUni(config.BinaryPath), expected, StringComparison.OrdinalIgnoreCase) ||
-                !string.Equals(Marshal.PtrToStringUni(config.StartName), $@"NT SERVICE\PowerToysProtectedStorage_{owner}", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(Marshal.PtrToStringUni(config.StartName), $@"NT SERVICE\{StorageIdentity.ProductName}_{owner}", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ProtectedStorageException("Unauthorized");
             }

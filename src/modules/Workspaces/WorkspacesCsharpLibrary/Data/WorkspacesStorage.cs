@@ -15,7 +15,6 @@ public static class WorkspacesStorage
 
     public static string GetLegacyFilePath()
     {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(localAppData, "Microsoft", "PowerToys", "Workspaces", "workspaces.json");
+        return Path.Combine(PowerToys.ProtectedStorage.StorageIdentity.WorkspacesDirectory, "workspaces.json");
     }
 }

@@ -18,7 +18,7 @@ public sealed class NamedPipeTransport : IProtectedStorageTransport
         string owner = WindowsIdentity.GetCurrent().User?.Value ?? throw new ProtectedStorageException("Unauthorized");
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(10));
-        using var pipe = new NamedPipeClientStream(".", $"PowerToysProtectedStorage.Data.{owner}", PipeDirection.InOut, PipeOptions.Asynchronous, TokenImpersonationLevel.Impersonation);
+        using var pipe = new NamedPipeClientStream(".", $"{StorageIdentity.ProductName}.Data.{owner}", PipeDirection.InOut, PipeOptions.Asynchronous, TokenImpersonationLevel.Impersonation);
         bool sent = false;
         try
         {
@@ -50,8 +50,20 @@ public sealed class NamedPipeTransport : IProtectedStorageTransport
         }
         catch (Exception exception) when (exception is IOException or TimeoutException or OperationCanceledException or Win32Exception)
         {
-            throw new ProtectedStorageException(sent ? "Timeout" : "NotProvisioned", nativeCode: exception.HResult, innerException: exception);
+            throw TransportFailure(exception, sent);
         }
+    }
+
+    internal static ProtectedStorageException TransportFailure(Exception exception, bool sent)
+    {
+        int native = exception is Win32Exception win32 ? win32.NativeErrorCode :
+            exception is EndOfStreamException ? 109 : exception.HResult & 0xffff;
+        string code = exception is InvalidDataException ? "InvalidPayload" :
+            exception is TimeoutException or OperationCanceledException || native is 121 or 1460 ? "Timeout" :
+            exception is EndOfStreamException || native is 109 or 232 or 233 ? "ConnectionClosed" :
+            !sent && native is 2 or 3 ? "NotProvisioned" :
+            native == 5 ? "Unauthorized" : "InternalError";
+        return new ProtectedStorageException(code, nativeCode: native, innerException: exception);
     }
 
     private static SafeProcessHandle VerifyServer(SafePipeHandle pipe, string owner)
@@ -92,7 +104,7 @@ public sealed class NamedPipeTransport : IProtectedStorageTransport
                     }
 
                     var sid = new SecurityIdentifier(Marshal.ReadIntPtr(buffer));
-                    var expected = (SecurityIdentifier)new NTAccount($@"NT SERVICE\PowerToysProtectedStorage_{owner}").Translate(typeof(SecurityIdentifier));
+                    var expected = (SecurityIdentifier)new NTAccount($@"NT SERVICE\{StorageIdentity.ProductName}_{owner}").Translate(typeof(SecurityIdentifier));
                     if (sid != expected)
                     {
                         throw new ProtectedStorageException("Unauthorized");
@@ -111,7 +123,7 @@ public sealed class NamedPipeTransport : IProtectedStorageTransport
                 throw new ProtectedStorageException("Unauthorized");
             }
 
-            string expectedImage = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "PowerToysProtectedStorage", "Owners", owner, "Code", "Runtime.exe");
+            string expectedImage = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), StorageIdentity.ProductName, "Owners", owner, "Code", "Runtime.exe");
             if (!string.Equals(new string(image, 0, (int)length), expectedImage, StringComparison.OrdinalIgnoreCase) ||
                 !GetNamedPipeServerProcessId(pipe, out uint currentPid) || currentPid != pid)
             {

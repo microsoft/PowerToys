@@ -7,6 +7,28 @@ using namespace PowerToys::ProtectedStorage;
 
 namespace
 {
+    void LogFailure(const Paths& paths, const Frame& request, bool parsed, std::string_view phase,
+        ULONG callerPid, const std::exception& error)
+    {
+        const auto native = dynamic_cast<const Error*>(&error);
+        const auto typed = dynamic_cast<const StorageError*>(&error);
+        Value detail(Value::Object{
+            { "phase", std::string(phase) },
+            { "requestId", parsed ? GuidText(request.requestId) : "" },
+            { "command", parsed ? static_cast<uint64_t>(request.command) : uint64_t{ 0 } },
+            { "callerPid", static_cast<uint64_t>(callerPid) },
+            { "nativeCode", static_cast<uint64_t>(native ? native->code : ERROR_GEN_FAILURE) },
+            { "errorCode", std::string(ErrorName(typed ? typed->errorCode : ErrorCode::InternalError)) } });
+        try
+        {
+            AppendText(paths.data + L"\\runtime-errors.log", detail.Stringify() + "\n");
+        }
+        catch (const std::exception& loggingFailure)
+        {
+            OutputDebugStringA(detail.Stringify().c_str());
+            OutputDebugStringA(loggingFailure.what());
+        }
+    }
     bool Maintenance(const Paths& paths)
     {
         if (paths.Draining())
@@ -49,7 +71,7 @@ namespace
               GetLastError());
         std::unique_ptr<void, decltype(&LocalFree)> descriptor(raw, LocalFree);
         SECURITY_ATTRIBUTES attributes{ sizeof(attributes), raw, FALSE };
-        auto endpoint = L"\\\\.\\pipe\\PowerToysProtectedStorage.Data." + paths.owner;
+        auto endpoint = L"\\\\.\\pipe\\" + std::wstring(App) + L".Data." + paths.owner;
         Handle pipe(CreateNamedPipeW(endpoint.c_str(), PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS, 1, 65536, 65536, 0, &attributes));
         Check(static_cast<bool>(pipe), ErrorCode::InternalError, GetLastError());
         // Ready means release, index recovery, identity ACLs and the unique data listener were all checked.
@@ -84,13 +106,20 @@ namespace
             bool parsed = false;
             bool mutationDispatched = false;
             bool dispatchCompleted = false;
+            bool responseStarted = false;
+            bool responseWritten = false;
+            std::string_view phase = "read";
+            ULONG callerPid = 0;
+            GetNamedPipeClientProcessId(pipe.get(), &callerPid);
             try
             {
                 request = ReadFrame(pipe.get(), stop.get());
                 parsed = true;
+                phase = "authenticate";
                 auto caller = request.command == DataCommand::GetCapabilities ? AuthenticateOwner(pipe.get(), paths) :
                                                                                 AuthenticateCaller(pipe.get(), paths);
                 AuthorizeRequest(caller, request);
+                phase = "dispatch";
                 Frame response;
                 if (request.command == DataCommand::GetCapabilities)
                 {
@@ -140,10 +169,14 @@ namespace
                         }
                     }
                 }
+                phase = "write-response";
+                responseStarted = true;
                 WriteFrame(pipe.get(), response, stop.get());
+                responseWritten = true;
             }
             catch (const std::exception& failure)
             {
+                LogFailure(paths, request, parsed, phase, callerPid, failure);
                 if (const auto typed = dynamic_cast<const StorageError*>(&failure);
                     typed && typed->errorCode == ErrorCode::RecoveryRequired)
                 {
@@ -151,7 +184,7 @@ namespace
                     if (!SetEvent(recoveryEvent.get()))
                         Fail("signal worker recovery");
                 }
-                if (parsed)
+                if (parsed && !responseStarted)
                 {
                     try
                     {
@@ -163,13 +196,28 @@ namespace
                         StorageError unknown(ErrorCode::OutcomeUnknown, native ? native->code : ERROR_GEN_FAILURE, operationId);
                         Frame response{ request.command, request.requestId, ErrorMetadata(mutationDispatched && (dispatchCompleted || !typed) ? unknown : failure, operationId), {} };
                         WriteFrame(pipe.get(), response, stop.get());
+                        responseWritten = true;
                     }
-                    catch (const std::exception&)
+                    catch (const std::exception& responseFailure)
                     {
+                        LogFailure(paths, request, parsed, "write-error-response", callerPid, responseFailure);
                     }
                 }
             }
-            DisconnectNamedPipe(pipe.get());
+            if (responseWritten)
+            {
+                try
+                {
+                    WaitForClientDisconnect(pipe.get(), stop.get());
+                }
+                catch (const std::exception& completionFailure)
+                {
+                    if (WaitForSingleObject(stop.get(), 0) != WAIT_OBJECT_0)
+                        LogFailure(paths, request, parsed, "complete-response", callerPid, completionFailure);
+                }
+            }
+            if (!DisconnectNamedPipe(pipe.get()))
+                LogFailure(paths, request, parsed, "disconnect", callerPid, Error("disconnect", GetLastError()));
         }
         // Writes are synchronous under the maintenance lease: reaching here is a completed drain.
         return 0;

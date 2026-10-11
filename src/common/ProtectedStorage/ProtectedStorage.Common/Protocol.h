@@ -70,6 +70,7 @@ namespace PowerToys::ProtectedStorage
     void ValidateNetworkFrame(const Frame& frame);
     Frame ReadFrame(HANDLE pipe, HANDLE cancel = nullptr, DWORD timeout = IoTimeout);
     void WriteFrame(HANDLE pipe, const Frame& frame, HANDLE cancel = nullptr, DWORD timeout = IoTimeout);
+    void WaitForClientDisconnect(HANDLE pipe, HANDLE cancel = nullptr, DWORD timeout = IoTimeout);
     void ValidateImportIntent(const Frame& request, bool autoImportSuppressed);
 
     enum class ErrorCode
@@ -91,7 +92,8 @@ namespace PowerToys::ProtectedStorage
         OperationConflict,
         CleanupPending,
         OwnerContextRequired,
-        InternalError
+        InternalError,
+        ConnectionClosed
     };
     std::string_view ErrorName(ErrorCode code);
     struct StorageError : Error

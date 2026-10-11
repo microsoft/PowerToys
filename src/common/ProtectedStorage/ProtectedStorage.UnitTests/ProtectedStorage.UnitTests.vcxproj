@@ -6,7 +6,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="..\ProtectedStorage.Native.props" />
   <PropertyGroup><RunVSTest>false</RunVSTest></PropertyGroup>
-  <ItemGroup><ClCompile Include="Tests.cpp" /><ClCompile Include="..\ProtectedStorage.Runtime\BlobStore.cpp" /><ClInclude Include="CatalogFixture.h" /></ItemGroup>
+  <ItemGroup><ClCompile Include="Tests.cpp" /><ClCompile Include="PipeTests.cpp" /><ClCompile Include="..\ProtectedStorage.Runtime\BlobStore.cpp" /><ClInclude Include="CatalogFixture.h" /><ClInclude Include="PipeTests.h" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\ProtectedStorage.Client\ProtectedStorage.Client.vcxproj"><Project>{1177C4C8-133C-43BD-91CA-D323772EECD2}</Project></ProjectReference></ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="Test" DependsOnTargets="Build"><Exec Command="&quot;$(TargetPath)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" /></Target>

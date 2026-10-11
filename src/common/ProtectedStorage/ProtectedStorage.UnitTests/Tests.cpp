@@ -12,6 +12,7 @@
 #include <thread>
 #include <memory>
 #include "CatalogFixture.h"
+#include "PipeTests.h"
 
 using namespace PowerToys::ProtectedStorage;
 
@@ -132,6 +133,8 @@ namespace
         Expect(ClientProtocol::TransportFailure(read, true, timeout).errorCode == ErrorCode::Timeout,
                "read-only timeout does not imply an unknown write");
         const Error disconnected("disconnected", ERROR_BROKEN_PIPE);
+        Expect(ClientProtocol::TransportFailure(read, true, disconnected).errorCode == ErrorCode::ConnectionClosed,
+               "closed read response is distinct from a timeout");
         Expect(ClientProtocol::TransportFailure(request, true, disconnected).errorCode == ErrorCode::OutcomeUnknown,
                "disconnected write is queried");
         auto invalid = response;
@@ -584,10 +587,16 @@ namespace
         Reject([&] { ParsePolicy(policy + "signer_policy=microsoft-production-v1\n"); });
     }
 }
-int main()
+int wmain(int argc, wchar_t** argv)
 {
     try
     {
+        if (argc > 1)
+            return RunPipeTestServer(argc, argv);
+        Expect(std::wstring_view(App) == L"PowerToysProtectedStorage" &&
+            std::string_view(ReleaseTrustPolicy) == "microsoft-production-v1",
+            "shipping targets retain production identity and trust");
+        RunPipeCompletionTests();
         ProtocolTests();
         ClientOutcomeTests();
         StoreTests();

@@ -17,7 +17,7 @@ namespace PowerToys::ProtectedStorage
             if (code != "None")
             {
                 bool known = false;
-                for (unsigned i = 0; i <= static_cast<unsigned>(ErrorCode::InternalError); ++i)
+                for (unsigned i = 0; i <= static_cast<unsigned>(ErrorCode::ConnectionClosed); ++i)
                     known = known || code == ErrorName(static_cast<ErrorCode>(i));
                 Check(known && response.bytes.empty() && response.metadata.At("nativeCode").Number() <= MAXDWORD,
                       ErrorCode::InvalidPayload);
@@ -69,6 +69,8 @@ namespace PowerToys::ProtectedStorage
             const auto code = native ? native->code : ERROR_GEN_FAILURE;
             if (writeAttempted && IsMutatingCommand(request.command))
                 return StorageError(ErrorCode::OutcomeUnknown, code, id);
+            if (code == ERROR_BROKEN_PIPE || code == ERROR_PIPE_NOT_CONNECTED || code == ERROR_NO_DATA)
+                return StorageError(ErrorCode::ConnectionClosed, code, id);
             if (const auto typed = dynamic_cast<const StorageError*>(&failure))
                 return StorageError(typed->errorCode, code, id);
             return StorageError(code == ERROR_TIMEOUT || code == ERROR_SEM_TIMEOUT        ? ErrorCode::Timeout :
@@ -110,7 +112,7 @@ namespace PowerToys::ProtectedStorage
             EncodeFrame(request);
             Check(TokenSid() == m_owner, ErrorCode::Unauthorized);
             Paths paths(m_owner);
-            const auto endpoint = L"\\\\.\\pipe\\PowerToysProtectedStorage.Data." + m_owner;
+            const auto endpoint = L"\\\\.\\pipe\\" + std::wstring(App) + L".Data." + m_owner;
             auto pipe = ConnectOwnerPipe(paths, endpoint, m_timeout);
             VerifyServer(pipe.get(), paths, false);
             sent = true;

@@ -25,45 +25,47 @@ public static class WorkspacesFailureViewModel
 
     public static async Task<bool> ExecuteAsync(Func<Task> operation, bool allowSetup = false, bool allowRetry = true)
     {
+        bool cleanupPending = false;
         while (true)
         {
             try
             {
                 await operation();
                 LastFailure = null;
+                if (cleanupPending)
+                {
+                    MessageBox.Show(Text("ProtectedStorageMaintenanceCleanup"), Text("ProtectedStorageTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
                 return true;
             }
             catch (Exception exception)
             {
-                Logger.LogError("Workspaces operation failed", exception);
                 var storage = exception as ProtectedStorageException;
                 string code = storage?.ErrorCode ?? "InvalidPayload";
-                string key = code switch
+                if (code == "NotProvisioned")
                 {
-                    "RevisionConflict" => "ProtectedStorageConflict",
-                    "OutcomeUnknown" => "ProtectedStorageUnknown",
-                    "CleanupPending" => "ProtectedStorageCleanupPending",
-                    "OwnerContextRequired" => "ProtectedStorageRunNormally",
-                    "IncompatibleVersion" => "ProtectedStorageIncompatible",
-                    "SetupRestartRequired" => "ProtectedStorageRestart",
-                    "SetupOutcomeUnknown" => "ProtectedStorageSetupUnknown",
-                    "InvalidPayload" => "ProtectedStorageInvalid",
-                    _ => "ProtectedStorageUnavailable",
-                };
-                string retry = code switch
+                    Logger.LogInfo("Workspaces requires first-time protected storage setup.");
+                }
+                else
                 {
-                    "OutcomeUnknown" or "SetupOutcomeUnknown" => "InspectUnknownOutcome",
-                    "SetupRestartRequired" => "RetryAfterRestart",
-                    "OwnerContextRequired" or "SetupAuthorizationRequired" => "RetryAfterAuthorization",
-                    "InvalidPayload" or "SetupFailed" => "RetryAfterInputFix",
-                    _ => "RetryNow",
-                };
+                    Logger.LogError("Workspaces operation failed", exception);
+                }
+
+                var presentation = WorkspacesCsharpLibrary.Data.WorkspacesFailurePresentation.For(code, allowSetup, allowRetry);
+                string key = presentation.MessageKey;
+                string retry = presentation.RetryKind;
                 LastFailure = new OperationFailure(storage?.OperationId ?? Guid.Empty, code, key, retry, storage?.NativeCode);
-                bool setupAvailable = allowSetup && code is "NotProvisioned" or "AuthorizationRequired" or "RecoveryRequired" or "SetupAuthorizationRequired";
+                bool setupAvailable = presentation.CanSetup;
                 bool setupFailure = code.StartsWith("Setup", StringComparison.Ordinal);
                 bool knownBusy = code == "SetupBusy" && storage != null && storage.OperationId != Guid.Empty && storage.NativeCode is 1618 or 170;
-                bool canRetry = allowRetry && retry is not ("RetryAfterRestart" or "RetryAfterAuthorization");
-                int choice = ShowFailure(key, canRetry, setupAvailable, setupFailure && !knownBusy ? "ProtectedStorageInspect" : "ProtectedStorageRetry");
+                bool canRetry = presentation.CanRetry;
+                int choice = ShowFailure(
+                    key,
+                    canRetry,
+                    setupAvailable,
+                    setupFailure && !knownBusy ? "ProtectedStorageInspect" : "ProtectedStorageRetry",
+                    code == "NotProvisioned" ? "ProtectedStorageSetUpOnly" : "ProtectedStorageSetup");
                 if (choice == 0)
                 {
                     return false;
@@ -78,6 +80,8 @@ public static class WorkspacesFailureViewModel
                         {
                             return false;
                         }
+
+                        cleanupPending |= retried.CleanupPending;
                     }
                     catch (Exception retryError)
                     {
@@ -110,6 +114,8 @@ public static class WorkspacesFailureViewModel
                         {
                             return false;
                         }
+
+                        cleanupPending |= result.CleanupPending;
                     }
                     catch (Exception setupError)
                     {
@@ -134,13 +140,18 @@ public static class WorkspacesFailureViewModel
 
         if (result.CleanupPending)
         {
-            MessageBox.Show(Text("ProtectedStorageMaintenanceCleanup"), Text("ProtectedStorageTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+            Logger.LogWarning($"Protected storage maintenance cleanup pending. Operation={result.OperationId}, nativeCode={result.NativeCode}.");
+        }
+
+        if (result.DiagnosticsRetained)
+        {
+            Logger.LogInfo($"Protected storage authorization diagnostics retained. Operation={result.OperationId}.");
         }
 
         return true;
     }
 
-    private static int ShowFailure(string key, bool retry, bool setup, string retryResource)
+    private static int ShowFailure(string key, bool retry, bool setup, string retryResource, string setupResource)
     {
         int result = 0;
         var panel = new StackPanel { Margin = new Thickness(20) };
@@ -174,7 +185,7 @@ public static class WorkspacesFailureViewModel
 
         if (setup)
         {
-            AddButton("ProtectedStorageSetup", 2);
+            AddButton(setupResource, 2);
         }
 
         AddButton("Cancel", 0);

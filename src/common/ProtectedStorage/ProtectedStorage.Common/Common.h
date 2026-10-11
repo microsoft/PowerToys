@@ -18,6 +18,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include "ProtectedStorageIdentity.h"
 
 namespace PowerToys::ProtectedStorage
 {
@@ -28,7 +29,6 @@ namespace PowerToys::ProtectedStorage
     constexpr size_t MaxText = 32768;
     constexpr uint64_t MaxPayload = 64ULL * 1024 * 1024;
     constexpr DWORD DecisionTimeout = 180000;
-    constexpr wchar_t App[] = L"PowerToysProtectedStorage";
     constexpr DWORD ProtocolMagic = 0x3143534D;
 
     struct Error : std::runtime_error

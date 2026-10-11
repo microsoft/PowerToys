@@ -368,6 +368,25 @@ namespace PowerToys::ProtectedStorage
         auto data = EncodeFrame(frame);
         ExactIo(pipe, true, data.data(), static_cast<DWORD>(data.size()), cancel, timeout);
     }
+    void WaitForClientDisconnect(HANDLE pipe, HANDLE cancel, DWORD timeout)
+    {
+        // DisconnectNamedPipe discards unread response bytes. Existing clients close
+        // their one-request connection after reading and verifying the full response.
+        if (cancel && WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0)
+            throw Error("response completion cancelled", ERROR_OPERATION_ABORTED);
+        BYTE unexpected = 0;
+        try
+        {
+            Check(BoundedIo(pipe, false, &unexpected, 1, cancel, timeout) == 0, ErrorCode::InvalidPayload);
+        }
+        catch (const Error& error)
+        {
+            if (cancel && WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0)
+                throw Error("response completion cancelled", ERROR_OPERATION_ABORTED);
+            if (error.code != ERROR_BROKEN_PIPE && error.code != ERROR_PIPE_NOT_CONNECTED && error.code != ERROR_NO_DATA)
+                throw;
+        }
+    }
     void ValidateNetworkFrame(const Frame& frame)
     {
         Check(std::any_of(frame.requestId.begin(), frame.requestId.end(), [](BYTE value) { return value != 0; }),
@@ -381,7 +400,7 @@ namespace PowerToys::ProtectedStorage
     }
     std::string_view ErrorName(ErrorCode code)
     {
-        constexpr std::string_view names[]{ "Unauthorized", "TargetDenied", "NotProvisioned", "AuthorizationRequired", "AlreadyInitialized", "RevisionConflict", "BusyMaintenance", "InvalidPayload", "Timeout", "OutcomeUnknown", "RecoveryRequired", "IncompatibleVersion", "QuotaExceeded", "NotFound", "OperationConflict", "CleanupPending", "OwnerContextRequired", "InternalError" };
+        constexpr std::string_view names[]{ "Unauthorized", "TargetDenied", "NotProvisioned", "AuthorizationRequired", "AlreadyInitialized", "RevisionConflict", "BusyMaintenance", "InvalidPayload", "Timeout", "OutcomeUnknown", "RecoveryRequired", "IncompatibleVersion", "QuotaExceeded", "NotFound", "OperationConflict", "CleanupPending", "OwnerContextRequired", "InternalError", "ConnectionClosed" };
         auto index = static_cast<size_t>(code);
         return index < std::size(names) ? names[index] : "InternalError";
     }
@@ -412,7 +431,7 @@ namespace PowerToys::ProtectedStorage
         const auto* error = metadata.Find("errorCode");
         if (!error || error->Text() == "None")
             return;
-        for (unsigned i = 0; i <= static_cast<unsigned>(ErrorCode::InternalError); ++i)
+        for (unsigned i = 0; i <= static_cast<unsigned>(ErrorCode::ConnectionClosed); ++i)
         {
             auto code = static_cast<ErrorCode>(i);
             if (error->Text() == ErrorName(code))

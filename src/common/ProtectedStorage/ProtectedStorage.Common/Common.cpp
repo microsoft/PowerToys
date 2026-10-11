@@ -603,7 +603,7 @@ namespace PowerToys::ProtectedStorage
     Paths::Paths(const std::wstring& ownerSid) : owner(ownerSid)
     {
         Require(ValidOwner(owner), "canonical real owner SID required");
-        service = L"PowerToysProtectedStorage_" + owner;
+        service = std::wstring(App) + L"_" + owner;
         va = AccountSid(L"NT SERVICE\\" + service);
         root = Known(FOLDERID_ProgramFiles) + L"\\" + App;
         state = Known(FOLDERID_ProgramData) + L"\\" + App;
@@ -611,7 +611,7 @@ namespace PowerToys::ProtectedStorage
         data = state + L"\\Data\\" + owner;
         policy = state + L"\\Policy\\" + owner + L"\\policy.txt";
         installer = state + L"\\Installer\\" + owner;
-        pipe = L"\\\\.\\pipe\\PowerToysProtectedStorage.Control." + owner;
+        pipe = L"\\\\.\\pipe\\" + std::wstring(App) + L".Control." + owner;
     }
     void Paths::Check() const
     {

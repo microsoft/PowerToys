@@ -52,6 +52,84 @@ ARM64:
 An x64 cross-build does not execute ARM64 tests. Run them on an appropriate
 acceptance machine before release.
 
+## Isolated local deployment and cleanup
+
+Do not use ADO as the first functional test loop. Real native/managed named-pipe
+tests now run in the regular unit suite, including delayed/fragmented reads,
+error replies, a stalled client and service-stop cancellation. They exercise the
+same bounded response-completion primitive used by Runtime.
+
+For a live development loop, use an elevated PowerShell terminal in the real
+test user's desktop session:
+
+```powershell
+.\tools\build\Test-ProtectedStorageLocal.ps1 -Action Test
+.\tools\build\Test-ProtectedStorageLocal.ps1 -Action Editor
+.\tools\build\Test-ProtectedStorageLocal.ps1 -Action Inspect
+```
+
+`Test` builds, cleans the previous **local-test** deployment, deploys the real
+Bootstrap/Runtime as a VA service, and launches the smoke client under the
+same user's verified non-elevated Explorer token. It checks first migration,
+matching legacy-file deletion, save/reopen, previews, cross-process persistence
+and rejection of direct owner writes, then opens and verifies the real editor
+main window before closing that test window. `Editor` launches the locally built
+editor with an isolated mutex, logs and workspace directory. A visible
+`[LOCAL TEST - isolated data]` title identifies this editor.
+`-SkipBuild` repeats cleanup/deployment/testing with the existing bundle.
+`-Action Build` only creates artifacts; `-Action Deploy` deploys an existing
+bundle without resetting an existing instance.
+
+These non-shipping projects live in
+`src\common\ProtectedStorage\tests\LocalDeployment`, outside the shipping solution.
+Artifacts and JSON results are in
+`artifacts\ProtectedStorageLocalTest\<Platform>\<Configuration>`.
+The namespace is fixed at build time to `PowerToysProtectedStorageLocalTest`,
+including service name, Code/Data/Policy/Installer roots and pipe endpoints.
+The managed test assembly also redirects legacy migration and editor data to
+`%LocalAppData%\PowerToysProtectedStorageLocalTest\Workspaces`; it must never
+migrate or remove the real user's legacy workspace file.
+
+Each build creates an in-memory seven-day signing certificate. Its private key
+is disposed after signing; no key or root is installed in a certificate store.
+Only the separately linked test verifier accepts that exact public certificate
+for detached CMS. It verifies the signature and still uses the actual manifest,
+catalog hashes, process identity, VA, ACL and storage code. It explicitly refuses
+Authenticode installer authorization. Production keeps
+`microsoft-production-v1`, and the local build verifies that the production
+verifier rejects its test signature. There is no runtime production bypass flag.
+
+This is a storage/editor development deployment, **not** qualification of the
+production MSI, UAC bootstrap, app launching/arranger integration, ESRP,
+timestamps or revocation. Those still require the real release acceptance
+matrix. Native module launchers are not deployed by this local editor harness.
+
+Cleanup:
+
+```powershell
+# Preview, then remove this owner's disposable local-test service/code/data.
+.\tools\build\Clear-ProtectedStorageTestEnvironment.ps1 -WhatIf
+.\tools\build\Clear-ProtectedStorageTestEnvironment.ps1
+
+# Separately, from the ORIGINAL USER'S NON-ELEVATED terminal:
+# explicitly remove the installed release's instance via signed Setup, keeping data.
+.\tools\build\Clear-ProtectedStorageTestEnvironment.ps1 -InstalledRelease
+```
+
+For a machine installation, pass its actual `-InstallRoot`. Installed-release
+cleanup does not uninstall the main PowerToys product and does not purge business
+data. No cleanup command searches for and deletes all `PowerToys*` services.
+Historical demo/prototype services remain untouched.
+
+The local lifecycle checks the exact service image/account and fixed owner
+paths, rejects reparse trees, waits for the exact host to exit, and reports
+residuals. A still-loaded VA profile is recorded as `profileCleanupPending`,
+not force-unloaded or falsely reported removed. Test Code/Data are reset
+independently, so the next test can have fresh storage while reusing that
+same isolated identity. Temporary SYSTEM lifecycle services run only an
+admin-protected copy of the test helper and are deleted after completion.
+Unknown outcomes retain their evidence; they must not be blindly replayed.
+
 ## Release packaging is a separate, authenticated step
 
 **Prior CI qualification:** ADO run `158436898` for `0.101.3000.0` failed

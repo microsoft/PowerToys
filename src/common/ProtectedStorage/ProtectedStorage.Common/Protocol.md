@@ -22,8 +22,8 @@ Output is `<repo>\<platform>\<configuration>\ProtectedStorage`. Projects inherit
 the repository toolset, SDK, `/W4`, warnings-as-errors and native analysis.
 
 The test target also implements `msbuild /t:Test`. Tests use isolated directories
-under their working directory and remove them, including failure paths. No test
-creates services, accounts, profiles, persistent signing keys or certificate-store
+under their working directory and remove them, including failure paths. These unit tests
+do not create services, accounts, profiles, persistent signing keys or certificate-store
 entries. The CMS fixture contains public certificate/signature bytes only.
 Common carries its required Windows SDK import libraries in object-file linker
 directives. Version APIs are resolved from the exact System32 `version.dll`,
@@ -32,6 +32,24 @@ Client/Common consumers need only the project references; they do not need
 module-local version/crypto workarounds or the service property sheet.
 
 ## Identities and deployment
+
+The data pipe is one request/response per connection. After writing either a
+success or an error frame, Runtime waits for the client to close, with a deadline
+and service-stop cancellation, before calling `DisconnectNamedPipe`. A completed
+write alone is not proof that the client consumed the response: disconnecting
+early discards unread pipe data. Clients read and verify the complete response
+before closing; no new wire ACK is required.
+
+Read-only EOF/broken-pipe failures are reported as `ConnectionClosed`, separately
+from a real timeout. A write whose result may already have committed remains
+`OutcomeUnknown` with its operation ID. Runtime records request ID, command,
+caller PID, failure stage and native code in protected `runtime-errors.log`,
+never workspace payloads. A failed partial response is not followed by a second
+error frame on the same connection.
+
+Ordinary unit tests remain non-deploying. The separately invoked local deployment
+under `tests\LocalDeployment` creates an isolated test VA service; see the
+module README for its explicit cleanup and test-trust boundaries.
 
 * Application/root: `PowerToysProtectedStorage`.
 * Service: `PowerToysProtectedStorage_<owner SID>`.

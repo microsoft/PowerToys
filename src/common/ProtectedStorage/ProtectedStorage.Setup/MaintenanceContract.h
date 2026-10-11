@@ -176,11 +176,13 @@ namespace PowerToysProtectedStorage::Maintenance
 
     inline std::wstring ResultJson(const std::wstring& operation, const std::wstring& state, DWORD code,
                                   bool cleanupPending = false, bool dataRetained = false,
-                                  const std::wstring& productCode = {}, const std::wstring& installedVersion = {})
+                                  const std::wstring& productCode = {}, const std::wstring& installedVersion = {},
+                                  bool diagnosticsRetained = false)
     {
         return L"{\"operationId\":\"" + JsonEscape(operation) + L"\",\"state\":\"" + JsonEscape(state) +
             L"\",\"nativeCode\":" + std::to_wstring(code) + L",\"retryKind\":\"" + RetryClass(code) +
             L"\",\"cleanupPending\":" + (cleanupPending ? L"true" : L"false") +
+            L",\"diagnosticsRetained\":" + (diagnosticsRetained ? L"true" : L"false") +
             L",\"dataRetained\":" + (dataRetained ? L"true" : L"false") +
             L",\"productCode\":\"" + JsonEscape(productCode) +
             L"\",\"installedVersion\":\"" + JsonEscape(installedVersion) + L"\"}\n";

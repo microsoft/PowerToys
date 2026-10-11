@@ -36,6 +36,17 @@ The publication test uses a process-local signature mock and project-local
 fixtures to verify exact public Setup bytes; it neither signs nor publishes a
 production artifact.
 
+The separate `tools\build\Test-ProtectedStorageLocal.ps1` harness provides a
+non-shipping, isolated VA/editor storage loop without ESRP. It is not a carrier
+MSI or a production signing alternative; see the module README for its distinct
+test namespace and cleanup commands.
+
+Setup reports `diagnosticsRetained` separately from `cleanupPending`. Retaining
+the protected authorization bundle/receipts is diagnostic retention, not a
+failed cleanup operation. Real MSI cleanup hints and restart results still
+report cleanup pending. The editor checks the business data path after setup
+instead of treating a successful maintenance receipt as functional readiness.
+
 Finalize a release with `Build-Carrier.ps1 -Package`, providing all of:
 
 * `-Version <major.minor.build[.0]>` (MSI bounds; a nonzero fourth component is rejected);

@@ -42,7 +42,7 @@ namespace WorkspacesEditor
         private async void OnStartup(object sender, StartupEventArgs e)
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            Logger.InitializeLogger("\\Workspaces\\Logs");
+            Logger.InitializeLogger(PowerToys.ProtectedStorage.StorageIdentity.IsLocalTest ? "\\WorkspacesLocalTest\\Logs" : "\\Workspaces\\Logs");
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             var languageTag = LanguageHelper.LoadLanguage();
@@ -59,7 +59,8 @@ namespace WorkspacesEditor
                 }
             }
 
-            const string appName = "Local\\PowerToys_Workspaces_Editor_InstanceMutex";
+            string appName = "Local\\PowerToys_Workspaces_Editor_InstanceMutex" +
+                (PowerToys.ProtectedStorage.StorageIdentity.IsLocalTest ? "_LocalTest" : string.Empty);
             bool createdNew;
             _instanceMutex = new Mutex(true, appName, out createdNew);
             if (!createdNew)
@@ -127,6 +128,10 @@ namespace WorkspacesEditor
             _mainWindow.ShowActivated = true;
             _mainWindow.Topmost = true;
             _mainWindow.Show();
+            if (PowerToys.ProtectedStorage.StorageIdentity.IsLocalTest)
+            {
+                _mainWindow.Title += " [LOCAL TEST - isolated data]";
+            }
 
             // we can reset topmost flag after it's opened
             _mainWindow.Topmost = false;

@@ -92,6 +92,10 @@ namespace
         Reject([&] { (void)TryTerminalCleanup("recovery_required", [&] { cleanupRan = true; }); });
         Expect(!cleanupRan, "unknown commit preserves recovery materials");
         Expect(ResultJson(id, L"Removed", 3010, true, true).find(L"\"dataRetained\":true") != std::wstring::npos, "structured retained result");
+        const auto diagnosticsOnly = ResultJson(id, L"Ready", 0, false, false, {}, {}, true);
+        Expect(diagnosticsOnly.find(L"\"diagnosticsRetained\":true") != std::wstring::npos &&
+            diagnosticsOnly.find(L"\"cleanupPending\":false") != std::wstring::npos,
+            "retained authorization evidence is not a cleanup failure");
         Reject([] { (void)JsonEscape(L"bad\nstate"); });
         Expect(PlanSync(0, false, false, 0, 20, false) == SyncPlan::Absent, "sync absent is a no-op");
         Expect(PlanSync(1, true, false, 20, 20, true) == SyncPlan::VerifyCurrent, "same release only inspects");

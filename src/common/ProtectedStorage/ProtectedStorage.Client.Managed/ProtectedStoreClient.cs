@@ -195,7 +195,7 @@ public sealed class ProtectedStoreClient : IProtectedStoreClient
             {
                 if (response.Bytes.Length != 0 || code is not ("Unauthorized" or "TargetDenied" or "NotProvisioned" or "AuthorizationRequired" or
                     "AlreadyInitialized" or "RevisionConflict" or "BusyMaintenance" or "InvalidPayload" or "Timeout" or "OutcomeUnknown" or
-                    "RecoveryRequired" or "IncompatibleVersion" or "QuotaExceeded" or "NotFound" or "OperationConflict" or "CleanupPending" or "InternalError" or "OwnerContextRequired"))
+                    "RecoveryRequired" or "IncompatibleVersion" or "QuotaExceeded" or "NotFound" or "OperationConflict" or "CleanupPending" or "InternalError" or "OwnerContextRequired" or "ConnectionClosed"))
                 {
                     throw new InvalidDataException("Invalid server rejection.");
                 }

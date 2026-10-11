@@ -11,6 +11,44 @@ namespace ProtectedStorage.Client.Managed.UnitTests;
 public sealed class MaintenanceTests
 {
     [TestMethod]
+    public void ShippingClientCannotSelectTheLocalTestNamespace()
+    {
+        Assert.IsFalse(StorageIdentity.IsLocalTest);
+        Assert.AreEqual("PowerToysProtectedStorage", StorageIdentity.ProductName);
+        Assert.AreEqual(
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Workspaces"),
+            StorageIdentity.WorkspacesDirectory);
+    }
+
+    [TestMethod]
+    public void RetainedDiagnosticsDoNotRequireCleanupOrRestart()
+    {
+        const string output = """
+            {"operationId":"00112233445566778899AABBCCDDEEFF","state":"Ready","nativeCode":0,"retryKind":"None","cleanupPending":false,"diagnosticsRetained":true,"dataRetained":false}
+            """;
+        var result = MaintenanceResult.Parse(0, output);
+        Assert.IsTrue(result.Succeeded);
+        Assert.IsTrue(result.DiagnosticsRetained);
+        Assert.IsFalse(result.CleanupPending);
+        Assert.IsFalse(result.RequiresRestart);
+    }
+
+    [TestMethod]
+    public void FirstSetupAndCommunicationFailuresHaveDifferentActions()
+    {
+        var initial = WorkspacesCsharpLibrary.Data.WorkspacesFailurePresentation.For("NotProvisioned", true, true);
+        Assert.AreEqual("ProtectedStorageNotProvisioned", initial.MessageKey);
+        Assert.IsTrue(initial.CanSetup);
+        Assert.IsFalse(initial.CanRetry);
+        foreach (string error in new[] { "ConnectionClosed", "Timeout", "Unauthorized" })
+        {
+            var failure = WorkspacesCsharpLibrary.Data.WorkspacesFailurePresentation.For(error, true, true);
+            Assert.IsFalse(failure.CanSetup);
+            Assert.AreNotEqual(initial.MessageKey, failure.MessageKey);
+        }
+    }
+
+    [TestMethod]
     public void UnsignedNativeTrustFailurePreservesTheProcessExitBits()
     {
         const uint nativeCode = 0x800b0100;
