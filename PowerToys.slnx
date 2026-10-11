@@ -975,7 +975,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/LightSwitch/Tests/LightSwitchService.UnitTests/LightSwitchService.UnitTests.vcxproj" Id="6b4bc04d-59a7-44b2-9ab5-4ed9a5607ab9" />
+    <Project Path="src/modules/LightSwitch/Tests/LightSwitchService.UnitTests/LightSwitchService.UnitTests.vcxproj" />
     <Project Path="src/modules/LightSwitch/Tests/LightSwitch.UITests.Next/LightSwitch.UITests.Next.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
