@@ -40,7 +40,8 @@ fn main() {
 
 /// The hardening flags live in .cargo/config.toml, which Cargo reads only when it runs from this
 /// folder and ignores when RUSTFLAGS is set. Without them the binary would still build, but
-/// without Control Flow Guard or CET and tied to the VC++ redistributable, so stop instead.
+/// without Control Flow Guard or CET, tied to the VC++ redistributable or carrying its own UCRT,
+/// so stop instead.
 fn check_hardening() {
     println!("cargo:rerun-if-env-changed=RUSTFLAGS");
     println!("cargo:rerun-if-env-changed=CARGO_ENCODED_RUSTFLAGS");
@@ -56,6 +57,11 @@ fn check_hardening() {
     }
     if !flags.contains(&"control-flow-guard=yes") {
         missing.push("control-flow-guard=yes");
+    }
+    if !flags.contains(&"link-arg=/NODEFAULTLIB:libucrt.lib")
+        || !flags.contains(&"link-arg=/DEFAULTLIB:ucrt.lib")
+    {
+        missing.push("hybrid CRT (/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib)");
     }
     if env::var("CARGO_CFG_TARGET_ARCH").as_deref() == Ok("x86_64") && !flags.contains(&"link-arg=/CETCOMPAT")
     {

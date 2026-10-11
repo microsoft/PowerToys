@@ -34,6 +34,8 @@
     <CargoDiagnosticArgs>--message-format=short</CargoDiagnosticArgs>
     <CargoErrorPattern>^(.+:\d+:\d+: )?error(\[\w+\])?: </CargoErrorPattern>
     <CargoWarningPattern>^(.+:\d+:\d+: )?warning(\[\w+\])?: </CargoWarningPattern>
+    <!-- Under the source tree in CI, where PublishTestResults@2 collects every **/*.trx. -->
+    <CargoTestResults>$(CargoTargetDir)-test\awake.trx</CargoTestResults>
     <!-- rc.exe from the Windows SDK this build selected, not whichever SDK is newest. -->
     <CargoEnvironment>POWERTOYS_VERSION=$(Version);WindowsSdkVerBinPath=$(WindowsSdkDir)bin\$(TargetPlatformVersion)\</CargoEnvironment>
   </PropertyGroup>
@@ -57,8 +59,148 @@
   <Target Name="Test" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
     <Exec Command="cargo fmt --all --check" WorkingDirectory="$(MSBuildThisFileDirectory)" />
     <Exec Command="cargo lint $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile) -- -D warnings" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
-    <Exec Command="cargo test-all $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile)" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
+    <Delete Files="$(CargoTestResults)" />
+    <!-- ErrorAndContinue still fails the build when a test fails, but lets the results file below
+         be written first, so the pipeline shows which test failed. -->
+    <Exec Command="cargo test-all $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile)" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" ConsoleToMSBuild="true" ContinueOnError="ErrorAndContinue">
+      <Output TaskParameter="ConsoleOutput" ItemName="CargoTestOutput" />
+    </Exec>
+    <WriteCargoTestResults Lines="@(CargoTestOutput)" OutputFile="$(CargoTestResults)" />
   </Target>
+  <!-- Turns libtest's "test NAME ... ok|FAILED|ignored" lines into a minimal TRX file, so the
+       pipeline's existing PublishTestResults@2 step (**/*.trx) lists every Rust test by name.
+       Stable libtest has no machine-readable output, and the pipeline cannot install tools. -->
+  <UsingTask TaskName="WriteCargoTestResults" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Lines ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <OutputFile ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Using Namespace="System.Xml.Linq" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+        const string unitTestType = "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b";
+        const string allResultsList = "19431567-8539-422a-85d7-44ee4e166bda";
+        var testLine = new Regex(@"^test (\S+) \.\.\. (ok|FAILED|ignored)\b");
+        var runningLine = new Regex(@"^\s*Running (?:unittests )?(\S+)");
+        var docTestsLine = new Regex(@"^\s*Doc-tests (\S+)");
+        var captureLine = new Regex(@"^---- (\S+) std(?:out|err) ----$");
+        var lines = (Lines ?? new ITaskItem[0]).Select(l => l.ItemSpec).ToList();
+
+        // What libtest prints for each failed test, by test name.
+        var failures = new Dictionary<string, List<string>>();
+        List<string> capture = null;
+        foreach (var line in lines)
+        {
+            var m = captureLine.Match(line);
+            if (m.Success)
+            {
+                if (!failures.TryGetValue(m.Groups[1].Value, out capture))
+                {
+                    capture = new List<string>();
+                    failures[m.Groups[1].Value] = capture;
+                }
+            }
+            else if (line == "failures:" || line.StartsWith("test result: ", StringComparison.Ordinal))
+            {
+                capture = null;
+            }
+            else if (capture != null)
+            {
+                capture.Add(line);
+            }
+        }
+
+        var results = new XElement(ns + "Results");
+        var definitions = new XElement(ns + "TestDefinitions");
+        var entries = new XElement(ns + "TestEntries");
+        int passed = 0, failed = 0, skipped = 0;
+        string binary = "awake";
+        foreach (var line in lines)
+        {
+            // "Running unittests src\main.rs (...)", "Running tests\process.rs (...)", "Doc-tests awake_core".
+            var running = runningLine.Match(line);
+            if (running.Success)
+            {
+                binary = running.Groups[1].Value.Replace('\\', '/');
+                continue;
+            }
+            var doc = docTestsLine.Match(line);
+            if (doc.Success)
+            {
+                binary = doc.Groups[1].Value + " (doc)";
+                continue;
+            }
+            var m = testLine.Match(line);
+            if (!m.Success)
+            {
+                continue;
+            }
+            string name = m.Groups[1].Value;
+            string outcome = m.Groups[2].Value == "ok" ? "Passed" : m.Groups[2].Value == "FAILED" ? "Failed" : "NotExecuted";
+            if (outcome == "Passed") { passed++; } else if (outcome == "Failed") { failed++; } else { skipped++; }
+            string testId = Guid.NewGuid().ToString();
+            string executionId = Guid.NewGuid().ToString();
+            var result = new XElement(ns + "UnitTestResult",
+                new XAttribute("executionId", executionId),
+                new XAttribute("testId", testId),
+                new XAttribute("testName", name),
+                new XAttribute("computerName", Environment.MachineName),
+                new XAttribute("duration", "00:00:00"),
+                new XAttribute("outcome", outcome),
+                new XAttribute("testType", unitTestType),
+                new XAttribute("testListId", allResultsList));
+            List<string> output;
+            if (outcome == "Failed" && failures.TryGetValue(name, out output))
+            {
+                result.Add(new XElement(ns + "Output",
+                    new XElement(ns + "ErrorInfo",
+                        new XElement(ns + "Message", string.Join(Environment.NewLine, output).Trim()))));
+            }
+            results.Add(result);
+            int split = name.LastIndexOf("::", StringComparison.Ordinal);
+            definitions.Add(new XElement(ns + "UnitTest",
+                new XAttribute("name", name),
+                new XAttribute("storage", binary),
+                new XAttribute("id", testId),
+                new XElement(ns + "Execution", new XAttribute("id", executionId)),
+                new XElement(ns + "TestMethod",
+                    new XAttribute("codeBase", binary),
+                    new XAttribute("adapterTypeName", "executor://cargo-test"),
+                    new XAttribute("className", split < 0 ? binary : binary + "::" + name.Substring(0, split)),
+                    new XAttribute("name", split < 0 ? name : name.Substring(split + 2)))));
+            entries.Add(new XElement(ns + "TestEntry",
+                new XAttribute("testId", testId),
+                new XAttribute("executionId", executionId),
+                new XAttribute("testListId", allResultsList)));
+        }
+
+        var run = new XElement(ns + "TestRun",
+            new XAttribute("id", Guid.NewGuid().ToString()),
+            new XAttribute("name", "Awake (cargo test)"),
+            results,
+            definitions,
+            entries,
+            new XElement(ns + "TestLists",
+                new XElement(ns + "TestList", new XAttribute("name", "All Loaded Results"), new XAttribute("id", allResultsList))),
+            new XElement(ns + "ResultSummary",
+                new XAttribute("outcome", failed > 0 ? "Failed" : "Completed"),
+                new XElement(ns + "Counters",
+                    new XAttribute("total", passed + failed + skipped),
+                    new XAttribute("executed", passed + failed),
+                    new XAttribute("passed", passed),
+                    new XAttribute("failed", failed),
+                    new XAttribute("notExecuted", skipped))));
+        Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+        new XDocument(new XDeclaration("1.0", "utf-8", null), run).Save(OutputFile);
+        Log.LogMessage(MessageImportance.High, "Awake test results: {0} passed, {1} failed, {2} ignored in {3}", passed, failed, skipped, OutputFile);
+]]></Code>
+    </Task>
+  </UsingTask>
   <Target Name="CargoClean" AfterTargets="Clean">
     <RemoveDir Directories="$(CargoTargetDir);$(CargoTargetDir)-test" />
     <Delete Files="$(OutDir)PowerToys.Awake.exe;$(OutDir)PowerToys.Awake.pdb" />

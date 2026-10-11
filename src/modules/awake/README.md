@@ -126,20 +126,21 @@ cargo lint -- -D warnings # clippy, as CI runs it
 cargo fmt --all --check   # formatting
 ```
 
+Or, from `src/modules/awake`:
+
+```powershell
+.\scripts\Build-Awake.ps1 -Configuration Debug -Platform x64
+```
+
 `test-all` and `lint` are aliases in `.cargo/config.toml`. A plain `cargo test --workspace` runs
 the unit tests only: the end-to-end tests need the `test-hooks` feature, and Cargo skips them
-silently without it. The solution's Test target runs all three checks.
+silently without it. The solution's Test target runs all three checks and writes the test results
+to `awake.trx` in its target folder, which the pipeline publishes.
 
 Run Cargo from `src/modules/awake/Awake`, not with `--manifest-path` from elsewhere, and leave
 `RUSTFLAGS` unset: Cargo only reads `.cargo/config.toml`, which adds Control Flow Guard, CET and
 the static VC++ runtime, from the current folder upwards, and `RUSTFLAGS` replaces those flags.
 The build stops with an error when they are missing.
-
-or from `src/modules/awake`:
-
-```powershell
-.\scripts\Build-Awake.ps1 -Configuration Debug -Platform x64
-```
 
 ## Dependencies
 
