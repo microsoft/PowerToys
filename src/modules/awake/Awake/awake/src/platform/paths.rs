@@ -7,7 +7,8 @@ use awake_core::settings::{FILE_NAME, MODULE_NAME};
 use windows_sys::Win32::System::Com::CoTaskMemFree;
 use windows_sys::Win32::UI::Shell::{FOLDERID_LocalAppData, KF_FLAG_DEFAULT, SHGetKnownFolderPath};
 
-use super::wide::from_buffer;
+use super::hresult_error;
+use super::wide::from_nul_terminated;
 
 /// Test hooks, compiled in only with the `test-hooks` feature, so automated tests can run next to
 /// a real PowerToys installation without touching it. The first replaces
@@ -97,12 +98,12 @@ fn local_app_data() -> io::Result<PathBuf> {
     if hr < 0 {
         // SAFETY: freeing a null or valid CoTaskMem pointer is allowed.
         unsafe { CoTaskMemFree(path as _) };
-        return Err(io::Error::from_raw_os_error(hr));
+        return Err(hresult_error(hr, "SHGetKnownFolderPath"));
     }
-    // SAFETY: on success `path` is a NUL-terminated string owned by us.
+    // SAFETY: on success `path` is a non-null, NUL-terminated string owned by us; it is read
+    // before being freed and not used afterwards.
     let text = unsafe {
-        let len = (0..).take_while(|&i| *path.add(i) != 0).count();
-        let text = from_buffer(std::slice::from_raw_parts(path, len));
+        let text = from_nul_terminated(path);
         CoTaskMemFree(path as _);
         text
     };
