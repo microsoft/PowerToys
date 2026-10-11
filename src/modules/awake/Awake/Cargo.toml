@@ -49,9 +49,10 @@ single_match_else = "allow"
 # The window procedure, the startup sequence and the build script's resx parser each read best
 # as one ordered list; splitting them would scatter steps that only make sense in sequence.
 too_many_lines = "allow"
-# Without a declared rust-version Clippy assumes the pinned toolchain, which has
-# Duration::from_mins and from_hours; the log retention and hook timings in logging.rs and
-# hooks.rs still count in seconds. Rewrite those and drop this line.
+# Temporary. Without a declared rust-version Clippy assumes the pinned toolchain, which has
+# Duration::from_mins and from_hours, and flags six durations still written in seconds: RETENTION
+# and four test durations in awake/src/logging.rs, and the hour-long sleep in awake/src/hooks.rs.
+# Rewrite those six and delete this allow, so new code gets the lint.
 duration_suboptimal_units = "allow"
 
 [profile.release]
