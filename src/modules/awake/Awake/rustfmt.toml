@@ -1,1 +1,5 @@
+# Lets editors and hooks that run rustfmt directly parse the 2024 syntax this code uses;
+# cargo fmt reads the edition from Cargo.toml.
+edition = "2024"
+style_edition = "2024"
 max_width = 110

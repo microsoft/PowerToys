@@ -13,13 +13,9 @@ rustflags = [
     "-C", "link-arg=/DEFAULTLIB:ucrt.lib",
 ]
 
-# CET shadow stacks exist on x64 only. Target-specific flags replace the cfg() list above, so
-# that list is repeated here.
+# Cargo joins every matching cfg() and triple section, so only the x64-only flag goes here:
+# CET shadow stacks exist on x64 only. A RUSTFLAGS or CARGO_ENCODED_RUSTFLAGS variable replaces
+# all of these flags, and so does running Cargo from outside this folder; awake/build.rs stops
+# the build when that happens.
 [target.x86_64-pc-windows-msvc]
-rustflags = [
-    "-C", "target-feature=+crt-static",
-    "-C", "control-flow-guard=yes",
-    "-C", "link-arg=/NODEFAULTLIB:libucrt.lib",
-    "-C", "link-arg=/DEFAULTLIB:ucrt.lib",
-    "-C", "link-arg=/CETCOMPAT",
-]
+rustflags = ["-C", "link-arg=/CETCOMPAT"]

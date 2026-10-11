@@ -1,4 +1,6 @@
 [package]
+# Also the binary name. Cargo binary names cannot contain dots; the MSBuild wrapper ships this as
+# PowerToys.Awake.exe.
 name = "awake"
 description = "PowerToys Awake: keeps the computer awake on demand."
 version.workspace = true
@@ -9,12 +11,6 @@ homepage.workspace = true
 repository.workspace = true
 license.workspace = true
 publish.workspace = true
-build = "build.rs"
-
-# Cargo binary names cannot contain dots; the MSBuild wrapper ships this as PowerToys.Awake.exe.
-[[bin]]
-name = "awake"
-path = "src/main.rs"
 
 [features]
 # Lets tests redirect Awake's files and kernel object names; never enabled in shipped builds.
@@ -27,9 +23,6 @@ required-features = ["test-hooks"]
 [[test]]
 name = "low_memory"
 required-features = ["test-hooks"]
-
-[[test]]
-name = "module_interface"
 
 [[example]]
 name = "measure"
