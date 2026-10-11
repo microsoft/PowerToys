@@ -185,6 +185,19 @@ fn a_second_instance_is_refused() {
     assert_eq!(wait_exit(&mut first, 5 * SECOND), Some(0));
 }
 
+/// A program that took Awake's single-instance mutex first, as any process in the session can, is
+/// refused, and the user is told why rather than shown "Access is denied".
+#[test]
+fn a_mutex_another_program_planted_is_refused_with_an_explanation() {
+    let _serial = serial();
+    let sandbox = Sandbox::new("planted");
+    let _planted = sandbox.planted_instance_mutex();
+    let output = output_within(&mut sandbox.command(&["for", "1m"]), PROMPTLY);
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains(english(StringId::CliErrNameTaken)), "{stderr}");
+}
+
 #[test]
 fn a_powertoys_start_waits_for_the_previous_instance() {
     let _serial = serial();

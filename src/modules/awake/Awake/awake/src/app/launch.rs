@@ -6,7 +6,7 @@ use std::ffi::OsString;
 use std::fmt::Display;
 use std::os::windows::io::AsRawHandle;
 use std::time::Duration;
-use std::{fs, ptr};
+use std::{fs, io, ptr};
 
 use awake_core::cli::{self, Binding, Invocation, Plan, Request, UntilSpec};
 use awake_core::engine::{Activity, Engine, Source};
@@ -168,7 +168,7 @@ impl Launcher {
         let instance = match instance::acquire(&self.paths.instance_mutex_name(), handover) {
             Ok(Some(lock)) => lock,
             Ok(None) => return Err(self.refuse(self.strings.get(StringId::CliErrAlreadyRunning))),
-            Err(error) => return Err(self.refuse_start(&error)),
+            Err(error) => return Err(self.refuse_named_object(&error)),
         };
         if bridge::policy() == Policy::Disabled {
             return Err(self.refuse(self.strings.get(StringId::CliErrPolicy)));
@@ -251,7 +251,8 @@ impl Launcher {
             SystemClock.now_utc().ticks(),
             self.paths.object_suffix
         );
-        let ready = event::manual_reset(Some(&ready_name)).map_err(|error| self.refuse_start(&error))?;
+        let ready =
+            event::manual_reset(Some(&ready_name)).map_err(|error| self.refuse_named_object(&error))?;
         args.extend(["--handoff".into(), ready_name]);
         // Let the new process take the single-instance lock.
         drop(instance);
@@ -299,7 +300,8 @@ impl Launcher {
 
         let exit_name = self.paths.exit_event_name(&bridge::exit_event_name());
         // Opens the runner's event when it created it first.
-        let exit_event = event::manual_reset(Some(&exit_name)).map_err(|error| self.refuse_start(&error))?;
+        let exit_event =
+            event::manual_reset(Some(&exit_name)).map_err(|error| self.refuse_named_object(&error))?;
         if source == Source::CommandLine {
             // A signal already set was meant for an Awake that has since exited: the runner sets
             // the event to stop the instance it started and keeps it open for a few seconds, and
@@ -415,6 +417,22 @@ impl Launcher {
     fn refuse_start(&self, error: &dyn Display) -> Refused {
         self.refuse(&self.strings.format(StringId::CliErrStart, &error.to_string()))
     }
+
+    fn refuse_named_object(&self, error: &io::Error) -> Refused {
+        log::warn!("Could not create or open a named kernel object: {error}");
+        self.refuse(&named_object_message(self.strings, error))
+    }
+}
+
+/// Why the single-instance mutex or an event could not be created or opened. Awake creates both
+/// for the current user, so access denied means another program holds the name, which the
+/// operating system's wording would not tell the user.
+fn named_object_message(strings: Strings, error: &io::Error) -> String {
+    if error.kind() == io::ErrorKind::PermissionDenied {
+        strings.get(StringId::CliErrNameTaken).to_owned()
+    } else {
+        strings.format(StringId::CliErrStart, &error.to_string())
+    }
 }
 
 /// When an `until` session ends, or the localized reason it cannot start.
@@ -458,6 +476,21 @@ mod tests {
         // `--parent` has no PID to show; every failure reads as "no parent".
         assert_eq!(message(BindError::AccessDenied, None), parent);
         assert_eq!(message(BindError::ParentNotFound, None), parent);
+    }
+
+    #[test]
+    fn a_name_another_program_holds_is_explained() {
+        let strings = Strings::ENGLISH;
+        let denied = io::Error::from_raw_os_error(5);
+        assert_eq!(
+            named_object_message(strings, &denied),
+            strings.get(StringId::CliErrNameTaken)
+        );
+        let other = io::Error::from_raw_os_error(8);
+        assert_eq!(
+            named_object_message(strings, &other),
+            strings.format(StringId::CliErrStart, &other.to_string())
+        );
     }
 
     #[test]

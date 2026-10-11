@@ -15,11 +15,15 @@ use std::time::{Duration, Instant};
 use std::{fs, ptr};
 
 use awake_testkit::{hook_names, runner, wide};
-use windows_sys::Win32::Foundation::{CloseHandle, HWND};
+use windows_sys::Win32::Foundation::{CloseHandle, HWND, LocalFree};
+use windows_sys::Win32::Security::Authorization::{
+    ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1,
+};
+use windows_sys::Win32::Security::SECURITY_ATTRIBUTES;
 use windows_sys::Win32::System::Console::{CTRL_BREAK_EVENT, GenerateConsoleCtrlEvent};
 use windows_sys::Win32::System::Power::{CallNtPowerInformation, SystemExecutionState};
 use windows_sys::Win32::System::Threading::{
-    CreateEventW, DETACHED_PROCESS, EVENT_MODIFY_STATE, OpenEventW, SetEvent,
+    CreateEventW, CreateMutexW, DETACHED_PROCESS, EVENT_MODIFY_STATE, OpenEventW, SetEvent,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     ENDSESSION_CLOSEAPP, PostMessageW, SMTO_ABORTIFHUNG, SendMessageTimeoutW, WM_CLOSE, WM_ENDSESSION,
@@ -28,6 +32,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
 
 pub const EXE: &str = env!("CARGO_BIN_EXE_awake");
 const EXIT_EVENT: &str = "Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
+const INSTANCE_MUTEX: &str = "Local\\PowerToysAwakeInstance-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
 
 /// A private `%LOCALAPPDATA%\Microsoft\PowerToys` and set of kernel object names.
 pub struct Sandbox {
@@ -128,6 +133,38 @@ impl Sandbox {
         // SAFETY: valid event handle; it may have existed unset already.
         unsafe { SetEvent(event.as_raw_handle()) };
         event
+    }
+
+    /// Creates the single-instance mutex first, the way a low-integrity process can: anyone may
+    /// open it, and its label is low. It lasts as long as the returned handle.
+    pub fn planted_instance_mutex(&self) -> OwnedHandle {
+        let sddl = wide("D:(A;;GA;;;WD)S:(ML;;NW;;;LW)");
+        let mut descriptor = ptr::null_mut();
+        // SAFETY: NUL-terminated SDDL; `descriptor` receives a LocalAlloc block freed below.
+        let converted = unsafe {
+            ConvertStringSecurityDescriptorToSecurityDescriptorW(
+                sddl.as_ptr(),
+                SDDL_REVISION_1,
+                &mut descriptor,
+                ptr::null_mut(),
+            )
+        };
+        assert_ne!(converted, 0, "{}", std::io::Error::last_os_error());
+        let attributes = SECURITY_ATTRIBUTES {
+            nLength: size_of::<SECURITY_ATTRIBUTES>() as u32,
+            lpSecurityDescriptor: descriptor,
+            bInheritHandle: 0,
+        };
+        let name = wide(&format!("{INSTANCE_MUTEX}{}", self.object_suffix()));
+        // SAFETY: the attributes, their descriptor and the NUL-terminated name outlive the call.
+        let mutex = unsafe { CreateMutexW(&raw const attributes, 0, name.as_ptr()) };
+        let error = std::io::Error::last_os_error();
+        // SAFETY: the block ConvertStringSecurityDescriptorToSecurityDescriptorW returned, no
+        // longer used.
+        unsafe { LocalFree(descriptor) };
+        assert!(!mutex.is_null(), "{error}");
+        // SAFETY: a fresh handle we own.
+        unsafe { OwnedHandle::from_raw_handle(mutex) }
     }
 
     /// Sets the exit event if an Awake in this sandbox has created it.

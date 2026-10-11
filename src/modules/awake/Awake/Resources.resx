@@ -281,6 +281,10 @@
   <data name="AWAKE_CLI_ERR_ALREADY_RUNNING" xml:space="preserve">
     <value>Awake is already running.</value>
   </data>
+  <data name="AWAKE_CLI_ERR_NAME_TAKEN" xml:space="preserve">
+    <value>Another program is blocking a name Awake needs, so Awake can't start. Signing out and back in clears it.</value>
+    <comment>Shown when another program created one of the system objects Awake uses (its single-instance lock or its exit signal) before Awake did.</comment>
+  </data>
   <data name="AWAKE_CLI_ERR_POLICY" xml:space="preserve">
     <value>Awake is turned off by your organization's policy.</value>
   </data>
