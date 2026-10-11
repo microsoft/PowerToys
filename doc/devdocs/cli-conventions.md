@@ -68,7 +68,7 @@ Add the reference to your project:
 ## Examples
 
 Reference implementations:
-- Awake: `src/modules/awake/Awake/awake-core/src/cli.rs`
+- Awake: `src/modules/awake/Awake/awake-core/src/cli.rs`. Written in Rust with clap, it follows the option naming, help and exit-code conventions here, not the System.CommandLine guidance.
 - ImageResizer: `src/modules/imageresizer/ui/Cli/`
 
 ## Help Output

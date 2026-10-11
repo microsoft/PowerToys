@@ -1,7 +1,7 @@
 //! Measures an Awake build the same way for any implementation:
 //!
 //! ```text
-//! cargo run --release --example measure -- <label> <exe> <args...>
+//! cargo run --release -p awake --features test-hooks --example measure -- <label> <exe> <args...>
 //! ```
 //!
 //! `{pid}` in the arguments is replaced with this process's id, so both implementations can be
