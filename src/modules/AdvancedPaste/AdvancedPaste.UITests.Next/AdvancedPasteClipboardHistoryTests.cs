@@ -16,12 +16,54 @@ using WinClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
 
 namespace AdvancedPaste.UITests;
 
+// TEMPORARY CLIPBOARD-HISTORY QUARANTINE
+//
+// These five cases require Windows to capture real clipboard-history entries before
+// their product assertions can execute. On the Windows 11 x64 CI workers, a real
+// foreground-editor Ctrl+C produces the expected current clipboard text, but the
+// first fixture never receives a Windows history ID. This is not merely an empty
+// Advanced Paste flyout or an incorrect UIA selector:
+//
+// - Public CI 390674 captured Win+V screenshots and its desktop-root UIA subtree
+//   for all five failures. The native panel visibly says "Nothing here"; UIA also
+//   exposes that explicit empty state.
+// - GetHistoryItemsAsync returns Success and zero IDs on both the test thread and
+//   the message-pumping STA, before AND after opening Win+V. IsHistoryEnabled is
+//   true, and the per-user cbdhsvc instance is running with exit code zero.
+// - Final diagnostic-only CI 390679 reproduced the same capture failures. Its
+//   downloaded Win+V evidence agrees with the API. Windows 10 and ARM64 each
+//   passed all 69 cases; Windows 11 passed 64/69, with only these five failing.
+//
+// The original selection/deletion/disable tests in #50504 genuinely passed in
+// CI 157228801 on SHINE-W11-Testing image 23.0.0. The failing workers use image
+// 25.0.0. The image change is a concrete correlation, NOT a proven root cause:
+// an app-independent reproduction and controlled image/payload comparison have
+// not been completed. Do not describe this as a confirmed Windows or product bug.
+//
+// Non-elevated dispatch, real OS Settings activation, real editor copies, STA
+// observations, and a Win+V warmup did not restore capture on the failing workers.
+// The complete suite still passes locally on Windows 10 and Windows 11 under
+// both Default and Constrained VM profiles. More sleeps or an empty-history
+// success fallback would hide the missing prerequisite rather than verify it.
+//
+// The CI image cannot currently be replaced or repaired, so these cases are
+// explicitly ignored pending resolution. Method-level Ignore also removes their
+// otherwise healthy Windows 10/ARM64 coverage; a green run with these skips is
+// NOT clipboard-history sign-off. Keep all assertions, fixtures, and failure
+// diagnostics intact. Re-enable all five once the CI desktop reliably captures
+// fresh test-owned entries, then verify exact-ID selection/deletion, Settings
+// disable behavior, capacity reset, and repeated enable/disable on every platform.
+//
+// Evidence (Win+V PNG, UIA/API JSON, console output, and recording attachments):
+// https://dev.azure.com/shine-oss/PowerToys/_build/results?buildId=390674
+// https://dev.azure.com/shine-oss/PowerToys/_build/results?buildId=390679
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
 [TestCategory("DestructiveClipboardHistory")]
 public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 {
+    private const string HistoryQuarantineReason = "Temporary CI quarantine: Windows 11 history capture stays empty despite an enabled, running broker. See the class comment for Win+V evidence and re-enable criteria.";
     private const string HistoryCard = "AdvancedPasteClipboardHistoryEnabledSettingsCard";
     private const string WindowsHistoryToggle = "SystemSettings_Clipboard_IsSaveClipboardItemsEnabled_ToggleSwitch";
     private const string ClipboardRegistryPath = @"Software\Microsoft\Clipboard";
@@ -39,6 +81,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     protected override bool ReuseScopeAcrossTests => false;
 
     [TestMethod]
+    [Ignore(HistoryQuarantineReason)]
     public Task SelectingANonFirstEntryUpdatesClipboardWithoutChangingHistoryIdentity()
     {
         return RunHistoryScenarioAsync(
@@ -82,6 +125,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    [Ignore(HistoryQuarantineReason)]
     public Task DeletingAnEntryRemovesOnlyItsExactWindowsHistoryId()
     {
         return RunHistoryScenarioAsync(
@@ -129,6 +173,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    [Ignore(HistoryQuarantineReason)]
     public Task DisablingClipboardHistoryThroughSettingsHidesHistoryAccess()
     {
         return RunHistoryScenarioAsync(
@@ -175,6 +220,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    [Ignore(HistoryQuarantineReason)]
     public Task FullHistoryCanBeResetBeforeAddingNewFixtureEntries()
     {
         return RunHistoryScenarioAsync(
@@ -205,6 +251,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    [Ignore(HistoryQuarantineReason)]
     public Task RepeatedHistoryEnableDisableCapturesNewEntries()
     {
         return RunHistoryScenarioAsync(
