@@ -81,6 +81,16 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         }
     }
 
+    public override ICommandItem? GetCommandItem(string id)
+    {
+        lock (_stateLock)
+        {
+            // The individual widget pages (CPU, memory, ...) are nested in the main page,
+            // so they're not top-level commands. Look them up so they can be pinned.
+            return _mainPage?.FindWidgetItem(id);
+        }
+    }
+
     public bool TryReactivateImmediately()
     {
         lock (_stateLock)
