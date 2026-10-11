@@ -45,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils),
                 SettingsRepository<CursorWrapSettings>.GetInstance(settingsUtils),
                 SettingsRepository<LaserPointerSettings>.GetInstance(settingsUtils),
+                SettingsRepository<MouseButtonLockSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;

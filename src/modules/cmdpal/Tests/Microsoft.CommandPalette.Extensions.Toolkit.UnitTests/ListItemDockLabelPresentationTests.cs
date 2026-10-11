@@ -28,7 +28,7 @@ public partial class ListItemDockLabelPresentationTests
         Assert.IsTrue((bool)properties[WellKnownExtensionAttributes.DockLabelTabularDigits]);
         Assert.IsTrue((bool)properties[WellKnownExtensionAttributes.DockLabelTrailingAlignment]);
 
-        item.ClearDockLabelTabularDigits();
+        item.SetDockLabelTabularDigits(false);
         Assert.IsFalse(properties.ContainsKey(WellKnownExtensionAttributes.DockLabelTabularDigits));
         Assert.IsTrue((bool)properties[WellKnownExtensionAttributes.DockLabelTrailingAlignment]);
 
@@ -56,8 +56,8 @@ public partial class ListItemDockLabelPresentationTests
         item.SetDockLabelTrailingAlignment();
         item.SetDockLabelTabularDigits(false);
         item.SetDockLabelTrailingAlignment(false);
-        item.ClearDockLabelTabularDigits();
-        item.ClearDockLabelTrailingAlignment();
+        item.SetDockLabelTabularDigits(false);
+        item.SetDockLabelTrailingAlignment(false);
 
         CollectionAssert.AreEqual(
             new[]
@@ -77,9 +77,9 @@ public partial class ListItemDockLabelPresentationTests
         item.PropChanged += (_, _) => notifications++;
 
         Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelTabularDigits());
-        Assert.ThrowsException<InvalidOperationException>(() => item.ClearDockLabelTabularDigits());
+        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelTabularDigits(false));
         Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelTrailingAlignment());
-        Assert.ThrowsException<InvalidOperationException>(() => item.ClearDockLabelTrailingAlignment());
+        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelTrailingAlignment(false));
 
         Assert.AreEqual(0, notifications);
     }

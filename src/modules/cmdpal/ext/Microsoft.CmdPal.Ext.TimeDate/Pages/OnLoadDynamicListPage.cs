@@ -88,14 +88,7 @@ internal abstract partial class OnLoadDynamicListPage : Page, IDynamicListPage
 
     protected void RaiseItemsChanged(int totalItems = -1)
     {
-        try
-        {
-            // TODO #181 - This is the same thing that BaseObservable has to deal with.
-            InternalItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
-        }
-        catch
-        {
-        }
+        EventHelpers.Raise(InternalItemsChanged, this, new ItemsChangedEventArgs(totalItems));
     }
 
     protected abstract void Loaded();

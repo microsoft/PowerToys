@@ -18,7 +18,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 {
     private readonly ExtensionObject<IContentPage> _model;
     private readonly Lock _commandsLock = new();
-    private volatile CommandSnapshot _snapshot = CommandSnapshot.Empty;
+    private volatile CommandContextSnapshot _snapshot = CommandContextSnapshot.Empty;
 
     [ObservableProperty]
     public partial ObservableCollection<ContentViewModel> Content { get; set; } = [];
@@ -33,9 +33,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     public bool HasDetails => Details is not null;
 
     /////// ICommandBarContext ///////
-    public IReadOnlyList<IContextItemViewModel> MoreCommands => _snapshot.MoreCommands;
-
-    public bool HasMoreCommands => _snapshot.SecondaryCommand is not null;
+    public bool HasOverflowCommands => _snapshot.HasOverflowCommands;
 
     public bool CanOpenContextMenu => _snapshot.AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
 
@@ -61,6 +59,12 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchContent()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         List<ContentViewModel> newContent = [];
         try
         {
@@ -71,13 +75,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 var viewModel = ViewModelFromContent(item, PageContext);
                 if (viewModel is not null)
                 {
-                    viewModel.InitializeProperties();
                     newContent.Add(viewModel);
+                    viewModel.InitializeProperties();
                 }
             }
         }
         catch (Exception ex)
         {
+            CleanupContent(newContent);
             ShowException(ex, _model?.Unsafe?.Name);
             throw;
         }
@@ -86,11 +91,29 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
 
         // Now, back to a UI thread to update the observable collection
-        DoOnUiThread(
+        if (!TryDoOnUiThread(
         () =>
         {
+            using var publication = TryBeginPageOperation();
+            if (publication is null)
+            {
+                _ = Task.Run(() => CleanupContent(newContent));
+                return;
+            }
+
             ListHelpers.InPlaceUpdateList(Content, newContent);
-        });
+        }))
+        {
+            CleanupContent(newContent);
+        }
+    }
+
+    private static void CleanupContent(IEnumerable<ContentViewModel> content)
+    {
+        foreach (var item in content)
+        {
+            item.SafeCleanup();
+        }
     }
 
     public virtual ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
@@ -103,6 +126,12 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -117,7 +146,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         lock (_commandsLock)
         {
             ListHelpers.InPlaceUpdateList(Commands, commands);
-            RefreshCommandSnapshotsUnsafe();
+            RefreshCommandSnapshotsUnsafe(contextItemsChanged: true);
         }
 
         var extensionDetails = model.Details;
@@ -132,10 +161,10 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         FetchContent();
         model.ItemsChanged += Model_ItemsChanged;
 
-        DoOnUiThread(
+        DoOnActivePage(
         () =>
         {
-            WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(this));
+            SendPageUiMessage(new UpdateCommandBarMessage(this));
         });
     }
 
@@ -163,7 +192,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                     lock (_commandsLock)
                     {
                         ListHelpers.InPlaceUpdateList(Commands, newContextMenu, out removedItems);
-                        RefreshCommandSnapshotsUnsafe();
+                        RefreshCommandSnapshotsUnsafe(contextItemsChanged: true);
                     }
 
                     CleanupCommandViewModels(removedItems);
@@ -175,24 +204,17 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                     {
                         removedItems = [.. Commands];
                         Commands.Clear();
-                        RefreshCommandSnapshotsUnsafe();
+                        RefreshCommandSnapshotsUnsafe(contextItemsChanged: true);
                     }
 
                     CleanupCommandViewModels(removedItems);
                 }
 
-                UpdateProperty(nameof(PrimaryCommand));
-                UpdateProperty(nameof(SecondaryCommand));
-                UpdateProperty(nameof(SecondaryCommandName));
-                UpdateProperty(nameof(HasCommands));
-                UpdateProperty(nameof(HasMoreCommands));
-                UpdateProperty(nameof(CanOpenContextMenu));
-                UpdateProperty(nameof(MoreCommands));
-                UpdateProperty(nameof(AllCommands));
-                DoOnUiThread(
+                NotifyCommandsChanged();
+                DoOnActivePage(
                 () =>
                 {
-                    WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(this));
+                    SendPageUiMessage(new UpdateCommandBarMessage(this));
                 });
 
                 break;
@@ -211,16 +233,16 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         UpdateProperty(nameof(Details));
         UpdateProperty(nameof(HasDetails));
 
-        DoOnUiThread(
+        DoOnActivePage(
             () =>
             {
                 if (HasDetails)
                 {
-                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(Details));
+                    SendPageUiMessage(new ShowDetailsMessage(Details));
                 }
                 else
                 {
-                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                    SendPageUiMessage(new HideDetailsMessage());
                 }
             });
     }
@@ -261,18 +283,70 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         }
     }
 
-    private void RefreshCommandSnapshotsUnsafe()
+    private void ContextItem_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        var allCommands = (IContextItemViewModel[])[.. Commands];
-        var moreCommands = allCommands.Length > 1
-            ? allCommands[1..]
-            : [];
+        if (e.PropertyName != nameof(CommandItemViewModel.Name) || sender is not CommandContextItemViewModel command)
+        {
+            return;
+        }
+
+        bool rolesChanged;
+        lock (_commandsLock)
+        {
+            // A queued notification may arrive after the entry was replaced.
+            if (!Commands.Contains(command))
+            {
+                return;
+            }
+
+            var previousSnapshot = _snapshot;
+            RefreshCommandSnapshotsUnsafe();
+            rolesChanged = !ReferenceEquals(previousSnapshot, _snapshot);
+        }
+
+        if (rolesChanged)
+        {
+            NotifyCommandsChanged();
+        }
+        else if (ReferenceEquals(command, SecondaryCommand))
+        {
+            UpdateProperty(nameof(SecondaryCommandName));
+        }
+    }
+
+    private void NotifyCommandsChanged() =>
+        UpdateProperty(
+            nameof(PrimaryCommand),
+            nameof(SecondaryCommand),
+            nameof(SecondaryCommandName),
+            nameof(HasCommands),
+            nameof(HasOverflowCommands),
+            nameof(CanOpenContextMenu),
+            nameof(AllCommands));
+
+    private void RefreshCommandSnapshotsUnsafe(bool contextItemsChanged = false)
+    {
+        if (contextItemsChanged)
+        {
+            foreach (var command in _snapshot.AllCommands.OfType<CommandContextItemViewModel>())
+            {
+                command.PropertyChangedBackground -= ContextItem_PropertyChanged;
+            }
+
+            foreach (var command in Commands.OfType<CommandContextItemViewModel>())
+            {
+                command.PropertyChangedBackground += ContextItem_PropertyChanged;
+            }
+        }
+
+        IContextItemViewModel[] allCommands = contextItemsChanged ? [.. Commands] : _snapshot.AllCommands;
+        var hasOverflowCommands = false;
 
         CommandContextItemViewModel? primary = null;
         CommandContextItemViewModel? secondary = null;
-        foreach (var item in allCommands)
+        for (var i = 0; i < allCommands.Length; i++)
         {
-            if (item is not CommandContextItemViewModel command)
+            if (allCommands[i] is not CommandContextItemViewModel command || !command.ShouldBeVisible)
             {
                 continue;
             }
@@ -284,11 +358,23 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             else if (secondary is null)
             {
                 secondary = command;
+            }
+            else
+            {
+                hasOverflowCommands = true;
                 break;
             }
         }
 
-        _snapshot = new(allCommands, moreCommands, primary, secondary);
+        if (ReferenceEquals(allCommands, _snapshot.AllCommands) &&
+            ReferenceEquals(primary, _snapshot.PrimaryCommand) &&
+            ReferenceEquals(secondary, _snapshot.SecondaryCommand) &&
+            hasOverflowCommands == _snapshot.HasOverflowCommands)
+        {
+            return;
+        }
+
+        _snapshot = new(allCommands, primary, secondary, hasOverflowCommands, hasSubmenu: false);
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
@@ -298,7 +384,8 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (PrimaryCommand is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand.Command.Model, PrimaryCommand.Model));
+            var message = new PerformCommandMessage(PrimaryCommand.Command.Model, PrimaryCommand.Model, this);
+            WeakReferenceMessenger.Default.Send(message);
         }
     }
 
@@ -308,8 +395,17 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (SecondaryCommand is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
+            var message = new PerformCommandMessage(SecondaryCommand.Command.Model, SecondaryCommand.Model, this);
+            WeakReferenceMessenger.Default.Send(message);
         }
+    }
+
+    internal override Task ResumeAfterNavigation()
+    {
+        base.ResumeAfterNavigation();
+        UpdateDetails();
+        DoOnActivePage(() => WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(this)));
+        return Task.CompletedTask;
     }
 
     protected override void UnsafeCleanup()
@@ -323,7 +419,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         {
             removedItems = [.. Commands];
             Commands.Clear();
-            RefreshCommandSnapshotsUnsafe();
+            RefreshCommandSnapshotsUnsafe(contextItemsChanged: true);
         }
 
         CleanupCommandViewModels(removedItems);
@@ -340,26 +436,5 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }
-    }
-
-    /// <summary>
-    /// Immutable bundle of derived command state, published atomically via a
-    /// single volatile write so readers never see a torn snapshot.
-    /// </summary>
-    private sealed class CommandSnapshot(
-        IContextItemViewModel[] allCommands,
-        IContextItemViewModel[] moreCommands,
-        CommandContextItemViewModel? primaryCommand,
-        CommandContextItemViewModel? secondaryCommand)
-    {
-        public static CommandSnapshot Empty { get; } = new([], [], null, null);
-
-        public IContextItemViewModel[] AllCommands { get; } = allCommands;
-
-        public IContextItemViewModel[] MoreCommands { get; } = moreCommands;
-
-        public CommandContextItemViewModel? PrimaryCommand { get; } = primaryCommand;
-
-        public CommandContextItemViewModel? SecondaryCommand { get; } = secondaryCommand;
     }
 }

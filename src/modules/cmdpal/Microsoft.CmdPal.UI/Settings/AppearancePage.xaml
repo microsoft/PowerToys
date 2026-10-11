@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.AppearancePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,10 +6,94 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
+    <Page.Resources>
+        <!--  Radio semantics keep one option selected; visuals mirror GridViewItem selection.  -->
+        <Style x:Key="PreviewTileRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="{ThemeResource GridViewItemBackground}" />
+            <Setter Property="Foreground" Value="{ThemeResource GridViewItemForeground}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource GridViewItemSelectedBorderBrush}" />
+            <Setter Property="BorderThickness" Value="{ThemeResource GridViewItemSelectedBorderThickness}" />
+            <Setter Property="CornerRadius" Value="{ThemeResource GridViewItemCornerRadius}" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+            <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+            <Setter Property="FocusVisualMargin" Value="-3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid
+                            x:Name="RootGrid"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border
+                                x:Name="CheckedBackground"
+                                Background="{ThemeResource GridViewItemBackgroundSelected}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Opacity="0" />
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                Foreground="{TemplateBinding Foreground}" />
+                            <Border
+                                x:Name="CheckedBorder"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                IsHitTestVisible="False"
+                                Opacity="0" />
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource GridViewItemBackgroundPointerOver}" />
+                                            <Setter Target="CheckedBorder.BorderBrush" Value="{ThemeResource GridViewItemSelectedPointerOverBorderBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource GridViewItemBackgroundPressed}" />
+                                            <Setter Target="CheckedBorder.BorderBrush" Value="{ThemeResource GridViewItemSelectedPressedBorderBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Opacity" Value="{ThemeResource ListViewItemDisabledThemeOpacity}" />
+                                            <Setter Target="CheckedBorder.BorderBrush" Value="{ThemeResource GridViewItemSelectedDisabledBorderBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Checked">
+                                        <VisualState.Setters>
+                                            <Setter Target="CheckedBackground.Opacity" Value="1" />
+                                            <Setter Target="CheckedBorder.Opacity" Value="1" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Unchecked" />
+                                    <VisualState x:Name="Indeterminate" />
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -22,13 +106,16 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
-                    <TextBlock x:Uid="Settings_AppearancePage_AppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <TextBlock
+                        x:Uid="Settings_AppearancePage_AppearanceSettingsHeader"
+                        local:SettingsPageTarget.Id="visuals-section"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <StackPanel
                         Margin="0,0,0,16"
                         HorizontalAlignment="Left"
                         Orientation="Horizontal"
                         Spacing="16">
-                        <ptControls:ScreenPreview>
+                        <ptControls:ScreenPreview x:Name="AppearanceScreenPreview">
                             <ptControls:CommandPalettePreview
                                 PreviewBackdropStyle="{x:Bind ViewModel.Appearance.EffectiveBackdropStyle, Mode=OneWay}"
                                 PreviewBackgroundColor="{x:Bind ViewModel.Appearance.EffectiveBackdrop.TintColor, Mode=OneWay}"
@@ -70,7 +157,10 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_AppTheme_SettingsCard"
+                        local:SettingsPageTarget.Id="theme"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_AppearancePage_Theme"
@@ -102,6 +192,7 @@
 
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_BackdropStyle_SettingsCard"
+                        local:SettingsPageTarget.Id="backdrop"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}"
                         IsExpanded="{x:Bind ViewModel.Appearance.IsBackdropOpacityVisible, Mode=OneWay}">
                         <ComboBox
@@ -146,6 +237,7 @@
 
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_Background_SettingsExpander"
+                        local:SettingsPageTarget.Id="background"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                         IsEnabled="{x:Bind ViewModel.Appearance.IsBackgroundSettingsEnabled, Mode=OneWay}"
                         IsExpanded="{x:Bind ViewModel.Appearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
@@ -284,30 +376,306 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard"
+                        local:SettingsPageTarget.Id="disable-animations"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_DisableAnimations" IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <TextBlock x:Uid="Settings_AppearancePage_LayoutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_CompactMode_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
-                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactMode" IsOn="{x:Bind ViewModel.CompactMode, Mode=TwoWay}" />
+                    <TextBlock
+                        x:Uid="Settings_AppearancePage_LayoutSettingsHeader"
+                        local:SettingsPageTarget.Id="layout-section"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_CommandPaletteOpening_SettingsCard"
+                        local:SettingsPageTarget.Id="compact-mode"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
+                        <!--
+                            Using radioButtons instead of GriView, because RadioButtons can't be deselected,
+                            and we want to make sure one option is always selected.
+                        -->
+                        <RadioButtons
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_CommandPaletteOpeningMode"
+                            MaxColumns="2"
+                            SelectedIndex="{x:Bind ViewModel.CommandPaletteOpeningModeIndex, Mode=TwoWay}">
+                            <RadioButton x:Uid="Settings_GeneralPage_CommandPaletteOpening_FullPalette_Automation" Style="{StaticResource PreviewTileRadioButtonStyle}">
+                                <StackPanel Spacing="8">
+                                    <Border
+                                        Width="160"
+                                        Height="96"
+                                        Background="{x:Bind AppearanceScreenPreview.WallpaperBackground, Mode=OneTime}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                        <Grid>
+                                            <Image
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                Source="{x:Bind AppearanceScreenPreview.WallpaperImageSource, Mode=OneTime}"
+                                                Stretch="UniformToFill" />
+                                            <Rectangle
+                                                Fill="Black"
+                                                IsHitTestVisible="False"
+                                                Opacity="0.12" />
+                                            <Border
+                                                Width="124"
+                                                Height="72"
+                                                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                RequestedTheme="{x:Bind ViewModel.Appearance.EffectiveTheme, Mode=OneWay}">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="20" />
+                                                        <RowDefinition Height="*" />
+                                                        <RowDefinition Height="12" />
+                                                    </Grid.RowDefinitions>
+                                                    <Grid Grid.Row="0" Padding="8,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border
+                                                            Width="9"
+                                                            Height="9"
+                                                            VerticalAlignment="Center"
+                                                            Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                            CornerRadius="2"
+                                                            Opacity="0.8" />
+                                                        <Rectangle
+                                                            Grid.Column="1"
+                                                            Height="4"
+                                                            Margin="6,0,0,0"
+                                                            HorizontalAlignment="Stretch"
+                                                            VerticalAlignment="Center"
+                                                            Fill="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Opacity="0.65"
+                                                            RadiusX="2"
+                                                            RadiusY="2" />
+                                                    </Grid>
+                                                    <Rectangle
+                                                        Grid.Row="0"
+                                                        Height="1"
+                                                        VerticalAlignment="Bottom"
+                                                        Fill="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
+                                                    <Grid
+                                                        Grid.Row="1"
+                                                        Margin="8,4"
+                                                        Opacity="0.2">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="*" />
+                                                            <RowDefinition Height="*" />
+                                                            <RowDefinition Height="*" />
+                                                        </Grid.RowDefinitions>
+                                                        <Grid Grid.Row="0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Border
+                                                                Width="9"
+                                                                Height="3"
+                                                                VerticalAlignment="Center"
+                                                                Background="{ThemeResource TextFillColorTertiaryBrush}"
+                                                                CornerRadius="2"
+                                                                Opacity="0.55" />
+                                                            <Rectangle
+                                                                Grid.Column="1"
+                                                                Height="3"
+                                                                Margin="6,0,0,0"
+                                                                HorizontalAlignment="Stretch"
+                                                                VerticalAlignment="Center"
+                                                                Fill="{ThemeResource TextFillColorTertiaryBrush}"
+                                                                Opacity="0.8"
+                                                                RadiusX="1.5"
+                                                                RadiusY="1.5" />
+                                                        </Grid>
+                                                        <Grid Grid.Row="1">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Border
+                                                                Width="9"
+                                                                Height="3"
+                                                                VerticalAlignment="Center"
+                                                                Background="{ThemeResource TextFillColorTertiaryBrush}"
+                                                                CornerRadius="2"
+                                                                Opacity="0.55" />
+                                                            <Rectangle
+                                                                Grid.Column="1"
+                                                                Height="3"
+                                                                Margin="6,0,0,0"
+                                                                HorizontalAlignment="Stretch"
+                                                                VerticalAlignment="Center"
+                                                                Fill="{ThemeResource TextFillColorTertiaryBrush}"
+                                                                Opacity="0.8"
+                                                                RadiusX="1.5"
+                                                                RadiusY="1.5" />
+                                                        </Grid>
+                                                        <Grid Grid.Row="2">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Border
+                                                                Width="9"
+                                                                Height="3"
+                                                                VerticalAlignment="Center"
+                                                                Background="{ThemeResource TextFillColorTertiaryBrush}"
+                                                                CornerRadius="2"
+                                                                Opacity="0.55" />
+                                                            <Rectangle
+                                                                Grid.Column="1"
+                                                                Height="3"
+                                                                Margin="6,0,0,0"
+                                                                HorizontalAlignment="Stretch"
+                                                                VerticalAlignment="Center"
+                                                                Fill="{ThemeResource TextFillColorTertiaryBrush}"
+                                                                Opacity="0.8"
+                                                                RadiusX="1.5"
+                                                                RadiusY="1.5" />
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Border
+                                                        Grid.Row="2"
+                                                        Background="{ThemeResource LayerFillColorAltBrush}"
+                                                        BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                                                        BorderThickness="0,1,0,0" />
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock
+                                        x:Uid="Settings_GeneralPage_CommandPaletteOpening_FullPalette"
+                                        HorizontalAlignment="Center"
+                                        Style="{StaticResource BodyTextBlockStyle}" />
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton x:Uid="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox_Automation" Style="{StaticResource PreviewTileRadioButtonStyle}">
+                                <StackPanel Spacing="8">
+                                    <Border
+                                        Width="160"
+                                        Height="96"
+                                        Background="{x:Bind AppearanceScreenPreview.WallpaperBackground, Mode=OneTime}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                        <Grid>
+                                            <Image
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                Source="{x:Bind AppearanceScreenPreview.WallpaperImageSource, Mode=OneTime}"
+                                                Stretch="UniformToFill" />
+                                            <Rectangle
+                                                Fill="Black"
+                                                IsHitTestVisible="False"
+                                                Opacity="0.12" />
+                                            <Border
+                                                Width="124"
+                                                Height="32"
+                                                Padding="8,0"
+                                                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                RequestedTheme="{x:Bind ViewModel.Appearance.EffectiveTheme, Mode=OneWay}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border
+                                                        Width="9"
+                                                        Height="9"
+                                                        VerticalAlignment="Center"
+                                                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                        CornerRadius="2"
+                                                        Opacity="0.8" />
+                                                    <Rectangle
+                                                        Grid.Column="1"
+                                                        Height="4"
+                                                        Margin="6,0,0,0"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Center"
+                                                        Fill="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Opacity="0.65"
+                                                        RadiusX="2"
+                                                        RadiusY="2" />
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock
+                                        x:Uid="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox"
+                                        HorizontalAlignment="Center"
+                                        Style="{StaticResource BodyTextBlockStyle}" />
+                                </StackPanel>
+                            </RadioButton>
+                        </RadioButtons>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard"
+                        local:SettingsPageTarget.Id="compact-position"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE78B;}"
+                        IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactCenterHeight"
+                            Maximum="100"
+                            Minimum="0"
+                            Orientation="Horizontal"
+                            StepFrequency="5"
+                            TickFrequency="25"
+                            TickPlacement="Outside"
+                            Value="{x:Bind ViewModel.CompactCenterHeightPercentage, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsExpander
+                        x:Name="QuickAccessShelfSettingsExpander"
+                        x:Uid="Settings_GeneralPage_QuickAccessShelf_SettingsCard"
+                        local:SettingsPageTarget.Id="quick-access-shelf"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE90E;}"
+                        IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
+                        <ToggleSwitch
+                            x:Name="QuickAccessShelfToggle"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelf"
+                            IsOn="{x:Bind ViewModel.ShowQuickAccessShelf, Mode=TwoWay}" />
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard" IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
-                                <Slider
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard" IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
+                                <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactCenterHeight"
-                                    Maximum="100"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelfPinnedCommandLimit"
+                                    Maximum="{x:Bind ViewModel.MaxQuickAccessShelfPinnedCommandLimit}"
                                     Minimum="0"
-                                    Orientation="Horizontal"
-                                    StepFrequency="5"
-                                    TickFrequency="25"
-                                    TickPlacement="Outside"
-                                    Value="{x:Bind ViewModel.CompactCenterHeightPercentage, Mode=TwoWay}" />
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.QuickAccessShelfPinnedCommandLimit, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard" IsEnabled="{x:Bind ViewModel.CanConfigureQuickAccessShelf, Mode=OneWay}">
+                                <controls:SettingsCard.Description>
+                                    <HyperlinkButton
+                                        x:Uid="Settings_GeneralPage_QuickAccessShelfRecentCommands_OpenRecentItemsSettings_Hyperlink"
+                                        Padding="0"
+                                        Click="OpenRecentItemsSettings_Click" />
+                                </controls:SettingsCard.Description>
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelfRecentCommands"
+                                    SelectedIndex="{x:Bind ViewModel.RecentCommandsOnQuickAccessShelfIndex, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_Hidden" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_BeforePinned" Visibility="Collapsed" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_RecentCommands_AfterPinned" />
+                                </ComboBox>
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
-                    <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                    <controls:SettingsCard
+                        x:Uid="Run_PositionHeader"
+                        local:SettingsPageTarget.Id="launch-position"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_GeneralPage_MonitorPosition"
@@ -320,7 +688,10 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard"
+                        local:SettingsPageTarget.Id="toast-position"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
                         <controls:SettingsCard.Description>
                             <HyperlinkButton
                                 x:Uid="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink"
@@ -340,20 +711,48 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <TextBlock x:Uid="Settings_AppearancePage_InteractionSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                    <TextBlock
+                        x:Uid="Settings_AppearancePage_InteractionSettingsHeader"
+                        local:SettingsPageTarget.Id="interaction-section"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard"
+                        local:SettingsPageTarget.Id="list-item-alt-number-behavior"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_AppearancePage_ListItemAltNumberBehavior"
+                            SelectedIndex="{x:Bind ViewModel.ListItemAltNumberBehaviorIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ListItemAltNumberBehavior_Run" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ListItemAltNumberBehavior_Select" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard"
+                        local:SettingsPageTarget.Id="single-click-activation"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_SingleClickActivates" IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard"
+                        local:SettingsPageTarget.Id="show-app-details"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_ShowAppDetails" IsOn="{x:Bind ViewModel.ShowAppDetails, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard"
+                        local:SettingsPageTarget.Id="backspace-goes-back"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_BackspaceGoesBack" IsOn="{x:Bind ViewModel.BackspaceGoesBack, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE845;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard"
+                        local:SettingsPageTarget.Id="escape-key-behavior"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE845;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_AppearancePage_EscapeKeyBehavior"

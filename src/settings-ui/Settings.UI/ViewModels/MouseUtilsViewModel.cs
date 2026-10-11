@@ -35,7 +35,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private LaserPointerSettings LaserPointerSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<LaserPointerSettings> laserPointerSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private MouseButtonLockSettings MouseButtonLockSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<LaserPointerSettings> laserPointerSettingsRepository, ISettingsRepository<MouseButtonLockSettings> mouseButtonLockSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -160,6 +162,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _laserPointerDecayLength = LaserPointerSettingsConfig.Properties.DecayLength.Value;
             _laserPointerStreamline = LaserPointerSettingsConfig.Properties.Streamline.Value;
 
+            ArgumentNullException.ThrowIfNull(mouseButtonLockSettingsRepository);
+
+            MouseButtonLockSettingsConfig = mouseButtonLockSettingsRepository.SettingsConfig;
+
+            // Null-safe in case a hand-edited settings.json carries explicit nulls: repair the
+            // properties container and its members to their defaults so both the reads below and
+            // the property setters are safe (mirrors the null-handling the CursorWrap block above
+            // uses, and covers a "properties": null payload that would otherwise throw here).
+            MouseButtonLockSettingsConfig.Properties ??= new MouseButtonLockProperties();
+            MouseButtonLockSettingsConfig.Properties.LmbLockEnabled ??= new BoolProperty(false);
+            MouseButtonLockSettingsConfig.Properties.RmbLockEnabled ??= new BoolProperty(true);
+            MouseButtonLockSettingsConfig.Properties.MmbLockEnabled ??= new BoolProperty(false);
+            MouseButtonLockSettingsConfig.Properties.HoldDurationMs ??= new IntProperty(1200);
+            MouseButtonLockSettingsConfig.Properties.MoveCancelPixels ??= new IntProperty(5);
+
+            _mouseButtonLockLmbEnabled = MouseButtonLockSettingsConfig.Properties.LmbLockEnabled.Value;
+            _mouseButtonLockRmbEnabled = MouseButtonLockSettingsConfig.Properties.RmbLockEnabled.Value;
+            _mouseButtonLockMmbEnabled = MouseButtonLockSettingsConfig.Properties.MmbLockEnabled.Value;
+            _mouseButtonLockHoldDurationMs = MouseButtonLockSettingsConfig.Properties.HoldDurationMs.Value;
+            _mouseButtonLockMoveCancelPixels = MouseButtonLockSettingsConfig.Properties.MoveCancelPixels.Value;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -244,6 +267,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isLaserPointerEnabled = GeneralSettingsConfig.Enabled.LaserPointer;
+            }
+
+            _mouseButtonLockEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMouseButtonLockEnabledValue();
+            if (_mouseButtonLockEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _mouseButtonLockEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _mouseButtonLockEnabledStateIsGPOConfigured = true;
+                _isMouseButtonLockEnabled = _mouseButtonLockEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                // Clear the cached flag so a policy retracted between refreshes (Enabled/Disabled
+                // back to Not Configured) re-enables the toggle instead of leaving it marked as
+                // policy-managed.
+                _mouseButtonLockEnabledStateIsGPOConfigured = false;
+                _isMouseButtonLockEnabled = GeneralSettingsConfig.Enabled.MouseButtonLock;
             }
         }
 
@@ -1749,6 +1788,117 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(LaserPointerSettingsConfig.ToJsonString(), LaserPointerSettings.ModuleName);
         }
 
+        public bool IsMouseButtonLockEnabled
+        {
+            get => _isMouseButtonLockEnabled;
+            set
+            {
+                if (_mouseButtonLockEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (_isMouseButtonLockEnabled != value)
+                {
+                    _isMouseButtonLockEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.MouseButtonLock = value;
+                    OnPropertyChanged(nameof(IsMouseButtonLockEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    NotifyMouseButtonLockPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsMouseButtonLockEnabledGpoConfigured
+        {
+            get => _mouseButtonLockEnabledStateIsGPOConfigured;
+        }
+
+        public bool MouseButtonLockLmbEnabled
+        {
+            get => _mouseButtonLockLmbEnabled;
+            set
+            {
+                if (value != _mouseButtonLockLmbEnabled)
+                {
+                    _mouseButtonLockLmbEnabled = value;
+                    MouseButtonLockSettingsConfig.Properties.LmbLockEnabled.Value = value;
+                    NotifyMouseButtonLockPropertyChanged();
+                }
+            }
+        }
+
+        public bool MouseButtonLockRmbEnabled
+        {
+            get => _mouseButtonLockRmbEnabled;
+            set
+            {
+                if (value != _mouseButtonLockRmbEnabled)
+                {
+                    _mouseButtonLockRmbEnabled = value;
+                    MouseButtonLockSettingsConfig.Properties.RmbLockEnabled.Value = value;
+                    NotifyMouseButtonLockPropertyChanged();
+                }
+            }
+        }
+
+        public bool MouseButtonLockMmbEnabled
+        {
+            get => _mouseButtonLockMmbEnabled;
+            set
+            {
+                if (value != _mouseButtonLockMmbEnabled)
+                {
+                    _mouseButtonLockMmbEnabled = value;
+                    MouseButtonLockSettingsConfig.Properties.MmbLockEnabled.Value = value;
+                    NotifyMouseButtonLockPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseButtonLockHoldDurationMs
+        {
+            get => _mouseButtonLockHoldDurationMs;
+            set
+            {
+                if (value != _mouseButtonLockHoldDurationMs)
+                {
+                    _mouseButtonLockHoldDurationMs = value;
+                    MouseButtonLockSettingsConfig.Properties.HoldDurationMs.Value = value;
+                    NotifyMouseButtonLockPropertyChanged();
+                }
+            }
+        }
+
+        public int MouseButtonLockMoveCancelPixels
+        {
+            get => _mouseButtonLockMoveCancelPixels;
+            set
+            {
+                if (value != _mouseButtonLockMoveCancelPixels)
+                {
+                    _mouseButtonLockMoveCancelPixels = value;
+                    MouseButtonLockSettingsConfig.Properties.MoveCancelPixels.Value = value;
+                    NotifyMouseButtonLockPropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyMouseButtonLockPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndMouseButtonLockSettings outsettings = new SndMouseButtonLockSettings(MouseButtonLockSettingsConfig);
+            SndModuleSettings<SndMouseButtonLockSettings> ipcMessage = new SndModuleSettings<SndMouseButtonLockSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(MouseButtonLockSettingsConfig.ToJsonString(), MouseButtonLockSettings.ModuleName);
+        }
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
@@ -1760,6 +1910,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsMousePointerCrosshairsEnabled));
             OnPropertyChanged(nameof(IsCursorWrapEnabled));
             OnPropertyChanged(nameof(IsLaserPointerEnabled));
+            OnPropertyChanged(nameof(IsMouseButtonLockEnabled));
+            OnPropertyChanged(nameof(IsMouseButtonLockEnabledGpoConfigured));
         }
 
         private Func<string, int> SendConfigMSG { get; }
@@ -1844,5 +1996,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _laserPointerDecayTimeMs;
         private int _laserPointerDecayLength;
         private int _laserPointerStreamline;
+
+        private GpoRuleConfigured _mouseButtonLockEnabledGpoRuleConfiguration;
+        private bool _mouseButtonLockEnabledStateIsGPOConfigured;
+        private bool _isMouseButtonLockEnabled;
+        private bool _mouseButtonLockLmbEnabled;
+        private bool _mouseButtonLockRmbEnabled;
+        private bool _mouseButtonLockMmbEnabled;
+        private int _mouseButtonLockHoldDurationMs;
+        private int _mouseButtonLockMoveCancelPixels;
     }
 }

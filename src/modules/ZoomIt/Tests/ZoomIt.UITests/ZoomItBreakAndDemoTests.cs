@@ -19,6 +19,7 @@ public sealed partial class ZoomItTests
     private readonly string fixtureDirectory = Path.Combine(Path.GetTempPath(), "PowerToys.ZoomIt.UITests", Guid.NewGuid().ToString("N"));
     private Session? notepad;
     private string? notepadPath;
+    private bool notepadSettingsOpen;
     private IntPtr notepadEditorWindow;
     private readonly Dictionary<string, bool> notepadEditingOptions = [];
 
@@ -297,17 +298,20 @@ public sealed partial class ZoomItTests
         File.WriteAllText(target, string.Empty);
         ui.Step("Opening the test-owned Notepad document");
         using var launcher = Process.Start(new ProcessStartInfo("notepad.exe") { UseShellExecute = true, ArgumentList = { target } });
-        notepad = WindowsFinder.WaitForWindowByApp("notepad", window => window.Title.Contains(Path.GetFileNameWithoutExtension(target), StringComparison.OrdinalIgnoreCase), 20_000);
-        Assert.IsNotNull(notepad, "Notepad did not open the test-owned document.");
-        WindowHelper.MaximizeWindow(new IntPtr(notepad.WindowHandle));
-        if (notepad.Has<Button>(By.Name("Settings"), 500))
+        var document = WaitForNotepadDocument();
+        WindowHelper.MaximizeWindow(new IntPtr(document.Window.WindowHandle));
+        document = WaitForNotepadDocument(requireSettings: true);
+        notepad = document.Window;
+        if (document.SettingsButton is not null)
         {
-            notepad.Find<Button>(By.Name("Settings")).Invoke(msPostAction: 0);
+            notepadSettingsOpen = true;
+            document.SettingsButton.Invoke(msPostAction: 0);
+            var settingsWindow = WaitForNotepadSettings();
             foreach (var option in new[] { "Autocorrect", "Spell check" })
             {
-                if (notepad.Has<ToggleSwitch>(By.Name(option), 2_000))
+                if (settingsWindow.Has<ToggleSwitch>(By.Name(option), 2_000))
                 {
-                    var toggle = notepad.Find<ToggleSwitch>(By.Name(option));
+                    var toggle = settingsWindow.Find<ToggleSwitch>(By.Name(option));
                     notepadEditingOptions.Add(option, toggle.IsOn);
                     if (toggle.IsOn && toggle.IsEnabled)
                     {
@@ -316,13 +320,9 @@ public sealed partial class ZoomItTests
                     }
                 }
             }
-
-            notepad.FindAll<Button>(By.Name("Back")).Single(button => button.Name == "Back").Click(msPostAction: 0);
         }
 
-        FocusNotepad();
-        var editor = NotepadEditor();
-        editor.Focus();
+        var editor = FocusNotepad();
         KeyboardHelper.SendChord(Key.Shift, Key.X);
         WaitForNotepadText("X", 10_000);
         KeyboardHelper.SendChord(Key.Backspace);
@@ -330,26 +330,119 @@ public sealed partial class ZoomItTests
         return editor;
     }
 
-    private Element NotepadEditor()
-    {
-        Assert.IsNotNull(notepad);
-        var editors = notepad.FindAll<Element>(By.Name("Text Editor"), 10_000)
-            .Where(element => element.ControlType is "Edit" or "Document").ToArray();
-        Assert.HasCount(1, editors, "Expected one Notepad text editor.");
-        return editors[0];
-    }
-
-    private void FocusNotepad()
+    private Session? FindOwnedNotepadWindow()
     {
         Assert.IsNotNull(notepadPath);
-        notepad = WindowsFinder.WaitForWindowByApp(
+        string document = Path.GetFileNameWithoutExtension(notepadPath);
+        return WindowsFinder.WaitForWindowByApp(
             "notepad",
-            window => window.Title.Contains(Path.GetFileNameWithoutExtension(notepadPath), StringComparison.OrdinalIgnoreCase) &&
+            window => window.ProcessName.Equals("notepad", StringComparison.OrdinalIgnoreCase) &&
+                (window.Title.Contains(document, StringComparison.OrdinalIgnoreCase) ||
+                    (notepadSettingsOpen && notepad is not null && window.Hwnd == notepad.WindowHandle && window.ProcessId == notepad.ProcessId)) &&
                 !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd)),
-            10_000);
-        Assert.IsNotNull(notepad, "The test-owned Notepad document is no longer visible.");
+            timeoutMS: 100,
+            pollIntervalMS: 25);
+    }
+
+    private NotepadDocument WaitForNotepadDocument(bool requireSettings = false)
+    {
+        var backInvoked = new HashSet<long>();
+        var result = NotepadReadiness.WaitForStableWindow(
+            () =>
+            {
+                var window = FindOwnedNotepadWindow();
+                if (window is null)
+                {
+                    return null;
+                }
+
+                // Modern Notepad can replace its startup HWND or retain its Settings page.
+                if (DismissNotepadPathError(window))
+                {
+                    return null;
+                }
+
+                var back = window.FindAll<Button>(By.Name("Back"), 0)
+                    .SingleOrDefault(button => button.Name == "Back" && button.Displayed && button.IsEnabled);
+                if (back is not null && !backInvoked.Contains(window.WindowHandle))
+                {
+                    back.Invoke(msPostAction: 0);
+                    backInvoked.Add(window.WindowHandle);
+                    return null;
+                }
+
+                var editors = window.FindAll<Element>(By.Name("Text Editor"), 0)
+                    .Where(element => element.ControlType is "Edit" or "Document").ToArray();
+                Assert.IsTrue(editors.Length <= 1, "More than one text editor was exposed by the test-owned Notepad document.");
+                var editor = editors.SingleOrDefault();
+                if (!window.WindowTitle.Contains(Path.GetFileNameWithoutExtension(notepadPath!), StringComparison.OrdinalIgnoreCase) ||
+                    editor is not { Width: > 0, Height: > 0 } || !editor.IsEnabled || !editor.Displayed)
+                {
+                    return null;
+                }
+
+                var settings = window.FindAll<Button>(By.Name("Settings"), 0)
+                    .SingleOrDefault(button => button.Name == "Settings" && button.Displayed && button.IsEnabled);
+                return requireSettings && !NotepadReadiness.IsSettingsReady(editor.ClassName, settings is not null)
+                    ? null
+                    : new NotepadDocument(window, editor, settings);
+            },
+            document => document.Window.WindowHandle);
+        Assert.IsTrue(result.Succeeded, $"The test-owned Notepad editor did not become ready on a stable window. {result.LastException?.Message}");
+        var document = result.LastObservation!;
+        notepad = document.Window;
+        notepadSettingsOpen = false;
+        return document;
+    }
+
+    private Session WaitForNotepadSettings()
+    {
+        var result = NotepadReadiness.WaitForStableWindow(
+            () =>
+            {
+                var window = FindOwnedNotepadWindow();
+                if (window is null || DismissNotepadPathError(window))
+                {
+                    return null;
+                }
+
+                return window.FindAll<Button>(By.Name("Back"), 0)
+                    .Any(button => button.Name == "Back" && button.Displayed && button.IsEnabled)
+                    ? window
+                    : null;
+            },
+            window => window.WindowHandle);
+        Assert.IsTrue(result.Succeeded, $"The test-owned Notepad Settings page did not become ready. {result.LastException?.Message}");
+        var window = result.LastObservation!;
+        notepad = window;
+        return window;
+    }
+
+    private bool DismissNotepadPathError(Session window)
+    {
+        const string message = "The system cannot find the path specified.";
+        var errors = window.FindAll<Element>(By.Name(message), 0).Where(element => element.Name == message && element.Displayed).ToArray();
+        if (errors.Length == 0)
+        {
+            return false;
+        }
+
+        Assert.IsTrue(File.Exists(notepadPath), "The test-owned Notepad file is missing; do not dismiss a genuine fixture error.");
+        var accept = window.FindAll<Button>(By.Name("OK"), 0)
+            .Where(button => button.Name == "OK" && button.Displayed && button.IsEnabled).ToArray();
+        Assert.HasCount(1, accept, "Expected the path-error acknowledgement in the test-owned Notepad window.");
+        ui.Step("Dismissing a restored-session path error while the new test-owned document still exists");
+        SaveDesktop("notepad-restored-path-error");
+        accept[0].Invoke(msPostAction: 0);
+        return true;
+    }
+
+    private Element FocusNotepad()
+    {
+        var document = WaitForNotepadDocument();
+        Assert.IsNotNull(notepad);
         Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(notepad.WindowHandle), 10_000), $"Notepad did not own foreground: {WindowControl.GetForegroundWindowInfo()}.");
-        NotepadEditor().Focus();
+        document.Editor.Focus();
         var ready = WaitHelper.WaitForStable(
             () =>
             {
@@ -371,6 +464,7 @@ public sealed partial class ZoomItTests
             2);
         Assert.IsTrue(ready.Succeeded, "The test-owned Notepad editor did not acquire native keyboard focus.");
         notepadEditorWindow = ready.LastObservation;
+        return document.Editor;
     }
 
     private void WaitForNotepadText(string expected, int timeoutMS)
@@ -401,17 +495,11 @@ public sealed partial class ZoomItTests
 
     private void CloseNotepadDocument()
     {
-        if (notepad is not null)
+        if (notepadPath is not null)
         {
             ui.Step("Saving and closing only the test-owned Notepad document");
-            if (notepad.Has<Button>(By.Name("Back"), 0))
-            {
-                notepad.FindAll<Button>(By.Name("Back")).Single(button => button.Name == "Back").Click(msPostAction: 0);
-            }
-
-            FocusNotepad();
+            var editor = FocusNotepad();
             KeyboardHelper.SendChord(Key.Esc);
-            var editor = NotepadEditor();
             var text = ReadNotepadText();
             try
             {
@@ -433,10 +521,14 @@ public sealed partial class ZoomItTests
             {
                 if (notepadEditingOptions.Count > 0)
                 {
-                    notepad!.Find<Button>(By.Name("Settings")).Invoke(msPostAction: 0);
+                    var currentDocument = WaitForNotepadDocument(requireSettings: true);
+                    Assert.IsNotNull(currentDocument.SettingsButton, "Notepad Settings must be available to restore editing options.");
+                    notepadSettingsOpen = true;
+                    currentDocument.SettingsButton.Invoke(msPostAction: 0);
+                    var settingsWindow = WaitForNotepadSettings();
                     foreach (var option in notepadEditingOptions.Reverse())
                     {
-                        var toggle = notepad.Find<ToggleSwitch>(By.Name(option.Key));
+                        var toggle = settingsWindow.Find<ToggleSwitch>(By.Name(option.Key));
                         if (toggle.IsEnabled && toggle.IsOn != option.Value)
                         {
                             toggle.Invoke(msPostAction: 0);
@@ -444,8 +536,7 @@ public sealed partial class ZoomItTests
                         }
                     }
 
-                    notepad.FindAll<Button>(By.Name("Back")).Single(button => button.Name == "Back").Click(msPostAction: 0);
-                    FocusNotepad();
+                    editor = FocusNotepad();
                 }
             }
 
@@ -459,6 +550,7 @@ public sealed partial class ZoomItTests
                     10_000).Succeeded,
                 "The test-owned Notepad tab did not close.");
             notepad = null;
+            notepadPath = null;
         }
     }
 
@@ -466,9 +558,17 @@ public sealed partial class ZoomItTests
     {
         if (Directory.Exists(fixtureDirectory))
         {
+            if (notepadPath is not null)
+            {
+                TestContext.WriteLine($"Preserving {fixtureDirectory}: closing the owned Notepad document was not confirmed.");
+                return;
+            }
+
             Directory.Delete(fixtureDirectory, recursive: true);
         }
     }
+
+    private sealed record NotepadDocument(Session Window, Element Editor, Button? SettingsButton);
 
     private static void WriteAlarm(string path)
     {

@@ -5,12 +5,10 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Common.UI;
 using CommunityToolkit.WinUI.Animations;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -173,13 +171,6 @@ namespace ShortcutGuide
                 _closeType = "CloseButton";
                 CloseAnimated();
             };
-
-            // Reveal the main pane after the window has loaded so the
-            // Implicit.ShowAnimations play on first appearance.
-            this.OverlayRoot.Loaded += (_, _) =>
-            {
-                this.MainPane.Visibility = Visibility.Visible;
-            };
         }
 
         private void ApplyThemeFromSettings()
@@ -285,7 +276,10 @@ namespace ShortcutGuide
                 return;
             }
 
-            UpdateTaskbarPaneLayout();
+            if (UpdateTaskbarPaneLayout())
+            {
+                this.TaskbarPane.Visibility = Visibility.Visible;
+            }
         }
 
         private void OnMainPaneInitializationFailed(object? sender, EventArgs e)
@@ -337,8 +331,9 @@ namespace ShortcutGuide
         /// <summary>
         /// Recomputes the taskbar pane's indicator children and applies the
         /// resulting layout to the Canvas-positioned pseudo-window.
+        /// Returns <see langword="false"/> if no buttons were found.
         /// </summary>
-        public void UpdateTaskbarPaneLayout()
+        public bool UpdateTaskbarPaneLayout()
         {
             var hwnd = WindowNative.GetWindowHandle(this);
             float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
@@ -354,14 +349,14 @@ namespace ShortcutGuide
             if (layout is null)
             {
                 this.TaskbarPane.Visibility = Visibility.Collapsed;
-                return;
+                return false;
             }
 
             this.TaskbarPane.Width = layout.Value.Width;
             this.TaskbarPane.Height = layout.Value.Height;
             Canvas.SetLeft(this.TaskbarPane, layout.Value.Left);
             Canvas.SetTop(this.TaskbarPane, layout.Value.Top);
-            this.TaskbarPane.Visibility = Visibility.Visible;
+            return true;
         }
 
         /// <summary>

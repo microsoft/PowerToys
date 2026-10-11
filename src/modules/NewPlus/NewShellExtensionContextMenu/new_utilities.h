@@ -2,6 +2,7 @@
 
 #include "pch.h"
 
+#include <common/utils/context_menu_lifecycle.h>
 #include <common/utils/process_path.h>
 #include <common/utils/package.h>
 
@@ -360,7 +361,7 @@ namespace newplus::utilities
         }
     }
 
-    inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke)
+    inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke, const context_menu_lifecycle::activity_guard& activity)
     {
         HRESULT hr = S_OK;
 
@@ -422,7 +423,7 @@ namespace newplus::utilities
             template_entry->refresh_target(target_final_fullpath);
 
             // Enter rename mode
-            template_entry->enter_rename_mode(target_final_fullpath, mouse_position_at_invoke);
+            template_entry->enter_rename_mode(target_final_fullpath, mouse_position_at_invoke, activity);
         }
         catch (const std::exception& ex)
         {

@@ -175,40 +175,83 @@ internal sealed class ZoomItUi(TestContext context)
         var middleTop = bounds.Top + ((bounds.Bottom - bounds.Top) / 4);
         var middleBottom = bounds.Top + (((bounds.Bottom - bounds.Top) * 2) / 3);
         MouseHelper.MoveTo(bounds.Left + 50, bounds.Top + 50);
-        var target = Control<Button>(cardId, "Button");
-        target.ScrollIntoView();
-        target.Focus();
-        var ready = WaitHelper.WaitForStable(
-            () => session.FindAll<Button>(By.Slug(target.Selector), 0).SingleOrDefault(),
+        var ready = WaitForDialogButton(
+            () => Control<Button>(cardId, "Button"),
+            target =>
+            {
+                target.ScrollIntoView();
+                target.Focus();
+            },
+            target => session.FindAll<Button>(By.Slug(target.Selector), 0).SingleOrDefault(),
             button => button is not null && button.Width > 0 && button.Height > 0 &&
                 button.Y + (button.Height / 2) >= middleTop && button.Y + (button.Height / 2) <= middleBottom &&
                 WindowControl.IsPointOwnedByWindow(handle, button.X + (button.Width / 2), button.Y + (button.Height / 2)),
-            60_000,
-            2,
-            recover: button =>
+            button =>
             {
                 WindowControl.TryBringToForeground(handle);
                 MouseHelper.MoveTo(bounds.Right - 100, bounds.Top + ((bounds.Bottom - bounds.Top) / 2));
-                if (button is null)
-                {
-                    target = Control<Button>(cardId, "Button");
-                    target.ScrollIntoView();
-                    target.Focus();
-                }
-                else if (button.Y + (button.Height / 2) > middleBottom)
+                if (button is not null && button.Y + (button.Height / 2) > middleBottom)
                 {
                     MouseHelper.ScrollDown();
                 }
-                else if (button.Y + (button.Height / 2) < middleTop)
+                else if (button is not null && button.Y + (button.Height / 2) < middleTop)
                 {
                     MouseHelper.ScrollUp();
                 }
             });
-        Assert.IsTrue(ready.Succeeded, $"The {cardId} button was not ready for physical input.");
+        Assert.IsTrue(ready.Succeeded, $"The {cardId} button was not ready for physical input. {ready.LastException?.Message}");
         var button = ready.LastObservation!;
         Step($"Opening {cardId} native dialog");
         MouseHelper.LeftClickAt(button.X + (button.Width / 2), button.Y + (button.Height / 2));
         return WaitForNativeDialog<TInput>("PowerToys.Settings", inputAutomationId);
+    }
+
+    internal static WaitHelper.StableWaitResult<TButton> WaitForDialogButton<TButton>(
+        Func<TButton> resolve,
+        Action<TButton> prepare,
+        Func<TButton, TButton?> observe,
+        Func<TButton?, bool> isReady,
+        Action<TButton?> recover,
+        int timeoutMS = 60_000,
+        int pollIntervalMS = 100)
+        where TButton : class
+    {
+        TButton? target = null;
+        return WaitHelper.WaitForStable(
+            () =>
+            {
+                if (target is null)
+                {
+                    target = resolve();
+                    prepare(target);
+                }
+
+                return observe(target);
+            },
+            isReady,
+            timeoutMS,
+            2,
+            pollIntervalMS,
+            recover: button =>
+            {
+                if (button is null)
+                {
+                    target = null;
+                }
+
+                recover(button);
+            },
+            shouldRetryException: exception =>
+            {
+                if (!ShellMenu.IsTransientElementException(exception))
+                {
+                    return false;
+                }
+
+                // Layout/focus can replace the UIA element. Re-resolve the card instead of retrying its stale slug.
+                target = null;
+                return true;
+            });
     }
 
     internal Session WaitForNativeDialog<TInput>(string appNameOrPid, string inputAutomationId)

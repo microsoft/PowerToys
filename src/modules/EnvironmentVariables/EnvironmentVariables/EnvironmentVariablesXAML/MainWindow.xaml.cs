@@ -84,7 +84,7 @@ namespace EnvironmentVariables
             {
                 case NativeMethods.WindowMessage.WM_SETTINGSCHANGED:
                     {
-                        var lParamStr = Marshal.PtrToStringUTF8(lParam);
+                        var lParamStr = Marshal.PtrToStringUni(lParam);
                         if (lParamStr == "Environment")
                         {
                             // Do not react on self - not nice, re-check this
