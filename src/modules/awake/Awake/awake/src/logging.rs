@@ -80,6 +80,7 @@ pub fn init(log_dir: &Path, version: &str, level: Option<LogLevel>) {
         Some(LogLevel::Debug) => LevelFilter::Debug,
         Some(LogLevel::Warn) => LevelFilter::Warn,
         Some(LogLevel::Error) => LevelFilter::Error,
+        Some(LogLevel::Off) => LevelFilter::Off,
         Some(LogLevel::Info) | None => LevelFilter::Info,
     };
     let (sender, receiver) = sync_channel(QUEUE_LINES);

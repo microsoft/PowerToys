@@ -24,6 +24,8 @@ pub enum LogLevel {
     Warn,
     /// Failures only.
     Error,
+    /// Nothing at all.
+    Off,
 }
 
 /// `%LOCALAPPDATA%\Microsoft\PowerToys\log_settings.json`: `{"logLevel":"trace"}`.
@@ -35,6 +37,7 @@ pub fn log_level(bytes: &[u8]) -> Option<LogLevel> {
         "info" => Some(LogLevel::Info),
         "warn" | "warning" => Some(LogLevel::Warn),
         "error" | "err" | "critical" => Some(LogLevel::Error),
+        "off" => Some(LogLevel::Off),
         _ => None,
     }
 }
@@ -62,6 +65,7 @@ mod tests {
     fn log_levels() {
         assert_eq!(log_level(br#"{"logLevel":"trace"}"#), Some(LogLevel::Trace));
         assert_eq!(log_level(br#"{"logLevel":"Warning"}"#), Some(LogLevel::Warn));
+        assert_eq!(log_level(br#"{"logLevel":"off"}"#), Some(LogLevel::Off));
         assert_eq!(log_level(br#"{"logLevel":"loud"}"#), None);
         assert_eq!(log_level(b"{}"), None);
     }
