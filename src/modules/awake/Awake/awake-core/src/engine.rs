@@ -1,9 +1,9 @@
 //! The keep-awake state machine.
 //!
 //! Inputs (settings, tray choices, ticks, lock and power events) go in; [`Effect`]s come out for
-//! the Windows layer to carry out. The engine diffs every input against the live state, so a
-//! settings write that changes nothing restarts nothing, and its own writes echoing back through
-//! the file watcher are no-ops.
+//! the Windows layer to carry out. The engine diffs every input against the live state, so Awake's
+//! own writes echoing back through the file watcher are no-ops. One deliberate exception: another
+//! program saving the running timed session again restarts its countdown, see [`Save`].
 
 use crate::execution_state::{self, RELEASED};
 use crate::mode::Mode;
@@ -32,7 +32,7 @@ pub enum Activity {
     Indefinite,
     /// Held for a fixed time, with a countdown in the tooltip.
     Timed {
-        /// The length chosen, kept so re-reading the same setting does not restart the countdown.
+        /// The length chosen, kept so an echo of the same setting does not restart the countdown.
         seconds: u64,
         /// When the session ends.
         deadline: Timestamp,
@@ -81,6 +81,21 @@ pub enum TrayCommand {
     ToggleDisplay,
     /// Quit Awake.
     Exit,
+}
+
+/// Whether settings read from `settings.json` are news to the engine.
+///
+/// The file says what the session is, not what changed, so the same values can mean two things.
+/// Awake's own write echoing back, or the same version read twice, must not disturb a running
+/// countdown. Another program writing the same timed session again (Command Palette's "Awake for
+/// 30 minutes", say) is a request to start it over, as it was in the .NET Awake and as choosing
+/// the same preset from the menu is.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Save {
+    /// A version of the file Awake has already acted on: its own write, or one read before.
+    Known,
+    /// Another program saved the file since Awake last read it.
+    New,
 }
 
 /// Why the process is asked to exit.
@@ -174,8 +189,19 @@ impl Engine {
         effects
     }
 
-    /// Reconciles with `settings.json` after it was read.
+    /// Reconciles with `settings.json` after another program saved it.
     pub fn apply_settings(&mut self, settings: &AwakeSettings, now: DateTimeOffset) -> Vec<Effect> {
+        self.apply_saved_settings(settings, now, Save::New)
+    }
+
+    /// Reconciles with `settings.json` after it was read; `save` says whether this version is
+    /// news, which decides whether the same timed session starts over.
+    pub fn apply_saved_settings(
+        &mut self,
+        settings: &AwakeSettings,
+        now: DateTimeOffset,
+        save: Save,
+    ) -> Vec<Effect> {
         let mut effects = Vec::new();
         if self.source != Source::PowerToys {
             return effects;
@@ -186,9 +212,14 @@ impl Engine {
         } else {
             &settings.custom_tray_times
         };
-        if *presets != self.presets {
+        let presets_changed = *presets != self.presets;
+        if presets_changed {
             self.presets = presets.clone();
         }
+        // A save that changes keep-display-on or the presets is about that setting, so it leaves
+        // a running countdown alone; only a save of exactly the running session starts it over.
+        let resaved =
+            save == Save::New && !presets_changed && settings.keep_display_on == self.keep_display_on;
 
         let activity = match settings.mode {
             // Leave the session alone; the caller logs the unexpected value.
@@ -198,11 +229,11 @@ impl Engine {
             ModeSetting::Known(Mode::Timed) => {
                 let seconds = settings.timed_seconds();
                 match self.activity {
-                    // Same duration: keep counting down instead of starting over.
+                    // Same duration: keep counting down unless the session was saved again.
                     Activity::Timed {
                         seconds: running,
                         deadline,
-                    } if running == seconds => Activity::Timed { seconds, deadline },
+                    } if running == seconds && !resaved => Activity::Timed { seconds, deadline },
                     _ => Activity::Timed {
                         seconds,
                         deadline: now.utc.saturating_add_secs(seconds),
@@ -440,10 +471,58 @@ mod tests {
     }
 
     #[test]
-    fn rereading_identical_settings_does_nothing() {
+    fn rereading_a_known_save_does_nothing() {
         let mut engine = powertoys();
         engine.apply_settings(&timed(0, 30), at(0));
-        assert_eq!(engine.apply_settings(&timed(0, 30), at(100)), []);
+        assert_eq!(
+            engine.apply_saved_settings(&timed(0, 30), at(100), Save::Known),
+            []
+        );
+        assert_eq!(
+            engine.activity().deadline(),
+            Some(at(1800).utc),
+            "the countdown kept running"
+        );
+    }
+
+    // Command Palette's "Awake for 30 minutes" writes the same values again and says the session
+    // was set; the .NET Awake started the countdown over, and so does choosing the preset again.
+    #[test]
+    fn another_program_saving_the_same_timed_session_restarts_it() {
+        let mut engine = powertoys();
+        engine.apply_settings(&timed(0, 30), at(0));
+        let effects = engine.apply_settings(&timed(0, 30), at(1500));
+        assert!(effects.contains(&Effect::ScheduleDeadline(Some(at(1500 + 1800).utc))));
+        assert!(effects.contains(&Effect::ModeEntered(Mode::Timed)));
+        assert!(effects.contains(&Effect::Countdown(true)));
+        assert!(
+            flags(&effects).is_empty(),
+            "the request is never dropped in between"
+        );
+        assert_eq!(engine.activity().deadline(), Some(at(3300).utc));
+    }
+
+    #[test]
+    fn a_save_about_another_setting_keeps_the_countdown() {
+        let mut engine = powertoys();
+        engine.apply_settings(&timed(0, 30), at(0));
+
+        let display_on = AwakeSettings {
+            keep_display_on: true,
+            ..timed(0, 30)
+        };
+        let effects = engine.apply_settings(&display_on, at(100));
+        assert_eq!(flags(&effects), [DISPLAY]);
+        assert!(!effects.iter().any(|e| matches!(e, Effect::ScheduleDeadline(_))));
+
+        let new_presets = AwakeSettings {
+            custom_tray_times: vec![Preset {
+                label: "5 minutes".into(),
+                seconds: 300,
+            }],
+            ..display_on
+        };
+        assert_eq!(engine.apply_settings(&new_presets, at(200)), []);
         assert_eq!(
             engine.activity().deadline(),
             Some(at(1800).utc),
@@ -472,7 +551,7 @@ mod tests {
             keep_display_on: true,
             ..timed(1, 0)
         };
-        assert_eq!(engine.apply_settings(&echo, at(601)), []);
+        assert_eq!(engine.apply_saved_settings(&echo, at(601), Save::Known), []);
         assert_eq!(engine.activity().deadline(), Some(at(3600).utc));
     }
 
@@ -500,7 +579,7 @@ mod tests {
                 SettingsChange::Interval { hours: 1, minutes: 0 }
             ]))
         );
-        assert_eq!(engine.apply_settings(&timed(1, 0), at(1)), []);
+        assert_eq!(engine.apply_saved_settings(&timed(1, 0), at(1), Save::Known), []);
     }
 
     #[test]
@@ -587,7 +666,7 @@ mod tests {
         );
         assert_eq!(engine.tick(at(1).utc), []);
         assert_eq!(
-            engine.apply_settings(&settings(Mode::Passive), at(1)),
+            engine.apply_saved_settings(&settings(Mode::Passive), at(1), Save::Known),
             [],
             "the echo of the write is a no-op"
         );
@@ -651,7 +730,7 @@ mod tests {
             expiration: Some(until),
             ..settings(Mode::Expirable)
         };
-        assert_eq!(engine.apply_settings(&echo, at(101)), []);
+        assert_eq!(engine.apply_saved_settings(&echo, at(101), Save::Known), []);
     }
 
     #[test]

@@ -92,6 +92,20 @@ fn powertoys_mode_follows_the_settings_file() {
         "the countdown was not restarted"
     );
 
+    // Saving the same session again, as Command Palette does, starts the countdown over.
+    sandbox.write_settings(&settings_json(2, true, 0, 30, "2026-01-01T00:00:00+00:00"));
+    assert!(
+        sandbox.wait_for_log("Entered Timed.", 2, 5 * SECOND),
+        "{}",
+        sandbox.log()
+    );
+    std::thread::sleep(Duration::from_millis(300));
+    assert_eq!(
+        sandbox.log().matches("Entered Timed.").count(),
+        2,
+        "restarted once per save, however many change notifications it caused"
+    );
+
     // An expiration already in the past is moved five minutes ahead and saved back.
     sandbox.write_settings(&settings_json(3, true, 0, 30, "2020-01-01T00:00:00+00:00"));
     assert!(sandbox.wait_for_log("Entered Expirable.", 1, 5 * SECOND));
@@ -278,6 +292,50 @@ fn corrupt_settings_are_reported_and_left_alone() {
         0,
         "the session was not dropped"
     );
+
+    sandbox.write_settings(&settings_json(0, false, 0, 1, "2026-01-01T00:00:00+00:00"));
+    assert!(sandbox.wait_for_log("Entered Passive.", 1, 5 * SECOND));
+    sandbox.signal_exit();
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+}
+
+#[test]
+fn an_unknown_mode_is_reported_at_startup_too() {
+    let _serial = serial();
+    let sandbox = Sandbox::new("unknown-mode");
+    sandbox.write_settings(&settings_json(9, false, 0, 1, "2026-01-01T00:00:00+00:00"));
+    let mut awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
+    assert!(
+        sandbox.wait_for_log("Ignoring unknown mode 9 in the settings file.", 1, 5 * SECOND),
+        "{}",
+        sandbox.log()
+    );
+    sandbox.signal_exit();
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+}
+
+#[test]
+fn a_removed_settings_file_keeps_the_mode_until_it_is_written_again() {
+    let _serial = serial();
+    let sandbox = Sandbox::new("removed");
+    sandbox.write_settings(&settings_json(1, false, 0, 1, "2026-01-01T00:00:00+00:00"));
+    let mut awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
+    assert!(sandbox.wait_for_log("Entered Indefinite.", 1, 5 * SECOND));
+
+    fs::remove_file(sandbox.settings_path()).unwrap();
+    assert!(
+        sandbox.wait_for_log("The settings file was removed", 1, 5 * SECOND),
+        "{}",
+        sandbox.log()
+    );
+    // Another change notification while the file is gone says nothing new.
+    sandbox.write_settings("");
+    fs::remove_file(sandbox.settings_path()).unwrap();
+    std::thread::sleep(Duration::from_millis(500));
+    let log = sandbox.log();
+    assert_eq!(log.matches("The settings file was removed").count(), 1, "{log}");
+    assert!(!log.contains("unreadable"), "{log}");
+    assert!(!log.contains("Entered Passive."), "{log}");
 
     sandbox.write_settings(&settings_json(0, false, 0, 1, "2026-01-01T00:00:00+00:00"));
     assert!(sandbox.wait_for_log("Entered Passive.", 1, 5 * SECOND));

@@ -8,15 +8,15 @@ use std::cell::RefCell;
 use std::ffi::OsString;
 use std::os::windows::io::{AsRawHandle, OwnedHandle};
 use std::sync::atomic::{AtomicU32, Ordering};
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use std::{fs, ptr};
 
 use awake_core::cli::{self, Binding, Invocation, Plan, Request, UntilSpec};
 use awake_core::duration::Human;
-use awake_core::engine::{Activity, Effect, Engine, ExitReason, Source};
+use awake_core::engine::{Activity, Effect, Engine, ExitReason, Save, Source};
 use awake_core::execution_state::RELEASED;
 use awake_core::powertoys;
-use awake_core::settings::{FILE_NAME, ModeSetting, SettingsChange, SettingsDocument};
+use awake_core::settings::{AwakeSettings, FILE_NAME, ModeSetting, SettingsChange, SettingsDocument};
 use awake_core::strings::{StringId, Strings};
 use awake_core::text::{self, SessionSummary, Style};
 use awake_core::time::{CivilDateTime, DateTimeOffset, LocalZone, ParsedTime, Timestamp};
@@ -407,6 +407,7 @@ impl Launcher {
             pending_changes: Vec::new(),
             write_retries: 0,
             reload_retries: 0,
+            settings_file: SettingsFile::Unseen,
             waiter: Some(waiter),
             bound,
             live,
@@ -515,6 +516,24 @@ enum Outcome {
     Destroy,
 }
 
+/// What Awake last found at `settings.json`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum SettingsFile {
+    /// Not read or saved yet, or its write time could not be read.
+    Unseen,
+    /// Read or saved when it had this write time. Every writer changes it, so finding the same
+    /// time again means a version already acted on, Awake's own save echoing back included.
+    Seen(SystemTime),
+    /// The last read found no file; its removal is logged once.
+    Missing,
+}
+
+impl SettingsFile {
+    fn seen(path: &std::path::Path) -> SettingsFile {
+        write_time(path).map_or(SettingsFile::Unseen, SettingsFile::Seen)
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 struct ExitPlan {
     code: i32,
@@ -541,6 +560,7 @@ struct App {
     pending_changes: Vec<SettingsChange>,
     write_retries: u32,
     reload_retries: u32,
+    settings_file: SettingsFile,
     waiter: Option<Waiter>,
     bound: Option<BoundTarget>,
     live: Option<LiveOutput>,
@@ -579,21 +599,37 @@ impl App {
             return Vec::new();
         };
         let now = self.clock.now();
+        let version = write_time(store.path());
         match store.read() {
             Ok(document) => match document.settings(&self.clock) {
-                Ok(settings) => return self.engine.apply_settings(&settings, now),
+                Ok(settings) => return self.apply_loaded(&settings, version),
                 Err(error) => log::error!("Ignoring the settings file: {error}"),
             },
             Err(LoadError::Missing) => {
                 log::info!("No settings file yet; creating one with defaults.");
-                if let Err(error) = store.write(&SettingsDocument::scaffold(now)) {
-                    log::error!("Could not create the settings file: {error}");
+                match store.write(&SettingsDocument::scaffold(now)) {
+                    Ok(()) => self.settings_file = SettingsFile::seen(store.path()),
+                    Err(error) => log::error!("Could not create the settings file: {error}"),
                 }
             }
             // Never replace a file that exists but cannot be read: other programs own it too.
             Err(error) => log::error!("Ignoring the settings file: {error}"),
         }
         Vec::new()
+    }
+
+    /// Hands settings read from the file to the engine, at startup and on every reload alike.
+    /// `version` is the file's write time, taken before reading it.
+    fn apply_loaded(&mut self, settings: &AwakeSettings, version: Option<SystemTime>) -> Vec<Effect> {
+        if let ModeSetting::Unknown(value) = settings.mode {
+            log::warn!("Ignoring unknown mode {value} in the settings file.");
+        }
+        let save = match version {
+            Some(time) if self.settings_file == SettingsFile::Seen(time) => Save::Known,
+            _ => Save::New,
+        };
+        self.settings_file = version.map_or(SettingsFile::Unseen, SettingsFile::Seen);
+        self.engine.apply_saved_settings(settings, self.clock.now(), save)
     }
 
     fn on_message(&mut self, message: u32, wparam: WPARAM, lparam: LPARAM) -> Outcome {
@@ -809,22 +845,33 @@ impl App {
         let Some(store) = &self.store else {
             return Outcome::Handled(0);
         };
+        // Taken before the content: a save landing in between then looks known, and its own
+        // change notification brings it back as new.
+        let version = write_time(store.path());
         // Unsaved changes from the menu win over what the file says until they are written.
-        let loaded = store
-            .read()
-            .map(|mut document| {
+        let loaded = match store.read() {
+            Ok(mut document) => {
                 document.apply(&self.pending_changes);
-                document
-            })
-            .map_err(|e| e.to_string())
-            .and_then(|document| document.settings(&self.clock).map_err(|e| e.to_string()));
+                document.settings(&self.clock).map_err(|e| e.to_string())
+            }
+            // Not a writer halfway through, so no retries. Saving from the menu creates the file
+            // again, as at startup; until then nothing says the mode should change.
+            Err(LoadError::Missing) => {
+                self.reload_retries = 0;
+                if self.settings_file != SettingsFile::Missing {
+                    self.settings_file = SettingsFile::Missing;
+                    log::info!(
+                        "The settings file was removed; keeping the current mode until it is written again."
+                    );
+                }
+                return Outcome::Handled(0);
+            }
+            Err(error) => Err(error.to_string()),
+        };
         match loaded {
             Ok(settings) => {
                 self.reload_retries = 0;
-                if let ModeSetting::Unknown(value) = settings.mode {
-                    log::warn!("Ignoring unknown mode {value} in the settings file.");
-                }
-                let effects = self.engine.apply_settings(&settings, self.clock.now());
+                let effects = self.apply_loaded(&settings, version);
                 if !effects.is_empty() {
                     log::info!("Settings changed: {effects:?}");
                 }
@@ -963,6 +1010,7 @@ impl App {
         match store.write(&document) {
             Ok(()) => {
                 log::info!("Saved {:?}.", self.pending_changes);
+                self.settings_file = SettingsFile::seen(store.path());
                 self.pending_changes.clear();
                 self.write_retries = 0;
             }
@@ -1080,6 +1128,10 @@ impl App {
         log::info!("Exiting with code {}.", exit.code);
         exit.code
     }
+}
+
+fn write_time(path: &std::path::Path) -> Option<SystemTime> {
+    fs::metadata(path).and_then(|metadata| metadata.modified()).ok()
 }
 
 fn session_summary(
