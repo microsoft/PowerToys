@@ -4,6 +4,13 @@
 //! never stalls the thread that holds the keep-awake request: when the queue is full, lines are
 //! dropped and counted instead. Each day's file is capped in size and old files are removed.
 //!
+//! Old files are removed once the queue has gone quiet after the first line of each day, so the
+//! lines of a short run, such as a refused start, reach the disk first and a process that runs
+//! for weeks still keeps only the retention period. The cleanup yields to any new line and
+//! never follows a link out of the log folder: Awake may run elevated, and the folder is
+//! writable by the user. If the log folder is deleted while Awake runs, today's file is created
+//! again with the next line.
+//!
 //! Awake's code takes no lock on the log path: the queue's sender is shared directly (it is
 //! `Sync`) and lines are sent with `try_send`, so a log call never blocks on a full queue. The
 //! channel does hold an internal wake-up lock for a moment inside std when the writer is idle,
@@ -13,17 +20,19 @@
 //!
 //! Layout, as before: `Awake\Logs\<version>\Log_yyyy-MM-dd.log`.
 
-use std::fs::{self, File, OpenOptions};
+use std::fs::{self, File, Metadata, OpenOptions};
 use std::io::Write;
+use std::os::windows::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::mpsc::{Receiver, SyncSender, TrySendError, sync_channel};
+use std::sync::mpsc::{Receiver, RecvTimeoutError, SyncSender, TrySendError, sync_channel};
 use std::time::{Duration, Instant, SystemTime};
 
 use awake_core::powertoys::LogLevel;
 use awake_core::time::{DateTimeOffset, Timestamp};
-use log::{Level, LevelFilter, Log, Metadata, Record};
+use log::{Level, LevelFilter, Log, Record};
+use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_REPARSE_POINT;
 
 use crate::platform::clock::SystemClock;
 
@@ -32,6 +41,8 @@ const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
 const RETENTION: Duration = Duration::from_secs(30 * 24 * 3600);
 /// How long cleaning up old logs may take before the writer gets on with today's lines.
 const CLEANUP_BUDGET: Duration = Duration::from_secs(2);
+/// How long the queue must stay empty before old logs are cleaned up.
+const CLEANUP_AFTER_IDLE: Duration = Duration::from_secs(1);
 /// The wait for `log::logger().flush()`; code that needs another bound calls `flush`.
 const DEFAULT_FLUSH_TIMEOUT: Duration = Duration::from_millis(500);
 
@@ -65,7 +76,7 @@ pub fn init(log_dir: &Path, version: &str, level: Option<LogLevel>) {
     let root = log_dir.to_owned();
     if std::thread::Builder::new()
         .name("awake-log".into())
-        .spawn(move || write_lines(&root, &writer_dir, &receiver, &DROPPED))
+        .spawn(move || write_lines(&root, &writer_dir, &receiver, &DROPPED, CLEANUP_AFTER_IDLE))
         .is_err()
     {
         return;
@@ -107,7 +118,7 @@ impl FileLogger {
 }
 
 impl Log for FileLogger {
-    fn enabled(&self, metadata: &Metadata<'_>) -> bool {
+    fn enabled(&self, metadata: &log::Metadata<'_>) -> bool {
         metadata.level() <= self.level
     }
 
@@ -139,16 +150,42 @@ impl Log for FileLogger {
     }
 }
 
-fn write_lines(root: &Path, directory: &Path, receiver: &Receiver<Message>, dropped: &AtomicU64) {
-    remove_old_logs(root, directory, SystemTime::now(), CLEANUP_BUDGET);
-    let mut sink = Sink {
-        directory: directory.to_owned(),
-        file: None,
-        day: String::new(),
-        written: 0,
-        failures: 0,
-    };
-    while let Ok(message) = receiver.recv() {
+/// Writes queued lines until every sender is gone. Old logs are cleaned up once the queue has
+/// been empty for `cleanup_after` after a new day's first line.
+fn write_lines(
+    root: &Path,
+    directory: &Path,
+    receiver: &Receiver<Message>,
+    dropped: &AtomicU64,
+    cleanup_after: Duration,
+) {
+    let mut sink = Sink::new(directory);
+    // A message that cut a cleanup short; it is handled before anything else.
+    let mut next = None;
+    loop {
+        let message = if let Some(message) = next.take() {
+            message
+        } else if sink.cleanup_due {
+            match receiver.recv_timeout(cleanup_after) {
+                Ok(message) => message,
+                Err(RecvTimeoutError::Timeout) => {
+                    let outcome = remove_old_logs(root, directory, SystemTime::now(), CLEANUP_BUDGET, || {
+                        next = receiver.try_recv().ok();
+                        next.is_some()
+                    });
+                    // An interrupted cleanup runs again at the next quiet moment; one that
+                    // finished or ran out of time waits for the next day.
+                    sink.cleanup_due = outcome == Cleanup::Interrupted;
+                    continue;
+                }
+                Err(RecvTimeoutError::Disconnected) => return,
+            }
+        } else {
+            match receiver.recv() {
+                Ok(message) => message,
+                Err(_) => return,
+            }
+        };
         match message {
             Message::Line(utc, line) => {
                 let at = DateTimeOffset::new(utc, SystemClock.offset_minutes_at(utc));
@@ -175,29 +212,40 @@ fn write_lines(root: &Path, directory: &Path, receiver: &Receiver<Message>, drop
 
 struct Sink {
     directory: PathBuf,
+    /// Today's file, once the first line has named it.
+    path: PathBuf,
     file: Option<File>,
     day: String,
     written: u64,
     failures: u32,
+    /// Set by each day's first line, so old files are removed even when Awake runs for weeks.
+    cleanup_due: bool,
 }
 
 impl Sink {
+    fn new(directory: &Path) -> Self {
+        Sink {
+            directory: directory.to_owned(),
+            path: PathBuf::new(),
+            file: None,
+            day: String::new(),
+            written: 0,
+            failures: 0,
+            cleanup_due: false,
+        }
+    }
+
     fn write(&mut self, at: &DateTimeOffset, line: &str) {
         let local = at.local();
         let day = format!("{:04}-{:02}-{:02}", local.year, local.month, local.day);
         if day != self.day {
             self.day = day;
-            self.file = None;
-            self.failures = 0;
-            let path = self.directory.join(format!("Log_{}.log", self.day));
-            if fs::create_dir_all(&self.directory).is_ok() {
-                self.file = OpenOptions::new().create(true).append(true).open(&path).ok();
-                self.written = self
-                    .file
-                    .as_ref()
-                    .and_then(|f| f.metadata().ok())
-                    .map_or(0, |m| m.len());
-            }
+            self.cleanup_due = true;
+            self.open();
+        } else if !self.path.exists() {
+            // The file is shared for deletion, so the module or Logs folder can be deleted while
+            // Awake runs. Writes to a deleted file still succeed and are lost, so start again.
+            self.open();
         }
         // After repeated failures (a full disk, usually) stop trying until tomorrow's file.
         if self.failures >= 3 || self.written >= MAX_FILE_BYTES {
@@ -227,18 +275,68 @@ impl Sink {
             Err(_) => self.failures += 1,
         }
     }
+
+    fn open(&mut self) {
+        self.file = None;
+        self.failures = 0;
+        self.written = 0;
+        self.path = self.directory.join(format!("Log_{}.log", self.day));
+        if fs::create_dir_all(&self.directory).is_ok() {
+            self.file = OpenOptions::new().create(true).append(true).open(&self.path).ok();
+            self.written = self
+                .file
+                .as_ref()
+                .and_then(|f| f.metadata().ok())
+                .map_or(0, |m| m.len());
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum Cleanup {
+    Done,
+    OutOfTime,
+    Interrupted,
+}
+
+/// Junctions and symbolic links are reparse points; the cleanup never enters one.
+fn is_reparse_point(metadata: &Metadata) -> bool {
+    metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0
 }
 
 /// Deletes `.log` files last written before the retention period, then any version folder
 /// other than `current` that this leaves empty. Stops once `budget` has been spent, so a huge
-/// folder cannot keep today's lines waiting.
-fn remove_old_logs(root: &Path, current: &Path, now: SystemTime, budget: Duration) {
+/// folder cannot keep today's lines waiting, and as soon as `interrupted` says a line is waiting.
+/// Linked folders are skipped: through one, an elevated Awake would delete files elsewhere.
+fn remove_old_logs(
+    root: &Path,
+    current: &Path,
+    now: SystemTime,
+    budget: Duration,
+    mut interrupted: impl FnMut() -> bool,
+) -> Cleanup {
     let cutoff = now.checked_sub(RETENTION).unwrap_or(SystemTime::UNIX_EPOCH);
     let started = Instant::now();
-    let Ok(versions) = fs::read_dir(root) else { return };
-    for version in versions.flatten().map(|e| e.path()).filter(|p| p.is_dir()) {
+    if fs::symlink_metadata(root).is_ok_and(|m| is_reparse_point(&m)) {
+        return Cleanup::Done;
+    }
+    let Ok(versions) = fs::read_dir(root) else {
+        return Cleanup::Done;
+    };
+    // A directory entry describes the entry itself, never what a link points to.
+    let versions = versions
+        .flatten()
+        .filter(|e| e.metadata().is_ok_and(|m| m.is_dir() && !is_reparse_point(&m)))
+        .map(|e| e.path());
+    for version in versions {
         let mut remaining = 0;
         for file in fs::read_dir(&version).into_iter().flatten().flatten() {
+            if interrupted() {
+                return Cleanup::Interrupted;
+            }
+            if started.elapsed() > budget {
+                return Cleanup::OutOfTime;
+            }
             let old = file
                 .metadata()
                 .and_then(|m| m.modified())
@@ -248,14 +346,12 @@ fn remove_old_logs(root: &Path, current: &Path, now: SystemTime, budget: Duratio
             } else {
                 remaining += 1;
             }
-            if started.elapsed() > budget {
-                return;
-            }
         }
         if remaining == 0 && version != current {
             let _ = fs::remove_dir(&version);
         }
     }
+    Cleanup::Done
 }
 
 #[cfg(test)]
@@ -272,13 +368,7 @@ mod tests {
     #[test]
     fn sink_caps_file_size_and_survives_missing_directories() {
         let dir = temp_dir("sink");
-        let mut sink = Sink {
-            directory: dir.join("v1"),
-            file: None,
-            day: String::new(),
-            written: 0,
-            failures: 0,
-        };
+        let mut sink = Sink::new(&dir.join("v1"));
         let now = SystemClock.now();
         let line = "x".repeat(64 * 1024);
         for _ in 0..100 {
@@ -320,7 +410,10 @@ mod tests {
         fs::create_dir_all(root.join("empty")).unwrap();
         file_written_at(&root.join("Log_at_root.log"), old);
 
-        remove_old_logs(&root, &current, now, Duration::from_secs(60));
+        assert_eq!(
+            remove_old_logs(&root, &current, now, Duration::from_secs(60), || false),
+            Cleanup::Done
+        );
 
         assert!(!root.join("v1").exists(), "a folder of old logs is removed");
         assert!(!root.join("v1b").join("Log_old.log").exists());
@@ -342,7 +435,7 @@ mod tests {
 
         // The current folder survives even when nothing is left in it.
         fs::remove_file(current.join("Log_today.log")).unwrap();
-        remove_old_logs(&root, &current, now, Duration::from_secs(60));
+        remove_old_logs(&root, &current, now, Duration::from_secs(60), || false);
         assert!(current.is_dir());
         fs::remove_dir_all(root).ok();
     }
@@ -351,8 +444,186 @@ mod tests {
     fn cleanup_without_a_log_folder_does_nothing() {
         let root = std::env::temp_dir().join(format!("awake-log-none-{}", std::process::id()));
         let _ = fs::remove_dir_all(&root);
-        remove_old_logs(&root, &root.join("v1"), SystemTime::now(), CLEANUP_BUDGET);
+        let outcome = remove_old_logs(&root, &root.join("v1"), SystemTime::now(), CLEANUP_BUDGET, || {
+            false
+        });
+        assert_eq!(outcome, Cleanup::Done);
         assert!(!root.exists());
+    }
+
+    /// `mklink /J` needs no privilege, unlike a symbolic link.
+    fn junction(link: &Path, target: &Path) {
+        let status = std::process::Command::new("cmd")
+            .arg("/C")
+            .arg("mklink")
+            .arg("/J")
+            .arg(link)
+            .arg(target)
+            .stdout(std::process::Stdio::null())
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    #[test]
+    fn cleanup_does_not_follow_junctions() {
+        let root = temp_dir("junction");
+        let elsewhere = temp_dir("junction-target");
+        let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
+        file_written_at(&elsewhere.join("v0").join("Log_old.log"), old);
+        file_written_at(&elsewhere.join("Log_old.log"), old);
+        fs::create_dir_all(&root).unwrap();
+        junction(&root.join("v0"), &elsewhere);
+
+        remove_old_logs(&root, &root.join("v1"), SystemTime::now(), CLEANUP_BUDGET, || {
+            false
+        });
+        assert!(
+            elsewhere.join("Log_old.log").exists(),
+            "a linked version folder is skipped"
+        );
+        assert!(root.join("v0").exists(), "and left in place");
+
+        // A log root that is itself a link is left alone entirely.
+        let linked_root = root.join("linked-root");
+        junction(&linked_root, &elsewhere);
+        remove_old_logs(
+            &linked_root,
+            &linked_root.join("v1"),
+            SystemTime::now(),
+            CLEANUP_BUDGET,
+            || false,
+        );
+        assert!(elsewhere.join("v0").join("Log_old.log").exists());
+
+        // Removing a junction removes the link only.
+        fs::remove_dir(root.join("v0")).unwrap();
+        fs::remove_dir(&linked_root).unwrap();
+        fs::remove_dir_all(root).ok();
+        fs::remove_dir_all(elsewhere).ok();
+    }
+
+    #[test]
+    fn cleanup_stops_as_soon_as_a_line_is_waiting() {
+        let root = temp_dir("interrupted");
+        let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
+        file_written_at(&root.join("v0").join("Log_a.log"), old);
+        file_written_at(&root.join("v0").join("Log_b.log"), old);
+        let outcome = remove_old_logs(&root, &root.join("v1"), SystemTime::now(), CLEANUP_BUDGET, || {
+            true
+        });
+        assert_eq!(outcome, Cleanup::Interrupted);
+        assert!(root.join("v0").join("Log_a.log").exists() && root.join("v0").join("Log_b.log").exists());
+        fs::remove_dir_all(root).ok();
+    }
+
+    #[test]
+    fn a_deleted_log_folder_is_created_again_by_the_next_line() {
+        let root = temp_dir("deleted");
+        let directory = root.join("Logs").join("v1");
+        let mut sink = Sink::new(&directory);
+        let now = SystemClock.now();
+        sink.write(&now, "before");
+        // The way a user or uninstaller removes the module folder while Awake runs.
+        fs::remove_dir_all(root.join("Logs")).unwrap();
+        sink.write(&now, "after");
+        let text = fs::read_to_string(&sink.path).unwrap();
+        assert!(text.contains("after") && !text.contains("before"), "{text}");
+
+        // Deleting only today's file works the same way.
+        fs::remove_file(&sink.path).unwrap();
+        sink.write(&now, "again");
+        assert!(fs::read_to_string(&sink.path).unwrap().contains("again"));
+        fs::remove_dir_all(root).ok();
+    }
+
+    fn line_at(sender: &SyncSender<Message>, at: Timestamp, text: &str) {
+        sender.send(Message::Line(at, text.to_owned())).unwrap();
+        let (done, wait) = sync_channel(1);
+        sender.send(Message::Flush(done)).unwrap();
+        wait.recv_timeout(Duration::from_secs(30)).unwrap();
+    }
+
+    fn eventually(condition: impl Fn() -> bool) -> bool {
+        let started = Instant::now();
+        while started.elapsed() < Duration::from_secs(30) {
+            if condition() {
+                return true;
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        false
+    }
+
+    #[test]
+    fn lines_reach_the_disk_before_old_logs_are_cleaned_up() {
+        let root = temp_dir("first-lines");
+        let directory = root.join("v1");
+        let stale = root.join("v0").join("Log_old.log");
+        file_written_at(&stale, SystemTime::now() - RETENTION - Duration::from_secs(3600));
+        let (sender, receiver) = sync_channel(16);
+        let writer = {
+            let (root, directory) = (root.clone(), directory.clone());
+            std::thread::spawn(move || {
+                static NONE_DROPPED: AtomicU64 = AtomicU64::new(0);
+                write_lines(
+                    &root,
+                    &directory,
+                    &receiver,
+                    &NONE_DROPPED,
+                    Duration::from_secs(600),
+                );
+            })
+        };
+        line_at(&sender, SystemClock.now_utc(), "Not starting");
+        let text = fs::read_dir(&directory)
+            .unwrap()
+            .flatten()
+            .map(|e| fs::read_to_string(e.path()).unwrap())
+            .collect::<String>();
+        assert!(text.contains("Not starting"), "{text}");
+        assert!(stale.exists(), "the cleanup waits for a quiet queue");
+        drop(sender);
+        writer.join().unwrap();
+        fs::remove_dir_all(root).ok();
+    }
+
+    #[test]
+    fn old_logs_are_cleaned_up_again_when_the_day_changes() {
+        let root = temp_dir("rollover");
+        let directory = root.join("v1");
+        let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
+        let stale = root.join("v0").join("Log_old.log");
+        file_written_at(&stale, old);
+        let (sender, receiver) = sync_channel(16);
+        let writer = {
+            let (root, directory) = (root.clone(), directory.clone());
+            std::thread::spawn(move || {
+                static NONE_DROPPED: AtomicU64 = AtomicU64::new(0);
+                write_lines(
+                    &root,
+                    &directory,
+                    &receiver,
+                    &NONE_DROPPED,
+                    Duration::from_millis(20),
+                );
+            })
+        };
+        let today = SystemClock.now_utc();
+        line_at(&sender, today, "first day");
+        assert!(eventually(|| !stale.exists()), "the first day's cleanup runs");
+
+        // Files that age past the retention period later in the day wait for the next day.
+        file_written_at(&stale, old);
+        line_at(&sender, today, "same day");
+        std::thread::sleep(Duration::from_millis(300));
+        assert!(stale.exists(), "one cleanup per day");
+
+        line_at(&sender, today.saturating_add_secs(24 * 3600), "next day");
+        assert!(eventually(|| !stale.exists()), "the next day's cleanup runs");
+        drop(sender);
+        writer.join().unwrap();
+        fs::remove_dir_all(root).ok();
     }
 
     #[test]
@@ -363,7 +634,9 @@ mod tests {
         let (sender, receiver) = sync_channel(4);
         let writer = {
             let (root, directory) = (root.clone(), directory.clone());
-            std::thread::spawn(move || write_lines(&root, &directory, &receiver, &WRITER_DROPPED))
+            std::thread::spawn(move || {
+                write_lines(&root, &directory, &receiver, &WRITER_DROPPED, CLEANUP_AFTER_IDLE);
+            })
         };
         let logger = FileLogger {
             sender,
