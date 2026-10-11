@@ -126,5 +126,5 @@ fn the_memory_limit_is_enforced() {
         code >= 0xC000_0000,
         "the system stopped the process with an error status, not Awake: {code:#x}"
     );
-    assert!(sandbox.log().is_empty(), "Awake's code never ran");
+    assert!(sandbox.log().is_empty(), "Awake never got as far as logging");
 }
