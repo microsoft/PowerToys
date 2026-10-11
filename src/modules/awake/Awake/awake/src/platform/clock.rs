@@ -21,11 +21,14 @@ const LOCALE_USER_DEFAULT: u32 = 0x0400;
 pub struct SystemClock;
 
 impl SystemClock {
+    /// The time with the local offset. Working out the offset takes three time-zone
+    /// conversions, so code that only compares or subtracts times uses `now_utc` instead.
     pub fn now(&self) -> DateTimeOffset {
         let utc = self.now_utc();
         DateTimeOffset::new(utc, self.offset_minutes_at(utc))
     }
 
+    /// The time in UTC: one cheap call, for countdowns, deadlines and other comparisons.
     pub fn now_utc(&self) -> Timestamp {
         let mut ft = FILETIME {
             dwLowDateTime: 0,
@@ -178,6 +181,16 @@ mod tests {
         let resolved = clock.resolve(noon).unwrap();
         assert_eq!(resolved.local(), noon);
         assert_eq!(resolved.offset_minutes, clock.offset_minutes_at(resolved.utc));
+    }
+
+    #[test]
+    fn now_and_now_utc_agree() {
+        let clock = SystemClock;
+        let before = clock.now_utc();
+        let now = clock.now();
+        let after = clock.now_utc();
+        assert!(before <= now.utc && now.utc <= after);
+        assert_eq!(now.offset_minutes, clock.offset_minutes_at(now.utc));
     }
 
     #[test]

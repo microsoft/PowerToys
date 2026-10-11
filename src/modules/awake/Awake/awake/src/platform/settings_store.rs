@@ -4,6 +4,14 @@
 //! original only once the new content is safely on disk, so a full disk or a crash cannot leave
 //! a truncated file behind. The replacement's write time is then refreshed, because the Settings
 //! app's file watchers only listen for write-time changes, not renames.
+//!
+//! Writes, including the flush to disk, run on the window thread, which also owns the
+//! keep-awake request. That is a deliberate trade: the file is a few kilobytes, and writes are
+//! rare and user-initiated (a menu choice, a timer ending, a one-time fix-up of an expired
+//! time), so the wait is a few milliseconds and well inside every shutdown allowance. The flush
+//! itself is what makes the rename safe: without it, a power cut can leave a renamed but empty
+//! file, and the runner and the Settings app both read this file. Moving writes to another
+//! thread would also move the retry and pending-change state `App` keeps in one place.
 
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
@@ -36,6 +44,16 @@ impl std::fmt::Display for LoadError {
     }
 }
 
+impl std::error::Error for LoadError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            LoadError::Missing => None,
+            LoadError::Io(error) => Some(error),
+            LoadError::Invalid(error) => Some(error),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum SaveError {
     /// Another program has the file open right now; try again shortly.
@@ -48,6 +66,15 @@ impl std::fmt::Display for SaveError {
         match self {
             SaveError::Busy => f.write_str("the file is in use"),
             SaveError::Io(error) => write!(f, "{error}"),
+        }
+    }
+}
+
+impl std::error::Error for SaveError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            SaveError::Busy => None,
+            SaveError::Io(error) => Some(error),
         }
     }
 }
@@ -108,6 +135,7 @@ impl SettingsStore {
     }
 }
 
+/// Writes and flushes `path`; the flush is the one wait for the disk, see the module docs.
 fn write_durably(path: &Path, bytes: &[u8]) -> io::Result<()> {
     let mut file = OpenOptions::new()
         .write(true)
@@ -197,6 +225,20 @@ mod tests {
             Err(LoadError::Invalid(SettingsError::TooLarge))
         ));
         fs::remove_dir_all(dir).ok();
+    }
+
+    #[test]
+    fn errors_expose_their_cause() {
+        use std::error::Error;
+        let io = || io::Error::from(io::ErrorKind::PermissionDenied);
+        assert!(LoadError::Missing.source().is_none());
+        assert!(LoadError::Io(io()).source().unwrap().is::<io::Error>());
+        let invalid = LoadError::Invalid(SettingsError::TooLarge);
+        assert!(invalid.source().unwrap().is::<SettingsError>());
+        assert_eq!(invalid.to_string(), SettingsError::TooLarge.to_string());
+        assert!(SaveError::Busy.source().is_none());
+        let boxed: Box<dyn Error> = Box::new(SaveError::Io(io()));
+        assert!(boxed.source().unwrap().is::<io::Error>());
     }
 
     #[test]
