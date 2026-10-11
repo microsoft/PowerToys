@@ -58,7 +58,7 @@ pub fn detect() -> Output {
         )
     } != 0;
     let color = vt && std::env::var_os("NO_COLOR").is_none_or(|v| v.is_empty());
-    // Windows Terminal and VS Code ship fonts with the symbols Claude Code-style output uses.
+    // Windows Terminal and VS Code ship fonts with the symbols the rich output uses.
     let rich_glyphs = std::env::var_os("WT_SESSION").is_some() || std::env::var_os("TERM_PROGRAM").is_some();
     Output::Console(Style {
         vt,

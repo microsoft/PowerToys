@@ -12,6 +12,10 @@ use std::time::Duration;
 /// `v0.97.1`, from src/Version.props.
 pub const VERSION: &str = env!("AWAKE_PRODUCT_VERSION");
 
+/// Awake's own build codename, logged to pinpoint issues beyond the PowerToys version.
+/// Format: CODENAME_MMDDYYYY, the date of the last change before the pull request.
+pub const BUILD_ID: &str = "MENDICANT_10112026";
+
 fn main() -> ExitCode {
     std::panic::set_hook(Box::new(|info| {
         // The process ends right after this (release builds abort on panic), and Windows then

@@ -1,6 +1,6 @@
 //! Text for the terminal: help, errors and the live session display.
 //!
-//! The look follows Claude Code: an accented title, `⏺` for what is happening, `⎿` for details,
+//! The look: an accented title, `●` for what is happening, `⎿` for details,
 //! and one dim status line that updates in place.
 
 use crate::cli::{CliError, PROGRAM};
@@ -36,8 +36,9 @@ impl Style {
         }
     }
 
+    // Windows 11's dark-theme accent blue (#4CC2FF).
     fn accent(&self, text: &str) -> String {
-        self.paint("1;38;2;215;119;87", text)
+        self.paint("1;38;2;76;194;255", text)
     }
 
     fn bold(&self, text: &str) -> String {
@@ -57,11 +58,12 @@ impl Style {
     }
 
     fn title_glyph(&self) -> &'static str {
-        if self.rich_glyphs { "✻" } else { "*" }
+        if self.rich_glyphs { "◉" } else { "*" }
     }
 
+    // Not `⏺`: terminals draw it as a two-cell emoji that overlaps the text after it.
     fn bullet(&self) -> &'static str {
-        if self.rich_glyphs { "⏺" } else { "●" }
+        "●"
     }
 
     fn detail(&self) -> &'static str {
@@ -79,8 +81,8 @@ impl Style {
     }
 }
 
-pub fn version_line(version: &str) -> String {
-    format!("{version} (PowerToys Awake)\n")
+pub fn version_line(version: &str, build_id: &str) -> String {
+    format!("{version} (PowerToys Awake, build {build_id})\n")
 }
 
 pub fn help(strings: &Strings, style: Style, version: &str) -> String {
@@ -348,7 +350,7 @@ mod tests {
             status_line(&Strings::ENGLISH, COLOR, None),
             "\r\x1b[2K  \x1b[2mCtrl+C to stop\x1b[0m"
         );
-        assert!(farewell(&Strings::ENGLISH, COLOR, StringId::CliFinished).starts_with("\r\x1b[2K\x1b[32m⏺"));
+        assert!(farewell(&Strings::ENGLISH, COLOR, StringId::CliFinished).starts_with("\r\x1b[2K\x1b[32m●"));
     }
 
     #[test]

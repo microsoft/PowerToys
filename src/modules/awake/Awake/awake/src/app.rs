@@ -43,7 +43,7 @@ use crate::platform::settings_store::{LoadError, SaveError, SettingsStore};
 use crate::platform::tray::{IconKind, TIMER_RETRY, Tray, WM_TRAY};
 use crate::platform::waiter::{WM_WAITER, WaitEvent, Waiter, WaiterSetup};
 use crate::platform::{last_error, locale, menu, power, session, theme, window};
-use crate::{VERSION, logging};
+use crate::{BUILD_ID, VERSION, logging};
 
 const TIMER_TICK: usize = 1;
 const TIMER_RELOAD: usize = 2;
@@ -91,7 +91,7 @@ pub fn run() -> i32 {
             return 0;
         }
         Request::Version => {
-            console::write_stdout(&text::version_line(VERSION));
+            console::write_stdout(&text::version_line(VERSION, BUILD_ID));
             return 0;
         }
         Request::Run(invocation) => invocation,
@@ -112,7 +112,7 @@ pub fn run() -> i32 {
         .ok()
         .and_then(|bytes| powertoys::log_level(&bytes));
     logging::init(&paths.log_dir(), VERSION, log_level);
-    log::info!("PowerToys Awake {VERSION} starting: {invocation:?}, language {language:?}");
+    log::info!("PowerToys Awake {VERSION} ({BUILD_ID}) starting: {invocation:?}, language {language:?}");
 
     let mut launcher = Launcher {
         paths,
