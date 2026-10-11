@@ -32,6 +32,9 @@ internal sealed partial class Win32AppSource : IAppSource
     private const int IndexingMaxDegreeOfParallelism = 2;
     private const int IncrementalRefreshPathLimit = 256;
     private const int RawExecutablePriorityOffset = 1000;
+
+    // A shared tier lets ownership and depth outrank source priority for standard shortcuts.
+    private const int StandardShortcutRepresentationPriority = 10;
     private const int PortableAppMaximumDepth = 1;
 
     private static readonly IReadOnlyList<string> PortableAppSuffixes = ["exe"];
@@ -488,7 +491,8 @@ internal sealed partial class Win32AppSource : IAppSource
         {
             var path = candidate.Path;
             var stamp = FileStamp.TryRead(path);
-            if (background && reuseUnchanged
+            if (background
+                && reuseUnchanged
                 && forceReadPaths?.Contains(path) != true
                 && stamp is { Exists: true }
                 && (stamp.Value.Attributes & FileAttributes.ReparsePoint) == 0
@@ -584,10 +588,13 @@ internal sealed partial class Win32AppSource : IAppSource
             var shortcutName = PathHelpers.IsShortcutFile(path)
                 ? string.IsNullOrWhiteSpace(program.DisplayName) ? program.Name : program.DisplayName
                 : null;
+            var shortcutPreference = _source.GetShortcutPreference(path);
+            var representationPriority = GetRepresentationPriorityOffset(program, path)
+                + (shortcutPreference.HasValue ? StandardShortcutRepresentationPriority : _source.Priority);
             var item = new AppCatalogItem(
                 identity,
-                GetRepresentationPriority(program, path) + _source.Priority,
-                new AppCatalogSourceReference(_source.Id, path, shortcutName),
+                representationPriority,
+                new AppCatalogSourceReference(_source.Id, path, shortcutName, shortcutPreference),
                 CreateMatchTerms(program, path, candidate.MatchTerms),
                 Win32AppPayload.From(program),
                 [launchIdentity]);
@@ -667,7 +674,7 @@ internal sealed partial class Win32AppSource : IAppSource
         return (profile & option) != 0;
     }
 
-    private static int GetRepresentationPriority(Win32AppMetadata program, string sourcePath)
+    private static int GetRepresentationPriorityOffset(Win32AppMetadata program, string sourcePath)
     {
         return PathHelpers.IsExecutablePath(sourcePath) && program.AppExecutionAlias is null
             ? RawExecutablePriorityOffset

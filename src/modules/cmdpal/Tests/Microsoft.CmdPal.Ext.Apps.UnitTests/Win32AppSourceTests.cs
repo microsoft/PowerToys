@@ -485,35 +485,46 @@ public partial class Win32AppSourceTests
         var root = CreateTemporaryDirectory("cmdpal-squirrel-profiles");
         try
         {
-            var installDirectory = Path.Combine(@"C:\Users\Test\AppData\Local", packageName);
+            var installDirectory = Path.Combine(root, packageName);
             var targetPath = Path.Combine(installDirectory, executableName);
-            var startMenuPath = Path.Combine(@"C:\Start Menu", $"{packageName}.lnk");
+            var desktopRoot = Path.Combine(root, "Desktop");
+            var startMenuRoot = Path.Combine(root, "Start Menu");
+            var startMenuPath = Path.Combine(startMenuRoot, "Programs", $"{packageName}.lnk");
             var versions = secondOldVersion is null ? new[] { firstOldVersion } : new[] { firstOldVersion, secondOldVersion };
-            var desktopPaths = versions.Select((version, index) => Path.Combine(@"C:\Desktop", $"{packageName}-{index}.lnk")).ToArray();
+            var desktopPaths = versions.Select((version, index) => Path.Combine(desktopRoot, $"{packageName}-{index}.lnk")).ToArray();
+            Directory.CreateDirectory(desktopRoot);
+            Directory.CreateDirectory(Path.GetDirectoryName(startMenuPath)!);
+            Directory.CreateDirectory(Path.Combine(installDirectory, $"app-{currentVersion}"));
+            File.WriteAllText(targetPath, string.Empty);
+            File.WriteAllText(startMenuPath, string.Empty);
             var programs = new Dictionary<string, Win32AppMetadata>(StringComparer.OrdinalIgnoreCase);
             for (var index = 0; index < versions.Length; index++)
             {
+                File.WriteAllText(desktopPaths[index], string.Empty);
                 var program = CreateExecutable(packageName, targetPath, desktopPaths[index]);
                 program.WorkingDirectory = Path.Combine(installDirectory, $"app-{versions[index]}");
                 program.ExplicitAppUserModelId = $"com.squirrel.{packageName}.{Path.GetFileNameWithoutExtension(executableName)}";
                 programs.Add(desktopPaths[index], program);
             }
 
-            var preferredProgram = CreateExecutable(packageName, targetPath, startMenuPath);
-            preferredProgram.WorkingDirectory = Path.Combine(installDirectory, $"app-{currentVersion}");
-            preferredProgram.ExplicitAppUserModelId = $"com.squirrel.{packageName}.{Path.GetFileNameWithoutExtension(executableName)}";
-            programs.Add(startMenuPath, preferredProgram);
+            var startMenuProgram = CreateExecutable(packageName, targetPath, startMenuPath);
+            startMenuProgram.WorkingDirectory = Path.Combine(installDirectory, $"app-{currentVersion}");
+            startMenuProgram.ExplicitAppUserModelId = $"com.squirrel.{packageName}.{Path.GetFileNameWithoutExtension(executableName)}";
+            programs.Add(startMenuPath, startMenuProgram);
+            var settingsPath = Path.Combine(root, "settings.json");
+            var settings = new AllAppsSettings(settingsPath);
             using var desktopSource = new Win32AppSource(
-                new TestProgramSource("desktop", 20, Win32ProgramSourceProfile.None, desktopPaths),
+                new DesktopAppSource(settings, [desktopRoot]),
                 (path, _) => programs[path],
                 createWatchers: false);
             using var startMenuSource = new Win32AppSource(
-                new TestProgramSource("start-menu", 10, Win32ProgramSourceProfile.None, startMenuPath),
+                new StartMenuAppSource(settings, [startMenuRoot], []),
                 (path, _) => programs[path],
                 createWatchers: false);
             var desktopItems = await desktopSource.LoadAsync(CancellationToken.None);
             var startMenuItems = await startMenuSource.LoadAsync(CancellationToken.None);
             var merged = desktopItems.Single().MergeProvenance(startMenuItems.Single());
+            Assert.IsTrue(merged.HasSamePersistedContent(startMenuItems.Single().MergeProvenance(desktopItems.Single())));
 
             Assert.AreEqual($"win32:{targetPath}|args:", merged.Identity);
             Assert.AreEqual(10, merged.Provenance.Priority);
@@ -525,10 +536,16 @@ public partial class Win32AppSourceTests
 
             Assert.IsTrue(ContainsSourceReference(merged, "start-menu", startMenuPath));
             var payload = (Win32AppPayload)merged.Payload;
+
+            // Proximity selects the Desktop shortcut even when its Squirrel version directory is gone.
+            var preferredProgram = programs[desktopPaths[0]];
+            Assert.IsFalse(Directory.Exists(preferredProgram.WorkingDirectory));
+            Assert.IsTrue(Directory.Exists(startMenuProgram.WorkingDirectory));
+            Assert.AreEqual(new AppShortcutPreference(true, 0, 9), merged.Provenance.PreferredSource.ShortcutPreference);
             Assert.AreEqual(preferredProgram.WorkingDirectory, payload.WorkingDirectory);
             Assert.AreEqual(targetPath, merged.Payload.GetCanonicalTargetPath());
             Assert.IsNull(merged.Payload.GetCanonicalIdentityHint());
-            Assert.AreEqual(startMenuPath, merged.ToAppItem().LaunchTarget);
+            Assert.AreEqual(desktopPaths[0], merged.ToAppItem().LaunchTarget);
             var row = new AppListItem(merged.ToAppItem());
             var snapshot = new AppListItemSnapshot([row], []);
             foreach (var program in programs.Values)
@@ -546,8 +563,6 @@ public partial class Win32AppSourceTests
 
             var desktopPayload = (Win32AppPayload)desktopItems.Single().Payload;
             Assert.AreEqual(programs[desktopPayload.LnkFilePath].WorkingDirectory, desktopPayload.WorkingDirectory);
-            var settingsPath = Path.Combine(root, "settings.json");
-            var settings = new AllAppsSettings(settingsPath);
             using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             TestDataHelper.WriteHiddenIdentities(settingsPath, $"win32:{desktopPaths[0]}|args:");
             var visibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath));
