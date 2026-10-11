@@ -133,6 +133,10 @@ pub struct SettingsDocument {
 
 impl SettingsDocument {
     /// Accepts a UTF-8 BOM and the stray NULs some writers leave behind, like `SettingsUtils` does.
+    ///
+    /// # Errors
+    ///
+    /// A [`SettingsError`] when the file is too large, is not JSON, or is not a JSON object.
     pub fn parse(bytes: &[u8]) -> Result<Self, SettingsError> {
         if bytes.len() > MAX_FILE_BYTES {
             return Err(SettingsError::TooLarge);
@@ -163,6 +167,10 @@ impl SettingsDocument {
     }
 
     /// Reads the values Awake acts on. Expirations without an offset are local time, as in .NET.
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::InvalidField`] when a field Awake reads has the wrong type.
     pub fn settings(&self, zone: &dyn LocalZone) -> Result<AwakeSettings, SettingsError> {
         let mut settings = AwakeSettings::default();
         let properties = match self.root.get("properties") {
@@ -221,11 +229,11 @@ impl SettingsDocument {
             Value::Object(properties) => properties,
             _ => Map::new(),
         };
-        let mut changed = false;
+        let mut modified = false;
         let mut set = |key: &str, value: Value| {
             if properties.get(key) != Some(&value) {
                 properties.insert(key.to_owned(), value);
-                changed = true;
+                modified = true;
             }
         };
         for change in changes {
@@ -237,19 +245,21 @@ impl SettingsDocument {
                     set("intervalMinutes", Value::from(*minutes));
                 }
                 SettingsChange::Expiration(at) => {
-                    set("expirationDateTime", Value::String(at.to_json_string()))
+                    set("expirationDateTime", Value::String(at.to_json_string()));
                 }
             }
         }
         *slot = Value::Object(properties);
-        changed
+        modified
     }
 
     /// Compact JSON, like the other writers produce.
     ///
-    /// The document only ever holds parsed or constructed `serde_json` values with string keys,
-    /// which always serialize. Should that ever stop being true, panicking is far better than
-    /// the alternative of handing back an empty buffer that would replace every key in the file.
+    /// # Panics
+    ///
+    /// Never in practice: the document only ever holds parsed or constructed `serde_json` values
+    /// with string keys, which always serialize. Should that ever stop being true, panicking is
+    /// far better than handing back an empty buffer that would replace every key in the file.
     pub fn to_bytes(&self) -> Vec<u8> {
         serde_json::to_vec(&self.root).expect("a JSON object with string keys always serializes")
     }

@@ -14,7 +14,7 @@ use super::{last_error, wide::wide};
 /// Creates or opens a manual-reset event that starts unsignaled.
 pub fn manual_reset(name: Option<&str>) -> io::Result<OwnedHandle> {
     let name = name.map(wide);
-    let name_ptr = name.as_ref().map_or(ptr::null(), |name| name.as_ptr());
+    let name_ptr = name.as_ref().map_or(ptr::null(), Vec::as_ptr);
     // SAFETY: null attributes are allowed; the name is null or NUL-terminated and outlives the call.
     let raw = unsafe { CreateEventW(ptr::null(), 1, 0, name_ptr) };
     if raw.is_null() {

@@ -1,6 +1,6 @@
 //! Drives the real `PowerToys.AwakeModuleInterface.dll` the way the runner does: create it,
 //! enable it (which launches this build of Awake), push settings through `set_config`, and
-//! disable it (which must stop Awake cleanly, without TerminateProcess).
+//! disable it (which must stop Awake cleanly, without `TerminateProcess`).
 //!
 //! Ignored by default because the DLL always logs to the real `%LOCALAPPDATA%\Microsoft\PowerToys`
 //! and talks to Awake through the real kernel object names. Run it with
@@ -60,7 +60,7 @@ impl Module {
         let json = wide(json);
         // SAFETY: slot 3 is `void set_config(const wchar_t*)`.
         unsafe {
-            std::mem::transmute::<*const c_void, SetConfig>(self.slot(SET_CONFIG))(self.0, json.as_ptr())
+            std::mem::transmute::<*const c_void, SetConfig>(self.slot(SET_CONFIG))(self.0, json.as_ptr());
         }
     }
 }

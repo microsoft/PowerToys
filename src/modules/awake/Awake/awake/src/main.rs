@@ -14,7 +14,7 @@ use std::time::Duration;
 pub const VERSION: &str = env!("AWAKE_PRODUCT_VERSION");
 
 /// Awake's own build codename, logged to pinpoint issues beyond the PowerToys version.
-/// Format: CODENAME_MMDDYYYY, the date of the last change before the pull request.
+/// Format: `CODENAME_MMDDYYYY`, the date of the last change before the pull request.
 pub const BUILD_ID: &str = "MENDICANT_10112026";
 
 fn main() -> ExitCode {

@@ -141,7 +141,8 @@ Or, from `src/modules/awake`:
 `test-all` and `lint` are aliases in `.cargo/config.toml`. A plain `cargo test --workspace` runs
 the unit tests only: the end-to-end tests need the `test-hooks` feature, and Cargo skips them
 silently without it. The solution's Test target runs all three checks and writes the test results
-to `awake.trx` in its target folder, which the pipeline publishes.
+to `awake.trx` in its target folder, which the pipeline publishes. Clippy runs with its pedantic
+group on; the workspace `Cargo.toml` lists the few lints turned off and why.
 
 Run Cargo from `src/modules/awake/Awake`, not with `--manifest-path` from elsewhere, and leave
 `RUSTFLAGS` unset: Cargo only reads `.cargo/config.toml`, which adds Control Flow Guard, CET and

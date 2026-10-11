@@ -93,16 +93,16 @@ fn start() -> i32 {
         Err(error) => {
             Telemetry::start().cli_command(false);
             console::write_stderr(&text::error(
-                &strings,
+                strings,
                 style,
-                &text::cli_error_message(&strings, &error),
+                &text::cli_error_message(strings, &error),
             ));
             return 1;
         }
     };
     let invocation = match request {
         Request::Help => {
-            console::write_stdout(&text::help(&strings, style, VERSION));
+            console::write_stdout(&text::help(strings, style, VERSION));
             return 0;
         }
         Request::Version => {
@@ -116,7 +116,7 @@ fn start() -> i32 {
         Ok(paths) => paths,
         Err(error) => {
             console::write_stderr(&text::error(
-                &strings,
+                strings,
                 style,
                 &strings.format(StringId::CliErrStart, &error.to_string()),
             ));
@@ -219,7 +219,7 @@ impl Launcher {
                     deadline: now.utc.saturating_add_secs(*seconds),
                 }),
             ),
-            Plan::Until(spec) => match resolve_until(spec, &clock, now, &self.strings) {
+            Plan::Until(spec) => match resolve_until(spec, &clock, now, self.strings) {
                 Ok(until) => (Source::CommandLine, Some(Activity::Expirable { until })),
                 Err(message) => return Err(self.refuse(&message)),
             },
@@ -267,7 +267,7 @@ impl Launcher {
         }
         let new_console = prepared.bound.is_none() && prepared.source == Source::CommandLine;
         let summary = (!invocation.legacy && matches!(self.output, Output::Console(_)))
-            .then(|| session_summary(&self.strings, &SystemClock, &prepared, invocation.display_on));
+            .then(|| session_summary(self.strings, SystemClock, &prepared, invocation.display_on));
 
         // The new process confirms through this event once it has started, so the caller's exit
         // code still tells the truth.
@@ -296,19 +296,14 @@ impl Launcher {
         match wait_for_handoff(&ready, &child) {
             HandoffResult::Started | HandoffResult::Unknown => {
                 if let Some(summary) = summary {
-                    console::write_stdout(&text::session_header(
-                        &self.strings,
-                        self.style,
-                        VERSION,
-                        &summary,
-                    ));
+                    console::write_stdout(&text::session_header(self.strings, self.style, VERSION, &summary));
                 }
                 0
             }
             HandoffResult::Exited(code) => {
                 log::warn!("The detached session ended right away with exit code {code}.");
                 console::write_stderr(&text::error(
-                    &self.strings,
+                    self.strings,
                     self.style,
                     &self
                         .strings
@@ -396,7 +391,7 @@ impl Launcher {
             (Source::CommandLine, Output::Console(_)) => LiveOutput::start().ok(),
             _ => None,
         };
-        let presets = tray_model::default_presets(&self.strings);
+        let presets = tray_model::default_presets(self.strings);
         let app = RefCell::new(App {
             window,
             strings: self.strings,
@@ -439,17 +434,17 @@ impl Launcher {
     fn refuse(&self, message: &str) -> i32 {
         log::warn!("Not starting: {message}");
         self.telemetry.cli_command(false);
-        console::write_stderr(&text::error(&self.strings, self.style, message));
+        console::write_stderr(&text::error(self.strings, self.style, message));
         1
     }
 
     fn bind_error(&self, error: BindError, pid: Option<i64>) -> String {
-        bind_error_message(&self.strings, error, pid)
+        bind_error_message(self.strings, error, pid)
     }
 }
 
 /// `pid` is the `--pid` value, or `None` for `--parent`, whose failures all read the same.
-fn bind_error_message(strings: &Strings, error: BindError, pid: Option<i64>) -> String {
+fn bind_error_message(strings: Strings, error: BindError, pid: Option<i64>) -> String {
     match (error, pid) {
         (BindError::IsSelf, _) => strings.get(StringId::CliErrPidSelf).to_owned(),
         (BindError::NotFound, Some(pid)) => strings.format(StringId::CliErrPidNotFound, &pid.to_string()),
@@ -467,7 +462,7 @@ trait UntilZone: LocalZone {
 
 impl UntilZone for SystemClock {
     fn parse_regional(&self, text: &str) -> Option<CivilDateTime> {
-        SystemClock::parse_regional(self, text)
+        SystemClock::parse_regional(*self, text)
     }
 }
 
@@ -475,7 +470,7 @@ fn resolve_until(
     spec: &UntilSpec,
     clock: &impl UntilZone,
     now: DateTimeOffset,
-    strings: &Strings,
+    strings: Strings,
 ) -> Result<DateTimeOffset, String> {
     let invalid = |input: &str| strings.format(StringId::CliErrTime, input);
     let until = match spec {
@@ -565,7 +560,7 @@ impl App {
         let outcome = self.apply(effects);
         self.refresh_icon();
         if self.engine.source() == Source::CommandLine {
-            let header = text::session_header(&self.strings, self.style, VERSION, &self.summary());
+            let header = text::session_header(self.strings, self.style, VERSION, &self.summary());
             match &self.live {
                 Some(live) => live.print(header),
                 None if self.redirected => console::write_stdout(&header),
@@ -775,7 +770,7 @@ impl App {
     }
 
     fn menu_model(&self) -> (Vec<tray_model::MenuItem>, Vec<awake_core::settings::Preset>) {
-        let items = tray_model::menu(&self.engine, &self.strings, self.bound.is_some());
+        let items = tray_model::menu(&self.engine, self.strings, self.bound.is_some());
         (items, self.engine.presets().to_vec())
     }
 
@@ -1007,7 +1002,7 @@ impl App {
             Source::PowerToys => None,
         };
         let clock = self.clock;
-        let tooltip = tray_model::tooltip(&self.engine, &self.strings, clock.now_utc(), pid, &|at| {
+        let tooltip = tray_model::tooltip(&self.engine, self.strings, clock.now_utc(), pid, &|at| {
             clock.format_expiry(at)
         });
         self.tray.show(kind, &tooltip);
@@ -1015,8 +1010,8 @@ impl App {
 
     fn summary(&self) -> SessionSummary {
         session_summary_for(
-            &self.strings,
-            &self.clock,
+            self.strings,
+            self.clock,
             self.engine.activity(),
             self.engine.keep_display_on(),
             self.bound.clone(),
@@ -1034,7 +1029,7 @@ impl App {
             .activity()
             .deadline()
             .map(|deadline| now.secs_until(deadline));
-        live.status(text::status_line(&self.strings, self.style, remaining));
+        live.status(text::status_line(self.strings, self.style, remaining));
     }
 
     fn request_exit(&mut self, code: i32, reason: Farewell) -> Outcome {
@@ -1059,14 +1054,14 @@ impl App {
             reason: Farewell::Stopped,
         });
         let farewell = match exit.reason {
-            Farewell::Stopped => text::farewell(&self.strings, self.style, StringId::CliStopped),
-            Farewell::Finished => text::farewell(&self.strings, self.style, StringId::CliFinished),
-            Farewell::TargetExited => text::farewell(&self.strings, self.style, StringId::CliTargetExited),
+            Farewell::Stopped => text::farewell(self.strings, self.style, StringId::CliStopped),
+            Farewell::Finished => text::farewell(self.strings, self.style, StringId::CliFinished),
+            Farewell::TargetExited => text::farewell(self.strings, self.style, StringId::CliTargetExited),
             Farewell::Failed => {
                 format!(
                     "{}{}",
                     self.style.clear_line(),
-                    text::error(&self.strings, self.style, self.strings.get(StringId::CliErrPower))
+                    text::error(self.strings, self.style, self.strings.get(StringId::CliErrPower))
                 )
             }
         };
@@ -1074,7 +1069,7 @@ impl App {
             Some(live) => live.finish(format!("{farewell}\n"), Duration::from_secs(1)),
             // A pipe never had a live status line, so there is nothing to clear first.
             None if self.redirected && self.engine.source() == Source::CommandLine => {
-                console::write_stdout(farewell.trim_start_matches(['\r', ' ']))
+                console::write_stdout(farewell.trim_start_matches(['\r', ' ']));
             }
             None => {}
         }
@@ -1085,8 +1080,8 @@ impl App {
 }
 
 fn session_summary(
-    strings: &Strings,
-    clock: &SystemClock,
+    strings: Strings,
+    clock: SystemClock,
     prepared: &Prepared,
     display_on: bool,
 ) -> SessionSummary {
@@ -1096,8 +1091,8 @@ fn session_summary(
 }
 
 fn session_summary_for(
-    strings: &Strings,
-    clock: &SystemClock,
+    strings: Strings,
+    clock: SystemClock,
     activity: Activity,
     display_on: bool,
     bound: Option<BoundTarget>,
@@ -1306,9 +1301,9 @@ mod tests {
                 second: 0,
             })
         };
-        let later = resolve_until(&time_of_day(18, 0), &zone, now, &Strings::ENGLISH).unwrap();
+        let later = resolve_until(&time_of_day(18, 0), &zone, now, Strings::ENGLISH).unwrap();
         assert_eq!(later, local(zone, 18, 0, 0));
-        let earlier = resolve_until(&time_of_day(10, 30), &zone, now, &Strings::ENGLISH).unwrap();
+        let earlier = resolve_until(&time_of_day(10, 30), &zone, now, Strings::ENGLISH).unwrap();
         let tomorrow = zone
             .resolve(CivilDateTime::new(2026, 3, 29, 10, 30, 0).unwrap())
             .unwrap();
@@ -1325,7 +1320,7 @@ mod tests {
             &UntilSpec::Parsed(ParsedTime::Absolute(past)),
             &SystemClock,
             SystemClock.now(),
-            &strings,
+            strings,
         )
         .unwrap_err();
         assert_eq!(error, "That time has already passed.");
@@ -1334,7 +1329,7 @@ mod tests {
     #[test]
     fn bind_errors_name_the_pid_only_when_there_is_one() {
         let strings = Strings::ENGLISH;
-        let message = |error, pid| bind_error_message(&strings, error, pid);
+        let message = |error, pid| bind_error_message(strings, error, pid);
         let parent = strings.get(StringId::CliErrParentNotFound);
         assert!(message(BindError::NotFound, Some(4242)).contains("4242"));
         assert!(message(BindError::AccessDenied, Some(4242)).contains("4242"));
@@ -1357,7 +1352,7 @@ mod tests {
             &UntilSpec::Text("soonish".into()),
             &SystemClock,
             SystemClock.now(),
-            &Strings::ENGLISH,
+            Strings::ENGLISH,
         )
         .unwrap_err();
         assert!(error.contains("soonish"));

@@ -30,7 +30,10 @@ impl Style {
         rich_glyphs: false,
     };
 
-    fn paint(&self, code: &str, text: &str) -> String {
+    // Not `⏺`: terminals draw it as a two-cell emoji that overlaps the text after it.
+    const BULLET: &str = "●";
+
+    fn paint(self, code: &str, text: &str) -> String {
         if self.color && !text.is_empty() {
             format!("\x1b[{code}m{text}\x1b[0m")
         } else {
@@ -39,41 +42,36 @@ impl Style {
     }
 
     // Windows 11's dark-theme accent blue (#4CC2FF).
-    fn accent(&self, text: &str) -> String {
+    fn accent(self, text: &str) -> String {
         self.paint("1;38;2;76;194;255", text)
     }
 
-    fn bold(&self, text: &str) -> String {
+    fn bold(self, text: &str) -> String {
         self.paint("1", text)
     }
 
-    fn dim(&self, text: &str) -> String {
+    fn dim(self, text: &str) -> String {
         self.paint("2", text)
     }
 
-    fn red(&self, text: &str) -> String {
+    fn red(self, text: &str) -> String {
         self.paint("31", text)
     }
 
-    fn green(&self, text: &str) -> String {
+    fn green(self, text: &str) -> String {
         self.paint("32", text)
     }
 
-    fn title_glyph(&self) -> &'static str {
+    fn title_glyph(self) -> &'static str {
         if self.rich_glyphs { "◉" } else { "*" }
     }
 
-    // Not `⏺`: terminals draw it as a two-cell emoji that overlaps the text after it.
-    fn bullet(&self) -> &'static str {
-        "●"
-    }
-
-    fn detail(&self) -> &'static str {
+    fn detail(self) -> &'static str {
         if self.rich_glyphs { "⎿" } else { "└" }
     }
 
     /// Moves to the start of the line and clears it, so the status line can be redrawn.
-    pub fn clear_line(&self) -> &'static str {
+    pub fn clear_line(self) -> &'static str {
         // Without line control, blanks overwrite whatever a longer earlier line left behind.
         if self.vt {
             "\r\x1b[2K"
@@ -89,7 +87,7 @@ pub fn version_line(version: &str, build_id: &str) -> String {
 }
 
 /// The `--help` output, with the columns aligned for the current language.
-pub fn help(strings: &Strings, style: Style, version: &str) -> String {
+pub fn help(strings: Strings, style: Style, version: &str) -> String {
     let s = |id| strings.get(id);
     let duration = format!("<{}>", s(StringId::CliArgDuration));
     let time = format!("<{}>", s(StringId::CliArgTime));
@@ -153,12 +151,12 @@ pub fn help(strings: &Strings, style: Style, version: &str) -> String {
 
 /// An error report: the first line of `message` as the headline, any further lines as details,
 /// then a pointer to `--help`.
-pub fn error(strings: &Strings, style: Style, message: &str) -> String {
+pub fn error(strings: Strings, style: Style, message: &str) -> String {
     let hint = strings.format(StringId::CliHintHelp, PROGRAM);
     let mut lines = message.lines();
     let mut out = format!(
         "{} {}: {}\n",
-        style.red(style.bullet()),
+        style.red(Style::BULLET),
         style.bold(strings.get(StringId::CliError)),
         lines.next().unwrap_or_default()
     );
@@ -170,7 +168,7 @@ pub fn error(strings: &Strings, style: Style, message: &str) -> String {
 }
 
 /// The localized message for a rejected command line, to pass to [`error`].
-pub fn cli_error_message(strings: &Strings, error: &CliError) -> String {
+pub fn cli_error_message(strings: Strings, error: &CliError) -> String {
     match error {
         CliError::Usage(text) => text.clone(),
         CliError::Duration {
@@ -200,7 +198,7 @@ pub struct SessionSummary {
 }
 
 /// The block printed once when a command-line session starts.
-pub fn session_header(strings: &Strings, style: Style, version: &str, summary: &SessionSummary) -> String {
+pub fn session_header(strings: Strings, style: Style, version: &str, summary: &SessionSummary) -> String {
     let display = strings.get(if summary.display_on {
         StringId::CliDisplayOn
     } else {
@@ -211,7 +209,7 @@ pub fn session_header(strings: &Strings, style: Style, version: &str, summary: &
         style.accent(style.title_glyph()),
         style.bold("PowerToys Awake"),
         style.dim(version),
-        style.accent(style.bullet()),
+        style.accent(Style::BULLET),
         summary.headline,
         style.dim(style.detail()),
     );
@@ -227,7 +225,7 @@ pub fn session_header(strings: &Strings, style: Style, version: &str, summary: &
 }
 
 /// The line that updates in place; `remaining` is `None` for open-ended sessions.
-pub fn status_line(strings: &Strings, style: Style, remaining: Option<u64>) -> String {
+pub fn status_line(strings: Strings, style: Style, remaining: Option<u64>) -> String {
     let hint = strings.get(StringId::CliHintStop);
     let text = match remaining {
         Some(seconds) => {
@@ -242,11 +240,11 @@ pub fn status_line(strings: &Strings, style: Style, remaining: Option<u64>) -> S
 }
 
 /// The last line, replacing the status line, saying why the session ended.
-pub fn farewell(strings: &Strings, style: Style, message: StringId) -> String {
+pub fn farewell(strings: Strings, style: Style, message: StringId) -> String {
     format!(
         "{}{} {}\n",
         style.clear_line(),
-        style.green(style.bullet()),
+        style.green(Style::BULLET),
         strings.get(message)
     )
 }
@@ -275,7 +273,7 @@ mod tests {
 
     #[test]
     fn help_lists_commands_options_and_attribution() {
-        let text = help(&Strings::ENGLISH, Style::PLAIN, "0.0.1");
+        let text = help(Strings::ENGLISH, Style::PLAIN, "0.0.1");
         for needle in [
             "PowerToys Awake 0.0.1",
             "Usage: PowerToys.Awake [options] [command]",
@@ -295,7 +293,7 @@ mod tests {
 
     #[test]
     fn help_columns_line_up() {
-        let text = help(&Strings::ENGLISH, Style::PLAIN, "1");
+        let text = help(Strings::ENGLISH, Style::PLAIN, "1");
         let column = |needle: &str| {
             let line = text.lines().find(|l| l.contains(needle)).unwrap();
             line.find(if needle == "for <duration>" {
@@ -310,7 +308,7 @@ mod tests {
 
     #[test]
     fn colored_output_resets_every_span() {
-        let text = help(&Strings::ENGLISH, COLOR, "1");
+        let text = help(Strings::ENGLISH, COLOR, "1");
         assert_eq!(
             text.matches("\x1b[0m").count(),
             text.matches('\x1b').count() - text.matches("\x1b[0m").count()
@@ -320,7 +318,7 @@ mod tests {
     #[test]
     fn errors_carry_a_hint() {
         let text = error(
-            &Strings::ENGLISH,
+            Strings::ENGLISH,
             Style::PLAIN,
             "unexpected argument '--x' found\ntip: try '--pid'",
         );
@@ -333,7 +331,7 @@ mod tests {
     #[test]
     fn cli_errors_are_localized_sentences() {
         let message = cli_error_message(
-            &Strings::ENGLISH,
+            Strings::ENGLISH,
             &CliError::Duration {
                 input: "90".into(),
                 error: DurationError::MissingUnit,
@@ -349,20 +347,20 @@ mod tests {
             display_on: true,
             bound_to: Some("process 7 (cmd.exe)".into()),
         };
-        let text = session_header(&Strings::ENGLISH, Style::PLAIN, "v1", &summary);
+        let text = session_header(Strings::ENGLISH, Style::PLAIN, "v1", &summary);
         assert_eq!(
             text,
             "* PowerToys Awake v1\n\n● Keeping your PC awake for 1h 30m\n  └ Display stays on\n  └ Stops when process 7 (cmd.exe) exits\n\n"
         );
         assert_eq!(
-            status_line(&Strings::ENGLISH, Style::PLAIN, Some(5398)).trim_start(),
+            status_line(Strings::ENGLISH, Style::PLAIN, Some(5398)).trim_start(),
             "1:29:58 remaining · Ctrl+C to stop"
         );
         assert_eq!(
-            status_line(&Strings::ENGLISH, COLOR, None),
+            status_line(Strings::ENGLISH, COLOR, None),
             "\r\x1b[2K  \x1b[2mCtrl+C to stop\x1b[0m"
         );
-        assert!(farewell(&Strings::ENGLISH, COLOR, StringId::CliFinished).starts_with("\r\x1b[2K\x1b[32m●"));
+        assert!(farewell(Strings::ENGLISH, COLOR, StringId::CliFinished).starts_with("\r\x1b[2K\x1b[32m●"));
     }
 
     #[test]

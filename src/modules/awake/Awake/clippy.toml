@@ -1,0 +1,2 @@
+# Product names the docs mention often; ".." keeps Clippy's default list.
+doc-valid-idents = ["MSBuild", "PowerToys", "ZoomIt", ".."]

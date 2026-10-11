@@ -5,7 +5,7 @@ mod support;
 
 use std::fs;
 use std::process::Command;
-use std::sync::{Mutex, MutexGuard};
+use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::{Duration, Instant};
 
 use awake_core::mode::Mode;
@@ -21,7 +21,7 @@ const PROMPTLY: Duration = Duration::from_secs(15);
 
 fn serial() -> MutexGuard<'static, ()> {
     static LOCK: Mutex<()> = Mutex::new(());
-    LOCK.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+    LOCK.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
 fn own_pid() -> String {

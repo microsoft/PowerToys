@@ -31,15 +31,16 @@ pub fn is_locked() -> bool {
     }
     let locked = if bytes as usize >= mem::size_of::<WTSINFOEXW>() {
         // SAFETY: Windows returned a WTSINFOEXW of at least that size; level 1 is the only level.
+        // The buffer is typed as a string, so the copy makes no assumption about its alignment.
         unsafe {
-            let info = &*(buffer as *const WTSINFOEXW);
+            let info = buffer.cast::<WTSINFOEXW>().read_unaligned();
             info.Level == 1 && info.Data.WTSInfoExLevel1.SessionFlags == WTS_SESSIONSTATE_LOCK
         }
     } else {
         false
     };
     // SAFETY: buffer came from WTSQuerySessionInformationW.
-    unsafe { WTSFreeMemory(buffer as _) };
+    unsafe { WTSFreeMemory(buffer.cast()) };
     locked
 }
 

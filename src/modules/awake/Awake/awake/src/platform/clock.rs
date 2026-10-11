@@ -18,16 +18,20 @@ use super::wide::{from_buffer, wide};
 #[derive(Clone, Copy, Debug, Default)]
 pub struct SystemClock;
 
+#[allow(
+    clippy::unused_self,
+    reason = "callers read the time through a clock value, though the system clock has no state"
+)]
 impl SystemClock {
     /// The time with the local offset. Working out the offset takes three time-zone
     /// conversions, so code that only compares or subtracts times uses `now_utc` instead.
-    pub fn now(&self) -> DateTimeOffset {
+    pub fn now(self) -> DateTimeOffset {
         let utc = self.now_utc();
         DateTimeOffset::new(utc, self.offset_minutes_at(utc))
     }
 
     /// The time in UTC: one cheap call, for countdowns, deadlines and other comparisons.
-    pub fn now_utc(&self) -> Timestamp {
+    pub fn now_utc(self) -> Timestamp {
         let mut ft = FILETIME {
             dwLowDateTime: 0,
             dwHighDateTime: 0,
@@ -38,7 +42,7 @@ impl SystemClock {
     }
 
     /// The local UTC offset in effect at `utc`, honoring daylight saving rules.
-    pub fn offset_minutes_at(&self, utc: Timestamp) -> i16 {
+    pub fn offset_minutes_at(self, utc: Timestamp) -> i16 {
         let Some(utc_st) = to_system_time(utc) else {
             return 0;
         };
@@ -53,7 +57,7 @@ impl SystemClock {
     }
 
     /// `Oct 10, 5:30 PM` in the user's regional format, like the .NET `MMM d, h:mm tt` pattern.
-    pub fn format_expiry(&self, at: &DateTimeOffset) -> String {
+    pub fn format_expiry(self, at: &DateTimeOffset) -> String {
         let civil = at.local();
         let st = SYSTEMTIME {
             wYear: civil.year.clamp(1601, 30827) as u16,
@@ -102,7 +106,7 @@ impl SystemClock {
 
     /// Parses a date and time written in the user's regional format, as `DateTimeOffset.Parse`
     /// with the current culture did for `--expire-at`.
-    pub fn parse_regional(&self, text: &str) -> Option<CivilDateTime> {
+    pub fn parse_regional(self, text: &str) -> Option<CivilDateTime> {
         let text = wide(text);
         let mut date = 0f64;
         // SAFETY: `text` is NUL-terminated; `date` is valid for writes.

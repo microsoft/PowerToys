@@ -67,20 +67,28 @@ fn main() {
         ms(startups[RUNS / 2]),
         ms(startups[0]),
         ms(startups[RUNS - 1]),
-        footprint.private_bytes as f64 / 1_048_576.0,
-        footprint.working_set as f64 / 1_048_576.0,
+        scaled(footprint.private_bytes as u64, 1_048_576.0),
+        scaled(footprint.working_set as u64, 1_048_576.0),
         footprint.handles,
         footprint.threads,
         footprint.gdi,
         footprint.user,
-        (cpu_after - cpu_before) as f64 / 10_000.0,
-        (cycles_after - cycles_before) as f64 / 1_000_000.0,
+        scaled(cpu_after - cpu_before, 10_000.0),
+        scaled(cycles_after - cycles_before, 1_000_000.0),
         IDLE_WINDOW.as_secs(),
     );
 }
 
 fn ms(duration: Duration) -> f64 {
     duration.as_secs_f64() * 1000.0
+}
+
+#[allow(
+    clippy::cast_precision_loss,
+    reason = "display only, and these counts stay far below 2^52, where f64 is exact"
+)]
+fn scaled(value: u64, unit: f64) -> f64 {
+    value as f64 / unit
 }
 
 /// Starts the program and waits for its tray window, which both implementations create with

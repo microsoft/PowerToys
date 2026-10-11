@@ -27,7 +27,7 @@ pub fn last_error() -> io::Error {
 }
 
 /// A failed HRESULT as an error. HRESULTs and Win32 error codes are different number spaces, so
-/// only a wrapped Win32 code (FACILITY_WIN32) becomes an OS error; anything else keeps its
+/// only a wrapped Win32 code (`FACILITY_WIN32`) becomes an OS error; anything else keeps its
 /// HRESULT in the message instead of being misread as an unrelated Win32 code.
 pub fn hresult_error(hr: i32, call: &str) -> io::Error {
     const FACILITY_WIN32: u32 = 7;

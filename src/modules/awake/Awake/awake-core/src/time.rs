@@ -25,6 +25,7 @@ impl Timestamp {
     }
 
     /// `seconds` later, clamped at the largest representable instant.
+    #[must_use]
     pub fn saturating_add_secs(self, seconds: u64) -> Self {
         let ticks = i64::try_from(seconds)
             .unwrap_or(i64::MAX)
@@ -135,6 +136,7 @@ impl DateTimeOffset {
     }
 
     /// `seconds` later in the same offset, clamped like [`Timestamp::saturating_add_secs`].
+    #[must_use]
     pub fn saturating_add_secs(self, seconds: u64) -> Self {
         DateTimeOffset {
             utc: self.utc.saturating_add_secs(seconds),
@@ -292,9 +294,8 @@ fn parse_time_of_day(text: &str) -> Option<(u8, u8, u8)> {
     let hour: u8 = digits(parts.next()?)?;
     let minute: u8 = match parts.next() {
         Some(m) if m.len() == 2 => digits(m)?,
-        Some(_) => return None,
         None if meridiem.is_some() => 0,
-        None => return None,
+        _ => return None,
     };
     let second: u8 = match parts.next() {
         Some(s) if s.len() == 2 => digits(s)?,

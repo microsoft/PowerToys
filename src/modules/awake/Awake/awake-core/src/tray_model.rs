@@ -66,7 +66,7 @@ pub enum Check {
 
 /// Builds the context menu. PowerToys sessions get the full mode menu; command-line sessions
 /// only get "Exit", and only when no process binding decides their lifetime.
-pub fn menu(engine: &Engine, strings: &Strings, bound_to_process: bool) -> Vec<MenuItem> {
+pub fn menu(engine: &Engine, strings: Strings, bound_to_process: bool) -> Vec<MenuItem> {
     let mut items = Vec::new();
     let activity = engine.activity();
     let radio = |selected: bool| if selected { Check::Selected } else { Check::None };
@@ -155,7 +155,7 @@ pub fn command_for(id: u16, presets: &[Preset]) -> Option<TrayCommand> {
 }
 
 /// The built-in presets, used when the settings file defines none.
-pub fn default_presets(strings: &Strings) -> Vec<Preset> {
+pub fn default_presets(strings: Strings) -> Vec<Preset> {
     vec![
         Preset {
             label: strings.format(StringId::Minutes, "30"),
@@ -175,7 +175,7 @@ pub fn default_presets(strings: &Strings) -> Vec<Preset> {
 /// Tooltip text, one fact per line, in the same shape the .NET version used.
 pub fn tooltip(
     engine: &Engine,
-    strings: &Strings,
+    strings: Strings,
     now: Timestamp,
     bound_pid: Option<u32>,
     format_expiry: &dyn Fn(&DateTimeOffset) -> String,
@@ -223,7 +223,7 @@ mod tests {
     use crate::settings::{AwakeSettings, ModeSetting};
 
     fn engine(source: Source) -> Engine {
-        Engine::new(source, default_presets(&Strings::ENGLISH), false)
+        Engine::new(source, default_presets(Strings::ENGLISH), false)
     }
 
     fn now() -> DateTimeOffset {
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn powertoys_menu_layout() {
-        let menu = menu(&engine(Source::PowerToys), &Strings::ENGLISH, true);
+        let menu = menu(&engine(Source::PowerToys), Strings::ENGLISH, true);
         assert_eq!(
             labels(&menu),
             [
@@ -273,20 +273,20 @@ mod tests {
 
     #[test]
     fn exit_only_when_not_bound() {
-        let unbound = menu(&engine(Source::PowerToys), &Strings::ENGLISH, false);
+        let unbound = menu(&engine(Source::PowerToys), Strings::ENGLISH, false);
         assert_eq!(labels(&unbound)[6..], ["-", "Exit"]);
         assert_eq!(
-            labels(&menu(&engine(Source::CommandLine), &Strings::ENGLISH, false)),
+            labels(&menu(&engine(Source::CommandLine), Strings::ENGLISH, false)),
             ["Exit"]
         );
-        assert!(menu(&engine(Source::CommandLine), &Strings::ENGLISH, true).is_empty());
+        assert!(menu(&engine(Source::CommandLine), Strings::ENGLISH, true).is_empty());
     }
 
     #[test]
     fn active_preset_is_selected() {
         let mut engine = engine(Source::PowerToys);
         engine.tray(TrayCommand::Interval { seconds: 3600 }, now());
-        let menu = menu(&engine, &Strings::ENGLISH, true);
+        let menu = menu(&engine, Strings::ENGLISH, true);
         let MenuItem::Submenu { check, items, .. } = &menu[0] else {
             panic!()
         };
@@ -308,7 +308,7 @@ mod tests {
 
     #[test]
     fn commands_map_back_through_the_menu_presets() {
-        let presets = default_presets(&Strings::ENGLISH);
+        let presets = default_presets(Strings::ENGLISH);
         assert_eq!(
             command_for(ids::FIRST_PRESET + 2, &presets),
             Some(TrayCommand::Interval { seconds: 7200 })
@@ -325,7 +325,7 @@ mod tests {
         let expiry = |_: &DateTimeOffset| "Oct 10, 5:30 PM".to_string();
         let mut engine = engine(Source::PowerToys);
         assert_eq!(
-            tooltip(&engine, &strings, now().utc, None, &expiry),
+            tooltip(&engine, strings, now().utc, None, &expiry),
             "PowerToys Awake\nOff"
         );
 
@@ -337,7 +337,7 @@ mod tests {
             now(),
         );
         assert_eq!(
-            tooltip(&engine, &strings, now().utc, Some(42), &expiry),
+            tooltip(&engine, strings, now().utc, Some(42), &expiry),
             "PowerToys Awake\nIndefinite\nScreen: Off\nPID: 42"
         );
 
@@ -345,7 +345,7 @@ mod tests {
         engine.tray(TrayCommand::ToggleDisplay, now());
         let later = now().utc.saturating_add_secs(2);
         assert_eq!(
-            tooltip(&engine, &strings, later, None, &expiry),
+            tooltip(&engine, strings, later, None, &expiry),
             "PowerToys Awake\n1:29:58 remaining\nScreen: On"
         );
 
@@ -358,7 +358,7 @@ mod tests {
         };
         engine.apply_settings(&file, now());
         assert_eq!(
-            tooltip(&engine, &strings, now().utc, None, &expiry),
+            tooltip(&engine, strings, now().utc, None, &expiry),
             "PowerToys Awake\nUntil Oct 10, 5:30 PM\nScreen: On"
         );
     }

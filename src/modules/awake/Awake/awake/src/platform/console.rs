@@ -164,7 +164,7 @@ fn write(handle: HANDLE, text: &str) {
     }
 }
 
-/// Units per WriteConsoleW call, which keeps each call's buffer small.
+/// Units per `WriteConsoleW` call, which keeps each call's buffer small.
 const CONSOLE_CHUNK: usize = 8192;
 
 /// Splits UTF-16 text into pieces of at most `max` units without separating a surrogate pair,
@@ -239,7 +239,7 @@ impl LiveOutput {
         let (sender, receiver) = sync_channel(16);
         let thread = std::thread::Builder::new()
             .name("awake-console".into())
-            .spawn(move || render(receiver))?;
+            .spawn(move || render(&receiver))?;
         Ok(LiveOutput {
             sender: Some(sender),
             thread: Some(thread),
@@ -279,7 +279,7 @@ impl LiveOutput {
     }
 }
 
-fn render(receiver: Receiver<Line>) {
+fn render(receiver: &Receiver<Line>) {
     while let Ok(mut line) = receiver.recv() {
         // Coalesce: only the newest queued status line is worth drawing.
         while let (Line::Status(_), Ok(next)) = (&line, receiver.try_recv()) {

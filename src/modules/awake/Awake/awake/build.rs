@@ -234,7 +234,7 @@ fn rc_string(text: &str) -> String {
     format!("\"{}\"", text.replace('\\', "\\\\"))
 }
 
-/// rc.exe from `RC`, the SDK MSBuild selected (`WindowsSdkVerBinPath`), or the newest installed
+/// `rc.exe` from `RC`, the SDK MSBuild selected (`WindowsSdkVerBinPath`), or the newest installed
 /// Windows SDK as found by cc.
 fn find_rc() -> Command {
     println!("cargo:rerun-if-env-changed=RC");
@@ -282,8 +282,7 @@ impl ProductVersion {
         let text = content
             .split_once("<Version>")
             .and_then(|(_, rest)| rest.split_once("</Version>"))
-            .map(|(version, _)| version.trim().to_owned())
-            .unwrap_or_else(|| "0.0.1".to_owned());
+            .map_or_else(|| "0.0.1".to_owned(), |(version, _)| version.trim().to_owned());
         ProductVersion { text }
     }
 

@@ -133,6 +133,10 @@ struct Args {
           default_missing_value = "true", value_parser = parse_bool, global = true)]
     display_on: Option<bool>,
 
+    #[allow(
+        clippy::option_option,
+        reason = "clap's shape for absent, given bare, or given a value"
+    )]
     #[arg(short = 'p', long = "pid", num_args = 0..=1, allow_negative_numbers = true, global = true)]
     pid: Option<Option<i64>>,
 
@@ -149,6 +153,10 @@ struct Args {
     #[arg(short = 't', long = "time-limit", hide = true)]
     time_limit: Option<u32>,
 
+    #[allow(
+        clippy::option_option,
+        reason = "clap's shape for absent, given bare, or given a value"
+    )]
     #[arg(short = 'e', long = "expire-at", num_args = 0..=1, hide = true)]
     expire_at: Option<Option<String>>,
 
@@ -174,6 +182,10 @@ enum Command {
 }
 
 /// Parses the full argument list, program name first.
+///
+/// # Errors
+///
+/// A [`CliError`] for arguments Awake does not accept, ready to show to the user.
 pub fn parse<I, T>(args: I) -> Result<Request, CliError>
 where
     I: IntoIterator<Item = T>,

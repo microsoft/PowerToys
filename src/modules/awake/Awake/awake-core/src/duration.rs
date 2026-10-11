@@ -36,6 +36,10 @@ impl std::error::Error for DurationError {}
 pub const MAX_SECONDS: u64 = u32::MAX as u64;
 
 /// Parses `45m`, `2h`, `1h30m`, `1h 30m`, `90s` or `1d`. Units: d, h, m, s.
+///
+/// # Errors
+///
+/// A [`DurationError`] saying what is wrong with the text.
 pub fn parse_duration(text: &str) -> Result<u64, DurationError> {
     let compact: String = text
         .chars()

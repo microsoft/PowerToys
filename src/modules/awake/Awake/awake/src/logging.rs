@@ -357,10 +357,10 @@ mod tests {
 
     #[test]
     fn writer_flushes_and_reports_dropped_lines() {
+        static WRITER_DROPPED: AtomicU64 = AtomicU64::new(0);
         let root = temp_dir("writer");
         let directory = root.join("v1");
         let (sender, receiver) = sync_channel(4);
-        static WRITER_DROPPED: AtomicU64 = AtomicU64::new(0);
         let writer = {
             let (root, directory) = (root.clone(), directory.clone());
             std::thread::spawn(move || write_lines(&root, &directory, &receiver, &WRITER_DROPPED))
