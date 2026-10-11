@@ -597,6 +597,60 @@ mod tests {
     }
 
     #[test]
+    fn interval_presets_under_a_minute_round_up_and_zero_is_ignored() {
+        let mut engine = powertoys();
+        let effects = engine.tray(TrayCommand::Interval { seconds: 30 }, at(0));
+        assert_eq!(engine.activity().deadline(), Some(at(60).utc));
+        assert_eq!(
+            effects.last(),
+            Some(&Effect::Persist(vec![
+                SettingsChange::Mode(Mode::Timed),
+                SettingsChange::Interval { hours: 0, minutes: 1 }
+            ]))
+        );
+        let mut engine = powertoys();
+        assert_eq!(engine.tray(TrayCommand::Interval { seconds: 0 }, at(0)), []);
+        assert_eq!(engine.activity(), Activity::Passive);
+    }
+
+    #[test]
+    fn menu_off_and_indefinite_are_persisted() {
+        let mut engine = powertoys();
+        let effects = engine.tray(TrayCommand::Indefinite, at(0));
+        assert_eq!(flags(&effects), [SYSTEM]);
+        assert_eq!(
+            effects.last(),
+            Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Indefinite)]))
+        );
+        let effects = engine.tray(TrayCommand::Off, at(1));
+        assert_eq!(flags(&effects), [ES_CONTINUOUS]);
+        assert_eq!(
+            effects.last(),
+            Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)]))
+        );
+    }
+
+    // Telemetry and the log count a new end time as a new session, as they do for a timed one.
+    #[test]
+    fn moving_an_expiration_reports_the_mode_again() {
+        let mut engine = powertoys();
+        let until = |seconds| AwakeSettings {
+            expiration: Some(at(seconds)),
+            ..settings(Mode::Expirable)
+        };
+        engine.apply_settings(&until(3600), at(0));
+        let effects = engine.apply_settings(&until(7200), at(10));
+        assert!(effects.contains(&Effect::ModeEntered(Mode::Expirable)));
+        assert!(effects.contains(&Effect::ScheduleDeadline(Some(at(7200).utc))));
+        assert!(flags(&effects).is_empty(), "the request stays as it is");
+        assert_eq!(
+            engine.apply_settings(&until(7200), at(20)),
+            [],
+            "the same end time is no news"
+        );
+    }
+
+    #[test]
     fn choosing_the_same_preset_again_restarts_it() {
         let mut engine = powertoys();
         engine.tray(TrayCommand::Interval { seconds: 1800 }, at(0));
@@ -711,6 +765,18 @@ mod tests {
             [],
             "a stale timer does nothing"
         );
+    }
+
+    #[test]
+    fn early_deadline_timer_for_timed_session_also_redraws() {
+        let mut engine = powertoys();
+        engine.apply_settings(&timed(0, 1), at(0));
+        assert_eq!(
+            engine.deadline_fired(at(59).utc),
+            [Effect::ScheduleDeadline(Some(at(60).utc)), Effect::RefreshIcon],
+            "armed again, and the countdown shown as for any tick"
+        );
+        assert_eq!(engine.activity().mode(), Mode::Timed);
     }
 
     #[test]

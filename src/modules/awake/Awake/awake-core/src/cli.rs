@@ -809,6 +809,18 @@ mod tests {
         );
     }
 
+    // A blank value is a mistake, not a request to fall back on --time-limit as the .NET
+    // version did: a script whose expiry variable came out empty asked for an end time.
+    #[test]
+    fn blank_expire_at_is_refused_even_next_to_a_time_limit() {
+        assert_eq!(error(&["-e", ""]), missing("-e", Expected::Time));
+        assert_eq!(
+            error(&["-t", "60", "--expire-at", ""]),
+            missing("--expire-at", Expected::Time)
+        );
+        assert_eq!(error(&["-e", " ", "-t", "60"]), missing("-e", Expected::Time));
+    }
+
     #[test]
     fn time_limits_that_are_not_whole_seconds_get_their_own_error() {
         let seconds = |input: &str| CliError::Seconds { input: input.into() };
@@ -831,6 +843,18 @@ mod tests {
         );
         assert_eq!(error(&["-t", "-d"]), missing("-t", Expected::Seconds));
         assert_eq!(error(&["-t", "for", "2s"]), missing("-t", Expected::Seconds));
+    }
+
+    #[test]
+    fn pid_wins_over_parent() {
+        assert_eq!(run(&["--pid", "42", "--parent"]).binding, Binding::Pid(42));
+        assert_eq!(run(&["-p", "42", "-u"]).binding, Binding::Pid(42));
+        assert_eq!(
+            run(&["--parent", "for", "1m", "-p", "42"]).binding,
+            Binding::Pid(42)
+        );
+        // `--pid 0` means no process, so the parent binding applies.
+        assert_eq!(run(&["-p", "0", "--parent"]).binding, Binding::Parent);
     }
 
     #[test]
