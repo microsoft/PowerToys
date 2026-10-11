@@ -6,6 +6,11 @@
 //! instance lock for good or signal Awake to exit. So Awake creates its objects for the current
 //! user and SYSTEM only, with a medium integrity label, and before using an object that already
 //! existed it checks who made it.
+//!
+//! The label also refuses lower-integrity processes read and execute access. Execute includes
+//! the right to wait on the object, and a waiter could take the mutex once Awake releases it, or
+//! keep a signaled exit event alive after Awake exits; either would stop every later start,
+//! because the object left behind was created by Awake and passes the check.
 
 use std::ffi::c_void;
 use std::io;
@@ -32,6 +37,9 @@ use super::wide::{from_nul_terminated, wide};
 const SYSTEM_MANDATORY_LABEL_ACE_TYPE: u8 = 0x11;
 const SECURITY_MANDATORY_MEDIUM_RID: u32 = 0x2000;
 
+/// Medium integrity, with no-write-up, no-read-up and no-execute-up.
+const MEDIUM_LABEL: &str = "S:(ML;;NWNRNX;;;ME)";
+
 /// A block `LocalAlloc` returned to us, such as a security descriptor; freed when dropped.
 struct LocalBox(*mut c_void);
 
@@ -50,11 +58,12 @@ pub struct Descriptor(LocalBox);
 
 impl Descriptor {
     /// The user owns the object and gets full access, so the regular and the elevated Awake of
-    /// one user still find each other; SYSTEM gets full access too. The medium label with
-    /// no-write-up keeps lower-integrity processes from signaling or taking the object.
+    /// one user still find each other; SYSTEM gets full access too. The medium label refuses
+    /// lower-integrity processes every kind of access: with no-write-up alone they could still
+    /// open the object to wait on it, which is enough to take the mutex or keep the event alive.
     pub fn for_current_user() -> io::Result<Self> {
         let user = UserSid::current()?.to_string_sid()?;
-        Self::from_sddl(&format!("O:{user}D:(A;;GA;;;{user})(A;;GA;;;SY)S:(ML;;NW;;;ME)"))
+        Self::from_sddl(&format!("O:{user}D:(A;;GA;;;{user})(A;;GA;;;SY){MEDIUM_LABEL}"))
     }
 
     fn from_sddl(sddl: &str) -> io::Result<Self> {
@@ -244,12 +253,21 @@ unsafe fn integrity_level(sacl: *const ACL) -> u32 {
 
 #[cfg(test)]
 pub(crate) mod tests {
+    use windows_sys::Win32::Foundation::GetLastError;
     use windows_sys::Win32::Security::{
-        CreateWellKnownSid, SECURITY_MAX_SID_SIZE, WELL_KNOWN_SID_TYPE, WinWorldSid,
+        CreateWellKnownSid, DuplicateTokenEx, GetLengthSid, RevertToSelf, SECURITY_MAX_SID_SIZE,
+        SID_AND_ATTRIBUTES, SecurityImpersonation, SetTokenInformation, TOKEN_ADJUST_DEFAULT,
+        TOKEN_DUPLICATE, TOKEN_IMPERSONATE, TOKEN_MANDATORY_LABEL, TokenImpersonation, TokenIntegrityLevel,
+        WELL_KNOWN_SID_TYPE, WinLowLabelSid, WinWorldSid,
     };
-    use windows_sys::Win32::System::Threading::CreateMutexW;
+    use windows_sys::Win32::System::Threading::{
+        CreateEventW, CreateMutexW, OpenEventW, OpenMutexW, SYNCHRONIZATION_SYNCHRONIZE, SetThreadToken,
+    };
 
     use super::*;
+
+    // In `Win32_System_SystemServices`, like the constants above.
+    const SE_GROUP_INTEGRITY: u32 = 0x20;
 
     /// A descriptor like the one a low-integrity process gets by default, for planting objects.
     pub(crate) fn low_integrity() -> Descriptor {
@@ -288,6 +306,96 @@ pub(crate) mod tests {
         unsafe { OwnedHandle::from_raw_handle(raw) }
     }
 
+    fn event_with(descriptor: &Descriptor, name: &str) -> OwnedHandle {
+        let attributes = descriptor.attributes();
+        let name = wide(name);
+        // SAFETY: the attributes and name outlive the call.
+        let raw = unsafe { CreateEventW(&raw const attributes, 1, 0, name.as_ptr()) };
+        assert!(!raw.is_null(), "{}", last_error());
+        // SAFETY: fresh handle we own.
+        unsafe { OwnedHandle::from_raw_handle(raw) }
+    }
+
+    /// Opens a named object only to wait on it, which is all a squatter needs; the error is the
+    /// Win32 code.
+    fn open_to_wait(
+        open: unsafe extern "system" fn(u32, i32, *const u16) -> *mut c_void,
+        name: &str,
+    ) -> Result<(), u32> {
+        let name = wide(name);
+        // SAFETY: NUL-terminated name; a handle returned is closed right away.
+        unsafe {
+            let raw = open(SYNCHRONIZATION_SYNCHRONIZE, 0, name.as_ptr());
+            if raw.is_null() {
+                return Err(GetLastError());
+            }
+            drop(OwnedHandle::from_raw_handle(raw));
+        }
+        Ok(())
+    }
+
+    /// Runs `body` on a new thread that impersonates a low-integrity copy of this process's
+    /// token, so its access checks are the ones a sandboxed process of the same user gets.
+    fn as_low_integrity<T: Send + 'static>(body: impl FnOnce() -> T + Send + 'static) -> T {
+        std::thread::spawn(move || {
+            let mut process = ptr::null_mut();
+            // SAFETY: the pseudo-handle needs no closing; `process` receives a handle we own.
+            let opened = unsafe {
+                OpenProcessToken(
+                    GetCurrentProcess(),
+                    TOKEN_DUPLICATE | TOKEN_QUERY,
+                    &raw mut process,
+                )
+            };
+            assert_ne!(opened, 0, "{}", last_error());
+            // SAFETY: a fresh token handle we own.
+            let process = unsafe { OwnedHandle::from_raw_handle(process) };
+            let mut low = ptr::null_mut();
+            // SAFETY: valid token handle; `low` receives a new handle we own.
+            let duplicated = unsafe {
+                DuplicateTokenEx(
+                    process.as_raw_handle(),
+                    TOKEN_QUERY | TOKEN_IMPERSONATE | TOKEN_ADJUST_DEFAULT,
+                    ptr::null(),
+                    SecurityImpersonation,
+                    TokenImpersonation,
+                    &raw mut low,
+                )
+            };
+            assert_ne!(duplicated, 0, "{}", last_error());
+            // SAFETY: a fresh token handle we own.
+            let low = unsafe { OwnedHandle::from_raw_handle(low) };
+            let mut sid = well_known(WinLowLabelSid);
+            let label = TOKEN_MANDATORY_LABEL {
+                Label: SID_AND_ATTRIBUTES {
+                    Sid: sid.as_mut_ptr().cast(),
+                    Attributes: SE_GROUP_INTEGRITY,
+                },
+            };
+            // SAFETY: `label` points at `sid`, both alive for the calls; lowering a token's own
+            // integrity level needs no privilege.
+            let lowered = unsafe {
+                let size = size_of::<TOKEN_MANDATORY_LABEL>() as u32 + GetLengthSid(label.Label.Sid);
+                SetTokenInformation(
+                    low.as_raw_handle(),
+                    TokenIntegrityLevel,
+                    (&raw const label).cast(),
+                    size,
+                )
+            };
+            assert_ne!(lowered, 0, "{}", last_error());
+            // SAFETY: a null thread means this one; the impersonation ends with `RevertToSelf`
+            // or, at the latest, with the thread.
+            assert_ne!(unsafe { SetThreadToken(ptr::null(), low.as_raw_handle()) }, 0);
+            let result = body();
+            // SAFETY: drops the impersonation set above.
+            unsafe { RevertToSelf() };
+            result
+        })
+        .join()
+        .unwrap()
+    }
+
     fn well_known(kind: WELL_KNOWN_SID_TYPE) -> Vec<u64> {
         let mut sid = vec![0u64; SECURITY_MAX_SID_SIZE as usize / size_of::<u64>() + 1];
         let mut size = SECURITY_MAX_SID_SIZE;
@@ -313,6 +421,38 @@ pub(crate) mod tests {
         assert!(label_of(&mutex) < SECURITY_MANDATORY_MEDIUM_RID);
         let error = verify_existing(&mutex, &name).unwrap_err();
         assert_eq!(error.raw_os_error(), Some(ERROR_ACCESS_DENIED as i32));
+    }
+
+    #[test]
+    fn lower_integrity_processes_cannot_even_wait_on_awakes_objects() {
+        let id = std::process::id();
+        let (mutex_name, event_name, control_name) = (
+            format!(r"Local\AwakeSecurityTest-wait-mutex-{id}"),
+            format!(r"Local\AwakeSecurityTest-wait-event-{id}"),
+            format!(r"Local\AwakeSecurityTest-wait-control-{id}"),
+        );
+        let ours = Descriptor::for_current_user().unwrap();
+        let _mutex = mutex_with(&ours, &mutex_name);
+        let _event = event_with(&ours, &event_name);
+        // The same object with only no-write-up, to show the impersonation really reaches it.
+        let user = UserSid::current().unwrap().to_string_sid().unwrap();
+        let no_write_up = Descriptor::from_sddl(&format!("D:(A;;GA;;;{user})S:(ML;;NW;;;ME)")).unwrap();
+        let _control = mutex_with(&no_write_up, &control_name);
+
+        let (control, mutex, event) = as_low_integrity(move || {
+            (
+                open_to_wait(OpenMutexW, &control_name),
+                open_to_wait(OpenMutexW, &mutex_name),
+                open_to_wait(OpenEventW, &event_name),
+            )
+        });
+        assert_eq!(
+            control,
+            Ok(()),
+            "no-write-up alone lets a low-integrity waiter in"
+        );
+        assert_eq!(mutex, Err(ERROR_ACCESS_DENIED));
+        assert_eq!(event, Err(ERROR_ACCESS_DENIED));
     }
 
     #[test]
