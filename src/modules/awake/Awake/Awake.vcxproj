@@ -42,6 +42,7 @@
     <None Include="awake\src\app.rs" />
     <None Include="awake\src\bridge.rs" />
     <None Include="awake\src\logging.rs" />
+    <None Include="awake\src\hooks.rs" />
     <None Include="awake\src\main.rs" />
     <None Include="awake\src\platform\clock.rs" />
     <None Include="awake\src\platform\console.rs" />
@@ -61,6 +62,7 @@
     <None Include="awake\src\platform\window.rs" />
     <None Include="awake-core\Cargo.toml" />
     <None Include="awake-core\build.rs" />
+    <None Include="awake-core\build\resx.rs" />
     <None Include="awake-core\src\cli.rs" />
     <None Include="awake-core\src\console.rs" />
     <None Include="awake-core\src\duration.rs" />
@@ -83,7 +85,9 @@
   <!-- There are no ARM64 test agents, matching the other test projects. Tests build with the
        test hooks into their own folder, so they never replace the binary that ships. -->
   <Target Name="Test" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
-    <Exec Command="cargo test $(CargoCommonArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile) --workspace --features awake/test-hooks" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="POWERTOYS_VERSION=$(Version)" />
+    <Exec Command="cargo fmt --all --check" WorkingDirectory="$(MSBuildThisFileDirectory)" />
+    <Exec Command="cargo lint $(CargoCommonArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile) -- -D warnings" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="POWERTOYS_VERSION=$(Version)" />
+    <Exec Command="cargo test-all $(CargoCommonArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile)" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="POWERTOYS_VERSION=$(Version)" />
   </Target>
   <Target Name="CargoClean" AfterTargets="Clean">
     <RemoveDir Directories="$(CargoTargetDir)" />

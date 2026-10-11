@@ -55,6 +55,8 @@ fn compile_bridge(manifest_dir: &Path, repo_src: &Path) {
         .flag("/EHsc")
         .flag("/WX")
         .flag("/sdl")
+        // Match the Control Flow Guard the Rust code and Cpp.Build.props use.
+        .flag("/guard:cf")
         .flag("/utf-8")
         .compile("awake_bridge");
     println!("cargo:rustc-link-lib=advapi32");

@@ -1,3 +1,8 @@
+[alias]
+# The end-to-end tests need the test hooks; without them Cargo skips those tests silently.
+test-all = "test --workspace --features awake/test-hooks"
+lint = "clippy --workspace --all-targets --features awake/test-hooks"
+
 # Match the native PowerToys conventions in Cpp.Build.props: Control Flow Guard and the
 # hybrid CRT (static VC++ runtime, in-box UCRT shared by every module).
 [target.'cfg(all(windows, target_env = "msvc"))']

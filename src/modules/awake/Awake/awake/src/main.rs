@@ -3,6 +3,7 @@
 
 mod app;
 mod bridge;
+mod hooks;
 mod logging;
 mod platform;
 

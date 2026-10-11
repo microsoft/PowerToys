@@ -6,7 +6,8 @@ members = ["awake-core", "awake"]
 # The product version comes from src/Version.props at build time; this one is for Cargo only.
 version = "0.0.0"
 edition = "2024"
-rust-version = "1.85"
+# Let chains need 1.88; checked with `cargo +1.88.0 check --workspace --all-targets`.
+rust-version = "1.88"
 authors = ["Den Delimarsky"]
 homepage = "https://awake.den.dev"
 repository = "https://github.com/microsoft/PowerToys"

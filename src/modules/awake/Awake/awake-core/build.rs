@@ -9,10 +9,14 @@ use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
 
+#[path = "build/resx.rs"]
+mod resx;
+
 fn main() {
     let strings_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("..");
     let neutral_path = strings_dir.join("Resources.resx");
     println!("cargo:rerun-if-changed={}", neutral_path.display());
+    println!("cargo:rerun-if-changed=build/resx.rs");
 
     let neutral = parse_resx(&neutral_path);
     let localized = find_localized(&strings_dir);
@@ -103,68 +107,7 @@ fn looks_like_language(name: &str) -> bool {
         && parts.all(|p| !p.is_empty() && p.len() <= 8 && p.chars().all(|c| c.is_ascii_alphanumeric()))
 }
 
-/// Minimal resx reader: `<data name="X"> ... <value>text</value> ... </data>`.
 fn parse_resx(path: &Path) -> Vec<(String, String)> {
     let text = fs::read_to_string(path).unwrap_or_else(|e| panic!("cannot read {}: {e}", path.display()));
-    let mut entries = Vec::new();
-    let mut rest = text.as_str();
-    while let Some(start) = rest.find("<data ") {
-        rest = &rest[start..];
-        let end = rest
-            .find("</data>")
-            .unwrap_or_else(|| panic!("unterminated <data> in {}", path.display()));
-        let block = &rest[..end];
-        rest = &rest[end + "</data>".len()..];
-
-        let name =
-            attribute(block, "name").unwrap_or_else(|| panic!("<data> without name in {}", path.display()));
-        let value = block
-            .find("<value>")
-            .and_then(|v| block[v + 7..].find("</value>").map(|e| &block[v + 7..v + 7 + e]))
-            .unwrap_or("");
-        entries.push((name, unescape(value)));
-    }
-    entries
-}
-
-fn attribute(block: &str, attr: &str) -> Option<String> {
-    let needle = format!("{attr}=\"");
-    let start = block.find(&needle)? + needle.len();
-    let len = block[start..].find('"')?;
-    Some(unescape(&block[start..start + len]))
-}
-
-fn unescape(text: &str) -> String {
-    let mut out = String::with_capacity(text.len());
-    let mut rest = text;
-    while let Some(amp) = rest.find('&') {
-        out.push_str(&rest[..amp]);
-        rest = &rest[amp..];
-        let Some(semi) = rest.find(';') else { break };
-        let entity = &rest[1..semi];
-        let decoded = match entity {
-            "lt" => Some('<'),
-            "gt" => Some('>'),
-            "amp" => Some('&'),
-            "quot" => Some('"'),
-            "apos" => Some('\''),
-            _ if entity.starts_with("#x") => u32::from_str_radix(&entity[2..], 16)
-                .ok()
-                .and_then(char::from_u32),
-            _ if entity.starts_with('#') => entity[1..].parse().ok().and_then(char::from_u32),
-            _ => None,
-        };
-        match decoded {
-            Some(c) => {
-                out.push(c);
-                rest = &rest[semi + 1..];
-            }
-            None => {
-                out.push('&');
-                rest = &rest[1..];
-            }
-        }
-    }
-    out.push_str(rest);
-    out.replace("\r\n", "\n")
+    resx::parse(&text).unwrap_or_else(|e| panic!("{} is not a valid resx file: {e}", path.display()))
 }

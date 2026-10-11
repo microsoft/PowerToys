@@ -1,17 +1,18 @@
 //! A background thread that waits on kernel objects and forwards what happened to the window
 //! thread as posted messages. It never touches application state.
 //!
-//! It also guards against a stuck UI thread: once a stop has been requested (exit event or the
-//! bound process ending) the process must be gone within [`WATCHDOG`], or this thread ends it.
-//! Windows releases the keep-awake request when the process dies, so the machine is never held
-//! awake by a hung Awake.
+//! It also guards against a stuck UI thread: once a stop has been requested (exit event, the
+//! bound process ending, or the deadline of a session that ends the process) the process must be
+//! gone within [`watchdog`], or this thread ends it. Ctrl+C has the same backstop in
+//! `console.rs`. Windows releases the keep-awake request when the process dies, so the machine is
+//! never held awake by a hung Awake.
 
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStrExt;
 use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
 use std::path::Path;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::thread::JoinHandle;
 use std::time::Duration;
 use std::{io, mem, ptr, slice};
@@ -32,10 +33,16 @@ use windows_sys::Win32::System::Threading::{
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{PostMessageW, WM_APP};
 
+use super::clock::SystemClock;
 use super::{last_error, wide::wide};
 
 pub const WM_WAITER: u32 = WM_APP + 1;
-pub const WATCHDOG: Duration = Duration::from_secs(10);
+const WATCHDOG: Duration = Duration::from_secs(10);
+
+/// How long a stop request may take before the process is ended.
+pub fn watchdog() -> Duration {
+    crate::hooks::duration("POWERTOYS_AWAKE_TEST_WATCHDOG_MS", WATCHDOG)
+}
 /// How often to try watching the settings folder again after it disappeared.
 const WATCH_RETRY: Duration = Duration::from_secs(2);
 
@@ -67,15 +74,21 @@ pub struct WaiterSetup {
     pub process: Option<OwnedHandle>,
     /// Directory and file name to watch for changes.
     pub watch: Option<(std::path::PathBuf, OsString)>,
+    /// The deadline ends the process (command-line sessions), so it gets the watchdog too.
+    pub deadline_ends_process: bool,
 }
 
 #[derive(Debug)]
 pub struct Waiter {
     stop: OwnedHandle,
     timer: OwnedHandle,
+    /// The armed deadline in ticks, `NO_DEADLINE` when cancelled.
+    deadline: Arc<AtomicI64>,
     settings_pending: Arc<AtomicBool>,
     thread: Option<JoinHandle<()>>,
 }
+
+const NO_DEADLINE: i64 = i64::MIN;
 
 impl Waiter {
     pub fn start(setup: WaiterSetup) -> io::Result<Waiter> {
@@ -88,6 +101,7 @@ impl Waiter {
         // SAFETY: fresh handle we own.
         let timer = unsafe { OwnedHandle::from_raw_handle(timer) };
         let settings_pending = Arc::new(AtomicBool::new(false));
+        let deadline = Arc::new(AtomicI64::new(NO_DEADLINE));
 
         let watch = setup
             .watch
@@ -104,6 +118,8 @@ impl Waiter {
             stop: stop.try_clone()?,
             exit_event: setup.exit_event,
             timer: timer.try_clone()?,
+            deadline: deadline.clone(),
+            deadline_ends_process: setup.deadline_ends_process,
             process: setup.process,
             watch,
             watch_target: setup.watch,
@@ -115,6 +131,7 @@ impl Waiter {
         Ok(Waiter {
             stop,
             timer,
+            deadline,
             settings_pending,
             thread: Some(thread),
         })
@@ -126,17 +143,14 @@ impl Waiter {
         let handle = self.timer.as_raw_handle();
         match deadline {
             Some(at) => {
-                // A positive due time is absolute (UTC FILETIME); zero would fire immediately.
-                let due = at.ticks().max(1);
-                // SAFETY: valid timer handle and due-time pointer; no completion routine.
-                if unsafe { SetWaitableTimer(handle, &due, 0, None, ptr::null(), 0) } == 0 {
-                    log::error!("Could not arm the deadline timer: {}", last_error());
-                }
+                self.deadline.store(at.ticks(), Ordering::Release);
+                arm_timer(handle, at.ticks());
             }
-            // SAFETY: valid timer handle.
-            None => unsafe {
-                CancelWaitableTimer(handle);
-            },
+            None => {
+                self.deadline.store(NO_DEADLINE, Ordering::Release);
+                // SAFETY: valid timer handle.
+                unsafe { CancelWaitableTimer(handle) };
+            }
         }
     }
 
@@ -169,6 +183,8 @@ struct Context {
     stop: OwnedHandle,
     exit_event: OwnedHandle,
     timer: OwnedHandle,
+    deadline: Arc<AtomicI64>,
+    deadline_ends_process: bool,
     process: Option<OwnedHandle>,
     watch: Option<DirectoryWatch>,
     /// What to watch, kept so the watch can be restored if the folder is deleted and recreated.
@@ -211,7 +227,11 @@ impl Context {
                 .map(|i| i as usize)
                 .filter(|i| *i < handles.len())
             else {
+                // Nothing would observe the exit event, the bound process or the deadline any
+                // more, so stop rather than hold the machine awake unattended.
                 log::error!("Waiting failed ({result:#x}): {}", last_error());
+                self.post(WaitEvent::ExitRequested);
+                self.watchdog();
                 return;
             };
 
@@ -222,7 +242,16 @@ impl Context {
                     self.watchdog();
                     return;
                 }
-                2 => self.post(WaitEvent::DeadlineReached),
+                2 => {
+                    if self.deadline_is_early() {
+                        continue;
+                    }
+                    self.post(WaitEvent::DeadlineReached);
+                    if self.deadline_ends_process {
+                        self.watchdog();
+                        return;
+                    }
+                }
                 i if Some(i) == process_index => {
                     self.process = None;
                     self.post(WaitEvent::ProcessExited);
@@ -270,15 +299,45 @@ impl Context {
         }
     }
 
+    /// The timer runs on interrupt time, which clock corrections do not move, so it can fire
+    /// while the system clock still reads a little before the deadline. Arms it again then.
+    fn deadline_is_early(&self) -> bool {
+        let deadline = self.deadline.load(Ordering::Acquire);
+        if deadline == NO_DEADLINE || SystemClock.now_utc().ticks() >= deadline {
+            return false;
+        }
+        arm_timer(self.timer.as_raw_handle(), deadline);
+        true
+    }
+
     fn watchdog(&self) {
-        let millis = WATCHDOG.as_millis() as u32;
+        let millis = watchdog().as_millis() as u32;
         // SAFETY: valid event handle.
         if unsafe { WaitForSingleObject(self.stop.as_raw_handle(), millis) } == WAIT_TIMEOUT {
-            log::error!("The window thread did not shut down within {WATCHDOG:?}; ending the process.");
-            crate::logging::flush(Duration::from_millis(500));
-            // SAFETY: terminating our own process; Windows releases every request it held.
-            unsafe { TerminateProcess(GetCurrentProcess(), 1) };
+            end_hung_process();
         }
+    }
+}
+
+/// Ends the process because the window thread did not act on a stop request in time. Windows
+/// releases every keep-awake request the process held.
+pub fn end_hung_process() -> ! {
+    log::error!(
+        "The window thread did not shut down within {:?}; ending the process.",
+        watchdog()
+    );
+    crate::logging::flush(Duration::from_millis(500));
+    // SAFETY: terminating our own process.
+    unsafe { TerminateProcess(GetCurrentProcess(), 1) };
+    std::process::abort()
+}
+
+fn arm_timer(timer: HANDLE, ticks: i64) {
+    // A positive due time is absolute (UTC FILETIME); zero would fire immediately.
+    let due = ticks.max(1);
+    // SAFETY: valid timer handle and due-time pointer; no completion routine.
+    if unsafe { SetWaitableTimer(timer, &due, 0, None, ptr::null(), 0) } == 0 {
+        log::error!("Could not arm the deadline timer: {}", last_error());
     }
 }
 

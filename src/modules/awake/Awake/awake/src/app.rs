@@ -42,7 +42,7 @@ use crate::platform::process::{self, BindError, BoundProcess};
 use crate::platform::settings_store::{LoadError, SaveError, SettingsStore};
 use crate::platform::tray::{IconKind, TIMER_RETRY, Tray, WM_TRAY};
 use crate::platform::waiter::{WM_WAITER, WaitEvent, Waiter, WaiterSetup};
-use crate::platform::{last_error, locale, menu, power, session, theme, window};
+use crate::platform::{last_error, locale, menu, power, session, theme, wide, window};
 use crate::{BUILD_ID, VERSION, logging};
 
 const TIMER_TICK: usize = 1;
@@ -58,8 +58,10 @@ const INSTANCE_HANDOVER: Duration = Duration::from_secs(5);
 /// `TaskbarCreated` is registered at run time; the window procedure needs it even when the app
 /// is busy.
 static TASKBAR_CREATED: AtomicU32 = AtomicU32::new(0);
-/// Theme or display settings changed while the app was busy.
+/// Theme or display settings changed while the app was busy; `wParam` holds the change flags.
 const WM_ENVIRONMENT_CHANGED: u32 = WM_APP + 4;
+const THEME_CHANGED: usize = 1;
+const DISPLAY_CHANGED: usize = 2;
 const NIN_SELECT: u32 = WM_USER;
 const NIN_KEYSELECT: u32 = WM_USER + 1;
 
@@ -171,7 +173,7 @@ struct Launcher {
 impl Launcher {
     fn prepare(&self, invocation: &Invocation) -> Result<Prepared, i32> {
         let handover = if invocation.plan == Plan::PowerToys || invocation.handoff_event.is_some() {
-            INSTANCE_HANDOVER
+            crate::hooks::duration("POWERTOYS_AWAKE_TEST_HANDOVER_MS", INSTANCE_HANDOVER)
         } else {
             Duration::ZERO
         };
@@ -349,6 +351,7 @@ impl Launcher {
             exit_event,
             process: process_handle,
             watch,
+            deadline_ends_process: source == Source::CommandLine,
         }) {
             Ok(waiter) => waiter,
             Err(error) => {
@@ -434,9 +437,20 @@ fn open_exit_event(name: &str) -> std::io::Result<OwnedHandle> {
     Ok(unsafe { OwnedHandle::from_raw_handle(raw) })
 }
 
+/// What `resolve_until` needs from the clock, so tests can use a fixed zone.
+trait UntilZone: LocalZone {
+    fn parse_regional(&self, text: &str) -> Option<CivilDateTime>;
+}
+
+impl UntilZone for SystemClock {
+    fn parse_regional(&self, text: &str) -> Option<CivilDateTime> {
+        SystemClock::parse_regional(self, text)
+    }
+}
+
 fn resolve_until(
     spec: &UntilSpec,
-    clock: &SystemClock,
+    clock: &impl UntilZone,
     now: DateTimeOffset,
     strings: &Strings,
 ) -> Result<DateTimeOffset, String> {
@@ -570,7 +584,7 @@ impl App {
                     log::info!("The bound process exited.");
                     self.request_exit(0, Farewell::TargetExited)
                 }
-                Some(WaitEvent::DeadlineReached) => self.tick(),
+                Some(WaitEvent::DeadlineReached) => self.tick(Engine::deadline_fired),
                 Some(WaitEvent::SettingsChanged) => {
                     if window::set_timer(self.window, TIMER_RELOAD, RELOAD_DEBOUNCE_MS) {
                         Outcome::Handled(0)
@@ -588,7 +602,7 @@ impl App {
                 _ => Outcome::Handled(0),
             },
             WM_TIMER => match wparam {
-                TIMER_TICK => self.tick(),
+                TIMER_TICK => self.tick(Engine::tick),
                 TIMER_RELOAD => {
                     window::kill_timer(self.window, TIMER_RELOAD);
                     self.reload_settings()
@@ -629,8 +643,15 @@ impl App {
                 Outcome::Handled(0)
             }
             WM_SETTINGCHANGE | WM_DISPLAYCHANGE | WM_ENVIRONMENT_CHANGED => {
-                theme::apply_system_theme();
-                self.tray.display_changed();
+                // Windows broadcasts WM_SETTINGCHANGE for every kind of setting, often several
+                // times per change; only act on the ones that affect Awake.
+                let change = environment_change(message, wparam, lparam);
+                if change & THEME_CHANGED != 0 {
+                    theme::apply_system_theme();
+                }
+                if change & DISPLAY_CHANGED != 0 {
+                    self.tray.display_changed();
+                }
                 if message == WM_ENVIRONMENT_CHANGED {
                     Outcome::Handled(0)
                 } else {
@@ -690,8 +711,8 @@ impl App {
         }
     }
 
-    fn tick(&mut self) -> Outcome {
-        let effects = self.engine.tick(self.clock.now());
+    fn tick(&mut self, input: fn(&mut Engine, DateTimeOffset) -> Vec<Effect>) -> Outcome {
+        let effects = input(&mut self.engine, self.clock.now());
         let outcome = self.apply(effects);
         self.update_status();
         outcome
@@ -901,6 +922,7 @@ impl App {
     }
 
     fn request_exit(&mut self, code: i32, reason: Farewell) -> Outcome {
+        crate::hooks::hang_on_exit();
         if self.exit.is_none() {
             self.exit = Some(ExitPlan { code, reason });
         }
@@ -1062,6 +1084,22 @@ unsafe extern "system" fn window_proc(window: HWND, message: u32, wparam: WPARAM
     }
 }
 
+/// What a settings or display broadcast means for Awake, as `THEME_CHANGED | DISPLAY_CHANGED`.
+fn environment_change(message: u32, wparam: WPARAM, lparam: LPARAM) -> usize {
+    match message {
+        WM_DISPLAYCHANGE => DISPLAY_CHANGED,
+        // lParam names the changed section; switching between light and dark is this one.
+        WM_SETTINGCHANGE if lparam != 0 => {
+            // SAFETY: for WM_SETTINGCHANGE a non-null lParam is a NUL-terminated string, valid
+            // while the message is being handled.
+            let theme = unsafe { wide::nul_terminated_eq(lparam as *const u16, "ImmersiveColorSet") };
+            if theme { THEME_CHANGED } else { 0 }
+        }
+        WM_ENVIRONMENT_CHANGED => wparam,
+        _ => 0,
+    }
+}
+
 /// Handles a message that arrived while the app was busy. Nothing that ends the window or
 /// changes the session may fall through to default handling, or Awake could end up without a
 /// window while still holding the keep-awake request.
@@ -1085,10 +1123,13 @@ fn reentered(window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> LRES
             logging::flush(Duration::from_millis(500));
             0
         }
-        // The settings text in lParam is only valid during the call, so post a marker instead.
+        // The settings text in lParam is only valid during the call, so post what it means instead.
         WM_SETTINGCHANGE | WM_DISPLAYCHANGE => {
-            // SAFETY: posting to our own window.
-            unsafe { PostMessageW(window, WM_ENVIRONMENT_CHANGED, 0, 0) };
+            let change = environment_change(message, wparam, lparam);
+            if change != 0 {
+                // SAFETY: posting to our own window.
+                unsafe { PostMessageW(window, WM_ENVIRONMENT_CHANGED, change, 0) };
+            }
             0
         }
         WM_CLOSE | WM_WTSSESSION_CHANGE => repost(0),
@@ -1138,20 +1179,35 @@ mod tests {
     use super::*;
     use awake_core::time::FixedZone;
 
+    impl UntilZone for FixedZone {
+        fn parse_regional(&self, _: &str) -> Option<CivilDateTime> {
+            None
+        }
+    }
+
+    fn local(zone: FixedZone, hour: u8, minute: u8, second: u8) -> DateTimeOffset {
+        zone.resolve(CivilDateTime::new(2026, 3, 28, hour, minute, second).unwrap())
+            .unwrap()
+    }
+
     #[test]
     fn until_a_time_of_day_means_the_next_one() {
-        let clock = SystemClock;
-        let now = clock.now();
-        let strings = Strings::ENGLISH;
-        let local = now.local();
-        let earlier = UntilSpec::Parsed(ParsedTime::TimeOfDay {
-            hour: local.hour,
-            minute: local.minute,
-            second: 0,
-        });
-        let until = resolve_until(&earlier, &clock, now, &strings).unwrap();
-        let hours = (until.utc.ticks() - now.utc.ticks()) as f64 / 36_000_000_000.0;
-        assert!(hours > 23.0 && hours <= 24.1, "wrapped to tomorrow: {hours}");
+        let zone = FixedZone(60);
+        let now = local(zone, 10, 30, 15);
+        let time_of_day = |hour, minute| {
+            UntilSpec::Parsed(ParsedTime::TimeOfDay {
+                hour,
+                minute,
+                second: 0,
+            })
+        };
+        let later = resolve_until(&time_of_day(18, 0), &zone, now, &Strings::ENGLISH).unwrap();
+        assert_eq!(later, local(zone, 18, 0, 0));
+        let earlier = resolve_until(&time_of_day(10, 30), &zone, now, &Strings::ENGLISH).unwrap();
+        let tomorrow = zone
+            .resolve(CivilDateTime::new(2026, 3, 29, 10, 30, 0).unwrap())
+            .unwrap();
+        assert_eq!(earlier, tomorrow);
     }
 
     #[test]

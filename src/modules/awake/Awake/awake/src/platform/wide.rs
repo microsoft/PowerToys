@@ -33,9 +33,40 @@ pub fn from_buffer(buffer: &[u16]) -> String {
     String::from_utf16_lossy(&buffer[..end])
 }
 
+/// Whether the NUL-terminated UTF-16 string at `ptr` equals `text`.
+///
+/// # Safety
+///
+/// `ptr` must point to a readable, NUL-terminated UTF-16 string.
+pub unsafe fn nul_terminated_eq(ptr: *const u16, text: &str) -> bool {
+    let mut offset = 0;
+    for expected in text.encode_utf16() {
+        // SAFETY: every unit up to and including the NUL is readable, and a mismatch, which the
+        // NUL is for any unit of `text`, stops the loop.
+        if unsafe { *ptr.add(offset) } != expected {
+            return false;
+        }
+        offset += 1;
+    }
+    // SAFETY: as above; all earlier units matched non-NUL units, so this is still in bounds.
+    unsafe { *ptr.add(offset) == 0 }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn nul_terminated_comparison() {
+        let value = wide("ImmersiveColorSet");
+        // SAFETY: `wide` strings are NUL-terminated.
+        unsafe {
+            assert!(nul_terminated_eq(value.as_ptr(), "ImmersiveColorSet"));
+            assert!(!nul_terminated_eq(value.as_ptr(), "Immersive"));
+            assert!(!nul_terminated_eq(value.as_ptr(), "ImmersiveColorSetX"));
+            assert!(!nul_terminated_eq(wide("").as_ptr(), "a"));
+        }
+    }
 
     #[test]
     fn truncation_keeps_surrogate_pairs_whole() {

@@ -97,9 +97,11 @@ and reporting any error with exit code 1:
   applies its own changes immediately and its file watcher sees the echo as a no-op. Writes go to a
   temporary file and replace the original only once complete, then refresh its write time so the
   Settings app's watchers notice.
-- **Never holds the computer awake by accident.** Every exit path releases the request; the waiter
-  ends a process whose window thread stops responding; a crash ends the process, and Windows drops
-  the request with it.
+- **Never holds the computer awake by accident.** Every exit path releases the request. When a stop
+  arrives from outside the window thread (the runner's exit event, the bound process ending, the
+  deadline of a command-line session, Ctrl+C) and the window thread does not finish within 10
+  seconds, the process is ended. A crash ends the process too, and Windows drops the request
+  with it.
 
 ## Building
 
@@ -119,8 +121,14 @@ The solution builds `Awake/Awake.vcxproj`, which runs Cargo and places
 # From src/modules/awake/Awake
 cargo build               # debug
 cargo build --release     # release
-cargo test --workspace    # unit and end-to-end tests
+cargo test-all            # unit and end-to-end tests
+cargo lint -- -D warnings # clippy, as CI runs it
+cargo fmt --all --check   # formatting
 ```
+
+`test-all` and `lint` are aliases in `.cargo/config.toml`. A plain `cargo test --workspace` runs
+the unit tests only: the end-to-end tests need the `test-hooks` feature, and Cargo skips them
+silently without it. The solution's Test target runs all three checks.
 
 or from `src/modules/awake`:
 

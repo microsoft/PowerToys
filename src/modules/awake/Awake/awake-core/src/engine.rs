@@ -236,12 +236,27 @@ impl Engine {
         effects
     }
 
-    /// Called when the deadline timer fires and once a second while counting down.
+    /// Called once a second while counting down.
     pub fn tick(&mut self, now: DateTimeOffset) -> Vec<Effect> {
         match self.activity.deadline() {
             Some(deadline) if now.utc >= deadline => self.end_session(ExitReason::TimeUp),
             Some(_) if matches!(self.activity, Activity::Timed { .. }) => vec![Effect::RefreshIcon],
             _ => Vec::new(),
+        }
+    }
+
+    /// Called when the deadline timer fires. The timer runs on interrupt time, which clock
+    /// corrections do not move, so it can fire while the system clock still reads a little
+    /// before the deadline; it is then armed again rather than leaving the session without
+    /// an end.
+    pub fn deadline_fired(&mut self, now: DateTimeOffset) -> Vec<Effect> {
+        match self.activity.deadline() {
+            Some(deadline) if now.utc < deadline => {
+                let mut effects = vec![Effect::ScheduleDeadline(Some(deadline))];
+                effects.extend(self.tick(now));
+                effects
+            }
+            _ => self.tick(now),
         }
     }
 
@@ -472,6 +487,29 @@ mod tests {
             Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)]))
         );
         assert_eq!(engine.tick(at(61)), [], "it completes exactly once");
+    }
+
+    #[test]
+    fn early_deadline_timer_is_armed_again() {
+        let mut engine = powertoys();
+        let deadline = at(3600);
+        let settings = AwakeSettings {
+            expiration: Some(deadline),
+            ..settings(Mode::Expirable)
+        };
+        engine.apply_settings(&settings, at(0));
+        assert_eq!(
+            engine.deadline_fired(at(3599)),
+            [Effect::ScheduleDeadline(Some(deadline.utc))]
+        );
+        assert_eq!(engine.activity().mode(), Mode::Expirable);
+        let effects = engine.deadline_fired(at(3600));
+        assert!(effects.contains(&Effect::ScheduleDeadline(None)));
+        assert_eq!(
+            effects.last(),
+            Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)]))
+        );
+        assert_eq!(engine.deadline_fired(at(3601)), [], "a stale timer does nothing");
     }
 
     #[test]

@@ -4,6 +4,7 @@
 //! this repository uses the same ordinals; if they are missing, menus simply stay light.
 
 use std::mem;
+use std::sync::OnceLock;
 
 use windows_sys::Win32::System::LibraryLoader::{
     GetProcAddress, LOAD_LIBRARY_SEARCH_SYSTEM32, LoadLibraryExW,
@@ -22,33 +23,42 @@ type FlushMenuThemes = unsafe extern "system" fn();
 
 /// Matches menus to the taskbar: dark when Windows' system theme is dark.
 pub fn apply_system_theme() {
-    let name = wide("uxtheme.dll");
-    // SAFETY: loads a system DLL from System32 only; it stays loaded for the process lifetime.
-    let module = unsafe { LoadLibraryExW(name.as_ptr(), std::ptr::null_mut(), LOAD_LIBRARY_SEARCH_SYSTEM32) };
-    if module.is_null() {
-        return;
-    }
-    // SAFETY: ordinal lookups on a valid module; null results are checked.
-    let (set_mode, flush) = unsafe {
-        (
-            GetProcAddress(module, SET_PREFERRED_APP_MODE as usize as *const u8),
-            GetProcAddress(module, FLUSH_MENU_THEMES as usize as *const u8),
-        )
-    };
-    let (Some(set_mode), Some(flush)) = (set_mode, flush) else {
+    static EXPORTS: OnceLock<Option<(SetPreferredAppMode, FlushMenuThemes)>> = OnceLock::new();
+    let Some((set_mode, flush)) = *EXPORTS.get_or_init(load_exports) else {
         return;
     };
-    // SAFETY: the ordinals have these signatures on every Windows version PowerToys supports
-    // (Windows 10 2004 and later).
+    // SAFETY: the exports have these signatures, see `load_exports`.
     unsafe {
-        let set_mode: SetPreferredAppMode = mem::transmute(set_mode);
-        let flush: FlushMenuThemes = mem::transmute(flush);
         set_mode(if system_uses_light_theme() {
             FORCE_LIGHT
         } else {
             FORCE_DARK
         });
         flush();
+    }
+}
+
+fn load_exports() -> Option<(SetPreferredAppMode, FlushMenuThemes)> {
+    let name = wide("uxtheme.dll");
+    // SAFETY: loads a system DLL from System32 only; it stays loaded for the process lifetime,
+    // which keeps the function pointers below valid.
+    let module = unsafe { LoadLibraryExW(name.as_ptr(), std::ptr::null_mut(), LOAD_LIBRARY_SEARCH_SYSTEM32) };
+    if module.is_null() {
+        return None;
+    }
+    // SAFETY: ordinal lookups on a valid module; null results are checked.
+    let (set_mode, flush) = unsafe {
+        (
+            GetProcAddress(module, SET_PREFERRED_APP_MODE as usize as *const u8)?,
+            GetProcAddress(module, FLUSH_MENU_THEMES as usize as *const u8)?,
+        )
+    };
+    // SAFETY: the ordinals have these signatures on every Windows version PowerToys supports
+    // (Windows 10 2004 and later).
+    unsafe {
+        let set_mode: SetPreferredAppMode = mem::transmute(set_mode);
+        let flush: FlushMenuThemes = mem::transmute(flush);
+        Some((set_mode, flush))
     }
 }
 

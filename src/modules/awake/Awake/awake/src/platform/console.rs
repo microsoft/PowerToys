@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 use std::{io, mem, ptr};
 
 use awake_core::console::Style;
-use windows_sys::Win32::Foundation::{HANDLE, HWND, INVALID_HANDLE_VALUE};
+use windows_sys::Win32::Foundation::{HANDLE, HWND, INVALID_HANDLE_VALUE, WAIT_TIMEOUT};
 use windows_sys::Win32::Storage::FileSystem::WriteFile;
 use windows_sys::Win32::System::Console::{
     CTRL_BREAK_EVENT, CTRL_C_EVENT, CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT, CTRL_SHUTDOWN_EVENT,
@@ -70,10 +70,18 @@ pub fn detect() -> Output {
 /// The processes attached to this console, Awake included; empty without a console.
 pub fn attached_processes() -> Vec<u32> {
     let mut ids = vec![0u32; 64];
-    // SAFETY: the buffer holds `ids.len()` entries.
-    let count = unsafe { GetConsoleProcessList(ids.as_mut_ptr(), ids.len() as u32) } as usize;
-    ids.truncate(count.min(ids.len()));
-    ids
+    loop {
+        // SAFETY: the buffer holds `ids.len()` entries.
+        let count = unsafe { GetConsoleProcessList(ids.as_mut_ptr(), ids.len() as u32) } as usize;
+        // A count larger than the buffer means nothing was stored; more processes may attach
+        // before the next call, so leave some room.
+        if count > ids.len() {
+            ids.resize(count + 16, 0);
+            continue;
+        }
+        ids.truncate(count);
+        return ids;
+    }
 }
 
 /// Whether this process has a console window, visible or not.
@@ -243,7 +251,17 @@ unsafe extern "system" fn ctrl_handler(kind: u32) -> i32 {
     // SAFETY: posting to a window owned by another thread is allowed.
     unsafe { PostMessageW(window, WM_CONSOLE_CTRL, kind as usize, 0) };
     match kind {
-        CTRL_C_EVENT | CTRL_BREAK_EVENT => 1,
+        // Returning TRUE keeps Windows from ending the process, so if the window thread is hung
+        // nothing else would: end it here once the watchdog time has passed.
+        CTRL_C_EVENT | CTRL_BREAK_EVENT => {
+            let done = SHUTDOWN_DONE.load(Ordering::Acquire);
+            let millis = super::waiter::watchdog().as_millis() as u32;
+            // SAFETY: valid event handle.
+            if !done.is_null() && unsafe { WaitForSingleObject(done, millis) } == WAIT_TIMEOUT {
+                super::waiter::end_hung_process();
+            }
+            1
+        }
         // Returning from these ends the process, so give the window thread time to clean up.
         CTRL_CLOSE_EVENT | CTRL_LOGOFF_EVENT | CTRL_SHUTDOWN_EVENT => {
             let done = SHUTDOWN_DONE.load(Ordering::Acquire);

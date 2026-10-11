@@ -22,14 +22,18 @@ pub struct SystemClock;
 
 impl SystemClock {
     pub fn now(&self) -> DateTimeOffset {
+        let utc = self.now_utc();
+        DateTimeOffset::new(utc, self.offset_minutes_at(utc))
+    }
+
+    pub fn now_utc(&self) -> Timestamp {
         let mut ft = FILETIME {
             dwLowDateTime: 0,
             dwHighDateTime: 0,
         };
         // SAFETY: `ft` is valid for writes.
         unsafe { GetSystemTimePreciseAsFileTime(&mut ft) };
-        let utc = Timestamp::from_ticks(filetime_ticks(ft));
-        DateTimeOffset::new(utc, self.offset_minutes_at(utc))
+        Timestamp::from_ticks(filetime_ticks(ft))
     }
 
     /// The local UTC offset in effect at `utc`, honoring daylight saving rules.
@@ -165,12 +169,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn now_round_trips_through_the_local_zone() {
+    fn local_times_round_trip_through_the_local_zone() {
+        // Noon, because no zone changes its clocks then: around a transition a local time can
+        // be missing or repeated, and would not round-trip.
         let clock = SystemClock;
-        let now = clock.now();
-        let resolved = clock.resolve(now.local()).unwrap();
-        assert_eq!(resolved.utc, now.utc);
-        assert_eq!(resolved.offset_minutes, now.offset_minutes);
+        let today = clock.now().local();
+        let noon = CivilDateTime::new(today.year, today.month, today.day, 12, 0, 0).unwrap();
+        let resolved = clock.resolve(noon).unwrap();
+        assert_eq!(resolved.local(), noon);
+        assert_eq!(resolved.offset_minutes, clock.offset_minutes_at(resolved.utc));
     }
 
     #[test]

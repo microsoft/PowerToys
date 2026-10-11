@@ -140,6 +140,63 @@ fn a_second_instance_is_refused() {
 }
 
 #[test]
+fn a_powertoys_start_waits_for_the_previous_instance() {
+    let _serial = serial();
+    let sandbox = Sandbox::new("handover");
+    let mut first = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
+    let first_window = find_window(first.id(), 5 * SECOND).expect("the first instance starts");
+
+    let refused = sandbox
+        .command(&["--use-pt-config", "--pid", &own_pid()])
+        .env("POWERTOYS_AWAKE_TEST_HANDOVER_MS", "500")
+        .output()
+        .unwrap();
+    assert_eq!(
+        refused.status.code(),
+        Some(1),
+        "refused once the hand-over time is up"
+    );
+
+    let mut second = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
+    std::thread::sleep(SECOND);
+    assert_eq!(second.try_wait().unwrap(), None, "waits for the first instance");
+    close_window(first_window);
+    assert_eq!(wait_exit(&mut first, 5 * SECOND), Some(0));
+    let second_window = find_window(second.id(), 5 * SECOND).expect("the second instance takes over");
+    assert_eq!(second.try_wait().unwrap(), None);
+
+    close_window(second_window);
+    assert_eq!(wait_exit(&mut second, 5 * SECOND), Some(0));
+}
+
+#[test]
+fn the_watchdog_ends_a_hung_awake() {
+    let _serial = serial();
+    let hung = |sandbox: &Sandbox, args: &[&str]| {
+        sandbox
+            .command(args)
+            .env("POWERTOYS_AWAKE_TEST_HANG_ON_EXIT", "1")
+            .env("POWERTOYS_AWAKE_TEST_WATCHDOG_MS", "1000")
+            .spawn()
+            .unwrap()
+    };
+
+    // Stopped by the runner's exit event.
+    let sandbox = Sandbox::new("watchdog-exit");
+    let mut awake = hung(&sandbox, &["for", "1m", "--pid", &own_pid()]);
+    assert!(sandbox.wait_for_log("Entered Timed.", 1, 5 * SECOND));
+    sandbox.signal_exit();
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(1), "{}", sandbox.log());
+    assert!(sandbox.log().contains("ending the process"), "{}", sandbox.log());
+
+    // A command-line session whose time is up.
+    let sandbox = Sandbox::new("watchdog-deadline");
+    let mut awake = hung(&sandbox, &["for", "2s", "--pid", &own_pid()]);
+    assert_eq!(wait_exit(&mut awake, 8 * SECOND), Some(1), "{}", sandbox.log());
+    assert!(sandbox.log().contains("ending the process"), "{}", sandbox.log());
+}
+
+#[test]
 fn a_command_line_session_ends_on_time() {
     let _serial = serial();
     let sandbox = Sandbox::new("timed");
@@ -257,10 +314,10 @@ fn mode_switches_do_not_leak_or_hang() {
 
     let switch = |i: usize| {
         let json = match i % 5 {
-            0 => settings_json(1, i % 2 == 0, 0, 1, future),
+            0 => settings_json(1, i.is_multiple_of(2), 0, 1, future),
             1 => settings_json(2, false, 0, 1 + (i % 50) as u32, future),
             2 => settings_json(2, true, 0, 1 + (i % 50) as u32, future),
-            3 => settings_json(3, i % 3 == 0, 0, 1, future),
+            3 => settings_json(3, i.is_multiple_of(3), 0, 1, future),
             _ => settings_json(0, false, 0, 1, future),
         };
         sandbox.write_settings(&json);

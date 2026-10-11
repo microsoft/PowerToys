@@ -64,4 +64,46 @@ mod tests {
         assert_eq!(Strings::for_language("xx-YY").get(StringId::Hour), "{0} hour");
         assert_eq!(Strings::for_language("").get(StringId::Hours), "{0} hours");
     }
+
+    #[path = "../../../build/resx.rs"]
+    mod resx;
+
+    const HEADER: &str =
+        "<root><resheader name=\"resmimetype\"><value>text/microsoft-resx</value></resheader>";
+
+    #[test]
+    fn the_shipped_resx_is_well_formed() {
+        let text = include_str!("../../Resources.resx");
+        let entries = resx::parse(text).unwrap();
+        assert_eq!(entries.len(), COUNT);
+        assert!(
+            entries
+                .iter()
+                .any(|(name, value)| name == "AWAKE_EXIT" && value == "Exit")
+        );
+    }
+
+    #[test]
+    fn resx_reader_skips_comments_and_comment_elements() {
+        let text = format!(
+            "{HEADER}<!-- <data name=\"Name1\"><value>x</value></data> -->             <data name=\"A\" xml:space=\"preserve\"><value>a &amp; b</value><comment>note</comment></data></root>"
+        );
+        assert_eq!(
+            resx::parse(&text).unwrap(),
+            [("A".to_owned(), "a & b".to_owned())]
+        );
+    }
+
+    #[test]
+    fn resx_reader_rejects_what_xml_parsers_reject() {
+        for broken in [
+            format!("{HEADER}<!-- never closed <data name=\"A\"><value>a</value></data></root>"),
+            format!("{HEADER}<!-- run --help --></root>"),
+            format!("{HEADER}<data name=\"A\"><value>a</data></value></root>"),
+            format!("{HEADER}<data name=\"A\"><value>a</value></data>"),
+            "<root><data name=\"A\"><value>a</value></data></root>".to_owned(),
+        ] {
+            assert!(resx::parse(&broken).is_err(), "accepted {broken:?}");
+        }
+    }
 }

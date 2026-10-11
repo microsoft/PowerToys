@@ -51,6 +51,9 @@ pub struct Tray {
     window: HWND,
     icons: [HICON; 4],
     current: Option<(IconKind, String)>,
+    /// The icon Explorer has. While it matches, updates send only the tooltip: the countdown
+    /// changes it every second, and sending the icon makes Explorer copy it each time.
+    shown: Option<IconKind>,
     added: bool,
     retries: u32,
     /// A retry timer is pending, or retries ran out; changes are only recorded until then.
@@ -63,6 +66,7 @@ impl Tray {
             window,
             icons: [ptr::null_mut(); 4],
             current: None,
+            shown: None,
             added: false,
             retries: 0,
             waiting: false,
@@ -89,6 +93,7 @@ impl Tray {
         // A new Explorer starts empty, but clear any icon an old one may still hold.
         self.notify(NIM_DELETE);
         self.added = false;
+        self.shown = None;
         self.retries = 0;
         self.waiting = false;
         self.release_icons();
@@ -97,6 +102,7 @@ impl Tray {
 
     pub fn display_changed(&mut self) {
         self.release_icons();
+        self.shown = None;
         if self.added {
             self.added = self.notify(NIM_MODIFY);
         }
@@ -120,6 +126,7 @@ impl Tray {
         // Deleting an icon that is not there is harmless; leaving one behind is not.
         self.notify(NIM_DELETE);
         self.added = false;
+        self.shown = None;
         // SAFETY: as above.
         unsafe { KillTimer(self.window, TIMER_RETRY) };
     }
@@ -159,19 +166,29 @@ impl Tray {
         data.cbSize = mem::size_of::<NOTIFYICONDATAW>() as u32;
         data.hWnd = self.window;
         data.uID = ICON_ID;
+        let mut showing = None;
         if message == NIM_SETVERSION {
             data.Anonymous.uVersion = NOTIFYICON_VERSION_4;
-        } else if message != NIM_DELETE
-            && message != NIM_SETFOCUS
-            && let Some((kind, tooltip)) = self.current.clone()
+        } else if (message == NIM_ADD || message == NIM_MODIFY)
+            && let Some((kind, tooltip)) = &self.current
         {
-            data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
-            data.uCallbackMessage = WM_TRAY;
-            data.hIcon = self.icon(kind);
-            copy_truncated(&tooltip, &mut data.szTip);
+            let kind = *kind;
+            data.uFlags = NIF_TIP | NIF_SHOWTIP;
+            copy_truncated(tooltip, &mut data.szTip);
+            if message == NIM_ADD || self.shown != Some(kind) {
+                data.uFlags |= NIF_MESSAGE | NIF_ICON;
+                data.uCallbackMessage = WM_TRAY;
+                data.hIcon = self.icon(kind);
+            }
+            showing = Some(kind);
         }
         // SAFETY: `data` is fully initialized for the message being sent.
-        unsafe { Shell_NotifyIconW(message, &data) != 0 }
+        let ok = unsafe { Shell_NotifyIconW(message, &data) != 0 };
+        if showing.is_some() {
+            // After a failure, the next update sends the icon again.
+            self.shown = showing.filter(|_| ok);
+        }
+        ok
     }
 
     fn icon(&mut self, kind: IconKind) -> HICON {
