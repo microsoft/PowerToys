@@ -73,6 +73,9 @@
   <Target Name="Test" DependsOnTargets="CargoCheckToolchain" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
     <Exec Command="cargo fmt --all --check" WorkingDirectory="$(MSBuildThisFileDirectory)" />
     <Exec Command="cargo lint $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTestTargetDir)&quot; --profile $(CargoProfile) -- -D warnings" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
+    <!-- Again without the test hooks, as shipped: code that only that build compiles is otherwise
+         never linted, and the build itself reports rustc warnings without failing. -->
+    <Exec Command="cargo lint-shipped $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTestTargetDir)&quot; --profile $(CargoProfile) -- -D warnings" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
     <Delete Files="$(CargoTestResults)" />
     <!-- ErrorAndContinue still fails the build when a test fails, but lets the results file below
          be written first, so the pipeline shows which test failed. -->
