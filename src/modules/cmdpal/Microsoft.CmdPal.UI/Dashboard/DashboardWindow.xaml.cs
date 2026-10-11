@@ -40,6 +40,8 @@ public sealed partial class DashboardWindow : WindowEx,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>,
     IRecipient<ShowWindowMessage>,
+    IRecipient<ReloadFinishedMessage>,
+    IRecipient<ProviderEnabledStateChangedMessage>,
     IDisposable
 {
     // The space between neighboring tiles, in DIPs.
@@ -104,6 +106,8 @@ public sealed partial class DashboardWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<ReloadFinishedMessage>(this);
+        WeakReferenceMessenger.Default.Register<ProviderEnabledStateChangedMessage>(this);
 
         ApplySettings(settings);
     }
@@ -312,12 +316,26 @@ public sealed partial class DashboardWindow : WindowEx,
     private void LoadTile(DashboardTileControl tile) =>
         _ = tile.LoadAsync(_hwnd, _commandManager, _uiScheduler, _pageFactory, _appHostService, _lifetime.Token);
 
-    // Extensions may still have been loading when a tile was created. Try again on show.
+    // Extensions may still have been loading when a tile was created, and page errors never
+    // clear on their own. Try those tiles again on show.
     private void RetryUnavailableTiles()
     {
         foreach (var tile in _tiles)
         {
-            if (!tile.HasPage && !tile.IsLoading)
+            if ((!tile.HasPage || tile.HasError) && !tile.IsLoading)
+            {
+                LoadTile(tile);
+            }
+        }
+    }
+
+    // Tiles hold pages from the extension instance that was loaded when they opened. After a
+    // reload those are stale (or dead), so resolve each tile again against the new providers.
+    private void ReloadTiles(string? providerId = null)
+    {
+        foreach (var tile in _tiles)
+        {
+            if (providerId is null || tile.ProviderId == providerId)
             {
                 LoadTile(tile);
             }
@@ -720,6 +738,24 @@ public sealed partial class DashboardWindow : WindowEx,
         // The palette is about to show; get out of its way.
         DispatcherQueue.TryEnqueue(HideDashboard);
     }
+
+    public void Receive(ReloadFinishedMessage message) =>
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!_isDisposed)
+            {
+                ReloadTiles();
+            }
+        });
+
+    public void Receive(ProviderEnabledStateChangedMessage message) =>
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!_isDisposed)
+            {
+                ReloadTiles(message.ProviderId);
+            }
+        });
 
     private bool IsForThisWindow(DockCommandRoute? route) =>
         route is { } value && value.OwnerHwnd == (nint)_hwnd;

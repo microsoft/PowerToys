@@ -27,6 +27,7 @@ public sealed partial class DashboardTileControl : UserControl, IDisposable
     private static readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader ResourceLoader = new();
 
     private CommandResolution? _resolution;
+    private CancellationTokenSource? _loadCancellation;
     private DockPageNavigationViewModel? _navigation;
     private DockPageControl? _pageControl;
     private bool _isEditing;
@@ -56,6 +57,12 @@ public sealed partial class DashboardTileControl : UserControl, IDisposable
     internal bool HasOpenTransientUi => _pageControl?.HasOpenTransientUi ?? false;
 
     internal bool HasPage => _navigation?.CurrentPage is not null;
+
+    /// <summary>
+    /// Gets a value indicating whether the hosted page is showing an extension error. Page
+    /// errors stick to their page view model, so the tile has to reload to clear them.
+    /// </summary>
+    internal bool HasError => !string.IsNullOrEmpty(_navigation?.CurrentPage?.ErrorMessage);
 
     internal bool IsLoading { get; private set; }
 
@@ -90,8 +97,16 @@ public sealed partial class DashboardTileControl : UserControl, IDisposable
         TaskScheduler uiScheduler,
         IPageViewModelFactoryService pageFactory,
         IAppHostService appHostService,
-        CancellationToken cancellationToken)
+        CancellationToken lifetimeToken)
     {
+        // Only the latest load may finish; an older one would leak or replace its page.
+        _loadCancellation?.Cancel();
+        _loadCancellation?.Dispose();
+        var loadCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeToken);
+        _loadCancellation = loadCancellation;
+        var cancellationToken = loadCancellation.Token;
+
+        ReleasePage();
         ShowLoading();
         IsLoading = true;
         try
@@ -130,7 +145,7 @@ public sealed partial class DashboardTileControl : UserControl, IDisposable
             var message = DockItemActions.CreateInvocationMessage(command.ItemViewModel);
             message.DockRoute = route;
             var opened = await navigation.NavigateAsync(message, cancellationToken);
-            if (_isDisposed || !ReferenceEquals(_navigation, navigation))
+            if (_isDisposed || cancellationToken.IsCancellationRequested || !ReferenceEquals(_navigation, navigation))
             {
                 return;
             }
@@ -155,7 +170,7 @@ public sealed partial class DashboardTileControl : UserControl, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"Failed to load dashboard tile '{CommandId}' from '{ProviderId}'.", ex);
-            if (!_isDisposed)
+            if (!_isDisposed && !cancellationToken.IsCancellationRequested)
             {
                 ReleasePage();
                 ShowMessage(ResourceLoader.GetString("Dashboard_Tile_Unavailable"));
@@ -163,7 +178,11 @@ public sealed partial class DashboardTileControl : UserControl, IDisposable
         }
         finally
         {
-            IsLoading = false;
+            // A newer load owns the loading state now.
+            if (ReferenceEquals(_loadCancellation, loadCancellation))
+            {
+                IsLoading = false;
+            }
         }
     }
 
@@ -294,6 +313,9 @@ public sealed partial class DashboardTileControl : UserControl, IDisposable
         }
 
         _isDisposed = true;
+        _loadCancellation?.Cancel();
+        _loadCancellation?.Dispose();
+        _loadCancellation = null;
         ReleasePage();
     }
 }
