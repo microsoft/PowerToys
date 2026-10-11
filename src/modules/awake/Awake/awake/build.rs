@@ -36,6 +36,9 @@ fn main() {
     // at every start. It is a KnownDLL, so the loader always takes it from System32.
     println!("cargo:rustc-link-arg-bins=/DELAYLOAD:oleaut32.dll");
     println!("cargo:rustc-link-arg-bins=delayimp.lib");
+    // LOAD_LIBRARY_SEARCH_SYSTEM32: imports that are not KnownDLLs, such as wtsapi32.dll, come
+    // from System32 only, never from the folder holding a copied, standalone exe.
+    println!("cargo:rustc-link-arg-bins=/DEPENDENTLOADFLAG:0x800");
 }
 
 /// The hardening flags live in .cargo/config.toml, which Cargo reads only when it runs from this
