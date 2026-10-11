@@ -13,6 +13,7 @@ name = "awake"
 version = "0.0.0"
 dependencies = [
  "awake-core",
+ "awake-testkit",
  "cc",
  "log",
  "windows-sys",
@@ -24,6 +25,14 @@ version = "0.0.0"
 dependencies = [
  "clap",
  "serde_json",
+]
+
+[[package]]
+name = "awake-testkit"
+version = "0.0.0"
+dependencies = [
+ "awake-core",
+ "windows-sys",
 ]
 
 [[package]]

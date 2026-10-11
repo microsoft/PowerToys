@@ -1,25 +1,29 @@
-//! Binding Awake's lifetime to another process.
+//! Other processes: the one a session is bound to, and the detached Awake a hand-off starts.
 //!
-//! The process handle is opened once, at startup, so a later PID reuse cannot redirect the
-//! wait. The only window for reuse is between whoever computed the PID and that open; a target
-//! created after Awake itself cannot be the intended one, and is rejected.
+//! A bound process's handle is opened once, at startup, so a later PID reuse cannot redirect
+//! the wait. The only window for reuse is between whoever computed the PID and that open; a
+//! target created after Awake itself cannot be the intended one, and is rejected.
 
-use std::mem;
 use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
 use std::path::Path;
+use std::time::Duration;
+use std::{io, mem, ptr};
 
 use windows_sys::Win32::Foundation::{
-    ERROR_ACCESS_DENIED, FILETIME, GetLastError, HANDLE, INVALID_HANDLE_VALUE, WAIT_TIMEOUT,
+    ERROR_ACCESS_DENIED, FILETIME, GetLastError, HANDLE, INVALID_HANDLE_VALUE, WAIT_OBJECT_0, WAIT_TIMEOUT,
 };
 use windows_sys::Win32::System::Diagnostics::ToolHelp::{
     CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW, TH32CS_SNAPPROCESS,
 };
 use windows_sys::Win32::System::Threading::{
-    GetCurrentProcess, GetCurrentProcessId, GetProcessTimes, OpenProcess, PROCESS_NAME_WIN32,
-    PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE, QueryFullProcessImageNameW, WaitForSingleObject,
+    CREATE_NEW_CONSOLE, CreateProcessW, DETACHED_PROCESS, GetCurrentProcess, GetCurrentProcessId,
+    GetExitCodeProcess, GetProcessTimes, OpenProcess, PROCESS_INFORMATION, PROCESS_NAME_WIN32,
+    PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE, QueryFullProcessImageNameW, STARTUPINFOW,
+    WaitForMultipleObjects, WaitForSingleObject,
 };
 
-use super::wide::from_buffer;
+use super::last_error;
+use super::wide::{from_buffer, wide};
 
 #[derive(Debug)]
 pub struct BoundProcess {
@@ -151,9 +155,150 @@ pub fn parent_pid() -> Option<u32> {
     None
 }
 
+/// Starts Awake again with `args`, detached from the calling console, and returns at once. The
+/// original Awake options never blocked the shell that started them, and scripts rely on that.
+/// `new_console` gives the new process a console window of its own, as unbound sessions had;
+/// bound sessions run without any console, as the .NET Awake did, so no console host runs
+/// alongside them.
+pub fn spawn_detached(args: &[String], new_console: bool) -> io::Result<OwnedHandle> {
+    let exe = std::env::current_exe()?;
+    let mut command_line: Vec<u16> = std::iter::once(quote(&exe.to_string_lossy()))
+        .chain(args.iter().map(|a| quote(a)))
+        .collect::<Vec<_>>()
+        .join(" ")
+        .encode_utf16()
+        .chain(Some(0))
+        .collect();
+    // SAFETY: STARTUPINFOW and PROCESS_INFORMATION are plain data.
+    let mut startup: STARTUPINFOW = unsafe { mem::zeroed() };
+    startup.cb = mem::size_of::<STARTUPINFOW>() as u32;
+    // SAFETY: as above.
+    let mut process: PROCESS_INFORMATION = unsafe { mem::zeroed() };
+    let exe = wide(exe);
+    let flags = if new_console {
+        CREATE_NEW_CONSOLE
+    } else {
+        DETACHED_PROCESS
+    };
+    // SAFETY: all pointers are valid; the command line buffer is writable as required. No
+    // handles are inherited and no standard handles are passed, so the child uses its own.
+    let ok = unsafe {
+        CreateProcessW(
+            exe.as_ptr(),
+            command_line.as_mut_ptr(),
+            ptr::null(),
+            ptr::null(),
+            0,
+            flags,
+            ptr::null(),
+            ptr::null(),
+            &startup,
+            &mut process,
+        )
+    } != 0;
+    if !ok {
+        return Err(last_error());
+    }
+    // SAFETY: both handles are ours; the thread handle is closed and the process returned.
+    unsafe {
+        drop(OwnedHandle::from_raw_handle(process.hThread));
+        Ok(OwnedHandle::from_raw_handle(process.hProcess))
+    }
+}
+
+/// How a process started with [`spawn_detached`] got on.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Started {
+    /// It signaled `ready`.
+    Confirmed,
+    /// It exited first, with this exit code.
+    Exited(i32),
+    /// Neither happened within the time given.
+    NoWord,
+}
+
+/// Waits up to `timeout` for `child` to signal `ready` or to exit.
+pub fn wait_for_start(ready: &OwnedHandle, child: &OwnedHandle, timeout: Duration) -> Started {
+    let handles = [ready.as_raw_handle(), child.as_raw_handle()];
+    let millis = u32::try_from(timeout.as_millis()).unwrap_or(u32::MAX - 1);
+    // SAFETY: both handles are open for the duration of the call.
+    let result = unsafe { WaitForMultipleObjects(2, handles.as_ptr(), 0, millis) };
+    match result {
+        r if r == WAIT_OBJECT_0 => Started::Confirmed,
+        r if r == WAIT_OBJECT_0 + 1 => {
+            let mut code = 1u32;
+            // SAFETY: the child has exited; its handle is valid.
+            unsafe { GetExitCodeProcess(child.as_raw_handle(), &mut code) };
+            Started::Exited(code as i32)
+        }
+        _ => Started::NoWord,
+    }
+}
+
+/// Quotes one argument for the command line, following the rules `CommandLineToArgvW` reverses.
+fn quote(argument: &str) -> String {
+    if !argument.is_empty() && !argument.contains([' ', '\t', '"']) {
+        return argument.to_owned();
+    }
+    let mut quoted = String::from('"');
+    let mut backslashes = 0;
+    for c in argument.chars() {
+        match c {
+            '\\' => backslashes += 1,
+            '"' => {
+                quoted.extend(std::iter::repeat_n('\\', backslashes * 2 + 1));
+                quoted.push('"');
+                backslashes = 0;
+            }
+            _ => {
+                quoted.extend(std::iter::repeat_n('\\', backslashes));
+                quoted.push(c);
+                backslashes = 0;
+            }
+        }
+    }
+    quoted.extend(std::iter::repeat_n('\\', backslashes * 2));
+    quoted.push('"');
+    quoted
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn quoting_round_trips_through_the_windows_rules() {
+        assert_eq!(quote("for"), "for");
+        assert_eq!(quote("C:\\Program Files\\x.exe"), "\"C:\\Program Files\\x.exe\"");
+        assert_eq!(quote(""), "\"\"");
+        assert_eq!(quote("a\"b"), "\"a\\\"b\"");
+        assert_eq!(quote("dir\\ end\\"), "\"dir\\ end\\\\\"");
+    }
+
+    #[test]
+    fn a_start_is_confirmed_by_the_event_or_ends_with_the_exit_code() {
+        let ready = crate::platform::event::manual_reset(None).unwrap();
+        let mut child = std::process::Command::new("cmd.exe")
+            .args(["/c", "exit 7"])
+            .spawn()
+            .unwrap();
+        child.wait().unwrap();
+        let child: OwnedHandle = child.into();
+        assert_eq!(
+            wait_for_start(&ready, &child, Duration::from_secs(5)),
+            Started::Exited(7)
+        );
+        // SAFETY: valid event handle.
+        unsafe { windows_sys::Win32::System::Threading::SetEvent(ready.as_raw_handle()) };
+        assert_eq!(
+            wait_for_start(&ready, &child, Duration::ZERO),
+            Started::Confirmed,
+            "the event wins when both are signaled"
+        );
+        let silent = crate::platform::event::manual_reset(None).unwrap();
+        let other = crate::platform::event::manual_reset(None).unwrap();
+        assert_eq!(wait_for_start(&silent, &other, Duration::ZERO), Started::NoWord);
+    }
 
     #[test]
     fn binding_to_self_is_rejected() {

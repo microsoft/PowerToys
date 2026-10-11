@@ -4,30 +4,19 @@
 //! user selects text in it), and that must never stall the window thread that holds the
 //! keep-awake request.
 
-use std::os::windows::io::{FromRawHandle, IntoRawHandle, OwnedHandle};
-use std::sync::atomic::{AtomicPtr, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::{Receiver, SyncSender, TrySendError, sync_channel};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
-use std::{io, mem, ptr};
+use std::{io, ptr};
 
 use awake_core::text::Style;
-use windows_sys::Win32::Foundation::{HANDLE, HWND, INVALID_HANDLE_VALUE, WAIT_TIMEOUT};
+use windows_sys::Win32::Foundation::{HANDLE, INVALID_HANDLE_VALUE};
 use windows_sys::Win32::Storage::FileSystem::WriteFile;
 use windows_sys::Win32::System::Console::{
-    CTRL_BREAK_EVENT, CTRL_C_EVENT, CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT, CTRL_SHUTDOWN_EVENT,
     ENABLE_PROCESSED_OUTPUT, ENABLE_VIRTUAL_TERMINAL_PROCESSING, FreeConsole, GetConsoleMode,
-    GetConsoleProcessList, GetStdHandle, STD_ERROR_HANDLE, STD_OUTPUT_HANDLE, SetConsoleCtrlHandler,
-    SetConsoleMode, WriteConsoleW,
+    GetConsoleProcessList, GetStdHandle, STD_ERROR_HANDLE, STD_OUTPUT_HANDLE, SetConsoleMode, WriteConsoleW,
 };
-use windows_sys::Win32::System::Threading::{
-    CREATE_NEW_CONSOLE, CreateProcessW, DETACHED_PROCESS, PROCESS_INFORMATION, STARTUPINFOW, SetEvent,
-    WaitForSingleObject,
-};
-use windows_sys::Win32::UI::WindowsAndMessaging::PostMessageW;
-
-use super::last_error;
-use super::messages::WM_CONSOLE_CTRL;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Output {
@@ -287,145 +276,12 @@ fn render(receiver: &Receiver<Line>) {
     }
 }
 
-static CTRL_WINDOW: AtomicPtr<core::ffi::c_void> = AtomicPtr::new(ptr::null_mut());
-static SHUTDOWN_DONE: AtomicPtr<core::ffi::c_void> = AtomicPtr::new(ptr::null_mut());
-
-/// Routes Ctrl+C, closing the console window, sign-out and shutdown to the window thread.
-pub fn install_ctrl_handler(window: HWND) {
-    CTRL_WINDOW.store(window, Ordering::Release);
-    // Intentionally never closed: the handler may wait on it until the process ends.
-    if let Ok(done) = super::event::manual_reset(None) {
-        SHUTDOWN_DONE.store(done.into_raw_handle(), Ordering::Release);
-    }
-    // SAFETY: the handler is a plain function valid for the process lifetime.
-    unsafe { SetConsoleCtrlHandler(Some(ctrl_handler), 1) };
-}
-
-/// Lets a pending console close or shutdown proceed once Awake has cleaned up.
-pub fn signal_shutdown_complete() {
-    let done = SHUTDOWN_DONE.load(Ordering::Acquire);
-    if !done.is_null() {
-        // SAFETY: valid event created in `install_ctrl_handler`.
-        unsafe { SetEvent(done) };
-    }
-}
-
-unsafe extern "system" fn ctrl_handler(kind: u32) -> i32 {
-    let window = CTRL_WINDOW.load(Ordering::Acquire);
-    if window.is_null() {
-        return 0;
-    }
-    // SAFETY: posting to a window owned by another thread is allowed.
-    unsafe { PostMessageW(window, WM_CONSOLE_CTRL, kind as usize, 0) };
-    match kind {
-        // Returning TRUE keeps Windows from ending the process, so if the window thread is hung
-        // nothing else would: end it here once the watchdog time has passed.
-        CTRL_C_EVENT | CTRL_BREAK_EVENT => {
-            let done = SHUTDOWN_DONE.load(Ordering::Acquire);
-            let millis = super::waiter::watchdog().as_millis() as u32;
-            // SAFETY: valid event handle.
-            if !done.is_null() && unsafe { WaitForSingleObject(done, millis) } == WAIT_TIMEOUT {
-                super::waiter::end_hung_process();
-            }
-            1
-        }
-        // Returning from these ends the process, so give the window thread time to clean up.
-        CTRL_CLOSE_EVENT | CTRL_LOGOFF_EVENT | CTRL_SHUTDOWN_EVENT => {
-            let done = SHUTDOWN_DONE.load(Ordering::Acquire);
-            if !done.is_null() {
-                // SAFETY: valid event handle.
-                unsafe { WaitForSingleObject(done, 4000) };
-            }
-            1
-        }
-        _ => 0,
-    }
-}
-
-/// Starts Awake again with `args`, detached from the calling console, and returns at once. The
-/// original Awake options never blocked the shell that started them, and scripts rely on that.
-/// `new_console` gives the new process a console window of its own, as unbound sessions had;
-/// bound sessions run without any console, as the .NET Awake did, so no console host runs
-/// alongside them.
-pub fn hand_off(args: &[String], new_console: bool) -> io::Result<OwnedHandle> {
-    let exe = std::env::current_exe()?;
-    let mut command_line: Vec<u16> = std::iter::once(quote(&exe.to_string_lossy()))
-        .chain(args.iter().map(|a| quote(a)))
-        .collect::<Vec<_>>()
-        .join(" ")
-        .encode_utf16()
-        .chain(Some(0))
-        .collect();
-    // SAFETY: STARTUPINFOW and PROCESS_INFORMATION are plain data.
-    let mut startup: STARTUPINFOW = unsafe { mem::zeroed() };
-    startup.cb = mem::size_of::<STARTUPINFOW>() as u32;
-    // SAFETY: as above.
-    let mut process: PROCESS_INFORMATION = unsafe { mem::zeroed() };
-    let exe = super::wide::wide(exe);
-    let flags = if new_console {
-        CREATE_NEW_CONSOLE
-    } else {
-        DETACHED_PROCESS
-    };
-    // SAFETY: all pointers are valid; the command line buffer is writable as required. No
-    // handles are inherited and no standard handles are passed, so the child uses its own.
-    let ok = unsafe {
-        CreateProcessW(
-            exe.as_ptr(),
-            command_line.as_mut_ptr(),
-            ptr::null(),
-            ptr::null(),
-            0,
-            flags,
-            ptr::null(),
-            ptr::null(),
-            &startup,
-            &mut process,
-        )
-    } != 0;
-    if !ok {
-        return Err(last_error());
-    }
-    // SAFETY: both handles are ours; the thread handle is closed and the process returned.
-    unsafe {
-        drop(OwnedHandle::from_raw_handle(process.hThread));
-        Ok(OwnedHandle::from_raw_handle(process.hProcess))
-    }
-}
-
 /// Leaves a console Awake does not need: one created just for it when a program without a
 /// console started it bound to a process or under PowerToys.
 pub fn detach() {
     restore_mode();
     // SAFETY: plain call; afterwards this process has no console.
     unsafe { FreeConsole() };
-}
-
-/// Quotes one argument for the command line, following the rules `CommandLineToArgvW` reverses.
-fn quote(argument: &str) -> String {
-    if !argument.is_empty() && !argument.contains([' ', '\t', '"']) {
-        return argument.to_owned();
-    }
-    let mut quoted = String::from('"');
-    let mut backslashes = 0;
-    for c in argument.chars() {
-        match c {
-            '\\' => backslashes += 1,
-            '"' => {
-                quoted.extend(std::iter::repeat_n('\\', backslashes * 2 + 1));
-                quoted.push('"');
-                backslashes = 0;
-            }
-            _ => {
-                quoted.extend(std::iter::repeat_n('\\', backslashes));
-                quoted.push(c);
-                backslashes = 0;
-            }
-        }
-    }
-    quoted.extend(std::iter::repeat_n('\\', backslashes * 2));
-    quoted.push('"');
-    quoted
 }
 
 #[cfg(test)]
@@ -458,14 +314,5 @@ mod tests {
         // A lone ESC is dropped rather than written as a control character.
         assert_eq!(strip_escapes("a\x1bb"), "ab");
         assert_eq!(strip_escapes("tail\x1b["), "tail");
-    }
-
-    #[test]
-    fn quoting_round_trips_through_the_windows_rules() {
-        assert_eq!(quote("for"), "for");
-        assert_eq!(quote("C:\\Program Files\\x.exe"), "\"C:\\Program Files\\x.exe\"");
-        assert_eq!(quote(""), "\"\"");
-        assert_eq!(quote("a\"b"), "\"a\\\"b\"");
-        assert_eq!(quote("dir\\ end\\"), "\"dir\\ end\\\\\"");
     }
 }

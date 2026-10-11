@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["awake-core", "awake"]
+members = ["awake-core", "awake", "awake-testkit"]
 
 [workspace.package]
 # The product version comes from src/Version.props at build time; this one is for Cargo only.
@@ -14,6 +14,7 @@ publish = false
 
 [workspace.dependencies]
 awake-core = { path = "awake-core" }
+awake-testkit = { path = "awake-testkit" }
 clap = { version = "4.6", default-features = false, features = ["std", "derive", "error-context", "suggestions"] }
 log = "0.4"
 serde_json = { version = "1.0", features = ["preserve_order"] }

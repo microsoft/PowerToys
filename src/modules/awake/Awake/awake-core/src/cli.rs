@@ -11,7 +11,7 @@ use clap::error::{ContextKind, ContextValue, ErrorKind};
 use clap::{ArgAction, Parser, Subcommand};
 
 use crate::duration::{DurationError, parse_duration};
-use crate::time::{ParsedTime, parse_time};
+use crate::time::{CivilDateTime, DateTimeOffset, LocalZone, ParsedTime, parse_time};
 
 /// The executable name, as shown in help and error text.
 pub const PROGRAM: &str = "PowerToys.Awake";
@@ -66,6 +66,78 @@ pub enum UntilSpec {
     /// `--expire-at` text that is not ISO 8601, such as `10/11/2026 5:00 PM`; the platform layer
     /// parses it with the user's regional format, as the .NET version did.
     Text(String),
+}
+
+/// Why [`resolve_until`] turned a time down.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum UntilError {
+    /// Not a time Awake can read, or a local time that does not exist, such as one inside a
+    /// daylight saving gap. Holds the time as the user should see it.
+    Unreadable(String),
+    /// The time has already passed.
+    Past,
+}
+
+/// When an `until` session ends. A time of day means its next occurrence: later today, else
+/// tomorrow. `zone` turns local times into instants, `regional` reads `--expire-at` text in the
+/// user's regional format, and `now` is the current time.
+///
+/// # Errors
+///
+/// An [`UntilError`] for a time that cannot be resolved or that has already passed.
+pub fn resolve_until(
+    spec: &UntilSpec,
+    zone: &dyn LocalZone,
+    regional: &dyn Fn(&str) -> Option<CivilDateTime>,
+    now: DateTimeOffset,
+) -> Result<DateTimeOffset, UntilError> {
+    let until = match spec {
+        UntilSpec::Parsed(ParsedTime::Absolute(at)) => *at,
+        UntilSpec::Parsed(ParsedTime::Local(local)) => zone
+            .resolve(*local)
+            .ok_or_else(|| UntilError::Unreadable(civil_text(local)))?,
+        UntilSpec::Parsed(ParsedTime::TimeOfDay { hour, minute, second }) => {
+            let today = now.local();
+            let at = |date: CivilDateTime| {
+                CivilDateTime::new(date.year, date.month, date.day, *hour, *minute, *second)
+                    .and_then(|local| zone.resolve(local))
+            };
+            match at(today) {
+                Some(candidate) if candidate.utc > now.utc => candidate,
+                _ => {
+                    let tomorrow =
+                        CivilDateTime::from_timestamp(today.to_timestamp().saturating_add_secs(86_400));
+                    at(tomorrow).ok_or_else(|| UntilError::Unreadable(clock_text(*hour, *minute, *second)))?
+                }
+            }
+        }
+        UntilSpec::Text(input) => regional(input)
+            .and_then(|local| zone.resolve(local))
+            .ok_or_else(|| UntilError::Unreadable(input.clone()))?,
+    };
+    if until.utc <= now.utc {
+        return Err(UntilError::Past);
+    }
+    Ok(until)
+}
+
+/// `2026-03-29 02:30`, the way the user could have typed it.
+fn civil_text(local: &CivilDateTime) -> String {
+    format!(
+        "{:04}-{:02}-{:02} {}",
+        local.year,
+        local.month,
+        local.day,
+        clock_text(local.hour, local.minute, local.second)
+    )
+}
+
+fn clock_text(hour: u8, minute: u8, second: u8) -> String {
+    if second == 0 {
+        format!("{hour:02}:{minute:02}")
+    } else {
+        format!("{hour:02}:{minute:02}:{second:02}")
+    }
 }
 
 /// A process whose exit ends the session.
@@ -840,5 +912,106 @@ mod tests {
             CliError::Pid { input: "abc".into() }.to_string(),
             "'abc' is not a valid process ID"
         );
+    }
+
+    mod until {
+        use super::super::*;
+        use crate::time::FixedZone;
+
+        const ZONE: FixedZone = FixedZone(60);
+
+        fn local(day: u8, hour: u8, minute: u8, second: u8) -> DateTimeOffset {
+            ZONE.resolve(CivilDateTime::new(2026, 3, day, hour, minute, second).unwrap())
+                .unwrap()
+        }
+
+        fn no_regional(_: &str) -> Option<CivilDateTime> {
+            None
+        }
+
+        fn resolve(spec: &UntilSpec, now: DateTimeOffset) -> Result<DateTimeOffset, UntilError> {
+            resolve_until(spec, &ZONE, &no_regional, now)
+        }
+
+        fn time_of_day(hour: u8, minute: u8) -> UntilSpec {
+            UntilSpec::Parsed(ParsedTime::TimeOfDay {
+                hour,
+                minute,
+                second: 0,
+            })
+        }
+
+        #[test]
+        fn a_time_of_day_means_the_next_one() {
+            let now = local(28, 10, 30, 15);
+            assert_eq!(resolve(&time_of_day(18, 0), now), Ok(local(28, 18, 0, 0)));
+            assert_eq!(resolve(&time_of_day(10, 30), now), Ok(local(29, 10, 30, 0)));
+            // Not later than now, so tomorrow's.
+            assert_eq!(
+                resolve(&time_of_day(10, 30), local(28, 10, 30, 0)),
+                Ok(local(29, 10, 30, 0))
+            );
+        }
+
+        #[test]
+        fn past_times_are_refused() {
+            let now = local(28, 10, 0, 0);
+            let past = UntilSpec::Parsed(ParsedTime::Absolute(local(28, 9, 0, 0)));
+            assert_eq!(resolve(&past, now), Err(UntilError::Past));
+            let exactly_now = UntilSpec::Parsed(ParsedTime::Absolute(now));
+            assert_eq!(resolve(&exactly_now, now), Err(UntilError::Past));
+            let local_past = UntilSpec::Parsed(ParsedTime::Local(
+                CivilDateTime::new(2026, 3, 27, 12, 0, 0).unwrap(),
+            ));
+            assert_eq!(resolve(&local_past, now), Err(UntilError::Past));
+        }
+
+        #[test]
+        fn regional_text_is_read_by_the_platform() {
+            let now = local(28, 10, 0, 0);
+            let regional = |text: &str| {
+                (text == "28.03.2026 18:00").then(|| CivilDateTime::new(2026, 3, 28, 18, 0, 0).unwrap())
+            };
+            let spec = UntilSpec::Text("28.03.2026 18:00".into());
+            assert_eq!(
+                resolve_until(&spec, &ZONE, &regional, now),
+                Ok(local(28, 18, 0, 0))
+            );
+            let soonish = UntilSpec::Text("soonish".into());
+            assert_eq!(
+                resolve_until(&soonish, &ZONE, &regional, now),
+                Err(UntilError::Unreadable("soonish".into()))
+            );
+        }
+
+        /// A zone where 02:00 to 03:00 does not exist, like the night clocks go forward.
+        struct Gap;
+
+        impl LocalZone for Gap {
+            fn resolve(&self, local: CivilDateTime) -> Option<DateTimeOffset> {
+                (local.hour != 2).then(|| ZONE.resolve(local)).flatten()
+            }
+        }
+
+        #[test]
+        fn local_times_that_do_not_exist_are_named_as_typed() {
+            let now = local(28, 10, 0, 0);
+            let skipped = UntilSpec::Parsed(ParsedTime::Local(
+                CivilDateTime::new(2026, 3, 29, 2, 30, 0).unwrap(),
+            ));
+            assert_eq!(
+                resolve_until(&skipped, &Gap, &no_regional, now),
+                Err(UntilError::Unreadable("2026-03-29 02:30".into()))
+            );
+            let tonight = UntilSpec::Parsed(ParsedTime::TimeOfDay {
+                hour: 2,
+                minute: 30,
+                second: 5,
+            });
+            assert_eq!(
+                resolve_until(&tonight, &Gap, &no_regional, now),
+                Err(UntilError::Unreadable("02:30:05".into()))
+            );
+        }
     }
 }

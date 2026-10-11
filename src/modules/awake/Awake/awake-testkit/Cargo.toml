@@ -1,0 +1,27 @@
+[package]
+name = "awake-testkit"
+description = "Test support for PowerToys Awake: starting it as the runner does, and measuring it."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+awake-core.workspace = true
+
+[dependencies.windows-sys]
+workspace = true
+features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_ProcessStatus",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+]
+
+[lints]
+workspace = true

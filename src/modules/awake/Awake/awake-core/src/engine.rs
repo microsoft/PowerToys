@@ -98,15 +98,29 @@ pub enum Save {
     New,
 }
 
-/// Why the process is asked to exit.
+/// Why the process exits. The engine raises all but [`ExitReason::TargetExited`]; the Windows
+/// layer raises the rest from what it observes, and maps every reason to its exit code and
+/// farewell through [`ExitReason::exit_code`] and `text::farewell`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ExitReason {
-    /// The user chose Exit.
+    /// Asked to stop: Exit from the menu, the runner's exit event, Ctrl+C, or a window close.
     Requested,
     /// A command-line session reached its end.
     TimeUp,
+    /// The process the session was bound to exited.
+    TargetExited,
     /// Windows refused the keep-awake request of a command-line session.
     PowerRequestFailed,
+}
+
+impl ExitReason {
+    /// The process exit code: 1 when the session could not do its job, 0 otherwise.
+    pub fn exit_code(self) -> i32 {
+        match self {
+            ExitReason::Requested | ExitReason::TimeUp | ExitReason::TargetExited => 0,
+            ExitReason::PowerRequestFailed => 1,
+        }
+    }
 }
 
 /// Something the Windows layer must do, in the order given.
@@ -828,6 +842,14 @@ mod tests {
         assert_eq!(engine.apply_settings(&settings(Mode::Passive), at(0)), []);
         let effects = engine.tray(TrayCommand::Off, at(0));
         assert!(!effects.iter().any(|e| matches!(e, Effect::Persist(_))));
+    }
+
+    #[test]
+    fn only_a_refused_power_request_exits_with_an_error() {
+        assert_eq!(ExitReason::Requested.exit_code(), 0);
+        assert_eq!(ExitReason::TimeUp.exit_code(), 0);
+        assert_eq!(ExitReason::TargetExited.exit_code(), 0);
+        assert_eq!(ExitReason::PowerRequestFailed.exit_code(), 1);
     }
 
     #[test]

@@ -10,15 +10,6 @@ use windows_sys::Win32::UI::Shell::{FOLDERID_LocalAppData, KF_FLAG_DEFAULT, SHGe
 use super::hresult_error;
 use super::wide::from_nul_terminated;
 
-/// Test hooks, compiled in only with the `test-hooks` feature, so automated tests can run next to
-/// a real PowerToys installation without touching it. The first replaces
-/// `%LOCALAPPDATA%\Microsoft\PowerToys`; the second is appended to the names of Awake's kernel
-/// objects (single-instance mutex and exit event).
-#[cfg(feature = "test-hooks")]
-const DATA_DIR_VARIABLE: &str = "POWERTOYS_AWAKE_DATA_DIR";
-#[cfg(feature = "test-hooks")]
-const OBJECT_SUFFIX_VARIABLE: &str = "POWERTOYS_AWAKE_OBJECT_SUFFIX";
-
 #[derive(Clone, Debug)]
 pub struct Paths {
     /// `%LOCALAPPDATA%\Microsoft\PowerToys`.
@@ -36,14 +27,16 @@ impl Paths {
         })
     }
 
+    /// Under test, `hook_names::DATA_DIR` and `hook_names::OBJECT_SUFFIX` let tests run next to
+    /// a real PowerToys installation without touching it.
     #[cfg(feature = "test-hooks")]
     pub fn resolve() -> io::Result<Paths> {
-        let object_suffix = std::env::var(OBJECT_SUFFIX_VARIABLE)
+        let object_suffix = std::env::var(crate::hook_names::OBJECT_SUFFIX)
             .unwrap_or_default()
             .chars()
             .filter(|c| c.is_ascii_alphanumeric() || *c == '-')
             .collect();
-        let root = match std::env::var_os(DATA_DIR_VARIABLE).filter(|v| !v.is_empty()) {
+        let root = match std::env::var_os(crate::hook_names::DATA_DIR).filter(|v| !v.is_empty()) {
             Some(dir) => PathBuf::from(dir),
             None => local_app_data()?.join("Microsoft").join("PowerToys"),
         };

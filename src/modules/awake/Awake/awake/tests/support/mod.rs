@@ -1,8 +1,7 @@
-//! Helpers for driving the real executable in an isolated sandbox.
+//! Driving the real executable in an isolated sandbox. What the `measure` example needs as well
+//! lives in `awake-testkit`.
 
 #![allow(dead_code)]
-
-pub mod runner;
 
 use std::ffi::OsString;
 use std::io::Read;
@@ -13,30 +12,22 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Output, Stdio};
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
-use std::{fs, mem, ptr};
+use std::{fs, ptr};
 
-use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, HWND};
+use awake_testkit::{hook_names, runner, wide};
+use windows_sys::Win32::Foundation::{CloseHandle, HWND};
 use windows_sys::Win32::System::Console::{CTRL_BREAK_EVENT, GenerateConsoleCtrlEvent};
-use windows_sys::Win32::System::Diagnostics::ToolHelp::{
-    CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW, TH32CS_SNAPPROCESS,
-};
 use windows_sys::Win32::System::Power::{CallNtPowerInformation, SystemExecutionState};
-use windows_sys::Win32::System::ProcessStatus::{K32GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS_EX};
 use windows_sys::Win32::System::Threading::{
-    CreateEventW, DETACHED_PROCESS, EVENT_MODIFY_STATE, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources,
-    GetProcessHandleCount, OpenEventW, SetEvent,
+    CreateEventW, DETACHED_PROCESS, EVENT_MODIFY_STATE, OpenEventW, SetEvent,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-    ENDSESSION_CLOSEAPP, FindWindowExW, GetWindowThreadProcessId, PostMessageW, SMTO_ABORTIFHUNG,
-    SendMessageTimeoutW, WM_CLOSE, WM_ENDSESSION, WM_NULL,
+    ENDSESSION_CLOSEAPP, PostMessageW, SMTO_ABORTIFHUNG, SendMessageTimeoutW, WM_CLOSE, WM_ENDSESSION,
+    WM_NULL,
 };
 
 pub const EXE: &str = env!("CARGO_BIN_EXE_awake");
 const EXIT_EVENT: &str = "Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
-
-pub fn wide(text: &str) -> Vec<u16> {
-    text.encode_utf16().chain(Some(0)).collect()
-}
 
 /// A private `%LOCALAPPDATA%\Microsoft\PowerToys` and set of kernel object names.
 pub struct Sandbox {
@@ -70,14 +61,15 @@ impl Sandbox {
     /// Starts Awake exactly as the runner does: `flags` for creation, no standard handles and no
     /// inherited handles.
     pub fn launch_like_runner(&self, args: &[&str], flags: u32) -> runner::Launched {
-        let env = [
-            ("POWERTOYS_AWAKE_DATA_DIR", self.root.clone().into_os_string()),
-            (
-                "POWERTOYS_AWAKE_OBJECT_SUFFIX",
-                OsString::from(self.object_suffix()),
-            ),
-        ];
-        runner::launch(EXE, args, &env, flags).expect("start awake")
+        runner::launch(EXE, args, &self.environment(), flags).expect("start awake")
+    }
+
+    /// The test hooks that point Awake at this sandbox.
+    pub fn environment(&self) -> [(&'static str, OsString); 2] {
+        [
+            (hook_names::DATA_DIR, self.root.clone().into_os_string()),
+            (hook_names::OBJECT_SUFFIX, OsString::from(self.object_suffix())),
+        ]
     }
 
     /// Starts Awake in the test's own console, the way a shell would.
@@ -85,8 +77,7 @@ impl Sandbox {
         let mut command = Command::new(EXE);
         command
             .args(args)
-            .env("POWERTOYS_AWAKE_DATA_DIR", &self.root)
-            .env("POWERTOYS_AWAKE_OBJECT_SUFFIX", self.object_suffix())
+            .envs(self.environment())
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
@@ -98,14 +89,7 @@ impl Sandbox {
     }
 
     pub fn log(&self) -> String {
-        let dir = self.root.join("Awake").join("Logs");
-        let mut text = String::new();
-        for version in fs::read_dir(&dir).into_iter().flatten().flatten() {
-            for file in fs::read_dir(version.path()).into_iter().flatten().flatten() {
-                text.push_str(&fs::read_to_string(file.path()).unwrap_or_default());
-            }
-        }
-        text
+        awake_testkit::read_logs(&self.root.join("Awake").join("Logs"))
     }
 
     /// Waits until the log contains `needle` `count` times.
@@ -293,30 +277,6 @@ pub fn wait_exit(child: &mut Child, timeout: Duration) -> Option<i32> {
     None
 }
 
-/// The hidden tray window of `pid`.
-pub fn find_window(pid: u32, timeout: Duration) -> Option<HWND> {
-    let class = wide("Awake.MessageWindow");
-    let deadline = Instant::now() + timeout;
-    while Instant::now() < deadline {
-        let mut window: HWND = ptr::null_mut();
-        loop {
-            // SAFETY: iterating top-level windows by class name.
-            window = unsafe { FindWindowExW(ptr::null_mut(), window, class.as_ptr(), ptr::null()) };
-            if window.is_null() {
-                break;
-            }
-            let mut owner = 0;
-            // SAFETY: valid window handle from FindWindowExW.
-            unsafe { GetWindowThreadProcessId(window, &mut owner) };
-            if owner == pid {
-                return Some(window);
-            }
-        }
-        std::thread::sleep(Duration::from_millis(25));
-    }
-    None
-}
-
 /// Whether the window thread answers within `timeout`; a deadlocked thread would not.
 pub fn responsive(window: HWND, timeout: Duration) -> bool {
     let mut result = 0;
@@ -343,56 +303,6 @@ pub fn close_window(window: HWND) {
 pub fn end_session_for_restart_manager(window: HWND) {
     // SAFETY: posting to another process's window; the message carries no pointers.
     unsafe { PostMessageW(window, WM_ENDSESSION, 1, ENDSESSION_CLOSEAPP as isize) };
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Resources {
-    pub private_bytes: usize,
-    pub working_set: usize,
-    pub handles: u32,
-    pub gdi_objects: u32,
-    pub user_objects: u32,
-    pub threads: u32,
-}
-
-pub fn resources(child: &Child) -> Resources {
-    let process: HANDLE = child.as_raw_handle();
-    // SAFETY: plain data, valid process handle with full access (we created it).
-    unsafe {
-        let mut memory: PROCESS_MEMORY_COUNTERS_EX = mem::zeroed();
-        memory.cb = mem::size_of::<PROCESS_MEMORY_COUNTERS_EX>() as u32;
-        K32GetProcessMemoryInfo(process, (&raw mut memory).cast(), memory.cb);
-        let mut handles = 0;
-        GetProcessHandleCount(process, &mut handles);
-        Resources {
-            private_bytes: memory.PrivateUsage,
-            working_set: memory.WorkingSetSize,
-            handles,
-            gdi_objects: GetGuiResources(process, GR_GDIOBJECTS),
-            user_objects: GetGuiResources(process, GR_USEROBJECTS),
-            threads: thread_count(child.id()),
-        }
-    }
-}
-
-fn thread_count(pid: u32) -> u32 {
-    // SAFETY: snapshot handle closed below; entry is sized.
-    unsafe {
-        let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        let mut entry: PROCESSENTRY32W = mem::zeroed();
-        entry.dwSize = mem::size_of::<PROCESSENTRY32W>() as u32;
-        let mut more = Process32FirstW(snapshot, &mut entry) != 0;
-        let mut threads = 0;
-        while more {
-            if entry.th32ProcessID == pid {
-                threads = entry.cntThreads;
-                break;
-            }
-            more = Process32NextW(snapshot, &mut entry) != 0;
-        }
-        windows_sys::Win32::Foundation::CloseHandle(snapshot);
-        threads
-    }
 }
 
 /// The machine-wide execution state: what all processes together currently request.

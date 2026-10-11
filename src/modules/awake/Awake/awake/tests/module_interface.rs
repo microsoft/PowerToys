@@ -12,21 +12,21 @@
 mod support;
 
 use std::ffi::c_void;
+use std::fs;
+use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
-use std::{fs, mem, ptr};
 
+use awake_core::mode::Mode;
+use awake_testkit::process::{any_awake_window, find_window, image_path, process_ids_named};
+use awake_testkit::{log_lines, read_logs, wide};
 use support::*;
-use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, HWND, WAIT_OBJECT_0};
-use windows_sys::Win32::System::Diagnostics::ToolHelp::{
-    CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW, TH32CS_SNAPPROCESS,
-};
+use windows_sys::Win32::Foundation::WAIT_OBJECT_0;
 use windows_sys::Win32::System::LibraryLoader::{GetProcAddress, LoadLibraryW};
 use windows_sys::Win32::System::Threading::{
-    OpenProcess, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE,
-    PROCESS_TERMINATE, QueryFullProcessImageNameW, TerminateProcess, WaitForSingleObject,
+    OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE, PROCESS_TERMINATE, TerminateProcess,
+    WaitForSingleObject,
 };
-use windows_sys::Win32::UI::WindowsAndMessaging::FindWindowExW;
 
 /// Slots of `PowertoyModuleIface`, in declaration order (there is no virtual destructor).
 const SET_CONFIG: usize = 3;
@@ -132,7 +132,7 @@ fn the_runner_contract_still_holds() {
     // The Settings app reaches Awake through set_config, which writes settings.json.
     module.set_config(r#"{"name":"Awake","version":"1.0","properties":{"keepDisplayOn":false,"mode":1,"intervalHours":0,"intervalMinutes":1,"expirationDateTime":"2026-01-01T00:00:00+00:00","customTrayTimes":{}}}"#);
     assert!(
-        wait_for_real_log("Entered Indefinite.", Duration::from_secs(10)),
+        wait_for_real_log(&log_lines::entered(Mode::Indefinite), Duration::from_secs(10)),
         "Awake applied the runner's settings"
     );
 
@@ -146,7 +146,7 @@ fn the_runner_contract_still_holds() {
         started.elapsed()
     );
     assert!(
-        real_log().contains("Exit event signaled."),
+        real_log().contains(log_lines::EXIT_EVENT_SIGNALED),
         "a clean exit, not TerminateProcess"
     );
 
@@ -157,24 +157,21 @@ fn the_runner_contract_still_holds() {
 /// The Awake the module started, held open so its exit can be checked without a pid lookup, and
 /// ended when dropped so a failed assertion never leaves it holding the machine awake.
 struct StagedAwake {
-    process: HANDLE,
+    process: OwnedHandle,
 }
 
 impl StagedAwake {
     fn exited(&self) -> bool {
         // SAFETY: `process` is an open handle with SYNCHRONIZE access.
-        unsafe { WaitForSingleObject(self.process, 0) == WAIT_OBJECT_0 }
+        unsafe { WaitForSingleObject(self.process.as_raw_handle(), 0) == WAIT_OBJECT_0 }
     }
 }
 
 impl Drop for StagedAwake {
     fn drop(&mut self) {
-        // SAFETY: `process` is an open handle with PROCESS_TERMINATE access, closed exactly once.
-        unsafe {
-            if !self.exited() {
-                TerminateProcess(self.process, 1);
-            }
-            CloseHandle(self.process);
+        if !self.exited() {
+            // SAFETY: `process` is an open handle with PROCESS_TERMINATE access.
+            unsafe { TerminateProcess(self.process.as_raw_handle(), 1) };
         }
     }
 }
@@ -197,62 +194,25 @@ fn find_staged_awake(exe: &Path, timeout: Duration) -> Option<StagedAwake> {
             if process.is_null() {
                 continue;
             }
-            let ours = image_path(process)
+            // SAFETY: a fresh handle we own.
+            let process = unsafe { OwnedHandle::from_raw_handle(process) };
+            let ours = image_path(&process)
                 .and_then(|path| fs::canonicalize(path).ok())
                 .is_some_and(|path| path.as_os_str().eq_ignore_ascii_case(exe.as_os_str()));
             if ours && find_window(pid, Duration::from_millis(100)).is_some() {
                 return Some(StagedAwake { process });
             }
-            // SAFETY: the handle opened above, not used afterwards.
-            unsafe { CloseHandle(process) };
         }
         std::thread::sleep(Duration::from_millis(50));
     }
     None
 }
 
-fn process_ids_named(name: &str) -> Vec<u32> {
-    let mut ids = Vec::new();
-    // SAFETY: the snapshot handle is closed below; the entry is sized as the API requires.
-    unsafe {
-        let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        let mut entry: PROCESSENTRY32W = mem::zeroed();
-        entry.dwSize = mem::size_of::<PROCESSENTRY32W>() as u32;
-        let mut more = Process32FirstW(snapshot, &mut entry) != 0;
-        while more {
-            let len = entry
-                .szExeFile
-                .iter()
-                .position(|&c| c == 0)
-                .unwrap_or(entry.szExeFile.len());
-            if String::from_utf16_lossy(&entry.szExeFile[..len]).eq_ignore_ascii_case(name) {
-                ids.push(entry.th32ProcessID);
-            }
-            more = Process32NextW(snapshot, &mut entry) != 0;
-        }
-        CloseHandle(snapshot);
-    }
-    ids
-}
-
-fn image_path(process: HANDLE) -> Option<PathBuf> {
-    let mut buffer = [0u16; 1024];
-    let mut len = buffer.len() as u32;
-    // SAFETY: `buffer` holds `len` units; on success `len` is the length written.
-    let ok =
-        unsafe { QueryFullProcessImageNameW(process, PROCESS_NAME_WIN32, buffer.as_mut_ptr(), &mut len) };
-    (ok != 0).then(|| PathBuf::from(String::from_utf16_lossy(&buffer[..len as usize])))
-}
-
 /// Whether every Awake tray window, whoever owns it, is gone within `timeout`.
 fn no_awake_window_within(timeout: Duration) -> bool {
-    let class = wide("Awake.MessageWindow");
     let deadline = Instant::now() + timeout;
     loop {
-        // SAFETY: looking up a top-level window by class.
-        let window: HWND =
-            unsafe { FindWindowExW(ptr::null_mut(), ptr::null_mut(), class.as_ptr(), ptr::null()) };
-        if window.is_null() {
+        if !any_awake_window() {
             return true;
         }
         if Instant::now() >= deadline {
@@ -263,19 +223,8 @@ fn no_awake_window_within(timeout: Duration) -> bool {
 }
 
 fn real_log() -> String {
-    let logs = PathBuf::from(std::env::var("LOCALAPPDATA").unwrap()).join(r"Microsoft\PowerToys\Awake\Logs");
-    let mut text = String::new();
-    for version in fs::read_dir(&logs)
-        .into_iter()
-        .flatten()
-        .flatten()
-        .filter(|e| e.path().is_dir())
-    {
-        for file in fs::read_dir(version.path()).into_iter().flatten().flatten() {
-            text.push_str(&fs::read_to_string(file.path()).unwrap_or_default());
-        }
-    }
-    text
+    let local = PathBuf::from(std::env::var("LOCALAPPDATA").unwrap());
+    read_logs(&local.join(r"Microsoft\PowerToys\Awake\Logs"))
 }
 
 fn wait_for_real_log(needle: &str, timeout: Duration) -> bool {

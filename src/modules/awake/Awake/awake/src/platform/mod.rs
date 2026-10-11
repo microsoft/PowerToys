@@ -1,8 +1,14 @@
-//! Thin, safe wrappers over the Windows APIs Awake uses. Each module owns one concern and
-//! keeps its `unsafe` blocks small and documented.
+//! Everything Awake asks of Windows. Each module owns one concern and keeps its `unsafe` blocks
+//! small and documented.
+//!
+//! Most modules are plain wrappers. A few also hold policy that needs the Windows details to
+//! decide: `tray` retries while Explorer is not ready, `settings_store` never leaves other
+//! programs a half-written file, `waiter` and `watchdog` make sure a stop request ends the
+//! process, and `security` refuses kernel objects another program planted.
 
 pub mod clock;
 pub mod console;
+pub mod console_ctrl;
 pub mod event;
 pub mod instance;
 pub mod locale;
@@ -17,6 +23,8 @@ pub mod settings_store;
 pub mod theme;
 pub mod tray;
 pub mod waiter;
+pub mod watch;
+pub mod watchdog;
 pub mod wide;
 pub mod window;
 

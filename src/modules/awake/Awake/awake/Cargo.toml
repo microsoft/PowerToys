@@ -58,10 +58,13 @@ features = [
     "Win32_UI_WindowsAndMessaging",
 ]
 
-# Only the tests measure processes and run them under job objects.
+[dev-dependencies]
+awake-testkit.workspace = true
+
+# Only the tests run Awake under job objects, and only `measure` counts CPU cycles.
 [dev-dependencies.windows-sys]
 workspace = true
-features = ["Win32_System_JobObjects", "Win32_System_ProcessStatus", "Win32_System_WindowsProgramming"]
+features = ["Win32_System_JobObjects", "Win32_System_WindowsProgramming"]
 
 [build-dependencies]
 cc.workspace = true

@@ -3,8 +3,9 @@
 //! The look: an accented title, `●` for what is happening, `⎿` for details,
 //! and one dim status line that updates in place.
 
-use crate::cli::{CliError, Expected, PROGRAM};
+use crate::cli::{CliError, Expected, PROGRAM, UntilError};
 use crate::duration::{Countdown, DurationError};
+use crate::engine::ExitReason;
 use crate::strings::{StringId, Strings};
 
 // From `[workspace.package]`, so the help text and the manifest cannot drift apart.
@@ -199,6 +200,14 @@ pub fn cli_error_message(strings: Strings, error: &CliError) -> String {
     }
 }
 
+/// The localized message for an `until` time that [`crate::cli::resolve_until`] turned down.
+pub fn until_error_message(strings: Strings, error: &UntilError) -> String {
+    match error {
+        UntilError::Unreadable(input) => strings.format(StringId::CliErrTime, input),
+        UntilError::Past => strings.get(StringId::CliErrPast).to_owned(),
+    }
+}
+
 fn is_integer(text: &str) -> bool {
     let text = text.trim();
     let digits = text.strip_prefix(['-', '+']).unwrap_or(text);
@@ -259,7 +268,19 @@ pub fn status_line(strings: Strings, style: Style, remaining: Option<u64>) -> St
 }
 
 /// The last line, replacing the status line, saying why the session ended.
-pub fn farewell(strings: Strings, style: Style, message: StringId) -> String {
+pub fn farewell(strings: Strings, style: Style, reason: ExitReason) -> String {
+    let message = match reason {
+        ExitReason::Requested => StringId::CliStopped,
+        ExitReason::TimeUp => StringId::CliFinished,
+        ExitReason::TargetExited => StringId::CliTargetExited,
+        ExitReason::PowerRequestFailed => {
+            return format!(
+                "{}{}",
+                style.clear_line(),
+                error(strings, style, strings.get(StringId::CliErrPower))
+            );
+        }
+    };
     format!(
         "{}{} {}\n",
         style.clear_line(),
@@ -360,6 +381,19 @@ mod tests {
     }
 
     #[test]
+    fn until_errors_are_localized_sentences() {
+        let unreadable = until_error_message(Strings::ENGLISH, &UntilError::Unreadable("soonish".into()));
+        assert_eq!(
+            unreadable,
+            "\"soonish\" isn't a time Awake understands. Try 17:30 or 2026-12-24T18:00."
+        );
+        assert_eq!(
+            until_error_message(Strings::ENGLISH, &UntilError::Past),
+            "That time has already passed."
+        );
+    }
+
+    #[test]
     fn missing_values_name_the_command_or_option() {
         let message = |name: &str, expected| {
             cli_error_message(
@@ -428,14 +462,31 @@ mod tests {
             status_line(Strings::ENGLISH, COLOR, None),
             "\r\x1b[2K  \x1b[2mCtrl+C to stop\x1b[0m"
         );
-        assert!(farewell(Strings::ENGLISH, COLOR, StringId::CliFinished).starts_with("\r\x1b[2K\x1b[32m●"));
+        assert!(farewell(Strings::ENGLISH, COLOR, ExitReason::TimeUp).starts_with("\r\x1b[2K\x1b[32m●"));
         assert_eq!(
-            farewell(Strings::ENGLISH, Style::PLAIN, StringId::CliStopped),
+            farewell(Strings::ENGLISH, Style::PLAIN, ExitReason::Requested),
             format!(
                 "{}● Awake stopped. Your power plan applies again.\n",
                 Style::PLAIN.clear_line()
             )
         );
+    }
+
+    #[test]
+    fn every_exit_reason_says_why_the_session_ended() {
+        let english = Strings::ENGLISH;
+        let plain = |reason| farewell(english, Style::PLAIN, reason);
+        for (reason, id) in [
+            (ExitReason::Requested, StringId::CliStopped),
+            (ExitReason::TimeUp, StringId::CliFinished),
+            (ExitReason::TargetExited, StringId::CliTargetExited),
+        ] {
+            assert!(plain(reason).contains(english.get(id)), "{reason:?}");
+        }
+        // A failure reads as an error, not as a session that ended well.
+        let failed = plain(ExitReason::PowerRequestFailed);
+        assert!(failed.contains(english.get(StringId::CliErrPower)), "{failed}");
+        assert!(failed.contains(english.get(StringId::CliError)), "{failed}");
     }
 
     #[test]

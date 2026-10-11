@@ -10,25 +10,15 @@
 //! settling, CPU time used while idle, and any console host that runs alongside, whose memory
 //! the program's own numbers leave out.
 
-#[path = "../tests/support/runner.rs"]
-mod runner;
-
 use std::ffi::OsString;
 use std::time::{Duration, Instant};
-use std::{mem, ptr};
 
-use runner::Launched;
-
-use windows_sys::Win32::Foundation::{FILETIME, HWND};
-use windows_sys::Win32::System::Diagnostics::ToolHelp::{
-    CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW, TH32CS_SNAPPROCESS,
-};
-use windows_sys::Win32::System::ProcessStatus::{K32GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS_EX};
-use windows_sys::Win32::System::Threading::{
-    DETACHED_PROCESS, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources, GetProcessHandleCount, GetProcessTimes,
-};
+use awake_testkit::hook_names;
+use awake_testkit::process::{console_hosts, footprint, window_of, working_set};
+use awake_testkit::runner::{self, Launched};
+use windows_sys::Win32::Foundation::FILETIME;
+use windows_sys::Win32::System::Threading::{DETACHED_PROCESS, GetProcessTimes};
 use windows_sys::Win32::System::WindowsProgramming::QueryProcessCycleTime;
-use windows_sys::Win32::UI::WindowsAndMessaging::{FindWindowExW, GetWindowThreadProcessId};
 
 const RUNS: usize = 5;
 const SETTLE: Duration = Duration::from_secs(3);
@@ -62,9 +52,9 @@ fn main() {
     std::thread::sleep(IDLE_WINDOW);
     let cpu_after = cpu_time(&child);
     let cycles_after = cycles(&child);
-    let footprint = footprint(&child);
-    let hosts = runner::console_hosts(child.pid);
-    let host_memory: usize = hosts.iter().filter_map(|&host| runner::working_set(host)).sum();
+    let footprint = footprint(&child, child.pid);
+    let hosts = console_hosts(child.pid);
+    let host_memory: usize = hosts.iter().filter_map(|&host| working_set(host)).sum();
     child.kill();
 
     println!(
@@ -76,8 +66,8 @@ fn main() {
         scaled(footprint.working_set as u64, 1_048_576.0),
         footprint.handles,
         footprint.threads,
-        footprint.gdi,
-        footprint.user,
+        footprint.gdi_objects,
+        footprint.user_objects,
         scaled(cpu_after - cpu_before, 10_000.0),
         scaled(cycles_after - cycles_before, 1_000_000.0),
         IDLE_WINDOW.as_secs(),
@@ -110,27 +100,15 @@ fn start(exe: &str, args: &[String]) -> (Launched, Duration) {
     // Keep logs and settings out of the real profile; harmless for builds that ignore it.
     let data_dir = std::env::temp_dir().join(format!("awake-measure-{}", std::process::id()));
     let env = [
-        ("POWERTOYS_AWAKE_DATA_DIR", data_dir.into_os_string()),
-        ("POWERTOYS_AWAKE_OBJECT_SUFFIX", OsString::from("-measure")),
+        (hook_names::DATA_DIR, data_dir.into_os_string()),
+        (hook_names::OBJECT_SUFFIX, OsString::from("-measure")),
     ];
     let args: Vec<&str> = args.iter().map(String::as_str).collect();
     // The runner's flags; the launcher passes no standard handles, as the runner does not.
     let child = runner::launch(exe, &args, &env, DETACHED_PROCESS).expect("start");
-    let class: Vec<u16> = "Awake.MessageWindow".encode_utf16().chain(Some(0)).collect();
     loop {
-        let mut window: HWND = ptr::null_mut();
-        loop {
-            // SAFETY: iterating top-level windows by class name.
-            window = unsafe { FindWindowExW(ptr::null_mut(), window, class.as_ptr(), ptr::null()) };
-            if window.is_null() {
-                break;
-            }
-            let mut owner = 0;
-            // SAFETY: valid window handle.
-            unsafe { GetWindowThreadProcessId(window, &mut owner) };
-            if owner == child.pid {
-                return (child, started.elapsed());
-            }
+        if window_of(child.pid).is_some() {
+            return (child, started.elapsed());
         }
         // Dropping the child ends it.
         assert!(
@@ -159,52 +137,4 @@ fn cycles(child: &Launched) -> u64 {
     // SAFETY: valid process handle and out-pointer.
     unsafe { QueryProcessCycleTime(child.handle(), &mut cycles) };
     cycles
-}
-
-struct Footprint {
-    private_bytes: usize,
-    working_set: usize,
-    handles: u32,
-    threads: u32,
-    gdi: u32,
-    user: u32,
-}
-
-fn footprint(child: &Launched) -> Footprint {
-    let process = child.handle();
-    // SAFETY: plain data and a valid process handle we own.
-    unsafe {
-        let mut memory: PROCESS_MEMORY_COUNTERS_EX = mem::zeroed();
-        memory.cb = mem::size_of::<PROCESS_MEMORY_COUNTERS_EX>() as u32;
-        K32GetProcessMemoryInfo(process, (&raw mut memory).cast(), memory.cb);
-        let mut handles = 0;
-        GetProcessHandleCount(process, &mut handles);
-        Footprint {
-            private_bytes: memory.PrivateUsage,
-            working_set: memory.WorkingSetSize,
-            handles,
-            threads: threads(child.pid),
-            gdi: GetGuiResources(process, GR_GDIOBJECTS),
-            user: GetGuiResources(process, GR_USEROBJECTS),
-        }
-    }
-}
-
-fn threads(pid: u32) -> u32 {
-    // SAFETY: snapshot iteration with a sized entry; the handle is closed below.
-    unsafe {
-        let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        let mut entry: PROCESSENTRY32W = mem::zeroed();
-        entry.dwSize = mem::size_of::<PROCESSENTRY32W>() as u32;
-        let mut more = Process32FirstW(snapshot, &mut entry) != 0;
-        let mut count = 0;
-        while more {
-            if entry.th32ProcessID == pid {
-                count = entry.cntThreads;
-            }
-            more = Process32NextW(snapshot, &mut entry) != 0;
-        }
-        windows_sys::Win32::Foundation::CloseHandle(snapshot);
-        count
-    }
 }

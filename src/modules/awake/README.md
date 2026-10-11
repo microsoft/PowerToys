@@ -18,12 +18,13 @@ A PowerToys utility that prevents Windows from sleeping and/or turning off the d
 | `AwakeModuleInterface/` | C++ | Runner module: starts and stops `PowerToys.Awake.exe`, stores settings |
 | `Awake.ModuleServices/` | C# | Command Palette integration; reads and writes `settings.json` |
 
-`Awake` is a Cargo workspace with two crates:
+`Awake` is a Cargo workspace with three crates:
 
 | Crate | Purpose |
 |-------|---------|
 | `awake-core` | Platform-independent logic: the keep-awake state machine (`engine`), `settings.json` model, command line (`cli`), terminal text (`text`) and the tray tooltip and menu (`tray_model`). No `unsafe`, fully unit-tested. |
 | `awake` | The Windows executable: window and tray icon, power requests, file watching, process binding, logging, and a small C++ bridge (`native/bridge.cpp`) that reuses the shared PowerToys headers for group policy, telemetry and kernel object names. |
+| `awake-testkit` | Test support only: starts Awake the way the runner does and measures its process, for the end-to-end tests and the `measure` example. It includes the executable's `hook_names.rs` and `log_lines.rs`, so the tests and the executable agree on test hook names and on the log lines the tests wait for. |
 
 ## How It Works
 

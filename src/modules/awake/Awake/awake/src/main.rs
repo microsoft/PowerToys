@@ -3,7 +3,10 @@
 
 mod app;
 mod bridge;
+#[cfg(feature = "test-hooks")]
+mod hook_names;
 mod hooks;
+mod log_lines;
 mod logging;
 mod platform;
 

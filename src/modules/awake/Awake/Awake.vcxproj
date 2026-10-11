@@ -57,6 +57,7 @@
     <None Include="awake\Cargo.toml;awake\build.rs;awake\src\**\*.rs;awake\tests\**\*.rs;awake\examples\**\*.rs" />
     <None Include="awake\native\*.cpp;awake\native\*.manifest;awake\assets\*.ico" />
     <None Include="awake-core\Cargo.toml;awake-core\build.rs;awake-core\build\**\*.rs;awake-core\src\**\*.rs" />
+    <None Include="awake-testkit\Cargo.toml;awake-testkit\src\**\*.rs" />
     <None Include="tools\*.ps1" />
     <None Include="msbuild\*.targets;msbuild\*.txt" />
   </ItemGroup>
