@@ -189,11 +189,13 @@ pub fn cli_error_message(strings: Strings, error: &CliError) -> String {
             strings.format(StringId::CliErrPidNotFound, input.trim())
         }
         CliError::Pid { input } => strings.format(StringId::CliErrPidInvalid, input),
+        CliError::Seconds { input } => strings.format(StringId::CliErrSeconds, input),
         CliError::MissingValue { name, expected } => strings.format(
             match expected {
                 Expected::Duration => StringId::CliErrNeedsDuration,
                 Expected::Time => StringId::CliErrNeedsTime,
                 Expected::ProcessId => StringId::CliErrNeedsPid,
+                Expected::Seconds => StringId::CliErrNeedsSeconds,
             },
             name,
         ),
@@ -378,6 +380,11 @@ mod tests {
             },
         );
         assert_eq!(message, "\"90\" isn't a duration. Try 45m, 2h or 1h30m.");
+        let seconds = cli_error_message(Strings::ENGLISH, &CliError::Seconds { input: "abc".into() });
+        assert_eq!(
+            seconds,
+            "\"abc\" isn't a number of seconds. Try 3600 for one hour."
+        );
     }
 
     #[test]
@@ -419,6 +426,10 @@ mod tests {
         assert_eq!(
             message("--pid", Expected::ProcessId),
             "--pid needs a process ID, like --pid 1234."
+        );
+        assert_eq!(
+            message("-t", Expected::Seconds),
+            "-t needs a number of seconds, like -t 3600."
         );
     }
 

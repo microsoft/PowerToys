@@ -174,6 +174,11 @@ pub enum CliError {
         /// The text as typed.
         input: String,
     },
+    /// The value of `--time-limit` is not a whole number of seconds.
+    Seconds {
+        /// The text as typed.
+        input: String,
+    },
     /// A command or option that takes a value was given none.
     MissingValue {
         /// The command or option as typed, such as `for` or `-e`.
@@ -192,6 +197,8 @@ pub enum Expected {
     Time,
     /// A process ID, for `--pid`.
     ProcessId,
+    /// A whole number of seconds, for `--time-limit`.
+    Seconds,
 }
 
 impl fmt::Display for CliError {
@@ -201,11 +208,13 @@ impl fmt::Display for CliError {
             CliError::Duration { input, error } => write!(f, "'{input}' is not a valid duration: {error}"),
             CliError::Time { input } => write!(f, "'{input}' is not a valid time"),
             CliError::Pid { input } => write!(f, "'{input}' is not a valid process ID"),
+            CliError::Seconds { input } => write!(f, "'{input}' is not a whole number of seconds"),
             CliError::MissingValue { name, expected } => {
                 let what = match expected {
                     Expected::Duration => "a duration",
                     Expected::Time => "a time",
                     Expected::ProcessId => "a process ID",
+                    Expected::Seconds => "a number of seconds",
                 };
                 write!(f, "{name} needs {what}")
             }
@@ -220,6 +229,7 @@ impl std::error::Error for CliError {
             CliError::Usage(_)
             | CliError::Time { .. }
             | CliError::Pid { .. }
+            | CliError::Seconds { .. }
             | CliError::MissingValue { .. } => None,
         }
     }
@@ -257,8 +267,9 @@ struct Args {
           default_missing_value = "true", value_parser = parse_bool, hide = true)]
     use_pt_config: Option<bool>,
 
-    #[arg(short = 't', long = "time-limit", hide = true)]
-    time_limit: Option<u32>,
+    // Text for the same reason as `pid`: a value that is not a number gets Awake's own message.
+    #[arg(short = 't', long = "time-limit", allow_hyphen_values = true, hide = true)]
+    time_limit: Option<String>,
 
     #[arg(short = 'e', long = "expire-at", allow_hyphen_values = true, hide = true)]
     expire_at: Option<String>,
@@ -325,6 +336,14 @@ where
         None => None,
     };
 
+    let time_limit = match args.time_limit {
+        Some(text) => match text.trim().parse::<u32>() {
+            Ok(seconds) => Some(seconds),
+            Err(_) => return Err(CliError::Seconds { input: text }),
+        },
+        None => None,
+    };
+
     if args.use_pt_config == Some(true) {
         // Settings come from the file; only --pid still applies.
         let binding = pid.map_or(Binding::None, Binding::Pid);
@@ -370,7 +389,7 @@ where
                 None => return Err(CliError::Time { input }),
             }
         }
-        None => match (args.expire_at, args.time_limit) {
+        None => match (args.expire_at, time_limit) {
             (Some(text), _) => {
                 Plan::Until(parse_time(&text).map_or(UntilSpec::Text(text), UntilSpec::Parsed))
             }
@@ -456,9 +475,9 @@ fn colon_to_equals(token: OsString) -> OsString {
     rewritten.unwrap_or(token)
 }
 
-/// `--pid` or `--expire-at` with nothing usable after it. Checked before clap sees the tokens,
-/// because clap would take a following `for` as the value and then report the duration as an
-/// unknown command.
+/// `--pid`, `--expire-at` or `--time-limit` with nothing usable after it. Checked before clap
+/// sees the tokens, because clap would take a following `for` as the value and then report the
+/// duration as an unknown command.
 fn missing_option_value(tokens: &[OsString]) -> Option<CliError> {
     let mut iter = tokens.iter().skip(1).map(|token| token.to_str());
     while let Some(token) = iter.next() {
@@ -470,6 +489,7 @@ fn missing_option_value(tokens: &[OsString]) -> Option<CliError> {
         let expected = match name {
             "-p" | "--pid" => Expected::ProcessId,
             "-e" | "--expire-at" => Expected::Time,
+            "-t" | "--time-limit" => Expected::Seconds,
             _ => continue,
         };
         let value = match inline {
@@ -739,8 +759,6 @@ mod tests {
 
     #[test]
     fn mistakes_are_reported() {
-        assert!(matches!(error(&["--time-limit", "abc"]), CliError::Usage(_)));
-        assert!(matches!(error(&["-t"]), CliError::Usage(_)));
         assert!(matches!(error(&["--bogus"]), CliError::Usage(_)));
         assert_eq!(
             error(&["for", "90"]),
@@ -789,6 +807,30 @@ mod tests {
             run(&["--expire-at=-05:00"]).plan,
             Plan::Until(UntilSpec::Text("-05:00".into()))
         );
+    }
+
+    #[test]
+    fn time_limits_that_are_not_whole_seconds_get_their_own_error() {
+        let seconds = |input: &str| CliError::Seconds { input: input.into() };
+        assert_eq!(error(&["--time-limit", "abc"]), seconds("abc"));
+        assert_eq!(error(&["-t", "45m"]), seconds("45m"));
+        assert_eq!(error(&["-t:1.5"]), seconds("1.5"));
+        assert_eq!(error(&["-t", "-5"]), seconds("-5"));
+        assert_eq!(error(&["-t", "4294967296"]), seconds("4294967296"));
+        // Checked even where the value would be ignored, as --pid is.
+        assert_eq!(error(&["-c", "-t", "abc"]), seconds("abc"));
+        assert_eq!(run(&["-t", " 90 "]).plan, Plan::For { seconds: 90 });
+    }
+
+    #[test]
+    fn bare_time_limit_is_an_error_and_keeps_the_command() {
+        assert_eq!(error(&["-t"]), missing("-t", Expected::Seconds));
+        assert_eq!(
+            error(&["--time-limit="]),
+            missing("--time-limit", Expected::Seconds)
+        );
+        assert_eq!(error(&["-t", "-d"]), missing("-t", Expected::Seconds));
+        assert_eq!(error(&["-t", "for", "2s"]), missing("-t", Expected::Seconds));
     }
 
     #[test]
@@ -911,6 +953,10 @@ mod tests {
         assert_eq!(
             CliError::Pid { input: "abc".into() }.to_string(),
             "'abc' is not a valid process ID"
+        );
+        assert_eq!(
+            CliError::Seconds { input: "abc".into() }.to_string(),
+            "'abc' is not a whole number of seconds"
         );
     }
 

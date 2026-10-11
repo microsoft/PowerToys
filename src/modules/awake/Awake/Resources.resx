@@ -308,6 +308,10 @@
     <value>"{0}" isn't a process ID. Try a number like 1234.</value>
     <comment>{0} is the text typed after --pid.</comment>
   </data>
+  <data name="AWAKE_CLI_ERR_SECONDS" xml:space="preserve">
+    <value>"{0}" isn't a number of seconds. Try 3600 for one hour.</value>
+    <comment>{0} is the text typed after --time-limit. Do not translate 3600.</comment>
+  </data>
   <data name="AWAKE_CLI_ERR_NEEDS_DURATION" xml:space="preserve">
     <value>{0} needs a duration, like 45m or 1h30m.</value>
     <comment>{0} is the command as typed, such as "for"; do not translate it. Do not translate 45m and 1h30m.</comment>
@@ -319,6 +323,10 @@
   <data name="AWAKE_CLI_ERR_NEEDS_PID" xml:space="preserve">
     <value>{0} needs a process ID, like {0} 1234.</value>
     <comment>{0} is the option as typed, such as "--pid"; do not translate it.</comment>
+  </data>
+  <data name="AWAKE_CLI_ERR_NEEDS_SECONDS" xml:space="preserve">
+    <value>{0} needs a number of seconds, like {0} 3600.</value>
+    <comment>{0} is the option as typed, such as "--time-limit"; do not translate it. Do not translate 3600.</comment>
   </data>
   <data name="AWAKE_CLI_ERR_PAST" xml:space="preserve">
     <value>That time has already passed.</value>

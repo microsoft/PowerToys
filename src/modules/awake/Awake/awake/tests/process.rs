@@ -286,6 +286,7 @@ fn invalid_requests_fail_fast_with_a_message() {
             vec!["for", "soon"],
             strings.format(StringId::CliErrDuration, "soon"),
         ),
+        (vec!["-t", "abc"], strings.format(StringId::CliErrSeconds, "abc")),
         // clap's own wording, which Awake passes on.
         (vec!["--bogus"], "unexpected argument".to_owned()),
     ] {
