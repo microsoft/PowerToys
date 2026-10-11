@@ -15,7 +15,7 @@ pub const RELEASED: u32 = ES_CONTINUOUS;
 
 /// Flags for an active keep-awake session. The display is only held while the session is
 /// unlocked, so the lock screen can still turn the monitor off.
-pub const fn keep_awake(keep_display_on: bool, screen_locked: bool) -> u32 {
+pub(crate) const fn keep_awake(keep_display_on: bool, screen_locked: bool) -> u32 {
     if keep_display_on && !screen_locked {
         ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_CONTINUOUS
     } else {

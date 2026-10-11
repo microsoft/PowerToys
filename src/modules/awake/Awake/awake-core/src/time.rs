@@ -145,7 +145,7 @@ impl DateTimeOffset {
     }
 
     /// .NET's `DateTime.MinValue` and similar placeholders that mean "not set".
-    pub fn is_placeholder(&self) -> bool {
+    pub(crate) fn is_placeholder(&self) -> bool {
         self.local().year < 2
     }
 

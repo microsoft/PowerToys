@@ -7,7 +7,7 @@ use crate::strings::{StringId, Strings};
 use crate::time::{DateTimeOffset, Timestamp};
 
 /// The name at the start of every tooltip.
-pub const APP_NAME: &str = "PowerToys Awake";
+pub(crate) const APP_NAME: &str = "PowerToys Awake";
 
 /// Menu command identifiers, unchanged from the .NET implementation (`WM_USER` based). A test in
 /// the `awake` binary pins them to `WM_USER`.

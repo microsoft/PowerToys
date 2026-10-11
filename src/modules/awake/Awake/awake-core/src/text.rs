@@ -268,7 +268,7 @@ pub fn farewell(strings: Strings, style: Style, message: StringId) -> String {
 }
 
 /// Terminal columns a string occupies; East Asian wide characters take two.
-pub fn display_width(text: &str) -> usize {
+pub(crate) fn display_width(text: &str) -> usize {
     text.chars()
         .map(|c| {
             let wide = matches!(c as u32,

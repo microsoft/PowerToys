@@ -31,7 +31,7 @@ pub struct Preset {
 
 /// The settings file stores timed sessions in whole minutes, so a 90-second preset runs for two
 /// minutes; rounding up never shortens what the user asked for.
-pub fn round_up_to_minute(seconds: u32) -> u64 {
+pub(crate) fn round_up_to_minute(seconds: u32) -> u64 {
     u64::from(seconds).div_ceil(60) * 60
 }
 
@@ -64,7 +64,7 @@ pub struct AwakeSettings {
 
 impl AwakeSettings {
     /// The length of a timed session; zero when both parts are zero.
-    pub fn timed_seconds(&self) -> u64 {
+    pub(crate) fn timed_seconds(&self) -> u64 {
         u64::from(self.interval_hours) * 3600 + u64::from(self.interval_minutes) * 60
     }
 }
