@@ -1,8 +1,8 @@
 //! Command-line parsing.
 //!
 //! The modern surface is `PowerToys.Awake [for <duration> | until <time>] [-d] [--pid <pid> |
-//! --parent]`. The original options (`-c`, `-t`, `-e`, `-u`, `-p`, `-d`) keep working, hidden
-//! from help, because the PowerToys runner and existing scripts use them.
+//! --parent]`. The original options (`-c`, `-t`, `-e`, `-u`, and `-p` for `--pid`) keep working,
+//! hidden from help, because the PowerToys runner and existing scripts use them.
 
 use std::ffi::OsString;
 use std::fmt;

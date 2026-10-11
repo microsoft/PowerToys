@@ -9,19 +9,7 @@
 [Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen++label%3A%22Product-Awake%22+)
 
 ## Overview
-Awake is a PowerToys utility designed to keep your computer awake without permanently modifying system power settings. It prevents the computer from sleeping and can keep the monitor on, providing a convenient alternative to changing system power configurations.
-
-## Key Features
-- Temporarily override system sleep settings
-- Keep monitor on (prevent display from turning off)
-- Set time intervals for keeping the system awake
-- One-time setup with no need to revert power settings afterward
-
-## Advantages Over System Power Settings
-- **Convenience**: Easy UI for quick toggling of sleep prevention
-- **Flexibility**: Support for different time intervals (indefinitely, for specific duration)
-- **Non-persistent**: Changes are temporary and don't require manual reversion
-- **Quick Access**: Available directly from the system tray
+Awake keeps the computer from sleeping, and optionally the display from turning off, without changing the Windows power plan: it holds a keep-awake request only while it runs, so there is nothing to undo afterward. A session lasts indefinitely, for a set time, or until a set date and time.
 
 ## Architecture
 
@@ -31,7 +19,7 @@ The [module README](../../../src/modules/awake/README.md) describes the crates, 
 
 ## User Experience
 - **PowerToys Settings**: every mode, including a custom duration and an expiry time, and whether to keep the screen on.
-- **Notification-area icon**: Awake shows its own icon while it runs. Its menu switches between off, indefinite, a preset interval and the configured expiry, and turns "Keep screen on" on or off.
+- **Notification-area icon**: Awake shows its own icon while it runs. When PowerToys started it, the menu switches between off, indefinite and a preset interval, shows when an expiry is set, and turns "Keep screen on" on or off (unavailable while Awake is off). A session started from the command line offers only "Exit", and nothing when it is bound to a process.
 - **Command Palette**: turns Awake off, or keeps the computer awake indefinitely or for a number of minutes.
 
 ## Command Line Support

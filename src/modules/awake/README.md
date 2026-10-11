@@ -17,6 +17,7 @@ A PowerToys utility that keeps Windows from sleeping and, optionally, the displa
 | `Awake/` | Rust | `PowerToys.Awake.exe`: tray icon, keep-awake engine and command line |
 | `AwakeModuleInterface/` | C++ | Runner module: starts and stops `PowerToys.Awake.exe`, stores settings |
 | `Awake.ModuleServices/` | C# | Command Palette integration; reads and writes `settings.json` |
+| `Awake.ModuleServices.UnitTests/` | C# | MSTest tests for `Awake.ModuleServices` |
 
 `Awake` is a Cargo workspace with three crates:
 
@@ -163,6 +164,9 @@ cargo build               # debug
 cargo build --release     # release
 ```
 
+Cargo names the executable `target\debug\awake.exe` (or `target\release\awake.exe`), because
+Cargo binary names cannot contain dots; `Awake.vcxproj` copies it as `PowerToys.Awake.exe`.
+
 Or, from `src/modules/awake`, with the module interface and Command Palette service as well:
 
 ```powershell
@@ -220,6 +224,13 @@ cargo run -p awake --features test-hooks -- for 5m
   set up like the Settings app's.
 - `cargo run --release -p awake --features test-hooks --example measure -- <label> <exe> <args...>`
   measures an Awake build; the header of `examples/measure.rs` explains the output.
+
+The Command Palette service has its own MSTest project. From the repository root, with the Visual
+Studio MSBuild:
+
+```powershell
+msbuild src\modules\awake\Awake.ModuleServices.UnitTests\Awake.ModuleServices.UnitTests.csproj -p:Platform=x64 "-t:Build;Test"
+```
 
 ## Dependencies
 

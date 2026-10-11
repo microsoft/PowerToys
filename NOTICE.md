@@ -1654,7 +1654,7 @@ litigation is filed.
 ### Rust crates
 
 Awake is built with the following crates from <https://crates.io>. Each is available under the MIT
-License; where the table lists a second license after OR, the user may choose that one instead.
+License; where the table joins two licenses with OR, the user may choose either.
 `unicode-ident` additionally carries the Unicode License v3 for its Unicode data.
 
 | Crate | License | Source |

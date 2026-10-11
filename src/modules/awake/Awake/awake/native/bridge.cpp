@@ -15,10 +15,11 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-// TraceLoggingWrite needs a literal event name, so each mode event is spelled out.
-// All of Awake's events carry ProductAndServicePerformance, the privacy tag of every native
+// Every Awake event carries ProductAndServicePerformance, the privacy tag of every native
 // PowerToys event and the only one TraceLoggingDefines.h defines. The .NET version declared
 // ProductAndServiceUsage; taking the native tag instead is deliberate.
+
+// TraceLoggingWrite needs a literal event name, so each mode event is spelled out.
 #define AWAKE_WRITE_MODE_EVENT(name)                                                      \
     TraceLoggingWriteWrapper(                                                             \
         g_hProvider,                                                                      \
