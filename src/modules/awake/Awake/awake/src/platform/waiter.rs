@@ -6,6 +6,10 @@
 //! gone within [`watchdog`], or this thread ends it. Ctrl+C has the same backstop in
 //! `console.rs`. Windows releases the keep-awake request when the process dies, so the machine is
 //! never held awake by a hung Awake.
+//!
+//! Only this thread arms or cancels the deadline timer. The window thread records the deadline it
+//! wants and signals a change; `SetWaitableTimer` replaces rather than compares, so two writers
+//! could leave an older deadline armed over a newer one.
 
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStrExt;
@@ -15,7 +19,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::sync::mpsc::{self, SyncSender};
 use std::thread::JoinHandle;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::{io, mem, ptr, slice};
 
 use awake_core::time::Timestamp;
@@ -81,9 +85,10 @@ pub struct WaiterSetup {
 #[derive(Debug)]
 pub struct Waiter {
     stop: OwnedHandle,
-    timer: OwnedHandle,
-    /// The armed deadline in ticks, `NO_DEADLINE` when cancelled.
+    /// The deadline the window thread wants, in ticks, `NO_DEADLINE` for none.
     deadline: Arc<AtomicI64>,
+    /// Tells the waiter thread that `deadline` changed.
+    deadline_changed: OwnedHandle,
     settings_pending: Arc<AtomicBool>,
     thread: Option<JoinHandle<()>>,
 }
@@ -102,13 +107,15 @@ impl Waiter {
         let timer = unsafe { OwnedHandle::from_raw_handle(timer) };
         let settings_pending = Arc::new(AtomicBool::new(false));
         let deadline = Arc::new(AtomicI64::new(NO_DEADLINE));
+        let deadline_changed = super::event::manual_reset(None)?;
 
         let context = Context {
             window: setup.window as usize,
             stop: stop.try_clone()?,
             exit_event: setup.exit_event,
-            timer: timer.try_clone()?,
+            timer,
             deadline: deadline.clone(),
+            deadline_changed: deadline_changed.try_clone()?,
             deadline_ends_process: setup.deadline_ends_process,
             process: setup.process,
             watch_target: setup.watch,
@@ -126,28 +133,20 @@ impl Waiter {
         let _ = armed.recv();
         Ok(Waiter {
             stop,
-            timer,
             deadline,
+            deadline_changed,
             settings_pending,
             thread: Some(thread),
         })
     }
 
-    /// Arms the one-shot deadline at an absolute time, which Windows keeps correct across clock
-    /// changes and sleep. `None` cancels it.
+    /// Has the waiter thread arm the one-shot deadline at an absolute time, which Windows keeps
+    /// correct across clock changes and sleep. `None` cancels it.
     pub fn set_deadline(&self, deadline: Option<Timestamp>) {
-        let handle = self.timer.as_raw_handle();
-        match deadline {
-            Some(at) => {
-                self.deadline.store(at.ticks(), Ordering::Release);
-                arm_timer(handle, at.ticks());
-            }
-            None => {
-                self.deadline.store(NO_DEADLINE, Ordering::Release);
-                // SAFETY: valid timer handle.
-                unsafe { CancelWaitableTimer(handle) };
-            }
-        }
+        let ticks = deadline.map_or(NO_DEADLINE, Timestamp::ticks);
+        self.deadline.store(ticks, Ordering::Release);
+        // SAFETY: valid event handle.
+        unsafe { SetEvent(self.deadline_changed.as_raw_handle()) };
     }
 
     /// Lets the next settings change be posted again; call before reading the file.
@@ -180,6 +179,7 @@ struct Context {
     exit_event: OwnedHandle,
     timer: OwnedHandle,
     deadline: Arc<AtomicI64>,
+    deadline_changed: OwnedHandle,
     deadline_ends_process: bool,
     process: Option<OwnedHandle>,
     /// What to watch, kept so the watch can be restored if the folder is deleted and recreated.
@@ -207,6 +207,7 @@ impl Context {
                 self.stop.as_raw_handle(),
                 self.exit_event.as_raw_handle(),
                 self.timer.as_raw_handle(),
+                self.deadline_changed.as_raw_handle(),
             ];
             let process_index = self.process.as_ref().map(|p| {
                 handles.push(p.as_raw_handle());
@@ -251,14 +252,22 @@ impl Context {
                     return;
                 }
                 2 => {
-                    if self.deadline_is_early() {
+                    // Early (see `deadline_is_due`), or fired just before a cancel or a later
+                    // deadline reached this thread.
+                    if !self.deadline_is_due() {
+                        self.sync_timer();
                         continue;
                     }
                     self.post(WaitEvent::DeadlineReached);
-                    if self.deadline_ends_process {
-                        self.watchdog();
+                    if self.deadline_ends_process && !self.deadline_watchdog() {
                         return;
                     }
+                }
+                3 => {
+                    // SAFETY: valid event handle. Reset before reading, so a change stored after
+                    // the read signals again.
+                    unsafe { ResetEvent(self.deadline_changed.as_raw_handle()) };
+                    self.sync_timer();
                 }
                 i if Some(i) == process_index => {
                     self.process = None;
@@ -305,15 +314,51 @@ impl Context {
         Some(watch)
     }
 
-    /// The timer runs on interrupt time, which clock corrections do not move, so it can fire
-    /// while the system clock still reads a little before the deadline. Arms it again then.
-    fn deadline_is_early(&self) -> bool {
+    /// Whether the deadline has come. The timer runs on interrupt time, which clock corrections
+    /// do not move, so it can fire while the system clock still reads a little before the
+    /// deadline.
+    fn deadline_is_due(&self) -> bool {
         let deadline = self.deadline.load(Ordering::Acquire);
-        if deadline == NO_DEADLINE || SystemClock.now_utc().ticks() >= deadline {
-            return false;
+        deadline != NO_DEADLINE && SystemClock.now_utc().ticks() >= deadline
+    }
+
+    /// Arms the timer for the deadline the window thread last asked for, or cancels it.
+    fn sync_timer(&self) {
+        let timer = self.timer.as_raw_handle();
+        match self.deadline.load(Ordering::Acquire) {
+            NO_DEADLINE => {
+                // SAFETY: valid timer handle.
+                unsafe { CancelWaitableTimer(timer) };
+            }
+            ticks => arm_timer(timer, ticks),
         }
-        arm_timer(self.timer.as_raw_handle(), deadline);
-        true
+    }
+
+    /// The watchdog after a deadline that ends the process. Returns true when the window thread
+    /// sets a deadline again instead of exiting, as it does when the system clock it reads is
+    /// still short of the deadline: the session goes on, and so does the main wait. A cancelled
+    /// deadline is the session ending, so the watchdog keeps counting then.
+    fn deadline_watchdog(&self) -> bool {
+        let limit = Instant::now() + watchdog();
+        let handles = [self.stop.as_raw_handle(), self.deadline_changed.as_raw_handle()];
+        loop {
+            let left = limit.saturating_duration_since(Instant::now()).as_millis() as u32;
+            // SAFETY: both handles are owned by this context and stay open.
+            let result = unsafe { WaitForMultipleObjects(2, handles.as_ptr(), 0, left) };
+            match result {
+                r if r == WAIT_OBJECT_0 => return false,
+                r if r == WAIT_OBJECT_0 + 1 => {
+                    if self.deadline.load(Ordering::Acquire) != NO_DEADLINE {
+                        // Left signaled, so the main loop arms the timer.
+                        return true;
+                    }
+                    // SAFETY: valid event handle.
+                    unsafe { ResetEvent(self.deadline_changed.as_raw_handle()) };
+                    self.sync_timer();
+                }
+                _ => end_hung_process(),
+            }
+        }
     }
 
     fn watchdog(&self) {
@@ -533,7 +578,111 @@ fn lower(unit: u16) -> u16 {
 
 #[cfg(test)]
 mod tests {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        CreateWindowExW, DestroyWindow, HWND_MESSAGE, MSG, PM_REMOVE, PeekMessageW,
+    };
+
     use super::*;
+
+    /// A message-only window on the test thread that collects what the waiter posts.
+    struct Inbox(HWND);
+
+    impl Inbox {
+        fn new() -> Inbox {
+            let class = wide("STATIC");
+            // SAFETY: a predefined class needs no registration; the window is destroyed in Drop.
+            let window = unsafe {
+                CreateWindowExW(
+                    0,
+                    class.as_ptr(),
+                    ptr::null(),
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    HWND_MESSAGE,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    ptr::null(),
+                )
+            };
+            assert!(!window.is_null(), "{}", last_error());
+            Inbox(window)
+        }
+
+        fn next(&self, timeout: Duration) -> Option<WaitEvent> {
+            let limit = Instant::now() + timeout;
+            loop {
+                // SAFETY: MSG is plain data.
+                let mut message: MSG = unsafe { mem::zeroed() };
+                // SAFETY: our own window, polled on the thread that created it.
+                if unsafe { PeekMessageW(&mut message, self.0, WM_WAITER, WM_WAITER, PM_REMOVE) } != 0 {
+                    return WaitEvent::from_wparam(message.wParam);
+                }
+                if Instant::now() >= limit {
+                    return None;
+                }
+                std::thread::sleep(Duration::from_millis(5));
+            }
+        }
+
+        fn waiter(&self, deadline_ends_process: bool) -> Waiter {
+            Waiter::start(WaiterSetup {
+                window: self.0,
+                exit_event: super::super::event::manual_reset(None).unwrap(),
+                process: None,
+                watch: None,
+                deadline_ends_process,
+            })
+            .unwrap()
+        }
+    }
+
+    impl Drop for Inbox {
+        fn drop(&mut self) {
+            // SAFETY: created in `new` on this thread.
+            unsafe { DestroyWindow(self.0) };
+        }
+    }
+
+    fn in_millis(millis: i64) -> Timestamp {
+        Timestamp::from_ticks(SystemClock.now_utc().ticks() + millis * 10_000)
+    }
+
+    const SOON: Duration = Duration::from_secs(3);
+
+    #[test]
+    fn the_deadline_set_last_is_the_one_that_fires() {
+        let inbox = Inbox::new();
+        let waiter = inbox.waiter(false);
+        waiter.set_deadline(Some(in_millis(60_000)));
+        waiter.set_deadline(Some(in_millis(50)));
+        assert_eq!(inbox.next(SOON), Some(WaitEvent::DeadlineReached));
+
+        waiter.set_deadline(Some(in_millis(50)));
+        waiter.set_deadline(None);
+        assert_eq!(
+            inbox.next(Duration::from_millis(300)),
+            None,
+            "a cancelled deadline never fires"
+        );
+        waiter.stop();
+    }
+
+    // A session that ends the process puts the waiter on watch after its deadline. When the
+    // window thread finds the clock still short of it and sets the deadline again, the session
+    // goes on, so the waiter must go back to waiting rather than end a healthy process.
+    #[test]
+    fn a_deadline_set_again_after_firing_is_waited_for() {
+        let inbox = Inbox::new();
+        let waiter = inbox.waiter(true);
+        waiter.set_deadline(Some(in_millis(50)));
+        assert_eq!(inbox.next(SOON), Some(WaitEvent::DeadlineReached));
+        waiter.set_deadline(Some(in_millis(50)));
+        assert_eq!(inbox.next(SOON), Some(WaitEvent::DeadlineReached));
+        waiter.stop();
+    }
 
     /// One `FILE_NOTIFY_INFORMATION` record, padded to a DWORD as the kernel lays them out.
     fn record(name: &str, last: bool) -> Vec<u8> {
