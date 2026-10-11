@@ -11,6 +11,7 @@ pub mod messages;
 pub mod paths;
 pub mod power;
 pub mod process;
+pub mod security;
 pub mod session;
 pub mod settings_store;
 pub mod theme;
