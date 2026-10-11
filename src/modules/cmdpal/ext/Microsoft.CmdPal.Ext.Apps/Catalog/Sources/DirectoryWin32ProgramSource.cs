@@ -93,6 +93,50 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
     }
 
     /// <inheritdoc />
+    public virtual AppShortcutPreference? GetShortcutPreference(string path)
+    {
+        return null;
+    }
+
+    /// <summary>Captures personal/shared scope, shortcut depth, and source priority without reading the filesystem.</summary>
+    /// <param name="path">The discovered shortcut path.</param>
+    /// <param name="isStartMenu">Whether the conventional Programs directory is excluded from the depth.</param>
+    protected AppShortcutPreference? GetStandardShortcutPreference(string path, bool isStartMenu)
+    {
+        if (!PathHelpers.IsShortcutFile(path))
+        {
+            return null;
+        }
+
+        var directory = Path.GetDirectoryName(path);
+        if (string.IsNullOrEmpty(directory))
+        {
+            return null;
+        }
+
+        for (var i = 0; i < _directories.Count; i++)
+        {
+            var root = _directories[i];
+            if (string.IsNullOrWhiteSpace(root))
+            {
+                continue;
+            }
+
+            if (isStartMenu && TryGetDirectoryDepth(Path.Combine(root, "Programs"), directory, out var programsDepth))
+            {
+                return new AppShortcutPreference(i == 0, programsDepth, Priority);
+            }
+
+            if (TryGetDirectoryDepth(root, directory, out var depth))
+            {
+                return new AppShortcutPreference(i == 0, depth, Priority);
+            }
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc />
     public IEnumerable<string> GetPaths()
     {
         foreach (var candidate in GetCandidates())

@@ -16,7 +16,12 @@ internal interface IWin32ProgramSource
     /// <summary>Gets the stable identity used for provenance and cache validation.</summary>
     string Id { get; }
 
-    /// <summary>Gets the representation preference; lower values are preferred.</summary>
+    /// <summary>Gets this discovery origin's base priority; lower values are preferred.</summary>
+    /// <remarks>
+    /// Normally contributes to the effective representation priority. Standard Desktop and Start Menu shortcuts
+    /// share a representation tier and retain this value in <see cref="AppShortcutPreference.SourcePriority"/>
+    /// for comparison after ownership and depth. This does not control scan scheduling or search scores.
+    /// </remarks>
     int Priority { get; }
 
     /// <summary>Gets a value indicating whether this origin participates in discovery.</summary>
@@ -45,6 +50,12 @@ internal interface IWin32ProgramSource
 
     /// <summary>Enumerates candidate paths from this origin.</summary>
     IEnumerable<string> GetPaths();
+
+    /// <summary>Gets an optional shortcut representation preference; sources without a preference return null.</summary>
+    AppShortcutPreference? GetShortcutPreference(string path)
+    {
+        return null;
+    }
 
     /// <summary>Enumerates candidate paths together with their search metadata.</summary>
     IEnumerable<Win32ProgramCandidate> GetCandidates(Action<string, Exception>? onError = null, CancellationToken cancellationToken = default)
