@@ -81,7 +81,7 @@ pub(super) fn start() -> i32 {
             console::write_stderr(&text::error(
                 strings,
                 style,
-                &strings.format(StringId::CliErrStart, &error.to_string()),
+                &start_error_message(strings, &error),
             ));
             return 1;
         }
@@ -263,18 +263,9 @@ impl Launcher {
         // over the PID it was given in between.
         drop(bound);
         match started {
-            Started::Confirmed | Started::NoWord => {
-                if started == Started::Confirmed {
-                    log::info!("{}", log_lines::HANDOFF_CONFIRMED);
-                } else {
-                    log::warn!(
-                        "No word from the detached session within {HANDOFF_WAIT:?}; it most likely runs."
-                    );
-                }
-                if let Some(summary) = summary {
-                    console::write_stdout(&text::session_header(self.strings, self.style, VERSION, &summary));
-                }
-                Ok(0)
+            Started::Confirmed => log::info!("{}", log_lines::HANDOFF_CONFIRMED),
+            Started::NoWord => {
+                log::warn!("No word from the detached session within {HANDOFF_WAIT:?}; it most likely runs.");
             }
             Started::Exited(code) => {
                 log::warn!("The detached session ended right away with exit code {code}.");
@@ -283,11 +274,15 @@ impl Launcher {
                     self.style,
                     &self
                         .strings
-                        .format(StringId::CliErrStart, &format!("exit code {code}")),
+                        .format(StringId::CliErrHandoffExited, &code.to_string()),
                 ));
-                Ok(code)
+                return Ok(code);
             }
         }
+        if let Some(summary) = summary {
+            console::write_stdout(&text::session_header(self.strings, self.style, VERSION, &summary));
+        }
+        Ok(0)
     }
 
     fn launch(self, invocation: &Invocation) -> Result<i32, Refused> {
@@ -415,7 +410,7 @@ impl Launcher {
 
     /// A start that failed for a technical reason, which the message passes on.
     fn refuse_start(&self, error: &dyn Display) -> Refused {
-        self.refuse(&self.strings.format(StringId::CliErrStart, &error.to_string()))
+        self.refuse(&start_error_message(self.strings, error))
     }
 
     fn refuse_named_object(&self, error: &io::Error) -> Refused {
@@ -431,8 +426,13 @@ fn named_object_message(strings: Strings, error: &io::Error) -> String {
     if error.kind() == io::ErrorKind::PermissionDenied {
         strings.get(StringId::CliErrNameTaken).to_owned()
     } else {
-        strings.format(StringId::CliErrStart, &error.to_string())
+        start_error_message(strings, error)
     }
+}
+
+/// A start that failed for a technical reason, which the message passes on.
+fn start_error_message(strings: Strings, error: &dyn Display) -> String {
+    strings.format(StringId::CliErrStart, &error.to_string())
 }
 
 /// When an `until` session ends, or the localized reason it cannot start.

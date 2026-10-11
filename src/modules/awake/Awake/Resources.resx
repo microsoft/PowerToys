@@ -282,8 +282,8 @@
     <value>Awake is already running.</value>
   </data>
   <data name="AWAKE_CLI_ERR_NAME_TAKEN" xml:space="preserve">
-    <value>Another program is blocking a name Awake needs, so Awake can't start. Signing out and back in clears it.</value>
-    <comment>Shown when another program created one of the system objects Awake uses (its single-instance lock or its exit signal) before Awake did.</comment>
+    <value>Another program is blocking a name Awake needs, so Awake can't start. Signing out and back in usually clears it.</value>
+    <comment>Shown when another program created one of the system objects Awake uses (its single-instance lock, its exit signal, or the signal a newly started Awake uses to confirm it is running) before Awake did.</comment>
   </data>
   <data name="AWAKE_CLI_ERR_POLICY" xml:space="preserve">
     <value>Awake is turned off by your organization's policy.</value>
@@ -341,6 +341,10 @@
   <data name="AWAKE_CLI_ERR_START" xml:space="preserve">
     <value>Awake couldn't start: {0}</value>
     <comment>{0} is a technical error description.</comment>
+  </data>
+  <data name="AWAKE_CLI_ERR_HANDOFF_EXITED" xml:space="preserve">
+    <value>Awake couldn't start: the new Awake process exited right away with exit code {0}.</value>
+    <comment>{0} is a number. Awake sometimes continues in a new process of its own so the command prompt is free again; this is shown when that process ends before its session begins.</comment>
   </data>
   <data name="AWAKE_CLI_AUTHOR" xml:space="preserve">
     <value>Created by {0}</value>
