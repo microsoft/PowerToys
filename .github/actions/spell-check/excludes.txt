@@ -105,6 +105,7 @@
 ^src/common/ManagedCommon/ColorFormatHelper\.cs$
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$
 ^src/common/sysinternals/Eula/
+^src/modules/awake/Awake/msbuild/libtest-output\.txt$
 ^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherComparisonTests.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherDiacriticsTests.cs$
 ^src/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002\.pdn$

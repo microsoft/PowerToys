@@ -97,6 +97,7 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+AUTODISMISS
 AWC
 ATRIOX
 aumid
@@ -127,6 +128,7 @@ basename
 basenames
 bbwe
 BCIE
+beenden
 Belarusian
 BESTEFFORT
 bezelled
@@ -208,9 +210,11 @@ CENTERALIGN
 cer
 certlm
 certmgr
+CETCOMPAT
 cfp
 CHANGECBCHAIN
 changecursor
+CHANGEFILTERSTRUCT
 chatasweetie
 checkmarks
 CHILDACTIVATE
@@ -235,6 +239,7 @@ clientside
 cliextensions
 CLIPBOARDUPDATE
 CLIPCHILDREN
+clippy
 CLIPSIBLINGS
 closesocket
 clp
@@ -254,6 +259,7 @@ CMN
 CMONITORS
 cmph
 CNF
+coalescable
 coclass
 CODENAME
 codereview
@@ -281,6 +287,7 @@ COMPOSITIONFULL
 CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
+conhost
 CONOUT
 constexpr
 contentdialog
@@ -389,11 +396,14 @@ DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+delayimp
+DELAYLOAD
 DELD
 deld
 DELETEDKEYIMAGE
 DEMOTYPE
 DENORMAL
+DEPENDENTLOADFLAG
 depersist
 deprioritized
 DESELECTOTHERS
@@ -429,6 +439,7 @@ displayconfig
 DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
+displayon
 DISPLAYORIENTATION
 divyan
 DLGFRAME
@@ -623,6 +634,7 @@ gameid
 GC'ed
 GCLP
 gdi
+GDIOBJECTS
 gdiplus
 GDIPVER
 GDISCALED
@@ -633,6 +645,7 @@ GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 getfilesiginforedist
+GETHIGHCONTRAST
 GETHOTKEY
 GETICON
 GETLBTEXT
@@ -673,6 +686,7 @@ GUITHREADINFO
 gwl
 GWLP
 GWLSTYLE
+handover
 hangeul
 Hanguel
 Hantai
@@ -721,10 +735,13 @@ HICONSM
 HIDEWINDOW
 Hif
 highcontrast
+HIGHCONTRASTON
+HIGHCONTRASTW
 highlightbackground
 highlightthickness
 HIMAGELIST
 himl
+hinnant
 hinst
 HIWORD
 HKC
@@ -765,6 +782,7 @@ HRAWINPUT
 HREDRAW
 hres
 hresult
+hresults
 hrgn
 HROW
 hsb
@@ -898,6 +916,7 @@ JOBOBJECT
 jpe
 jpnime
 jrsoftware
+jso
 Jsons
 jsonval
 jxr
@@ -919,6 +938,7 @@ KEYIMAGE
 keynum
 keyremaps
 keyring
+KEYSELECT
 keyvault
 kfull
 KILLFOCUS
@@ -961,6 +981,7 @@ lindex
 linkid
 LINKOVERLAY
 LINQTo
+linted
 listview
 LIVEDRAW
 livezoom
@@ -980,6 +1001,7 @@ LOCALSYSTEM
 LOCATIONCHANGE
 LOCKTYPE
 LOGFONTW
+logissue
 LOGMSG
 logon
 LOGPIXELSX
@@ -1028,6 +1050,7 @@ lstrcpyn
 lstrlen
 LTEXT
 LTM
+lto
 LTRREADING
 luid
 lusrmgr
@@ -1093,6 +1116,7 @@ MINMAXINFO
 minwindef
 Mip
 mkdn
+mklink
 mlcfg
 mmb
 mmc
@@ -1123,6 +1147,7 @@ mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
+mpsc
 MRM
 mru
 msaccess
@@ -1209,6 +1234,8 @@ newrow
 nicksnettravels
 NIF
 nightlight
+NIN
+NINF
 NLSTEXT
 NMAKE
 NNN
@@ -1224,6 +1251,7 @@ NOCOPYBITS
 NOCOPYSECURITYATTRIBS
 NOCRLF
 nodeca
+NODEFAULTLIB
 nodiscard
 NODRAWCAPTION
 NODRAWICON
@@ -1261,6 +1289,7 @@ notdefault
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
+notifyicon
 NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
@@ -1285,8 +1314,10 @@ nullability
 NULLCURSOR
 nullonfailure
 nullref
+nuls
 numberbox
 nwc
+NWNRNX
 ocr
 Ocrsettings
 odbccp
@@ -1363,6 +1394,7 @@ pchast
 PCIDLIST
 PCTSTR
 PCWSTR
+PDBALTPATH
 pdbs
 PDBs
 PDEVMODE
@@ -1375,6 +1407,7 @@ pdto
 pdtobj
 pdw
 Peb
+peekable
 Pels
 PELSHEIGHT
 PELSWIDTH
@@ -1536,6 +1569,7 @@ quickaccent
 quicklinks
 quickmask
 QUNS
+RADIOCHECK
 RAII
 randi
 rasterization
@@ -1594,6 +1628,7 @@ reparenting
 reportfileaccesses
 requery
 requerying
+resaved
 rescap
 resgen
 resheader
@@ -1615,13 +1650,17 @@ rgs
 rguid
 rhk
 RIDEV
+RIGHTALIGN
 RIGHTBUTTON
+RIGHTJUSTIFY
+RIGHTORDER
 RIGHTSCROLLBAR
 riid
 rmb
 rollups
 ROUNDSMALL
 rpcrt
+rposition
 RRF
 rsop
 Rsp
@@ -1637,6 +1676,11 @@ RUNLEVEL
 runtimeclass
 runtimeconfig
 runtimepack
+rustc
+rustdoc
+rustflags
+rustlang
+rustup
 ruuid
 rvm
 RWIN
@@ -1671,6 +1715,7 @@ SELCHANGE
 selfhost
 SENDCHANGE
 sendvirtualinput
+serde
 serverside
 SETAUTOHIDEBAREX
 SETBUDDYINT
@@ -1696,6 +1741,7 @@ SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
 setvariable
+SETVERSION
 SETWORKAREA
 SFBS
 sfgao
@@ -1778,6 +1824,7 @@ smileys
 smpte
 SMTO
 SNAPPROCESS
+SNAPTHREAD
 snk
 snwprintf
 softline
@@ -1856,6 +1903,8 @@ subkeys
 sublang
 SUBMODULEUPDATE
 subresource
+subtag
+subtags
 sug
 Superbar
 SUPPRESSMSGBOXES
@@ -1915,6 +1964,7 @@ tcsrchr
 tdbuild
 telephon
 templatenamespace
+testkit
 TESTONLY
 testprocess
 TEXCOORD
@@ -1930,6 +1980,7 @@ themeresources
 THH
 thickframe
 THISCOMPONENT
+THREADENTRY
 threadpool
 throughs
 TILEDWINDOW
@@ -2003,6 +2054,7 @@ ULONGLONG
 Ultrawide
 ums
 uncompilable
+unconfigured
 UNCPRIORITY
 UNDNAME
 unescaped
@@ -2020,6 +2072,7 @@ unittests
 UNLEN
 UNORM
 unparsable
+unregisters
 unremapped
 Unsend
 Unsubscribes
@@ -2040,6 +2093,7 @@ Usb
 USEDEFAULT
 USEFILEATTRIBUTES
 USEINSTALLERFORTEST
+USEROBJECTS
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
@@ -2110,6 +2164,7 @@ vstprintf
 VSTT
 vswhere
 Vtbl
+waitable
 WANTNUKEWARNING
 WANTPALM
 WASDK
@@ -2231,7 +2286,9 @@ WTA
 WTNCA
 wtoi
 WTS
+wtsapi
 WTSAT
+WTSINFOEXW
 Wubi
 WUX
 Wwanpp
