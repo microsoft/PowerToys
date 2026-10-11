@@ -776,7 +776,7 @@ namespace KeyboardManagerEditorUI.Controls
             ShowNotificationTip(ResourceHelper.GetString("Warning_InputLimitReached"));
         }
 
-        public void OnRecordingStopped(bool restorePreviousKeys)
+        public void OnRecordingStopped(bool restorePreviousKeys, bool moveFocusBackward)
         {
             void ApplyRecordingStopped()
             {
@@ -790,6 +790,11 @@ namespace KeyboardManagerEditorUI.Controls
                 SetDropDownsEnabled(ActionKeys, true);
                 TriggerEmptyKeyDropDown.IsEnabled = true;
                 ActionEmptyKeyDropDown.IsEnabled = true;
+
+                if (moveFocusBackward)
+                {
+                    MoveFocusBackward();
+                }
             }
 
             if (DispatcherQueue.HasThreadAccess)
@@ -800,6 +805,29 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 DispatcherQueue.TryEnqueue(ApplyRecordingStopped);
             }
+        }
+
+        private void MoveFocusBackward()
+        {
+            if (XamlRoot == null)
+            {
+                return;
+            }
+
+            // Keep the search inside the hosting dialog, which lives in a popup outside XamlRoot.Content.
+            DependencyObject? searchRoot = this;
+            for (DependencyObject? parent = this; parent != null; parent = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(parent))
+            {
+                searchRoot = parent;
+                if (parent is ContentDialog)
+                {
+                    break;
+                }
+            }
+
+            Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(
+                Microsoft.UI.Xaml.Input.FocusNavigationDirection.Previous,
+                new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = searchRoot });
         }
 
         #endregion
