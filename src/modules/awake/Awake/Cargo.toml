@@ -33,7 +33,9 @@ all = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
 undocumented_unsafe_blocks = "warn"
 # Win32 hands the same value around as i32, u32, usize or isize (sizes, WPARAM, LPARAM, HRESULT),
-# so these casts are bit reinterpretations of known-range values, not accidents.
+# and the calendar code in time.rs and the tray menu's preset ids narrow values whose range the
+# arithmetic or a cap fixes (hour < 24, month <= 12, at most MAX_PRESETS presets). Each cast is
+# safe by reinterpretation or by range, not by accident.
 cast_possible_truncation = "allow"
 cast_possible_wrap = "allow"
 cast_sign_loss = "allow"
@@ -46,7 +48,8 @@ must_use_candidate = "allow"
 format_push_string = "allow"
 # A two-arm match on an Option reads as clearly as `if let ... else`.
 single_match_else = "allow"
-# The window procedure and the startup sequence read best as one ordered list each.
+# The window procedure, the startup sequence and the build script's resx parser each read best
+# as one ordered list; splitting them would scatter steps that only make sense in sequence.
 too_many_lines = "allow"
 
 [profile.release]
