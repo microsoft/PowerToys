@@ -419,7 +419,8 @@ mod tests {
         let link = dir.join("settings.json");
         // File symbolic links need Developer Mode or elevation; without either there is nothing
         // to plant, and so nothing to follow.
-        if std::os::windows::fs::symlink_file(&target, &link).is_err() {
+        if let Err(error) = std::os::windows::fs::symlink_file(&target, &link) {
+            eprintln!("touch_does_not_follow_a_link skipped: cannot create a symbolic link ({error})");
             fs::remove_dir_all(dir).ok();
             return;
         }
