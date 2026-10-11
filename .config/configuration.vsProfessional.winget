@@ -31,6 +31,13 @@ properties:
         productId: Microsoft.VisualStudio.Product.Professional
         channelId: VisualStudio.18.Release
         vsConfigFile: '${WinGetConfigRoot}\..\.vsconfig'
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      directives:
+        description: Install rustup, which Awake's Rust build needs. The pinned toolchain in src/modules/awake/Awake/rust-toolchain.toml installs itself on the first build
+        # rustup installs per user, so this needs no elevation
+      settings:
+        id: Rustlang.Rustup
+        source: winget
   configurationVersion: 0.2.0
 
   # Next steps:
