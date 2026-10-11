@@ -40,14 +40,13 @@ pub struct Footprint {
     pub threads: u32,
 }
 
-/// Measures process `pid`, whose `process` handle has query and read access.
+/// Measures process `pid`, whose `process` handle has query and read access. Memory reads as 0
+/// if Windows will not report it.
 pub fn footprint(process: &impl AsHandle, pid: u32) -> Footprint {
+    let memory = memory_counters(process).unwrap_or_default();
     let process = process.as_handle().as_raw_handle();
-    // SAFETY: plain data and a valid process handle.
+    // SAFETY: plain calls on a valid process handle.
     unsafe {
-        let mut memory: PROCESS_MEMORY_COUNTERS_EX = mem::zeroed();
-        memory.cb = mem::size_of::<PROCESS_MEMORY_COUNTERS_EX>() as u32;
-        K32GetProcessMemoryInfo(process, (&raw mut memory).cast(), memory.cb);
         let mut handles = 0;
         GetProcessHandleCount(process, &mut handles);
         Footprint {
@@ -61,7 +60,7 @@ pub fn footprint(process: &impl AsHandle, pid: u32) -> Footprint {
     }
 }
 
-/// The working set of process `pid` in bytes, if it can be opened.
+/// The working set of process `pid` in bytes, if it can be opened and Windows reports it.
 pub fn working_set(pid: u32) -> Option<usize> {
     // SAFETY: plain call; a null handle means the process is gone or inaccessible.
     let process = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, 0, pid) };
@@ -70,7 +69,21 @@ pub fn working_set(pid: u32) -> Option<usize> {
     }
     // SAFETY: a fresh handle we own.
     let process = unsafe { OwnedHandle::from_raw_handle(process) };
-    Some(footprint(&process, pid).working_set)
+    memory_counters(&process).map(|memory| memory.WorkingSetSize)
+}
+
+fn memory_counters(process: &impl AsHandle) -> Option<PROCESS_MEMORY_COUNTERS_EX> {
+    // SAFETY: plain data sized for the call and a valid process handle.
+    unsafe {
+        let mut memory: PROCESS_MEMORY_COUNTERS_EX = mem::zeroed();
+        memory.cb = mem::size_of::<PROCESS_MEMORY_COUNTERS_EX>() as u32;
+        let ok = K32GetProcessMemoryInfo(
+            process.as_handle().as_raw_handle(),
+            (&raw mut memory).cast(),
+            memory.cb,
+        );
+        (ok != 0).then_some(memory)
+    }
 }
 
 /// Every process in a snapshot, with its ID first.
