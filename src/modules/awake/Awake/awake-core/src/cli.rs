@@ -170,7 +170,9 @@ struct Args {
     display_on: Option<bool>,
 
     // Text, so a value that is not a number gets Awake's own message rather than clap's.
-    #[arg(short = 'p', long = "pid", allow_negative_numbers = true, global = true)]
+    // `missing_option_value` has already turned away option-shaped values, so a hyphen here
+    // starts a signed value.
+    #[arg(short = 'p', long = "pid", allow_hyphen_values = true, global = true)]
     pid: Option<String>,
 
     #[arg(long = "parent", action = ArgAction::SetTrue, global = true)]
@@ -186,7 +188,7 @@ struct Args {
     #[arg(short = 't', long = "time-limit", hide = true)]
     time_limit: Option<u32>,
 
-    #[arg(short = 'e', long = "expire-at", hide = true)]
+    #[arg(short = 'e', long = "expire-at", allow_hyphen_values = true, hide = true)]
     expire_at: Option<String>,
 
     #[arg(short = 'u', long = "use-parent-pid", num_args = 0..=1, require_equals = true,
@@ -402,14 +404,12 @@ fn missing_option_value(tokens: &[OsString]) -> Option<CliError> {
             Some(value) => Some(value),
             None => iter.clone().next().flatten(),
         };
+        // A signed value such as -5 is still a value, so it gets the message about a bad ID or
+        // time rather than one saying nothing was typed.
         let usable = value.is_some_and(|value| {
-            // Negative IDs are let through so the platform layer can say no process has them.
-            let negative_number = value
-                .strip_prefix('-')
-                .is_some_and(|digits| !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit()));
             !value.trim().is_empty()
                 && !matches!(value, "for" | "until")
-                && (!value.starts_with('-') || (negative_number && expected == Expected::ProcessId))
+                && (!value.starts_with('-') || is_signed_value(value))
         });
         if !usable {
             return Some(CliError::MissingValue {
@@ -421,8 +421,17 @@ fn missing_option_value(tokens: &[OsString]) -> Option<CliError> {
     None
 }
 
-/// clap reads `for -5m` as an unknown option `-5`. No Awake option starts with a digit, so it is
-/// a signed value meant for `for` or `until`, and gets the same message as any other bad value.
+/// No Awake option starts with a digit, so `-5m` or `-05:00` is a value with a sign, not an
+/// option.
+fn is_signed_value(token: &str) -> bool {
+    token
+        .strip_prefix('-')
+        .is_some_and(|rest| rest.starts_with(|c: char| c.is_ascii_digit()))
+}
+
+/// clap reads `for -5m` as an unknown option `-5`. It is a signed value meant for `for` or
+/// `until`, and gets the same message as any other bad value, quoting the whole value as the
+/// user typed it.
 fn signed_value(error: &clap::Error, tokens: &[OsString]) -> Option<CliError> {
     if error.kind() != ErrorKind::UnknownArgument {
         return None;
@@ -430,15 +439,10 @@ fn signed_value(error: &clap::Error, tokens: &[OsString]) -> Option<CliError> {
     let Some(ContextValue::String(unknown)) = error.get(ContextKind::InvalidArg) else {
         return None;
     };
-    if !unknown
-        .strip_prefix('-')?
-        .starts_with(|c: char| c.is_ascii_digit())
-    {
+    if !is_signed_value(unknown) {
         return None;
     }
-    let mut rest = tokens.iter().skip(1).filter_map(|token| token.to_str());
-    let command = rest.find(|token| matches!(*token, "for" | "until"))?;
-    let input = rest.find(|token| token.starts_with(unknown.as_str()))?.to_owned();
+    let (command, input) = command_value(tokens)?;
     Some(if command == "for" {
         // A leading minus is never part of a duration.
         CliError::Duration {
@@ -448,6 +452,22 @@ fn signed_value(error: &clap::Error, tokens: &[OsString]) -> Option<CliError> {
     } else {
         CliError::Time { input }
     })
+}
+
+/// The command and its value as clap would have collected it: every later token except options
+/// and the values they take.
+fn command_value(tokens: &[OsString]) -> Option<(&str, String)> {
+    let mut rest = tokens.iter().skip(1).filter_map(|token| token.to_str());
+    let command = rest.find(|token| matches!(*token, "for" | "until"))?;
+    let mut words = Vec::new();
+    while let Some(token) = rest.next() {
+        if !token.starts_with('-') || is_signed_value(token) {
+            words.push(token);
+        } else if matches!(token, "-p" | "--pid" | "--handoff") {
+            rest.next();
+        }
+    }
+    Some((command, words.join(" ")))
 }
 
 fn parse_bool(text: &str) -> Result<bool, String> {
@@ -680,11 +700,22 @@ mod tests {
         assert_eq!(error(&["-e"]), missing("-e", Expected::Time));
         assert_eq!(error(&["--expire-at"]), missing("--expire-at", Expected::Time));
         assert_eq!(error(&["-e", "-d"]), missing("-e", Expected::Time));
+        assert_eq!(error(&["-e", "--pid", "5"]), missing("-e", Expected::Time));
         assert_eq!(error(&["-e="]), missing("-e", Expected::Time));
         assert_eq!(error(&["-e:"]), missing("-e", Expected::Time));
         assert_eq!(
             error(&["--expire-at", "  "]),
             missing("--expire-at", Expected::Time)
+        );
+    }
+
+    #[test]
+    fn signed_expire_at_is_a_bad_time_not_a_missing_one() {
+        // The shell reports text it cannot read as a time, naming what was typed.
+        assert_eq!(run(&["-e", "-5"]).plan, Plan::Until(UntilSpec::Text("-5".into())));
+        assert_eq!(
+            run(&["--expire-at=-05:00"]).plan,
+            Plan::Until(UntilSpec::Text("-05:00".into()))
         );
     }
 
@@ -725,6 +756,9 @@ mod tests {
             error(&["-c", "--pid", "1.5"]),
             CliError::Pid { input: "1.5".into() }
         );
+        // A signed value was typed, so it is a bad ID rather than a missing one.
+        assert_eq!(error(&["--pid", "-5x"]), CliError::Pid { input: "-5x".into() });
+        assert_eq!(error(&["--pid=+-5"]), CliError::Pid { input: "+-5".into() });
     }
 
     #[test]
@@ -741,6 +775,28 @@ mod tests {
             CliError::Duration {
                 input: "-5m".into(),
                 error: DurationError::Invalid
+            }
+        );
+        // The whole value is quoted, not just the signed piece clap stopped at, and options
+        // between its words are left out as they are for any other value.
+        assert_eq!(
+            error(&["for", "1h", "-5m"]),
+            CliError::Duration {
+                input: "1h -5m".into(),
+                error: DurationError::Invalid
+            }
+        );
+        assert_eq!(
+            error(&["for", "1h", "--pid", "42", "-d", "-5m", "2s"]),
+            CliError::Duration {
+                input: "1h -5m 2s".into(),
+                error: DurationError::Invalid
+            }
+        );
+        assert_eq!(
+            error(&["until", "2026-12-24", "18:00", "-05:00"]),
+            CliError::Time {
+                input: "2026-12-24 18:00 -05:00".into()
             }
         );
         assert_eq!(error(&["until", "-5"]), CliError::Time { input: "-5".into() });

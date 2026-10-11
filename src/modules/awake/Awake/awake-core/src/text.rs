@@ -200,7 +200,8 @@ pub fn cli_error_message(strings: Strings, error: &CliError) -> String {
 }
 
 fn is_integer(text: &str) -> bool {
-    let digits = text.trim().trim_start_matches(['-', '+']);
+    let text = text.trim();
+    let digits = text.strip_prefix(['-', '+']).unwrap_or(text);
     !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit())
 }
 
@@ -398,6 +399,12 @@ mod tests {
         assert_eq!(
             message("99999999999999999999"),
             "No running process has the ID 99999999999999999999."
+        );
+        assert_eq!(message("-5"), "No running process has the ID -5.");
+        // One sign makes a number; more than one does not.
+        assert_eq!(
+            message("+-5"),
+            "\"+-5\" isn't a process ID. Try a number like 1234."
         );
     }
 
