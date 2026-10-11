@@ -98,9 +98,10 @@ pub enum Save {
     New,
 }
 
-/// Why the process exits. The engine raises all but [`ExitReason::TargetExited`]; the Windows
-/// layer raises the rest from what it observes, and maps every reason to its exit code and
-/// farewell through [`ExitReason::exit_code`] and `text::farewell`.
+/// Why the process exits. The engine raises every reason but [`ExitReason::TargetExited`]; the
+/// Windows layer raises [`ExitReason::Requested`] and [`ExitReason::TargetExited`] from what it
+/// observes, and maps every reason to its exit code and farewell through
+/// [`ExitReason::exit_code`] and `text::farewell`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ExitReason {
     /// Asked to stop: Exit from the menu, the runner's exit event, Ctrl+C, or a window close.
