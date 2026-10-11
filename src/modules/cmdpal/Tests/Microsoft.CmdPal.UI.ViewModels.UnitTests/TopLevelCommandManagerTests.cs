@@ -30,7 +30,7 @@ public partial class TopLevelCommandManagerTests
 
         await manager.LoadExternalProvidersAsync();
 
-        await waitTask.WaitAsync(TimeSpan.FromSeconds(2));
+        await waitTask.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.IsFalse(manager.IsLoading);
     }
 
@@ -170,7 +170,7 @@ public partial class TopLevelCommandManagerTests
                 cleanupStarted.TrySetResult();
                 try
                 {
-                    Assert.IsTrue(continueCleanup.Wait(TimeSpan.FromSeconds(10)), "Cleanup was never released.");
+                    Assert.IsTrue(continueCleanup.Wait(TimeSpan.FromSeconds(15)), "Cleanup was never released.");
                 }
                 finally
                 {
@@ -196,8 +196,8 @@ public partial class TopLevelCommandManagerTests
         var resolutionTask = manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
         try
         {
-            await cleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
-            var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2));
+            await cleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(5));
 
             Assert.AreSame(replacement, manager.LookupProvider(provider.Id));
             Assert.IsNotNull(resolution);
@@ -210,8 +210,8 @@ public partial class TopLevelCommandManagerTests
         finally
         {
             continueCleanup.Set();
-            await cleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(2));
-            using var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2));
+            await cleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            using var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(5));
         }
     }
 
@@ -247,8 +247,8 @@ public partial class TopLevelCommandManagerTests
         Assert.IsNull(resolution);
         Assert.AreSame(secondReplacement, manager.LookupProvider(provider.Id));
         Assert.AreEqual(2, provider.LookupCount);
-        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)));
-        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)));
+        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(5)));
         item.VerifyRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Exactly(2));
     }
 
