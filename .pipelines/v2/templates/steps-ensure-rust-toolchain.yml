@@ -1,14 +1,25 @@
 # Installs rustup when the agent does not have it, then the toolchain pinned in
 # src/modules/awake/Awake/rust-toolchain.toml (including the ARM64 target), and fetches the
-# locked crates so the build itself needs no further downloads.
+# locked crates. Later steps run Cargo offline, so the build itself cannot download anything.
 steps:
 - pwsh: |-
     $cargoBin = Join-Path $env:USERPROFILE '.cargo\bin'
     if (-not (Get-Command rustup -ErrorAction SilentlyContinue) -and -not (Test-Path (Join-Path $cargoBin 'rustup.exe'))) {
-      curl.exe -sSfL -o rustup-init.exe "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe"
+      # A pinned rustup-init, checked against the SHA-256 published next to it, so a changed
+      # download is never run. To update, take the version from
+      # https://static.rust-lang.org/rustup/release-stable.toml and the hash from <url>.sha256.
+      $rustupVersion = '1.29.1'
+      $rustupSha256 = '6f4bef66261261fcb43131be8720bab817d403a09edec7455c371974b90bdb7e'
+      $rustupUrl = "https://static.rust-lang.org/rustup/archive/$rustupVersion/x86_64-pc-windows-msvc/rustup-init.exe"
+      curl.exe -sSfL -o rustup-init.exe $rustupUrl
       if (-not (Test-Path rustup-init.exe)) {
         Write-Error "Failed to download rustup-init.exe"
         exit 1
+      }
+      $actual = (Get-FileHash rustup-init.exe -Algorithm SHA256).Hash
+      if ($actual -ne $rustupSha256) {
+        Remove-Item rustup-init.exe -ErrorAction:Ignore
+        throw "rustup-init.exe $rustupVersion has SHA-256 $actual, expected $rustupSha256"
       }
       & ./rustup-init.exe -y --no-modify-path --profile minimal --default-toolchain none
       if ($LASTEXITCODE -ne 0) { throw "rustup-init failed (exit $LASTEXITCODE)" }
@@ -24,5 +35,26 @@ steps:
     cargo fetch --locked
     if ($LASTEXITCODE -ne 0) { Pop-Location; throw "cargo fetch failed (exit $LASTEXITCODE)" }
     Pop-Location
+    # Every crate for every target is now cached; a later download would mean the lock file and
+    # the cache disagree, which should fail the build rather than reach the network.
+    Write-Host "##vso[task.setvariable variable=CARGO_NET_OFFLINE]true"
   displayName: Install the Rust toolchain
   retryCountOnTaskFailure: 3
+
+# The NuGet side of NOTICE.md is checked by verifyNoticeMdAgainstNugetPackages.ps1; this does the
+# same for the crates in Awake's Cargo.lock.
+- pwsh: |-
+    $lock = Get-Content src/modules/awake/Awake/Cargo.lock -Raw
+    $crates = [regex]::Matches($lock, '(?m)^name = "([^"]+)"\r?\nversion = "[^"]+"\r?\nsource = "registry\+') |
+      ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+    $notice = Get-Content NOTICE.md -Raw
+    $section = [regex]::Match($notice, '(?ms)^## Utility: Awake\r?\n.*?(?=^## )').Value
+    if (-not $section) { throw "NOTICE.md has no '## Utility: Awake' section" }
+    $listed = [regex]::Matches($section, '[A-Za-z0-9_-]+') | ForEach-Object { $_.Value }
+    $missing = $crates | Where-Object { $listed -cnotcontains $_ }
+    if ($missing) {
+      $missing | ForEach-Object { Write-Host "##vso[task.logissue type=error]NOTICE.md does not list the crate '$_' from Awake's Cargo.lock" }
+      throw "Add the missing crates to the Rust crates table under '## Utility: Awake' in NOTICE.md."
+    }
+    Write-Host "NOTICE.md lists all $($crates.Count) crates from Awake's Cargo.lock."
+  displayName: Verify NOTICE.md lists Awake's crates

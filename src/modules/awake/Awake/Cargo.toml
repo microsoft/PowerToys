@@ -17,7 +17,7 @@ publish = false
 [workspace.dependencies]
 awake-core = { path = "awake-core" }
 clap = { version = "4.6", default-features = false, features = ["std", "derive", "error-context", "suggestions"] }
-log = { version = "0.4", features = ["std"] }
+log = "0.4"
 serde_json = { version = "1.0", features = ["preserve_order"] }
 windows-sys = "0.61"
 cc = "1.2"

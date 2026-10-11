@@ -1669,7 +1669,7 @@ additionally under the Unicode License v3 for its Unicode data.
 | log | MIT OR Apache-2.0 | <https://github.com/rust-lang/log> |
 | memchr | Unlicense OR MIT | <https://github.com/BurntSushi/memchr> |
 | proc-macro2, quote, syn | MIT OR Apache-2.0 | <https://github.com/dtolnay> |
-| serde_core, serde_json | MIT OR Apache-2.0 | <https://github.com/serde-rs> |
+| serde, serde_core, serde_derive, serde_json | MIT OR Apache-2.0 | <https://github.com/serde-rs> |
 | strsim | MIT | <https://github.com/rapidfuzz/strsim-rs> |
 | unicode-ident | (MIT OR Apache-2.0) AND Unicode-3.0 | <https://github.com/dtolnay/unicode-ident> |
 | windows-link, windows-sys | MIT OR Apache-2.0 | <https://github.com/microsoft/windows-rs> |
