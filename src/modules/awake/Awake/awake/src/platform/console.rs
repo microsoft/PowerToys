@@ -345,7 +345,8 @@ unsafe extern "system" fn ctrl_handler(kind: u32) -> i32 {
 /// Starts Awake again with `args`, detached from the calling console, and returns at once. The
 /// original Awake options never blocked the shell that started them, and scripts rely on that.
 /// `new_console` gives the new process a console window of its own, as unbound sessions had;
-/// bound sessions run without any console, as before, so no console host runs alongside them.
+/// bound sessions run without any console, as the .NET Awake did, so no console host runs
+/// alongside them.
 pub fn hand_off(args: &[String], new_console: bool) -> io::Result<OwnedHandle> {
     let exe = std::env::current_exe()?;
     let mut command_line: Vec<u16> = std::iter::once(quote(&exe.to_string_lossy()))

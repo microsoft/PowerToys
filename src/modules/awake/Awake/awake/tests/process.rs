@@ -367,7 +367,8 @@ fn a_save_still_waiting_on_a_busy_file_is_tried_again_on_exit() {
         (sandbox, awake)
     };
 
-    // The file comes free just as Awake is asked to exit.
+    // The file comes free just as Awake is asked to exit. The regular retry may win the race
+    // and save first, so this part only shows the save lands; the next part pins the exit path.
     let (sandbox, mut awake) = start("busy-exit");
     let busy = hold(&sandbox);
     assert!(sandbox.wait_for_log("Entered Passive.", 1, 10 * SECOND));

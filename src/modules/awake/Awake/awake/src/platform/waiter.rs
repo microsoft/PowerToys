@@ -652,8 +652,11 @@ mod tests {
 
     const SOON: Duration = Duration::from_secs(3);
 
+    // Pins the single-writer design: a later deadline replaces an earlier one and a cancel
+    // sticks. The cross-thread race that design removes cannot be staged from a test; what
+    // guards it is that only the waiter thread ever touches the kernel timer.
     #[test]
-    fn the_deadline_set_last_is_the_one_that_fires() {
+    fn a_later_deadline_replaces_an_earlier_one() {
         let inbox = Inbox::new();
         let waiter = inbox.waiter(false);
         waiter.set_deadline(Some(in_millis(60_000)));

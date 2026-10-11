@@ -1133,7 +1133,8 @@ impl App {
             waiter.stop();
         }
         // The request ends with this thread anyway; releasing it explicitly makes that visible
-        // in the log and to anyone inspecting `powercfg /requests` during shutdown.
+        // in the log and to anyone inspecting `powercfg /requests` during shutdown. After a
+        // Restart Manager close WM_ENDSESSION has already released it, so the line appears twice.
         release_request();
         if !self.pending_changes.is_empty() {
             // A save waiting out a busy file would die with the window's retry timer, and the next
