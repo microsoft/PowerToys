@@ -2,15 +2,35 @@
 
 use std::fmt;
 
+/// Why [`parse_duration`] rejected its input. People see the localized text from
+/// `console::cli_error_message`; `Display` gives a neutral English message for logs.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DurationError {
+    /// Nothing but whitespace.
     Empty,
     /// A number without a unit, such as `90`; the unit is ambiguous.
     MissingUnit,
+    /// Something other than numbers followed by d, h, m or s.
     Invalid,
+    /// Adds up to no time at all, such as `0m`.
     Zero,
+    /// Longer than [`MAX_SECONDS`].
     TooLong,
 }
+
+impl fmt::Display for DurationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            DurationError::Empty => f.write_str("the duration is empty"),
+            DurationError::MissingUnit => f.write_str("the duration needs a unit: d, h, m or s"),
+            DurationError::Invalid => f.write_str("the duration is not numbers followed by d, h, m or s"),
+            DurationError::Zero => f.write_str("the duration is zero"),
+            DurationError::TooLong => write!(f, "the duration is longer than {}", Human(MAX_SECONDS)),
+        }
+    }
+}
+
+impl std::error::Error for DurationError {}
 
 /// Longest duration accepted, matching the `uint` seconds the settings file can store.
 pub const MAX_SECONDS: u64 = u32::MAX as u64;
@@ -127,6 +147,17 @@ mod tests {
             Err(DurationError::TooLong)
         );
         assert_eq!(parse_duration("50000d"), Err(DurationError::TooLong));
+    }
+
+    #[test]
+    fn errors_describe_themselves() {
+        assert_eq!(
+            DurationError::MissingUnit.to_string(),
+            "the duration needs a unit: d, h, m or s"
+        );
+        assert!(DurationError::TooLong.to_string().ends_with("49710d 6h 28m 15s"));
+        let boxed: Box<dyn std::error::Error> = Box::new(DurationError::Zero);
+        assert!(boxed.source().is_none());
     }
 
     #[test]

@@ -6,36 +6,57 @@ use crate::settings::{Preset, round_up_to_minute};
 use crate::strings::{StringId, Strings};
 use crate::time::{DateTimeOffset, Timestamp};
 
+/// The name at the start of every tooltip.
 pub const APP_NAME: &str = "PowerToys Awake";
 
-/// Menu command identifiers, unchanged from the .NET implementation (`WM_USER` based).
+/// Menu command identifiers, unchanged from the .NET implementation (`WM_USER` based). A test in
+/// the `awake` binary pins them to `WM_USER`.
 pub mod ids {
+    /// "Keep screen on".
     pub const DISPLAY: u16 = 0x402;
+    /// "Off (keep using the selected power plan)".
     pub const OFF: u16 = 0x403;
+    /// "Keep awake indefinitely".
     pub const INDEFINITE: u16 = 0x404;
+    /// "Keep awake until expiration date and time"; shown disabled, as a mode indicator.
     pub const EXPIRABLE: u16 = 0x405;
+    /// "Exit".
     pub const EXIT: u16 = 0x464;
+    /// The first interval preset; the others follow in order.
     pub const FIRST_PRESET: u16 = 0x465;
 }
 
+/// One entry of the context menu.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum MenuItem {
+    /// A clickable entry.
     Command {
+        /// Sent back in `WM_COMMAND`; see [`command_for`].
         id: u16,
+        /// The text shown.
         label: String,
+        /// The mark next to it.
         check: Check,
+        /// Disabled entries are shown greyed out.
         enabled: bool,
     },
+    /// An entry that opens more entries.
     Submenu {
+        /// The text shown.
         label: String,
+        /// The mark next to it.
         check: Check,
+        /// The entries inside.
         items: Vec<MenuItem>,
     },
+    /// A dividing line.
     Separator,
 }
 
+/// The mark drawn next to a menu entry.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Check {
+    /// No mark.
     None,
     /// A checkmark, for on/off settings.
     Checked,

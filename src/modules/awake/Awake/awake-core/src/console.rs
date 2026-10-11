@@ -22,6 +22,7 @@ pub struct Style {
 }
 
 impl Style {
+    /// No terminal features at all, as when output is redirected to a file.
     pub const PLAIN: Style = Style {
         vt: false,
         color: false,
@@ -81,10 +82,12 @@ impl Style {
     }
 }
 
+/// The `--version` output.
 pub fn version_line(version: &str, build_id: &str) -> String {
     format!("{version} (PowerToys Awake, build {build_id})\n")
 }
 
+/// The `--help` output, with the columns aligned for the current language.
 pub fn help(strings: &Strings, style: Style, version: &str) -> String {
     let s = |id| strings.get(id);
     let duration = format!("<{}>", s(StringId::CliArgDuration));
@@ -147,6 +150,8 @@ pub fn help(strings: &Strings, style: Style, version: &str) -> String {
     out
 }
 
+/// An error report: the first line of `message` as the headline, any further lines as details,
+/// then a pointer to `--help`.
 pub fn error(strings: &Strings, style: Style, message: &str) -> String {
     let hint = strings.format(StringId::CliHintHelp, PROGRAM);
     let mut lines = message.lines();
@@ -163,6 +168,7 @@ pub fn error(strings: &Strings, style: Style, message: &str) -> String {
     out
 }
 
+/// The localized message for a rejected command line, to pass to [`error`].
 pub fn cli_error_message(strings: &Strings, error: &CliError) -> String {
     match error {
         CliError::Usage(text) => text.clone(),
@@ -184,11 +190,15 @@ pub fn cli_error_message(strings: &Strings, error: &CliError) -> String {
 /// What the terminal shows for a running session.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SessionSummary {
+    /// The first line, such as "Keeping awake for 1h 30m".
     pub headline: String,
+    /// Whether the display is kept on too.
     pub display_on: bool,
+    /// The process the session ends with, as the user should see it.
     pub bound_to: Option<String>,
 }
 
+/// The block printed once when a command-line session starts.
 pub fn session_header(strings: &Strings, style: Style, version: &str, summary: &SessionSummary) -> String {
     let display = strings.get(if summary.display_on {
         StringId::CliDisplayOn
@@ -230,6 +240,7 @@ pub fn status_line(strings: &Strings, style: Style, remaining: Option<u64>) -> S
     format!("{}  {}", style.clear_line(), style.dim(&text))
 }
 
+/// The last line, replacing the status line, saying why the session ended.
 pub fn farewell(strings: &Strings, style: Style, message: StringId) -> String {
     format!(
         "{}{} {}\n",

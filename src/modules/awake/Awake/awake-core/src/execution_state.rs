@@ -1,7 +1,13 @@
 //! Flags for `SetThreadExecutionState`.
+//!
+//! The values repeat the Windows headers so this crate needs no Windows dependency; a test in the
+//! `awake` binary checks them against windows-sys.
 
+/// Keeps the system from sleeping.
 pub const ES_SYSTEM_REQUIRED: u32 = 0x0000_0001;
+/// Keeps the display from turning off.
 pub const ES_DISPLAY_REQUIRED: u32 = 0x0000_0002;
+/// Makes the request last until it is changed, instead of only resetting the idle timer.
 pub const ES_CONTINUOUS: u32 = 0x8000_0000;
 
 /// Releases every request this thread made.

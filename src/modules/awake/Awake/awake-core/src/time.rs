@@ -3,6 +3,7 @@
 
 use std::fmt::Write as _;
 
+/// FILETIME ticks are 100 ns.
 pub const TICKS_PER_SECOND: i64 = 10_000_000;
 const SECONDS_PER_DAY: i64 = 86_400;
 /// Days from 1601-01-01 (the FILETIME epoch) to 1970-01-01.
@@ -13,14 +14,17 @@ const DAYS_1601_TO_1970: i64 = 134_774;
 pub struct Timestamp(i64);
 
 impl Timestamp {
+    /// Wraps a FILETIME value read as a signed 64-bit number.
     pub const fn from_ticks(ticks: i64) -> Self {
         Timestamp(ticks)
     }
 
+    /// The FILETIME value, for passing back to Windows.
     pub const fn ticks(self) -> i64 {
         self.0
     }
 
+    /// `seconds` later, clamped at the largest representable instant.
     pub fn saturating_add_secs(self, seconds: u64) -> Self {
         let ticks = i64::try_from(seconds)
             .unwrap_or(i64::MAX)
@@ -42,17 +46,24 @@ impl Timestamp {
 /// A calendar date and time with no time zone attached.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct CivilDateTime {
+    /// 1 to 9999.
     pub year: i32,
+    /// 1 to 12.
     pub month: u8,
+    /// 1 to the length of the month.
     pub day: u8,
+    /// 0 to 23.
     pub hour: u8,
+    /// 0 to 59.
     pub minute: u8,
+    /// 0 to 59; leap seconds are not represented.
     pub second: u8,
     /// Sub-second part in 100 ns ticks.
     pub fraction: u32,
 }
 
 impl CivilDateTime {
+    /// A whole-second date and time, or `None` when any part is out of range.
     pub fn new(year: i32, month: u8, day: u8, hour: u8, minute: u8, second: u8) -> Option<Self> {
         let valid = (1..=9999).contains(&year)
             && (1..=12).contains(&month)
@@ -83,6 +94,7 @@ impl CivilDateTime {
         Timestamp(seconds * TICKS_PER_SECOND + i64::from(self.fraction))
     }
 
+    /// The UTC calendar date and time of `at`.
     pub fn from_timestamp(at: Timestamp) -> Self {
         let seconds = at.0.div_euclid(TICKS_PER_SECOND);
         let fraction = at.0.rem_euclid(TICKS_PER_SECOND) as u32;
@@ -104,20 +116,25 @@ impl CivilDateTime {
 /// An instant plus the UTC offset it is expressed in, like .NET's `DateTimeOffset`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct DateTimeOffset {
+    /// The instant; comparisons and deadlines use only this.
     pub utc: Timestamp,
+    /// Local time minus UTC, in minutes; only affects how the instant is written.
     pub offset_minutes: i16,
 }
 
 impl DateTimeOffset {
+    /// `utc` expressed with `offset_minutes`.
     pub fn new(utc: Timestamp, offset_minutes: i16) -> Self {
         DateTimeOffset { utc, offset_minutes }
     }
 
+    /// The calendar date and time in this value's own offset.
     pub fn local(&self) -> CivilDateTime {
         let offset = i64::from(self.offset_minutes) * 60 * TICKS_PER_SECOND;
         CivilDateTime::from_timestamp(Timestamp(self.utc.0.saturating_add(offset)))
     }
 
+    /// `seconds` later in the same offset, clamped like [`Timestamp::saturating_add_secs`].
     pub fn saturating_add_secs(self, seconds: u64) -> Self {
         DateTimeOffset {
             utc: self.utc.saturating_add_secs(seconds),
@@ -176,7 +193,14 @@ pub enum ParsedTime {
     /// A date and time with no offset, to be read in the local time zone.
     Local(CivilDateTime),
     /// A time of day only; the next occurrence is meant.
-    TimeOfDay { hour: u8, minute: u8, second: u8 },
+    TimeOfDay {
+        /// 0 to 23.
+        hour: u8,
+        /// 0 to 59.
+        minute: u8,
+        /// 0 to 59.
+        second: u8,
+    },
 }
 
 /// Parses ISO 8601 date-times (`2026-12-24T18:00`, `2026-12-24 18:00:00.5+01:00`), plain dates
