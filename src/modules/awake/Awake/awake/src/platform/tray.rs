@@ -2,6 +2,9 @@
 //!
 //! Shell calls never block the window thread: when Explorer is not ready, a timer retries later,
 //! and a restarted Explorer announces itself with `TaskbarCreated`, which re-adds the icon.
+//!
+//! The Win32 calls sit behind `Shell`, so the retry and update logic around them can be tested
+//! without Explorer.
 
 use std::{mem, ptr};
 
@@ -46,10 +49,83 @@ impl IconKind {
     }
 }
 
+/// The Win32 calls the tray depends on.
+pub trait Shell {
+    fn notify(&mut self, message: u32, data: &NOTIFYICONDATAW) -> bool;
+    /// Loads the icon for the current DPI, or returns the failing HRESULT.
+    fn load_icon(&mut self, kind: IconKind) -> Result<HICON, i32>;
+    fn destroy_icon(&mut self, icon: HICON);
+    fn set_retry_timer(&mut self, delay_ms: u32);
+    fn kill_retry_timer(&mut self);
+}
+
+/// The real shell, for the tray window.
 #[derive(Debug)]
-pub struct Tray {
+pub struct Win32Shell {
     window: HWND,
-    icons: [HICON; 4],
+}
+
+impl Shell for Win32Shell {
+    fn notify(&mut self, message: u32, data: &NOTIFYICONDATAW) -> bool {
+        // SAFETY: `data` is fully initialized for the message being sent.
+        unsafe { Shell_NotifyIconW(message, data) != 0 }
+    }
+
+    fn load_icon(&mut self, kind: IconKind) -> Result<HICON, i32> {
+        let mut icon = ptr::null_mut();
+        // SAFETY: the module handle of this executable and an integer resource id; LoadIconMetric
+        // picks the frame for the current DPI.
+        let hr = unsafe {
+            LoadIconMetric(
+                GetModuleHandleW(ptr::null()),
+                kind.resource_id() as usize as *const u16,
+                LIM_SMALL,
+                &mut icon,
+            )
+        };
+        if hr < 0 || icon.is_null() {
+            Err(hr)
+        } else {
+            Ok(icon)
+        }
+    }
+
+    fn destroy_icon(&mut self, icon: HICON) {
+        // SAFETY: icons come from `load_icon` and are owned by the tray.
+        unsafe { DestroyIcon(icon) };
+    }
+
+    fn set_retry_timer(&mut self, delay_ms: u32) {
+        // SAFETY: timer on our own window.
+        unsafe { SetTimer(self.window, TIMER_RETRY, delay_ms, None) };
+    }
+
+    fn kill_retry_timer(&mut self) {
+        // SAFETY: killing a timer on our own window.
+        unsafe { KillTimer(self.window, TIMER_RETRY) };
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum IconSlot {
+    Unloaded,
+    Loaded(HICON),
+    /// Loading failed; not retried until the display or Explorer changes, so a broken resource
+    /// or exhausted GDI handles cost one log line, not one a second.
+    Failed,
+}
+
+/// How long to wait before attempt `retries + 1` to add the icon, or `None` to stop and wait
+/// for Explorer to announce itself.
+fn retry_delay(retries: u32) -> Option<u32> {
+    (retries < MAX_RETRIES).then(|| (500u32 << retries.min(2)).min(2000))
+}
+
+#[derive(Debug)]
+pub struct Tray<S: Shell = Win32Shell> {
+    window: HWND,
+    shell: S,
+    icons: [IconSlot; 4],
     current: Option<(IconKind, String)>,
     /// The icon Explorer has. While it matches, updates send only the tooltip: the countdown
     /// changes it every second, and sending the icon makes Explorer copy it each time.
@@ -62,9 +138,16 @@ pub struct Tray {
 
 impl Tray {
     pub fn new(window: HWND) -> Self {
+        Tray::with_shell(window, Win32Shell { window })
+    }
+}
+
+impl<S: Shell> Tray<S> {
+    fn with_shell(window: HWND, shell: S) -> Self {
         Tray {
             window,
-            icons: [ptr::null_mut(); 4],
+            shell,
+            icons: [IconSlot::Unloaded; 4],
             current: None,
             shown: None,
             added: false,
@@ -109,8 +192,7 @@ impl Tray {
     }
 
     pub fn retry(&mut self) {
-        // SAFETY: killing a timer on our own window.
-        unsafe { KillTimer(self.window, TIMER_RETRY) };
+        self.shell.kill_retry_timer();
         self.waiting = false;
         self.sync();
     }
@@ -127,8 +209,7 @@ impl Tray {
         self.notify(NIM_DELETE);
         self.added = false;
         self.shown = None;
-        // SAFETY: as above.
-        unsafe { KillTimer(self.window, TIMER_RETRY) };
+        self.shell.kill_retry_timer();
     }
 
     fn sync(&mut self) {
@@ -144,16 +225,14 @@ impl Tray {
         if self.added {
             self.retries = 0;
             self.notify(NIM_SETVERSION);
-        } else if self.retries < MAX_RETRIES {
-            let delay = (500u32 << self.retries).min(2000);
+        } else if let Some(delay) = retry_delay(self.retries) {
             self.retries += 1;
             self.waiting = true;
             log::warn!(
                 "The notification area is not ready; retry {} in {delay} ms.",
                 self.retries
             );
-            // SAFETY: timer on our own window.
-            unsafe { SetTimer(self.window, TIMER_RETRY, delay, None) };
+            self.shell.set_retry_timer(delay);
         } else {
             self.waiting = true;
             log::error!("Could not add the notification icon; waiting for Explorer to restart.");
@@ -176,14 +255,18 @@ impl Tray {
             data.uFlags = NIF_TIP | NIF_SHOWTIP;
             copy_truncated(tooltip, &mut data.szTip);
             if message == NIM_ADD || self.shown != Some(kind) {
-                data.uFlags |= NIF_MESSAGE | NIF_ICON;
+                data.uFlags |= NIF_MESSAGE;
                 data.uCallbackMessage = WM_TRAY;
-                data.hIcon = self.icon(kind);
+                // Without an icon, the tooltip and menu still work, so leave the image out
+                // rather than hand Explorer a null one.
+                if let Some(icon) = self.icon(kind) {
+                    data.uFlags |= NIF_ICON;
+                    data.hIcon = icon;
+                }
             }
             showing = Some(kind);
         }
-        // SAFETY: `data` is fully initialized for the message being sent.
-        let ok = unsafe { Shell_NotifyIconW(message, &data) != 0 };
+        let ok = self.shell.notify(message, &data);
         if showing.is_some() {
             // After a failure, the next update sends the icon again.
             self.shown = showing.filter(|_| ok);
@@ -191,35 +274,30 @@ impl Tray {
         ok
     }
 
-    fn icon(&mut self, kind: IconKind) -> HICON {
+    fn icon(&mut self, kind: IconKind) -> Option<HICON> {
         let slot = &mut self.icons[kind.index()];
-        if slot.is_null() {
-            let mut icon = ptr::null_mut();
-            // SAFETY: the module handle of this executable and an integer resource id; LoadIconMetric
-            // picks the frame for the current DPI.
-            let hr = unsafe {
-                LoadIconMetric(
-                    GetModuleHandleW(ptr::null()),
-                    kind.resource_id() as usize as *const u16,
-                    LIM_SMALL,
-                    &mut icon,
-                )
+        if *slot == IconSlot::Unloaded {
+            *slot = match self.shell.load_icon(kind) {
+                Ok(icon) => IconSlot::Loaded(icon),
+                Err(hr) => {
+                    log::error!("Could not load icon {}: {hr:#x}", kind.resource_id());
+                    IconSlot::Failed
+                }
             };
-            if hr < 0 {
-                log::error!("Could not load icon {}: {hr:#x}", kind.resource_id());
-            }
-            *slot = icon;
         }
-        *slot
+        match *slot {
+            IconSlot::Loaded(icon) => Some(icon),
+            IconSlot::Unloaded | IconSlot::Failed => None,
+        }
     }
 
+    /// Frees the loaded icons and forgets failures, so the next update loads them afresh.
     fn release_icons(&mut self) {
-        for icon in &mut self.icons {
-            if !icon.is_null() {
-                // SAFETY: icons came from LoadIconMetric and are owned by us.
-                unsafe { DestroyIcon(*icon) };
-                *icon = ptr::null_mut();
+        for slot in &mut self.icons {
+            if let IconSlot::Loaded(icon) = *slot {
+                self.shell.destroy_icon(icon);
             }
+            *slot = IconSlot::Unloaded;
         }
     }
 }
@@ -236,9 +314,253 @@ pub fn remove_icon(window: HWND) {
     }
 }
 
-impl Drop for Tray {
+impl<S: Shell> Drop for Tray<S> {
     fn drop(&mut self) {
         self.remove();
         self.release_icons();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::cell::RefCell;
+    use std::collections::VecDeque;
+    use std::rc::Rc;
+
+    use super::*;
+
+    /// One `Shell_NotifyIconW` call: the message, its flags and whether it carried an icon.
+    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    struct Call(u32, u32, bool);
+
+    #[derive(Debug, Default)]
+    struct Record {
+        calls: Vec<Call>,
+        /// Results for the next notify calls; when empty, calls succeed.
+        results: VecDeque<bool>,
+        icons_fail: bool,
+        loads: u32,
+        destroyed: u32,
+        timers: Vec<u32>,
+        kills: u32,
+    }
+
+    #[derive(Debug, Default)]
+    struct FakeShell(Rc<RefCell<Record>>);
+
+    impl Shell for FakeShell {
+        fn notify(&mut self, message: u32, data: &NOTIFYICONDATAW) -> bool {
+            let mut record = self.0.borrow_mut();
+            record
+                .calls
+                .push(Call(message, data.uFlags, !data.hIcon.is_null()));
+            record.results.pop_front().unwrap_or(true)
+        }
+
+        fn load_icon(&mut self, kind: IconKind) -> Result<HICON, i32> {
+            let mut record = self.0.borrow_mut();
+            record.loads += 1;
+            if record.icons_fail {
+                Err(0x8007_0008_u32 as i32)
+            } else {
+                Ok(usize::from(kind.resource_id()) as HICON)
+            }
+        }
+
+        fn destroy_icon(&mut self, _icon: HICON) {
+            self.0.borrow_mut().destroyed += 1;
+        }
+
+        fn set_retry_timer(&mut self, delay_ms: u32) {
+            self.0.borrow_mut().timers.push(delay_ms);
+        }
+
+        fn kill_retry_timer(&mut self) {
+            self.0.borrow_mut().kills += 1;
+        }
+    }
+
+    fn tray() -> (Tray<FakeShell>, Rc<RefCell<Record>>) {
+        let record = Rc::new(RefCell::new(Record::default()));
+        let tray = Tray::with_shell(ptr::null_mut(), FakeShell(record.clone()));
+        (tray, record)
+    }
+
+    fn take_calls(record: &Rc<RefCell<Record>>) -> Vec<Call> {
+        mem::take(&mut record.borrow_mut().calls)
+    }
+
+    const TIP: u32 = NIF_TIP | NIF_SHOWTIP;
+    const FULL: u32 = TIP | NIF_MESSAGE | NIF_ICON;
+
+    #[test]
+    fn retry_delays_double_up_to_two_seconds_then_stop() {
+        let delays: Vec<_> = (0..=MAX_RETRIES).map(retry_delay).collect();
+        assert_eq!(&delays[..4], [Some(500), Some(1000), Some(2000), Some(2000)]);
+        assert_eq!(delays[MAX_RETRIES as usize - 1], Some(2000));
+        assert_eq!(delays[MAX_RETRIES as usize], None);
+        assert_eq!(retry_delay(u32::MAX), None);
+    }
+
+    #[test]
+    fn countdown_updates_send_only_the_tooltip() {
+        let (mut tray, record) = tray();
+        tray.show(IconKind::Timed, "1:00");
+        assert_eq!(
+            take_calls(&record),
+            [Call(NIM_ADD, FULL, true), Call(NIM_SETVERSION, 0, false)]
+        );
+        tray.show(IconKind::Timed, "1:00");
+        assert!(take_calls(&record).is_empty(), "an unchanged icon is not resent");
+        tray.show(IconKind::Timed, "0:59");
+        assert_eq!(take_calls(&record), [Call(NIM_MODIFY, TIP, false)]);
+        tray.show(IconKind::Passive, "Off");
+        assert_eq!(take_calls(&record), [Call(NIM_MODIFY, FULL, true)]);
+        assert_eq!(record.borrow().loads, 2, "each icon is loaded once");
+    }
+
+    #[test]
+    fn failed_adds_back_off_then_recover_on_retry() {
+        let (mut tray, record) = tray();
+        // NIM_ADD and the NIM_MODIFY fallback both fail, twice.
+        record.borrow_mut().results.extend([false; 4]);
+        tray.show(IconKind::Indefinite, "On");
+        assert!(tray.waiting && !tray.added);
+        assert_eq!(record.borrow().timers, [500]);
+
+        // While a retry is pending, changes are only recorded.
+        take_calls(&record);
+        tray.show(IconKind::Indefinite, "Still on");
+        assert!(take_calls(&record).is_empty());
+
+        tray.retry();
+        assert_eq!(record.borrow().timers, [500, 1000]);
+        assert_eq!(tray.retries, 2);
+
+        take_calls(&record);
+        tray.retry();
+        assert!(tray.added && !tray.waiting);
+        assert_eq!(tray.retries, 0);
+        assert_eq!(
+            take_calls(&record),
+            [Call(NIM_ADD, FULL, true), Call(NIM_SETVERSION, 0, false)]
+        );
+        assert_eq!(record.borrow().kills, 2);
+    }
+
+    #[test]
+    fn an_add_rejected_because_the_icon_exists_falls_back_to_modify() {
+        let (mut tray, record) = tray();
+        record.borrow_mut().results.push_back(false);
+        tray.show(IconKind::Indefinite, "On");
+        assert!(tray.added);
+        assert_eq!(
+            take_calls(&record),
+            [
+                Call(NIM_ADD, FULL, true),
+                Call(NIM_MODIFY, FULL, true),
+                Call(NIM_SETVERSION, 0, false)
+            ]
+        );
+    }
+
+    #[test]
+    fn exhausted_retries_wait_for_explorer_to_restart() {
+        let (mut tray, record) = tray();
+        record
+            .borrow_mut()
+            .results
+            .extend([false; 2 * (MAX_RETRIES as usize + 1)]);
+        tray.show(IconKind::Indefinite, "On");
+        for _ in 0..MAX_RETRIES {
+            tray.retry();
+        }
+        assert!(tray.waiting && !tray.added);
+        assert_eq!(record.borrow().timers.len(), MAX_RETRIES as usize);
+        assert!(record.borrow().results.is_empty());
+
+        take_calls(&record);
+        tray.show(IconKind::Timed, "1:00");
+        assert!(
+            take_calls(&record).is_empty(),
+            "no more attempts until Explorer returns"
+        );
+
+        tray.taskbar_created();
+        assert!(tray.added && !tray.waiting);
+        assert_eq!(
+            take_calls(&record),
+            [
+                Call(NIM_DELETE, 0, false),
+                Call(NIM_ADD, FULL, true),
+                Call(NIM_SETVERSION, 0, false)
+            ]
+        );
+    }
+
+    #[test]
+    fn a_failed_modify_resends_the_icon_next_time() {
+        let (mut tray, record) = tray();
+        tray.show(IconKind::Timed, "1:00");
+        take_calls(&record);
+        // The update fails, and so does the re-add; the fallback modify succeeds.
+        record.borrow_mut().results.extend([false, false]);
+        tray.show(IconKind::Timed, "0:59");
+        assert_eq!(
+            take_calls(&record),
+            [
+                Call(NIM_MODIFY, TIP, false),
+                Call(NIM_ADD, FULL, true),
+                Call(NIM_MODIFY, FULL, true),
+                Call(NIM_SETVERSION, 0, false)
+            ]
+        );
+    }
+
+    #[test]
+    fn an_icon_that_fails_to_load_is_not_retried_every_update() {
+        let (mut tray, record) = tray();
+        record.borrow_mut().icons_fail = true;
+        tray.show(IconKind::Timed, "1:00");
+        assert_eq!(
+            take_calls(&record),
+            [
+                Call(NIM_ADD, TIP | NIF_MESSAGE, false),
+                Call(NIM_SETVERSION, 0, false)
+            ],
+            "the icon is added without an image rather than with a null one"
+        );
+        for second in 0..5 {
+            tray.show(IconKind::Timed, &format!("0:5{second}"));
+        }
+        assert_eq!(record.borrow().loads, 1);
+
+        // A display change is a fresh start: the load is tried again.
+        record.borrow_mut().icons_fail = false;
+        tray.display_changed();
+        assert_eq!(record.borrow().loads, 2);
+        assert_eq!(take_calls(&record).last(), Some(&Call(NIM_MODIFY, FULL, true)));
+    }
+
+    #[test]
+    fn display_changes_reload_icons_and_drop_cleans_up() {
+        let (mut tray, record) = tray();
+        tray.show(IconKind::Timed, "1:00");
+        tray.display_changed();
+        assert_eq!(record.borrow().destroyed, 1);
+        assert_eq!(record.borrow().loads, 2);
+        take_calls(&record);
+        drop(tray);
+        assert_eq!(take_calls(&record), [Call(NIM_DELETE, 0, false)]);
+        assert_eq!(record.borrow().destroyed, 2);
+    }
+
+    #[test]
+    fn nothing_is_sent_before_there_is_something_to_show() {
+        let (mut tray, record) = tray();
+        tray.retry();
+        tray.return_focus();
+        tray.display_changed();
+        assert!(take_calls(&record).is_empty());
     }
 }

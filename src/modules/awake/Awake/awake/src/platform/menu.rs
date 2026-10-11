@@ -9,10 +9,10 @@ use awake_core::tray::{Check, MenuItem};
 use windows_sys::Win32::Foundation::HWND;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     CreatePopupMenu, DestroyMenu, GetSystemMetrics, HMENU, InsertMenuItemW, MENUINFO, MENUITEMINFOW,
-    MFS_CHECKED, MFS_DISABLED, MFT_RADIOCHECK, MFT_RIGHTJUSTIFY, MFT_RIGHTORDER, MFT_SEPARATOR, MFT_STRING,
-    MIIM_FTYPE, MIIM_ID, MIIM_STATE, MIIM_STRING, MIIM_SUBMENU, MIM_STYLE, MNS_AUTODISMISS, PostMessageW,
-    SM_MENUDROPALIGNMENT, SetForegroundWindow, SetMenuInfo, TPM_BOTTOMALIGN, TPM_LAYOUTRTL, TPM_LEFTALIGN,
-    TPM_NONOTIFY, TPM_RETURNCMD, TPM_RIGHTALIGN, TPM_RIGHTBUTTON, TrackPopupMenuEx, WM_NULL,
+    MFS_CHECKED, MFS_DISABLED, MFT_RADIOCHECK, MFT_SEPARATOR, MFT_STRING, MIIM_FTYPE, MIIM_ID, MIIM_STATE,
+    MIIM_STRING, MIIM_SUBMENU, MIM_STYLE, MNS_AUTODISMISS, PostMessageW, SM_MENUDROPALIGNMENT,
+    SetForegroundWindow, SetMenuInfo, TPM_BOTTOMALIGN, TPM_LAYOUTRTL, TPM_LEFTALIGN, TPM_NONOTIFY,
+    TPM_RETURNCMD, TPM_RIGHTALIGN, TPM_RIGHTBUTTON, TrackPopupMenuEx, WM_NULL,
 };
 
 use super::wide::wide;
@@ -27,9 +27,13 @@ impl Drop for PopupMenu {
     }
 }
 
-pub fn build(items: &[MenuItem], right_to_left: bool) -> Option<PopupMenu> {
+/// Builds the popup. Right-to-left languages need nothing per item: `track` mirrors the whole
+/// menu, submenus included, with `TPM_LAYOUTRTL`, as Explorer does. The per-item
+/// `MFT_RIGHTJUSTIFY` only applies to menu bars, and `MFT_RIGHTORDER` on top of a mirrored menu
+/// would flip submenus a second time.
+pub fn build(items: &[MenuItem], _right_to_left: bool) -> Option<PopupMenu> {
     let menu = PopupMenu(create()?);
-    append(menu.0, items, right_to_left)?;
+    append(menu.0, items)?;
     let info = MENUINFO {
         cbSize: mem::size_of::<MENUINFO>() as u32,
         fMask: MIM_STYLE,
@@ -68,12 +72,7 @@ fn create() -> Option<HMENU> {
     (!menu.is_null()).then_some(menu)
 }
 
-fn append(menu: HMENU, items: &[MenuItem], right_to_left: bool) -> Option<()> {
-    let direction = if right_to_left {
-        MFT_RIGHTORDER | MFT_RIGHTJUSTIFY
-    } else {
-        0
-    };
+fn append(menu: HMENU, items: &[MenuItem]) -> Option<()> {
     for (position, item) in items.iter().enumerate() {
         // SAFETY: MENUITEMINFOW is plain data.
         let mut info: MENUITEMINFOW = unsafe { mem::zeroed() };
@@ -92,21 +91,21 @@ fn append(menu: HMENU, items: &[MenuItem], right_to_left: bool) -> Option<()> {
             } => {
                 text = wide(label);
                 info.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_STATE | MIIM_ID;
-                info.fType = MFT_STRING | direction | radio(*check);
+                info.fType = MFT_STRING | radio(*check);
                 info.fState = state(*check, *enabled);
                 info.wID = u32::from(*id);
                 info.dwTypeData = text.as_mut_ptr();
             }
             MenuItem::Submenu { label, check, items } => {
                 let submenu = create()?;
-                if append(submenu, items, right_to_left).is_none() {
+                if append(submenu, items).is_none() {
                     // SAFETY: not yet attached, so we still own it.
                     unsafe { DestroyMenu(submenu) };
                     return None;
                 }
                 text = wide(label);
                 info.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_STATE | MIIM_SUBMENU;
-                info.fType = MFT_STRING | direction | radio(*check);
+                info.fType = MFT_STRING | radio(*check);
                 info.fState = state(*check, true);
                 info.hSubMenu = submenu;
                 info.dwTypeData = text.as_mut_ptr();
