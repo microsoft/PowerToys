@@ -25,8 +25,13 @@
     <CargoProfile Condition="'$(CargoProfile)' == ''">dev</CargoProfile>
     <CargoProfileDir Condition="'$(CargoProfile)' == 'release'">release</CargoProfileDir>
     <CargoProfileDir Condition="'$(CargoProfileDir)' == ''">debug</CargoProfileDir>
-    <!-- Cargo's intermediate files stay with the other build outputs, outside the source tree. -->
-    <CargoTargetDir>$(RepoRoot)$(Platform)\$(Configuration)\obj\Awake</CargoTargetDir>
+    <!-- Cargo's intermediate files go in the git-ignored target folder next to this project, not
+         under $(OutDir): the pipeline publishes, signs and indexes for symbols everything under
+         $(OutDir), and only the two files copied there below ship. -->
+    <CargoTargetDir>$(MSBuildThisFileDirectory)target\$(Platform)\$(Configuration)</CargoTargetDir>
+    <!-- Tests build with the test hooks into their own folder, so they never replace the binary
+         that ships. -->
+    <CargoTestTargetDir>$(CargoTargetDir)-test</CargoTestTargetDir>
     <CargoOutputDir>$(CargoTargetDir)\$(CargoTriple)\$(CargoProfileDir)\</CargoOutputDir>
     <CargoCommonArgs>--locked --target $(CargoTriple)</CargoCommonArgs>
     <!-- One-line diagnostics that the Exec patterns below turn into MSBuild errors and warnings,
@@ -34,8 +39,8 @@
     <CargoDiagnosticArgs>--message-format=short</CargoDiagnosticArgs>
     <CargoErrorPattern>^(.+:\d+:\d+: )?error(\[\w+\])?: </CargoErrorPattern>
     <CargoWarningPattern>^(.+:\d+:\d+: )?warning(\[\w+\])?: </CargoWarningPattern>
-    <!-- Under the source tree in CI, where PublishTestResults@2 collects every **/*.trx. -->
-    <CargoTestResults>$(CargoTargetDir)-test\awake.trx</CargoTestResults>
+    <!-- Inside the repository checkout, where CI's PublishTestResults@2 collects every **/*.trx. -->
+    <CargoTestResults>$(CargoTestTargetDir)\awake.trx</CargoTestResults>
     <!-- rc.exe from the Windows SDK this build selected, not whichever SDK is newest. -->
     <CargoEnvironment>POWERTOYS_VERSION=$(Version);WindowsSdkVerBinPath=$(WindowsSdkDir)bin\$(TargetPlatformVersion)\</CargoEnvironment>
   </PropertyGroup>
@@ -54,15 +59,14 @@
     <Copy SourceFiles="$(CargoOutputDir)awake.exe" DestinationFiles="$(OutDir)PowerToys.Awake.exe" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(CargoOutputDir)awake.pdb" DestinationFiles="$(OutDir)PowerToys.Awake.pdb" SkipUnchangedFiles="true" Condition="Exists('$(CargoOutputDir)awake.pdb')" />
   </Target>
-  <!-- There are no ARM64 test agents, matching the other test projects. Tests build with the
-       test hooks into their own folder, so they never replace the binary that ships. -->
+  <!-- There are no ARM64 test agents, matching the other test projects. -->
   <Target Name="Test" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
     <Exec Command="cargo fmt --all --check" WorkingDirectory="$(MSBuildThisFileDirectory)" />
-    <Exec Command="cargo lint $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile) -- -D warnings" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
+    <Exec Command="cargo lint $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTestTargetDir)&quot; --profile $(CargoProfile) -- -D warnings" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
     <Delete Files="$(CargoTestResults)" />
     <!-- ErrorAndContinue still fails the build when a test fails, but lets the results file below
          be written first, so the pipeline shows which test failed. -->
-    <Exec Command="cargo test-all $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile)" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" ConsoleToMSBuild="true" ContinueOnError="ErrorAndContinue">
+    <Exec Command="cargo test-all $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTestTargetDir)&quot; --profile $(CargoProfile)" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" ConsoleToMSBuild="true" ContinueOnError="ErrorAndContinue">
       <Output TaskParameter="ConsoleOutput" ItemName="CargoTestOutput" />
     </Exec>
     <WriteCargoTestResults Lines="@(CargoTestOutput)" OutputFile="$(CargoTestResults)" />
@@ -202,7 +206,7 @@
     </Task>
   </UsingTask>
   <Target Name="CargoClean" AfterTargets="Clean">
-    <RemoveDir Directories="$(CargoTargetDir);$(CargoTargetDir)-test" />
+    <RemoveDir Directories="$(CargoTargetDir);$(CargoTestTargetDir)" />
     <Delete Files="$(OutDir)PowerToys.Awake.exe;$(OutDir)PowerToys.Awake.pdb" />
   </Target>
 </Project>
