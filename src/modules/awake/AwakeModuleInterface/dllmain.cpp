@@ -14,8 +14,11 @@
 #include <common/utils/os-detect.h>
 #include <common/utils/winapi_error.h>
 
+#include <sddl.h>
+
 #include <filesystem>
 #include <set>
+#include <vector>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
@@ -32,6 +35,56 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
         break;
     }
     return TRUE;
+}
+
+// Creates or opens Awake's exit event with the security Awake gives it
+// (Awake/awake/src/platform/security.rs): the current user owns it, the user and SYSTEM get full
+// access, and a medium integrity label keeps lower-integrity processes from opening it at all,
+// even to wait on it, which could keep a set event alive after Awake exits.
+static HANDLE create_awake_exit_event()
+{
+    std::wstring user_sid;
+    HANDLE token = nullptr;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+    {
+        DWORD size = 0;
+        GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+        std::vector<BYTE> buffer(size);
+        wchar_t* sid_text = nullptr;
+        if (size != 0 && GetTokenInformation(token, TokenUser, buffer.data(), size, &size) &&
+            ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(buffer.data())->User.Sid, &sid_text))
+        {
+            user_sid = sid_text;
+            LocalFree(sid_text);
+        }
+        CloseHandle(token);
+    }
+
+    PSECURITY_DESCRIPTOR descriptor = nullptr;
+    if (!user_sid.empty())
+    {
+        const std::wstring sddl = L"O:" + user_sid + L"D:(A;;GA;;;" + user_sid + L")(A;;GA;;;SY)S:(ML;;NWNRNX;;;ME)";
+        if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, &descriptor, nullptr))
+        {
+            descriptor = nullptr;
+        }
+    }
+    if (descriptor == nullptr)
+    {
+        // The default security still passes Awake's check, since this user or the administrators
+        // own the event; only the label that keeps lower-integrity processes out is missing.
+        Logger::warn(L"Could not build the security descriptor for the Awake exit event. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    SECURITY_ATTRIBUTES attributes = { sizeof(attributes), descriptor, FALSE };
+    HANDLE exit_event = CreateEventW(descriptor != nullptr ? &attributes : nullptr, TRUE, FALSE, CommonSharedConstants::AWAKE_EXIT_EVENT);
+    const DWORD error = GetLastError();
+    if (descriptor != nullptr)
+    {
+        LocalFree(descriptor);
+    }
+    SetLastError(error);
+    return exit_event;
 }
 
 const static wchar_t* MODULE_NAME = L"Awake";
@@ -103,8 +156,8 @@ private:
         }
 
         // Awake creates this manual-reset event at startup; if it has not yet, creating it here
-        // with the same reset mode keeps the signal until Awake starts waiting for it.
-        HANDLE exit_event = CreateEvent(nullptr, TRUE, FALSE, CommonSharedConstants::AWAKE_EXIT_EVENT);
+        // with the same reset mode and security keeps the signal until Awake opens the event.
+        HANDLE exit_event = create_awake_exit_event();
         bool exited = false;
         if (exit_event == nullptr || !SetEvent(exit_event))
         {
