@@ -33,6 +33,23 @@ pub fn from_buffer(buffer: &[u16]) -> String {
     String::from_utf16_lossy(&buffer[..end])
 }
 
+/// Reads the NUL-terminated UTF-16 string at `ptr`; unpaired surrogates become U+FFFD. The one
+/// place that scans a Win32 string of unknown length, so every caller shares one audited loop.
+///
+/// # Safety
+///
+/// `ptr` must be non-null and point to a readable, NUL-terminated UTF-16 string that stays valid
+/// and unchanged for the duration of the call.
+pub unsafe fn from_nul_terminated(ptr: *const u16) -> String {
+    let mut len = 0;
+    // SAFETY: every unit up to and including the NUL is readable, and the loop stops at the NUL.
+    while unsafe { *ptr.add(len) } != 0 {
+        len += 1;
+    }
+    // SAFETY: the `len` units before the NUL were just read, so they form a valid slice.
+    String::from_utf16_lossy(unsafe { std::slice::from_raw_parts(ptr, len) })
+}
+
 /// Whether the NUL-terminated UTF-16 string at `ptr` equals `text`.
 ///
 /// # Safety
@@ -65,6 +82,21 @@ mod tests {
             assert!(!nul_terminated_eq(value.as_ptr(), "Immersive"));
             assert!(!nul_terminated_eq(value.as_ptr(), "ImmersiveColorSetX"));
             assert!(!nul_terminated_eq(wide("").as_ptr(), "a"));
+        }
+    }
+
+    #[test]
+    fn nul_terminated_reading() {
+        // SAFETY: `wide` strings are NUL-terminated and outlive each call.
+        unsafe {
+            assert_eq!(
+                from_nul_terminated(wide("Local\\Awake 😀").as_ptr()),
+                "Local\\Awake 😀"
+            );
+            assert_eq!(from_nul_terminated(wide("").as_ptr()), "");
+            // Stops at the first NUL even when more text follows.
+            assert_eq!(from_nul_terminated([0x61u16, 0, 0x62, 0].as_ptr()), "a");
+            assert_eq!(from_nul_terminated([0xD800u16, 0].as_ptr()), "\u{FFFD}");
         }
     }
 

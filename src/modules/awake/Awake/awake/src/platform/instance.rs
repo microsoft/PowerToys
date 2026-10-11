@@ -1,6 +1,7 @@
 //! One Awake per session.
 
 use std::io;
+use std::marker::PhantomData;
 use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
 use std::ptr;
 use std::time::Duration;
@@ -11,15 +12,20 @@ use windows_sys::Win32::System::Threading::{CreateMutexW, ReleaseMutex, WaitForS
 use super::{last_error, wide::wide};
 
 /// Holds the single-instance mutex; released when dropped.
+///
+/// A mutex belongs to the thread that acquired it and `ReleaseMutex` fails on any other, so the
+/// lock is neither `Send` nor `Sync`: dropping it elsewhere is a compile error, not a silent
+/// leak until the acquiring thread exits.
 #[derive(Debug)]
 pub struct InstanceLock {
     mutex: OwnedHandle,
+    _thread_affine: PhantomData<*const ()>,
 }
 
 impl Drop for InstanceLock {
     fn drop(&mut self) {
-        // SAFETY: the mutex is owned by this thread (acquired in `acquire`, dropped on the same
-        // thread by the app), and the handle stays valid until `OwnedHandle` closes it.
+        // SAFETY: the type is `!Send`, so this runs on the thread that acquired the mutex in
+        // `acquire`, and the handle stays valid until `OwnedHandle` closes it.
         unsafe { ReleaseMutex(self.mutex.as_raw_handle()) };
     }
 }
@@ -39,7 +45,10 @@ pub fn acquire(name: &str, wait: Duration) -> io::Result<Option<InstanceLock>> {
     // SAFETY: valid handle.
     match unsafe { WaitForSingleObject(mutex.as_raw_handle(), millis) } {
         // An abandoned mutex means the previous instance crashed; ownership is still ours.
-        WAIT_OBJECT_0 | WAIT_ABANDONED => Ok(Some(InstanceLock { mutex })),
+        WAIT_OBJECT_0 | WAIT_ABANDONED => Ok(Some(InstanceLock {
+            mutex,
+            _thread_affine: PhantomData,
+        })),
         WAIT_TIMEOUT => Ok(None),
         _ => Err(last_error()),
     }

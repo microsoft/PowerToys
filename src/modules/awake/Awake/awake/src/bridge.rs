@@ -1,7 +1,11 @@
 //! Shared PowerToys C++ code reached through `native/bridge.cpp`: group policy, telemetry and
 //! kernel object names.
 
+use std::sync::{Mutex, MutexGuard, PoisonError};
+
 use awake_core::mode::Mode;
+
+use crate::platform::wide::from_nul_terminated;
 
 unsafe extern "C" {
     fn awake_telemetry_register();
@@ -35,12 +39,19 @@ pub fn policy() -> Policy {
 
 /// `Local\PowerToysAwakeExitEvent-...`, the event the runner signals to stop Awake.
 pub fn exit_event_name() -> String {
-    // SAFETY: the C++ side returns a pointer to a static NUL-terminated constant.
-    unsafe {
-        let name = awake_exit_event_name();
-        let len = (0..).take_while(|&i| *name.add(i) != 0).count();
-        String::from_utf16_lossy(std::slice::from_raw_parts(name, len))
-    }
+    // SAFETY: no arguments; the C++ side returns a non-null pointer to a static NUL-terminated
+    // constant, which stays valid for the process lifetime.
+    unsafe { from_nul_terminated(awake_exit_event_name()) }
+}
+
+/// How many `Telemetry` values are alive. The provider is a single static handle that must not
+/// be registered twice, so only the first value registers it and only the last one unregisters.
+/// The lock also keeps a register from racing an unregister.
+static LIVE: Mutex<usize> = Mutex::new(0);
+
+fn live() -> MutexGuard<'static, usize> {
+    // The count is updated in one step, so a panic elsewhere cannot leave it half changed.
+    LIVE.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
 /// Telemetry through the shared PowerToys provider. Events are only written when the user has
@@ -52,8 +63,13 @@ pub struct Telemetry {
 
 impl Telemetry {
     pub fn start() -> Telemetry {
-        // SAFETY: registers the static provider once; balanced in Drop.
-        unsafe { awake_telemetry_register() };
+        let mut live = live();
+        if *live == 0 {
+            // SAFETY: no arguments; the count is zero under the lock, so the provider is not
+            // registered. Balanced by the last Drop.
+            unsafe { awake_telemetry_register() };
+        }
+        *live += 1;
         Telemetry {
             version: env!("AWAKE_TELEMETRY_VERSION")
                 .encode_utf16()
@@ -75,8 +91,13 @@ impl Telemetry {
 
 impl Drop for Telemetry {
     fn drop(&mut self) {
-        // SAFETY: balances `start`.
-        unsafe { awake_telemetry_unregister() };
+        let mut live = live();
+        *live -= 1;
+        if *live == 0 {
+            // SAFETY: no arguments; this was the last live value, so the provider is registered
+            // and nothing else will write through it until the next `start`.
+            unsafe { awake_telemetry_unregister() };
+        }
     }
 }
 
@@ -89,6 +110,28 @@ mod tests {
         assert_eq!(
             exit_event_name(),
             "Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe"
+        );
+    }
+
+    #[test]
+    fn telemetry_registers_the_provider_once_while_any_value_lives() {
+        // Other tests do not touch telemetry, so the count starts and ends at zero here.
+        let first = Telemetry::start();
+        let second = Telemetry::start();
+        assert_eq!(*live(), 2);
+        drop(first);
+        assert_eq!(
+            *live(),
+            1,
+            "the provider stays registered for the remaining value"
+        );
+        drop(second);
+        assert_eq!(*live(), 0);
+        drop(Telemetry::start());
+        assert_eq!(
+            *live(),
+            0,
+            "a new value registers again after the last one is gone"
         );
     }
 
