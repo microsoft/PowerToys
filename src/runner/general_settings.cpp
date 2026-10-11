@@ -1,3 +1,4 @@
+#include <filesystem>
 #include "pch.h"
 #include "general_settings.h"
 #include "auto_start_helper.h"
@@ -62,6 +63,66 @@ namespace
 
         return fallback;
     }
+
+    // Returns either:
+    // - std::nullopt if there was a transient read/parse error on an existing non-empty
+    // file (skip saving); or
+    // - Populated JsonObject if settings were successfully parsed; or
+    // - Empty JsonObject if file is absent or 0-bytes.
+    std::optional<json::JsonObject> load_general_settings_checked()
+    {
+        const std::wstring settings_path = PTSettingsHelper::get_powertoys_general_save_file_location();
+
+        constexpr int max_retries = 3;
+        int delay_ms = 25;
+
+        for (int retry = 0; retry <= max_retries; retry++)
+        {
+            auto loaded = json::from_file(settings_path);
+            if (loaded.has_value())
+            {
+                return loaded;
+            }
+
+            std::error_code ec;
+            const bool exists = std::filesystem::exists(settings_path, ec);
+            if (ec)
+            {
+                Logger::warn("load_general_settings_checked: Failed to check if settings.json exists: {}", ec.message());
+                return std::nullopt;
+            }
+
+            if (!exists)
+            {
+                // File genuinely does not exist.
+                return json::JsonObject{};
+            }
+
+            const auto size = std::filesystem::file_size(settings_path, ec);
+            if (ec)
+            {
+                Logger::warn("load_general_settings_checked: Failed to get file size for settings.json: {}", ec.message());
+                return std::nullopt;
+            }
+
+            if (size == 0)
+            {
+                // File exists but is 0 bytes.
+                return json::JsonObject{};
+            }
+
+            if (retry == max_retries)
+            {
+                Logger::warn(L"load_general_settings_checked: Failed to read/parse existing settings.json ({} bytes) after 3 retries. Transient error suspected.", size);
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+            delay_ms *= 2; // 25ms, then 50ms, then 100ms
+        }
+
+        return std::nullopt;
+    }
 }
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
@@ -124,7 +185,13 @@ json::JsonObject GeneralSettings::to_json()
 
 json::JsonObject load_general_settings()
 {
-    auto loaded = PTSettingsHelper::load_general_settings();
+    auto loaded_opt = load_general_settings_checked();
+    if (!loaded_opt.has_value())
+    {
+        Logger::warn(L"load_general_settings: Skipping global state update due to transient read error on settings.json.");
+        return json::JsonObject{};
+    }
+    auto loaded = std::move(loaded_opt).value();
     settings_theme = loaded.GetNamedString(L"theme", L"system");
     if (settings_theme != L"dark" && settings_theme != L"light")
     {
@@ -193,21 +260,31 @@ GeneralSettings get_general_settings()
     // those which are missing or which failed to load, are represented.
     try
     {
-        auto loaded = PTSettingsHelper::load_general_settings();
-        if (json::has(loaded, L"enabled", json::JsonValueType::Object))
+        auto loaded_opt = load_general_settings_checked();
+        if (!loaded_opt.has_value())
         {
-            auto enabled_obj = loaded.GetNamedObject(L"enabled");
-            for (const auto& elem : enabled_obj)
+            settings.isDataLoadedSuccessfully = false;
+        }
+        else
+        {
+            const json::JsonObject& loaded = *loaded_opt;
+
+            if (json::has(loaded, L"enabled", json::JsonValueType::Object))
             {
-                if (elem.Value().ValueType() == json::JsonValueType::Boolean)
+                auto enabled_obj = loaded.GetNamedObject(L"enabled");
+                for (const auto& elem : enabled_obj)
                 {
-                    settings.isModulesEnabledMap[std::wstring{ elem.Key() }] = elem.Value().GetBoolean();
+                    if (elem.Value().ValueType() == json::JsonValueType::Boolean)
+                    {
+                        settings.isModulesEnabledMap[std::wstring{ elem.Key() }] = elem.Value().GetBoolean();
+                    }
                 }
             }
         }
     }
     catch (...)
     {
+        settings.isDataLoadedSuccessfully = false;
     }
 
     // Overlay the active runtime states from loaded modules.
@@ -289,8 +366,17 @@ void apply_module_status_update(const json::JsonObject& module_config, bool save
 
     if (save)
     {
-        // Load existing settings and only update the specific module's enabled state
-        json::JsonObject current_settings = PTSettingsHelper::load_general_settings();
+        // Load existing settings and only update the specific module's enabled state.
+        auto loaded_opt = load_general_settings_checked();
+        if (!loaded_opt.has_value())
+        {
+            Logger::warn(L"apply_module_status_update: Skipping save due to transient read error on settings.json.");
+            return;
+        }
+
+        // Use the successful read as the base for the update, or create a new settings
+        // object if the file doesn't exist or is empty.
+        json::JsonObject current_settings = std::move(loaded_opt).value();
 
         json::JsonObject enabled;
         if (current_settings.HasKey(L"enabled"))
@@ -303,7 +389,7 @@ void apply_module_status_update(const json::JsonObject& module_config, bool save
 
         if (!has_current_saved || current_saved != target_enabled)
         {
-            // Update only this module's enabled state
+            // Update only this module's enabled state.
             enabled.SetNamedValue(name, json::value(target_enabled));
             current_settings.SetNamedValue(L"enabled", enabled);
 
@@ -317,6 +403,12 @@ void apply_module_status_update(const json::JsonObject& module_config, bool save
 
 void apply_general_settings(const json::JsonObject& general_configs, bool save)
 {
+    if (general_configs.Size() == 0)
+    {
+        Logger::warn(L"apply_general_settings: Empty configuration provided; skipping application.");
+        return;
+    }
+
     std::wstring old_settings_json_string;
     if (save)
     {
@@ -516,6 +608,12 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (save)
     {
         GeneralSettings save_settings = get_general_settings();
+
+        if (!save_settings.isDataLoadedSuccessfully)
+        {
+            Logger::warn(L"apply_general_settings: Skipping save due to transient read error on settings.json.");
+            return;
+        }
 
         // Ensure any unloaded module enabled states are preserved in the saved settings.
         if (json::has(general_configs, L"enabled", json::JsonValueType::Object))
