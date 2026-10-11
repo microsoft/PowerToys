@@ -54,6 +54,8 @@ const CLEANUP_BUDGET: Duration = Duration::from_secs(2);
 const CLEANUP_AFTER_IDLE: Duration = Duration::from_secs(1);
 /// The wait for `log::logger().flush()`; code that needs another bound calls `flush`.
 const DEFAULT_FLUSH_TIMEOUT: Duration = Duration::from_millis(500);
+/// Failed writes or opens in a row after which the day's file is given up on.
+const MAX_FAILURES: u32 = 3;
 
 enum Message {
     /// When the line was logged, in UTC; the writer adds the local offset.
@@ -259,14 +261,16 @@ impl Sink {
         if day != self.day {
             self.day = day;
             self.cleanup_due = true;
+            self.failures = 0;
             self.open();
-        } else if !self.path.exists() {
+        } else if self.failures < MAX_FAILURES && !self.path.exists() {
             // The file is shared for deletion, so the module or Logs folder can be deleted while
             // Awake runs. Writes to a deleted file still succeed and are lost, so start again.
             self.open();
         }
-        // After repeated failures (a full disk, usually) stop trying until tomorrow's file.
-        if self.failures >= 3 || self.written >= MAX_FILE_BYTES {
+        // After repeated failures (a full disk, or a folder that cannot be created) stop trying
+        // until tomorrow's file.
+        if self.failures >= MAX_FAILURES || self.written >= MAX_FILE_BYTES {
             return;
         }
         let Some(file) = self.file.as_mut() else { return };
@@ -294,18 +298,21 @@ impl Sink {
         }
     }
 
+    /// A failed open counts as a failed write, so a folder that cannot be created is not tried
+    /// again for every line.
     fn open(&mut self) {
         self.file = None;
-        self.failures = 0;
         self.written = 0;
         self.path = self.directory.join(format!("Log_{}.log", self.day));
         if fs::create_dir_all(&self.directory).is_ok() {
             self.file = OpenOptions::new().create(true).append(true).open(&self.path).ok();
-            self.written = self
-                .file
-                .as_ref()
-                .and_then(|f| f.metadata().ok())
-                .map_or(0, |m| m.len());
+        }
+        match self.file.as_ref() {
+            Some(file) => {
+                self.written = file.metadata().map_or(0, |m| m.len());
+                self.failures = 0;
+            }
+            None => self.failures += 1,
         }
     }
 }
@@ -468,6 +475,32 @@ mod tests {
             anchor: path.parent().unwrap().to_owned(),
             path: path.to_owned(),
         }
+    }
+
+    #[test]
+    fn a_folder_that_cannot_be_created_is_not_tried_again_for_every_line() {
+        let dir = temp_dir("uncreatable");
+        // A file where the version folder's parent should be makes the folder impossible.
+        let blocker = dir.join("Logs");
+        fs::write(&blocker, "").unwrap();
+        let directory = blocker.join("v1");
+        let mut sink = Sink::new(&directory);
+        let now = SystemClock.now();
+        for _ in 0..MAX_FAILURES {
+            sink.write(&now, "lost");
+        }
+        assert_eq!(sink.failures, MAX_FAILURES);
+
+        // Once the folder could be created, the same day still does not try again.
+        fs::remove_file(&blocker).unwrap();
+        sink.write(&now, "still lost");
+        assert!(!directory.exists());
+
+        // The next day's file gets a fresh start.
+        let tomorrow = now.saturating_add_secs(24 * 3600);
+        sink.write(&tomorrow, "tomorrow");
+        assert!(fs::read_to_string(&sink.path).unwrap().contains("tomorrow"));
+        fs::remove_dir_all(dir).ok();
     }
 
     #[test]
