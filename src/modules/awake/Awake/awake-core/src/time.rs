@@ -267,7 +267,8 @@ fn parse_date_time(text: &str) -> Option<ParsedTime> {
         let body = &zone[1..];
         let (h, m) = match body.split_once(':') {
             Some(parts) => parts,
-            None if body.len() == 4 => body.split_at(2),
+            // `len` counts bytes, so only all-digit text is known to split on a char boundary.
+            None if body.len() == 4 && body.bytes().all(|b| b.is_ascii_digit()) => body.split_at(2),
             None => (body, "0"),
         };
         let h: i16 = digits(h)?;
@@ -502,6 +503,9 @@ mod tests {
     fn non_ascii_input_does_not_panic() {
         assert_eq!(parse_time("2026-10-1é"), None);
         assert_eq!(parse_time("１７:３０"), None);
+        // Four bytes after the sign, but not four characters.
+        assert_eq!(parse_time("2000-01-01T10:00+😀"), None);
+        assert_eq!(parse_time("2000-01-01T10:00-a時"), None);
     }
 
     #[test]
