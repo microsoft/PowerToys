@@ -10,7 +10,8 @@ use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     CHANGEFILTERSTRUCT, ChangeWindowMessageFilterEx, CreateWindowExW, DispatchMessageW, GWLP_USERDATA,
     GetMessageW, GetWindowLongPtrW, KillTimer, MSG, MSGFLT_ALLOW, RegisterClassExW, RegisterWindowMessageW,
-    SetTimer, SetWindowLongPtrW, TranslateMessage, WNDCLASSEXW, WNDPROC, WS_EX_TOOLWINDOW, WS_OVERLAPPED,
+    SetCoalescableTimer, SetTimer, SetWindowLongPtrW, TranslateMessage, WNDCLASSEXW, WNDPROC,
+    WS_EX_TOOLWINDOW, WS_OVERLAPPED,
 };
 
 use super::{last_error, wide::wide};
@@ -96,9 +97,18 @@ pub fn user_data(window: HWND) -> isize {
 }
 
 /// Returns false when Windows is out of timers.
+#[must_use]
 pub fn set_timer(window: HWND, id: usize, millis: u32) -> bool {
     // SAFETY: timer on our own window; no callback, so it arrives as WM_TIMER.
     unsafe { SetTimer(window, id, millis, None) != 0 }
+}
+
+/// Like [`set_timer`], but Windows may deliver each tick up to `tolerance_ms` late, so it can
+/// wake the processor once for several timers.
+#[must_use]
+pub fn set_coalescable_timer(window: HWND, id: usize, millis: u32, tolerance_ms: u32) -> bool {
+    // SAFETY: timer on our own window; no callback, so it arrives as WM_TIMER.
+    unsafe { SetCoalescableTimer(window, id, millis, None, tolerance_ms) != 0 }
 }
 
 pub fn kill_timer(window: HWND, id: usize) {

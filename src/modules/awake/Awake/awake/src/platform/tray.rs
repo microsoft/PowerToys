@@ -15,12 +15,11 @@ use windows_sys::Win32::UI::Shell::{
     NIF_ICON, NIF_MESSAGE, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_MODIFY, NIM_SETFOCUS,
     NIM_SETVERSION, NOTIFYICON_VERSION_4, NOTIFYICONDATAW, Shell_NotifyIconW,
 };
-use windows_sys::Win32::UI::WindowsAndMessaging::{DestroyIcon, HICON, KillTimer, SetTimer, WM_APP};
+use windows_sys::Win32::UI::WindowsAndMessaging::{DestroyIcon, HICON, KillTimer, SetTimer};
 
+use super::messages::{TIMER_TRAY_RETRY, WM_TRAY};
 use super::wide::copy_truncated;
 
-pub const WM_TRAY: u32 = WM_APP + 2;
-pub const TIMER_RETRY: usize = 3;
 /// Same identifier as before, so Windows keeps the user's "always show" choice.
 const ICON_ID: u32 = 1000;
 const MAX_RETRIES: u32 = 10;
@@ -55,7 +54,8 @@ pub trait Shell {
     /// Loads the icon for the current DPI, or returns the failing HRESULT.
     fn load_icon(&mut self, kind: IconKind) -> Result<HICON, i32>;
     fn destroy_icon(&mut self, icon: HICON);
-    fn set_retry_timer(&mut self, delay_ms: u32);
+    /// Returns false when Windows is out of timers.
+    fn set_retry_timer(&mut self, delay_ms: u32) -> bool;
     fn kill_retry_timer(&mut self);
 }
 
@@ -95,14 +95,14 @@ impl Shell for Win32Shell {
         unsafe { DestroyIcon(icon) };
     }
 
-    fn set_retry_timer(&mut self, delay_ms: u32) {
+    fn set_retry_timer(&mut self, delay_ms: u32) -> bool {
         // SAFETY: timer on our own window.
-        unsafe { SetTimer(self.window, TIMER_RETRY, delay_ms, None) };
+        unsafe { SetTimer(self.window, TIMER_TRAY_RETRY, delay_ms, None) != 0 }
     }
 
     fn kill_retry_timer(&mut self) {
         // SAFETY: killing a timer on our own window.
-        unsafe { KillTimer(self.window, TIMER_RETRY) };
+        unsafe { KillTimer(self.window, TIMER_TRAY_RETRY) };
     }
 }
 
@@ -251,7 +251,10 @@ impl<S: Shell> Tray<S> {
                 "The notification area is not ready; retry {} in {delay} ms.",
                 self.retries
             );
-            self.shell.set_retry_timer(delay);
+            if !self.shell.set_retry_timer(delay) {
+                // Still waiting: Explorer's next TaskbarCreated adds the icon.
+                log::error!("Could not schedule the retry; waiting for Explorer to restart.");
+            }
         } else {
             self.waiting = true;
             log::error!("Could not add the notification icon; waiting for Explorer to restart.");
@@ -407,8 +410,9 @@ mod tests {
             self.0.borrow_mut().destroyed += 1;
         }
 
-        fn set_retry_timer(&mut self, delay_ms: u32) {
+        fn set_retry_timer(&mut self, delay_ms: u32) -> bool {
             self.0.borrow_mut().timers.push(delay_ms);
+            true
         }
 
         fn kill_retry_timer(&mut self) {

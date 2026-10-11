@@ -28,16 +28,15 @@ use windows_sys::Win32::Storage::FileSystem::{
 };
 use windows_sys::Win32::System::IO::{CancelIoEx, GetOverlappedResult, OVERLAPPED};
 use windows_sys::Win32::System::Threading::{
-    CancelWaitableTimer, CreateEventW, CreateWaitableTimerExW, GetCurrentProcess, INFINITE, ResetEvent,
-    SetEvent, SetWaitableTimer, TIMER_ALL_ACCESS, TerminateProcess, WaitForMultipleObjects,
-    WaitForSingleObject,
+    CancelWaitableTimer, CreateWaitableTimerExW, GetCurrentProcess, INFINITE, ResetEvent, SetEvent,
+    SetWaitableTimer, TIMER_ALL_ACCESS, TerminateProcess, WaitForMultipleObjects, WaitForSingleObject,
 };
-use windows_sys::Win32::UI::WindowsAndMessaging::{PostMessageW, WM_APP};
+use windows_sys::Win32::UI::WindowsAndMessaging::PostMessageW;
 
 use super::clock::SystemClock;
+use super::messages::WM_WAITER;
 use super::{last_error, wide::wide};
 
-pub const WM_WAITER: u32 = WM_APP + 1;
 const WATCHDOG: Duration = Duration::from_secs(10);
 
 /// How long a stop request may take before the process is ended.
@@ -93,7 +92,7 @@ const NO_DEADLINE: i64 = i64::MIN;
 
 impl Waiter {
     pub fn start(setup: WaiterSetup) -> io::Result<Waiter> {
-        let stop = event(true)?;
+        let stop = super::event::manual_reset(None)?;
         // SAFETY: anonymous synchronization timer; null attributes and name are allowed.
         let timer = unsafe { CreateWaitableTimerExW(ptr::null(), ptr::null(), 0, TIMER_ALL_ACCESS) };
         if timer.is_null() {
@@ -351,16 +350,6 @@ fn arm_timer(timer: HANDLE, ticks: i64) {
     }
 }
 
-fn event(manual_reset: bool) -> io::Result<OwnedHandle> {
-    // SAFETY: anonymous event; null attributes and name are allowed.
-    let raw = unsafe { CreateEventW(ptr::null(), i32::from(manual_reset), 0, ptr::null()) };
-    if raw.is_null() {
-        return Err(last_error());
-    }
-    // SAFETY: fresh handle we own.
-    Ok(unsafe { OwnedHandle::from_raw_handle(raw) })
-}
-
 /// Bytes of change records one request can return.
 const WATCH_BUFFER_BYTES: usize = 8192;
 
@@ -404,7 +393,7 @@ impl DirectoryWatch {
         let mut watch = DirectoryWatch {
             // SAFETY: fresh handle we own.
             directory: unsafe { OwnedHandle::from_raw_handle(raw) },
-            event: event(true)?,
+            event: super::event::manual_reset(None)?,
             file_name: file_name.encode_wide().map(lower).collect(),
             // SAFETY: OVERLAPPED is plain data, for which all zeroes is a valid value.
             overlapped: Box::into_raw(Box::new(unsafe { mem::zeroed() })),

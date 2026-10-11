@@ -1,16 +1,15 @@
 //! The UI language: PowerToys' own choice first, then Windows'.
 
-use std::fs;
-
 use awake_core::powertoys;
 use windows_sys::Win32::Globalization::{GetUserPreferredUILanguages, MUI_LANGUAGE_NAME};
 
 use super::paths::Paths;
+use super::settings_store::read_bounded;
 use super::wide::from_buffer;
 
 pub fn ui_language(paths: Option<&Paths>) -> String {
     paths
-        .and_then(|paths| fs::read(paths.language_file()).ok())
+        .and_then(|paths| read_bounded(&paths.language_file()).ok())
         .and_then(|bytes| powertoys::language_tag(&bytes))
         .unwrap_or_else(windows_ui_language)
 }

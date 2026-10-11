@@ -273,10 +273,11 @@ impl Engine {
         effects
     }
 
-    /// Called once a second while counting down.
-    pub fn tick(&mut self, now: DateTimeOffset) -> Vec<Effect> {
+    /// Called once a second while counting down. It only compares times, so it takes UTC, which
+    /// is cheaper to read than the local time.
+    pub fn tick(&mut self, now: Timestamp) -> Vec<Effect> {
         match self.activity.deadline() {
-            Some(deadline) if now.utc >= deadline => self.end_session(ExitReason::TimeUp),
+            Some(deadline) if now >= deadline => self.end_session(ExitReason::TimeUp),
             Some(_) if matches!(self.activity, Activity::Timed { .. }) => vec![Effect::RefreshIcon],
             _ => Vec::new(),
         }
@@ -286,9 +287,9 @@ impl Engine {
     /// corrections do not move, so it can fire while the system clock still reads a little
     /// before the deadline; it is then armed again rather than leaving the session without
     /// an end.
-    pub fn deadline_fired(&mut self, now: DateTimeOffset) -> Vec<Effect> {
+    pub fn deadline_fired(&mut self, now: Timestamp) -> Vec<Effect> {
         match self.activity.deadline() {
-            Some(deadline) if now.utc < deadline => {
+            Some(deadline) if now < deadline => {
                 let mut effects = vec![Effect::ScheduleDeadline(Some(deadline))];
                 effects.extend(self.tick(now));
                 effects
@@ -307,7 +308,7 @@ impl Engine {
         effects
     }
 
-    /// Resume from sleep or a power source change: assert the request again.
+    /// Resume from sleep: assert the request again.
     pub fn power_changed(&mut self) -> Vec<Effect> {
         let mut effects = Vec::new();
         self.sync_flags(true, &mut effects);
@@ -515,8 +516,8 @@ mod tests {
     fn timed_session_ends_in_passive_and_is_persisted() {
         let mut engine = powertoys();
         engine.apply_settings(&timed(0, 1), at(0));
-        assert_eq!(engine.tick(at(30)), [Effect::RefreshIcon]);
-        let effects = engine.tick(at(60));
+        assert_eq!(engine.tick(at(30).utc), [Effect::RefreshIcon]);
+        let effects = engine.tick(at(60).utc);
         assert_eq!(flags(&effects), [ES_CONTINUOUS]);
         assert!(effects.contains(&Effect::ScheduleDeadline(None)));
         assert!(effects.contains(&Effect::Countdown(false)));
@@ -524,7 +525,7 @@ mod tests {
             effects.last(),
             Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)]))
         );
-        assert_eq!(engine.tick(at(61)), [], "it completes exactly once");
+        assert_eq!(engine.tick(at(61).utc), [], "it completes exactly once");
     }
 
     #[test]
@@ -538,8 +539,12 @@ mod tests {
             },
             at(0),
         );
-        assert_eq!(engine.tick(at(99)), [], "expirable sessions show no countdown");
-        let effects = engine.tick(at(100));
+        assert_eq!(
+            engine.tick(at(99).utc),
+            [],
+            "expirable sessions show no countdown"
+        );
+        let effects = engine.tick(at(100).utc);
         assert_eq!(flags(&effects), [ES_CONTINUOUS]);
         assert!(effects.contains(&Effect::ScheduleDeadline(None)));
         assert!(
@@ -550,15 +555,15 @@ mod tests {
             effects.last(),
             Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)]))
         );
-        assert_eq!(engine.tick(at(101)), [], "it completes exactly once");
+        assert_eq!(engine.tick(at(101).utc), [], "it completes exactly once");
     }
 
     #[test]
     fn command_line_expirable_session_exits_when_the_time_comes() {
         let mut engine = Engine::new(Source::CommandLine, defaults(), false);
         engine.start(Activity::Expirable { until: at(100) }, false);
-        assert_eq!(engine.tick(at(99)), []);
-        let effects = engine.tick(at(100));
+        assert_eq!(engine.tick(at(99).utc), []);
+        let effects = engine.tick(at(100).utc);
         assert_eq!(effects.last(), Some(&Effect::Exit(ExitReason::TimeUp)));
         assert!(!effects.iter().any(|e| matches!(e, Effect::Persist(_))));
     }
@@ -570,7 +575,7 @@ mod tests {
         let mut engine = powertoys();
         let effects = engine.apply_settings(&timed(0, 0), at(0));
         assert!(effects.contains(&Effect::ScheduleDeadline(Some(at(0).utc))));
-        let effects = engine.tick(at(0));
+        let effects = engine.tick(at(0).utc);
         assert_eq!(engine.activity(), Activity::Passive);
         assert_eq!(flags(&effects), [ES_CONTINUOUS]);
         assert_eq!(
@@ -580,7 +585,7 @@ mod tests {
                 .collect::<Vec<_>>(),
             [&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)])]
         );
-        assert_eq!(engine.tick(at(1)), []);
+        assert_eq!(engine.tick(at(1).utc), []);
         assert_eq!(
             engine.apply_settings(&settings(Mode::Passive), at(1)),
             [],
@@ -598,17 +603,21 @@ mod tests {
         };
         engine.apply_settings(&settings, at(0));
         assert_eq!(
-            engine.deadline_fired(at(3599)),
+            engine.deadline_fired(at(3599).utc),
             [Effect::ScheduleDeadline(Some(deadline.utc))]
         );
         assert_eq!(engine.activity().mode(), Mode::Expirable);
-        let effects = engine.deadline_fired(at(3600));
+        let effects = engine.deadline_fired(at(3600).utc);
         assert!(effects.contains(&Effect::ScheduleDeadline(None)));
         assert_eq!(
             effects.last(),
             Some(&Effect::Persist(vec![SettingsChange::Mode(Mode::Passive)]))
         );
-        assert_eq!(engine.deadline_fired(at(3601)), [], "a stale timer does nothing");
+        assert_eq!(
+            engine.deadline_fired(at(3601).utc),
+            [],
+            "a stale timer does nothing"
+        );
     }
 
     #[test]
@@ -621,7 +630,7 @@ mod tests {
             },
             false,
         );
-        let effects = engine.tick(at(5));
+        let effects = engine.tick(at(5).utc);
         assert_eq!(effects.last(), Some(&Effect::Exit(ExitReason::TimeUp)));
         assert!(!effects.iter().any(|e| matches!(e, Effect::Persist(_))));
     }

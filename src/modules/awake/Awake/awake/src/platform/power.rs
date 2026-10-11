@@ -12,7 +12,7 @@ pub fn set_execution_state(flags: u32) -> bool {
 #[cfg(test)]
 mod tests {
     use awake_core::execution_state::{ES_CONTINUOUS, ES_DISPLAY_REQUIRED, ES_SYSTEM_REQUIRED};
-    use awake_core::tray::ids;
+    use awake_core::tray_model::ids;
     use windows_sys::Win32::System::Power as power;
     use windows_sys::Win32::UI::WindowsAndMessaging::WM_USER;
 

@@ -3,9 +3,11 @@
 
 pub mod clock;
 pub mod console;
+pub mod event;
 pub mod instance;
 pub mod locale;
 pub mod menu;
+pub mod messages;
 pub mod paths;
 pub mod power;
 pub mod process;

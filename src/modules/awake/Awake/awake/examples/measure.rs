@@ -20,7 +20,7 @@ use windows_sys::Win32::System::Diagnostics::ToolHelp::{
 };
 use windows_sys::Win32::System::ProcessStatus::{K32GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS_EX};
 use windows_sys::Win32::System::Threading::{
-    GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources, GetProcessHandleCount, GetProcessTimes,
+    CREATE_NO_WINDOW, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources, GetProcessHandleCount, GetProcessTimes,
 };
 use windows_sys::Win32::System::WindowsProgramming::QueryProcessCycleTime;
 use windows_sys::Win32::UI::WindowsAndMessaging::{FindWindowExW, GetWindowThreadProcessId};
@@ -98,7 +98,7 @@ fn start(exe: &str, args: &[String]) -> (Child, Duration) {
         .env("POWERTOYS_AWAKE_DATA_DIR", &data_dir)
         .env("POWERTOYS_AWAKE_OBJECT_SUFFIX", "-measure")
         // Like the PowerToys runner: no console of its own and none shared with this harness.
-        .creation_flags(0x0800_0000)
+        .creation_flags(CREATE_NO_WINDOW)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())

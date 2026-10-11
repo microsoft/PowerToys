@@ -294,6 +294,21 @@ fn closing_the_window_exits_instead_of_running_headless() {
 }
 
 #[test]
+fn a_restart_manager_close_ends_awake_instead_of_leaving_it_headless() {
+    let _serial = serial();
+    let sandbox = Sandbox::new("restart-manager");
+    let mut awake = sandbox.spawn(&["-c", "--pid", &own_pid()]);
+    let window = find_window(awake.id(), 5 * SECOND).expect("tray window");
+    end_session_for_restart_manager(window);
+    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert!(sandbox.log().contains("Asked to close so files can be updated."));
+    assert!(
+        sandbox.log().contains("Exiting with code 0."),
+        "the last line is written before the process ends"
+    );
+}
+
+#[test]
 fn failing_writes_degrade_gracefully() {
     let _serial = serial();
     let sandbox = Sandbox::new("readonly");

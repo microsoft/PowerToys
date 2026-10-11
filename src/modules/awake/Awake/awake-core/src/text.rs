@@ -7,8 +7,9 @@ use crate::cli::{CliError, PROGRAM};
 use crate::duration::{Countdown, DurationError};
 use crate::strings::{StringId, Strings};
 
-const AUTHOR: &str = "Den Delimarsky";
-const HOMEPAGE: &str = "https://awake.den.dev";
+// From `[workspace.package]`, so the help text and the manifest cannot drift apart.
+const AUTHOR: &str = env!("CARGO_PKG_AUTHORS");
+const HOMEPAGE: &str = env!("CARGO_PKG_HOMEPAGE");
 
 /// How much the terminal can show.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

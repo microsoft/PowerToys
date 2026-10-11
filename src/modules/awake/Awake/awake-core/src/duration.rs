@@ -3,7 +3,7 @@
 use std::fmt;
 
 /// Why [`parse_duration`] rejected its input. People see the localized text from
-/// `console::cli_error_message`; `Display` gives a neutral English message for logs.
+/// `text::cli_error_message`; `Display` gives a neutral English message for logs.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DurationError {
     /// Nothing but whitespace.

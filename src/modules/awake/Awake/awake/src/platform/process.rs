@@ -24,6 +24,12 @@ use super::wide::from_buffer;
 #[derive(Debug)]
 pub struct BoundProcess {
     pub handle: OwnedHandle,
+    pub target: BoundTarget,
+}
+
+/// What Awake shows about the process it is bound to; the handle stays with the waiter.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct BoundTarget {
     pub pid: u32,
     pub image_name: Option<String>,
 }
@@ -45,8 +51,10 @@ pub fn bind_pid(pid: i64) -> Result<BoundProcess, BindError> {
     open_older_than_self(pid)
 }
 
-pub fn bind_parent() -> Result<BoundProcess, BindError> {
-    let parent = parent_pid().ok_or(BindError::ParentNotFound)?;
+/// Binds to `parent`, the result of [`parent_pid`]; the caller looks it up once, since taking a
+/// process snapshot walks every process on the machine.
+pub fn bind_parent(parent: Option<u32>) -> Result<BoundProcess, BindError> {
+    let parent = parent.ok_or(BindError::ParentNotFound)?;
     open_older_than_self(parent).map_err(|error| match error {
         BindError::AccessDenied => BindError::AccessDenied,
         _ => BindError::ParentNotFound,
@@ -69,8 +77,7 @@ fn open_older_than_self(pid: u32) -> Result<BoundProcess, BindError> {
     let image_name = image_name(handle.as_raw_handle());
     Ok(BoundProcess {
         handle,
-        pid,
-        image_name,
+        target: BoundTarget { pid, image_name },
     })
 }
 
@@ -166,9 +173,14 @@ mod tests {
 
     #[test]
     fn the_test_runner_parent_can_be_bound() {
-        let bound = bind_parent().expect("cargo test has a parent process");
-        assert_ne!(bound.pid, std::process::id());
-        assert!(bound.image_name.is_some());
+        let bound = bind_parent(parent_pid()).expect("cargo test has a parent process");
+        assert_ne!(bound.target.pid, std::process::id());
+        assert!(bound.target.image_name.is_some());
+    }
+
+    #[test]
+    fn a_missing_parent_is_reported_as_such() {
+        assert_eq!(bind_parent(None).unwrap_err(), BindError::ParentNotFound);
     }
 
     #[test]

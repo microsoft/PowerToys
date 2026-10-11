@@ -19,12 +19,12 @@ use windows_sys::Win32::System::Diagnostics::ToolHelp::{
 use windows_sys::Win32::System::Power::{CallNtPowerInformation, SystemExecutionState};
 use windows_sys::Win32::System::ProcessStatus::{K32GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS_EX};
 use windows_sys::Win32::System::Threading::{
-    EVENT_MODIFY_STATE, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources, GetProcessHandleCount, OpenEventW,
-    SetEvent,
+    CREATE_NO_WINDOW, EVENT_MODIFY_STATE, GR_GDIOBJECTS, GR_USEROBJECTS, GetGuiResources,
+    GetProcessHandleCount, OpenEventW, SetEvent,
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-    FindWindowExW, GetWindowThreadProcessId, PostMessageW, SMTO_ABORTIFHUNG, SendMessageTimeoutW, WM_CLOSE,
-    WM_NULL,
+    ENDSESSION_CLOSEAPP, FindWindowExW, GetWindowThreadProcessId, PostMessageW, SMTO_ABORTIFHUNG,
+    SendMessageTimeoutW, WM_CLOSE, WM_ENDSESSION, WM_NULL,
 };
 
 pub const EXE: &str = env!("CARGO_BIN_EXE_awake");
@@ -58,7 +58,7 @@ impl Sandbox {
     /// without sharing the caller's console.
     pub fn command(&self, args: &[&str]) -> Command {
         let mut command = self.command_in_callers_console(args);
-        command.creation_flags(0x0800_0000 /* CREATE_NO_WINDOW */);
+        command.creation_flags(CREATE_NO_WINDOW);
         command
     }
 
@@ -305,6 +305,12 @@ pub fn responsive(window: HWND, timeout: Duration) -> bool {
 pub fn close_window(window: HWND) {
     // SAFETY: posting to another process's window.
     unsafe { PostMessageW(window, WM_CLOSE, 0, 0) };
+}
+
+/// What the Restart Manager sends when an installer needs Awake's files: the session goes on.
+pub fn end_session_for_restart_manager(window: HWND) {
+    // SAFETY: posting to another process's window; the message carries no pointers.
+    unsafe { PostMessageW(window, WM_ENDSESSION, 1, ENDSESSION_CLOSEAPP as isize) };
 }
 
 #[derive(Clone, Copy, Debug)]

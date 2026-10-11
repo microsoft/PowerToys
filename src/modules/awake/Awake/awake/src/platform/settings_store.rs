@@ -103,11 +103,7 @@ impl SettingsStore {
             Err(error) if error.kind() == io::ErrorKind::NotFound => return Err(LoadError::Missing),
             Err(error) => return Err(LoadError::Io(error)),
         };
-        let mut bytes = Vec::new();
-        // Reading one byte past the limit is how an oversized file is detected.
-        file.take(MAX_FILE_BYTES as u64 + 1)
-            .read_to_end(&mut bytes)
-            .map_err(LoadError::Io)?;
+        let bytes = read_at_most_limit(file).map_err(LoadError::Io)?;
         SettingsDocument::parse(&bytes).map_err(LoadError::Invalid)
     }
 
@@ -152,6 +148,27 @@ fn touch(path: &Path) -> io::Result<()> {
         .share_mode(SHARE_ALL)
         .open(path)?;
     file.set_modified(SystemTime::now())
+}
+
+/// Reads another small PowerToys file, such as `language.json`, with the same size limit as
+/// `settings.json`: a damaged or replaced file must not be loaded whole into memory.
+pub fn read_bounded(path: &Path) -> io::Result<Vec<u8>> {
+    let file = OpenOptions::new().read(true).share_mode(SHARE_ALL).open(path)?;
+    let bytes = read_at_most_limit(file)?;
+    if bytes.len() > MAX_FILE_BYTES {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("{} is larger than {MAX_FILE_BYTES} bytes", path.display()),
+        ));
+    }
+    Ok(bytes)
+}
+
+/// Reads up to one byte past [`MAX_FILE_BYTES`], which is how an oversized file is detected.
+fn read_at_most_limit(file: File) -> io::Result<Vec<u8>> {
+    let mut bytes = Vec::new();
+    file.take(MAX_FILE_BYTES as u64 + 1).read_to_end(&mut bytes)?;
+    Ok(bytes)
 }
 
 fn is_busy(error: &io::Error) -> bool {
@@ -224,6 +241,25 @@ mod tests {
             SettingsStore::new(path).read(),
             Err(LoadError::Invalid(SettingsError::TooLarge))
         ));
+        fs::remove_dir_all(dir).ok();
+    }
+
+    #[test]
+    fn other_powertoys_files_are_read_with_the_same_bound() {
+        let dir = temp_dir("bounded");
+        let small = dir.join("language.json");
+        fs::write(&small, br#"{"language":"de-DE"}"#).unwrap();
+        assert_eq!(read_bounded(&small).unwrap(), br#"{"language":"de-DE"}"#);
+        let large = dir.join("log_settings.json");
+        fs::write(&large, vec![b' '; MAX_FILE_BYTES + 1]).unwrap();
+        assert_eq!(
+            read_bounded(&large).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+        assert_eq!(
+            read_bounded(&dir.join("missing.json")).unwrap_err().kind(),
+            io::ErrorKind::NotFound
+        );
         fs::remove_dir_all(dir).ok();
     }
 

@@ -9,7 +9,6 @@
 #![warn(missing_docs)]
 
 pub mod cli;
-pub mod console;
 pub mod duration;
 pub mod engine;
 pub mod execution_state;
@@ -17,5 +16,6 @@ pub mod mode;
 pub mod powertoys;
 pub mod settings;
 pub mod strings;
+pub mod text;
 pub mod time;
-pub mod tray;
+pub mod tray_model;

@@ -4,7 +4,7 @@ use std::{mem, ptr};
 
 use awake_core::time::{CivilDateTime, DateTimeOffset, LocalZone, TICKS_PER_SECOND, Timestamp};
 use windows_sys::Win32::Foundation::{FILETIME, SYSTEMTIME};
-use windows_sys::Win32::Globalization::{GetDateFormatEx, GetTimeFormatEx};
+use windows_sys::Win32::Globalization::{GetDateFormatEx, GetTimeFormatEx, LOCALE_USER_DEFAULT};
 use windows_sys::Win32::System::Ole::VarDateFromStr;
 use windows_sys::Win32::System::SystemInformation::GetSystemTimePreciseAsFileTime;
 use windows_sys::Win32::System::Time::{
@@ -14,8 +14,6 @@ use windows_sys::Win32::System::Time::{
 use windows_sys::Win32::System::Variant::VariantTimeToSystemTime;
 
 use super::wide::{from_buffer, wide};
-
-const LOCALE_USER_DEFAULT: u32 = 0x0400;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct SystemClock;

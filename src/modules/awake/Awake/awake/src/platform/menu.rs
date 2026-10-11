@@ -1,11 +1,11 @@
-//! Turns the menu model from `awake_core::tray` into a Win32 popup menu and shows it.
+//! Turns the menu model from `awake_core::tray_model` into a Win32 popup menu and shows it.
 //!
 //! The menu is built fresh each time it opens and destroyed when it closes, so it can never be
 //! out of date or touched by another thread.
 
 use std::{mem, ptr};
 
-use awake_core::tray::{Check, MenuItem};
+use awake_core::tray_model::{Check, MenuItem};
 use windows_sys::Win32::Foundation::HWND;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     CreatePopupMenu, DestroyMenu, GetSystemMetrics, HMENU, InsertMenuItemW, MENUINFO, MENUITEMINFOW,

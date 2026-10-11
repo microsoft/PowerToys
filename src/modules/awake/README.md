@@ -22,7 +22,7 @@ A PowerToys utility that prevents Windows from sleeping and/or turning off the d
 
 | Crate | Purpose |
 |-------|---------|
-| `awake-core` | Platform-independent logic: the keep-awake state machine, `settings.json` model, command line, tray and console text. No `unsafe`, fully unit-tested. |
+| `awake-core` | Platform-independent logic: the keep-awake state machine (`engine`), `settings.json` model, command line (`cli`), terminal text (`text`) and the tray tooltip and menu (`tray_model`). No `unsafe`, fully unit-tested. |
 | `awake` | The Windows executable: window and tray icon, power requests, file watching, process binding, logging, and a small C++ bridge (`native/bridge.cpp`) that reuses the shared PowerToys headers for group policy, telemetry and kernel object names. |
 
 ## How It Works
@@ -95,13 +95,18 @@ and reporting any error with exit code 1:
 - **`settings.json` is the single source of truth.** The runner writes it for the Settings app,
   Command Palette and DSC write it directly, and Awake writes it for its own menu and timers. Awake
   applies its own changes immediately and its file watcher sees the echo as a no-op. Writes go to a
-  temporary file and replace the original only once complete, then refresh its write time so the
-  Settings app's watchers notice.
+  temporary file, are flushed to disk and replace the original only once complete, then refresh its
+  write time so the Settings app's watchers notice. They run on the window thread: the file is
+  small and writes are rare, and keeping them there keeps pending changes and retries in one place.
 - **Never holds the computer awake by accident.** Every exit path releases the request. When a stop
   arrives from outside the window thread (the runner's exit event, the bound process ending, the
   deadline of a command-line session, Ctrl+C) and the window thread does not finish within 10
   seconds, the process is ended. A crash ends the process too, and Windows drops the request
-  with it.
+  with it. A Restart Manager request to close (from an installer) ends Awake like any other stop.
+- **Quiet while idle.** Nothing polls. A timed session redraws its countdown once a second on a
+  timer Windows may batch with others, and skips the tray update while the session is locked.
+  Power broadcasts only matter on resume. If lock notifications are not available yet early in a
+  logon, Awake retries for about a minute, then catches up with the current lock state.
 
 ## Building
 

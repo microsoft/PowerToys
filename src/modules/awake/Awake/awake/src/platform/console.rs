@@ -4,14 +4,14 @@
 //! user selects text in it), and that must never stall the window thread that holds the
 //! keep-awake request.
 
-use std::os::windows::io::{FromRawHandle, OwnedHandle};
+use std::os::windows::io::{FromRawHandle, IntoRawHandle, OwnedHandle};
 use std::sync::atomic::{AtomicPtr, AtomicU64, Ordering};
 use std::sync::mpsc::{Receiver, SyncSender, TrySendError, sync_channel};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
 use std::{io, mem, ptr};
 
-use awake_core::console::Style;
+use awake_core::text::Style;
 use windows_sys::Win32::Foundation::{HANDLE, HWND, INVALID_HANDLE_VALUE, WAIT_TIMEOUT};
 use windows_sys::Win32::Storage::FileSystem::WriteFile;
 use windows_sys::Win32::System::Console::{
@@ -21,14 +21,13 @@ use windows_sys::Win32::System::Console::{
     SetConsoleCtrlHandler, SetConsoleMode, WriteConsoleW,
 };
 use windows_sys::Win32::System::Threading::{
-    CREATE_NEW_CONSOLE, CREATE_NO_WINDOW, CreateEventW, CreateProcessW, PROCESS_INFORMATION, STARTUPINFOW,
-    SetEvent, WaitForSingleObject,
+    CREATE_NEW_CONSOLE, CREATE_NO_WINDOW, CreateProcessW, PROCESS_INFORMATION, STARTUPINFOW, SetEvent,
+    WaitForSingleObject,
 };
-use windows_sys::Win32::UI::WindowsAndMessaging::{PostMessageW, WM_APP};
+use windows_sys::Win32::UI::WindowsAndMessaging::PostMessageW;
 
 use super::last_error;
-
-pub const WM_CONSOLE_CTRL: u32 = WM_APP + 3;
+use super::messages::WM_CONSOLE_CTRL;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Output {
@@ -298,9 +297,10 @@ static SHUTDOWN_DONE: AtomicPtr<core::ffi::c_void> = AtomicPtr::new(ptr::null_mu
 /// Routes Ctrl+C, closing the console window, sign-out and shutdown to the window thread.
 pub fn install_ctrl_handler(window: HWND) {
     CTRL_WINDOW.store(window, Ordering::Release);
-    // SAFETY: anonymous manual-reset event, intentionally never closed (process lifetime).
-    let done = unsafe { CreateEventW(ptr::null(), 1, 0, ptr::null()) };
-    SHUTDOWN_DONE.store(done, Ordering::Release);
+    // Intentionally never closed: the handler may wait on it until the process ends.
+    if let Ok(done) = super::event::manual_reset(None) {
+        SHUTDOWN_DONE.store(done.into_raw_handle(), Ordering::Release);
+    }
     // SAFETY: the handler is a plain function valid for the process lifetime.
     unsafe { SetConsoleCtrlHandler(Some(ctrl_handler), 1) };
 }

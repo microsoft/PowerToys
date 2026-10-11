@@ -6,66 +6,79 @@
 
 use std::cell::RefCell;
 use std::ffi::OsString;
-use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
+use std::os::windows::io::{AsRawHandle, OwnedHandle};
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 use std::{fs, ptr};
 
 use awake_core::cli::{self, Binding, Invocation, Plan, Request, UntilSpec};
-use awake_core::console::{self as text, SessionSummary, Style};
 use awake_core::duration::Human;
 use awake_core::engine::{Activity, Effect, Engine, ExitReason, Source};
 use awake_core::execution_state::RELEASED;
 use awake_core::powertoys;
 use awake_core::settings::{FILE_NAME, ModeSetting, SettingsChange, SettingsDocument};
 use awake_core::strings::{StringId, Strings};
-use awake_core::time::{CivilDateTime, DateTimeOffset, LocalZone, ParsedTime};
-use awake_core::tray as tray_model;
+use awake_core::text::{self, SessionSummary, Style};
+use awake_core::time::{CivilDateTime, DateTimeOffset, LocalZone, ParsedTime, Timestamp};
+use awake_core::tray_model;
 use windows_sys::Win32::Foundation::WAIT_OBJECT_0;
 use windows_sys::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
-use windows_sys::Win32::System::Threading::{
-    CreateEventW, EVENT_MODIFY_STATE, GetExitCodeProcess, OpenEventW, SetEvent, WaitForMultipleObjects,
-};
+use windows_sys::Win32::System::Threading::{GetExitCodeProcess, WaitForMultipleObjects};
+use windows_sys::Win32::UI::Shell::NIN_SELECT;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-    DefWindowProcW, DestroyWindow, PBT_APMPOWERSTATUSCHANGE, PBT_APMRESUMEAUTOMATIC, PBT_APMRESUMESUSPEND,
+    DefWindowProcW, DestroyWindow, ENDSESSION_CLOSEAPP, PBT_APMRESUMEAUTOMATIC, PBT_APMRESUMESUSPEND,
     PostMessageW, PostQuitMessage, WM_APP, WM_CLOSE, WM_CONTEXTMENU, WM_DESTROY, WM_DISPLAYCHANGE,
-    WM_ENDSESSION, WM_POWERBROADCAST, WM_QUERYENDSESSION, WM_SETTINGCHANGE, WM_TIMER, WM_USER,
-    WM_WTSSESSION_CHANGE,
+    WM_ENDSESSION, WM_POWERBROADCAST, WM_QUERYENDSESSION, WM_SETTINGCHANGE, WM_TIMER, WM_WTSSESSION_CHANGE,
+    WTS_SESSION_LOCK, WTS_SESSION_UNLOCK,
 };
 
 use crate::bridge::{self, Policy, Telemetry};
 use crate::platform::clock::SystemClock;
-use crate::platform::console::{self, LiveOutput, Output, WM_CONSOLE_CTRL};
+use crate::platform::console::{self, LiveOutput, Output};
 use crate::platform::instance::{self, InstanceLock};
+use crate::platform::messages::{
+    TIMER_RELOAD, TIMER_SESSION, TIMER_TICK, TIMER_TRAY_RETRY, TIMER_WRITE, WM_APP_END, WM_CONSOLE_CTRL,
+    WM_ENVIRONMENT_CHANGED, WM_TRAY, WM_WAITER,
+};
 use crate::platform::paths::Paths;
-use crate::platform::process::{self, BindError, BoundProcess};
-use crate::platform::settings_store::{LoadError, SaveError, SettingsStore};
-use crate::platform::tray::{IconKind, TIMER_RETRY, Tray, WM_TRAY};
-use crate::platform::waiter::{WM_WAITER, WaitEvent, Waiter, WaiterSetup};
-use crate::platform::{last_error, locale, menu, power, session, theme, wide, window};
+use crate::platform::process::{self, BindError, BoundProcess, BoundTarget};
+use crate::platform::settings_store::{self, LoadError, SaveError, SettingsStore};
+use crate::platform::tray::{IconKind, Tray};
+use crate::platform::waiter::{WaitEvent, Waiter, WaiterSetup};
+use crate::platform::{event, last_error, locale, menu, power, session, theme, wide, window};
 use crate::{BUILD_ID, VERSION, logging};
 
-const TIMER_TICK: usize = 1;
-const TIMER_RELOAD: usize = 2;
-const TIMER_WRITE: usize = 4;
 /// Settings writers often touch the file several times in a row; read once they settle.
 const RELOAD_DEBOUNCE_MS: u32 = 50;
 const RETRY_DELAY_MS: u32 = 100;
 const MAX_RELOAD_RETRIES: u32 = 5;
 const MAX_WRITE_RETRIES: u32 = 20;
+/// The countdown only redraws a seconds display, so Windows may batch its wake-ups with others.
+const COUNTDOWN_TOLERANCE_MS: u32 = 200;
+/// Session notifications can be unavailable early in a logon; try again for about a minute.
+const SESSION_RETRY_MS: u32 = 2000;
+const MAX_SESSION_RETRIES: u32 = 30;
 /// How long a PowerToys-managed start waits for a previous instance that is still shutting down.
 const INSTANCE_HANDOVER: Duration = Duration::from_secs(5);
 /// `TaskbarCreated` is registered at run time; the window procedure needs it even when the app
 /// is busy.
 static TASKBAR_CREATED: AtomicU32 = AtomicU32::new(0);
-/// Theme or display settings changed while the app was busy; `wParam` holds the change flags.
-const WM_ENVIRONMENT_CHANGED: u32 = WM_APP + 4;
 const THEME_CHANGED: usize = 1;
 const DISPLAY_CHANGED: usize = 2;
-const NIN_SELECT: u32 = WM_USER;
-const NIN_KEYSELECT: u32 = WM_USER + 1;
+/// `NIN_SELECT | NINF_KEY`; windows-sys does not export it.
+const NIN_KEYSELECT: u32 = NIN_SELECT + 1;
 
 pub fn run() -> i32 {
+    let code = start();
+    // The console belongs to the shell that started Awake and outlives it.
+    console::restore_mode();
+    logging::flush(Duration::from_secs(1));
+    // Only now, with the last log line written, may a console close or shutdown end the process.
+    console::signal_shutdown_complete();
+    code
+}
+
+fn start() -> i32 {
     let paths = Paths::resolve();
     let language = locale::ui_language(paths.as_ref().ok());
     let strings = Strings::for_language(&language);
@@ -110,18 +123,24 @@ pub fn run() -> i32 {
             return 1;
         }
     };
-    let log_level = fs::read(paths.log_settings_file())
+    let log_level = settings_store::read_bounded(&paths.log_settings_file())
         .ok()
         .and_then(|bytes| powertoys::log_level(&bytes));
     logging::init(&paths.log_dir(), VERSION, log_level);
     log::info!("PowerToys Awake {VERSION} ({BUILD_ID}) starting: {invocation:?}, language {language:?}");
 
+    // Looked up once: it takes a snapshot of every process on the machine.
+    let parent = match invocation.binding {
+        Binding::Parent => process::parent_pid(),
+        Binding::Pid(_) | Binding::None => None,
+    };
     let mut launcher = Launcher {
         paths,
         strings,
         language,
         style,
         output,
+        parent,
         telemetry: Telemetry::start(),
     };
     let attached = console::attached_processes();
@@ -140,17 +159,15 @@ pub fn run() -> i32 {
     // running `--pid $PID`, or `--parent` from a shell) would never end, so detach instead.
     let target = match invocation.binding {
         Binding::Pid(pid) => u32::try_from(pid).ok(),
-        Binding::Parent => process::parent_pid(),
+        Binding::Parent => launcher.parent,
         Binding::None => None,
     };
     let caller_waits_for_target = target.is_some_and(|pid| attached.contains(&pid));
-    let code = if shell_waits && (invocation.legacy || caller_waits_for_target) {
+    if shell_waits && (invocation.legacy || caller_waits_for_target) {
         launcher.hand_off(&invocation)
     } else {
         launcher.launch(&invocation)
-    };
-    logging::flush(Duration::from_secs(1));
-    code
+    }
 }
 
 /// Everything checked before Awake commits to running: a refused start never shows an icon.
@@ -167,6 +184,8 @@ struct Launcher {
     language: String,
     style: Style,
     output: Output,
+    /// The parent process for `--parent`, when there is one.
+    parent: Option<u32>,
     telemetry: Telemetry,
 }
 
@@ -212,7 +231,7 @@ impl Launcher {
                 Ok(bound) => Some(bound),
                 Err(error) => return Err(self.refuse(&self.bind_error(error, Some(pid)))),
             },
-            Binding::Parent => match process::bind_parent() {
+            Binding::Parent => match process::bind_parent(self.parent) {
                 Ok(bound) => Some(bound),
                 Err(error) => return Err(self.refuse(&self.bind_error(error, None))),
             },
@@ -244,7 +263,7 @@ impl Launcher {
             args.push("--display-on".into());
         }
         if let Some(bound) = &prepared.bound {
-            args.extend(["--pid".into(), bound.pid.to_string()]);
+            args.extend(["--pid".into(), bound.target.pid.to_string()]);
         }
         let new_console = prepared.bound.is_none() && prepared.source == Source::CommandLine;
         let summary = (!invocation.legacy && matches!(self.output, Output::Console(_)))
@@ -255,10 +274,10 @@ impl Launcher {
         let ready_name = format!(
             "Local\\PowerToysAwakeHandoff-{}-{}{}",
             std::process::id(),
-            SystemClock.now().utc.ticks(),
+            SystemClock.now_utc().ticks(),
             self.paths.object_suffix
         );
-        let ready = match open_event(&ready_name) {
+        let ready = match event::manual_reset(Some(&ready_name)) {
             Ok(event) => event,
             Err(error) => {
                 return self.refuse(&self.strings.format(StringId::CliErrStart, &error.to_string()));
@@ -311,11 +330,12 @@ impl Launcher {
             Err(code) => return code,
         };
         if let Some(name) = &invocation.handoff_event {
-            signal_event(name);
+            event::signal_named(name);
         }
 
         let exit_name = self.paths.exit_event_name(&bridge::exit_event_name());
-        let exit_event = match open_exit_event(&exit_name) {
+        // Opens the runner's event when it created it first.
+        let exit_event = match event::manual_reset(Some(&exit_name)) {
             Ok(event) => event,
             Err(error) => {
                 return self.refuse(&self.strings.format(StringId::CliErrStart, &error.to_string()));
@@ -332,7 +352,16 @@ impl Launcher {
         TASKBAR_CREATED.store(taskbar_created, Ordering::Relaxed);
         window::allow_message(window, WM_TRAY);
         theme::apply_system_theme();
-        let session_registered = session::register(window);
+        let session_registered = match session::register(window) {
+            Ok(()) => true,
+            Err(error) => {
+                log::warn!("Lock notifications are not available yet ({error}); will retry.");
+                if !window::set_timer(window, TIMER_SESSION, SESSION_RETRY_MS) {
+                    log::error!("Could not schedule the retry: {}", last_error());
+                }
+                false
+            }
+        };
         // Harmless without a console; with one, even a redirected one, Ctrl+C must clean up.
         console::install_ctrl_handler(window);
 
@@ -344,8 +373,10 @@ impl Launcher {
             let _ = fs::create_dir_all(self.paths.module_dir());
             log::info!("Following {}", store.path().display());
         }
-        let bound_summary = bound.as_ref().map(|b| (b.pid, b.image_name.clone()));
-        let process_handle = bound.map(|b| b.handle);
+        let (bound, process_handle) = match bound {
+            Some(BoundProcess { handle, target }) => (Some(target), Some(handle)),
+            None => (None, None),
+        };
         let waiter = match Waiter::start(WaiterSetup {
             window,
             exit_event,
@@ -379,12 +410,13 @@ impl Launcher {
             write_retries: 0,
             reload_retries: 0,
             waiter: Some(waiter),
-            bound: bound_summary,
+            bound,
             live,
             redirected: matches!(self.output, Output::Redirected),
             style: self.style,
             taskbar_created,
             session_registered,
+            session_retries: 0,
             exit: None,
             _instance: instance,
         });
@@ -412,29 +444,20 @@ impl Launcher {
     }
 
     fn bind_error(&self, error: BindError, pid: Option<i64>) -> String {
-        let pid = pid.map(|p| p.to_string()).unwrap_or_default();
-        match error {
-            BindError::NotFound => self.strings.format(StringId::CliErrPidNotFound, &pid),
-            BindError::IsSelf => self.strings.get(StringId::CliErrPidSelf).to_owned(),
-            BindError::AccessDenied if pid.is_empty() => {
-                self.strings.get(StringId::CliErrParentNotFound).to_owned()
-            }
-            BindError::AccessDenied => self.strings.format(StringId::CliErrPidAccess, &pid),
-            BindError::ParentNotFound => self.strings.get(StringId::CliErrParentNotFound).to_owned(),
-        }
+        bind_error_message(&self.strings, error, pid)
     }
 }
 
-fn open_exit_event(name: &str) -> std::io::Result<OwnedHandle> {
-    let name = crate::platform::wide::wide(name);
-    // Manual reset, so a signal sent before Awake starts waiting is not lost.
-    // SAFETY: NUL-terminated name; opens the event if the runner already created it.
-    let raw = unsafe { CreateEventW(ptr::null(), 1, 0, name.as_ptr()) };
-    if raw.is_null() {
-        return Err(last_error());
+/// `pid` is the `--pid` value, or `None` for `--parent`, whose failures all read the same.
+fn bind_error_message(strings: &Strings, error: BindError, pid: Option<i64>) -> String {
+    match (error, pid) {
+        (BindError::IsSelf, _) => strings.get(StringId::CliErrPidSelf).to_owned(),
+        (BindError::NotFound, Some(pid)) => strings.format(StringId::CliErrPidNotFound, &pid.to_string()),
+        (BindError::AccessDenied, Some(pid)) => strings.format(StringId::CliErrPidAccess, &pid.to_string()),
+        (BindError::ParentNotFound, _) | (BindError::NotFound | BindError::AccessDenied, None) => {
+            strings.get(StringId::CliErrParentNotFound).to_owned()
+        }
     }
-    // SAFETY: fresh handle we own.
-    Ok(unsafe { OwnedHandle::from_raw_handle(raw) })
 }
 
 /// What `resolve_until` needs from the clock, so tests can use a fixed zone.
@@ -521,12 +544,14 @@ struct App {
     write_retries: u32,
     reload_retries: u32,
     waiter: Option<Waiter>,
-    bound: Option<(u32, Option<String>)>,
+    bound: Option<BoundTarget>,
     live: Option<LiveOutput>,
     redirected: bool,
     style: Style,
     taskbar_created: u32,
+    /// Lock notifications arrive; until then the lock state is the one read at startup.
     session_registered: bool,
+    session_retries: u32,
     exit: Option<ExitPlan>,
     _instance: InstanceLock,
 }
@@ -612,27 +637,30 @@ impl App {
                     self.write_pending();
                     Outcome::Handled(0)
                 }
-                TIMER_RETRY => {
+                TIMER_TRAY_RETRY => {
                     self.tray.retry();
                     Outcome::Handled(0)
+                }
+                TIMER_SESSION => {
+                    window::kill_timer(self.window, TIMER_SESSION);
+                    self.register_session()
                 }
                 _ => Outcome::Default,
             },
             WM_POWERBROADCAST => {
-                if matches!(
-                    wparam as u32,
-                    PBT_APMRESUMEAUTOMATIC | PBT_APMRESUMESUSPEND | PBT_APMPOWERSTATUSCHANGE
-                ) {
-                    log::info!("Power event {wparam:#x}; asserting the request again.");
+                // Only resume matters. PBT_APMPOWERSTATUSCHANGE also arrives with every few percent
+                // of battery, and a change of power source leaves the thread's request in force.
+                if matches!(wparam as u32, PBT_APMRESUMEAUTOMATIC | PBT_APMRESUMESUSPEND) {
+                    log::info!("Resumed ({wparam:#x}); asserting the request again.");
                     let effects = self.engine.power_changed();
                     self.apply(effects);
                 }
                 Outcome::Handled(1)
             }
             WM_WTSSESSION_CHANGE => {
-                let locked = match wparam {
-                    session::WTS_SESSION_LOCK => Some(true),
-                    session::WTS_SESSION_UNLOCK => Some(false),
+                let locked = match u32::try_from(wparam) {
+                    Ok(WTS_SESSION_LOCK) => Some(true),
+                    Ok(WTS_SESSION_UNLOCK) => Some(false),
                     _ => None,
                 };
                 if let Some(locked) = locked {
@@ -669,15 +697,25 @@ impl App {
             }
             WM_QUERYENDSESSION => Outcome::Handled(1),
             WM_ENDSESSION => {
-                if wparam != 0 {
-                    log::info!("Windows is signing out or shutting down.");
-                    power::set_execution_state(RELEASED);
-                    self.tray.remove();
-                    logging::flush(Duration::from_millis(500));
+                if wparam == 0 {
+                    return Outcome::Handled(0);
                 }
-                Outcome::Handled(0)
+                if lparam as u32 & ENDSESSION_CLOSEAPP != 0 {
+                    // The Restart Manager, for an installer or servicing: the session goes on,
+                    // and Windows expects Awake to close itself.
+                    log::info!("Asked to close so files can be updated.");
+                } else {
+                    log::info!("Windows is signing out or shutting down.");
+                }
+                // Windows may end the process as soon as this returns, so clean up right here.
+                power::set_execution_state(RELEASED);
+                self.tray.remove();
+                logging::flush(Duration::from_millis(500));
+                self.request_exit(0, Farewell::Stopped)
             }
             WM_DESTROY => {
+                // While the window still exists, so Explorer can match the icon to its owner.
+                self.tray.remove();
                 if self.session_registered {
                     session::unregister(self.window);
                     self.session_registered = false;
@@ -689,9 +727,46 @@ impl App {
             m if m == self.taskbar_created && m != 0 => {
                 log::info!("Explorer restarted; adding the icon again.");
                 self.tray.taskbar_created();
+                if !self.session_registered {
+                    // A new shell is a good moment to try again for lock notifications.
+                    self.session_retries = 0;
+                    return self.register_session();
+                }
                 Outcome::Handled(0)
             }
             _ => Outcome::Default,
+        }
+    }
+
+    /// Retries asking for lock notifications, then catches up with a lock that happened
+    /// meanwhile, so the display is not held on through the lock screen.
+    fn register_session(&mut self) -> Outcome {
+        if self.session_registered {
+            return Outcome::Handled(0);
+        }
+        match session::register(self.window) {
+            Ok(()) => {
+                log::info!("Lock notifications are available.");
+                self.session_registered = true;
+                self.session_retries = 0;
+                let effects = self.engine.set_screen_locked(session::is_locked());
+                self.apply(effects)
+            }
+            Err(error) if self.session_retries < MAX_SESSION_RETRIES => {
+                self.session_retries += 1;
+                log::debug!(
+                    "Lock notifications still unavailable ({error}); retry {}.",
+                    self.session_retries
+                );
+                if !window::set_timer(self.window, TIMER_SESSION, SESSION_RETRY_MS) {
+                    log::error!("Could not schedule the retry: {}", last_error());
+                }
+                Outcome::Handled(0)
+            }
+            Err(error) => {
+                log::error!("No lock notifications ({error}); the display request stays while locked.");
+                Outcome::Handled(0)
+            }
         }
     }
 
@@ -711,8 +786,13 @@ impl App {
         }
     }
 
-    fn tick(&mut self, input: fn(&mut Engine, DateTimeOffset) -> Vec<Effect>) -> Outcome {
-        let effects = input(&mut self.engine, self.clock.now());
+    fn tick(&mut self, input: fn(&mut Engine, Timestamp) -> Vec<Effect>) -> Outcome {
+        let mut effects = input(&mut self.engine, self.clock.now_utc());
+        if self.session_registered && self.engine.screen_locked() {
+            // Nobody sees the notification area on the lock screen; the next tick after unlocking
+            // brings the countdown up to date.
+            effects.retain(|effect| *effect != Effect::RefreshIcon);
+        }
         let outcome = self.apply(effects);
         self.update_status();
         outcome
@@ -753,8 +833,13 @@ impl App {
                     "Settings not readable yet ({error}); retry {}.",
                     self.reload_retries
                 );
-                window::set_timer(self.window, TIMER_RELOAD, RETRY_DELAY_MS);
-                Outcome::Handled(0)
+                if window::set_timer(self.window, TIMER_RELOAD, RETRY_DELAY_MS) {
+                    Outcome::Handled(0)
+                } else {
+                    self.reload_retries = 0;
+                    log::warn!("Keeping the current mode; could not schedule another read: {error}");
+                    Outcome::Handled(0)
+                }
             }
             Err(error) => {
                 self.reload_retries = 0;
@@ -788,10 +873,16 @@ impl App {
                     Outcome::Handled(0)
                 }
                 Effect::Countdown(on) => {
-                    if on {
-                        window::set_timer(self.window, TIMER_TICK, 1000);
-                    } else {
+                    if !on {
                         window::kill_timer(self.window, TIMER_TICK);
+                    } else if !window::set_coalescable_timer(
+                        self.window,
+                        TIMER_TICK,
+                        1000,
+                        COUNTDOWN_TOLERANCE_MS,
+                    ) {
+                        // Only the display depends on it; the session ends on the waiter's timer.
+                        log::warn!("No live countdown: {}", last_error());
                     }
                     Outcome::Handled(0)
                 }
@@ -824,6 +915,11 @@ impl App {
 
     /// Re-reads the file and applies the pending changes on top, so edits other programs made
     /// in the meantime are kept.
+    ///
+    /// This runs on the window thread on purpose, flush to disk included: the file is small,
+    /// writes are rare and follow a user's choice or a session ending, and the runner and the
+    /// Settings app read the result, so it has to survive a power cut. Keeping it here also keeps
+    /// the pending changes and retries in one place. See `settings_store` for the details.
     fn write_pending(&mut self) {
         let Some(store) = &self.store else {
             self.pending_changes.clear();
@@ -843,7 +939,7 @@ impl App {
                     "Settings not readable before saving ({error}); retry {}.",
                     self.write_retries
                 );
-                window::set_timer(self.window, TIMER_WRITE, RETRY_DELAY_MS);
+                self.schedule_write_retry();
                 return;
             }
             Err(error) => {
@@ -868,13 +964,27 @@ impl App {
             }
             Err(SaveError::Busy) if self.write_retries < MAX_WRITE_RETRIES => {
                 self.write_retries += 1;
-                window::set_timer(self.window, TIMER_WRITE, RETRY_DELAY_MS);
+                self.schedule_write_retry();
             }
             Err(error) => {
                 log::error!("Could not save settings: {error}");
                 self.pending_changes.clear();
                 self.write_retries = 0;
             }
+        }
+    }
+
+    /// Without a timer nothing would ever write the pending changes, so give up on them visibly
+    /// rather than leave them queued.
+    fn schedule_write_retry(&mut self) {
+        if !window::set_timer(self.window, TIMER_WRITE, RETRY_DELAY_MS) {
+            log::error!(
+                "Not saving {:?}: could not schedule a retry: {}",
+                self.pending_changes,
+                last_error()
+            );
+            self.pending_changes.clear();
+            self.write_retries = 0;
         }
     }
 
@@ -887,11 +997,11 @@ impl App {
         };
         // The PID line only ever appeared for command-line sessions.
         let pid = match self.engine.source() {
-            Source::CommandLine => self.bound.as_ref().map(|(pid, _)| *pid),
+            Source::CommandLine => self.bound.as_ref().map(|bound| bound.pid),
             Source::PowerToys => None,
         };
         let clock = self.clock;
-        let tooltip = tray_model::tooltip(&self.engine, &self.strings, clock.now().utc, pid, &|at| {
+        let tooltip = tray_model::tooltip(&self.engine, &self.strings, clock.now_utc(), pid, &|at| {
             clock.format_expiry(at)
         });
         self.tray.show(kind, &tooltip);
@@ -903,7 +1013,7 @@ impl App {
             &self.clock,
             self.engine.activity(),
             self.engine.keep_display_on(),
-            self.bound.as_ref().map(|(pid, name)| (*pid, name.clone())),
+            self.bound.clone(),
         )
     }
 
@@ -912,7 +1022,7 @@ impl App {
         if self.exit.is_some() {
             return;
         }
-        let now = self.clock.now().utc;
+        let now = self.clock.now_utc();
         let remaining = self
             .engine
             .activity()
@@ -936,6 +1046,7 @@ impl App {
         // The request ends with this thread anyway; releasing it explicitly makes that visible
         // in the log and to anyone inspecting `powercfg /requests` during shutdown.
         power::set_execution_state(RELEASED);
+        // Normally gone already (WM_DESTROY); this covers a window that never got that far.
         self.tray.remove();
         let exit = self.exit.unwrap_or(ExitPlan {
             code: 0,
@@ -961,8 +1072,8 @@ impl App {
             }
             None => {}
         }
+        // `run` flushes this line before letting a console close end the process.
         log::info!("Exiting with code {}.", exit.code);
-        console::signal_shutdown_complete();
         exit.code
     }
 }
@@ -974,7 +1085,7 @@ fn session_summary(
     display_on: bool,
 ) -> SessionSummary {
     let activity = prepared.activity.unwrap_or(Activity::Indefinite);
-    let bound = prepared.bound.as_ref().map(|b| (b.pid, b.image_name.clone()));
+    let bound = prepared.bound.as_ref().map(|b| b.target.clone());
     session_summary_for(strings, clock, activity, display_on, bound)
 }
 
@@ -983,7 +1094,7 @@ fn session_summary_for(
     clock: &SystemClock,
     activity: Activity,
     display_on: bool,
-    bound: Option<(u32, Option<String>)>,
+    bound: Option<BoundTarget>,
 ) -> SessionSummary {
     let headline = match activity {
         Activity::Timed { seconds, .. } => {
@@ -994,9 +1105,9 @@ fn session_summary_for(
         }
         Activity::Indefinite | Activity::Passive => strings.get(StringId::CliStatusIndefinite).to_owned(),
     };
-    let bound_to = bound.map(|(pid, name)| {
+    let bound_to = bound.map(|BoundTarget { pid, image_name }| {
         let process = strings.format(StringId::CliProcess, &pid.to_string());
-        match name {
+        match image_name {
             Some(name) => format!("{process} ({name})"),
             None => process,
         }
@@ -1028,29 +1139,6 @@ fn wait_for_handoff(ready: &OwnedHandle, child: &OwnedHandle) -> HandoffResult {
             HandoffResult::Exited(code as i32)
         }
         _ => HandoffResult::Unknown,
-    }
-}
-
-fn open_event(name: &str) -> std::io::Result<OwnedHandle> {
-    let name = crate::platform::wide::wide(name);
-    // SAFETY: NUL-terminated name; manual reset so the signal is not missed.
-    let raw = unsafe { CreateEventW(ptr::null(), 1, 0, name.as_ptr()) };
-    if raw.is_null() {
-        return Err(last_error());
-    }
-    // SAFETY: fresh handle we own.
-    Ok(unsafe { OwnedHandle::from_raw_handle(raw) })
-}
-
-fn signal_event(name: &str) {
-    let name = crate::platform::wide::wide(name);
-    // SAFETY: NUL-terminated name; the handle is closed right after signaling.
-    unsafe {
-        let event = OpenEventW(EVENT_MODIFY_STATE, 0, name.as_ptr());
-        if !event.is_null() {
-            SetEvent(event);
-            drop(OwnedHandle::from_raw_handle(event));
-        }
     }
 }
 
@@ -1111,16 +1199,21 @@ fn reentered(window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> LRES
     };
     match message {
         WM_DESTROY => {
+            // While the window still exists, as in `App::on_message`.
+            crate::platform::tray::remove_icon(window);
             // SAFETY: ends this thread's message loop; finish() cleans up afterwards.
             unsafe { PostQuitMessage(0) };
             0
         }
         WM_QUERYENDSESSION | WM_POWERBROADCAST => repost(1),
-        // Windows may end the process as soon as this returns, so clean up right here.
+        // Windows may end the process as soon as this returns, so clean up right here, then
+        // close once the app is free: after a Restart Manager request the session goes on.
         WM_ENDSESSION if wparam != 0 => {
             power::set_execution_state(RELEASED);
             crate::platform::tray::remove_icon(window);
             logging::flush(Duration::from_millis(500));
+            // SAFETY: posting to our own window.
+            unsafe { PostMessageW(window, WM_CLOSE, 0, 0) };
             0
         }
         // The settings text in lParam is only valid during the call, so post what it means instead.
@@ -1133,7 +1226,7 @@ fn reentered(window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> LRES
             0
         }
         WM_CLOSE | WM_WTSSESSION_CHANGE => repost(0),
-        m if (WM_APP..0xC000).contains(&m) || m == TASKBAR_CREATED.load(Ordering::Relaxed) => repost(0),
+        m if (WM_APP..WM_APP_END).contains(&m) || m == TASKBAR_CREATED.load(Ordering::Relaxed) => repost(0),
         // SAFETY: default handling for everything else.
         _ => unsafe { DefWindowProcW(window, message, wparam, lparam) },
     }
@@ -1224,6 +1317,26 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(error, "That time has already passed.");
+    }
+
+    #[test]
+    fn bind_errors_name_the_pid_only_when_there_is_one() {
+        let strings = Strings::ENGLISH;
+        let message = |error, pid| bind_error_message(&strings, error, pid);
+        let parent = strings.get(StringId::CliErrParentNotFound);
+        assert!(message(BindError::NotFound, Some(4242)).contains("4242"));
+        assert!(message(BindError::AccessDenied, Some(4242)).contains("4242"));
+        assert_ne!(
+            message(BindError::NotFound, Some(4242)),
+            message(BindError::AccessDenied, Some(4242))
+        );
+        assert_eq!(
+            message(BindError::IsSelf, Some(1)),
+            strings.get(StringId::CliErrPidSelf)
+        );
+        // `--parent` has no PID to show; every failure reads as "no parent".
+        assert_eq!(message(BindError::AccessDenied, None), parent);
+        assert_eq!(message(BindError::ParentNotFound, None), parent);
     }
 
     #[test]

@@ -79,7 +79,7 @@ pub enum Binding {
 }
 
 /// Why the command line was rejected. People see the localized text from
-/// `console::cli_error_message`; `Display` gives a neutral English message for logs.
+/// `text::cli_error_message`; `Display` gives a neutral English message for logs.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CliError {
     /// Unknown options, missing values and similar; the text comes from clap.

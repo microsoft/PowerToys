@@ -1,6 +1,6 @@
 //! Whether the session is locked. Changes arrive as `WM_WTSSESSION_CHANGE` on the tray window.
 
-use std::{mem, ptr};
+use std::{io, mem, ptr};
 
 use windows_sys::Win32::Foundation::HWND;
 use windows_sys::Win32::System::RemoteDesktop::{
@@ -9,8 +9,7 @@ use windows_sys::Win32::System::RemoteDesktop::{
     WTSUnRegisterSessionNotification,
 };
 
-pub const WTS_SESSION_LOCK: usize = 0x7;
-pub const WTS_SESSION_UNLOCK: usize = 0x8;
+// The bindings declare it as u32, but `SessionFlags` is an i32.
 const WTS_SESSIONSTATE_LOCK: i32 = 0;
 
 /// Asks Windows directly. When it cannot answer, assume unlocked, as the .NET version did.
@@ -44,9 +43,14 @@ pub fn is_locked() -> bool {
     locked
 }
 
-pub fn register(window: HWND) -> bool {
+/// Asks for `WM_WTSSESSION_CHANGE`. This can fail early in a logon, before the session service
+/// is ready, so callers retry.
+pub fn register(window: HWND) -> io::Result<()> {
     // SAFETY: `window` is a live window owned by this thread.
-    unsafe { WTSRegisterSessionNotification(window, NOTIFY_FOR_THIS_SESSION) != 0 }
+    if unsafe { WTSRegisterSessionNotification(window, NOTIFY_FOR_THIS_SESSION) } == 0 {
+        return Err(super::last_error());
+    }
+    Ok(())
 }
 
 pub fn unregister(window: HWND) {
