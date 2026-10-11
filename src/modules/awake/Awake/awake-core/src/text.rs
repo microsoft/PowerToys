@@ -422,6 +422,13 @@ mod tests {
             "\r\x1b[2K  \x1b[2mCtrl+C to stop\x1b[0m"
         );
         assert!(farewell(Strings::ENGLISH, COLOR, StringId::CliFinished).starts_with("\r\x1b[2K\x1b[32m●"));
+        assert_eq!(
+            farewell(Strings::ENGLISH, Style::PLAIN, StringId::CliStopped),
+            format!(
+                "{}● Awake stopped. Your power plan applies again.\n",
+                Style::PLAIN.clear_line()
+            )
+        );
     }
 
     #[test]

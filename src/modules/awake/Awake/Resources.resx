@@ -168,9 +168,6 @@
   <data name="AWAKE_TRAY_TEXT_INDEFINITE" xml:space="preserve">
     <value>Indefinite</value>
   </data>
-  <data name="AWAKE_TRAY_TEXT_TIMED" xml:space="preserve">
-    <value>Timed</value>
-  </data>
   <data name="AWAKE_TRAY_UNTIL" xml:space="preserve">
     <value>Until</value>
     <comment>Label for expiration mode showing end date/time.</comment>
@@ -265,13 +262,13 @@
     <value>Ctrl+C to stop</value>
   </data>
   <data name="AWAKE_CLI_STOPPED" xml:space="preserve">
-    <value>Awake stopped. Your power plan is back in charge.</value>
+    <value>Awake stopped. Your power plan applies again.</value>
   </data>
   <data name="AWAKE_CLI_FINISHED" xml:space="preserve">
-    <value>Time's up. Your power plan is back in charge.</value>
+    <value>Time's up. Your power plan applies again.</value>
   </data>
   <data name="AWAKE_CLI_TARGET_EXITED" xml:space="preserve">
-    <value>The watched process exited. Your power plan is back in charge.</value>
+    <value>The watched process exited. Your power plan applies again.</value>
   </data>
   <data name="AWAKE_CLI_ERROR" xml:space="preserve">
     <value>Error</value>

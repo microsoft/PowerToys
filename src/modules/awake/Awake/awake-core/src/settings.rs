@@ -44,7 +44,8 @@ pub enum ModeSetting {
     Unknown(i64),
 }
 
-/// The values Awake acts on, with the defaults System.Text.Json applies to missing keys.
+/// The values Awake acts on, with the defaults the .NET `AwakeProperties` constructor gave missing
+/// keys.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AwakeSettings {
     /// `keepDisplayOn`.
