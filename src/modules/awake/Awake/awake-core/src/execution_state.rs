@@ -27,7 +27,7 @@ pub(crate) const fn keep_awake(keep_display_on: bool, screen_locked: bool) -> u3
 mod tests {
     use super::*;
 
-    // The same cases the .NET implementation tested, plus the fourth combination it missed.
+    // One test per combination of "Keep screen on" and lock state.
     #[test]
     fn display_on_and_unlocked_holds_the_display() {
         assert_eq!(

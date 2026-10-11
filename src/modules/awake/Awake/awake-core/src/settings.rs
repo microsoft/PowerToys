@@ -44,8 +44,7 @@ pub enum ModeSetting {
     Unknown(i64),
 }
 
-/// The values Awake acts on, with the defaults the .NET `AwakeProperties` constructor gave missing
-/// keys.
+/// The values Awake acts on, with defaults for missing keys.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AwakeSettings {
     /// `keepDisplayOn`.
@@ -96,7 +95,7 @@ pub enum SettingsChange {
         /// Minutes past the hours.
         minutes: u32,
     },
-    /// `expirationDateTime`, in the format .NET writes.
+    /// `expirationDateTime`, in the format the Settings app writes.
     Expiration(DateTimeOffset),
 }
 
@@ -151,7 +150,7 @@ impl SettingsDocument {
         }
     }
 
-    /// The file Awake creates when none exists, with the same keys and defaults as before.
+    /// The file Awake creates when none exists, with the keys and defaults the Settings app expects.
     pub fn scaffold(now: DateTimeOffset) -> Self {
         let mut properties = Map::new();
         properties.insert("keepDisplayOn".into(), Value::Bool(false));
@@ -167,7 +166,7 @@ impl SettingsDocument {
         SettingsDocument { root }
     }
 
-    /// Reads the values Awake acts on. Expirations without an offset are local time, as in .NET.
+    /// Reads the values Awake acts on. Expirations without an offset are local time.
     ///
     /// # Errors
     ///

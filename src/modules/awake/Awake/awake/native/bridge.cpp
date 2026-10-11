@@ -16,8 +16,7 @@ TRACELOGGING_DEFINE_PROVIDER(
     TraceLoggingOptionProjectTelemetry());
 
 // Every Awake event carries ProductAndServicePerformance, the privacy tag of every native
-// PowerToys event and the only one TraceLoggingDefines.h defines. The .NET version declared
-// ProductAndServiceUsage; taking the native tag instead is deliberate.
+// PowerToys event and the only one TraceLoggingDefines.h defines.
 
 // TraceLoggingWrite needs a literal event name, so each mode event is spelled out.
 #define AWAKE_WRITE_MODE_EVENT(name)                                                      \
@@ -34,7 +33,7 @@ namespace
     class AwakeTrace : public telemetry::TraceBase
     {
     public:
-        // Event names and payload fields match the events the .NET version wrote.
+        // Event names and payload fields are what telemetry consumers query; keep them stable.
         static void CliCommand(bool successful, const wchar_t* version) noexcept
         {
             TraceLoggingWriteWrapper(

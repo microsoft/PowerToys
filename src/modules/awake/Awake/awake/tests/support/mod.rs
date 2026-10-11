@@ -182,7 +182,7 @@ impl Sandbox {
         }
     }
 
-    /// Writes the file the way the runner and the .NET writers do: truncate and rewrite in place.
+    /// Writes the file the way the runner and the Settings app do: truncate and rewrite in place.
     pub fn write_settings(&self, json: &str) {
         let path = self.settings_path();
         fs::create_dir_all(path.parent().unwrap()).unwrap();

@@ -19,7 +19,7 @@
 //! the panic hook. Callers only read the UTC clock; the writer thread works out each line's
 //! local time.
 //!
-//! Layout, as before: `Awake\Logs\<version>\Log_yyyy-MM-dd.log`.
+//! Layout: `Awake\Logs\<version>\Log_yyyy-MM-dd.log`.
 
 use std::ffi::OsString;
 use std::fs::{self, File, Metadata, OpenOptions};

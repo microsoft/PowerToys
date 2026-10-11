@@ -12,7 +12,7 @@ use windows_sys::Win32::System::RemoteDesktop::{
 // The bindings declare it as u32, but `SessionFlags` is an i32.
 const WTS_SESSIONSTATE_LOCK: i32 = 0;
 
-/// Asks Windows directly. When it cannot answer, assume unlocked, as the .NET version did.
+/// Asks Windows directly. When it cannot answer, assume unlocked.
 pub fn is_locked() -> bool {
     let mut buffer = ptr::null_mut();
     let mut bytes = 0u32;

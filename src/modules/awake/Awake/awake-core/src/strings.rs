@@ -34,7 +34,7 @@ impl Strings {
             .unwrap_or(NEUTRAL[index])
     }
 
-    /// Substitutes `{0}` the way the .NET resources expected.
+    /// Substitutes `{0}`, the placeholder the resources use.
     pub fn format(&self, id: StringId, argument: &str) -> String {
         self.get(id).replace("{0}", argument)
     }

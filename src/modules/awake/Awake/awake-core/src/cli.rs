@@ -64,7 +64,7 @@ pub enum UntilSpec {
     /// A time Awake parsed itself.
     Parsed(ParsedTime),
     /// `--expire-at` text that is not ISO 8601, such as `10/11/2026 5:00 PM`; the platform layer
-    /// parses it with the user's regional format, as the .NET version did.
+    /// parses it with the user's regional format.
     Text(String),
 }
 
@@ -326,7 +326,7 @@ where
         || args.time_limit.is_some()
         || args.expire_at.is_some()
         || args.use_parent_pid.is_some();
-    // `--pid 0` is how a caller says "no process", as the .NET version allowed.
+    // `--pid 0` is how a caller says "no process".
     let pid = match args.pid {
         Some(text) => match text.trim().parse::<i64>() {
             Ok(0) => None,
@@ -417,7 +417,7 @@ fn is_help_token(token: &OsString) -> bool {
     })
 }
 
-/// Options the .NET version took; it accepted `-t:60` as well as `-t=60` and `-t 60`.
+/// The hidden options, which take `-t:60` as well as `-t=60` and `-t 60`.
 const LEGACY_OPTIONS: [&str; 12] = [
     "-c",
     "--use-pt-config",
@@ -433,7 +433,7 @@ const LEGACY_OPTIONS: [&str; 12] = [
     "--use-parent-pid",
 ];
 
-/// Rewrites the spellings the .NET parser accepted into ones clap understands: `-t:60` becomes
+/// Rewrites the hidden options' spellings into ones clap understands: `-t:60` becomes
 /// `-t=60`, and `-c true` becomes `-c=true`, since clap needs the `=` to tell a boolean's value
 /// from a command.
 fn normalize_legacy(tokens: Vec<OsString>) -> Vec<OsString> {
@@ -809,8 +809,8 @@ mod tests {
         );
     }
 
-    // A blank value is a mistake, not a request to fall back on --time-limit as the .NET
-    // version did: a script whose expiry variable came out empty asked for an end time.
+    // A blank value is a mistake, not a request to fall back on --time-limit: a script whose
+    // expiry variable came out empty asked for an end time.
     #[test]
     fn blank_expire_at_is_refused_even_next_to_a_time_limit() {
         assert_eq!(error(&["-e", ""]), missing("-e", Expected::Time));

@@ -20,7 +20,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{DestroyIcon, HICON, KillTimer,
 use super::messages::{TIMER_TRAY_RETRY, WM_TRAY};
 use super::wide::copy_truncated;
 
-/// Same identifier as before, so Windows keeps the user's "always show" choice.
+/// Keep it fixed: Windows remembers the user's "always show" choice by this identifier.
 const ICON_ID: u32 = 1000;
 const MAX_RETRIES: u32 = 10;
 

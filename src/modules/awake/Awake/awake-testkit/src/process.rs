@@ -20,7 +20,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{FindWindowExW, GetWindowThread
 
 use crate::wide;
 
-/// The class of Awake's hidden tray window, the same for the .NET and the Rust Awake.
+/// The class of Awake's hidden tray window.
 pub const WINDOW_CLASS: &str = "Awake.MessageWindow";
 
 /// What a process holds at one moment.

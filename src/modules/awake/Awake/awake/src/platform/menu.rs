@@ -35,7 +35,7 @@ pub fn build(items: &[MenuItem]) -> io::Result<PopupMenu> {
     let info = MENUINFO {
         cbSize: mem::size_of::<MENUINFO>() as u32,
         fMask: MIM_STYLE,
-        // Closes the menu when the pointer has been away from it for a while, as before.
+        // Closes the menu when the pointer has been away from it for a while.
         dwStyle: MNS_AUTODISMISS,
         // SAFETY: the remaining fields are unused for MIM_STYLE.
         ..unsafe { mem::zeroed() }

@@ -307,7 +307,7 @@ impl ProductVersion {
         }
     }
 
-    /// `v0.97.1`, the shape the managed telemetry events reported.
+    /// `v0.97.1`, the shape telemetry events report.
     fn telemetry(&self) -> String {
         let [major, minor, revision, _] = self.numbers();
         format!("v{major}.{minor}.{revision}")

@@ -63,7 +63,7 @@ impl Paths {
         self.module_dir().join("Logs")
     }
 
-    /// Single-instance mutex. Namespaced, unlike the bare `Awake` the .NET version used.
+    /// Single-instance mutex.
     pub fn instance_mutex_name(&self) -> String {
         format!(
             "Local\\PowerToysAwakeInstance-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe{}",

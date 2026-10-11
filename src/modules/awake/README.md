@@ -42,7 +42,7 @@ Awake calls the Win32 `SetThreadExecutionState()` API with:
 | **TIMED** | Keep awake for a specified duration |
 | **EXPIRABLE** | Keep awake until a specific date/time |
 
-A timed session ends by the wall clock, as in the previous version: moving the clock back extends
+A timed session ends by the wall clock: moving the clock back extends
 it by the same amount.
 
 ## Command-Line Usage
@@ -80,17 +80,16 @@ and reporting any error with exit code 1:
   `--parent` from a shell. Waiting in the foreground for a process that waits for Awake would
   never end.
 
-### Options from earlier versions
+### Hidden options
 
-These still work, hidden from help, so existing scripts and shortcuts keep running:
-`-c/--use-pt-config`, `-t/--time-limit <seconds>`, `-e/--expire-at <date>` and
-`-u/--use-parent-pid`, plus `-p` as a short form of `--pid`. The colon form (`-t:60`, `-c:true`)
-is accepted too, and `-e` without a value is an error. Two cases behave differently than before:
+These work but are hidden from help: `-c/--use-pt-config`, `-t/--time-limit <seconds>`,
+`-e/--expire-at <date>` and `-u/--use-parent-pid`, plus `-p` as a short form of `--pid`. The colon
+form (`-t:60`, `-c:true`) is accepted too, and `-e` without a value is an error.
 
-- With a process binding, `-t` and `-e` used to be ignored. They now apply as well, and the session
-  ends at whichever comes first.
-- A `-t` or `-e` session without a process binding still gets a console window of its own, but `-c`
-  no longer does: it follows `settings.json` without one.
+- With a process binding, `-t` and `-e` apply as well, and the session ends at whichever comes
+  first.
+- A `-t` or `-e` session without a process binding gets a console window of its own; `-c` follows
+  `settings.json` without one.
 
 ## Architecture
 
@@ -117,7 +116,7 @@ is accepted too, and `-e` without a value is an error. Two cases behave differen
   seconds, the process is ended. A crash ends the process too, and Windows drops the request
   with it. A Restart Manager request to close (from an installer) ends Awake like any other stop.
 - **No console nobody can see.** The runner starts Awake with no console at all, so a hidden
-  console host no longer runs alongside it. A console made just for Awake by a program without one
+  console host never runs alongside it. A console made just for Awake by a program without one
   is dropped for sessions bound to a process or run under PowerToys.
 - **Quiet while idle.** Nothing polls. A timed session redraws its countdown once a second on a
   timer Windows may batch with others, and skips that redraw while the session is locked (a session
@@ -273,8 +272,7 @@ Per [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/win32/
 
 ## Telemetry
 
-The module emits the same events with the same fields as the previous version (`Awake_EnableAwake`,
-`Awake_CLICommand` and one event per keep-awake mode), through the shared PowerToys provider and
-only when the user has opted in to diagnostic data. The events `PowerToys.Awake.exe` writes now
-carry the privacy tag `ProductAndServicePerformance`, the one every native PowerToys event uses,
-where the .NET version declared `ProductAndServiceUsage`.
+The module emits `Awake_EnableAwake`, `Awake_CLICommand` and one event per keep-awake mode, through
+the shared PowerToys provider and only when the user has opted in to diagnostic data. The events
+`PowerToys.Awake.exe` writes carry the privacy tag `ProductAndServicePerformance`, the one every
+native PowerToys event uses.

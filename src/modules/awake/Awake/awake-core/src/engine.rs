@@ -88,8 +88,8 @@ pub enum TrayCommand {
 /// The file says what the session is, not what changed, so the same values can mean two things.
 /// Awake's own write echoing back, or the same version read twice, must not disturb a running
 /// countdown. Another program writing the same timed session again (Command Palette's "Awake for
-/// 30 minutes", say) is a request to start it over, as it was in the .NET Awake and as choosing
-/// the same preset from the menu is.
+/// 30 minutes", say) is a request to start it over, as choosing the same preset from the menu
+/// is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Save {
     /// A version of the file Awake has already acted on: its own write, or one read before.
@@ -501,7 +501,7 @@ mod tests {
     }
 
     // Command Palette's "Awake for 30 minutes" writes the same values again and says the session
-    // was set; the .NET Awake started the countdown over, and so does choosing the preset again.
+    // was set, so the countdown starts over, as it does when the preset is chosen again.
     #[test]
     fn another_program_saving_the_same_timed_session_restarts_it() {
         let mut engine = powertoys();

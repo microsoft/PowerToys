@@ -9,8 +9,7 @@ use crate::time::{DateTimeOffset, Timestamp};
 /// The name at the start of every tooltip.
 pub(crate) const APP_NAME: &str = "PowerToys Awake";
 
-/// Menu command identifiers, unchanged from the .NET implementation (`WM_USER` based). A test in
-/// the `awake` binary pins them to `WM_USER`.
+/// Menu command identifiers, numbered from `WM_USER`. A test in the `awake` binary pins them.
 pub mod ids {
     /// "Keep screen on".
     pub const DISPLAY: u16 = 0x402;
@@ -172,7 +171,7 @@ pub fn default_presets(strings: Strings) -> Vec<Preset> {
     ]
 }
 
-/// Tooltip text, one fact per line, in the same shape the .NET version used.
+/// Tooltip text, one fact per line.
 pub fn tooltip(
     engine: &Engine,
     strings: Strings,

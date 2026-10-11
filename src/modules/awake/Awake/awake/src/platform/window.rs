@@ -16,7 +16,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
 
 use super::{last_error, wide::wide};
 
-/// Same class name and title as the .NET version.
+/// Tests and tools find Awake's window by this class name; keep it fixed.
 const CLASS_NAME: &str = "Awake.MessageWindow";
 const TITLE: &str = "PowerToys Awake";
 

@@ -56,7 +56,7 @@ impl SystemClock {
         ((local.ticks() - utc.ticks()) / (60 * TICKS_PER_SECOND)) as i16
     }
 
-    /// `Oct 10, 5:30 PM` in the user's regional format, like the .NET `MMM d, h:mm tt` pattern.
+    /// `Oct 10, 5:30 PM` in the user's regional format (`MMM d, h:mm tt`).
     pub fn format_expiry(self, at: &DateTimeOffset) -> String {
         let civil = at.local();
         let st = SYSTEMTIME {

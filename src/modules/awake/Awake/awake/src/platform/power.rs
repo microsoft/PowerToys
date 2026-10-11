@@ -25,8 +25,8 @@ mod tests {
         assert_eq!(ES_CONTINUOUS, power::ES_CONTINUOUS);
     }
 
-    // The .NET implementation numbered its menu commands from `WM_USER`; the core keeps the same
-    // numbers so nothing that relied on them breaks.
+    // Menu commands are numbered from `WM_USER`; the numbers stay fixed so nothing that relies on
+    // them breaks.
     #[test]
     fn menu_ids_keep_their_wm_user_offsets() {
         let offset = |id: u16| u32::from(id) - WM_USER;
