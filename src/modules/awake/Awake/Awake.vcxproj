@@ -41,6 +41,11 @@
     <CargoWarningPattern>^(.+:\d+:\d+: )?warning(\[\w+\])?: </CargoWarningPattern>
     <!-- Inside the repository checkout, where CI's PublishTestResults@2 collects every **/*.trx. -->
     <CargoTestResults>$(CargoTestTargetDir)\awake.trx</CargoTestResults>
+    <!-- The runner contract test (awake\tests\module_interface.rs) drives the real module DLL,
+         which logs to the real PowerToys data folder and uses the real kernel object names, so by
+         default it runs only on pipeline agents, which set TF_BUILD. Pass
+         -p:RunAwakeRunnerContractTest=true to run it locally. -->
+    <RunAwakeRunnerContractTest Condition="'$(RunAwakeRunnerContractTest)' == '' and '$(TF_BUILD)' != '' and '$(Platform)' == 'x64'">true</RunAwakeRunnerContractTest>
     <!-- rc.exe from the Windows SDK this build selected, not whichever SDK is newest. -->
     <CargoEnvironment>POWERTOYS_VERSION=$(Version);WindowsSdkVerBinPath=$(WindowsSdkDir)bin\$(TargetPlatformVersion)\</CargoEnvironment>
   </PropertyGroup>
@@ -52,6 +57,14 @@
     <None Include="awake\native\*.cpp;awake\native\*.manifest;awake\assets\*.ico" />
     <None Include="awake-core\Cargo.toml;awake-core\build.rs;awake-core\build\**\*.rs;awake-core\src\**\*.rs" />
     <None Include="tools\*.ps1" />
+  </ItemGroup>
+  <!-- Only orders the build: nothing links against the module DLL, but the contract test needs it
+       in $(OutDir) before this project's Test target runs, and nothing else builds it first. -->
+  <ItemGroup Condition="'$(RunAwakeRunnerContractTest)' == 'true'">
+    <ProjectReference Include="..\AwakeModuleInterface\AwakeModuleInterface.vcxproj">
+      <Project>{5e7360a8-d048-4ed3-8f09-0bfd64c5529a}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <!-- Without a Rust toolchain the first cargo call fails with MSB3073 around "'cargo' is not
@@ -80,6 +93,11 @@
     <!-- ErrorAndContinue still fails the build when a test fails, but lets the results file below
          be written first, so the pipeline shows which test failed. -->
     <Exec Command="cargo test-all $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTestTargetDir)&quot; --profile $(CargoProfile)" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" ConsoleToMSBuild="true" ContinueOnError="ErrorAndContinue">
+      <Output TaskParameter="ConsoleOutput" ItemName="CargoTestOutput" />
+    </Exec>
+    <!-- Last, because it needs to be the only Awake on the machine and the tests above start many.
+         Same features and folder as above, so Cargo reuses the test binary it already built. -->
+    <Exec Condition="'$(RunAwakeRunnerContractTest)' == 'true'" Command="cargo test $(CargoCommonArgs) $(CargoDiagnosticArgs) --features awake/test-hooks --target-dir &quot;$(CargoTestTargetDir)&quot; --profile $(CargoProfile) -p awake --test module_interface -- --ignored" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment);POWERTOYS_AWAKE_MODULE_DIR=$(OutDir)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" ConsoleToMSBuild="true" ContinueOnError="ErrorAndContinue">
       <Output TaskParameter="ConsoleOutput" ItemName="CargoTestOutput" />
     </Exec>
     <WriteCargoTestResults Lines="@(CargoTestOutput)" OutputFile="$(CargoTestResults)" />

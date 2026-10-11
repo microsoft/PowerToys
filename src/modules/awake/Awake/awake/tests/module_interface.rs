@@ -3,8 +3,9 @@
 //! disable it (which must stop Awake cleanly, without `TerminateProcess`).
 //!
 //! Ignored by default because the DLL always logs to the real `%LOCALAPPDATA%\Microsoft\PowerToys`
-//! and talks to Awake through the real kernel object names. Run it with
-//! `cargo test -p awake --test module_interface -- --ignored` after building the DLL.
+//! and talks to Awake through the real kernel object names. CI runs it from Awake.vcxproj's Test
+//! target; locally, build the DLL and run
+//! `cargo test -p awake --test module_interface -- --ignored`.
 
 #![cfg(target_arch = "x86_64")]
 
@@ -65,17 +66,11 @@ impl Module {
     }
 }
 
-/// The PowerToys output folder that matches this build. Through Awake.vcxproj, Cargo's target
-/// folder is `<OutDir>\obj\Awake-test`, so the DLL built alongside is in `<OutDir>`. A plain
-/// `cargo test` uses the conventional `<repo>\x64\<configuration>` for its profile.
+/// The PowerToys output folder that holds the module DLL. Awake.vcxproj passes its `$(OutDir)`;
+/// a plain `cargo test` uses the conventional `<repo>\x64\<configuration>` for its profile.
 fn repo_output_dir() -> PathBuf {
-    let built_by_msbuild = Path::new(EXE).ancestors().find_map(|dir| {
-        let target = dir.file_name()?.to_str()?;
-        let obj = dir.parent()?;
-        (target.starts_with("Awake") && obj.file_name()?.eq_ignore_ascii_case("obj")).then(|| obj.parent())?
-    });
-    if let Some(out_dir) = built_by_msbuild {
-        return out_dir.to_path_buf();
+    if let Some(out_dir) = std::env::var_os("POWERTOYS_AWAKE_MODULE_DIR") {
+        return PathBuf::from(out_dir);
     }
     let configuration = if cfg!(debug_assertions) {
         "Debug"
@@ -97,9 +92,10 @@ fn the_runner_contract_still_holds() {
         built_dll.display()
     );
     // The test uses the real kernel object names, so another Awake would win the single-instance
-    // mutex and this build would refuse to start.
+    // mutex and this build would refuse to start. Run right after the other end-to-end tests, the
+    // last of their sandboxed instances may still be closing.
     assert!(
-        any_awake_window().is_none(),
+        no_awake_window_within(Duration::from_secs(10)),
         "another Awake is running (an installed PowerToys?); exit it first"
     );
 
@@ -248,12 +244,22 @@ fn image_path(process: HANDLE) -> Option<PathBuf> {
     (ok != 0).then(|| PathBuf::from(String::from_utf16_lossy(&buffer[..len as usize])))
 }
 
-/// Any Awake tray window, whoever owns it.
-fn any_awake_window() -> Option<HWND> {
+/// Whether every Awake tray window, whoever owns it, is gone within `timeout`.
+fn no_awake_window_within(timeout: Duration) -> bool {
     let class = wide("Awake.MessageWindow");
-    // SAFETY: looking up a top-level window by class.
-    let window = unsafe { FindWindowExW(ptr::null_mut(), ptr::null_mut(), class.as_ptr(), ptr::null()) };
-    (!window.is_null()).then_some(window)
+    let deadline = Instant::now() + timeout;
+    loop {
+        // SAFETY: looking up a top-level window by class.
+        let window: HWND =
+            unsafe { FindWindowExW(ptr::null_mut(), ptr::null_mut(), class.as_ptr(), ptr::null()) };
+        if window.is_null() {
+            return true;
+        }
+        if Instant::now() >= deadline {
+            return false;
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
 }
 
 fn real_log() -> String {
