@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Imported by Awake.vcxproj, which defines CargoTestTargetDir. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Turns libtest's "test NAME ... ok|FAILED|ignored" lines into a minimal TRX file, so the
+       pipeline's existing PublishTestResults@2 step (**/*.trx) lists every Rust test by name.
+       Stable libtest has no machine-readable output, and the pipeline cannot install tools. -->
+  <UsingTask TaskName="WriteCargoTestResults" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Lines ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <OutputFile ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Using Namespace="System.Xml.Linq" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+        const string unitTestType = "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b";
+        const string allResultsList = "19431567-8539-422a-85d7-44ee4e166bda";
+        // libtest appends " - should panic", " - compile fail" or " - compile" for those kinds of
+        // test, and doc test names contain spaces ("src\lib.rs - item (line 3)"), so a name runs
+        // up to that suffix or to " ... ".
+        var testLine = new Regex(@"^test (.+?)(?: - (?:should panic|compile fail|compile))? \.\.\. (ok|FAILED|ignored)\b");
+        var summaryLine = new Regex(@"^test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored;");
+        // "Running unittests src\main.rs (target\...\deps\awake-0123.exe)", "Running tests\process.rs (...)".
+        var runningLine = new Regex(@"^\s*Running (?:unittests )?(\S+)(?: \((.+)\))?");
+        var docTestsLine = new Regex(@"^\s*Doc-tests (\S+)");
+        var captureLine = new Regex(@"^---- (.+) std(?:out|err) ----$");
+        var lines = (Lines ?? new ITaskItem[0]).Select(l => l.ItemSpec).ToList();
+
+        // Each test once, keeping its last line: the contract test is listed as ignored by the full
+        // run and then run on its own, and only the run that executed it counts. Tests are keyed by
+        // the test executable, not the source file, because every library crate's unit tests are
+        // "src\lib.rs" and may share module paths.
+        var tests = new Dictionary<string, Tuple<string, string, string, bool>>();
+        var order = new List<string>();
+        // What libtest prints for each failed test, by the same key.
+        var failures = new Dictionary<string, List<string>>();
+        List<string> capture = null;
+        int parsed = 0, reported = 0;
+        string binary = "awake";
+        string source = binary;
+        bool docTests = false;
+        foreach (var line in lines)
+        {
+            var running = runningLine.Match(line);
+            if (running.Success)
+            {
+                binary = running.Groups[1].Value.Replace('\\', '/');
+                source = running.Groups[2].Success ? running.Groups[2].Value : binary;
+                docTests = false;
+                capture = null;
+                continue;
+            }
+            var doc = docTestsLine.Match(line);
+            if (doc.Success)
+            {
+                binary = doc.Groups[1].Value + " (doc)";
+                source = binary;
+                docTests = true;
+                capture = null;
+                continue;
+            }
+            var summary = summaryLine.Match(line);
+            if (summary.Success)
+            {
+                reported += int.Parse(summary.Groups[1].Value) + int.Parse(summary.Groups[2].Value) + int.Parse(summary.Groups[3].Value);
+                capture = null;
+                continue;
+            }
+            var captured = captureLine.Match(line);
+            if (captured.Success)
+            {
+                string failureKey = source + "\n" + captured.Groups[1].Value;
+                if (!failures.TryGetValue(failureKey, out capture))
+                {
+                    capture = new List<string>();
+                    failures[failureKey] = capture;
+                }
+                continue;
+            }
+            if (line == "failures:")
+            {
+                capture = null;
+                continue;
+            }
+            if (capture != null)
+            {
+                capture.Add(line);
+                continue;
+            }
+            var m = testLine.Match(line);
+            if (!m.Success)
+            {
+                continue;
+            }
+            parsed++;
+            string key = source + "\n" + m.Groups[1].Value;
+            if (!tests.ContainsKey(key))
+            {
+                order.Add(key);
+            }
+            string outcome = m.Groups[2].Value == "ok" ? "Passed" : m.Groups[2].Value == "FAILED" ? "Failed" : "NotExecuted";
+            tests[key] = Tuple.Create(binary, m.Groups[1].Value, outcome, docTests);
+        }
+        if (parsed != reported)
+        {
+            Log.LogWarning("libtest reported {0} test results but {1} test lines were recognised, so {2} may not match what ran. Check the patterns in msbuild\\CargoTestResults.targets against libtest's output.", reported, parsed, OutputFile);
+        }
+
+        var results = new XElement(ns + "Results");
+        var definitions = new XElement(ns + "TestDefinitions");
+        var entries = new XElement(ns + "TestEntries");
+        int passed = 0, failed = 0, skipped = 0;
+        foreach (var key in order)
+        {
+            string testBinary = tests[key].Item1;
+            string name = tests[key].Item2;
+            string outcome = tests[key].Item3;
+            if (outcome == "Passed") { passed++; } else if (outcome == "Failed") { failed++; } else { skipped++; }
+            string testId = Guid.NewGuid().ToString();
+            string executionId = Guid.NewGuid().ToString();
+            var result = new XElement(ns + "UnitTestResult",
+                new XAttribute("executionId", executionId),
+                new XAttribute("testId", testId),
+                new XAttribute("testName", name),
+                new XAttribute("computerName", Environment.MachineName),
+                new XAttribute("duration", "00:00:00"),
+                new XAttribute("outcome", outcome),
+                new XAttribute("testType", unitTestType),
+                new XAttribute("testListId", allResultsList));
+            List<string> output;
+            if (outcome == "Failed" && failures.TryGetValue(key, out output))
+            {
+                result.Add(new XElement(ns + "Output",
+                    new XElement(ns + "ErrorInfo",
+                        new XElement(ns + "Message", string.Join(Environment.NewLine, output).Trim()))));
+            }
+            results.Add(result);
+            // Doc test names hold a file path and an item, not a module path to split.
+            int split = tests[key].Item4 ? -1 : name.LastIndexOf("::", StringComparison.Ordinal);
+            definitions.Add(new XElement(ns + "UnitTest",
+                new XAttribute("name", name),
+                new XAttribute("storage", testBinary),
+                new XAttribute("id", testId),
+                new XElement(ns + "Execution", new XAttribute("id", executionId)),
+                new XElement(ns + "TestMethod",
+                    new XAttribute("codeBase", testBinary),
+                    new XAttribute("adapterTypeName", "executor://cargo-test"),
+                    new XAttribute("className", split < 0 ? testBinary : testBinary + "::" + name.Substring(0, split)),
+                    new XAttribute("name", split < 0 ? name : name.Substring(split + 2)))));
+            entries.Add(new XElement(ns + "TestEntry",
+                new XAttribute("testId", testId),
+                new XAttribute("executionId", executionId),
+                new XAttribute("testListId", allResultsList)));
+        }
+
+        var run = new XElement(ns + "TestRun",
+            new XAttribute("id", Guid.NewGuid().ToString()),
+            new XAttribute("name", "Awake (cargo test)"),
+            results,
+            definitions,
+            entries,
+            new XElement(ns + "TestLists",
+                new XElement(ns + "TestList", new XAttribute("name", "All Loaded Results"), new XAttribute("id", allResultsList))),
+            new XElement(ns + "ResultSummary",
+                new XAttribute("outcome", failed > 0 ? "Failed" : "Completed"),
+                new XElement(ns + "Counters",
+                    new XAttribute("total", passed + failed + skipped),
+                    new XAttribute("executed", passed + failed),
+                    new XAttribute("passed", passed),
+                    new XAttribute("failed", failed),
+                    new XAttribute("notExecuted", skipped))));
+        Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+        new XDocument(new XDeclaration("1.0", "utf-8", null), run).Save(OutputFile);
+        Log.LogMessage(MessageImportance.High, "Awake test results: {0} passed, {1} failed, {2} ignored in {3}", passed, failed, skipped, OutputFile);
+]]></Code>
+    </Task>
+  </UsingTask>
+  <!-- Feeds recorded cargo test output (libtest-output.txt) through WriteCargoTestResults and checks
+       the file it writes, so a libtest format change or a broken pattern fails the build instead of
+       quietly dropping tests from the pipeline's results. The recording covers should_panic,
+       compile_fail and doc tests, a doc test whose name holds "::", failure output for a name with
+       spaces, two crates whose unit tests share a name, and the contract test listed as ignored and
+       then run. It is written as .xml, not .trx, so the pipeline never publishes it. Run it alone
+       with: msbuild Awake.vcxproj -t:CheckCargoTestResults -->
+  <Target Name="CheckCargoTestResults">
+    <PropertyGroup>
+      <_CheckResultsFile>$(CargoTestTargetDir)\libtest-output.xml</_CheckResultsFile>
+      <_CheckNamespaces>&lt;Namespace Prefix='t' Uri='http://microsoft.com/schemas/VisualStudio/TeamTest/2010' /&gt;</_CheckNamespaces>
+    </PropertyGroup>
+    <ReadLinesFromFile File="$(MSBuildThisFileDirectory)libtest-output.txt">
+      <Output TaskParameter="Lines" ItemName="_CheckLines" />
+    </ReadLinesFromFile>
+    <WriteCargoTestResults Lines="@(_CheckLines)" OutputFile="$(_CheckResultsFile)" />
+
+    <!-- total, executed, passed, failed, notExecuted -->
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="/t:TestRun/t:ResultSummary/t:Counters/@*">
+      <Output TaskParameter="Result" PropertyName="_CheckCounters" />
+    </XmlPeek>
+    <Error Condition="'$(_CheckCounters)' != '10;10;8;2;0'" Text="Expected counters 10;10;8;2;0 (total;executed;passed;failed;notExecuted), got $(_CheckCounters)." />
+
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="//t:UnitTestResult[@testName='tests::parsing::rejects_an_overflow']/@outcome">
+      <Output TaskParameter="Result" PropertyName="_CheckShouldPanic" />
+    </XmlPeek>
+    <Error Condition="'$(_CheckShouldPanic)' != 'Passed'" Text="Expected the should_panic test to pass, got '$(_CheckShouldPanic)'." />
+
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="//t:UnitTest[@name='src\lib.rs - typed (line 6)']/@storage">
+      <Output TaskParameter="Result" PropertyName="_CheckCompileFail" />
+    </XmlPeek>
+    <Error Condition="'$(_CheckCompileFail)' != 'awake_core (doc)'" Text="Expected the compile_fail doc test under 'awake_core (doc)', got '$(_CheckCompileFail)'." />
+
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="//t:UnitTest[@name='src\lib.rs - Mode::name (line 32)']/t:TestMethod/@className">
+      <Output TaskParameter="Result" PropertyName="_CheckDocClass" />
+    </XmlPeek>
+    <Error Condition="'$(_CheckDocClass)' != 'awake_core (doc)'" Text="Expected a doc test name not to be split at '::', got class '$(_CheckDocClass)'." />
+
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="//t:UnitTest[@name='tests::parsing::rounds_down']/t:TestMethod/@className">
+      <Output TaskParameter="Result" PropertyName="_CheckUnitClass" />
+    </XmlPeek>
+    <Error Condition="'$(_CheckUnitClass)' != 'src/lib.rs::tests::parsing'" Text="Expected a unit test's module path as its class, got '$(_CheckUnitClass)'." />
+
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="//t:UnitTestResult[@testName='tests::parsing::rounds_down']/t:Output/t:ErrorInfo/t:Message/text()">
+      <Output TaskParameter="Result" PropertyName="_CheckUnitFailure" />
+    </XmlPeek>
+    <Error Condition="!$(_CheckUnitFailure.Contains('rounding went up'))" Text="Expected the failed unit test's output, got '$(_CheckUnitFailure)'." />
+
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="//t:UnitTestResult[@testName='src\lib.rs - broken (line 11)']/t:Output/t:ErrorInfo/t:Message/text()">
+      <Output TaskParameter="Result" PropertyName="_CheckDocFailure" />
+    </XmlPeek>
+    <Error Condition="!$(_CheckDocFailure.Contains('doubling is off'))" Text="Expected the failed doc test's output, got '$(_CheckDocFailure)'." />
+
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="//t:UnitTestResult[@testName='tests::parsing::reads_a_duration']/@outcome">
+      <Output TaskParameter="Result" PropertyName="_CheckSharedName" />
+    </XmlPeek>
+    <Error Condition="'$(_CheckSharedName)' != 'Passed;Passed'" Text="Expected one result for each crate's tests::parsing::reads_a_duration, got '$(_CheckSharedName)'." />
+
+    <XmlPeek XmlInputPath="$(_CheckResultsFile)" Namespaces="$(_CheckNamespaces)" Query="//t:UnitTestResult[@testName='the_runner_contract_holds']/@outcome">
+      <Output TaskParameter="Result" PropertyName="_CheckRerun" />
+    </XmlPeek>
+    <Error Condition="'$(_CheckRerun)' != 'Passed'" Text="Expected the ignored-then-run contract test once, as passed, got '$(_CheckRerun)'." />
+  </Target>
+</Project>

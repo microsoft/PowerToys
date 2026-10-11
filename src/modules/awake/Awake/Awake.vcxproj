@@ -58,6 +58,7 @@
     <None Include="awake\native\*.cpp;awake\native\*.manifest;awake\assets\*.ico" />
     <None Include="awake-core\Cargo.toml;awake-core\build.rs;awake-core\build\**\*.rs;awake-core\src\**\*.rs" />
     <None Include="tools\*.ps1" />
+    <None Include="msbuild\*.targets;msbuild\*.txt" />
   </ItemGroup>
   <!-- Only orders the build: nothing links against the module DLL, but the contract test needs it
        in $(OutDir) before this project's Test target runs, and nothing else builds it first. -->
@@ -68,6 +69,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="msbuild\CargoTestResults.targets" />
   <!-- Without a Rust toolchain the first cargo call fails with MSB3073 around "'cargo' is not
        recognized", which does not say what to install. 9009 is cmd's exit code for an unknown
        command; any other failure is the toolchain's own, explained in the output above it. -->
@@ -84,7 +86,7 @@
     <Copy SourceFiles="$(CargoOutputDir)awake.pdb" DestinationFiles="$(OutDir)PowerToys.Awake.pdb" SkipUnchangedFiles="true" Condition="Exists('$(CargoOutputDir)awake.pdb')" />
   </Target>
   <!-- There are no ARM64 test agents, matching the other test projects. -->
-  <Target Name="Test" DependsOnTargets="CargoCheckToolchain" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
+  <Target Name="Test" DependsOnTargets="CheckCargoTestResults;CargoCheckToolchain" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
     <Exec Command="cargo fmt --all --check" WorkingDirectory="$(MSBuildThisFileDirectory)" />
     <Exec Command="cargo lint $(CargoCommonArgs) $(CargoDiagnosticArgs) --target-dir &quot;$(CargoTestTargetDir)&quot; --profile $(CargoProfile) -- -D warnings" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="$(CargoEnvironment)" CustomErrorRegularExpression="$(CargoErrorPattern)" CustomWarningRegularExpression="$(CargoWarningPattern)" />
     <!-- Again without the test hooks, as shipped: code that only that build compiles is otherwise
@@ -103,177 +105,6 @@
     </Exec>
     <WriteCargoTestResults Lines="@(CargoTestOutput)" OutputFile="$(CargoTestResults)" />
   </Target>
-  <!-- Turns libtest's "test NAME ... ok|FAILED|ignored" lines into a minimal TRX file, so the
-       pipeline's existing PublishTestResults@2 step (**/*.trx) lists every Rust test by name.
-       Stable libtest has no machine-readable output, and the pipeline cannot install tools. -->
-  <UsingTask TaskName="WriteCargoTestResults" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <Lines ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
-      <OutputFile ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.Collections.Generic" />
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Linq" />
-      <Using Namespace="System.Text.RegularExpressions" />
-      <Using Namespace="System.Xml.Linq" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-        XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-        const string unitTestType = "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b";
-        const string allResultsList = "19431567-8539-422a-85d7-44ee4e166bda";
-        // libtest appends " - should panic", " - compile fail" or " - compile" for those kinds of
-        // test, and doc test names contain spaces ("src\lib.rs - item (line 3)"), so a name runs
-        // up to that suffix or to " ... ".
-        var testLine = new Regex(@"^test (.+?)(?: - (?:should panic|compile fail|compile))? \.\.\. (ok|FAILED|ignored)\b");
-        var summaryLine = new Regex(@"^test result: \w+\. (\d+) passed; (\d+) failed; (\d+) ignored;");
-        var runningLine = new Regex(@"^\s*Running (?:unittests )?(\S+)");
-        var docTestsLine = new Regex(@"^\s*Doc-tests (\S+)");
-        var captureLine = new Regex(@"^---- (.+) std(?:out|err) ----$");
-        var lines = (Lines ?? new ITaskItem[0]).Select(l => l.ItemSpec).ToList();
-
-        // What libtest prints for each failed test, by test name.
-        var failures = new Dictionary<string, List<string>>();
-        List<string> capture = null;
-        foreach (var line in lines)
-        {
-            var m = captureLine.Match(line);
-            if (m.Success)
-            {
-                if (!failures.TryGetValue(m.Groups[1].Value, out capture))
-                {
-                    capture = new List<string>();
-                    failures[m.Groups[1].Value] = capture;
-                }
-            }
-            else if (line == "failures:" || line.StartsWith("test result: ", StringComparison.Ordinal))
-            {
-                capture = null;
-            }
-            else if (capture != null)
-            {
-                capture.Add(line);
-            }
-        }
-
-        // Each test once, by binary and name, keeping the last line: the contract test is listed
-        // as ignored by the full run and then run on its own, and only the run that executed it
-        // counts.
-        var tests = new Dictionary<string, Tuple<string, string, string, bool>>();
-        var order = new List<string>();
-        int parsed = 0, reported = 0;
-        string binary = "awake";
-        bool docTests = false;
-        foreach (var line in lines)
-        {
-            // "Running unittests src\main.rs (...)", "Running tests\process.rs (...)", "Doc-tests awake_core".
-            var running = runningLine.Match(line);
-            if (running.Success)
-            {
-                binary = running.Groups[1].Value.Replace('\\', '/');
-                docTests = false;
-                continue;
-            }
-            var doc = docTestsLine.Match(line);
-            if (doc.Success)
-            {
-                binary = doc.Groups[1].Value + " (doc)";
-                docTests = true;
-                continue;
-            }
-            var summary = summaryLine.Match(line);
-            if (summary.Success)
-            {
-                reported += int.Parse(summary.Groups[1].Value) + int.Parse(summary.Groups[2].Value) + int.Parse(summary.Groups[3].Value);
-                continue;
-            }
-            var m = testLine.Match(line);
-            if (!m.Success)
-            {
-                continue;
-            }
-            parsed++;
-            string key = binary + "\n" + m.Groups[1].Value;
-            if (!tests.ContainsKey(key))
-            {
-                order.Add(key);
-            }
-            string outcome = m.Groups[2].Value == "ok" ? "Passed" : m.Groups[2].Value == "FAILED" ? "Failed" : "NotExecuted";
-            tests[key] = Tuple.Create(binary, m.Groups[1].Value, outcome, docTests);
-        }
-        if (parsed != reported)
-        {
-            Log.LogWarning("libtest reported {0} test results but {1} test lines were recognised, so {2} may not match what ran. Check the patterns in Awake.vcxproj against libtest's output.", reported, parsed, OutputFile);
-        }
-
-        var results = new XElement(ns + "Results");
-        var definitions = new XElement(ns + "TestDefinitions");
-        var entries = new XElement(ns + "TestEntries");
-        int passed = 0, failed = 0, skipped = 0;
-        foreach (var key in order)
-        {
-            string testBinary = tests[key].Item1;
-            string name = tests[key].Item2;
-            string outcome = tests[key].Item3;
-            if (outcome == "Passed") { passed++; } else if (outcome == "Failed") { failed++; } else { skipped++; }
-            string testId = Guid.NewGuid().ToString();
-            string executionId = Guid.NewGuid().ToString();
-            var result = new XElement(ns + "UnitTestResult",
-                new XAttribute("executionId", executionId),
-                new XAttribute("testId", testId),
-                new XAttribute("testName", name),
-                new XAttribute("computerName", Environment.MachineName),
-                new XAttribute("duration", "00:00:00"),
-                new XAttribute("outcome", outcome),
-                new XAttribute("testType", unitTestType),
-                new XAttribute("testListId", allResultsList));
-            List<string> output;
-            if (outcome == "Failed" && failures.TryGetValue(name, out output))
-            {
-                result.Add(new XElement(ns + "Output",
-                    new XElement(ns + "ErrorInfo",
-                        new XElement(ns + "Message", string.Join(Environment.NewLine, output).Trim()))));
-            }
-            results.Add(result);
-            // Doc test names hold a file path and an item, not a module path to split.
-            int split = tests[key].Item4 ? -1 : name.LastIndexOf("::", StringComparison.Ordinal);
-            definitions.Add(new XElement(ns + "UnitTest",
-                new XAttribute("name", name),
-                new XAttribute("storage", testBinary),
-                new XAttribute("id", testId),
-                new XElement(ns + "Execution", new XAttribute("id", executionId)),
-                new XElement(ns + "TestMethod",
-                    new XAttribute("codeBase", testBinary),
-                    new XAttribute("adapterTypeName", "executor://cargo-test"),
-                    new XAttribute("className", split < 0 ? testBinary : testBinary + "::" + name.Substring(0, split)),
-                    new XAttribute("name", split < 0 ? name : name.Substring(split + 2)))));
-            entries.Add(new XElement(ns + "TestEntry",
-                new XAttribute("testId", testId),
-                new XAttribute("executionId", executionId),
-                new XAttribute("testListId", allResultsList)));
-        }
-
-        var run = new XElement(ns + "TestRun",
-            new XAttribute("id", Guid.NewGuid().ToString()),
-            new XAttribute("name", "Awake (cargo test)"),
-            results,
-            definitions,
-            entries,
-            new XElement(ns + "TestLists",
-                new XElement(ns + "TestList", new XAttribute("name", "All Loaded Results"), new XAttribute("id", allResultsList))),
-            new XElement(ns + "ResultSummary",
-                new XAttribute("outcome", failed > 0 ? "Failed" : "Completed"),
-                new XElement(ns + "Counters",
-                    new XAttribute("total", passed + failed + skipped),
-                    new XAttribute("executed", passed + failed),
-                    new XAttribute("passed", passed),
-                    new XAttribute("failed", failed),
-                    new XAttribute("notExecuted", skipped))));
-        Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
-        new XDocument(new XDeclaration("1.0", "utf-8", null), run).Save(OutputFile);
-        Log.LogMessage(MessageImportance.High, "Awake test results: {0} passed, {1} failed, {2} ignored in {3}", passed, failed, skipped, OutputFile);
-]]></Code>
-    </Task>
-  </UsingTask>
   <Target Name="CargoClean" AfterTargets="Clean">
     <RemoveDir Directories="$(CargoTargetDir);$(CargoTestTargetDir)" />
     <Delete Files="$(OutDir)PowerToys.Awake.exe;$(OutDir)PowerToys.Awake.pdb" />

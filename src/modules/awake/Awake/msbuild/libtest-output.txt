@@ -1,0 +1,85 @@
+   Compiling awake-core v0.0.0 (D:\a\_work\1\s\src\modules\awake\Awake\awake-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.36s
+     Running unittests src\lib.rs (target\x86_64-pc-windows-msvc\debug\deps\awake_core-bdfe536317bbdd8b.exe)
+
+running 3 tests
+test tests::parsing::rejects_an_overflow - should panic ... ok
+test tests::parsing::rounds_down ... FAILED
+test tests::parsing::reads_a_duration ... ok
+
+failures:
+
+---- tests::parsing::rounds_down stdout ----
+
+thread 'tests::parsing::rounds_down' (46260) panicked at src\lib.rs:25:28:
+assertion `left == right` failed: rounding went up
+  left: 2
+ right: 3
+
+
+failures:
+    tests::parsing::rounds_down
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `--lib`
+     Running unittests src\lib.rs (target\x86_64-pc-windows-msvc\debug\deps\awake_extra-0f1e2d3c4b5a6978.exe)
+
+running 1 test
+test tests::parsing::reads_a_duration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\module_interface.rs (target\x86_64-pc-windows-msvc\debug\deps\module_interface-d1505a77317bae4a.exe)
+
+running 2 tests
+test the_runner_contract_holds ... ignored, uses the real PowerToys data folder
+test the_module_loads ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests awake_core
+
+running 3 tests
+test src\lib.rs - Mode::name (line 32) ... ok
+test src\lib.rs - broken (line 11) ... FAILED
+test src\lib.rs - double (line 1) ... ok
+
+failures:
+
+---- src\lib.rs - broken (line 11) stdout ----
+Test executable failed (exit status: 101).
+
+stderr:
+
+thread 'main' (51096) panicked at C:\Users\VssAdministrator\AppData\Local\Temp\rustdoctest\doctest_bundle_2024.rs:14:1:
+assertion `left == right` failed: doubling is off
+  left: 4
+ right: 5
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+
+failures:
+    src\lib.rs - broken (line 11)
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 1 test
+test src\lib.rs - typed (line 6) - compile fail ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+all doctests ran in 1.00s; merged doctests compilation took 0.35s
+error: doctest failed, to rerun pass `--doc`
+error: 2 targets failed:
+    `--lib`
+    `--doc`
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running tests\module_interface.rs (target\x86_64-pc-windows-msvc\debug\deps\module_interface-d1505a77317bae4a.exe)
+
+running 1 test
+test the_runner_contract_holds ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
