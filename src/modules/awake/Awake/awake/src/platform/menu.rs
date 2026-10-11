@@ -3,7 +3,7 @@
 //! The menu is built fresh each time it opens and destroyed when it closes, so it can never be
 //! out of date or touched by another thread.
 
-use std::{mem, ptr};
+use std::{io, mem, ptr};
 
 use awake_core::tray_model::{Check, MenuItem};
 use windows_sys::Win32::Foundation::HWND;
@@ -15,6 +15,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
     TPM_RETURNCMD, TPM_RIGHTALIGN, TPM_RIGHTBUTTON, TrackPopupMenuEx, WM_NULL,
 };
 
+use super::last_error;
 use super::wide::wide;
 
 #[derive(Debug)]
@@ -27,11 +28,8 @@ impl Drop for PopupMenu {
     }
 }
 
-/// Builds the popup. Right-to-left languages need nothing per item: `track` mirrors the whole
-/// menu, submenus included, with `TPM_LAYOUTRTL`, as Explorer does. The per-item
-/// `MFT_RIGHTJUSTIFY` only applies to menu bars, and `MFT_RIGHTORDER` on top of a mirrored menu
-/// would flip submenus a second time.
-pub fn build(items: &[MenuItem], _right_to_left: bool) -> Option<PopupMenu> {
+/// Builds the popup. The error is the one from the call that failed, taken before any cleanup.
+pub fn build(items: &[MenuItem]) -> io::Result<PopupMenu> {
     let menu = PopupMenu(create()?);
     append(menu.0, items)?;
     let info = MENUINFO {
@@ -44,10 +42,14 @@ pub fn build(items: &[MenuItem], _right_to_left: bool) -> Option<PopupMenu> {
     };
     // SAFETY: valid menu and struct.
     unsafe { SetMenuInfo(menu.0, &info) };
-    Some(menu)
+    Ok(menu)
 }
 
 /// Shows the menu at a screen point and returns the chosen command id, or 0.
+///
+/// Right-to-left languages need nothing per item: `TPM_LAYOUTRTL` mirrors the whole menu,
+/// submenus included, as Explorer does. The per-item `MFT_RIGHTJUSTIFY` only applies to menu
+/// bars, and `MFT_RIGHTORDER` on top of a mirrored menu would flip submenus a second time.
 pub fn track(menu: &PopupMenu, window: HWND, x: i32, y: i32, right_to_left: bool) -> u16 {
     // SAFETY: plain value call.
     let drop_right = unsafe { GetSystemMetrics(SM_MENUDROPALIGNMENT) } != 0;
@@ -66,13 +68,17 @@ pub fn track(menu: &PopupMenu, window: HWND, x: i32, y: i32, right_to_left: bool
     }
 }
 
-fn create() -> Option<HMENU> {
+fn create() -> io::Result<HMENU> {
     // SAFETY: plain call.
     let menu = unsafe { CreatePopupMenu() };
-    (!menu.is_null()).then_some(menu)
+    if menu.is_null() {
+        Err(last_error())
+    } else {
+        Ok(menu)
+    }
 }
 
-fn append(menu: HMENU, items: &[MenuItem]) -> Option<()> {
+fn append(menu: HMENU, items: &[MenuItem]) -> io::Result<()> {
     for (position, item) in items.iter().enumerate() {
         // SAFETY: MENUITEMINFOW is plain data.
         let mut info: MENUITEMINFOW = unsafe { mem::zeroed() };
@@ -98,10 +104,10 @@ fn append(menu: HMENU, items: &[MenuItem]) -> Option<()> {
             }
             MenuItem::Submenu { label, check, items } => {
                 let submenu = create()?;
-                if append(submenu, items).is_none() {
+                if let Err(error) = append(submenu, items) {
                     // SAFETY: not yet attached, so we still own it.
                     unsafe { DestroyMenu(submenu) };
-                    return None;
+                    return Err(error);
                 }
                 text = wide(label);
                 info.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_STATE | MIIM_SUBMENU;
@@ -113,14 +119,15 @@ fn append(menu: HMENU, items: &[MenuItem]) -> Option<()> {
         }
         // SAFETY: `info` and the text it points to are valid for the call; the menu copies them.
         if unsafe { InsertMenuItemW(menu, position as u32, 1, &info) } == 0 {
+            let error = last_error();
             if !info.hSubMenu.is_null() {
                 // SAFETY: insertion failed, so the submenu is still ours.
                 unsafe { DestroyMenu(info.hSubMenu) };
             }
-            return None;
+            return Err(error);
         }
     }
-    Some(())
+    Ok(())
 }
 
 fn radio(check: Check) -> u32 {
@@ -141,4 +148,34 @@ fn state(check: Check, enabled: bool) -> u32 {
         state |= MFS_DISABLED;
     }
     state
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn menus_with_submenus_build() {
+        let items = [
+            MenuItem::Command {
+                id: 1,
+                label: "Off".into(),
+                check: Check::Selected,
+                enabled: true,
+            },
+            MenuItem::Separator,
+            MenuItem::Submenu {
+                label: "Keep awake for".into(),
+                check: Check::None,
+                items: vec![MenuItem::Command {
+                    id: 2,
+                    label: "30 minutes".into(),
+                    check: Check::None,
+                    enabled: false,
+                }],
+            },
+        ];
+        let menu = build(&items).unwrap();
+        assert!(!menu.0.is_null());
+    }
 }

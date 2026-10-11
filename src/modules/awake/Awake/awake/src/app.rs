@@ -364,6 +364,9 @@ impl Launcher {
         let taskbar_created = window::register_message(window, "TaskbarCreated");
         TASKBAR_CREATED.store(taskbar_created, Ordering::Relaxed);
         window::allow_message(window, WM_TRAY);
+        // Theme changes are broadcast by Explorer and the Settings app, which run below an
+        // elevated Awake's integrity level; without this, its menu keeps the start-up theme.
+        window::allow_message(window, WM_SETTINGCHANGE);
         theme::apply_system_theme();
         let session_registered = match session::register(window) {
             Ok(()) => true,
@@ -527,12 +530,25 @@ fn resolve_until(
     Ok(until)
 }
 
+/// What the window procedure does after a message. Dropping one could drop a `Destroy`, leaving
+/// the window alive after the session asked to exit.
+#[must_use]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Outcome {
     Handled(LRESULT),
     Default,
     ShowMenu(i32, i32),
     Destroy,
+}
+
+impl Outcome {
+    /// `Destroy` stays; anything else becomes the message's own `result`.
+    fn or_handled(self, result: LRESULT) -> Outcome {
+        match self {
+            Outcome::Destroy => Outcome::Destroy,
+            _ => Outcome::Handled(result),
+        }
+    }
 }
 
 /// What Awake last found at `settings.json`.
@@ -586,7 +602,8 @@ struct App {
     redirected: bool,
     style: Style,
     taskbar_created: u32,
-    /// Lock notifications arrive; until then the lock state is the one read at startup.
+    /// Whether `WM_WTSSESSION_CHANGE` is registered; until it is, the lock state is the one read at
+    /// startup.
     session_registered: bool,
     session_retries: u32,
     exit: Option<ExitPlan>,
@@ -706,7 +723,7 @@ impl App {
                 if matches!(wparam as u32, PBT_APMRESUMEAUTOMATIC | PBT_APMRESUMESUSPEND) {
                     log::info!("Resumed ({wparam:#x}); asserting the request again.");
                     let effects = self.engine.power_changed();
-                    self.apply(effects);
+                    return self.apply(effects).or_handled(1);
                 }
                 Outcome::Handled(1)
             }
@@ -716,16 +733,17 @@ impl App {
                     Ok(WTS_SESSION_UNLOCK) => Some(false),
                     _ => None,
                 };
-                if let Some(locked) = locked {
-                    log::info!("Session {}.", if locked { "locked" } else { "unlocked" });
-                    let effects = self.engine.set_screen_locked(locked);
-                    self.apply(effects);
-                    if !locked {
-                        // Countdown redraws were skipped while locked.
-                        self.refresh_icon();
-                    }
+                let Some(locked) = locked else {
+                    return Outcome::Handled(0);
+                };
+                log::info!("Session {}.", if locked { "locked" } else { "unlocked" });
+                let effects = self.engine.set_screen_locked(locked);
+                let outcome = self.apply(effects);
+                if !locked && outcome != Outcome::Destroy {
+                    // Countdown redraws were skipped while locked.
+                    self.refresh_icon();
                 }
-                Outcome::Handled(0)
+                outcome.or_handled(0)
             }
             WM_SETTINGCHANGE | WM_DISPLAYCHANGE | WM_ENVIRONMENT_CHANGED => {
                 // Windows broadcasts WM_SETTINGCHANGE for every kind of setting, often several
@@ -1332,9 +1350,12 @@ fn show_menu(cell: &RefCell<App>, window: HWND, x: i32, y: i32) {
     if items.is_empty() {
         return;
     }
-    let Some(popup) = menu::build(&items, right_to_left) else {
-        log::error!("Could not build the context menu: {}", last_error());
-        return;
+    let popup = match menu::build(&items) {
+        Ok(popup) => popup,
+        Err(error) => {
+            log::error!("Could not build the context menu: {error}");
+            return;
+        }
     };
     let command = menu::track(&popup, window, x, y, right_to_left);
     drop(popup);
@@ -1443,6 +1464,15 @@ mod tests {
         )
         .unwrap_err();
         assert!(error.contains("soonish"));
+    }
+
+    // Resume and lock handlers answer the message themselves, but an exit their effects asked
+    // for (a refused power request in a command-line session) must still close the window.
+    #[test]
+    fn an_exit_asked_for_while_handling_a_notification_is_kept() {
+        assert_eq!(Outcome::Destroy.or_handled(1), Outcome::Destroy);
+        assert_eq!(Outcome::Handled(0).or_handled(1), Outcome::Handled(1));
+        assert_eq!(Outcome::Default.or_handled(0), Outcome::Handled(0));
     }
 
     #[test]
