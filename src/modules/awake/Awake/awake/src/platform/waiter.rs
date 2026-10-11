@@ -333,6 +333,9 @@ pub fn end_hung_process() -> ! {
         "The window thread did not shut down within {:?}; ending the process.",
         watchdog()
     );
+    // TerminateProcess skips every normal exit path, so hand the shell back its console mode
+    // here; it is one SetConsoleMode call that takes no locks.
+    super::console::restore_mode();
     crate::logging::flush(Duration::from_millis(500));
     // SAFETY: terminating our own process.
     unsafe { TerminateProcess(GetCurrentProcess(), 1) };
