@@ -162,6 +162,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool BringToFrontOnGrab
+        {
+            get => _moduleSettings.Properties.BringToFrontOnGrab.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.BringToFrontOnGrab.Value != value)
+                {
+                    _moduleSettings.Properties.BringToFrontOnGrab.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(BringToFrontOnGrab));
+                }
+            }
+        }
+
         public string ExcludedApps
         {
             get => _moduleSettings.Properties.ExcludedApps.Value;
