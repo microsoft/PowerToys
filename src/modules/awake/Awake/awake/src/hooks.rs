@@ -24,7 +24,7 @@ pub fn hang_on_exit() {
     if std::env::var_os("POWERTOYS_AWAKE_TEST_HANG_ON_EXIT").is_some() {
         log::warn!("Test hook: the window thread stops responding.");
         loop {
-            std::thread::sleep(Duration::from_secs(3600));
+            std::thread::sleep(Duration::from_hours(1));
         }
     }
 }

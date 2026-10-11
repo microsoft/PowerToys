@@ -47,7 +47,7 @@ use crate::platform::paths;
 
 const QUEUE_LINES: usize = 1024;
 const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
-const RETENTION: Duration = Duration::from_secs(30 * 24 * 3600);
+const RETENTION: Duration = Duration::from_hours(30 * 24);
 /// How long cleaning up old logs may take before the writer gets on with today's lines.
 const CLEANUP_BUDGET: Duration = Duration::from_secs(2);
 /// How long the queue must stay empty before old logs are cleaned up.
@@ -535,8 +535,8 @@ mod tests {
     fn old_logs_and_emptied_version_folders_are_removed() {
         let root = temp_dir("retention");
         let now = SystemTime::now();
-        let old = now - RETENTION - Duration::from_secs(3600);
-        let recent = now - Duration::from_secs(3600);
+        let old = now - RETENTION - Duration::from_hours(1);
+        let recent = now - Duration::from_hours(1);
         let current = root.join("v2");
 
         file_written_at(&root.join("v1").join("Log_old.log"), old);
@@ -550,7 +550,7 @@ mod tests {
         file_written_at(&root.join("Log_at_root.log"), old);
 
         assert_eq!(
-            remove_old_logs(&log_root(&root), &current, now, Duration::from_secs(60), || false),
+            remove_old_logs(&log_root(&root), &current, now, Duration::from_mins(1), || false),
             Cleanup::Done
         );
 
@@ -574,7 +574,7 @@ mod tests {
 
         // The current folder survives even when nothing is left in it.
         fs::remove_file(current.join("Log_today.log")).unwrap();
-        remove_old_logs(&log_root(&root), &current, now, Duration::from_secs(60), || false);
+        remove_old_logs(&log_root(&root), &current, now, Duration::from_mins(1), || false);
         assert!(current.is_dir());
         fs::remove_dir_all(root).ok();
     }
@@ -612,7 +612,7 @@ mod tests {
     fn cleanup_does_not_follow_junctions() {
         let root = temp_dir("junction");
         let elsewhere = temp_dir("junction-target");
-        let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
+        let old = SystemTime::now() - RETENTION - Duration::from_hours(1);
         file_written_at(&elsewhere.join("v0").join("Log_old.log"), old);
         file_written_at(&elsewhere.join("Log_old.log"), old);
         fs::create_dir_all(&root).unwrap();
@@ -654,7 +654,7 @@ mod tests {
     fn cleanup_does_not_run_through_a_linked_folder_above_the_log_folder() {
         let base = temp_dir("linked-parent");
         let elsewhere = temp_dir("linked-parent-target");
-        let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
+        let old = SystemTime::now() - RETENTION - Duration::from_hours(1);
         // A junction in place of a folder between the anchor and the log folder, leading to a
         // real `Logs` folder somewhere else, as `C:\Windows\Logs` would be.
         let protected = elsewhere.join("Logs").join("CBS").join("Log_old.log");
@@ -712,7 +712,7 @@ mod tests {
     #[test]
     fn cleanup_stops_as_soon_as_a_line_is_waiting() {
         let root = temp_dir("interrupted");
-        let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
+        let old = SystemTime::now() - RETENTION - Duration::from_hours(1);
         file_written_at(&root.join("v0").join("Log_a.log"), old);
         file_written_at(&root.join("v0").join("Log_b.log"), old);
         let outcome = remove_old_logs(
@@ -770,7 +770,7 @@ mod tests {
         let root = temp_dir("first-lines");
         let directory = root.join("v1");
         let stale = root.join("v0").join("Log_old.log");
-        file_written_at(&stale, SystemTime::now() - RETENTION - Duration::from_secs(3600));
+        file_written_at(&stale, SystemTime::now() - RETENTION - Duration::from_hours(1));
         let (sender, receiver) = sync_channel(16);
         let writer = {
             let (root, directory) = (root.clone(), directory.clone());
@@ -781,7 +781,7 @@ mod tests {
                     &directory,
                     &receiver,
                     &NONE_DROPPED,
-                    Duration::from_secs(600),
+                    Duration::from_mins(10),
                 );
             })
         };
@@ -802,7 +802,7 @@ mod tests {
     fn old_logs_are_cleaned_up_again_when_the_day_changes() {
         let root = temp_dir("rollover");
         let directory = root.join("v1");
-        let old = SystemTime::now() - RETENTION - Duration::from_secs(3600);
+        let old = SystemTime::now() - RETENTION - Duration::from_hours(1);
         let stale = root.join("v0").join("Log_old.log");
         file_written_at(&stale, old);
         let (sender, receiver) = sync_channel(16);

@@ -36,7 +36,7 @@ const SHARE_ALL: u32 = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
 /// A staged write takes milliseconds, so a temporary file this old belongs to an Awake that was
 /// killed mid-write. The margin keeps a concurrent write by this user's Awake in another session,
 /// which shares the folder, well clear.
-const ABANDONED_AFTER: Duration = Duration::from_secs(5 * 60);
+const ABANDONED_AFTER: Duration = Duration::from_mins(5);
 
 #[derive(Debug)]
 pub enum LoadError {
@@ -360,7 +360,7 @@ mod tests {
     fn abandoned_temporary_files_are_removed_and_nothing_else() {
         let dir = temp_dir("abandoned");
         let now = SystemTime::now();
-        let old = now - ABANDONED_AFTER - Duration::from_secs(60);
+        let old = now - ABANDONED_AFTER - Duration::from_mins(1);
         written_at(&dir.join("settings.json.99999.tmp"), old);
         // Another session's Awake may be writing this one right now.
         written_at(&dir.join("settings.json.12345.tmp"), now);
@@ -414,7 +414,7 @@ mod tests {
     fn touch_does_not_follow_a_link() {
         let dir = temp_dir("touch-link");
         let target = dir.join("elsewhere.txt");
-        let old = SystemTime::now() - Duration::from_secs(24 * 3600);
+        let old = SystemTime::now() - Duration::from_hours(24);
         written_at(&target, old);
         let link = dir.join("settings.json");
         // File symbolic links need Developer Mode or elevation; without either there is nothing
