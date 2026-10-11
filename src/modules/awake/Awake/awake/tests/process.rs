@@ -23,8 +23,9 @@ use windows_sys::Win32::System::Console::GetConsoleProcessList;
 use windows_sys::Win32::System::Threading::{CREATE_NEW_PROCESS_GROUP, CREATE_NO_WINDOW, DETACHED_PROCESS};
 
 const SECOND: Duration = Duration::from_secs(1);
-/// How long a command that should return promptly may take before the test fails instead of
-/// hanging; generous for a loaded build agent.
+/// How long a wait for a log line, a window or an exit may take before the test fails instead of
+/// hanging. Generous, because a loaded build agent can stall Awake for seconds, and free when
+/// things go well: every wait returns as soon as what it waits for happens.
 const PROMPTLY: Duration = Duration::from_secs(15);
 
 fn serial() -> MutexGuard<'static, ()> {
@@ -68,7 +69,7 @@ fn powertoys_mode_follows_the_settings_file() {
     let sandbox = Sandbox::new("follow");
     let mut awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
 
-    let deadline = Instant::now() + 5 * SECOND;
+    let deadline = Instant::now() + PROMPTLY;
     while !sandbox.settings_path().exists() && Instant::now() < deadline {
         std::thread::sleep(Duration::from_millis(20));
     }
@@ -80,7 +81,7 @@ fn powertoys_mode_follows_the_settings_file() {
 
     sandbox.write_settings(&settings_json(1, false, 0, 1, "2026-01-01T00:00:00+00:00"));
     assert!(
-        sandbox.wait_for_log(&execution_state_set(0x8000_0001), 1, 5 * SECOND),
+        sandbox.wait_for_log(&execution_state_set(0x8000_0001), 1, PROMPTLY),
         "{}",
         sandbox.log()
     );
@@ -91,11 +92,11 @@ fn powertoys_mode_follows_the_settings_file() {
     );
 
     sandbox.write_settings(&settings_json(2, false, 0, 30, "2026-01-01T00:00:00+00:00"));
-    assert!(sandbox.wait_for_log(&entered(Mode::Timed), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Timed), 1, PROMPTLY));
 
     // Turning the display on during a countdown must not restart it.
     sandbox.write_settings(&settings_json(2, true, 0, 30, "2026-01-01T00:00:00+00:00"));
-    assert!(sandbox.wait_for_log(&execution_state_set(0x8000_0003), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&execution_state_set(0x8000_0003), 1, PROMPTLY));
     std::thread::sleep(Duration::from_millis(300));
     assert_eq!(
         sandbox.log().matches(&entered(Mode::Timed)).count(),
@@ -106,7 +107,7 @@ fn powertoys_mode_follows_the_settings_file() {
     // Saving the same session again, as Command Palette does, starts the countdown over.
     sandbox.write_settings(&settings_json(2, true, 0, 30, "2026-01-01T00:00:00+00:00"));
     assert!(
-        sandbox.wait_for_log(&entered(Mode::Timed), 2, 5 * SECOND),
+        sandbox.wait_for_log(&entered(Mode::Timed), 2, PROMPTLY),
         "{}",
         sandbox.log()
     );
@@ -119,8 +120,8 @@ fn powertoys_mode_follows_the_settings_file() {
 
     // An expiration already in the past is moved five minutes ahead and saved back.
     sandbox.write_settings(&settings_json(3, true, 0, 30, "2020-01-01T00:00:00+00:00"));
-    assert!(sandbox.wait_for_log(&entered(Mode::Expirable), 1, 5 * SECOND));
-    assert!(sandbox.wait_for_log(log_lines::SAVED, 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Expirable), 1, PROMPTLY));
+    assert!(sandbox.wait_for_log(log_lines::SAVED, 1, PROMPTLY));
     let saved = read_settings(&sandbox);
     assert_eq!(saved.mode, ModeSetting::Known(Mode::Expirable));
     let expiration = saved.expiration.expect("expiration saved");
@@ -136,7 +137,7 @@ fn powertoys_mode_follows_the_settings_file() {
     );
 
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
 }
 
 #[test]
@@ -151,14 +152,14 @@ fn exits_when_the_bound_process_ends() {
     );
     let mut awake = sandbox.spawn(&["--pid", &target.id().to_string()]);
     assert!(
-        sandbox.wait_for_log(&entered(Mode::Indefinite), 1, 5 * SECOND),
+        sandbox.wait_for_log(&entered(Mode::Indefinite), 1, PROMPTLY),
         "{}",
         sandbox.log()
     );
 
     target.kill().unwrap();
     target.wait().unwrap();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
     let output = awake.wait_with_output().unwrap();
     assert!(String::from_utf8_lossy(&output.stdout).contains(english(StringId::CliTargetExited)));
 }
@@ -168,7 +169,7 @@ fn a_second_instance_is_refused() {
     let _serial = serial();
     let sandbox = Sandbox::new("single");
     let mut first = sandbox.spawn(&["for", "1m"]);
-    assert!(sandbox.wait_for_log(&entered(Mode::Timed), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Timed), 1, PROMPTLY));
 
     let started = Instant::now();
     let second = output_within(&mut sandbox.command(&["for", "1m"]), PROMPTLY);
@@ -182,7 +183,7 @@ fn a_second_instance_is_refused() {
     );
 
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut first, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut first, PROMPTLY), Some(0));
 }
 
 /// A program that took Awake's single-instance mutex first, as any process in the session can, is
@@ -203,7 +204,7 @@ fn a_powertoys_start_waits_for_the_previous_instance() {
     let _serial = serial();
     let sandbox = Sandbox::new("handover");
     let mut first = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
-    let first_window = find_window(first.id(), 5 * SECOND).expect("the first instance starts");
+    let first_window = find_window(first.id(), PROMPTLY).expect("the first instance starts");
 
     let refused = output_within(
         sandbox
@@ -221,12 +222,12 @@ fn a_powertoys_start_waits_for_the_previous_instance() {
     std::thread::sleep(SECOND);
     assert_eq!(second.try_wait().unwrap(), None, "waits for the first instance");
     close_window(first_window);
-    assert_eq!(wait_exit(&mut first, 5 * SECOND), Some(0));
-    let second_window = find_window(second.id(), 5 * SECOND).expect("the second instance takes over");
+    assert_eq!(wait_exit(&mut first, PROMPTLY), Some(0));
+    let second_window = find_window(second.id(), PROMPTLY).expect("the second instance takes over");
     assert_eq!(second.try_wait().unwrap(), None);
 
     close_window(second_window);
-    assert_eq!(wait_exit(&mut second, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut second, PROMPTLY), Some(0));
 }
 
 #[test]
@@ -246,9 +247,9 @@ fn the_watchdog_ends_a_hung_awake() {
     // Stopped by the runner's exit event.
     let sandbox = Sandbox::new("watchdog-exit");
     let mut awake = hung(&sandbox, &["for", "1m", "--pid", &own_pid()]);
-    assert!(sandbox.wait_for_log(&entered(Mode::Timed), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Timed), 1, PROMPTLY));
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(1), "{}", sandbox.log());
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(1), "{}", sandbox.log());
     assert!(
         sandbox.log().contains(log_lines::ENDING_HUNG_PROCESS),
         "{}",
@@ -258,7 +259,7 @@ fn the_watchdog_ends_a_hung_awake() {
     // A command-line session whose time is up.
     let sandbox = Sandbox::new("watchdog-deadline");
     let mut awake = hung(&sandbox, &["for", "2s", "--pid", &own_pid()]);
-    assert_eq!(wait_exit(&mut awake, 8 * SECOND), Some(1), "{}", sandbox.log());
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(1), "{}", sandbox.log());
     assert!(
         sandbox.log().contains(log_lines::ENDING_HUNG_PROCESS),
         "{}",
@@ -319,11 +320,11 @@ fn corrupt_settings_are_reported_and_left_alone() {
     let sandbox = Sandbox::new("corrupt");
     sandbox.write_settings(&settings_json(1, false, 0, 1, "2026-01-01T00:00:00+00:00"));
     let mut awake = sandbox.spawn(&["-c", "--pid", &own_pid()]);
-    assert!(sandbox.wait_for_log(&entered(Mode::Indefinite), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Indefinite), 1, PROMPTLY));
 
     sandbox.write_settings("{\"name\":\"Awake\",\"properties\":{\"mode\":");
     assert!(
-        sandbox.wait_for_log(log_lines::SETTINGS_UNREADABLE, 1, 5 * SECOND),
+        sandbox.wait_for_log(log_lines::SETTINGS_UNREADABLE, 1, PROMPTLY),
         "{}",
         sandbox.log()
     );
@@ -338,9 +339,9 @@ fn corrupt_settings_are_reported_and_left_alone() {
     );
 
     sandbox.write_settings(&settings_json(0, false, 0, 1, "2026-01-01T00:00:00+00:00"));
-    assert!(sandbox.wait_for_log(&entered(Mode::Passive), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Passive), 1, PROMPTLY));
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
 }
 
 #[test]
@@ -350,12 +351,12 @@ fn an_unknown_mode_is_reported_at_startup_too() {
     sandbox.write_settings(&settings_json(9, false, 0, 1, "2026-01-01T00:00:00+00:00"));
     let mut awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
     assert!(
-        sandbox.wait_for_log(&log_lines::unknown_mode(9), 1, 5 * SECOND),
+        sandbox.wait_for_log(&log_lines::unknown_mode(9), 1, PROMPTLY),
         "{}",
         sandbox.log()
     );
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
 }
 
 #[test]
@@ -364,11 +365,11 @@ fn a_removed_settings_file_keeps_the_mode_until_it_is_written_again() {
     let sandbox = Sandbox::new("removed");
     sandbox.write_settings(&settings_json(1, false, 0, 1, "2026-01-01T00:00:00+00:00"));
     let mut awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
-    assert!(sandbox.wait_for_log(&entered(Mode::Indefinite), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Indefinite), 1, PROMPTLY));
 
     fs::remove_file(sandbox.settings_path()).unwrap();
     assert!(
-        sandbox.wait_for_log(log_lines::SETTINGS_REMOVED, 1, 5 * SECOND),
+        sandbox.wait_for_log(log_lines::SETTINGS_REMOVED, 1, PROMPTLY),
         "{}",
         sandbox.log()
     );
@@ -382,9 +383,9 @@ fn a_removed_settings_file_keeps_the_mode_until_it_is_written_again() {
     assert!(!log.contains(&entered(Mode::Passive)), "{log}");
 
     sandbox.write_settings(&settings_json(0, false, 0, 1, "2026-01-01T00:00:00+00:00"));
-    assert!(sandbox.wait_for_log(&entered(Mode::Passive), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Passive), 1, PROMPTLY));
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
 }
 
 /// A session that ends while another program holds the settings file waits to save that. Exiting
@@ -404,7 +405,7 @@ fn a_save_still_waiting_on_a_busy_file_is_tried_again_on_exit() {
         let sandbox = Sandbox::new(name);
         sandbox.write_settings(&settings_json(3, false, 0, 1, &utc_in(3)));
         let awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
-        assert!(sandbox.wait_for_log(&entered(Mode::Expirable), 1, 5 * SECOND));
+        assert!(sandbox.wait_for_log(&entered(Mode::Expirable), 1, PROMPTLY));
         (sandbox, awake)
     };
 
@@ -412,12 +413,12 @@ fn a_save_still_waiting_on_a_busy_file_is_tried_again_on_exit() {
     // and save first, so this part only shows the save lands; the next part pins the exit path.
     let (sandbox, mut awake) = start("busy-exit");
     let busy = hold(&sandbox);
-    assert!(sandbox.wait_for_log(&entered(Mode::Passive), 1, 10 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Passive), 1, PROMPTLY));
     std::thread::sleep(Duration::from_millis(300));
     assert!(!sandbox.log().contains(log_lines::SAVED), "{}", sandbox.log());
     drop(busy);
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
     assert_eq!(
         read_settings(&sandbox).mode,
         ModeSetting::Known(Mode::Passive),
@@ -428,9 +429,9 @@ fn a_save_still_waiting_on_a_busy_file_is_tried_again_on_exit() {
     // Still busy at exit: the save is given up on visibly, not dropped in silence.
     let (sandbox, mut awake) = start("busy-gone");
     let busy = hold(&sandbox);
-    assert!(sandbox.wait_for_log(&entered(Mode::Passive), 1, 10 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Passive), 1, PROMPTLY));
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
     let log = sandbox.log();
     let exit = log.find(log_lines::EXIT_EVENT_SIGNALED).expect("exit logged");
     assert!(log[exit..].contains(log_lines::SAVE_FAILED), "{log}");
@@ -445,18 +446,18 @@ fn a_command_line_start_ignores_a_stop_meant_for_the_previous_instance() {
     let sandbox = Sandbox::new("stale-exit");
     let stale = sandbox.signaled_exit_event();
     let mut awake = sandbox.spawn(&["for", "1m"]);
-    assert!(sandbox.wait_for_log(&entered(Mode::Timed), 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(&entered(Mode::Timed), 1, PROMPTLY));
     std::thread::sleep(Duration::from_millis(500));
     assert_eq!(awake.try_wait().unwrap(), None, "{}", sandbox.log());
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
     drop(stale);
 
     // A PowerToys start keeps the signal: the runner may stop it before it gets that far.
     let sandbox = Sandbox::new("early-exit");
     let early = sandbox.signaled_exit_event();
     let mut awake = sandbox.spawn(&["--use-pt-config", "--pid", &own_pid()]);
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0), "{}", sandbox.log());
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0), "{}", sandbox.log());
     assert!(sandbox.log().contains(log_lines::EXIT_EVENT_SIGNALED));
     drop(early);
 }
@@ -472,7 +473,7 @@ fn a_start_without_a_console_window_keeps_no_console() {
     let cmd = std::env::var("ComSpec").unwrap_or_else(|_| r"C:\Windows\System32\cmd.exe".into());
     let probe = runner::launch(&cmd, &["/c", "ping -n 5 127.0.0.1"], &[], CREATE_NO_WINDOW).unwrap();
     assert!(
-        wait_until(5 * SECOND, || !console_hosts(probe.pid).is_empty()),
+        wait_until(PROMPTLY, || !console_hosts(probe.pid).is_empty()),
         "a hidden console's host is visible"
     );
     drop(probe);
@@ -485,7 +486,7 @@ fn a_start_without_a_console_window_keeps_no_console() {
         ] {
             let sandbox = Sandbox::new(&format!("console-{name}-{session}"));
             let awake = sandbox.launch_like_runner(args, flags);
-            find_window(awake.pid, 5 * SECOND).expect("the session starts");
+            find_window(awake.pid, PROMPTLY).expect("the session starts");
             assert!(
                 wait_until(3 * SECOND, || console_hosts(awake.pid).is_empty()),
                 "{name} {session}: a console host stayed with Awake"
@@ -496,7 +497,7 @@ fn a_start_without_a_console_window_keeps_no_console() {
                 "{name} {session}: live output into a console nobody sees: {threads:?}"
             );
             sandbox.signal_exit();
-            assert_eq!(awake.wait_exit(5 * SECOND), Some(0), "{}", sandbox.log());
+            assert_eq!(awake.wait_exit(PROMPTLY), Some(0), "{}", sandbox.log());
         }
     }
 }
@@ -517,7 +518,7 @@ fn ctrl_break_ends_the_session_and_the_watchdog_backs_it_up() {
         }
         let awake = Running::new(command.spawn().unwrap());
         assert!(
-            sandbox.wait_for_log(&entered(Mode::Timed), 1, 5 * SECOND),
+            sandbox.wait_for_log(&entered(Mode::Timed), 1, PROMPTLY),
             "{}",
             sandbox.log()
         );
@@ -527,7 +528,7 @@ fn ctrl_break_ends_the_session_and_the_watchdog_backs_it_up() {
     let sandbox = Sandbox::new("ctrl-break");
     let mut awake = start(&sandbox, false);
     ctrl_break(awake.id());
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0), "{}", sandbox.log());
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0), "{}", sandbox.log());
     let log = sandbox.log();
     assert!(log.contains(&log_lines::console_control_event(1)), "{log}");
     assert!(log.contains(&log_lines::exiting(0)), "{log}");
@@ -535,7 +536,7 @@ fn ctrl_break_ends_the_session_and_the_watchdog_backs_it_up() {
     let sandbox = Sandbox::new("ctrl-break-hung");
     let mut awake = start(&sandbox, true);
     ctrl_break(awake.id());
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(1), "{}", sandbox.log());
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(1), "{}", sandbox.log());
     assert!(
         sandbox.log().contains(log_lines::ENDING_HUNG_PROCESS),
         "{}",
@@ -559,9 +560,9 @@ fn closing_the_window_exits_instead_of_running_headless() {
     let _serial = serial();
     let sandbox = Sandbox::new("close");
     let mut awake = sandbox.spawn(&["-c", "--pid", &own_pid()]);
-    let window = find_window(awake.id(), 5 * SECOND).expect("tray window");
+    let window = find_window(awake.id(), PROMPTLY).expect("tray window");
     close_window(window);
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
 }
 
 #[test]
@@ -569,9 +570,9 @@ fn a_restart_manager_close_ends_awake_instead_of_leaving_it_headless() {
     let _serial = serial();
     let sandbox = Sandbox::new("restart-manager");
     let mut awake = sandbox.spawn(&["-c", "--pid", &own_pid()]);
-    let window = find_window(awake.id(), 5 * SECOND).expect("tray window");
+    let window = find_window(awake.id(), PROMPTLY).expect("tray window");
     end_session_for_restart_manager(window);
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
     assert!(sandbox.log().contains(log_lines::CLOSING_FOR_UPDATE));
     assert!(
         sandbox.log().contains(&log_lines::exiting(0)),
@@ -591,10 +592,10 @@ fn failing_writes_degrade_gracefully() {
     fs::set_permissions(&path, permissions.clone()).unwrap();
 
     let mut awake = sandbox.spawn(&["-c", "--pid", &own_pid()]);
-    let window = find_window(awake.id(), 5 * SECOND).expect("tray window");
-    assert!(sandbox.wait_for_log(&entered(Mode::Expirable), 1, 5 * SECOND));
+    let window = find_window(awake.id(), PROMPTLY).expect("tray window");
+    assert!(sandbox.wait_for_log(&entered(Mode::Expirable), 1, PROMPTLY));
     assert!(
-        sandbox.wait_for_log(log_lines::SAVE_FAILED, 1, 10 * SECOND),
+        sandbox.wait_for_log(log_lines::SAVE_FAILED, 1, PROMPTLY),
         "{}",
         sandbox.log()
     );
@@ -609,7 +610,7 @@ fn failing_writes_degrade_gracefully() {
     permissions.set_readonly(false);
     fs::set_permissions(&path, permissions).unwrap();
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
 }
 
 /// Rapid mode switches through the settings file, as a user clicking through the Settings app
@@ -621,7 +622,7 @@ fn mode_switches_do_not_leak_or_hang() {
     let _serial = serial();
     let sandbox = Sandbox::new("soak");
     let mut awake = sandbox.spawn(&["-c", "--pid", &own_pid()]);
-    let window = find_window(awake.id(), 5 * SECOND).expect("tray window");
+    let window = find_window(awake.id(), PROMPTLY).expect("tray window");
     let future = "2099-01-01T00:00:00+00:00";
 
     let switch = |i: usize| {
@@ -692,7 +693,7 @@ transitions applied: {transitions} of 400"
     }
 
     sandbox.signal_exit();
-    assert_eq!(wait_exit(&mut awake, 5 * SECOND), Some(0));
+    assert_eq!(wait_exit(&mut awake, PROMPTLY), Some(0));
 }
 
 /// What grew from one soak phase to the next by more than noise allows. The handle margin covers
@@ -752,12 +753,12 @@ fn legacy_options_hand_off_and_keep_the_parent_binding() {
         sandbox.log()
     );
     assert!(
-        sandbox.wait_for_log(&entered(Mode::Timed), 1, 5 * SECOND),
+        sandbox.wait_for_log(&entered(Mode::Timed), 1, PROMPTLY),
         "the detached session runs"
     );
 
     sandbox.signal_exit();
-    assert!(sandbox.wait_for_log(log_lines::EXIT_EVENT_SIGNALED, 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(log_lines::EXIT_EVENT_SIGNALED, 1, PROMPTLY));
 }
 
 #[test]
@@ -795,7 +796,7 @@ fn binding_to_the_waiting_caller_detaches_instead_of_deadlocking() {
         sandbox.log()
     );
     assert!(
-        sandbox.wait_for_log(&entered(Mode::Timed), 1, 5 * SECOND),
+        sandbox.wait_for_log(&entered(Mode::Timed), 1, PROMPTLY),
         "the detached session runs"
     );
     assert!(
@@ -804,5 +805,5 @@ fn binding_to_the_waiting_caller_detaches_instead_of_deadlocking() {
     );
 
     sandbox.signal_exit();
-    assert!(sandbox.wait_for_log(log_lines::EXIT_EVENT_SIGNALED, 1, 5 * SECOND));
+    assert!(sandbox.wait_for_log(log_lines::EXIT_EVENT_SIGNALED, 1, PROMPTLY));
 }
