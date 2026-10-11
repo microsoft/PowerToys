@@ -12,20 +12,25 @@ A PowerToys utility that prevents Windows from sleeping and/or turning off the d
 
 ## Overview
 
-The Awake module consists of three projects:
+| Project | Language | Purpose |
+|---------|----------|---------|
+| `Awake/` | Rust | `PowerToys.Awake.exe`: tray icon, keep-awake engine and command line |
+| `AwakeModuleInterface/` | C++ | Runner module: starts and stops `PowerToys.Awake.exe`, stores settings |
+| `Awake.ModuleServices/` | C# | Command Palette integration; reads and writes `settings.json` |
 
-| Project | Purpose |
-|---------|---------|
-| `Awake/` | Main WinExe application with CLI support |
-| `Awake.ModuleServices/` | Service layer for PowerToys integration |
-| `AwakeModuleInterface/` | C++ native module bridge |
+`Awake` is a Cargo workspace with two crates:
+
+| Crate | Purpose |
+|-------|---------|
+| `awake-core` | Platform-independent logic: the keep-awake state machine, `settings.json` model, command line, tray and console text. No `unsafe`, fully unit-tested. |
+| `awake` | The Windows executable: window and tray icon, power requests, file watching, process binding, logging, and a small C++ bridge (`native/bridge.cpp`) that reuses the shared PowerToys headers for group policy, telemetry and kernel object names. |
 
 ## How It Works
 
 The module uses the Win32 `SetThreadExecutionState()` API to signal Windows that the system should remain awake:
 
 - `ES_SYSTEM_REQUIRED` - Prevents system sleep
-- `ES_DISPLAY_REQUIRED` - Prevents display sleep
+- `ES_DISPLAY_REQUIRED` - Prevents display sleep (released while the session is locked)
 - `ES_CONTINUOUS` - Maintains state until explicitly changed
 
 ## Operating Modes
@@ -39,67 +44,62 @@ The module uses the Win32 `SetThreadExecutionState()` API to signal Windows that
 
 ## Command-Line Usage
 
-Awake can be run standalone with the following options:
-
 ```
-PowerToys.Awake.exe [options]
+PowerToys.Awake [options] [command]
+
+Commands:
+  for <duration>      Keep awake for a duration, like 45m or 1h30m
+  until <time>        Keep awake until a time, like 17:30 or 2026-12-24T18:00
 
 Options:
-  -c, --use-pt-config    Use PowerToys configuration file
-  -d, --display-on       Keep display on (default: false)
-  -t, --time-limit       Time limit in seconds
-  -p, --pid              Process ID to bind to
-  -e, --expire-at        Expiration date/time
-  -u, --use-parent-pid   Bind to parent process
+  -d, --display-on    Keep the display on too
+      --pid <pid>     Stop when the process with this ID exits
+      --parent        Stop when the program that started Awake exits
+  -h, --help          Show this help
+  -v, --version       Show the version
 ```
 
-### Examples
+Without a command, Awake keeps the computer awake until you press Ctrl+C. Run from a terminal, it shows
+what it is doing and a live countdown.
 
-Keep system awake indefinitely:
 ```powershell
-PowerToys.Awake.exe
-```
-
-Keep awake for 1 hour with display on:
-```powershell
-PowerToys.Awake.exe --time-limit 3600 --display-on
-```
-
-Keep awake until a specific time:
-```powershell
-PowerToys.Awake.exe --expire-at "2024-12-31 23:59:59"
-```
-
-Keep awake while another process is running:
-```powershell
+PowerToys.Awake.exe for 1h30m --display-on
+PowerToys.Awake.exe until 18:00 --parent
 PowerToys.Awake.exe --pid 1234
 ```
 
+The original options still work, so existing scripts and shortcuts keep working:
+`-c/--use-pt-config`, `-t/--time-limit <seconds>`, `-e/--expire-at <date>`, `-p/--pid <pid>`,
+`-u/--use-parent-pid` and `-d/--display-on`.
+
+Run from a terminal, Awake stays in the foreground with a live status line. Two cases return
+control to the caller at once and continue in the background instead, after checking the request
+and reporting any error with exit code 1:
+
+- `-c`, `-t`, `-e` or `-u`, which never blocked the calling shell before. Without a process
+  binding, the session gets a console window of its own, as before.
+- A process binding that points at the caller itself, such as `--pid $PID` in a script or
+  `--parent` from a shell. Waiting in the foreground for a process that waits for Awake would
+  never end.
+
 ## Architecture
 
-### Design Highlights
-
-1. **Pure Win32 API for Tray UI** - No WPF/WinForms dependencies, keeping the binary small. Uses direct `Shell_NotifyIcon` API for tray icon management.
-
-2. **Reactive Extensions (Rx.NET)** - Used for timed operations via `Observable.Interval()` and `Observable.Timer()`. File system watching uses 25ms throttle to debounce rapid config changes.
-
-3. **Custom SynchronizationContext** - Queue-based message dispatch ensures tray operations run on a dedicated thread for thread-safe UI updates.
-
-4. **Dual-Mode Operation**
-   - Standalone: Command-line arguments only
-   - Integrated: PowerToys settings file + process binding
-
-5. **Process Binding** - The `--pid` parameter keeps the system awake only while a target process runs, with auto-exit when the parent PowerToys runner terminates.
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| `Program.cs` | Entry point & CLI parsing |
-| `Core/Manager.cs` | State orchestration & power management |
-| `Core/TrayHelper.cs` | System tray UI management |
-| `Core/Native/Bridge.cs` | Win32 P/Invoke declarations |
-| `Core/Threading/SingleThreadSynchronizationContext.cs` | Threading utilities |
+- **One thread owns all state.** The window thread holds the keep-awake request (which Windows ties
+  to the calling thread), the tray icon, the menu and the state machine. Background threads only
+  wait or write: a waiter thread watches the exit event, the bound process, the deadline timer and
+  `settings.json`, and posts messages; a logger thread and a console thread write output. No locks
+  guard application state, so there is nothing to deadlock on.
+- **Functional core.** `awake_core::engine::Engine` turns inputs (settings, tray choices, ticks,
+  lock and power events) into effects (`SetExecutionState`, `ScheduleDeadline`, `Persist`, ...).
+  It diffs against the live state, so a settings write that changes nothing restarts nothing.
+- **`settings.json` is the single source of truth.** The runner writes it for the Settings app,
+  Command Palette and DSC write it directly, and Awake writes it for its own menu and timers. Awake
+  applies its own changes immediately and its file watcher sees the echo as a no-op. Writes go to a
+  temporary file and replace the original only once complete, then refresh its write time so the
+  Settings app's watchers notice.
+- **Never holds the computer awake by accident.** Every exit path releases the request; the waiter
+  ends a process whose window thread stops responding; a crash ends the process, and Windows drops
+  the request with it.
 
 ## Building
 
@@ -107,32 +107,36 @@ PowerToys.Awake.exe --pid 1234
 
 - Visual Studio 2022 or 2026 with C++ and .NET workloads
 - Windows SDK 10.0.26100.0 or later
+- [Rust](https://rustup.rs) via `rustup`; the toolchain version is pinned in
+  `Awake/rust-toolchain.toml` and installed automatically on first build
 
 ### Build Commands
 
-From the `src/modules/awake` directory:
+The solution builds `Awake/Awake.vcxproj`, which runs Cargo and places
+`PowerToys.Awake.exe` with the other PowerToys binaries. To build just Awake:
 
 ```powershell
-# Using the build script
-.\scripts\Build-Awake.ps1
-
-# Or with specific configuration
-.\scripts\Build-Awake.ps1 -Configuration Debug -Platform x64
+# From src/modules/awake/Awake
+cargo build               # debug
+cargo build --release     # release
+cargo test --workspace    # unit and end-to-end tests
 ```
 
-Or using MSBuild directly:
+or from `src/modules/awake`:
 
 ```powershell
-msbuild Awake\Awake.csproj /p:Configuration=Release /p:Platform=x64
+.\scripts\Build-Awake.ps1 -Configuration Debug -Platform x64
 ```
 
 ## Dependencies
 
-- **System.CommandLine** - Command-line parsing
-- **System.Reactive** - Rx.NET for timer management
-- **PowerToys.ManagedCommon** - Shared PowerToys utilities
-- **PowerToys.Settings.UI.Lib** - Settings integration
-- **PowerToys.Interop** - Native interop layer
+| Crate | Why |
+|-------|-----|
+| `windows-sys` | Win32 API bindings, published by Microsoft |
+| `serde_json` | Reading and writing `settings.json` with key order preserved |
+| `clap` | Command-line parsing |
+| `log` | Logging facade |
+| `cc` (build only) | Compiles the C++ bridge |
 
 ## Configuration
 
@@ -140,6 +144,8 @@ When running with PowerToys (`--use-pt-config`), settings are stored in:
 ```
 %LOCALAPPDATA%\Microsoft\PowerToys\Awake\settings.json
 ```
+
+Logs are written to `%LOCALAPPDATA%\Microsoft\PowerToys\Awake\Logs\<version>\`.
 
 ## Known Limitations
 
@@ -163,6 +169,6 @@ Per [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/win32/
 
 ## Telemetry
 
-The module emits telemetry events for:
-- Keep-awake mode changes (indefinite, timed, expirable, passive)
-- Privacy-compliant event tagging via `Microsoft.PowerToys.Telemetry`
+The module emits the same telemetry events as before (`Awake_EnableAwake`, `Awake_CLICommand` and
+one event per keep-awake mode), through the shared PowerToys provider and only when the user has
+opted in to diagnostic data.

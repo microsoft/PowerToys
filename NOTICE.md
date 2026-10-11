@@ -2,6 +2,7 @@
 
 This software incorporates material from third parties.
 
+- Awake
 - Color Picker
 - Command Palette
 - File Explorer Add-ins
@@ -1647,6 +1648,54 @@ constitute direct or contributory patent infringement, or inducement of
 patent infringement, then any patent rights granted to you under this License
 for these implementations of WebM shall terminate as of the date such
 litigation is filed.
+
+## Utility: Awake
+
+### Rust crates
+
+Awake is built with the following crates from <https://crates.io>. Each is available under the MIT
+License, at the user's choice under the Apache License 2.0 where listed, and `unicode-ident`
+additionally under the Unicode License v3 for its Unicode data.
+
+| Crate | License | Source |
+|-------|---------|--------|
+| anstyle | MIT OR Apache-2.0 | <https://github.com/rust-cli/anstyle> |
+| clap, clap_builder, clap_derive, clap_lex | MIT OR Apache-2.0 | <https://github.com/clap-rs/clap> |
+| equivalent | Apache-2.0 OR MIT | <https://github.com/indexmap-rs/equivalent> |
+| hashbrown | MIT OR Apache-2.0 | <https://github.com/rust-lang/hashbrown> |
+| heck | MIT OR Apache-2.0 | <https://github.com/withoutboats/heck> |
+| indexmap | Apache-2.0 OR MIT | <https://github.com/indexmap-rs/indexmap> |
+| itoa | MIT OR Apache-2.0 | <https://github.com/dtolnay/itoa> |
+| log | MIT OR Apache-2.0 | <https://github.com/rust-lang/log> |
+| memchr | Unlicense OR MIT | <https://github.com/BurntSushi/memchr> |
+| proc-macro2, quote, syn | MIT OR Apache-2.0 | <https://github.com/dtolnay> |
+| serde_core, serde_json | MIT OR Apache-2.0 | <https://github.com/serde-rs> |
+| strsim | MIT | <https://github.com/rapidfuzz/strsim-rs> |
+| unicode-ident | (MIT OR Apache-2.0) AND Unicode-3.0 | <https://github.com/dtolnay/unicode-ident> |
+| windows-link, windows-sys | MIT OR Apache-2.0 | <https://github.com/microsoft/windows-rs> |
+| zmij | MIT | <https://github.com/dtolnay/zmij> |
+
+Build tools only, not shipped: cc, find-msvc-tools and shlex (MIT OR Apache-2.0).
+
+The MIT License (MIT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 

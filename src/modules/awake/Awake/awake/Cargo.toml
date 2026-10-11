@@ -1,0 +1,78 @@
+[package]
+name = "awake"
+description = "PowerToys Awake: keeps the computer awake on demand."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+# Cargo binary names cannot contain dots; the MSBuild wrapper ships this as PowerToys.Awake.exe.
+[[bin]]
+name = "awake"
+path = "src/main.rs"
+
+[features]
+# Lets tests redirect Awake's files and kernel object names; never enabled in shipped builds.
+test-hooks = []
+
+[[test]]
+name = "process"
+required-features = ["test-hooks"]
+
+[[test]]
+name = "low_memory"
+required-features = ["test-hooks"]
+
+[[test]]
+name = "module_interface"
+
+[[example]]
+name = "measure"
+required-features = ["test-hooks"]
+
+[dependencies]
+awake-core.workspace = true
+log.workspace = true
+
+[dependencies.windows-sys]
+workspace = true
+features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_Globalization",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Com",
+    "Win32_System_Console",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_Environment",
+    "Win32_System_IO",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Ole",
+    "Win32_System_Power",
+    "Win32_System_Registry",
+    "Win32_System_RemoteDesktop",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_System_Time",
+    "Win32_System_Variant",
+    "Win32_UI_Controls",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+]
+
+# Only the tests measure processes and run them under job objects.
+[dev-dependencies.windows-sys]
+workspace = true
+features = ["Win32_System_JobObjects", "Win32_System_ProcessStatus", "Win32_System_WindowsProgramming"]
+
+[build-dependencies]
+cc.workspace = true
+
+[lints]
+workspace = true

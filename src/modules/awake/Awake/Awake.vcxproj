@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Builds the Rust implementation of PowerToys Awake with Cargo and places PowerToys.Awake.exe (and
+  its PDB) next to the other PowerToys binaries. The Test target runs the Rust tests.
+-->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{66dd9426-f301-46aa-a271-cd75c6ed3af4}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Awake</RootNamespace>
+    <ProjectName>Awake</ProjectName>
+    <TargetName>PowerToys.Awake</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
+    <CargoTriple Condition="'$(Platform)' == 'ARM64'">aarch64-pc-windows-msvc</CargoTriple>
+    <CargoTriple Condition="'$(CargoTriple)' == ''">x86_64-pc-windows-msvc</CargoTriple>
+    <CargoProfile Condition="'$(Configuration)' == 'Release'">release</CargoProfile>
+    <CargoProfile Condition="'$(CargoProfile)' == ''">dev</CargoProfile>
+    <CargoProfileDir Condition="'$(CargoProfile)' == 'release'">release</CargoProfileDir>
+    <CargoProfileDir Condition="'$(CargoProfileDir)' == ''">debug</CargoProfileDir>
+    <!-- Cargo's intermediate files stay with the other build outputs, outside the source tree. -->
+    <CargoTargetDir>$(RepoRoot)$(Platform)\$(Configuration)\obj\Awake</CargoTargetDir>
+    <CargoOutputDir>$(CargoTargetDir)\$(CargoTriple)\$(CargoProfileDir)\</CargoOutputDir>
+    <CargoCommonArgs>--locked --target $(CargoTriple)</CargoCommonArgs>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="Cargo.toml" />
+    <None Include="Cargo.lock" />
+    <None Include="rust-toolchain.toml" />
+    <None Include="Resources.resx" />
+    <None Include="awake\Cargo.toml" />
+    <None Include="awake\build.rs" />
+    <None Include="awake\native\awake.manifest" />
+    <None Include="awake\native\bridge.cpp" />
+    <None Include="awake\src\app.rs" />
+    <None Include="awake\src\bridge.rs" />
+    <None Include="awake\src\logging.rs" />
+    <None Include="awake\src\main.rs" />
+    <None Include="awake\src\platform\clock.rs" />
+    <None Include="awake\src\platform\console.rs" />
+    <None Include="awake\src\platform\instance.rs" />
+    <None Include="awake\src\platform\locale.rs" />
+    <None Include="awake\src\platform\menu.rs" />
+    <None Include="awake\src\platform\mod.rs" />
+    <None Include="awake\src\platform\paths.rs" />
+    <None Include="awake\src\platform\power.rs" />
+    <None Include="awake\src\platform\process.rs" />
+    <None Include="awake\src\platform\session.rs" />
+    <None Include="awake\src\platform\settings_store.rs" />
+    <None Include="awake\src\platform\theme.rs" />
+    <None Include="awake\src\platform\tray.rs" />
+    <None Include="awake\src\platform\waiter.rs" />
+    <None Include="awake\src\platform\wide.rs" />
+    <None Include="awake\src\platform\window.rs" />
+    <None Include="awake-core\Cargo.toml" />
+    <None Include="awake-core\build.rs" />
+    <None Include="awake-core\src\cli.rs" />
+    <None Include="awake-core\src\console.rs" />
+    <None Include="awake-core\src\duration.rs" />
+    <None Include="awake-core\src\engine.rs" />
+    <None Include="awake-core\src\execution_state.rs" />
+    <None Include="awake-core\src\lib.rs" />
+    <None Include="awake-core\src\mode.rs" />
+    <None Include="awake-core\src\powertoys.rs" />
+    <None Include="awake-core\src\settings.rs" />
+    <None Include="awake-core\src\strings.rs" />
+    <None Include="awake-core\src\time.rs" />
+    <None Include="awake-core\src\tray.rs" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CargoBuild" AfterTargets="Build">
+    <Exec Command="cargo build $(CargoCommonArgs) --target-dir &quot;$(CargoTargetDir)&quot; --profile $(CargoProfile) -p awake" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="POWERTOYS_VERSION=$(Version)" />
+    <Copy SourceFiles="$(CargoOutputDir)awake.exe" DestinationFiles="$(OutDir)PowerToys.Awake.exe" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(CargoOutputDir)awake.pdb" DestinationFiles="$(OutDir)PowerToys.Awake.pdb" SkipUnchangedFiles="true" Condition="Exists('$(CargoOutputDir)awake.pdb')" />
+  </Target>
+  <!-- There are no ARM64 test agents, matching the other test projects. Tests build with the
+       test hooks into their own folder, so they never replace the binary that ships. -->
+  <Target Name="Test" Condition="'$(Platform)' != 'ARM64' and '$(BuildTests)' != 'false' and '$(BuildTests)' != 'False'">
+    <Exec Command="cargo test $(CargoCommonArgs) --target-dir &quot;$(CargoTargetDir)-test&quot; --profile $(CargoProfile) --workspace --features awake/test-hooks" WorkingDirectory="$(MSBuildThisFileDirectory)" EnvironmentVariables="POWERTOYS_VERSION=$(Version)" />
+  </Target>
+  <Target Name="CargoClean" AfterTargets="Clean">
+    <RemoveDir Directories="$(CargoTargetDir)" />
+    <Delete Files="$(OutDir)PowerToys.Awake.exe;$(OutDir)PowerToys.Awake.pdb" />
+  </Target>
+</Project>

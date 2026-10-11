@@ -1,0 +1,18 @@
+[package]
+name = "awake-core"
+description = "Platform-independent logic for PowerToys Awake: settings, keep-awake state machine, command line and text."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+clap.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

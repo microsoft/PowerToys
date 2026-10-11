@@ -35,7 +35,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
       call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
-      call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
       call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
       call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
       call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs

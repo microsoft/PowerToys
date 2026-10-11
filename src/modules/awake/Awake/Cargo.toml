@@ -1,0 +1,37 @@
+[workspace]
+resolver = "3"
+members = ["awake-core", "awake"]
+
+[workspace.package]
+# The product version comes from src/Version.props at build time; this one is for Cargo only.
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Den Delimarsky"]
+homepage = "https://awake.den.dev"
+repository = "https://github.com/microsoft/PowerToys"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+awake-core = { path = "awake-core" }
+clap = { version = "4.6", default-features = false, features = ["std", "derive", "error-context", "suggestions"] }
+log = { version = "0.4", features = ["std"] }
+serde_json = { version = "1.0", features = ["preserve_order"] }
+windows-sys = "0.61"
+cc = "1.2"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+undocumented_unsafe_blocks = "warn"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+debug = "limited"

@@ -292,10 +292,6 @@ Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PS
 Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteAssetsFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\AdvancedPaste"
 Generate-FileComponents -fileListName "AdvancedPasteAssetsFiles" -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs
 
-#AwakeFiles
-Generate-FileList -fileDepsJson "" -fileListName AwakeImagesFiles -wxsFilePath $PSScriptRoot\Awake.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Awake"
-Generate-FileComponents -fileListName "AwakeImagesFiles" -wxsFilePath $PSScriptRoot\Awake.wxs
-
 #ColorPicker
 Generate-FileList -fileDepsJson "" -fileListName ColorPickerAssetsFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ColorPicker"
 Generate-FileComponents -fileListName "ColorPickerAssetsFiles" -wxsFilePath $PSScriptRoot\ColorPicker.wxs

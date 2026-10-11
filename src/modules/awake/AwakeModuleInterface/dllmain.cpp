@@ -43,33 +43,89 @@ class Awake : public PowertoyModuleIface
     std::wstring app_key;
 
 private:
-    bool m_enabled = false;
-    PROCESS_INFORMATION p_info = {};
+    // How long disable() waits for Awake to exit after signaling it before ending it forcibly.
+    static constexpr DWORD exit_timeout_ms = 3000;
 
-    bool is_process_running()
+    bool m_enabled = false;
+    HANDLE m_process = nullptr;
+
+    bool is_process_running() const
     {
-        return WaitForSingleObject(p_info.hProcess, 0) == WAIT_TIMEOUT;
+        return m_process != nullptr && WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT;
     }
 
-    void launch_process()
+    void close_process_handle()
     {
-        Logger::trace(L"Launching PowerToys Awake process");
-        unsigned long powertoys_pid = GetCurrentProcessId();
-
-        std::wstring executable_args = L"--use-pt-config --pid " + std::to_wstring(powertoys_pid);
-        std::wstring application_path = L"PowerToys.Awake.exe";
-        std::wstring full_command_path = application_path + L" " + executable_args.data();
-        Logger::trace(L"PowerToys Awake launching with parameters: " + executable_args);
-
-        STARTUPINFO info = { sizeof(info) };
-
-        if (!CreateProcess(application_path.c_str(), full_command_path.data(), NULL, NULL, true, NULL, NULL, NULL, &info, &p_info))
+        if (m_process != nullptr)
         {
-            DWORD error = GetLastError();
-            std::wstring message = L"PowerToys Awake failed to start with error: ";
-            message += std::to_wstring(error);
-            Logger::error(message);
+            CloseHandle(m_process);
+            m_process = nullptr;
         }
+    }
+
+    bool launch_process()
+    {
+        if (is_process_running())
+        {
+            Logger::trace(L"PowerToys Awake is already running");
+            return true;
+        }
+        close_process_handle();
+
+        // Launch by full path from this DLL's folder, not relative to the runner's working directory.
+        std::filesystem::path executable = get_module_folderpath(reinterpret_cast<HMODULE>(&__ImageBase));
+        executable /= L"PowerToys.Awake.exe";
+        std::wstring command_line = L"\"" + executable.wstring() + L"\" --use-pt-config --pid " + std::to_wstring(GetCurrentProcessId());
+        Logger::trace(L"Launching PowerToys Awake: {}", command_line);
+
+        STARTUPINFO startup_info = { sizeof(startup_info) };
+        PROCESS_INFORMATION process_info = {};
+        // Awake is a console program for its command line; it runs here without a console window
+        // and inherits none of the runner's handles.
+        if (!CreateProcess(executable.c_str(), command_line.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &startup_info, &process_info))
+        {
+            Logger::error(L"PowerToys Awake failed to start. {}", get_last_error_or_default(GetLastError()));
+            return false;
+        }
+
+        CloseHandle(process_info.hThread);
+        m_process = process_info.hProcess;
+        return true;
+    }
+
+    void stop_process()
+    {
+        if (!is_process_running())
+        {
+            close_process_handle();
+            return;
+        }
+
+        // Awake creates this manual-reset event at startup; if it has not yet, creating it here
+        // with the same reset mode keeps the signal until Awake starts waiting for it.
+        HANDLE exit_event = CreateEvent(nullptr, TRUE, FALSE, CommonSharedConstants::AWAKE_EXIT_EVENT);
+        bool exited = false;
+        if (exit_event == nullptr || !SetEvent(exit_event))
+        {
+            Logger::warn(L"Failed to signal PowerToys Awake to exit. {}", get_last_error_or_default(GetLastError()));
+        }
+        else
+        {
+            exited = WaitForSingleObject(m_process, exit_timeout_ms) == WAIT_OBJECT_0;
+        }
+
+        if (!exited)
+        {
+            Logger::warn(L"PowerToys Awake did not exit in time; terminating it.");
+            TerminateProcess(m_process, 1);
+            WaitForSingleObject(m_process, exit_timeout_ms);
+        }
+
+        if (exit_event != nullptr)
+        {
+            CloseHandle(exit_event);
+        }
+        close_process_handle();
     }
 
 public:
@@ -91,6 +147,8 @@ public:
 
     virtual void destroy() override
     {
+        // Awake exits by itself when the runner process ends; only the handle needs releasing.
+        close_process_handle();
         delete this;
     }
 
@@ -122,9 +180,13 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values.
             values.save_to_settings_file();
+
+            // Awake picks the new settings up from the file; start it again if it is not running.
+            if (m_enabled && !is_process_running())
+            {
+                launch_process();
+            }
         }
         catch (std::exception&)
         {
@@ -132,41 +194,21 @@ public:
         }
     }
 
-    virtual void enable()
+    virtual void enable() override
     {
         Trace::EnableAwake(true);
-        launch_process();
+        // The user's choice stands even if this launch fails; set_config retries it.
         m_enabled = true;
-    };
+        launch_process();
+    }
 
-    virtual void disable()
+    virtual void disable() override
     {
         if (m_enabled)
         {
             Trace::EnableAwake(false);
             Logger::trace(L"Disabling Awake...");
-
-            auto exitEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::AWAKE_EXIT_EVENT);
-            if (!exitEvent)
-            {
-                Logger::warn(L"Failed to create exit event for PowerToys Awake. {}", get_last_error_or_default(GetLastError()));
-            }
-            else
-            {
-                Logger::trace(L"Signaled exit event for PowerToys Awake.");
-                if (!SetEvent(exitEvent))
-                {
-                    Logger::warn(L"Failed to signal exit event for PowerToys Awake. {}", get_last_error_or_default(GetLastError()));
-
-                    // For some reason, we couldn't process the signal correctly, so we still
-                    // need to terminate the Awake process.
-                    TerminateProcess(p_info.hProcess, 1);
-                }
-
-                ResetEvent(exitEvent);
-                CloseHandle(exitEvent);
-                CloseHandle(p_info.hProcess);
-            }
+            stop_process();
         }
 
         m_enabled = false;

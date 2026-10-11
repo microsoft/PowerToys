@@ -343,7 +343,6 @@ function Test-CoreFiles {
         'PowerToys.AdvancedPasteModuleInterface.dll',
         'PowerToys.AwakeModuleInterface.dll',
         'PowerToys.Awake.exe',
-        'PowerToys.Awake.dll',
         
         # FancyZones
         'PowerToys.FancyZonesEditor.exe',

@@ -1,0 +1,20 @@
+# Match the native PowerToys conventions in Cpp.Build.props: Control Flow Guard and the
+# hybrid CRT (static VC++ runtime, in-box UCRT shared by every module).
+[target.'cfg(all(windows, target_env = "msvc"))']
+rustflags = [
+    "-C", "target-feature=+crt-static",
+    "-C", "control-flow-guard=yes",
+    "-C", "link-arg=/NODEFAULTLIB:libucrt.lib",
+    "-C", "link-arg=/DEFAULTLIB:ucrt.lib",
+]
+
+# CET shadow stacks exist on x64 only. Target-specific flags replace the cfg() list above, so
+# that list is repeated here.
+[target.x86_64-pc-windows-msvc]
+rustflags = [
+    "-C", "target-feature=+crt-static",
+    "-C", "control-flow-guard=yes",
+    "-C", "link-arg=/NODEFAULTLIB:libucrt.lib",
+    "-C", "link-arg=/DEFAULTLIB:ucrt.lib",
+    "-C", "link-arg=/CETCOMPAT",
+]

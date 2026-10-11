@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="AWAKE_EXIT" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="AWAKE_KEEP_SCREEN_ON" xml:space="preserve">
+    <value>Keep screen on</value>
+  </data>
+  <data name="AWAKE_KEEP_ON_INTERVAL" xml:space="preserve">
+    <value>Keep awake on interval</value>
+    <comment>Keep the system awake for a given time</comment>
+  </data>
+  <data name="AWAKE_OFF" xml:space="preserve">
+    <value>Off (keep using the selected power plan)</value>
+    <comment>Don't keep the system awake, use the selected system power plan</comment>
+  </data>
+  <data name="AWAKE_KEEP_INDEFINITELY" xml:space="preserve">
+    <value>Keep awake indefinitely</value>
+    <comment>Keep the system awake forever</comment>
+  </data>
+  <data name="AWAKE_KEEP_UNTIL_EXPIRATION" xml:space="preserve">
+    <value>Keep awake until expiration date and time</value>
+    <comment>Keep the system awake until expiration date and time</comment>
+  </data>
+  <data name="AWAKE_MINUTE" xml:space="preserve">
+    <value>{0} minute</value>
+    <comment>{0} shouldn't be removed. It will be replaced by the number 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
+  </data>
+  <data name="AWAKE_MINUTES" xml:space="preserve">
+    <value>{0} minutes</value>
+    <comment>{0} shouldn't be removed. It will be replaced by a number greater than 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
+  </data>
+  <data name="AWAKE_HOUR" xml:space="preserve">
+    <value>{0} hour</value>
+    <comment>{0} shouldn't be removed. It will be replaced by the number 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
+  </data>
+  <data name="AWAKE_HOURS" xml:space="preserve">
+    <value>{0} hours</value>
+    <comment>{0} shouldn't be removed. It will be replaced by a number greater than 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
+  </data>
+  <data name="AWAKE_SCREEN_ON" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="AWAKE_SCREEN_OFF" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="AWAKE_TRAY_DISPLAY" xml:space="preserve">
+    <value>Screen</value>
+    <comment>Label for the screen/display line in tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_INDEFINITE" xml:space="preserve">
+    <value>Indefinite</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_TIMED" xml:space="preserve">
+    <value>Timed</value>
+  </data>
+  <data name="AWAKE_TRAY_UNTIL" xml:space="preserve">
+    <value>Until</value>
+    <comment>Label for expiration mode showing end date/time.</comment>
+  </data>
+  <data name="AWAKE_TRAY_REMAINING" xml:space="preserve">
+    <value>remaining</value>
+    <comment>Suffix for timed mode showing time remaining, e.g. "1:30:00 remaining".</comment>
+  </data>
+  <data name="AWAKE_CLI_DESCRIPTION" xml:space="preserve">
+    <value>Keep your PC awake on demand. Part of Microsoft PowerToys.</value>
+  </data>
+  <data name="AWAKE_CLI_USAGE" xml:space="preserve">
+    <value>Usage</value>
+    <comment>Section heading in command-line help.</comment>
+  </data>
+  <data name="AWAKE_CLI_COMMANDS" xml:space="preserve">
+    <value>Commands</value>
+    <comment>Section heading in command-line help.</comment>
+  </data>
+  <data name="AWAKE_CLI_OPTIONS" xml:space="preserve">
+    <value>Options</value>
+    <comment>Section heading in command-line help.</comment>
+  </data>
+  <data name="AWAKE_CLI_EXAMPLES" xml:space="preserve">
+    <value>Examples</value>
+    <comment>Section heading in command-line help.</comment>
+  </data>
+  <data name="AWAKE_CLI_ARG_DURATION" xml:space="preserve">
+    <value>duration</value>
+    <comment>Placeholder name for a duration argument, shown as &lt;duration&gt;.</comment>
+  </data>
+  <data name="AWAKE_CLI_ARG_TIME" xml:space="preserve">
+    <value>time</value>
+    <comment>Placeholder name for a time argument, shown as &lt;time&gt;.</comment>
+  </data>
+  <data name="AWAKE_CLI_CMD_DEFAULT" xml:space="preserve">
+    <value>Keep awake until you press Ctrl+C</value>
+  </data>
+  <data name="AWAKE_CLI_CMD_FOR" xml:space="preserve">
+    <value>Keep awake for a duration, like 45m or 1h30m</value>
+    <comment>Do not translate 45m and 1h30m.</comment>
+  </data>
+  <data name="AWAKE_CLI_CMD_UNTIL" xml:space="preserve">
+    <value>Keep awake until a time, like 17:30 or 2026-12-24T18:00</value>
+    <comment>Do not translate the example times.</comment>
+  </data>
+  <data name="AWAKE_CLI_OPT_DISPLAY" xml:space="preserve">
+    <value>Keep the display on too</value>
+  </data>
+  <data name="AWAKE_CLI_OPT_PID" xml:space="preserve">
+    <value>Stop when the process with this ID exits</value>
+  </data>
+  <data name="AWAKE_CLI_OPT_PARENT" xml:space="preserve">
+    <value>Stop when the program that started Awake exits</value>
+  </data>
+  <data name="AWAKE_CLI_OPT_HELP" xml:space="preserve">
+    <value>Show this help</value>
+  </data>
+  <data name="AWAKE_CLI_OPT_VERSION" xml:space="preserve">
+    <value>Show the version</value>
+  </data>
+  <data name="AWAKE_CLI_STATUS_INDEFINITE" xml:space="preserve">
+    <value>Keeping your PC awake</value>
+  </data>
+  <data name="AWAKE_CLI_STATUS_TIMED" xml:space="preserve">
+    <value>Keeping your PC awake for {0}</value>
+    <comment>{0} is a duration such as 1h 30m.</comment>
+  </data>
+  <data name="AWAKE_CLI_STATUS_UNTIL" xml:space="preserve">
+    <value>Keeping your PC awake until {0}</value>
+    <comment>{0} is a date and time.</comment>
+  </data>
+  <data name="AWAKE_CLI_DISPLAY_ON" xml:space="preserve">
+    <value>Display stays on</value>
+  </data>
+  <data name="AWAKE_CLI_DISPLAY_OFF" xml:space="preserve">
+    <value>Display can turn off</value>
+  </data>
+  <data name="AWAKE_CLI_BOUND" xml:space="preserve">
+    <value>Stops when {0} exits</value>
+    <comment>{0} is a process, such as "process 1234 (cmd.exe)".</comment>
+  </data>
+  <data name="AWAKE_CLI_PROCESS" xml:space="preserve">
+    <value>process {0}</value>
+    <comment>{0} is a process ID number.</comment>
+  </data>
+  <data name="AWAKE_CLI_REMAINING" xml:space="preserve">
+    <value>{0} remaining</value>
+    <comment>{0} is a countdown such as 1:29:58.</comment>
+  </data>
+  <data name="AWAKE_CLI_HINT_STOP" xml:space="preserve">
+    <value>Ctrl+C to stop</value>
+  </data>
+  <data name="AWAKE_CLI_STOPPED" xml:space="preserve">
+    <value>Awake stopped. Your power plan is back in charge.</value>
+  </data>
+  <data name="AWAKE_CLI_FINISHED" xml:space="preserve">
+    <value>Time's up. Your power plan is back in charge.</value>
+  </data>
+  <data name="AWAKE_CLI_TARGET_EXITED" xml:space="preserve">
+    <value>The watched process exited. Your power plan is back in charge.</value>
+  </data>
+  <data name="AWAKE_CLI_ERROR" xml:space="preserve">
+    <value>Error</value>
+    <comment>Prefix for an error message.</comment>
+  </data>
+  <data name="AWAKE_CLI_HINT_HELP" xml:space="preserve">
+    <value>Run {0} --help to see what Awake can do.</value>
+    <comment>{0} is the program name. Do not translate --help.</comment>
+  </data>
+  <data name="AWAKE_CLI_ERR_ALREADY_RUNNING" xml:space="preserve">
+    <value>Awake is already running.</value>
+  </data>
+  <data name="AWAKE_CLI_ERR_POLICY" xml:space="preserve">
+    <value>Awake is turned off by your organization's policy.</value>
+  </data>
+  <data name="AWAKE_CLI_ERR_PID_NOT_FOUND" xml:space="preserve">
+    <value>No running process has the ID {0}.</value>
+  </data>
+  <data name="AWAKE_CLI_ERR_PID_SELF" xml:space="preserve">
+    <value>Awake can't wait for itself to exit.</value>
+  </data>
+  <data name="AWAKE_CLI_ERR_PID_ACCESS" xml:space="preserve">
+    <value>Awake isn't allowed to watch process {0}.</value>
+  </data>
+  <data name="AWAKE_CLI_ERR_PARENT_NOT_FOUND" xml:space="preserve">
+    <value>Couldn't find the program that started Awake.</value>
+  </data>
+  <data name="AWAKE_CLI_ERR_DURATION" xml:space="preserve">
+    <value>"{0}" isn't a duration. Try 45m, 2h or 1h30m.</value>
+    <comment>Do not translate 45m, 2h and 1h30m.</comment>
+  </data>
+  <data name="AWAKE_CLI_ERR_TIME" xml:space="preserve">
+    <value>"{0}" isn't a time Awake understands. Try 17:30 or 2026-12-24T18:00.</value>
+    <comment>Do not translate the example times.</comment>
+  </data>
+  <data name="AWAKE_CLI_ERR_PAST" xml:space="preserve">
+    <value>That time has already passed.</value>
+  </data>
+  <data name="AWAKE_CLI_ERR_POWER" xml:space="preserve">
+    <value>Windows didn't accept the keep-awake request.</value>
+  </data>
+  <data name="AWAKE_CLI_ERR_START" xml:space="preserve">
+    <value>Awake couldn't start: {0}</value>
+    <comment>{0} is a technical error description.</comment>
+  </data>
+  <data name="AWAKE_CLI_AUTHOR" xml:space="preserve">
+    <value>Created by {0}</value>
+    <comment>{0} is the author's name, which is not translated.</comment>
+  </data>
+</root>

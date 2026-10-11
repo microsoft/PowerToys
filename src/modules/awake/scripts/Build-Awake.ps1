@@ -62,7 +62,8 @@ $script:StartTime = Get-Date
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ModuleDir = Split-Path -Parent $ScriptDir
 $RepoRoot = Resolve-Path (Join-Path $ModuleDir "..\..\..") | Select-Object -ExpandProperty Path
-$AwakeProject = Join-Path $ModuleDir "Awake\Awake.csproj"
+$AwakeProject = Join-Path $ModuleDir "Awake\Awake.vcxproj"
+$ModuleInterfaceProject = Join-Path $ModuleDir "AwakeModuleInterface\AwakeModuleInterface.vcxproj"
 $ModuleServicesProject = Join-Path $ModuleDir "Awake.ModuleServices\Awake.ModuleServices.csproj"
 
 # ============================================================================
@@ -412,7 +413,8 @@ if ($Clean) {
 # Restore phase
 if ($Restore) {
     Write-Phase "Restoring"
-    $restoreArgs = @($AwakeProject) + $BaseArgs + @("/t:Restore")
+    # The Rust project restores its crates itself; only the C# service layer needs NuGet.
+    $restoreArgs = @($ModuleServicesProject) + $BaseArgs + @("/t:Restore")
     $result = Invoke-BuildWithSpinner -TaskName "NuGet packages" -MSBuildPath $MSBuild -Arguments $restoreArgs -IsLast
     if (-not $result.Success) {
         Write-ErrorBox
@@ -425,9 +427,16 @@ Write-Phase "Building"
 
 $hasModuleServices = Test-Path $ModuleServicesProject
 
-# Build Awake
+# Build Awake (Rust, through Cargo) and the runner module that launches it
 $awakeArgs = @($AwakeProject) + $BaseArgs + @("/t:Build")
-$result = Invoke-BuildWithSpinner -TaskName "Awake" -MSBuildPath $MSBuild -Arguments $awakeArgs -ShowProjects -IsLast:(-not $hasModuleServices)
+$result = Invoke-BuildWithSpinner -TaskName "Awake" -MSBuildPath $MSBuild -Arguments $awakeArgs -ShowProjects
+if (-not $result.Success) {
+    Write-ErrorBox
+    exit $result.ExitCode
+}
+
+$moduleArgs = @($ModuleInterfaceProject) + $BaseArgs + @("/t:Build")
+$result = Invoke-BuildWithSpinner -TaskName "AwakeModuleInterface" -MSBuildPath $MSBuild -Arguments $moduleArgs -ShowProjects -IsLast:(-not $hasModuleServices)
 if (-not $result.Success) {
     Write-ErrorBox
     exit $result.ExitCode
@@ -445,12 +454,12 @@ if ($hasModuleServices) {
 
 # Summary
 $OutputDir = Join-Path $RepoRoot "$Platform\$Configuration"
-$AwakeDll = Join-Path $OutputDir "PowerToys.Awake.dll"
+$AwakeExe = Join-Path $OutputDir "PowerToys.Awake.exe"
 $elapsed = Get-ElapsedTime
 
-if (Test-Path $AwakeDll) {
-    $size = "$([math]::Round((Get-Item $AwakeDll).Length / 1KB, 1)) KB"
-    Write-SuccessBox -Time $elapsed -Output "PowerToys.Awake.dll" -Size $size
+if (Test-Path $AwakeExe) {
+    $size = "$([math]::Round((Get-Item $AwakeExe).Length / 1KB, 1)) KB"
+    Write-SuccessBox -Time $elapsed -Output "PowerToys.Awake.exe" -Size $size
 } else {
     Write-SuccessBox -Time $elapsed -Output $OutputDir -Size "N/A"
 }

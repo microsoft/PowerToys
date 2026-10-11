@@ -1,0 +1,28 @@
+# Installs rustup when the agent does not have it, then the toolchain pinned in
+# src/modules/awake/Awake/rust-toolchain.toml (including the ARM64 target), and fetches the
+# locked crates so the build itself needs no further downloads.
+steps:
+- pwsh: |-
+    $cargoBin = Join-Path $env:USERPROFILE '.cargo\bin'
+    if (-not (Get-Command rustup -ErrorAction SilentlyContinue) -and -not (Test-Path (Join-Path $cargoBin 'rustup.exe'))) {
+      curl.exe -sSfL -o rustup-init.exe "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe"
+      if (-not (Test-Path rustup-init.exe)) {
+        Write-Error "Failed to download rustup-init.exe"
+        exit 1
+      }
+      & ./rustup-init.exe -y --no-modify-path --profile minimal --default-toolchain none
+      if ($LASTEXITCODE -ne 0) { throw "rustup-init failed (exit $LASTEXITCODE)" }
+      Remove-Item rustup-init.exe -ErrorAction:Ignore
+    }
+    Write-Host "##vso[task.prependpath]$cargoBin"
+    $env:PATH = "$cargoBin;$env:PATH"
+    Push-Location src/modules/awake/Awake
+    # Installs what rust-toolchain.toml asks for; older rustup versions do that in 'rustup show'.
+    rustup toolchain install
+    if ($LASTEXITCODE -ne 0) { rustup show }
+    if ($LASTEXITCODE -ne 0) { Pop-Location; throw "installing the Rust toolchain failed (exit $LASTEXITCODE)" }
+    cargo fetch --locked
+    if ($LASTEXITCODE -ne 0) { Pop-Location; throw "cargo fetch failed (exit $LASTEXITCODE)" }
+    Pop-Location
+  displayName: Install the Rust toolchain
+  retryCountOnTaskFailure: 3

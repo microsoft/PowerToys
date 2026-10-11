@@ -68,7 +68,7 @@ Add the reference to your project:
 ## Examples
 
 Reference implementations:
-- Awake: `src/modules/Awake/Awake/Program.cs`
+- Awake: `src/modules/awake/Awake/awake-core/src/cli.rs`
 - ImageResizer: `src/modules/imageresizer/ui/Cli/`
 
 ## Help Output
