@@ -74,7 +74,7 @@
     <Exec Command="cargo --version" WorkingDirectory="$(MSBuildThisFileDirectory)" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true">
       <Output TaskParameter="ExitCode" PropertyName="CargoVersionExitCode" />
     </Exec>
-    <Error Condition="'$(CargoVersionExitCode)' == '9009'" Text="Awake needs the Rust toolchain: install rustup (https://rustup.rs) and rerun the build. See src/modules/awake/README.md." />
+    <Error Condition="'$(CargoVersionExitCode)' == '9009'" Text="Awake needs the Rust toolchain, and cargo is not on PATH: install rustup (https://rustup.rs), or if it is already installed, restart Visual Studio or the shell so PATH includes %25USERPROFILE%25\.cargo\bin, then rerun the build. See src/modules/awake/README.md." />
     <Error Condition="'$(CargoVersionExitCode)' != '0' and '$(CargoVersionExitCode)' != '9009'" Text="cargo --version failed with exit code $(CargoVersionExitCode), so Awake's Rust toolchain is not usable; the output above says why." />
   </Target>
   <Target Name="CargoBuild" AfterTargets="Build" DependsOnTargets="CargoCheckToolchain">
