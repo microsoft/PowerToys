@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(RepoRoot)src\settings-ui\Settings.UI\Views\PowerLauncherPage.xaml" Link="TestData\PowerLauncherPage.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(RepoRoot)src\settings-ui\Settings.UI\SettingsXAML\Views\PowerLauncherPage.xaml" Link="TestData\PowerLauncherPage.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
