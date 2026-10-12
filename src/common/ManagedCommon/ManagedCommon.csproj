@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="ManagedCommon.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>
