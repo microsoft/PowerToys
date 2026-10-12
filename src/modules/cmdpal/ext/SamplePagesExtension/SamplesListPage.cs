@@ -146,7 +146,7 @@ public partial class SamplesListPage : ListPage
         new ListItem(new SampleChartsPage())
         {
             Title = "Charts and visuals",
-            Subtitle = "Live charts, gauges, progress bars, and badges in an Adaptive Card",
+            Subtitle = "Charts, gauges, progress bars, badges, and icons, with a live line chart and gauge",
         },
 
         // Settings helpers

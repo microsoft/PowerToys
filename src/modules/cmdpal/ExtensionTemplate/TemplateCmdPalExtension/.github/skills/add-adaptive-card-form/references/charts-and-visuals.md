@@ -82,11 +82,11 @@ Names have a light theme and a dark theme variant. Without a color, items take t
 | `data` | Series: `[{ "legend": "...", "color": "...", "values": [{ "x": "...", "y": 1 }] }]`. `x` labels are optional. |
 | `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
 | `xAxisTitle`, `yAxisTitle` | Labels under and above the plot. Put the unit in the axis title, such as `% Utilization`. |
-| `yMin`, `yMax` | Fix the value range. Without them, the range fits the data. |
+| `yMin`, `yMax` | Fix the value range. Without them, the axis starts at 0, or lower for negative data, and its top rounds up to a grid line: values from 82 to 97 draw on 0 to 100. |
 | `color`, `colorSet` | Series colors when a series doesn't set its own. |
 | `showLegend` | Shows the legend; the default is `true`. A single series without a `legend` has nothing to show. |
 
-Command Palette draws smooth lines with a soft fill under them. A chart narrower than 400 pixels, such as one in a dashboard tile, draws as a sparkline: just the lines, without the title, axis labels, grid lines, or legend.
+Command Palette draws smooth lines with a soft fill under them. A line chart narrower than 400 pixels draws as a sparkline: just the lines, without the title, axis labels, grid lines, or legend. Only the chart's width counts. In a typical Command Palette window, a chart in one of three tiles in a row is narrow enough, but a chart in a tile that spans the card isn't (see [Tiles](#tiles-with-roundedcorners-and-showborder)).
 
 ## Chart.Gauge
 
@@ -117,10 +117,10 @@ Command Palette draws smooth lines with a soft fill under them. A chart narrower
 | `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
 | `xAxisTitle`, `yAxisTitle` | Labels. |
 | `showBarValues` | Shows each bar's value; the default is `false`. |
-| `yMin`, `yMax` | The value range. Without them, the range fits the data. |
+| `yMin`, `yMax` | The value range. Without them, the axis starts at 0, or lower for negative data, and its top rounds up to a grid line. |
 | `color`, `colorSet` | One color for every bar, or a color per bar. |
 
-Labels that would overlap are skipped.
+The chart thins its labels so that their centers are at least 56 pixels apart. It doesn't measure them, so long labels can still overlap; keep them short.
 
 ## Chart.HorizontalBar
 
@@ -128,7 +128,7 @@ Labels that would overlap are skipped.
 |----------|-------------|
 | `data` | Bars: `[{ "x": "Browser", "y": 34, "color": "..." }]`. Values can't be negative. |
 | `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
-| `xAxisTitle`, `yAxisTitle` | The category axis title, under the labels, and the value axis title, under the bars. |
+| `xAxisTitle`, `yAxisTitle` | The category axis title, under the labels, and the value axis title, under the bars. They draw only in the default `AbsoluteWithAxis` mode. |
 | `displayMode` | `AbsoluteWithAxis` (default): a value axis under the bars. `AbsoluteNoAxis`: each value at the end of its bar. `PartToWhole`: each bar's share of the total, as a percentage. |
 | `color`, `colorSet` | One color for every bar, or a color per bar. |
 
@@ -192,7 +192,7 @@ Command Palette doesn't render `Chart.VerticalBar.Grouped` or `ProgressRing`. Li
 
 ## Tiles with roundedCorners and showBorder
 
-Use an emphasis container with rounded corners and a border for a dashboard tile. Set `"height": "stretch"` so tiles in a row line up. A line chart in a tile is narrow, so it draws as a sparkline:
+Use an emphasis container with rounded corners and a border for a dashboard tile. Set `"height": "stretch"` so tiles in a row line up. A line chart narrower than 400 pixels draws as a sparkline, so put tiles with charts three to a row. A chart in a tile that spans the card is usually wider, so it draws in full.
 
 ```json
 {
@@ -215,6 +215,42 @@ Use an emphasis container with rounded corners and a border for a dashboard tile
           ]
         }
       ]
+    },
+    {
+      "type": "Column",
+      "width": "stretch",
+      "items": [
+        {
+          "type": "Container",
+          "style": "emphasis",
+          "roundedCorners": true,
+          "showBorder": true,
+          "height": "stretch",
+          "items": [
+            { "type": "TextBlock", "text": "Memory", "size": "small", "weight": "bolder" },
+            { "type": "TextBlock", "text": "${memory}", "size": "extraLarge", "weight": "bolder", "spacing": "none" },
+            { "type": "Chart.Line", "yMin": 0, "showLegend": false, "data": "${memorySeries}", "fallback": "drop" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Column",
+      "width": "stretch",
+      "items": [
+        {
+          "type": "Container",
+          "style": "emphasis",
+          "roundedCorners": true,
+          "showBorder": true,
+          "height": "stretch",
+          "items": [
+            { "type": "TextBlock", "text": "GPU", "size": "small", "weight": "bolder" },
+            { "type": "TextBlock", "text": "${gpu}", "size": "extraLarge", "weight": "bolder", "spacing": "none" },
+            { "type": "Chart.Line", "yMin": 0, "showLegend": false, "data": "${gpuSeries}", "fallback": "drop" }
+          ]
+        }
+      ]
     }
   ]
 }
@@ -223,7 +259,7 @@ Use an emphasis container with rounded corners and a border for a dashboard tile
 ## Design tips
 
 - Lead with the number people came for, in `extraLarge` text, and put the chart under it.
-- Fix `yMin` and `yMax` for percentages, so 5% looks like 5%. Let rates fit their data.
+- Fix `yMin` and `yMax` for percentages, so 5% looks like 5%. Leave them out for rates, so the axis grows with the data.
 - Use one color per metric, and the same color for the same metric on every card.
 - Keep the template stable and update only `DataJson`, so updates animate instead of redraw.
-- The Samples extension's "Charts and visuals" page shows every element with live data.
+- The Samples extension's "Charts and visuals" page shows every element. Its line chart, its gauge, and the progress bar under the gauge update live.
