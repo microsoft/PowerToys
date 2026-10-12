@@ -14,7 +14,6 @@ namespace CoreWidgetProvider.Helpers;
 internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDisposable
 {
     private readonly PerformanceCounter? _memCommitted;
-    private readonly PerformanceCounter? _memCached;
     private readonly PerformanceCounter? _memCommittedLimit;
     private readonly PerformanceCounter? _memPoolPaged;
     private readonly PerformanceCounter? _memPoolNonPaged;
@@ -50,10 +49,11 @@ internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDispo
         get; set;
     }
 
-    public ulong MemCached
-    {
-        get; set;
-    }
+    /// <summary>
+    /// Gets cached memory as Task Manager counts it: standby and modified memory. The
+    /// <c>Memory\Cache Bytes</c> counter is the system working set, which is much smaller.
+    /// </summary>
+    public ulong MemCached => MemStandby + MemModified;
 
     public ulong MemPagedPool
     {
@@ -87,7 +87,6 @@ internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDispo
     public MemoryStats()
     {
         _memCommitted = CreatePerformanceCounter("Memory", "Committed Bytes");
-        _memCached = CreatePerformanceCounter("Memory", "Cache Bytes");
         _memCommittedLimit = CreatePerformanceCounter("Memory", "Commit Limit");
         _memPoolPaged = CreatePerformanceCounter("Memory", "Pool Paged Bytes");
         _memPoolNonPaged = CreatePerformanceCounter("Memory", "Pool Nonpaged Bytes");
@@ -117,7 +116,6 @@ internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDispo
 
         try
         {
-            MemCached = (ulong)(_memCached?.NextValue() ?? 0);
             MemCommitted = (ulong)(_memCommitted?.NextValue() ?? 0);
             MemCommitLimit = (ulong)(_memCommittedLimit?.NextValue() ?? 0);
             MemPagedPool = (ulong)(_memPoolPaged?.NextValue() ?? 0);
@@ -137,7 +135,6 @@ internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDispo
     public void Dispose()
     {
         _memCommitted?.Dispose();
-        _memCached?.Dispose();
         _memCommittedLimit?.Dispose();
         _memPoolPaged?.Dispose();
         _memPoolNonPaged?.Dispose();
