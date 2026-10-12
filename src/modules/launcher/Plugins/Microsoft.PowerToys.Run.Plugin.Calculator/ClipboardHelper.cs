@@ -14,6 +14,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private const uint UnicodeTextFormat = 13;
         private const uint MoveableZeroInitializedMemory = 0x0042;
 
+        // Retain the retry window used by WPF for initial clipboard contention.
+        private const int ClipboardRetryCount = 10;
+        private const int ClipboardRetryDelay = 100;
+
         internal static void SetText(string text)
         {
             ArgumentNullException.ThrowIfNull(text);
@@ -51,7 +55,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 }
 
                 var opened = false;
-                for (var attempt = 0; attempt < 10; attempt++)
+                for (var attempt = 0; attempt <= ClipboardRetryCount; attempt++)
                 {
                     opened = OpenClipboard(window);
                     if (opened)
@@ -59,9 +63,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                         break;
                     }
 
-                    if (attempt < 9)
+                    if (attempt < ClipboardRetryCount)
                     {
-                        Thread.Sleep(10);
+                        Thread.Sleep(ClipboardRetryDelay);
                     }
                 }
 

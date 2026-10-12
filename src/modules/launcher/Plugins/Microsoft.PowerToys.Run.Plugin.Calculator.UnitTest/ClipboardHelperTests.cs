@@ -43,6 +43,16 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         }
 
         [TestMethod]
+        public void ClipboardContentionClearsWithinTheExistingRetryWindow()
+        {
+            WithPrivateClipboard(() =>
+            {
+                WithClipboardLocked(() => ClipboardHelper.SetText("replacement"), releaseAfterMilliseconds: 250);
+                Assert.AreEqual("replacement", System.Windows.Clipboard.GetText());
+            });
+        }
+
+        [TestMethod]
         public void OleFlushCanFailAfterTextHasAlreadyBeenPlacedOnClipboard()
         {
             WithPrivateClipboard(() =>
@@ -58,7 +68,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             });
         }
 
-        private static void WithClipboardLocked(Action action)
+        private static void WithClipboardLocked(Action action, int releaseAfterMilliseconds = Timeout.Infinite)
         {
             using var acquired = new ManualResetEventSlim();
             using var release = new ManualResetEventSlim();
@@ -75,7 +85,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                 acquired.Set();
                 try
                 {
-                    release.Wait();
+                    release.Wait(releaseAfterMilliseconds);
                 }
                 finally
                 {
