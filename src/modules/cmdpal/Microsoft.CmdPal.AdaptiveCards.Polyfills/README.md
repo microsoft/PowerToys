@@ -17,6 +17,8 @@ The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Ad
 
 Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. These are partial implementations, not full schema conformance; see [Bar chart limitations](#bar-chart-limitations) and [Gauge, donut, and pie chart limitations](#gauge-donut-and-pie-chart-limitations). Each piece can serve as a reference when adding support to the open-source renderer (see [Upstream](#upstream)).
 
+Extension authors: see `ExtensionTemplate\TemplateCmdPalExtension\.github\skills\add-adaptive-card-form\references\charts-and-visuals.md`, and the Samples extension's "Charts and visuals" page.
+
 ## Use it
 
 `AdaptiveCardPolyfills` is the entry point. Command Palette's `ContentFormControl` calls it three times:
@@ -79,6 +81,7 @@ Supporting signed horizontal data requires a common zero baseline, bars extendin
 2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Add any text it shows to this library's `Properties\Resources.resx`, and read it with `Properties.Resources`.
 3. Add the element to the list in `AdaptiveCardPolyfills`.
 4. Add parsing tests to `Tests\Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests`.
+5. Document the element for extension authors, and add it to the Samples extension.
 
 ## Upstream
 
