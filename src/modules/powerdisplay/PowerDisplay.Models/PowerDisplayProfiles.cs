@@ -16,8 +16,14 @@ namespace PowerDisplay.Models
     /// </summary>
     public class PowerDisplayProfiles
     {
+        private readonly List<PowerDisplayProfile> _profiles = new();
+
         [JsonPropertyName("profiles")]
-        public List<PowerDisplayProfile> Profiles { get; set; }
+        public List<PowerDisplayProfile> Profiles
+        {
+            get => _profiles;
+            init => _profiles = value ?? new();
+        }
 
         [JsonPropertyName("nextId")]
         public int NextId { get; set; }
@@ -27,7 +33,6 @@ namespace PowerDisplay.Models
 
         public PowerDisplayProfiles()
         {
-            Profiles = new List<PowerDisplayProfile>();
             LastUpdated = DateTime.UtcNow;
         }
 
