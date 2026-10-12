@@ -48,6 +48,7 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
                               const PowertoyModuleIface::Hotkey& advancedPasteUIHotkey,
                               const PowertoyModuleIface::Hotkey& pasteMarkdownHotkey,
                               const PowertoyModuleIface::Hotkey& pasteJsonHotkey,
+                              const PowertoyModuleIface::Hotkey& pasteSingleLineHotkey,
                               const bool is_advanced_ai_enabled,
                               const bool preview_custom_format_output,
                               const std::unordered_map<std::wstring, PowertoyModuleIface::Hotkey>& additionalActionsHotkeys) noexcept
@@ -83,6 +84,7 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
         TraceLoggingWideString(getHotkeyCStr(advancedPasteUIHotkey), "AdvancedPasteUIHotkey"),
         TraceLoggingWideString(getHotkeyCStr(pasteMarkdownHotkey), "PasteMarkdownHotkey"),
         TraceLoggingWideString(getHotkeyCStr(pasteJsonHotkey), "PasteJsonHotkey"),
+        TraceLoggingWideString(getHotkeyCStr(pasteSingleLineHotkey), "PasteSingleLineHotkey"),
         TraceLoggingBoolean(is_advanced_ai_enabled, "IsAdvancedAIEnabled"),
         TraceLoggingBoolean(preview_custom_format_output, "ShowCustomPreview"),
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"ImageToText"), "ImageToTextHotkey"),

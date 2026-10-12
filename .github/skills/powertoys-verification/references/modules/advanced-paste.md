@@ -1,21 +1,22 @@
 # Advanced Paste — module verification profile
 
-**PT module**: `AdvancedPaste` (clipboard transform: plain/markdown/json + AI custom paste)
+**PT module**: `AdvancedPaste` (clipboard transform: plain/single-line/markdown/json + AI custom paste)
 **Source**: `src\modules\AdvancedPaste\`
 **Settings file**: `%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\settings.json`
 **Exe**: `%LOCALAPPDATA%\PowerToys\WinUI3Apps\PowerToys.AdvancedPaste.exe`
 **Named Event**: `Local\PowerToys_AdvancedPaste_ShowUI` (friendly: `AdvancedPaste.ShowUI`)
 **Default UI hotkey**: Win+Shift+V (`advanced-paste-ui-hotkey`); paste-as-plain Win+Ctrl+Alt+V
-**Settings UI section keys**: IsAIEnabled, AutoCopySelectionForCustomActionHotkey, paste-as-{plain,markdown,json}-hotkey, additional-actions, custom-actions
+**Settings UI section keys**: IsAIEnabled, AutoCopySelectionForCustomActionHotkey, paste-as-{plain,single-line,markdown,json}-hotkey, additional-actions, custom-actions
 
 ## Entry-paths (try in order)
 1. Enable module: master `settings.json` `enabled.AdvancedPaste=true` + `Restart-PtRunner` (it ships DISABLED). Then `Invoke-PtSharedEvent -Name AdvancedPaste.ShowUI`. Window title "Advanced Paste", class WinUIDesktopWin32WindowClass.
-2. Paste options are a ListView: invoke `itm-pasteasplaintex-*` / `itm-pasteasmarkdown-*` / `itm-pasteasjson*` (suffix is dynamic — match by `Select-String 'pasteas...'`). They paste into the previously-focused window.
+2. Paste options are a ListView: invoke `itm-pasteasplaintex-*` / `itm-pasteasmarkdown-*` / `itm-pasteasjson*`; for Single Line, locate the ListItem by accessible name containing `Paste as single line` (generated `itm-*` aliases are runtime-dependent). They paste into the previously-focused window.
 
 ## Recipes — control/observation map
 | Capability | Drive | Observe |
 |---|---|---|
 | Strip formatting | invoke paste-as-plain ListItem | clipboard format-diff: `HTML Format` removed, `UnicodeText` kept |
+| Single-line flatten | invoke paste-as-single-line | target app content read-back; line breaks collapsed to single spaces |
 | Markdown convert | invoke paste-as-markdown | target app content (Ctrl+A,Ctrl+C read-back) |
 | JSON convert (CSV/XML) | invoke paste-as-json | target content read-back |
 | Color swatch | clip a `#RRGGBB` string, ShowUI | preview row shows swatch |
