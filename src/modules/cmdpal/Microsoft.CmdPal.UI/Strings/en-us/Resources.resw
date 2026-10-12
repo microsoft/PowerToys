@@ -1883,6 +1883,10 @@ Home: highest position. End: lowest position.</value>
     <value>{0}: latest {1}, low {2}, high {3}.</value>
     <comment>Screen reader summary of one chart data series. {0} is the series name; {1}, {2}, and {3} are formatted values.</comment>
   </data>
+  <data name="AdaptiveChart_Gauge" xml:space="preserve">
+    <value>Gauge</value>
+    <comment>Accessible name of a gauge chart in a form when the chart has no title.</comment>
+  </data>
   <data name="AdaptiveChart_CompactThousands" xml:space="preserve">
     <value>{0}K</value>
     <comment>A large chart value in units of 1,000, in axis labels and tooltips. For example, 12.3K is 12,300. {0} is the number of thousands. Use your language's short form.</comment>
@@ -1898,6 +1902,14 @@ Home: highest position. End: lowest position.</value>
   <data name="AdaptiveChart_CompactTrillions" xml:space="preserve">
     <value>{0}T</value>
     <comment>A large chart value in units of 1,000,000,000,000 (10^12), in axis labels and tooltips. For example, 1.2T is 1,200,000,000,000. {0} is the number of units. Use your language's short form for 10^12.</comment>
+  </data>
+  <data name="AdaptiveChart_DonutChart" xml:space="preserve">
+    <value>Donut chart</value>
+    <comment>Accessible name of a donut chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_PieChart" xml:space="preserve">
+    <value>Pie chart</value>
+    <comment>Accessible name of a pie chart in a form when the chart has no title.</comment>
   </data>
   <data name="AdaptiveChart_BarChart" xml:space="preserve">
     <value>Bar chart</value>
