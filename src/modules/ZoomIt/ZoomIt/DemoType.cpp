@@ -361,9 +361,8 @@ DWORD GetClipboardSequence()
 wchar_t* GetClipboard()
 {
     // Confirm clipboard accessibility and data format
-    if( !OpenClipboard( nullptr ) && !IsClipboardFormatAvailable( CF_UNICODETEXT ) )
+    if( !IsClipboardFormatAvailable( CF_UNICODETEXT ) || !OpenClipboard( nullptr ) )
     {
-        CloseClipboard();
         return nullptr;
     }
     HANDLE hData = GetClipboardData( CF_UNICODETEXT );
@@ -390,8 +389,12 @@ wchar_t* GetClipboard()
         return nullptr;
     }
 
-    wchar_t* data = new wchar_t[size / sizeof(wchar_t)];
-    wcscpy( data, pData );
+    // Clipboard text is not guaranteed to be null terminated, so copy exactly the
+    // characters present and terminate the buffer ourselves.
+    const size_t charCount = size / sizeof(wchar_t);
+    wchar_t* data = new wchar_t[charCount + 1];
+    memcpy( data, pData, charCount * sizeof(wchar_t) );
+    data[charCount] = L'\0';
     GlobalUnlock( hData );
     CloseClipboard();
     return data;
