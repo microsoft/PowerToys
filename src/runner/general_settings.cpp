@@ -1,6 +1,6 @@
-#include <filesystem>
 #include "pch.h"
 #include "general_settings.h"
+#include "general_settings_reader.h"
 #include "auto_start_helper.h"
 #include "tray_icon.h"
 #include "quick_access_host.h"
@@ -64,64 +64,9 @@ namespace
         return fallback;
     }
 
-    // Returns either:
-    // - std::nullopt if there was a transient read/parse error on an existing non-empty
-    // file (skip saving); or
-    // - Populated JsonObject if settings were successfully parsed; or
-    // - Empty JsonObject if file is absent or 0-bytes.
     std::optional<json::JsonObject> load_general_settings_checked()
     {
-        const std::wstring settings_path = PTSettingsHelper::get_powertoys_general_save_file_location();
-
-        constexpr int max_retries = 3;
-        int delay_ms = 25;
-
-        for (int retry = 0; retry <= max_retries; retry++)
-        {
-            auto loaded = json::from_file(settings_path);
-            if (loaded.has_value())
-            {
-                return loaded;
-            }
-
-            std::error_code ec;
-            const bool exists = std::filesystem::exists(settings_path, ec);
-            if (ec)
-            {
-                Logger::warn("load_general_settings_checked: Failed to check if settings.json exists: {}", ec.message());
-                return std::nullopt;
-            }
-
-            if (!exists)
-            {
-                // File genuinely does not exist.
-                return json::JsonObject{};
-            }
-
-            const auto size = std::filesystem::file_size(settings_path, ec);
-            if (ec)
-            {
-                Logger::warn("load_general_settings_checked: Failed to get file size for settings.json: {}", ec.message());
-                return std::nullopt;
-            }
-
-            if (size == 0)
-            {
-                // File exists but is 0 bytes.
-                return json::JsonObject{};
-            }
-
-            if (retry == max_retries)
-            {
-                Logger::warn(L"load_general_settings_checked: Failed to read/parse existing settings.json ({} bytes) after 3 retries. Transient error suspected.", size);
-                break;
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
-            delay_ms *= 2; // 25ms, then 50ms, then 100ms
-        }
-
-        return std::nullopt;
+        return general_settings::load_from_file_checked(PTSettingsHelper::get_powertoys_general_save_file_location());
     }
 }
 
@@ -375,7 +320,7 @@ void apply_module_status_update(const json::JsonObject& module_config, bool save
         }
 
         // Use the successful read as the base for the update, or create a new settings
-        // object if the file doesn't exist or is empty.
+        // object if the file doesn't exist.
         json::JsonObject current_settings = std::move(loaded_opt).value();
 
         json::JsonObject enabled;
@@ -736,4 +681,3 @@ void start_enabled_powertoys()
         }
     }
 }
-
