@@ -100,10 +100,14 @@ public class CardFormattingTests
     [TestMethod]
     public void RateScaleUsesBitsForTheDefaultUnit()
     {
-        var (divisor, unit) = PerformanceChartData.GetRateScale(SpeedUnit.BitsPerSecond, 50 * 1024 * 1024 / 8);
+        var (divisor, unit) = PerformanceChartData.GetRateScale(SpeedUnit.BitsPerSecond, 50_000_000 / 8);
 
         Assert.AreEqual("Mbps", unit);
-        Assert.AreEqual(50f, 50 * 1024 * 1024 / 8 / divisor, 1e-3);
+        Assert.AreEqual(50f, 50_000_000 / 8 / divisor, 1e-3);
+
+        // Bits step by 1000, as the labels do.
+        Assert.AreEqual((125f, "Kbps"), PerformanceChartData.GetRateScale(SpeedUnit.BitsPerSecond, 999_999 / 8f));
+        Assert.AreEqual((125_000f, "Mbps"), PerformanceChartData.GetRateScale(SpeedUnit.BitsPerSecond, 1_000_000 / 8f));
     }
 
     [TestMethod]
