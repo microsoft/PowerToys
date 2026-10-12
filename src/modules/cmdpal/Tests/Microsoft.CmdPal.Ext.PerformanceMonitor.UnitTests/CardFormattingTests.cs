@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.Json.Nodes;
 using CoreWidgetProvider.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Win32.Storage.FileSystem;
@@ -198,5 +199,20 @@ public class CardFormattingTests
         Assert.AreEqual(25d, WidgetPage.GetPercent(1, 4));
         Assert.AreEqual(100d, WidgetPage.GetPercent(9, 4));
         Assert.AreEqual(0d, WidgetPage.GetPercent(9, 0));
+    }
+
+    [TestMethod]
+    public void SparklineTopRoundsUpWithAFloor()
+    {
+        static JsonObject Data(params float[] values) => new()
+        {
+            ["series"] = PerformanceChartData.Create(new PerformanceChartData.Series("CPU", PerformanceChartData.CpuColor, values)),
+        };
+
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(Data(0.4f, 2f), "series"));
+        Assert.AreEqual(40d, SystemOverviewWidgetPage.GetSparklineMax(Data(12f, 33.5f), "series"));
+        Assert.AreEqual(100d, SystemOverviewWidgetPage.GetSparklineMax(Data(100f), "series"));
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(null, "series"));
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(new JsonObject(), "series"));
     }
 }
