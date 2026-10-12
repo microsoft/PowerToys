@@ -1,6 +1,10 @@
 GlobalMemoryStatusEx
 GetSystemPowerStatus
 GetPerformanceInfo
+CallNtPowerInformation
+PROCESSOR_POWER_INFORMATION
+GetActiveProcessorCount
+ALL_PROCESSOR_GROUPS
 CreateDXGIFactory1
 IDXGIFactory1
 IDXGIAdapter1
