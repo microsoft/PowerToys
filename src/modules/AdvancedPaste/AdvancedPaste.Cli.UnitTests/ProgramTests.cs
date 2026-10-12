@@ -95,6 +95,44 @@ public class ProgramTests
         Assert.AreEqual("hello", await clipboard.WrittenContent!.GetView().GetTextAsync());
     }
 
+    [DataTestMethod]
+    [DataRow("json", ".csv", "name,age\r\nAda,37", "\"Ada\"", true)]
+    [DataRow("json", ".csv", "name,age\r\nAda,37", "\"Ada\"", false)]
+    [DataRow("markdown", ".html", "<p>Hello <strong>world</strong></p>", "Hello **world**", true)]
+    [DataRow("markdown", ".html", "<p>Hello <strong>world</strong></p>", "Hello **world**", false)]
+    public async Task ClipboardFile_TransformsContentAndPreservesAgedSource(string action, string extension, string text, string expected, bool explicitClipboard)
+    {
+        var directory = AdvancedPasteTempFileManager.CreateDirectory();
+        var path = Path.Combine(directory.FullName, $"clipboard{extension}");
+        try
+        {
+            await File.WriteAllTextAsync(path, text);
+            Directory.SetCreationTimeUtc(directory.FullName, DateTime.UtcNow.AddDays(-2));
+            var clipboard = new TestClipboardAdapter();
+            clipboard.Content.SetStorageItems([await Windows.Storage.StorageFile.GetFileFromPathAsync(path)]);
+
+            var args = new List<string> { "transform", "--action", action, "--stdout" };
+            if (explicitClipboard)
+            {
+                args.Add("--clipboard");
+            }
+
+            var result = await RunAsync(args.ToArray(), clipboard: clipboard);
+
+            Assert.AreEqual(0, result.ExitCode, result.Stderr);
+            StringAssert.Contains(result.Stdout, expected);
+            Assert.AreEqual(string.Empty, result.Stderr);
+            Assert.AreEqual(text, await File.ReadAllTextAsync(path));
+            Assert.AreEqual(1, clipboard.ReadCount);
+            Assert.IsNull(clipboard.WrittenContent);
+            Assert.AreEqual(path, (await clipboard.Content.GetView().GetStorageItemsAsync())[0].Path);
+        }
+        finally
+        {
+            Directory.Delete(directory.FullName, recursive: true);
+        }
+    }
+
     [TestMethod]
     public async Task PasteWithAi_RequiresPrompt()
     {
@@ -189,13 +227,18 @@ public class ProgramTests
         File.Delete(runtime.OutputPath);
     }
 
-    [TestMethod]
-    public async Task ConflictingInputModes_ReturnArgumentError()
+    [DataTestMethod]
+    [DataRow(new[] { "--stdin", "--clipboard" })]
+    [DataRow(new[] { "--input", "unused.csv", "--clipboard" })]
+    [DataRow(new[] { "--input", "unused.csv", "--stdin" })]
+    public async Task ConflictingInputModes_ReturnArgumentError(string[] inputOptions)
     {
-        var result = await RunAsync(["transform", "--format", "json", "--stdin", "--clipboard", "--json"]);
+        var clipboard = new TestClipboardAdapter("do not read");
+        var result = await RunAsync(["transform", "--format", "json", "--json", .. inputOptions], clipboard: clipboard);
 
         Assert.AreEqual(2, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "invalid_");
+        StringAssert.Contains(result.Stderr, "invalid_input_mode");
+        Assert.AreEqual(0, clipboard.ReadCount);
     }
 
     [TestMethod]
@@ -208,12 +251,65 @@ public class ProgramTests
     }
 
     [TestMethod]
-    public async Task MissingInputMode_ReturnsArgumentErrorAndUsage()
+    public async Task DefaultInput_EmptyCopiedFileReturnsEmptyInputError()
     {
-        var result = await RunAsync(["transform", "--format", "json"]);
+        var path = Path.GetTempFileName();
+        try
+        {
+            var clipboard = new TestClipboardAdapter();
+            clipboard.Content.SetStorageItems([await Windows.Storage.StorageFile.GetFileFromPathAsync(path)]);
 
-        Assert.AreEqual(2, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "Usage:");
+            var result = await RunAsync(["transform", "--action", "json", "--stdout", "--json"], clipboard: clipboard);
+
+            Assert.AreEqual(1, result.ExitCode);
+            using var document = JsonDocument.Parse(result.Stderr);
+            Assert.AreEqual("empty_input", document.RootElement.GetProperty("code").GetString());
+            Assert.IsNull(clipboard.WrittenContent);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [TestMethod]
+    public async Task DefaultInput_EmptyClipboardReturnsRuntimeError()
+    {
+        var clipboard = new TestClipboardAdapter();
+        var result = await RunAsync(["transform", "--format", "json", "--stdout", "--json"], clipboard: clipboard);
+
+        Assert.AreEqual(1, result.ExitCode);
+        Assert.AreEqual(1, clipboard.ReadCount);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("empty_input", document.RootElement.GetProperty("code").GetString());
+    }
+
+    [DataTestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task DefaultInput_UsesClipboardEvenWithRedirectedStdin(bool stdout)
+    {
+        var clipboard = new TestClipboardAdapter("clipboard input");
+        var args = new List<string> { "transform", "--action", "plain-text" };
+        if (stdout)
+        {
+            args.Add("--stdout");
+        }
+
+        var result = await RunAsync(args.ToArray(), "unused stdin", clipboard);
+
+        Assert.AreEqual(0, result.ExitCode, result.Stderr);
+        Assert.AreEqual(1, clipboard.ReadCount);
+        if (stdout)
+        {
+            Assert.AreEqual("clipboard input", result.Stdout);
+            Assert.IsNull(clipboard.WrittenContent);
+        }
+        else
+        {
+            Assert.AreEqual(string.Empty, result.Stdout);
+            Assert.AreEqual("clipboard input", await clipboard.WrittenContent!.GetView().GetTextAsync());
+        }
     }
 
     [TestMethod]
@@ -607,6 +703,7 @@ public class ProgramTests
     [DataTestMethod]
     [DataRow(new[] { "actions", "list", "--json" })]
     [DataRow(new[] { "transform", "--action", "plain-text", "--clipboard", "--json" })]
+    [DataRow(new[] { "transform", "--action", "plain-text", "--json" })]
     public async Task DisabledPolicy_BlocksListingAndClipboardRead(string[] args)
     {
         var clipboard = new TestClipboardAdapter("private input");

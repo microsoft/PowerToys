@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using AdvancedPaste.Cli;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.Storage.Streams;
 
 namespace AdvancedPaste.Cli.UnitTests;
 
@@ -169,6 +171,146 @@ public class CliInputReaderTests
             Assert.IsTrue(input.Contains(StandardDataFormats.Text));
             Assert.IsTrue(input.Contains(StandardDataFormats.Html));
             Assert.IsFalse(input.Contains(StandardDataFormats.StorageItems));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(".csv", "name,age\r\nAda,37", false)]
+    [DataRow(".html", "<p>Hello <strong>world</strong></p>", true)]
+    public async Task ClipboardFile_UsesSameTextAndHtmlClassification(string extension, string text, bool html)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}{extension}");
+        try
+        {
+            await File.WriteAllTextAsync(path, text);
+            var package = new DataPackage();
+            package.SetStorageItems([await StorageFile.GetFileFromPathAsync(path)]);
+
+            var input = await CliInputReader.ReadClipboardFileContentAsync(package.GetView(), 100, CancellationToken.None);
+
+            Assert.AreEqual(text, await input.GetTextAsync());
+            Assert.AreEqual(html, input.Contains(StandardDataFormats.Html));
+            Assert.IsFalse(input.Contains(StandardDataFormats.StorageItems));
+            Assert.AreEqual(path, (await package.GetView().GetStorageItemsAsync())[0].Path);
+            Assert.AreEqual(text, await File.ReadAllTextAsync(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ClipboardBinaryOrMalformedFile_PreservesOriginalFile(bool malformed)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.dat");
+        byte[] bytes = malformed ? [0xff] : [0, 1, 2, 3];
+        try
+        {
+            await File.WriteAllBytesAsync(path, bytes);
+            var package = new DataPackage();
+            package.SetStorageItems([await StorageFile.GetFileFromPathAsync(path)]);
+
+            var input = await CliInputReader.ReadClipboardFileContentAsync(package.GetView(), 100, CancellationToken.None);
+
+            Assert.IsFalse(input.Contains(StandardDataFormats.Text));
+            Assert.AreEqual(path, (await input.GetStorageItemsAsync())[0].Path);
+            CollectionAssert.AreEqual(bytes, await File.ReadAllBytesAsync(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow("Text")]
+    [DataRow("HTML Format")]
+    [DataRow("Bitmap")]
+    public async Task ClipboardRichContent_TakesPrecedenceOverFile(string format)
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            var file = await StorageFile.GetFileFromPathAsync(path);
+            var package = new DataPackage();
+            package.SetStorageItems([file]);
+            if (format == StandardDataFormats.Text)
+            {
+                package.SetText("clipboard text");
+            }
+            else if (format == StandardDataFormats.Html)
+            {
+                package.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat("<p>clipboard HTML</p>"));
+            }
+            else
+            {
+                package.SetBitmap(RandomAccessStreamReference.CreateFromFile(file));
+            }
+
+            var original = package.GetView();
+            var input = await CliInputReader.ReadClipboardFileContentAsync(original, 100, CancellationToken.None);
+
+            Assert.AreSame(original, input);
+            Assert.IsTrue(input.Contains(format));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [TestMethod]
+    public async Task ClipboardMultipleFilesOrFolder_AreNotReadAsText()
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllTextAsync(path, "do not choose one file");
+            var file = await StorageFile.GetFileFromPathAsync(path);
+            var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(path)!);
+            foreach (var items in new IStorageItem[][] { [file, file], [folder] })
+            {
+                var package = new DataPackage();
+                package.SetStorageItems(items);
+                var original = package.GetView();
+
+                var input = await CliInputReader.ReadClipboardFileContentAsync(original, 100, CancellationToken.None);
+
+                Assert.AreSame(original, input);
+                Assert.IsFalse(input.Contains(StandardDataFormats.Text));
+            }
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [TestMethod]
+    public async Task ClipboardTextFile_EnforcesCharacterLimitAndCancellation()
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllTextAsync(path, "ééé");
+            var package = new DataPackage();
+            package.SetStorageItems([await StorageFile.GetFileFromPathAsync(path)]);
+
+            var input = await CliInputReader.ReadClipboardFileContentAsync(package.GetView(), 3, CancellationToken.None);
+            Assert.AreEqual("ééé", await input.GetTextAsync());
+            await Assert.ThrowsExactlyAsync<InputTooLargeException>(() =>
+                CliInputReader.ReadClipboardFileContentAsync(package.GetView(), 2, CancellationToken.None));
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+            await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+                CliInputReader.ReadClipboardFileContentAsync(package.GetView(), 3, cancellation.Token));
         }
         finally
         {

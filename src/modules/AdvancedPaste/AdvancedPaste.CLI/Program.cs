@@ -33,7 +33,7 @@ public static partial class Program
     internal const int ArgumentErrorExitCode = 2;
     internal const int MaximumInputCharacters = 16 * 1024 * 1024;
     private const string SupportedActions = "plain-text, markdown, json, fix-spelling-and-grammar, image-to-text, paste-as-txt-file, paste-as-png-file, paste-as-html-file, transcode-to-mp3, transcode-to-mp4, or paste-with-ai";
-    private const string TransformUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe transform (--action <name>|--custom-action <id-or-name>) (--input <path>|--stdin|--clipboard) [--output <path>|--stdout|--output-clipboard] [--prompt <text>] [--provider <id>] [--json]";
+    private const string TransformUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe transform (--action <name>|--custom-action <id-or-name>) [--input <path>|--stdin|--clipboard] [--output <path>|--stdout|--output-clipboard] [--prompt <text>] [--provider <id>] [--json]";
     private const string ActionsListUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe actions list [--json]";
 
     private static readonly string[] ActionAliases = ["--action", "--format"];
@@ -260,11 +260,12 @@ public static partial class Program
             var inputFile = parseResult.GetValueForOption(options.Input);
             var stdinRequested = parseResult.GetValueForOption(options.Stdin);
             var clipboardRequested = parseResult.GetValueForOption(options.Clipboard);
-            if (CountSelected(inputFile is not null, stdinRequested, clipboardRequested) != 1)
+            if (CountSelected(inputFile is not null, stdinRequested, clipboardRequested) > 1)
             {
-                return WriteArgumentError(stderr, json, "invalid_input_mode", "Specify exactly one input mode: --input, --stdin, or --clipboard.");
+                return WriteArgumentError(stderr, json, "invalid_input_mode", "Specify at most one input mode: --input, --stdin, or --clipboard. Clipboard is the default.");
             }
 
+            clipboardRequested = inputFile is null && !stdinRequested;
             var outputFile = parseResult.GetValueForOption(options.Output);
             var stdoutRequested = parseResult.GetValueForOption(options.Stdout);
             var outputClipboardRequested = parseResult.GetValueForOption(options.OutputClipboard);
@@ -274,19 +275,25 @@ public static partial class Program
             }
 
             var input = await CliInputReader.ReadAsync(inputFile, stdinRequested, clipboard, stdin, MaximumInputCharacters, cancellationToken);
+            var clipboardSnapshot = input;
+            if (clipboardRequested)
+            {
+                input = await CliInputReader.ReadClipboardFileContentAsync(input, MaximumInputCharacters, cancellationToken);
+            }
+
             if (!await input.HasUsableDataAsync())
             {
                 WriteError(stderr, json, "empty_input", "The selected input source did not contain supported content.");
                 return RuntimeErrorExitCode;
             }
 
-            // Only explicit clipboard input provides a snapshot that can protect live file-drop paths.
+            // Text-file input no longer carries StorageItems; protect paths from the original snapshot.
             if (clipboardRequested)
             {
                 var protectedPaths = new List<string>();
-                if (input.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
+                if (clipboardSnapshot.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
                 {
-                    protectedPaths.AddRange((await input.GetStorageItemsAsync()).Select(item => item.Path));
+                    protectedPaths.AddRange((await clipboardSnapshot.GetStorageItemsAsync()).Select(item => item.Path));
                 }
 
                 if (outputFile is not null)
@@ -523,7 +530,7 @@ public static partial class Program
 
         internal Option<bool> Stdin { get; } = new(StdinAliases, "Read text input from standard input.");
 
-        internal Option<bool> Clipboard { get; } = new(ClipboardAliases, "Read rich content explicitly from the Windows clipboard.");
+        internal Option<bool> Clipboard { get; } = new(ClipboardAliases, "Read rich content or a single copied file from the Windows clipboard. This is the default.");
 
         internal Option<FileInfo?> Output { get; } = new(OutputAliases, "Write transformed text or a generated file to a path.");
 

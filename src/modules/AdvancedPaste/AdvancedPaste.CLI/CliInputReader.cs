@@ -31,14 +31,46 @@ internal static class CliInputReader
             return clipboardInput;
         }
 
-        var package = new DataPackage();
         if (stdinRequested)
         {
+            var package = new DataPackage();
             package.SetText(await ReadBoundedAsync(stdin, maximumTextCharacters, cancellationToken));
             return package.GetView();
         }
 
-        if (!inputFile!.Exists)
+        return await ReadFileAsync(inputFile!, maximumTextCharacters, cancellationToken);
+    }
+
+    internal static async Task<DataPackageView> ReadClipboardFileContentAsync(
+        DataPackageView input,
+        int maximumTextCharacters,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!input.Contains(StandardDataFormats.StorageItems) ||
+            input.Contains(StandardDataFormats.Text) ||
+            input.Contains(StandardDataFormats.Html) ||
+            input.Contains(StandardDataFormats.Bitmap))
+        {
+            return input;
+        }
+
+        var items = await input.GetStorageItemsAsync();
+        if (items.Count != 1 || items[0] is not StorageFile file)
+        {
+            return input;
+        }
+
+        return await ReadFileAsync(new FileInfo(file.Path), maximumTextCharacters, cancellationToken);
+    }
+
+    private static async Task<DataPackageView> ReadFileAsync(
+        FileInfo inputFile,
+        int maximumTextCharacters,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!inputFile.Exists)
         {
             throw new IOException();
         }
@@ -82,6 +114,7 @@ internal static class CliInputReader
             return await CreateFilePackageViewAsync(inputFile);
         }
 
+        var package = new DataPackage();
         package.SetText(text);
         if (text.Length > 0 &&
             (inputFile.Extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
