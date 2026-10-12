@@ -7,7 +7,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget commandBar) : IDisposable
+public sealed partial class PageInteractionCoordinator(ICommandBarInteractionTarget commandBar) : IDisposable
 {
     private PageViewModel? _page;
     private IPageInteractionTarget? _target;
