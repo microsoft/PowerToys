@@ -84,6 +84,17 @@ public enum PasteFormats
 
     [PasteFormatMetadata(
         IsCoreAction = false,
+        ResourceId = "PasteAsJpgFile",
+        IconGlyph = "\uE8B9",
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Image,
+        IPCKey = AdvancedPastePasteAsFileAction.PropertyNames.PasteAsJpgFile,
+        KernelFunctionDescription = "Takes an image in the clipboard and transforms it to a JPG (JPEG) file.")]
+    PasteAsJpgFile,
+
+    [PasteFormatMetadata(
+        IsCoreAction = false,
         ResourceId = "PasteAsHtmlFile",
         IconGlyph = "\uF6FA",
         RequiresAIService = false,

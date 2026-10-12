@@ -247,6 +247,9 @@
   <data name="PasteAsPngFile" xml:space="preserve">
     <value>Paste as .png file</value>
   </data>
+  <data name="PasteAsJpgFile" xml:space="preserve">
+    <value>Paste as .jpg file</value>
+  </data>
   <data name="PasteAsHtmlFile" xml:space="preserve">
     <value>Paste as .html file</value>
   </data>

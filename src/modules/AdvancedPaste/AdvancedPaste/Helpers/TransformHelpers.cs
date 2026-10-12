@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 
 using AdvancedPaste.Models;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 
@@ -18,7 +20,7 @@ namespace AdvancedPaste.Helpers;
 
 public static class TransformHelpers
 {
-    public static async Task<DataPackage> TransformAsync(PasteFormats format, DataPackageView clipboardData, CancellationToken cancellationToken, IProgress<double> progress)
+    public static async Task<DataPackage> TransformAsync(PasteFormats format, DataPackageView clipboardData, CancellationToken cancellationToken, IProgress<double> progress, int jpgQuality = AdvancedPasteProperties.DefaultPasteAsJpgQuality)
     {
         return format switch
         {
@@ -28,6 +30,7 @@ public static class TransformHelpers
             PasteFormats.ImageToText => await ImageToTextAsync(clipboardData, cancellationToken),
             PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData, cancellationToken),
             PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData, cancellationToken),
+            PasteFormats.PasteAsJpgFile => await ToJpgFileAsync(clipboardData, jpgQuality, cancellationToken),
             PasteFormats.PasteAsHtmlFile => await ToHtmlFileAsync(clipboardData, cancellationToken),
             PasteFormats.TranscodeToMp3 => await TranscodeHelpers.TranscodeToMp3Async(clipboardData, cancellationToken, progress),
             PasteFormats.TranscodeToMp4 => await TranscodeHelpers.TranscodeToMp4Async(clipboardData, cancellationToken, progress),
@@ -76,6 +79,25 @@ public static class TransformHelpers
         await encoder.FlushAsync();
 
         return await CreateDataPackageFromFileContentAsync(pngStream.AsStreamForRead(), "png", cancellationToken);
+    }
+
+    private static async Task<DataPackage> ToJpgFileAsync(DataPackageView clipboardData, int jpgQuality, CancellationToken cancellationToken)
+    {
+        Logger.LogTrace();
+
+        var clipboardBitmap = await clipboardData.GetImageContentAsync();
+
+        var encoderOptions = new BitmapPropertySet
+        {
+            ["ImageQuality"] = new BitmapTypedValue(Math.Clamp(jpgQuality, 1, 100) / 100f, PropertyType.Single),
+        };
+
+        using var jpgStream = new InMemoryRandomAccessStream();
+        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, jpgStream, encoderOptions);
+        encoder.SetSoftwareBitmap(clipboardBitmap);
+        await encoder.FlushAsync();
+
+        return await CreateDataPackageFromFileContentAsync(jpgStream.AsStreamForRead(), "jpg", cancellationToken);
     }
 
     private static async Task<DataPackage> ToTxtFileAsync(DataPackageView clipboardData, CancellationToken cancellationToken)
