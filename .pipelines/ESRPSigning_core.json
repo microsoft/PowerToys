@@ -143,6 +143,8 @@
 
             "PowerToys.LightSwitchModuleInterface.dll",
             "LightSwitchService\\PowerToys.LightSwitchService.exe",
+            "PowerToys.LightSwitch.Cli.exe",
+            "PowerToys.LightSwitch.Cli.dll",
 
             "PowerToys.KeyboardManager.dll",
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
@@ -194,6 +196,7 @@
             "WinUI3Apps\\PowerToys.MouseJump.WinUI3.exe",
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.CursorWrap.dll",
+            "PowerToys.MouseButtonLock.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",
@@ -260,6 +263,8 @@
 
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
+            "WinUI3Apps\\PowerToys.Settings.Cli.dll",
+            "WinUI3Apps\\PowerToys.Settings.Cli.exe",
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",

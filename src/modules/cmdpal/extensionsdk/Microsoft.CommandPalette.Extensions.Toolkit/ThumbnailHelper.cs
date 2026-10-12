@@ -15,6 +15,9 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public static class ThumbnailHelper
 {
+    // Temporary until IShellItemImageFactory replaces image lists; the SDK does not own the extension lifecycle.
+    private static readonly Lazy<bool> ShellIconCacheInitialized = new(static () => NativeMethods.FileIconInit(true));
+
     private static readonly string[] ImageExtensions =
     [
         ".png",
@@ -142,6 +145,8 @@ public static class ThumbnailHelper
             return icon != 0 ? await FromHIconToStream(icon) : null;
         }
 
+        // Initialize once before concurrent requests can race the Shell image-list setup.
+        _ = ShellIconCacheInitialized.Value;
         return await TryExtractUsingPIDL(filePath, jumbo)
                ?? await GetFileIconStreamUsingFilePath(filePath, jumbo);
     }
