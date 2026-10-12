@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
@@ -27,7 +26,6 @@ namespace WorkspacesLauncherUI
         private StatusWindow _mainWindow;
 
         private MainViewModel _mainViewModel;
-        private Process _ownerProcess;
 
         private bool _isDisposed;
 
@@ -80,20 +78,15 @@ namespace WorkspacesLauncherUI
 
                 operationId = id.ToString("D");
                 ShutdownMode = ShutdownMode.OnExplicitShutdown;
-                try
+                if (!RunnerHelper.TryWaitForProcessExit(ownerPid, () =>
                 {
-                    _ownerProcess = Process.GetProcessById(ownerPid);
-                    _ownerProcess.EnableRaisingEvents = true;
-                    _ownerProcess.Exited += (_, _) => Dispatcher.BeginInvoke(new Action(() => Shutdown()));
-                    if (_ownerProcess.HasExited)
+                    if (!Dispatcher.HasShutdownStarted)
                     {
-                        Shutdown(1);
-                        return;
+                        Dispatcher.BeginInvoke(new Action(() => Shutdown()));
                     }
-                }
-                catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+                }))
                 {
-                    Logger.LogError("Workspaces confirmation owner is unavailable.", exception);
+                    Logger.LogError("Workspaces confirmation owner is unavailable.");
                     Shutdown(1);
                     return;
                 }
@@ -170,7 +163,6 @@ namespace WorkspacesLauncherUI
                     ipcmanager?.Dispose();
 
                     _instanceMutex?.Dispose();
-                    _ownerProcess?.Dispose();
                 }
 
                 _isDisposed = true;

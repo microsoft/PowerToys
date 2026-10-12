@@ -178,6 +178,12 @@ namespace WorkspacesLauncherUI.ViewModels
                 {
                     warning.Window.Owner = _snapshotWindow;
                 }
+                else
+                {
+                    warning.Window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    warning.Window.ShowInTaskbar = true;
+                    warning.Window.Topmost = true;
+                }
 
                 warning.Window.ContentRendered += rendered;
                 if (CanShowWarning(warning))

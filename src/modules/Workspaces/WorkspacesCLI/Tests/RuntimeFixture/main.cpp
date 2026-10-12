@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 // Exercises CLI process/stream behavior without launching workspace applications or requesting UAC.
 #include <windows.h>
+#include <sddl.h>
 #include <filesystem>
 #include <iostream>
 #include <atomic>
@@ -78,8 +79,37 @@ namespace
         }
     }
 
-    void CheckUiStartup(bool cancelStartup)
+    void CheckUiStartup(bool cancelStartup, bool restrictedOwner)
     {
+        std::vector<BYTE> originalSecurity;
+        auto restoreSecurity = wil::scope_exit([&] {
+            if (!originalSecurity.empty())
+                SetKernelObjectSecurity(GetCurrentProcess(), DACL_SECURITY_INFORMATION, originalSecurity.data());
+        });
+        if (restrictedOwner)
+        {
+            DWORD size{};
+            GetKernelObjectSecurity(GetCurrentProcess(), DACL_SECURITY_INFORMATION, nullptr, 0, &size);
+            Check(size != 0);
+            originalSecurity.resize(size);
+            Check(GetKernelObjectSecurity(GetCurrentProcess(), DACL_SECURITY_INFORMATION, originalSecurity.data(), size, &size) != FALSE);
+            wil::unique_handle token;
+            Check(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, token.put()) != FALSE);
+            DWORD tokenSize{};
+            GetTokenInformation(token.get(), TokenUser, nullptr, 0, &tokenSize);
+            std::vector<BYTE> user(tokenSize);
+            Check(GetTokenInformation(token.get(), TokenUser, user.data(), tokenSize, &tokenSize) != FALSE);
+            wil::unique_hlocal_string sid;
+            Check(ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(user.data())->User.Sid, sid.put()) != FALSE);
+            const auto sddl = std::wstring(L"D:P(A;;0x00101000;;;") + sid.get() + L")";
+            wil::unique_hlocal_security_descriptor descriptor;
+            Check(ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, descriptor.put(), nullptr) != FALSE);
+            Check(SetKernelObjectSecurity(GetCurrentProcess(), DACL_SECURITY_INFORMATION, descriptor.get()) != FALSE);
+            wil::unique_handle broad(OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId()));
+            Check(!broad);
+            wil::unique_handle waitOnly(OpenProcess(SYNCHRONIZE, FALSE, GetCurrentProcessId()));
+            Check(static_cast<bool>(waitOnly));
+        }
         GUID operation{}, request{};
         winrt::check_hresult(CoCreateGuid(&operation));
         winrt::check_hresult(CoCreateGuid(&request));
@@ -170,7 +200,8 @@ int wmain(int argc, wchar_t** argv)
         }
         if (std::wstring_view(argv[1]).starts_with(L"ui-startup"))
         {
-            CheckUiStartup(std::wstring_view(argv[1]) == L"ui-startup-canceled");
+            CheckUiStartup(std::wstring_view(argv[1]) == L"ui-startup-canceled",
+                           std::wstring_view(argv[1]) == L"ui-startup-restricted-owner");
             std::cout << "{\"passed\":true}\n";
             return 0;
         }

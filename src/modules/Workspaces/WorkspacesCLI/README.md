@@ -38,9 +38,13 @@ No medium context or identity mismatch means a clear error, never an elevated fa
 Unverified elevated EXEs use the existing GUI confirmation flow end-to-end:
 `Launcher::requestApproval` owns the single pending request and talks through `LauncherUIHelper`
 to `SignatureWarningWindow`. CLI mode starts that UI lazily without the progress window.
+Without a status-window owner, the shared warning is centered on screen, topmost, and available
+in the taskbar so it cannot silently hide behind the launching terminal without a discoverable entry.
 The same rendered acknowledgement, default Skip, file pin and reply validation apply; there
 is no CLI-specific approval channel or input state machine. Ctrl+C/deadline cancel the shared
 request. Final JSON stdout remains separate from the dialog.
+The confirmation host reuses `RunnerHelper`'s wait-only process lifetime monitoring; it does not
+request broad access to the CLI worker through `Process.EnableRaisingEvents`.
 The shared UI helper waits for its receiver pipe to become available before accepting the first
 warning. Startup remains bounded and honors cancellation; process existence alone is not readiness.
 

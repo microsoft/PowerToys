@@ -162,7 +162,7 @@ namespace
         if (GetTickCount64() >= options.deadline)
             throw WorkspacesCli::Error(9, L"timeout", "Operation deadline expired before starting applications.");
         const bool loggingReady = CliLogging::Initialize();
-        Logger::info("Workspaces CLI: launch worker started");
+        Logger::info("Workspaces CLI: launch worker started; execution context verified Medium/non-elevated.");
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
         std::vector<WorkspacesData::WorkspacesProject> unusedStore;
         int exitCode = 1;

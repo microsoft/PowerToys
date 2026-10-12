@@ -90,6 +90,11 @@ namespace WorkspacesLibUnitTests
             Run(L"ui-startup-canceled");
         }
 
+        TEST_METHOD (ConfirmationUiUsesWaitOnlyAccessToItsOwner)
+        {
+            Run(L"ui-startup-restricted-owner");
+        }
+
         TEST_METHOD (WorkerResourceFailureKeepsCombinedOutputJsonOnly)
         {
             Run(L"worker-resource-error", true);

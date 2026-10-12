@@ -356,6 +356,10 @@ void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
     {
         Logger::warn(L"Ignoring a stale, early, or duplicate elevation confirmation message");
     }
+    else if (m_cliOptions && message->type == LauncherUiMessage::Type::WarningShown)
+    {
+        Logger::info("Workspaces CLI: confirmation dialog rendered; waiting for a decision.");
+    }
 }
 
 LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::wstring& path, const std::wstring& arguments, const SignatureVerification::Result& result)
@@ -364,6 +368,8 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
     {
         return LaunchDecision::Canceled;
     }
+    if (m_cliOptions)
+        Logger::info("Workspaces CLI: preparing the shared confirmation dialog.");
     if (!m_uiHelper || !m_uiHelper->LaunchUI([&] { return m_approval.IsCanceled() || ShouldStop(); }))
     {
         Logger::error(L"Cannot request elevation confirmation: Workspaces UI is unavailable");
@@ -395,6 +401,8 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
         {
             if (ShouldStop())
                 return LaunchDecision::Canceled;
+            if (m_cliOptions)
+                Logger::info("Workspaces CLI: confirmation finished, decision={}", static_cast<int>(decision.value()));
             return decision.value();
         }
         if (!m_uiHelper->IsRunning())
