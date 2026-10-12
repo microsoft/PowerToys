@@ -133,6 +133,16 @@ public class CardFormattingTests
     }
 
     [TestMethod]
+    public void LinkSpeedUsesTheLargestWholeUnit()
+    {
+        Assert.AreEqual("1 Gbps", SystemNetworkUsageWidgetPage.LinkSpeedToString(1e9));
+        Assert.AreEqual("2.5 Gbps", SystemNetworkUsageWidgetPage.LinkSpeedToString(2.5e9));
+        Assert.AreEqual("866.7 Mbps", SystemNetworkUsageWidgetPage.LinkSpeedToString(866.7e6));
+        Assert.AreEqual("56 Kbps", SystemNetworkUsageWidgetPage.LinkSpeedToString(56e3));
+        Assert.AreEqual("—", SystemNetworkUsageWidgetPage.LinkSpeedToString(0));
+    }
+
+    [TestMethod]
     public void MemoryUseShowsTheSizeUnit()
     {
         const ulong BytesPerGigabyte = 1024UL * 1024 * 1024;
