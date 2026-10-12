@@ -42,7 +42,7 @@ namespace AdvancedPaste
             {
                 double GetHeight(int maxCustomActionCount) =>
                     baseHeight +
-                    new PasteFormatsToHeightConverter().GetHeight(coreActionCount + _userSettings.AdditionalActions.Count) +
+                    new PasteFormatsToHeightConverter() { MaxItems = 5 }.GetHeight(coreActionCount + _userSettings.AdditionalActions.Count) +
                     new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(_optionsViewModel.IsCustomAIServiceEnabled ? _userSettings.CustomActions.Count : 0);
 
                 MinHeight = GetHeight(1);

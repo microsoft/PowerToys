@@ -14,6 +14,7 @@ public sealed class AdvancedPasteAdditionalActions
     private AdvancedPasteAdditionalAction _fixSpellingAndGrammar = new();
     private AdvancedPastePasteAsFileAction _pasteAsFile = new();
     private AdvancedPasteTranscodeAction _transcode = new();
+    private AdvancedPasteTextCaseAction _textCase = new();
 
     public static class PropertyNames
     {
@@ -21,6 +22,7 @@ public sealed class AdvancedPasteAdditionalActions
         public const string FixSpellingAndGrammar = "fix-spelling-and-grammar";
         public const string PasteAsFile = "paste-as-file";
         public const string Transcode = "transcode";
+        public const string TextCase = "text-case";
     }
 
     [JsonPropertyName(PropertyNames.ImageToText)]
@@ -51,9 +53,16 @@ public sealed class AdvancedPasteAdditionalActions
         init => _transcode = value ?? new();
     }
 
+    [JsonPropertyName(PropertyNames.TextCase)]
+    public AdvancedPasteTextCaseAction TextCase
+    {
+        get => _textCase;
+        init => _textCase = value ?? new();
+    }
+
     public IEnumerable<IAdvancedPasteAction> GetAllActions()
     {
-        return GetAllActionsRecursive([ImageToText, FixSpellingAndGrammar, PasteAsFile, Transcode]);
+        return GetAllActionsRecursive([ImageToText, FixSpellingAndGrammar, PasteAsFile, Transcode, TextCase]);
     }
 
     /// <summary>

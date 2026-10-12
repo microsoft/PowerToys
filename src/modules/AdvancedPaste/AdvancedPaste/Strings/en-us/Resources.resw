@@ -232,6 +232,36 @@
   <data name="PasteAsPlainText" xml:space="preserve">
     <value>Paste as plain text</value>
   </data>
+  <data name="LowerCase" xml:space="preserve">
+    <value>Lower case</value>
+  </data>
+  <data name="UpperCase" xml:space="preserve">
+    <value>UPPER CASE</value>
+  </data>
+  <data name="TitleCase" xml:space="preserve">
+    <value>Title Case</value>
+  </data>
+  <data name="SentenceCase" xml:space="preserve">
+    <value>Sentence case</value>
+  </data>
+  <data name="ToggleCase" xml:space="preserve">
+    <value>Toggle case</value>
+  </data>
+  <data name="CamelCase" xml:space="preserve">
+    <value>camelCase</value>
+  </data>
+  <data name="PascalCase" xml:space="preserve">
+    <value>PascalCase</value>
+  </data>
+  <data name="SnakeCase" xml:space="preserve">
+    <value>snake_case</value>
+  </data>
+  <data name="ScreamingSnakeCase" xml:space="preserve">
+    <value>SCREAMING_SNAKE_CASE</value>
+  </data>
+  <data name="KebabCase" xml:space="preserve">
+    <value>kebab-case</value>
+  </data>
   <data name="FixSpellingAndGrammar" xml:space="preserve">
     <value>Fix spelling and grammar</value>
   </data>
