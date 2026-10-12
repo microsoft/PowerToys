@@ -11,10 +11,11 @@
       Keep the .NET SDK's generated assembly info. Otherwise XES sets GenerateAssemblyInfo=false,
       which drops [SupportedOSPlatform], [TargetPlatform] and [NeutralResourcesLanguage] from
       release builds and makes CA1416 fire on every Windows API call. XES still stamps the
-      native version resource; PTUseXesAssemblyVersion below feeds its versions to the SDK.
+      native version resource; PTUseXesAssemblyVersion below feeds the same nine values XES would
+      have written (version, file/informational version, company, product, copyright, title,
+      description, trademark) to the SDK.
     -->
     <XesDisableAssemblyInfoWrite>True</XesDisableAssemblyInfoWrite>
-    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
   </PropertyGroup>
 
   <Target Name="PTUseXesAssemblyVersion" BeforeTargets="GetAssemblyAttributes">
@@ -24,6 +25,14 @@
       <Company>$(VersionInfoCompanyName)</Company>
       <Product>$(VersionInfoProductName)</Product>
       <Description>$(VersionInfoFileDescription)</Description>
+      <Copyright>$(VersionInfoCopyRight)</Copyright>
+      <AssemblyTitle>$(VersionInfoTitle)</AssemblyTitle>
+      <InformationalVersion>$(NuGetPackVersion)</InformationalVersion>
     </PropertyGroup>
+    <ItemGroup Condition="'$(VersionInfoLegalTradeMarks)' != ''">
+      <AssemblyAttribute Include="System.Reflection.AssemblyTrademarkAttribute">
+        <_Parameter1>$(VersionInfoLegalTradeMarks)</_Parameter1>
+      </AssemblyAttribute>
+    </ItemGroup>
   </Target>
 </Project>
