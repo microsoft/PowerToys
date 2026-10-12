@@ -77,18 +77,46 @@ $candidateSamples = Get-Samples -Paths $Candidate
 Write-Host '| Scenario | Metric | n | Baseline median | Candidate median | Change | Baseline P90 | Candidate P90 | Change |'
 Write-Host '|---|---|--:|--:|--:|--:|--:|--:|--:|'
 
-$scenarios = @($baselineSamples | ForEach-Object Scenario | Select-Object -Unique)
+$scenarios = @(
+    $baselineSamples | ForEach-Object Scenario
+    $candidateSamples | ForEach-Object Scenario
+) | Sort-Object -Unique
+
 foreach ($scenario in $scenarios)
 {
-    $first = $baselineSamples | Where-Object { $_.Scenario -eq $scenario } | Select-Object -First 1
-    $metrics = $first.PSObject.Properties.Name | Where-Object { $_ -notin 'Scenario', 'Iteration', 'IsWarmup' }
+    $baselineScenario = @($baselineSamples | Where-Object { $_.Scenario -eq $scenario })
+    $candidateScenario = @($candidateSamples | Where-Object { $_.Scenario -eq $scenario })
+    if ($baselineScenario.Count -eq 0 -or $candidateScenario.Count -eq 0)
+    {
+        throw "Scenario '$scenario' must be present in both baseline and candidate results."
+    }
+
+    $metrics = @(
+        $baselineScenario |
+            ForEach-Object { $_.PSObject.Properties.Name } |
+            Where-Object { $_ -notin 'Scenario', 'Iteration', 'IsWarmup' } |
+            Sort-Object -Unique
+    )
+    $candidateMetrics = @(
+        $candidateScenario |
+            ForEach-Object { $_.PSObject.Properties.Name } |
+            Where-Object { $_ -notin 'Scenario', 'Iteration', 'IsWarmup' } |
+            Sort-Object -Unique
+    )
+    $metricDifference = @(Compare-Object -ReferenceObject $metrics -DifferenceObject $candidateMetrics)
+    if ($metricDifference.Count -gt 0)
+    {
+        $names = @($metricDifference | ForEach-Object InputObject | Sort-Object -Unique) -join ', '
+        throw "Scenario '$scenario' has different baseline and candidate metrics: $names."
+    }
+
     foreach ($metric in $metrics)
     {
         $before = Get-Values -Samples $baselineSamples -Scenario $scenario -Metric $metric
         $after = Get-Values -Samples $candidateSamples -Scenario $scenario -Metric $metric
         if ($before.Count -eq 0 -or $after.Count -eq 0)
         {
-            continue
+            throw "Metric '$scenario.$metric' must have measured values in both baseline and candidate results."
         }
 
         $medianBefore = Get-Percentile -Values $before -Percentile 0.5

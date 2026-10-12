@@ -1682,105 +1682,140 @@ if ($Scenario | Where-Object { $_ -in 'Runner', 'Settings', 'PowerToysRun' })
     }
 }
 
-$null = New-Item -ItemType Directory -Force -Path $OutputDirectory
-New-SampleFiles
-$started = Get-Date
+$currentUserSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+$measurementMutex = [Threading.Mutex]::new($false, "Local\PowerToys_StartupPerformance_$currentUserSid")
+$ownsMeasurementMutex = $false
 
 try
 {
-    $script:recorder = [PowerToysPerformance.WindowShowRecorder]::new()
-
-    if ($Scenario | Where-Object { $_ -in 'Runner', 'Settings', 'PowerToysRun' })
+    try
     {
-        Stop-AllRunners
-        $script:tookOver = $true
-        Save-DataFolder
-        Set-LastVersionRun
+        $ownsMeasurementMutex = $measurementMutex.WaitOne(0)
+    }
+    catch [Threading.AbandonedMutexException]
+    {
+        $ownsMeasurementMutex = $true
     }
 
-    foreach ($name in $Scenario)
+    if (-not $ownsMeasurementMutex)
     {
-        Write-Host "== $name"
-        switch ($name)
+        throw 'Another PowerToys startup measurement is already running in this session.'
+    }
+
+    $null = New-Item -ItemType Directory -Force -Path $OutputDirectory
+    New-SampleFiles
+    $started = Get-Date
+
+    try
+    {
+        $script:recorder = [PowerToysPerformance.WindowShowRecorder]::new()
+
+        if ($Scenario | Where-Object { $_ -in 'Runner', 'Settings', 'PowerToysRun' })
         {
-            'Runner' { Measure-Runner }
-            'Settings' { Measure-Settings }
-            'PowerToysRun' { Measure-PowerToysRun }
-            'FileLocksmith' { Measure-FileLocksmith }
-            'SvgThumbnail' { Measure-SvgThumbnail }
-            default { Measure-PreviewHandler -Name $name }
+            Stop-AllRunners
+            $script:tookOver = $true
+            Save-DataFolder
+            Set-LastVersionRun
         }
-    }
 
-    $result = [ordered]@{
-        SchemaVersion = 1
-        Label = $Label
-        Timestamp = $started.ToString('o')
-        PowerToysRoot = $root
-        PowerToysVersion = (Get-Item $runnerPath).VersionInfo.FileVersion
-        Machine = [ordered]@{
-            OS = (Get-CimInstance Win32_OperatingSystem).Caption
-            OSVersion = [Environment]::OSVersion.Version.ToString()
-            Processor = (Get-CimInstance Win32_Processor | Select-Object -First 1 -ExpandProperty Name)
-            LogicalProcessors = [Environment]::ProcessorCount
-            Architecture = $env:PROCESSOR_ARCHITECTURE
-            MemoryGB = [Math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
-        }
-        ModuleProfile = Get-ModuleProfile
-        Configuration = [ordered]@{
-            Scenario = $Scenario
-            Iterations = $Iterations
-            WarmupIterations = $WarmupIterations
-            SettleMilliseconds = $SettleMilliseconds
-        }
-        Summary = Get-Summary
-        Samples = $script:samples
-    }
-
-    $resultPath = Join-Path $OutputDirectory ('{0}-{1}.json' -f $Label, $started.ToString('yyyyMMdd-HHmmss'))
-    $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8
-
-    Write-Host ''
-    Write-Host '| Scenario | Metric | Median | P90 | Min | Max |'
-    Write-Host '|---|---|--:|--:|--:|--:|'
-    foreach ($scenarioName in $result.Summary.Keys)
-    {
-        foreach ($metric in $result.Summary[$scenarioName].Keys)
+        foreach ($name in $Scenario)
         {
-            $s = $result.Summary[$scenarioName][$metric]
-            Write-Host ('| {0} | {1} | {2} | {3} | {4} | {5} |' -f $scenarioName, $metric, $s.Median, $s.P90, $s.Min, $s.Max)
+            Write-Host "== $name"
+            switch ($name)
+            {
+                'Runner' { Measure-Runner }
+                'Settings' { Measure-Settings }
+                'PowerToysRun' { Measure-PowerToysRun }
+                'FileLocksmith' { Measure-FileLocksmith }
+                'SvgThumbnail' { Measure-SvgThumbnail }
+                default { Measure-PreviewHandler -Name $name }
+            }
+        }
+
+        $result = [ordered]@{
+            SchemaVersion = 1
+            Label = $Label
+            Timestamp = $started.ToString('o')
+            PowerToysRoot = $root
+            PowerToysVersion = (Get-Item $runnerPath).VersionInfo.FileVersion
+            Machine = [ordered]@{
+                OS = (Get-CimInstance Win32_OperatingSystem).Caption
+                OSVersion = [Environment]::OSVersion.Version.ToString()
+                Processor = (Get-CimInstance Win32_Processor | Select-Object -First 1 -ExpandProperty Name)
+                LogicalProcessors = [Environment]::ProcessorCount
+                Architecture = $env:PROCESSOR_ARCHITECTURE
+                MemoryGB = [Math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
+            }
+            ModuleProfile = Get-ModuleProfile
+            Configuration = [ordered]@{
+                Scenario = $Scenario
+                Iterations = $Iterations
+                WarmupIterations = $WarmupIterations
+                SettleMilliseconds = $SettleMilliseconds
+            }
+            Summary = Get-Summary
+            Samples = $script:samples
+        }
+
+        $resultPath = Join-Path $OutputDirectory ('{0}-{1}.json' -f $Label, $started.ToString('yyyyMMdd-HHmmss'))
+        $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8
+
+        Write-Host ''
+        Write-Host '| Scenario | Metric | Median | P90 | Min | Max |'
+        Write-Host '|---|---|--:|--:|--:|--:|'
+        foreach ($scenarioName in $result.Summary.Keys)
+        {
+            foreach ($metric in $result.Summary[$scenarioName].Keys)
+            {
+                $s = $result.Summary[$scenarioName][$metric]
+                Write-Host ('| {0} | {1} | {2} | {3} | {4} | {5} |' -f $scenarioName, $metric, $s.Median, $s.P90, $s.Min, $s.Max)
+            }
+        }
+
+        Write-Host ''
+        Write-Host "Results: $resultPath"
+    }
+    finally
+    {
+        Stop-LaunchedProcesses
+        if ($script:tookOver)
+        {
+            # Every runner was stopped first, so anything still running from this build was started by
+            # the measured runs, for example module processes of a runner that crashed.
+            Stop-RootProcesses
+        }
+
+        Restore-Files
+        if ($null -ne $script:dataSnapshot)
+        {
+            Restore-DataFolder
+        }
+
+        foreach ($path in $script:stoppedRunnerPaths)
+        {
+            if (Test-Path -LiteralPath $path)
+            {
+                Start-Process -FilePath $path | Out-Null
+            }
+        }
+
+        if ($null -ne $script:recorder)
+        {
+            $script:recorder.Dispose()
         }
     }
-
-    Write-Host ''
-    Write-Host "Results: $resultPath"
 }
 finally
 {
-    Stop-LaunchedProcesses
-    if ($script:tookOver)
+    try
     {
-        # Every runner was stopped first, so anything still running from this build was started by
-        # the measured runs, for example module processes of a runner that crashed.
-        Stop-RootProcesses
-    }
-
-    Restore-Files
-    if ($null -ne $script:dataSnapshot)
-    {
-        Restore-DataFolder
-    }
-
-    foreach ($path in $script:stoppedRunnerPaths)
-    {
-        if (Test-Path -LiteralPath $path)
+        if ($ownsMeasurementMutex)
         {
-            Start-Process -FilePath $path | Out-Null
+            $measurementMutex.ReleaseMutex()
         }
     }
-
-    if ($null -ne $script:recorder)
+    finally
     {
-        $script:recorder.Dispose()
+        $measurementMutex.Dispose()
     }
 }
