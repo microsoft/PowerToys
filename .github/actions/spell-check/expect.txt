@@ -420,6 +420,7 @@ dfx
 DIALOGEX
 diffs
 digicert
+dimm
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -1623,6 +1624,7 @@ rollups
 ROUNDSMALL
 rpcrt
 RRF
+rsmb
 rsop
 Rsp
 rstringalnum
@@ -1780,6 +1782,7 @@ SMTO
 SNAPPROCESS
 snk
 snwprintf
+sodimm
 softline
 softpub
 SOURCECLIENTAREAONLY

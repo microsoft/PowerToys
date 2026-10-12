@@ -11,5 +11,7 @@ IDXGIAdapter1
 DXGI_ADAPTER_DESC1
 GetIfTable2
 FreeMibTable
+GetSystemFirmwareTable
+GetPhysicallyInstalledSystemMemory
 NtQuerySystemInformation
 SYSTEM_PROCESS_INFORMATION
