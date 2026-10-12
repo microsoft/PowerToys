@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using CoreWidgetProvider.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -137,6 +138,29 @@ public class GPUStatsTests
         Assert.AreEqual(new GPUStats.EngineUsage(0, 55f), reduced[1][0]);
         Assert.AreEqual(new GPUStats.EngineUsage(1, 4f), reduced[1][1]);
         Assert.AreEqual(new GPUStats.EngineUsage(0, 100f), reduced[2][0]);
+    }
+
+    [TestMethod]
+    public void ReduceAdapterUsage_TakesTheBusiestEngineOfAnyType()
+    {
+        var compute = GPUStats.GetEngineType("pid_1_luid_0x00000000_0x0001766D_phys_0_eng_4_engtype_Compute_0");
+        var perEngineUsage = new Dictionary<(long Luid, string EngineId, int Type), float>
+        {
+            [(1, "0", 0)] = 3f,
+            [(1, "1", 1)] = 4f,
+            [(1, "3", 3)] = 20f,
+            [(1, "4", compute)] = 85f,
+            [(2, "0", 0)] = 140f,
+        };
+
+        var usage = GPUStats.ReduceAdapterUsage(perEngineUsage);
+        var engines = GPUStats.ReduceEngineUsage(perEngineUsage);
+
+        // Compute isn't a tile, but it's the busiest engine, so it sets the adapter's utilization.
+        Assert.AreEqual(85f, usage[1]);
+        Assert.AreEqual(100f, usage[2]);
+        Assert.AreEqual(3, engines[1].Length);
+        Assert.AreEqual(new GPUStats.EngineUsage(3, 20f), engines[1][2]);
     }
 
     [TestMethod]
