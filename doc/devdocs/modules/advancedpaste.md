@@ -39,6 +39,24 @@ Clipboard modes use the Win32/OLE clipboard so they do not require a foreground 
 
 Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. The CLI honors the Advanced Paste enabled policy and AI actions honor the configured provider, AI-related GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
 
+Root `--help` and `transform --help` describe every built-in action, input/output defaults, AI/custom-action setup, examples, size limits, cancellation, and exit codes without loading settings or providers. `actions list` includes descriptions; its JSON array uses keys `name`, `kind`, `id`, `requiresPrompt`, and `description`. Saved custom actions are discovered through `actions list`, since they depend on the user's configuration.
+
+#### AI providers
+
+A provider is an AI service and model configured in **PowerToys Settings > Advanced Paste**, such as Ollama with a local model or OpenAI with a cloud model. Provider IDs are generated per configured entry; there is no fixed list of IDs, and names such as `Ollama` are not IDs.
+
+```powershell
+PowerToys.AdvancedPaste.CLI.exe providers list
+PowerToys.AdvancedPaste.CLI.exe providers list --json
+PowerToys.AdvancedPaste.CLI.exe transform --action paste-with-ai --prompt "Summarize in one sentence" --stdin --stdout --provider <id-from-list>
+```
+
+`providers list` shows each configured ID, service/model, default selection, and policy status without making AI requests or reading the clipboard. It lists configuration, not a connectivity or credential-health check; it also works when AI is turned off in settings. JSON output is an array with stable keys `id`, `name`, `serviceType`, `model`, `isDefault`, and `isAllowedByPolicy`. API keys, endpoints, and system prompts are not included.
+
+`--provider` applies only to `paste-with-ai`, `fix-spelling-and-grammar`, and `--custom-action`. It overrides the saved action's provider or the default provider for that invocation, including nested Advanced AI transformations and cached action chains. Unknown explicit IDs are rejected rather than falling back to another provider. Without the option, the saved action's configured provider is used when present, otherwise the default provider. Plain-text, Markdown, JSON, OCR, and media conversion do not use this AI-provider option.
+
+Configure providers and credentials in Settings; the CLI does not enable AI, create providers, sign in, install local models, or accept API keys. Local Ollama needs a running server and an installed model with a matching model name; cloud services need their own API access and can incur charges. A GitHub Copilot subscription is not an Advanced Paste provider.
+
 Text files are exposed as text/HTML, not as image/file attachments; malformed UTF-8 and binary files retain their original file representation. With default clipboard input or explicit `--clipboard`, a single file copied in Explorer is read using the same bounded file reader as `--input`, enabling copied CSV-to-JSON and HTML-to-Markdown conversions. Existing clipboard text, HTML, or bitmap takes precedence; folders and multiple-file selections are not converted to text or combined. Markdown and custom AI actions also accept HTML-only clipboard content. OpenAI moderation is skipped, with a warning in the log, when OpenAI or online AI is forbidden by policy; an otherwise permitted Azure provider can still run.
 
 Generated file output is cleaned after copying to an explicit output path. Older owned temporary directories are cleaned only when clipboard input provides a snapshot (default or explicit `--clipboard`), excluding directories containing current clipboard files or the selected output. Cleanup uses paths from the original file-drop snapshot even after text-file input has been converted to text/HTML. File/stdin commands and action listing never read the clipboard for cleanup.

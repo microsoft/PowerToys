@@ -47,11 +47,47 @@ internal sealed class AdvancedPasteRuntime(
     public bool IsEnabled => _isAdvancedPasteEnabled();
 
     public IReadOnlyList<CliActionDescriptor> GetActions()
-        => BuiltInActions.Keys
-            .Select(name => new CliActionDescriptor(name, "built-in", null, RequiresPrompt: false))
-            .Append(new CliActionDescriptor("paste-with-ai", "built-in", null, RequiresPrompt: true))
-            .Concat(_settings.CustomActions.Select(action => new CliActionDescriptor(action.Name, "custom", action.Id, RequiresPrompt: false)))
+        => GetBuiltInActions()
+            .Concat(_settings.CustomActions.Select(action => new CliActionDescriptor(
+                action.Name, "custom", action.Id, RequiresPrompt: false, Description: "Run this saved AI prompt using its configured provider, unless --provider overrides it.")))
             .ToArray();
+
+    internal static IReadOnlyList<CliActionDescriptor> GetBuiltInActions()
+        => BuiltInActions.Keys
+            .Select(name => new CliActionDescriptor(name, "built-in", null, RequiresPrompt: false, Description: GetBuiltInActionDescription(name)))
+            .Append(new CliActionDescriptor(
+                "paste-with-ai", "built-in", null, RequiresPrompt: true, Description: "Follow --prompt instructions using a configured AI provider; Advanced AI may combine tools."))
+            .ToArray();
+
+    private static string GetBuiltInActionDescription(string name) => name switch
+    {
+        "plain-text" => "Remove formatting and return plain text.",
+        "markdown" => "Convert HTML content to Markdown; plain text passes through.",
+        "json" => "Convert CSV, XML, or INI to JSON; existing JSON passes through; other text becomes an array of lines.",
+        "fix-spelling-and-grammar" => "Correct text using a configured AI provider.",
+        "image-to-text" => "Extract text from an image using Windows OCR; no AI provider needed.",
+        "paste-as-txt-file" => "Generate a TXT file from text; use --output or clipboard output.",
+        "paste-as-png-file" => "Generate a PNG file from an image; use --output or clipboard output.",
+        "paste-as-html-file" => "Generate an HTML file from HTML content; use --output or clipboard output.",
+        "transcode-to-mp3" => "Convert audio/video to an MP3 file; use --output or clipboard output.",
+        "transcode-to-mp4" => "Convert media to an MP4 file; use --output or clipboard output.",
+        _ => throw new ArgumentException("Unsupported built-in action.", nameof(name)),
+    };
+
+    public IReadOnlyList<CliProviderDescriptor> GetProviders()
+    {
+        var configuration = _settings.PasteAIConfiguration;
+        var defaultProvider = configuration?.ActiveProvider ?? configuration?.Providers?.FirstOrDefault();
+        return configuration?.Providers?
+            .Select(provider => new CliProviderDescriptor(
+                provider.Id,
+                provider.DisplayName,
+                provider.ServiceType,
+                provider.ModelName,
+                string.Equals(provider.Id, defaultProvider?.Id, StringComparison.OrdinalIgnoreCase),
+                _isProviderAllowed(provider)))
+            .ToArray() ?? [];
+    }
 
     public async Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
     {
@@ -136,7 +172,9 @@ internal sealed class AdvancedPasteRuntime(
     {
         if (!string.IsNullOrWhiteSpace(providerId))
         {
-            return providerId;
+            return _settings.PasteAIConfiguration?.Providers?
+                .FirstOrDefault(provider => string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase))?.Id
+                ?? throw new CliActionResolutionException("Unknown AI provider ID. Run 'providers list' to find configured IDs.");
         }
 
         var configuration = _settings.PasteAIConfiguration;

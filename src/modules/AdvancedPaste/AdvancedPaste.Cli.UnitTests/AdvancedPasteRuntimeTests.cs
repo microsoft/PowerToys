@@ -150,6 +150,92 @@ public class AdvancedPasteRuntimeTests
             },
         };
 
+    [DataTestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void GetProviders_ReportsDefaultAndPolicyWithoutExecutingAI(bool activeProviderSet)
+    {
+        var configuration = new PasteAIConfiguration
+        {
+            ActiveProviderId = activeProviderSet ? "second" : string.Empty,
+            Providers =
+            [
+                new() { Id = "first", ServiceType = "Ollama", ModelName = "local-model" },
+                new() { Id = "second", ServiceType = "OpenAI", ModelName = "cloud-model" },
+            ],
+        };
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(
+            executor,
+            new TestUserSettings(isAIEnabled: false, configuration: configuration),
+            isAdvancedPasteEnabled: () => true,
+            isProviderAllowed: provider => provider.Id == "first");
+
+        var providers = runtime.GetProviders();
+
+        Assert.AreEqual(2, providers.Count);
+        Assert.AreEqual("first", providers[0].Id);
+        Assert.AreEqual("local-model", providers[0].Model);
+        Assert.AreEqual(!activeProviderSet, providers[0].IsDefault);
+        Assert.IsTrue(providers[0].IsAllowedByPolicy);
+        Assert.AreEqual(activeProviderSet, providers[1].IsDefault);
+        Assert.IsFalse(providers[1].IsAllowedByPolicy);
+        Assert.IsFalse(executor.WasCalled);
+    }
+
+    [TestMethod]
+    public void GetProviders_EmptyConfigurationReturnsEmptyList()
+    {
+        var runtime = new AdvancedPasteRuntime(
+            new TestPasteFormatExecutor(),
+            new TestUserSettings(isAIEnabled: false),
+            isAdvancedPasteEnabled: () => true);
+
+        Assert.AreEqual(0, runtime.GetProviders().Count);
+    }
+
+    [DataTestMethod]
+    [DataRow("paste-with-ai")]
+    [DataRow("fix-spelling-and-grammar")]
+    [DataRow(null)]
+    public async Task ExplicitProvider_RejectsUnknownIdWithoutFallingBack(string? actionName)
+    {
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(
+            executor,
+            new TestUserSettings(
+                isAIEnabled: true,
+                configuration: CreateProviderConfiguration("active"),
+                customActions: [new() { Id = 1, Name = "Saved", Prompt = "prompt" }]),
+            isAdvancedPasteEnabled: () => true,
+            isProviderAllowed: _ => true);
+        var input = new DataPackage();
+        input.SetText("input");
+
+        await Assert.ThrowsExactlyAsync<CliActionResolutionException>(() => runtime.ExecuteAsync(
+            new CliActionRequest(actionName, actionName is null ? "1" : null, "prompt", "unknown"),
+            input.GetView(),
+            CancellationToken.None));
+        Assert.IsFalse(executor.WasCalled);
+    }
+
+    [TestMethod]
+    public async Task ExplicitProvider_UsesConfiguredIdCaseInsensitively()
+    {
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(
+            executor,
+            new TestUserSettings(isAIEnabled: true, configuration: CreateProviderConfiguration("configured")),
+            isAdvancedPasteEnabled: () => true,
+            isProviderAllowed: _ => true);
+        var input = new DataPackage();
+        input.SetText("input");
+
+        await runtime.ExecuteAsync(new CliActionRequest("paste-with-ai", null, "prompt", "CONFIGURED"), input.GetView(), CancellationToken.None);
+
+        Assert.AreEqual("configured", executor.LastPasteFormat?.ProviderId);
+    }
+
     private sealed class TestPasteFormatExecutor : IPasteFormatExecutor
     {
         public bool WasCalled { get; private set; }

@@ -29,6 +29,7 @@ runtime failure, `2` invalid arguments).
 | stdin -> default clipboard | `'Hello from stdin' \| & $cli transform --action plain-text --stdin; $code = $LASTEXITCODE; Get-Clipboard; $code` | Clipboard contains `Hello from stdin`, then `0`. |
 | JSON success envelope | `'hello' \| & $cli transform --action plain-text --stdin --stdout --json; $LASTEXITCODE` | One parseable JSON object with `status: "success"` and `output: "hello\r\n"`; then `0`. |
 | List actions | `& $cli actions list --json \| ConvertFrom-Json` | Lists all built-in actions and configured custom actions. |
+| List AI provider IDs | `& $cli providers list --json \| ConvertFrom-Json` | Lists configured IDs, service/model, default selection, and policy status; no AI requests or clipboard access. |
 | OCR image -> stdout | `& $cli transform --action image-to-text --input 'path\to\image.png' --stdout; $LASTEXITCODE` | Prints OCR text, then `0`. |
 | Video -> MP3 file | `& $cli transform --action transcode-to-mp3 --input 'path\to\video.mp4' --output (Join-Path $out 'audio.mp3'); $LASTEXITCODE` | Creates a nonempty MP3, then `0`. |
 | Paste with AI | `Set-Clipboard 'Text to summarize'; & $cli transform --action paste-with-ai --prompt 'Summarize in one sentence' --clipboard; $LASTEXITCODE` | Clipboard contains the configured provider's result, then `0`. |
@@ -57,5 +58,11 @@ OCR, PNG-file creation, and media transcoding accept an input file or compatible
 rich clipboard content. AI tests use the same provider configuration, policy,
 and Credential Vault entries as the Advanced Paste UI and may incur provider
 usage.
+
+For an AI-provider override, run `& $cli providers list` and pass a returned ID
+with `--provider <id>`. IDs belong to configured entries, not service names such
+as `Ollama`. The option only applies to `paste-with-ai`,
+`fix-spelling-and-grammar`, and saved custom actions. Providers and credentials
+are configured in PowerToys Settings > Advanced Paste, not by this CLI.
 
 Clean up generated outputs when finished: `Remove-Item -LiteralPath $out -Recurse -Force`.

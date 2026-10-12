@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
@@ -35,6 +36,24 @@ public static partial class Program
     private const string SupportedActions = "plain-text, markdown, json, fix-spelling-and-grammar, image-to-text, paste-as-txt-file, paste-as-png-file, paste-as-html-file, transcode-to-mp3, transcode-to-mp4, or paste-with-ai";
     private const string TransformUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe transform (--action <name>|--custom-action <id-or-name>) [--input <path>|--stdin|--clipboard] [--output <path>|--stdout|--output-clipboard] [--prompt <text>] [--provider <id>] [--json]";
     private const string ActionsListUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe actions list [--json]";
+    private const string ProvidersListUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe providers list [--json]";
+    private const string WorkflowHelp = """
+        Saved AI actions: run 'actions list' to find custom IDs/names, then use --custom-action <id-or-name>.
+        AI providers: configure them in PowerToys Settings > Advanced Paste and run 'providers list' to find IDs for --provider.
+        Input and output default to the clipboard. Use --stdin for piped text and --stdout to print text without changing the clipboard.
+        Choose at most one input mode (--input, --stdin, --clipboard) and one output mode (--output, --stdout, --output-clipboard).
+        Generated files cannot be written to stdout. Clipboard operations require an interactive user session.
+        Text input limit: 16,777,216 characters. --json provides machine-readable results; Ctrl+C cancels.
+        Exit codes: 0 success, 1 runtime/input/provider failure, 2 invalid arguments.
+
+        Examples:
+          PowerToys.AdvancedPaste.CLI.exe transform --action json --input people.csv --stdout
+          PowerToys.AdvancedPaste.CLI.exe transform --action markdown --input article.html --output article.md
+          PowerToys.AdvancedPaste.CLI.exe transform --action image-to-text --input image.png --stdout
+          PowerToys.AdvancedPaste.CLI.exe transform --action paste-with-ai --prompt "Summarize in one sentence" --clipboard --stdout
+          PowerToys.AdvancedPaste.CLI.exe transform --custom-action 3 --input notes.txt --stdout
+          PowerToys.AdvancedPaste.CLI.exe providers list --json
+        """;
 
     private static readonly string[] ActionAliases = ["--action", "--format"];
     private static readonly string[] CustomActionAliases = ["--custom-action"];
@@ -50,19 +69,9 @@ public static partial class Program
 
     public static async Task<int> Main(string[] args)
     {
-        TrySetUtf8Output();
-        TrySetUtf8RedirectedInput();
-        if (IsHelpRequest(args))
-        {
-            var root = CreateRootCommand(out _);
-            var helpExitCode = await root.InvokeAsync(args);
-            LogCLITelemetry("help", helpExitCode == SuccessExitCode, loggerInitialized: false);
-            return helpExitCode;
-        }
-
         using var cancellationSource = new CancellationTokenSource();
         var exitCode = RuntimeErrorExitCode;
-        var telemetryCommandName = GetTelemetryCommandName(args);
+        var telemetryCommandName = "unknown";
         ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
         {
             eventArgs.Cancel = true;
@@ -72,8 +81,18 @@ public static partial class Program
         var loggerInitialized = false;
         try
         {
-            Console.CancelKeyPress += cancelHandler;
             loggerInitialized = TryInitializeLogger(() => Logger.InitializeLogger("\\AdvancedPaste\\CLI\\Logs"));
+            TrySetUtf8Output();
+            TrySetUtf8RedirectedInput();
+            telemetryCommandName = GetTelemetryCommandName(args);
+            if (IsHelpRequest(args))
+            {
+                var root = CreateRootCommand(out _);
+                exitCode = await WriteHelpAsync(root, args, Console.Out, Console.Error);
+                return exitCode;
+            }
+
+            Console.CancelKeyPress += cancelHandler;
             if (TryWritePolicyDisabledError(args, Console.Error, AdvancedPastePolicy.IsAdvancedPasteEnabled))
             {
                 return RuntimeErrorExitCode;
@@ -122,6 +141,13 @@ public static partial class Program
             return "actions list";
         }
 
+        if (args.Length > 1 &&
+            string.Equals(args[0], "providers", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(args[1], "list", StringComparison.OrdinalIgnoreCase))
+        {
+            return "providers list";
+        }
+
         return args.Length > 0 && string.Equals(args[0], "transform", StringComparison.OrdinalIgnoreCase)
             ? "transform"
             : "unknown";
@@ -151,8 +177,9 @@ public static partial class Program
 
     private static RootCommand CreateRootCommand(out CliOptions options)
     {
+        var actionHelp = GetActionHelp();
         var root = new RootCommand("Run Advanced Paste actions without opening the Advanced Paste UI.");
-        var transform = new Command("transform", "Transform text, HTML, images, or media using a built-in or configured Advanced Paste action.");
+        var transform = new Command("transform", $"Transform text, HTML, images, or media using a built-in or configured action.{Environment.NewLine}{Environment.NewLine}{actionHelp}{Environment.NewLine}{Environment.NewLine}{WorkflowHelp}");
         options = new CliOptions();
         transform.AddOption(options.Action);
         transform.AddOption(options.CustomAction);
@@ -168,11 +195,33 @@ public static partial class Program
         root.AddCommand(transform);
 
         var actions = new Command("actions", "Inspect actions available to the command-line interface.");
-        var list = new Command("list", "List built-in and configured custom actions.");
+        var list = new Command("list", $"List built-in and configured custom actions, descriptions, and custom IDs.{Environment.NewLine}{Environment.NewLine}{actionHelp}");
         list.AddOption(options.ListJson);
         actions.AddCommand(list);
         root.AddCommand(actions);
+
+        var providers = new Command("providers", "Inspect AI providers configured in PowerToys Settings > Advanced Paste.");
+        options.ProvidersList.AddOption(options.ProvidersJson);
+        providers.AddCommand(options.ProvidersList);
+        root.AddCommand(providers);
         return root;
+    }
+
+    private static string GetActionHelp()
+        => "Built-in actions:" + Environment.NewLine +
+            string.Join(Environment.NewLine, AdvancedPasteRuntime.GetBuiltInActions().Select(action => $"  {action.Name}: {action.Description}"));
+
+    private static async Task<int> WriteHelpAsync(RootCommand root, string[] args, TextWriter stdout, TextWriter stderr)
+    {
+        var exitCode = await root.InvokeAsync(args, new TextWriterConsole(stdout, stderr));
+        if (exitCode == SuccessExitCode && new Parser(root).Parse(args).CommandResult.Command is RootCommand)
+        {
+            stdout.WriteLine(GetActionHelp());
+            stdout.WriteLine();
+            stdout.WriteLine(WorkflowHelp);
+        }
+
+        return exitCode;
     }
 
     internal static async Task<int> RunAsync(
@@ -189,24 +238,32 @@ public static partial class Program
 
         if (args.Length == 0 || HasHelpToken(parseResult, options))
         {
-            return await root.InvokeAsync(args);
+            return await WriteHelpAsync(root, args, stdout, stderr);
         }
 
         var json = parseResult.GetValueForOption(options.Json) ||
-            parseResult.GetValueForOption(options.ListJson);
+            parseResult.GetValueForOption(options.ListJson) ||
+            parseResult.GetValueForOption(options.ProvidersJson);
         if (args.SequenceEqual(["actions"], StringComparer.Ordinal))
         {
             return WriteArgumentError(stderr, json, "incomplete_command", "Specify 'actions list' to inspect available actions.", ActionsListUsage);
+        }
+
+        if (args.SequenceEqual(["providers"], StringComparer.Ordinal))
+        {
+            return WriteArgumentError(stderr, json, "incomplete_command", "Specify 'providers list' to inspect configured AI provider IDs.", ProvidersListUsage);
         }
 
         if (parseResult.Errors.Count > 0 || parseResult.CommandResult.Command is RootCommand)
         {
             var message = parseResult.Errors.Count > 0
                 ? string.Join("; ", parseResult.Errors.Select(error => error.Message))
-                : "The transform command is required.";
+                : "Specify transform, actions list, or providers list.";
             var usage = args.Length > 0 && string.Equals(args[0], "actions", StringComparison.OrdinalIgnoreCase)
                 ? ActionsListUsage
-                : TransformUsage;
+                : args.Length > 0 && string.Equals(args[0], "providers", StringComparison.OrdinalIgnoreCase)
+                    ? ProvidersListUsage
+                    : TransformUsage;
             WriteError(stderr, json, "invalid_arguments", message, usage);
             return ArgumentErrorExitCode;
         }
@@ -214,6 +271,28 @@ public static partial class Program
         if (TryWritePolicyDisabledError(args, stderr, runtime.IsEnabled))
         {
             return RuntimeErrorExitCode;
+        }
+
+        if (parseResult.CommandResult.Command == options.ProvidersList)
+        {
+            var providers = runtime.GetProviders();
+            if (parseResult.GetValueForOption(options.ProvidersJson))
+            {
+                stdout.WriteLine(JsonSerializer.Serialize(providers.ToArray(), CliJsonContext.Default.CliProviderDescriptorArray));
+            }
+            else if (providers.Count == 0)
+            {
+                stdout.WriteLine("No AI providers configured. Add a provider in PowerToys Settings > Advanced Paste.");
+            }
+            else
+            {
+                foreach (var provider in providers)
+                {
+                    stdout.WriteLine($"{provider.Id}: {provider.Name} ({provider.ServiceType}){(provider.IsDefault ? " [default]" : string.Empty)}{(provider.IsAllowedByPolicy ? string.Empty : " [disabled by policy]")}");
+                }
+            }
+
+            return SuccessExitCode;
         }
 
         if (parseResult.CommandResult.Command.Name == "list")
@@ -228,7 +307,7 @@ public static partial class Program
                 foreach (var action in actions)
                 {
                     var id = action.Id is null ? string.Empty : $" ({action.Id})";
-                    stdout.WriteLine($"{action.Kind}: {action.Name}{id}{(action.RequiresPrompt ? " [requires --prompt]" : string.Empty)}");
+                    stdout.WriteLine($"{action.Kind}: {action.Name}{id}{(action.RequiresPrompt ? " [requires --prompt]" : string.Empty)} - {action.Description}");
                 }
             }
 
@@ -255,6 +334,16 @@ public static partial class Program
             if (string.Equals(action, "paste-with-ai", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(prompt))
             {
                 return WriteArgumentError(stderr, json, "missing_prompt", "--prompt is required for paste-with-ai.");
+            }
+
+            var provider = parseResult.GetValueForOption(options.Provider);
+            if (provider is not null &&
+                (string.IsNullOrWhiteSpace(provider) ||
+                 (string.IsNullOrWhiteSpace(customAction) &&
+                  !string.Equals(action, "paste-with-ai", StringComparison.OrdinalIgnoreCase) &&
+                  !string.Equals(action, "fix-spelling-and-grammar", StringComparison.OrdinalIgnoreCase))))
+            {
+                return WriteArgumentError(stderr, json, "invalid_provider", "--provider requires a configured AI provider ID and is only supported with paste-with-ai, fix-spelling-and-grammar, or --custom-action. Run 'providers list' to find IDs.");
             }
 
             var inputFile = parseResult.GetValueForOption(options.Input);
@@ -304,7 +393,7 @@ public static partial class Program
                 AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1), protectedPaths);
             }
 
-            var request = new CliActionRequest(action, customAction, prompt, parseResult.GetValueForOption(options.Provider));
+            var request = new CliActionRequest(action, customAction, prompt, provider);
             var result = await runtime.ExecuteAsync(request, input, cancellationToken);
             var output = await CliOutputWriter.WriteAsync(
                 result,
@@ -371,6 +460,12 @@ public static partial class Program
             WriteError(stderr, json, "disabled_by_policy", $"{ex.Message}.");
             return RuntimeErrorExitCode;
         }
+        catch (ProviderPolicyDisabledException ex)
+        {
+            Logger.LogWarning(ex.Message);
+            WriteError(stderr, json, "action_unavailable", ex.Message);
+            return RuntimeErrorExitCode;
+        }
         catch (Exception ex)
         {
             Logger.LogError("Advanced Paste transformation failed.", ex);
@@ -425,7 +520,8 @@ public static partial class Program
         var root = CreateRootCommand(out var options);
         var parseResult = new Parser(root).Parse(args);
         return parseResult.GetValueForOption(options.Json) ||
-            parseResult.GetValueForOption(options.ListJson);
+            parseResult.GetValueForOption(options.ListJson) ||
+            parseResult.GetValueForOption(options.ProvidersJson);
     }
 
     private static int CountSelected(params bool[] modes)
@@ -489,6 +585,7 @@ public static partial class Program
 
     private static void WriteError(TextWriter stderr, bool json, string code, string message, string? usage = null)
     {
+        Logger.LogWarning($"Advanced Paste CLI error: {code}.");
         if (json)
         {
             stderr.WriteLine(JsonSerializer.Serialize(new ErrorResult("error", code, message, usage), CliJsonContext.Default.ErrorResult));
@@ -524,7 +621,7 @@ public static partial class Program
 
         internal Option<string?> Prompt { get; } = new(PromptAliases, "Instructions for the paste-with-ai action.");
 
-        internal Option<string?> Provider { get; } = new(ProviderAliases, "Use a configured AI provider ID instead of the action or active provider.");
+        internal Option<string?> Provider { get; } = new(ProviderAliases, "AI actions only: select the service/model configured in PowerToys Settings > Advanced Paste by its ID (not its service name). Run 'providers list' to find IDs. Otherwise use the saved action's provider or the default provider. This does not configure providers or API keys.");
 
         internal Option<FileInfo?> Input { get; } = new(InputAliases, "Read input from a text, image, audio, or video file.");
 
@@ -542,6 +639,10 @@ public static partial class Program
 
         internal Option<bool> ListJson { get; } = new(JsonAliases, "Emit the action list as JSON.");
 
+        internal Option<bool> ProvidersJson { get; } = new(JsonAliases, "Emit configured AI provider IDs, models, default selection, and policy status as JSON. Does not expose API keys or test connectivity.");
+
+        internal Command ProvidersList { get; } = new("list", "List configured AI provider IDs for --provider without making AI requests.");
+
         internal IEnumerable<Option> ValueOptions =>
         [
             Action,
@@ -553,9 +654,23 @@ public static partial class Program
         ];
     }
 
+    private sealed class TextWriterConsole(TextWriter stdout, TextWriter stderr) : IConsole
+    {
+        public IStandardStreamWriter Out { get; } = StandardStreamWriter.Create(stdout);
+
+        public IStandardStreamWriter Error { get; } = StandardStreamWriter.Create(stderr);
+
+        public bool IsOutputRedirected => true;
+
+        public bool IsErrorRedirected => true;
+
+        public bool IsInputRedirected => true;
+    }
+
     [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
     [JsonSerializable(typeof(SuccessResult))]
     [JsonSerializable(typeof(ErrorResult))]
     [JsonSerializable(typeof(CliActionDescriptor[]))]
+    [JsonSerializable(typeof(CliProviderDescriptor[]))]
     private sealed partial class CliJsonContext : JsonSerializerContext;
 }

@@ -152,6 +152,108 @@ public class ProgramTests
         Assert.AreEqual("plain-text", document.RootElement[0].GetProperty("name").GetString());
     }
 
+    [DataTestMethod]
+    [DataRow("--json")]
+    [DataRow("--json=true")]
+    public async Task ProvidersListJson_ListsConfiguredIdsWithoutReadingClipboard(string jsonOption)
+    {
+        var clipboard = new TestClipboardAdapter("unused clipboard");
+        var runtime = new TestRuntime(providers: [new("provider-id", "local model", "Ollama", "llama3.2:3b", true, true)]);
+
+        var result = await RunAsync(["providers", "list", jsonOption], clipboard: clipboard, runtime: runtime);
+
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual(0, clipboard.ReadCount);
+        using var document = JsonDocument.Parse(result.Stdout);
+        var provider = document.RootElement[0];
+        Assert.AreEqual("provider-id", provider.GetProperty("id").GetString());
+        Assert.AreEqual("Ollama", provider.GetProperty("serviceType").GetString());
+        Assert.AreEqual("llama3.2:3b", provider.GetProperty("model").GetString());
+        Assert.IsTrue(provider.GetProperty("isDefault").GetBoolean());
+        Assert.IsTrue(provider.GetProperty("isAllowedByPolicy").GetBoolean());
+        Assert.IsFalse(provider.TryGetProperty("apiKey", out _));
+        Assert.AreEqual(string.Empty, result.Stderr);
+    }
+
+    [TestMethod]
+    public async Task ProvidersList_ExplainsEmptyConfigurationAndPolicyStatus()
+    {
+        var empty = await RunAsync(["providers", "list"]);
+        Assert.AreEqual(0, empty.ExitCode);
+        StringAssert.Contains(empty.Stdout, "PowerToys Settings > Advanced Paste");
+
+        var json = await RunAsync(["providers", "list", "--json"]);
+        Assert.AreEqual("[]", json.Stdout.Trim());
+
+        var runtime = new TestRuntime(providers: [new("blocked-id", "model", "OpenAI", "model", true, false)]);
+        var blocked = await RunAsync(["providers", "list"], runtime: runtime);
+        StringAssert.Contains(blocked.Stdout, "blocked-id");
+        StringAssert.Contains(blocked.Stdout, "[default]");
+        StringAssert.Contains(blocked.Stdout, "[disabled by policy]");
+    }
+
+    [TestMethod]
+    public async Task ProvidersCommand_RequiresListAndReportsMatchingUsage()
+    {
+        var incomplete = await RunAsync(["providers"]);
+        Assert.AreEqual(2, incomplete.ExitCode);
+        StringAssert.Contains(incomplete.Stderr, "providers list");
+
+        var invalid = await RunAsync(["providers", "list", "--json", "--invalid"]);
+        Assert.AreEqual(2, invalid.ExitCode);
+        using var document = JsonDocument.Parse(invalid.Stderr);
+        StringAssert.Contains(document.RootElement.GetProperty("usage").GetString(), "providers list [--json]");
+        Assert.AreEqual(string.Empty, invalid.Stdout);
+    }
+
+    [TestMethod]
+    public async Task TransformHelp_ExplainsProviderPurposeAndIdDiscovery()
+    {
+        var result = await RunAsync(["transform", "--help"]);
+
+        Assert.AreEqual(0, result.ExitCode);
+        var help = string.Join(" ", result.Stdout.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        StringAssert.Contains(help, "AI actions only");
+        StringAssert.Contains(help, "providers list");
+        StringAssert.Contains(help, "service name");
+    }
+
+    [DataTestMethod]
+    [DataRow(new[] { "--help" })]
+    [DataRow(new[] { "transform", "--help" })]
+    [DataRow(new[] { "actions", "list", "--help" })]
+    public async Task Help_DescribesEverySupportedBuiltInAction(string[] args)
+    {
+        var result = await RunAsync(args, runtime: new TestRuntime(isEnabled: false));
+
+        Assert.AreEqual(0, result.ExitCode);
+        var help = string.Join(" ", result.Stdout.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        foreach (var action in AdvancedPasteRuntime.GetBuiltInActions())
+        {
+            Assert.IsFalse(string.IsNullOrWhiteSpace(action.Description), action.Name);
+            StringAssert.Contains(help, action.Name);
+            StringAssert.Contains(help, action.Description);
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow("plain-text", "provider-id")]
+    [DataRow("markdown", "provider-id")]
+    [DataRow("json", "provider-id")]
+    [DataRow("fix-spelling-and-grammar", "")]
+    public async Task ProviderOption_RejectsNonAiActionsAndEmptyIdsBeforeClipboardRead(string action, string provider)
+    {
+        var clipboard = new TestClipboardAdapter("unused");
+        var result = await RunAsync(
+            ["transform", "--action", action, "--provider", provider, "--json"],
+            clipboard: clipboard);
+
+        Assert.AreEqual(2, result.ExitCode);
+        Assert.AreEqual(0, clipboard.ReadCount);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("invalid_provider", document.RootElement.GetProperty("code").GetString());
+    }
+
     [TestMethod]
     public async Task ActionsListJson_ExplicitTrue_IsMachineReadable()
     {
@@ -653,6 +755,21 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task NestedProviderPolicyDenial_UsesStableUnavailableError()
+    {
+        var result = await RunAsync(
+            ["transform", "--action", "paste-with-ai", "--prompt", "prompt", "--stdin", "--stdout", "--json"],
+            "input",
+            runtime: new ExceptionRuntime(new AdvancedPaste.Services.ProviderPolicyDisabledException()));
+
+        Assert.AreEqual(1, result.ExitCode);
+        Assert.AreEqual(string.Empty, result.Stdout);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("action_unavailable", document.RootElement.GetProperty("code").GetString());
+        Assert.AreEqual("The selected AI provider is disabled by policy.", document.RootElement.GetProperty("message").GetString());
+    }
+
+    [TestMethod]
     public async Task InvalidOperationFromTransformation_UsesGenericError()
     {
         var result = await RunAsync(
@@ -702,6 +819,7 @@ public class ProgramTests
 
     [DataTestMethod]
     [DataRow(new[] { "actions", "list", "--json" })]
+    [DataRow(new[] { "providers", "list", "--json" })]
     [DataRow(new[] { "transform", "--action", "plain-text", "--clipboard", "--json" })]
     [DataRow(new[] { "transform", "--action", "plain-text", "--json" })]
     public async Task DisabledPolicy_BlocksListingAndClipboardRead(string[] args)
@@ -810,6 +928,7 @@ public class ProgramTests
     [DataRow(new[] { "transform", "--input", "-h", "--invalid" }, "transform")]
     [DataRow(new[] { "transform", "--action", "plain-text" }, "transform")]
     [DataRow(new[] { "actions", "list", "--json" }, "actions list")]
+    [DataRow(new[] { "providers", "list", "--json" }, "providers list")]
     [DataRow(new[] { "unexpected", "--prompt", "sensitive prompt" }, "unknown")]
     public void TelemetryCommandName_IsBounded(string[] args, string expected)
     {
@@ -856,6 +975,8 @@ public class ProgramTests
 
         public IReadOnlyList<CliActionDescriptor> GetActions() => [];
 
+        public IReadOnlyList<CliProviderDescriptor> GetProviders() => [];
+
         public Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
             => Task.FromException<DataPackage>(exception);
     }
@@ -888,12 +1009,14 @@ public class ProgramTests
         public void Write(DataPackage content) => WrittenContent = content;
     }
 
-    private sealed class TestRuntime(bool isEnabled = true) : IAdvancedPasteRuntime
+    private sealed class TestRuntime(bool isEnabled = true, IReadOnlyList<CliProviderDescriptor>? providers = null) : IAdvancedPasteRuntime
     {
         public bool IsEnabled => isEnabled;
 
         public IReadOnlyList<CliActionDescriptor> GetActions()
             => [new("plain-text", "built-in", null, RequiresPrompt: false)];
+
+        public IReadOnlyList<CliProviderDescriptor> GetProviders() => providers ?? [];
 
         public async Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
         {
@@ -924,6 +1047,8 @@ public class ProgramTests
         public string OutputPath { get; private set; } = string.Empty;
 
         public IReadOnlyList<CliActionDescriptor> GetActions() => [];
+
+        public IReadOnlyList<CliProviderDescriptor> GetProviders() => [];
 
         public async Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
         {

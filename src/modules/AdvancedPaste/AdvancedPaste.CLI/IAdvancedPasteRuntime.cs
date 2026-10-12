@@ -16,5 +16,7 @@ internal interface IAdvancedPasteRuntime
 
     IReadOnlyList<CliActionDescriptor> GetActions();
 
+    IReadOnlyList<CliProviderDescriptor> GetProviders();
+
     Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null);
 }

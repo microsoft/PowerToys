@@ -4,4 +4,4 @@
 
 namespace AdvancedPaste.Cli;
 
-internal sealed record CliActionDescriptor(string Name, string Kind, int? Id, bool RequiresPrompt);
+internal sealed record CliActionDescriptor(string Name, string Kind, int? Id, bool RequiresPrompt, string Description = "");
