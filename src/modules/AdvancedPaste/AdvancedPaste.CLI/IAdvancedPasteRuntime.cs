@@ -12,6 +12,8 @@ namespace AdvancedPaste.Cli;
 
 internal interface IAdvancedPasteRuntime
 {
+    bool IsEnabled { get; }
+
     IReadOnlyList<CliActionDescriptor> GetActions();
 
     Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null);

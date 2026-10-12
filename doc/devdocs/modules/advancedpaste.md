@@ -37,6 +37,10 @@ Clipboard modes use the Win32/OLE clipboard so they do not require a foreground 
 
 Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. The CLI honors the Advanced Paste enabled policy and AI actions honor the configured provider, AI-related GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
 
+Text files are exposed as text/HTML, not as image/file attachments; malformed UTF-8 and binary files retain their original file representation. Markdown and custom AI actions also accept HTML-only clipboard content. OpenAI moderation is skipped, with a warning in the log, when OpenAI or online AI is forbidden by policy; an otherwise permitted Azure provider can still run.
+
+Generated file output is cleaned after copying to an explicit output path. Older owned temporary directories are cleaned only when `--clipboard` explicitly provides a clipboard snapshot, excluding directories containing current clipboard files or the selected output. File/stdin commands and action listing never read the clipboard for cleanup.
+
 For `transform`, `--json` emits one UTF-8 JSON result envelope on stdout (`status`, `action`, `resultKind`, `outputPath`, `outputClipboard`, and optional `output`) or one error envelope on stderr (`status`, `code`, `message`, and `usage` for argument errors). `actions list --json` emits a bare array of action objects (`name`, `kind`, optional `id`, and `requiresPrompt`). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, provider, clipboard, or transformation failures, and `2` for parser/argument errors.
 
 Run `src\modules\AdvancedPaste\AdvancedPaste.CLI\SmokeTest.ps1` after building the CLI to exercise help, stdin/stdout, file input/output, JSON output, and failing argument paths against the built executable.

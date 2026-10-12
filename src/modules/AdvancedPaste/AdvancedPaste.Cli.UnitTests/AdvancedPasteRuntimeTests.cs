@@ -120,6 +120,26 @@ public class AdvancedPasteRuntimeTests
         Assert.AreEqual("active", executor.LastPasteFormat?.ProviderId);
     }
 
+    [DataTestMethod]
+    [DataRow("markdown")]
+    [DataRow("paste-with-ai")]
+    public async Task HtmlOnlyInput_ReachesTextCompatibleExecutor(string action)
+    {
+        var package = new DataPackage();
+        package.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat("<p>HTML-only text</p>"));
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(
+            executor,
+            new TestUserSettings(isAIEnabled: true, configuration: CreateProviderConfiguration("active")),
+            isAdvancedPasteEnabled: () => true,
+            isProviderAllowed: _ => true);
+
+        await runtime.ExecuteAsync(new CliActionRequest(action, null, "prompt", null), package.GetView(), CancellationToken.None);
+
+        Assert.IsTrue(executor.WasCalled);
+        Assert.IsTrue(executor.LastPasteFormat?.IsEnabled);
+    }
+
     private static PasteAIConfiguration CreateProviderConfiguration(string providerId)
         => new()
         {

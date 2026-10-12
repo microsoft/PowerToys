@@ -106,4 +106,35 @@ public class AdvancedPasteTempFileManagerTests
 
         Assert.IsFalse(Directory.Exists(directory.FullName));
     }
+
+    [TestMethod]
+    public void CleanupStaleDirectories_PreservesReferencedPathsOnly()
+    {
+        var protectedDirectory = AdvancedPasteTempFileManager.CreateDirectory();
+        var staleDirectory = AdvancedPasteTempFileManager.CreateDirectory();
+        var protectedPath = Path.Combine(protectedDirectory.FullName, "clipboard.txt");
+        File.WriteAllText(protectedPath, "keep");
+        File.WriteAllText(Path.Combine(staleDirectory.FullName, "stale.txt"), "remove");
+        Directory.SetCreationTimeUtc(protectedDirectory.FullName, DateTime.UtcNow.AddDays(-2));
+        Directory.SetCreationTimeUtc(staleDirectory.FullName, DateTime.UtcNow.AddDays(-2));
+        try
+        {
+            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1), [protectedPath]);
+
+            Assert.AreEqual("keep", File.ReadAllText(protectedPath));
+            Assert.IsFalse(Directory.Exists(staleDirectory.FullName));
+        }
+        finally
+        {
+            if (Directory.Exists(protectedDirectory.FullName))
+            {
+                Directory.Delete(protectedDirectory.FullName, recursive: true);
+            }
+
+            if (Directory.Exists(staleDirectory.FullName))
+            {
+                Directory.Delete(staleDirectory.FullName, recursive: true);
+            }
+        }
+    }
 }

@@ -77,4 +77,17 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
+
+  <!-- CsWinRT's native copy-local DLL must also flow through the library to executable outputs. -->
+  <Target Name="ExposeGpoWrapperRuntimeDependency"
+          BeforeTargets="GetCopyToOutputDirectoryItems;GetCopyToPublishDirectoryItems"
+          DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <ContentWithTargetPath Include="@(ReferenceCopyLocalPaths)"
+                             Condition="'%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)' == 'PowerToys.GPOWrapper.dll'"
+                             TargetPath="PowerToys.GPOWrapper.dll"
+                             CopyToOutputDirectory="PreserveNewest"
+                             CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -74,7 +74,10 @@ public static partial class Program
         {
             Console.CancelKeyPress += cancelHandler;
             loggerInitialized = TryInitializeLogger(() => Logger.InitializeLogger("\\AdvancedPaste\\CLI\\Logs"));
-            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
+            if (TryWritePolicyDisabledError(args, Console.Error, AdvancedPastePolicy.IsAdvancedPasteEnabled))
+            {
+                return RuntimeErrorExitCode;
+            }
 
             using var host = Host.CreateDefaultBuilder()
                 .UseContentRoot(AppContext.BaseDirectory)
@@ -208,6 +211,11 @@ public static partial class Program
             return ArgumentErrorExitCode;
         }
 
+        if (TryWritePolicyDisabledError(args, stderr, runtime.IsEnabled))
+        {
+            return RuntimeErrorExitCode;
+        }
+
         if (parseResult.CommandResult.Command.Name == "list")
         {
             var actions = runtime.GetActions();
@@ -270,6 +278,23 @@ public static partial class Program
             {
                 WriteError(stderr, json, "empty_input", "The selected input source did not contain supported content.");
                 return RuntimeErrorExitCode;
+            }
+
+            // Only explicit clipboard input provides a snapshot that can protect live file-drop paths.
+            if (clipboardRequested)
+            {
+                var protectedPaths = new List<string>();
+                if (input.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
+                {
+                    protectedPaths.AddRange((await input.GetStorageItemsAsync()).Select(item => item.Path));
+                }
+
+                if (outputFile is not null)
+                {
+                    protectedPaths.Add(outputFile.FullName);
+                }
+
+                AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1), protectedPaths);
             }
 
             var request = new CliActionRequest(action, customAction, prompt, parseResult.GetValueForOption(options.Provider));
@@ -355,6 +380,17 @@ public static partial class Program
 
     internal static void WriteStartupError(string[] args, TextWriter stderr)
         => WriteError(stderr, IsJsonRequested(args), "internal_error", "Advanced Paste CLI failed.");
+
+    internal static bool TryWritePolicyDisabledError(string[] args, TextWriter stderr, bool policyEnabled)
+    {
+        if (policyEnabled)
+        {
+            return false;
+        }
+
+        WriteError(stderr, IsJsonRequested(args), "disabled_by_policy", "Advanced Paste is disabled by policy.");
+        return true;
+    }
 
     internal static bool TryInitializeLogger(Action initializeLogger)
     {

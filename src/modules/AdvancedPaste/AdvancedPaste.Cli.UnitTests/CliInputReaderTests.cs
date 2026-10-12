@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,6 +58,7 @@ public class CliInputReaderTests
                     cancellationToken: CancellationToken.None);
 
                 Assert.AreEqual("var answer = 42;", await input.GetTextAsync());
+                Assert.IsFalse(input.Contains(StandardDataFormats.StorageItems));
             }
             finally
             {
@@ -81,12 +83,101 @@ public class CliInputReaderTests
                 cancellationToken: CancellationToken.None);
 
             Assert.IsFalse(input.Contains(StandardDataFormats.Text));
+            Assert.IsTrue(input.Contains(StandardDataFormats.StorageItems));
         }
         finally
         {
             File.Delete(inputPath);
         }
     }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ValidReplacementCharacter_IsTextWithOrWithoutUtf8Bom(bool bom)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.txt");
+        try
+        {
+            await File.WriteAllTextAsync(path, "valid \uFFFD text", new UTF8Encoding(bom, throwOnInvalidBytes: true));
+            var input = await ReadFileAsync(path);
+
+            Assert.AreEqual("valid \uFFFD text", await input.GetTextAsync());
+            Assert.IsFalse(input.Contains(StandardDataFormats.StorageItems));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(0, false)]
+    [DataRow(0, true)]
+    [DataRow(10000, false)]
+    [DataRow(10000, true)]
+    public async Task MalformedUtf8_UsesOnlyOriginalFile(int validPrefixLength, bool bom)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.html");
+        var encoding = new UTF8Encoding(bom);
+        var bytes = new System.Collections.Generic.List<byte>(encoding.GetPreamble());
+        bytes.AddRange(Encoding.UTF8.GetBytes(new string('x', validPrefixLength)));
+        bytes.Add(0xff);
+        try
+        {
+            await File.WriteAllBytesAsync(path, bytes.ToArray());
+            var input = await ReadFileAsync(path);
+
+            Assert.IsFalse(input.Contains(StandardDataFormats.Text));
+            Assert.IsFalse(input.Contains(StandardDataFormats.Html));
+            Assert.AreEqual(path, (await input.GetStorageItemsAsync())[0].Path);
+            CollectionAssert.AreEqual(bytes.ToArray(), await File.ReadAllBytesAsync(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [TestMethod]
+    public async Task BinaryControlAfterSample_UsesOnlyOriginalFile()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.dat");
+        try
+        {
+            await File.WriteAllTextAsync(path, new string('x', 10000) + '\0');
+            var input = await ReadFileAsync(path);
+
+            Assert.IsFalse(input.Contains(StandardDataFormats.Text));
+            Assert.IsTrue(input.Contains(StandardDataFormats.StorageItems));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [TestMethod]
+    public async Task HtmlTextFile_DoesNotAdvertiseAnImageAttachment()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.html");
+        try
+        {
+            await File.WriteAllTextAsync(path, "<p>text</p>");
+            var input = await ReadFileAsync(path);
+
+            Assert.IsTrue(input.Contains(StandardDataFormats.Text));
+            Assert.IsTrue(input.Contains(StandardDataFormats.Html));
+            Assert.IsFalse(input.Contains(StandardDataFormats.StorageItems));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    private static Task<DataPackageView> ReadFileAsync(string path)
+        => CliInputReader.ReadAsync(new FileInfo(path), false, new TestClipboardAdapter(), TextReader.Null, 20000, CancellationToken.None);
 
     private sealed class TestClipboardAdapter : IClipboardAdapter
     {

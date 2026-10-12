@@ -604,6 +604,92 @@ public class ProgramTests
         Assert.AreEqual("disabled_by_policy", document.RootElement.GetProperty("code").GetString());
     }
 
+    [DataTestMethod]
+    [DataRow(new[] { "actions", "list", "--json" })]
+    [DataRow(new[] { "transform", "--action", "plain-text", "--clipboard", "--json" })]
+    public async Task DisabledPolicy_BlocksListingAndClipboardRead(string[] args)
+    {
+        var clipboard = new TestClipboardAdapter("private input");
+        var runtime = new TestRuntime(isEnabled: false);
+        var result = await RunAsync(args, clipboard: clipboard, runtime: runtime);
+
+        Assert.AreEqual(1, result.ExitCode);
+        Assert.AreEqual(string.Empty, result.Stdout);
+        Assert.AreEqual(0, clipboard.ReadCount);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("disabled_by_policy", document.RootElement.GetProperty("code").GetString());
+    }
+
+    [TestMethod]
+    public void StartupPolicyGuard_ProducesStableErrorWithoutRuntime()
+    {
+        var stderr = new StringWriter();
+
+        Assert.IsTrue(Program.TryWritePolicyDisabledError(["actions", "list", "--json"], stderr, policyEnabled: false));
+        using var document = JsonDocument.Parse(stderr.ToString());
+        Assert.AreEqual("disabled_by_policy", document.RootElement.GetProperty("code").GetString());
+    }
+
+    [TestMethod]
+    public async Task Help_RemainsAvailableWhenPolicyIsDisabled()
+    {
+        var result = await RunAsync(["transform", "--help"], runtime: new TestRuntime(isEnabled: false));
+
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual(string.Empty, result.Stderr);
+    }
+
+    [TestMethod]
+    public async Task FileMode_PreservesAgedOwnedInputWithoutReadingClipboard()
+    {
+        var directory = AdvancedPasteTempFileManager.CreateDirectory();
+        var path = Path.Combine(directory.FullName, "input.txt");
+        await File.WriteAllTextAsync(path, "preserve input");
+        Directory.SetCreationTimeUtc(directory.FullName, DateTime.UtcNow.AddDays(-2));
+        var clipboard = new TestClipboardAdapter();
+        try
+        {
+            var result = await RunAsync(["transform", "--action", "plain-text", "--input", path, "--stdout"], clipboard: clipboard);
+
+            Assert.AreEqual(0, result.ExitCode);
+            Assert.AreEqual("preserve input", result.Stdout);
+            Assert.IsTrue(File.Exists(path));
+            Assert.AreEqual(0, clipboard.ReadCount);
+        }
+        finally
+        {
+            Directory.Delete(directory.FullName, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ClipboardMode_PreservesAgedClipboardAndOutputDirectories()
+    {
+        var inputDirectory = AdvancedPasteTempFileManager.CreateDirectory();
+        var outputDirectory = AdvancedPasteTempFileManager.CreateDirectory();
+        var inputPath = Path.Combine(inputDirectory.FullName, "clipboard.txt");
+        var outputPath = Path.Combine(outputDirectory.FullName, "output.txt");
+        await File.WriteAllTextAsync(inputPath, "existing clipboard file");
+        await File.WriteAllTextAsync(outputPath, "existing output");
+        Directory.SetCreationTimeUtc(inputDirectory.FullName, DateTime.UtcNow.AddDays(-2));
+        Directory.SetCreationTimeUtc(outputDirectory.FullName, DateTime.UtcNow.AddDays(-2));
+        var clipboard = new TestClipboardAdapter("result");
+        clipboard.Content.SetStorageItems([await Windows.Storage.StorageFile.GetFileFromPathAsync(inputPath)]);
+        try
+        {
+            var result = await RunAsync(["transform", "--action", "plain-text", "--clipboard", "--output", outputPath], clipboard: clipboard);
+
+            Assert.AreEqual(0, result.ExitCode);
+            Assert.AreEqual("existing clipboard file", await File.ReadAllTextAsync(inputPath));
+            Assert.AreEqual("result", await File.ReadAllTextAsync(outputPath));
+        }
+        finally
+        {
+            Directory.Delete(inputDirectory.FullName, recursive: true);
+            Directory.Delete(outputDirectory.FullName, recursive: true);
+        }
+    }
+
     [TestMethod]
     public void LoggerInitializationFailure_DoesNotPreventCliStartup()
     {
@@ -669,6 +755,8 @@ public class ProgramTests
 
     private sealed class ExceptionRuntime(Exception exception) : IAdvancedPasteRuntime
     {
+        public bool IsEnabled => true;
+
         public IReadOnlyList<CliActionDescriptor> GetActions() => [];
 
         public Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
@@ -692,13 +780,21 @@ public class ProgramTests
 
         public DataPackage? WrittenContent { get; private set; }
 
-        public DataPackageView Read() => Content.GetView();
+        public int ReadCount { get; private set; }
+
+        public DataPackageView Read()
+        {
+            ReadCount++;
+            return Content.GetView();
+        }
 
         public void Write(DataPackage content) => WrittenContent = content;
     }
 
-    private sealed class TestRuntime : IAdvancedPasteRuntime
+    private sealed class TestRuntime(bool isEnabled = true) : IAdvancedPasteRuntime
     {
+        public bool IsEnabled => isEnabled;
+
         public IReadOnlyList<CliActionDescriptor> GetActions()
             => [new("plain-text", "built-in", null, RequiresPrompt: false)];
 
@@ -726,6 +822,8 @@ public class ProgramTests
 
     private sealed class FileResultRuntime : IAdvancedPasteRuntime
     {
+        public bool IsEnabled => true;
+
         public string OutputPath { get; private set; } = string.Empty;
 
         public IReadOnlyList<CliActionDescriptor> GetActions() => [];

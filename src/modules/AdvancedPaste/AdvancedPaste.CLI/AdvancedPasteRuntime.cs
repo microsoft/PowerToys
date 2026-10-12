@@ -44,6 +44,8 @@ internal sealed class AdvancedPasteRuntime(
     private readonly Func<bool> _isAdvancedPasteEnabled = isAdvancedPasteEnabled ?? (() => AdvancedPastePolicy.IsAdvancedPasteEnabled);
     private readonly Func<PasteAIProviderDefinition, bool> _isProviderAllowed = isProviderAllowed ?? AdvancedPastePolicy.IsProviderAllowed;
 
+    public bool IsEnabled => _isAdvancedPasteEnabled();
+
     public IReadOnlyList<CliActionDescriptor> GetActions()
         => BuiltInActions.Keys
             .Select(name => new CliActionDescriptor(name, "built-in", null, RequiresPrompt: false))
@@ -53,7 +55,7 @@ internal sealed class AdvancedPasteRuntime(
 
     public async Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
     {
-        if (!_isAdvancedPasteEnabled())
+        if (!IsEnabled)
         {
             throw new CliPolicyDisabledException();
         }
