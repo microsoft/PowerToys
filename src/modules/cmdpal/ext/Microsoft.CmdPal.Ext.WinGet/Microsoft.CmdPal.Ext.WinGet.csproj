@@ -2,6 +2,8 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\Common.ExtDependencies.props" />
   <PropertyGroup>
+    <!-- AssemblyInfo.cs supplies this attribute for both SDK generation and official version rewriting. -->
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <RootNamespace>Microsoft.CmdPal.Ext.WinGet</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>

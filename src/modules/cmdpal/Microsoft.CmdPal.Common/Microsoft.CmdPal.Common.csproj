@@ -3,6 +3,8 @@
   <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
+    <!-- AssemblyInfo.cs supplies this attribute for both SDK generation and official version rewriting. -->
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <RootNamespace>Microsoft.CmdPal.Common</RootNamespace>
     <Nullable>enable</Nullable>
     <!-- For MVVM Toolkit Partial Properties/AOT support -->

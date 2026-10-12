@@ -42,6 +42,12 @@ Projects of interest are:
 * `Microsoft.CommandPalette.Extensions.Toolkit`: This is a C# helper library for creating extensions. This makes writing extensions easier.
 * Everything under "SampleExtensions": These are example plugins to demo how to author extensions. Deploy any number of these, to get a feel for how the extension API works.
 
+### Neutral resource metadata in official builds
+
+CmdPal projects with `.resx` resources declare `[assembly: NeutralResourcesLanguage("en-US")]` in `Properties/AssemblyInfo.cs` and set `GenerateNeutralResourcesLanguageAttribute` to `false` in their project file. Keep these together: the explicit attribute supplies the default resource language, while the project setting prevents duplicate SDK generation in ordinary builds.
+
+Official builds use `Microsoft.Windows.Terminal.Versioning`, which disables SDK assembly-info generation. Its rewriter preserves the explicit attribute from `AssemblyInfo.cs`, but does not generate it from `NeutralLanguage`. Each resource-bearing assembly needs its own declaration; referencing the Toolkit does not provide it to dependent assemblies. Keep CA1824 enabled and validate both ordinary SDK and official version-rewriting builds when changing this metadata.
+
 ### Footnotes and other links
 
 * [Initial SDK Spec]
@@ -53,5 +59,4 @@ Projects of interest are:
 [generic samples]: ./ext/SamplePagesExtension 
 [real samples]: ./ext/ProcessMonitorExtension
 [real extensions that we've "shipped" already]: https://github.com/zadjii/CmdPalExtensions/blob/main/src/extensions
-
 

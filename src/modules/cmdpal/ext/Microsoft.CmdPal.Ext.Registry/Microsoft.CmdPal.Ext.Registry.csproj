@@ -4,6 +4,8 @@
   <Import Project="..\Common.ExtDependencies.props" />
 
   <PropertyGroup>
+    <!-- AssemblyInfo.cs supplies this attribute for both SDK generation and official version rewriting. -->
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <RootNamespace>Microsoft.CmdPal.Ext.Registry</RootNamespace>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
