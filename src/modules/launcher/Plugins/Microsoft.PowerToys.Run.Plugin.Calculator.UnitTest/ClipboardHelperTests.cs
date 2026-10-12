@@ -198,7 +198,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         private static extern IntPtr GetProcessWindowStation();
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern IntPtr CreateDesktop(string name, string device, IntPtr devmode, uint flags, uint access, IntPtr attributes);
+        private static extern IntPtr CreateDesktop(string name, string device, IntPtr deviceMode, uint flags, uint access, IntPtr attributes);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
