@@ -610,6 +610,28 @@
   <data name="Battery_Widget_Template.TimeRemaining" xml:space="preserve">
     <value>Time remaining</value>
   </data>
+  <data name="Overview_Title" xml:space="preserve">
+    <value>Overview</value>
+    <comment>Title of the page that shows every performance metric at a glance</comment>
+  </data>
+  <data name="Overview_Subtitle" xml:space="preserve">
+    <value>CPU, memory, GPU, disk, and network at a glance</value>
+  </data>
+  <data name="Overview_Widget_Template.CPU" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Overview_Widget_Template.Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Overview_Widget_Template.GPU" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Overview_Widget_Template.Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Overview_Widget_Template.Battery" xml:space="preserve">
+    <value>Battery</value>
+  </data>
   <data name="Battery_Widget_Template.Charge_Rate" xml:space="preserve">
     <value>Charge rate</value>
     <comment>Label for the power flowing into the battery, such as 25 W</comment>
