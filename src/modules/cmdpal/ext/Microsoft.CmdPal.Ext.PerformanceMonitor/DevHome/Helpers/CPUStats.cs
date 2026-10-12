@@ -12,12 +12,16 @@ using System.Threading;
 using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Microsoft.Win32;
 using Windows.Win32;
+using Windows.Win32.System.Power;
 
 namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposable
 {
     private static readonly Lazy<string> CachedProcessorName = new(ReadProcessorName);
+
+    // A processor's rated speed doesn't change while it runs, so it's read once.
+    private static readonly Lazy<uint> CachedBaseSpeed = new(ReadBaseSpeed);
 
     // A longer gap between per-processor samples means sampling stopped while no CPU card was
     // open, and utilization averaged over the gap wouldn't be current.
@@ -44,7 +48,10 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
 
     public float CpuSpeed { get; set; }
 
-    /// <summary>Gets or sets the nominal processor frequency in MHz.</summary>
+    /// <summary>
+    /// Gets or sets the processor's base speed in MHz, as Task Manager shows it: the rated speed of
+    /// its fastest cores.
+    /// </summary>
     public float CpuBaseSpeed { get; set; }
 
     public uint ProcessCount { get; private set; }
@@ -70,6 +77,7 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     public CPUStats()
     {
         CpuUsage = 0;
+        CpuBaseSpeed = CachedBaseSpeed.Value;
 
         // Use "% Processor Time" instead of "% Processor Utility": the latter is unbounded above 100%
         // when cores boost above their nominal base frequency (it is scaled by % Processor Performance),
@@ -92,7 +100,13 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
             if (_procFrequency is not null && _procPerformance is not null)
             {
                 var frequency = _procFrequency.NextValue();
-                CpuBaseSpeed = frequency;
+                if (CachedBaseSpeed.Value == 0)
+                {
+                    // Without the rated speeds, use the counter's frequency. It's the same on chips
+                    // with one core cluster.
+                    CpuBaseSpeed = frequency;
+                }
+
                 CpuSpeed = frequency * (_procPerformance.NextValue() / 100);
             }
 
@@ -272,6 +286,56 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
         {
             return string.Empty;
         }
+    }
+
+    /// <summary>
+    /// Reads the processor's base speed in MHz, or 0 if it can't be read. Chips with more than one
+    /// core cluster rate each cluster differently, and Task Manager shows the highest rating.
+    /// </summary>
+    private static unsafe uint ReadBaseSpeed()
+    {
+        try
+        {
+            // The call fails unless the buffer has room for every active processor.
+            var count = PInvoke.GetActiveProcessorCount(PInvoke.ALL_PROCESSOR_GROUPS);
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            var processors = new PROCESSOR_POWER_INFORMATION[count];
+            fixed (PROCESSOR_POWER_INFORMATION* buffer = processors)
+            {
+                var status = PInvoke.CallNtPowerInformation(
+                    POWER_INFORMATION_LEVEL.ProcessorInformation,
+                    null,
+                    0,
+                    buffer,
+                    (uint)(processors.Length * sizeof(PROCESSOR_POWER_INFORMATION)));
+                if (status.Value != 0)
+                {
+                    return 0;
+                }
+            }
+
+            return GetBaseSpeed(processors);
+        }
+        catch (Exception)
+        {
+            return 0;
+        }
+    }
+
+    /// <summary>Returns the highest rated speed of the processors in MHz, or 0 if none is known.</summary>
+    internal static uint GetBaseSpeed(ReadOnlySpan<PROCESSOR_POWER_INFORMATION> processors)
+    {
+        uint fastest = 0;
+        foreach (var processor in processors)
+        {
+            fastest = Math.Max(fastest, processor.MaxMhz);
+        }
+
+        return fastest;
     }
 
     public void Dispose()
