@@ -399,7 +399,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityLaserPointer" class="Both" displayName="$(string.ConfigureEnabledUtilityLaserPointer)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityLaserPointer">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_101_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_102_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
