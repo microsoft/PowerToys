@@ -21,11 +21,22 @@ void SetClipBoardToText(const std::wstring_view text)
     if (auto* bufPtr = static_cast<wchar_t*>(GlobalLock(handle.get())); bufPtr != nullptr)
     {
         text.copy(bufPtr, text.length());
+        // basic_string_view::copy doesn't write a terminator and GMEM_MOVEABLE memory isn't zeroed
+        bufPtr[text.length()] = L'\0';
         GlobalUnlock(handle.get());
+    }
+    else
+    {
+        CloseClipboard();
+        return;
     }
 
     EmptyClipboard();
-    SetClipboardData(CF_UNICODETEXT, handle.get());
+    if (SetClipboardData(CF_UNICODETEXT, handle.get()))
+    {
+        // The system owns the memory once SetClipboardData succeeds
+        handle.release();
+    }
     CloseClipboard();
 }
 

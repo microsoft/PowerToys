@@ -569,14 +569,18 @@ void RestoreForeground()
 //----------------------------------------------------------------------------
 VOID ErrorDialog( HWND hParent, PCTSTR message, DWORD _Error )
 {
-    LPTSTR	lpMsgBuf;
+    LPTSTR	lpMsgBuf = nullptr;
     TCHAR	errmsg[1024];
 
     FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                     NULL, _Error,
                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                     reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, NULL );
-    _stprintf( errmsg, L"%s: %s", message, lpMsgBuf );
+    _stprintf_s( errmsg, _countof( errmsg ), L"%s: %s", message, lpMsgBuf ? lpMsgBuf : L"" );
+    if( lpMsgBuf )
+    {
+        LocalFree( lpMsgBuf );
+    }
 #ifdef __ZOOMIT_POWERTOYS__
     if( g_StartedByPowerToys )
     {

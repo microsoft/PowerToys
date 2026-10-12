@@ -724,7 +724,9 @@ private:
                 return;
             }
 
-            clipboard_text = pch_data;
+            // Clipboard text isn't guaranteed to be null terminated, so bound the read by the allocation size.
+            const size_t max_chars = GlobalSize(h_clipboard_data) / sizeof(wchar_t);
+            clipboard_text.assign(pch_data, wcsnlen(pch_data, max_chars));
             GlobalUnlock(h_clipboard_data);
 
             CloseClipboard();
