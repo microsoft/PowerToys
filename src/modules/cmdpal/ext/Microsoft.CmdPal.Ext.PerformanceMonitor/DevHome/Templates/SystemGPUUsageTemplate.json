@@ -19,64 +19,209 @@
       "$when": "${errorMessage == null}",
       "items": [
         {
-          "type": "Image",
-          "url": "${gpuGraphUrl}",
-          "height": "${chartHeight}",
-          "width": "${chartWidth}",
-          "$when": "${$host.widgetSize != \"small\"}",
-          "horizontalAlignment": "center"
-        },
-        {
           "type": "ColumnSet",
           "columns": [
             {
               "type": "Column",
+              "width": "stretch",
               "items": [
                 {
-                  "text": "%GPUUsage_Widget_Template/GPU_Usage%",
                   "type": "TextBlock",
+                  "isSubtle": true,
                   "size": "small",
-                  "isSubtle": true
+                  "text": "%GPUUsage_Widget_Template/GPU_Usage%"
                 },
                 {
-                  "text": "${gpuUsage}",
                   "type": "TextBlock",
-                  "size": "large",
-                  "weight": "bolder"
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "text": "${gpuUsage}"
                 }
               ]
             },
             {
               "type": "Column",
+              "width": "auto",
+              "$when": "${gpuMemory != null}",
               "items": [
                 {
-                  "text": "%GPUUsage_Widget_Template/GPU_Temperature%",
                   "type": "TextBlock",
-                  "size": "small",
                   "isSubtle": true,
-                  "horizontalAlignment": "right"
+                  "size": "small",
+                  "horizontalAlignment": "right",
+                  "text": "${gpuMemoryLabel}"
                 },
                 {
-                  "text": "${gpuTemp}",
                   "type": "TextBlock",
-                  "size": "large",
+                  "size": "extraLarge",
                   "weight": "bolder",
-                  "horizontalAlignment": "right"
+                  "spacing": "none",
+                  "horizontalAlignment": "right",
+                  "text": "${gpuMemory}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "$when": "${gpuTemp != '--'}",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "size": "small",
+                  "horizontalAlignment": "right",
+                  "text": "%GPUUsage_Widget_Template/GPU_Temperature%"
+                },
+                {
+                  "type": "TextBlock",
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "horizontalAlignment": "right",
+                  "text": "${gpuTemp}"
                 }
               ]
             }
           ]
         },
         {
-          "text": "%GPUUsage_Widget_Template/GPU_Name%",
-          "type": "TextBlock",
-          "size": "small",
-          "isSubtle": true
+          "type": "Chart.Line",
+          "spacing": "medium",
+          "yAxisTitle": "%CPUUsage_Widget_Template/Chart_Y_Axis%",
+          "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
+          "yMin": 0,
+          "yMax": 100,
+          "showLegend": false,
+          "data": "${gpuSeries}",
+          "fallback": "drop"
         },
         {
-          "text": "${gpuName}",
           "type": "TextBlock",
-          "size": "medium"
+          "$when": "${gpuName != ''}",
+          "spacing": "medium",
+          "isSubtle": true,
+          "wrap": true,
+          "text": "${gpuName}"
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${count(gpuEngines) > 0}",
+          "spacing": "small",
+          "columns": [
+            {
+              "type": "Column",
+              "$data": "${gpuEngines}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "${name}"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${text}"
+                    },
+                    {
+                      "type": "Chart.Line",
+                      "spacing": "small",
+                      "yMin": 0,
+                      "yMax": "${chartMax}",
+                      "showLegend": false,
+                      "data": "${series}",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${hasDedicatedMemory || hasSharedMemory}",
+          "spacing": "small",
+          "columns": [
+            {
+              "type": "Column",
+              "$when": "${hasDedicatedMemory}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%GPUUsage_Widget_Template/Dedicated_Memory%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${gpuDedicatedMemory}"
+                    },
+                    {
+                      "type": "ProgressBar",
+                      "spacing": "small",
+                      "value": "${gpuDedicatedPercent}",
+                      "color": "good",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "$when": "${hasSharedMemory}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%GPUUsage_Widget_Template/Shared_Memory%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${gpuSharedMemory}"
+                    },
+                    {
+                      "type": "ProgressBar",
+                      "spacing": "small",
+                      "value": "${gpuSharedPercent}",
+                      "color": "good",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
