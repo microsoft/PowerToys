@@ -177,7 +177,7 @@ public sealed class RecoveryTests
             {
                 RunFiles.Wait(
                     () => legacy.ViewerHwnd != 0,
-                    TimeSpan.FromSeconds(90),
+                    SandboxTimeouts.LegacyViewerStart,
                     "The owned legacy startup did not create its viewer.",
                     legacy.Discover);
                 identity = legacy.Processes.ToArray();

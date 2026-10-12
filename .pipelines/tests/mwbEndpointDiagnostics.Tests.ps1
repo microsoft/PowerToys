@@ -322,6 +322,21 @@ Describe 'MWB bounded nonsecret guest-command stages' {
         $json | Should Not Match 'private-pairing-token|private-peer|Arguments|Tree|Error'
     }
 
+    It 'identifies the exact peer teardown stage without publishing process arguments or settings' -TestCases @(
+        @{ Stage = 'PeersStopProcesses' }
+        @{ Stage = 'PeersStopSettings' }
+        @{ Stage = 'PeersStopFirewall' }
+        @{ Stage = 'PeersStopped' }
+    ) {
+        param($Stage)
+        Write-EndpointCommandStage $Stage 'StopPeers' 24 0 1500
+        $value = $global:MwbStageCaptures[0].Value
+        $value.Stage | Should Be $Stage
+        $value.Operation | Should Be 'StopPeers'
+        $value.ElapsedMilliseconds | Should Be 1500
+        ($value | ConvertTo-Json) | Should Not Match 'SecurityKey|Arguments|PeerAddress|SettingsRoot'
+    }
+
     It 'does not add diagnostic writes on the host endpoint' {
         $script:config.Role = 'Host'
         Write-EndpointCommandStage 'RequestDispatching' 'Connect' 2

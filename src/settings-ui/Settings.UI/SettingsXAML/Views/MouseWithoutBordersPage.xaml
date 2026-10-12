@@ -76,9 +76,10 @@
                                 Style="{StaticResource AccentButtonStyle}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_Connect"
+                                AutomationProperties.AutomationId="MouseWithoutBordersShowConnectFieldsButton"
                                 Command="{x:Bind ShowConnectFieldsCommand, Mode=OneTime}"
                                 Style="{StaticResource AccentButtonStyle}"
-                                Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}" />
+                                Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
                         </StackPanel>
                     </tkcontrols:SettingsExpander>
 

@@ -39,12 +39,15 @@ public sealed class ReceiverFocusTests
             RunFiles.Write(before, new { Hwnd = foreground.Hwnd.ToInt64(), foreground.ProcessId, foreground.ProcessName, foreground.ClassName, Path = NativeSupport.ImagePath(foreground.ProcessId) });
             TestContext.AddResultFile(before);
             var watch = Stopwatch.StartNew();
-            RunFiles.Wait(
+            var focus = WaitHelper.WaitForStable(
                 () => NativeSupport.GetForegroundWindow() == receiver.Handle && receiver.InputFocused,
-                TimeSpan.FromSeconds(10),
-                "An open Start menu prevented the owned receiver from regaining foreground.",
-                receiver.FocusInput);
-            KeyboardHelper.SendKeys(Key.A);
+                isMatch: ready => ready,
+                timeoutMS: 10_000,
+                requiredConsecutiveMatches: 3,
+                pollIntervalMS: 100,
+                recover: _ => receiver.FocusInput());
+            Assert.IsTrue(focus.Succeeded, "An open Start menu prevented stable owned receiver foreground/input focus.");
+            KeyboardHelper.SendChord(Key.A);
             RunFiles.Wait(() => receiver.ReceivedText == "a", TimeSpan.FromSeconds(5), "Physical keyboard input did not reach the receiver after Start closed.");
             Assert.AreEqual(0, receiver.Clicks, "Focus recovery must not inject a mouse click.");
             Assert.AreEqual(0, receiver.MouseDownMessages);
@@ -56,6 +59,17 @@ public sealed class ReceiverFocusTests
         }
         finally
         {
+            var final = Path.Combine(directory, "receiver-final-state.json");
+            RunFiles.Write(final, new
+            {
+                ForegroundHwnd = NativeSupport.GetForegroundWindow().ToInt64(),
+                ExpectedForegroundHwnd = receiver.Handle.ToInt64(),
+                receiver.InputFocused,
+                ReceivedCharacterCount = receiver.ReceivedText.Length,
+                receiver.StartMenuDismissals,
+                receiver.Clicks,
+            });
+            TestContext.AddResultFile(final);
             recording.Complete();
             if (IsStartMenuForeground())
             {

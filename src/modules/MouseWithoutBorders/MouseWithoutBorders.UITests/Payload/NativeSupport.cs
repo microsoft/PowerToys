@@ -226,6 +226,15 @@ namespace Microsoft.MouseWithoutBorders.UITests
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        private struct WindowRect
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         private struct GuiThreadInfo
         {
             public uint Size;
@@ -284,6 +293,28 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr window, int command);
+
+        [DllImport("user32.dll")]
+        public static extern bool IsZoomed(IntPtr window);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool GetWindowRect(IntPtr window, out WindowRect rectangle);
+
+        public static int[] WindowBounds(IntPtr window, int processId)
+        {
+            if (WindowProcessId(window) != processId)
+            {
+                throw new InvalidOperationException("Settings window ownership changed before layout observation.");
+            }
+
+            WindowRect rectangle;
+            if (!GetWindowRect(window, out rectangle))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            return new[] { rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom };
+        }
 
         [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr window);

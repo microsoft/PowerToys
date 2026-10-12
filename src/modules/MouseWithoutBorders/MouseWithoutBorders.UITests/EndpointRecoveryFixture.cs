@@ -49,7 +49,7 @@ internal sealed class EndpointRecoveryFixture : IDisposable
         settings = SettingsPaths().Select(path => new SettingsSnapshot(path, File.Exists(path), File.Exists(path) ? Hash(path) : null)).ToList();
         Assert.IsFalse(Directory.Exists(BackupRoot), "A previous run's private settings recovery must be resolved first.");
         host = new EndpointChannel(RunId, Path.Combine(controlRoot, "host-input"), Path.Combine(RunRoot, "host"));
-        var deadline = DateTime.UtcNow.AddMinutes(8);
+        var deadline = DateTime.UtcNow + SandboxTimeouts.RecoveryRun;
         RunFiles.Write(Path.Combine(host.InputRoot, "bootstrap.json"), new
         {
             RunId, Role = "Host", HardDeadlineUtc = deadline,
@@ -161,7 +161,7 @@ internal sealed class EndpointRecoveryFixture : IDisposable
                 ["ExpectedLocalAddress"] = IPAddress.Loopback.ToString(),
                 ["GlobalSettings"] = TwoEndpointFixture.CreateGlobalSettings(payloadRoot),
             },
-            timeoutSeconds: (int)Budget(360).TotalSeconds);
+            timeoutSeconds: (int)Budget(SandboxTimeouts.EndpointStartRequestSeconds).TotalSeconds);
         var endpoint = RunFiles.Read(Path.Combine(host.OutputRoot, "endpoint-journal.json"));
         Assert.AreEqual(3, endpoint["Settings"]!.AsArray().Count);
         Assert.IsFalse(endpoint["SettingsRestored"]!.GetValue<bool>());
@@ -249,7 +249,7 @@ internal sealed class EndpointRecoveryFixture : IDisposable
             RecoveryScriptStatus = recovery["Status"]!.GetValue<string>(),
             SettingsRestored = true, OwnedResourcesStopped = true, NormalFinishAcknowledged = false,
             RequiresBaselineReset = clipboardLost, ElapsedSeconds = watch.Elapsed.TotalSeconds,
-            CaseHardDeadlineSeconds = 480, RecoveryDeadlineSeconds = 180, IndependentClipboardGuard = clipboardLost,
+            CaseHardDeadlineSeconds = (int)SandboxTimeouts.RecoveryRun.TotalSeconds, RecoveryDeadlineSeconds = 180, IndependentClipboardGuard = clipboardLost,
         });
     }
 
@@ -441,10 +441,10 @@ internal sealed class EndpointRecoveryFixture : IDisposable
 
     private TimeSpan Budget(int seconds)
     {
-        var remaining = TimeSpan.FromMinutes(8) - watch.Elapsed;
+        var remaining = SandboxTimeouts.RecoveryRun - watch.Elapsed;
         if (remaining < TimeSpan.FromSeconds(1))
         {
-            throw new TimeoutException("The recovery scenario exceeded its eight-minute hard deadline.");
+            throw new TimeoutException($"The recovery scenario exceeded its {SandboxTimeouts.RecoveryRun.TotalMinutes}-minute hard deadline.");
         }
 
         return remaining < TimeSpan.FromSeconds(seconds) ? remaining : TimeSpan.FromSeconds(seconds);

@@ -26,7 +26,7 @@ steps:
         -Configuration "$(BuildConfiguration)" `
         -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Run the complete MWB pilot suite once on the standard-user desktop
-    timeoutInMinutes: 83
+    timeoutInMinutes: 103
     condition: and(succeeded(), eq(variables['RunMwbSandbox'], 'true'))
     env:
       platform: $(TestPlatform)

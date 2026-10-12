@@ -75,7 +75,15 @@ This SDK debug dependency is internal test payload, not a Release/installer
 redistribution.
 
 The one-vCPU/4-GB generic `Constrained` profile is **not signed off for nested
-Sandbox**. The earlier Debug results used Win10 four vCPUs/24 GB and Win11
+Sandbox**: Windows Sandbox requires at least two CPU cores.
+`Invoke-AutonomousLocalVm.ps1 -ResourceProfile Constrained` forwards an explicit
+VM-specific pressure override; it does not claim the unsupported generic
+one-core profile. The two-vCPU/eight-GB pressure suite passed Win10. Win11
+failed cold native Sandbox creation before PowerToys started at both two and
+four vCPUs/eight GB, so reduced-resource Win11 remains a validation blocker.
+These findings do not replace or invalidate the eight-vCPU/16-GB default gate.
+See [Windows Sandbox prerequisites](https://learn.microsoft.com/en-us/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-install).
+The earlier Debug results used Win10 four vCPUs/24 GB and Win11
 four vCPUs/8 GB; those historical profiles remain part of their evidence.
 The user-selected eight-vCPU/16-GB profiles are the current Release stability
 baseline, not a retroactive change to those results. Resource profiles are
@@ -97,11 +105,38 @@ smoke.
 
 | Deadline | Legacy | Modern |
 |---|---|---|
-| Guest bootstrap, including provider setup/transfer | 15 minutes | 35 minutes, including at most 10 minutes of provider start |
-| Fixture/worker hard run deadline | 40 minutes | 70 minutes |
-| Local suite/controller envelope | 45/60 minutes | 75/90 minutes |
-| CI interactive suite/outer Run step | 45/83 minutes | 80/83 minutes |
+| Guest bootstrap, including provider setup/transfer | 20 minutes | 35 minutes, including at most 15 minutes of provider start |
+| Runner/Settings/MWB endpoint startup, including native window readiness | 15 minutes on both endpoints | 15 minutes on both endpoints |
+| Enclosing endpoint Start request, including preparation/reply headroom | 20 minutes | 20 minutes |
+| Fixture/worker hard run deadline | 65 minutes | 90 minutes |
+| Local suite/controller envelope | 70/85 minutes | 95/110 minutes |
+| CI interactive suite/outer Run step | 70/103 minutes | 100/103 minutes |
 | Lease freshness | 45 seconds, no grace | 45 seconds, no grace |
+
+The endpoint startup allowance was increased explicitly after observing a
+9m 16s Settings initialization without UIA or native responsiveness probes.
+It is a readiness ceiling, not a fixed sleep or a startup-performance fix:
+the original owned-process/window predicates and two stable observations still
+must pass. Recovery cases that start real endpoints use the same 20-minute
+Start request inside a 23-minute case envelope; the actual three-minute
+recovery-script deadline remains unchanged. UIA, input, clipboard, cleanup and
+ownership-lease deadlines were not initially relaxed. A subsequent identical-cohort
+repeat completed all eight smoke phases but exceeded the **180-second** guest
+StopPeers deadline during exact-rule teardown; the legacy abort-test viewer did
+not appear within 90 seconds. Guest StopPeers now allows five minutes and that
+viewer readiness three minutes, independently of startup and fault assertions.
+The guest command-stage journal distinguishes stopping processes, restoring
+settings and removing its exact firewall rule. No firewall scope, ownership
+check, input/clipboard assertion, UIA ceiling or 45-second lease changed.
+Legacy bootstrap separately allows 20 minutes after a run completed runtime
+extraction and manifest validation just after its previous 15-minute deadline,
+before any PowerToys startup. The endpoint startup ceiling remains 15 minutes.
+Modern provider creation independently uses the same fifteen-minute ceiling
+after verified cold creation exhausted ten minutes before returning a confirmed
+GUID. A failed creation still requires baseline reset; no warm-up, fallback or
+unconfirmed-ownership adoption is permitted.
+Historical runs below retain their
+original budgets; this change alone does not establish local stability.
 
 The modern-client setup step precedes protected runtime preparation and is
 bounded to 12 minutes. Owned external recovery and privileged cleanup always
@@ -174,6 +209,15 @@ Home in the pre-cleanup image. Connect had not been submitted. An exit-zero
 navigation action or a visible window must therefore not be treated as proof
 that the MWB page finished loading; the underlying UI stall remains unresolved.
 
+The MWB pairing flow opens the module page with Runner's supported
+`--open-settings=MouseWithoutBorders` deep link on both endpoints. It verifies
+native maximized window geometry without UIA, within the unchanged startup
+deadline, then waits for `MouseWithoutBordersShowConnectFieldsButton` and both
+enabled peer/key fields before submitting the real acknowledged RPC. Startup
+diagnostics retain native process evidence rather than walking the entire UIA
+tree. This preserves pairing coverage, not the unrelated Home-to-module
+navigation route; it does not establish that the startup latency is fixed.
+
 **Artifact access/retention:** full recordings are internal, access-controlled
 diagnostics and may display disposable pairing keys. Keep them in the existing
 Azure Test/pipeline artifact store under its build-retention policy, or the
@@ -193,7 +237,8 @@ future image work; it is not evidence of a working ARM64 Sandbox.
 `buildNowSlim` preserves installer-based execution for other selected modules.
 MWB uses protected lean copies of the **same build**, not the installed path;
 this does not sign off per-user/machine installer behavior or service mode.
-The recorded Debug results below are historical evidence, not Release sign-off.
+The recorded Debug results below are historical evidence, separate from the
+shared Release CI results.
 
 ### Required recovery cases
 
@@ -223,18 +268,94 @@ worker snapshot is lost.
 
 ## Recorded evidence
 
-**Release extension is not signed off.** The shared Release/configuration,
-coherent native-module closure, private signing and default-selection changes
-remain unpublished while their local end-to-end gate is incomplete. The best
-unfiltered Release Win10 run passed 10/11 cases; subsequent focused attempts
-identified guest Settings/UIA readiness failures before Connect was submitted.
-Win11 reached matching Release endpoints and successful navigation but scoped
-inspection returned an empty tree; the final prior-art-query discriminator
-failed modern guest login/startup. Original-user recovery restored settings and
-clipboard, protected trust/firewall cleanup completed, and both owned VMs were
-stopped. The current local profiles are eight vCPUs/16 GB; no constrained run
-was used. No new Release CI was queued, and two of the six authorized attempts
-remain. The Debug results below do not close these Release gates.
+**Current default operating-contract stability:** the final test cohort passed
+three completed, cold, clean-module-profile full suites on each OS at eight
+vCPUs/16 GB. Win10 runs were `localvm-20261012-042656-d101a85b`,
+`localvm-20261012-045819-00739fa4` and `localvm-20261012-143328-4f18a206`;
+Win11 runs were `localvm-20261012-021913-4cd025fb`,
+`localvm-20261012-030032-843e0e0b` and `localvm-20261012-034200-81af6b50`.
+Every run passed all eleven cases and eight smoke phases with zero normal
+cleanup/export errors and no overlapping host suspension. A separate Win10
+attempt was interrupted by host sleep and is excluded, not relabeled passed.
+
+The final receiver-focus check waits for three native foreground/input-focus
+matches before one checked physical `SendInput` key batch; its exact received
+character, no-mouse-input and single-dismissal assertions remain unchanged.
+The final cohort's controlled bootstrap, viewer and cleanup ceilings are listed
+above. This is practical repeatability evidence for the stated default contract,
+not proof of startup root-cause resolution or stability on every resource profile.
+Current Win11 reduced-resource cold provider creation remains blocked. CI for
+the proven default contract is explicitly authorized as a separate validation
+axis; it must not be presented as reduced-resource Win11 sign-off. No new CI
+attempt was consumed during the local sequence.
+
+**The published shared Release suite passed all eleven cases on both fresh CI
+jobs in [build 160090375](https://dev.azure.com/microsoft/Dart/_build/results?buildId=160090375)**
+at source `c2a70f473fcd846536f83dee9b8b660d4843377e`. Win10 Legacy and Win11
+modern each passed all eight smoke phases, real persisted key/peer
+acknowledgements, input/clipboard positive and negative controls, and all four
+recovery cases. Fixture/external recovery, scoped trust/firewall cleanup and
+recording finalization succeeded. This run was an explicitly authorized
+diagnostic while the deeper local Sandbox matrix remained incomplete; it does
+not establish a fix for local Settings latency.
+
+**Adjusted-startup Win10 rerun: all eleven cases passed** in
+`localvm-20261011-211220-58f7e062`, with both endpoints using the 15-minute
+startup allowance at eight vCPUs/16 GB. All eight smoke phases and four recovery
+cases passed; persisted key/peer acknowledgement took 1.244 seconds. Fixture and
+external recovery were clean, both recordings finalized, and no host suspension
+overlapped the run. Guest clipboard-toggle UIA still took 78.894 seconds under
+the unchanged 90-second ceiling. Both endpoint starts together completed in
+5m 05s, so this pass did not need the additional startup headroom. It is one
+full Win10 success, not repeated-stability or Win11/constrained sign-off.
+
+**The local eight-vCPU/16-GB matrix gate remains incomplete.** A diagnostic startup-only
+run with UIA prohibited still needed 156 seconds for native readiness. Its
+search-index build took 1.5 seconds; during passive observation, the exact
+tiered-JIT worker accumulated 36.453 CPU seconds and the UI thread 1.094 seconds.
+Native CPU settling plus a progressing dispatcher did not prevent the next
+navigation timeout, so no CPU-quiescence or runtime-switch workaround was kept.
+
+A subsequent startup-only discriminator also prohibited guest
+`Process.Responding`/WM_NULL probes and awaited private Loaded/dispatcher markers.
+With zero UIA and zero responsiveness queries, the original eight-minute
+deadline still expired: Shell XAML initialization took 61.2 seconds, initial
+Frame navigation 131.2 seconds, and Frame return to Shell Loaded another
+191.1 seconds. Loaded completed about 9m 16s after Runner startup; Home painted
+later. The search index began afterward and took 6.4 seconds. This run did not
+overlap host suspend and recovered cleanly. Neither UIA nor responsiveness
+polling is necessary for this delayed initialization; the responsible
+pre-Loaded work remains unresolved, and the private trace gate is not shipped.
+
+Bracketing the final synchronous foreground call in a faster zero-probe replay
+measured 118 ms in `BringToForeground`, followed by 26.94 seconds from
+`OnLaunched` return to Shell Loaded. Startup/passive-observation assertions
+passed at 116.6-second readiness; the run failed only its guest StopPeers cleanup
+deadline, and external recovery completed. This does not reproduce or explain
+the previous 191-second gap. All private markers were removed; no shared
+foreground helper or product startup behavior was changed.
+
+Separately, a supported direct-page/targeted-control diagnostic smoke passed all
+eight phases once. However, the maintained, noninstrumented unfiltered Win10
+run `localvm-20261011-041418-95063aff` passed **9/11**, with no skipped cases.
+Its smoke failed the original eight-minute native Settings startup deadline:
+the pre-cleanup recording shows a blank window and no guest UIA/Connect was
+reached. The independent Start-menu dismissal test also failed. Pre-teardown
+guest evidence timed out separately; external recovery restored settings and
+clipboard without a baseline reset, and owned processes/tasks/firewall/trust
+were removed. These results do not sign off the new test path, Home navigation,
+Win11 local clean-profile behavior or constrained resources. The authorized
+six-run CI cycle is exhausted; no additional CI was queued for this local
+investigation.
+
+An otherwise identical private capture-disabled smoke passed all eight phases.
+Its capture-on repeat passed startup, pairing, transport and remote input, then
+timed out on the guest clipboard-sharing UIA call. The failures occurred at
+different boundaries, so these runs do not prove recording is the root cause;
+maintained capture remains enabled. A further foreground prototype was
+invalidated before its gate by host suspend from 06:10:16 to 17:01:24 UTC on
+October 11. It provides no product verdict, and no foreground workaround was
+retained.
 
 **Final x64 Debug pilot: the complete eleven-case suite passed on both fresh CI
 jobs in [build 159677767](https://dev.azure.com/microsoft/Dart/_build/results?buildId=159677767).**

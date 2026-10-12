@@ -114,7 +114,8 @@ function Write-EndpointCommandStage {
             'RequestReadStarting', 'RequestDispatching', 'RequestFailed',
             'ResponsePublishing', 'ResponsePublished',
             'UiPreparing', 'UiProcessStarting', 'UiProcessStarted', 'UiWaiting',
-            'UiProcessExited', 'UiTimedOut', 'UiOutputRead', 'UiResultParsed'
+            'UiProcessExited', 'UiTimedOut', 'UiOutputRead', 'UiResultParsed',
+            'PeersStopProcesses', 'PeersStopSettings', 'PeersStopFirewall', 'PeersStopped'
         )) { $Stage = 'Unknown' }
         if ($Operation -cnotin @(
             'Start', 'Connect', 'VerifyPeerMapping', 'ClipboardSharing', 'Transport',
@@ -445,6 +446,54 @@ function Get-GuestSettingsWindow {
     $handle
 }
 
+function Request-SettingsMaximize {
+    $window = Get-GuestSettingsWindow
+    # Post once: a synchronous ShowWindow call can wait for a busy target UI thread.
+    if (-not [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::PostMessage(
+        [IntPtr]$window, 0x0112, [IntPtr]0xF030, [IntPtr]::Zero)) {
+        throw 'The owned Settings window rejected its maximize request.'
+    }
+}
+
+function Get-SettingsWindowLayout {
+    $window = Get-GuestSettingsWindow
+    $bounds = [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::WindowBounds([IntPtr]$window, $script:settingsPid)
+    $area = [Windows.Forms.Screen]::FromHandle([IntPtr]$window).WorkingArea
+    @{
+        Window = $window; Maximized = [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::IsZoomed([IntPtr]$window)
+        Left = $bounds[0]; Top = $bounds[1]; Right = $bounds[2]; Bottom = $bounds[3]
+        WorkLeft = $area.Left; WorkTop = $area.Top; WorkRight = $area.Right; WorkBottom = $area.Bottom
+    }
+}
+
+function Set-SettingsWindowMaximized {
+    param([DateTime]$DeadlineUtc)
+    if ([DateTime]::UtcNow -ge $DeadlineUtc) { throw 'The original Settings startup deadline expired before maximization.' }
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    Request-SettingsMaximize
+    $previous = $null
+    $stableSamples = 0
+    do {
+        $layout = Get-SettingsWindowLayout
+        $ready = $layout.Maximized -and $layout.Left -le $layout.WorkLeft -and $layout.Top -le $layout.WorkTop -and
+            $layout.Right -ge $layout.WorkRight -and $layout.Bottom -ge $layout.WorkBottom
+        $identity = '{0}|{1}|{2}|{3}|{4}' -f $layout.Window, $layout.Left, $layout.Top, $layout.Right, $layout.Bottom
+        if ($ready) {
+            if ($identity -ceq $previous) { $stableSamples++ } else { $stableSamples = 1; $previous = $identity }
+            if ($stableSamples -ge 2 -and [DateTime]::UtcNow -lt $DeadlineUtc) {
+                Write-RunJson "$OutputRoot\settings-maximized.json" @{
+                    Layout = $layout; StableSamples = $stableSamples; ElapsedMilliseconds = $watch.ElapsedMilliseconds
+                    TimestampUtc = [DateTime]::UtcNow.ToString('o'); Role = $script:config.Role
+                }
+                return
+            }
+        }
+        else { $stableSamples = 0; $previous = $null }
+        Start-Sleep -Milliseconds 250
+    } while ([DateTime]::UtcNow -lt $DeadlineUtc)
+    throw 'The owned Settings window did not acknowledge stable maximized geometry within its original startup deadline.'
+}
+
 function New-EndpointFirewallPolicy {
     New-Object -ComObject HNetCfg.FwPolicy2
 }
@@ -695,7 +744,7 @@ function Start-Endpoint {
     $start = [Diagnostics.ProcessStartInfo]::new()
     $start.FileName = Join-Path $ProductRoot 'PowerToys.exe'
     $start.WorkingDirectory = $ProductRoot
-    $start.Arguments = '--open-settings'
+    $start.Arguments = '--open-settings=MouseWithoutBorders'
     $start.UseShellExecute = $false
     $process = [Diagnostics.Process]::Start($start)
     try { $script:owned.Add([Microsoft.MouseWithoutBorders.UITests.ProcessIdentity]::Capture($process.Id)) }
@@ -706,7 +755,7 @@ function Start-Endpoint {
     finally { $process.Dispose() }
     $script:status = 'Running'
     Write-EndpointJournal
-    $startupBudgetMinutes = if ($script:config.Role -eq 'Guest') { 8 } else { 5 }
+    $startupBudgetMinutes = 15
     $deadline = [DateTime]::UtcNow.AddMinutes($startupBudgetMinutes)
     $lastTraceUtc = [DateTime]::MinValue
     $readySettingsPid = 0
@@ -748,11 +797,11 @@ function Start-Endpoint {
             catch [Microsoft.PowerShell.Commands.ProcessCommandException] { $stillAlive = $false }
             if ($stillAlive) {
                 $script:settingsPid = $readySettingsPid
+                Set-SettingsWindowMaximized -DeadlineUtc $deadline
                 if ($script:config.Role -eq 'Guest') {
                     try { Save-SettingsDiagnostics 'startup' }
                     catch {
-                        # A best-effort UI-tree snapshot must never turn an already-confirmed
-                        # successful start into a reported failure.
+                        # Optional diagnostics must not replace the startup verdict.
                         Write-Trace ("Save-SettingsDiagnostics failed after startup succeeded: {0}" -f $_.Exception.Message)
                     }
                 }
@@ -792,6 +841,8 @@ function Start-Endpoint {
 }
 
 function Stop-Endpoint {
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    Write-EndpointCommandStage 'PeersStopProcesses' 'StopPeers' $script:requestNumber 0 $watch.ElapsedMilliseconds
     Update-OwnedProcesses
     # The first record is Runner: stop it before children so it cannot restart MWB.
     foreach ($record in $script:owned) { $record.Stop() }
@@ -802,10 +853,13 @@ function Stop-Endpoint {
         Start-Sleep -Milliseconds 250
     } while ([DateTime]::UtcNow -lt $deadline)
     Assert-CleanEndpoint
+    Write-EndpointCommandStage 'PeersStopSettings' 'StopPeers' $script:requestNumber 0 $watch.ElapsedMilliseconds
     Restore-Settings
+    Write-EndpointCommandStage 'PeersStopFirewall' 'StopPeers' $script:requestNumber 0 $watch.ElapsedMilliseconds
     Remove-EndpointFirewallRule $script:firewallOwnership
     $script:status = 'PeersStoppedSettingsRestored'
     Write-EndpointJournal
+    Write-EndpointCommandStage 'PeersStopped' 'StopPeers' $script:requestNumber 0 $watch.ElapsedMilliseconds
 }
 
 function Get-GuestUiWaitSnapshot {
@@ -996,6 +1050,7 @@ function Get-GuestUiControlKind {
         'Security key' { 'SecurityKeyHeader' }
         'ConnectSecurityKeyTextBox' { 'ConnectKeyField' }
         'ConnectPCNameTextBox' { 'ConnectPeerField' }
+        'MouseWithoutBordersShowConnectFieldsButton' { 'ShowConnectFields' }
         'MouseWithoutBordersConnectButton' { 'SubmitConnect' }
         'MouseWithoutBordersShareClipboardToggle' { 'ClipboardToggle' }
         default { 'Other' }
@@ -1133,6 +1188,18 @@ function Get-GuestElement {
     Get-InspectedGuestElement (Invoke-GuestUi @('inspect', $AutomationId, '-d', '0')) $AutomationId
 }
 
+function Wait-GuestMwbControl {
+    param([string]$AutomationId)
+    $result = Invoke-GuestUi @('wait-for', $AutomationId, '--timeout', '90000', '--property', 'IsEnabled', '--value', 'True')
+    if ($null -eq $result -or -not $result.PSObject.Properties['found'] -or $result.found -ne $true -or
+        -not $result.PSObject.Properties['element'] -or $null -eq $result.element -or
+        -not $result.element.PSObject.Properties['automationId'] -or $result.element.automationId -cne $AutomationId -or
+        -not $result.element.PSObject.Properties['isEnabled'] -or $result.element.isEnabled -ne $true) {
+        throw "The actual MWB control did not acknowledge readiness: $AutomationId."
+    }
+    $result.element
+}
+
 function Get-GuestSecurityKeyHeader {
     param($Result)
     if ($null -eq $Result -or -not $Result.PSObject.Properties['matches']) {
@@ -1186,18 +1253,10 @@ function Wait-GuestConnectAcknowledgement {
 
 function Connect-Guest {
     param([string]$Key, [string]$PeerName)
-    $group = Get-GuestElement 'InputOutputNavItem'
-    if (-not $group.PSObject.Properties['expandState'] -or $group.expandState -notin @('collapsed', 'expanded')) {
-        throw 'Guest Settings input/output navigation did not expose its expansion state.'
-    }
-    if ($group.expandState -eq 'collapsed') {
-        $null = Invoke-GuestUi -Arguments @('invoke', 'InputOutputNavItem') -TimeoutSeconds 180
-    }
-    $null = Invoke-GuestUi -Arguments @('invoke', 'MouseWithoutBordersNavItem') -TimeoutSeconds 180
-    $expander = Get-GuestSecurityKeyHeader (Invoke-GuestUi @('search', 'Security key', '--type', 'Button'))
-    if ($expander.expandState -eq 'collapsed') {
-        $null = Invoke-GuestUi @('invoke', $expander.selector)
-    }
+    $null = Wait-GuestMwbControl 'MouseWithoutBordersShowConnectFieldsButton'
+    $null = Invoke-GuestUi @('invoke', 'MouseWithoutBordersShowConnectFieldsButton')
+    $null = Wait-GuestMwbControl 'ConnectSecurityKeyTextBox'
+    $null = Wait-GuestMwbControl 'ConnectPCNameTextBox'
     $null = Invoke-GuestUi @('set-value', 'ConnectSecurityKeyTextBox', $Key)
     $null = Invoke-GuestUi @('set-value', 'ConnectPCNameTextBox', $PeerName)
     $mapping = Assert-PeerMapping 'before-connect'
@@ -1274,18 +1333,6 @@ function Save-SettingsDiagnostics {
         ProcessId = $process.Id; MainWindowHandle = $process.MainWindowHandle.ToInt64()
         MainWindowTitle = $process.MainWindowTitle; Responding = $process.Responding
         CpuSeconds = $process.CPU; TimestampUtc = [DateTime]::UtcNow.ToString('o')
-    }
-    try {
-        $tree = Invoke-GuestUi @('inspect', '-d', '5')
-        $text = $tree | ConvertTo-Json -Depth 30
-        $settings = Read-RunJson "$script:settingsRoot\MouseWithoutBorders\settings.json"
-        $key = $settings.properties.SecurityKey.value
-        if ($key) { $text = $text.Replace($key, '[REDACTED]') }
-        $text = [regex]::Replace($text, '("value"\s*:\s*)"(?:[^"\\]|\\.)*"', '$1"[REDACTED]"')
-        [IO.File]::WriteAllText("$OutputRoot\$Label-ui.json", $text, [Text.UTF8Encoding]::new($false))
-    }
-    catch {
-        Write-RunJson "$OutputRoot\$Label-ui-failure.json" @{ Error = $_.Exception.Message }
     }
 }
 

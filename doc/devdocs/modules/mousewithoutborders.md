@@ -14,6 +14,7 @@ This file contains the documentation for the Mouse Without Borders PowerToy modu
   - [Table of Contents](#table-of-contents)
   - [Status colors](#status-colors)
   - [Settings matrix reconciliation](#settings-matrix-reconciliation)
+  - [Settings pairing readiness](#settings-pairing-readiness)
   - [Experimental non-console sessions](#experimental-non-console-sessions)
   - [Release, installed and physical-device validation](#release-installed-and-physical-device-validation)
 
@@ -41,6 +42,30 @@ not removed machines, and only an actual removal or insertion should cause a
 settings save. Rewriting an unchanged matrix retriggers the page's file watcher,
 which can repeatedly reload and save settings on the UI dispatcher. Existing
 device positions and the four-slot layout are preserved during reconciliation.
+
+## Settings pairing readiness
+
+The security section's **Connect** button opens the peer/key fields; it is visible
+while those fields are collapsed and hidden once they expand. Its
+`MouseWithoutBordersShowConnectFieldsButton` AutomationId is distinct from the
+input row's `MouseWithoutBordersConnectButton`, which submits the actual RPC.
+When automating this command, await both enabled fields before setting values,
+then await the matching persisted key/peer acknowledgement after submit.
+The Sandbox flow starts Settings through the supported
+`--open-settings=MouseWithoutBorders` Runner deep link, maximizes the owned
+window, and waits for this field-opening command before invoking it. It avoids
+a whole-window header search and a Home-page navigation that are not required
+for MWB pairing. This does not claim to fix Settings startup latency or validate
+Home-to-module navigation. Navigation invocation alone does not establish that
+the destination page loaded.
+
+The autonomous suite allows 15 minutes for each endpoint's initial
+Runner/MWB/Settings readiness, with a separate 20-minute Start-request envelope
+for preparation and reply delivery. This is a nested-Sandbox test allowance,
+not a product startup-performance guarantee. UIA, input, clipboard and
+the 45-second ownership lease retain their existing deadlines. Independent
+bootstrap, viewer and cleanup envelopes are documented in the autonomous
+suite's README.
 
 ## Experimental non-console sessions
 

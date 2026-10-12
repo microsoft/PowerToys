@@ -6,11 +6,17 @@ namespace Microsoft.MouseWithoutBorders.UITests;
 
 internal static class SandboxTimeouts
 {
-    internal static readonly TimeSpan LegacyBootstrap = TimeSpan.FromMinutes(15);
+    internal const int EndpointStartupMinutes = 15;
+    internal const int EndpointStartRequestSeconds = (EndpointStartupMinutes + 5) * 60;
+    internal const int GuestStopRequestSeconds = 300;
+
+    internal static readonly TimeSpan LegacyBootstrap = TimeSpan.FromMinutes(20);
     internal static readonly TimeSpan ModernBootstrap = TimeSpan.FromMinutes(35);
-    internal static readonly TimeSpan LegacyRun = TimeSpan.FromMinutes(40);
-    internal static readonly TimeSpan ModernRun = TimeSpan.FromMinutes(70);
-    internal static readonly TimeSpan ModernStart = TimeSpan.FromMinutes(10);
+    internal static readonly TimeSpan LegacyRun = TimeSpan.FromMinutes(65);
+    internal static readonly TimeSpan ModernRun = TimeSpan.FromMinutes(90);
+    internal static readonly TimeSpan ModernStart = TimeSpan.FromMinutes(15);
+    internal static readonly TimeSpan LegacyViewerStart = TimeSpan.FromMinutes(3);
+    internal static readonly TimeSpan RecoveryRun = TimeSpan.FromSeconds(EndpointStartRequestSeconds) + TimeSpan.FromMinutes(3);
 
     internal static DateTime BootstrapDeadline(DateTime now, DateTime hardDeadline, bool modern)
     {

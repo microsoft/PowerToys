@@ -123,7 +123,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         {
             if (guest?.Ready == true)
             {
-                guest.Request("StopPeers", timeoutSeconds: 180);
+                guest.Request("StopPeers", timeoutSeconds: SandboxTimeouts.GuestStopRequestSeconds);
             }
 
             guestStopped = true;
@@ -514,21 +514,15 @@ internal sealed class TwoEndpointFixture : IDisposable
         {
             ["PeerName"] = guestName, ["PeerAddress"] = guestAddress, ["GlobalSettings"] = global.DeepClone(),
             ["ExpectedLocalAddress"] = provision["HostAddress"]!.DeepClone(),
-        }, timeoutSeconds: 360);
+        }, timeoutSeconds: SandboxTimeouts.EndpointStartRequestSeconds);
         settings = Session.FromProcess(started["SettingsProcessId"]!.GetValue<int>().ToString(CultureInfo.InvariantCulture), timeoutMS: 30_000);
         guestPeersStarted = true;
-        // The guest's WinUI3 Settings window can take longer than the host's to satisfy the
-        // startup check: it is one level deeper, inside a Windows Sandbox with no GPU
-        // passthrough. Give this channel call ample headroom above EndpointSupport.ps1's own
-        // guest startup budget (8 minutes) so that budget - not this outer channel timeout -
-        // is what fails first; run localvm-20260914-050434 observed the mapped-folder
-        // response round trip alone add roughly two extra minutes on top of the internal
-        // budget under this nested VM's I/O load.
+        // Enclose the fifteen-minute readiness budget and the mapped-folder reply.
         guest!.Request("Start", new JsonObject
         {
             ["PeerName"] = hostName, ["PeerAddress"] = provision["HostAddress"]!.DeepClone(), ["GlobalSettings"] = global.DeepClone(),
             ["ExpectedLocalAddress"] = guestAddress,
-        }, timeoutSeconds: 900);
+        }, timeoutSeconds: SandboxTimeouts.EndpointStartRequestSeconds);
     }
 
     internal static JsonObject CreateGlobalSettings(string payloadRoot)

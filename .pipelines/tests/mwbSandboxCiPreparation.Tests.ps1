@@ -805,7 +805,9 @@ Describe 'MWB gated preparation source contracts' {
     }
 
     It 'retains the existing bounded Limited desktop dispatch and recovery' {
-        $script | Should Match "\`$suiteTimeoutMinutes = if \(\`$manifest.SandboxBackend -eq 'WinApp'\) \{ 80 \} else \{ 45 \}"
+        $script | Should Match "\`$suiteTimeoutMinutes = if \(\`$manifest.SandboxBackend -eq 'WinApp'\) \{ 100 \} else \{ 70 \}"
+        $steps = Get-Content -LiteralPath (Join-Path $templates 'steps-mwb-sandbox-experiment.yml') -Raw
+        $steps | Should Match 'timeoutInMinutes: 103'
         $script | Should Match '-TimeoutMinutes \$suiteTimeoutMinutes'
         $script | Should Match "\`$task.Principal.RunLevel -ne 'Limited'"
         $script | Should Match "\`$task.Principal.LogonType -ne 'Interactive'"

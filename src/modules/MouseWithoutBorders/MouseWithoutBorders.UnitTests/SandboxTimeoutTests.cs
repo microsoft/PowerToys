@@ -11,14 +11,43 @@ namespace MouseWithoutBorders.UnitTests;
 public sealed class SandboxTimeoutTests
 {
     [TestMethod]
-    public void ModernColdBootstrapDoesNotChangeLegacyOrHostBudget()
+    public void BootstrapBudgetsRemainBackendSpecific()
     {
         var now = new DateTime(2026, 10, 2, 12, 0, 0, DateTimeKind.Utc);
-        Assert.AreEqual(now.AddMinutes(15), SandboxTimeouts.BootstrapDeadline(now, now.AddHours(2), modern: false));
+        Assert.AreEqual(now.AddMinutes(20), SandboxTimeouts.BootstrapDeadline(now, now.AddHours(2), modern: false));
         Assert.AreEqual(now.AddMinutes(35), SandboxTimeouts.BootstrapDeadline(now, now.AddHours(2), modern: true));
-        Assert.AreEqual(TimeSpan.FromMinutes(40), SandboxTimeouts.LegacyRun);
+        Assert.AreEqual(TimeSpan.FromMinutes(65), SandboxTimeouts.LegacyRun);
+        Assert.AreEqual(TimeSpan.FromMinutes(90), SandboxTimeouts.ModernRun);
+        Assert.AreEqual(TimeSpan.FromMinutes(15), SandboxTimeouts.ModernStart);
         Assert.IsTrue(SandboxTimeouts.ModernStart < SandboxTimeouts.ModernBootstrap);
         Assert.IsTrue(SandboxTimeouts.ModernBootstrap + SandboxTimeouts.LegacyBootstrap < SandboxTimeouts.ModernRun);
+    }
+
+    [TestMethod]
+    public void EndpointStartupHasFifteenMinutesAndSeparateReplyHeadroom()
+    {
+        Assert.AreEqual(15, SandboxTimeouts.EndpointStartupMinutes);
+        Assert.AreEqual(1200, SandboxTimeouts.EndpointStartRequestSeconds);
+        Assert.IsTrue(SandboxTimeouts.EndpointStartRequestSeconds > SandboxTimeouts.EndpointStartupMinutes * 60);
+        Assert.AreEqual(TimeSpan.FromMinutes(23), SandboxTimeouts.RecoveryRun);
+    }
+
+    [TestMethod]
+    public void GuestCleanupAndLegacyViewerHaveIndependentReadinessBudgets()
+    {
+        Assert.AreEqual(300, SandboxTimeouts.GuestStopRequestSeconds);
+        Assert.AreEqual(TimeSpan.FromMinutes(3), SandboxTimeouts.LegacyViewerStart);
+        Assert.IsTrue(SandboxTimeouts.LegacyViewerStart < SandboxTimeouts.LegacyBootstrap);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RunBudgetEnclosesBootstrapAndBothEndpointStartRequests(bool modern)
+    {
+        var bootstrap = modern ? SandboxTimeouts.ModernBootstrap : SandboxTimeouts.LegacyBootstrap;
+        var run = modern ? SandboxTimeouts.ModernRun : SandboxTimeouts.LegacyRun;
+        Assert.IsTrue(run > bootstrap + TimeSpan.FromSeconds(2 * SandboxTimeouts.EndpointStartRequestSeconds));
     }
 
     [TestMethod]

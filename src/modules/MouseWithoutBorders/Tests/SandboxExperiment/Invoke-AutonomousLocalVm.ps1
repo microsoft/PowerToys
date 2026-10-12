@@ -25,6 +25,7 @@ param(
     [string]$ProductArchive = 'powertoys-runtime.zip',
     [string]$TestsArchive = 'ui-tests.zip',
     [ValidateSet('x64Win10', 'x64Win11')][string]$Platform = 'x64Win10',
+    [ValidateSet('Default', 'Constrained')][string]$ResourceProfile = 'Default',
     [ValidateSet('Auto', 'Legacy', 'WinApp')][string]$SandboxBackend = 'Auto',
     [string]$SandboxWinAppArchive,
     [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'),
@@ -114,9 +115,10 @@ $parameters = @{
     ExchangeRoot = $ExchangeRoot; TestExecutable = 'MouseWithoutBorders.UITests.exe'
     Platform = $Platform; BuildLabel = $BuildLabel; StandardUser = $StandardUser
     CredentialPath = $CredentialPath
+    ResourceProfile = $ResourceProfile
     ProductArchive = $ProductArchive; TestsArchive = $TestsArchive
-    SuiteTimeout = $(if ($backend -eq 'WinApp') { '75m' } else { '45m' })
-    TimeoutMinutes = $(if ($backend -eq 'WinApp') { 90 } else { 60 })
+    SuiteTimeout = $(if ($backend -eq 'WinApp') { '95m' } else { '70m' })
+    TimeoutMinutes = $(if ($backend -eq 'WinApp') { 110 } else { 85 })
     StartupTimeoutMinutes = 15
     ReuseStagedPayload = $ReuseStagedPayload
 }
@@ -137,7 +139,7 @@ $controllerStartedUtc = [DateTime]::UtcNow
 $controllerTimer = [Diagnostics.Stopwatch]::StartNew()
 & (Join-Path $skillRoot 'Initialize-LocalVmHost.ps1') -VmRoot $VmRoot -ConfigPath $ConfigurationPath -CredentialPath $CredentialPath -CheckOnly
 if ($LASTEXITCODE -ne 0) { throw 'Local-VM host readiness failed.' }
-& (Join-Path $VmRoot 'Start-LocalVm.ps1') -ConfigPath $ConfigurationPath -CredentialPath $CredentialPath -Wait -TimeoutMinutes 15
+& (Join-Path $VmRoot 'Start-LocalVm.ps1') -ConfigPath $ConfigurationPath -CredentialPath $CredentialPath -ResourceProfile $ResourceProfile -Wait -TimeoutMinutes 15
 $runId = [Guid]::NewGuid().ToString()
 $taskName = "PowerToys-Mwb-Provision-$runId"
 $guestTools = "C:\ProgramData\PowerToysMwbProvisioner\$runId"
