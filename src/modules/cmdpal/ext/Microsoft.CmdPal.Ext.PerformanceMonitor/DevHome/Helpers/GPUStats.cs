@@ -23,8 +23,8 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     private static readonly CompositeFormat TemperatureFormat = CompositeFormat.Parse("{0:0.} \u00B0C");
 
     /// <summary>
-    /// The engine types the card shows, in Task Manager's order. The first, 3D, is the GPU's
-    /// overall utilization.
+    /// The engine types the card shows, in Task Manager's order. The GPU's overall utilization is
+    /// its busiest engine of any type, as in Task Manager, including types that aren't listed here.
     /// </summary>
     internal static readonly string[] EngineTypes = ["3D", "Copy", "VideoDecode", "VideoEncode"];
 
@@ -192,11 +192,12 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             // for the same engine is correct (gives total engine utilization). Summing across
             // multiple engines of the same type on the same adapter, however, is NOT - that produced
             // values >100% in the dock under heavy GPU load (issue #48677). Mirroring Task Manager,
-            // we take the maximum utilization per adapter and engine type and clamp to [0, 100].
-            // The 3D engines give the adapter's overall utilization. This parallels the CPU fix in
-            // #46381, which switched to a counter that is naturally bounded to 0-100%. Adapters are
-            // keyed by LUID rather than the "phys_N" token, which is effectively always 0 even on
-            // multi-GPU machines and so cannot tell adapters apart.
+            // we take the maximum utilization per adapter and engine type and clamp to [0, 100], and
+            // the adapter's overall utilization is its busiest engine of any type, including types
+            // the card doesn't list, such as Compute. This parallels the CPU fix in #46381, which
+            // switched to a counter that is naturally bounded to 0-100%. Adapters are keyed by LUID
+            // rather than the "phys_N" token, which is effectively always 0 even on multi-GPU
+            // machines and so cannot tell adapters apart.
             var perEngineUsage = new Dictionary<(long Luid, string EngineId, int Type), float>();
             var currentSamples = new Dictionary<string, CounterSample>();
             var seenLuids = new HashSet<long>();
@@ -204,12 +205,10 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             foreach (InstanceData instance in utilizationData.Values)
             {
                 var instanceName = instance.InstanceName;
-                var engineType = GetEngineType(instanceName);
-                if (engineType < 0)
-                {
-                    continue;
-                }
 
+                // Engine types the card doesn't list (-1), such as Compute, still count toward the
+                // adapter's overall utilization.
+                var engineType = GetEngineType(instanceName);
                 if (!TryGetLuidAndEngine(instanceName, out var luidKey, out var engineId))
                 {
                     continue;
@@ -260,6 +259,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             DiscoverGpus(seenLuids);
 
             var adapterEngines = ReduceEngineUsage(perEngineUsage);
+            var adapterUsage = ReduceAdapterUsage(perEngineUsage);
             var adapterMemory = ReadAdapterMemory();
 
             // Update stats
@@ -274,8 +274,8 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                         percents[engine.Type] = engine.Percent;
                     }
 
-                    // The 3D engines give the adapter's overall utilization.
-                    var usage = percents[0];
+                    // As in Task Manager, the adapter's overall utilization is its busiest engine of any type.
+                    var usage = adapterUsage.GetValueOrDefault(gpu.LuidKey);
                     gpu.Usage = usage / 100f;
                     gpu.Engines = engines;
                     if (adapterMemory.TryGetValue(gpu.LuidKey, out var memory))
@@ -322,13 +322,19 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
     /// <summary>
     /// Reduces per-engine utilization to one value per adapter and engine type: the busiest
-    /// engine of that type, clamped to 0-100. Engine types the adapter doesn't have are omitted.
+    /// engine of that type, clamped to 0-100. Engine types the adapter doesn't have, and types
+    /// the card doesn't list, are omitted.
     /// </summary>
     internal static Dictionary<long, EngineUsage[]> ReduceEngineUsage(Dictionary<(long Luid, string EngineId, int Type), float> perEngineUsage)
     {
         var maxima = new Dictionary<long, float[]>();
         foreach (var ((luid, _, type), value) in perEngineUsage)
         {
+            if (type < 0)
+            {
+                continue;
+            }
+
             if (!maxima.TryGetValue(luid, out var values))
             {
                 values = new float[EngineTypes.Length];
@@ -356,6 +362,21 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Reduces per-engine utilization to one value per adapter, as Task Manager does: its busiest
+    /// engine of any type, clamped to 0-100. Engine types the card doesn't list count too.
+    /// </summary>
+    internal static Dictionary<long, float> ReduceAdapterUsage(Dictionary<(long Luid, string EngineId, int Type), float> perEngineUsage)
+    {
+        var usage = new Dictionary<long, float>();
+        foreach (var ((luid, _, _), value) in perEngineUsage)
+        {
+            usage[luid] = Math.Max(usage.GetValueOrDefault(luid), Math.Clamp(value, 0f, 100f));
+        }
+
+        return usage;
     }
 
     /// <summary>Reads each adapter's dedicated and shared memory use, in bytes, keyed by LUID.</summary>
