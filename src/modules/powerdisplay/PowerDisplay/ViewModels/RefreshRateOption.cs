@@ -6,7 +6,8 @@ using System.Windows.Input;
 
 namespace PowerDisplay.ViewModels;
 
-public sealed class RefreshRateOption
+[WinRT.GeneratedBindableCustomProperty([nameof(Rate), nameof(DisplayText)], [])]
+public sealed partial class RefreshRateOption
 {
     public RefreshRateOption(int rate, bool isSelected, ICommand selectCommand)
     {

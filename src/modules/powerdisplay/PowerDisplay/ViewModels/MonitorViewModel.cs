@@ -449,10 +449,16 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     public bool SupportsRefreshRate => _monitor.SupportsRefreshRate;
 
-    public int SelectedRefreshRate
+    public int? SelectedRefreshRate
     {
         get => CurrentRefreshRate;
-        set => _ = SetRefreshRateAsync(value);
+        set
+        {
+            if (value.HasValue)
+            {
+                _ = SetRefreshRateAsync(value.Value);
+            }
+        }
     }
 
     [RelayCommand]
@@ -471,6 +477,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             if (!result.IsSuccess)
             {
                 Logger.LogWarning($"[{Id}] Failed to set refresh rate: {result.ErrorMessage}");
+                OnPropertyChanged(nameof(SelectedRefreshRate));
             }
             else
             {
@@ -480,6 +487,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[{Id}] Exception setting refresh rate: {ex.Message}");
+            OnPropertyChanged(nameof(SelectedRefreshRate));
         }
     }
 
