@@ -84,7 +84,10 @@ internal sealed partial class DataManager : IDisposable
     {
         lock (_systemData.CpuStats)
         {
-            _systemData.CpuStats.GetData(includeTopProcesses);
+            if (ShouldSample(_systemData.CpuStats))
+            {
+                _systemData.CpuStats.GetData(includeTopProcesses);
+            }
         }
     }
 
