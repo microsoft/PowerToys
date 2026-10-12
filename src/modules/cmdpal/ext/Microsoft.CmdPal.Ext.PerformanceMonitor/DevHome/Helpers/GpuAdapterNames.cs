@@ -20,7 +20,7 @@ namespace CoreWidgetProvider.Helpers;
 /// </summary>
 internal static class GpuAdapterNames
 {
-    internal readonly record struct AdapterInfo(string Description, bool IsSoftware);
+    internal readonly record struct AdapterInfo(string Description, bool IsSoftware, ulong DedicatedVideoMemory = 0, ulong SharedSystemMemory = 0);
 
     // Driver descriptions have no separate short model field; preserve unrecognized names.
     internal static string GetShortName(string? description)
@@ -138,7 +138,7 @@ internal static class GpuAdapterNames
                     // stops at the null terminator and yields the friendly name.
                     var description = desc.Description.ToString();
 
-                    adapters[luidKey] = new AdapterInfo(description, isSoftware);
+                    adapters[luidKey] = new AdapterInfo(description, isSoftware, desc.DedicatedVideoMemory, desc.SharedSystemMemory);
                 }
                 finally
                 {
