@@ -16,8 +16,6 @@ namespace WorkspacesEditor.Utils
 {
     public class WorkspacesEditorIO
     {
-        private string _savedWorkspaceSnapshot = "{\"workspaces\":[]}";
-
         public WorkspacesEditorIO()
         {
         }
@@ -33,8 +31,7 @@ namespace WorkspacesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                var source = new IOUtils().ReadFile(parser.File);
-                WorkspacesData.WorkspacesListWrapper workspaces = parser.Deserialize(source);
+                WorkspacesData.WorkspacesListWrapper workspaces = parser.Read(parser.File);
                 if (workspaces.Workspaces == null)
                 {
                     return new ParsingResult(true);
@@ -46,7 +43,6 @@ namespace WorkspacesEditor.Utils
                     return new ParsingResult(false, WorkspacesEditor.Properties.Resources.Error_Parsing_Message);
                 }
 
-                _savedWorkspaceSnapshot = source;
                 return new ParsingResult(true);
             }
             catch (Exception e)
@@ -77,7 +73,7 @@ namespace WorkspacesEditor.Utils
             }
         }
 
-        public bool SerializeWorkspaces(List<Project> workspaces, bool useTempFile = false)
+        public void SerializeWorkspaces(List<Project> workspaces, bool useTempFile = false)
         {
             WorkspacesData serializer = new();
             WorkspacesData.WorkspacesListWrapper workspacesWrapper = new()
@@ -158,28 +154,12 @@ namespace WorkspacesEditor.Utils
             try
             {
                 IOUtils ioUtils = new();
-                var saved = ioUtils.WriteFile(
-                    useTempFile ? TempProjectData.File : serializer.File,
-                    serializer.Serialize(workspacesWrapper),
-                    useTempFile ? null : _savedWorkspaceSnapshot);
-                if (!useTempFile)
-                {
-                    _savedWorkspaceSnapshot = saved;
-                }
-
-                return true;
-            }
-            catch (WorkspaceConflictException e)
-            {
-                Logger.LogError("Workspaces changed while the editor was open.", e);
-                System.Windows.MessageBox.Show(WorkspacesEditor.Properties.Resources.Error_Save_Conflict_Message);
-                return false;
+                ioUtils.WriteFile(useTempFile ? TempProjectData.File : serializer.File, serializer.Serialize(workspacesWrapper));
             }
             catch (Exception e)
             {
-                Logger.LogError("Workspaces could not be saved.", e);
-                System.Windows.MessageBox.Show(WorkspacesEditor.Properties.Resources.Error_Save_Message);
-                return false;
+                // TODO: show error
+                Logger.LogError($"Exception while writing storage file: {e.Message}");
             }
         }
 
@@ -200,9 +180,9 @@ namespace WorkspacesEditor.Utils
             return AddWorkspaces(mainViewModel, workspaces);
         }
 
-        internal bool SerializeTempProject(Project project)
+        internal void SerializeTempProject(Project project)
         {
-            return SerializeWorkspaces([project], true);
+            SerializeWorkspaces([project], true);
         }
     }
 }

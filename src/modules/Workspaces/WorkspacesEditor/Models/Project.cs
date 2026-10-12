@@ -202,8 +202,6 @@ namespace WorkspacesEditor.Models
         {
             Id = selectedProject.Id;
             Name = selectedProject.Name;
-            CreationTime = selectedProject.CreationTime;
-            LastLaunchedTime = selectedProject.LastLaunchedTime;
             PreviewIcons = selectedProject.PreviewIcons;
             PreviewImage = selectedProject.PreviewImage;
             IsShortcutNeeded = selectedProject.IsShortcutNeeded;

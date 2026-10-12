@@ -198,6 +198,9 @@ was not fully restored, so it is not reported as all-success.
 ## Compatibility boundaries
 
 The CLI does not enable modules, migrate storage to another format, or add a permanent service.
+General Editor snapshot-conflict handling and save-workflow redesign are not included. Basic atomic
+file IO and targeted launch metadata updates remain, but an older Editor snapshot is not merged
+with concurrent configuration/application metadata changes when the Editor saves.
 The public CLI contract covers the reused detail shape: future breaking storage changes must
 not silently change that public output, including unversioned successful list responses.
 Future creation APIs may reuse appropriate payload types,

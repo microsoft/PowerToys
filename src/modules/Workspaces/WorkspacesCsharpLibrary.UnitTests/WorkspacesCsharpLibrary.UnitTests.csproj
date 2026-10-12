@@ -14,6 +14,5 @@
   <ItemGroup>
     <PackageReference Include="MSTest" />
     <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
-    <ProjectReference Include="..\WorkspacesEditor\WorkspacesEditor.csproj" />
   </ItemGroup>
 </Project>

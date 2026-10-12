@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -22,38 +20,18 @@ public class IOUtils
 
     public void WriteFile(string fileName, string data)
     {
-        WriteFile(fileName, data, expectedData: null);
-    }
-
-    public string WriteFile(string fileName, string data, string? expectedData)
-    {
         if (!string.Equals(Path.GetFileName(fileName), "workspaces.json", StringComparison.OrdinalIgnoreCase))
         {
             _fileSystem.File.WriteAllText(fileName, data);
-            return data;
+            return;
         }
 
         using var transaction = AcquireWorkspaceLock(fileName + ".lock");
         var incoming = JsonNode.Parse(data)?.AsObject() ?? throw new InvalidDataException("Invalid workspace data.");
-        JsonObject? current = null;
         if (File.Exists(fileName))
         {
             using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            current = JsonNode.Parse(stream)?.AsObject() ?? throw new InvalidDataException("Invalid saved workspace data.");
-        }
-
-        if (expectedData is not null)
-        {
-            var expected = JsonNode.Parse(expectedData)?.AsObject() ?? throw new InvalidDataException("Invalid workspace snapshot.");
-            var actual = current ?? new JsonObject { ["workspaces"] = new JsonArray() };
-            if (!JsonNode.DeepEquals(WithoutLaunchHistory(expected), WithoutLaunchHistory(actual)))
-            {
-                throw new WorkspaceConflictException();
-            }
-        }
-
-        if (current is not null)
-        {
+            var current = JsonNode.Parse(stream)?.AsObject() ?? throw new InvalidDataException("Invalid saved workspace data.");
             PreserveLaunchHistory(current, incoming);
         }
 
@@ -81,21 +59,6 @@ public class IOUtils
                 File.Delete(temporary);
             }
         }
-
-        return serialized;
-    }
-
-    private static JsonObject WithoutLaunchHistory(JsonObject data)
-    {
-        var snapshot = data.DeepClone().AsObject();
-        var workspaces = snapshot["workspaces"]?.AsArray() ?? throw new InvalidDataException("Missing workspace list.");
-        foreach (var value in workspaces)
-        {
-            var workspace = value?.AsObject() ?? throw new InvalidDataException("Invalid workspace entry.");
-            workspace.Remove("last-launched-time");
-        }
-
-        return snapshot;
     }
 
     private static void ReplaceWorkspaceFile(string temporary, string fileName)
