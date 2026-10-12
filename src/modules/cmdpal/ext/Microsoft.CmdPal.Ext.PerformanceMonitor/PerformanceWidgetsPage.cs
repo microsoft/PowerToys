@@ -1833,9 +1833,9 @@ internal static class FormatIncomingData
         // Bytes to bits
         value *= 8;
 
-        // bits to Kbits
-        value /= 1024;
-        if (value < 1024)
+        // bits to Kbits (SI decimal, 1000-based, as network speeds are measured)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -1846,8 +1846,8 @@ internal static class FormatIncomingData
         }
 
         // Kbits to Mbits
-        value /= 1024;
-        if (value < 1024)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -1858,7 +1858,7 @@ internal static class FormatIncomingData
         }
 
         // Mbits to Gbits
-        value /= 1024;
+        value /= 1000;
         if (value < 100)
         {
             return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Gbps", value);
