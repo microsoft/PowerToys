@@ -2123,6 +2123,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WDA
+wdk
 wdm
 wdp
 wdupenv
