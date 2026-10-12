@@ -2,9 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.ViewModel;
@@ -16,14 +21,21 @@ namespace Wox.Test
     public class ResultsViewModelTest
     {
         [DataTestMethod]
-        [DataRow(5000, 20000, 0, false)]
-        [DataRow(10500, 0, -20000, false)]
-        [DataRow(10500, 20000, -20000, false)]
-        [DataRow(5000, 20000, 0, true)]
-        [DataRow(10500, 0, -20000, true)]
-        [DataRow(10500, 20000, -20000, true)]
-        public void SortAllowsPluginModifiersToOverrideHighScoringGlobalResults(int competingScore, int programModifier, int competingModifier, bool tuningEnabled)
+        [DataRow(5000, true, false, false)]
+        [DataRow(10500, false, true, false)]
+        [DataRow(10500, true, true, false)]
+        [DataRow(5000, true, false, true)]
+        [DataRow(10500, false, true, true)]
+        [DataRow(10500, true, true, true)]
+        public void SortAllowsPluginModifiersToOverrideHighScoringGlobalResults(int competingScore, bool raiseProgram, bool lowerCompetingPlugin, bool tuningEnabled)
         {
+            // Use values users can enter in the shipped Settings control so a range regression also fails these ranking tests.
+            var settingsPage = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "TestData", "PowerLauncherPage.xaml"));
+            var modifierControl = settingsPage.Descendants()
+                .Single(element => (string)element.Attribute("Name") == "PowerLauncherPluginWeightBoost")
+                .Descendants().Single(element => element.Name.LocalName == "NumberBox");
+            var programModifier = raiseProgram ? int.Parse(modifierControl.Attribute("Maximum").Value, CultureInfo.InvariantCulture) : 0;
+            var competingModifier = lowerCompetingPlugin ? int.Parse(modifierControl.Attribute("Minimum").Value, CultureInfo.InvariantCulture) : 0;
             var results = new ResultsViewModel();
             var program = new Result
             {
