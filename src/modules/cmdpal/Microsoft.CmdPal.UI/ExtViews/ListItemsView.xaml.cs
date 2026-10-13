@@ -612,10 +612,10 @@ public sealed partial class ListItemsView : UserControl,
 
     private void QueueViewportFillCheck()
     {
-        if (!_isLoaded 
-            || _viewportFillCheckQueued 
-            || ViewModel is not { IsInitialized: true, IsLoading: false } page 
-            || page.FilteredItems.Count == _lastViewportFillItemCount 
+        if (!_isLoaded
+            || _viewportFillCheckQueued
+            || ViewModel is not { IsInitialized: true, IsLoading: false } page
+            || page.FilteredItems.Count == _lastViewportFillItemCount
             || (page.FilteredItems.Count > 0 && CurrentScrollViewer is not { ViewportHeight: > 0, ScrollableHeight: 0 }))
         {
             return;
