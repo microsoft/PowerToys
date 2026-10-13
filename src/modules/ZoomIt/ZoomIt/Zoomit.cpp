@@ -8507,7 +8507,6 @@ LRESULT APIENTRY MainWndProc(
 
         case SNIP_DICTATE_HOTKEY:
         {
-            OutputDebugStringW( L"[SnipDictate] Hotkey received\n" );
 
             if( !g_SnipDictateEnabled )
             {
