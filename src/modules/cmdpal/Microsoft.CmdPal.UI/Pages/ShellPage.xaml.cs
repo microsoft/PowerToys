@@ -58,7 +58,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<FocusDockMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
-    IRecipient<ClosePaletteContextMenuMessage>,
+    IContextMenuOwner,
     INotifyPropertyChanged,
     ISearchBarHost,
     IDisposable
@@ -257,6 +257,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             () => IsLoaded && ItemActionsAllowed && !IsContentDialogActive,
             new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout),
             WeakReferenceMessenger.Default);
+        MainCommandBar.ContextMenuOwner = this;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
@@ -275,7 +276,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
-        WeakReferenceMessenger.Default.Register<ClosePaletteContextMenuMessage>(this);
 
         // The compact-mode setting can be toggled while the palette is open. React to the
         // hot-reload so the expanded/collapsed layout updates immediately instead of waiting
@@ -1676,7 +1676,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
-    public void Receive(ClosePaletteContextMenuMessage message) => ReleaseQuickAccessShelfContext();
+    void IContextMenuOwner.ShowContextMenu(ContextMenuRequest request) => _itemActions.ShowContextMenu(request);
+
+    void IContextMenuOwner.ShowContextMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu) =>
+        _itemActions.ShowContextMenuAfterKeyEvent(context, initialSubmenu);
+
+    void IContextMenuOwner.CloseContextMenu()
+    {
+        _itemActions.CloseContextMenu();
+        ReleaseQuickAccessShelfContext();
+    }
 
     private Task<ListItemViewModel?> EnsureQuickAccessShelfContextAsync(Button anchor, QuickAccessShelfItem item)
     {

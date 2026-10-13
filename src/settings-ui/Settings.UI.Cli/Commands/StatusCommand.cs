@@ -14,18 +14,13 @@ internal sealed class StatusCommand : Command
     public StatusCommand()
         : base("status", "Show one PowerToys module's enabled status")
     {
-        var moduleArg = new Argument<string>("module", "Module name (e.g. AlwaysOnTop, FancyZones)");
-        var jsonOpt = new Option<bool>("--json", "Format output as JSON");
+        var moduleArg = new Argument<string>("module") { Description = "Module name (e.g. AlwaysOnTop, FancyZones)" };
+        var jsonOpt = new Option<bool>("--json") { Description = "Format output as JSON" };
 
-        AddArgument(moduleArg);
-        AddOption(jsonOpt);
+        Arguments.Add(moduleArg);
+        Options.Add(jsonOpt);
 
-        this.SetHandler(context =>
-        {
-            var module = context.ParseResult.GetValueForArgument(moduleArg);
-            var json = context.ParseResult.GetValueForOption(jsonOpt);
-            context.ExitCode = Execute(module, json);
-        });
+        SetAction(parseResult => Execute(parseResult.GetValue(moduleArg)!, parseResult.GetValue(jsonOpt)));
     }
 
     private static int Execute(string module, bool json)
