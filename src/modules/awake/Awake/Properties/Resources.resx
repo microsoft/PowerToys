@@ -194,6 +194,32 @@
   <data name="AWAKE_CMD_PARENT_PID_OPTION" xml:space="preserve">
     <value>Uses the parent process as the bound target - once the process terminates, Awake stops.</value>
   </data>
+  <data name="AWAKE_CMD_DESCRIPTION" xml:space="preserve">
+    <value>Keep your PC awake on demand.
+
+Commands:
+  for &lt;duration&gt;  Keep awake for a duration, such as 45m or 1h30m.
+  until &lt;time&gt;    Keep awake until a time, such as 17:30 or 2026-12-24T18:00.</value>
+  </data>
+  <data name="AWAKE_CMD_ERROR_DURATION_REQUIRED" xml:space="preserve">
+    <value>The 'for' command needs a duration, such as 45m or 1h30m.</value>
+  </data>
+  <data name="AWAKE_CMD_ERROR_DURATION_INVALID" xml:space="preserve">
+    <value>"{0}" is not a valid duration. Try 45m, 2h, or 1h30m.</value>
+  </data>
+  <data name="AWAKE_CMD_ERROR_TIME_REQUIRED" xml:space="preserve">
+    <value>The 'until' command needs a time, such as 17:30 or 2026-12-24T18:00.</value>
+  </data>
+  <data name="AWAKE_CMD_ERROR_TIME_INVALID" xml:space="preserve">
+    <value>"{0}" is not a time Awake understands. Try 17:30 or 2026-12-24T18:00.</value>
+  </data>
+  <data name="AWAKE_CMD_ERROR_TIME_PAST" xml:space="preserve">
+    <value>The requested time has already passed.</value>
+  </data>
+  <data name="AWAKE_CMD_ERROR_CONFLICTING_OPTIONS" xml:space="preserve">
+    <value>Use 'for' or 'until' on its own, without --time-limit, --expire-at, or --use-pt-config.</value>
+    <comment>Do not translate command names or option names.</comment>
+  </data>
   <data name="AWAKE_SCREEN_ON" xml:space="preserve">
     <value>On</value>
   </data>

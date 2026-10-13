@@ -13,7 +13,6 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using Awake.Core.Models;
 using Awake.Core.Native;
@@ -31,7 +30,7 @@ namespace Awake.Core
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
     /// of the codebase.
     /// </summary>
-    public class Manager : IDisposable
+    public partial class Manager : IDisposable
     {
         private bool _disposed;
 
@@ -132,7 +131,13 @@ namespace Awake.Core
 
             Bridge.SetStdHandle(Native.Constants.STD_OUTPUT_HANDLE, outputFilePointer);
 
+            InitializeAttachedConsole();
+        }
+
+        internal static void InitializeAttachedConsole()
+        {
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
+            Console.SetError(new StreamWriter(Console.OpenStandardError(), Console.OutputEncoding) { AutoFlush = true });
         }
 
         /// <summary>
@@ -255,7 +260,7 @@ namespace Awake.Core
                     {
                         currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
                         currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the indefinite keep-awake will kick-in properly
@@ -304,7 +309,7 @@ namespace Awake.Core
                         currentSettings.Properties.Mode = AwakeMode.EXPIRABLE;
                         currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
                         currentSettings.Properties.ExpirationDateTime = expireAt;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the expirable keep-awake will kick-in properly
@@ -373,7 +378,7 @@ namespace Awake.Core
                         currentSettings.Properties.Mode = AwakeMode.TIMED;
                         currentSettings.Properties.IntervalHours = totalHours;
                         currentSettings.Properties.IntervalMinutes = remainingMinutes;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the timed keep-awake will kick-in properly
@@ -536,7 +541,7 @@ namespace Awake.Core
                     if (currentSettings.Properties.Mode != AwakeMode.PASSIVE)
                     {
                         currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the passive keep-awake will kick-in properly
@@ -589,12 +594,12 @@ namespace Awake.Core
 
                         // Save settings - ProcessSettings will skip reinitialization
                         // since we're already in TIMED mode
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         return;
                     }
 
-                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
                 }
                 catch (Exception ex)
                 {

@@ -95,19 +95,19 @@ namespace Awake.Core.Models
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public BatteryReportingScale[] BatteryScale;
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter<SystemPowerState>))]
         public SystemPowerState AcOnLineWake;
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter<SystemPowerState>))]
         public SystemPowerState SoftLidWake;
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter<SystemPowerState>))]
         public SystemPowerState RtcWake;
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter<SystemPowerState>))]
         public SystemPowerState MinDeviceWakeState;
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter<SystemPowerState>))]
         public SystemPowerState DefaultLowLatencyWake;
     }
 }

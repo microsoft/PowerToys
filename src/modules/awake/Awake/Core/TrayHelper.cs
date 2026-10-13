@@ -120,7 +120,7 @@ namespace Awake.Core
                             LpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
                             CbClsExtra = 0,
                             CbWndExtra = 0,
-                            HInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
+                            HInstance = Bridge.GetModuleHandle(null),
                             HIcon = IntPtr.Zero,
                             HCursor = IntPtr.Zero,
                             HbrBackground = IntPtr.Zero,
@@ -142,7 +142,7 @@ namespace Awake.Core
                             0,
                             IntPtr.Zero,
                             IntPtr.Zero,
-                            Marshal.GetHINSTANCE(typeof(Program).Module),
+                            Bridge.GetModuleHandle(null),
                             IntPtr.Zero);
 
                         if (hWnd == IntPtr.Zero)

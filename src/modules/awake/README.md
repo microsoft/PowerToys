@@ -39,9 +39,11 @@ The module uses the Win32 `SetThreadExecutionState()` API to signal Windows that
 
 ## Command-Line Usage
 
-Awake can be run standalone with the following options:
+Awake can be run standalone with human-readable commands or the legacy options:
 
 ```
+PowerToys.Awake.exe for <duration> [options]
+PowerToys.Awake.exe until <time> [options]
 PowerToys.Awake.exe [options]
 
 Options:
@@ -50,7 +52,8 @@ Options:
   -t, --time-limit       Time limit in seconds
   -p, --pid              Process ID to bind to
   -e, --expire-at        Expiration date/time
-  -u, --use-parent-pid   Bind to parent process
+  -u, --use-parent-pid,
+      --parent           Bind to parent process
 ```
 
 ### Examples
@@ -62,12 +65,17 @@ PowerToys.Awake.exe
 
 Keep awake for 1 hour with display on:
 ```powershell
-PowerToys.Awake.exe --time-limit 3600 --display-on
+PowerToys.Awake.exe for 1h --display-on
 ```
 
-Keep awake until a specific time:
+Keep awake until the next occurrence of a local time:
 ```powershell
-PowerToys.Awake.exe --expire-at "2024-12-31 23:59:59"
+PowerToys.Awake.exe until 18:00
+```
+
+Keep awake until a specific date and time:
+```powershell
+PowerToys.Awake.exe until "2026-12-31 23:59:59"
 ```
 
 Keep awake while another process is running:
@@ -75,11 +83,22 @@ Keep awake while another process is running:
 PowerToys.Awake.exe --pid 1234
 ```
 
+Put `for` or `until` before the options. Durations accept whole-number `d`, `h`, `m`,
+and `s` components (for example, `1h30m`); zero, fractional, and overflowing durations
+are rejected. A time without a date means its next local occurrence. Nonexistent
+daylight-saving times are rejected, and explicit dates must be in the future.
+
+Combining a modern command with `--pid` or `--parent` ends the session at the deadline
+or when the process exits, whichever comes first. Do not combine these commands with
+`--use-pt-config`, `--time-limit`, or `--expire-at`; use the legacy options separately
+for existing scripts. Legacy process-binding precedence and console behavior are
+unchanged. `--pid` and `--expire-at` now require a value when supplied.
+
 ## Architecture
 
 ### Design Highlights
 
-1. **Pure Win32 API for Tray UI** - No WPF/WinForms dependencies, keeping the binary small. Uses direct `Shell_NotifyIcon` API for tray icon management.
+1. **Pure Win32 API for Tray UI** - Uses direct `Shell_NotifyIcon` calls rather than WPF or WinForms windows. Shared project references can still bring desktop-framework dependencies into publish output.
 
 2. **Reactive Extensions (Rx.NET)** - Used for timed operations via `Observable.Interval()` and `Observable.Timer()`. File system watching uses 25ms throttle to debounce rapid config changes.
 
@@ -125,6 +144,73 @@ Or using MSBuild directly:
 ```powershell
 msbuild Awake\Awake.csproj /p:Configuration=Release /p:Platform=x64
 ```
+
+Release builds are NativeAOT-compatible. Use the `Publish` target to produce the native executable:
+
+```powershell
+msbuild Awake\Awake.csproj /t:Publish /p:Configuration=Release /p:Platform=x64
+```
+
+The native output is `x64\Release\win-x64\publish\PowerToys.Awake.exe` relative to
+the repository root. A normal `Build` still produces the managed executable.
+This branch is an experiment: it does not change the installer or release pipeline
+to select the native output.
+
+### NativeAOT experiment results
+
+Measured on one x64 Windows machine on October 13, 2026, using the `measure` example
+from the final Rust rewrite commit `93a394bbcc` in PowerToys PR #51181. Each Release
+executable ran `for 5m --pid {pid}`. Startup is the median of five launches until
+the tray message window exists; footprint and CPU are one sample after three
+seconds of settling, followed by a ten-second countdown interval. These are
+development-machine observations, not release performance guarantees.
+
+| Metric | Managed C# (this branch) | NativeAOT C# (this branch) | Rust PR |
+|--------|-------------------------|---------------------------|---------|
+| Startup median | 209.4 ms | 64.9 ms | 30.4 ms |
+| Private memory | 12.8 MiB | 9.3 MiB | 2.1 MiB |
+| Working set | 45.1 MiB | 24.9 MiB | 12.0 MiB |
+| Handles | 349 | 267 | 162 |
+| Threads | 14 | 11 | 6 |
+| CPU cycles during countdown / 10 seconds | 43.4 million | 4.4 million | 2.6 million |
+| x64 executable bytes | 266,752 (managed apphost only) | 12,554,240 | 938,496 |
+
+NativeAOT significantly improves startup and countdown CPU, but does not match
+Rust's footprint. It compiles the existing runtime services, Rx timers, shared
+settings serialization and telemetry into a native application; it does not adopt
+Rust's smaller event-driven architecture. Its executable is approximately 12 MiB.
+Since other PowerToys modules still need the shared managed libraries and .NET
+runtime, converting Awake cannot reclaim their installed bytes. The native
+executable is therefore a significant additional package cost; the publish
+directory is not an installer-size measurement and also contains debug symbols
+and transitive native dependencies.
+
+The four state icons retain the original pixel-identical 32-bit artwork at
+16, 24, 32, 48, and 128 pixels, stored with lossless PNG compression. The application
+icon is unchanged. Unused `normal.ico` and `scheduled.ico` are removed. Total source
+icon bytes fall from 689,266 to 158,376 without dropping the high-resolution frame.
+
+### Tests
+
+From `src\modules\awake\Awake.UnitTests`, build with the repository scripts and
+run the Microsoft.Testing.Platform executable:
+
+```powershell
+..\..\..\..\tools\build\build.ps1 -Platform x64 -Configuration Release -ExtraArgs "/p:SolutionDir=$((Resolve-Path ..\..\..\..).Path)\"
+..\..\..\..\x64\Release\tests\Awake.UnitTests\Awake.UnitTests.exe
+```
+
+The x64 Release suite passes 69 tests: execution-state flags, lock transitions,
+duration and date parsing, legacy command compatibility, daylight-saving boundaries,
+arbitrary Unicode input, settings serialization, countdown formatting, and Windows
+loading of all compressed icon frames. This ports applicable behaviors from the
+Rust tests, not the entire Rust-specific engine or test harness.
+
+Both x64 and ARM64 NativeAOT publishes are checked. Native x64 process smoke tests
+cover help/error output, missing option values, timed/expiring sessions with process
+binding, and successful timer completion. ARM64 runtime, translated release resources,
+installer upgrades, and manual multi-monitor UI validation are not covered by these
+checks.
 
 ## Dependencies
 
