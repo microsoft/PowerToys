@@ -12,6 +12,8 @@ namespace CommonLibTest;
 [TestClass]
 public class GeneratedCollectionSerializationTests
 {
+    private static readonly string[] ReplacementMatrix = ["first", "second", string.Empty, string.Empty];
+
     [TestMethod]
     [DataRow("{}")]
     [DataRow("{\"valueList\":null}")]
@@ -81,6 +83,34 @@ public class GeneratedCollectionSerializationTests
         var reloaded = JsonSerializer.Deserialize(saved, SettingsSerializationContext.Default.MouseWithoutBordersProperties);
         Assert.IsNotNull(reloaded);
         Assert.AreEqual("Machine", reloaded.MachineMatrixString[^1]);
+
+        var snapshot = settings.MachineMatrixString;
+        settings.ReplaceMachineMatrixString(ReplacementMatrix);
+        Assert.AreNotSame(snapshot, settings.MachineMatrixString);
+        Assert.AreEqual("Machine", snapshot[^1]);
+        var updatedJson = JsonSerializer.Serialize(settings, SettingsSerializationContext.Default.MouseWithoutBordersProperties);
+        var updated = JsonSerializer.Deserialize(updatedJson, SettingsSerializationContext.Default.MouseWithoutBordersProperties);
+        Assert.IsNotNull(updated);
+        Assert.HasCount(4, updated.MachineMatrixString);
+        Assert.AreEqual("first", updated.MachineMatrixString[0]);
+        Assert.AreEqual("second", updated.MachineMatrixString[1]);
+    }
+
+    [TestMethod]
+    public void MouseWithoutBorders_ReplacementUsingSameList_PreservesValues()
+    {
+        var properties = new MouseWithoutBordersProperties();
+        properties.MachineMatrixString.Add("first");
+        properties.MachineMatrixString.Add("second");
+        properties.MachineMatrixString.Add(string.Empty);
+        properties.MachineMatrixString.Add(string.Empty);
+        var snapshot = properties.MachineMatrixString;
+
+        properties.ReplaceMachineMatrixString(snapshot);
+
+        Assert.AreNotSame(snapshot, properties.MachineMatrixString);
+        CollectionAssert.AreEqual(snapshot, properties.MachineMatrixString);
+        Assert.HasCount(4, properties.MachineMatrixString);
     }
 
     [TestMethod]

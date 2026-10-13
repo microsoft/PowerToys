@@ -78,7 +78,7 @@ namespace MouseWithoutBorders.Class
 
                     _settings = settings;
 
-                    var machineMatrixChanged = AdoptLoadedProperties(ref _properties, settings.Properties);
+                    var machineMatrixChanged = AdoptLoadedProperties(settings.Properties);
 
                     // Keep track of the need to resend the machine matrix.
                     bool shouldSendMachineMatrix = false;
@@ -151,6 +151,11 @@ namespace MouseWithoutBorders.Class
             return previous != null && !Enumerable.SequenceEqual(previous.MachineMatrixString, loaded.MachineMatrixString);
         }
 
+        internal bool AdoptLoadedProperties(MouseWithoutBordersProperties loaded)
+        {
+            return AdoptLoadedProperties(ref _properties, loaded);
+        }
+
         public void SaveSettings()
         {
             if (!Common.RunOnLogonDesktop)
@@ -217,6 +222,14 @@ namespace MouseWithoutBorders.Class
             UpdateSettingsFromJson();
         }
 
+        // Initialize the same settings state without starting a file watcher or network work.
+        internal Settings(SettingsUtils settingsUtils, MouseWithoutBordersSettings settings)
+        {
+            _settingsUtils = settingsUtils;
+            _settings = settings;
+            _properties = settings.Properties;
+        }
+
         internal string Username { get; set; }
 
         internal bool IsMyKeyRandom { get; set; }
@@ -231,16 +244,20 @@ namespace MouseWithoutBorders.Class
                 }
             }
 
-            set
+            set => SetMachineMatrix(value.Split(","));
+        }
+
+        internal void SetMachineMatrix(IEnumerable<string> machineNames)
+        {
+            lock (_loadingSettingsLock)
             {
-                lock (_loadingSettingsLock)
+                // Capture one properties instance and replace its list in one assignment.
+                // Reload adoption is intentionally not under this lock: MachineStuff takes
+                // McMatrixLock before this lock, so reversing that order could deadlock.
+                _properties.ReplaceMachineMatrixString(machineNames);
+                if (!PauseInstantSaving)
                 {
-                    _properties.MachineMatrixString.Clear();
-                    _properties.MachineMatrixString.AddRange(value.Split(","));
-                    if (!PauseInstantSaving)
-                    {
-                        SaveSettings();
-                    }
+                    SaveSettings();
                 }
             }
         }

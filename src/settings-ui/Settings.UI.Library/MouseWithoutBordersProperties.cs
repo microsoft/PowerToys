@@ -90,6 +90,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             init => _machineMatrixString = value ?? new List<string>();
         }
 
+        public void ReplaceMachineMatrixString(IEnumerable<string> value)
+        {
+            // Publish a complete snapshot; readers may still hold the previous list.
+            var replacement = value?.ToList() ?? new List<string>();
+            _machineMatrixString = replacement;
+        }
+
         [CmdConfigureIgnoreAttribute]
         public StringProperty MachinePool { get; set; }
 

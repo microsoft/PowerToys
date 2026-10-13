@@ -1262,8 +1262,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     machineMatrixString = value;
                 }
 
-                Settings.Properties.MachineMatrixString.Clear();
-                Settings.Properties.MachineMatrixString.AddRange(value.ToEnumerable().Select(d => d.Name));
+                Settings.Properties.ReplaceMachineMatrixString(value.ToEnumerable().Select(d => d.Name));
                 NotifyPropertyChanged();
             }
         }
