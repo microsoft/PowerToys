@@ -87,6 +87,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Display.lib;shcore.lib;Dbghelp.lib;dwmapi.lib;uxtheme.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -96,6 +97,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <AdditionalIncludeDirectories>./;$(RepoRoot)src\modules\;$(RepoRoot)src\modules\KeyboardManager\KeyboardManagerEditorLibrary\;$(RepoRoot)src\common\Display;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
