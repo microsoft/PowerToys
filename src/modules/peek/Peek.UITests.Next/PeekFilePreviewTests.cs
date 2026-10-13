@@ -324,7 +324,7 @@ public class PeekFilePreviewTests : UITestBase
 
         var peekWindow = SendPeekHotkeyWithRetry(selectedFiles[2]);
         EnsurePeekWindowInteractive(peekWindow);
-        var expectedNames = selectedFiles.Select(Path.GetFileNameWithoutExtension).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var expectedNames = selectedFiles.Select(path => Path.GetFileNameWithoutExtension(path)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var visitedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             FileNameFromTitle(peekWindow.WindowTitle, expectedNames),
