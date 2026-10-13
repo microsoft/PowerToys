@@ -521,7 +521,8 @@ public class PeekFilePreviewTests : UITestBase
     {
         for (var attempt = 1; attempt <= MaxHotkeyAttempts; attempt++)
         {
-            var visiblePeekWindow = WindowsFinder.ListByApp(PeekProcessName).FirstOrDefault();
+            var visiblePeekWindows = WindowsFinder.ListByApp(PeekProcessName);
+            var visiblePeekWindow = visiblePeekWindows.Count > 0 ? visiblePeekWindows[0] : null;
             if (visiblePeekWindow is not null)
             {
                 return WaitForInitializedPeekWindow(
