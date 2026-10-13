@@ -181,6 +181,7 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(
                 WindowControl.WaitForForeground(SettingsWindow(), 10_000),
                 $"Settings did not acquire foreground for the launch card: {WindowControl.GetForegroundWindowInfo()}.");
+
             // SettingsCard exposes a Button role but no InvokePattern; its pointer command is the user action.
             launch.Click(msPostAction: 0);
             AttachEditor();
