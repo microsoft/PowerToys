@@ -112,30 +112,58 @@ namespace newplus::utilities
         }
     }
 
-    inline std::wstring get_path_from_unknown_site(const ComPtr<IUnknown> site_of_folder)
-    {
-        ComPtr<IServiceProvider> service_provider;
-        site_of_folder->QueryInterface(IID_PPV_ARGS(&service_provider));
-        ComPtr<IFolderView> folder_view;
-        service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&folder_view));
-        ComPtr<IShellFolder> shell_folder;
-        folder_view->GetFolder(IID_PPV_ARGS(&shell_folder));
-        STRRET strings_returned;
-        shell_folder->GetDisplayNameOf(0, SHGDN_FORPARSING, &strings_returned);
-        LPWSTR path;
-        StrRetToStr(&strings_returned, NULL, &path);
-        return path;
-    }
-
+    // Returns an empty string when the path can't be determined
     inline std::wstring get_path_from_folder_view(const ComPtr<IFolderView> folder_view)
     {
+        if (folder_view == nullptr)
+        {
+            return {};
+        }
+
         ComPtr<IShellFolder> shell_folder;
-        folder_view->GetFolder(IID_PPV_ARGS(&shell_folder));
+        if (FAILED(folder_view->GetFolder(IID_PPV_ARGS(&shell_folder))) || shell_folder == nullptr)
+        {
+            return {};
+        }
+
         STRRET strings_returned;
-        shell_folder->GetDisplayNameOf(0, SHGDN_FORPARSING, &strings_returned);
-        LPWSTR path;
-        StrRetToStr(&strings_returned, NULL, &path);
-        return path;
+        if (FAILED(shell_folder->GetDisplayNameOf(0, SHGDN_FORPARSING, &strings_returned)))
+        {
+            return {};
+        }
+
+        LPWSTR path = nullptr;
+        if (FAILED(StrRetToStr(&strings_returned, NULL, &path)) || path == nullptr)
+        {
+            return {};
+        }
+
+        std::wstring path_string(path);
+        CoTaskMemFree(path);
+        return path_string;
+    }
+
+    // Returns an empty string when the path can't be determined
+    inline std::wstring get_path_from_unknown_site(const ComPtr<IUnknown> site_of_folder)
+    {
+        if (site_of_folder == nullptr)
+        {
+            return {};
+        }
+
+        ComPtr<IServiceProvider> service_provider;
+        if (FAILED(site_of_folder->QueryInterface(IID_PPV_ARGS(&service_provider))) || service_provider == nullptr)
+        {
+            return {};
+        }
+
+        ComPtr<IFolderView> folder_view;
+        if (FAILED(service_provider->QueryService(__uuidof(IFolderView), IID_PPV_ARGS(&folder_view))) || folder_view == nullptr)
+        {
+            return {};
+        }
+
+        return get_path_from_folder_view(folder_view);
     }
 
     inline bool is_desktop_folder(const std::filesystem::path target_fullpath)
@@ -380,6 +408,10 @@ namespace newplus::utilities
 
             // Determine target path of where context menu was displayed
             const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
+            if (target_path_name.empty())
+            {
+                throw std::runtime_error("Failed to determine the folder to create the template in");
+            }
 
             // Determine initial filename
             std::filesystem::path source_fullpath = template_entry->path;
@@ -498,17 +530,13 @@ namespace newplus::utilities
             return false;
         }
 
-        const auto built_in_new_registry_disabled_value_prefix_len = lstrlenW(built_in_new_registry_disabled_value_prefix);
+        // REG_SZ data is specified in bytes and includes the terminating null character
+        const DWORD built_in_new_registry_disabled_value_size = static_cast<DWORD>((lstrlenW(built_in_new_registry_disabled_value_prefix) + 1) * sizeof(wchar_t));
 
-        if (RegSetValueExW(key, nullptr, 0, REG_SZ, reinterpret_cast<const BYTE*>(&built_in_new_registry_disabled_value_prefix), built_in_new_registry_disabled_value_prefix_len) != ERROR_SUCCESS)
-        {
-            RegCloseKey(key);
-            return true;
-        }
+        const LONG set_result = RegSetValueExW(key, nullptr, 0, REG_SZ, reinterpret_cast<const BYTE*>(built_in_new_registry_disabled_value_prefix), built_in_new_registry_disabled_value_size);
 
         RegCloseKey(key);
-        return false;
-
+        return set_result == ERROR_SUCCESS;
     }
 
     inline bool enable_built_in_new_via_registry()
@@ -519,23 +547,22 @@ namespace newplus::utilities
 
         HKEY key{};
 
-        if (RegOpenKeyExW(HKEY_CURRENT_USER,
-                          built_in_new_registry_path,
-                          0,
-                          KEY_ALL_ACCESS,
-                          &key) != ERROR_SUCCESS)
+        const LONG open_result = RegOpenKeyExW(HKEY_CURRENT_USER,
+                                               built_in_new_registry_path,
+                                               0,
+                                               KEY_ALL_ACCESS,
+                                               &key);
+        if (open_result != ERROR_SUCCESS)
         {
-            return true;
+            // A missing key means the built-in New handler is already enabled
+            return open_result == ERROR_FILE_NOT_FOUND;
         }
 
-        if (RegDeleteValueW(key, nullptr) != ERROR_SUCCESS)
-        {
-            RegCloseKey(key);
-            return true;
-        }
+        const LONG delete_result = RegDeleteValueW(key, nullptr);
 
         RegCloseKey(key);
-        return false;
 
+        // A missing default value means the built-in New handler is already enabled
+        return delete_result == ERROR_SUCCESS || delete_result == ERROR_FILE_NOT_FOUND;
     }
 }

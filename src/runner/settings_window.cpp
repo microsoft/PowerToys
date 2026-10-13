@@ -509,7 +509,14 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
 
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
-    PTSettingsHelper::save_general_settings(save_settings.to_json());
+    if (save_settings.isDataLoadedSuccessfully)
+    {
+        PTSettingsHelper::save_general_settings(save_settings.to_json());
+    }
+    else
+    {
+        Logger::warn(L"run_settings_window: Skipping save due to transient read error on settings.json.");
+    }
 
     std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {}",
                                                executable_path,
