@@ -5,6 +5,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
@@ -40,6 +41,11 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
         get => (ICommandBarContext?)GetValue(CommandContextProperty);
         set => SetValue(CommandContextProperty, value);
     }
+
+    /// <summary>
+    /// Gets or sets the owning shell's menu presenter. Menu requests go only to this owner.
+    /// </summary>
+    internal IContextMenuOwner? ContextMenuOwner { get; set; }
 
     public CommandBar()
     {
@@ -91,19 +97,18 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
             return;
         }
 
-        WeakReferenceMessenger.Default.Send(
-            new OpenContextMenuMessage(
-                new ContextMenuRequest(menuContext)
-                {
-                    Anchor = new ContextMenuAnchor(
-                        element ?? MoreCommandsButton,
-                        position,
-                        placement ?? (element is null ? FlyoutPlacementMode.TopEdgeAlignedRight : FlyoutPlacementMode.BottomEdgeAlignedLeft),
-                        filterLocation),
-                }));
+        ContextMenuOwner?.ShowContextMenu(
+            new ContextMenuRequest(menuContext)
+            {
+                Anchor = new ContextMenuAnchor(
+                    element ?? MoreCommandsButton,
+                    position,
+                    placement ?? (element is null ? FlyoutPlacementMode.TopEdgeAlignedRight : FlyoutPlacementMode.BottomEdgeAlignedLeft),
+                    filterLocation),
+            });
     }
 
-    public void CloseContextMenu() => WeakReferenceMessenger.Default.Send<ClosePaletteContextMenuMessage>();
+    public void CloseContextMenu() => ContextMenuOwner?.CloseContextMenu();
 
     public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
@@ -121,15 +126,7 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
 
         if (command.HasSubmenu)
         {
-            // Finish routing the key before the flyout takes focus.
-            _ = DispatcherQueue.TryEnqueue(() =>
-            {
-                if (ReferenceEquals(context, CommandContext) && context.AllCommands.Contains(command))
-                {
-                    WeakReferenceMessenger.Default.Send(
-                        new OpenContextMenuMessage(new ContextMenuRequest(context) { InitialSubmenu = command }));
-                }
-            });
+            ContextMenuOwner?.ShowContextMenuAfterKeyEvent(context, command);
         }
         else
         {
