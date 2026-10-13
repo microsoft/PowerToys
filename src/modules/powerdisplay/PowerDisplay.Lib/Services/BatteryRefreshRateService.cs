@@ -40,6 +40,7 @@ namespace PowerDisplay.Common.Services
             {
                 BatteryRefreshRateMode.OnBattery => onBattery,
                 BatteryRefreshRateMode.OnEnergySaverMode => energySaving,
+                BatteryRefreshRateMode.OnBatteryOrEnergySaver => onBattery || energySaving,
                 BatteryRefreshRateMode.OnBatteryAndEnergySaver => onBattery && energySaving,
                 _ => false,
             };

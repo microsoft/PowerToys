@@ -40,9 +40,10 @@ public class PowerDisplay
     }
 
     [TestMethod]
-    [DataRow(BatteryRefreshRateMode.OnEnergySaverMode)]
-    [DataRow(BatteryRefreshRateMode.OnBatteryAndEnergySaver)]
-    public void BatteryRefreshRate_DefaultPresetAndChangesPersistAndSignal(BatteryRefreshRateMode mode)
+    [DataRow(BatteryRefreshRateMode.OnEnergySaverMode, 2)]
+    [DataRow(BatteryRefreshRateMode.OnBatteryOrEnergySaver, 3)]
+    [DataRow(BatteryRefreshRateMode.OnBatteryAndEnergySaver, 4)]
+    public void BatteryRefreshRate_DefaultPresetAndChangesPersistAndSignal(BatteryRefreshRateMode mode, int index)
     {
         var events = new List<string>();
         using var viewModel = CreateViewModel(out var settings, out _, out _, namedEvents: events);
@@ -50,7 +51,8 @@ public class PowerDisplay
         Assert.IsTrue(viewModel.CanUseBatteryRefreshRate);
         Assert.AreEqual(0, viewModel.BatteryRefreshRateIndex);
 
-        viewModel.BatteryRefreshRateModeIndex = (int)mode;
+        viewModel.BatteryRefreshRateModeIndex = index;
+        Assert.AreEqual(index, viewModel.BatteryRefreshRateModeIndex);
         viewModel.BatteryRefreshRateIndex = 1;
         viewModel.BatteryRefreshRateIndex = -1;
         Assert.AreEqual(1, viewModel.BatteryRefreshRateIndex);
@@ -76,10 +78,11 @@ public class PowerDisplay
     }
 
     [TestMethod]
-    [DataRow(BatteryRefreshRateMode.OnBattery)]
-    [DataRow(BatteryRefreshRateMode.OnEnergySaverMode)]
-    [DataRow(BatteryRefreshRateMode.OnBatteryAndEnergySaver)]
-    public void BatteryRefreshRate_PresetEnabledOnlyForActiveModeWithBuiltInDisplay(BatteryRefreshRateMode mode)
+    [DataRow(1)]
+    [DataRow(2)]
+    [DataRow(3)]
+    [DataRow(4)]
+    public void BatteryRefreshRate_PresetEnabledOnlyForActiveModeWithBuiltInDisplay(int index)
     {
         using var viewModel = CreateViewModel(out var settings);
         settings.Properties.InternalDisplayRefreshRates = new List<int> { 60, 120 };
@@ -88,7 +91,7 @@ public class PowerDisplay
         var changedProperties = new List<string>();
         viewModel.PropertyChanged += (_, args) => changedProperties.Add(args.PropertyName);
 
-        viewModel.BatteryRefreshRateModeIndex = (int)mode;
+        viewModel.BatteryRefreshRateModeIndex = index;
         Assert.IsTrue(viewModel.CanSetBatteryRefreshRate);
         CollectionAssert.Contains(changedProperties, nameof(PowerDisplayViewModel.CanSetBatteryRefreshRate));
         changedProperties.Clear();
@@ -97,9 +100,36 @@ public class PowerDisplay
         CollectionAssert.Contains(changedProperties, nameof(PowerDisplayViewModel.CanSetBatteryRefreshRate));
         Assert.AreEqual(120, settings.Properties.BatteryRefreshRate);
 
-        viewModel.BatteryRefreshRateModeIndex = (int)mode;
+        viewModel.BatteryRefreshRateModeIndex = index;
         settings.Properties.InternalDisplayRefreshRates.Clear();
         Assert.IsFalse(viewModel.CanSetBatteryRefreshRate);
+    }
+
+    [TestMethod]
+    [DataRow(BatteryRefreshRateMode.Off, 0)]
+    [DataRow(BatteryRefreshRateMode.OnBattery, 1)]
+    [DataRow(BatteryRefreshRateMode.OnEnergySaverMode, 2)]
+    [DataRow(BatteryRefreshRateMode.OnBatteryOrEnergySaver, 3)]
+    [DataRow(BatteryRefreshRateMode.OnBatteryAndEnergySaver, 4)]
+    [DataRow((BatteryRefreshRateMode)99, 0)]
+    public void BatteryRefreshRate_SavedModeMapsToDropdownOrder(BatteryRefreshRateMode mode, int index)
+    {
+        using var viewModel = CreateViewModel(out var settings);
+        settings.Properties.BatteryRefreshRateMode = mode;
+        Assert.AreEqual(index, viewModel.BatteryRefreshRateModeIndex);
+    }
+
+    [TestMethod]
+    [DataRow(-1)]
+    [DataRow(5)]
+    public void BatteryRefreshRate_InvalidIndexDoesNotChangeMode(int index)
+    {
+        using var viewModel = CreateViewModel(out var settings);
+        settings.Properties.InternalDisplayRefreshRates = new List<int> { 60, 120 };
+        settings.Properties.BatteryRefreshRateMode = BatteryRefreshRateMode.OnBatteryAndEnergySaver;
+        viewModel.BatteryRefreshRateModeIndex = index;
+        Assert.AreEqual(BatteryRefreshRateMode.OnBatteryAndEnergySaver, settings.Properties.BatteryRefreshRateMode);
+        Assert.AreEqual(4, viewModel.BatteryRefreshRateModeIndex);
     }
 
     [TestMethod]

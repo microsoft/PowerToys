@@ -471,15 +471,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool CanSetBatteryRefreshRate => CanUseBatteryRefreshRate && BatteryRefreshRateModeIndex != (int)BatteryRefreshRateMode.Off;
 
+        private static readonly BatteryRefreshRateMode[] BatteryRefreshRateModes =
+        {
+            BatteryRefreshRateMode.Off,
+            BatteryRefreshRateMode.OnBattery,
+            BatteryRefreshRateMode.OnEnergySaverMode,
+            BatteryRefreshRateMode.OnBatteryOrEnergySaver,
+            BatteryRefreshRateMode.OnBatteryAndEnergySaver,
+        };
+
         public int BatteryRefreshRateModeIndex
         {
-            get => Enum.IsDefined(_settings.Properties.BatteryRefreshRateMode)
-                ? (int)_settings.Properties.BatteryRefreshRateMode
-                : (int)BatteryRefreshRateMode.Off;
+            get => Math.Max(0, Array.IndexOf(BatteryRefreshRateModes, _settings.Properties.BatteryRefreshRateMode));
             set
             {
-                var mode = (BatteryRefreshRateMode)value;
-                if (!Enum.IsDefined(mode) || (mode != BatteryRefreshRateMode.Off && !CanUseBatteryRefreshRate))
+                if (value < 0 || value >= BatteryRefreshRateModes.Length)
+                {
+                    OnPropertyChanged();
+                    return;
+                }
+
+                var mode = BatteryRefreshRateModes[value];
+                if (mode != BatteryRefreshRateMode.Off && !CanUseBatteryRefreshRate)
                 {
                     OnPropertyChanged();
                     return;

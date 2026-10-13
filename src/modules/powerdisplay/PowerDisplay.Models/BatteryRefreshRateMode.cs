@@ -19,6 +19,9 @@ public enum BatteryRefreshRateMode
     /// <summary>Lowers the refresh rate while Energy Saver (Battery Saver on Windows 10) is active.</summary>
     OnEnergySaverMode = 2,
 
+    /// <summary>Lowers the refresh rate while either battery power or Energy Saver is active.</summary>
+    OnBatteryOrEnergySaver = 3,
+
     /// <summary>Lowers the refresh rate only while both battery power and Energy Saver are active.</summary>
-    OnBatteryAndEnergySaver = 3,
+    OnBatteryAndEnergySaver = 4,
 }

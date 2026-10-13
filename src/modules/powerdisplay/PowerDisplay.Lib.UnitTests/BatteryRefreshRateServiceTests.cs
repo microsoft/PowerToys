@@ -173,6 +173,26 @@ public sealed class BatteryRefreshRateServiceTests
     [DataRow(false, true)]
     [DataRow(true, false)]
     [DataRow(true, true)]
+    public void BatteryOrEnergySaver_LowersForEitherCondition_AndRestoresWhenBothEnd(bool onBattery, bool energySaving)
+    {
+        var monitor = CreateMonitor();
+        var service = new BatteryRefreshRateService((_, _) => MonitorOperationResult.Success());
+
+        service.Apply(new[] { monitor }, BatteryRefreshRateMode.OnBatteryOrEnergySaver, onBattery, 0, energySaving);
+        Assert.AreEqual(onBattery || energySaving ? 60 : 144, monitor.CurrentRefreshRate);
+
+        service.Apply(new[] { monitor }, BatteryRefreshRateMode.OnBatteryOrEnergySaver, true, 0);
+        service.Apply(new[] { monitor }, BatteryRefreshRateMode.OnBatteryOrEnergySaver, false, 0, energySaving: true);
+        Assert.AreEqual(60, monitor.CurrentRefreshRate);
+        service.Apply(new[] { monitor }, BatteryRefreshRateMode.OnBatteryOrEnergySaver, false, 0);
+        Assert.AreEqual(144, monitor.CurrentRefreshRate);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
     public void BatteryAndEnergySaver_RequiresBothConditions_AndRestoresWhenEitherEnds(bool onBattery, bool energySaving)
     {
         var monitor = CreateMonitor();
@@ -195,7 +215,8 @@ public sealed class BatteryRefreshRateServiceTests
     [DataRow("{\"battery_refresh_rate_enabled\":true}", BatteryRefreshRateMode.OnBattery)]
     [DataRow("{\"battery_refresh_rate_enabled\":true,\"battery_refresh_rate_mode\":0}", BatteryRefreshRateMode.Off)]
     [DataRow("{\"battery_refresh_rate_mode\":2,\"battery_refresh_rate_enabled\":true}", BatteryRefreshRateMode.OnEnergySaverMode)]
-    [DataRow("{\"battery_refresh_rate_mode\":3}", BatteryRefreshRateMode.OnBatteryAndEnergySaver)]
+    [DataRow("{\"battery_refresh_rate_mode\":3}", BatteryRefreshRateMode.OnBatteryOrEnergySaver)]
+    [DataRow("{\"battery_refresh_rate_mode\":4}", BatteryRefreshRateMode.OnBatteryAndEnergySaver)]
     public void Settings_MigrateLegacyToggleAndHonorExplicitMode(string json, BatteryRefreshRateMode expected)
     {
         var properties = JsonSerializer.Deserialize<PowerDisplayProperties>(json)!;

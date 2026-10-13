@@ -6785,6 +6785,9 @@ Text uses the current drawing color.</value>
   <data name="PowerDisplay_BatteryRefreshRateMode_OnEnergySaverMode.Content" xml:space="preserve">
     <value>On Energy Saver Mode</value>
   </data>
+  <data name="PowerDisplay_BatteryRefreshRateMode_OnBatteryOrEnergySaver.Content" xml:space="preserve">
+    <value>On Battery or Energy Saver</value>
+  </data>
   <data name="PowerDisplay_BatteryRefreshRateMode_OnBatteryAndEnergySaver.Content" xml:space="preserve">
     <value>On Battery w/ Energy Saver</value>
   </data>

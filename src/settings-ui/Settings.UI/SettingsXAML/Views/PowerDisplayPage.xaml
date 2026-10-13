@@ -141,6 +141,7 @@
                                         <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_Off" />
                                         <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_OnBattery" />
                                         <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_OnEnergySaverMode" />
+                                        <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_OnBatteryOrEnergySaver" />
                                         <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_OnBatteryAndEnergySaver" />
                                     </ComboBox>
                                 </tkcontrols:SettingsCard>
