@@ -27,18 +27,15 @@ namespace ManagedCommon
         private IsActive _isActive;
         private bool disposedValue;
 
-        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
-            : this(keyDown, keyUp, isActive, ev => FilterKeyboardEvents(ev, filterAccessibleKeyboardEvents))
-        {
-        }
+        private FilterAccessibleKeyboardEvents _filterKeyboardEvent;
 
-        // Preserve the message type for callers that must distinguish navigation key-down from key-up.
-        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterKeyboardEvent filterKeyboardEvents)
+        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
         {
             _keyDown = keyDown;
             _keyUp = keyUp;
             _isActive = isActive;
-            _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, filterKeyboardEvents);
+            _filterKeyboardEvent = filterAccessibleKeyboardEvents;
+            _hook = new KeyboardHook(HotkeySettingsHookCallback, IsActive, FilterKeyboardEvents);
             _hook.Start();
         }
 
@@ -62,10 +59,10 @@ namespace ManagedCommon
             }
         }
 
-        private static bool FilterKeyboardEvents(KeyboardEvent ev, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
+        private bool FilterKeyboardEvents(KeyboardEvent ev)
         {
 #pragma warning disable CA2020 // Prevent from behavioral change
-            return filterAccessibleKeyboardEvents(ev.key, (UIntPtr)ev.dwExtraInfo);
+            return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo);
 #pragma warning restore CA2020 // Prevent from behavioral change
         }
 
