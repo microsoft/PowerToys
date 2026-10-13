@@ -26,6 +26,7 @@ public class PeekFilePreviewTests : UITestBase
     private const int MaxHotkeyAttempts = 3;
     private const int MaxNavigationAttempts = 3;
     private static readonly IDisposable PeekSettings;
+    private static readonly string[] PeekModules = { "Peek" };
 
     private long explorerWindowHandle;
     private IReadOnlyList<string> expectedExplorerSelection = Array.Empty<string>();
@@ -37,7 +38,7 @@ public class PeekFilePreviewTests : UITestBase
     private static bool restoreAppsUseLightTheme;
 
     public PeekFilePreviewTests()
-        : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical, enableModules: new[] { "Peek" })
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical, enableModules: PeekModules)
     {
     }
 
