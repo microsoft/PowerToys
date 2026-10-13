@@ -8,6 +8,8 @@ using System.Linq;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace KeyboardManagerEditorUI.Controls
 {
@@ -61,6 +63,9 @@ namespace KeyboardManagerEditorUI.Controls
         {
             this.InitializeComponent();
             UpdateKeyVisualState();
+
+            // handledEventsToo: the AutoSuggestBox may already have marked Escape as handled.
+            KeySearchBox.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(KeySearchBox_KeyDown), handledEventsToo: true);
 
             this.Loaded += (_, _) =>
             {
@@ -125,9 +130,23 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void KeySearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            if (KeyListView.ItemsSource is List<KeyNameEntry> { Count: > 0 } filtered)
+            // TextChanged is deferred, so ItemsSource may still reflect an older query; filter the submitted text directly.
+            var filtered = FilterKeyList(args.QueryText);
+            if (filtered.Count > 0)
             {
                 SelectEntry(filtered[0]);
+            }
+        }
+
+        private void KeySearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            // AutoSuggestBox consumes Escape for its own suggestion popup, which this picker doesn't use.
+            // Key events consumed by an IME arrive as VirtualKey.ProcessKey, so they never reach this branch.
+            if (e.Key == VirtualKey.Escape && !KeySearchBox.IsSuggestionListOpen)
+            {
+                e.Handled = true;
+                KeyListFlyout.Hide();
+                KeyButton.Focus(FocusState.Keyboard);
             }
         }
 
@@ -158,13 +177,17 @@ namespace KeyboardManagerEditorUI.Controls
             return cached;
         }
 
-        internal void RefreshKeyList()
+        private List<KeyNameEntry> FilterKeyList(string? query)
         {
-            string query = KeySearchBox.Text?.Trim() ?? string.Empty;
-            var list = query.Length == 0
+            query = query?.Trim() ?? string.Empty;
+            return query.Length == 0
                 ? GetKeyList()
                 : GetKeyList().Where(k => k.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
 
+        internal void RefreshKeyList()
+        {
+            var list = FilterKeyList(KeySearchBox.Text);
             KeyListView.ItemsSource = list;
             NoResultsText.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 

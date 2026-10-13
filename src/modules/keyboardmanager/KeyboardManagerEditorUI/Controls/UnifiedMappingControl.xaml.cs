@@ -809,20 +809,12 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void MoveFocusBackward()
         {
-            if (XamlRoot == null)
+            // Passing the public XamlRoot content lets WinUI widen the search to its internal root, which
+            // includes the popup hosting the dialog. Other explicit roots reject Next/Previous navigation.
+            var searchRoot = XamlRoot?.Content;
+            if (searchRoot is null)
             {
                 return;
-            }
-
-            // Keep the search inside the hosting dialog, which lives in a popup outside XamlRoot.Content.
-            DependencyObject? searchRoot = this;
-            for (DependencyObject? parent = this; parent != null; parent = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(parent))
-            {
-                searchRoot = parent;
-                if (parent is ContentDialog)
-                {
-                    break;
-                }
             }
 
             Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(

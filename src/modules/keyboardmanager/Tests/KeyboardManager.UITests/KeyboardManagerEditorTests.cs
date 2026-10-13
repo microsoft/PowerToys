@@ -18,6 +18,8 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
     private const int D = 0x44;
     private const int E = 0x45;
     private const int LeftControl = 0xA2;
+    private const int VolumeMute = 0xAD;
+    private const int VolumeUp = 0xAF;
 
     private static KeyboardInputFixtureLock? inputFixtureLock;
 
@@ -296,13 +298,17 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         Assert.IsNotNull(triggerChoice, "The trigger key dropdown did not expose numeric key 1 after returning to the top of the list.");
         triggerChoice!.MouseClick(msPostAction: 300);
 
-        Step("Changing the action dropdown from C to numeric key 2 with keyboard navigation");
+        Step("Changing the action dropdown from C to numeric key 2 with search and keyboard navigation");
         keyButtons = VisibleKeyButtons(editorProcess);
         keyButtons[^1].Focus();
         KeyboardHelper.SendKey(Key.Enter);
         Assert.IsTrue(editorProcess.WaitForElement(By.AccessibilityId("KeyListView"), timeoutMS: 5_000), "The action key dropdown did not open from Enter.");
-        KeyboardHelper.SendKey(Key.Down);
-        KeyboardHelper.SendKey(Key.Down);
+
+        // The flyout focuses its search box; filter to "2" (digits precede F2/F12/... in the list), then move into the results.
+        KeyboardHelper.SendKey(Key.Num2);
+        Thread.Sleep(500);
+        KeyboardHelper.SendKey(Key.Tab);
+        KeyboardHelper.SendKey(Key.Home);
         KeyboardHelper.SendKey(Key.Enter);
 
         Step("Saving the dropdown-created 1 to 2 mapping");
@@ -315,6 +321,25 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
                 timeoutMS: 10_000,
                 pollIntervalMS: 250),
             "Mouse and keyboard dropdown selection did not persist the expected 1 to 2 mapping.");
+
+        Step("Picking physically absent media keys from the empty-slot dropdowns of a fresh dialog");
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
+        keyButtons = VisibleKeyButtons(editorProcess);
+        Assert.AreEqual(2, keyButtons.Count, "A fresh dialog should expose an empty-slot key dropdown in each column.");
+        SelectKeyFromSearch(editorProcess, keyButtons[0], Key.M, Key.U, Key.T, Key.E);
+        keyButtons = VisibleKeyButtons(editorProcess);
+        SelectKeyFromSearch(editorProcess, keyButtons[^1], Key.V, Key.O, Key.L, Key.U, Key.M, Key.E, Key.Space, Key.U, Key.P);
+
+        save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
+        Assert.IsNotNull(save, "The empty-slot dropdown mapping did not expose Save.");
+        Assert.IsTrue(save!.IsEnabled, "Save did not enable after selecting both keys from the empty-slot dropdowns.");
+        save.Invoke(msPostAction: 500);
+        Assert.IsTrue(
+            editor.WaitFor(
+                () => ProfileContainsSingleKeyMapping(VolumeMute, VolumeUp),
+                timeoutMS: 10_000,
+                pollIntervalMS: 250),
+            "Empty-slot dropdown selection did not persist the expected Volume Mute to Volume Up mapping.");
 
         Step("Opening a fresh dialog for Ctrl+B to D app-specific validation");
         editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
@@ -481,6 +506,23 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         }
 
         Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", timeoutMS: 3_000), $"{toggleAutomationId} did not leave recording mode.");
+    }
+
+    private static void SelectKeyFromSearch(Session editor, Element keyButton, params Key[] query)
+    {
+        keyButton.Click(msPostAction: 300);
+        Assert.IsTrue(editor.WaitForElement(By.AccessibilityId("KeyListView"), timeoutMS: 5_000), "The key dropdown did not open.");
+
+        // The flyout focuses its search box; Enter submits the query and picks the first match.
+        KeyboardHelper.SendKeySequence(query);
+        Thread.Sleep(300);
+        KeyboardHelper.SendKey(Key.Enter);
+        Assert.IsTrue(
+            editor.WaitFor(
+                () => !editor.WaitForElement(By.AccessibilityId("KeyListView"), timeoutMS: 200),
+                timeoutMS: 5_000,
+                pollIntervalMS: 200),
+            "Submitting the key search did not close the dropdown.");
     }
 
     private static IReadOnlyList<Element> VisibleKeyButtons(Session editor) =>

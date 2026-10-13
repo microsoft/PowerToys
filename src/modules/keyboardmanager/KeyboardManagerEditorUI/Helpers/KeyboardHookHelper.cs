@@ -120,7 +120,7 @@ namespace KeyboardManagerEditorUI.Helpers
             return foregroundProcessId == (uint)Environment.ProcessId;
         }
 
-        private bool ShouldHandleKeyboardEvent(int key, UIntPtr extraInfo)
+        private bool ShouldHandleKeyboardEvent(int key, UIntPtr extraInfo, bool isKeyDown)
         {
             if (_activeTarget == null)
             {
@@ -133,7 +133,10 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             var virtualKey = (VirtualKey)key;
-            if (IsKeyboardNavigationExit(virtualKey))
+
+            // Only a Tab press exits recording. A Tab release whose press preceded recording (e.g. Tab held
+            // while Space toggled recording on) must not stop it; it falls through to normal key-up handling.
+            if (isKeyDown && IsKeyboardNavigationExit(virtualKey))
             {
                 // Shift was already swallowed by this hook, so the window would see a plain Tab and move
                 // focus forward. Swallow the Tab instead and let the target move focus backward.
