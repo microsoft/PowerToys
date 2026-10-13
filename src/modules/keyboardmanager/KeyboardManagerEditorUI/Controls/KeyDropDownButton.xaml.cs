@@ -8,6 +8,8 @@ using System.Linq;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace KeyboardManagerEditorUI.Controls
 {
@@ -15,6 +17,7 @@ namespace KeyboardManagerEditorUI.Controls
     {
         private static List<KeyNameEntry>? _cachedKeyList;
         private static List<KeyNameEntry>? _cachedShortcutKeyList;
+        private TextBox? _searchTextBox;
 
         public static readonly DependencyProperty KeyNameProperty =
             DependencyProperty.Register(
@@ -103,6 +106,8 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void KeyListFlyout_Closed(object sender, object e)
         {
+            DetachSearchTextBox();
+
             // Clear selection when flyout closes
             KeyListView.SelectedItem = null;
         }
@@ -123,9 +128,45 @@ namespace KeyboardManagerEditorUI.Controls
             RefreshKeyList();
         }
 
+        private void KeySearchBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is not TextBox textBox || ReferenceEquals(_searchTextBox, textBox))
+            {
+                return;
+            }
+
+            DetachSearchTextBox();
+            _searchTextBox = textBox;
+
+            // AutoSuggestBox consumes Escape for its own suggestion popup. Handle only an
+            // unhandled, bubbling TextBox event so text services and IME get the first chance.
+            _searchTextBox.KeyDown += SearchTextBox_KeyDown;
+        }
+
+        private void SearchTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Escape && !e.Handled)
+            {
+                e.Handled = true;
+                KeyListFlyout.Hide();
+            }
+        }
+
+        private void DetachSearchTextBox()
+        {
+            if (_searchTextBox != null)
+            {
+                _searchTextBox.KeyDown -= SearchTextBox_KeyDown;
+                _searchTextBox = null;
+            }
+        }
+
         private void KeySearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            if (KeyListView.ItemsSource is List<KeyNameEntry> { Count: > 0 } filtered)
+            // TextChanged can be queued behind QuerySubmitted; use this submission's text
+            // instead of the results from the previous TextChanged event.
+            var filtered = FilterKeyList(args.QueryText);
+            if (filtered.Count > 0)
             {
                 SelectEntry(filtered[0]);
             }
@@ -158,12 +199,17 @@ namespace KeyboardManagerEditorUI.Controls
             return cached;
         }
 
-        internal void RefreshKeyList()
+        private List<KeyNameEntry> FilterKeyList(string? query)
         {
-            string query = KeySearchBox.Text?.Trim() ?? string.Empty;
-            var list = query.Length == 0
+            query = query?.Trim() ?? string.Empty;
+            return query.Length == 0
                 ? GetKeyList()
                 : GetKeyList().Where(k => k.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        internal void RefreshKeyList()
+        {
+            var list = FilterKeyList(KeySearchBox.Text);
 
             KeyListView.ItemsSource = list;
             NoResultsText.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;

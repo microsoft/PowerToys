@@ -33,8 +33,8 @@ namespace KeyboardManagerEditorUI.Controls
 
         private readonly ObservableCollection<string> _triggerKeys = new();
         private readonly ObservableCollection<string> _actionKeys = new();
-        private List<string> _triggerKeysBeforeRecording = new();
-        private List<string> _actionKeysBeforeRecording = new();
+        private List<string> _triggerKeysBeforeLastCapture = new();
+        private List<string> _actionKeysBeforeLastCapture = new();
 
         private bool _disposed;
         private bool _internalUpdate;
@@ -222,7 +222,7 @@ namespace KeyboardManagerEditorUI.Controls
             if (TriggerKeyToggleBtn.IsChecked == true)
             {
                 _currentInputMode = KeyInputMode.OriginalKeys;
-                _triggerKeysBeforeRecording = _triggerKeys.ToList();
+                _triggerKeysBeforeLastCapture = _triggerKeys.ToList();
 
                 // Uncheck action toggle if checked
                 if (ActionKeyToggleBtn?.IsChecked == true)
@@ -284,7 +284,7 @@ namespace KeyboardManagerEditorUI.Controls
             if (ActionKeyToggleBtn.IsChecked == true)
             {
                 _currentInputMode = KeyInputMode.RemappedKeys;
-                _actionKeysBeforeRecording = _actionKeys.ToList();
+                _actionKeysBeforeLastCapture = _actionKeys.ToList();
 
                 // Uncheck trigger toggle if checked
                 if (TriggerKeyToggleBtn?.IsChecked == true)
@@ -763,10 +763,14 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (_currentInputMode == KeyInputMode.OriginalKeys)
             {
+                // A fresh Shift press can be used to leave recording. Preserve the last displayed
+                // capture so that Shift+Tab does not roll back to the value at recording start.
+                _triggerKeysBeforeLastCapture = _triggerKeys.ToList();
                 _triggerKeys.Clear();
             }
             else
             {
+                _actionKeysBeforeLastCapture = _actionKeys.ToList();
                 _actionKeys.Clear();
             }
         }
@@ -782,7 +786,7 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 if (restorePreviousKeys)
                 {
-                    RestoreKeysBeforeRecording();
+                    RestoreKeysBeforeLastCapture();
                 }
 
                 UncheckAllToggleButtons();
@@ -814,20 +818,10 @@ namespace KeyboardManagerEditorUI.Controls
                 return;
             }
 
-            // Keep the search inside the hosting dialog, which lives in a popup outside XamlRoot.Content.
-            DependencyObject? searchRoot = this;
-            for (DependencyObject? parent = this; parent != null; parent = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(parent))
-            {
-                searchRoot = parent;
-                if (parent is ContentDialog)
-                {
-                    break;
-                }
-            }
-
+            // Next/Previous traversal requires the XamlRoot content, even when focus is in a dialog popup.
             Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(
                 Microsoft.UI.Xaml.Input.FocusNavigationDirection.Previous,
-                new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = searchRoot });
+                new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = XamlRoot.Content });
         }
 
         #endregion
@@ -1188,16 +1182,16 @@ namespace KeyboardManagerEditorUI.Controls
             }
         }
 
-        private void RestoreKeysBeforeRecording()
+        private void RestoreKeysBeforeLastCapture()
         {
             if (_currentInputMode == KeyInputMode.OriginalKeys)
             {
-                RestoreKeys(_triggerKeys, _triggerKeysBeforeRecording);
+                RestoreKeys(_triggerKeys, _triggerKeysBeforeLastCapture);
                 UpdateAppSpecificCheckBoxState();
             }
             else
             {
-                RestoreKeys(_actionKeys, _actionKeysBeforeRecording);
+                RestoreKeys(_actionKeys, _actionKeysBeforeLastCapture);
             }
         }
 

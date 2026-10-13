@@ -34,6 +34,7 @@
                     <AutoSuggestBox
                         x:Name="KeySearchBox"
                         x:Uid="KeyDropDownButton_SearchBox"
+                        GotFocus="KeySearchBox_GotFocus"
                         QueryIcon="Find"
                         QuerySubmitted="KeySearchBox_QuerySubmitted"
                         TextChanged="KeySearchBox_TextChanged" />

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -300,10 +301,15 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         keyButtons = VisibleKeyButtons(editorProcess);
         keyButtons[^1].Focus();
         KeyboardHelper.SendKey(Key.Enter);
-        Assert.IsTrue(editorProcess.WaitForElement(By.AccessibilityId("KeyListView"), timeoutMS: 5_000), "The action key dropdown did not open from Enter.");
-        KeyboardHelper.SendKey(Key.Down);
-        KeyboardHelper.SendKey(Key.Down);
+        var keySearch = WaitForKeySearch(editorProcess);
+        KeyboardHelper.SendKey(Key.Num2);
+        Assert.IsTrue(keySearch.WaitForValue("2"), "The action key search did not receive numeric key 2.");
+        var actionChoice = WaitForFilteredKeyList(editorProcess, "2", "2");
+        KeyboardHelper.SendKey(Key.Tab);
+        KeyboardHelper.SendKey(Key.Home);
+        Assert.IsTrue(actionChoice.WaitForProperty("HasKeyboardFocus", "true"), "Tab and Home did not focus numeric key 2 in the filtered list.");
         KeyboardHelper.SendKey(Key.Enter);
+        Assert.IsTrue(keySearch.WaitForGone(), "Enter did not select the focused action key and close the dropdown.");
 
         Step("Saving the dropdown-created 1 to 2 mapping");
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
@@ -315,6 +321,13 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
                 timeoutMS: 10_000,
                 pollIntervalMS: 250),
             "Mouse and keyboard dropdown selection did not persist the expected 1 to 2 mapping.");
+
+        Step("Reopening the editor to verify the dropdown-created mapping persisted");
+        CloseEditor();
+        editor = OpenEditor();
+        editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
+        Assert.IsNotNull(FindExact<Element>(editorProcess, "1", timeoutMS: 5_000), "The reopened editor did not show trigger key 1.");
+        Assert.IsNotNull(FindExact<Element>(editorProcess, "2", timeoutMS: 5_000), "The reopened editor did not show action key 2.");
 
         Step("Opening a fresh dialog for Ctrl+B to D app-specific validation");
         editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
@@ -347,6 +360,175 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
                 timeoutMS: 10_000,
                 pollIntervalMS: 250),
             "Enter did not save the valid app-specific Ctrl+B to D mapping.");
+    }
+
+    [TestMethod("KeyboardManager.Editor.RecordingShiftTab")]
+    [TestCategory("Keyboard Manager")]
+    [DataRow("TriggerKeyToggleBtn", "TriggerTypeComboBox", false)]
+    [DataRow("TriggerKeyToggleBtn", "TriggerTypeComboBox", true)]
+    [DataRow("ActionKeyToggleBtn", "ActionTypeComboBox", false)]
+    [DataRow("ActionKeyToggleBtn", "ActionTypeComboBox", true)]
+    public void ShiftTabStopsRecordingPreservesCaptureAndContinuesBackward(
+        string toggleAutomationId,
+        string previousControlId,
+        bool captureIncludesShift)
+    {
+        var editor = OpenNewRemappingDialog();
+        RecordKeys(editor, "TriggerKeyToggleBtn", A);
+        RecordKeys(editor, "ActionKeyToggleBtn", B);
+        editor.Find<CheckBox>(By.AccessibilityId("AllowChordsCheckBox"), timeoutMS: 5_000).SetCheck(false);
+
+        // Learn the preceding tab stop before recording changes keyboard state. The second
+        // Tab must still move backward while the same physical Shift press remains held.
+        var previousControl = editor.Find<Element>(By.AccessibilityId(previousControlId), timeoutMS: 5_000);
+        previousControl.Focus();
+        KeyboardHelper.SendChord(Key.LShift, Key.Tab);
+        Assert.IsTrue(previousControl.WaitForProperty("HasKeyboardFocus", "false"), "Shift+Tab did not establish the preceding tab stop before recording.");
+        var precedingFocus = editor.GetFocused();
+        Assert.IsTrue(precedingFocus.TryGetProperty("element", out var precedingElement), "No element had focus before recording.");
+        string precedingSelector = precedingElement.GetProperty("selector").GetString()!;
+
+        var toggle = editor.Find<Element>(By.AccessibilityId(toggleAutomationId), timeoutMS: 5_000);
+        toggle.Focus();
+        KeyboardHelper.SendKey(Key.Space);
+        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On"), "Space did not start recording.");
+
+        try
+        {
+            KeyboardHelper.PressKey(Key.LCtrl);
+            if (captureIncludesShift)
+            {
+                KeyboardHelper.PressKey(Key.LShift);
+            }
+
+            KeyboardHelper.SendKey(Key.C);
+            KeyboardHelper.ReleaseKey(Key.LCtrl);
+            Assert.IsNotNull(FindExact<Element>(editor, "C", timeoutMS: 5_000), "The new shortcut was not captured before leaving recording.");
+
+            if (!captureIncludesShift)
+            {
+                KeyboardHelper.PressKey(Key.LShift);
+            }
+
+            Step("Leaving recording with Shift+Tab without releasing Shift");
+            KeyboardHelper.SendKey(Key.Tab);
+            Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off"), "Shift+Tab did not stop recording, or the editor exited.");
+            Assert.IsTrue(previousControl.WaitForProperty("HasKeyboardFocus", "true"), "Shift+Tab did not move to the preceding control.");
+
+            KeyboardHelper.SendKey(Key.Tab);
+            Assert.IsTrue(
+                editor.Find<Element>(By.Slug(precedingSelector), timeoutMS: 5_000).WaitForProperty("HasKeyboardFocus", "true"),
+                "The next Tab did not continue backward while Shift remained held.");
+        }
+        finally
+        {
+            KeyboardHelper.ReleaseKey(Key.Tab);
+            KeyboardHelper.ReleaseKey(Key.C);
+            KeyboardHelper.ReleaseKey(Key.LCtrl);
+            KeyboardHelper.ReleaseKey(Key.LShift);
+        }
+
+        string capturedKeys = captureIncludesShift ? $"{LeftControl};{(int)Key.LShift};{C}" : $"{LeftControl};{C}";
+        string sourceKeys = toggleAutomationId == "TriggerKeyToggleBtn" ? capturedKeys : A.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        string targetKeys = toggleAutomationId == "ActionKeyToggleBtn" ? capturedKeys : B.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        SaveAndAssertKeyMapping(editor, sourceKeys, targetKeys);
+    }
+
+    [TestMethod("KeyboardManager.Editor.RecordingIgnoresEarlierTabRelease")]
+    [TestCategory("Keyboard Manager")]
+    [DataRow("TriggerKeyToggleBtn", "TriggerTypeComboBox", C, B)]
+    [DataRow("ActionKeyToggleBtn", "ActionTypeComboBox", A, C)]
+    public void ReleasingTabPressedBeforeRecordingDoesNotStopCapture(
+        string toggleAutomationId,
+        string previousControlId,
+        int expectedSource,
+        int expectedTarget)
+    {
+        var editor = OpenNewRemappingDialog();
+        RecordKeys(editor, "TriggerKeyToggleBtn", A);
+        RecordKeys(editor, "ActionKeyToggleBtn", B);
+        var toggle = editor.Find<Element>(By.AccessibilityId(toggleAutomationId), timeoutMS: 5_000);
+        editor.Find<Element>(By.AccessibilityId(previousControlId), timeoutMS: 5_000).Focus();
+
+        try
+        {
+            KeyboardHelper.PressKey(Key.Tab);
+            Assert.IsTrue(toggle.WaitForProperty("HasKeyboardFocus", "true"), "Tab did not focus the recording button.");
+            KeyboardHelper.SendKey(Key.Space);
+            Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On"), "Space did not start recording while Tab was held.");
+
+            Step("Releasing the Tab press that preceded recording, then capturing C");
+            KeyboardHelper.ReleaseKey(Key.Tab);
+            KeyboardHelper.SendKey(Key.C);
+            Assert.IsNotNull(FindExact<Element>(editor, "C", timeoutMS: 5_000), "The earlier Tab release stopped recording before C could be captured.");
+            Assert.AreEqual("On", toggle.GetProperty("ToggleState"), "Releasing an earlier Tab press stopped recording.");
+
+            KeyboardHelper.SendKey(Key.Tab);
+            Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off"), "A new Tab press did not stop recording normally.");
+        }
+        finally
+        {
+            KeyboardHelper.ReleaseKey(Key.Tab);
+            KeyboardHelper.ReleaseKey(Key.Space);
+            KeyboardHelper.ReleaseKey(Key.C);
+        }
+
+        SaveAndAssertKeyMapping(
+            editor,
+            expectedSource.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            expectedTarget.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    [TestMethod("KeyboardManager.Editor.KeySearchImmediateSubmit")]
+    [TestCategory("Keyboard Manager")]
+    public void SubmittingImmediatelyAfterTypingUsesTheLatestQuery()
+    {
+        var editor = OpenNewRemappingDialog();
+        RecordKeys(editor, "TriggerKeyToggleBtn", A);
+        RecordKeys(editor, "ActionKeyToggleBtn", B);
+        VisibleKeyButtons(editor)[0].Focus();
+        KeyboardHelper.SendKey(Key.Enter);
+        var search = WaitForKeySearch(editor);
+        KeyboardHelper.SendKeySequence(Key.F, Key.Num1);
+        Assert.IsTrue(search.WaitForValue("f1"), "The key search did not receive f1.");
+        _ = WaitForFilteredKeyList(editor, "f1", "F1");
+
+        // Queue the last character and submission together. A delay or UIA call between
+        // them would allow the old result list to refresh and miss this regression.
+        KeyboardHelper.SendChord(Key.Num0, Key.Enter);
+        Assert.IsTrue(search.WaitForGone(), "The submitted key query did not close the dropdown.");
+        SaveAndAssertKeyMapping(
+            editor,
+            ((int)Key.F10).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            B.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    [TestMethod("KeyboardManager.Editor.KeySearchEscape")]
+    [TestCategory("Keyboard Manager")]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void EscapeFromKeySearchClosesOnlyThePicker(bool typeQuery)
+    {
+        var editor = OpenNewRemappingDialog();
+        RecordKeys(editor, "TriggerKeyToggleBtn", A);
+        RecordKeys(editor, "ActionKeyToggleBtn", B);
+        var keyButton = VisibleKeyButtons(editor)[^1];
+        keyButton.Focus();
+        KeyboardHelper.SendKey(Key.Enter);
+        var search = WaitForKeySearch(editor);
+        if (typeQuery)
+        {
+            KeyboardHelper.SendKey(Key.A);
+            Assert.IsTrue(search.WaitForValue("a"), "The key search did not receive the query.");
+        }
+
+        KeyboardHelper.SendKey(Key.Esc);
+        Assert.IsTrue(search.WaitForGone(), "Escape from the search field did not close the key picker.");
+        Assert.IsTrue(keyButton.WaitForProperty("HasKeyboardFocus", "true"), "Escape did not return focus to the originating key button.");
+        SaveAndAssertKeyMapping(
+            editor,
+            A.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            B.ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
 
     [TestMethod("KeyboardManager.Editor.ActionPersistence")]
@@ -441,6 +623,94 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
                 timeoutMS: 10_000,
                 pollIntervalMS: 250),
             $"The reopened editor did not preserve canonical action mappings. Profile: {KeyboardManagerSettings.ReadProfile().ToJsonString()}; editor settings: {KeyboardManagerSettings.ReadEditorSettings().ToJsonString()}");
+    }
+
+    private Session OpenNewRemappingDialog()
+    {
+        var editor = OpenEditor();
+        editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
+        var editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
+        Assert.IsTrue(editorProcess.WaitForElement(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 15_000), "The remapping dialog did not finish loading.");
+        return editorProcess;
+    }
+
+    private static TextBox WaitForKeySearch(Session editor)
+    {
+        Assert.IsTrue(editor.WaitForElement(By.AccessibilityId("KeyListView"), timeoutMS: 5_000), "The key dropdown did not open.");
+        var search = FindExact<TextBox>(editor, "Search keys", timeoutMS: 5_000);
+        Assert.IsNotNull(search, "The key dropdown did not expose its search field.");
+        Assert.IsTrue(search!.WaitForProperty("HasKeyboardFocus", "true"), "Opening the key dropdown did not focus its search field.");
+        return search;
+    }
+
+    private static Element WaitForFilteredKeyList(Session editor, string query, string expectedFirstKey)
+    {
+        string? firstSelector = null;
+        string[] names = Array.Empty<string>();
+        bool filtered = editor.WaitFor(
+            () =>
+            {
+                // Inspect one snapshot of the actual list, including off-screen items. Merely
+                // finding the expected key also succeeds in the unfiltered or an older list.
+                var list = EnumerateAutomationElements(editor.Inspect(depth: 15))
+                    .FirstOrDefault(element =>
+                        element.TryGetProperty("automationId", out var id) && id.GetString() == "KeyListView");
+                if (list.ValueKind != JsonValueKind.Object || !list.TryGetProperty("children", out var children))
+                {
+                    return false;
+                }
+
+                var items = children.EnumerateArray()
+                    .Where(element => element.TryGetProperty("type", out var type) && type.GetString() == "ListItem")
+                    .ToArray();
+                names = items.Select(item => item.GetProperty("name").GetString() ?? string.Empty).ToArray();
+                if (names.Length == 0 || names[0] != expectedFirstKey ||
+                    names.Any(name => !name.Contains(query, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
+
+                firstSelector = items[0].GetProperty("selector").GetString();
+                return !string.IsNullOrEmpty(firstSelector);
+            },
+            timeoutMS: 5_000,
+            pollIntervalMS: 100);
+        Assert.IsTrue(filtered, $"The key list did not finish filtering for '{query}' with {expectedFirstKey} first. Observed: [{string.Join(", ", names)}].");
+        return editor.Find<Element>(By.Slug(firstSelector!), timeoutMS: 5_000);
+    }
+
+    private static IEnumerable<JsonElement> EnumerateAutomationElements(JsonElement root)
+    {
+        yield return root;
+        foreach (string property in new[] { "windows", "elements", "children" })
+        {
+            if (root.TryGetProperty(property, out var children) && children.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var child in children.EnumerateArray())
+                {
+                    foreach (var descendant in EnumerateAutomationElements(child))
+                    {
+                        yield return descendant;
+                    }
+                }
+            }
+        }
+    }
+
+    private static void SaveAndAssertKeyMapping(Session editor, string sourceKeys, string targetKeys)
+    {
+        var save = FindExact<Button>(editor, "Save", timeoutMS: 5_000);
+        Assert.IsNotNull(save, "The remapping dialog did not remain open with a Save button.");
+        Assert.IsTrue(save!.IsEnabled, "The captured key mapping was not valid for saving.");
+        save.Invoke(msPostAction: 500);
+        Assert.IsTrue(
+            editor.WaitFor(
+                () => SingleKeyMappings().Concat(GlobalShortcutMappings()).Any(mapping =>
+                    mapping?["originalKeys"]?.GetValue<string>() == sourceKeys &&
+                    mapping?["newRemapKeys"]?.GetValue<string>() == targetKeys),
+                timeoutMS: 10_000,
+                pollIntervalMS: 250),
+            $"The editor did not preserve and save {sourceKeys} to {targetKeys}. Profile: {KeyboardManagerSettings.ReadProfile().ToJsonString()}");
     }
 
     private static void SelectActionType(Session editor, string actionName, string expectedInputId)

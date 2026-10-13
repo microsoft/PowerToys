@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using KeyboardManagerEditorUI.Interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using PowerToys.Interop;
 using Windows.System;
 
 namespace KeyboardManagerEditorUI.Helpers
@@ -17,11 +18,15 @@ namespace KeyboardManagerEditorUI.Helpers
     {
         private static KeyboardHookHelper? _instance;
 
+        private static int _nextNavigationKeyEventMarker = 0x4B4D0000;
+
+        private readonly Dictionary<ulong, RecordingHookSession> _sessions = new();
+
         public static KeyboardHookHelper Instance => _instance ??= new KeyboardHookHelper();
 
         private KeyboardMappingService? _mappingService;
 
-        private HotkeySettingsControlHook? _keyboardHook;
+        private RecordingHookSession? _activeSession;
 
         // The active page using this keyboard hook
         private IKeyboardHookTarget? _activeTarget;
@@ -31,17 +36,18 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private bool _disposed;
 
-        private bool _exitRequested;
-
         private bool _hasCapturedKeys;
 
-        private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
+        private bool _hasCapturedNonShiftKeys;
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern uint SendInput(uint count, NativeKeyboardHelper.INPUT[] inputs, int size);
 
         // Singleton to make sure only one instance of the hook is active
         private KeyboardHookHelper()
@@ -61,22 +67,43 @@ namespace KeyboardManagerEditorUI.Helpers
             CleanupHook(notifyTarget: false);
 
             _activeTarget = target;
-            _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            var session = new RecordingHookSession
+            {
+                NavigationMarker = unchecked((uint)System.Threading.Interlocked.Increment(ref _nextNavigationKeyEventMarker)),
+                DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(),
+            };
+            _activeSession = session;
+            _sessions.Add(session.NavigationMarker, session);
 
             _currentlyPressedKeys.Clear();
             _keyPressOrder.Clear();
             _hasCapturedKeys = false;
+            _hasCapturedNonShiftKeys = false;
 
             try
             {
-                _keyboardHook = new HotkeySettingsControlHook(
-                    KeyDown,
-                    KeyUp,
-                    IsEditorForeground,
-                    ShouldHandleKeyboardEvent);
+                session.Hook = new HotkeySettingsControlHook(
+                    key =>
+                    {
+                        if (ReferenceEquals(_activeSession, session) && !session.ExitRequested)
+                        {
+                            KeyDown(key);
+                        }
+                    },
+                    key =>
+                    {
+                        if (ReferenceEquals(_activeSession, session) && !session.ExitRequested)
+                        {
+                            KeyUp(key);
+                        }
+                    },
+                    () => session.PendingShiftRestorations.Count > 0 || (ReferenceEquals(_activeSession, session) && IsEditorForeground()),
+                    keyboardEvent => ShouldHandleKeyboardEvent(session, keyboardEvent));
             }
             catch (Exception ex)
             {
+                _sessions.Remove(session.NavigationMarker);
+                _activeSession = null;
                 Logger.LogWarning($"Keyboard hook unavailable: {ex.Message}");
             }
         }
@@ -90,13 +117,18 @@ namespace KeyboardManagerEditorUI.Helpers
         {
             IKeyboardHookTarget? target = _activeTarget;
             _activeTarget = null;
-            _exitRequested = false;
             _hasCapturedKeys = false;
+            _hasCapturedNonShiftKeys = false;
 
-            if (_keyboardHook != null)
+            var session = _activeSession;
+            _activeSession = null;
+            if (session != null)
             {
-                _keyboardHook.Dispose();
-                _keyboardHook = null;
+                session.Canceled = true;
+
+                // A queued Shift-down must still be consumed if recording is closed or restarted.
+                // Keep this session's hook alive only to drain its own tagged events.
+                DisposeSessionIfDrained(session);
             }
 
             _currentlyPressedKeys.Clear();
@@ -120,20 +152,50 @@ namespace KeyboardManagerEditorUI.Helpers
             return foregroundProcessId == (uint)Environment.ProcessId;
         }
 
-        private bool ShouldHandleKeyboardEvent(int key, UIntPtr extraInfo)
+        private bool ShouldHandleKeyboardEvent(RecordingHookSession session, KeyboardEvent keyboardEvent)
         {
-            if (_activeTarget == null)
+            var virtualKey = (VirtualKey)keyboardEvent.key;
+            bool isKeyDown = keyboardEvent.message is 0x100 or 0x104;
+            if (_sessions.TryGetValue(keyboardEvent.dwExtraInfo, out var inputOwner))
+            {
+                // Another session may still be draining when a new recording starts. Let its
+                // hook consume the marker; never interpret its synthetic input as a new capture.
+                if (!ReferenceEquals(inputOwner, session))
+                {
+                    return false;
+                }
+
+                // A physical Shift release can precede our injected down in an input batch.
+                // Suppress that stale down instead of leaving Shift stuck after recording.
+                bool expectedRestoration = session.PendingShiftRestorations.Remove(virtualKey);
+                bool suppressRestoration = !expectedRestoration || session.Canceled || !session.HeldShiftKeys.Contains(virtualKey);
+                QueueNavigationExitCleanup(session);
+                return suppressRestoration;
+            }
+
+            if (!ReferenceEquals(_activeSession, session) || _activeTarget == null)
             {
                 return false;
             }
 
-            if (_exitRequested)
+            if (session.ExitRequested)
             {
+                if (!isKeyDown)
+                {
+                    session.HeldShiftKeys.Remove(virtualKey);
+                }
+
                 return false;
             }
 
-            var virtualKey = (VirtualKey)key;
-            if (IsKeyboardNavigationExit(virtualKey))
+            if (!isKeyDown && !_currentlyPressedKeys.Contains(virtualKey))
+            {
+                // This press predates recording (for example, Tab held while activating with Space).
+                // Let its release update the system state without ending or changing this capture.
+                return false;
+            }
+
+            if (isKeyDown && IsKeyboardNavigationExit(virtualKey))
             {
                 // Shift was already swallowed by this hook, so the window would see a plain Tab and move
                 // focus forward. Swallow the Tab instead and let the target move focus backward.
@@ -141,22 +203,17 @@ namespace KeyboardManagerEditorUI.Helpers
 
                 // Keep the recorded keys unless nothing was captured, or the only captured key is the
                 // Shift held for Shift+Tab.
-                bool restorePreviousKeys = moveFocusBackward
-                    ? _keyPressOrder.All(IsShiftKey)
-                    : !_hasCapturedKeys;
+                session.RestorePreviousKeys = !_hasCapturedKeys || (moveFocusBackward && !_hasCapturedNonShiftKeys);
+                session.MoveFocusBackward = moveFocusBackward;
 
                 // Defer cleanup: disposing the hook from inside its own callback is unsafe.
-                _exitRequested = true;
-                if (_dispatcherQueue == null || !_dispatcherQueue.TryEnqueue(() =>
+                session.ExitRequested = true;
+                if (moveFocusBackward)
                 {
-                    if (_exitRequested)
-                    {
-                        CleanupHook(restorePreviousKeys, notifyTarget: true, moveFocusBackward);
-                    }
-                }))
-                {
-                    CleanupHook(restorePreviousKeys, notifyTarget: true, moveFocusBackward);
+                    RestoreShiftKeyState(session);
                 }
+
+                QueueNavigationExitCleanup(session);
 
                 return moveFocusBackward;
             }
@@ -179,9 +236,84 @@ namespace KeyboardManagerEditorUI.Helpers
             return key == VirtualKey.Shift || key == VirtualKey.LeftShift || key == VirtualKey.RightShift;
         }
 
+        private void RestoreShiftKeyState(RecordingHookSession session)
+        {
+            // The hook swallowed these Shift presses. Hand them back to the system so holding
+            // Shift continues backward navigation. Keep observing releases until these tagged
+            // events arrive, so a release cannot be followed by a stale injected key-down.
+            var shiftKeys = _currentlyPressedKeys.Where(IsShiftKey).ToArray();
+            session.HeldShiftKeys.UnionWith(shiftKeys);
+            session.PendingShiftRestorations.UnionWith(shiftKeys);
+
+            var inputs = shiftKeys.Select(key => new NativeKeyboardHelper.INPUT
+            {
+                type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
+                data = new NativeKeyboardHelper.InputUnion
+                {
+                    ki = new NativeKeyboardHelper.KEYBDINPUT
+                    {
+                        wVk = (short)key,
+                        dwExtraInfo = (UIntPtr)session.NavigationMarker,
+                    },
+                },
+            }).ToArray();
+
+            uint sent = SendInput((uint)inputs.Length, inputs, NativeKeyboardHelper.INPUT.Size);
+            if (sent != inputs.Length)
+            {
+                foreach (var key in shiftKeys.Skip((int)sent))
+                {
+                    session.PendingShiftRestorations.Remove(key);
+                }
+
+                Logger.LogWarning($"Unable to restore Shift after recording: {Marshal.GetLastWin32Error()}");
+            }
+        }
+
+        private void QueueNavigationExitCleanup(RecordingHookSession session)
+        {
+            if (session.PendingShiftRestorations.Count != 0 || session.CleanupQueued || (!session.ExitRequested && !session.Canceled))
+            {
+                return;
+            }
+
+            session.CleanupQueued = true;
+            if (session.DispatcherQueue == null || !session.DispatcherQueue.TryEnqueue(() =>
+            {
+                session.CleanupQueued = false;
+                if (ReferenceEquals(_activeSession, session) && session.ExitRequested)
+                {
+                    CleanupHook(session.RestorePreviousKeys, notifyTarget: true, session.MoveFocusBackward);
+                }
+                else
+                {
+                    DisposeSessionIfDrained(session);
+                }
+            }))
+            {
+                session.CleanupQueued = false;
+
+                // The UI dispatcher is shutting down. Let the owner's Dispose clean up the hook
+                // instead of disposing a native hook from inside its own callback.
+                Logger.LogWarning("Unable to queue keyboard recording cleanup");
+            }
+        }
+
+        private void DisposeSessionIfDrained(RecordingHookSession session)
+        {
+            if (session.PendingShiftRestorations.Count != 0)
+            {
+                return;
+            }
+
+            session.Hook?.Dispose();
+            session.Hook = null;
+            _sessions.Remove(session.NavigationMarker);
+        }
+
         private void KeyDown(int key)
         {
-            if (_activeTarget == null || _exitRequested)
+            if (_activeTarget == null || _activeSession?.ExitRequested != false)
             {
                 return;
             }
@@ -198,6 +330,7 @@ namespace KeyboardManagerEditorUI.Helpers
             {
                 _activeTarget.ClearKeys();
                 _keyPressOrder.Clear();
+                _hasCapturedNonShiftKeys = false;
             }
 
             // Count current modifiers
@@ -222,6 +355,7 @@ namespace KeyboardManagerEditorUI.Helpers
             if (_currentlyPressedKeys.Add(virtualKey))
             {
                 _hasCapturedKeys = true;
+                _hasCapturedNonShiftKeys |= !IsShiftKey(virtualKey);
                 _keyPressOrder.Add(virtualKey);
 
                 // When building chords, cap at 2 action keys: if a third action key arrives,
@@ -242,7 +376,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private void KeyUp(int key)
         {
-            if (_activeTarget == null || _exitRequested)
+            if (_activeTarget == null || _activeSession?.ExitRequested != false)
             {
                 return;
             }
@@ -378,11 +512,39 @@ namespace KeyboardManagerEditorUI.Helpers
                 if (disposing)
                 {
                     CleanupHook();
+                    foreach (var session in _sessions.Values.ToArray())
+                    {
+                        DisposeSessionIfDrained(session);
+                    }
+
                     _mappingService?.Dispose();
                 }
 
                 _disposed = true;
             }
+        }
+
+        private sealed class RecordingHookSession
+        {
+            public uint NavigationMarker { get; init; }
+
+            public HotkeySettingsControlHook? Hook { get; set; }
+
+            public Microsoft.UI.Dispatching.DispatcherQueue? DispatcherQueue { get; init; }
+
+            public HashSet<VirtualKey> HeldShiftKeys { get; } = new();
+
+            public HashSet<VirtualKey> PendingShiftRestorations { get; } = new();
+
+            public bool ExitRequested { get; set; }
+
+            public bool Canceled { get; set; }
+
+            public bool CleanupQueued { get; set; }
+
+            public bool RestorePreviousKeys { get; set; }
+
+            public bool MoveFocusBackward { get; set; }
         }
     }
 
