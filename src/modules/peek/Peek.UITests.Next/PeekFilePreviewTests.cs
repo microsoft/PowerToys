@@ -994,5 +994,4 @@ public class PeekFilePreviewTests : UITestBase
     {
         public (int X, int Y) Center => (Left + (Width / 2), Top + (Height / 2));
     }
-
 }
