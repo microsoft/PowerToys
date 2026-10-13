@@ -352,8 +352,45 @@ namespace WorkspacesLibUnitTests
             Assert::IsFalse(app.HasKey(L"code"));
             Assert::IsFalse(app.HasKey(L"nativeError"));
             Assert::AreEqual(10, exitCode);
-            Assert::AreEqual(std::wstring(L"failed"), std::wstring(result.GetNamedString(L"state")),
-                             L"The existing aggregate result still requires confirmed arrangement.");
+            Assert::AreEqual(std::wstring(L"partial"), std::wstring(result.GetNamedString(L"state")),
+                             L"Launch progress without confirmed arrangement is incomplete, not wholly failed.");
+        }
+
+        TEST_METHOD (AggregateResultDistinguishesLaunchProgressFromNoProgress)
+        {
+            struct Case
+            {
+                LaunchingState first;
+                LaunchingState second;
+                const wchar_t* expected;
+                int exitCode;
+            };
+            const Case cases[] = {
+                { LaunchingState::Skipped, LaunchingState::Launched, L"partial", 10 },
+                { LaunchingState::Launched, LaunchingState::Skipped, L"partial", 10 },
+                { LaunchingState::Launched, LaunchingState::Launched, L"partial", 10 },
+                { LaunchingState::Launched, LaunchingState::Failed, L"partial", 10 },
+                { LaunchingState::Launched, LaunchingState::Canceled, L"partial", 10 },
+                { LaunchingState::LaunchedAndMoved, LaunchingState::Skipped, L"partial", 10 },
+                { LaunchingState::LaunchedAndMoved, LaunchingState::LaunchedAndMoved, L"completed", 0 },
+                { LaunchingState::Skipped, LaunchingState::Skipped, L"failed", 10 },
+                { LaunchingState::Failed, LaunchingState::Canceled, L"failed", 10 },
+                { LaunchingState::Failed, LaunchingState::Failed, L"failed", 10 },
+            };
+            auto project = Project();
+            project.apps[1].id = L"{682A3A9E-D18D-4DC6-B2AF-E6ABD92F42A9}";
+            for (const auto& test : cases)
+            {
+                LaunchingStatus states(project);
+                states.Update(project.apps[0], test.first);
+                states.Update(project.apps[1], test.second);
+                int exitCode = -1;
+                const auto result = WorkspacesCli::LaunchResult(project, states.Get(), L"operation", exitCode);
+                Assert::AreEqual(std::wstring(test.expected), std::wstring(result.GetNamedString(L"state")));
+                Assert::AreEqual(test.exitCode, exitCode);
+                Assert::IsFalse(result.HasKey(L"error"));
+                Assert::AreEqual(2u, result.GetNamedObject(L"result").GetNamedArray(L"applications").Size());
+            }
         }
 
         TEST_METHOD (MixedArrangedAndUnconfirmedApplicationsRemainPartial)

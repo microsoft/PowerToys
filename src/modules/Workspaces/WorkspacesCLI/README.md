@@ -6,7 +6,9 @@ See [the command contract](..\..\..\..\doc\devdocs\modules\workspaces-cli.md).
 Successful `list --json` responses expose `view` and `workspaces` directly at the top level.
 Launch results and errors retain their existing envelopes; human-readable list output is unchanged.
 Launch results preserve native `Launched` as `launched`, with a localized explanation that arrangement
-is unconfirmed. Only explicit arrangement failures use `arrangeFailed`; aggregate exit rules are unchanged.
+is unconfirmed. Only explicit arrangement failures use `arrangeFailed`. Any successful launch or
+arrangement counts as partial progress unless every app is arranged; `skipped` plus `launched`
+therefore yields `partial`. Exit 0 still requires all apps arranged, and incomplete results retain exit 10.
 The final-result boundary rejects pending `Waiting` states and missing/invalid entries before
 acknowledging completion, reporting `outcomeUnknown` rather than inventing an app-level `unknown`.
 

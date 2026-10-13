@@ -31,7 +31,7 @@
   <data name="CliLoggingWarning" xml:space="preserve"><value>File logging is unavailable for this operation. The launch result is unaffected.</value></data>
   <data name="CliPersistenceUnverified" xml:space="preserve"><value>The workspace file was replaced but its contents could not be verified. The application results are reported separately. Check the saved workspace before retrying.</value></data>
   <data name="CliCompleted" xml:space="preserve"><value>Completed</value></data>
-  <data name="CliPartial" xml:space="preserve"><value>Completed with application failures</value></data>
+  <data name="CliPartial" xml:space="preserve"><value>Workspace restoration is incomplete</value></data>
   <data name="CliFailed" xml:space="preserve"><value>Failed</value></data>
   <data name="CliConfirmationRequired" xml:space="preserve"><value>This application requires one-time confirmation, but the Workspaces confirmation dialog is unavailable. It was not launched.</value></data>
   <data name="CliConfirmationTimedOut" xml:space="preserve"><value>The confirmation could not be displayed in time. This application was not launched.</value></data>

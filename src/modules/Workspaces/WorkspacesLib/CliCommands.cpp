@@ -388,12 +388,14 @@ namespace WorkspacesCli
     {
         json::JsonArray apps;
         size_t arranged = 0;
+        bool hasLaunchProgress = false;
         for (const auto& app : project.apps)
         {
             const auto entry = states.find(app);
             const auto state = entry == states.end() ? LaunchingState::Waiting : entry->second.state;
             if (state <= LaunchingState::Waiting || state > LaunchingState::Skipped)
                 throw Error(9, L"outcomeUnknown", "No conclusive application launch outcome was received.");
+            hasLaunchProgress = hasLaunchProgress || state == LaunchingState::Launched || state == LaunchingState::LaunchedAndMoved;
             const wchar_t* name = L"launched";
             if (state == LaunchingState::LaunchedAndMoved)
             {
@@ -441,7 +443,7 @@ namespace WorkspacesCli
         result.SetNamedValue(L"operationId", json::value(operationId));
         result.SetNamedValue(L"applications", apps);
         result.SetNamedValue(L"persistenceStatus", json::value(L"unchanged"));
-        auto output = Envelope(L"launch", exitCode == 0 ? L"completed" : (arranged == 0 ? L"failed" : L"partial"), result);
+        auto output = Envelope(L"launch", exitCode == 0 ? L"completed" : (hasLaunchProgress ? L"partial" : L"failed"), result);
         output.SetNamedValue(L"warnings", json::JsonArray{});
         return output;
     }

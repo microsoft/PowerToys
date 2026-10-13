@@ -85,8 +85,16 @@ Per-application `launched` preserves the native `Launched` state: the applicatio
 but window arrangement was not confirmed. A localized `message` explains this distinction.
 `arrangeFailed` is reserved for a native failed result without a recorded application-launch error;
 recorded launch errors remain `launchFailed`. `arranged` means the engine confirmed arrangement.
-The aggregate/exit-code rules are unchanged: unconfirmed arrangement is not counted as a fully
-restored workspace, even though it is not labeled an application-level arrangement failure.
+Aggregate state distinguishes launch progress from fully confirmed restoration:
+
+| Application outcomes | Aggregate state | Exit code |
+|---|---|---:|
+| Every application is `arranged` | `completed` | 0 |
+| At least one is `launched` or `arranged`, but not all are `arranged` | `partial` | 10 |
+| None is `launched` or `arranged` (for example, all skipped or failed) | `failed` | 10 |
+
+Thus `skipped` plus `launched` is `partial`, not `failed`. Exit codes remain unchanged:
+unconfirmed arrangement is not counted as a fully restored workspace.
 Final arranger responses must contain a known outcome for every requested application.
 `Waiting`, missing/duplicate applications and invalid results are rejected before applying or
 acknowledging completion. They produce `outcomeUnknown` (exit 9), not an application-level
