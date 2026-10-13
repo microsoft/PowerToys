@@ -323,6 +323,7 @@
                                             Style="{StaticResource CaptionTextBlockStyle}"
                                             TextWrapping="WrapWholeWords">
                                             <Run x:Uid="MouseUtils_MouseButtonLock_LmbLock_Description" />
+                                            <Run Text=" " />
                                             <Hyperlink Click="OpenMouseSettings_Click">
                                                 <Run x:Uid="MouseUtils_MouseButtonLock_LmbLock_Link" />
                                             </Hyperlink>
