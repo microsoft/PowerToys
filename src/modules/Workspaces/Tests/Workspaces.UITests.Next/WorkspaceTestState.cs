@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -208,30 +209,43 @@ namespace Microsoft.Workspaces.UITests
 
         public void Dispose()
         {
+            Exception? fixtureError = null;
             try
             {
                 Fixture.Dispose();
             }
-            finally
+            catch (Exception error)
             {
-                List<Exception> errors = [];
-                foreach (var snapshot in snapshots.AsEnumerable().Reverse())
+                fixtureError = error;
+            }
+
+            List<Exception> errors = [];
+            foreach (var snapshot in snapshots.AsEnumerable().Reverse())
+            {
+                try
                 {
-                    try
-                    {
-                        snapshot.Dispose();
-                    }
-                    catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-                    {
-                        errors.Add(error);
-                    }
+                    snapshot.Dispose();
+                }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+                {
+                    errors.Add(error);
+                }
+            }
+
+            snapshots.Clear();
+            if (errors.Count > 0)
+            {
+                if (fixtureError is not null)
+                {
+                    errors.Insert(0, fixtureError);
                 }
 
-                snapshots.Clear();
-                if (errors.Count > 0)
-                {
-                    throw new AggregateException("Could not restore the Workspaces test files.", errors);
-                }
+                throw new AggregateException("Could not restore the Workspaces test files.", errors);
+            }
+
+            if (fixtureError is not null)
+            {
+                ExceptionDispatchInfo.Throw(fixtureError);
             }
         }
 
