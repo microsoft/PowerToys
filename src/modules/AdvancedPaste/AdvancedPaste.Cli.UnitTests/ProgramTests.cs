@@ -20,25 +20,29 @@ namespace AdvancedPaste.Cli.UnitTests;
 [TestClass]
 public class ProgramTests
 {
-    [TestMethod]
-    public async Task StdinToStdout_TransformsJson()
+    [DataTestMethod]
+    [DataRow("--action")]
+    [DataRow("--format")]
+    public async Task StdinToStdout_TransformsJson(string actionOption)
     {
-        var result = await RunAsync(["transform", "--format", "json", "--stdin", "--stdout"], "name,age\r\nAda,37");
+        var result = await RunAsync(["transform", actionOption, "json", "--stdin", "--stdout"], "name,age\r\nAda,37");
 
         Assert.AreEqual(0, result.ExitCode);
         StringAssert.Contains(result.Stdout, "\"Ada\"");
         Assert.AreEqual(string.Empty, result.Stderr);
     }
 
-    [TestMethod]
-    public async Task FileInputAndOutput_TransformsMarkdown()
+    [DataTestMethod]
+    [DataRow("--input", "--output")]
+    [DataRow("-i", "-o")]
+    public async Task FileInputAndOutput_TransformsMarkdown(string inputOption, string outputOption)
     {
         var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.html");
         var outputPath = Path.GetTempFileName();
         try
         {
             await File.WriteAllTextAsync(inputPath, "<p>Hello <strong>world</strong></p>");
-            var result = await RunAsync(["transform", "--format", "markdown", "--input", inputPath, "--output", outputPath]);
+            var result = await RunAsync(["transform", "--format", "markdown", inputOption, inputPath, outputOption, outputPath]);
 
             Assert.AreEqual(0, result.ExitCode);
             StringAssert.Contains(await File.ReadAllTextAsync(outputPath), "Hello **world**");
@@ -220,6 +224,9 @@ public class ProgramTests
 
     [DataTestMethod]
     [DataRow(new[] { "--help" })]
+    [DataRow(new[] { "-h" })]
+    [DataRow(new[] { "-?" })]
+    [DataRow(new[] { "/?" })]
     [DataRow(new[] { "transform", "--help" })]
     [DataRow(new[] { "actions", "list", "--help" })]
     public async Task Help_DescribesEverySupportedBuiltInAction(string[] args)
@@ -227,6 +234,7 @@ public class ProgramTests
         var result = await RunAsync(args, runtime: new TestRuntime(isEnabled: false));
 
         Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual(string.Empty, result.Stderr);
         var help = string.Join(" ", result.Stdout.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
         foreach (var action in AdvancedPasteRuntime.GetBuiltInActions())
         {
@@ -952,6 +960,22 @@ public class ProgramTests
 
         Assert.AreEqual(Program.ArgumentErrorExitCode, result.ExitCode);
         StringAssert.Contains(result.Stderr, "Usage:");
+    }
+
+    [DataTestMethod]
+    [DataRow("--help")]
+    [DataRow("-h")]
+    [DataRow("-?")]
+    [DataRow("/?")]
+    public async Task HelpLikePromptValue_ExecutesActionInsteadOfShowingHelp(string prompt)
+    {
+        var result = await RunAsync(
+            ["transform", "--action", "paste-with-ai", "--prompt", prompt, "--stdin", "--stdout"],
+            "hello");
+
+        Assert.AreEqual(Program.SuccessExitCode, result.ExitCode);
+        Assert.AreEqual("hello", result.Stdout);
+        Assert.AreEqual(string.Empty, result.Stderr);
     }
 
     private static async Task<RunResult> RunAsync(
