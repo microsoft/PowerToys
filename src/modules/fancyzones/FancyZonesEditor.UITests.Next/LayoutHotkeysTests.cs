@@ -254,13 +254,14 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
     private static Element RequireHotkeyOption(Session processSession, string optionName)
     {
         Element? option = null;
-        Assert.IsTrue(
-            processSession.WaitFor(() =>
+        bool found = processSession.WaitFor(
+            () =>
             {
                 option = FindHotkeyOption(processSession, optionName);
                 return option is not null;
-            }, 10_000),
-            $"Shortcut option '{optionName}' was not found in the popup.");
+            },
+            10_000);
+        Assert.IsTrue(found, $"Shortcut option '{optionName}' was not found in the popup.");
 
         return option!;
     }
