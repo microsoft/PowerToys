@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using ManagedCommon;
-using static Peek.Common.Helpers.ResourceLoaderInstance;
+using Peek.Common.Helpers;
 
 namespace Peek.UI.Helpers;
 
@@ -16,13 +16,13 @@ public static class DeleteErrorMessageHelper
     /// The "Could not delete 'filename'." message, which begins every user-facing error string.
     /// </summary>
     private static readonly CompositeFormat UserMessagePrefix =
-        CompositeFormat.Parse(ResourceLoader.GetString("DeleteFileError_Prefix") + " ");
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("DeleteFileError_Prefix") + " ");
 
     /// <summary>
     /// The message displayed if the delete failed but the error code isn't covered in the
     /// <see cref="DeleteFileErrors"/> collection.
     /// </summary>
-    private static readonly string GenericErrorMessage = ResourceLoader.GetString("DeleteFileError_Generic");
+    private static readonly string GenericErrorMessage = ResourceLoaderInstance.GetString("DeleteFileError_Generic");
 
     /// <summary>
     /// The collection of the most common error codes with their matching log messages and user-
@@ -34,42 +34,42 @@ public static class DeleteErrorMessageHelper
             2,
             (
                 "The system cannot find the file specified.",
-                ResourceLoader.GetString("DeleteFileError_NotFound")
+                ResourceLoaderInstance.GetString("DeleteFileError_NotFound")
             )
         },
         {
             3,
             (
                 "The system cannot find the path specified.",
-                ResourceLoader.GetString("DeleteFileError_NotFound")
+                ResourceLoaderInstance.GetString("DeleteFileError_NotFound")
             )
         },
         {
             5,
             (
                 "Access is denied.",
-                ResourceLoader.GetString("DeleteFileError_AccessDenied")
+                ResourceLoaderInstance.GetString("DeleteFileError_AccessDenied")
             )
         },
         {
             19,
             (
                 "The media is write protected.",
-                ResourceLoader.GetString("DeleteFileError_WriteProtected")
+                ResourceLoaderInstance.GetString("DeleteFileError_WriteProtected")
             )
         },
         {
             32,
             (
                 "The process cannot access the file because it is being used by another process.",
-                ResourceLoader.GetString("DeleteFileError_FileInUse")
+                ResourceLoaderInstance.GetString("DeleteFileError_FileInUse")
             )
         },
         {
             33,
             (
                 "The process cannot access the file because another process has locked a portion of the file.",
-                ResourceLoader.GetString("DeleteFileError_FileInUse")
+                ResourceLoaderInstance.GetString("DeleteFileError_FileInUse")
             )
         },
     };

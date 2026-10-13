@@ -36,30 +36,23 @@ namespace Peek.FilePreviewer.Controls
             this.InitializeComponent();
         }
 
-        public string FormatType(string type)
-        {
-            return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Drive_Type"), type);
-        }
+        public string FormatType(string type) =>
+            ResourceLoaderInstance.FormatString("Drive_Type", type);
 
-        public string FormatFileSystem(string fileSystem)
-        {
-            return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Drive_FileSystem"), fileSystem);
-        }
+        public string FormatFileSystem(string fileSystem) =>
+            ResourceLoaderInstance.FormatString("Drive_FileSystem", fileSystem);
 
-        public string FormatCapacity(ulong capacity)
-        {
-            return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Drive_Capacity"), ReadableStringHelper.BytesToReadableString(capacity, false));
-        }
+        public string FormatCapacity(ulong capacity) =>
+            ResourceLoaderInstance.FormatString(
+                "Drive_Capacity", ReadableStringHelper.BytesToReadableString(capacity, false));
 
-        public string FormatFreeSpace(ulong freeSpace)
-        {
-            return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Drive_FreeSpace"), ReadableStringHelper.BytesToReadableString(freeSpace, false));
-        }
+        public string FormatFreeSpace(ulong freeSpace) =>
+            ResourceLoaderInstance.FormatString(
+                "Drive_FreeSpace", ReadableStringHelper.BytesToReadableString(freeSpace, false));
 
-        public string FormatUsedSpace(ulong usedSpace)
-        {
-            return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Drive_UsedSpace"), ReadableStringHelper.BytesToReadableString(usedSpace, false));
-        }
+        public string FormatUsedSpace(ulong usedSpace) =>
+            ResourceLoaderInstance.FormatString(
+                "Drive_UsedSpace", ReadableStringHelper.BytesToReadableString(usedSpace, false));
 
         private void SizeChanged_Handler(object sender, SizeChangedEventArgs e)
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -180,9 +180,12 @@ namespace Peek.FilePreviewer.Previewers.Archives
             }
 
             _size = (ulong)new FileInfo(Item.Path).Length; // archive.TotalSize isn't accurate
-            DirectoryCountText = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Archive_Directory_Count"), _directoryCount);
-            FileCountText = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Archive_File_Count"), _fileCount);
-            SizeText = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Archive_Size"), ReadableStringHelper.BytesToReadableString(_size), ReadableStringHelper.BytesToReadableString(_extractedSize));
+            DirectoryCountText = ResourceLoaderInstance.FormatString("Archive_Directory_Count", _directoryCount);
+            FileCountText = ResourceLoaderInstance.FormatString("Archive_File_Count", _fileCount);
+            SizeText = ResourceLoaderInstance.FormatString(
+                "Archive_Size",
+                ReadableStringHelper.BytesToReadableString(_size),
+                ReadableStringHelper.BytesToReadableString(_extractedSize));
 
             State = PreviewState.Loaded;
         }
