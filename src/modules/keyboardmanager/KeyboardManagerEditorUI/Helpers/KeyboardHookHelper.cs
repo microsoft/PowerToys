@@ -9,20 +9,27 @@ using System.Text;
 using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Interop;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
+using PowerToys.Interop;
 using Windows.System;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
     public class KeyboardHookHelper : IDisposable
     {
+        private const ulong WmKeyDown = 0x100;
+        private const ulong WmKeyUp = 0x101;
+        private const ulong WmSysKeyDown = 0x104;
+        private const ulong WmSysKeyUp = 0x105;
+
         private static KeyboardHookHelper? _instance;
 
         public static KeyboardHookHelper Instance => _instance ??= new KeyboardHookHelper();
 
+        private readonly EditorCaptureState _captureState = new();
+
         private KeyboardMappingService? _mappingService;
 
-        private HotkeySettingsControlHook? _keyboardHook;
+        private KeyboardHook? _keyboardHook;
 
         // The active page using this keyboard hook
         private IKeyboardHookTarget? _activeTarget;
@@ -56,11 +63,8 @@ namespace KeyboardManagerEditorUI.Helpers
 
             try
             {
-                _keyboardHook = new HotkeySettingsControlHook(
-                    KeyDown,
-                    KeyUp,
-                    () => true,
-                    (key, extraInfo) => true);
+                _keyboardHook = new KeyboardHook(OnKeyboardEvent, () => true, ShouldCaptureEvent);
+                _keyboardHook.Start();
             }
             catch (Exception ex)
             {
@@ -78,7 +82,33 @@ namespace KeyboardManagerEditorUI.Helpers
 
             _currentlyPressedKeys.Clear();
             _keyPressOrder.Clear();
+            _captureState.Reset();
             _activeTarget = null;
+        }
+
+        private bool ShouldCaptureEvent(KeyboardEvent keyboardEvent)
+        {
+            // Latch readiness for the whole recording session. The engine may be above
+            // us and observe captured keys; its subsequent busy state must not split them.
+            return _captureState.ShouldCapture(
+                EditorWindowLifetime.IsSourceKey(keyboardEvent.dwExtraInfo),
+                keyboardEvent.message == WmKeyUp || keyboardEvent.message == WmSysKeyUp,
+                _captureState.IsReady || EditorWindowLifetime.CanCaptureKeys());
+        }
+
+        private void OnKeyboardEvent(KeyboardEvent keyboardEvent)
+        {
+            switch (keyboardEvent.message)
+            {
+                case WmKeyDown:
+                case WmSysKeyDown:
+                    KeyDown(keyboardEvent.key);
+                    break;
+                case WmKeyUp:
+                case WmSysKeyUp:
+                    KeyUp(keyboardEvent.key);
+                    break;
+            }
         }
 
         private void KeyDown(int key)

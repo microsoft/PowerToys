@@ -114,6 +114,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     editor = std::make_unique<KeyboardManagerEditor>(hInstance);
+    if (!editor->IsConfigurationLoaded())
+    {
+        Logger::error(L"Cannot open the editor because the mapping configuration could not be loaded");
+        show_last_error_message(L"Keyboard Manager", ERROR_INVALID_DATA, L"PowerToys - Keyboard Manager Editor");
+        editor = nullptr;
+        Trace::UnregisterProvider();
+        return -1;
+    }
+
     if (!editor->StartLowLevelKeyboardHook())
     {
         DWORD errorCode = GetLastError();
@@ -136,16 +145,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 KeyboardManagerEditor::KeyboardManagerEditor(HINSTANCE hInst) :
     hInstance(hInst)
 {
-    bool loadedSuccessful = mappingConfiguration.LoadSettings();
-    if (!loadedSuccessful)
+    configurationLoaded = mappingConfiguration.LoadSettings();
+    if (!configurationLoaded)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        mappingConfiguration.LoadSettings();
+        configurationLoaded = mappingConfiguration.LoadSettings();
     }
-
-    StartLowLevelKeyboardHook();
 }
 
 KeyboardManagerEditor::~KeyboardManagerEditor()
@@ -180,6 +187,11 @@ void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type, std
 
 intptr_t KeyboardManagerEditor::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
+    if (keyboardManagerState.ShouldSkipKeyboardEvent(*data))
+    {
+        return 0;
+    }
+
     // If the Detect Key Window is currently activated, then suppress the keyboard event
     Helpers::KeyboardHookDecision singleKeyRemapUIDetected = keyboardManagerState.DetectSingleRemapKeyUIBackend(data);
     if (singleKeyRemapUIDetected == Helpers::KeyboardHookDecision::Suppress)

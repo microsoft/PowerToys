@@ -25,5 +25,6 @@ namespace KeyboardManagerEditorUI.Helpers
         EmptyUrl,
         EmptyProgramPath,
         OneKeyMapping,
+        ShortcutMissingModifier,
     }
 }

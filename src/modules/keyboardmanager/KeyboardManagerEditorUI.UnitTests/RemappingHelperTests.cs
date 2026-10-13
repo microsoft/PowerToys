@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using KeyboardManagerEditorUI.Settings;
@@ -16,6 +17,10 @@ namespace KeyboardManagerEditorUI.UnitTests
     [TestClass]
     public class RemappingHelperTests
     {
+        private static readonly string[] ControlSideKeyCodes = { "162", "163" };
+        private static readonly string[] SharedProfileNames = { "default", "other-profile" };
+        private static readonly string[] LeftMappingId = { "left-id" };
+
         // Test that modifier keys pressed in reverse order (Shift, Alt, Ctrl, Win)
         // are sorted into the standard display order (Win, Ctrl, Alt, Shift)
         [TestMethod]
@@ -551,6 +556,106 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsTrue(settings.ShortcutSettingsDictionary["legacy-id"].IsActive);
             CollectionAssert.AreEqual(new List<string> { "default" }, settings.ShortcutSettingsDictionary["legacy-id"].Profiles);
             CollectionAssert.AreEqual(new List<string> { "legacy-id" }, settings.ProfileDictionary["default"]);
+        }
+
+        [TestMethod]
+        public void ReconcileMappings_ShouldPreserveExactMatchAfterMetadataCloneAndNormalization()
+        {
+            var mapping = CreateMapping(ShortcutOperationType.RemapShortcut, "17;65", "18;86");
+            mapping.ExactMatch = true;
+            var settings = CreateEditorSettings("mapping-id", mapping);
+            settings.ShortcutSettingsDictionary["mapping-id"].Profiles.Add("default");
+            settings.ProfileDictionary["default"] = new List<string> { "mapping-id" };
+
+            // The transaction clones editor metadata with this JSON round-trip before normalizing.
+            var clone = JsonSerializer.Deserialize<EditorSettings>(JsonSerializer.Serialize(settings));
+            Assert.IsNotNull(clone);
+            SettingsManager.NormalizeSettings(clone);
+            Assert.IsTrue(clone.ShortcutSettingsDictionary["mapping-id"].Shortcut.ExactMatch);
+
+            var persisted = CreateMapping(ShortcutOperationType.RemapShortcut, "17;65", "18;86");
+            persisted.ExactMatch = true;
+            Assert.IsTrue(SettingsManager.ReconcileMappings(clone, new[] { persisted }, "default"));
+            Assert.IsTrue(clone.ShortcutSettingsDictionary["mapping-id"].IsActive);
+            Assert.IsTrue(clone.ShortcutSettingsDictionary["mapping-id"].Shortcut.ExactMatch);
+            Assert.AreEqual(1, clone.ShortcutSettingsDictionary.Count);
+            Assert.IsFalse(SettingsManager.ReconcileMappings(clone, new[] { persisted }, "default"));
+            Assert.IsFalse(settings.ShortcutSettingsDictionary["mapping-id"].IsActive);
+        }
+
+        [TestMethod]
+        public void ReconcileMappings_ShouldImportCombinedPairsSeparatelyForAlwaysAndAlone()
+        {
+            var alwaysLeft = CreateMapping(ShortcutOperationType.RemapShortcut, "162", "65");
+            var alwaysRight = CreateMapping(ShortcutOperationType.RemapShortcut, "163", "65");
+            var aloneLeft = CreateMapping(ShortcutOperationType.RemapShortcut, "162", "66");
+            aloneLeft.Condition = SingleKeyRemapCondition.Alone;
+            var aloneRight = CreateMapping(ShortcutOperationType.RemapShortcut, "163", "66");
+            aloneRight.Condition = SingleKeyRemapCondition.Alone;
+            var activeMappings = new[] { alwaysLeft, aloneRight, alwaysRight, aloneLeft };
+            var settings = new EditorSettings();
+
+            Assert.IsTrue(SettingsManager.ReconcileMappings(settings, activeMappings, "default"));
+            Assert.AreEqual(2, settings.ShortcutSettingsDictionary.Count);
+            var always = settings.ShortcutSettingsDictionary.Single(entry => entry.Value.Shortcut.Condition == SingleKeyRemapCondition.Always);
+            var alone = settings.ShortcutSettingsDictionary.Single(entry => entry.Value.Shortcut.Condition == SingleKeyRemapCondition.Alone);
+            Assert.AreEqual("17", always.Value.Shortcut.OriginalKeys);
+            Assert.AreEqual("65", always.Value.Shortcut.TargetKeys);
+            Assert.AreEqual("17", alone.Value.Shortcut.OriginalKeys);
+            Assert.AreEqual("66", alone.Value.Shortcut.TargetKeys);
+            Assert.IsTrue(always.Value.IsActive);
+            Assert.IsTrue(alone.Value.IsActive);
+            CollectionAssert.AreEquivalent(new[] { always.Key, alone.Key }, settings.ProfileDictionary["default"]);
+
+            Assert.IsFalse(SettingsManager.ReconcileMappings(settings, activeMappings, "default"));
+            CollectionAssert.AreEquivalent(new[] { always.Key, alone.Key }, settings.ShortcutSettingsDictionary.Keys.ToList());
+            Assert.AreEqual("162", alwaysLeft.OriginalKeys);
+            Assert.AreEqual("163", aloneRight.OriginalKeys);
+        }
+
+        [TestMethod]
+        public void ReconcileMappings_ShouldNotCombinePhysicalSidesFromDifferentConditions()
+        {
+            var left = CreateMapping(ShortcutOperationType.RemapShortcut, "162", "65");
+            var right = CreateMapping(ShortcutOperationType.RemapShortcut, "163", "65");
+            right.Condition = SingleKeyRemapCondition.Alone;
+            var settings = new EditorSettings();
+
+            Assert.IsTrue(SettingsManager.ReconcileMappings(settings, new[] { left, right }, "default"));
+            Assert.AreEqual(2, settings.ShortcutSettingsDictionary.Count);
+            CollectionAssert.AreEquivalent(
+                ControlSideKeyCodes,
+                settings.ShortcutSettingsDictionary.Values.Select(entry => entry.Shortcut.OriginalKeys).ToList());
+            Assert.IsTrue(settings.ShortcutSettingsDictionary.Values.All(entry => entry.IsActive));
+        }
+
+        [TestMethod]
+        public void ReconcileMappings_ShouldRetainAuthoredSideIdsWhileImportingOtherCondition()
+        {
+            var left = CreateMapping(ShortcutOperationType.RemapShortcut, "162", "65");
+            var right = CreateMapping(ShortcutOperationType.RemapShortcut, "163", "65");
+            var settings = CreateEditorSettings(("left-id", left, true), ("right-id", right, true));
+            settings.ShortcutSettingsDictionary["left-id"].Profiles.AddRange(SharedProfileNames);
+            settings.ShortcutSettingsDictionary["right-id"].Profiles.Add("default");
+            settings.ProfileDictionary["default"] = new List<string> { "left-id", "right-id" };
+            settings.ProfileDictionary["other-profile"] = new List<string> { "left-id" };
+            var aloneLeft = CreateMapping(ShortcutOperationType.RemapShortcut, "162", "66");
+            aloneLeft.Condition = SingleKeyRemapCondition.Alone;
+            var aloneRight = CreateMapping(ShortcutOperationType.RemapShortcut, "163", "66");
+            aloneRight.Condition = SingleKeyRemapCondition.Alone;
+
+            Assert.IsTrue(SettingsManager.ReconcileMappings(settings, new[] { left, right, aloneLeft, aloneRight }, "default"));
+            Assert.AreEqual(3, settings.ShortcutSettingsDictionary.Count);
+            Assert.AreSame(left, settings.ShortcutSettingsDictionary["left-id"].Shortcut);
+            Assert.AreSame(right, settings.ShortcutSettingsDictionary["right-id"].Shortcut);
+            Assert.IsTrue(settings.ShortcutSettingsDictionary["left-id"].IsActive);
+            Assert.IsTrue(settings.ShortcutSettingsDictionary["right-id"].IsActive);
+            CollectionAssert.AreEquivalent(SharedProfileNames, settings.ShortcutSettingsDictionary["left-id"].Profiles);
+            CollectionAssert.AreEqual(LeftMappingId, settings.ProfileDictionary["other-profile"]);
+            var alone = settings.ShortcutSettingsDictionary.Single(entry => entry.Value.Shortcut.Condition == SingleKeyRemapCondition.Alone);
+            Assert.AreEqual("17", alone.Value.Shortcut.OriginalKeys);
+            Assert.AreEqual("66", alone.Value.Shortcut.TargetKeys);
+            CollectionAssert.AreEquivalent(new[] { "left-id", "right-id", alone.Key }, settings.ProfileDictionary["default"]);
         }
 
         private static EditorSettings CreateEditorSettings(string mappingId, ShortcutOperationType operationType, string originalKeys, string targetKeys) =>

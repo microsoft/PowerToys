@@ -32,6 +32,8 @@ KeyboardManager::KeyboardManager()
 
     // Load the initial settings.
     LoadSettings();
+    hasRegisteredRemappings = HasRegisteredRemappingsUnchecked();
+    hasAloneRemappings = !state.aloneSingleKeyReMap.empty();
 
     // Set the static pointer to the newest object of the class
     keyboardManagerObjectPtr = this;
@@ -49,6 +51,8 @@ KeyboardManager::KeyboardManager()
         try
         {
             LoadSettings();
+            hasRegisteredRemappings = HasRegisteredRemappingsUnchecked();
+            hasAloneRemappings = !state.aloneSingleKeyReMap.empty();
             loadedSuccessfully = true;
         }
         catch (...)
@@ -61,27 +65,19 @@ KeyboardManager::KeyboardManager()
         if (!loadedSuccessfully)
             return;
 
-        const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
-        // We didn't have any bindings before and we have now
-        if (newHasRemappings && !hookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-
-        // All bindings were removed
-        if (!newHasRemappings && hookHandle)
-            StopLowlevelKeyboardHook();
-
-        // The set of "Alone" (dual-key) remaps may have changed without changing whether ANY binding
-        // exists, so reconcile the companion mouse hook. Route an install through the same StartHook
-        // message (SetWindowsHookEx must run on the hook thread); a removal is safe inline, mirroring
-        // the StopLowlevelKeyboardHook call above.
-        const bool needMouseHook = !state.aloneSingleKeyReMap.empty();
-        if (needMouseHook && hookHandle && !mouseHookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-        else if (!needMouseHook && mouseHookHandle)
-            StopLowlevelMouseHook();
+        // Serialize both start and stop with hook callbacks. Unhooking from this
+        // worker could let an outstanding callback overwrite capture readiness.
+        PostThreadMessageW(mainThreadId, UpdateHookMessageID, 0, 0);
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
+    editorLifetimeMutex = CreateMutex(nullptr, false, KeyboardManagerConstants::EditorWindowMutexName.c_str());
+    editorCaptureReadyEvent = CreateEvent(nullptr, true, true, KeyboardManagerConstants::EditorCaptureReadyEventName.c_str());
+    if (editorCaptureReadyEvent)
+    {
+        SetEvent(editorCaptureReadyEvent);
+    }
+
     settingsEventWaiter.start(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
@@ -122,22 +118,29 @@ void KeyboardManager::LoadSettings()
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
 {
-    LowlevelKeyboardEvent event{};
-    if (nCode == HC_ACTION)
+    if (nCode != HC_ACTION)
     {
-        event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-        event.wParam = wParam;
-        event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
+        return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
+    }
 
-        if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
+    LowlevelKeyboardEvent event{};
+    event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+    event.wParam = wParam;
+    event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
+
+    EditorCaptureReadyScope publishCaptureReady(
+        keyboardManagerObjectPtr->editorSuspensionState,
+        keyboardManagerObjectPtr->editorCaptureReadyEvent,
+        EditorSuspensionState::IsSourceEvent(event));
+
+    if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
+    {
+        // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
+        if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
         {
-            // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
-            if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-            {
-                KeyboardEventHandlers::SetNumLockToPreviousState(keyboardManagerObjectPtr->inputHandler);
-            }
-            return 1;
+            KeyboardEventHandlers::SetNumLockToPreviousState(keyboardManagerObjectPtr->inputHandler);
         }
+        return 1;
     }
 
     return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
@@ -175,9 +178,9 @@ void KeyboardManager::HandleMouseHookEvent() noexcept
         return;
     }
 
-    // Suspend while the remap key/shortcut editor window is capturing input, mirroring
-    // HandleKeyboardHookEvent.
-    if (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0)
+    // Finish any gesture that began before the editor opened, just like the
+    // keyboard hook. Keys pressed during suspension never become tap candidates.
+    if (editorSuspensionState.IsSuspended())
     {
         return;
     }
@@ -205,6 +208,11 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
     if (!hookHandle)
     {
+        // Releases while the hook was stopped could not be observed.
+        const bool editorOpen =
+            (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0) ||
+            IsEditorMutexOwned(editorLifetimeMutex);
+        editorSuspensionState.Reset(editorOpen);
         hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
         hookHandleCopy = hookHandle;
         if (!hookHandle)
@@ -214,12 +222,36 @@ void KeyboardManager::StartLowlevelKeyboardHook()
             auto errorMessage = get_last_error_message(errorCode);
             Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"StartLowlevelKeyboardHook::SetWindowsHookEx");
         }
+        else
+        {
+            // Sample after installation so releases cannot fall into a gap before
+            // the hook exists. These modifiers can already participate in shortcuts.
+            for (const DWORD key : { VK_LCONTROL, VK_RCONTROL, VK_LMENU, VK_RMENU, VK_LSHIFT, VK_RSHIFT, VK_LWIN, VK_RWIN })
+            {
+                if (inputHandler.GetVirtualKeyState(key))
+                {
+                    editorSuspensionState.AddInitiallyPressedModifier(key);
+                }
+            }
+        }
+
+        if (editorCaptureReadyEvent)
+        {
+            if (editorSuspensionState.IsIdle())
+            {
+                SetEvent(editorCaptureReadyEvent);
+            }
+            else
+            {
+                ResetEvent(editorCaptureReadyEvent);
+            }
+        }
     }
 
     // The "Alone" (dual-key) feature also needs a mouse hook so a click/scroll while an alone key is
     // held counts as a combination. Only install it when alone remaps exist; keep it in sync with the
     // keyboard hook (this runs on the hook message-loop thread, where SetWindowsHookEx must be called).
-    if (!state.aloneSingleKeyReMap.empty())
+    if (hookHandle && hasAloneRemappings)
     {
         StartLowlevelMouseHook();
     }
@@ -235,6 +267,10 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     {
         UnhookWindowsHookEx(hookHandle);
         hookHandle = nullptr;
+        if (editorCaptureReadyEvent)
+        {
+            SetEvent(editorCaptureReadyEvent);
+        }
     }
 
     StopLowlevelMouseHook();
@@ -272,25 +308,18 @@ void KeyboardManager::StopLowlevelMouseHook()
     }
 }
 
-bool KeyboardManager::HasRegisteredRemappings() const
+void KeyboardManager::UpdateLowlevelKeyboardHook()
 {
-    constexpr int MaxAttempts = 5;
-
-    if (loadingSettings)
+    // Queued updates use the latest completed configuration. Reading this published
+    // value never blocks the hook thread or races a reload of the mapping tables.
+    if (hasRegisteredRemappings)
     {
-        for (int currentAttempt = 0; currentAttempt < MaxAttempts; ++currentAttempt)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            if (!loadingSettings)
-                break;
-        }
+        StartLowlevelKeyboardHook();
     }
-
-    // Assume that we have registered remappings to be on the safe side if we couldn't check
-    if (loadingSettings)
-        return true;
-
-    return HasRegisteredRemappingsUnchecked();
+    else
+    {
+        StopLowlevelKeyboardHook();
+    }
 }
 
 bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
@@ -300,15 +329,27 @@ bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
+    const bool suspensionRequested =
+        (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0) ||
+        IsEditorMutexOwned(editorLifetimeMutex);
+    const bool wasSuspended = editorSuspensionState.IsSuspended();
+    bool skipSingleKeyRemapping = false;
+    const bool skipRemapping = editorSuspensionState.ShouldSkipRemapping(*data, suspensionRequested, &skipSingleKeyRemapping);
+
+    // Keep tracking source releases even while settings are loading.
     if (loadingSettings)
     {
         return 0;
     }
 
-    // Suspend remapping if remap key/shortcut window is opened
-    if (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0)
+    if (!wasSuspended && editorSuspensionState.IsSuspended())
     {
-        return 0;
+        // A chord prefix must not survive a trip through the editor.
+        KeyboardEventHandlers::ResetAllStartedChords(state, std::nullopt);
+        for (auto& app : state.appSpecificShortcutReMapSortedKeys)
+        {
+            KeyboardEventHandlers::ResetAllStartedChords(state, app.first);
+        }
     }
 
     // If key has suppress flag, then suppress it
@@ -317,19 +358,20 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 1;
     }
 
+    if (skipRemapping)
+    {
+        return 0;
+    }
     // Remap a key tapped alone (dual-key). Runs before the regular single-key remap so it can hold
     // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
-    intptr_t SingleKeyAloneRemapResult = KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(inputHandler, data, state);
-    if (SingleKeyAloneRemapResult == 1)
+    if (!skipSingleKeyRemapping && KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(inputHandler, data, state) == 1)
     {
         return 1;
     }
 
-    // Remap a key
-    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state);
-
-    // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
-    if (SingleKeyRemapResult == 1)
+    // A modifier held before hook startup has no single-key remap to release,
+    // but its up must still finish any shortcut invoked since startup.
+    if (!skipSingleKeyRemapping && KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state) == 1)
     {
         return 1;
     }

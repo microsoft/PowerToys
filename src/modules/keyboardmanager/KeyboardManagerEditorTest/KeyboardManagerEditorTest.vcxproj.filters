@@ -15,10 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EditorCaptureStateTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LoadingAndSavingRemappingTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MappingConfigurationTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BufferValidationTests.cpp">

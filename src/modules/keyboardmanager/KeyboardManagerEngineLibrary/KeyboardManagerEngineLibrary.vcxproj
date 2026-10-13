@@ -34,6 +34,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="EditorSuspensionState.h" />
     <ClInclude Include="KeyboardEventHandlers.h" />
     <ClInclude Include="KeyboardManager.h" />
     <ClInclude Include="pch.h" />

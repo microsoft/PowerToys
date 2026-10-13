@@ -40,6 +40,7 @@ namespace KeyboardManagerEditorUI.Pages
         private bool _disposed;
         private bool _isEditMode;
         private EditingItem? _editingItem;
+        private string? _pendingOrphanedKeyName;
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
         private bool _isUpdatingToggle;
@@ -261,6 +262,16 @@ namespace KeyboardManagerEditorUI.Pages
                 MappingState = "Error";
             }
 
+            // A failed configuration read leaves the editor showing an empty list that looks like
+            // "you have no remaps". Saving is blocked in that state (KeyboardMappingService), so
+            // say why rather than letting the user hit an unexplained save failure.
+            if (_mappingService is { ConfigurationLoaded: false })
+            {
+                ConfigLoadFailedBanner.Title = ResourceHelper.GetString("Error_ConfigLoadFailed_Title");
+                ConfigLoadFailedBanner.Message = ResourceHelper.GetString("Error_ConfigLoadFailed_Message");
+                ConfigLoadFailedBanner.IsOpen = true;
+            }
+
             Unloaded += All_Unloaded;
 
             CheckServiceStatus();
@@ -318,6 +329,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetTriggerKeys(remapping.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
             UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
+            UnifiedMappingControl.SetExactMatch(remapping.ExactMatch);
             UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
             UnifiedMappingControl.SetCondition(remapping.Condition);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
@@ -344,6 +356,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.Reset();
             UnifiedMappingControl.SetTriggerKeys(disabledMapping.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Disable);
+            UnifiedMappingControl.SetExactMatch(disabledMapping.ExactMatch);
             UnifiedMappingControl.SetAppSpecific(!disabledMapping.IsAllApps, disabledMapping.AppName);
             UnifiedMappingControl.SetCondition(disabledMapping.Condition);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
@@ -371,6 +384,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetTriggerKeys(textMapping.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Text);
             UnifiedMappingControl.SetTextContent(textMapping.Text);
+            UnifiedMappingControl.SetExactMatch(textMapping.ExactMatch);
             UnifiedMappingControl.SetAppSpecific(!textMapping.IsAllApps, textMapping.AppName);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
@@ -409,6 +423,7 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.SetIfRunningAction(mapping.IfRunningAction);
             }
 
+            UnifiedMappingControl.SetExactMatch(programShortcut.ExactMatch);
             UnifiedMappingControl.SetAppSpecific(!programShortcut.IsAllApps, programShortcut.AppName);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
@@ -435,6 +450,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetTriggerKeys(urlShortcut.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenUrl);
             UnifiedMappingControl.SetUrl(urlShortcut.URL);
+            UnifiedMappingControl.SetExactMatch(urlShortcut.ExactMatch);
             UnifiedMappingControl.SetAppSpecific(!urlShortcut.IsAllApps, urlShortcut.AppName);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
@@ -442,17 +458,32 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async System.Threading.Tasks.Task ShowRemappingDialog()
         {
+            _pendingOrphanedKeyName = null;
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
             RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
 
-            await RemappingDialog.ShowAsync();
+            ContentDialogResult result = await RemappingDialog.ShowAsync();
 
             RemappingDialog.PrimaryButtonClick -= RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
             _isEditMode = false;
             _editingItem = null;
             KeyboardHookHelper.Instance.CleanupHook();
+
+            if (result == ContentDialogResult.Primary && _pendingOrphanedKeyName != null)
+            {
+                ShowOrphanedKeyBanner(_pendingOrphanedKeyName);
+            }
+
+            _pendingOrphanedKeyName = null;
+        }
+
+        private void ShowOrphanedKeyBanner(string keyName)
+        {
+            OrphanedKeyBanner.Title = ResourceHelper.GetString("OrphanedKeyInfo_Title");
+            OrphanedKeyBanner.Message = ResourceHelper.GetString("Warning_OrphanedKeys").Replace("{0}", keyName, System.StringComparison.Ordinal);
+            OrphanedKeyBanner.IsOpen = true;
         }
 
         private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
@@ -517,14 +548,25 @@ namespace KeyboardManagerEditorUI.Pages
                     return;
                 }
 
+                if (!_mappingService.ConfigurationLoaded)
+                {
+                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
+                    args.Cancel = true;
+                    return;
+                }
+
                 bool saved = SaveMappingTransaction(triggerKeys);
 
                 if (saved)
                 {
+                    _pendingOrphanedKeyName = ShouldWarnOrphanedKeys(UnifiedMappingControl.CurrentActionType, triggerKeys, out string orphanedKeyName)
+                        ? orphanedKeyName
+                        : null;
                     LoadAllMappings();
                 }
                 else
                 {
+                    _pendingOrphanedKeyName = null;
                     UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
                     args.Cancel = true;
                 }
@@ -554,7 +596,7 @@ namespace KeyboardManagerEditorUI.Pages
             return actionType switch
             {
                 UnifiedMappingControl.ActionType.KeyOrShortcut => ValidationHelper.ValidateKeyMapping(
-                    triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
+                    triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId, condition: UnifiedMappingControl.GetCondition()),
                 UnifiedMappingControl.ActionType.Text => ValidationHelper.ValidateTextMapping(
                     triggerKeys, UnifiedMappingControl.GetTextContent(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.OpenUrl => ValidationHelper.ValidateUrlMapping(
@@ -562,14 +604,41 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.ActionType.OpenApp => ValidationHelper.ValidateAppMapping(
                     triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.Disable => ValidationHelper.ValidateDisableMapping(
-                    triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
+                    triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingId, condition: UnifiedMappingControl.GetCondition()),
                 _ => ValidationErrorType.NoError,
             };
         }
 
+        private bool ShouldWarnOrphanedKeys(UnifiedMappingControl.ActionType actionType, List<string> triggerKeys, out string orphanedKeyName)
+        {
+            orphanedKeyName = string.Empty;
+
+            // Orphaned-key detection mirrors the classic Remap Keys editor: it applies only to
+            // single-key remaps, where remapping a key away can leave that physical key unreachable.
+            if (_mappingService == null || triggerKeys.Count != 1 || actionType == UnifiedMappingControl.ActionType.MouseClick ||
+                UnifiedMappingControl.GetCondition() == SingleKeyRemapCondition.Alone)
+            {
+                return false;
+            }
+
+            int originalKey = _mappingService.GetKeyCodeFromName(triggerKeys[0]);
+            if (originalKey == 0)
+            {
+                return false;
+            }
+
+            if (ValidationHelper.IsKeyOrphaned(originalKey, _mappingService))
+            {
+                orphanedKeyName = triggerKeys[0];
+                return true;
+            }
+
+            return false;
+        }
+
         private bool SaveMappingTransaction(List<string> triggerKeys)
         {
-            if (_mappingService == null)
+            if (_mappingService is not { ConfigurationLoaded: true })
             {
                 return false;
             }
@@ -587,14 +656,15 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 originalService = new KeyboardMappingService();
                 candidateService = new KeyboardMappingService();
-                if (!_mappingService.HasSameMappings(originalService) ||
+                if (!originalService.ConfigurationLoaded || !candidateService.ConfigurationLoaded ||
+                    !_mappingService.HasSameMappings(originalService) ||
                     !originalService.HasSameMappings(candidateService))
                 {
                     return false;
                 }
 
                 string? replacingId = null;
-                bool exactMatch = false;
+                bool exactMatch = UnifiedMappingControl.GetExactMatch();
 
                 if (_isEditMode)
                 {
@@ -606,7 +676,6 @@ namespace KeyboardManagerEditorUI.Pages
                     }
 
                     replacingId = existingMapping.Id;
-                    exactMatch = existingSettings.Shortcut.ExactMatch;
                     if (existingSettings.IsActive && !DeleteMapping(candidateService, existingSettings.Shortcut))
                     {
                         return false;
@@ -809,15 +878,15 @@ namespace KeyboardManagerEditorUI.Pages
         private static bool HasDuplicateEditorMapping(ShortcutKeyMapping replacementMapping, string? replacingId) =>
             SettingsManager.EditorSettings.ShortcutSettingsDictionary.Any(entry =>
                 entry.Value.IsActive &&
+                SettingsManager.IsMappingInActiveProfile(entry.Value) &&
                 !entry.Key.Equals(replacingId, StringComparison.OrdinalIgnoreCase) &&
                 KeyboardManagerInterop.AreShortcutsEqual(entry.Value.Shortcut.OriginalKeys, replacementMapping.OriginalKeys) &&
 
                 // An Always and an Alone remap of the same key are distinct (separate engine tables),
                 // so only treat it as a duplicate when the condition matches too.
                 entry.Value.Shortcut.Condition == replacementMapping.Condition &&
-                (string.IsNullOrEmpty(entry.Value.Shortcut.TargetApp) ||
-                 string.IsNullOrEmpty(replacementMapping.TargetApp) ||
-                 entry.Value.Shortcut.TargetApp.Equals(replacementMapping.TargetApp, StringComparison.OrdinalIgnoreCase)));
+                (!replacementMapping.OriginalKeys.Contains(';') ||
+                 string.Equals(entry.Value.Shortcut.TargetApp ?? string.Empty, replacementMapping.TargetApp ?? string.Empty, StringComparison.OrdinalIgnoreCase)));
 
         private static void RestoreOriginalMappingSettings(KeyboardMappingService originalService)
         {
@@ -851,18 +920,24 @@ namespace KeyboardManagerEditorUI.Pages
 
             try
             {
+                bool deleted = false;
                 switch (menuFlyoutItem.Tag)
                 {
                     case Remapping remapping:
-                        HandleRemappingDelete(remapping);
+                        deleted = HandleRemappingDelete(remapping);
                         RefreshAppFilterOptions();
                         ApplyFilter();
                         break;
 
                     case IToggleableShortcut shortcut:
-                        HandleShortcutDelete(shortcut);
+                        deleted = HandleShortcutDelete(shortcut);
                         LoadAllMappings();
                         break;
+                }
+
+                if (deleted)
+                {
+                    AnnounceToScreenReader(ResourceHelper.GetString("Announcement_MappingDeleted"));
                 }
             }
             catch (Exception ex)
@@ -871,24 +946,52 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private void HandleRemappingDelete(Remapping remapping)
+        /// <summary>
+        /// Raises an automation notification after a mapping is removed.
+        /// </summary>
+        private void AnnounceToScreenReader(string message)
+        {
+            try
+            {
+                // Page has no default automation peer. This button remains in the visual tree
+                // after deleting a row, including when the mapping list becomes empty.
+                var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.FromElement(NewRemappingBtn);
+                peer ??= Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(NewRemappingBtn);
+
+                peer?.RaiseNotificationEvent(
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.ItemRemoved,
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent,
+                    message,
+                    "KeyboardManagerEditorMappingChanged");
+            }
+            catch (Exception ex)
+            {
+                // Announcements are best-effort; never let one break the delete.
+                Logger.LogWarning("Could not raise an accessibility notification: " + ex.Message);
+            }
+        }
+
+        private bool HandleRemappingDelete(Remapping remapping)
         {
             if (DeleteMappingTransaction(remapping.Id))
             {
                 LoadRemappings();
+                return true;
             }
-            else
-            {
-                Logger.LogWarning($"Failed to delete remapping: {string.Join("+", remapping.Shortcut)}");
-            }
+
+            Logger.LogWarning($"Failed to delete remapping: {string.Join("+", remapping.Shortcut)}");
+            return false;
         }
 
-        private void HandleShortcutDelete(IToggleableShortcut shortcut)
+        private bool HandleShortcutDelete(IToggleableShortcut shortcut)
         {
-            if (!DeleteMappingTransaction(shortcut.Id))
+            if (DeleteMappingTransaction(shortcut.Id))
             {
-                Logger.LogWarning($"Failed to delete mapping: {string.Join("+", shortcut.Shortcut)}");
+                return true;
             }
+
+            Logger.LogWarning($"Failed to delete mapping: {string.Join("+", shortcut.Shortcut)}");
+            return false;
         }
 
         #endregion
@@ -995,7 +1098,7 @@ namespace KeyboardManagerEditorUI.Pages
             Func<KeyboardMappingService, bool> updateCandidate,
             Func<bool> commitMetadata)
         {
-            if (_mappingService == null)
+            if (_mappingService is not { ConfigurationLoaded: true })
             {
                 return false;
             }
@@ -1007,7 +1110,8 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 originalService = new KeyboardMappingService();
                 candidateService = new KeyboardMappingService();
-                if (!_mappingService.HasSameMappings(originalService) ||
+                if (!originalService.ConfigurationLoaded || !candidateService.ConfigurationLoaded ||
+                    !_mappingService.HasSameMappings(originalService) ||
                     !originalService.HasSameMappings(candidateService) ||
                     !updateCandidate(candidateService))
                 {
@@ -1110,6 +1214,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                     // Round-trip the dual-key condition so the list badge and edit dialog reflect Alone.
                     Condition = mapping.Condition,
+                    ExactMatch = mapping.ExactMatch,
                     TriggerKeyCodes = ParseVkCodes(mapping.OriginalKeys),
                     SearchableText = BuildSearchableText(originalKeyNames.Concat(isDisabled ? Enumerable.Empty<string>() : remappedKeyNames).Append(mapping.TargetApp ?? string.Empty)),
                 };
@@ -1155,6 +1260,7 @@ namespace KeyboardManagerEditorUI.Pages
                     AppName = mapping.TargetApp ?? string.Empty,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
+                    ExactMatch = mapping.ExactMatch,
                     TriggerKeyCodes = ParseVkCodes(mapping.OriginalKeys),
                     SearchableText = BuildSearchableText(originalKeyNames.Append(mapping.TargetText).Append(mapping.TargetApp ?? string.Empty)),
                 });
@@ -1196,6 +1302,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Elevation = mapping.Elevation.ToString(),
                     IfRunningAction = mapping.IfRunningAction.ToString(),
                     Visibility = mapping.Visibility.ToString(),
+                    ExactMatch = mapping.ExactMatch,
                     TriggerKeyCodes = ParseVkCodes(mapping.OriginalKeys),
                     SearchableText = BuildSearchableText(originalKeyNames.Append(mapping.ProgramPath).Append(mapping.ProgramArgs).Append(mapping.TargetApp ?? string.Empty)),
                 });
@@ -1232,6 +1339,7 @@ namespace KeyboardManagerEditorUI.Pages
                     IsActive = shortcutSettings.IsActive,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = mapping.TargetApp ?? string.Empty,
+                    ExactMatch = mapping.ExactMatch,
                     TriggerKeyCodes = ParseVkCodes(mapping.OriginalKeys),
                     SearchableText = BuildSearchableText(originalKeyNames.Append(mapping.UriToOpen).Append(mapping.TargetApp ?? string.Empty)),
                 });

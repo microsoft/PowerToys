@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -19,6 +20,13 @@ namespace KeyboardManagerEditorUI.Controls
         public static readonly DependencyProperty KeyNameProperty =
             DependencyProperty.Register(
                 nameof(KeyName),
+                typeof(string),
+                typeof(KeyDropDownButton),
+                new PropertyMetadata(string.Empty, OnKeyNameChanged));
+
+        public static readonly DependencyProperty AccessibleNameProperty =
+            DependencyProperty.Register(
+                nameof(AccessibleName),
                 typeof(string),
                 typeof(KeyDropDownButton),
                 new PropertyMetadata(string.Empty));
@@ -43,6 +51,37 @@ namespace KeyboardManagerEditorUI.Controls
             set => SetValue(KeyNameProperty, value);
         }
 
+        /// <summary>
+        /// Gets the name screen readers announce for this button.
+        /// </summary>
+        /// <remarks>
+        /// The button's visual content is a <c>KeyCharPresenter</c>, which renders a glyph rather
+        /// than text, and an unfilled slot renders nothing at all - so without this the button is
+        /// announced as just "button". Auto-grow leaves an empty placeholder at the end of a
+        /// shortcut, which is exactly the slot a keyboard user needs to find.
+        /// </remarks>
+        public string AccessibleName
+        {
+            get => (string)GetValue(AccessibleNameProperty);
+            private set => SetValue(AccessibleNameProperty, value);
+        }
+
+        private static void OnKeyNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is KeyDropDownButton button)
+            {
+                button.UpdateAccessibleName();
+            }
+        }
+
+        private void UpdateAccessibleName()
+        {
+            string keyName = KeyName;
+            AccessibleName = string.IsNullOrEmpty(keyName)
+                ? ResourceHelper.GetString("KeyDropDown_Empty_AccessibleName")
+                : ResourceHelper.GetString("KeyDropDown_AccessibleName").Replace("{0}", keyName, StringComparison.Ordinal);
+        }
+
         public bool IsShortcut
         {
             get => (bool)GetValue(IsShortcutProperty);
@@ -60,6 +99,7 @@ namespace KeyboardManagerEditorUI.Controls
         public KeyDropDownButton()
         {
             this.InitializeComponent();
+            UpdateAccessibleName();
             this.Loaded += (_, _) =>
             {
                 if (UseAccentStyle)
