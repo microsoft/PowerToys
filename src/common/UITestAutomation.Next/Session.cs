@@ -297,9 +297,13 @@ public sealed class Session
     public bool WaitForElement(By by, int timeoutMS = 5000)
     {
         var r = WinappCli.Invoke(
-            "ui", "wait-for", by.Value,
-            TargetFlag, TargetValue,
-            "-t", timeoutMS.ToString(CultureInfo.InvariantCulture));
+            "ui",
+            "wait-for",
+            by.Value,
+            TargetFlag,
+            TargetValue,
+            "-t",
+            timeoutMS.ToString(CultureInfo.InvariantCulture));
         return r.ExitCode == 0;
     }
 

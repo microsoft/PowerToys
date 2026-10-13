@@ -78,6 +78,9 @@
     <ClInclude Include="general_settings.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="general_settings_reader.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
     <ClInclude Include="restart_elevated.h">
       <Filter>Utils</Filter>
     </ClInclude>

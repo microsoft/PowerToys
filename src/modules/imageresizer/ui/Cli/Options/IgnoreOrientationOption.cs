@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class IgnoreOrientationOption : Option<bool>
     {
-        private static readonly string[] _aliases = ["--ignore-orientation"];
-
         public IgnoreOrientationOption()
-            : base(_aliases, Properties.Resources.CLI_Option_IgnoreOrientation)
+            : base("--ignore-orientation")
         {
+            Description = Properties.Resources.CLI_Option_IgnoreOrientation;
         }
     }
 }

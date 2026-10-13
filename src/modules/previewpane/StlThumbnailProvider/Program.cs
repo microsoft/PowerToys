@@ -7,7 +7,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
 {
     internal static class Program
     {
-        private static StlThumbnailProvider _thumbnailProvider;
+        private static StlThumbnailProvider? _thumbnailProvider;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                     uint cx = Convert.ToUInt32(args[1], 10);
 
                     _thumbnailProvider = new StlThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                    Bitmap? thumbnail = _thumbnailProvider.GetThumbnail(cx);
                     if (thumbnail != null)
                     {
                         filePath = filePath.Replace(".stl", ".bmp");
