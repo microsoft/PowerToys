@@ -10,6 +10,7 @@
 
 #include <AppLauncher.h>
 #include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/LauncherUiMessage.h>
 #include <WorkspacesLib/WorkspaceStore.h>
 
@@ -286,18 +287,10 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
             const auto object = json::JsonValue::Parse(msg).GetObjectW();
             if (m_cliOptions && object.GetNamedString(L"kind", L"") == L"arranger-result")
             {
-                if (object.GetNamedNumber(L"protocolVersion") != 1 || object.GetNamedString(L"operationId") != m_cliOptions->operationId)
-                    throw std::runtime_error("Invalid arranger protocol");
-                auto expected = m_launchingStatus.Get();
-                if (object.GetNamedArray(L"applications").Size() != expected.size())
-                    throw std::runtime_error("Incomplete arranger result");
-                for (const auto& value : object.GetNamedArray(L"applications"))
+                const auto result = WorkspacesCli::ParseArrangerResult(object, m_launchingStatus.Get(), m_cliOptions->operationId);
+                for (const auto& [application, outcome] : result)
                 {
-                    const auto item = WorkspacesData::AppLaunchInfoJSON::FromJson(value.GetObjectW());
-                    if (!item || !expected.erase(item->application) ||
-                        item->state < LaunchingState::Waiting || item->state > LaunchingState::Skipped)
-                        throw std::runtime_error("Invalid arranger result");
-                    m_launchingStatus.Update(item->application, item->state);
+                    m_launchingStatus.Update(application, outcome.state);
                 }
                 m_windowArrangerHelper->AcknowledgeResult();
                 m_arrangerCompleted = true;

@@ -48,6 +48,10 @@ namespace WorkspacesCli
     json::JsonObject ListResult(const std::vector<WorkspacesData::WorkspacesProject>& workspaces, bool details);
     json::JsonObject Envelope(const std::wstring& command, const std::wstring& state, const json::JsonObject& result);
     json::JsonObject Failure(const std::wstring& command, const Error& error);
+    WorkspacesData::LaunchingAppStateMap ParseArrangerResult(
+        const json::JsonObject& message,
+        const WorkspacesData::LaunchingAppStateMap& expected,
+        const std::wstring& operationId);
     json::JsonObject LaunchResult(
         const WorkspacesData::WorkspacesProject& project,
         const WorkspacesData::LaunchingAppStateMap& states,

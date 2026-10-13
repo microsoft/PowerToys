@@ -7,6 +7,8 @@ Successful `list --json` responses expose `view` and `workspaces` directly at th
 Launch results and errors retain their existing envelopes; human-readable list output is unchanged.
 Launch results preserve native `Launched` as `launched`, with a localized explanation that arrangement
 is unconfirmed. Only explicit arrangement failures use `arrangeFailed`; aggregate exit rules are unchanged.
+The final-result boundary rejects pending `Waiting` states and missing/invalid entries before
+acknowledging completion, reporting `outcomeUnknown` rather than inventing an app-level `unknown`.
 
 ## Entry point and dependencies
 

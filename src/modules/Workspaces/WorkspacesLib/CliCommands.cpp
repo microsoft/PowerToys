@@ -348,6 +348,37 @@ namespace WorkspacesCli
         return result;
     }
 
+    WorkspacesData::LaunchingAppStateMap ParseArrangerResult(
+        const json::JsonObject& message,
+        const WorkspacesData::LaunchingAppStateMap& expected,
+        const std::wstring& operationId)
+    {
+        try
+        {
+            if (message.GetNamedString(L"kind") != L"arranger-result" ||
+                message.GetNamedNumber(L"protocolVersion") != 1 || message.GetNamedString(L"operationId") != operationId)
+                throw Error(9, L"outcomeUnknown", "Invalid final arranger protocol.");
+            const auto applications = message.GetNamedArray(L"applications");
+            if (applications.Size() != expected.size())
+                throw Error(9, L"outcomeUnknown", "Incomplete final arranger result.");
+            auto remaining = expected;
+            WorkspacesData::LaunchingAppStateMap result;
+            for (const auto& value : applications)
+            {
+                const auto item = WorkspacesData::AppLaunchInfoJSON::FromJson(value.GetObjectW());
+                if (!item || !remaining.erase(item->application) ||
+                    item->state <= LaunchingState::Waiting || item->state > LaunchingState::Skipped)
+                    throw Error(9, L"outcomeUnknown", "Invalid final arranger application outcome.");
+                result.emplace(item->application, *item);
+            }
+            return result;
+        }
+        catch (const winrt::hresult_error&)
+        {
+            throw Error(9, L"outcomeUnknown", "Malformed final arranger result.");
+        }
+    }
+
     json::JsonObject LaunchResult(const WorkspacesData::WorkspacesProject& project,
                                   const WorkspacesData::LaunchingAppStateMap& states,
                                   const std::wstring& operationId,
@@ -361,7 +392,9 @@ namespace WorkspacesCli
         {
             const auto entry = states.find(app);
             const auto state = entry == states.end() ? LaunchingState::Waiting : entry->second.state;
-            const wchar_t* name = L"unknown";
+            if (state <= LaunchingState::Waiting || state > LaunchingState::Skipped)
+                throw Error(9, L"outcomeUnknown", "No conclusive application launch outcome was received.");
+            const wchar_t* name = L"launched";
             if (state == LaunchingState::LaunchedAndMoved)
             {
                 name = L"arranged";
@@ -373,8 +406,6 @@ namespace WorkspacesCli
                 name = L"canceled";
             else if (state == LaunchingState::Skipped)
                 name = L"skipped";
-            else if (state == LaunchingState::Launched)
-                name = L"launched";
             json::JsonObject item;
             item.SetNamedValue(L"id", json::value(app.id));
             item.SetNamedValue(L"state", json::value(name));

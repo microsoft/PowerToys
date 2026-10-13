@@ -87,6 +87,10 @@ but window arrangement was not confirmed. A localized `message` explains this di
 recorded launch errors remain `launchFailed`. `arranged` means the engine confirmed arrangement.
 The aggregate/exit-code rules are unchanged: unconfirmed arrangement is not counted as a fully
 restored workspace, even though it is not labeled an application-level arrangement failure.
+Final arranger responses must contain a known outcome for every requested application.
+`Waiting`, missing/duplicate applications and invalid results are rejected before applying or
+acknowledging completion. They produce `outcomeUnknown` (exit 9), not an application-level
+`unknown` with exit 10. Native `Launched` remains valid and is reported as `launched`.
 
 ## Launch behavior
 

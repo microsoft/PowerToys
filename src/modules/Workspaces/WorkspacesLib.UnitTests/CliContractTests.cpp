@@ -25,7 +25,120 @@ namespace WorkspacesLibUnitTests
             return project;
         }
 
+        static json::JsonObject FinalResult(const WorkspacesData::WorkspacesProject& project, const std::vector<LaunchingState>& states)
+        {
+            json::JsonObject message;
+            message.SetNamedValue(L"kind", json::value(L"arranger-result"));
+            message.SetNamedValue(L"protocolVersion", json::value(1));
+            message.SetNamedValue(L"operationId", json::value(L"operation"));
+            json::JsonArray applications;
+            for (size_t i = 0; i < states.size(); ++i)
+                applications.Append(WorkspacesData::AppLaunchInfoJSON::ToJson({ project.apps[i], nullptr, states[i] }));
+            message.SetNamedValue(L"applications", applications);
+            return message;
+        }
+
     public:
+        TEST_METHOD (FinalArrangerResultRejectsWaiting)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            LaunchingStatus status(project);
+            try
+            {
+                WorkspacesCli::ParseArrangerResult(FinalResult(project, { LaunchingState::Waiting }), status.Get(), L"operation");
+                Assert::Fail(L"Waiting cannot be accepted as a final application outcome.");
+            }
+            catch (const WorkspacesCli::Error& error)
+            {
+                Assert::AreEqual(9, error.exitCode);
+                Assert::AreEqual(std::wstring(L"outcomeUnknown"), error.code);
+                const auto response = WorkspacesCli::Failure(L"launch", error);
+                Assert::IsFalse(response.HasKey(L"result"));
+                Assert::AreEqual(9.0, response.GetNamedObject(L"error").GetNamedNumber(L"exitCode"));
+            }
+        }
+
+        TEST_METHOD (FinalArrangerResultRetainsLaunchedAndExistingOutcomes)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            LaunchingStatus status(project);
+            for (const auto state : { LaunchingState::Launched, LaunchingState::LaunchedAndMoved, LaunchingState::Failed,
+                                      LaunchingState::Canceled, LaunchingState::Skipped })
+            {
+                const auto result = WorkspacesCli::ParseArrangerResult(FinalResult(project, { state }), status.Get(), L"operation");
+                Assert::AreEqual(size_t{ 1 }, result.size());
+                Assert::IsTrue(result.at(project.apps[0]).state == state);
+            }
+        }
+
+        TEST_METHOD (FinalArrangerResultRejectsWaitingAnywhereWithoutChangingExpectedState)
+        {
+            auto project = Project();
+            project.apps[1].id = L"{682A3A9E-D18D-4DC6-B2AF-E6ABD92F42A9}";
+            LaunchingStatus status(project);
+            const auto expected = status.Get();
+            for (const bool waitingFirst : { false, true })
+            {
+                const auto message = FinalResult(project, waitingFirst ?
+                    std::vector{ LaunchingState::Waiting, LaunchingState::LaunchedAndMoved } :
+                    std::vector{ LaunchingState::LaunchedAndMoved, LaunchingState::Waiting });
+                Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ParseArrangerResult(message, expected, L"operation"); });
+                Assert::IsTrue(expected.at(project.apps[0]).state == LaunchingState::Waiting);
+                Assert::IsTrue(expected.at(project.apps[1]).state == LaunchingState::Waiting);
+            }
+        }
+
+        TEST_METHOD (FinalArrangerResultRejectsMissingDuplicateAndUnknownApplications)
+        {
+            auto project = Project();
+            project.apps[1].id = L"{682A3A9E-D18D-4DC6-B2AF-E6ABD92F42A9}";
+            LaunchingStatus status(project);
+            const auto expected = status.Get();
+            auto message = FinalResult(project, { LaunchingState::Launched });
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ParseArrangerResult(message, expected, L"operation"); });
+            message = FinalResult(project, { LaunchingState::Launched, LaunchingState::LaunchedAndMoved });
+            auto applications = message.GetNamedArray(L"applications");
+            applications.SetAt(1, applications.GetAt(0));
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ParseArrangerResult(message, expected, L"operation"); });
+            message = FinalResult(project, { LaunchingState::Launched, LaunchingState::LaunchedAndMoved });
+            message.GetNamedArray(L"applications").GetObjectAt(0).GetNamedObject(L"application").SetNamedValue(L"id", json::value(L"unknown-app"));
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ParseArrangerResult(message, expected, L"operation"); });
+        }
+
+        TEST_METHOD (FinalArrangerResultRejectsInvalidProtocolAndStates)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            LaunchingStatus status(project);
+            const auto expected = status.Get();
+            for (const auto key : { L"kind", L"operationId" })
+            {
+                auto message = FinalResult(project, { LaunchingState::Launched });
+                message.SetNamedValue(key, json::value(L"wrong"));
+                Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ParseArrangerResult(message, expected, L"operation"); });
+            }
+            auto message = FinalResult(project, { LaunchingState::Launched });
+            message.SetNamedValue(L"protocolVersion", json::value(2));
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ParseArrangerResult(message, expected, L"operation"); });
+            for (const auto state : { static_cast<LaunchingState>(-1), static_cast<LaunchingState>(6) })
+            {
+                message = FinalResult(project, { state });
+                Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::ParseArrangerResult(message, expected, L"operation"); });
+            }
+        }
+
+        TEST_METHOD (LaunchResultRejectsPendingOrMissingOutcomes)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            LaunchingStatus status(project);
+            int exitCode = 0;
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::LaunchResult(project, status.Get(), L"operation", exitCode); });
+            Assert::ExpectException<WorkspacesCli::Error>([&] { WorkspacesCli::LaunchResult(project, {}, L"operation", exitCode); });
+        }
+
         TEST_METHOD (SkippedAndUnavailableAreNotUacDenial)
         {
             WorkspacesData::WorkspacesProject project{};
