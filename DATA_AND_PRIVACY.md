@@ -48,6 +48,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.Repair_Fail | Triggered when the PowerToys repair operation fails to complete successfully due to an error. |
 | Microsoft.PowerToys.Runner_Launch | Indicates when the PowerToys Runner is launched. |
 | Microsoft.PowerToys.ScoobeStartedEvent | Triggered when SCOOBE (Secondary Out-of-box experience) starts. |
+| Microsoft.PowerToys.Settings_CLICommand | Triggered when the Settings CLI is invoked, logging only a fixed command category and success status. Module names, settings values, and other arguments are not collected. |
 | Microsoft.PowerToys.SettingsBootEvent | Triggered when PowerToys settings are initialized at startup. |
 | Microsoft.PowerToys.SettingsEnabledEvent | Indicates that the PowerToys settings have been enabled. |
 | Microsoft.PowerToys.ShortcutConflictControlClickedEvent | Triggered when a user clicks on the Shortcut Conflict Control button in the PowerToys Settings UI Dashboard. |
@@ -314,6 +315,12 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.LightSwitch_ScheduleModeToggled | Occurs when a new schedule mode is selected for Light Switch. |
 | Microsoft.PowerToys.LightSwitch_ShortcutInvoked | Occurs when the shortcut for Light Switch is invoked. |
 | Microsoft.PowerToys.LightSwitch_ThemeTargetChanged | Occurs when the options for targeting the system or apps is updated. |
+
+### Mouse Button Lock
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.MouseButtonLock_EnableMouseButtonLock | Triggered when Mouse Button Lock is enabled or disabled. |
 
 ### Mouse Highlighter
 
