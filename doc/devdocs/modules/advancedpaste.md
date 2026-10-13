@@ -65,6 +65,8 @@ For `transform`, `--json` emits one UTF-8 JSON result envelope on stdout (`statu
 
 Run `src\modules\AdvancedPaste\AdvancedPaste.CLI\SmokeTest.ps1` after building the CLI to exercise help, stdin/stdout, file input/output, JSON output, and failing argument paths against the built executable.
 
+The CLI uses the centrally pinned System.CommandLine 2.0 API. Register options and subcommands through `Options` and `Subcommands`, read parsed values with `ParseResult.GetValue`, and route help through `InvocationConfiguration.Output` and `Error`. Keep option-value token checks when detecting help so a prompt or file path such as `-h` is not treated as a help request. `AdvancedPaste.Cli.UnitTests` covers these cases, command aliases, JSON output, and exit codes.
+
 ### Paste with AI Preview
 
 The "Show preview" setting (`ShowCustomPreview`) controls whether AI-generated results are displayed in a preview window before pasting. **The preview feature does not consume additional AI credits**—the preview displays the same AI response that was already generated, cached locally from a single API call.
