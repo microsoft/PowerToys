@@ -420,6 +420,7 @@ public class PeekFilePreviewTests : UITestBase
             }
 
             var expectedExplorerTitle = Path.GetFileName(Path.GetDirectoryName(normalizedPath));
+            Assert.IsNotNull(expectedExplorerTitle, $"Test asset '{normalizedPath}' has no parent folder for Explorer to open.");
             if (!WaitForExplorerWindowTitle(explorerWindow.WindowHandle, expectedExplorerTitle, ExplorerOpenTimeoutMS))
             {
                 TestContext.WriteLine(
