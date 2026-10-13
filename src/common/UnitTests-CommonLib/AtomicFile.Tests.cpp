@@ -191,6 +191,110 @@ namespace UnitTestsCommonLib
             assertOnlyFile(directory, existing);
         }
 
+        TEST_METHOD (UnsupportedExtendedRenameFallsBackForCreationAndReplacement)
+        {
+            for (const DWORD unsupportedError : { ERROR_INVALID_PARAMETER, ERROR_NOT_SUPPORTED, ERROR_INVALID_FUNCTION })
+            {
+                TemporaryDirectory directory;
+                const auto destination = directory.path() / L"settings.json";
+                for (const std::string contents : { "{\"enabled\":true}", "{\"enabled\":false}" })
+                {
+                    unsigned int extendedCalls = 0;
+                    unsigned int legacyCalls = 0;
+                    const auto rename = [&](HANDLE file, FILE_INFO_BY_HANDLE_CLASS infoClass, void* buffer, DWORD size) -> BOOL {
+                        if (infoClass == FileRenameInfoEx)
+                        {
+                            ++extendedCalls;
+                            SetLastError(unsupportedError);
+                            return FALSE;
+                        }
+
+                        ++legacyCalls;
+                        Assert::AreEqual(static_cast<int>(FileRenameInfo), static_cast<int>(infoClass));
+                        Assert::IsTrue(static_cast<FILE_RENAME_INFO*>(buffer)->ReplaceIfExists != FALSE);
+                        return SetFileInformationByHandle(file, infoClass, buffer, size);
+                    };
+
+                    Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::detail::write_with_rename(destination.wstring(), contents, rename));
+                    Assert::AreEqual(1U, extendedCalls);
+                    Assert::AreEqual(1U, legacyCalls);
+                    std::string actual;
+                    Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), readFile(destination, actual));
+                    Assert::AreEqual(contents, actual);
+                    assertOnlyFile(directory, destination);
+                }
+            }
+        }
+
+        TEST_METHOD (LegacyRenameRetriesSharingViolations)
+        {
+            TemporaryDirectory directory;
+            const auto destination = directory.path() / L"settings.json";
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(destination.wstring(), "{\"enabled\":true}"));
+            unsigned int legacyCalls = 0;
+            const auto rename = [&](HANDLE file, FILE_INFO_BY_HANDLE_CLASS infoClass, void* buffer, DWORD size) -> BOOL {
+                if (infoClass == FileRenameInfoEx)
+                {
+                    SetLastError(ERROR_NOT_SUPPORTED);
+                    return FALSE;
+                }
+                if (++legacyCalls == 1)
+                {
+                    SetLastError(ERROR_SHARING_VIOLATION);
+                    return FALSE;
+                }
+                return SetFileInformationByHandle(file, infoClass, buffer, size);
+            };
+
+            const std::string replacement = "{\"enabled\":false}";
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::detail::write_with_rename(destination.wstring(), replacement, rename));
+            Assert::AreEqual(2U, legacyCalls);
+            std::string actual;
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), readFile(destination, actual));
+            Assert::AreEqual(replacement, actual);
+            assertOnlyFile(directory, destination);
+        }
+
+        TEST_METHOD (FailedLegacyRenamePreservesOriginalAndRemovesTemporaryFile)
+        {
+            TemporaryDirectory directory;
+            const auto destination = directory.path() / L"settings.json";
+            const std::string original = "{\"enabled\":true}";
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(destination.wstring(), original));
+            const auto rename = [](HANDLE, FILE_INFO_BY_HANDLE_CLASS infoClass, void*, DWORD) -> BOOL {
+                SetLastError(infoClass == FileRenameInfoEx ? ERROR_NOT_SUPPORTED : ERROR_WRITE_PROTECT);
+                return FALSE;
+            };
+
+            Assert::AreEqual(static_cast<DWORD>(ERROR_WRITE_PROTECT), atomic_file::detail::write_with_rename(destination.wstring(), "{\"enabled\":false}", rename));
+            std::string actual;
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), readFile(destination, actual));
+            Assert::AreEqual(original, actual);
+            assertOnlyFile(directory, destination);
+        }
+
+        TEST_METHOD (OtherRenameFailuresDoNotUseCompatibilityFallback)
+        {
+            TemporaryDirectory directory;
+            const auto destination = directory.path() / L"settings.json";
+            const std::string original = "{\"enabled\":true}";
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(destination.wstring(), original));
+            unsigned int calls = 0;
+            const auto rename = [&](HANDLE, FILE_INFO_BY_HANDLE_CLASS infoClass, void*, DWORD) -> BOOL {
+                ++calls;
+                Assert::AreEqual(static_cast<int>(FileRenameInfoEx), static_cast<int>(infoClass));
+                SetLastError(ERROR_WRITE_PROTECT);
+                return FALSE;
+            };
+
+            Assert::AreEqual(static_cast<DWORD>(ERROR_WRITE_PROTECT), atomic_file::detail::write_with_rename(destination.wstring(), "{\"enabled\":false}", rename));
+            Assert::AreEqual(1U, calls);
+            std::string actual;
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), readFile(destination, actual));
+            Assert::AreEqual(original, actual);
+            assertOnlyFile(directory, destination);
+        }
+
         TEST_METHOD (ConcurrentWritesExposeOnlyCompleteJsonToReaders)
         {
             TemporaryDirectory directory;
