@@ -170,7 +170,6 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     }
 
     // ---- settings navigation --------------------------------------------------------------------
-
     private static Session NavigateToPowerRenameSettings()
     {
         var settings = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings, timeoutMS: 15_000);
@@ -274,7 +273,6 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     }
 
     // ---- context-menu assertions -----------------------------------------------------------------
-
     private enum ContextMenuSurface
     {
         /// <summary>The Windows 11 tier-1 (sparse-MSIX, <c>IExplorerCommand</c>) menu.</summary>
@@ -559,7 +557,6 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
     }
 
     // ---- Explorer --------------------------------------------------------------------------------
-
     private void PrepareContextMenuTest()
     {
         contextMenuTest = true;
