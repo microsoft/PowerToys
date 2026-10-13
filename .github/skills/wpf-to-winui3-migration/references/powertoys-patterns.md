@@ -121,11 +121,11 @@ public partial class ResizeSize : ObservableObject  // MUST be partial
 {
     [ObservableProperty]
     [JsonPropertyName("Id")]
-    private int _id;
+    public partial int Id { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowHeight))]  // Replaces manual UpdateShowHeight()
-    private ResizeFit _fit;
+    public partial ResizeFit Fit { get; set; } = ResizeFit.Fit;
 
     // Computed property — no backing field, no manual update method
     public bool ShowHeight => Fit == ResizeFit.Stretch || Unit != ResizeUnit.Percent;
@@ -136,6 +136,8 @@ Key changes:
 - Class must be `partial` for source generators
 - `Observable` → `ObservableObject` (from CommunityToolkit.Mvvm)
 - Manual `Set(ref _field, value)` → `[ObservableProperty]` attribute
+- Use `public partial` properties, not private fields — field-based `[ObservableProperty]` raises `MVVMTK0045`, which is a build error in WinUI/CsWinRT projects. Put attributes such as `[JsonPropertyName]` directly on the partial property (no `property:` target)
+- Partial properties require `<LangVersion>preview</LangVersion>` in the `.csproj` with CommunityToolkit.Mvvm 8.4 (see `ImageResizerUI.csproj`)
 - `PropertyChanged` dependencies → `[NotifyPropertyChangedFor(nameof(...))]`
 - Computed properties with manual `UpdateXxx()` → direct expression body
 

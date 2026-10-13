@@ -1,136 +1,188 @@
 #include "pch.h"
 #include "ThemeHelper.h"
 #include <logger/logger.h>
+#include <memory>
+#include <new>
 
-// Controls changing the themes.
-
-static void ResetColorPrevalence()
+namespace LightSwitchThemeHelpers
 {
-    HKEY hKey;
-    if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     PERSONALIZATION_REGISTRY_PATH,
-                     0,
-                     KEY_SET_VALUE,
-                     &hKey) == ERROR_SUCCESS)
+    LSTATUS ReadThemeValue(HKEY key, const wchar_t* name, bool& isLight)
     {
-        DWORD value = 0; // back to default value
-        RegSetValueEx(hKey, L"ColorPrevalence", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
-        RegCloseKey(hKey);
-
-        SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
-
-        SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
-
-        SendMessageTimeout(HWND_BROADCAST, WM_DWMCOLORIZATIONCOLORCHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
-    }
-}
-
-void SetAppsTheme(bool mode)
-{
-    HKEY hKey;
-    if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     PERSONALIZATION_REGISTRY_PATH,
-                     0,
-                     KEY_SET_VALUE,
-                     &hKey) == ERROR_SUCCESS)
-    {
-        DWORD value = mode;
-        RegSetValueEx(hKey, L"AppsUseLightTheme", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
-        RegCloseKey(hKey);
-
-        SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
-
-        SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
-    }
-}
-
-void SetSystemTheme(bool mode)
-{
-    HKEY hKey;
-    if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     PERSONALIZATION_REGISTRY_PATH,
-                     0,
-                     KEY_SET_VALUE,
-                     &hKey) == ERROR_SUCCESS)
-    {
-        DWORD value = mode;
-        RegSetValueEx(hKey, L"SystemUsesLightTheme", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
-        RegCloseKey(hKey);
-
-        if (mode) // if are changing to light mode 
+        DWORD value = 0;
+        DWORD size = sizeof(value);
+        const auto result = RegGetValueW(key, nullptr, name, RRF_RT_REG_DWORD, nullptr, &value, &size);
+        if (result != ERROR_SUCCESS)
         {
-            ResetColorPrevalence();
-            Logger::info(L"[LightSwitchLib] Reset ColorPrevalence to default when switching to light mode.");
+            return result;
+        }
+        if (size != sizeof(value) || value > 1)
+        {
+            return ERROR_INVALID_DATA;
+        }
+        isLight = value == 1;
+        return ERROR_SUCCESS;
+    }
+
+    LSTATUS WriteThemeValue(HKEY key, const wchar_t* name, bool isLight)
+    {
+        const DWORD value = isLight ? 1 : 0;
+        return RegSetValueExW(key, name, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
+    }
+
+    LSTATUS ReadNightLightState(HKEY key, bool& enabled)
+    {
+        constexpr DWORD minimumSize = 25;
+        constexpr DWORD maximumSize = 64 * 1024;
+        DWORD size = 0;
+        auto result = RegGetValueW(key, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, nullptr, &size);
+        if (result != ERROR_SUCCESS)
+        {
+            return result;
+        }
+        if (size < minimumSize)
+        {
+            return ERROR_INVALID_DATA;
+        }
+        if (size > maximumSize)
+        {
+            return ERROR_MORE_DATA;
         }
 
-        SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
+        // Bound the allocation and recheck the actual size: CloudStore can replace
+        // this value between the size query and the data read.
+        const std::unique_ptr<BYTE[]> data(new (std::nothrow) BYTE[size]);
+        if (!data)
+        {
+            return ERROR_NOT_ENOUGH_MEMORY;
+        }
+        result = RegGetValueW(key, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, data.get(), &size);
+        if (result != ERROR_SUCCESS)
+        {
+            return result;
+        }
+        if (size < minimumSize)
+        {
+            return ERROR_INVALID_DATA;
+        }
 
-        SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
+        enabled = data[23] == 0x10 && data[24] == 0x00;
+        return ERROR_SUCCESS;
     }
 }
 
-// Can think of this as "is the current theme light?"
-bool GetCurrentSystemTheme()
+namespace
 {
-    HKEY hKey;
-    DWORD value = 1; // default = light
-    DWORD size = sizeof(value);
-
-    if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     PERSONALIZATION_REGISTRY_PATH,
-                     0,
-                     KEY_READ,
-                     &hKey) == ERROR_SUCCESS)
+    LSTATUS ReadPersonalizationTheme(const wchar_t* name, bool& isLight)
     {
-        RegQueryValueEx(hKey, L"SystemUsesLightTheme", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &size);
-        RegCloseKey(hKey);
+        HKEY key = nullptr;
+        auto result = RegOpenKeyExW(HKEY_CURRENT_USER, PERSONALIZATION_REGISTRY_PATH, 0, KEY_QUERY_VALUE, &key);
+        if (result == ERROR_SUCCESS)
+        {
+            result = LightSwitchThemeHelpers::ReadThemeValue(key, name, isLight);
+            RegCloseKey(key);
+        }
+        return result;
     }
 
-    return value == 1; // true = light, false = dark
+    void BroadcastThemeChange()
+    {
+        SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
+        SendMessageTimeoutW(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
+    }
+
+    LSTATUS WritePersonalizationTheme(const wchar_t* name, bool isLight, bool system)
+    {
+        HKEY key = nullptr;
+        auto result = RegOpenKeyExW(HKEY_CURRENT_USER, PERSONALIZATION_REGISTRY_PATH, 0, KEY_SET_VALUE, &key);
+        if (result != ERROR_SUCCESS)
+        {
+            return result;
+        }
+
+        result = LightSwitchThemeHelpers::WriteThemeValue(key, name, isLight);
+        if (result == ERROR_SUCCESS && system && isLight)
+        {
+            const DWORD value = 0;
+            const auto colorResult = RegSetValueExW(key, L"ColorPrevalence", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
+            if (colorResult != ERROR_SUCCESS)
+            {
+                Logger::warn(L"[LightSwitchLib] Could not reset ColorPrevalence (error: {}).", colorResult);
+            }
+        }
+        RegCloseKey(key);
+
+        if (result == ERROR_SUCCESS)
+        {
+            BroadcastThemeChange();
+            if (system && isLight)
+            {
+                SendMessageTimeoutW(HWND_BROADCAST, WM_DWMCOLORIZATIONCOLORCHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
+            }
+        }
+        return result;
+    }
+}
+
+LSTATUS TryGetSystemTheme(bool& isLight)
+{
+    return ReadPersonalizationTheme(L"SystemUsesLightTheme", isLight);
+}
+
+LSTATUS TryGetAppsTheme(bool& isLight)
+{
+    return ReadPersonalizationTheme(L"AppsUseLightTheme", isLight);
+}
+
+LSTATUS TrySetSystemTheme(bool isLight)
+{
+    return WritePersonalizationTheme(L"SystemUsesLightTheme", isLight, true);
+}
+
+LSTATUS TrySetAppsTheme(bool isLight)
+{
+    return WritePersonalizationTheme(L"AppsUseLightTheme", isLight, false);
+}
+
+void SetSystemTheme(bool isLight)
+{
+    const auto result = TrySetSystemTheme(isLight);
+    if (result != ERROR_SUCCESS)
+    {
+        Logger::warn(L"[LightSwitchLib] Could not set system theme (error: {}).", result);
+    }
+}
+
+void SetAppsTheme(bool isLight)
+{
+    const auto result = TrySetAppsTheme(isLight);
+    if (result != ERROR_SUCCESS)
+    {
+        Logger::warn(L"[LightSwitchLib] Could not set apps theme (error: {}).", result);
+    }
+}
+
+bool GetCurrentSystemTheme()
+{
+    bool isLight = true;
+    TryGetSystemTheme(isLight);
+    return isLight;
 }
 
 bool GetCurrentAppsTheme()
 {
-    HKEY hKey;
-    DWORD value = 1;
-    DWORD size = sizeof(value);
-
-    if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                     PERSONALIZATION_REGISTRY_PATH,
-                     0,
-                     KEY_READ,
-                     &hKey) == ERROR_SUCCESS)
-    {
-        RegQueryValueEx(hKey, L"AppsUseLightTheme", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &size);
-        RegCloseKey(hKey);
-    }
-
-    return value == 1; // true = light, false = dark
+    bool isLight = true;
+    TryGetAppsTheme(isLight);
+    return isLight;
 }
 
-bool IsNightLightEnabled()
+LSTATUS TryGetNightLightState(bool& enabled)
 {
-    HKEY hKey;
-    const wchar_t* path = NIGHT_LIGHT_REGISTRY_PATH;
-
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, path, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
-        return false;
-
-    // RegGetValueW will set size to the size of the data and we expect that to be at least 25 bytes (we need to access bytes 23 and 24)
-    DWORD size = 0;
-    if (RegGetValueW(hKey, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, nullptr, &size) != ERROR_SUCCESS || size < 25)
+    HKEY key = nullptr;
+    auto result = RegOpenKeyExW(HKEY_CURRENT_USER, NIGHT_LIGHT_REGISTRY_PATH, 0, KEY_QUERY_VALUE, &key);
+    if (result == ERROR_SUCCESS)
     {
-        RegCloseKey(hKey);
-        return false;
+        result = LightSwitchThemeHelpers::ReadNightLightState(key, enabled);
+        RegCloseKey(key);
     }
-
-    std::vector<BYTE> data(size);
-    if (RegGetValueW(hKey, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, data.data(), &size) != ERROR_SUCCESS)
-    {
-        RegCloseKey(hKey);
-        return false;
-    }
-
-    RegCloseKey(hKey);
-    return data[23] == 0x10 && data[24] == 0x00;
+    return result;
 }

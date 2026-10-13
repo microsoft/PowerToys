@@ -113,8 +113,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsMarkdown);
         AssertTransformedText();
 
-        // CF_HTML boundary comments remain inert HTML comments in the generated Markdown.
-        Assert.AreEqual("<!--StartFragment -->\n## Offline\n\n**Bold** and *italic* [link](https://example.test/)\n<!--EndFragment -->", NormalizeMarkdown(Target.Text));
+        Assert.AreEqual("## Offline\n\n**Bold** and *italic* [link](https://example.test/)", NormalizeMarkdown(Target.Text));
     }
 
     [TestMethod]
@@ -165,17 +164,22 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         const string html = "<p>Desktop clipboard <strong>snapshot</strong></p>";
         const string rtf = @"{\rtf1\ansi Desktop clipboard \b snapshot\b0}";
         Step("Preparing a desktop data object before taking a clipboard snapshot from an MTA worker");
-        Target.Invoke(() =>
+        if (includeRichFormats)
         {
-            var data = new Forms.DataObject(text);
-            if (includeRichFormats)
+            Target.Invoke(() =>
             {
+                var data = new Forms.DataObject(text);
                 data.SetData(Forms.DataFormats.Html, autoConvert: false, HtmlFormatHelper.CreateHtmlFormat(html));
                 data.SetData(Forms.DataFormats.Rtf, autoConvert: false, rtf);
-            }
+                Forms.Clipboard.SetDataObject(data, copy: true, retryTimes: 50, retryDelay: 100);
+            });
+        }
+        else
+        {
+            SetClipboardText(text);
+        }
 
-            Forms.Clipboard.SetDataObject(data, copy: true);
-        });
+        Assert.AreEqual(text, ReadClipboardText(), "The original desktop clipboard fixture was not established before taking its snapshot.");
         var formats = ReadClipboardFormats();
         var readAttempts = 0;
         var snapshot = await Task.Run(() =>

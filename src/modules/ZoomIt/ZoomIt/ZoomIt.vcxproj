@@ -477,6 +477,8 @@
   <ItemGroup>
     <ClInclude Include="..\ZoomItBreak\BreakTimer.h" />
     <ClInclude Include="AudioSampleGenerator.h" />
+    <ClInclude Include="AudioSamplePacer.h" />
+    <ClInclude Include="AudioQueueLimits.h" />
     <ClInclude Include="LoopbackCapture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\Eula\Eula.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\ZoomItModuleInterface\Trace.h" />
@@ -501,6 +503,7 @@
     <ClInclude Include="WebcamPreviewWindow.h" />
     <ClInclude Include="ZoomAnimation.h" />
     <ClInclude Include="ZoomIt.h" />
+    <ClInclude Include="ZoomItMessages.h" />
     <ClInclude Include="ZoomItSettings.h" />
   </ItemGroup>
   <ItemGroup>
