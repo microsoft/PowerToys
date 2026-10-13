@@ -8,17 +8,16 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class SizeOption : Option<int?>
     {
-        private static readonly string[] _aliases = ["--size"];
-
         public SizeOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Size)
+            : base("--size")
         {
-            AddValidator(result =>
+            Description = Properties.Resources.CLI_Option_Size;
+            Validators.Add(result =>
             {
                 var value = result.GetValueOrDefault<int?>();
                 if (value.HasValue && value.Value < 0)
                 {
-                    result.ErrorMessage = "Size index must be a non-negative integer.";
+                    result.AddError("Size index must be a non-negative integer.");
                 }
             });
         }
