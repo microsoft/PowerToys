@@ -8,17 +8,16 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class QualityOption : Option<int?>
     {
-        private static readonly string[] _aliases = ["--quality", "-q"];
-
         public QualityOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Quality)
+            : base("--quality", "-q")
         {
-            AddValidator(result =>
+            Description = Properties.Resources.CLI_Option_Quality;
+            Validators.Add(result =>
             {
                 var value = result.GetValueOrDefault<int?>();
                 if (value.HasValue && (value.Value < 1 || value.Value > 100))
                 {
-                    result.ErrorMessage = "JPEG quality must be between 1 and 100.";
+                    result.AddError("JPEG quality must be between 1 and 100.");
                 }
             });
         }
