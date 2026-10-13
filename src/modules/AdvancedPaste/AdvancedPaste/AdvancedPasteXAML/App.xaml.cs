@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -13,8 +12,6 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services;
-using AdvancedPaste.Services.CustomActions;
-using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,15 +72,7 @@ namespace AdvancedPaste
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
-                services.AddSingleton<IFileSystem, FileSystem>();
-                services.AddSingleton<IUserSettings, UserSettings>();
-                services.AddSingleton<IAICredentialsProvider, EnhancedVaultCredentialsProvider>();
-                services.AddSingleton<IPromptModerationService, Services.OpenAI.PromptModerationService>();
-                services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();
-                services.AddSingleton<IPasteAIProviderFactory, PasteAIProviderFactory>();
-                services.AddSingleton<ICustomActionTransformService, CustomActionTransformService>();
-                services.AddSingleton<IKernelService, AdvancedAIKernelService>();
-                services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
+                services.AddAdvancedPasteEngine();
                 services.AddSingleton<OptionsViewModel>();
             }).Build();
 
