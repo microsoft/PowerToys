@@ -240,7 +240,15 @@ function Ensure-VsDevEnvironment {
         "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe"
     )
     $vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-    if ($vswhere) { Write-Host "[VS] vswhere found: $vswhere" } else { Write-Host "[VS] vswhere not found" }
+    if ($vswhere) {
+        Write-Host "[VS] vswhere found: $vswhere"
+        $vswhereDirectory = Split-Path $vswhere
+        if (($env:PATH -split ';') -notcontains $vswhereDirectory) {
+            $env:PATH = "$vswhereDirectory;$env:PATH"
+        }
+    } else {
+        Write-Host "[VS] vswhere not found"
+    }
 
     # Probe for a Visual Studio install with the C++ workload. Selection is
     # capability-based (-requires VC.Tools.x86.x64), not SKU-based: full VS
