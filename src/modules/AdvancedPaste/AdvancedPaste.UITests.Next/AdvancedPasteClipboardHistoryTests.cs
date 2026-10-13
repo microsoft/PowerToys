@@ -374,7 +374,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         {
             var ready = WaitHelper.WaitForStable(
                 ReadWindowsHistorySurface,
-                surface => surface.Tree is not null && surface.State != "Unknown",
+                surface => surface is { Tree: not null } && surface.State != "Unknown",
                 timeoutMS: 20_000,
                 requiredConsecutiveMatches: 2,
                 shouldRetryException: AdvancedPasteUi.IsStaleElement);

@@ -508,7 +508,7 @@ public class MouseHighlighterTests : UITestBase
                 Near = WindowHelper.GetPixelColor(nearPoint.X, nearPoint.Y),
                 Far = WindowHelper.GetPixelColor(farPoint.X, farPoint.Y),
             },
-            sample => IsNear(sample.Near, nearBase, 5) && IsNear(sample.Far, farBase, 5),
+            sample => sample is not null && IsNear(sample.Near, nearBase, 5) && IsNear(sample.Far, farBase, 5),
             timeoutMs,
             requiredConsecutiveMatches: 5,
             pollIntervalMS: 50).Succeeded;
