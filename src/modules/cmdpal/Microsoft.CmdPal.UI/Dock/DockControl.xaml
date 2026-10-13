@@ -91,6 +91,8 @@
             </Style>
 
             <x:Double x:Key="DockPageFlyoutWidth">500</x:Double>
+            <!--  A dock page's details panel widens the flyout up to this width.  -->
+            <x:Double x:Key="DockPageFlyoutMaxWidth">1000</x:Double>
 
             <Style
                 x:Key="DockPageFlyoutStyle"
@@ -102,7 +104,7 @@
                 <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
                 <!--  The default presenter MaxWidth is narrower than a dock page.  -->
                 <Setter Property="MinWidth" Value="{StaticResource DockPageFlyoutWidth}" />
-                <Setter Property="MaxWidth" Value="{StaticResource DockPageFlyoutWidth}" />
+                <Setter Property="MaxWidth" Value="{StaticResource DockPageFlyoutMaxWidth}" />
                 <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
                 <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
             </Style>

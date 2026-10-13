@@ -300,6 +300,27 @@ public sealed partial class DockPageNavigationViewModelTests
     }
 
     [TestMethod]
+    public async Task GoBackAsync_DiscardsThePoppedPageOffTheUiScheduler()
+    {
+        var route = NewRoute();
+        var scheduler = new QueuedTaskScheduler();
+        var navigation = CreateNavigation(route, scheduler);
+        Assert.IsTrue(await DrainUntilCompleteAsync(
+            scheduler,
+            navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, new TestAppExtensionHost(), CommandProviderContext.Empty))));
+        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation))));
+        var popped = navigation.CurrentPage!;
+
+        Assert.IsTrue(await DrainUntilCompleteAsync(scheduler, navigation.GoBackAsync()));
+
+        Assert.IsTrue(popped.IsDiscarded);
+
+        // CleanupAsync returns the shared cleanup task; it must finish without the UI scheduler running.
+        await popped.CleanupAsync().WaitAsync(WaitTimeout);
+        navigation.Dispose();
+    }
+
+    [TestMethod]
     public async Task DynamicListSearch_UpdatesTheRoutedPageItems()
     {
         var route = NewRoute();

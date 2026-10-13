@@ -4,12 +4,14 @@
 
 using System.ComponentModel;
 using System.Globalization;
+using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,9 +20,10 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockPageControl : UserControl, IDisposable
+public sealed partial class DockPageControl : UserControl, IDisposable, ISearchBarHost
 {
     private readonly PageInteractionCoordinator _pageInteractions;
+    private readonly Microsoft.UI.Dispatching.DispatcherQueueTimer _detailsTimer;
     private IListInteractionSource? _listInteractionSource;
     private PageViewModel? _subscribedPage;
     private bool _isLoaded;
@@ -40,18 +43,23 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         Navigation = navigation;
         InitializeComponent();
 
+        _detailsTimer = DispatcherQueue.CreateTimer();
         _pageInteractions = new(PageCommandBar);
         _pageInteractions.FocusSearchRequested += PageInteractions_FocusSearchRequested;
+        _pageInteractions.DetailsChanged += PageInteractions_DetailsChanged;
         Navigation.PropertyChanged += Navigation_PropertyChanged;
         SearchBox.BackRequested += SearchBox_BackRequested;
         SearchBox.NavigationRequested += SearchBox_NavigationRequested;
         PageCommandBar.FocusSearchRequested += PageCommandBar_FocusSearchRequested;
+        FiltersDropDown.FocusSearchRequested += FiltersDropDown_FocusSearchRequested;
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown), false);
         AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), false);
         Loaded += OnLoaded;
     }
 
     internal bool HasOpenTransientUi => PageCommandBar.HasOpenTransientUi;
+
+    bool ISearchBarHost.CanFocusSearchBar => !_isDisposed && IsLoaded && XamlRoot is not null;
 
     internal void FocusSearch()
     {
@@ -173,7 +181,10 @@ public sealed partial class DockPageControl : UserControl, IDisposable
     private void DetachCurrentContent()
     {
         PageCommandBar.CloseContextMenu();
+        FiltersDropDown.CloseDropDown();
         AttachInteractionTarget(null);
+        _detailsTimer.Stop();
+        HideDetails();
 
         switch (PageContent.Content)
         {
@@ -196,6 +207,101 @@ public sealed partial class DockPageControl : UserControl, IDisposable
     private void PageInteractions_FocusSearchRequested(object? sender, EventArgs e) => FocusSearch();
 
     private void PageCommandBar_FocusSearchRequested(object? sender, EventArgs e) => FocusSearch();
+
+    private void FiltersDropDown_FocusSearchRequested(object? sender, EventArgs e) => FocusSearch();
+
+    private void ToggleFilterFocus()
+    {
+        if (!FiltersDropDown.IsFilterVisible)
+        {
+            return;
+        }
+
+        if (FiltersDropDown.IsActive)
+        {
+            FiltersDropDown.CloseDropDownAndFocusSearch();
+        }
+        else
+        {
+            FiltersDropDown.OpenDropDown();
+        }
+    }
+
+    private void PageInteractions_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
+    {
+        var sourcePage = _pageInteractions.CurrentPage;
+        if (e.Details is null)
+        {
+            _detailsTimer.Debounce(
+                () =>
+                {
+                    if (!_isDisposed && ReferenceEquals(sourcePage, _pageInteractions.CurrentPage))
+                    {
+                        HideDetails();
+                    }
+                },
+                interval: TimeSpan.FromMilliseconds(150),
+                immediate: false);
+            return;
+        }
+
+        ShowDetails(sourcePage, e.Details);
+    }
+
+    private void ShowDetails(PageViewModel? sourcePage, DetailsViewModel details)
+    {
+        var wasVisible = DetailsContent.Visibility == Visibility.Visible;
+
+        // Like ShellPage, coalesce rapid detail changes (GH #322). Show the first
+        // details right away so the panel doesn't lag behind the selection.
+        _detailsTimer.Debounce(ApplyDetails, interval: TimeSpan.FromMilliseconds(100), immediate: !wasVisible);
+
+        void ApplyDetails()
+        {
+            // immediate=true runs synchronously, so we may not be on the UI thread yet.
+            if (!DispatcherQueue.HasThreadAccess)
+            {
+                if (!DispatcherQueue.TryEnqueue(ApplyDetails))
+                {
+                    Logger.LogError("Failed to enqueue show details action on UI thread");
+                }
+
+                return;
+            }
+
+            if (_isDisposed || !ReferenceEquals(sourcePage, _pageInteractions.CurrentPage))
+            {
+                return;
+            }
+
+            try
+            {
+                DetailsContent.ChangeView(null, 0, null, true);
+                DetailsContent.Width = GetDetailsWidth(details.Size);
+                DetailsView.SourcePage = sourcePage;
+                DetailsView.Details = details;
+                DetailsContent.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to show dock page details", ex);
+            }
+        }
+    }
+
+    private void HideDetails()
+    {
+        DetailsContent.Visibility = Visibility.Collapsed;
+        DetailsView.Details = null;
+        DetailsView.SourcePage = null;
+    }
+
+    private static double GetDetailsWidth(ContentSize? size) => size switch
+    {
+        ContentSize.Medium => 360,
+        ContentSize.Large => 480,
+        _ => 280,
+    };
 
     private void SearchBox_BackRequested(object? sender, SearchBarBackRequestedEventArgs e) =>
         ApplyBackAction(e.Kind, e.FromBackspace);
@@ -236,6 +342,11 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         else if (e.Key == VirtualKey.K && modifiers.OnlyCtrl)
         {
             _pageInteractions.OpenContextMenu();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.F && modifiers.OnlyAlt)
+        {
+            ToggleFilterFocus();
             e.Handled = true;
         }
         else if (_pageInteractions.TryCommandKeybinding(
@@ -318,9 +429,12 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         SearchBox.BackRequested -= SearchBox_BackRequested;
         SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
         PageCommandBar.FocusSearchRequested -= PageCommandBar_FocusSearchRequested;
+        FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
         _pageInteractions.FocusSearchRequested -= PageInteractions_FocusSearchRequested;
+        _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
         DetachCurrentContent();
         SearchBox.CurrentPageViewModel = null;
+        FiltersDropDown.CurrentPageViewModel = null;
         _pageInteractions.Dispose();
         PageCommandBar.Dispose();
         GC.SuppressFinalize(this);
