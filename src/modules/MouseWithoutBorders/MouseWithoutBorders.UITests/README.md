@@ -281,6 +281,13 @@ attempt was interrupted by host sleep and is excluded, not relabeled passed.
 The final receiver-focus check waits for three native foreground/input-focus
 matches before one checked physical `SendInput` key batch; its exact received
 character, no-mouse-input and single-dismissal assertions remain unchanged.
+If the actual cursor hit test is obstructed, the physical-input probe moves the
+real host mouse to another safe point within the owned receiver surface instead
+of waiting motionless over an overlay. The twenty-second settling deadline and
+two unobstructed hit tests before the single physical click are unchanged.
+Lease-expiry fault injection measures the actual last immutable lease payload's
+timestamp, not the publisher's later status-file write; the real 45-second
+expiry threshold and original-worker exit assertion are unchanged.
 The final cohort's controlled bootstrap, viewer and cleanup ceilings are listed
 above. This is practical repeatability evidence for the stated default contract,
 not proof of startup root-cause resolution or stability on every resource profile.

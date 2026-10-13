@@ -31,6 +31,21 @@ internal sealed class EndpointChannel
 
     public int LeaseSequence => Volatile.Read(ref leaseSequence);
 
+    public DateTime ReadLastPublishedLeaseTimestamp(JsonObject publisher)
+    {
+        RequireCorrelation(publisher);
+        var number = publisher["Sequence"]!.GetValue<int>();
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(number);
+        var lease = RunFiles.Read(Path.Combine(InputRoot, "leases", $"{number:D8}.json"));
+        RequireCorrelation(lease);
+        if (lease["Sequence"]?.GetValue<int>() != number)
+        {
+            throw new InvalidDataException("Published lease generation does not match its publisher.");
+        }
+
+        return lease["TimestampUtc"]!.GetValue<DateTime>().ToUniversalTime();
+    }
+
     public void WriteLease()
     {
         var number = Interlocked.Increment(ref leaseSequence);

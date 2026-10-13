@@ -40,6 +40,45 @@ public sealed class ExperimentChannelTests
     }
 
     [TestMethod]
+    public void PublishedLeaseTimestampUsesPayloadNotTheLaterReportWrite()
+    {
+        WithChannel((channel, runId) =>
+        {
+            var timestamp = DateTime.UtcNow.AddMinutes(-1);
+            RunFiles.Write(
+                Path.Combine(channel.InputRoot, "leases", "00000005.json"),
+                new { RunId = runId, Sequence = 5, TimestampUtc = timestamp });
+            var report = System.Text.Json.Nodes.JsonNode.Parse(
+                $$"""{"RunId":"{{runId}}","Sequence":5,"LastPublishedUtc":"{{timestamp.AddMilliseconds(583):O}}"}""")!.AsObject();
+            Assert.AreEqual(timestamp, channel.ReadLastPublishedLeaseTimestamp(report));
+        });
+    }
+
+    [TestMethod]
+    [DataRow("wrong-run", 5, 5)]
+    [DataRow(null, 5, 6)]
+    [DataRow(null, 0, 0)]
+    public void PublishedLeaseTimestampRejectsWrongRunOrGeneration(string? leaseRun, int published, int actual)
+    {
+        WithChannel((channel, runId) =>
+        {
+            RunFiles.Write(
+                Path.Combine(channel.InputRoot, "leases", $"{published:D8}.json"),
+                new { RunId = leaseRun ?? runId, Sequence = actual, TimestampUtc = DateTime.UtcNow });
+            var report = System.Text.Json.Nodes.JsonNode.Parse(
+                $$"""{"RunId":"{{runId}}","Sequence":{{published}}}""")!.AsObject();
+            if (published == 0)
+            {
+                Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => channel.ReadLastPublishedLeaseTimestamp(report));
+            }
+            else
+            {
+                Assert.ThrowsExactly<InvalidDataException>(() => channel.ReadLastPublishedLeaseTimestamp(report));
+            }
+        });
+    }
+
+    [TestMethod]
     public void CommittedReadinessBypassesDiscovery()
     {
         WithChannel((channel, runId) =>

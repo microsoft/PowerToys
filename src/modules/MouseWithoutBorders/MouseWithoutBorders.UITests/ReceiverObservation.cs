@@ -8,6 +8,19 @@ namespace Microsoft.MouseWithoutBorders.UITests;
 
 internal static class ReceiverObservation
 {
+    internal static (int X, int Y) ClickProbePosition(int left, int top, int right, int bottom, int probe)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(probe);
+        if (right - left <= 62 || bottom - top <= 62)
+        {
+            throw new ArgumentException("The receiver has no safe physical click surface.");
+        }
+
+        var x = (probe % 4) is 0 or 2 ? left + ((right - left) / 4) : right - ((right - left) / 4);
+        var y = (probe % 4) is 0 or 1 ? top + ((bottom - top) / 4) : bottom - ((bottom - top) / 4);
+        return (Math.Clamp(x, left + 31, right - 31), Math.Clamp(y, top + 31, bottom - 31));
+    }
+
     internal static bool IsPhysicalClickTarget(JsonObject observation, long expectedReceiver)
     {
         var target = observation["MouseTarget"] as JsonObject;

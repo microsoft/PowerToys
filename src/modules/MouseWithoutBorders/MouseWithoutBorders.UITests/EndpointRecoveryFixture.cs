@@ -189,7 +189,7 @@ internal sealed class EndpointRecoveryFixture : IDisposable
             () => RunFiles.Read(publisherPath)["Stage"]?.GetValue<string>() == "ParentExited",
             Budget(15),
             "The lease publisher did not observe its retained owner exit.");
-        var lastPublished = RunFiles.Read(publisherPath)["LastPublishedUtc"]!.GetValue<DateTime>().ToUniversalTime();
+        var lastPublished = host.ReadLastPublishedLeaseTimestamp(RunFiles.Read(publisherPath));
         RunFiles.Wait(() => !worker!.IsCurrent(), Budget(95), "The dead lease did not stop its owned endpoint.");
         var failurePath = Path.Combine(host.OutputRoot, "failed.json");
         var failure = RunFiles.Read(failurePath);

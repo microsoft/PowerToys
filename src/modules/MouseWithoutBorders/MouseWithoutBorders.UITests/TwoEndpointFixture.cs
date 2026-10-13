@@ -622,6 +622,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         RequireHostForeground();
         MouseHelper.MoveBy(30, 30, steps: 3);
         int stableClickTarget = 0;
+        int blockedClickProbes = 0;
         RunFiles.Wait(() =>
         {
             var current = Observe(guest);
@@ -630,6 +631,8 @@ internal sealed class TwoEndpointFixture : IDisposable
         RunFiles.Wait(() =>
         {
             var current = Observe(guest);
+            Assert.AreEqual(guestReceiverHwnd, current["ForegroundHwnd"]!.GetValue<long>(),
+                "No remote probe movement sent: the exact guest receiver must retain foreground.");
             int x = current["CursorX"]!.GetValue<int>();
             int y = current["CursorY"]!.GetValue<int>();
             int left = current["ClickLeft"]!.GetValue<int>();
@@ -640,9 +643,18 @@ internal sealed class TwoEndpointFixture : IDisposable
             {
                 // A delayed MWB cursor overlay can still intercept the button
                 // even when the receiver is foreground and the cursor is inside.
-                stableClickTarget = ReceiverObservation.IsPhysicalClickTarget(current, guestReceiverHwnd)
-                    ? stableClickTarget + 1 : 0;
-                return stableClickTarget >= 2;
+                if (ReceiverObservation.IsPhysicalClickTarget(current, guestReceiverHwnd))
+                {
+                    stableClickTarget++;
+                    return stableClickTarget >= 2;
+                }
+
+                stableClickTarget = 0;
+                var probe = ReceiverObservation.ClickProbePosition(left, top, right, bottom, blockedClickProbes++);
+                RequireHostForeground();
+                MouseHelper.MoveBy(Math.Clamp(probe.X - x, -100, 100),
+                    Math.Clamp(probe.Y - y, -100, 100), steps: 4);
+                return false;
             }
 
             stableClickTarget = 0;
