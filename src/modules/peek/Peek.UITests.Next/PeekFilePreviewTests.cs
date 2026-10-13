@@ -48,15 +48,16 @@ public class PeekFilePreviewTests : UITestBase
         {
             ForcePipelineLightTheme();
 
-            SettingsConfigHelper.UpdateModuleSettings(
-                "Peek",
-                """
+            const string DefaultPeekSettings = """
                 {
                   "name": "Peek",
                   "version": "1.0",
                   "properties": {}
                 }
-                """,
+                """;
+            SettingsConfigHelper.UpdateModuleSettings(
+                "Peek",
+                DefaultPeekSettings,
                 settings =>
                 {
                     var properties = settings["properties"] as JsonObject ?? new JsonObject();
@@ -484,14 +485,15 @@ public class PeekFilePreviewTests : UITestBase
         var normalizedPaths = selectedPaths.Select(NormalizePath).ToList();
         var normalizedFocusedPath = NormalizePath(focusedPath);
 
-        Assert.IsTrue(
-            SetAndWaitForExplorerSelection(
-                explorerWindow.WindowHandle,
-                normalizedPaths,
-                normalizedFocusedPath,
-                ExplorerOpenTimeoutMS),
+        bool selectionEstablished = SetAndWaitForExplorerSelection(
+            explorerWindow.WindowHandle,
+            normalizedPaths,
+            normalizedFocusedPath,
+            ExplorerOpenTimeoutMS);
+        string selectionMessage =
             $"Explorer did not establish the expected selection [{string.Join(", ", normalizedPaths.Select(Path.GetFileName))}] " +
-            $"with '{Path.GetFileName(normalizedFocusedPath)}' focused.");
+            $"with '{Path.GetFileName(normalizedFocusedPath)}' focused.";
+        Assert.IsTrue(selectionEstablished, selectionMessage);
 
         explorerWindowHandle = explorerWindow.WindowHandle;
         expectedExplorerSelection = normalizedPaths;
@@ -804,11 +806,12 @@ public class PeekFilePreviewTests : UITestBase
     private void EnsurePeekWindowForeground(long windowHandle)
     {
         var nativeWindowHandle = new IntPtr(windowHandle);
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(nativeWindowHandle, PeekWindowTimeoutMS, pollIntervalMS: 250),
+        bool isForeground = WindowControl.WaitForForeground(nativeWindowHandle, PeekWindowTimeoutMS, pollIntervalMS: 250);
+        string foregroundMessage =
             $"Peek HWND {windowHandle} did not become the foreground window within " +
             $"{PeekWindowTimeoutMS / 1_000}s." + Environment.NewLine +
-            GetActivationDiagnostics("Peek foreground activation failed"));
+            GetActivationDiagnostics("Peek foreground activation failed");
+        Assert.IsTrue(isForeground, foregroundMessage);
     }
 
     private static void EnsurePeekReady(Session peekWindow)
@@ -816,10 +819,11 @@ public class PeekFilePreviewTests : UITestBase
         EnsurePeekWindowInteractive(peekWindow);
 
         var previewState = peekWindow.Find<Element>(By.AccessibilityId("PreviewStateAutomationPeer"), 15_000);
-        Assert.IsTrue(
-            previewState.WaitForValue("Loaded", timeoutMS: PreviewLoadTimeoutMS),
+        bool loaded = previewState.WaitForValue("Loaded", timeoutMS: PreviewLoadTimeoutMS);
+        string loadedMessage =
             $"Peek did not finish loading '{peekWindow.WindowTitle}' within {PreviewLoadTimeoutMS / 1_000}s. " +
-            $"Last preview state: '{previewState.GetValue()}'.");
+            $"Last preview state: '{previewState.GetValue()}'.";
+        Assert.IsTrue(loaded, loadedMessage);
 
         var loadingIndicator = peekWindow
             .FindAll<Element>(By.AccessibilityId("LoadingIndicator"), 1_000)
