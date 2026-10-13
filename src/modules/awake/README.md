@@ -190,6 +190,38 @@ The four state icons retain the original pixel-identical 32-bit artwork at
 icon is unchanged. Unused `normal.ico` and `scheduled.ico` are removed. Total source
 icon bytes fall from 689,266 to 158,376 without dropping the high-resolution frame.
 
+#### Follow-up: compiler settings versus retained code
+
+Additional x64 experiments used the same source and timed workload:
+
+| Experiment | Executable bytes | Startup median | Private memory | Disposition |
+|------------|------------------|----------------|----------------|-------------|
+| Speed optimization, identical-method folding off | 16,099,840 | 60.8 / 63.2 ms | 6.7 / 6.6 MiB | Command-line build override only |
+| Size optimization, identical-method folding on | 12,554,240 | 67.9 ms | 9.1 MiB | Existing branch configuration retained |
+| Shared settings serializer: metadata generation only | 12,407,808 | Not measured | Not measured | One-line experiment reverted |
+| Defer settings service initialization in standalone mode | 12,554,240 | 64.6 ms | 9.2 MiB | Experiment reverted; no meaningful measured gain |
+
+Speed versus size changes two compiler settings together, so these results do not
+isolate either setting's individual effect. The speed configuration was measured
+twice. The size configuration saves 3,545,600 executable bytes (22%), but its observed
+private memory is higher; executable size is not a proxy for process memory.
+The small startup and CPU-cycle differences are not sufficient for statistical
+claims about which configuration is faster.
+
+The NativeAOT size map identifies about 2.39 million bytes of nodes whose names
+refer to the shared settings library, including about 0.76 million bytes referring
+to its generated JSON context. These are overlapping attribution groups, not
+guaranteed removable package bytes. The context registers settings for many
+modules, while Awake needs only its own settings. It remains reachable through the
+shared settings infrastructure even though Awake has its own serialization context.
+Switching off generated fast-write methods alone saved just 146,432 bytes (1.2%).
+
+These experiments do not demonstrate a large, safe code-deletion win. The remaining
+gap combines .NET runtime costs with a broader dependency graph and a heavier
+event/timer/interop design than the Rust rewrite. Further narrowing the shared
+serialization boundary or replacing the timer architecture would be substantive
+engineering work, not another compiler switch. No such refactor was attempted.
+
 ### Tests
 
 From `src\modules\awake\Awake.UnitTests`, build with the repository scripts and
