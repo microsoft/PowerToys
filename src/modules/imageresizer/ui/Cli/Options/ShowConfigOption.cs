@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class ShowConfigOption : Option<bool>
     {
-        private static readonly string[] _aliases = ["--show-config", "--config"];
-
         public ShowConfigOption()
-            : base(_aliases, Properties.Resources.CLI_Option_ShowConfig)
+            : base("--show-config", "--config")
         {
+            Description = Properties.Resources.CLI_Option_ShowConfig;
         }
     }
 }

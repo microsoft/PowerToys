@@ -92,6 +92,7 @@
     <ClInclude Include="centralized_hotkeys.h" />
   <ClInclude Include="quick_access_host.h" />
     <ClInclude Include="general_settings.h" />
+    <ClInclude Include="general_settings_reader.h" />
     <ClInclude Include="hotkey_conflict_detector.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="centralized_kb_hook.h" />
