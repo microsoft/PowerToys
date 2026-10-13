@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
@@ -71,6 +72,9 @@ public sealed partial class ListItemsView : UserControl,
     private bool _isMessengerRegistered;
     private ScrollViewer? _itemsScrollViewer;
     private ListViewBase? _itemsScrollViewerOwner;
+    private bool _viewportFillCheckQueued;
+    private int _lastViewportFillItemCount = -1;
+    private (string SearchText, string? FilterId) _viewportFillQueryContext;
     private bool _areNumberedShortcutCuesVisible;
     private bool _numberedShortcutCueUpdatePending;
     private Border[]? _numberedShortcutCues;
@@ -108,6 +112,7 @@ public sealed partial class ListItemsView : UserControl,
 
         this.Loaded += OnLoaded;
         this.Unloaded += OnUnloaded;
+        this.LayoutUpdated += Items_LayoutUpdated;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -123,6 +128,7 @@ public sealed partial class ListItemsView : UserControl,
         RegisterExistingRealizedItems();
         _accessKeyMode.IsActiveChanged += AccessKeyMode_IsActiveChanged;
         SetNumberedShortcutCuesVisibility(_accessKeyMode.IsActive);
+        QueueViewportFillCheck();
     }
 
     internal void DetachFromPage()
@@ -469,6 +475,8 @@ public sealed partial class ListItemsView : UserControl,
         {
             _itemsScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
         }
+
+        QueueViewportFillCheck();
     }
 
     private void Items_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
@@ -585,6 +593,71 @@ public sealed partial class ListItemsView : UserControl,
         if (scrollView.VerticalOffset >= (scrollView.ScrollableHeight * .8))
         {
             ViewModel?.LoadMoreIfNeeded();
+        }
+    }
+
+    private void Items_LayoutUpdated(object? sender, object e)
+    {
+        QueueViewportFillCheck();
+    }
+
+    private void ViewportFill_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ViewModel)
+            && e.PropertyName is nameof(ListViewModel.IsInitialized) or nameof(ListViewModel.IsLoading))
+        {
+            QueueViewportFillCheck();
+        }
+    }
+
+    private void QueueViewportFillCheck()
+    {
+        if (!_isLoaded 
+            || _viewportFillCheckQueued 
+            || ViewModel is not { IsInitialized: true, IsLoading: false } page 
+            || page.FilteredItems.Count == _lastViewportFillItemCount 
+            || (page.FilteredItems.Count > 0 && CurrentScrollViewer is not { ViewportHeight: > 0, ScrollableHeight: 0 }))
+        {
+            return;
+        }
+
+        _viewportFillCheckQueued = true;
+        if (!DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, FillViewport))
+        {
+            _viewportFillCheckQueued = false;
+        }
+    }
+
+    private void FillViewport()
+    {
+        try
+        {
+            if (!_isLoaded || ViewModel is not { IsInitialized: true, IsLoading: false } page || ActualHeight <= 0 || ActualWidth <= 0)
+            {
+                return;
+            }
+
+            // Settle layout after publication before deciding whether another batch fits.
+            ItemView.UpdateLayout();
+            if (!ReferenceEquals(page, ViewModel) || !_isLoaded)
+            {
+                return;
+            }
+
+            var itemCount = page.FilteredItems.Count;
+            if (itemCount == _lastViewportFillItemCount ||
+                (itemCount > 0 && CurrentScrollViewer is not { IsLoaded: true, ViewportHeight: > 0, ScrollableHeight: 0 }))
+            {
+                return;
+            }
+
+            // Do not chain requests when the last batch left the visible count unchanged.
+            _lastViewportFillItemCount = itemCount;
+            page.LoadMoreIfNeeded();
+        }
+        finally
+        {
+            _viewportFillCheckQueued = false;
         }
     }
 
@@ -918,6 +991,7 @@ public sealed partial class ListItemsView : UserControl,
         if (d is ListItemsView @this)
         {
             @this._lastInputSource = InputSource.None;
+            @this._lastViewportFillItemCount = -1;
             Interlocked.Increment(ref @this._itemsUpdatedVersion);
             @this.CancelPendingGridActions();
             @this.CancelPendingContextMenuOpen();
@@ -926,6 +1000,7 @@ public sealed partial class ListItemsView : UserControl,
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
+                old.PropertyChanged -= @this.ViewportFill_PropertyChanged;
             }
 
             // Reset latched state — selection sticky/last-pushed only make sense
@@ -946,6 +1021,7 @@ public sealed partial class ListItemsView : UserControl,
             if (e.NewValue is ListViewModel page)
             {
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
+                page.PropertyChanged += @this.ViewportFill_PropertyChanged;
 
                 // When the hosted ViewModel is swapped while we're already on
                 // screen (e.g. ParametersPage activating a list parameter), the
@@ -978,8 +1054,16 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        var queryContext = (sender.SearchTextBox, sender.Filters?.CurrentFilterId);
+        if (_viewportFillQueryContext != queryContext)
+        {
+            _viewportFillQueryContext = queryContext;
+            _lastViewportFillItemCount = -1;
+        }
+
         var version = Interlocked.Increment(ref _itemsUpdatedVersion);
         ProcessItemsUpdated(sender, args, version);
+        QueueViewportFillCheck();
     }
 
     private void ProcessItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args, long version)

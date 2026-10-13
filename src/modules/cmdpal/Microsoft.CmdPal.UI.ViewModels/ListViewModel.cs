@@ -26,6 +26,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
 
+    // In-proc pages fetch inline from LoadMore; hide this scheduler so work they start doesn't queue behind it.
+    private readonly TaskFactory _loadMoreTaskFactory = new(CancellationToken.None, TaskCreationOptions.HideScheduler, TaskContinuationOptions.None, new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+
     private Dictionary<IListItem, ListItemViewModel> _vmCache = new(VmCacheComparer);
 
     // TODO: Do we want a base "ItemsPageViewModel" for anything that's going to have items?
@@ -1276,7 +1279,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // state changes between our check and this reset
         }
 
-        _ = Task.Run(() =>
+        _ = _loadMoreTaskFactory.StartNew(() =>
         {
             // Execute all COM calls on background thread to avoid reentrancy issues with UI
             // with the UI thread when COM starts inner message pump
