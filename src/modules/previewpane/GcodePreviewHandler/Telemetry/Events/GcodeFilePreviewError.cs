@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode.Telemetry.Events
         /// <summary>
         /// Gets or sets the error message to log as part of the telemetry event.
         /// </summary>
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         /// <inheritdoc/>
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;

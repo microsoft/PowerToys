@@ -1729,6 +1729,7 @@ SOFTWARE.
 - ControlzEx
 - HelixToolkit
 - HelixToolkit.Core.Wpf
+- HtmlAgilityPack
 - hyjiacan.pinyin4net
 - Interop.Microsoft.Office.Interop.OneNote
 - LazyCache
@@ -1740,6 +1741,7 @@ SOFTWARE.
 - MSTest
 - MSTest.TestFramework
 - NJsonSchema
+- Newtonsoft.Json
 - NLog
 - NLog.Extensions.Logging
 - NLog.Schema
@@ -1753,7 +1755,6 @@ SOFTWARE.
 - StreamJsonRpc
 - StyleCop.Analyzers
 - ToolGood.Words.Pinyin
-- UnicodeInformation
 - UnitsNet
 - UTF.Unknown
 - WinUIEx

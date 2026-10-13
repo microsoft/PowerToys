@@ -620,16 +620,11 @@
                         local:SettingsPageTarget.Id="compact-position"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE78B;}"
                         IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
-                        <Slider
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        <Button
+                            x:Name="OpenCompactPositionPickerButton"
+                            x:Uid="Settings_GeneralPage_CompactCenterHeight_Button"
                             AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactCenterHeight"
-                            Maximum="100"
-                            Minimum="0"
-                            Orientation="Horizontal"
-                            StepFrequency="5"
-                            TickFrequency="25"
-                            TickPlacement="Outside"
-                            Value="{x:Bind ViewModel.CompactCenterHeightPercentage, Mode=TwoWay}" />
+                            Click="OpenCompactPositionPicker_Click" />
                     </controls:SettingsCard>
 
                     <controls:SettingsExpander

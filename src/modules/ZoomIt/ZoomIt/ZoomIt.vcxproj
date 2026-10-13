@@ -529,6 +529,8 @@
   <ItemGroup>
     <ClInclude Include="..\ZoomItBreak\BreakTimer.h" />
     <ClInclude Include="AudioSampleGenerator.h" />
+    <ClInclude Include="AudioSamplePacer.h" />
+    <ClInclude Include="AudioQueueLimits.h" />
     <ClInclude Include="ClipboardPayload.h" />
     <ClInclude Include="PasteChaperone.h" />
     <ClInclude Include="DictationBadge.h" />
@@ -567,6 +569,7 @@
     <ClInclude Include="WebcamPreviewWindow.h" />
     <ClInclude Include="ZoomAnimation.h" />
     <ClInclude Include="ZoomIt.h" />
+    <ClInclude Include="ZoomItMessages.h" />
     <ClInclude Include="ZoomItSettings.h" />
   </ItemGroup>
   <ItemGroup>

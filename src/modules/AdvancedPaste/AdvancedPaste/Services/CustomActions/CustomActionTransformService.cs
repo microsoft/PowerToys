@@ -31,17 +31,20 @@ namespace AdvancedPaste.Services.CustomActions
         private readonly IPasteAIProviderFactory providerFactory;
         private readonly IAICredentialsProvider credentialsProvider;
         private readonly IUserSettings userSettings;
+        private readonly Func<PasteAIProviderDefinition, bool> isProviderAllowed;
 
-        public CustomActionTransformService(IPromptModerationService promptModerationService, IPasteAIProviderFactory providerFactory, IAICredentialsProvider credentialsProvider, IUserSettings userSettings)
+        public CustomActionTransformService(IPromptModerationService promptModerationService, IPasteAIProviderFactory providerFactory, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, Func<PasteAIProviderDefinition, bool> isProviderAllowed = null)
         {
             this.promptModerationService = promptModerationService;
             this.providerFactory = providerFactory;
             this.credentialsProvider = credentialsProvider;
             this.userSettings = userSettings;
+            this.isProviderAllowed = isProviderAllowed ?? AdvancedPastePolicy.IsProviderAllowed;
         }
 
         public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress, string systemPromptOverride = null, string providerIdOverride = null)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var pasteConfig = userSettings?.PasteAIConfiguration;
             var providerConfig = BuildProviderConfig(pasteConfig, providerIdOverride);
 
@@ -168,6 +171,11 @@ namespace AdvancedPaste.Services.CustomActions
             else
             {
                 provider = config.ActiveProvider ?? config.Providers?.FirstOrDefault() ?? new PasteAIProviderDefinition();
+            }
+
+            if (!isProviderAllowed(provider))
+            {
+                throw new ProviderPolicyDisabledException();
             }
 
             var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
