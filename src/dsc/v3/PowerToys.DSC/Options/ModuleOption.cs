@@ -13,7 +13,8 @@ namespace PowerToys.DSC.Options;
 public sealed class ModuleOption : Option<string?>
 {
     public ModuleOption()
-        : base("--module", Resources.ModuleOptionDescription)
+        : base("--module")
     {
+        Description = Resources.ModuleOptionDescription;
     }
 }

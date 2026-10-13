@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.CommandLine.Invocation;
+using System.CommandLine;
 using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Commands;
@@ -18,8 +18,8 @@ public sealed class ExportCommand : BaseCommand
     }
 
     /// <inheritdoc/>
-    public override void CommandHandlerInternal(InvocationContext context)
+    public override int CommandHandlerInternal(ParseResult parseResult)
     {
-        context.ExitCode = Resource!.ExportState(Input) ? 0 : 1;
+        return Resource!.ExportState(Input) ? 0 : 1;
     }
 }
