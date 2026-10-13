@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Linq;
@@ -14,13 +15,13 @@ internal sealed class CliCommandLine
 {
     internal static string HelpText => Resources.Help_Text;
 
-    private static readonly string[] HelpAliases = { "--help", "-h", "-?" };
+    private static readonly ParserConfiguration NoTokenReplacement = new() { ResponseFileTokenReplacer = null };
 
     private readonly RootCommand _root = new(Resources.Description_Root);
     private readonly Command _schedule = new("schedule", Resources.Description_Schedule);
     private readonly Command _enable = new("enable", Resources.Description_Enable);
     private readonly Command _disable = new("disable", Resources.Description_Disable);
-    private readonly Option<string?> _mode = new("--mode", Resources.Description_Mode) { Arity = ArgumentArity.ExactlyOne };
+    private readonly Option<string?> _mode = new("--mode") { Description = Resources.Description_Mode, Arity = ArgumentArity.ExactlyOne };
 
     internal CliCommandLine()
         : this(presentationOnly: false)
@@ -29,32 +30,33 @@ internal sealed class CliCommandLine
 
     private CliCommandLine(bool presentationOnly)
     {
-        _root.AddGlobalOption(Json);
-        _root.AddGlobalOption(Help);
-        _root.AddGlobalOption(Version);
+        ClearDefaults(_root);
+        _root.Options.Add(Json);
+        _root.Options.Add(Help);
+        _root.Options.Add(Version);
         if (presentationOnly)
         {
             return;
         }
 
-        _root.AddCommand(new Command("status", Resources.Description_Status));
-        _root.AddCommand(new Command("light", Resources.Description_Light));
-        _root.AddCommand(new Command("dark", Resources.Description_Dark));
-        _root.AddCommand(new Command("toggle", Resources.Description_Toggle));
-        _enable.AddOption(_mode);
-        _schedule.AddCommand(_enable);
-        _schedule.AddCommand(_disable);
-        _root.AddCommand(_schedule);
+        _root.Subcommands.Add(new Command("status", Resources.Description_Status));
+        _root.Subcommands.Add(new Command("light", Resources.Description_Light));
+        _root.Subcommands.Add(new Command("dark", Resources.Description_Dark));
+        _root.Subcommands.Add(new Command("toggle", Resources.Description_Toggle));
+        _enable.Options.Add(_mode);
+        _schedule.Subcommands.Add(_enable);
+        _schedule.Subcommands.Add(_disable);
+        _root.Subcommands.Add(_schedule);
     }
 
-    internal Option<bool> Json { get; } = new("--json", Resources.Description_Json);
+    internal Option<bool> Json { get; } = new("--json") { Description = Resources.Description_Json, Recursive = true };
 
-    internal Option<bool> Help { get; } = new(HelpAliases, Resources.Description_Help);
+    internal Option<bool> Help { get; } = new("--help", "-h", "-?") { Description = Resources.Description_Help, Recursive = true };
 
-    internal Option<bool> Version { get; } = new("--version", Resources.Description_Version);
+    internal Option<bool> Version { get; } = new("--version") { Description = Resources.Description_Version, Recursive = true };
 
     internal ParseResult Parse(string[] expandedArgs)
-        => new Parser(new CommandLineConfiguration(_root, enableDirectives: false, enableTokenReplacement: false)).Parse(expandedArgs);
+        => _root.Parse(expandedArgs, NoTokenReplacement);
 
     internal static (string[] Arguments, bool Json, bool Help, bool Version, string? Error) ParsePresentationOptions(string[] args)
     {
@@ -62,7 +64,8 @@ internal sealed class CliCommandLine
         // tokens cannot distinguish --mode --help from --mode=--help, so preserve the
         // expanded argument text for both parsing passes. Neither pass reopens a file.
         var expansionRoot = new RootCommand { TreatUnmatchedTokensAsErrors = false };
-        var expansion = new Parser(new CommandLineConfiguration(expansionRoot, enableDirectives: false)).Parse(args);
+        ClearDefaults(expansionRoot);
+        var expansion = expansionRoot.Parse(args);
         string[] expandedArgs = expansion.Tokens.Select(token => token.Value).ToArray();
 
         // Parse presentation options independently: the pinned parser can otherwise consume
@@ -84,28 +87,51 @@ internal sealed class CliCommandLine
             // unmatched and treats the option as true. Validate individual tokens using
             // the parser rather than reimplementing its aliases or assignment syntax.
             var token = assignmentValidator.Parse(new[] { argument });
-            if (token.Errors.Count != 0 && token.RootCommandResult.Children.OfType<OptionResult>().Any())
+            if (token.Errors.Count != 0 && token.RootCommandResult.Children.OfType<OptionResult>().Any(option => !option.Implicit))
             {
                 errors.AddRange(token.Errors.Select(error => error.Message));
             }
         }
 
-        var jsonResult = parsed.FindResultFor(presentation.Json);
-        bool json = jsonResult?.ErrorMessage is null && parsed.GetValueForOption(presentation.Json);
-        bool onlyJson = parsed.UnmatchedTokens.Count == 0 && parsed.UnparsedTokens.Count == 0 &&
-            parsed.FindResultFor(presentation.Help) is null && parsed.FindResultFor(presentation.Version) is null &&
+        var jsonResult = parsed.GetResult(presentation.Json);
+        bool json = (jsonResult is null || !jsonResult.Errors.Any()) && parsed.GetValue(presentation.Json);
+        bool onlyJson = parsed.UnmatchedTokens.Count == 0 && !HasDirectives(parsed) &&
+            !IsSpecified(parsed, presentation.Help) && !IsSpecified(parsed, presentation.Version) &&
             !parsed.Tokens.Any(token => token.Type == TokenType.DoubleDash);
 
         return errors.Count == 0
-            ? (expandedArgs, json, onlyJson || parsed.GetValueForOption(presentation.Help), parsed.GetValueForOption(presentation.Version), null)
+            ? (expandedArgs, json, onlyJson || parsed.GetValue(presentation.Help), parsed.GetValue(presentation.Version), null)
             : (expandedArgs, json, false, false, string.Join(" ", errors.Distinct()));
+    }
+
+    // Directives are disabled for this CLI. System.CommandLine 2.0 still tokenizes leading
+    // [name] arguments as directives and ignores unknown ones, so report them as unrecognized.
+    internal static List<string> GetErrors(ParseResult result)
+        => result.Tokens.Where(token => token.Type == TokenType.Directive)
+            .Select(token => Resources.Error_UnrecognizedArgument(token.Value))
+            .Concat(result.Errors.Select(error => error.Message))
+            .ToList();
+
+    private static bool HasDirectives(ParseResult result)
+        => result.Tokens.Any(token => token.Type == TokenType.Directive);
+
+    // System.CommandLine 2.0 reports implicit results for options that have default values.
+    private static bool IsSpecified(ParseResult result, Option option)
+        => result.GetResult(option) is { Implicit: false };
+
+    // System.CommandLine 2.0 adds help, version, and directives to every RootCommand. This CLI
+    // owns those presentation options and treats directive-like tokens as ordinary arguments.
+    private static void ClearDefaults(RootCommand root)
+    {
+        root.Options.Clear();
+        root.Directives.Clear();
     }
 
     internal CliRequest CreateRequest(ParseResult result)
     {
         if (result.CommandResult.Command == _enable)
         {
-            string? mode = result.GetValueForOption(_mode) switch
+            string? mode = result.GetValue(_mode) switch
             {
                 null => null,
                 "fixed-hours" => "FixedHours",
