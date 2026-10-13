@@ -58,6 +58,20 @@ public:
         return { false, std::move(request) };
     }
 
+    template<typename Launch>
+    bool TryLaunch(Launch&& launch)
+    {
+        std::scoped_lock lock(mutex);
+        if (stopped || !initialized)
+        {
+            return false;
+        }
+
+        // Publish the process ID before releasing this lock. Stop() either cancels
+        // creation or waits until close_settings_window() can see the child.
+        return std::forward<Launch>(launch)();
+    }
+
     void Stop()
     {
         std::scoped_lock lock(mutex);

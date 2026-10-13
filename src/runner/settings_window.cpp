@@ -556,31 +556,41 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     //    }
     //}
 
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+    {
+        Logger::error(L"Failed to open Runner token before launching Settings: {}", GetLastError());
+        goto LExit;
+    }
+
     if (FALSE == process_created)
     {
         // The runner is not elevated or we failed to create the process using the
         // attribute list from Windows Explorer (this happens when PowerToys is executed
         // as Administrator from a non-Administrator user or an error occur trying).
         // In the second case the Settings process will run elevated.
-        STARTUPINFO startup_info = { sizeof(startup_info) };
-        if (!CreateProcessW(executable_path.c_str(),
-                            executable_args.data(),
-                            nullptr,
-                            nullptr,
-                            FALSE,
-                            0,
-                            nullptr,
-                            nullptr,
-                            &startup_info,
-                            &process_info))
+        if (!settings_window_startup.TryLaunch([&]() {
+                STARTUPINFO startup_info = { sizeof(startup_info) };
+                if (!CreateProcessW(executable_path.c_str(),
+                                    executable_args.data(),
+                                    nullptr,
+                                    nullptr,
+                                    FALSE,
+                                    0,
+                                    nullptr,
+                                    nullptr,
+                                    &startup_info,
+                                    &process_info))
+                {
+                    Logger::error(L"Failed to launch Settings: {}", GetLastError());
+                    return false;
+                }
+
+                g_settings_process_id = process_info.dwProcessId;
+                return true;
+            }))
         {
             goto LExit;
         }
-    }
-
-    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
-    {
-        goto LExit;
     }
 
     {
@@ -615,7 +625,6 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
                 current_settings_ipc->send(result.Stringify().c_str());
         });
 
-        g_settings_process_id = process_info.dwProcessId;
         g_isLaunchInProgress = false;
     }
 
