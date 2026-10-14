@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Dock;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Utilities;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -54,6 +55,7 @@ public sealed partial class TaskbarWindow : WindowEx,
     private bool _disposed;
     private bool _clipRunning;
     private bool _clipRequested;
+    private bool _isFullScreenAppOpen;
     private TaskbarEdge _lastKnownEdge;
     private RECT _lastPollTaskbarRect;
 
@@ -187,6 +189,14 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         try
         {
+            // Like the dock, get out of the way of fullscreen apps. Pending
+            // taskbar changes are left unconsumed and handled once we're back.
+            UpdateFullScreenState();
+            if (_isFullScreenAppOpen)
+            {
+                return;
+            }
+
             // Explorer can raise the taskbar without a layout WinEvent, including
             // when it is already foreground. Keep this independent of clipping
             // and edit mode, which must not suspend z-order maintenance.
@@ -204,9 +214,51 @@ public sealed partial class TaskbarWindow : WindowEx,
         }
     }
 
+    private void UpdateFullScreenState()
+    {
+        var flags = WindowHelper.GetUserNotificationFlags();
+        var isFullScreenAppOpen = flags.IsFullscreenState || flags.IsBusy;
+        if (isFullScreenAppOpen == _isFullScreenAppOpen)
+        {
+            return;
+        }
+
+        _isFullScreenAppOpen = isFullScreenAppOpen;
+        if (isFullScreenAppOpen)
+        {
+            _autoHidePollTimer.Stop();
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            return;
+        }
+
+        if (PInvoke.IsWindowVisible(_hwnd))
+        {
+            return;
+        }
+
+        var shellTray = PInvoke.FindWindow("Shell_TrayWnd", null);
+        if (shellTray.IsNull)
+        {
+            return;
+        }
+
+        PInvoke.GetWindowRect(shellTray, out var taskbarRect);
+        if (IsTaskbarOnScreen(shellTray, taskbarRect))
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+            MoveToTaskbar();
+        }
+        else
+        {
+            // Auto-hide taskbar is currently hidden; wait for it to reappear.
+            _lastPollTaskbarRect = default;
+            _autoHidePollTimer.Start();
+        }
+    }
+
     private void OnTaskbarChanged()
     {
-        if (_disposed || _bandsControl.IsEditMode || _clipSuspended)
+        if (_disposed || _isFullScreenAppOpen || _bandsControl.IsEditMode || _clipSuspended)
         {
             return;
         }
@@ -270,7 +322,7 @@ public sealed partial class TaskbarWindow : WindowEx,
     /// </summary>
     private void AutoHidePollTick(DispatcherQueueTimer sender, object args)
     {
-        if (_disposed)
+        if (_disposed || _isFullScreenAppOpen)
         {
             sender.Stop();
             return;
