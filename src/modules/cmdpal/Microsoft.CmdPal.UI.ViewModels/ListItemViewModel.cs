@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -13,6 +14,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ListItemViewModel : CommandItemViewModel
 {
     private const int MaxVisibleTags = 3;
+
+    private long _detailsRequestVersion;
+    private long _publishedDetailsVersion;
 
     public new ExtensionObject<IListItem> Model { get; }
 
@@ -38,6 +42,32 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     [MemberNotNullWhen(true, nameof(Details))]
     public bool HasDetails => Details is not null;
+
+    public override ItemSurface Surface { get; }
+
+    // Owned here; access and replace under ContextItemsLock.
+    protected CommandContextItemViewModel? UnsafeShowDetailsCommand { get; private set; }
+
+    private bool IsManualDetailsMode =>
+        PageContext.TryGetTarget(out var pageContext) && pageContext is ListViewModel { ShowDetails: false };
+
+    private bool ShouldIncludeShowDetailsCommand =>
+        HasContextMenuSlotUnsafe(ContextMenuSlot.ShowDetails) && IsManualDetailsMode;
+
+    protected override CommandContextItemViewModel? ResolveContextMenuSlotUnsafe(ContextMenuSlot slot) =>
+        ReferenceEquals(slot, ContextMenuSlot.ShowDetails) && IsManualDetailsMode ? UnsafeShowDetailsCommand : null;
+
+    protected override void OnContextMenuItemsChanged()
+    {
+        try
+        {
+            RefreshDetailsCommand(notify: false);
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to refresh the list item details command", ex);
+        }
+    }
 
     public string AccessibleName { get; private set; } = string.Empty;
 
@@ -73,10 +103,17 @@ public partial class ListItemViewModel : CommandItemViewModel
         }
     }
 
-    public ListItemViewModel(IListItem model, WeakReference<IPageContext> context, IContextMenuFactory contextMenuFactory)
+    public ListItemViewModel(
+        IListItem model,
+        WeakReference<IPageContext> context,
+        IContextMenuFactory contextMenuFactory,
+        ItemSurface surface)
         : base(new(model), context, contextMenuFactory)
     {
+        ArgumentNullException.ThrowIfNull(surface);
+
         Model = new ExtensionObject<IListItem>(model);
+        Surface = surface;
     }
 
     public override void InitializeProperties()
@@ -112,22 +149,24 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public override void SlowInitializeProperties()
     {
+        // Re-selection must re-read extension-owned values.
         base.SlowInitializeProperties();
+
         var model = Model.Unsafe;
         if (model is null || IsCleanedUp)
         {
             return;
         }
 
-        var extensionDetails = model.Details;
-        if (extensionDetails is not null)
+        try
         {
-            Details = new(extensionDetails, PageContext);
-            Details.InitializeProperties();
-            UpdateProperty(nameof(Details), nameof(HasDetails));
+            UpdateDetails(model);
         }
-
-        AddShowDetailsCommands();
+        catch (Exception ex)
+        {
+            // Details are optional; their failure must not hide a working item.
+            CoreLogger.LogError("Failed to initialize list item details", ex);
+        }
 
         TextToSuggest = model.TextToSuggest;
         UpdateProperty(nameof(TextToSuggest));
@@ -135,7 +174,10 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     protected override void FetchProperty(string propertyName)
     {
-        base.FetchProperty(propertyName);
+        if (propertyName != nameof(Details))
+        {
+            base.FetchProperty(propertyName);
+        }
 
         var model = this.Model.Unsafe;
         if (model is null || IsCleanedUp)
@@ -162,16 +204,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 UpdateProperty(nameof(Type), nameof(IsInteractive));
                 break;
             case nameof(Details):
-                var existingReference = Details;
-                var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
-                Details?.InitializeProperties();
-                UpdateProperty(nameof(Details), nameof(HasDetails));
-                UpdateShowDetailsCommand();
-                existingReference?.SafeCleanup();
-                break;
-            case nameof(model.MoreCommands):
-                AddShowDetailsCommands();
+                UpdateDetails(model);
                 break;
             case nameof(model.Title):
                 UpdateProperty(nameof(Title));
@@ -189,6 +222,136 @@ public partial class ListItemViewModel : CommandItemViewModel
         }
     }
 
+    private void UpdateDetails(IListItem model)
+    {
+        if (!Surface.SupportsDetailsPane)
+        {
+            return;
+        }
+
+        long version;
+        lock (ContextItemsLock)
+        {
+            if (IsCleanedUp)
+            {
+                return;
+            }
+
+            version = ++_detailsRequestVersion;
+        }
+
+        DetailsViewModel? details = null;
+        try
+        {
+            var extensionDetails = model.Details;
+            if (extensionDetails is not null)
+            {
+                details = new(extensionDetails, PageContext);
+                details.InitializeProperties();
+            }
+        }
+        catch
+        {
+            details?.SafeCleanup();
+            throw;
+        }
+
+        ReconcileDetails(details, version, notify: true);
+    }
+
+    internal void RefreshDetailsCommand(bool notify = true) =>
+        ReconcileDetails(updatedDetails: null, version: null, notify);
+
+    // A version transfers ownership of newly loaded details; null refreshes the current details.
+    private void ReconcileDetails(DetailsViewModel? updatedDetails, long? version, bool notify)
+    {
+        DetailsViewModel? commandDetails = null;
+        CommandContextItemViewModel? showDetails = null;
+        DetailsViewModel? replacedDetails = null;
+        CommandContextItemViewModel? replacedCommand = null;
+        var published = false;
+        var menuChanged = false;
+        try
+        {
+            while (true)
+            {
+                DetailsViewModel? details;
+                bool includeCommand;
+                lock (ContextItemsLock)
+                {
+                    // A failed newer read must not invalidate a successful pending update.
+                    if (IsCleanedUp || (version is { } pendingVersion && pendingVersion <= _publishedDetailsVersion))
+                    {
+                        break;
+                    }
+
+                    details = version.HasValue ? updatedDetails : Details;
+                    includeCommand = details is not null && ShouldIncludeShowDetailsCommand;
+                    if (!version.HasValue && includeCommand == (UnsafeShowDetailsCommand is not null))
+                    {
+                        menuChanged = RefreshContextMenuSnapshotUnsafe();
+                        break;
+                    }
+
+                    if (includeCommand == (showDetails is not null) &&
+                        (!includeCommand || ReferenceEquals(commandDetails, details)))
+                    {
+                        replacedCommand = UnsafeShowDetailsCommand;
+                        UnsafeShowDetailsCommand = showDetails;
+                        if (version is { } detailsVersion)
+                        {
+                            replacedDetails = Details;
+                            Details = details;
+                            _publishedDetailsVersion = detailsVersion;
+                        }
+
+                        menuChanged = RefreshContextMenuSnapshotUnsafe();
+                        published = true;
+                        break;
+                    }
+                }
+
+                showDetails?.SafeCleanup();
+                commandDetails = details;
+                showDetails = includeCommand ? CreateShowDetailsCommand(details!) : null;
+            }
+        }
+        finally
+        {
+            (published ? replacedCommand : showDetails)?.SafeCleanup();
+            if (version.HasValue)
+            {
+                (published ? replacedDetails : updatedDetails)?.SafeCleanup();
+            }
+        }
+
+        if (published && version.HasValue && !ReferenceEquals(replacedDetails, updatedDetails))
+        {
+            UpdateProperty(nameof(Details), nameof(HasDetails));
+        }
+
+        if (menuChanged && notify)
+        {
+            NotifyContextMenuChanged();
+        }
+    }
+
+    private CommandContextItemViewModel CreateShowDetailsCommand(DetailsViewModel details)
+    {
+        var command = new ShowDetailsCommand(details);
+        var item = new CommandContextItemViewModel(new CommandContextItem(command) { Icon = command.Icon }, PageContext);
+        try
+        {
+            item.SlowInitializeProperties();
+            return item;
+        }
+        catch
+        {
+            item.SafeCleanup();
+            throw;
+        }
+    }
+
     // TODO: Do we want filters to match descriptions and other properties? Tags, etc... Yes?
     // TODO: Do we want to save off the score here so we can sort by it in our ListViewModel?
     public override string ToString() => $"{Name} ListItemViewModel";
@@ -196,82 +359,6 @@ public partial class ListItemViewModel : CommandItemViewModel
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
     public override int GetHashCode() => Model.GetHashCode();
-
-    private void AddShowDetailsCommands()
-    {
-        // If the parent page has ShowDetails = false and we have details,
-        // then we should add a show details action in the context menu.
-        if (HasDetails &&
-            PageContext.TryGetTarget(out var pageContext) &&
-            pageContext is ListViewModel listViewModel &&
-            !listViewModel.ShowDetails)
-        {
-            var addedCommand = false;
-            lock (ContextItemsLock)
-            {
-                // Check if "Show Details" action already exists to prevent duplicates
-                if (!UnsafeContextItems.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
-                                                  contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
-                {
-                    var showDetailsCommand = new ShowDetailsCommand(Details);
-                    var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
-                    {
-                        Icon = showDetailsCommand.Icon,
-                    };
-                    var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
-                    showDetailsContextItemViewModel.SlowInitializeProperties();
-                    UnsafeContextItems.Add(showDetailsContextItemViewModel);
-                    RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
-                    addedCommand = true;
-                }
-            }
-
-            if (addedCommand)
-            {
-                NotifyContextMenuChanged();
-            }
-        }
-    }
-
-    // This method is called when the details change to make sure we
-    // have the latest details in the show details command.
-    private void UpdateShowDetailsCommand()
-    {
-        // If the parent page has ShowDetails = false and we have details,
-        // then we should add a show details action in the context menu.
-        if (HasDetails &&
-            PageContext.TryGetTarget(out var pageContext) &&
-            pageContext is ListViewModel listViewModel &&
-            !listViewModel.ShowDetails)
-        {
-            CommandContextItemViewModel? oldCommand = null;
-            lock (ContextItemsLock)
-            {
-                oldCommand = UnsafeContextItems
-                    .OfType<CommandContextItemViewModel>()
-                    .FirstOrDefault(contextItemViewModel => contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
-
-                if (oldCommand is not null)
-                {
-                    UnsafeContextItems.Remove(oldCommand);
-                }
-
-                var showDetailsCommand = new ShowDetailsCommand(Details);
-                var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
-                {
-                    Icon = showDetailsCommand.Icon,
-                };
-                var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
-                showDetailsContextItemViewModel.SlowInitializeProperties();
-                UnsafeContextItems.Add(showDetailsContextItemViewModel);
-                RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
-            }
-
-            oldCommand?.SafeCleanup();
-
-            NotifyContextMenuChanged();
-        }
-    }
 
     private void UpdateTags(ITag[]? newTagsFromModel)
     {
@@ -357,7 +444,18 @@ public partial class ListItemViewModel : CommandItemViewModel
         // Tags don't have event handlers or anything to cleanup
         Tags?.ForEach(t => t.SafeCleanup());
         _overflowTag?.SafeCleanup();
-        Details?.SafeCleanup();
+        DetailsViewModel? details;
+        CommandContextItemViewModel? showDetails;
+        lock (ContextItemsLock)
+        {
+            details = Details;
+            Details = null;
+            showDetails = UnsafeShowDetailsCommand;
+            UnsafeShowDetailsCommand = null;
+        }
+
+        showDetails?.SafeCleanup();
+        details?.SafeCleanup();
 
         var model = Model.Unsafe;
         if (model is not null)

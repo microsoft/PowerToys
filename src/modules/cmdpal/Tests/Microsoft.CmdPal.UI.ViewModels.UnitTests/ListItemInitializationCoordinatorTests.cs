@@ -69,7 +69,7 @@ public sealed partial class ListItemInitializationCoordinatorTests
     private sealed partial class CleanupFailureListItemViewModel : ListItemViewModel
     {
         internal CleanupFailureListItemViewModel(IListItem model, CommandContextItemViewModel cleanupItem)
-            : base(model, new(TestContext), DefaultContextMenuFactory.Instance)
+            : base(model, new(TestContext), DefaultContextMenuFactory.Instance, ItemSurface.CommandPalette)
         {
             UnsafeContextItems.Add(cleanupItem);
         }
@@ -1129,7 +1129,7 @@ public sealed partial class ListItemInitializationCoordinatorTests
 
             // View models intentionally retain only a weak page-context reference.
             // Keep the stateless test context alive during allocation-heavy races.
-            viewModels[i] = new(models[i], new(TestContext), DefaultContextMenuFactory.Instance);
+            viewModels[i] = new(models[i], new(TestContext), DefaultContextMenuFactory.Instance, ItemSurface.CommandPalette);
             Assert.IsTrue(viewModels[i].SafeFastInit());
         }
 

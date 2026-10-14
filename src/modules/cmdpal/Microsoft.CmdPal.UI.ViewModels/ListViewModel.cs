@@ -460,7 +460,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         continue;
                     }
 
-                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory);
+                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory, ItemSurface.CommandPalette);
 
                     // If an item fails to load, silently ignore it.
                     if (viewModel.SafeFastInit())
@@ -1323,6 +1323,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(ShowDetails):
                 ShowDetails = model.ShowDetails;
+                RefreshDetailsCommands();
                 break;
             case nameof(PlaceholderText):
                 _modelPlaceholderText = model.PlaceholderText;
@@ -1363,6 +1364,20 @@ public partial class ListViewModel : PageViewModel, IDisposable
            {
                SendPageUiMessage(new UpdateCommandBarMessage(EmptyContent));
            });
+    }
+
+    private void RefreshDetailsCommands()
+    {
+        ListItemViewModel[] items;
+        lock (_listLock)
+        {
+            items = Items.ToArray();
+        }
+
+        foreach (var item in items)
+        {
+            item.RefreshDetailsCommand();
+        }
     }
 
     private void ApplyLayoutToItems()
