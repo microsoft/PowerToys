@@ -288,8 +288,9 @@ namespace Microsoft.Workspaces.UITests
                 .ToArray();
             Assert.HasCount(1, more, "The workspace actions button was not uniquely addressable.");
             more[0].Invoke(msPostAction: 0);
+
+            // The delete command's accessible name is the localized Resources.Delete, which reads "Remove".
             Assert.IsTrue(
-                // The delete command's accessible name is the localized Resources.Delete, which reads "Remove".
                 Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess).Has<Button>(By.Name("Remove"), 10_000),
                 "The workspace actions menu did not open.");
         }

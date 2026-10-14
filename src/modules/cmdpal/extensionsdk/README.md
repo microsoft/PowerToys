@@ -13,12 +13,3 @@ There are samples of just about everything you can do in [the samples project].
 Head over there to see basic usage of the APIs.
 
 [the samples project]: https://github.com/microsoft/PowerToys/tree/main/src/modules/cmdpal/ext/SamplePagesExtension
-
-## Toolkit resource metadata
-
-The Toolkit declares its neutral resource language in `Properties/AssemblyInfo.cs`.
-Official builds use Microsoft.Windows.Terminal.Versioning to rewrite assembly
-metadata instead of the .NET SDK's generator; the rewriter preserves this explicit
-attribute. `GenerateNeutralResourcesLanguageAttribute` is disabled in the Toolkit
-project to prevent duplicate attributes in ordinary SDK builds. Keep these settings
-together so both build paths retain the resource language without suppressing CA1824.
