@@ -150,4 +150,3 @@ public sealed class SettingsNavigationSmokeTests : UITestBase
 
     private readonly record struct NavigationCase(string? ParentGroupSlug, string NavItemSlug);
 }
-
