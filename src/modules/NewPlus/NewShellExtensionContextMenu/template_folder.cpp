@@ -25,19 +25,19 @@ void template_folder::rescan_template_folder()
 {
     list_of_templates.clear();
 
-    std::list<std::pair<std::wstring, template_item*>> dirs;
-    std::list<std::pair<std::wstring, template_item*>> files;
+    std::list<std::pair<std::wstring, std::shared_ptr<template_item>>> dirs;
+    std::list<std::pair<std::wstring, std::shared_ptr<template_item>>> files;
     for (const auto& entry : std::filesystem::directory_iterator(template_folder_path))
     {
         if (entry.is_directory())
         {
-            dirs.push_back({ entry.path().wstring(), new template_item(entry) });
+            dirs.push_back({ entry.path().wstring(), std::make_shared<template_item>(entry.path()) });
         }
         else
         {
             if (!newplus::helpers::variables::exclude_item(entry.path()))
             {
-                files.push_back({ entry.path().wstring(), new template_item(entry) });
+                files.push_back({ entry.path().wstring(), std::make_shared<template_item>(entry.path()) });
             }
         }
     }
@@ -49,7 +49,7 @@ void template_folder::rescan_template_folder()
     list_of_templates.splice(list_of_templates.end(), files);
 }
 
-template_item* template_folder::get_template_item(const int index) const
+std::shared_ptr<template_item> template_folder::get_template_item(const int index) const
 {
     auto it = list_of_templates.begin();
     std::advance(it, index);

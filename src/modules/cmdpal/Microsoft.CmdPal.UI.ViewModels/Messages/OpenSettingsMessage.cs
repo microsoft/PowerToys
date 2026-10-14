@@ -4,4 +4,18 @@
 
 namespace Microsoft.CmdPal.UI.Messages;
 
-public record OpenSettingsMessage(string SettingsPageTag = "", string? ExtensionGalleryId = null);
+/// <summary>Settings-window navigation request.</summary>
+/// <param name="SettingsPageTag">NavigationView page tag.</param>
+/// <param name="ExtensionGalleryId">Optional gallery extension ID.</param>
+/// <param name="SettingsLinkId">Optional stable settings link ID.</param>
+/// <param name="ExtensionProviderId">Optional extension-settings provider ID.</param>
+/// <remarks>Protocol routes set <paramref name="SettingsLinkId"/>; trusted UI navigation may set <paramref name="SettingsPageTag"/>.</remarks>
+public record OpenSettingsMessage(
+    string SettingsPageTag = "",
+    string? ExtensionGalleryId = null,
+    string? SettingsLinkId = null,
+    string? ExtensionProviderId = null)
+{
+    /// <summary>Command to reveal in extension settings, used by in-app search.</summary>
+    public string? CommandId { get; init; }
+}

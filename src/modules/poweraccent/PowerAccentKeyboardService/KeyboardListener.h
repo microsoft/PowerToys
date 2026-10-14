@@ -31,8 +31,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         KeyboardListener();
 
-        void KeyboardListener::InitHook();
-        void KeyboardListener::UnInitHook();
+        void InitHook();
+        void UnInitHook();
         void SetShowToolbarEvent(ShowToolbar showToolbarEvent);
         void SetCancelToolbarEvent(CancelToolbar cancelToolbarEvent);
         void SetHideToolbarEvent(HideToolbar hideToolbarEvent);

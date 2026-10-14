@@ -3,27 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-// shamelessly from https://github.com/PowerShell/PowerShell/blob/master/src/Microsoft.PowerShell.Commands.Management/commands/management/Clipboard.cs
+// This follows PowerShell's approach because extensions run without a foreground window.
 public static partial class ClipboardHelper
 {
-    private static readonly bool? _clipboardSupported = true;
-
-    // Used if an external clipboard is not available, e.g. if xclip is missing.
-    // This is useful for testing in CI as well.
-    private static string? _internalClipboard;
-
     public static string GetText()
     {
-        if (_clipboardSupported == false)
-        {
-            return _internalClipboard ?? string.Empty;
-        }
-
-        var tool = string.Empty;
-        var args = string.Empty;
         var clipboardText = string.Empty;
 
         ExecuteOnStaThread(() => GetTextImpl(out clipboardText));
@@ -32,16 +21,7 @@ public static partial class ClipboardHelper
 
     public static void SetText(string text)
     {
-        if (_clipboardSupported == false)
-        {
-            _internalClipboard = text;
-            return;
-        }
-
-        var tool = string.Empty;
-        var args = string.Empty;
         ExecuteOnStaThread(() => SetClipboardData(Tuple.Create(text, CF_UNICODETEXT)));
-        return;
     }
 
     public static void SetRtf(string plainText, string rtfText)
@@ -54,6 +34,34 @@ public static partial class ClipboardHelper
         ExecuteOnStaThread(() => SetClipboardData(
             Tuple.Create(plainText, CF_UNICODETEXT),
             Tuple.Create(rtfText, s_CF_RTF)));
+    }
+
+    public static void SetImage(RandomAccessStreamReference image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        var dataPackage = new DataPackage();
+        dataPackage.SetBitmap(image);
+        SetContent(dataPackage);
+    }
+
+    public static void SetContent(DataPackage content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        ExecuteOnStaThread(() =>
+        {
+            try
+            {
+                Clipboard.SetContent(content);
+                Clipboard.Flush();
+                return true;
+            }
+            catch (COMException)
+            {
+                return false;
+            }
+        });
     }
 
 #pragma warning disable SA1310 // Field names should not contain underscore
@@ -76,7 +84,7 @@ public static partial class ClipboardHelper
     private static partial bool GlobalUnlock(IntPtr hMem);
 
     [LibraryImport("kernel32.dll", EntryPoint = "RtlMoveMemory")]
-    private static partial void CopyMemory(IntPtr dest, IntPtr src, uint count);
+    private static partial void CopyMemory(IntPtr dest, IntPtr src, UIntPtr count);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -100,7 +108,7 @@ public static partial class ClipboardHelper
     [LibraryImport("user32.dll")]
     private static partial IntPtr SetClipboardData(uint format, IntPtr data);
 
-    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("user32.dll", EntryPoint = "RegisterClipboardFormatW", StringMarshalling = StringMarshalling.Utf16)]
     private static partial uint RegisterClipboardFormat(string lpszFormat);
 
 #pragma warning disable SA1310 // Field names should not contain underscore
@@ -123,10 +131,19 @@ public static partial class ClipboardHelper
                     var data = GetClipboardData(CF_UNICODETEXT);
                     if (data != IntPtr.Zero)
                     {
-                        data = GlobalLock(data);
-                        text = Marshal.PtrToStringUni(data) ?? string.Empty;
-                        GlobalUnlock(data);
-                        return true;
+                        var dataPointer = GlobalLock(data);
+                        if (dataPointer != IntPtr.Zero)
+                        {
+                            try
+                            {
+                                text = Marshal.PtrToStringUni(dataPointer) ?? string.Empty;
+                                return true;
+                            }
+                            finally
+                            {
+                                GlobalUnlock(data);
+                            }
+                        }
                     }
                 }
             }
@@ -137,10 +154,19 @@ public static partial class ClipboardHelper
                     var data = GetClipboardData(CF_TEXT);
                     if (data != IntPtr.Zero)
                     {
-                        data = GlobalLock(data);
-                        text = Marshal.PtrToStringAnsi(data) ?? string.Empty;
-                        GlobalUnlock(data);
-                        return true;
+                        var dataPointer = GlobalLock(data);
+                        if (dataPointer != IntPtr.Zero)
+                        {
+                            try
+                            {
+                                text = Marshal.PtrToStringAnsi(dataPointer) ?? string.Empty;
+                                return true;
+                            }
+                            finally
+                            {
+                                GlobalUnlock(data);
+                            }
+                        }
                     }
                 }
             }
@@ -226,13 +252,17 @@ public static partial class ClipboardHelper
                 return false;
             }
 
-            CopyMemory(dataCopy, data, bytes);
+            CopyMemory(dataCopy, data, (UIntPtr)bytes);
             GlobalUnlock(hGlobal);
 
             if (SetClipboardData(format, hGlobal) != IntPtr.Zero)
             {
                 // The clipboard owns this memory now, so don't free it.
                 hGlobal = IntPtr.Zero;
+            }
+            else
+            {
+                return false;
             }
         }
         catch

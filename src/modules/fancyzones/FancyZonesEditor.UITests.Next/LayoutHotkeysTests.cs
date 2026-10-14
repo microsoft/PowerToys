@@ -302,21 +302,21 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
 
     private LayoutHotkeys.LayoutHotkeysWrapper SaveHotkeyAndWait(string layoutUuid, int? expectedKey)
     {
-        EditorUiTestHelper.Step(
-            this,
-            expectedKey.HasValue
-                ? $"Saving layout shortcut {expectedKey.Value} for '{layoutUuid}'"
-                : $"Saving removal of the layout shortcut for '{layoutUuid}'");
+        string saveStep = expectedKey.HasValue
+            ? $"Saving layout shortcut {expectedKey.Value} for '{layoutUuid}'"
+            : $"Saving removal of the layout shortcut for '{layoutUuid}'";
+        EditorUiTestHelper.Step(this, saveStep);
         Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Invoke();
 
+        string expectation = expectedKey.HasValue
+            ? $"layout '{layoutUuid}' to own key {expectedKey.Value}"
+            : $"layout '{layoutUuid}' to have no assigned key";
         return EditorUiTestHelper.WaitForLayoutHotkeys(
             this,
             data => expectedKey.HasValue
                                 ? data.LayoutHotkeys.Count(item => item.LayoutId == layoutUuid) == 1 &&
                                     data.LayoutHotkeys.Any(item => item.LayoutId == layoutUuid && item.Key == expectedKey.Value)
                 : !data.LayoutHotkeys.Any(item => item.LayoutId == layoutUuid),
-            expectedKey.HasValue
-                ? $"layout '{layoutUuid}' to own key {expectedKey.Value}"
-                : $"layout '{layoutUuid}' to have no assigned key");
+            expectation);
     }
 }

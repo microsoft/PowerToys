@@ -26,6 +26,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Assets\Images\PlainSampleIcon.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Images\ThemedSampleIcon.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -77,6 +86,14 @@
 
     <!-- When publishing trimmed, make sure to treat trimming warnings as build errors -->
     <ILLinkTreatWarningsAsErrors>true</ILLinkTreatWarningsAsErrors>
+
+    <!--
+      Don't let ILLink rewrite debug symbols, so the trimmed publish output has no PDBs. Release builds of this
+      project and the Toolkit use Windows PDBs (DebugType=pdbonly in Common.Dotnet.props), which ILLink can only
+      rewrite through the native DiaSymReader COM writer, and that writer intermittently crashes ILLink in CI with
+      an access violation (MSB6006: "dotnet.exe" exited with code 57005).
+    -->
+    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
 
   </PropertyGroup>
 

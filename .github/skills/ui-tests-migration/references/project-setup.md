@@ -212,7 +212,8 @@ $exe = "$PWD\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0\<
 #    --filter accepts "TestCategory=X" or "FullyQualifiedName~Y"; omit it to run everything. Exit 0 = all passed.
 ```
 
-- On build failure, read `build.<Configuration>.<Platform>.errors.log` next to the project.
+- On build failure, read `artifacts\logs\<project>\build.<Configuration>.<Platform>.errors.log` at the
+  repo root (`<project>` is the project file name without its extension).
 - For CI runtime-pack restore or dependency-audit failures, see
   [NuGet runtime-pack cache misses](nuget-runtime-pack-cache.md).
 - `winapp.exe` is a **run-time** prerequisite only (`winget install Microsoft.winappcli`, or set

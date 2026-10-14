@@ -431,11 +431,10 @@ public static class EditorUiTestHelper
             timeoutMS: 10_000,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
-        Assert.IsTrue(
-            expectedState.Succeeded,
-            confirm
-                ? "The custom-layout collection did not shrink after confirming deletion."
-                : "The custom-layout collection changed after cancelling deletion.");
+        string layoutsMessage = confirm
+            ? "The custom-layout collection did not shrink after confirming deletion."
+            : "The custom-layout collection changed after cancelling deletion.";
+        Assert.IsTrue(expectedState.Succeeded, layoutsMessage);
 
         if (beforeHotkeys.HasValue && expectedState.LastObservation.HasValue)
         {
@@ -458,11 +457,10 @@ public static class EditorUiTestHelper
                 timeoutMS: 10_000,
                 requiredConsecutiveMatches: 2,
                 pollIntervalMS: 100);
-            Assert.IsTrue(
-                hotkeyState.Succeeded,
-                confirm
-                    ? "Layout hotkeys were not updated after confirming deletion."
-                    : "Layout hotkeys changed after cancelling deletion.");
+            string hotkeysMessage = confirm
+                ? "Layout hotkeys were not updated after confirming deletion."
+                : "Layout hotkeys changed after cancelling deletion.";
+            Assert.IsTrue(hotkeyState.Succeeded, hotkeysMessage);
         }
     }
 

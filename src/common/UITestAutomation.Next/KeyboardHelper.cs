@@ -107,8 +107,10 @@ public static class KeyboardHelper
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint SendInput(uint count, Input[] inputs, int size);
 
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint KEYEVENTF_KEYUP = 0x2;
     private const uint KEYEVENTF_EXTENDEDKEY = 0x1;
+#pragma warning restore SA1310
 
     /// <summary>
     /// Press all keys in order, then release them in reverse order, in a single <c>SendInput</c> batch.
