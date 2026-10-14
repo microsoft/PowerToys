@@ -34,7 +34,7 @@ namespace Awake
         private static RegisteredWaitHandle? _registeredWaitHandle;
 
         private static bool _startedFromPowerToys;
-        private static bool _hasDurationCommand;
+        private static bool _hasDeadlineCommand;
 
         public static Mutex? LockMutex { get; set; }
 
@@ -46,11 +46,10 @@ namespace Awake
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
             Bridge.AttachConsole(Core.Native.Constants.ATTACH_PARENT_PROCESS);
+            LoadConfiguredLanguage();
             Manager.InitializeAttachedConsole();
 
-            LoadConfiguredLanguage();
-
-            _hasDurationCommand = args.Length > 0 &&
+            _hasDeadlineCommand = args.Length > 0 &&
                 (args[0].Equals("for", StringComparison.OrdinalIgnoreCase) ||
                  args[0].Equals("until", StringComparison.OrdinalIgnoreCase));
 
@@ -471,7 +470,7 @@ namespace Awake
 
         /// <summary>
         /// Start a process-scoped keep-awake session. The application will keep the system awake
-        /// indefinitely until the target process terminates.
+        /// until the target process terminates or a modern command's deadline is reached.
         /// </summary>
         /// <param name="pid">The explicit process ID to monitor.</param>
         /// <param name="useParentPid">A flag indicating whether the application should monitor its
@@ -517,11 +516,11 @@ namespace Awake
             Logger.LogInfo($"Bound to target process: {targetPid}");
 
             // Sets the keep-awake plan and updates the tray icon.
-            if (_hasDurationCommand && !string.IsNullOrEmpty(expireAt))
+            if (_hasDeadlineCommand && !string.IsNullOrEmpty(expireAt))
             {
                 Manager.SetExpirableKeepAwake(DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture), displayOn);
             }
-            else if (_hasDurationCommand)
+            else if (_hasDeadlineCommand)
             {
                 Manager.SetTimedKeepAwake(timeLimit, displayOn);
             }

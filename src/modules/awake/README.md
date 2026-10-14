@@ -158,6 +158,10 @@ to select the native output.
 
 ### NativeAOT experiment results
 
+The following are historical measurements of the original proposal before its
+integration with newer upstream System.CommandLine and SDK versions. They are
+not performance certification of the current review branch.
+
 Measured on one x64 Windows machine on October 13, 2026, using the `measure` example
 from the final Rust rewrite commit `93a394bbcc` in PowerToys PR #51181. Each Release
 executable ran `for 5m --pid {pid}`. Startup is the median of five launches until
@@ -165,7 +169,7 @@ the tray message window exists; footprint and CPU are one sample after three
 seconds of settling, followed by a ten-second countdown interval. These are
 development-machine observations, not release performance guarantees.
 
-| Metric | Managed C# (this branch) | NativeAOT C# (this branch) | Rust PR |
+| Metric | Managed C# (original proposal) | NativeAOT C# (original proposal) | Rust PR |
 |--------|-------------------------|---------------------------|---------|
 | Startup median | 209.4 ms | 64.9 ms | 30.4 ms |
 | Private memory | 12.8 MiB | 9.3 MiB | 2.1 MiB |
@@ -232,17 +236,22 @@ run the Microsoft.Testing.Platform executable:
 ..\..\..\..\x64\Release\tests\Awake.UnitTests\Awake.UnitTests.exe
 ```
 
-The x64 Release suite passes 69 tests: execution-state flags, lock transitions,
+The original proposal's x64 Release suite passed 69 tests: execution-state flags, lock transitions,
 duration and date parsing, legacy command compatibility, daylight-saving boundaries,
 arbitrary Unicode input, settings serialization, countdown formatting, and Windows
 loading of all compressed icon frames. This ports applicable behaviors from the
 Rust tests, not the entire Rust-specific engine or test harness.
 
-Both x64 and ARM64 NativeAOT publishes are checked. Native x64 process smoke tests
+Both original-proposal x64 and ARM64 NativeAOT publishes were checked. Native x64 process smoke tests
 cover help/error output, missing option values, timed/expiring sessions with process
 binding, and successful timer completion. ARM64 runtime, translated release resources,
 installer upgrades, and manual multi-monitor UI validation are not covered by these
 checks.
+
+The current upstream-integrated review candidate adds seven autumn-DST overlap
+cases. Current toolchain validation and translated-payload testing must be reported
+separately from the original proposal's results above; cached-pack diagnostic runs
+are not default-toolchain or shipping acceptance.
 
 ## Dependencies
 

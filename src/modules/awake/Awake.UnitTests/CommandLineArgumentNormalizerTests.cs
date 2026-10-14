@@ -195,6 +195,26 @@ public class CommandLineArgumentNormalizerTests
             "02:30", now, CultureInfo.InvariantCulture, zone, out _));
     }
 
+    [DataRow("2026-11-01T00:30:00-07:00", "2026-11-01T01:30:00-07:00")]
+    [DataRow("2026-11-01T01:15:00-07:00", "2026-11-01T01:30:00-07:00")]
+    [DataRow("2026-11-01T01:30:00-07:00", "2026-11-01T01:30:00-08:00")]
+    [DataRow("2026-11-01T01:45:00-07:00", "2026-11-01T01:30:00-08:00")]
+    [DataRow("2026-11-01T01:15:00-08:00", "2026-11-01T01:30:00-08:00")]
+    [DataRow("2026-11-01T01:30:00-08:00", "2026-11-02T01:30:00-08:00")]
+    [DataRow("2026-11-01T02:00:00-08:00", "2026-11-02T01:30:00-08:00")]
+    [DataTestMethod]
+    public void TryParseExpiration_AutumnOverlap_SelectsEarliestFutureOccurrence(string currentTime, string expectedTime)
+    {
+        TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+        DateTimeOffset now = DateTimeOffset.Parse(currentTime, CultureInfo.InvariantCulture);
+        DateTimeOffset expected = DateTimeOffset.Parse(expectedTime, CultureInfo.InvariantCulture);
+
+        Assert.IsTrue(CommandLineArgumentNormalizer.TryParseExpiration(
+            "01:30", now, CultureInfo.InvariantCulture, zone, out DateTimeOffset expiration));
+        Assert.AreEqual(expected, expiration);
+        Assert.AreEqual(expected.Offset, expiration.Offset);
+    }
+
     [DataRow("--pid")]
     [DataRow("--expire-at")]
     [DataRow("--time-limit")]

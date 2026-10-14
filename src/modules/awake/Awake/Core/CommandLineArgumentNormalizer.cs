@@ -195,21 +195,38 @@ namespace Awake.Core
             if (TimeOnly.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out TimeOnly time))
             {
                 DateTime localDateTime = TimeZoneInfo.ConvertTime(now, timeZone).Date.Add(time.ToTimeSpan());
-                TimeSpan offset = timeZone.GetUtcOffset(localDateTime);
-                expiration = new DateTimeOffset(localDateTime, offset);
-                if (expiration <= now)
+                for (int day = 0; day < 2; day++)
                 {
+                    if (timeZone.IsInvalidTime(localDateTime))
+                    {
+                        expiration = default;
+                        return false;
+                    }
+
+                    TimeSpan[] offsets = timeZone.IsAmbiguousTime(localDateTime)
+                        ? timeZone.GetAmbiguousTimeOffsets(localDateTime)
+                        : [timeZone.GetUtcOffset(localDateTime)];
+                    DateTimeOffset? nextOccurrence = null;
+                    foreach (TimeSpan offset in offsets)
+                    {
+                        DateTimeOffset candidate = new(localDateTime, offset);
+                        if (candidate > now && (nextOccurrence == null || candidate < nextOccurrence.Value))
+                        {
+                            nextOccurrence = candidate;
+                        }
+                    }
+
+                    if (nextOccurrence.HasValue)
+                    {
+                        expiration = nextOccurrence.Value;
+                        return true;
+                    }
+
                     localDateTime = localDateTime.AddDays(1);
                 }
 
-                if (timeZone.IsInvalidTime(localDateTime))
-                {
-                    expiration = default;
-                    return false;
-                }
-
-                expiration = new DateTimeOffset(localDateTime, timeZone.GetUtcOffset(localDateTime));
-                return true;
+                expiration = default;
+                return false;
             }
 
             if (DateTime.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTime localExpiration) &&
