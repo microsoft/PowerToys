@@ -430,11 +430,15 @@ namespace Awake
 
                         Logger.LogInfo($"Bound to target process while also using PowerToys settings: {pid}");
 
-                        RunnerHelper.WaitForPowerToysRunner(pid, () =>
-                        {
-                            Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
-                            Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
-                        });
+                        RunnerHelper.WaitForPowerToysRunner(
+                            pid,
+                            () =>
+                            {
+                                Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
+                                Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+                            },
+                            error => HandleProcessMonitoringFailure(pid, error),
+                            nameof(HandleCommandLineArguments));
                     }
                 }
                 catch (Exception ex)
@@ -561,15 +565,17 @@ namespace Awake
                     Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
                     Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
                 },
-                error =>
-                {
-                    Logger.LogError($"Could not monitor target PID {targetPid}.", error);
-                    Exit(
-                        Resources.ResourceManager.GetString("AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE", CultureInfo.CurrentUICulture)
-                            ?? throw new InvalidOperationException("Missing resource: AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE"),
-                        1);
-                },
+                error => HandleProcessMonitoringFailure(targetPid, error),
                 nameof(HandleProcessScopedKeepAwake));
+        }
+
+        private static void HandleProcessMonitoringFailure(int pid, Win32Exception error)
+        {
+            Logger.LogError($"Could not monitor target PID {pid}.", error);
+            Exit(
+                Resources.ResourceManager.GetString("AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE", CultureInfo.CurrentUICulture)
+                    ?? throw new InvalidOperationException("Missing resource: AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE"),
+                1);
         }
 
         private static void AllocateLocalConsole()
