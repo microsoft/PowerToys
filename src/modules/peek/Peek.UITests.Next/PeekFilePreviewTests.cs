@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -406,7 +407,7 @@ public class PeekFilePreviewTests : UITestBase
             });
             TestContext.WriteLine(
                 $"Explorer launch attempt {attempt}/{ExplorerOpenAttempts}: " +
-                $"launcherPid={launchProcess?.Id.ToString() ?? "unknown"}, existingHwnds=[{string.Join(", ", existingHandles)}].");
+                $"launcherPid={launchProcess?.Id.ToString(CultureInfo.InvariantCulture) ?? "unknown"}, existingHwnds=[{string.Join(", ", existingHandles)}].");
 
             var explorerWindow = WindowsFinder.WaitForWindowByApp(
                 "explorer",
@@ -613,20 +614,20 @@ public class PeekFilePreviewTests : UITestBase
         var output = new StringBuilder();
         using var testHost = Process.GetCurrentProcess();
         var foreground = WindowControl.GetForegroundWindowInfo();
-        output.AppendLine($"[{DateTime.UtcNow:O}] {stage}");
-        output.AppendLine(
-            $"Test host: pid={testHost.Id}, session={GetProcessSessionId(testHost.Id)}, " +
-            $"elevated={ElevationHelper.IsCurrentProcessElevated()}.");
-        output.AppendLine(
-            $"Foreground: hwnd={foreground.Hwnd.ToInt64()}, pid={foreground.ProcessId}, " +
-            $"process='{foreground.ProcessName}', class='{foreground.ClassName}', title='{foreground.Title}', " +
-            $"elevated={FormatElevation(foreground.IsElevated)}.");
-        output.AppendLine(
-            $"Settings session: pid={Session.ProcessId}, session={GetProcessSessionId(Session.ProcessId)}, " +
-            $"elevated={FormatElevation(Session.IsElevated)}.");
-        output.AppendLine(
-            $"Configured Peek shortcut: Ctrl+Space; AlwaysRunNotElevated=true; EnableSpaceToActivate=false; " +
-            $"AppsUseLightTheme={ReadAppsUseLightTheme()?.ToString() ?? "unknown"}.");
+        output.AppendLine(CultureInfo.InvariantCulture, $"[{DateTime.UtcNow:O}] {stage}");
+        output
+            .Append(CultureInfo.InvariantCulture, $"Test host: pid={testHost.Id}, session={GetProcessSessionId(testHost.Id)}, ")
+            .AppendLine(CultureInfo.InvariantCulture, $"elevated={ElevationHelper.IsCurrentProcessElevated()}.");
+        output
+            .Append(CultureInfo.InvariantCulture, $"Foreground: hwnd={foreground.Hwnd.ToInt64()}, pid={foreground.ProcessId}, ")
+            .Append(CultureInfo.InvariantCulture, $"process='{foreground.ProcessName}', class='{foreground.ClassName}', title='{foreground.Title}', ")
+            .AppendLine(CultureInfo.InvariantCulture, $"elevated={FormatElevation(foreground.IsElevated)}.");
+        output
+            .Append(CultureInfo.InvariantCulture, $"Settings session: pid={Session.ProcessId}, session={GetProcessSessionId(Session.ProcessId)}, ")
+            .AppendLine(CultureInfo.InvariantCulture, $"elevated={FormatElevation(Session.IsElevated)}.");
+        output
+            .Append(CultureInfo.InvariantCulture, $"Configured Peek shortcut: Ctrl+Space; AlwaysRunNotElevated=true; EnableSpaceToActivate=false; ")
+            .AppendLine(CultureInfo.InvariantCulture, $"AppsUseLightTheme={ReadAppsUseLightTheme()?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
         AppendProcessDiagnostics(output, "PowerToys");
         AppendProcessDiagnostics(output, "explorer");
         AppendProcessDiagnostics(output, PeekProcessName);
@@ -640,7 +641,7 @@ public class PeekFilePreviewTests : UITestBase
         var processes = Process.GetProcessesByName(processName);
         if (processes.Length == 0)
         {
-            output.AppendLine($"Process '{processName}': none.");
+            output.AppendLine(CultureInfo.InvariantCulture, $"Process '{processName}': none.");
             return;
         }
 
@@ -648,10 +649,10 @@ public class PeekFilePreviewTests : UITestBase
         {
             using (process)
             {
-                output.AppendLine(
-                    $"Process '{processName}': pid={process.Id}, session={GetProcessSessionId(process.Id)}, " +
-                    $"elevated={FormatElevation(ElevationHelper.IsProcessElevated(process.Id))}, " +
-                    $"mainHwnd={GetMainWindowHandle(process)}.");
+                output
+                    .Append(CultureInfo.InvariantCulture, $"Process '{processName}': pid={process.Id}, session={GetProcessSessionId(process.Id)}, ")
+                    .Append(CultureInfo.InvariantCulture, $"elevated={FormatElevation(ElevationHelper.IsProcessElevated(process.Id))}, ")
+                    .AppendLine(CultureInfo.InvariantCulture, $"mainHwnd={GetMainWindowHandle(process)}.");
             }
         }
     }
@@ -661,15 +662,15 @@ public class PeekFilePreviewTests : UITestBase
         var windows = WindowsFinder.ListByApp(appName);
         if (windows.Count == 0)
         {
-            output.AppendLine($"Windows for '{appName}': none.");
+            output.AppendLine(CultureInfo.InvariantCulture, $"Windows for '{appName}': none.");
             return;
         }
 
         foreach (var window in windows)
         {
-            output.AppendLine(
-                $"Window for '{appName}': hwnd={window.Hwnd}, pid={window.ProcessId}, " +
-                $"class='{window.ClassName}', title='{window.Title}', size={window.Width}x{window.Height}.");
+            output
+                .Append(CultureInfo.InvariantCulture, $"Window for '{appName}': hwnd={window.Hwnd}, pid={window.ProcessId}, ")
+                .AppendLine(CultureInfo.InvariantCulture, $"class='{window.ClassName}', title='{window.Title}', size={window.Width}x{window.Height}.");
         }
     }
 
