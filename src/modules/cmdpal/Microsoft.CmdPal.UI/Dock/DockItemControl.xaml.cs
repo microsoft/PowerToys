@@ -20,6 +20,7 @@ public sealed partial class DockItemControl : Control
     public DockItemControl()
     {
         DefaultStyleKey = typeof(DockItemControl);
+        RegisterPropertyChangedCallback(FlowDirectionProperty, OnFlowDirectionChanged);
     }
 
     public static readonly DependencyProperty ToolTipProperty =
@@ -55,6 +56,24 @@ public sealed partial class DockItemControl : Control
     {
         get => (string)GetValue(SubtitleProperty);
         set => SetValue(SubtitleProperty, value);
+    }
+
+    public static readonly DependencyProperty ShowTitleProperty =
+        DependencyProperty.Register(nameof(ShowTitle), typeof(bool), typeof(DockItemControl), new PropertyMetadata(true, OnTextPropertyChanged));
+
+    public bool ShowTitle
+    {
+        get => (bool)GetValue(ShowTitleProperty);
+        set => SetValue(ShowTitleProperty, value);
+    }
+
+    public static readonly DependencyProperty ShowSubtitleProperty =
+        DependencyProperty.Register(nameof(ShowSubtitle), typeof(bool), typeof(DockItemControl), new PropertyMetadata(true, OnTextPropertyChanged));
+
+    public bool ShowSubtitle
+    {
+        get => (bool)GetValue(ShowSubtitleProperty);
+        set => SetValue(ShowSubtitleProperty, value);
     }
 
     public static readonly DependencyProperty IconProperty =
@@ -93,6 +112,42 @@ public sealed partial class DockItemControl : Control
         set => SetValue(IsCompactProperty, value);
     }
 
+    public static readonly DependencyProperty UseTabularDigitsProperty =
+        DependencyProperty.Register(nameof(UseTabularDigits), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnUseTabularDigitsPropertyChanged));
+
+    public bool UseTabularDigits
+    {
+        get => (bool)GetValue(UseTabularDigitsProperty);
+        set => SetValue(UseTabularDigitsProperty, value);
+    }
+
+    private static void OnUseTabularDigitsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateTabularDigitsState();
+        }
+    }
+
+    public static readonly DependencyProperty UseTrailingLabelAlignmentProperty =
+        DependencyProperty.Register(nameof(UseTrailingLabelAlignment), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnUseTrailingLabelAlignmentPropertyChanged));
+
+    public bool UseTrailingLabelAlignment
+    {
+        get => (bool)GetValue(UseTrailingLabelAlignmentProperty);
+        set => SetValue(UseTrailingLabelAlignmentProperty, value);
+    }
+
+    private static void OnUseTrailingLabelAlignmentPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateTextAlignmentState();
+        }
+    }
+
+    private void OnFlowDirectionChanged(DependencyObject sender, DependencyProperty dp) => UpdateTextAlignmentState();
+
     private static void OnIsCompactPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is DockItemControl control)
@@ -104,8 +159,8 @@ public sealed partial class DockItemControl : Control
     private void UpdateCompactState()
     {
         VisualStateManager.GoToState(this, IsCompact ? "Compact" : "DefaultLayout", true);
-        UpdateSubtitleVisibilityState();
         UpdateInnerMargin();
+        UpdateTextVisibility();
     }
 
     private const string IconPresenterName = "IconPresenter";
@@ -126,6 +181,9 @@ public sealed partial class DockItemControl : Control
     private double _backPlateMinSize;
     private DockControl? _parentDock;
     private ToolTip? _toolTip;
+    private IconBox? _observedIcon;
+    private long _iconSourceKeyCallbackToken = -1;
+    private long _iconSourceCallbackToken = -1;
     private long _dockSideCallbackToken = -1;
     private long _dockSizeCallbackToken = -1;
 
@@ -142,14 +200,53 @@ public sealed partial class DockItemControl : Control
     {
         if (d is DockItemControl control)
         {
+            control.StopWatchingIcon();
+            if (control.IsLoaded)
+            {
+                control.WatchIcon();
+            }
+
             control.UpdateIconVisibility();
             control.UpdateAlignment();
         }
     }
 
-    internal bool HasTitle => !string.IsNullOrEmpty(Title);
+    private void WatchIcon()
+    {
+        if (Icon is not IconBox icon || ReferenceEquals(_observedIcon, icon))
+        {
+            return;
+        }
 
-    internal bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
+        _observedIcon = icon;
+        _iconSourceKeyCallbackToken = icon.RegisterPropertyChangedCallback(IconBox.SourceKeyProperty, OnIconSourceChanged);
+        _iconSourceCallbackToken = icon.RegisterPropertyChangedCallback(IconBox.SourceProperty, OnIconSourceChanged);
+    }
+
+    private void StopWatchingIcon()
+    {
+        if (_observedIcon is null)
+        {
+            return;
+        }
+
+        _observedIcon.UnregisterPropertyChangedCallback(IconBox.SourceKeyProperty, _iconSourceKeyCallbackToken);
+        _observedIcon.UnregisterPropertyChangedCallback(IconBox.SourceProperty, _iconSourceCallbackToken);
+        _observedIcon = null;
+        _iconSourceKeyCallbackToken = -1;
+        _iconSourceCallbackToken = -1;
+    }
+
+    private void OnIconSourceChanged(DependencyObject sender, DependencyProperty dp)
+    {
+        UpdateIconVisibility();
+        UpdateAlignment();
+    }
+
+    // Explicit row widths keep their slots when text is temporarily empty.
+    internal bool HasTitle => ShowTitle && (!string.IsNullOrEmpty(Title) || LabelWidthConstraints?.TitleWidth is not null);
+
+    internal bool HasSubtitle => ShowSubtitle && !IsCompact && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null);
 
     internal bool HasText => HasTitle || HasSubtitle;
 
@@ -161,6 +258,7 @@ public sealed partial class DockItemControl : Control
         UpdateSubtitleVisibilityState();
         UpdateContentSpacingState();
         UpdateChromeSize();
+        UpdateLabelWidth();
     }
 
     private void UpdateTextVisibilityState()
@@ -187,8 +285,7 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateSubtitleVisibilityState()
     {
-        var showSubtitle = HasSubtitle && !IsCompact;
-        VisualStateManager.GoToState(this, showSubtitle ? "SubtitleVisible" : "SubtitleHidden", true);
+        VisualStateManager.GoToState(this, HasSubtitle ? "SubtitleVisible" : "SubtitleHidden", true);
     }
 
     private void UpdateIconVisibility()
@@ -268,9 +365,21 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextAlignmentState()
     {
+        if (UseTrailingLabelAlignment)
+        {
+            var trailingState = FlowDirection == FlowDirection.RightToLeft ? "TextLeftAligned" : "TextRightAligned";
+            VisualStateManager.GoToState(this, trailingState, true);
+            return;
+        }
+
         var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
         var shouldCenterText = verticalDock && !ShouldShowIcon();
         VisualStateManager.GoToState(this, shouldCenterText ? "TextCentered" : "TextLeftAligned", true);
+    }
+
+    private void UpdateTabularDigitsState()
+    {
+        VisualStateManager.GoToState(this, UseTabularDigits ? "TabularDigits" : "DefaultNumeralAlignment", true);
     }
 
     private void UpdateAllVisibility()
@@ -279,6 +388,7 @@ public sealed partial class DockItemControl : Control
         UpdateIconVisibility();
         UpdateToolTip();
         UpdateAlignment();
+        UpdateTabularDigitsState();
         UpdateCompactState();
     }
 
@@ -340,12 +450,16 @@ public sealed partial class DockItemControl : Control
             _backPlate.SizeChanged += BackPlate_SizeChanged;
         }
 
+        InitializeLabelWidth();
+
         // Set initial visibility
         UpdateAllVisibility();
     }
 
     private void DockItemControl_Loaded(object sender, RoutedEventArgs e)
     {
+        WatchIcon();
+
         // Walk the visual tree to find our parent DockControl and watch its DockSide.
         // This lets us extend the hit-test area toward the screen edge.
         DependencyObject? parent = VisualTreeHelper.GetParent(this);
@@ -359,7 +473,6 @@ public sealed partial class DockItemControl : Control
             _parentDock = dock;
             UpdateInnerMargin();
             UpdateCompactFromParent(dock);
-            UpdateAllVisibility();
             _dockSideCallbackToken = dock.RegisterPropertyChangedCallback(
                 DockControl.DockSideProperty,
                 OnParentDockSideChanged);
@@ -368,7 +481,8 @@ public sealed partial class DockItemControl : Control
                 OnParentDockSizeChanged);
         }
 
-        UpdateToolTip();
+        UpdateAllVisibility();
+        InvalidateLabelFont();
     }
 
     private void DockItemControl_ActualThemeChanged(FrameworkElement sender, object args)
@@ -379,6 +493,8 @@ public sealed partial class DockItemControl : Control
 
     private void DockItemControl_Unloaded(object sender, RoutedEventArgs e)
     {
+        StopWatchingIcon();
+
         if (_parentDock is not null)
         {
             if (_dockSideCallbackToken >= 0)
@@ -402,6 +518,7 @@ public sealed partial class DockItemControl : Control
 
         ToolTipService.SetToolTip(this, null);
         _toolTip = null;
+        StopWatchingLabelFont();
     }
 
     private void OnParentDockSideChanged(DependencyObject sender, DependencyProperty dp)
@@ -411,6 +528,7 @@ public sealed partial class DockItemControl : Control
             UpdateInnerMargin();
             UpdateAlignment();
             UpdateChromeSize();
+            UpdateLabelWidth();
         }
     }
 

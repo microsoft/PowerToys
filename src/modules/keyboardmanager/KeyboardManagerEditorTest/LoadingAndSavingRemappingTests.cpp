@@ -438,6 +438,51 @@ namespace RemappingUITests
             Assert::AreEqual(true, areTablesEqual);
         }
 
+        // Test that a single-key remap tagged condition="alone" is loaded into the alone table while
+        // an untagged (legacy / "always") remap goes to the regular table. This locks the dual-key
+        // (tap-alone) round-trip contract: SaveSettingsToFile writes the "condition" field for alone
+        // remaps, and LoadSingleKeyRemaps must route by it. Builds the JSON exactly as the save path
+        // emits it so it exercises the real on-disk shape without touching disk.
+        TEST_METHOD (LoadSingleKeyRemaps_ShouldRouteAloneToAloneTable_AndAlwaysToRegularTable)
+        {
+            MappingConfiguration config;
+
+            // Alone entry: A -> B, tagged condition="alone" (as SaveSettingsToFile writes it)
+            json::JsonObject aloneEntry;
+            aloneEntry.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(0x41))));
+            aloneEntry.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(0x42))));
+            aloneEntry.SetNamedValue(KeyboardManagerConstants::RemapConditionSettingName, json::value(KeyboardManagerConstants::RemapConditionAlone));
+
+            // Always entry: C -> D, no condition field (legacy shape; loader defaults to "always")
+            json::JsonObject alwaysEntry;
+            alwaysEntry.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(0x43))));
+            alwaysEntry.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(0x44))));
+
+            json::JsonArray inProcess;
+            inProcess.Append(aloneEntry);
+            inProcess.Append(alwaysEntry);
+
+            json::JsonObject remapKeys;
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcess);
+
+            json::JsonObject root;
+            root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+            config.LoadSingleKeyRemaps(root);
+
+            // Alone entry routed to the alone table (A -> B) and NOT the regular table
+            Assert::AreEqual(static_cast<size_t>(1), config.aloneSingleKeyReMap.size());
+            Assert::IsTrue(config.aloneSingleKeyReMap.find(0x41) != config.aloneSingleKeyReMap.end());
+            Assert::AreEqual(static_cast<DWORD>(0x42), std::get<DWORD>(config.aloneSingleKeyReMap[0x41]));
+            Assert::IsTrue(config.singleKeyReMap.find(0x41) == config.singleKeyReMap.end());
+
+            // Always entry routed to the regular table (C -> D) and NOT the alone table
+            Assert::AreEqual(static_cast<size_t>(1), config.singleKeyReMap.size());
+            Assert::IsTrue(config.singleKeyReMap.find(0x43) != config.singleKeyReMap.end());
+            Assert::AreEqual(static_cast<DWORD>(0x44), std::get<DWORD>(config.singleKeyReMap[0x43]));
+            Assert::IsTrue(config.aloneSingleKeyReMap.find(0x43) == config.aloneSingleKeyReMap.end());
+        }
+
         // Test if the ApplyShortcutRemappings method resets the keyboard manager state's os level and app specific shortcut remappings on passing an empty buffer
         TEST_METHOD (ApplyShortcutRemappings_ShouldResetShortcutRemappings_OnPassingEmptyBuffer)
         {

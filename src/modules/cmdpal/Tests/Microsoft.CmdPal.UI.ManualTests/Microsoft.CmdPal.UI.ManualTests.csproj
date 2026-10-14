@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <!-- Manual component checks, excluded from CI and UI automation test execution. -->
+    <RunVSTest>false</RunVSTest>
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
+    <IsPackable>false</IsPackable>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>false</SelfContained>
+    <!-- VSTest supplies the CLR; tests load the app assembly without its executable entry point. -->
+    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+    <RuntimeIdentifier>win-$(Platform.ToLowerInvariant())</RuntimeIdentifier>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <ApplicationManifest>..\..\Microsoft.CmdPal.UI\app.manifest</ApplicationManifest>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\tests\manual\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <ProjectReference Include="..\..\Microsoft.CmdPal.UI\Microsoft.CmdPal.UI.csproj" />
+    <Content Include="$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\resources.pri" Link="resources.pri" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- VSTest starts testhost.exe, which needs the WinUI activation classes in its own manifest. -->
+  <Target Name="AddWinUIActivationToTestHost" AfterTargets="Build" Condition="'$(_IsSkippedTestProject)' != 'true'">
+    <Exec Command="&quot;$(ManifestTool)&quot; -nologo -manifest &quot;$(IntermediateOutputPath)Manifests\app.manifest&quot; -outputresource:&quot;$(TargetDir)testhost.exe&quot;;#1" />
+  </Target>
+</Project>

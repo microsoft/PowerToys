@@ -72,6 +72,17 @@ private static bool WaitForProcess(string name, bool expected, int timeoutMS)
 > (actually `PowerToys.MeasureToolUI`), `PowerToys.FancyZonesEditor`, etc. — see `ModuleConfigData.cs`
 > in the harness for the authoritative list.
 
+> **Release CI / Settings IPC:** Keep this exact interaction shape. The switch state proves only the
+> UI changed; the process/event/window assertion proves the Runner accepted the command. If every
+> lifecycle assertion fails in Release CI and `RunnerLogs` says
+> `Rejected unauthenticated Settings pipe client ... reason=not-microsoft-signed`, do **not** write
+> `settings.json` and restart the Runner from the test. Opt the selected test project into the
+> existing `$requiresAuthenticatedSettingsIpc` path in
+> `.pipelines/v2/templates/job-test-project.yml`, which reuses
+> `.pipelines/signSparsePackages.ps1 -RequiredAuthenticodeFile` for `PowerToys.exe` and
+> `PowerToys.Settings.exe`. See
+> [ci-stability.md](ci-stability.md#principle-5a--keep-module-lifecycle-tests-on-real-release-settings-ipc).
+
 ## Recipe 3 — Read the activation shortcut from a `ShortcutControl`
 
 PowerToys' `ShortcutControl` renders the current chord on its inner `EditButton`, exposing the readable

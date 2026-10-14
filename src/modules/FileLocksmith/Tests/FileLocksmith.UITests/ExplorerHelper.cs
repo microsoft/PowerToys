@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -28,11 +27,6 @@ internal sealed record MenuObservation(bool IsOpen, bool HasCommand, bool HasSib
 /// </summary>
 internal static class ExplorerHelper
 {
-    public const string ClassicMenuClassName = "#32768";
-    public const string ModernMenuClassName = "Microsoft.UI.Content.PopupWindowSiteBridge";
-
-    private const string ExplorerProcessName = "explorer";
-    private const string ShowMoreOptionsCaption = "Show more options";
     private const int ExplorerTimeoutMS = 30_000;
     private const int MenuSurfaceTimeoutMS = 25_000;
 
@@ -40,13 +34,10 @@ internal static class ExplorerHelper
 
     public static bool IsWindows11OrNewer => Environment.OSVersion.Version.Build >= 22_000;
 
-    public static Session OpenFolder(string folderPath) => OpenLocation($"/n,\"{folderPath}\"", folderPath);
+    public static Session OpenFolder(string folderPath) => OpenLocation(folderPath, folderPath);
 
     /// <summary>Open "This PC", the only view that exposes drive roots as selectable Shell items.</summary>
     public static Session OpenThisPc() => OpenLocation("shell:MyComputerFolder", "This PC");
-
-    public static bool CloseFileWindows() =>
-        WindowControl.TryCloseByApp(ExplorerProcessName, IsExplorerFileWindow, timeoutMS: 10_000);
 
     /// <summary>
     /// Both handlers register at module-enable time — the classic registry-COM one always, the modern
@@ -60,39 +51,11 @@ internal static class ExplorerHelper
             return;
         }
 
-        shellRestarted = true;
         Thread.Sleep(3_000);
-
-        var previousProcessIds = Process.GetProcessesByName(ExplorerProcessName)
-            .Select(process =>
-            {
-                var id = process.Id;
-                process.Dispose();
-                return id;
-            })
-            .ToHashSet();
-
-        // Only explorer.exe: Kill(entireProcessTree) would also take down anything launched from it.
-        WindowControl.TryKillProcessByName(ExplorerProcessName);
-
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(30);
-        while (DateTime.UtcNow < deadline)
-        {
-            var current = Process.GetProcessesByName(ExplorerProcessName);
-            var hasFreshShell = current.Any(process => !previousProcessIds.Contains(process.Id));
-            foreach (var process in current)
-            {
-                process.Dispose();
-            }
-
-            if (hasFreshShell)
-            {
-                break;
-            }
-
-            Thread.Sleep(500);
-        }
-
+        Assert.IsTrue(
+            ExplorerControl.RestartShell(timeoutMS: ExplorerTimeoutMS),
+            "Explorer did not expose a taskbar in a fresh process after registering the context-menu handlers.");
+        shellRestarted = true;
         Thread.Sleep(2_000);
     }
 
@@ -204,7 +167,7 @@ internal static class ExplorerHelper
             menu = OpenMenu(explorer, tier);
             if (menu is not null)
             {
-                command = FindVisibleMenuItem(menu, commandCaption, timeoutMS: 5_000);
+                command = ShellMenu.FindVisibleMenuItem(menu, commandCaption, timeoutMS: 5_000);
                 if (command is not null)
                 {
                     break;
@@ -236,7 +199,7 @@ internal static class ExplorerHelper
             return explorer;
         }
 
-        var replacement = FindReplacementExplorer(explorer);
+        var replacement = ExplorerControl.FindReplacementWindow(explorer);
         if (replacement is not null &&
             ExplorerShell.SetSelectionAndWaitForStable(
                 new IntPtr(replacement.WindowHandle), paths, paths[0], timeoutMS, requiredConsecutiveMatches: 4).Succeeded)
@@ -247,50 +210,12 @@ internal static class ExplorerHelper
         return null;
     }
 
-    public static Element? FindVisibleMenuItem(Session menu, string caption, int timeoutMS)
-    {
-        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
-        do
-        {
-            var item = menu.FindAll<Element>(By.Name(caption), timeoutMS: 250)
-                .FirstOrDefault(element =>
-                    element.Name.Contains(caption, StringComparison.OrdinalIgnoreCase) &&
-                    element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase) &&
-                    element.Width > 0 &&
-                    element.Height > 0);
-            if (item is not null)
-            {
-                return item;
-            }
-
-            Thread.Sleep(100);
-        }
-        while (DateTime.UtcNow < deadline);
-
-        return null;
-    }
-
-    private static Session OpenLocation(string arguments, string diagnosticName)
+    private static Session OpenLocation(string folderPath, string diagnosticName)
     {
         EnsureShellRestartedOnce();
-        CloseFileWindows();
+        ExplorerControl.CloseFileWindows();
 
-        var existingHandles = WindowsFinder.ListByApp(ExplorerProcessName)
-            .Where(IsExplorerFileWindow)
-            .Select(window => window.Hwnd)
-            .ToHashSet();
-
-        using var explorerLaunch = Process.Start(new ProcessStartInfo
-        {
-            FileName = "explorer.exe",
-            Arguments = arguments,
-            UseShellExecute = true,
-        });
-
-        var explorer = WindowsFinder.WaitForWindowByApp(
-            ExplorerProcessName,
-            window => IsExplorerFileWindow(window) && !existingHandles.Contains(window.Hwnd),
-            timeoutMS: ExplorerTimeoutMS);
+        var explorer = ExplorerControl.OpenFolder(folderPath, timeoutMS: ExplorerTimeoutMS);
         Assert.IsNotNull(explorer, $"Explorer did not open '{diagnosticName}'.");
 
         EnsureForeground(explorer!);
@@ -302,46 +227,17 @@ internal static class ExplorerHelper
         EnsureForeground(explorer);
         KeyboardHelper.SendKeys(Key.Esc);
 
-        if (!WindowControl.TryOpenContextMenuForFocusedControl(new IntPtr(explorer.WindowHandle)))
-        {
-            return null;
-        }
-
-        var firstSurface = WaitForMenuSurface(
-            IsWindows11OrNewer ? ModernMenuClassName : ClassicMenuClassName,
-            MenuSurfaceTimeoutMS);
-        if (firstSurface is null || tier == ContextMenuTier.Default || !IsWindows11OrNewer)
-        {
-            return firstSurface;
-        }
-
-        // Windows 11 only: the classic menu lives one level down, behind "Show more options".
-        var showMoreOptions = FindVisibleMenuItem(firstSurface, ShowMoreOptionsCaption, timeoutMS: 5_000);
-        if (showMoreOptions is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            showMoreOptions.Invoke(msPostAction: 300);
-        }
-        catch (Exception)
-        {
-            // The popup can vanish between finding and invoking it; let the caller reopen the menu.
-            return null;
-        }
-
-        return WaitForMenuSurface(ClassicMenuClassName, MenuSurfaceTimeoutMS);
+        var menu = ShellMenu.OpenForFocusedControl(
+            explorer,
+            useClassicMenu: tier == ContextMenuTier.Classic,
+            timeoutMS: MenuSurfaceTimeoutMS);
+        var expectModern = tier == ContextMenuTier.Default && IsWindows11OrNewer;
+        return menu is not null && WindowsFinder.ListByApp(ExplorerControl.ProcessName).Any(window =>
+            window.Hwnd == menu.WindowHandle &&
+            (expectModern ? ShellMenu.IsModernWindow(window) : ShellMenu.IsClassicWindow(window)))
+            ? menu
+            : null;
     }
-
-    private static Session? WaitForMenuSurface(string className, int timeoutMS) =>
-        WindowsFinder.WaitForWindow(
-            window => className == ClassicMenuClassName
-                ? window.ClassName.Equals(className, StringComparison.OrdinalIgnoreCase)
-                : window.ClassName.Contains(className, StringComparison.OrdinalIgnoreCase),
-            timeoutMS: timeoutMS,
-            pollIntervalMS: 100);
 
     private static MenuObservation Observe(Session menu, string commandCaption, string? siblingCaption)
     {
@@ -356,33 +252,14 @@ internal static class ExplorerHelper
         {
             return new MenuObservation(
                 true,
-                FindVisibleMenuItem(menu, commandCaption, timeoutMS: 250) is not null,
-                siblingCaption is null || FindVisibleMenuItem(menu, siblingCaption, timeoutMS: 250) is not null);
+                ShellMenu.FindVisibleMenuItem(menu, commandCaption, timeoutMS: 250) is not null,
+                siblingCaption is null || ShellMenu.FindVisibleMenuItem(menu, siblingCaption, timeoutMS: 250) is not null);
         }
         catch (Exception)
         {
             // winappcli reports the popup's HWND as gone mid-query; treat it as not-yet-stable.
             return new MenuObservation(false, false, false);
         }
-    }
-
-    private static Session? FindReplacementExplorer(Session explorer)
-    {
-        var foregroundWindow = WindowControl.GetForegroundWindowHandle().ToInt64();
-        var replacement = WindowsFinder.ListByApp(ExplorerProcessName)
-            .Where(IsExplorerFileWindow)
-            .Where(window => window.Hwnd != explorer.WindowHandle)
-            .OrderByDescending(window => window.Hwnd == foregroundWindow)
-            .FirstOrDefault();
-        if (replacement is null)
-        {
-            return null;
-        }
-
-        return WindowsFinder.WaitForWindow(
-            window => window.Hwnd == replacement.Hwnd,
-            timeoutMS: 2_000,
-            pollIntervalMS: 100);
     }
 
     private static void EnsureForeground(Session explorer) => Assert.IsTrue(
@@ -392,7 +269,4 @@ internal static class ExplorerHelper
             requiredConsecutiveMatches: 3),
         $"Explorer HWND {explorer.WindowHandle} was not the stable foreground window. " +
         $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
-
-    private static bool IsExplorerFileWindow(WindowsFinder.WindowInfo window) =>
-        window.ClassName.Equals("CabinetWClass", StringComparison.OrdinalIgnoreCase);
 }

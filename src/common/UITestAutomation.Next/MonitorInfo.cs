@@ -31,9 +31,16 @@ public static class MonitorInfo
 
         /// <summary>Full monitor height in pixels.</summary>
         public int Height => Bottom - Top;
+
+        /// <summary>Usable work-area width in pixels.</summary>
+        public int WorkWidth => WorkRight - WorkLeft;
+
+        /// <summary>Usable work-area height in pixels.</summary>
+        public int WorkHeight => WorkBottom - WorkTop;
     }
 
-    private const uint MONITORINFOF_PRIMARY = 0x1;
+    private const uint MonitorInfoPrimary = 0x1;
+    private const uint MonitorDefaultToNearest = 0x2;
 
     private delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdc, ref RECT lprcMonitor, IntPtr dwData);
 
@@ -41,9 +48,16 @@ public static class MonitorInfo
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hWnd, uint dwFlags);
 
     /// <summary>All connected displays, in enumeration order.</summary>
     public static IReadOnlyList<Monitor> GetAll()
@@ -58,17 +72,7 @@ public static class MonitorInfo
             var mi = new MONITORINFOEX { CbSize = Marshal.SizeOf<MONITORINFOEX>() };
             if (GetMonitorInfo(hMonitor, ref mi))
             {
-                list.Add(new Monitor(
-                    mi.SzDevice,
-                    mi.RcMonitor.Left,
-                    mi.RcMonitor.Top,
-                    mi.RcMonitor.Right,
-                    mi.RcMonitor.Bottom,
-                    mi.RcWork.Left,
-                    mi.RcWork.Top,
-                    mi.RcWork.Right,
-                    mi.RcWork.Bottom,
-                    (mi.DwFlags & MONITORINFOF_PRIMARY) != 0));
+                list.Add(CreateMonitor(mi));
             }
 
             return true;
@@ -80,6 +84,79 @@ public static class MonitorInfo
 
     /// <summary>Number of connected displays.</summary>
     public static int Count => GetAll().Count;
+
+    /// <summary>
+    /// The monitor containing most of <paramref name="hWnd"/>, or the nearest monitor when the
+    /// window is currently outside every monitor.
+    /// </summary>
+    /// <remarks>
+    /// Monitor and work-area coordinates match physical DWM bounds only from a per-monitor-DPI-aware
+    /// test host. Every UITestAutomation.Next test executable should embed the framework's
+    /// PerMonitorV2 application manifest.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// <paramref name="hWnd"/> is invalid, was destroyed during the lookup, or its monitor
+    /// information could not be read.
+    /// </exception>
+    public static Monitor GetFromWindow(IntPtr hWnd) =>
+        GetFromWindow(hWnd, IsWindow, MonitorFromWindow, GetMonitor);
+
+    internal static Monitor GetFromWindow(
+        IntPtr hWnd,
+        Func<IntPtr, bool> isWindow,
+        Func<IntPtr, uint, IntPtr> monitorFromWindow,
+        Func<IntPtr, Monitor> getMonitor)
+    {
+        ArgumentNullException.ThrowIfNull(isWindow);
+        ArgumentNullException.ThrowIfNull(monitorFromWindow);
+        ArgumentNullException.ThrowIfNull(getMonitor);
+
+        if (hWnd == IntPtr.Zero || !isWindow(hWnd))
+        {
+            throw new InvalidOperationException($"Cannot query a monitor for invalid or destroyed HWND {FormatHandle(hWnd)}.");
+        }
+
+        var hMonitor = monitorFromWindow(hWnd, MonitorDefaultToNearest);
+        if (hMonitor == IntPtr.Zero)
+        {
+            throw new InvalidOperationException($"MonitorFromWindow failed for HWND {FormatHandle(hWnd)}.");
+        }
+
+        var monitor = getMonitor(hMonitor);
+        if (!isWindow(hWnd))
+        {
+            throw new InvalidOperationException($"HWND {FormatHandle(hWnd)} was destroyed during its monitor lookup.");
+        }
+
+        return monitor;
+    }
+
+    private static Monitor GetMonitor(IntPtr hMonitor)
+    {
+        var mi = new MONITORINFOEX { CbSize = Marshal.SizeOf<MONITORINFOEX>() };
+        if (!GetMonitorInfo(hMonitor, ref mi))
+        {
+            throw new InvalidOperationException(
+                $"GetMonitorInfo failed for HMONITOR {FormatHandle(hMonitor)} with Win32 error {Marshal.GetLastWin32Error()}.");
+        }
+
+        return CreateMonitor(mi);
+    }
+
+    private static Monitor CreateMonitor(MONITORINFOEX mi) =>
+        new(
+            mi.SzDevice,
+            mi.RcMonitor.Left,
+            mi.RcMonitor.Top,
+            mi.RcMonitor.Right,
+            mi.RcMonitor.Bottom,
+            mi.RcWork.Left,
+            mi.RcWork.Top,
+            mi.RcWork.Right,
+            mi.RcWork.Bottom,
+            (mi.DwFlags & MonitorInfoPrimary) != 0);
+
+    private static string FormatHandle(IntPtr handle) => $"0x{handle.ToInt64():X}";
 
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT

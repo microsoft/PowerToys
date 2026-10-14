@@ -85,6 +85,29 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsExpander
+                        Name="GrabAndMoveExcludeAppsForModifier"
+                        x:Uid="GrabAndMove_ExcludeAppsForModifier"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        IsExpanded="True">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="GrabAndMoveExcludeAppsForModifierTextBoxControl"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="GrabAndMove_ExcludeAppsForModifier_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind ViewModel.ExcludedAppsForModifier, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

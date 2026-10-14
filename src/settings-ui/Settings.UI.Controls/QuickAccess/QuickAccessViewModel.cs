@@ -14,7 +14,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public partial class QuickAccessViewModel : Observable
+    public partial class QuickAccessViewModel : Observable, IDisposable
     {
         private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
 
@@ -27,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly ResourceLoader _resourceLoader;
         private readonly DispatcherQueue _dispatcherQueue;
         private GeneralSettings _generalSettings;
+        private bool _disposed;
 
         public ObservableCollection<QuickAccessItem> Items { get; } = new();
 
@@ -54,12 +55,30 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             InitializeItems();
         }
 
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            _kbmSettingsRepository.SettingsChanged -= OnKbmSettingsChanged;
+            GC.SuppressFinalize(this);
+        }
+
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
             if (_dispatcherQueue != null)
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     _generalSettings = newSettings;
                     _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
                     RefreshItemsVisibility();
@@ -76,6 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.KeyboardManager);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
+            AddFlyoutMenuItem(ModuleType.MousePointerCrosshairs);
             AddFlyoutMenuItem(ModuleType.MouseWithoutBorders);
             AddFlyoutMenuItem(ModuleType.PowerDisplay);
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
@@ -110,6 +130,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     _generalSettings = _settingsRepository.SettingsConfig;
                     _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
                     RefreshItemsVisibility();
@@ -170,6 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.ShortcutGuide => SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
                 ModuleType.MouseWithoutBorders => SettingsRepository<MouseWithoutBordersSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ReconnectShortcut.ToString(),
+                ModuleType.MousePointerCrosshairs => SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 _ => string.Empty,
             };
         }

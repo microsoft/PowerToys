@@ -10,15 +10,18 @@ namespace newplus::helpers::variables
 {
     inline std::wstring resolve_an_environment_variable(const std::wstring& string)
     {
+        // Not _wdupenv_s: the CRT's environment copy is a snapshot that misses variables Explorer picks up later.
         std::wstring return_string = string;
-        wchar_t* env_variable = nullptr;
-
-        _wdupenv_s(&env_variable, nullptr, return_string.c_str());
-
-        if (env_variable != nullptr)
+        const DWORD required_size = GetEnvironmentVariableW(string.c_str(), nullptr, 0);
+        if (required_size > 0)
         {
-            return_string = env_variable;
-            free(env_variable);
+            std::wstring value(required_size, L'\0');
+            const DWORD length = GetEnvironmentVariableW(string.c_str(), value.data(), required_size);
+            if (length < required_size)
+            {
+                value.resize(length);
+                return_string = value;
+            }
         }
 
         return return_string;

@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Dock;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -441,16 +441,15 @@ public sealed partial class TaskbarBandControl : UserControl,
                 return;
             }
 
-            if (item.HasMoreCommands)
+            if (item.CanOpenContextMenu)
             {
                 var anchor = GetInvocationAnchor(dockItem);
                 _bandContextMenuPalettePos = GetElementCenter(anchor);
                 _bandContextMenuTarget = anchor;
                 _bandContextMenuItem = item;
 
-                ContextControl.SetCommandContext(item);
                 ContextControl.ShowFilterBox = true;
-                ContextControl.PrepareForOpen(GetContextMenuFilterLocation());
+                ContextControl.PrepareForOpen(item, GetContextMenuFilterLocation());
                 ContextMenuFlyout.ShowAt(
                     dockItem,
                     new FlyoutShowOptions()
@@ -499,9 +498,9 @@ public sealed partial class TaskbarBandControl : UserControl,
                 WithAnimation = false,
                 TransientPage = true,
             };
-            AddSourceContext(message, item);
+            message = DockItemActions.WithOwnerContext(message, item);
 
-            if (command.Model.Unsafe is IPage)
+            if (command.IsPage)
             {
                 if (!DeferPageUntilOverflowCloses(message, anchor, pos))
                 {
@@ -524,7 +523,7 @@ public sealed partial class TaskbarBandControl : UserControl,
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
         ContextControl.FocusSearchBox();
-        ContextControl.AnnounceOpened();
+        ContextControl.AnnounceOpened(() => ContextMenuFlyout.IsOpen);
     }
 
     private ContextMenuFilterLocation GetContextMenuFilterLocation()
@@ -588,16 +587,7 @@ public sealed partial class TaskbarBandControl : UserControl,
         FrameworkElement anchor,
         Point position)
     {
-        var result = _pageFlyoutController.Open(message, anchor, position);
-        if (result == DockPageFlyoutController.RequestResult.Started)
-        {
-            WeakReferenceMessenger.Default.Send(message);
-        }
-        else if (result == DockPageFlyoutController.RequestResult.Failed)
-        {
-            _pageFlyoutController.PreparePaletteFallback(message, position);
-            WeakReferenceMessenger.Default.Send(message);
-        }
+        _pageFlyoutController.OpenPage(message, anchor, position);
     }
 
     private void ContextMenu_CommandInvoked(object? sender, CommandItemViewModel command)
@@ -612,7 +602,7 @@ public sealed partial class TaskbarBandControl : UserControl,
         _bandContextMenuItem = null;
     }
 
-    private void ContextMenu_CommandInvoking(object? sender, PerformCommandMessage message)
+    private void ContextMenu_CommandInvoking(object? sender, CommandInvokingEventArgs e)
     {
         var pos = _bandContextMenuPalettePos;
         var target = _bandContextMenuTarget;
@@ -622,52 +612,36 @@ public sealed partial class TaskbarBandControl : UserControl,
             return;
         }
 
-        AddSourceContext(message, item);
-        if (message.Command.Unsafe is IPage)
+        ClearBandContextMenuInvocation();
+        e.Handled = true;
+        var message = DockItemActions.WithOwnerContext(e.Message, e.Command);
+        message = DockItemActions.WithOwnerContext(message, item);
+        try
         {
-            if (ContextMenuFlyout.IsOpen)
+            if (e.Command.Command.IsPage)
             {
-                ContextMenuFlyout.Hide();
-            }
+                if (ContextMenuFlyout.IsOpen)
+                {
+                    ContextMenuFlyout.Hide();
+                }
 
-            if (DeferPageUntilOverflowCloses(message, target, pos.Value))
-            {
-                message.CancelSend();
-                ClearBandContextMenuInvocation();
+                if (!DeferPageUntilOverflowCloses(message, target, pos.Value))
+                {
+                    StartPageRequest(message, target, pos.Value);
+                }
+
                 return;
             }
 
-            var result = _pageFlyoutController.Open(message, target, pos.Value);
-            if (result == DockPageFlyoutController.RequestResult.Deferred)
-            {
-                message.CancelSend();
-                ClearBandContextMenuInvocation();
-            }
-            else if (result == DockPageFlyoutController.RequestResult.Failed)
-            {
-                _pageFlyoutController.PreparePaletteFallback(message, pos.Value);
-            }
-
-            return;
+            var hwnd = OwnerHwnd;
+            var capturedPos = pos.Value;
+            message.OnBeforeShowConfirmation = () =>
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
+            WeakReferenceMessenger.Default.Send(message);
         }
-
-        var hwnd = OwnerHwnd;
-        var capturedPos = pos.Value;
-        message.OnBeforeShowConfirmation = () =>
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
-    }
-
-    private static void AddSourceContext(PerformCommandMessage message, DockItemViewModel item)
-    {
-        if (!item.PageContext.TryGetTarget(out var pageContext))
+        catch (COMException ex)
         {
-            return;
-        }
-
-        message.SourceProviderContext = pageContext.ProviderContext;
-        if (pageContext.ProviderContext is CommandProviderWrapper provider)
-        {
-            message.SourceExtensionHost = provider.ExtensionHost;
+            Logger.LogError("Error invoking taskbar context command", ex);
         }
     }
 
@@ -727,12 +701,11 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
 
         var item = _viewModel.GetContextMenuForTaskbar();
-        if (item.HasMoreCommands)
+        if (item.CanOpenContextMenu)
         {
             ClearBandContextMenuInvocation();
-            ContextControl.SetCommandContext(item);
             ContextControl.ShowFilterBox = false;
-            ContextControl.PrepareForOpen(GetContextMenuFilterLocation());
+            ContextControl.PrepareForOpen(item, GetContextMenuFilterLocation());
             ContextMenuFlyout.ShowAt(
                 target,
                 new FlyoutShowOptions()

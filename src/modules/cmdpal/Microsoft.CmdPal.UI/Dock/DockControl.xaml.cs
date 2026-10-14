@@ -6,22 +6,28 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks;
+using Microsoft.CmdPal.UI.Controls;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.System;
 
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
@@ -29,10 +35,17 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeMessage>, IRecipient<ExitEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>, IDisposable
 {
-    private readonly DockViewModel _viewModel;
+    private static readonly TimeSpan DropTimeout = TimeSpan.FromSeconds(3);
+
     private readonly DockPageFlyoutController _pageFlyoutController;
+    private readonly ContextMenuHost _menuHost;
+
+    private DockViewModel _viewModel;
+    private WeakReference<DockItemViewModel>? _lastFocusedItem;
 
     internal DockViewModel ViewModel => _viewModel;
+
+    internal bool HasRememberedFocus => _lastFocusedItem?.TryGetTarget(out _) == true;
 
     /// <summary>
     /// Gets or sets the HWND of the parent DockWindow that owns this control.
@@ -41,7 +54,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
     internal IntPtr OwnerHwnd { get; set; }
 
     internal bool HasOpenTransientUi =>
-        ContextMenuFlyout.IsOpen ||
+        ItemContextMenuFlyout.IsOpen ||
         AddBandFlyout.IsOpen ||
         EditModeContextMenu.IsOpen ||
         EditButtonsTeachingTip.IsOpen ||
@@ -108,7 +121,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
             () => DockSide,
             () => !IsEditMode,
             () => Focus(FocusState.Programmatic));
-        ContextControl.CloseRequested += ContextControl_CloseRequested;
+        _menuHost = new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout);
         Loaded += DockControl_Loaded;
         Unloaded += DockControl_Unloaded;
 
@@ -126,13 +139,15 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
         _pageFlyoutController.Activate();
 
-        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
-        ContextControl.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
-        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
-        ContextControl.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
+        ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        ItemContextMenuFlyout.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
+
+        // Bands can be added to CenterItems before Loaded fires (or while unloaded),
+        // and those CollectionChanged notifications are missed. Re-evaluate now.
+        UpdateCenterVisibility();
 
         UpdateEditModeTeachingTip();
     }
@@ -141,20 +156,15 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _pageFlyoutController.Deactivate();
+        _menuHost.Close();
 
-        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
-        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
 
         if (EditButtonsTeachingTip.IsOpen)
         {
             EditButtonsTeachingTip.IsOpen = false;
-        }
-
-        if (ContextMenuFlyout.IsOpen)
-        {
-            ContextMenuFlyout.Hide();
         }
 
         if (AddBandFlyout.IsOpen)
@@ -258,14 +268,6 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         }
     }
 
-    private static void PreparePopupForShow(FlyoutBase popup, FrameworkElement placementTarget)
-    {
-        if (placementTarget.XamlRoot is not null && popup.XamlRoot != placementTarget.XamlRoot)
-        {
-            popup.XamlRoot = placementTarget.XamlRoot;
-        }
-    }
-
     // Whether this control is showing the save/discard flyout
     private bool _showFlyout;
 
@@ -327,41 +329,159 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
         // Ignore clicks when in edit mode - allow drag behavior instead
-        if (IsEditMode)
+        if (TryInvokeBandItem(sender))
         {
-            return;
-        }
-
-        if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
-        {
-            // Use the center of the border as the point to open at
-            var borderCenter = GetDockItemCenter(dockItem);
-
-            InvokeItem(item, dockItem, borderCenter);
             e.Handled = true;
         }
     }
 
-    private ContextMenuFilterLocation GetDockContextMenuFilterLocation()
+    private void BandItem_GotFocus(object sender, RoutedEventArgs e)
     {
-        return DockSide == DockSide.Bottom
-            ? ContextMenuFilterLocation.Bottom
-            : ContextMenuFilterLocation.Top;
+        if (sender is DockItemControl { Tag: DockItemViewModel item })
+        {
+            _lastFocusedItem = new(item);
+        }
+    }
+
+    internal void ResetRememberedFocus() => _lastFocusedItem = null;
+
+    private void BandItem_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        // Edit mode owns Escape while bands are being edited.
+        if (!IsEditMode && e.Key == VirtualKey.Escape)
+        {
+            KeyboardFocusReleaseRequested?.Invoke(this, EventArgs.Empty);
+            e.Handled = true;
+            return;
+        }
+
+        if (IsEditMode || sender is not DockItemControl dockItem || dockItem.Tag is not DockItemViewModel item)
+        {
+            return;
+        }
+
+        var modifiers = KeyModifiers.GetCurrent();
+        var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key, 0);
+        e.Handled = DockItemActions.TryHandleKey(
+            item,
+            chord,
+            command => InvokeItem(command, dockItem, GetDockItemCenter(dockItem)),
+            submenu => TryShowBandContextMenu(dockItem, item, submenu, afterKeyEvent: true));
+    }
+
+    /// <summary>
+    /// Raised when the user presses Escape while focus is in the dock.
+    /// </summary>
+    internal event EventHandler? KeyboardFocusReleaseRequested;
+
+    /// <summary>
+    /// Moves focus across bands in either direction, optionally wrapping within this dock.
+    /// </summary>
+    internal bool TryFocusNextItem(bool moveFromCurrent, bool wrap, bool reverse, bool restoreLastFocus)
+    {
+        ListView[] listViews = [StartListView, CenterListView, EndListView];
+        List<(ItemsRepeater Repeater, int Index)> items = [];
+        var focusedItem = moveFromCurrent ? FocusManager.GetFocusedElement(XamlRoot) as DockItemControl : null;
+        var focusedIndex = -1;
+        var rememberedIndex = -1;
+        DockItemViewModel? rememberedItem = null;
+        if (restoreLastFocus)
+        {
+            _lastFocusedItem?.TryGetTarget(out rememberedItem);
+        }
+
+        foreach (var listView in listViews)
+        {
+            for (var bandIndex = 0; bandIndex < listView.Items.Count; bandIndex++)
+            {
+                var container = listView.ContainerFromIndex(bandIndex) as ListViewItem;
+                var repeater = container?.FindDescendant<ItemsRepeater>();
+                if (repeater?.ItemsSourceView is not { } source)
+                {
+                    continue;
+                }
+
+                // Recycled visual children need not be in data order.
+                for (var itemIndex = 0; itemIndex < source.Count; itemIndex++)
+                {
+                    if (focusedItem is not null && ReferenceEquals(repeater.TryGetElement(itemIndex), focusedItem))
+                    {
+                        focusedIndex = items.Count;
+                    }
+
+                    if (rememberedItem is not null && ReferenceEquals(source.GetAt(itemIndex), rememberedItem))
+                    {
+                        rememberedIndex = items.Count;
+                    }
+
+                    items.Add((repeater, itemIndex));
+                }
+            }
+        }
+
+        return DockFocusNavigation.TryFocusNext(
+            items.Count,
+            focusedIndex,
+            index =>
+            {
+                var (repeater, itemIndex) = items[index];
+                if (repeater.GetOrCreateElement(itemIndex) is not DockItemControl item)
+                {
+                    return false;
+                }
+
+                // Realized items need a layout position before focus can scroll them into view.
+                item.UpdateLayout();
+                if (!item.Focus(FocusState.Keyboard))
+                {
+                    return false;
+                }
+
+                item.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
+                return true;
+            },
+            wrap,
+            reverse,
+            rememberedIndex);
+    }
+
+    private bool TryInvokeBandItem(object sender)
+    {
+        if (IsEditMode)
+        {
+            return false;
+        }
+
+        if (sender is not DockItemControl dockItem || dockItem.Tag is not DockItemViewModel item)
+        {
+            return false;
+        }
+
+        // Use the center of the border as the point to open at.
+        var borderCenter = GetDockItemCenter(dockItem);
+        InvokeItem(item, dockItem, borderCenter);
+        return true;
+    }
+
+    private ContextMenuAnchor GetDefaultContextMenuAnchor()
+    {
+        return new(
+            RootGrid,
+            null,
+            FlyoutPlacementHelper.ForDockSide(DockSide),
+            DockSide == DockSide.Bottom ? ContextMenuFilterLocation.Bottom : ContextMenuFilterLocation.Top);
     }
 
     // Stores the band that was right-clicked for edit mode context menu
     private DockBandViewModel? _editModeContextBand;
 
-    // Position (in window coords) of the dock item whose context menu is currently
-    // open, used to anchor the cmdpal palette when a Page command is invoked from
-    // the context menu. Null when the open context menu is not anchored to a band.
-    private Point? _bandContextMenuPalettePos;
+    // The dock item whose context menu is open. Page commands from that menu open at the
+    // item, and confirmations surface the palette there. Null for the dock's own menu.
+    private BandMenuInvocation? _bandContextMenu;
 
-    private FrameworkElement? _bandContextMenuTarget;
+    private sealed record BandMenuInvocation(FrameworkElement Target, DockItemViewModel Item, Point Position);
 
-    private DockItemViewModel? _bandContextMenuItem;
-
-    private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    private void BandItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
         if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
         {
@@ -381,13 +501,14 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
                         ? Visibility.Collapsed
                         : Visibility.Visible;
 
-                    PreparePopupForShow(EditModeContextMenu, dockItem);
+                    UIHelper.PreparePopupForShow(EditModeContextMenu, dockItem);
+                    EditModeContextMenu.Placement = FlyoutPlacementHelper.ForDockSide(DockSide);
                     EditModeContextMenu.ShowAt(
                         dockItem,
                         new FlyoutShowOptions()
                         {
                             ShowMode = FlyoutShowMode.Standard,
-                            Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                            Placement = EditModeContextMenu.Placement,
                         });
                     e.Handled = true;
                 }
@@ -395,28 +516,43 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
                 return;
             }
 
-            // Normal mode - show the command context menu
-            if (item.CanOpenContextMenu)
-            {
-                // Remember where to anchor the palette if the user picks a Page
-                // command from the context menu.
-                _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
-                _bandContextMenuTarget = dockItem;
-                _bandContextMenuItem = item;
+            e.Handled = TryShowBandContextMenu(dockItem, item);
+        }
+    }
 
-                ContextControl.SetCommandContext(item);
-                ContextControl.ShowFilterBox = true;
-                ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
-                PreparePopupForShow(ContextMenuFlyout, dockItem);
-                ContextMenuFlyout.ShowAt(
-                    dockItem,
-                    new FlyoutShowOptions()
-                    {
-                        ShowMode = FlyoutShowMode.Standard,
-                        Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                    });
-                e.Handled = true;
+    private bool TryShowBandContextMenu(DockItemControl dockItem, DockItemViewModel item, CommandContextItemViewModel? initialSubmenu = null, bool afterKeyEvent = false)
+    {
+        if (!item.CanOpenContextMenu)
+        {
+            return false;
+        }
+
+        if (afterKeyEvent)
+        {
+            _menuHost.ShowAfterKeyEvent(CreateRequest);
+        }
+        else if (CreateRequest() is { } request)
+        {
+            _menuHost.Show(request);
+        }
+
+        return true;
+
+        ContextMenuRequest? CreateRequest()
+        {
+            if (!IsLoaded || IsEditMode || !dockItem.IsLoaded || !ReferenceEquals(dockItem.Tag, item) ||
+                (afterKeyEvent && dockItem.FocusState == FocusState.Unfocused))
+            {
+                return null;
             }
+
+            // Anchor page commands and confirmation dialogs to the invoking dock item.
+            _bandContextMenu = new(dockItem, item, GetDockItemCenter(dockItem));
+            return new ContextMenuRequest(item)
+            {
+                Anchor = GetDefaultContextMenuAnchor() with { Element = dockItem },
+                InitialSubmenu = initialSubmenu,
+            };
         }
     }
 
@@ -445,42 +581,39 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         }
     }
 
-    private void InvokeItem(DockItemViewModel item, FrameworkElement anchor, Point pos)
+    private void InvokeItem(CommandItemViewModel item, FrameworkElement anchor, Point pos)
     {
-        var command = item.Command;
-        var hwnd = OwnerHwnd;
         try
         {
-            PerformCommandMessage message = new(command.Model, item.Model)
+            var message = DockItemActions.CreateInvocationMessage(item);
+            if (item.Command.IsPage)
             {
-                WithAnimation = false,
-                TransientPage = true,
-            };
-            AddSourceContext(message, item);
-
-            if (command.Model.Unsafe is IPage)
-            {
-                var result = _pageFlyoutController.Open(message, anchor, pos);
-                if (result == DockPageFlyoutController.RequestResult.Started)
-                {
-                    WeakReferenceMessenger.Default.Send(message);
-                }
-                else if (result == DockPageFlyoutController.RequestResult.Failed)
-                {
-                    _pageFlyoutController.PreparePaletteFallback(message, pos);
-                    WeakReferenceMessenger.Default.Send(message);
-                }
+                _pageFlyoutController.OpenPage(message, anchor, pos);
             }
             else
             {
-                message.OnBeforeShowConfirmation = () =>
-                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
-                WeakReferenceMessenger.Default.Send(message);
+                SendCommand(message, item.Command, pos);
             }
         }
         catch (COMException e)
         {
             Logger.LogError("Error invoking dock command", e);
+        }
+    }
+
+    /// <summary>
+    /// Sends a command that is not a page. Confirmations, and commands that need the
+    /// palette, surface the palette at the dock item.
+    /// </summary>
+    private void SendCommand(PerformCommandMessage message, CommandViewModel command, Point pos)
+    {
+        var hwnd = OwnerHwnd;
+        message.OnBeforeShowConfirmation = () =>
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
+        WeakReferenceMessenger.Default.Send(message);
+        if (DockItemActions.ShouldShowPalette(command))
+        {
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
         }
     }
 
@@ -492,91 +625,39 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
             borderPos.Y + (dockItem.ActualHeight / 2));
     }
 
-    private void ContextMenu_CommandInvoked(object? sender, CommandItemViewModel command)
+    private void ContextMenu_CommandInvoking(object? sender, CommandInvokingEventArgs e)
     {
-        ClearBandContextMenuInvocation();
-    }
-
-    private void ClearBandContextMenuInvocation()
-    {
-        _bandContextMenuPalettePos = null;
-        _bandContextMenuTarget = null;
-        _bandContextMenuItem = null;
-    }
-
-    private void ContextMenu_CommandInvoking(object? sender, PerformCommandMessage message)
-    {
-        // The context menu is about to dispatch a command. If it was opened
-        // from a dock band, attach a callback so that an invokable command
-        // whose result is a Confirm surfaces the cmdpal window anchored at the
-        // dock item before the confirmation dialog appears.
-        var pos = _bandContextMenuPalettePos;
-        var target = _bandContextMenuTarget;
-        var item = _bandContextMenuItem;
-        if (pos is null || target is null || item is null)
+        // Commands from a dock band's menu run as if the band item were invoked directly.
+        // The dock's own menu has no band, so its commands are sent unchanged.
+        if (_bandContextMenu is not { } invocation)
         {
             return;
         }
 
-        AddSourceContext(message, item);
-        if (message.Command.Unsafe is IPage)
+        _bandContextMenu = null;
+        e.Handled = true;
+
+        var message = DockItemActions.WithOwnerContext(e.Message, e.Command);
+        message = DockItemActions.WithOwnerContext(message, invocation.Item);
+        try
         {
-            if (ContextMenuFlyout.IsOpen)
+            if (e.Command.Command.IsPage)
             {
-                ContextMenuFlyout.Hide();
+                _menuHost.Close();
+                _pageFlyoutController.OpenPage(message, invocation.Target, invocation.Position);
             }
-
-            var result = _pageFlyoutController.Open(message, target, pos.Value);
-            if (result == DockPageFlyoutController.RequestResult.Deferred)
+            else
             {
-                message.CancelSend();
-                ClearBandContextMenuInvocation();
+                SendCommand(message, e.Command.Command, invocation.Position);
             }
-            else if (result == DockPageFlyoutController.RequestResult.Failed)
-            {
-                _pageFlyoutController.PreparePaletteFallback(message, pos.Value);
-            }
-
-            return;
         }
-
-        var hwnd = OwnerHwnd;
-        var capturedPos = pos.Value;
-        message.OnBeforeShowConfirmation = () =>
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
-    }
-
-    private void ContextMenuFlyout_Opened(object sender, object e)
-    {
-        // Focus the filter box so the flyout captures keyboard input,
-        // then fire a single consolidated Narrator announcement.
-        ContextControl.FocusSearchBox();
-        ContextControl.AnnounceOpened();
-    }
-
-    private static void AddSourceContext(PerformCommandMessage message, DockItemViewModel item)
-    {
-        if (!item.PageContext.TryGetTarget(out var pageContext))
+        catch (COMException ex)
         {
-            return;
-        }
-
-        message.SourceProviderContext = pageContext.ProviderContext;
-        if (pageContext.ProviderContext is CommandProviderWrapper provider)
-        {
-            message.SourceExtensionHost = provider.ExtensionHost;
+            Logger.LogError("Error invoking dock context command", ex);
         }
     }
 
-    private void ContextControl_CloseRequested(object? sender, EventArgs e)
-    {
-        if (ContextMenuFlyout.IsOpen)
-        {
-            ContextMenuFlyout.Hide();
-        }
-    }
-
-    private void RootGrid_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    private void RootGrid_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
         // Don't show the dock context menu while in edit mode
         if (IsEditMode)
@@ -586,28 +667,27 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
 
         // This context menu is for the dock itself (not a band), so the palette
         // should not be opened on invocation.
-        _bandContextMenuPalettePos = null;
-        _bandContextMenuTarget = null;
-        _bandContextMenuItem = null;
+        _bandContextMenu = null;
 
-        var pos = e.GetPosition(null);
         var item = this.ViewModel.GetContextMenuForDock();
-        if (item.HasMoreCommands)
+        if (item.CanOpenContextMenu)
         {
-            ContextControl.SetCommandContext(item);
-            ContextControl.ShowFilterBox = false;
-            ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
-            PreparePopupForShow(ContextMenuFlyout, RootGrid);
-            ContextMenuFlyout.ShowAt(
-            this.RootGrid,
-            new FlyoutShowOptions()
+            _menuHost.Show(new ContextMenuRequest(item)
             {
-                ShowMode = FlyoutShowMode.Standard,
-                Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                Position = pos,
+                Anchor = GetDefaultContextMenuAnchor() with
+                {
+                    Position = e.TryGetPosition(RootGrid, out var pos) ? pos : null,
+                },
+                ShowFilterBox = false,
             });
             e.Handled = true;
         }
+    }
+
+    private void RootGrid_ContextCanceled(UIElement sender, RoutedEventArgs e)
+    {
+        _menuHost.Close();
+        EditModeContextMenu.Hide();
     }
 
     private DockBandViewModel? _draggedBand;
@@ -869,7 +949,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
             AddBandListView.Visibility = hasAvailableBands ? Visibility.Visible : Visibility.Collapsed;
 
             // Show the flyout
-            PreparePopupForShow(AddBandFlyout, button);
+            UIHelper.PreparePopupForShow(AddBandFlyout, button);
             AddBandFlyout.ShowAt(button);
         }
     }
@@ -948,6 +1028,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
 
         e.Handled = true;
 
+        using var timeout = new CancellationTokenSource(DropTimeout);
+        var deferral = e.GetDeferral();
         try
         {
             var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
@@ -957,10 +1039,10 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
                 return;
             }
 
-            var foundItem = false;
             if (hasStorageItems)
             {
-                var items = await e.DataView.GetStorageItemsAsync();
+                var items = await e.DataView.GetStorageItemsAsync().AsTask().WaitAsync(timeout.Token);
+                var bookmarks = new List<(string Name, string Target)>();
                 foreach (var item in items)
                 {
                     var path = item.Path;
@@ -969,28 +1051,42 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
                         continue;
                     }
 
-                    var name = Path.GetFileNameWithoutExtension(path);
-                    AddBookmarkAndPinToDock(bookmarksManager, name, path);
-                    foundItem = true;
+                    bookmarks.Add(await DockDropHelper.GetBookmarkAsync(path, timeout.Token));
                 }
-            }
 
-            if (foundItem)
-            {
-                return;
+                timeout.Token.ThrowIfCancellationRequested();
+                foreach (var (name, target) in bookmarks)
+                {
+                    AddBookmarkAndPinToDock(bookmarksManager, name, target);
+                }
+
+                if (bookmarks.Count > 0)
+                {
+                    return;
+                }
             }
 
             if (hasUri)
             {
-                var uri = await e.DataView.GetUriAsync();
+                var uri = await e.DataView.GetUriAsync().AsTask().WaitAsync(timeout.Token);
+                timeout.Token.ThrowIfCancellationRequested();
                 var url = uri.AbsoluteUri;
                 var name = uri.Host;
                 AddBookmarkAndPinToDock(bookmarksManager, name, url);
             }
         }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+        {
+            Logger.LogWarning("[DockDrop] Timed out resolving dropped items");
+            WeakReferenceMessenger.Default.Send(new ShowToastMessage(RS_.GetString("Dock_Drop_TimedOut")));
+        }
         catch (Exception ex)
         {
             Logger.LogError("[DockDrop] Error handling file drop on dock", ex);
+        }
+        finally
+        {
+            deferral.Complete();
         }
     }
 
@@ -1028,9 +1124,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
     {
         Loaded -= DockControl_Loaded;
         Unloaded -= DockControl_Unloaded;
-        ContextControl.CloseRequested -= ContextControl_CloseRequested;
-        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
-        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        _menuHost.Close();
+        ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _pageFlyoutController.Dispose();

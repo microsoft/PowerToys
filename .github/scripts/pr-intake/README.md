@@ -1,20 +1,30 @@
 # Pull request intake
 
-The workflow in `.github/workflows/pr-intake.yml` runs deterministic pull
-request intake checks on non-draft pull requests. It does not call any AI model
-and does not execute any code from the pull request head; the Node script reads
-all pull request data through the GitHub API.
+The workflow in `.github/workflows/pr-intake.yml` applies deterministic product
+labels to all pull requests and runs intake checks on non-draft pull requests.
+It does not call any AI model and does not execute any code from the pull
+request head; the Node script reads all pull request data through the GitHub
+API.
 
 ## Flow
 
-1. Read the current PR through the GitHub API. Mergeability is re-fetched a few
+1. Read the current PR and changed files through the GitHub API.
+2. Add recognized `Product-*` labels from the historical path mapping. The
+   longest path prefix wins, generic Settings/General labels are suppressed
+   when a more specific product matches, and existing product labels are never
+   removed.
+3. Re-fetch mergeability a few
    times when GitHub still reports it as unknown so a conflicting PR is never
    treated as ready by default.
-2. Deterministically validate closing issue references, merge conflicts, and
+4. Deterministically validate closing issue references, merge conflicts, and
    whether visual evidence is present.
-3. Require visual evidence only when the changed paths touch product UI files.
-4. Keep a single canonical comment in sync and manage only the
-   `Ready for review` and `Needs-Author-Feedback` labels.
+5. Require visual evidence only when the changed paths touch product UI files.
+6. Keep a single canonical comment in sync and manage the `Ready for review`
+   and `Needs-Author-Feedback` lifecycle labels.
+
+Product labeling is additive. Intake never removes an existing product label,
+and a pull request that touches multiple mapped roots receives each matching
+label. Draft pull requests receive product labels but skip readiness checks.
 
 ## Comment behavior
 
@@ -26,8 +36,9 @@ all pull request data through the GitHub API.
 
 Missing issue references are advisory. Explicitly invalid references, merge
 conflicts, unknown mergeability, and missing required visual evidence block
-readiness. Draft PR events skip normal intake; conversion to draft runs only
-lifecycle-label cleanup, and marking a draft ready triggers full intake.
+readiness. Draft PR events run deterministic path labeling, remove intake
+lifecycle labels, delete trusted canonical intake comments, and then stop.
+Marking a draft ready triggers full intake.
 
 The existing resource-management policy closes PRs that retain
 `Needs-Author-Feedback` for seven inactive days. PR synchronization is handled

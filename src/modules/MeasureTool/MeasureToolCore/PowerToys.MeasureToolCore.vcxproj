@@ -43,6 +43,8 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <GenerateManifest>false</GenerateManifest>
     <DesktopCompatible>true</DesktopCompatible>
+    <!-- Keep a private UCRT: InitUnhandledExceptionHandler's signal(SIGABRT) would otherwise apply to every module in MeasureToolUI. -->
+    <EnableHybridCRT>false</EnableHybridCRT>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -82,6 +84,7 @@
     <ClInclude Include="D2DState.h" />
     <ClInclude Include="DxgiAPI.h" />
     <ClInclude Include="Measurement.h" />
+    <ClInclude Include="MeasurementLogic.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />
     <ClInclude Include="PerGlyphOpacityTextRender.h" />
     <ClInclude Include="resource.h" />

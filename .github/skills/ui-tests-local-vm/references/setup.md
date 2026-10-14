@@ -363,7 +363,7 @@ post-deployment signing step costs an extra full run every time the product arch
   -SkipLocalTrust -ExportCertificatePath X:\PowerToysUiTestPayload\pt-test-signer.cer
 
 # 2. Guest, once per VM: trust the exported public certificate.
-pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-GuestScript.ps1 `
+& .github\skills\ui-tests-local-vm\scripts\Invoke-GuestScript.ps1 `
   -VmName PowerToysUiTest-Win11 `
   -ScriptBlock {
       foreach ($store in 'Cert:\LocalMachine\Root', 'Cert:\LocalMachine\TrustedPeople') {
@@ -380,7 +380,7 @@ rather than driving the classic menu - is the faithful fix.
 Inspect guest state at any time over the same channel:
 
 ```pwsh
-pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-GuestScript.ps1 `
+& .github\skills\ui-tests-local-vm\scripts\Invoke-GuestScript.ps1 `
   -VmName PowerToysUiTest-Win11 `
   -ScriptBlock { Get-Process explorer | Select-Object Id, SessionId }
 ```

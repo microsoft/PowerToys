@@ -6,42 +6,42 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Media;
 
-using ColorPicker.Common;
 using ColorPicker.Helpers;
 using ColorPicker.Models;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
-using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
-using Microsoft.Win32;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using ManagedCommon;
+using Microsoft.UI;
+using Microsoft.Windows.Storage.Pickers;
+using Windows.UI;
 
 namespace ColorPicker.ViewModels
 {
-    [Export(typeof(IColorEditorViewModel))]
-    public class ColorEditorViewModel : ViewModelBase, IColorEditorViewModel
+    public class ColorEditorViewModel : ObservableObject, IColorEditorViewModel
     {
         private readonly IUserSettings _userSettings;
-        private readonly List<ColorFormatModel> _allColorRepresentations = new List<ColorFormatModel>();
         private Color _selectedColor;
         private bool _initializing;
         private int _selectedColorIndex;
 
-        [ImportingConstructor]
         public ColorEditorViewModel(IUserSettings userSettings)
         {
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
+            CopyColorTextCommand = new RelayCommand<ColorFormatModel>(CopyColorText);
 
-            RemoveColorsCommand = new RelayCommand(DeleteSelectedColors);
-            ExportColorsGroupedByColorCommand = new RelayCommand(ExportSelectedColorsByColor);
-            ExportColorsGroupedByFormatCommand = new RelayCommand(ExportSelectedColorsByFormat);
-            SelectedColorChangedCommand = new RelayCommand((newColor) =>
+            RemoveColorsCommand = new RelayCommand<object>(DeleteSelectedColors, IsNonEmptyList);
+            ExportColorsGroupedByColorCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByColor, IsNonEmptyList);
+            ExportColorsGroupedByFormatCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByFormat, IsNonEmptyList);
+            SelectedColorChangedCommand = new RelayCommand<object>((newColor) =>
             {
                 if (ColorsHistory.Contains((Color)newColor))
                 {
@@ -53,7 +53,7 @@ namespace ColorPicker.ViewModels
             });
             ColorsHistory.CollectionChanged += ColorsHistory_CollectionChanged;
             _userSettings = userSettings;
-            SetupAllColorRepresentations();
+            _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
             SetupAvailableColorRepresentations();
         }
 
@@ -65,6 +65,8 @@ namespace ColorPicker.ViewModels
 
         public ICommand OpenSettingsCommand { get; }
 
+        public ICommand CopyColorTextCommand { get; }
+
         public ICommand RemoveColorsCommand { get; }
 
         public ICommand ExportColorsGroupedByColorCommand { get; }
@@ -73,7 +75,12 @@ namespace ColorPicker.ViewModels
 
         public ICommand SelectedColorChangedCommand { get; }
 
-        public ICommand HideColorFormatCommand { get; }
+        /// <summary>
+        /// Gets or sets the editor window's native handle, used to anchor the WinUI
+        /// <see cref="FileSavePicker"/> raised by the export commands (a desktop-app
+        /// requirement). The host ColorEditorWindow assigns it once its HWND is available.
+        /// </summary>
+        public IntPtr WindowHandle { get; set; }
 
         public ObservableCollection<Color> ColorsHistory { get; } = new ObservableCollection<Color>();
 
@@ -88,8 +95,13 @@ namespace ColorPicker.ViewModels
 
             set
             {
-                _selectedColor = value;
-                OnPropertyChanged();
+                if (SetProperty(ref _selectedColor, value))
+                {
+                    foreach (var colorFormat in ColorRepresentations)
+                    {
+                        colorFormat.UpdateColor(value);
+                    }
+                }
             }
         }
 
@@ -114,24 +126,39 @@ namespace ColorPicker.ViewModels
 
         public void Initialize()
         {
-            _initializing = true;
-
-            ColorsHistory.Clear();
-
-            foreach (var item in _userSettings.ColorHistory)
+            var savedColors = _userSettings.ColorHistory.Select(item =>
             {
                 var parts = item.Split('|');
-                ColorsHistory.Add(new Color()
+                return new Color()
                 {
                     A = byte.Parse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture),
                     R = byte.Parse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture),
                     G = byte.Parse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture),
                     B = byte.Parse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture),
-                });
-                SelectedColorIndex = 0;
+                };
+            }).ToList();
+
+            if (!ColorsHistory.SequenceEqual(savedColors))
+            {
+                _initializing = true;
+                try
+                {
+                    ColorsHistory.Clear();
+                    foreach (var color in savedColors)
+                    {
+                        ColorsHistory.Add(color);
+                    }
+                }
+                finally
+                {
+                    _initializing = false;
+                }
             }
 
-            _initializing = false;
+            if (ColorsHistory.Count > 0)
+            {
+                SelectedColorIndex = 0;
+            }
         }
 
         private void ColorsHistory_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -148,9 +175,28 @@ namespace ColorPicker.ViewModels
             }
         }
 
+        private static bool IsNonEmptyList(object parameter) =>
+            parameter is IList { Count: > 0 } list &&
+            list.Cast<object>().All(item => item is Color);
+
+        private static void CopyColorText(ColorFormatModel colorFormat)
+        {
+            ArgumentNullException.ThrowIfNull(colorFormat);
+
+            ClipboardHelper.CopyToClipboard(colorFormat.ColorText);
+            SessionEventHelper.Event.EditorColorCopiedToClipboard = true;
+        }
+
         private void DeleteSelectedColors(object selectedColors)
         {
-            var colorsToRemove = ((IList)selectedColors).OfType<Color>().ToList();
+            if (!IsNonEmptyList(selectedColors))
+            {
+                return;
+            }
+
+            var list = (IList)selectedColors;
+            var colorsToRemove = list.Cast<Color>().ToList();
+
             var indicesToRemove = colorsToRemove.Select(color => ColorsHistory.IndexOf(color)).ToList();
 
             foreach (var color in colorsToRemove)
@@ -162,39 +208,56 @@ namespace ColorPicker.ViewModels
             SessionEventHelper.Event.EditorHistoryColorRemoved = true;
         }
 
-        private void ExportSelectedColorsByColor(object selectedColors)
+        private Task ExportSelectedColorsByColor(object selectedColors)
         {
-            ExportColors(selectedColors, GroupExportedColorsBy.Color);
+            return ExportColors(selectedColors, GroupExportedColorsBy.Color);
         }
 
-        private void ExportSelectedColorsByFormat(object selectedColors)
+        private Task ExportSelectedColorsByFormat(object selectedColors)
         {
-            ExportColors(selectedColors, GroupExportedColorsBy.Format);
+            return ExportColors(selectedColors, GroupExportedColorsBy.Format);
         }
 
-        private void ExportColors(object colorsToExport, GroupExportedColorsBy method)
+        private async Task ExportColors(object colorsToExport, GroupExportedColorsBy method)
         {
-            var colors = SerializationHelper.ConvertToDesiredColorFormats((IList)colorsToExport, ColorRepresentations, method);
-
-            var dialog = new SaveFileDialog
+            if (!IsNonEmptyList(colorsToExport))
             {
-                Title = "Save selected colors to",
-                Filter = "Text Files (*.txt)|*.txt|Json Files (*.json)|*.json",
-            };
+                return;
+            }
 
-            if (dialog.ShowDialog() == true)
+            try
             {
-                var extension = Path.GetExtension(dialog.FileName);
+                var colors = SerializationHelper.ConvertToDesiredColorFormats((IList)colorsToExport, ColorRepresentations, method);
 
-                var contentToWrite = extension.ToUpperInvariant() switch
+                // The Windows App SDK picker uses the in-process Win32 common item dialog, so it
+                // works for both normal and elevated PowerToys processes. It also returns a path
+                // directly, without the legacy StorageFile update transaction that failed here.
+                var picker = new FileSavePicker(Win32Interop.GetWindowIdFromWindow(WindowHandle))
                 {
-                    ".TXT" => colors.ToTxt(';'),
-                    ".JSON" => colors.ToJson(),
-                    _ => string.Empty,
+                    SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                    SuggestedFileName = ResourceLoaderInstance.GetString("Export_SuggestedFileName"),
+                    DefaultFileExtension = ".txt",
                 };
+                picker.FileTypeChoices.Add(
+                    ResourceLoaderInstance.GetString("Export_TextFileType"),
+                    new List<string> { ".txt" });
+                picker.FileTypeChoices.Add(
+                    ResourceLoaderInstance.GetString("Export_JsonFileType"),
+                    new List<string> { ".json" });
 
-                File.WriteAllText(dialog.FileName, contentToWrite);
-                SessionEventHelper.Event.EditorColorsExported = true;
+                var file = await picker.PickSaveFileAsync();
+                if (file != null)
+                {
+                    var extension = Path.GetExtension(file.Path);
+                    var contentToWrite = colors.ToFileContent(extension);
+
+                    await File.WriteAllTextAsync(file.Path, contentToWrite);
+                    SessionEventHelper.Event.EditorColorsExported = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to export selected colors", ex);
             }
         }
 
@@ -241,114 +304,6 @@ namespace ColorPicker.ViewModels
             return -1;
         }
 
-        private void SetupAllColorRepresentations()
-        {
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.HEX.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HEX.ToString()).ToLowerInvariant(),
-                });
-
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.RGB.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.RGB.ToString()),
-                });
-
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.HSL.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSL.ToString()),
-                });
-
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.HSV.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSV.ToString()),
-                });
-
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.CMYK.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CMYK.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.HSB.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSB.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.HSI.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HSI.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.HWB.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.HWB.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.NCol.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.NCol.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.CIEXYZ.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.CIELAB.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIELAB.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.Oklab.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.Oklab.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.Oklch.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.Oklch.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = ColorRepresentationType.VEC4.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.VEC4.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = "Decimal",
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, "Decimal"),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
-                    FormatName = "HEX Int",
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, "HEX Int"),
-                });
-
-            _userSettings.VisibleColorFormats.CollectionChanged += VisibleColorFormats_CollectionChanged;
-
-            // Any other custom format to be added here as well that are read from settings
-        }
-
         private void VisibleColorFormats_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             SetupAvailableColorRepresentations();
@@ -360,7 +315,9 @@ namespace ColorPicker.ViewModels
 
             foreach (var colorFormat in _userSettings.VisibleColorFormats)
             {
-                ColorRepresentations.Add(new ColorFormatModel() { FormatName = colorFormat.Key.ToUpperInvariant(), Convert = null, FormatString = colorFormat.Value });
+                var representation = new ColorFormatModel() { FormatName = colorFormat.Key.ToUpperInvariant(), Convert = null, FormatString = colorFormat.Value };
+                representation.UpdateColor(SelectedColor);
+                ColorRepresentations.Add(representation);
             }
         }
     }

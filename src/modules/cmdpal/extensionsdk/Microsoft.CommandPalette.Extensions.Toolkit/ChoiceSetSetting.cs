@@ -25,7 +25,7 @@ public sealed class ChoiceSetSetting : Setting<string>
         }
     }
 
-    public List<Choice> Choices { get; set; }
+    public List<Choice> Choices { get; init; }
 
     public bool IgnoreUnknownValue { get; set; }
 

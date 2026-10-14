@@ -4,12 +4,12 @@
 
 using System.Globalization;
 using System.Text;
-using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -27,11 +27,18 @@ public sealed partial class ContextMenu : UserControl
     private static readonly CompositeFormat _contextMenuOpenedFormat =
         CompositeFormat.Parse(ResourceLoaderInstance.GetString("ScreenReader_Announcement_ContextMenuOpened"));
 
+    private static readonly CompositeFormat _contextMenuBackFormat =
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("ContextMenu_Back"));
+
+    public event EventHandler? BackRequested;
+
     /// <summary>
-    /// True while the context menu is transitioning from PrepareForOpen to AnnounceOpened.
-    /// Prevents ViewModel_PropertyChanged from triggering UIA-visible selection changes.
+    /// Suppresses intermediate UI updates while synchronously replacing the menu context.
     /// </summary>
-    private bool _isOpening;
+    private bool _isPreparing;
+    private bool _hasAnnouncedOpen;
+    private int _openVersion;
+    private Func<bool>? _isFlyoutOpen;
 
     public bool ShowFilterBox
     {
@@ -43,50 +50,56 @@ public sealed partial class ContextMenu : UserControl
 
     public event EventHandler? CloseRequested;
 
-    public event EventHandler? FocusSearchRequested;
-
     public ContextMenu()
     {
         this.InitializeComponent();
 
         ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-    }
+     }
 
-    public void SetCommandContext(ICommandBarContext? context)
+    internal void PrepareForOpen(IContextMenuContext context, ContextMenuFilterLocation filterLocation, CommandContextItemViewModel? initialSubmenu = null)
     {
-        ViewModel.SetCommandContext(context);
-        UpdateUiForStackChange();
-    }
+        _openVersion++;
+        _hasAnnouncedOpen = false;
+        _isPreparing = true;
+        try
+        {
+            ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
+            ViewModel.PrepareForOpen(context, initialSubmenu);
 
-    internal void PrepareForOpen(ContextMenuFilterLocation filterLocation)
-    {
-        _isOpening = true;
-
-        ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
-        ViewModel.ResetContextMenu();
-
-        UpdateUiForStackChange();
-    }
+            UpdateUiForStackChange();
+        }
+        finally
+        {
+            _isPreparing = false;
+        }
+   }
 
     /// <summary>
     /// Fires a single consolidated Narrator announcement.
     /// Call this after the flyout is opened and focus has been set.
     /// </summary>
-    internal void AnnounceOpened()
+    internal void AnnounceOpened(Func<bool> isFlyoutOpen)
     {
+        _isFlyoutOpen = isFlyoutOpen;
+
         // Defer the announcement to the next dispatcher cycle. This ensures
         // any pending FilteredItems updates have completed and the flyout
         // content is fully materialized in the UIA tree.
+        var openVersion = _openVersion;
         DispatcherQueue.TryEnqueue(() =>
         {
-            _isOpening = false;
+            if (openVersion != _openVersion || !isFlyoutOpen() || ViewModel.SelectedItem is null)
+            {
+                return;
+            }
 
-            var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
-            var itemCount = commandItems.Count;
-            var selectedItem = CommandsDropdown.SelectedItem as CommandContextItemViewModel;
-            var selectedName = selectedItem?.Title ?? string.Empty;
-            var selectedIndex = selectedItem is not null ? commandItems.IndexOf(selectedItem) + 1 : 0;
+            var menuItems = ViewModel.FilteredItems.Where(item => item is not SeparatorViewModel).ToList();
+            var itemCount = menuItems.Count;
+            var selectedItem = CommandsDropdown.SelectedItem as IContextItemViewModel;
+            var selectedName = GetItemTitle(selectedItem);
+            var selectedIndex = selectedItem is not null ? menuItems.IndexOf(selectedItem) + 1 : 0;
 
             var announcement = string.Format(
                 CultureInfo.CurrentCulture,
@@ -99,40 +112,26 @@ public sealed partial class ContextMenu : UserControl
                 AutomationNotificationKind.ActionCompleted,
                 announcement,
                 "ContextMenuOpened");
+
+            _hasAnnouncedOpen = true;
         });
     }
 
-    public ContextKeybindingResult TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
+    private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e) => InvokeItem(e.ClickedItem);
+
+    private void InvokeItem(object? item)
     {
-        var result = ViewModel.CheckKeybinding(ctrl, alt, shift, win, key) ?? ContextKeybindingResult.Unhandled;
-
-        if (result == ContextKeybindingResult.Hide)
+        if (item is ContextMenuBackItemViewModel)
         {
-            RequestClose();
-            UpdateUiForStackChange();
+            NavigateBackOrClose();
         }
-        else if (result == ContextKeybindingResult.KeepOpen)
+        else if (item is CommandContextItemViewModel command)
         {
-            UpdateUiForStackChange();
-        }
-
-        return result;
-    }
-
-    private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is CommandContextItemViewModel item)
-        {
-            if (InvokeCommand(item) == ContextKeybindingResult.Hide)
-            {
-                RequestClose();
-            }
-
-            UpdateUiForStackChange();
+            InvokeCommand(command);
         }
     }
 
-    private void CommandsDropdown_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    private void HandleShortcut(KeyRoutedEventArgs e)
     {
         if (e.Handled)
         {
@@ -140,50 +139,89 @@ public sealed partial class ContextMenu : UserControl
         }
 
         var mods = KeyModifiers.GetCurrent();
+        var chord = KeyChordHelpers.FromModifiers(mods.Ctrl, mods.Alt, mods.Shift, mods.Win, e.Key, 0);
+        var item = ViewModel.FindKeybinding(chord);
+        if (item is null)
+        {
+            return;
+        }
 
-        var result = ViewModel?.CheckKeybinding(mods.Ctrl, mods.Alt, mods.Shift, mods.Win, e.Key);
-
-        if (result == ContextKeybindingResult.Hide)
-        {
-            e.Handled = true;
-            RequestClose();
-            UpdateUiForStackChange();
-        }
-        else if (result == ContextKeybindingResult.KeepOpen)
-        {
-            e.Handled = true;
-        }
-        else if (result == ContextKeybindingResult.Unhandled)
-        {
-            e.Handled = false;
-        }
+        e.Handled = true;
+        InvokeCommand(item);
     }
 
     /// <summary>
-    /// Handles Escape to close the context menu and return focus to the "More" button.
+    /// Handles menu shortcuts before the focused filter or list processes the key.
     /// </summary>
     private void UserControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Escape)
         {
-            // Close the context menu (if not already handled)
-            RequestClose();
-
-            // Find the parent CommandBar and set focus to MoreCommandsButton
-            var parent = this.FindParent<CommandBar>();
-            parent?.FocusMoreCommandsButton();
-
             e.Handled = true;
+            if (ViewModel.IsSubmenu)
+            {
+                NavigateBackOrClose();
+            }
+            else
+            {
+                // Let the flyout restore the previously focused element, even when More is hidden.
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+            }
+
+            return;
+        }
+
+        if (e.Key == VirtualKey.Left && KeyModifiers.GetCurrent().OnlyAlt)
+        {
+            e.Handled = true;
+            NavigateBackOrClose();
+            return;
+        }
+
+        if (ContextFilterBox.FocusState != FocusState.Unfocused && e.Key is VirtualKey.Up or VirtualKey.Down)
+        {
+            e.Handled = true;
+            CommandsDropdown.SelectedIndex = ViewModel.GetNextItemIndex(CommandsDropdown.SelectedIndex, e.Key == VirtualKey.Down);
+            if (CommandsDropdown.SelectedItem is { } selected)
+            {
+                (CommandsDropdown.ContainerFromItem(selected) as UIElement)?.StartBringIntoView();
+            }
+
+            AnnounceSelectedItem();
+            return;
+        }
+
+        HandleShortcut(e);
+        if (!e.Handled && e.Key == VirtualKey.Enter && KeyModifiers.GetCurrent().OnlyCtrl)
+        {
+            e.Handled = true;
+            if (ViewModel.SecondaryCommand is { } secondary)
+            {
+                // Match the command bar: activate the secondary action even when it has a submenu.
+                InvokeCommand(secondary, navigateSubmenus: false);
+            }
+        }
+        else if (!e.Handled && e.Key == VirtualKey.Enter)
+        {
+            e.Handled = true;
+            InvokeItem(CommandsDropdown.SelectedItem);
         }
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        var prop = e.PropertyName;
+        if (_isPreparing)
+        {
+            return;
+        }
 
-        if (prop == nameof(ContextMenuViewModel.FilteredItems) && !_isOpening)
+        if (e.PropertyName == nameof(ContextMenuViewModel.CurrentContext))
         {
             UpdateUiForStackChange();
+        }
+        else if (e.PropertyName == nameof(ContextMenuViewModel.FilteredItems))
+        {
+            ResetSelection();
         }
     }
 
@@ -191,158 +229,40 @@ public sealed partial class ContextMenu : UserControl
     {
         ViewModel?.SetSearchText(ContextFilterBox.Text);
 
-        if (CommandsDropdown.SelectedIndex == -1)
-        {
-            CommandsDropdown.SelectedIndex = 0;
-        }
+        ResetSelection();
     }
 
-    private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void NavigateBackOrClose()
     {
-        var modifiers = KeyModifiers.GetCurrent();
-
-        if (e.Key == VirtualKey.Enter)
+        if (ViewModel.CanPopContextStack())
         {
-            if (CommandsDropdown.SelectedItem is CommandContextItemViewModel item)
-            {
-                if (InvokeCommand(item) == ContextKeybindingResult.Hide)
-                {
-                    RequestClose();
-                }
-
-                UpdateUiForStackChange();
-
-                e.Handled = true;
-            }
-        }
-        else if (e.Key == VirtualKey.Escape ||
-            (e.Key == VirtualKey.Left && modifiers.Alt))
-        {
-            if (ViewModel.CanPopContextStack())
-            {
-                ViewModel.PopContextStack();
-                UpdateUiForStackChange();
-            }
-            else
-            {
-                RequestClose(focusSearch: true);
-                UpdateUiForStackChange();
-            }
-
-            e.Handled = true;
-        }
-    }
-
-    private void ContextFilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Key == VirtualKey.Up)
-        {
-            NavigateUp();
-            AnnounceSelectedItem();
-
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Down)
-        {
-            NavigateDown();
-            AnnounceSelectedItem();
-
-            e.Handled = true;
-        }
-
-        CommandsDropdown_PreviewKeyDown(sender, e);
-    }
-
-    private void NavigateUp()
-    {
-        var newIndex = CommandsDropdown.SelectedIndex;
-
-        if (CommandsDropdown.SelectedIndex > 0)
-        {
-            newIndex--;
-
-            while (
-                newIndex >= 0 &&
-                IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                newIndex != CommandsDropdown.SelectedIndex)
-            {
-                newIndex--;
-            }
-
-            if (newIndex < 0)
-            {
-                newIndex = CommandsDropdown.Items.Count - 1;
-
-                while (
-                    newIndex >= 0 &&
-                    IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                    newIndex != CommandsDropdown.SelectedIndex)
-                {
-                    newIndex--;
-                }
-            }
+            ViewModel.PopContextStack();
+            FocusSearchBox();
         }
         else
         {
-            newIndex = CommandsDropdown.Items.Count - 1;
+            BackRequested?.Invoke(this, EventArgs.Empty);
         }
-
-        CommandsDropdown.SelectedIndex = newIndex;
     }
 
-    private void NavigateDown()
+    private string GetItemTitle(IContextItemViewModel? item) => item switch
     {
-        var newIndex = CommandsDropdown.SelectedIndex;
-
-        if (CommandsDropdown.SelectedIndex == CommandsDropdown.Items.Count - 1)
-        {
-            newIndex = 0;
-        }
-        else
-        {
-            newIndex++;
-
-            while (
-                newIndex < CommandsDropdown.Items.Count &&
-                IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                newIndex != CommandsDropdown.SelectedIndex)
-            {
-                newIndex++;
-            }
-
-            if (newIndex >= CommandsDropdown.Items.Count)
-            {
-                newIndex = 0;
-
-                while (
-                    newIndex < CommandsDropdown.Items.Count &&
-                    IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                    newIndex != CommandsDropdown.SelectedIndex)
-                {
-                    newIndex++;
-                }
-            }
-        }
-
-        CommandsDropdown.SelectedIndex = newIndex;
-    }
-
-    private bool IsSeparator(object item)
-    {
-        return item is SeparatorViewModel;
-    }
+        CommandContextItemViewModel command => command.Title,
+        ContextMenuBackItemViewModel => string.Format(CultureInfo.CurrentCulture, _contextMenuBackFormat, ViewModel.CurrentMenuTitle),
+        _ => string.Empty,
+    };
 
     private void AnnounceSelectedItem()
     {
-        if (CommandsDropdown.SelectedItem is not CommandContextItemViewModel selected)
+        if (_isPreparing || !_hasAnnouncedOpen || _isFlyoutOpen?.Invoke() != true || CommandsDropdown.SelectedItem is not IContextItemViewModel selected)
         {
             return;
         }
 
-        var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
-        var position = commandItems.IndexOf(selected) + 1;
-        var total = commandItems.Count;
-        var announcement = $"{selected.Title}, {position} of {total}";
+        var menuItems = ViewModel.FilteredItems.Where(item => item is not SeparatorViewModel).ToList();
+        var position = menuItems.IndexOf(selected) + 1;
+        var total = menuItems.Count;
+        var announcement = $"{GetItemTitle(selected)}, {position} of {total}";
 
         RaiseNarratorNotification(
             AutomationNotificationKind.ItemAdded,
@@ -376,7 +296,17 @@ public sealed partial class ContextMenu : UserControl
     {
         ContextFilterBox.Text = string.Empty;
         ViewModel?.SetSearchText(string.Empty);
-        CommandsDropdown.SelectedIndex = 0;
+        ResetSelection(force: true);
+    }
+
+    private void ResetSelection(bool force = false)
+    {
+        // Selection must stay current independently of deferred Narrator announcements.
+        if (force || CommandsDropdown.SelectedIndex == -1)
+        {
+            CommandsDropdown.SelectedItem = (IContextItemViewModel?)ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().FirstOrDefault()
+                ?? ViewModel.FilteredItems.OfType<ContextMenuBackItemViewModel>().FirstOrDefault();
+        }
     }
 
     /// <summary>
@@ -385,17 +315,18 @@ public sealed partial class ContextMenu : UserControl
     /// </summary>
     internal void FocusSearchBox()
     {
-        ContextFilterBox.Focus(FocusState.Programmatic);
+        if (!ContextFilterBox.Focus(FocusState.Programmatic))
+        {
+            CommandsDropdown.Focus(FocusState.Programmatic);
+        }
     }
 
-    private ContextKeybindingResult InvokeCommand(CommandItemViewModel command) => ViewModel.InvokeCommand(command);
-
-    private void RequestClose(bool focusSearch = false)
+    private void InvokeCommand(CommandItemViewModel command, bool navigateSubmenus = true)
     {
-        CloseRequested?.Invoke(this, EventArgs.Empty);
-        if (focusSearch)
+        var result = ViewModel.InvokeCommand(command, navigateSubmenus);
+        if (result == ContextKeybindingResult.Hide)
         {
-            FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }

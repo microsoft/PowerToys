@@ -247,6 +247,9 @@
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Extra units of measurement</value>
   </data>
+  <data name="MeasureTool_UnitsOfMeasure.Description" xml:space="preserve">
+    <value>Display-independent pixels adjust for Windows display scaling</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure_Pixels.Content" xml:space="preserve">
     <value>Show only pixels</value>
   </data>
@@ -258,6 +261,9 @@
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Millimeters.Content" xml:space="preserve">
     <value>Millimeters</value>
+  </data>
+  <data name="MeasureTool_UnitsOfMeasure_DIP.Content" xml:space="preserve">
+    <value>Display-independent pixels (DIP)</value>
   </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
@@ -939,11 +945,59 @@ opera.exe</value>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
     <value>Make the dragged window transparent</value>
   </data>
+  <data name="FancyZones_LayoutNameLabel_GroupSettings.Header" xml:space="preserve">
+    <value>Layout name indicator</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabel_GroupSettings.Description" xml:space="preserve">
+    <value>Appearance of the layout name shown when switching layouts while dragging a window</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacement.Header" xml:space="preserve">
+    <value>Position on screen</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementTopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementTopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementTopRight.Content" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementCenter.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementBottomLeft.Content" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementBottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementBottomRight.Content" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelTextColor.Header" xml:space="preserve">
+    <value>Text color</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelBackgroundColor.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelFontSize.Header" xml:space="preserve">
+    <value>Text size</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPadding.Header" xml:space="preserve">
+    <value>Padding</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelDuration.Header" xml:space="preserve">
+    <value>Display duration (ms)</value>
+  </data>
   <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use a non-primary mouse button to toggle zone activation</value>
   </data>
   <data name="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use middle-click mouse button to toggle multiple zones spanning</value>
+  </data>
+  <data name="FancyZones_MouseWheelLayoutSwitchCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Use mouse wheel while dragging to switch between layouts</value>
   </data>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors</value>
@@ -2775,6 +2829,44 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="MouseUtils_Enable_AutoHideCursor.Header" xml:space="preserve">
+    <value>CursorHide</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="MouseUtils_AutoHideCursor.Header" xml:space="preserve">
+    <value>CursorHide</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="MouseUtils_AutoHideCursor.Description" xml:space="preserve">
+    <value>Hide the mouse cursor after keyboard input, inactivity, or both</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_Behavior.Header" xml:space="preserve">
+    <value>Activation and behavior</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_Behavior.Description" xml:space="preserve">
+    <value>Choose one or both ways to hide the cursor</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_HideOnTyping.Header" xml:space="preserve">
+    <value>Hide after keyboard input</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_HideOnTyping.Description" xml:space="preserve">
+    <value>Modifier keys and software-generated input are ignored</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_HideOnIdle.Header" xml:space="preserve">
+    <value>Hide after cursor inactivity</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_HideOnIdle.Description" xml:space="preserve">
+    <value>The cursor reappears after intentional movement, a mouse button, or the wheel</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_IdleDelay.Header" xml:space="preserve">
+    <value>Idle delay (seconds)</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_IdleDelay.Description" xml:space="preserve">
+    <value>Choose a delay from 1 to 60 seconds</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_IdleDelayInput.AutomationProperties.Name" xml:space="preserve">
+    <value>Idle delay in seconds</value>
+  </data>
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
     <value>CursorWrap</value>
   </data>
@@ -2783,6 +2875,61 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
     <value>Wrap the mouse cursor between monitor edges</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock.Header" xml:space="preserve">
+    <value>Mouse Button Lock</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock.Description" xml:space="preserve">
+    <value>Hold a mouse button to lock it, then press any button to release</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_Enable_MouseButtonLock.Header" xml:space="preserve">
+    <value>Mouse Button Lock</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_Options.Header" xml:space="preserve">
+    <value>Buttons and behavior</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_Options.Description" xml:space="preserve">
+    <value>Choose which buttons can be locked</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Left button</value>
+    <comment>Left (primary) mouse button.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock_Header.Text" xml:space="preserve">
+    <value>Left button</value>
+    <comment>Left (primary) mouse button.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock_Description.Text" xml:space="preserve">
+    <value>Windows has a built-in ClickLock for this button.</value>
+    <comment>ClickLock is a Windows feature name. Followed by a link that opens the Windows mouse settings.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock_Link.Text" xml:space="preserve">
+    <value>Open mouse settings</value>
+    <comment>Link that opens the Windows Settings accessibility mouse page, where ClickLock can be turned on.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_RmbLock.Content" xml:space="preserve">
+    <value>Right button</value>
+    <comment>Right mouse button.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_MmbLock.Content" xml:space="preserve">
+    <value>Middle button</value>
+    <comment>Middle mouse button.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_HoldDuration.Header" xml:space="preserve">
+    <value>Hold duration (ms)</value>
+    <comment>ms is the abbreviation for milliseconds.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_HoldDuration.Description" xml:space="preserve">
+    <value>How long to hold a button before it locks</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_MoveCancelPixels.Header" xml:space="preserve">
+    <value>Drag threshold (pixels)</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_MoveCancelPixels.Description" xml:space="preserve">
+    <value>Moving farther than this while holding cancels the lock</value>
   </data>
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation and behavior</value>
@@ -2839,6 +2986,30 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_MouseUtils_MouseJump_Description.Text" xml:space="preserve">
     <value>Jump the mouse pointer quickly to anywhere on your desktop.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_MouseButtonLock.Text" xml:space="preserve">
+    <value>Mouse Button Lock</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_MouseButtonLock_Description.Text" xml:space="preserve">
+    <value>Hold a mouse button to lock it for hands-free dragging.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorHide.Text" xml:space="preserve">
+    <value>CursorHide</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorHide_Description.Text" xml:space="preserve">
+    <value>Hide the mouse pointer while you type or when it's been idle for a while.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorWrap.Text" xml:space="preserve">
+    <value>CursorWrap</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorWrap_Description.Text" xml:space="preserve">
+    <value>Move the mouse pointer past a screen edge to wrap it around to the opposite side.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
@@ -3863,19 +4034,82 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Characters</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
-    <value>Choose character sets</value>
+    <value>Character sets</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Summary_None" xml:space="preserve">
+    <value>No character sets selected</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Summary_All" xml:space="preserve">
+    <value>All</value>
+    <comment>Shown when every character set is selected</comment>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected sets</value>
+    <value>Choose which languages and symbol sets Quick Accent shows characters for</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
-    <value>All available</value>
+  <data name="QuickAccent_EditCharacterSets_Button.Content" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="QuickAccent_EditCharacterSets_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Manage character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.Title" xml:space="preserve">
+    <value>Choose character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_Search.PlaceholderText" xml:space="preserve">
+    <value>Search character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_Search.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_SelectAll.Content" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_SelectedCount" xml:space="preserve">
+    <value>{0} of {1} selected</value>
+    <comment>{0} is the number of selected character sets, {1} is the total number of character sets</comment>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_NoResults.Text" xml:space="preserve">
+    <value>No character sets found</value>
+  </data>
+  <data name="QuickAccent_NoCharacterSets.Title" xml:space="preserve">
+    <value>No character sets added</value>
+  </data>
+  <data name="QuickAccent_NoCharacterSets.Message" xml:space="preserve">
+    <value>Quick Accent won't show any accented characters until you add at least one character set.</value>
   </data>
   <data name="QuickAccent_Group_Special" xml:space="preserve">
     <value>Special sets</value>
   </data>
   <data name="QuickAccent_Group_Language" xml:space="preserve">
     <value>Language sets</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Card.Header" xml:space="preserve">
+    <value>Character reference guide</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Card.Description" xml:space="preserve">
+    <value>View characters organised by language</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_WindowTitle" xml:space="preserve">
+    <value>Character reference guide</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_CharacterButton.CopiedMessage" xml:space="preserve">
+    <value>Copied to clipboard</value>
+    <comment>Screen reader announcement after a character is copied</comment>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Search.PlaceholderText" xml:space="preserve">
+    <value>Search for a character…</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_NoResults.Text" xml:space="preserve">
+    <value>No characters found matching your search.</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_SelectedSets" xml:space="preserve">
+    <value>Selected sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Special" xml:space="preserve">
     <value>Special Characters</value>
@@ -4652,6 +4886,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_Minimap.Content" xml:space="preserve">
     <value>Show minimap</value>
   </data>
+  <data name="Peek_SourceCode_MaxFileSize.Header" xml:space="preserve">
+    <value>Maximum file size to preview</value>
+    <comment>Size refers to the disk space used by a file</comment>
+  </data>
+  <data name="Peek_SourceCode_MaxFileSize.Description" xml:space="preserve">
+    <value>The maximum size, in kilobytes, for files to be displayed. This is a safety mechanism to prevent loading large files into RAM. Larger files show the file details instead.</value>
+    <comment>"RAM" refers to random access memory; "size" refers to disk space</comment>
+  </data>
   <data name="ShowPluginsOverview_All.Content" xml:space="preserve">
     <value>All</value>
   </data>
@@ -4955,7 +5197,7 @@ Press **Shift + a color key** for a translucent highlighter, **X** for blur, or 
 Press **Shift** for a line, **Ctrl** for a rectangle, **Tab** for an ellipse, or **Shift + Ctrl** for an arrow.
 
 **Screen**
-Press **K** or **W** for a black or white sketch pad.
+Press **Ctrl + K** or **Ctrl + W** for a black or white sketch pad.
 Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop.
     </value>
   </data>
@@ -5947,6 +6189,27 @@ The break timer font matches the text font.</value>
     <value>Click the profile button in the Power Display flyout to quickly apply saved monitor settings</value>
     <comment>{Locked="Power Display"}</comment>
   </data>
+  <data name="PowerDisplay_ProfileList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="PowerDisplay_ProfileList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Drag profiles to change their order, or use Move up and Move down in the More menu.</value>
+  </data>
+  <data name="PowerDisplay_Profile_DragHandle.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Drag to reorder</value>
+  </data>
+  <data name="PowerDisplay_Profile_DragDisabledByElevation.Title" xml:space="preserve">
+    <value>Drag to reorder is unavailable as administrator</value>
+  </data>
+  <data name="PowerDisplay_Profile_DragDisabledByElevation.Message" xml:space="preserve">
+    <value>Use Move up or Move down in each profile's More menu to change the order.</value>
+  </data>
+  <data name="PowerDisplay_Profile_ReorderError.Title" xml:space="preserve">
+    <value>Couldn't update the profile list</value>
+  </data>
+  <data name="PowerDisplay_Profile_ReorderError.Message" xml:space="preserve">
+    <value>Try again.</value>
+  </data>
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
     <value>Add profile</value>
   </data>
@@ -6097,6 +6360,9 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_ProfileEditor_Description.Text" xml:space="preserve">
     <value>Select what monitors and settings to include for this profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_PreservedSettings.Message" xml:space="preserve">
+    <value>Saved settings for unavailable monitors or features are kept. Uncheck a setting to remove it. Applying the profile still respects monitor capabilities.</value>
   </data>
   <data name="PowerDisplay_ProfileEditor_Brightness.Text" xml:space="preserve">
     <value>Brightness</value>
@@ -6506,6 +6772,7 @@ Text uses the current drawing color.</value>
   </data>
   <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
     <value>Fast access to quick actions and module toggles</value>
+    <comment>Simplified Chinese: translate the full string as "快速操作和模块切换", not "快速访问快速作和模块切换".</comment>
   </data>
   <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -6638,5 +6905,15 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
+  </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier.Header" xml:space="preserve">
+    <value>Excluded apps (for modifier)</value>
+  </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier.Description" xml:space="preserve">
+    <value>Prevents Grab And Move from processing the modifier key while an excluded application is in the foreground - add one application name per line</value>
+  </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: game.exe</value>
+    <comment>{Locked="game.exe"}</comment>
   </data>
 </root>

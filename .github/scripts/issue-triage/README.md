@@ -26,6 +26,9 @@ combines deterministic preprocessing with one bounded GitHub Copilot pass.
   accept or decline it; acceptance closes the issue as a duplicate and links
   it to the selected canonical issue.
 - Never close an issue directly from the model output.
+- Skip closed issues before agent execution and recheck their state immediately
+  before publishing. Never reopen a closure that cannot be attributed to the
+  workflow's duplicate-suggestion request.
 
 ## Reproduction and diagnostics
 
@@ -78,8 +81,8 @@ that retain `Needs-Author-Feedback` for seven days without activity.
 
 - The GitHub Models-based automatic issue deduplicator is removed.
 - The GitHub Models-based issue/PR area labeler is removed. This workflow
-  replaces issue labeling only; automatic PR product labeling is intentionally
-  not replaced here.
+  replaces issue labeling; deterministic changed-path product labeling for pull
+  requests is handled by `.github/workflows/pr-intake.yml`.
 - The Azure Pipelines XAML Styler verification step is removed. The local
   `.pipelines/applyXamlStyling.ps1` developer tool remains available.
 

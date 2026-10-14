@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.Linq;
+using System.Text.Json;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -57,6 +59,73 @@ public class DockSettingsEqualityTests
         var b = new DockSettings { StartBands = ImmutableList.Create(Band("p", "b"), Band("p", "a")) };
 
         Assert.AreNotEqual(a, b);
+    }
+
+    [TestMethod]
+    public void Equal_WhenTaskbarBandsHaveSameContentButDifferentInstances()
+    {
+        var a = new DockSettings
+        {
+            TaskbarBands = ImmutableList.Create(Band("p", "home"), Band("w", "winget", showTitles: false)),
+        };
+        var b = new DockSettings
+        {
+            TaskbarBands = ImmutableList.Create(Band("p", "home"), Band("w", "winget", showTitles: false)),
+        };
+
+        Assert.AreNotSame(a.TaskbarBands, b.TaskbarBands);
+        Assert.AreEqual(a, b);
+        Assert.IsTrue(a == b);
+        Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
+    }
+
+    [TestMethod]
+    public void NotEqual_WhenTaskbarBandDiffers()
+    {
+        var settings = new DockSettings { TaskbarBands = ImmutableList.Create(Band("p", "home")) };
+
+        Assert.AreNotEqual(settings, settings with { TaskbarBands = ImmutableList.Create(Band("p", "settings")) });
+        Assert.AreNotEqual(settings, settings with { TaskbarBands = ImmutableList.Create(Band("other", "home")) });
+        Assert.AreNotEqual(settings, settings with { TaskbarBands = ImmutableList.Create(Band("p", "home", showTitles: false)) });
+        Assert.AreNotEqual(settings, settings with { TaskbarBands = ImmutableList<DockBandSettings>.Empty });
+    }
+
+    [TestMethod]
+    public void NotEqual_WhenTaskbarBandOrderDiffers()
+    {
+        var a = new DockSettings { TaskbarBands = ImmutableList.Create(Band("p", "a"), Band("p", "b")) };
+        var b = new DockSettings { TaskbarBands = ImmutableList.Create(Band("p", "b"), Band("p", "a")) };
+
+        Assert.AreNotEqual(a, b);
+        Assert.IsTrue(a != b);
+    }
+
+    [TestMethod]
+    public void Equal_WhenTaskbarBandsIsNullVersusEmpty()
+    {
+        var fromNull = JsonSerializer.Deserialize<DockSettings>("{\"TaskbarBands\":null}")!;
+        var empty = new DockSettings { TaskbarBands = ImmutableList<DockBandSettings>.Empty };
+
+        Assert.AreSame(ImmutableList<DockBandSettings>.Empty, fromNull.TaskbarBands);
+        Assert.AreEqual(empty, fromNull);
+        Assert.AreEqual(empty.GetHashCode(), fromNull.GetHashCode());
+    }
+
+    [TestMethod]
+    public void TaskbarBands_PreserveJsonSchemaAndContent()
+    {
+        var settings = new DockSettings
+        {
+            TaskbarBands = ImmutableList.Create(Band("p", "home"), Band("w", "winget", showTitles: false)),
+        };
+        var json = JsonSerializer.Serialize(settings);
+        using var document = JsonDocument.Parse(json);
+        var taskbarBands = document.RootElement.GetProperty(nameof(DockSettings.TaskbarBands));
+
+        Assert.AreEqual(JsonValueKind.Array, taskbarBands.ValueKind);
+        Assert.AreEqual(2, taskbarBands.GetArrayLength());
+        Assert.AreEqual("home", taskbarBands[0].GetProperty(nameof(DockBandSettings.CommandId)).GetString());
+        CollectionAssert.AreEqual(settings.TaskbarBands.ToArray(), JsonSerializer.Deserialize<DockSettings>(json)!.TaskbarBands.ToArray());
     }
 
     [TestMethod]

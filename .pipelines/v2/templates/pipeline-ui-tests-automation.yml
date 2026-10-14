@@ -1,3 +1,7 @@
+trigger: none
+
+pr: none
+
 variables:
   - name: runCodesignValidationInjectionBG
     value: false
@@ -39,8 +43,8 @@ parameters:
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
     # Full build path: build PowerToys + UI tests + run tests.
-    # buildNow downloads the whole build and runs in place; buildNowSlim downloads only the installer
-    # from that same full build and installs it. Both require the full build, so they share this path.
+    # buildNow downloads the whole build artifact and runs in place; buildNowSlim downloads only the
+    # installer from that same full build and installs it. Both require the full build, so they share this path.
     - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
       - template: pipeline-ui-tests-full-build.yml
         parameters:
