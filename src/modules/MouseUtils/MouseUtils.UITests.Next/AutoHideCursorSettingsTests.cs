@@ -147,11 +147,7 @@ public class AutoHideCursorSettingsTests : UITestBase
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, true);
 
-        if (!Session.Has(By.AccessibilityId(HideOnTypingToggleId), 500))
-        {
-            Session.EnsureForeground();
-            Session.Find<Element>(By.AccessibilityId(SettingsExpanderId), 5_000).MouseClick(msPostAction: 500);
-        }
+        MouseUtilsTestHelper.ExpandSettings(this, SettingsExpanderId);
 
         Assert.IsTrue(Session.Has(By.AccessibilityId(HideOnTypingToggleId), 5_000), "Hide-on-typing toggle was not available.");
         Assert.IsTrue(Session.Has(By.AccessibilityId(HideOnIdleToggleId), 5_000), "Hide-on-idle toggle was not available.");
@@ -161,7 +157,11 @@ public class AutoHideCursorSettingsTests : UITestBase
     private void SetToggleState(string accessibilityId, bool enabled)
     {
         var checkBox = Session.Find<CheckBox>(By.AccessibilityId(accessibilityId), 5_000);
-        checkBox.SetCheck(enabled);
+        if (checkBox.IsChecked != enabled)
+        {
+            checkBox.Invoke(msPostAction: 0);
+        }
+
         Assert.IsTrue(
             checkBox.WaitForProperty("ToggleState", enabled ? "On" : "Off", 10_000),
             $"{accessibilityId} did not reach the expected {(enabled ? "On" : "Off")} state.");
