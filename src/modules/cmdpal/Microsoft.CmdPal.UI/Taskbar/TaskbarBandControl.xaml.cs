@@ -8,6 +8,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -37,6 +38,7 @@ public sealed partial class TaskbarBandControl : UserControl,
     private readonly DockViewModel _viewModel;
     private readonly DockPageFlyoutController _pageFlyoutController;
     private readonly Func<DockSide> _taskbarSide;
+    private readonly ContextMenuHost _menuHost;
     private bool _isEditMode;
     private bool _showFlyout;
     private DockBandViewModel? _editModeContextBand;
@@ -66,6 +68,7 @@ public sealed partial class TaskbarBandControl : UserControl,
         _viewModel = viewModel;
         _taskbarSide = taskbarSide;
         InitializeComponent();
+        _menuHost = new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout);
 
         var services = App.Current.Services;
         _pageFlyoutController = new(
@@ -82,9 +85,8 @@ public sealed partial class TaskbarBandControl : UserControl,
 
         BandsListView.ItemsSource = _viewModel.TaskbarItems;
 
-        ContextControl.CloseRequested += ContextControl_CloseRequested;
-        ContextControl.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
-        ContextControl.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
+        ItemContextMenuFlyout.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
+        ItemContextMenuFlyout.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
         MoreButton.Flyout.Closed += MoreButtonFlyout_Closed;
         WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
@@ -448,15 +450,10 @@ public sealed partial class TaskbarBandControl : UserControl,
                 _bandContextMenuTarget = anchor;
                 _bandContextMenuItem = item;
 
-                ContextControl.ShowFilterBox = true;
-                ContextControl.PrepareForOpen(item, GetContextMenuFilterLocation());
-                ContextMenuFlyout.ShowAt(
-                    dockItem,
-                    new FlyoutShowOptions()
-                    {
-                        ShowMode = FlyoutShowMode.Standard,
-                        Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                    });
+                _menuHost.Show(new ContextMenuRequest(item)
+                {
+                    Anchor = GetDefaultContextMenuAnchor() with { Element = dockItem },
+                });
                 e.Handled = true;
             }
         }
@@ -520,10 +517,9 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
     }
 
-    private void ContextMenuFlyout_Opened(object sender, object e)
+    private ContextMenuAnchor GetDefaultContextMenuAnchor()
     {
-        ContextControl.FocusSearchBox();
-        ContextControl.AnnounceOpened(() => ContextMenuFlyout.IsOpen);
+        return new(RootPanel, null, FlyoutPlacementMode.TopEdgeAlignedRight, GetContextMenuFilterLocation());
     }
 
     private ContextMenuFilterLocation GetContextMenuFilterLocation()
@@ -620,10 +616,7 @@ public sealed partial class TaskbarBandControl : UserControl,
         {
             if (e.Command.Command.IsPage)
             {
-                if (ContextMenuFlyout.IsOpen)
-                {
-                    ContextMenuFlyout.Hide();
-                }
+                _menuHost.Close();
 
                 if (!DeferPageUntilOverflowCloses(message, target, pos.Value))
                 {
@@ -642,14 +635,6 @@ public sealed partial class TaskbarBandControl : UserControl,
         catch (COMException ex)
         {
             Logger.LogError("Error invoking taskbar context command", ex);
-        }
-    }
-
-    private void ContextControl_CloseRequested(object? sender, EventArgs e)
-    {
-        if (ContextMenuFlyout.IsOpen)
-        {
-            ContextMenuFlyout.Hide();
         }
     }
 
@@ -704,16 +689,15 @@ public sealed partial class TaskbarBandControl : UserControl,
         if (item.CanOpenContextMenu)
         {
             ClearBandContextMenuInvocation();
-            ContextControl.ShowFilterBox = false;
-            ContextControl.PrepareForOpen(item, GetContextMenuFilterLocation());
-            ContextMenuFlyout.ShowAt(
-                target,
-                new FlyoutShowOptions()
+            _menuHost.Show(new ContextMenuRequest(item)
+            {
+                Anchor = GetDefaultContextMenuAnchor() with
                 {
-                    ShowMode = FlyoutShowMode.Standard,
-                    Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                    Element = target,
                     Position = e.GetPosition(target),
-                });
+                },
+                ShowFilterBox = false,
+            });
             e.Handled = true;
         }
     }
@@ -904,9 +888,9 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
 
         _disposed = true;
-        ContextControl.CloseRequested -= ContextControl_CloseRequested;
-        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
-        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        _menuHost.Close();
+        ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
         MoreButton.Flyout.Closed -= MoreButtonFlyout_Closed;
         _pendingOverflowPageRequest = null;
         WeakReferenceMessenger.Default.UnregisterAll(this);

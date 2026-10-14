@@ -252,7 +252,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
             return;
         }
 
-        if (!IsEditMode)
+        if (!IsEditMode || !_showFlyout)
         {
             if (EditButtonsTeachingTip.IsOpen)
             {

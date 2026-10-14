@@ -1345,7 +1345,8 @@ public sealed partial class MainWindow : WindowEx,
             }
 
             trayIcon.Destroy();
-            _keyboardListener.Stop();
+            await _keyboardStartTask;
+            await _keyboardDispatcher.DispatcherQueue.EnqueueAsync(_keyboardListener.Stop);
             return AppInstance.Restart("--settings");
         }
         finally
@@ -1353,7 +1354,7 @@ public sealed partial class MainWindow : WindowEx,
             _isRestarting = false;
 
             // A successful restart terminates this process. Restore services if it returns or throws.
-            _keyboardListener.Start();
+            await StartKeyboardListenerAsync();
             trayIcon.SetupTrayIcon();
             WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>();
         }
