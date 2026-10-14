@@ -38,6 +38,12 @@ public partial class ContextMenuViewModel : ObservableObject
     {
         get
         {
+            // Ctrl+Enter belongs to the root item's secondary action, not to a submenu's first command.
+            if (IsSubmenu)
+            {
+                return null;
+            }
+
             var (context, commands) = _contextMenuStack.LastOrDefault();
             var secondary = (context as ICommandBarContext)?.SecondaryCommand;
 
@@ -85,6 +91,9 @@ public partial class ContextMenuViewModel : ObservableObject
         UpdateFilteredItems();
         OnPropertyChanged(nameof(IsSubmenu));
         OnPropertyChanged(nameof(CurrentMenuTitle));
+
+        // Views drop state, such as a selection, that refers to the released context.
+        OnPropertyChanged(nameof(CurrentContext));
     }
 
     private void Context_PropertyChanged(object? sender, PropertyChangedEventArgs e)
