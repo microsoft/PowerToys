@@ -33,6 +33,7 @@ namespace WorkspacesLauncherUI.UnitTests
             Run(session =>
             {
                 var changed = false;
+                var appsListed = session.ViewModel.AppsListed;
                 session.ViewModel.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(MainViewModel.AppsListed);
                 session.Receive(JsonSerializer.Serialize(new
                 {
@@ -53,6 +54,7 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Drain();
 
                 Assert.IsTrue(changed);
+                Assert.AreSame(appsListed, session.ViewModel.AppsListed);
                 CollectionAssert.AreEqual(Enumerable.Range(0, 6).ToArray(), session.ViewModel.AppsListed.Select(app => (int)app.LaunchState).ToArray());
                 Assert.IsTrue(session.ViewModel.AppsListed.All(app => app.Name == "Example" && app.AppPath == @"C:\Apps\Example.exe"));
                 var skipped = session.ViewModel.AppsListed.Single(app => app.LaunchState == LaunchingState.Skipped);

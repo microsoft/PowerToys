@@ -33,6 +33,9 @@ struct GeneralSettings
     std::wstring powerToysVersion;
     json::JsonObject ignoredConflictProperties;
 
+    // Flag to indicate whether durable settings were successfully read from disk.
+    bool isDataLoadedSuccessfully = true;
+
     json::JsonObject to_json();
 };
 

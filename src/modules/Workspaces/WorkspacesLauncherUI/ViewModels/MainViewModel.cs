@@ -39,7 +39,7 @@ namespace WorkspacesLauncherUI.ViewModels
             App.IPCMessageReceivedCallback = ReceiveMessage;
         }
 
-        public ObservableCollection<AppLaunching> AppsListed { get; set; } = new ObservableCollection<AppLaunching>();
+        public ObservableCollection<AppLaunching> AppsListed { get; } = new ObservableCollection<AppLaunching>();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -286,7 +286,12 @@ namespace WorkspacesLauncherUI.ViewModels
                 });
             }
 
-            AppsListed = new ObservableCollection<AppLaunching>(appLaunchingList);
+            AppsListed.Clear();
+            foreach (var app in appLaunchingList)
+            {
+                AppsListed.Add(app);
+            }
+
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppsListed)));
         }
 

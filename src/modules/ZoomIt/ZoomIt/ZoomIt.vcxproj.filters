@@ -134,6 +134,9 @@
     <ClInclude Include="ZoomIt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ZoomItMessages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -147,6 +150,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioSampleGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioSamplePacer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioQueueLimits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LoopbackCapture.h">

@@ -86,7 +86,8 @@ internal sealed partial class AdaptiveFilePathInputElement : IAdaptiveInputEleme
 
     public bool IsVisible { get; set; } = true;
 
-    public IList<AdaptiveRequirement> Requirements { get; } = [];
+    // Use an explicit constructor so CsWinRT generates AOT collection marshalling.
+    public IList<AdaptiveRequirement> Requirements { get; } = new List<AdaptiveRequirement>();
 
     public bool Separator { get; set; }
 

@@ -53,12 +53,12 @@ public sealed partial class ListViewModelNavigationTests
         public override void UpdateSearchText(string oldSearch, string newSearch) =>
             ReplaceItems([CreateItem(newSearch, SearchGlyph)]);
 
-        internal void ReplaceItems(IListItem[] items, bool notify = true)
+        internal void ReplaceItems(IListItem[] items, bool notify = true, int? totalItems = null)
         {
             Volatile.Write(ref _items, items);
             if (notify)
             {
-                RaiseItemsChanged(items.Length);
+                RaiseItemsChanged(totalItems ?? items.Length);
             }
         }
 
@@ -317,6 +317,7 @@ public sealed partial class ListViewModelNavigationTests
             // Hold off the resumed background fetch before it can increment the
             // generation itself. Run queued UI work reentrantly on this test thread
             // to prove suspension invalidated the old callback, not just the next fetch.
+            using (GetPrivateField<Lock>(viewModel, "_listLock").EnterScope())
             using (GetPrivateField<Lock>(viewModel, "_fetchStateLock").EnterScope())
             {
                 shell.CurrentPage = viewModel;
@@ -397,8 +398,8 @@ public sealed partial class ListViewModelNavigationTests
             lockHolder = Task.Run(() =>
             {
                 using (GetPrivateField<Lock>(viewModel, "_initializationCoordinatorLock").EnterScope())
-                using (GetPrivateField<Lock>(viewModel, "_fetchStateLock").EnterScope())
                 using (GetPrivateField<Lock>(viewModel, "_listLock").EnterScope())
+                using (GetPrivateField<Lock>(viewModel, "_fetchStateLock").EnterScope())
                 {
                     held.Set();
                     Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(5)));
@@ -861,6 +862,472 @@ public sealed partial class ListViewModelNavigationTests
         }
         finally
         {
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    [Timeout(15000)]
+    public void FilteringCanRunQueuedPublicationWhileAnotherFetchWaitsForTheList()
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var page = new StaticPage([CreateItem("Alpha"), CreateItem("Beta")]);
+        var viewModel = CreateViewModel(page, scheduler);
+        Thread? worker = null;
+        Exception? workerFailure = null;
+        var reentered = false;
+
+        void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
+        {
+            if (reentered)
+            {
+                return;
+            }
+
+            reentered = true;
+            worker = new Thread(() =>
+            {
+                try
+                {
+                    page.ReplaceItems([CreateItem("Alpha current")]);
+                }
+                catch (Exception ex)
+                {
+                    workerFailure = ex;
+                }
+            }) { IsBackground = true };
+            worker.Start();
+
+            var waitingForList = SpinWait.SpinUntil(
+                () => page.GetItemsCount == 3 &&
+                    (worker!.ThreadState & System.Threading.ThreadState.WaitSleepJoin) != 0,
+                TimeSpan.FromSeconds(3));
+            Assert.IsTrue(waitingForList, "The fetch did not reach the held list lock.");
+
+            // Check before pumping so a regression fails without deadlocking the test.
+            var fetchLock = GetPrivateField<Lock>(viewModel, "_fetchStateLock");
+            Assert.IsTrue(fetchLock.TryEnter(TimeSpan.FromSeconds(1)), "A fetch waiting for the list must not hold the fetch-state lock.");
+            fetchLock.Exit();
+            Assert.AreEqual(3, page.GetItemsCount, "Fetching must reach the provider while the UI owns the list lock.");
+            scheduler.Drain();
+        }
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.DrainUntil(() => viewModel.FilteredItems.Count == 2);
+            scheduler.Drain();
+
+            // Leave a publication queued before filtering pumps the UI scheduler.
+            page.ReplaceItems([CreateItem("Alpha"), CreateItem("Beta")]);
+            viewModel.FilteredItems.CollectionChanged += OnCollectionChanged;
+            viewModel.SearchTextBox = "Alpha";
+
+            Assert.IsTrue(reentered);
+            Assert.IsTrue(worker!.Join(TimeSpan.FromSeconds(3)), "The fetch did not finish after filtering released the list.");
+            Assert.IsNull(workerFailure);
+            scheduler.Drain();
+            Assert.AreEqual("Alpha current", viewModel.FilteredItems.Single().Title);
+            Assert.AreEqual(ListPageFetchPhase.Published, GetWorkState(viewModel).Phase);
+        }
+        finally
+        {
+            viewModel.FilteredItems.CollectionChanged -= OnCollectionChanged;
+            if (worker is not null)
+            {
+                Assert.IsTrue(worker.Join(TimeSpan.FromSeconds(3)));
+            }
+
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    [Timeout(15000)]
+    public void DeferredPublicationWaitsForTheFetchStateLock()
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var page = new StaticPage([CreateItem("Alpha"), CreateItem("Beta")]);
+        var viewModel = CreateViewModel(page, scheduler);
+        using var held = new ManualResetEventSlim();
+        using var published = new ManualResetEventSlim();
+        Task? lockHolder = null;
+        var publishedWhileLocked = false;
+        var reentered = false;
+
+        void OnItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args) => published.Set();
+        void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
+        {
+            if (reentered)
+            {
+                return;
+            }
+
+            reentered = true;
+            page.ReplaceItems([CreateItem("Alpha current")]);
+            scheduler.Drain();
+            Assert.AreEqual(ListPageFetchPhase.Committed, GetWorkState(viewModel).Phase);
+            Assert.IsFalse(published.IsSet);
+
+            lockHolder = Task.Run(() =>
+            {
+                using (GetPrivateField<Lock>(viewModel, "_fetchStateLock").EnterScope())
+                {
+                    held.Set();
+                    publishedWhileLocked = published.Wait(TimeSpan.FromSeconds(1));
+                }
+            });
+            Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(3)));
+        }
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.DrainUntil(() => viewModel.FilteredItems.Count == 2);
+            scheduler.Drain();
+            viewModel.ItemsUpdated += OnItemsUpdated;
+            viewModel.FilteredItems.CollectionChanged += OnCollectionChanged;
+            viewModel.SearchTextBox = "Alpha";
+
+            Assert.IsTrue(reentered);
+            Assert.IsTrue(lockHolder!.Wait(TimeSpan.FromSeconds(3)));
+            Assert.IsFalse(publishedWhileLocked, "Deferred publication must serialize reset consumption with background fetches.");
+            Assert.IsTrue(published.IsSet);
+            Assert.AreEqual(ListPageFetchPhase.Published, GetWorkState(viewModel).Phase);
+        }
+        finally
+        {
+            viewModel.ItemsUpdated -= OnItemsUpdated;
+            viewModel.FilteredItems.CollectionChanged -= OnCollectionChanged;
+            if (lockHolder is not null)
+            {
+                Assert.IsTrue(lockHolder.Wait(TimeSpan.FromSeconds(3)));
+            }
+
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    [Timeout(15000)]
+    public void DynamicParameterPickerRetainsResetAfterLaterSelection()
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var alpha = CreateItem("Alpha");
+        var beta = CreateItem("Beta");
+        var gamma = CreateItem("Gamma");
+        var picker = new SearchPage { HasMoreItems = true };
+        picker.ReplaceItems([alpha, beta, gamma], notify: false);
+        var page = new Mock<IParametersPage>();
+        page.SetupGet(model => model.Command).Returns(CreateItem("Run it"));
+        page.SetupGet(model => model.Parameters).Returns([new CommandParameterRun { Command = picker }]);
+        var parameters = new ParametersPageViewModel(page.Object, scheduler, new TestHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
+
+        try
+        {
+            parameters.InitializeProperties();
+            var parameter = (CommandParameterRunViewModel)parameters.Items.Single();
+            Assert.IsNotNull(parameter.ListViewModel);
+            var viewModel = parameter.ListViewModel;
+            Assert.IsTrue(viewModel.IsRootPage, "Pickers must retain their existing full-fetch reset behavior.");
+            Assert.IsFalse(viewModel.IsMainPage, "Pickers must not retain Home's late-result latch.");
+            scheduler.DrainUntil(() => viewModel.FilteredItems.Count == 3);
+            scheduler.Drain();
+            var selected = viewModel.FilteredItems[2];
+            viewModel.UpdateSelectedItemCommand.Execute(selected);
+            ItemsUpdatedEventArgs? publication = null;
+            viewModel.ItemsUpdated += (_, args) => publication = args;
+
+            picker.ReplaceItems([beta, alpha, gamma]);
+            scheduler.DrainUntil(() => publication is not null);
+
+            Assert.AreSame(selected, viewModel.FilteredItems[2], "The previously selected item must remain in the results for this check.");
+            Assert.IsTrue(publication!.ForceFirstItem, "A picker full refresh must reset even when a later selected item remains in the results.");
+        }
+        finally
+        {
+            parameters.Dispose();
+            scheduler.Drain();
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [Timeout(15000)]
+    public void ForcedSelectionAcknowledgementSkipsUnchangedEffectsAndUpdatesChangedSelection(bool isRootPage)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var alpha = CreateItem("Alpha");
+        alpha.TextToSuggest = "Alpha suggestion";
+        var beta = CreateItem("Beta");
+        var page = new StaticPage([alpha, beta]);
+        var viewModel = CreateViewModel(page, scheduler);
+        viewModel.IsRootPage = isRootPage;
+        var recipient = new object();
+        var commandBars = 0;
+        var details = 0;
+        var suggestions = 0;
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.DrainUntil(() => viewModel.FilteredItems.Count == 2);
+            scheduler.Drain();
+            var first = viewModel.FilteredItems[0];
+            var later = viewModel.FilteredItems[1];
+            WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, _) => Interlocked.Increment(ref commandBars));
+            WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(recipient, (_, _) => Interlocked.Increment(ref details));
+            WeakReferenceMessenger.Default.Register<HideDetailsMessage>(recipient, (_, _) => Interlocked.Increment(ref details));
+            WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(recipient, (_, _) => Interlocked.Increment(ref suggestions));
+            viewModel.UpdateSelectedItemCommand.Execute(first);
+            scheduler.DrainUntil(() => Volatile.Read(ref suggestions) > 0);
+            var selectedWork = GetPrivateField<CancellationTokenSource>(viewModel, "_selectedItemCts");
+
+            foreach (var query in new[] { "a", "al", "alp" })
+            {
+                if (isRootPage)
+                {
+                    page.ReplaceItems([alpha, beta]);
+                }
+                else
+                {
+                    viewModel.SearchTextBox = query;
+                }
+
+                scheduler.Drain();
+                Assert.IsTrue(GetPrivateField<bool>(viewModel, "_awaitingFirstSelection"));
+                var beforeCommandBars = Volatile.Read(ref commandBars);
+                var beforeDetails = Volatile.Read(ref details);
+                var beforeSuggestions = Volatile.Read(ref suggestions);
+                viewModel.AcknowledgeSelection(first);
+                Assert.IsFalse(GetPrivateField<bool>(viewModel, "_awaitingFirstSelection"));
+                Assert.AreSame(selectedWork, GetPrivateField<CancellationTokenSource>(viewModel, "_selectedItemCts"));
+                Assert.AreEqual(beforeCommandBars, Volatile.Read(ref commandBars));
+                Assert.AreEqual(beforeDetails, Volatile.Read(ref details));
+                Assert.AreEqual(beforeSuggestions, Volatile.Read(ref suggestions));
+            }
+
+            // Direct selection handlers can leave the view's last-pushed item stale.
+            viewModel.UpdateSelectedItemCommand.Execute(later);
+            var beforeChangedAcknowledgement = Volatile.Read(ref commandBars);
+            viewModel.AcknowledgeSelection(first);
+            Assert.AreSame(first, GetPrivateField<ListItemViewModel>(viewModel, "_lastSelectedItem"));
+            Assert.AreEqual(beforeChangedAcknowledgement + 1, Volatile.Read(ref commandBars));
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false, false, false)]
+    [DataRow(false, false, true)]
+    [DataRow(false, true, false)]
+    [DataRow(false, true, true)]
+    [DataRow(true, false, false)]
+    [DataRow(true, false, true)]
+    [DataRow(true, true, false)]
+    [DataRow(true, true, true)]
+    [Timeout(15000)]
+    public void LaterSelectionInvalidatesPendingSubpageReset(bool isRootPage, bool blockFetch, bool supersedeFetch)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var alpha = CreateItem("Alpha");
+        var beta = CreateItem("Beta");
+        var gamma = CreateItem("Gamma");
+        var page = new SearchPage();
+        page.ReplaceItems([alpha, beta, gamma], notify: false);
+        var viewModel = CreateViewModel(page, scheduler);
+        viewModel.IsRootPage = isRootPage;
+        using var started = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        Task? fetch = null;
+        var completed = false;
+        var updates = new List<ItemsUpdatedEventArgs>();
+        void OnItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args) => updates.Add(args);
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.DrainUntil(() => viewModel.FilteredItems.Count == 3);
+            scheduler.Drain();
+            var first = viewModel.FilteredItems[0];
+            var later = viewModel.FilteredItems[1];
+            viewModel.UpdateSelectedItemCommand.Execute(first);
+            viewModel.ItemsUpdated += OnItemsUpdated;
+
+            if (blockFetch)
+            {
+                page.OnGetItems = count =>
+                {
+                    if (count == 2)
+                    {
+                        started.Set();
+                        Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(3)), "The pending refresh was not released.");
+                    }
+                };
+                fetch = Task.Run(() => page.ReplaceItems([gamma, alpha, beta]));
+                Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(3)));
+            }
+            else
+            {
+                page.ReplaceItems([gamma, alpha, beta]);
+            }
+
+            viewModel.UpdateSelectedItemCommand.Execute(later);
+            release.Set();
+            if (fetch is not null)
+            {
+                Assert.IsTrue(fetch.Wait(TimeSpan.FromSeconds(3)));
+            }
+
+            if (supersedeFetch)
+            {
+                page.ReplaceItems([alpha, gamma, beta]);
+            }
+
+            scheduler.Drain();
+            Assert.AreEqual(1, updates.Count);
+            Assert.AreEqual(isRootPage, updates[0].ForceFirstItem, "A subpage must honor newer navigation; root pages retain their reset behavior.");
+            Assert.AreSame(later, viewModel.FilteredItems[2]);
+            completed = true;
+        }
+        finally
+        {
+            release.Set();
+            try
+            {
+                fetch?.GetAwaiter().GetResult();
+            }
+            catch when (!completed)
+            {
+                // Keep the original test failure when releasing a faulted fetch.
+            }
+
+            viewModel.ItemsUpdated -= OnItemsUpdated;
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(true, false, true)]
+    [DataRow(false, false, false)]
+    [DataRow(false, true, true)]
+    [Timeout(15000)]
+    public void ReturningToFirstRowCancelsOnlyTheRefreshAlreadyInFlight(bool navigateBeforeFetch, bool supersedeFetch, bool expectedReset)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var alpha = CreateItem("Alpha");
+        var beta = CreateItem("Beta");
+        var gamma = CreateItem("Gamma");
+        var page = new SearchPage();
+        page.ReplaceItems([alpha, beta, gamma], notify: false);
+        var viewModel = CreateViewModel(page, scheduler);
+        viewModel.IsRootPage = false;
+        var updates = new List<ItemsUpdatedEventArgs>();
+        void OnItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args) => updates.Add(args);
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.DrainUntil(() => viewModel.FilteredItems.Count == 3);
+            scheduler.Drain();
+            var first = viewModel.FilteredItems[0];
+            var second = viewModel.FilteredItems[1];
+            viewModel.UpdateSelectedItemCommand.Execute(first);
+            viewModel.ItemsUpdated += OnItemsUpdated;
+
+            if (!navigateBeforeFetch)
+            {
+                page.ReplaceItems([beta, gamma, alpha]);
+            }
+
+            viewModel.UpdateSelectedItemCommand.Execute(second);
+            viewModel.UpdateSelectedItemCommand.Execute(first);
+
+            if (navigateBeforeFetch || supersedeFetch)
+            {
+                page.ReplaceItems([gamma, beta, alpha]);
+            }
+
+            scheduler.Drain();
+            Assert.AreEqual(1, updates.Count);
+            Assert.AreEqual(expectedReset, updates[0].ForceFirstItem, "Explicit navigation cancels an existing reset even when it ends on the old first row; a later fetch can request a new reset.");
+            Assert.AreSame(first, viewModel.FilteredItems[2]);
+        }
+        finally
+        {
+            viewModel.ItemsUpdated -= OnItemsUpdated;
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [Timeout(15000)]
+    public void DeferredFirstSelectionSurvivesLaterFetches(bool incrementalUpdate)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var section = new Separator("Apps");
+        var alpha = CreateItem("Alpha");
+        var beta = CreateItem("Beta");
+        var gamma = CreateItem("Gamma");
+        var page = new SearchPage();
+        page.ReplaceItems([section, alpha, beta, gamma], notify: false);
+        var viewModel = CreateViewModel(page, scheduler);
+        viewModel.IsRootPage = false;
+        var updates = new List<ItemsUpdatedEventArgs>();
+        void OnItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args) => updates.Add(args);
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.DrainUntil(() => viewModel.FilteredItems.Count == 4);
+            scheduler.Drain();
+            viewModel.UpdateSelectedItemCommand.Execute(viewModel.FilteredItems[1]);
+            viewModel.ItemsUpdated += OnItemsUpdated;
+
+            page.ReplaceItems([section, beta, alpha, gamma]);
+            scheduler.Drain();
+            Assert.IsTrue(updates[^1].ForceFirstItem);
+
+            // The view has not delivered its deferred selection change yet.
+            if (incrementalUpdate)
+            {
+                page.ReplaceItems([section, gamma, beta, alpha], totalItems: ListViewModel.IncrementalRefresh);
+                scheduler.Drain();
+                Assert.IsFalse(updates[^1].ForceFirstItem);
+            }
+
+            page.ReplaceItems([section, gamma, beta, alpha]);
+            scheduler.Drain();
+            Assert.IsTrue(updates[^1].ForceFirstItem, "A newer fetch must retain first-row intent until the view reports selection.");
+
+            viewModel.UpdateSelectedItemCommand.Execute(viewModel.FilteredItems[1]);
+            viewModel.UpdateSelectedItemCommand.Execute(viewModel.FilteredItems[2]);
+            page.ReplaceItems([section, gamma, alpha, beta]);
+            scheduler.Drain();
+            Assert.IsFalse(updates[^1].ForceFirstItem, "An explicit later-row selection must end the pending first-row intent.");
+        }
+        finally
+        {
+            viewModel.ItemsUpdated -= OnItemsUpdated;
             viewModel.Dispose();
             scheduler.Drain();
             viewModel.SafeCleanup();
