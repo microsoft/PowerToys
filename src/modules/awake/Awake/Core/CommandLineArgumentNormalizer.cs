@@ -194,11 +194,18 @@ namespace Awake.Core
         {
             if (TimeOnly.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out TimeOnly time))
             {
-                DateTime localDateTime = TimeZoneInfo.ConvertTime(now, timeZone).Date.Add(time.ToTimeSpan());
+                DateTime localNow = TimeZoneInfo.ConvertTime(now, timeZone).DateTime;
+                DateTime localDateTime = localNow.Date.Add(time.ToTimeSpan());
                 for (int day = 0; day < 2; day++)
                 {
                     if (timeZone.IsInvalidTime(localDateTime))
                     {
+                        if (localDateTime.Date == localNow.Date && localDateTime < localNow)
+                        {
+                            localDateTime = localDateTime.AddDays(1);
+                            continue;
+                        }
+
                         expiration = default;
                         return false;
                     }

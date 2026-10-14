@@ -249,7 +249,7 @@ installer upgrades, and manual multi-monitor UI validation are not covered by th
 checks.
 
 The current upstream-integrated review candidate adds seven autumn-DST overlap
-cases. Current toolchain validation and translated-payload testing must be reported
+cases and a passed-spring-gap rollover case. Current toolchain validation and translated-payload testing must be reported
 separately from the original proposal's results above; cached-pack diagnostic runs
 are not default-toolchain or shipping acceptance.
 

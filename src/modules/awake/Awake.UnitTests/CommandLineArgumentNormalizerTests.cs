@@ -195,6 +195,17 @@ public class CommandLineArgumentNormalizerTests
             "02:30", now, CultureInfo.InvariantCulture, zone, out _));
     }
 
+    [TestMethod]
+    public void TryParseExpiration_AfterSpringGap_UsesTomorrow()
+    {
+        TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+        DateTimeOffset now = new(2026, 3, 8, 4, 0, 0, TimeSpan.FromHours(-7));
+
+        Assert.IsTrue(CommandLineArgumentNormalizer.TryParseExpiration(
+            "02:30", now, CultureInfo.InvariantCulture, zone, out DateTimeOffset expiration));
+        Assert.AreEqual(new DateTimeOffset(2026, 3, 9, 2, 30, 0, TimeSpan.FromHours(-7)), expiration);
+    }
+
     [DataRow("2026-11-01T00:30:00-07:00", "2026-11-01T01:30:00-07:00")]
     [DataRow("2026-11-01T01:15:00-07:00", "2026-11-01T01:30:00-07:00")]
     [DataRow("2026-11-01T01:30:00-07:00", "2026-11-01T01:30:00-08:00")]
