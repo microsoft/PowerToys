@@ -29,6 +29,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // In-proc pages fetch inline from LoadMore; hide this scheduler so work they start doesn't queue behind it.
     private readonly TaskFactory _loadMoreTaskFactory = new(CancellationToken.None, TaskCreationOptions.HideScheduler, TaskContinuationOptions.None, new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
 
+    private readonly Lock _loadMoreRequestLock = new();
+
+    private Task<bool> _loadMoreTask = Task.FromResult(false);
+
+    // True also covers unknown availability until a background read completes.
+    private volatile bool _hasMoreItems = true;
+
     private Dictionary<IListItem, ListItemViewModel> _vmCache = new(VmCacheComparer);
 
     // TODO: Do we want a base "ItemsPageViewModel" for anything that's going to have items?
@@ -364,7 +371,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
-    private void FetchItems(bool keepSelection, bool ensureSelectionVisible, int? recoveryGeneration = null)
+    private void FetchItems(bool keepSelection, bool ensureSelectionVisible, int? recoveryGeneration = null, bool cacheInitialAvailability = false)
     {
         using var operation = TryBeginPageOperation();
         if (operation is null)
@@ -432,6 +439,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 ExitGetItemsScope();
             }
 
+            ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
+
+            // Probe only the initial snapshot; later snapshots make cached exhaustion unknown.
+            var hasMoreItems = !cacheInitialAvailability || ReadHasMoreItems(_model.Unsafe!);
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             // Collect all the items into new viewmodels
@@ -518,6 +529,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     // Now that we have new ViewModels for everything from the
                     // extension, smartly update our list of VMs
                     ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
+                    _hasMoreItems = hasMoreItems;
 
                     PublishVmCache(nextCache);
 
@@ -1149,6 +1161,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
+        var cacheInitialAvailability = !_initializationStarted;
         _initializationStarted = true;
         base.InitializeProperties();
 
@@ -1198,7 +1211,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             LoadExtendedAttributes(haveProperties.GetProperties().AsReadOnly());
         }
 
-        FetchItems(keepSelection: true, ensureSelectionVisible: true);
+        FetchItems(keepSelection: true, ensureSelectionVisible: true, cacheInitialAvailability: cacheInitialAvailability);
         model.ItemsChanged += Model_ItemsChanged;
     }
 
@@ -1263,46 +1276,90 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public void LoadMoreIfNeeded()
+    public void LoadMoreIfNeeded() => _ = RequestLoadMoreAsync(useCachedAvailability: false);
+
+    /// <summary>
+    /// Requests another batch for keyboard wrapping, using cached exhaustion when available.
+    /// </summary>
+    /// <returns>
+    /// The shared request result: true if a batch was requested; false for exhaustion or failure.
+    /// Completion does not imply that the batch has been published.
+    /// </returns>
+    public Task<bool> TryLoadMoreBeforeWrapAsync() => RequestLoadMoreAsync(useCachedAvailability: true);
+
+    private Task<bool> RequestLoadMoreAsync(bool useCachedAvailability)
     {
         var model = _model.Unsafe;
         if (model is null)
         {
-            return;
+            return Task.FromResult(false);
         }
 
-        if (!_isLoadingMore.Set())
+        lock (_loadMoreRequestLock)
         {
-            return;
+            if (!_loadMoreTask.IsCompleted || _isLoadingMore.Value)
+            {
+                return _loadMoreTask;
+            }
 
-            // NOTE: May miss newly available items until next scroll if model
-            // state changes between our check and this reset
+            if (useCachedAvailability && !_hasMoreItems)
+            {
+                return Task.FromResult(false);
+            }
+
+            _isLoadingMore.Set();
+            var generation = Volatile.Read(ref _workState).Generation;
+            return _loadMoreTask = _loadMoreTaskFactory.StartNew(() =>
+            {
+                // Keep provider calls off the UI thread to avoid COM message-pump reentrancy.
+                var loadRequested = false;
+                try
+                {
+                    var hasMoreItems = model.HasMoreItems;
+                    lock (_fetchStateLock)
+                    {
+                        if (_workState.Generation == generation)
+                        {
+                            _hasMoreItems = hasMoreItems;
+                        }
+                    }
+
+                    if (hasMoreItems)
+                    {
+                        model.LoadMore();
+
+                        // ItemsChanged publication clears the pending batch guard.
+                        loadRequested = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowException(ex);
+                }
+                finally
+                {
+                    if (!loadRequested)
+                    {
+                        _isLoadingMore.Clear();
+                    }
+                }
+
+                return loadRequested;
+            });
         }
+    }
 
-        _ = _loadMoreTaskFactory.StartNew(() =>
+    private bool ReadHasMoreItems(IListPage model)
+    {
+        try
         {
-            // Execute all COM calls on background thread to avoid reentrancy issues with UI
-            // with the UI thread when COM starts inner message pump
-            try
-            {
-                if (model.HasMoreItems)
-                {
-                    model.LoadMore();
-
-                    // LoadMore must raise ItemsChanged; the resulting fetch clears
-                    // _isLoadingMore when the updated items are published.
-                }
-                else
-                {
-                    _isLoadingMore.Clear();
-                }
-            }
-            catch (Exception ex)
-            {
-                _isLoadingMore.Clear();
-                ShowException(ex, model.Name);
-            }
-        });
+            return model.HasMoreItems;
+        }
+        catch (Exception)
+        {
+            // This cache is optional; paging requests report provider errors.
+            return true;
+        }
     }
 
     protected override void FetchProperty(string propertyName)
@@ -1317,6 +1374,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         switch (propertyName)
         {
+            case nameof(IListPage.HasMoreItems):
+                _hasMoreItems = true;
+                _ = _loadMoreTaskFactory.StartNew(() => _hasMoreItems = ReadHasMoreItems(model));
+                return;
             case nameof(GridProperties):
                 IsGridView = model.GridProperties is not null;
                 GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
