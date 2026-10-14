@@ -36,6 +36,7 @@ public static partial class Program
     private const string TransformUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe transform (--action <name>|--custom-action <id-or-name>) [--input <path>|--stdin|--clipboard] [--output <path>|--stdout|--output-clipboard] [--prompt <text>] [--provider <id>] [--json]";
     private const string ActionsListUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe actions list [--json]";
     private const string ProvidersListUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe providers list [--json]";
+    private static readonly string[] VersionArguments = ["--version"];
     private const string WorkflowHelp = """
         Saved AI actions: run 'actions list' to find custom IDs/names, then use --custom-action <id-or-name>.
         AI providers: configure them in PowerToys Settings > Advanced Paste and run 'providers list' to find IDs for --provider.
@@ -79,6 +80,13 @@ public static partial class Program
                 return exitCode;
             }
 
+            if (IsVersionRequest(args))
+            {
+                var root = CreateRootCommand(out _);
+                exitCode = await WriteVersionAsync(root, Console.Out, Console.Error);
+                return exitCode;
+            }
+
             Console.CancelKeyPress += cancelHandler;
             if (TryWritePolicyDisabledError(args, Console.Error, AdvancedPastePolicy.IsAdvancedPasteEnabled))
             {
@@ -119,6 +127,11 @@ public static partial class Program
         if (IsHelpRequest(args))
         {
             return "help";
+        }
+
+        if (IsVersionRequest(args))
+        {
+            return "version";
         }
 
         if (args.Length > 1 &&
@@ -212,6 +225,12 @@ public static partial class Program
         return exitCode;
     }
 
+    private static async Task<int> WriteVersionAsync(RootCommand root, TextWriter stdout, TextWriter stderr)
+    {
+        var parseResult = root.Parse(VersionArguments);
+        return await parseResult.InvokeAsync(new InvocationConfiguration { Output = stdout, Error = stderr });
+    }
+
     internal static async Task<int> RunAsync(
         string[] args,
         TextReader stdin,
@@ -223,6 +242,11 @@ public static partial class Program
     {
         var root = CreateRootCommand(out var options);
         var parseResult = root.Parse(args);
+
+        if (IsVersionRequest(parseResult, options))
+        {
+            return await WriteVersionAsync(root, stdout, stderr);
+        }
 
         if (args.Length == 0 || HasHelpToken(parseResult, options))
         {
@@ -556,6 +580,18 @@ public static partial class Program
         var root = CreateRootCommand(out var options);
         return args.Length == 0 || HasHelpToken(root.Parse(args), options);
     }
+
+    private static bool IsVersionRequest(string[] args)
+    {
+        var root = CreateRootCommand(out var options);
+        return IsVersionRequest(root.Parse(args), options);
+    }
+
+    private static bool IsVersionRequest(ParseResult parseResult, CliOptions options)
+        => parseResult.CommandResult.Command is RootCommand &&
+            parseResult.Tokens.Any(token =>
+                !IsOptionValueToken(parseResult, options, token)
+                && string.Equals(token.Value, "--version", StringComparison.Ordinal));
 
     private static bool HasHelpToken(ParseResult parseResult, CliOptions options)
         => parseResult.Tokens.Any(token =>
