@@ -20,6 +20,29 @@ namespace AdvancedPaste.Cli.UnitTests;
 [TestClass]
 public class ProgramTests
 {
+    [TestMethod]
+    public async Task RootVersionOption_PrintsVersionAndSucceedsWithoutRunningAnAction()
+    {
+        var clipboard = new TestClipboardAdapter("clipboard input");
+        var result = await RunAsync(["--version"], clipboard: clipboard);
+
+        Assert.AreEqual(Program.SuccessExitCode, result.ExitCode);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(result.Stdout));
+        Assert.IsTrue(Version.TryParse(result.Stdout.Trim(), out _), $"Expected a version string, got: {result.Stdout}");
+        Assert.AreEqual(string.Empty, result.Stderr);
+        Assert.AreEqual(0, clipboard.ReadCount);
+        Assert.IsNull(clipboard.WrittenContent);
+    }
+
+    [TestMethod]
+    public async Task VersionOption_IsRootOnly()
+    {
+        var result = await RunAsync(["transform", "--version"]);
+
+        Assert.AreEqual(Program.ArgumentErrorExitCode, result.ExitCode);
+        StringAssert.Contains(result.Stderr, "version");
+    }
+
     [DataTestMethod]
     [DataRow("--action")]
     [DataRow("--format")]
@@ -937,6 +960,7 @@ public class ProgramTests
     [DataRow(new[] { "transform", "--action", "plain-text" }, "transform")]
     [DataRow(new[] { "actions", "list", "--json" }, "actions list")]
     [DataRow(new[] { "providers", "list", "--json" }, "providers list")]
+    [DataRow(new[] { "--version" }, "version")]
     [DataRow(new[] { "unexpected", "--prompt", "sensitive prompt" }, "unknown")]
     public void TelemetryCommandName_IsBounded(string[] args, string expected)
     {
