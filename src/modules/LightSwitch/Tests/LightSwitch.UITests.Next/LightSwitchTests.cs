@@ -104,11 +104,13 @@ public sealed class LightSwitchTests : UITestBase
 
         var before = TestState.ReadTheme();
         page.SendShortcut();
-        page.WaitForTheme(new ThemeState(1 - before.System, 1 - before.Apps));
+        // Synchronous theme broadcasts can wait five seconds per recipient window.
+        // Observe the real result with a longer budget without sending another toggle.
+        page.WaitForTheme(new ThemeState(1 - before.System, 1 - before.Apps), timeoutMS: 120_000);
 
         page.SetThemeTargets(system: false, apps: false);
         before = TestState.ReadTheme();
-        page.SendShortcut();
+        page.SendShortcut(expectThemeChange: false);
         page.AssertThemeUnchanged(before);
     }
 

@@ -40,6 +40,7 @@
       <string id="SUPPORTED_POWERTOYS_0_99_0">PowerToys version 0.99.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_100_0">PowerToys version 0.100.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_101_0">PowerToys version 0.101.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_102_0">PowerToys version 0.102.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -292,6 +293,7 @@ Note: Online/remote images (http/https URLs) are always blocked regardless of th
       <string id="ConfigureEnabledUtilityMouseHighlighter">Mouse Highlighter: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAutoHideCursor">Auto Hide Cursor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCursorWrap">CursorWrap: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityMouseButtonLock">Mouse Button Lock: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseWithoutBorders">Mouse Without Borders: Configure enabled state</string>

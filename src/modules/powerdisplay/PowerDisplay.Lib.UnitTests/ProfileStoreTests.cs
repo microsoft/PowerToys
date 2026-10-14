@@ -62,6 +62,23 @@ public class ProfileStoreTests
     }
 
     [TestMethod]
+    [DataRow("{}")]
+    [DataRow("{\"profiles\":[]}")]
+    [DataRow("{\"profiles\":null}")]
+    public void AddOrUpdateProfile_IncompleteFile_PersistsNewProfile(string json)
+    {
+        File.WriteAllText(_profilesPath, json);
+        var store = CreateStore();
+        Assert.AreEqual(0, store.LoadProfiles().GetAssignedProfiles().Count());
+        store.AddOrUpdateProfile(MakeProfile("New"));
+
+        var reloaded = CreateStore().LoadProfiles();
+        var profile = reloaded.GetAssignedProfiles().Single();
+        Assert.AreEqual("New", profile.Name);
+        Assert.AreEqual("MON1", profile.MonitorSettings[0].MonitorId);
+    }
+
+    [TestMethod]
     public void UpdateProfiles_CorruptJson_DoesNotOverwriteSource()
     {
         const string corruptJson = "{not-json";

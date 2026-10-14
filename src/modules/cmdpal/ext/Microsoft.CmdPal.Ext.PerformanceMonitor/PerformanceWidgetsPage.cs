@@ -186,11 +186,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
                 if (_isBandPage)
                 {
-                    // Bands only show the usage percentage as the title, so put
-                    // the active GPU's name in the subtitle - otherwise cycling
-                    // Prev/Next GPU between two idle adapters looks like nothing
-                    // changed.
-                    _gpuItem.Subtitle = _gpuPage.GetBandSubtitle();
+                    _gpuPage.ConfigureBandItem(_gpuItem);
                 }
             };
         }
@@ -224,7 +220,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _cpuItem.Subtitle = Resources.GetResource("CPU_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _cpuItem,
-                    PerformanceMonitorDockItemPresentation.CpuLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_memoryItem is not null)
@@ -232,7 +228,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _memoryItem,
-                    PerformanceMonitorDockItemPresentation.MemoryLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_networkItem is not null)
@@ -240,7 +236,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _networkItem,
-                    PerformanceMonitorDockItemPresentation.NetworkUsageLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_diskItem is not null)
@@ -249,15 +245,12 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _diskItem.Icon = Icons.HardDriveIcon;
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _diskItem,
-                    PerformanceMonitorDockItemPresentation.DiskActiveTimeLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_gpuItem is not null)
             {
-                _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
-                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
-                    _gpuItem,
-                    PerformanceMonitorDockItemPresentation.GpuLabelWidth);
+                _gpuPage!.ConfigureBandItem(_gpuItem);
             }
 
             if (_batteryItem is not null)
@@ -265,7 +258,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _batteryItem,
-                    PerformanceMonitorDockItemPresentation.BatteryLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
         }
     }
@@ -1222,6 +1215,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     private readonly DataManager _dataManager;
     private readonly string _gpuActiveEngType = "3D";
     private int _gpuActiveIndex;
+    private GPUStats.DisplayInfo? _gpuDisplayInfo;
 
     public SystemGPUUsageWidgetPage()
     {
@@ -1247,10 +1241,10 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
             var dataDuration = timer.ElapsedMilliseconds;
 
-            var gpuName = stats.GetGPUName(_gpuActiveIndex);
+            _gpuDisplayInfo = stats.GetGPUDisplayInfo(_gpuActiveIndex);
 
             ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
-            ContentData["gpuName"] = gpuName;
+            ContentData["gpuName"] = _gpuDisplayInfo.Name;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
             ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
@@ -1263,6 +1257,11 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         catch (Exception e)
         {
             ContentData.Clear();
+            if (_gpuDisplayInfo is { } previous)
+            {
+                _gpuDisplayInfo = previous with { Name = string.Empty, ShortName = string.Empty };
+            }
+
             ContentData["errorMessage"] = e.Message;
             return;
         }
@@ -1290,15 +1289,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         }
     }
 
-    public string GetBandSubtitle()
-    {
-        if (ContentData.TryGetValue("gpuName", out var name) && !string.IsNullOrEmpty(name))
-        {
-            return name;
-        }
-
-        return Resources.GetResource("GPU_Usage_Subtitle");
-    }
+    public void ConfigureBandItem(ListItem item) => PerformanceMonitorDockItemPresentation.ConfigureGpuValueLabel(item, _gpuDisplayInfo);
 
     protected override void OnActivated() => _dataManager.Start();
 

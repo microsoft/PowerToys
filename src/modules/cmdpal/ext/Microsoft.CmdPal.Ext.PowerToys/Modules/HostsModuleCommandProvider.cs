@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
@@ -13,19 +14,32 @@ namespace PowerToysExtension.Modules;
 
 internal sealed class HostsModuleCommandProvider : ModuleCommandProvider
 {
+    private readonly Func<SettingsWindow, bool> _isModuleEnabled;
+
+    internal HostsModuleCommandProvider(Func<SettingsWindow, bool>? isModuleEnabled = null)
+    {
+        _isModuleEnabled = isModuleEnabled ?? ModuleEnablementService.IsModuleEnabled;
+    }
+
     public override IEnumerable<ListItem> BuildCommands()
     {
         var module = SettingsWindow.Hosts;
         var title = module.ModuleDisplayName();
         var icon = module.ModuleIcon();
 
-        if (ModuleEnablementService.IsModuleEnabled(module))
+        if (_isModuleEnabled(module))
         {
             yield return new ListItem(new OpenHostsEditorCommand() { Id = "com.microsoft.powertoys.hosts.open" })
             {
                 Title = Resources.Hosts_Open_Title,
                 Subtitle = Resources.Hosts_Open_Subtitle,
                 Icon = icon,
+                MoreCommands = [
+                    new CommandContextItem(new OpenHostsEditorAdminCommand() { Id = "com.microsoft.powertoys.hosts.openAdmin" })
+                    {
+                        RequestedShortcut = KeyChords.RunAsAdministrator,
+                    },
+                ],
             };
 
             yield return new ListItem(new OpenHostsEditorAdminCommand() { Id = "com.microsoft.powertoys.hosts.openAdmin" })

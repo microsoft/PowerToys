@@ -16,11 +16,11 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class ExtensionsPage : Page
+public sealed partial class ExtensionsPage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-    private readonly SettingsViewModel? viewModel;
+    private readonly SettingsViewModel viewModel;
     private readonly Dictionary<string, WeakReference<SettingsCard>> _vmToCardMap = new();
     private readonly Dictionary<SettingsCard, ProviderSettingsViewModel> _cardToVmMap = new();
 
@@ -31,12 +31,26 @@ public sealed partial class ExtensionsPage : Page
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
-
-        Unloaded += ExtensionsPage_Unloaded;
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, languageService);
     }
 
-    private void ExtensionsPage_Unloaded(object sender, RoutedEventArgs e)
+    internal ProviderSettingsViewModel? FindProvider(string providerId) =>
+        viewModel.FindOrAddCommandProvider(providerId);
+
+    internal async Task ShowFallbackOrderDialogAsync()
+    {
+        try
+        {
+            await FallbackRankerDialog!.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error when showing FallbackRankerDialog", ex);
+        }
+    }
+
+    public void Dispose()
     {
         // ProviderSettingsViewModel subscribes to its CommandProviderWrapper (owned by the
         // singleton TopLevelCommandManager), so a live VM roots this page through the
@@ -49,6 +63,8 @@ public sealed partial class ExtensionsPage : Page
 
         _cardToVmMap.Clear();
         _vmToCardMap.Clear();
+        viewModel?.Dispose();
+        FallbackRankerDialog?.Dispose();
     }
 
     private void SettingsCard_Click(object sender, RoutedEventArgs e)
@@ -114,13 +130,6 @@ public sealed partial class ExtensionsPage : Page
 
     private async void MenuFlyoutItem_OnClick(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            await FallbackRankerDialog!.ShowAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Error when showing FallbackRankerDialog", ex);
-        }
+        await ShowFallbackOrderDialogAsync();
     }
 }

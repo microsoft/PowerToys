@@ -14,16 +14,19 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Core;
 using Windows.Win32.UI.Shell;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class GeneralPage : Page, INotifyPropertyChanged
+public sealed partial class GeneralPage : Page, INotifyPropertyChanged, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
     private readonly SettingsViewModel? viewModel;
     private readonly IApplicationInfoService _appInfoService;
+    private readonly IAppStateService _appStateService;
     private readonly ISettingsService _settingsService;
     private readonly IExternalCommandPermissionStore _externalCommandPermissionStore;
     private readonly DispatcherTimer _notificationStateTimer;
@@ -46,13 +49,14 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         _externalCommandPermissionStore = App.Current.Services.GetRequiredService<IExternalCommandPermissionStore>();
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
-        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService);
+        _appStateService = App.Current.Services.GetRequiredService<IAppStateService>();
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService, languageService);
 
         _notificationStateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _notificationStateTimer.Tick += NotificationStateTimer_Tick;
 
         Loaded += GeneralPage_Loaded;
-        Unloaded += GeneralPage_Unloaded;
     }
 
     public bool HasExternalCommandPermissions
@@ -94,14 +98,58 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         }
     }
 
+    private async void LanguageRestartButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RestartAppAsync();
+    }
+
+    private async Task RestartAppAsync()
+    {
+        viewModel!.LanguageRestartFailed = false;
+        try
+        {
+            var reason = await ((MainWindow)App.Current.AppWindow!).RestartAsync();
+            if (reason == AppRestartFailureReason.RestartPending)
+            {
+                return;
+            }
+
+            Logger.LogWarning($"Failed to restart Command Palette: {reason}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to restart Command Palette", ex);
+        }
+
+        viewModel.LanguageRestartFailed = true;
+    }
+
+    private static string LanguageRestartMessage(bool failed) => failed ? RS_.GetString("Settings_GeneralPage_LanguageRestartFailed") : string.Empty;
+
+    private static InfoBarSeverity LanguageRestartSeverity(bool failed) => failed ? InfoBarSeverity.Error : InfoBarSeverity.Warning;
+
     public string ApplicationVersion
     {
         get
         {
-            var versionNo = ResourceLoaderInstance.GetString("Settings_GeneralPage_VersionNo");
+            var versionNo = RS_.GetString("Settings_GeneralPage_VersionNo");
             var version = _appInfoService.AppVersion;
             return string.Format(CultureInfo.CurrentCulture, versionNo, version);
         }
+    }
+
+    private void ClearRecentCommands_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _appStateService.State.RecentCommands;
+        if (current.IsEmpty)
+        {
+            return;
+        }
+
+        _appStateService.UpdateState(state => state with
+        {
+            RecentCommands = state.RecentCommands.ClearHistory(),
+        });
     }
 
     private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
@@ -114,12 +162,15 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         _ = RefreshExternalCommandPermissionsAsync();
     }
 
-    private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
+    public void Dispose()
     {
         _isPageLoaded = false;
+        Loaded -= GeneralPage_Loaded;
         _notificationStateTimer.Stop();
+        _notificationStateTimer.Tick -= NotificationStateTimer_Tick;
         _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
         _externalCommandPermissionStore.PermissionsChanged -= ExternalCommandPermissionStore_PermissionsChanged;
+        viewModel?.Dispose();
     }
 
     private void ExternalCommandPermissionStore_PermissionsChanged(object? sender, EventArgs e) =>

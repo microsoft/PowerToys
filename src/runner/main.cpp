@@ -166,6 +166,31 @@ inline wil::unique_mutex_nothrow create_msi_mutex()
     return createAppMutex(POWERTOYS_MSI_MUTEX_NAME);
 }
 
+wil::unique_hfile create_settings_cli_lock()
+{
+    const std::wstring lock_path = PTSettingsHelper::get_powertoys_general_save_file_location() + L".cli-lock";
+    constexpr ULONGLONG lock_timeout_ms = 10000;
+    const ULONGLONG start_time = GetTickCount64();
+    while (GetTickCount64() - start_time < lock_timeout_ms)
+    {
+        wil::unique_hfile lock{ CreateFileW(lock_path.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr) };
+        if (lock)
+        {
+            return lock;
+        }
+
+        const DWORD error = GetLastError();
+        if (error != ERROR_SHARING_VIOLATION)
+        {
+            throw std::runtime_error("Failed to lock general settings for the Settings CLI. Win32 error: " + std::to_string(error));
+        }
+
+        Sleep(50);
+    }
+
+    throw std::runtime_error("Timed out waiting for the general settings lock. Close any stuck Settings CLI command and restart PowerToys.");
+}
+
 void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
@@ -270,6 +295,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.MousePointerCrosshairs.dll",
             L"PowerToys.AutoHideCursor.dll",
             L"PowerToys.CursorWrap.dll",
+            L"PowerToys.MouseButtonLock.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
             L"PowerToys.AdvancedPasteModuleInterface.dll",
@@ -324,24 +350,33 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);
 
-        if (openSettings)
+        std::optional<std::wstring> window;
+        if (!settingsWindow.empty())
         {
-            std::optional<std::wstring> window;
-            if (!settingsWindow.empty())
-            {
-                window = winrt::to_hstring(settingsWindow);
-            }
-            open_settings_window(window);
+            window = winrt::to_hstring(settingsWindow);
         }
 
-        if (openOobe)
+        // Settings saves runtime module state when it starts, so defer early opens
+        // until initialization finishes. Explicit requests take precedence over
+        // automatic onboarding, avoiding two Settings processes at startup.
+        const auto settings_startup = complete_settings_window_startup(openSettings, std::move(window));
+        if (!settings_startup.canceled)
         {
-            PTSettingsHelper::save_oobe_opened_state();
-            open_oobe_window();
-        }
-        else if (openScoobe)
-        {
-            open_scoobe_window();
+            if (settings_startup.request)
+            {
+                open_settings_window(settings_startup.request->page);
+            }
+            else if (openOobe)
+            {
+                if (open_oobe_window())
+                {
+                    PTSettingsHelper::save_oobe_opened_state();
+                }
+            }
+            else if (openScoobe)
+            {
+                open_scoobe_window();
+            }
         }
 
         settings_telemetry::init();
@@ -555,6 +590,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     int result = 0;
     try
     {
+        // Serialize Runner lifetime and CLI module-state writes so shutdown cannot overwrite a CLI update.
+        [[maybe_unused]] auto settings_cli_lock = create_settings_cli_lock();
+
         // Singletons initialization order needs to be preserved, first events and
         // then modules to guarantee the reverse destruction order.
         modules();
@@ -608,12 +646,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             }
 
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe, showRestartNotificationAfterUpdate);
-
-            if (result == 0)
-            {
-                // Save settings on closing, if closed 'normal'
-                PTSettingsHelper::save_general_settings(get_general_settings().to_json());
-            }
         }
         else
         {

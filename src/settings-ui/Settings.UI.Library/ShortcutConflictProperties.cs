@@ -9,12 +9,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ShortcutConflictProperties
     {
+        private readonly List<HotkeySettings> _ignoredShortcuts = [];
+
         [JsonPropertyName("ignored_shortcuts")]
-        public List<HotkeySettings> IgnoredShortcuts { get; set; }
+        public List<HotkeySettings> IgnoredShortcuts
+        {
+            get => _ignoredShortcuts;
+            init => _ignoredShortcuts = value ?? [];
+        }
 
         public ShortcutConflictProperties()
         {
-            IgnoredShortcuts = new List<HotkeySettings>();
         }
     }
 }

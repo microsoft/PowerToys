@@ -291,12 +291,14 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         CatalogPackage package,
         bool skipDependencies = false,
         Action<InstallProgress>? progressHandler = null,
+        WinGetPackageOperationSource source = WinGetPackageOperationSource.Unspecified,
         CancellationToken cancellationToken = default)
     {
         var trackedOperation = _operationTracker.StartOperation(
             package.Id,
             WinGetPackageMetadataHelper.GetPackageDisplayName(package),
-            WinGetPackageOperationKind.Install);
+            WinGetPackageOperationKind.Install,
+            source);
 
         var initialization = _initialization.Value;
         if (!initialization.State.IsAvailable || initialization.Factory is null || initialization.PackageManager is null)
@@ -344,12 +346,14 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
     public async Task<WinGetPackageOperationResult> UninstallPackageAsync(
         CatalogPackage package,
         Action<UninstallProgress>? progressHandler = null,
+        WinGetPackageOperationSource source = WinGetPackageOperationSource.Unspecified,
         CancellationToken cancellationToken = default)
     {
         var trackedOperation = _operationTracker.StartOperation(
             package.Id,
             WinGetPackageMetadataHelper.GetPackageDisplayName(package),
-            WinGetPackageOperationKind.Uninstall);
+            WinGetPackageOperationKind.Uninstall,
+            source);
 
         var initialization = _initialization.Value;
         if (!initialization.State.IsAvailable || initialization.Factory is null || initialization.PackageManager is null)
