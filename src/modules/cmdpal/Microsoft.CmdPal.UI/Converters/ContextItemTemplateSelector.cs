@@ -18,6 +18,8 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate? Separator { get; set; }
 
+    public DataTemplate? Back { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
         DataTemplate? dataTemplate = Default;
@@ -25,6 +27,7 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
         if (dependencyObject is ListViewItem li)
         {
             li.IsEnabled = true;
+            li.AllowFocusOnInteraction = true;
 
             if (item is SeparatorViewModel)
             {
@@ -36,6 +39,10 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
             else if (item is CommandContextItemViewModel commandItem)
             {
                 dataTemplate = commandItem.IsCritical ? Critical : Default;
+            }
+            else if (item is ContextMenuBackItemViewModel)
+            {
+                dataTemplate = Back;
             }
             else
             {

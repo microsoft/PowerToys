@@ -986,7 +986,7 @@ public sealed partial class DockViewModel : IDisposable
             var openSettingsCommand = new AnonymousCommand(
                 action: () =>
                 {
-                    WeakReferenceMessenger.Default.Send(new OpenSettingsMessage("Dock"));
+                    WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(SettingsPageTags.Dock));
                 })
             {
                 Name = Properties.Resources.dock_settings_name,

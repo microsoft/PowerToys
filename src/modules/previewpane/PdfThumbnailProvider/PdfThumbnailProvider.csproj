@@ -4,6 +4,7 @@
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
+    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <ProjectGuid>{11491FD8-F921-48BF-880C-7FEA185B80A1}</ProjectGuid>

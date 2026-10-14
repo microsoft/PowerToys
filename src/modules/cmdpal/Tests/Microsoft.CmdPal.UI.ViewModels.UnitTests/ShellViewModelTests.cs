@@ -84,6 +84,40 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void PerformCommand_ResolvesHostAndProviderFromSourceContext(bool withSourcePage)
+    {
+        var currentHost = new TestAppExtensionHost();
+        var sourceHost = new TestAppExtensionHost();
+        var sourceProvider = Mock.Of<ICommandProviderContext>();
+        var sourcePage = new PageViewModel(new Page(), TaskScheduler.Default, sourceHost, sourceProvider);
+        var appHostService = CreateAppHostService(currentHost);
+        var pageFactory = new Mock<IPageViewModelFactoryService>();
+        var page = new TestPage();
+        pageFactory.Setup(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty))
+            .Returns(new TestPageViewModel(page, currentHost));
+        using var shell = new ShellViewModel(
+            TaskScheduler.Default,
+            Mock.Of<IRootPageService>(),
+            pageFactory.Object,
+            appHostService.Object);
+        var item = new ListItem(page);
+        var message = new PerformCommandMessage(
+            new ExtensionObject<ICommand>(page),
+            new ExtensionObject<IListItem>(item),
+            withSourcePage ? sourcePage : null);
+        var expectedHost = withSourcePage ? sourceHost : shell.CurrentPage.ExtensionHost;
+        var expectedProvider = withSourcePage ? sourceProvider : shell.CurrentPage.ProviderContext;
+
+        shell.Receive(message);
+
+        appHostService.Verify(service => service.GetHostForCommand(item, expectedHost), Times.Once);
+        appHostService.Verify(service => service.GetProviderContextForCommand(item, expectedProvider), Times.Once);
+        pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty), Times.Once);
+    }
+
+    [TestMethod]
     public void PerformCommand_InvalidListPageOptions_DoesNotMutateNavigationState()
     {
         var host = new TestAppExtensionHost();
@@ -373,6 +407,48 @@ public partial class ShellViewModelTests
         finally
         {
             WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            WeakReferenceMessenger.Default.UnregisterAll(viewModel);
+        }
+    }
+
+    [TestMethod]
+    public void CommandContext_FollowsSelectionImmediatelyWithoutACommandBar()
+    {
+        using var viewModel = CreateViewModel();
+        var first = Mock.Of<ICommandBarContext>();
+        var second = Mock.Of<ICommandBarContext>();
+        List<ICommandBarContext?> observedContexts = [];
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(ShellViewModel.CurrentCommandContext))
+            {
+                observedContexts.Add(viewModel.CurrentCommandContext);
+            }
+        };
+
+        try
+        {
+            Assert.IsNull(viewModel.CurrentCommandContext);
+
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
+            Assert.AreSame(first, viewModel.CurrentCommandContext);
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
+            Assert.HasCount(1, observedContexts, "Repeating the same context must not restart the bar's display debounce.");
+
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(second));
+            Assert.AreSame(second, viewModel.CurrentCommandContext);
+
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(null));
+            Assert.IsNull(viewModel.CurrentCommandContext);
+
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
+            viewModel.Dispose();
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(second));
+            Assert.IsNull(viewModel.CurrentCommandContext);
+            CollectionAssert.AreEqual(new ICommandBarContext?[] { first, second, null, first, null }, observedContexts);
+        }
+        finally
+        {
             WeakReferenceMessenger.Default.UnregisterAll(viewModel);
         }
     }
