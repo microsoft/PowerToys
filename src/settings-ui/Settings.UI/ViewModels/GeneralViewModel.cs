@@ -967,7 +967,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _isBugReportRunning)
                 {
                     _isBugReportRunning = value;
-                    NotifyPropertyChanged();
+                    OnPropertyChanged();
                 }
             }
         }
@@ -1041,7 +1041,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null, bool reDoBackupDryRun = true)
+        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
@@ -1050,7 +1050,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             SendConfigMSG(outsettings.ToString());
 
-            if (reDoBackupDryRun && DoBackupAndRestoreDryRun != null)
+            if (DoBackupAndRestoreDryRun != null)
             {
                 DoBackupAndRestoreDryRun(500);
             }
@@ -1142,13 +1142,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void NotifyAllBackupAndRestoreProperties()
         {
-            NotifyPropertyChanged(nameof(LastSettingsBackupDate), false);
-            NotifyPropertyChanged(nameof(LastSettingsBackupSource), false);
-            NotifyPropertyChanged(nameof(LastSettingsBackupFileName), false);
-            NotifyPropertyChanged(nameof(CurrentSettingMatchText), false);
-            NotifyPropertyChanged(nameof(SettingsBackupMessage), false);
-            NotifyPropertyChanged(nameof(BackupRestoreMessageSeverity), false);
-            NotifyPropertyChanged(nameof(SettingsBackupRestoreMessageVisible), false);
+            OnPropertyChanged(nameof(LastSettingsBackupDate));
+            OnPropertyChanged(nameof(LastSettingsBackupSource));
+            OnPropertyChanged(nameof(LastSettingsBackupFileName));
+            OnPropertyChanged(nameof(CurrentSettingMatchText));
+            OnPropertyChanged(nameof(SettingsBackupMessage));
+            OnPropertyChanged(nameof(BackupRestoreMessageSeverity));
+            OnPropertyChanged(nameof(SettingsBackupRestoreMessageVisible));
         }
 
         /// <summary>
