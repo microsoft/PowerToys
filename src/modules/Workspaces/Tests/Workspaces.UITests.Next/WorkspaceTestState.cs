@@ -49,8 +49,7 @@ namespace Microsoft.Workspaces.UITests
 
         internal void PrepareSettings()
         {
-            Directory.CreateDirectory(DirectoryPath);
-            File.WriteAllText(SettingsPath, """
+            const string Settings = """
                 {
                   "name": "Workspaces",
                   "version": "0.0.1",
@@ -68,7 +67,9 @@ namespace Microsoft.Workspaces.UITests
                     "sortby": 0
                   }
                 }
-                """);
+                """;
+            Directory.CreateDirectory(DirectoryPath);
+            File.WriteAllText(SettingsPath, Settings);
 
             // UITestBase has already journaled the global settings before this pre-launch hook.
             var globalPath = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "settings.json");
