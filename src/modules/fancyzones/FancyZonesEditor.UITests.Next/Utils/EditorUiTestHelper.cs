@@ -319,12 +319,14 @@ public static class EditorUiTestHelper
 
         Step(testBase, $"Waiting for context menu item '{menuItem}'");
         Element? foundItem = null;
-        var itemAppeared = session.WaitFor(() =>
-        {
-            var candidates = session.FindAll<Element>(By.Name(menuItem), 500);
-            foundItem = candidates.FirstOrDefault(IsMenuItem);
-            return foundItem is not null;
-        }, 10_000);
+        var itemAppeared = session.WaitFor(
+            () =>
+            {
+                var candidates = session.FindAll<Element>(By.Name(menuItem), 500);
+                foundItem = candidates.FirstOrDefault(IsMenuItem);
+                return foundItem is not null;
+            },
+            10_000);
 
         Assert.IsTrue(itemAppeared && foundItem is not null, $"Context menu item '{menuItem}' was not found after right-clicking '{layoutName}'.");
         return foundItem!;
