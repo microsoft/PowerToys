@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI.ViewModels.Commands;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -52,7 +52,29 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
     public override ICommandItem[]? GetDockBands()
     {
         var rootPage = _rootPageAccessor.GetRootPage();
-        return [new WrappedDockItem(rootPage, Properties.Resources.builtin_command_palette_title)];
+        var logPath = Logger.LogDirectoryPath("\\CmdPal\\Logs\\");
+        var openLogCommand = new OpenFileCommand(logPath) { Name = Properties.Resources.builtin_log_folder_command_name };
+
+        // The dock renders the items of the band's backing list, not the band
+        // item itself, so MoreCommands must live on the inner ListItem.
+        var rootItem = new ListItem(rootPage)
+        {
+            MoreCommands =
+            [
+                new CommandContextItem(openSettings),
+                new CommandContextItem(new ReloadExtensionsCommand()) { Title = Properties.Resources.builtin_reload_display_title },
+                new CommandContextItem(openLogCommand),
+                new CommandContextItem(quitCommand) { Title = Properties.Resources.builtin_quit_subtitle },
+            ],
+        };
+
+        return
+        [
+            new WrappedDockItem([rootItem], rootPage.Id, Properties.Resources.builtin_command_palette_title)
+            {
+                Icon = rootPage.Icon,
+            },
+        ];
     }
 
     public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);
