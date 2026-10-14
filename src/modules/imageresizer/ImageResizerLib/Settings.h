@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include <common/utils/file_change_stamp.h>
 #include <common/utils/gpo.h>
 
 class CSettings
@@ -37,7 +38,7 @@ private:
     std::wstring jsonFilePath;
     std::wstring generalJsonFilePath;
     FILETIME lastLoadedTime;
-    FILETIME lastLoadedGeneralSettingsTime{};
+    std::optional<file_change_stamp::stamp> lastLoadedGeneralSettingsStamp;
 };
 
 CSettings& CSettingsInstance();

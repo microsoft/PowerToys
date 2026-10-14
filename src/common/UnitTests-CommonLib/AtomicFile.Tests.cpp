@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <common/utils/atomic_file.h>
+#include <common/utils/file_change_stamp.h>
 
 #include <array>
 #include <atomic>
@@ -116,6 +117,13 @@ namespace UnitTestsCommonLib
             }
 
             Assert::AreEqual(size_t{ 1 }, count);
+        }
+
+        void setLastWriteTime(const std::filesystem::path& path, const FILETIME& time)
+        {
+            FileHandle file(CreateFileW(path.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+            Assert::IsTrue(file.get() != INVALID_HANDLE_VALUE);
+            Assert::IsTrue(SetFileTime(file.get(), nullptr, nullptr, &time) != FALSE);
         }
     }
 
@@ -388,6 +396,129 @@ namespace UnitTestsCommonLib
             Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), readFile(destination, finalContents));
             Assert::IsTrue(finalContents == documents[1] || finalContents == documents[2]);
             assertOnlyFile(directory, destination);
+        }
+    };
+
+    TEST_CLASS (FileChangeStampTests)
+    {
+    public:
+        TEST_METHOD (UnchangedFileKeepsTheSameStamp)
+        {
+            TemporaryDirectory directory;
+            const auto path = directory.path() / L"settings.json";
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(path.wstring(), "{\"enabled\":false}"));
+            const auto first = file_change_stamp::from_file(path.wstring());
+            const auto second = file_change_stamp::from_file(path.wstring());
+
+            Assert::IsTrue(first.has_value());
+            Assert::IsTrue(second.has_value());
+            Assert::IsFalse(file_change_stamp::has_changed(first, second));
+        }
+
+        TEST_METHOD (SameTimestampReplacementInvalidatesTheCachedStamp)
+        {
+            TemporaryDirectory directory;
+            const auto destination = directory.path() / L"settings.json";
+            const auto staged = directory.path() / L"replacement.json";
+            const std::string original = "{\"enabled\":false}";
+            const std::string replacement = "{\"enabled\":true }";
+            Assert::AreEqual(original.size(), replacement.size());
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(destination.wstring(), original));
+            const auto cached = file_change_stamp::from_file(destination.wstring());
+            Assert::IsTrue(cached.has_value());
+
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(staged.wstring(), replacement));
+            setLastWriteTime(staged, cached->last_write);
+            Assert::IsTrue(MoveFileExW(staged.c_str(), destination.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != FALSE);
+            const auto current = file_change_stamp::from_file(destination.wstring());
+
+            Assert::IsTrue(current.has_value());
+            Assert::AreEqual(0L, CompareFileTime(&cached->last_write, &current->last_write));
+            Assert::IsTrue(file_change_stamp::has_changed(cached, current), L"Replacement identity must invalidate the cache even when time and size are unchanged.");
+            std::string contents;
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), readFile(destination, contents));
+            Assert::IsTrue(JsonObject::Parse(winrt::to_hstring(contents)).GetNamedBoolean(L"enabled"));
+        }
+
+        TEST_METHOD (TimestampChangeOnTheSameFileInvalidatesTheStamp)
+        {
+            TemporaryDirectory directory;
+            const auto path = directory.path() / L"settings.json";
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(path.wstring(), "{}"));
+            const auto cached = file_change_stamp::from_file(path.wstring());
+            Assert::IsTrue(cached.has_value());
+            ULARGE_INTEGER earlier{};
+            earlier.HighPart = cached->last_write.dwHighDateTime;
+            earlier.LowPart = cached->last_write.dwLowDateTime;
+            earlier.QuadPart -= 10000000;
+            const FILETIME time{ earlier.LowPart, earlier.HighPart };
+            setLastWriteTime(path, time);
+            const auto current = file_change_stamp::from_file(path.wstring());
+
+            Assert::IsTrue(current.has_value());
+            Assert::IsTrue(std::memcmp(cached->identity.FileId.Identifier, current->identity.FileId.Identifier, sizeof(cached->identity.FileId.Identifier)) == 0);
+            Assert::IsTrue(file_change_stamp::has_changed(cached, current));
+        }
+
+        TEST_METHOD (FullVolumeIdentityParticipatesInComparison)
+        {
+            file_change_stamp::stamp cached;
+            cached.identity.VolumeSerialNumber = 1;
+            auto current = cached;
+            current.identity.VolumeSerialNumber |= (1ULL << 40);
+
+            Assert::IsTrue(file_change_stamp::has_changed(cached, current));
+        }
+
+        TEST_METHOD (All128FileIdentityBitsParticipateInComparison)
+        {
+            file_change_stamp::stamp cached;
+            auto current = cached;
+            current.identity.FileId.Identifier[15] = 1;
+
+            Assert::IsTrue(file_change_stamp::has_changed(cached, current));
+        }
+
+        TEST_METHOD (UnavailableMetadataAlwaysRequiresReload)
+        {
+            TemporaryDirectory directory;
+            const auto missing = file_change_stamp::from_file((directory.path() / L"missing.json").wstring());
+            const std::optional<file_change_stamp::stamp> cached = file_change_stamp::stamp{};
+
+            Assert::IsFalse(missing.has_value());
+            Assert::IsTrue(file_change_stamp::has_changed(cached, missing));
+            Assert::IsTrue(file_change_stamp::has_changed(missing, cached));
+            Assert::IsTrue(file_change_stamp::has_changed(missing, missing));
+        }
+
+        TEST_METHOD (FailedReadLeavesReplacementEligibleForRetry)
+        {
+            TemporaryDirectory directory;
+            const auto destination = directory.path() / L"settings.json";
+            const auto staged = directory.path() / L"replacement.json";
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(destination.wstring(), "{\"enabled\":false}"));
+            auto cached = file_change_stamp::from_file(destination.wstring());
+            Assert::IsTrue(cached.has_value());
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(staged.wstring(), "{\"enabled\":"));
+            setLastWriteTime(staged, cached->last_write);
+            Assert::IsTrue(MoveFileExW(staged.c_str(), destination.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != FALSE);
+            auto current = file_change_stamp::from_file(destination.wstring());
+            Assert::IsTrue(file_change_stamp::has_changed(cached, current));
+            std::string contents;
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), readFile(destination, contents));
+            JsonObject parsed;
+            Assert::IsFalse(JsonObject::TryParse(winrt::to_hstring(contents), parsed));
+
+            // A failed parse does not acknowledge this replacement.
+            Assert::IsTrue(file_change_stamp::has_changed(cached, file_change_stamp::from_file(destination.wstring())));
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), atomic_file::write(destination.wstring(), "{\"enabled\":true}"));
+            current = file_change_stamp::from_file(destination.wstring());
+            Assert::IsTrue(file_change_stamp::has_changed(cached, current));
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), readFile(destination, contents));
+            Assert::IsTrue(JsonObject::TryParse(winrt::to_hstring(contents), parsed));
+            Assert::IsTrue(parsed.GetNamedBoolean(L"enabled"));
+            cached = current;
+            Assert::IsFalse(file_change_stamp::has_changed(cached, file_change_stamp::from_file(destination.wstring())));
         }
     };
 }

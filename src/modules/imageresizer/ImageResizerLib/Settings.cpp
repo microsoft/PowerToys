@@ -84,11 +84,8 @@ void CSettings::Load()
 
 void CSettings::RefreshEnabledState()
 {
-    // Load json settings from data file if it is modified in the meantime.
-    // Concurrent atomic replacements can publish timestamps in either order.
-    FILETIME lastModifiedTime{};
-    if (!(LastModifiedTime(generalJsonFilePath, &lastModifiedTime) &&
-          CompareFileTime(&lastModifiedTime, &lastLoadedGeneralSettingsTime) != 0))
+    const auto currentStamp = file_change_stamp::from_file(generalJsonFilePath);
+    if (!file_change_stamp::has_changed(lastLoadedGeneralSettingsStamp, currentStamp))
         return;
 
     auto json = json::from_file(generalJsonFilePath);
@@ -102,7 +99,7 @@ void CSettings::RefreshEnabledState()
         json::get(jsonSettings, c_enabled, modulesEnabledState, json::JsonObject{});
         json::get(modulesEnabledState, c_ImageResizer, settings.enabled, true);
         // Retry a temporarily unreadable replacement on the next query.
-        lastLoadedGeneralSettingsTime = lastModifiedTime;
+        lastLoadedGeneralSettingsStamp = currentStamp;
     }
     catch (const winrt::hresult_error&)
     {
