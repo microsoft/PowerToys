@@ -2,7 +2,7 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-. "$PSScriptRoot\..\..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\MwbRunnerModules.ps1"
+. "$PSScriptRoot\..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\MwbRunnerModules.ps1"
 
 Describe 'Release Runner native module-load closure' {
     BeforeEach { $runnerFixturePath = Join-Path $TestDrive ([guid]::NewGuid().ToString('N') + '.cpp') }
@@ -38,7 +38,7 @@ Describe 'Release Runner native module-load closure' {
     }
 
     It 'includes the whole Release module set before traversing its native import graph' {
-        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\New-MwbRuntimeArchive.ps1') -Raw
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\New-MwbRuntimeArchive.ps1') -Raw
         $source | Should Match "if \(\`$Configuration -eq 'Release'\)"
         $source | Should Match 'Get-MwbRunnerModules \$RunnerSourcePath'
         $source | Should Match 'foreach \(\$relative in \$runnerModules.Modules\) \{ Add-RuntimeFile'

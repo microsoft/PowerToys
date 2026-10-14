@@ -2,7 +2,7 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-$path = Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\Invoke-AutonomousLocalVm.ps1'
+$path = Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\Invoke-AutonomousLocalVm.ps1'
 $tokens = $null
 $errors = $null
 $ast = [Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
@@ -17,6 +17,41 @@ $body = $replacement[0].Clauses[0].Item2.Extent.Text
 $replaceProduct = [scriptblock]::Create($body.Substring(1, $body.Length - 2))
 
 function tar.exe { throw 'Unmocked archive extraction' }
+
+Describe 'MWB maintained suite layout' {
+    It 'keeps active preparation helpers beside the suite and endpoint resources in Payload' {
+        $suite = Split-Path (Split-Path $path)
+        foreach ($relative in @(
+            'MouseWithoutBorders.UITests.csproj',
+            'Payload\MwbSettings.template.json',
+            'Payload\EndpointWorker.ps1',
+            'Payload\Recover-Host.ps1',
+            'Scripts\Initialize-AutonomousHost.ps1',
+            'Scripts\Remove-AutonomousHost.ps1',
+            'Scripts\Invoke-AutonomousLocalVm.ps1',
+            'Scripts\New-MwbRuntimeArchive.ps1',
+            'Scripts\MwbReadyToRun.ps1',
+            'Scripts\MwbReadyToRunMetadata.cs',
+            'Scripts\MwbRunnerModules.ps1',
+            'Scripts\MwbTestSigning.ps1',
+            'Scripts\Test-SuitePreparation.ps1'
+        )) {
+            Test-Path -LiteralPath (Join-Path $suite $relative) -PathType Leaf | Should Be $true
+        }
+    }
+
+    It 'keeps build-only metadata out of the test assembly while preserving endpoint target paths' {
+        $suite = Split-Path (Split-Path $path)
+        [xml]$project = Get-Content -LiteralPath (Join-Path $suite 'MouseWithoutBorders.UITests.csproj') -Raw
+        $project.SelectSingleNode('/Project/ItemGroup/Compile[@Remove="Scripts\MwbReadyToRunMetadata.cs"]') |
+            Should Not BeNullOrEmpty
+        $template = $project.SelectSingleNode('/Project/ItemGroup/None[@Update="Payload\*.json"]')
+        $template.CopyToOutputDirectory | Should Be 'PreserveNewest'
+        $signing = $project.SelectSingleNode('/Project/ItemGroup/None[@Update="Scripts\MwbTestSigning.ps1"]')
+        $signing.Link | Should Be 'Payload\MwbTestSigning.ps1'
+        $signing.CopyToOutputDirectory | Should Be 'PreserveNewest'
+    }
+}
 
 Describe 'MWB protected local product replacement' {
     BeforeEach {

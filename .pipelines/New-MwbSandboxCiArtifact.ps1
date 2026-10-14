@@ -200,7 +200,7 @@ $output = $paths.OutputRoot
 $work = $paths.WorkRoot
 $WorkRoot = $work
 $null = New-Item -ItemType Directory -Path $output, $work, (Join-Path $work 'scratch')
-$experiment = Join-Path $sourceRoot 'src\modules\MouseWithoutBorders\Tests\SandboxExperiment'
+$scriptsRoot = Join-Path $sourceRoot 'src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts'
 $archive = Join-Path $output 'runtime.zip'
 $options = @{}
 if ($Configuration -eq 'Debug') {
@@ -214,7 +214,7 @@ if ($ReadyToRun) {
     $options.ReadyToRun = $true
     $options.Crossgen2Path = Get-MwbCiCrossgen2 $runtimeVersion (Join-Path $work 'compiler') -TargetArchitecture $Platform
 }
-& (Join-Path $experiment 'New-MwbRuntimeArchive.ps1') -ProductRoot $product -ArchivePath $archive `
+& (Join-Path $scriptsRoot 'New-MwbRuntimeArchive.ps1') -ProductRoot $product -ArchivePath $archive `
     -Platform $Platform -Configuration $Configuration @options | Out-Null
 $runtime = Get-Content -LiteralPath "$archive.manifest.json" -Raw | ConvertFrom-Json
 $files = foreach ($relative in $runtime.Files) {

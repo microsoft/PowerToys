@@ -312,7 +312,7 @@ Describe 'MWB CI manifest and initializer agreement' {
         }, $true)
         $script:backendGuard = [scriptblock]::Create('param($marker,$manifest)' + "`n" + $guard.Extent.Text)
         $initializer = [Management.Automation.Language.Parser]::ParseFile(
-            (Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\Initialize-AutonomousHost.ps1'),
+            (Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\Initialize-AutonomousHost.ps1'),
             [ref]$tokens, [ref]$errors)
         if ($errors.Count) { throw 'Initializer parameter contract contains parse errors.' }
         $script:bindInitializer = [scriptblock]::Create($initializer.ParamBlock.Extent.Text + @'

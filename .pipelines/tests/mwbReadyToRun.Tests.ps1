@@ -3,7 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
-$experimentRoot = Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment'
+$experimentRoot = Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts'
 . (Join-Path $experimentRoot 'MwbReadyToRun.ps1')
 Initialize-MwbReadyToRunMetadata
 

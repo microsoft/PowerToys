@@ -283,7 +283,7 @@ function New-MwbCiSignedRuntime {
     }
     Expand-MwbCiRuntime (Join-Path $Bundle.Root 'runtime.zip') $ProductRoot $Bundle.Manifest.Runtime.Files
     Invoke-MwbCiEndpointSigning $ProductRoot $CertificateMarkerPath $RunId -SkipLocalTrust:$SkipLocalTrust
-    $signingHelper = Join-Path $PSScriptRoot '..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\MwbTestSigning.ps1'
+    $signingHelper = Join-Path $PSScriptRoot '..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\MwbTestSigning.ps1'
     . $signingHelper
     $certificatePath = Join-Path $ProductRoot 'mwb-test-signer.cer'
     $certificate = if (Test-Path -LiteralPath $certificatePath) { Get-MwbTestSigningCertificate $certificatePath } else { $null }

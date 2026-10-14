@@ -197,13 +197,13 @@ Describe 'MWB owned Settings readiness' {
     }
 
     It 'keeps local suite and controller envelopes outside the longer fixture deadlines' {
-        $wrapper = Get-Content -LiteralPath (Join-Path $payloadRoot '..\..\Tests\SandboxExperiment\Invoke-AutonomousLocalVm.ps1') -Raw
+        $wrapper = Get-Content -LiteralPath (Join-Path $payloadRoot '..\Scripts\Invoke-AutonomousLocalVm.ps1') -Raw
         $wrapper | Should Match "SuiteTimeout = \`$\(if \(\`$backend -eq 'WinApp'\) \{ '95m' \} else \{ '70m' \}\)"
         $wrapper | Should Match "TimeoutMinutes = \`$\(if \(\`$backend -eq 'WinApp'\) \{ 110 \} else \{ 85 \}\)"
     }
 
     It 'propagates the requested resource profile through both VM startup and test dispatch' {
-        $wrapper = Get-Content -LiteralPath (Join-Path $payloadRoot '..\..\Tests\SandboxExperiment\Invoke-AutonomousLocalVm.ps1') -Raw
+        $wrapper = Get-Content -LiteralPath (Join-Path $payloadRoot '..\Scripts\Invoke-AutonomousLocalVm.ps1') -Raw
         $wrapper | Should Match "ValidateSet\('Default', 'Constrained'\).*ResourceProfile = 'Default'"
         $wrapper | Should Match 'ResourceProfile = \$ResourceProfile'
         $wrapper | Should Match 'Start-LocalVm.ps1[\s\S]*-ResourceProfile \$ResourceProfile -Wait'

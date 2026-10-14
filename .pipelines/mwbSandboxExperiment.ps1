@@ -253,7 +253,7 @@ if ($Mode -eq 'Prepare') {
     # Raw provisioner output is not readable by the test user and is never attached
     # to public test results. This child directory does not inherit the read grant.
     New-MwbProtectedDirectory (Join-Path $runRoot 'provisioning-logs')
-    $sourceRoot = Join-Path $PSScriptRoot '..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment'
+    $sourceRoot = Join-Path $PSScriptRoot '..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts'
     $guestArchive = Join-Path $runRoot 'guest-runtime\product.zip'
     $null = New-Item -ItemType Directory -Path (Split-Path $guestArchive)
     $hostProductRoot = Join-Path $runRoot 'host-product'

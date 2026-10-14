@@ -4,7 +4,7 @@
 
 #Requires -Version 7.0
 . "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
-. "$PSScriptRoot\..\..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\MwbTestSigning.ps1"
+. "$PSScriptRoot\..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\MwbTestSigning.ps1"
 
 function New-MwbPublicCertificateFixture {
     param([string]$Subject = 'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US')

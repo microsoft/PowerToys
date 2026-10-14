@@ -123,11 +123,13 @@ testing remote input, and use disabled/disconnected MWB negative controls to avo
 mistaking Sandbox's own redirection for MWB behavior. Do not use this experiment to
 sign off service or secure-desktop behavior.
 
-The deferred host/Sandbox preparation scripts are in
-`src\modules\MouseWithoutBorders\Tests\SandboxExperiment`. Preparation must not
-launch either endpoint; start the experiment separately on an active, unlocked
-desktop. The maintained autonomous suite uses one matching Release payload for
-both endpoints and retains the production IPC/signing checks. Unsigned test
+The maintained test project is
+`src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests`; its `Scripts`
+folder contains packaging, local-VM dispatch and protected setup/cleanup helpers,
+and `Payload` contains the endpoint workers and settings template. Packaging
+does not launch either endpoint; the test runs inside a dedicated active,
+unlocked VM desktop. The suite uses one matching Release payload for both
+endpoints and retains the production IPC/signing checks. Unsigned test
 payloads require the existing disposable companion-signing mechanism and public
 certificate trust in the dedicated VM and its guest, never an authentication
 bypass. Installed/service behavior and physical two-PC sign-off remain separate.
