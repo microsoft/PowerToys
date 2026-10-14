@@ -3,9 +3,9 @@
 
 #include <thread>
 #include <wil/resource.h>
-#include "CliCommands.h"
+#include "LaunchSession.h"
 
-namespace WorkspacesCli
+namespace WorkspacesSession
 {
     // Only used by operation-owned workers, never by launched applications.
     class OperationLifetime

@@ -129,7 +129,7 @@ namespace
                 const auto message = LauncherUiMessage::Parse(text);
                 if (message && message->type == LauncherUiMessage::Type::WarningShown && message->requestId == requestText)
                     shown = true;
-            }, WorkspacesCli::NormalizeId(operationText));
+            }, WorkspacesCli::NormalizeId(operationText), true);
             if (cancelStartup)
             {
                 int checks = 0;
@@ -175,11 +175,47 @@ int wmain(int argc, wchar_t** argv)
                 return 1;
             }
             const bool canceled = mode == L"worker-result-canceled";
-            const auto output = WorkspacesCli::Failure(L"launch", { canceled ? 12 : 9, canceled ? L"canceled" : L"timeout", "Controlled worker completion." });
+            const auto output = WorkspacesSession::SerializeError(
+                { canceled ? 12 : 9, canceled ? L"canceled" : L"timeout", "Controlled worker completion." }, L"operation");
             std::cout << winrt::to_string(output.Stringify()) << '\n';
             return canceled ? 12 : 9;
         }
         Check(argc == 2);
+        if (std::wstring_view(argv[1]).starts_with(L"session-"))
+        {
+            const bool gui = std::wstring_view(argv[1]) != L"session-cli";
+            const bool draft = std::wstring_view(argv[1]) == L"session-draft";
+            GUID guid{};
+            winrt::check_hresult(CoCreateGuid(&guid));
+            wchar_t id[40]{};
+            StringFromGUID2(guid, id, ARRAYSIZE(id));
+            WorkspacesData::WorkspacesProject project{};
+            project.id = id;
+            project.name = L"Isolated shared session";
+            project.monitors.push_back({ .number = 1, .dpi = 96 });
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.id = draft ? L"" : L"{49330ECB-5917-4DF3-B70A-1F2D7FE4899B}";
+            app.name = L"WorkspacesNoExecutionFixture";
+            app.path = L"C:\\Workspaces.NoExecution.Fixture.DoesNotExist.exe";
+            app.position = { 10, 10, 640, 400 };
+            app.monitor = 1;
+            project.apps.push_back(app);
+            WorkspacesSession::Request request;
+            request.id = project.id;
+            request.presentation = gui ? WorkspacesSession::Presentation::Progress : WorkspacesSession::Presentation::ConfirmationOnly;
+            request.invokePoint = draft ? InvokePoint::LaunchAndEdit : InvokePoint::EditorButton;
+            request.timeoutSeconds = 20;
+            const auto result = WorkspacesSession::StartSnapshot(request, project, draft);
+            Check(result.project.id == project.id);
+            Check(result.applications.size() == 1 && result.applications.begin()->second.state == LaunchingState::Failed);
+            Check(!result.project.apps[0].id.empty());
+            Check(draft ? !result.persistence.has_value() : result.persistence == WorkspaceStore::UpdateResult::Conflict);
+            int exitCode{};
+            const auto output = WorkspacesCli::SessionResult(result, exitCode);
+            Check(exitCode == 10 && output.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0).GetNamedString(L"state") == L"launchFailed");
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
         if (std::wstring_view(argv[1]) == L"launched-localization")
         {
             WorkspacesData::WorkspacesProject project{};

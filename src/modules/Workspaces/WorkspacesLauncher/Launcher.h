@@ -9,20 +9,13 @@
 #include <WindowArrangerHelper.h>
 #include <WorkspacesLib/PendingLaunchApproval.h>
 #include <WorkspacesLib/SignatureVerification.h>
+#include <WorkspacesLib/LaunchSession.h>
 #include <thread>
-
-struct CliLaunchOptions
-{
-    std::wstring operationId;
-    HANDLE cancelEvent = nullptr;
-    ULONGLONG deadline = 0;
-    DWORD timeoutSeconds = 120;
-};
 
 class Launcher
 {
 public:
-    Launcher(const WorkspacesData::WorkspacesProject& project, std::vector<WorkspacesData::WorkspacesProject>& workspaces, InvokePoint invokePoint, const CliLaunchOptions* cliOptions = nullptr);
+    Launcher(const WorkspacesData::WorkspacesProject& project, InvokePoint invokePoint, const WorkspacesSession::ExecutionOptions& options);
     ~Launcher();
     WorkspacesData::LaunchingAppStateMap GetResult();
     std::map<std::wstring, DWORD> GetApplicationErrors();
@@ -32,7 +25,6 @@ public:
 
 private:
     WorkspacesData::WorkspacesProject m_project;
-    std::vector<WorkspacesData::WorkspacesProject>& m_workspaces;
     const InvokePoint m_invokePoint;
     const std::chrono::steady_clock::time_point m_start;
     std::atomic<bool> m_launchedSuccessfully{};
@@ -52,7 +44,7 @@ private:
     std::mutex m_launchErrorsMutex;
     std::map<std::wstring, DWORD> m_applicationErrors;
     std::map<std::wstring, LaunchDecision> m_approvalDecisions;
-    const CliLaunchOptions* m_cliOptions = nullptr;
+    const WorkspacesSession::ExecutionOptions& m_options;
     std::atomic<bool> m_stopping{};
     std::atomic<bool> m_arrangerCompleted{};
     DWORD m_arrangerError = ERROR_SUCCESS;

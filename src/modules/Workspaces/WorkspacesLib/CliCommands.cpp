@@ -12,11 +12,6 @@
 
 namespace WorkspacesCli
 {
-    Error::Error(int exitCode, std::wstring code, const char* message) :
-        std::runtime_error(message), exitCode(exitCode), code(std::move(code))
-    {
-    }
-
     void ValidateLaunch(const WorkspacesData::WorkspacesProject& project, bool allowMissingIds)
     {
         if (project.apps.empty())
@@ -50,39 +45,7 @@ namespace WorkspacesCli
 
     void EnsureApplicationIds(const std::filesystem::path& fileName, WorkspacesData::WorkspacesProject& project)
     {
-        ValidateLaunch(project, true);
-        if (std::none_of(project.apps.begin(), project.apps.end(), [](const auto& app) { return app.id.empty(); }))
-            return;
-        auto prepared = project;
-        std::set<std::wstring> ids;
-        for (const auto& app : prepared.apps)
-        {
-            if (!app.id.empty())
-                ids.insert(NormalizeId(app.id));
-        }
-        for (auto& app : prepared.apps)
-        {
-            if (!app.id.empty())
-                continue;
-            do
-            {
-                GUID guid{};
-                winrt::check_hresult(CoCreateGuid(&guid));
-                wchar_t text[40]{};
-                if (!StringFromGUID2(guid, text, ARRAYSIZE(text)))
-                    throw Error(1, L"internalError", "Cannot format a new application ID.");
-                app.id = text;
-            } while (!ids.insert(NormalizeId(app.id)).second);
-        }
-        ValidateLaunch(prepared);
-        const auto saved = WorkspaceStore::UpdateApplicationMetadata(fileName, project, prepared);
-        if (saved == WorkspaceStore::UpdateResult::Conflict)
-            throw Error(8, L"workspaceChanged", "The saved workspace changed before application IDs could be initialized. No applications were launched.");
-        if (saved == WorkspaceStore::UpdateResult::Unverified)
-            throw Error(11, L"persistenceUnverified", "Application ID persistence could not be verified.");
-        if (saved != WorkspaceStore::UpdateResult::Updated)
-            throw Error(8, L"applicationIdSaveFailed", "Missing application IDs could not be saved. No applications were launched.");
-        project = std::move(prepared);
+        WorkspacesSession::InitializeApplicationIds(fileName, project);
     }
 
     std::wstring NormalizeId(const std::wstring& id)
@@ -345,6 +308,41 @@ namespace WorkspacesCli
         json::JsonObject result;
         result.SetNamedValue(L"view", json::value(details ? L"detail" : L"summary"));
         result.SetNamedValue(L"workspaces", items);
+        return result;
+    }
+
+    json::JsonObject SessionResult(const WorkspacesSession::Result& session, int& exitCode)
+    {
+        auto result = LaunchResult(session.project, session.applications, session.operationId, exitCode,
+                                   session.applicationErrors, session.approvals);
+        if (!session.loggingAvailable)
+        {
+            json::JsonObject warning;
+            warning.SetNamedValue(L"code", json::value(L"loggingUnavailable"));
+            warning.SetNamedValue(L"message", json::value(L"File logging is unavailable for this operation."));
+            result.GetNamedArray(L"warnings").Append(warning);
+        }
+        if (session.persistence)
+        {
+            const auto saved = *session.persistence;
+            result.GetNamedObject(L"result").SetNamedValue(L"persistenceStatus",
+                json::value(saved == WorkspaceStore::UpdateResult::Updated ? L"updated" :
+                            saved == WorkspaceStore::UpdateResult::Conflict ? L"conflict" :
+                            saved == WorkspaceStore::UpdateResult::Unverified ? L"unverified" : L"failed"));
+            if (saved == WorkspaceStore::UpdateResult::Unverified)
+            {
+                exitCode = 11;
+                result.SetNamedValue(L"state", json::value(L"failed"));
+                result.SetNamedValue(L"error", Failure(L"launch", { 11, L"persistenceUnverified", "Workspace persistence could not be verified." }).GetNamedObject(L"error"));
+            }
+            else if (saved != WorkspaceStore::UpdateResult::Updated)
+            {
+                json::JsonObject warning;
+                warning.SetNamedValue(L"code", json::value(saved == WorkspaceStore::UpdateResult::Conflict ? L"metadataSaveConflict" : L"metadataSaveFailed"));
+                warning.SetNamedValue(L"message", json::value(L"Launch history could not be saved. Do not relaunch only to update history."));
+                result.GetNamedArray(L"warnings").Append(warning);
+            }
+        }
         return result;
     }
 

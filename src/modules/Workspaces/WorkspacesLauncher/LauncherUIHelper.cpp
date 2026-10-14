@@ -16,9 +16,10 @@ namespace
     }
 }
 
-LauncherUIHelper::LauncherUIHelper(std::function<void(const std::wstring&)> ipcCallback, std::wstring operationId) :
+LauncherUIHelper::LauncherUIHelper(std::function<void(const std::wstring&)> ipcCallback, std::wstring operationId, bool confirmationOnly) :
     m_processId{},
     m_operationId(std::move(operationId)),
+    m_confirmationOnly(confirmationOnly),
     m_ipcHelper(IPCHelperStrings::LauncherUIPipeName + m_operationId, IPCHelperStrings::UIPipeName + m_operationId, ipcCallback,
                 m_operationId.empty() ? interop_auth::CallerPolicy{} : IPCHelper::ModulePeer(L"PowerToys.WorkspacesLauncherUI.exe"))
 {
@@ -49,7 +50,7 @@ bool LauncherUIHelper::LaunchUI(const std::function<bool()>& isCanceled)
     GetModuleFileName(NULL, buffer, MAX_PATH);
     const auto path = std::filesystem::path(buffer).parent_path() / L"PowerToys.WorkspacesLauncherUI.exe";
     const auto arguments = m_operationId.empty() ? L"" :
-        L"--confirmation-only " + m_operationId + L" " + std::to_wstring(GetCurrentProcessId());
+        std::wstring(m_confirmationOnly ? L"--confirmation-only " : L"--launch-ui ") + m_operationId + L" " + std::to_wstring(GetCurrentProcessId());
     auto result = AppLauncher::LaunchApp(path.wstring(), arguments, false);
     if (result.isError())
     {
@@ -116,7 +117,7 @@ void LauncherUIHelper::DismissApproval(const std::wstring& requestId) const
 
 void LauncherUIHelper::UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const
 {
-    if (!m_operationId.empty())
+    if (m_confirmationOnly)
         return;
     WorkspacesData::AppLaunchData appData;
     appData.launcherProcessID = GetCurrentProcessId();

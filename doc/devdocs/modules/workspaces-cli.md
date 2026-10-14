@@ -110,8 +110,8 @@ acknowledging completion. They produce `outcomeUnknown` (exit 9), not an applica
   or approval time, and bounded worker cleanup may take additional time.
 - Workspaces progress/editor windows are suppressed. The existing Workspaces signature confirmation
   dialog, application windows and normal Windows UAC remain possible.
-- Both ordinary and administrator terminals use the same command. An administrator frontend
-  starts a non-elevated worker in the same user's desktop session while keeping command output
+- Both ordinary and administrator terminals use the same command. The shared session layer
+  starts a non-elevated Launcher host in the same user's desktop session while keeping command output
   in the original terminal. Existing saved elevation flags still determine individual app/UAC
   behavior; the administrator caller does not implicitly elevate every app.
 - Existing windows follow the saved `move-existing-windows` setting. Another launch in the same
@@ -127,29 +127,37 @@ acknowledging completion. They produce `outcomeUnknown` (exit 9), not an applica
   missing application IDs. Existing IDs are preserved; malformed or duplicate existing IDs are
   errors. Concurrent edits or failed ID persistence stop the launch before applications start.
   Listing remains read-only, and a later canceled/timed-out launch does not undo completed ID initialization.
-- The foreground CLI restores the console's original output code page on exit. Private workers
-  do not change it, and their result stream remains JSON-only even if localization is unavailable.
+- The foreground CLI restores the console's original output code page on exit. The shared host
+  uses an explicit private result pipe, independent of console output and CLI localization.
 - File logging is best-effort. An unavailable log directory/file does not prevent launching;
   the final launch result includes a `loggingUnavailable` warning without changing application outcomes.
 
-### Administrator terminal handoff
+### Shared session and administrator routing
 
-The foreground CLI remains in its original context. It validates the desktop shell's user,
-session and medium integrity, creates a suspended worker using Explorer's process-creation
-context, and verifies the child's actual token before allowing any code to run.
+The CLI and GUI launcher are adapters over `WorkspacesSession::Start`. That shared entry owns
+selection/snapshot transfer, execution context and result transport. Its existing
+`PowerToys.WorkspacesLauncher.exe` host owns one preparation/launch/history flow, returning a typed
+session outcome; only the CLI adapter creates the public JSON, text and exit-code representation.
+The GUI retains progress presentation and its invocation context, including unsaved Launch-and-Edit
+drafts; CLI mode only displays required confirmation UI. No Editor save-workflow changes are added.
+
+The caller remains in its original context. Shared session routing validates the desktop shell's
+user/session/Medium integrity for administrator callers, creates a suspended host through the common
+Explorer-parent helper, and verifies the actual child's token before allowing execution. Ordinary
+callers also use the same host, with restricted inherited handles and the same Medium verification.
 
 The child receives its operation handles through a bounded, read-only bootstrap pipe. The
 frontend pins the exact created PID; both sides verify the expected module image/version and
 Microsoft signature in Release. User SID/session must match, and the child must be non-elevated.
 Only a read-only snapshot, wait-only cancellation/owner-lifetime handles and the existing
-input/result endpoints are duplicated. No token handle or general administrator
+result writer are duplicated. No token handle or general administrator
 process capability is handed to the worker.
 
 The existing `run_non_elevated` helper owns Explorer selection, startup attributes and process
 creation. Its owning overload supports suspended creation and parent validation; the existing
-PID-only API delegates to that implementation. Both the Workspaces GUI launcher and CLI use
-this shared helper. `WorkerHandoff` only validates the resulting identity and transfers CLI
-capabilities; it no longer implements a separate process-creation path. Other users of
+PID-only API delegates to that implementation. The module's shared `SessionHandoff` owns bootstrap
+identity/capability transfer for both GUI and CLI; neither adapter maintains an independent
+de-elevation or worker implementation. Other users of
 `RunNonElevatedEx` retain their existing COM-based behavior.
 
 No normal same-user Explorer, a different-user administrator, wrong session, identity mismatch

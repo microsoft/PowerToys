@@ -62,12 +62,13 @@ namespace WorkspacesLauncherUI
                 }
             }
 
-            var confirmationOnly = e.Args.Length != 0;
+            var scopedSession = e.Args.Length != 0;
+            var confirmationOnly = scopedSession && e.Args[0] == "--confirmation-only";
             var operationId = string.Empty;
             int ownerPid = 0;
-            if (confirmationOnly)
+            if (scopedSession)
             {
-                if (e.Args.Length != 3 || e.Args[0] != "--confirmation-only" ||
+                if (e.Args.Length != 3 || (e.Args[0] != "--confirmation-only" && e.Args[0] != "--launch-ui") ||
                     !Guid.TryParse(e.Args[1], out var id) || id == Guid.Empty ||
                     !int.TryParse(e.Args[2], NumberStyles.None, CultureInfo.InvariantCulture, out ownerPid) || ownerPid <= 0)
                 {
@@ -77,7 +78,11 @@ namespace WorkspacesLauncherUI
                 }
 
                 operationId = id.ToString("D");
-                ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                if (confirmationOnly)
+                {
+                    ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                }
+
                 if (!RunnerHelper.TryWaitForProcessExit(ownerPid, () =>
                 {
                     if (!Dispatcher.HasShutdownStarted)

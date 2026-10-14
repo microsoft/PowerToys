@@ -39,6 +39,70 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (SharedSessionResultRoundTripsWithoutChangingTheWireEnvelope)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            project.monitors.push_back({ .number = 1, .dpi = 96 });
+            project.apps[0].monitor = 1;
+            project.apps[0].position = { 10, 20, 640, 400 };
+            WorkspacesSession::Result original;
+            original.operationId = L"operation";
+            original.project = project;
+            original.applications.emplace(project.apps[0], WorkspacesData::LaunchingAppState{ project.apps[0], nullptr, LaunchingState::Launched });
+            original.persistence = WorkspaceStore::UpdateResult::Updated;
+            original.loggingAvailable = false;
+            const auto message = WorkspacesSession::SerializeResult(original);
+            const auto before = std::wstring(message.Stringify());
+            const auto decoded = WorkspacesSession::DeserializeResult(message, L"operation");
+            Assert::AreEqual(before, std::wstring(message.Stringify()));
+            Assert::AreEqual(project.id, decoded.project.id);
+            Assert::IsTrue(decoded.applications.at(project.apps[0]).state == LaunchingState::Launched);
+            Assert::IsTrue(decoded.persistence == WorkspaceStore::UpdateResult::Updated);
+            Assert::IsFalse(decoded.loggingAvailable);
+            Assert::IsFalse(message.HasKey(L"command"));
+            Assert::ExpectException<WorkspacesSession::Error>([&] { WorkspacesSession::DeserializeResult(message, L"another-operation"); });
+        }
+
+        TEST_METHOD (SharedSessionErrorsRemainIndependentOfCliFormatting)
+        {
+            const auto message = WorkspacesSession::SerializeError({ 12, L"canceled", "Controlled cancellation." }, L"operation");
+            Assert::AreEqual(std::wstring(L"session-error"), std::wstring(message.GetNamedString(L"kind")));
+            Assert::IsFalse(message.HasKey(L"schemaVersion"));
+            try
+            {
+                WorkspacesSession::DeserializeResult(message, L"operation");
+                Assert::Fail(L"The private session error must propagate.");
+            }
+            catch (const WorkspacesSession::Error& error)
+            {
+                Assert::AreEqual(12, error.exitCode);
+                Assert::AreEqual(std::wstring(L"canceled"), error.code);
+                Assert::AreEqual(std::wstring(L"launch"), std::wstring(WorkspacesCli::Failure(L"launch", error).GetNamedString(L"command")));
+            }
+        }
+
+        TEST_METHOD (CliAdapterPreservesSessionPersistenceAndProgress)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            WorkspacesSession::Result session;
+            session.project = project;
+            session.operationId = L"operation";
+            session.applications.emplace(project.apps[0], WorkspacesData::LaunchingAppState{ project.apps[0], nullptr, LaunchingState::LaunchedAndMoved });
+            session.persistence = WorkspaceStore::UpdateResult::Failed;
+            int exitCode{};
+            auto output = WorkspacesCli::SessionResult(session, exitCode);
+            Assert::AreEqual(0, exitCode);
+            Assert::AreEqual(std::wstring(L"completed"), std::wstring(output.GetNamedString(L"state")));
+            Assert::AreEqual(std::wstring(L"metadataSaveFailed"), std::wstring(output.GetNamedArray(L"warnings").GetObjectAt(0).GetNamedString(L"code")));
+            session.persistence = WorkspaceStore::UpdateResult::Unverified;
+            output = WorkspacesCli::SessionResult(session, exitCode);
+            Assert::AreEqual(11, exitCode);
+            Assert::AreEqual(std::wstring(L"persistenceUnverified"), std::wstring(output.GetNamedObject(L"error").GetNamedString(L"code")));
+            Assert::AreEqual(std::wstring(L"arranged"), std::wstring(output.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0).GetNamedString(L"state")));
+        }
+
         TEST_METHOD (FinalArrangerResultRejectsWaiting)
         {
             auto project = Project();

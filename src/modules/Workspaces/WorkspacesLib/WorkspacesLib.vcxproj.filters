@@ -23,6 +23,15 @@
     <ClInclude Include="CliCommands.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LaunchSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionHandoff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionLogging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="OperationLifetime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -92,6 +101,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CliCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LaunchSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionHandoff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WorkspaceStore.cpp">

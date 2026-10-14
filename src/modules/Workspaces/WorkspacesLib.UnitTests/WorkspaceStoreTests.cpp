@@ -2,7 +2,7 @@
 #include "pch.h"
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/WorkspaceStore.h>
-#include <WorkspacesCLI/CommandLogging.h>
+#include <WorkspacesLib/SessionLogging.h>
 #include <fstream>
 #include <sstream>
 #include <future>
@@ -131,7 +131,7 @@ namespace WorkspacesLibUnitTests
                 auto restore = wil::scope_exit([] {
                     ::Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
                 });
-                Assert::IsFalse(CliLogging::Initialize(folder));
+                Assert::IsFalse(WorkspacesSession::Logging::Initialize(folder));
                 ::Logger::info("Workspaces CLI: existing logger remains usable");
                 ::Logger::flush();
                 Assert::IsTrue(captured.str().find("existing logger remains usable") != std::string::npos);
@@ -145,7 +145,7 @@ namespace WorkspacesLibUnitTests
             auto restore = wil::scope_exit([] {
                 ::Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
             });
-            Assert::IsTrue(CliLogging::Initialize(folder));
+            Assert::IsTrue(WorkspacesSession::Logging::Initialize(folder));
             ::Logger::info("Workspaces CLI: started");
             ::Logger::warn("private application arguments");
             ::Logger::flush();

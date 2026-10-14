@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 #include "pch.h"
-#include <WorkspacesCLI/WorkerHandoff.h>
+#include <WorkspacesLib/SessionHandoff.h>
 #include <WorkspacesLib/CliCommands.h>
 #include <wil/resource.h>
 #include <filesystem>
@@ -25,19 +25,19 @@ namespace WorkspacesLibUnitTests
 
         TEST_METHOD (CurrentProcessIdentityMatchesItself)
         {
-            Assert::IsTrue(WorkspacesCli::SameUserSession(GetCurrentProcess(), GetCurrentProcess()));
+            Assert::IsTrue(WorkspacesSession::SameUserSession(GetCurrentProcess(), GetCurrentProcess()));
         }
 
         TEST_METHOD (InvalidProcessAndOperationFailClosed)
         {
             Assert::ExpectException<WorkspacesCli::Error>([] {
-                WorkspacesCli::IsMediumProcess(nullptr);
+                WorkspacesSession::IsMediumProcess(nullptr);
             });
             Assert::ExpectException<WorkspacesCli::Error>([] {
-                WorkspacesCli::ReceiveWorkerHandles(L"..\\not-a-guid", GetCurrentProcessId());
+                WorkspacesSession::ReceiveWorkerHandles(L"..\\not-a-guid", GetCurrentProcessId(), { L"fixture.exe" });
             });
             Assert::ExpectException<WorkspacesCli::Error>([] {
-                WorkspacesCli::ReceiveWorkerHandles(L"{EF762D6C-EDBF-4C45-98F2-878BBF67583F}", 0);
+                WorkspacesSession::ReceiveWorkerHandles(L"{EF762D6C-EDBF-4C45-98F2-878BBF67583F}", 0, { L"fixture.exe" });
             });
         }
 
@@ -45,11 +45,11 @@ namespace WorkspacesLibUnitTests
         {
             wil::unique_handle cancel(CreateEventW(nullptr, TRUE, TRUE, nullptr));
             Assert::IsTrue(static_cast<bool>(cancel));
-            WorkspacesCli::WorkerHandles handles;
+            WorkspacesSession::WorkerHandles handles;
             handles.cancel = cancel.get();
             try
             {
-                WorkspacesCli::StartMediumWorker(L"must-not-start.exe",
+                WorkspacesSession::StartMediumWorker(L"must-not-start.exe",
                                                  L"{EF762D6C-EDBF-4C45-98F2-878BBF67583F}",
                                                  handles,
                                                  GetTickCount64() + 10000);
@@ -62,10 +62,10 @@ namespace WorkspacesLibUnitTests
             ResetEvent(cancel.get());
             try
             {
-                WorkspacesCli::StartMediumWorker(L"must-not-start.exe",
+                WorkspacesSession::StartMediumWorker(L"must-not-start.exe",
                                                  L"{EF762D6C-EDBF-4C45-98F2-878BBF67583F}",
                                                  handles,
-                                                 0);
+                                                 GetTickCount64() - 1);
                 Assert::Fail(L"Expired startup must not proceed.");
             }
             catch (const WorkspacesCli::Error& error)

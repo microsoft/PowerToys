@@ -31,20 +31,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="WorkerHandoff.cpp" />
-    <ClCompile Include="..\WorkspacesLauncher\Launcher.cpp" />
-    <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp" />
-    <ClCompile Include="..\WorkspacesLauncher\LauncherUIHelper.cpp" />
-    <ClCompile Include="..\WorkspacesLauncher\RegistryUtils.cpp" />
-    <ClCompile Include="..\WorkspacesLauncher\WindowArrangerHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files\WorkspacesCLI.rc" />
     <ClInclude Include="Resources.h" />
-    <ClInclude Include="CommandLogging.h" />
     <ClInclude Include="JsonOutput.h" />
-    <ClInclude Include="WorkerHandoff.h" />
-    <ClInclude Include="WorkerResult.h" />
     <None Include="resource.base.h" />
     <None Include="WorkspacesCLI.base.rc" />
     <EmbeddedResource Include="Resource.resx" />
@@ -54,8 +45,8 @@
     <Error Condition="!Exists('$(MSBuildProjectDirectory)\Generated Files\resource.h') Or !Exists('$(MSBuildProjectDirectory)\Generated Files\WorkspacesCLI.rc')" Text="Workspaces CLI resource generation failed." />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\WorkspacesLauncherUI\WorkspacesLauncherUI.csproj">
-      <Project>{9c53cc25-0623-4569-95bc-b05410675ee3}</Project>
+    <ProjectReference Include="..\WorkspacesLauncher\WorkspacesLauncher.vcxproj">
+      <Project>{2cac093e-5fcf-4102-9c2c-ac7dd5d9eb96}</Project>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

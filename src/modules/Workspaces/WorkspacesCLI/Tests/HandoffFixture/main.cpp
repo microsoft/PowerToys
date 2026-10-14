@@ -7,7 +7,8 @@
 #include <spdlog/sinks/null_sink.h>
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
-#include <WorkspacesCLI/WorkerHandoff.h>
+#include <WorkspacesLib/SessionHandoff.h>
+#include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/OperationLifetime.h>
 
 namespace
@@ -27,10 +28,9 @@ namespace
 
     json::JsonObject Child(const std::wstring& id, DWORD parentPid)
     {
-        auto handles = WorkspacesCli::ReceiveWorkerHandles(id, parentPid);
-        handles.BindStandardStreams();
-        WorkspacesCli::OperationLifetime lifetime(parentPid, 15000, handles.ownerLifetime.get());
-        Check(WorkspacesCli::IsMediumProcess(GetCurrentProcess()));
+        auto handles = WorkspacesSession::ReceiveWorkerHandles(id, parentPid, { OwnPath().filename().wstring() });
+        WorkspacesSession::OperationLifetime lifetime(parentPid, 15000, handles.ownerLifetime.get());
+        Check(WorkspacesSession::IsMediumProcess(GetCurrentProcess()));
         wil::unique_mapview_ptr<DWORD> data(static_cast<DWORD*>(MapViewOfFile(handles.snapshot.get(), FILE_MAP_READ, 0, 0, sizeof(DWORD))));
         Check(data && (*data == 42 || *data == 43));
         const auto writeView = MapViewOfFile(handles.snapshot.get(), FILE_MAP_WRITE, 0, 0, sizeof(DWORD));
@@ -49,6 +49,10 @@ namespace
         result.SetNamedValue(L"readOnlyCancel", json::value(true));
         result.SetNamedValue(L"syncOnlyOwner", json::value(true));
         result.SetNamedValue(L"canceled", json::value(cancellationExpected));
+        const auto bytes = winrt::to_string(result.Stringify());
+        DWORD written{};
+        Check(WriteFile(handles.result.get(), bytes.data(), static_cast<DWORD>(bytes.size()), &written, nullptr) &&
+              written == bytes.size());
         return result;
     }
 
@@ -62,12 +66,11 @@ namespace
         *data = scenario == L"cancel" ? 43 : 42;
         wil::unique_handle read, write;
         Check(CreatePipe(read.put(), write.put(), nullptr, 0) != FALSE);
-        wil::unique_handle input(CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr));
         GUID guid{};
         Check(SUCCEEDED(CoCreateGuid(&guid)));
         wchar_t id[40]{};
         StringFromGUID2(guid, id, ARRAYSIZE(id));
-        auto process = WorkspacesCli::StartMediumWorker(OwnPath().wstring(), id, { mapping.get(), cancel.get(), input.get(), write.get() }, GetTickCount64() + 10000);
+        auto process = WorkspacesSession::StartMediumWorker(OwnPath().wstring(), id, { mapping.get(), cancel.get(), write.get() }, GetTickCount64() + 10000);
         auto stop = wil::scope_exit([&] {
             if (WaitForSingleObject(process.hProcess, 0) == WAIT_TIMEOUT)
             {
@@ -75,8 +78,8 @@ namespace
                 WaitForSingleObject(process.hProcess, 2000);
             }
         });
-        Check(WorkspacesCli::SameUserSession(GetCurrentProcess(), process.hProcess));
-        Check(WorkspacesCli::IsMediumProcess(process.hProcess));
+        Check(WorkspacesSession::SameUserSession(GetCurrentProcess(), process.hProcess));
+        Check(WorkspacesSession::IsMediumProcess(process.hProcess));
         write.reset();
         if (scenario == L"cancel")
             Check(SetEvent(cancel.get()) != FALSE);
@@ -122,7 +125,7 @@ int wmain(int argc, wchar_t** argv)
     {
         winrt::init_apartment();
         Check(argc >= 3);
-        if (std::wstring_view(argv[1]) == L"--launch-connect")
+        if (std::wstring_view(argv[1]) == L"--session-connect")
         {
             Check(argc == 4);
             result = Child(argv[2], static_cast<DWORD>(std::stoul(argv[3])));

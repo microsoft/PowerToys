@@ -41,9 +41,6 @@
     <ClCompile Include="CliHandoffTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\WorkspacesCLI\WorkerHandoff.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WorkspaceStoreTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

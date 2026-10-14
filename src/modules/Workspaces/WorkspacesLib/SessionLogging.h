@@ -6,7 +6,7 @@
 #include <common/logger/logger.h>
 #include <WorkspacesLib/CliCommands.h>
 
-namespace CliLogging
+namespace WorkspacesSession::Logging
 {
     class CommandSink final : public spdlog::sinks::base_sink<std::mutex>
     {

@@ -12,32 +12,29 @@
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/LauncherUiMessage.h>
-#include <WorkspacesLib/WorkspaceStore.h>
 
 Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
-                   std::vector<WorkspacesData::WorkspacesProject>& workspaces,
                    InvokePoint invokePoint,
-                   const CliLaunchOptions* cliOptions) :
+                   const WorkspacesSession::ExecutionOptions& options) :
     m_project(project),
-    m_workspaces(workspaces),
     m_invokePoint(invokePoint),
     m_start(std::chrono::high_resolution_clock::now()),
     m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1),
-                                                cliOptions ? cliOptions->operationId : L"")),
+                                                options.operationId, options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)),
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(
         std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1),
-        cliOptions ? cliOptions->operationId : L"")),
+        options.operationId)),
     m_launchingStatus(m_project),
-    m_cliOptions(cliOptions)
+    m_options(options)
 {
     // main thread
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
 
-    if (!m_cliOptions && m_uiHelper->LaunchUI())
+    if (m_options.presentation == WorkspacesSession::Presentation::Progress && m_uiHelper->LaunchUI())
     {
         m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
     }
-    else if (!m_cliOptions)
+    else if (m_options.presentation == WorkspacesSession::Presentation::Progress)
     {
         Logger::error(L"Workspaces UI is unavailable; unverified elevated applications will not launch");
     }
@@ -50,26 +47,7 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
                 m_launchingStatus.Cancel();
                 return false;
             }
-            if (m_cliOptions)
-                return !m_arrangerCompleted;
-            if (m_launchingStatus.AllLaunchedAndMoved())
-            {
-                return false;
-            }
-
-            if (m_launchingStatus.AllLaunched())
-            {
-                static auto arrangerTimeDelay = std::chrono::high_resolution_clock::now();
-                auto currentTime = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> timeDiff = currentTime - arrangerTimeDelay;
-                if (timeDiff.count() >= 5)
-                {
-                    return false;
-                }
-            }
-            
-            return true; }, cliOptions ? cliOptions->timeoutSeconds : 0);
-    if (m_cliOptions)
+            return !m_arrangerCompleted; }, options.timeoutSeconds);
     {
         m_stopping = true;
         std::lock_guard lock(m_launchThreadMutex);
@@ -92,27 +70,10 @@ Launcher::~Launcher()
     // Stop callbacks while all launch state and synchronization objects are still alive.
     m_windowArrangerHelper.reset();
     m_uiHelper.reset();
-    if (m_cliOptions)
+    if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)
         return;
     // main thread, will wait until arranger is finished
     Logger::trace(L"Finalizing launch");
-
-    // update last-launched time
-    if (m_invokePoint != InvokePoint::LaunchAndEdit)
-    {
-        time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        m_project.lastLaunchedTime = launchedTime;
-        for (int i = 0; i < m_workspaces.size(); i++)
-        {
-            if (m_workspaces[i].id == m_project.id)
-            {
-                m_workspaces[i] = m_project;
-                break;
-            }
-        }
-        if (WorkspaceStore::UpdateLastLaunched(WorkspacesData::WorkspacesFile(), m_project.id, launchedTime) != WorkspaceStore::UpdateResult::Updated)
-            Logger::warn("Workspace launch history could not be saved");
-    }
 
     // telemetry
     auto end = std::chrono::high_resolution_clock::now();
@@ -262,12 +223,12 @@ void Launcher::Launch() // Launching thread
 
 void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // WorkspacesArranger IPC thread
 {
-    if (m_cliOptions && msg.size() > 1024 * 1024)
+    if (msg.size() > 1024 * 1024)
     {
         m_stopping = true;
         return;
     }
-    if (m_cliOptions && msg == L"snapshot-request")
+    if (msg == L"snapshot-request")
     {
         m_windowArrangerHelper->SendSnapshot(m_project);
         return;
@@ -285,9 +246,9 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
         try
         {
             const auto object = json::JsonValue::Parse(msg).GetObjectW();
-            if (m_cliOptions && object.GetNamedString(L"kind", L"") == L"arranger-result")
+            if (object.GetNamedString(L"kind", L"") == L"arranger-result")
             {
-                const auto result = WorkspacesCli::ParseArrangerResult(object, m_launchingStatus.Get(), m_cliOptions->operationId);
+                const auto result = WorkspacesCli::ParseArrangerResult(object, m_launchingStatus.Get(), m_options.operationId);
                 for (const auto& [application, outcome] : result)
                 {
                     m_launchingStatus.Update(application, outcome.state);
@@ -315,14 +276,12 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
         catch (const winrt::hresult_error&)
         {
             Logger::error(L"Failed to parse message from WorkspacesWindowArranger");
-            if (m_cliOptions)
-                m_stopping = true;
+            m_stopping = true;
         }
         catch (const std::exception&)
         {
             Logger::error(L"Invalid WorkspacesWindowArranger result");
-            if (m_cliOptions)
-                m_stopping = true;
+            m_stopping = true;
         }
     }
 }
@@ -349,7 +308,7 @@ void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
     {
         Logger::warn(L"Ignoring a stale, early, or duplicate elevation confirmation message");
     }
-    else if (m_cliOptions && message->type == LauncherUiMessage::Type::WarningShown)
+    else if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly && message->type == LauncherUiMessage::Type::WarningShown)
     {
         Logger::info("Workspaces CLI: confirmation dialog rendered; waiting for a decision.");
     }
@@ -361,7 +320,7 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
     {
         return LaunchDecision::Canceled;
     }
-    if (m_cliOptions)
+    if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)
         Logger::info("Workspaces CLI: preparing the shared confirmation dialog.");
     if (!m_uiHelper || !m_uiHelper->LaunchUI([&] { return m_approval.IsCanceled() || ShouldStop(); }))
     {
@@ -394,7 +353,7 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
         {
             if (ShouldStop())
                 return LaunchDecision::Canceled;
-            if (m_cliOptions)
+            if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)
                 Logger::info("Workspaces CLI: confirmation finished, decision={}", static_cast<int>(decision.value()));
             return decision.value();
         }
@@ -407,9 +366,8 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
 
 bool Launcher::ShouldStop() const
 {
-    return m_cliOptions && (m_stopping ||
-                            WaitForSingleObject(m_cliOptions->cancelEvent, 0) == WAIT_OBJECT_0 ||
-                            GetTickCount64() >= m_cliOptions->deadline);
+    return m_stopping || WaitForSingleObject(m_options.cancelEvent, 0) == WAIT_OBJECT_0 ||
+           (m_options.deadline && GetTickCount64() >= m_options.deadline);
 }
 
 WorkspacesData::LaunchingAppStateMap Launcher::GetResult()

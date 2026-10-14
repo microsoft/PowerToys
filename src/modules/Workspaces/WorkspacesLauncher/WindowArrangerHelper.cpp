@@ -42,7 +42,7 @@ DWORD WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated,
 
     std::wstring arguments = projectId;
     if (!m_operationId.empty())
-        arguments += L" --cli-worker " + m_operationId + L" " + std::to_wstring(GetCurrentProcessId()) + L" " + std::to_wstring(timeoutSeconds);
+        arguments += L" --session-worker " + m_operationId + L" " + std::to_wstring(GetCurrentProcessId()) + L" " + std::to_wstring(timeoutSeconds);
     auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", arguments, elevated);
     if (res.isOk())
     {

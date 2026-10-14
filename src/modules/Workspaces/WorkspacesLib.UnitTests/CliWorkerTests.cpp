@@ -3,7 +3,8 @@
 #include <WorkspacesLib/CliCommands.h>
 #include <wil/resource.h>
 #include <algorithm>
-#include <WorkspacesCLI/WorkerResult.h>
+#include <WorkspacesLib/LaunchSession.h>
+#include <workspaces-common/MonitorUtils.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -59,37 +60,40 @@ namespace WorkspacesLibUnitTests
                     WaitForSingleObject(process.hProcess, 2000);
                 }
             });
-            int exitCode = 0;
             const auto started = GetTickCount64();
             try
             {
-                const auto output = WorkspacesCli::ReadWorkerResult(process.hProcess, read.get(), cancel.get(),
-                                                                    deadline, L"operation", exitCode);
-                Assert::AreEqual(std::wstring(expectedCode), std::wstring(output.GetNamedObject(L"error").GetNamedString(L"code")));
-                Assert::AreEqual(cancelRequested ? 12 : 9, exitCode);
+                WorkspacesSession::ReadResult(process.hProcess, read.get(), cancel.get(), deadline, L"operation");
+                Assert::Fail(L"The controlled host must return an error outcome.");
             }
             catch (const WorkspacesCli::Error& error)
             {
                 Assert::AreEqual(std::wstring(expectedCode), error.code);
-                Assert::AreEqual(9, error.exitCode);
+                Assert::AreEqual(std::wstring(expectedCode) == L"canceled" ? 12 : 9, error.exitCode);
             }
             Assert::IsTrue(GetTickCount64() - started < 4000, L"Completion acknowledgement must remain bounded.");
             Assert::IsTrue(WaitForSingleObject(cancel.get(), 0) == (cancelRequested ? WAIT_OBJECT_0 : WAIT_TIMEOUT),
                            L"An elapsed deadline must not become an explicit cancellation.");
         }
 
-        static std::pair<DWORD, json::JsonObject> Run(bool fixture, bool canceled, bool cancelAfterStart = false, bool expired = false, ULONGLONG* cancellationLatency = nullptr)
+        static std::pair<DWORD, json::JsonObject> Run(bool fixture, bool canceled, bool cancelAfterStart = false, bool expired = false,
+                                                   ULONGLONG* cancellationLatency = nullptr, bool minimized = false, bool maximized = false)
         {
             RequireOptIn();
             wchar_t module[MAX_PATH]{};
             Assert::IsTrue(GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), module, ARRAYSIZE(module)) != 0);
             auto root = std::filesystem::path(module).parent_path().parent_path().parent_path();
-            auto executable = root / L"PowerToys.WorkspacesCLI.exe";
+            auto executable = root / L"PowerToys.WorkspacesLauncher.exe";
             Assert::IsTrue(std::filesystem::is_regular_file(executable));
             WorkspacesData::WorkspacesProject project{};
             project.id = L"{6CF910A2-D2E0-436D-A50E-41432A88452A}";
             project.name = L"Isolated CLI transport test";
             project.monitors.push_back({ .number = 1, .dpi = 96, .monitorRectDpiAware = { 0, 0, 1920, 1080 }, .monitorRectDpiUnaware = { 0, 0, 1920, 1080 } });
+            if (minimized || maximized)
+            {
+                project.monitors = MonitorUtils::IdentifyMonitors();
+                Assert::IsFalse(project.monitors.empty(), L"Window-state validation requires a current monitor, not the missing-monitor fallback.");
+            }
             WorkspacesData::WorkspacesProject::Application app{};
             app.id = L"{49330ECB-5917-4DF3-B70A-1F2D7FE4899B}";
             app.name = L"WorkspacesCliWindowFixture";
@@ -97,7 +101,9 @@ namespace WorkspacesLibUnitTests
                         (fixture ? L"WorkspacesCliWindowFixture.exe" : L"WorkspacesCliNonexistent-49330ECB.exe"))
                            .wstring();
             app.position = { 120, 120, 640, 400 };
-            app.monitor = 1;
+            app.monitor = project.monitors.front().number;
+            app.isMinimized = minimized;
+            app.isMaximized = maximized;
             project.apps.push_back(app);
             GUID guid{};
             CoCreateGuid(&guid);
@@ -114,6 +120,9 @@ namespace WorkspacesLibUnitTests
             request.SetNamedValue(L"operationId", json::value(operation));
             request.SetNamedValue(L"timeout", json::value(20));
             request.SetNamedValue(L"deadline", json::value(expired ? GetTickCount64() - 1 : GetTickCount64() + 20000));
+            request.SetNamedValue(L"presentation", json::value(static_cast<int>(WorkspacesSession::Presentation::ConfirmationOnly)));
+            request.SetNamedValue(L"invokePoint", json::value(static_cast<int>(InvokePoint::EditorButton)));
+            request.SetNamedValue(L"editorDraft", json::value(false));
             request.SetNamedValue(L"workspace", WorkspacesData::WorkspacesProjectJSON::ToJson(project));
             const auto bytes = winrt::to_string(request.Stringify());
             SECURITY_ATTRIBUTES sa{ sizeof(sa), nullptr, TRUE };
@@ -128,14 +137,19 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(CreatePipe(read.put(), write.put(), &sa, 0) != FALSE);
             Assert::IsTrue(SetHandleInformation(read.get(), HANDLE_FLAG_INHERIT, 0) != FALSE);
             wil::unique_handle input(CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_EXISTING, 0, nullptr));
+            wil::unique_handle owner;
+            Assert::IsTrue(DuplicateHandle(GetCurrentProcess(), GetCurrentProcess(), GetCurrentProcess(), owner.put(), SYNCHRONIZE, TRUE, 0) != FALSE);
             STARTUPINFOW startup{ sizeof(startup) };
             startup.dwFlags = STARTF_USESTDHANDLES;
             startup.hStdInput = input.get();
-            startup.hStdOutput = write.get();
-            startup.hStdError = write.get();
-            std::wstring command = L"\"" + executable.wstring() + L"\" --launch-worker " +
+            startup.hStdOutput = input.get();
+            startup.hStdError = input.get();
+            const auto operationId = WorkspacesCli::NormalizeId(operation);
+            std::wstring command = L"\"" + executable.wstring() + L"\" --session-worker " + operationId + L" " +
                                    std::to_wstring(reinterpret_cast<uintptr_t>(mapping.get())) + L" " +
-                                   std::to_wstring(reinterpret_cast<uintptr_t>(cancel.get())) + L" " + std::to_wstring(GetCurrentProcessId());
+                                   std::to_wstring(reinterpret_cast<uintptr_t>(cancel.get())) + L" " +
+                                   std::to_wstring(reinterpret_cast<uintptr_t>(write.get())) + L" " +
+                                   std::to_wstring(reinterpret_cast<uintptr_t>(owner.get())) + L" " + std::to_wstring(GetCurrentProcessId());
             wil::unique_process_information process;
             Assert::IsTrue(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, root.c_str(), &startup, &process) != FALSE);
             write.reset();
@@ -182,7 +196,18 @@ namespace WorkspacesLibUnitTests
                 Assert::IsTrue(cancellationAt != 0, L"Fixture must signal startup before requesting cancellation.");
             if (cancellationLatency)
                 *cancellationLatency = GetTickCount64() - cancellationAt;
-            return { code, json::JsonObject::Parse(winrt::to_hstring(output)) };
+            try
+            {
+                int resultCode{};
+                const auto result = WorkspacesCli::SessionResult(
+                    WorkspacesSession::DeserializeResult(json::JsonObject::Parse(winrt::to_hstring(output)), operationId), resultCode);
+                Assert::AreEqual(DWORD{ 0 }, code);
+                return { static_cast<DWORD>(resultCode), result };
+            }
+            catch (const WorkspacesSession::Error& error)
+            {
+                return { static_cast<DWORD>(error.exitCode), WorkspacesCli::Failure(L"launch", error) };
+            }
         }
 
     public:
@@ -243,6 +268,21 @@ namespace WorkspacesLibUnitTests
             RECT rect{};
             Assert::IsTrue(GetWindowRect(window, &rect) != FALSE);
             Assert::IsTrue(rect.right > rect.left && rect.bottom > rect.top);
+        }
+
+        TEST_METHOD (SessionHostPreservesMinimizedAndMaximizedPlacement)
+        {
+            RequireOptIn();
+            for (const bool minimized : { true, false })
+            {
+                Assert::IsNull(FindWindowW(L"WorkspacesCliIsolatedFixture", nullptr));
+                auto cleanup = wil::scope_exit([] { CloseFixture(); });
+                const auto [code, result] = Run(true, false, false, false, nullptr, minimized, !minimized);
+                Assert::AreEqual(DWORD{ 0 }, code);
+                const auto window = FindWindowW(L"WorkspacesCliIsolatedFixture", nullptr);
+                Assert::IsNotNull(window);
+                Assert::IsTrue(minimized ? IsIconic(window) != FALSE : IsZoomed(window) != FALSE);
+            }
         }
 
         TEST_METHOD (CancellationDoesNotKillAlreadyLaunchedApplication)

@@ -2,10 +2,6 @@
 #include <windows.h>
 #include <objbase.h>
 #include <sddl.h>
-#include <fcntl.h>
-#include <io.h>
-#include <cstdio>
-#include <iostream>
 #include <filesystem>
 #include <algorithm>
 #include <vector>
@@ -13,10 +9,11 @@
 #include <common/utils/elevation.h>
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/IPCHelper.h>
-#include "WorkerHandoff.h"
+#include "SessionHandoff.h"
 
-namespace WorkspacesCli
+namespace WorkspacesSession
 {
+    using WorkspacesCli::NormalizeId;
     namespace
     {
         constexpr DWORD HandoffTimeoutMs = 10000;
@@ -31,11 +28,11 @@ namespace WorkspacesCli
 
         struct Packet
         {
-            uint32_t version = 2;
+            uint32_t version = 3;
             uint32_t ownerPid = 0;
-            std::array<uint64_t, 5> handles{};
+            std::array<uint64_t, 4> handles{};
         };
-        static_assert(sizeof(Packet) == 48);
+        static_assert(sizeof(Packet) == 40);
 
         [[noreturn]] void Fail(const char* message)
         {
@@ -88,16 +85,6 @@ namespace WorkspacesCli
         std::wstring PipeName(const std::wstring& operationId)
         {
             return L"\\\\.\\pipe\\PowerToys.Workspaces.Handoff." + NormalizeId(operationId);
-        }
-
-        std::wstring OwnPath()
-        {
-            std::wstring path(32768, L'\0');
-            const auto length = GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size()));
-            if (!length || length == path.size())
-                Fail("Cannot locate the worker executable.");
-            path.resize(length);
-            return path;
         }
 
         void WaitForIo(OVERLAPPED& operation, HANDLE owner, HANDLE cancel, ULONGLONG deadline)
@@ -160,9 +147,10 @@ namespace WorkspacesCli
             return reinterpret_cast<uint64_t>(remote);
         }
 
-        void ValidatePeer(HANDLE pipe, DWORD expectedPid, bool server)
+        void ValidatePeer(HANDLE pipe, DWORD expectedPid, bool server, const std::vector<std::wstring>& names)
         {
-            const auto policy = IPCHelper::ModulePeer(std::filesystem::path(OwnPath()).filename().wstring(), expectedPid);
+            auto policy = IPCHelper::ModulePeer(names.front(), expectedPid);
+            policy.allowedBasenames = names;
             interop_auth::VerificationCache cache;
             const auto result = server ? interop_auth::AuthenticateServer(pipe, policy, cache) :
                                          interop_auth::AuthenticateClient(pipe, policy, cache);
@@ -186,7 +174,7 @@ namespace WorkspacesCli
     {
         if (handles.cancel && WaitForSingleObject(handles.cancel, 0) == WAIT_OBJECT_0)
             throw Error(12, L"canceled", "Worker startup was canceled.");
-        if (GetTickCount64() >= deadline)
+        if (deadline && GetTickCount64() >= deadline)
             throw Error(9, L"timeout", "Worker startup deadline expired.");
         auto self = Context(GetCurrentProcess());
         if (!self.session || self.integrity < SECURITY_MANDATORY_MEDIUM_RID ||
@@ -230,11 +218,10 @@ namespace WorkspacesCli
             }
         });
 
-        const auto arguments = L"--launch-connect " + NormalizeId(operationId) + L" " + std::to_wstring(GetCurrentProcessId());
+        const auto arguments = L"--session-connect " + NormalizeId(operationId) + L" " + std::to_wstring(GetCurrentProcessId());
         const auto directory = std::filesystem::path(executable).parent_path().wstring();
         wil::unique_process_information process;
-        if (!run_non_elevated(executable, arguments, process, directory.c_str(), false, true,
-                             [&](HANDLE parent) { return SameContext(self, Context(parent)) && IsMediumProcess(parent); }))
+        if (!run_non_elevated(executable, arguments, process, directory.c_str(), false, true, [&](HANDLE parent) { return SameContext(self, Context(parent)) && IsMediumProcess(parent); }))
             Fail("Cannot create a non-elevated worker.");
         bool delivered = false;
         auto stopUndelivered = wil::scope_exit([&] {
@@ -249,7 +236,8 @@ namespace WorkspacesCli
             Fail("Worker was not created in the required non-elevated context.");
         if (ResumeThread(process.hThread) == static_cast<DWORD>(-1))
             Fail("Cannot start the non-elevated worker.");
-        const auto handoffDeadline = (std::min)(deadline, GetTickCount64() + HandoffTimeoutMs);
+        const auto handoffDeadline = deadline ? (std::min)(deadline, GetTickCount64() + HandoffTimeoutMs) :
+                                                GetTickCount64() + HandoffTimeoutMs;
         if (connectionError == ERROR_IO_PENDING)
         {
             WaitForIo(connection, process.hProcess, handles.cancel, handoffDeadline);
@@ -257,7 +245,7 @@ namespace WorkspacesCli
             if (!GetOverlappedResult(pipe.get(), &connection, &ignored, FALSE))
                 Fail("Worker handoff connection failed.");
         }
-        ValidatePeer(pipe.get(), process.dwProcessId, false);
+        ValidatePeer(pipe.get(), process.dwProcessId, false, { std::filesystem::path(executable).filename().wstring() });
         if (!SameUserSession(GetCurrentProcess(), process.hProcess) || !IsMediumProcess(process.hProcess))
             Fail("Worker identity changed before handoff.");
         Packet packet;
@@ -265,7 +253,6 @@ namespace WorkspacesCli
         packet.handles = {
             DuplicateFor(process.hProcess, handles.snapshot, FILE_MAP_READ),
             DuplicateFor(process.hProcess, handles.cancel, SYNCHRONIZE),
-            DuplicateFor(process.hProcess, handles.input, 0, true),
             DuplicateFor(process.hProcess, handles.result, 0, true),
             DuplicateFor(process.hProcess, GetCurrentProcess(), SYNCHRONIZE),
         };
@@ -274,9 +261,9 @@ namespace WorkspacesCli
         return process;
     }
 
-    ReceivedWorkerHandles ReceiveWorkerHandles(const std::wstring& operationId, DWORD ownerPid)
+    ReceivedWorkerHandles ReceiveWorkerHandles(const std::wstring& operationId, DWORD ownerPid, const std::vector<std::wstring>& allowedOwners)
     {
-        if (!ownerPid || !IsMediumProcess(GetCurrentProcess()))
+        if (!ownerPid || allowedOwners.empty() || !IsMediumProcess(GetCurrentProcess()))
             Fail("Worker must run in a non-elevated user context.");
         wil::unique_handle owner(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, ownerPid));
         if (!owner || !SameUserSession(GetCurrentProcess(), owner.get()))
@@ -294,10 +281,10 @@ namespace WorkspacesCli
                 Fail("Cannot connect to the worker owner.");
             Sleep(20);
         }
-        ValidatePeer(pipe.get(), ownerPid, true);
+        ValidatePeer(pipe.get(), ownerPid, true, allowedOwners);
         Packet packet{};
         Transfer(pipe.get(), &packet, sizeof(packet), false, nullptr, nullptr, deadline);
-        if (packet.version != 2 || packet.ownerPid != ownerPid)
+        if (packet.version != 3 || packet.ownerPid != ownerPid)
             Fail("Invalid worker handoff protocol.");
         for (const auto value : packet.handles)
         {
@@ -308,32 +295,8 @@ namespace WorkspacesCli
         result.ownerPid = ownerPid;
         result.snapshot.reset(reinterpret_cast<HANDLE>(packet.handles[0]));
         result.cancel.reset(reinterpret_cast<HANDLE>(packet.handles[1]));
-        result.input.reset(reinterpret_cast<HANDLE>(packet.handles[2]));
-        result.result.reset(reinterpret_cast<HANDLE>(packet.handles[3]));
-        result.ownerLifetime.reset(reinterpret_cast<HANDLE>(packet.handles[4]));
+        result.result.reset(reinterpret_cast<HANDLE>(packet.handles[2]));
+        result.ownerLifetime.reset(reinterpret_cast<HANDLE>(packet.handles[3]));
         return result;
-    }
-
-    void ReceivedWorkerHandles::BindStandardStreams() const
-    {
-        FILE* stream = nullptr;
-        if (freopen_s(&stream, "NUL", "w", stdout) || freopen_s(&stream, "NUL", "w", stderr))
-            Fail("Cannot attach worker standard streams.");
-        HANDLE copy = nullptr;
-        if (!DuplicateHandle(GetCurrentProcess(), result.get(), GetCurrentProcess(), &copy, 0, FALSE, DUPLICATE_SAME_ACCESS))
-            Fail("Cannot attach the worker result stream.");
-        const int descriptor = _open_osfhandle(reinterpret_cast<intptr_t>(copy), _O_WRONLY | _O_BINARY);
-        if (descriptor < 0)
-        {
-            CloseHandle(copy);
-            Fail("Cannot create the worker result descriptor.");
-        }
-        auto closeDescriptor = wil::scope_exit([&] { _close(descriptor); });
-        if (_dup2(descriptor, _fileno(stdout)) || _dup2(descriptor, _fileno(stderr)) ||
-            !SetStdHandle(STD_INPUT_HANDLE, input.get()) || !SetStdHandle(STD_OUTPUT_HANDLE, result.get()) ||
-            !SetStdHandle(STD_ERROR_HANDLE, result.get()))
-            Fail("Cannot connect worker standard streams.");
-        std::cout.clear();
-        std::cerr.clear();
     }
 }

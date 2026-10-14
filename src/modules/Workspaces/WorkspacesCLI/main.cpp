@@ -1,28 +1,16 @@
 // Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <algorithm>
 #include <atomic>
 #include <iostream>
-#include <shellapi.h>
 #include <spdlog/sinks/null_sink.h>
 #include <wil/resource.h>
-#include <wil/stl.h>
-#include <wil/win32_helpers.h>
-
 #include <common/logger/logger.h>
-#include <common/utils/elevation.h>
-#include <WorkspacesLib/CliCommands.h>
-#include <WorkspacesLib/AppUtils.h>
-#include <WorkspacesLib/OperationLifetime.h>
-#include <WorkspacesLib/WorkspaceStore.h>
-#include <Launcher.h>
 #include <common/version/version.h>
+#include <WorkspacesLib/CliCommands.h>
+#include <WorkspacesLib/LaunchSession.h>
 #include "Resources.h"
-#include "CommandLogging.h"
 #include "JsonOutput.h"
-#include "WorkerHandoff.h"
-#include "WorkerResult.h"
 
 namespace
 {
@@ -39,33 +27,12 @@ namespace
         return FALSE;
     }
 
-    void Check(BOOL success, const char* message)
+    void Print(const json::JsonObject& output, bool asJson)
     {
-        if (!success)
-            throw WorkspacesCli::Error(1, L"internalError", message);
-    }
-
-    std::wstring ExePath()
-    {
-        std::wstring path;
-        winrt::check_hresult(wil::GetModuleFileNameW(nullptr, path));
-        return path;
-    }
-
-    void CheckLaunchContext(bool requireNonElevated = true)
-    {
-        DWORD session = 0;
-        if ((requireNonElevated && !WorkspacesCli::IsMediumProcess(GetCurrentProcess())) ||
-            !ProcessIdToSessionId(GetCurrentProcessId(), &session) || session == 0)
-            throw WorkspacesCli::Error(7, L"unsupportedContext", "Workspaces requires a signed-in user session and a non-elevated execution worker.");
-    }
-
-    void Print(const json::JsonObject& output, bool asJson, bool workerOutput = false)
-    {
-        CliResources::LocalizeForOutput(output, workerOutput);
+        CliResources::LocalizeForOutput(output, false);
         if (asJson)
         {
-            std::cout << (workerOutput ? winrt::to_string(output.Stringify()) : WorkspacesCli::FormatJson(output)) << '\n';
+            std::cout << WorkspacesCli::FormatJson(output) << '\n';
             return;
         }
         if (output.HasKey(L"error"))
@@ -108,231 +75,18 @@ namespace
                 std::cerr << winrt::to_string(CliResources::Get(IDS_CLIWARNINGPREFIX)) << winrt::to_string(warning.GetObjectW().GetNamedString(L"message")) << '\n';
         }
     }
-
-    int Worker(const std::vector<std::wstring>& args, HANDLE ownerLifetime = nullptr)
-    {
-        if (args.size() != 4)
-            throw WorkspacesCli::Error(2, L"invalidArguments", "Invalid worker arguments.");
-        const auto mapping = reinterpret_cast<HANDLE>(std::stoull(args[1]));
-        const auto cancel = reinterpret_cast<HANDLE>(std::stoull(args[2]));
-        const auto parentPid = static_cast<DWORD>(std::stoul(args[3]));
-        for (const auto handle : { mapping, cancel, GetStdHandle(STD_INPUT_HANDLE), GetStdHandle(STD_OUTPUT_HANDLE) })
-            Check(SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0), "Cannot isolate worker handles.");
-        wil::unique_mapview_ptr<DWORD> header(static_cast<DWORD*>(MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, sizeof(DWORD))));
-        if (!header || *header == 0 || *header > WorkspacesCli::MaxPayload)
-            throw WorkspacesCli::Error(8, L"invalidData", "Invalid operation request.");
-        const auto size = *header;
-        wil::unique_mapview_ptr<char> view(static_cast<char*>(MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, sizeof(DWORD) + size)));
-        if (!view)
-            throw WorkspacesCli::Error(8, L"invalidData", "Cannot map operation request.");
-        const auto request = json::JsonObject::Parse(winrt::to_hstring(std::string(view.get() + sizeof(DWORD), size)));
-        if (request.GetNamedNumber(L"protocolVersion") != 1)
-            throw WorkspacesCli::Error(8, L"invalidData", "Unsupported launch protocol.");
-        CliLaunchOptions options;
-        options.operationId = WorkspacesCli::NormalizeId(request.GetNamedString(L"operationId").c_str());
-        options.timeoutSeconds = static_cast<DWORD>(request.GetNamedNumber(L"timeout"));
-        options.deadline = static_cast<ULONGLONG>(request.GetNamedNumber(L"deadline"));
-        options.cancelEvent = cancel;
-        if (options.timeoutSeconds < 1 || options.timeoutSeconds > 600 ||
-            options.deadline <= GetTickCount64())
-            throw WorkspacesCli::Error(9, L"timeout", "Operation deadline has expired.");
-        WorkspacesCli::OperationLifetime lifetime(parentPid, options.timeoutSeconds * 1000 + 5000, ownerLifetime);
-        WorkspacesCli::CheckEnabled();
-        CheckLaunchContext();
-        auto project = WorkspacesData::WorkspacesProjectJSON::FromJson(request.GetNamedObject(L"workspace"));
-        if (!project)
-            throw WorkspacesCli::Error(8, L"invalidData", "Invalid operation snapshot.");
-        WorkspacesCli::ValidateLaunch(*project, true);
-        wil::unique_mutex_nothrow mutex(CreateMutexW(nullptr, TRUE, L"Local\\PowerToys_WorkspacesLauncher_InstanceMutex"));
-        const auto mutexError = GetLastError();
-        if (!mutex)
-            throw WorkspacesCli::Error(5, L"busy", "Cannot acquire the launcher instance lock.");
-        if (mutexError == ERROR_ALREADY_EXISTS)
-            throw WorkspacesCli::Error(5, L"busy", "Another workspace launch is running.");
-        auto release = wil::scope_exit([&] { ReleaseMutex(mutex.get()); });
-        if (WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0)
-            throw WorkspacesCli::Error(12, L"canceled", "Operation canceled before starting applications.");
-        if (GetTickCount64() >= options.deadline)
-            throw WorkspacesCli::Error(9, L"timeout", "Operation deadline expired before application preparation.");
-        WorkspacesCli::EnsureApplicationIds(WorkspacesCli::SettingsRoot() / L"Workspaces" / L"workspaces.json", *project);
-        Utils::Apps::UpdateWorkspacesApps(*project, Utils::Apps::GetAppsList());
-        WorkspacesCli::ValidateLaunch(*project);
-        if (WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0)
-            throw WorkspacesCli::Error(12, L"canceled", "Operation canceled before starting applications.");
-        if (GetTickCount64() >= options.deadline)
-            throw WorkspacesCli::Error(9, L"timeout", "Operation deadline expired before starting applications.");
-        const bool loggingReady = CliLogging::Initialize();
-        Logger::info("Workspaces CLI: launch worker started; execution context verified Medium/non-elevated.");
-        SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-        std::vector<WorkspacesData::WorkspacesProject> unusedStore;
-        int exitCode = 1;
-        json::JsonObject result;
-        {
-            Launcher launcher(*project, unusedStore, InvokePoint::LaunchAndEdit, &options);
-            if (launcher.GetArrangerError() != ERROR_SUCCESS)
-                throw WorkspacesCli::Error(7, launcher.GetArrangerError() == ERROR_CANCELLED ? L"consentDenied" : L"arrangerFailed", "Window arranger could not start or elevation was declined.");
-            if (WaitForSingleObject(cancel, 0) == WAIT_OBJECT_0)
-                throw WorkspacesCli::Error(12, L"canceled", "Stopped scheduling further applications; already launched apps remain open.");
-            if (GetTickCount64() >= options.deadline)
-                throw WorkspacesCli::Error(9, L"timeout", "Launch deadline expired; applications already started remain open.");
-            if (!launcher.HasArrangerResult())
-                throw WorkspacesCli::Error(9, L"outcomeUnknown", "Arranger exited without its final result.");
-            result = WorkspacesCli::LaunchResult(*project, launcher.GetResult(), options.operationId, exitCode,
-                                                launcher.GetApplicationErrors(), launcher.GetApprovalDecisions());
-        }
-        if (!loggingReady)
-        {
-            json::JsonObject warning;
-            warning.SetNamedValue(L"code", json::value(L"loggingUnavailable"));
-            warning.SetNamedValue(L"message", json::value(L"File logging is unavailable for this operation. The launch result is unaffected."));
-            result.GetNamedArray(L"warnings").Append(warning);
-        }
-        const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        const auto saved = WorkspaceStore::UpdateLastLaunched(WorkspacesCli::SettingsRoot() / L"Workspaces" / L"workspaces.json", project->id, now);
-        const auto persistence = saved == WorkspaceStore::UpdateResult::Updated    ? L"updated" :
-                                 saved == WorkspaceStore::UpdateResult::Conflict   ? L"conflict" :
-                                 saved == WorkspaceStore::UpdateResult::Unverified ? L"unverified" :
-                                                                                     L"failed";
-        result.GetNamedObject(L"result").SetNamedValue(L"persistenceStatus", json::value(persistence));
-        if (saved == WorkspaceStore::UpdateResult::Unverified)
-        {
-            exitCode = 11;
-            result.SetNamedValue(L"state", json::value(L"failed"));
-            result.SetNamedValue(L"error", WorkspacesCli::Failure(L"launch", { exitCode, L"persistenceUnverified", "Workspace persistence could not be verified." }).GetNamedObject(L"error"));
-        }
-        else if (saved != WorkspaceStore::UpdateResult::Updated)
-        {
-            json::JsonObject warning;
-            warning.SetNamedValue(L"code", json::value(saved == WorkspaceStore::UpdateResult::Conflict ? L"metadataSaveConflict" : L"metadataSaveFailed"));
-            warning.SetNamedValue(L"message", json::value(L"The launch result is available, but launch history could not be saved. Do not relaunch just to update history."));
-            result.GetNamedArray(L"warnings").Append(warning);
-        }
-        Logger::info("Workspaces CLI: launch worker finished, exit={}, metadata={}", exitCode, static_cast<int>(saved));
-        Logger::flush();
-        std::cout << winrt::to_string(result.Stringify()) << '\n';
-        return exitCode;
-    }
-
-    json::JsonObject Launch(const WorkspacesData::WorkspacesProject& project, DWORD timeoutSeconds, int& exitCode)
-    {
-        CheckLaunchContext(false);
-        const bool elevatedCaller = is_process_elevated();
-        const auto arranger = std::filesystem::path(ExePath()).parent_path() / L"PowerToys.WorkspacesWindowArranger.exe";
-        if (!std::filesystem::is_regular_file(arranger))
-            throw WorkspacesCli::Error(6, L"unavailable", "The matching window arranger is unavailable.");
-        WorkspacesCli::ValidateLaunch(project, true);
-        GUID guid{};
-        winrt::check_hresult(CoCreateGuid(&guid));
-        wchar_t guidText[40]{};
-        StringFromGUID2(guid, guidText, ARRAYSIZE(guidText));
-        const auto operationId = WorkspacesCli::NormalizeId(guidText);
-        const auto deadline = GetTickCount64() + timeoutSeconds * 1000ULL;
-        json::JsonObject request;
-        request.SetNamedValue(L"protocolVersion", json::value(1));
-        request.SetNamedValue(L"operationId", json::value(operationId));
-        request.SetNamedValue(L"timeout", json::value(timeoutSeconds));
-        request.SetNamedValue(L"deadline", json::value(deadline));
-        request.SetNamedValue(L"workspace", WorkspacesData::WorkspacesProjectJSON::ToJson(project));
-        const auto bytes = winrt::to_string(request.Stringify());
-        if (bytes.size() > WorkspacesCli::MaxPayload)
-            throw WorkspacesCli::Error(8, L"invalidData", "Workspace exceeds the operation payload limit.");
-        SECURITY_ATTRIBUTES attributes{ sizeof(attributes), nullptr, TRUE };
-        wil::unique_handle mapping(CreateFileMappingW(INVALID_HANDLE_VALUE, &attributes, PAGE_READWRITE, 0, static_cast<DWORD>(sizeof(DWORD) + bytes.size()), nullptr));
-        wil::unique_handle cancel(CreateEventW(&attributes, TRUE, FALSE, nullptr));
-        if (!mapping || !cancel)
-            throw WorkspacesCli::Error(1, L"internalError", "Cannot create operation handles.");
-        cancelHandle = cancel.get();
-        Check(SetConsoleCtrlHandler(Cancel, TRUE), "Cannot register console cancellation.");
-        auto removeHandler = wil::scope_exit([&] {
-            SetConsoleCtrlHandler(Cancel, FALSE);
-            cancelHandle = nullptr;
-        });
-        wil::unique_mapview_ptr<char> view(static_cast<char*>(MapViewOfFile(mapping.get(), FILE_MAP_WRITE, 0, 0, 0)));
-        if (!view)
-            throw WorkspacesCli::Error(1, L"internalError", "Cannot create operation snapshot.");
-        *reinterpret_cast<DWORD*>(view.get()) = static_cast<DWORD>(bytes.size());
-        memcpy(view.get() + sizeof(DWORD), bytes.data(), bytes.size());
-        wil::unique_handle read;
-        wil::unique_handle write;
-        Check(CreatePipe(read.put(), write.put(), &attributes, 0), "Cannot create result pipe.");
-        Check(SetHandleInformation(read.get(), HANDLE_FLAG_INHERIT, 0), "Cannot restrict result handle inheritance.");
-        wil::unique_handle input(CreateFileW(L"NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &attributes, OPEN_EXISTING, 0, nullptr));
-        const auto executable = ExePath();
-        wil::unique_process_information process;
-        if (elevatedCaller)
-        {
-            process = WorkspacesCli::StartMediumWorker(executable, operationId,
-                {mapping.get(), cancel.get(), input.get(), write.get()}, deadline);
-        }
-        else
-        {
-            SIZE_T attributeBytes = 0;
-            InitializeProcThreadAttributeList(nullptr, 1, 0, &attributeBytes);
-            std::vector<char> attributeStorage(attributeBytes);
-            auto list = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(attributeStorage.data());
-            Check(InitializeProcThreadAttributeList(list, 1, 0, &attributeBytes), "Cannot initialize handle inheritance.");
-            auto deleteList = wil::scope_exit([&] { DeleteProcThreadAttributeList(list); });
-            HANDLE inherited[] = { mapping.get(), cancel.get(), write.get(), input.get() };
-            Check(UpdateProcThreadAttribute(list, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST, inherited, sizeof(inherited), nullptr, nullptr),
-                  "Cannot restrict inherited operation handles.");
-            STARTUPINFOEXW startup{};
-            startup.StartupInfo.cb = sizeof(startup);
-            startup.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
-            startup.StartupInfo.hStdInput = input.get();
-            startup.StartupInfo.hStdOutput = write.get();
-            startup.StartupInfo.hStdError = write.get();
-            startup.lpAttributeList = list;
-            std::wstring command = L"\"" + executable + L"\" --launch-worker " +
-                std::to_wstring(reinterpret_cast<uintptr_t>(mapping.get())) + L" " +
-                std::to_wstring(reinterpret_cast<uintptr_t>(cancel.get())) + L" " + std::to_wstring(GetCurrentProcessId());
-            Check(CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE,
-                EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW, nullptr, nullptr, &startup.StartupInfo, &process),
-                "Cannot start launch worker.");
-        }
-        write.reset();
-        auto cleanup = wil::scope_exit([&] {
-            if (WaitForSingleObject(process.hProcess, 0) == WAIT_TIMEOUT)
-            {
-                SetEvent(cancel.get());
-                if (WaitForSingleObject(process.hProcess, 2000) == WAIT_TIMEOUT)
-                {
-                    TerminateProcess(process.hProcess, 9);
-                    WaitForSingleObject(process.hProcess, 2000);
-                }
-            }
-        });
-        return WorkspacesCli::ReadWorkerResult(process.hProcess, read.get(), cancel.get(), deadline, operationId, exitCode);
-    }
 }
 
 int wmain(int argc, wchar_t** argv)
 {
-    std::vector<std::wstring> args(argv + 1, argv + argc);
-    const bool connectedWorker = !args.empty() && args.front() == L"--launch-connect";
-    const bool worker = connectedWorker || (!args.empty() && args.front() == L"--launch-worker");
-    const bool asJson = worker || WorkspacesCli::WantsJson(args);
-    std::wstring command = worker ? L"launch" : (args.empty() ? L"" : args.front());
+    const std::vector<std::wstring> args(argv + 1, argv + argc);
+    const bool asJson = WorkspacesCli::WantsJson(args);
+    const std::wstring command = args.empty() ? L"" : args.front();
     Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
-    WorkspacesCli::ConsoleOutputCodePage consoleCodePage(!worker);
+    WorkspacesCli::ConsoleOutputCodePage consoleCodePage;
     try
     {
         winrt::init_apartment();
-        if (connectedWorker)
-        {
-            if (args.size() != 3)
-                throw WorkspacesCli::Error(2, L"invalidArguments", "Invalid worker handoff arguments.");
-            auto handles = WorkspacesCli::ReceiveWorkerHandles(args[1], static_cast<DWORD>(std::stoul(args[2])));
-            handles.BindStandardStreams();
-            const std::vector<std::wstring> workerArguments{
-                L"--launch-worker",
-                std::to_wstring(reinterpret_cast<uintptr_t>(handles.snapshot.get())),
-                std::to_wstring(reinterpret_cast<uintptr_t>(handles.cancel.get())),
-                std::to_wstring(handles.ownerPid),
-            };
-            return Worker(workerArguments, handles.ownerLifetime.get());
-        }
-        if (worker)
-            return Worker(args);
         const auto options = WorkspacesCli::Parse(args);
         if (options.command == L"--help")
         {
@@ -344,27 +98,46 @@ int wmain(int argc, wchar_t** argv)
             std::cout << "PowerToys Workspaces CLI " << FILE_VERSION_STRING << '\n';
             return 0;
         }
-        WorkspacesCli::CheckEnabled();
-        const auto projects = WorkspacesCli::Select(WorkspacesCli::LoadWorkspaces(), options);
-        int exitCode = 0;
-        auto result = options.command == L"list" ? WorkspacesCli::ListResult(projects, options.details) :
-                                                   Launch(projects.front(), options.timeoutSeconds, exitCode);
-        Print(result, options.json);
+        int exitCode{};
+        if (options.command == L"list")
+        {
+            WorkspacesCli::CheckEnabled();
+            Print(WorkspacesCli::ListResult(WorkspacesCli::Select(WorkspacesCli::LoadWorkspaces(), options), options.details), options.json);
+        }
+        else
+        {
+            wil::unique_handle cancel(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+            if (!cancel)
+                throw WorkspacesCli::Error(1, L"internalError", "Cannot create console cancellation.");
+            cancelHandle = cancel.get();
+            if (!SetConsoleCtrlHandler(Cancel, TRUE))
+                throw WorkspacesCli::Error(1, L"internalError", "Cannot register console cancellation.");
+            auto restore = wil::scope_exit([&] {
+                SetConsoleCtrlHandler(Cancel, FALSE);
+                cancelHandle = nullptr;
+            });
+            WorkspacesSession::Request request;
+            request.id = options.id;
+            request.name = options.name;
+            request.presentation = WorkspacesSession::Presentation::ConfirmationOnly;
+            request.timeoutSeconds = options.timeoutSeconds;
+            Print(WorkspacesCli::SessionResult(WorkspacesSession::Start(request, cancel.get()), exitCode), options.json);
+        }
         return exitCode;
     }
     catch (const WorkspacesCli::Error& error)
     {
-        Print(WorkspacesCli::Failure(command, error), asJson, worker);
+        Print(WorkspacesCli::Failure(command, error), asJson);
         return error.exitCode;
-    }
-    catch (const winrt::hresult_error&)
-    {
-        Print(WorkspacesCli::Failure(command, { 1, L"internalError", "A Windows operation failed." }), asJson, worker);
-        return 1;
     }
     catch (const std::exception&)
     {
-        Print(WorkspacesCli::Failure(command, { 1, L"internalError", "Unexpected Workspaces CLI failure." }), asJson, worker);
+        Print(WorkspacesCli::Failure(command, { 1, L"internalError", "The command could not complete." }), asJson);
+        return 1;
+    }
+    catch (const winrt::hresult_error&)
+    {
+        Print(WorkspacesCli::Failure(command, { 1, L"internalError", "A Windows operation failed." }), asJson);
         return 1;
     }
 }
