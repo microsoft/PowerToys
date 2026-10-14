@@ -36,5 +36,11 @@ namespace Peek.FilePreviewer.Controls
         public string FormatFolderContains(string? folderContents) => ReadableStringHelper.FormatResourceString("UnsupportedFile_FolderContains", folderContents);
 
         public string FormatFileDateModified(string? fileDateModified) => ReadableStringHelper.FormatResourceString("UnsupportedFile_DateModified", fileDateModified);
+
+        public string FormatShortcutTarget(string? shortcutTarget) => ReadableStringHelper.FormatResourceString("UnsupportedFile_ShortcutTarget", shortcutTarget);
+
+        public string PeekTargetText => ResourceLoaderInstance.ResourceLoader.GetString("ShortcutTarget_Peek_Text");
+
+        public string PeekTargetToolTip => ResourceLoaderInstance.ResourceLoader.GetString("ShortcutTarget_Peek_ToolTip");
     }
 }

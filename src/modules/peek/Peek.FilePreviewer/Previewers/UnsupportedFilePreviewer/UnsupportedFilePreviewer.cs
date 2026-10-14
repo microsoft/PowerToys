@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Enumeration;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
@@ -65,6 +66,9 @@ namespace Peek.FilePreviewer.Previewers
 
         private DispatcherQueue Dispatcher { get; }
 
+        /// <inheritdoc/>
+        public ICommand? PeekShortcutTargetCommand { get; set; }
+
         public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken) =>
             Task.FromResult(new PreviewSize { MonitorSize = new Size(680, 500), UseEffectivePixels = true });
 
@@ -77,6 +81,7 @@ namespace Peek.FilePreviewer.Previewers
                     Preview.FileName = Item.Name;
                     Preview.DateModified = Item.DateModified?.ToString(CultureInfo.CurrentCulture);
                     Preview.IsFolder = Item is FolderItem;
+                    UpdateShortcutTarget();
 
                     State = PreviewState.Loaded;
 
@@ -123,6 +128,19 @@ namespace Peek.FilePreviewer.Previewers
             Preview.IconPreview = await ThumbnailHelper.GetThumbnailAsync(Item.Path, cancellationToken) ??
                 await ThumbnailHelper.GetIconAsync(Item.Path, cancellationToken) ??
                 DefaultIcon;
+        }
+
+        /// <summary>
+        /// Shows the path that a shortcut points to, so that the target can be previewed from the
+        /// shortcut's card.
+        /// </summary>
+        private void UpdateShortcutTarget()
+        {
+            string? targetPath = ShortcutHelper.TryGetTargetPath(Item.Path);
+
+            Preview.ShortcutTarget = targetPath;
+            Preview.CanPeekShortcutTarget = ShortcutHelper.TargetExists(targetPath);
+            Preview.PeekShortcutTargetCommand = PeekShortcutTargetCommand;
         }
 
         private async Task LoadDisplayInfoAsync(IProgress<FolderScanProgress> sizeProgress, CancellationToken cancellationToken)

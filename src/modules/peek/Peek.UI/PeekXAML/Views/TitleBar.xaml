@@ -76,29 +76,55 @@
             IsTabStop="True"
             UseSystemFocusVisuals="False" />
 
-        <Button
-            x:Name="LaunchAppButton"
+        <StackPanel
             Grid.Column="2"
             VerticalAlignment="Center"
-            Command="{x:Bind LaunchDefaultAppButtonCommand, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
-            Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
-            <Button.Content>
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                    <FontIcon
-                        x:Name="LaunchAppButton_Icon"
-                        FontSize="16"
-                        Glyph="&#xE8E5;" />
-                    <TextBlock
-                        x:Name="LaunchAppButton_Text"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
-                </StackPanel>
-            </Button.Content>
-            <Button.KeyboardAccelerators>
-                <KeyboardAccelerator Key="Enter" />
-            </Button.KeyboardAccelerators>
-        </Button>
+            Orientation="Horizontal"
+            Spacing="4">
+            <Button
+                x:Name="LaunchAppButton"
+                VerticalAlignment="Center"
+                Command="{x:Bind LaunchDefaultAppButtonCommand, Mode=OneWay}"
+                ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
+                Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <FontIcon
+                            x:Name="LaunchAppButton_Icon"
+                            FontSize="16"
+                            Glyph="&#xE8E5;" />
+                        <TextBlock
+                            x:Name="LaunchAppButton_Text"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind OpenWithAppText, Mode=OneWay}" />
+                    </StackPanel>
+                </Button.Content>
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Enter" />
+                </Button.KeyboardAccelerators>
+            </Button>
+
+            <Button
+                x:Name="ShortcutButton"
+                VerticalAlignment="Center"
+                Command="{x:Bind ShortcutButtonCommand, Mode=OneWay}"
+                Style="{StaticResource SubtleButtonStyle}"
+                ToolTipService.ToolTip="{x:Bind ShortcutButtonToolTip, Mode=OneWay}"
+                Visibility="{x:Bind ShortcutButtonVisibility, Mode=OneWay}">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <FontIcon
+                            x:Name="ShortcutButton_Icon"
+                            FontSize="14"
+                            Glyph="&#xE71B;" />
+                        <TextBlock
+                            x:Name="ShortcutButton_Text"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ShortcutButtonText}" />
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+        </StackPanel>
 
         <Button
             x:Name="PinButton"
@@ -131,6 +157,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="ShortcutButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinimumLayout">

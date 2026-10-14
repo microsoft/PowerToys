@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Windows.Input;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media;
 
@@ -38,5 +40,17 @@ namespace Peek.FilePreviewer.Models
 
         [ObservableProperty]
         private string? dateModified;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasShortcutTarget))]
+        private string? shortcutTarget;
+
+        [ObservableProperty]
+        private bool canPeekShortcutTarget;
+
+        [ObservableProperty]
+        private ICommand? peekShortcutTargetCommand;
+
+        public bool HasShortcutTarget => !string.IsNullOrEmpty(ShortcutTarget);
     }
 }
