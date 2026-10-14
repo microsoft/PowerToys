@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -26,7 +27,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
         /// </summary>
-        private RichTextBox _textBox;
+        private RichTextBox? _textBox;
 
         /// <summary>
         /// Represent if a text box info bar is added for showing message.
@@ -41,44 +42,42 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <summary>
         /// WebView2 element
         /// </summary>
-        private WebView2 _webView;
+        private WebView2? _webView;
 
         /// <summary>
         /// WebView2 Environment
         /// </summary>
-        private CoreWebView2Environment _webView2Environment;
+        private CoreWebView2Environment? _webView2Environment;
 
         /// <summary>
         /// Loading label
         /// </summary>
-        private Label _loading;
+        private Label? _loading;
 
         /// <summary>
         /// Loading progress bar
         /// </summary>
-        private ProgressBar _loadingBar;
+        private ProgressBar? _loadingBar;
 
         /// <summary>
         /// Grey background
         /// </summary>
-        private Label _loadingBackground;
+        private Label? _loadingBackground;
 
         /// <summary>
         /// HTML code passed to the file
         /// </summary>
-#nullable enable
         private string? _html;
-#nullable disable
 
         /// <summary>
         /// Id for monaco language
         /// </summary>
-        private string _vsCodeLangSet;
+        private string _vsCodeLangSet = string.Empty;
 
         /// <summary>
         /// The content of the previewing file in base64
         /// </summary>
-        private string _base64FileCode;
+        private string _base64FileCode = string.Empty;
 
         public MonacoPreviewHandlerControl()
         {
@@ -222,7 +221,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             this.Resize += FormResize;
         }
 
-        private async void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+        private async void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
         {
             // Monaco opens URI in a new window. We open the URI in the default web browser.
             if (e.Uri != null && e.IsUserInitiated)
@@ -235,10 +234,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <summary>
         /// This event sets the height and width of the webview to the size of the form
         /// </summary>
-        public void FormResize(object sender, EventArgs e)
+        public void FormResize(object? sender, EventArgs e)
         {
-            _webView.Height = this.Height;
-            _webView.Width = this.Width;
+            if (_webView != null)
+            {
+                _webView.Height = this.Height;
+                _webView.Width = this.Width;
+            }
+
             this.Update();
         }
 
@@ -246,13 +249,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// This event initializes the webview and sets various settings
         /// </summary>
         [STAThread]
-        private void WebView2Init(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        private void WebView2Init(object? sender, CoreWebView2NavigationCompletedEventArgs e)
         {
-            // Checks if already navigated
-            if (!_hasNavigated)
+            // Checks if already navigated. The sender is always the WebView2 this handler was subscribed on.
+            if (!_hasNavigated && sender is WebView2 webView)
             {
                 Logger.LogInfo("Setting WebView2 settings");
-                CoreWebView2Settings settings = (sender as WebView2).CoreWebView2.Settings;
+                CoreWebView2Settings settings = webView.CoreWebView2.Settings;
 
 #if DEBUG
                 // Enable developer tools and context menu for debugging
@@ -286,11 +289,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 Controls.Remove(_loadingBar);
                 Controls.Remove(_loadingBackground);
 #if DEBUG
-                _webView.CoreWebView2.OpenDevToolsWindow();
+                webView.CoreWebView2.OpenDevToolsWindow();
                 Logger.LogInfo("Opened Dev Tools window, because solution was built in debug mode");
 #endif
 
-                _loadingBar.Value = 80;
+                if (_loadingBar != null)
+                {
+                    _loadingBar.Value = 80;
+                }
+
                 this.Update();
             }
         }
@@ -299,7 +306,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// This event cancels every navigation inside the webview
         /// </summary>
         [STAThread]
-        private void NavigationStarted(object sender, CoreWebView2NavigationStartingEventArgs e)
+        private void NavigationStarted(object? sender, CoreWebView2NavigationStartingEventArgs e)
         {
             // Prevents navigation if already one done to index.html
             if (_hasNavigated)
@@ -321,6 +328,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             this.BackColor = Settings.BackgroundColor;
         }
 
+        [MemberNotNull(nameof(_loading), nameof(_loadingBar), nameof(_loadingBackground))]
         private void InitializeLoadingScreen()
         {
             Logger.LogTrace();
@@ -406,7 +414,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             _html = _html.Replace("[[PT_MINIMAP]]", _settings.Minimap ? "true" : "false", StringComparison.InvariantCulture);
         }
 
-        private async void DownloadLink_Click(object sender, EventArgs e)
+        private async void DownloadLink_Click(object? sender, EventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"));
             Logger.LogTrace();
@@ -417,10 +425,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// </summary>
         /// <param name="sender">Reference to resized control.</param>
         /// <param name="e">Provides data for the ContentsResized event.</param>
-        private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
+        private void RTBContentsResized(object? sender, ContentsResizedEventArgs e)
         {
-            var richTextBox = sender as RichTextBox;
-            richTextBox.Height = e.NewRectangle.Height + 5;
+            if (sender is RichTextBox richTextBox)
+            {
+                richTextBox.Height = e.NewRectangle.Height + 5;
+            }
         }
 
         /// <summary>
@@ -428,9 +438,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// </summary>
         /// <param name="sender">Reference to resized control.</param>
         /// <param name="e">Provides data for the resize event.</param>
-        private void FormResized(object sender, EventArgs e)
+        private void FormResized(object? sender, EventArgs e)
         {
-            if (_infoBarAdded)
+            if (_infoBarAdded && _textBox != null)
             {
                 _textBox.Width = Width;
             }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
@@ -18,6 +19,16 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public partial class ContentPageViewModelTests
 {
+    // UI messages must finish within each test, not overwrite another test's shell context.
+    private sealed class ImmediateTaskScheduler : TaskScheduler
+    {
+        protected override IEnumerable<Task> GetScheduledTasks() => [];
+
+        protected override void QueueTask(Task task) => TryExecuteTask(task);
+
+        protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => TryExecuteTask(task);
+    }
+
     private sealed partial class TestAppExtensionHost : AppExtensionHost
     {
         public override string? GetExtensionDisplayName() => "Test Host";
@@ -31,7 +42,79 @@ public partial class ContentPageViewModelTests
     private static CommandContextItem Command(string name) => new(new NoOpCommand { Name = name });
 
     private static ContentPageViewModel CreateViewModel(TestContentPage page) =>
-        new(page, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+        new(page, new ImmediateTaskScheduler(), new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+    [TestMethod]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    public void DetailsUpdate_InitializesReplacementAndCleansUpPreviousDetails(bool hasInitialDetails, bool hasUpdatedDetails)
+    {
+        var initialDetails = new Details { Title = "Initial title", Body = "Initial body" };
+        var page = new TestContentPage { Details = hasInitialDetails ? initialDetails : null };
+        var viewModel = CreateViewModel(page);
+        var recipient = new object();
+
+        try
+        {
+            viewModel.InitializeProperties();
+            viewModel.ApplyPendingUpdates();
+            var previousDetails = viewModel.Details;
+            List<string?> notifications = [];
+            viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+            DetailsViewModel? shownDetails = null;
+            var hideMessages = 0;
+            WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(recipient, (_, message) => shownDetails = message.Details);
+            WeakReferenceMessenger.Default.Register<HideDetailsMessage>(recipient, (_, _) => hideMessages++);
+
+            var updatedDetails = new Details
+            {
+                Title = "Updated title",
+                Body = "Updated body",
+                Metadata = [new DetailsElement { Key = "Link", Data = new DetailsLink("https://example.com", "Example") }],
+            };
+
+            page.Details = hasUpdatedDetails ? updatedDetails : null;
+            viewModel.ApplyPendingUpdates();
+
+            Assert.AreEqual(hasUpdatedDetails, viewModel.HasDetails);
+            CollectionAssert.Contains(notifications, nameof(viewModel.Details));
+            CollectionAssert.Contains(notifications, nameof(viewModel.HasDetails));
+            if (hasUpdatedDetails)
+            {
+                var replacement = viewModel.Details;
+                Assert.IsNotNull(replacement);
+                Assert.AreNotSame(previousDetails, replacement);
+                Assert.AreEqual("Updated title", replacement.Title);
+                Assert.AreEqual("Updated body", replacement.Body);
+                Assert.AreEqual(1, replacement.Metadata.Count);
+                Assert.AreSame(replacement, shownDetails);
+                Assert.AreEqual(0, hideMessages);
+
+                updatedDetails.Body = "Live update";
+                Assert.AreEqual("Live update", replacement.Body);
+            }
+            else
+            {
+                Assert.IsNull(viewModel.Details);
+                Assert.IsNull(shownDetails);
+                Assert.AreEqual(1, hideMessages);
+            }
+
+            if (previousDetails is not null)
+            {
+                initialDetails.Title = "Detached title";
+                initialDetails.Body = "Detached body";
+                Assert.AreEqual("Initial title", previousDetails.Title);
+                Assert.AreEqual("Initial body", previousDetails.Body);
+            }
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            viewModel.SafeCleanup();
+        }
+    }
 
     [TestMethod]
     public void AllCommands_ReturnCachedSnapshot()
@@ -80,14 +163,69 @@ public partial class ContentPageViewModelTests
         viewModel.InitializeProperties();
 
         var actions = viewModel.AllCommands.OfType<CommandContextItemViewModel>().ToArray();
+        Assert.IsTrue(actions.All(command => command.DisplayShortcut is null));
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+        menu.PrepareForOpen(viewModel);
         Assert.AreSame(viewModel.PrimaryCommand, actions[0]);
         Assert.AreSame(viewModel.SecondaryCommand, actions[1]);
+        Assert.AreEqual(CommandContextItemViewModel.PrimaryShortcut, actions[0].DisplayShortcut);
+        Assert.AreEqual(new KeyChord(VirtualKeyModifiers.Control, (int)VirtualKey.Enter, 0), actions[1].DisplayShortcut);
         Assert.IsFalse(viewModel.HasOverflowCommands);
         Assert.IsTrue(viewModel.CanOpenContextMenu);
 
         page.Commands = [.. page.Commands, Command("Additional")];
 
         Assert.IsTrue(viewModel.HasOverflowCommands);
+        menu.Close();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ReservedRequestedShortcut_DoesNotOverrideDefaultAction(bool primaryShortcut)
+    {
+        var shortcut = primaryShortcut ? CommandContextItemViewModel.PrimaryShortcut : CommandContextItemViewModel.SecondaryShortcut;
+        var requested = Command("Requested");
+        requested.RequestedShortcut = shortcut;
+        var viewModel = CreateViewModel(new TestContentPage
+        {
+            Commands = [Command("Primary"), Command("Secondary"), requested],
+        });
+        viewModel.InitializeProperties();
+
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+        menu.PrepareForOpen(viewModel);
+        var action = primaryShortcut ? viewModel.PrimaryCommand : viewModel.SecondaryCommand;
+        Assert.AreEqual(shortcut, ((CommandContextItemViewModel)action!).DisplayShortcut);
+        Assert.IsNull(((IContextMenuContext)viewModel).FindKeybinding(shortcut));
+        Assert.IsNull(menu.FindKeybinding(shortcut));
+        var requestedCommand = (CommandContextItemViewModel)viewModel.AllCommands[2];
+        Assert.IsFalse(requestedCommand.HasRequestedShortcut);
+        Assert.IsNull(requestedCommand.DisplayShortcut);
+        menu.Close();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void DefaultShortcuts_IgnoreReservedRequestsEvenForActionsWithSubmenus(bool hasSubmenu)
+    {
+        var primary = Command("Primary");
+        primary.RequestedShortcut = CommandContextItemViewModel.PrimaryShortcut;
+        primary.MoreCommands = hasSubmenu ? [Command("Child")] : [];
+        var duplicate = Command("Duplicate");
+        duplicate.RequestedShortcut = CommandContextItemViewModel.PrimaryShortcut;
+        var viewModel = CreateViewModel(new TestContentPage { Commands = [primary, duplicate] });
+        viewModel.InitializeProperties();
+        viewModel.PrimaryCommand!.SlowInitializeProperties();
+
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+        Assert.IsNull(((CommandContextItemViewModel)viewModel.PrimaryCommand!).DisplayShortcut);
+        menu.PrepareForOpen(viewModel);
+        Assert.IsNull(menu.FindKeybinding(CommandContextItemViewModel.PrimaryShortcut));
+        Assert.AreEqual(CommandContextItemViewModel.PrimaryShortcut, ((CommandContextItemViewModel)viewModel.PrimaryCommand!).DisplayShortcut);
+        Assert.AreEqual(CommandContextItemViewModel.SecondaryShortcut, ((CommandContextItemViewModel)viewModel.SecondaryCommand!).DisplayShortcut);
+        menu.Close();
     }
 
     [TestMethod]
@@ -131,9 +269,12 @@ public partial class ContentPageViewModelTests
     }
 
     [TestMethod]
-    public void RequestedPrimaryShortcut_UsesTheSameRuleWithTheMenuOpenOrClosed()
+    [DataRow(VirtualKey.F6, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Menu)]
+    public void RequestedPrimaryShortcut_UsesTheSameRuleWithTheMenuOpenOrClosed(VirtualKey primaryKeyValue, VirtualKeyModifiers modifiers)
     {
-        var primaryKey = new KeyChord(0, (int)VirtualKey.F6, 0);
+        var primaryKey = new KeyChord(modifiers, (int)primaryKeyValue, 0);
         var secondaryKey = new KeyChord(0, (int)VirtualKey.F7, 0);
         var primary = Command("Primary");
         primary.RequestedShortcut = primaryKey;
@@ -148,18 +289,19 @@ public partial class ContentPageViewModelTests
         };
         var viewModel = CreateViewModel(page);
         viewModel.InitializeProperties();
-        var shortcuts = ((IContextMenuContext)viewModel).Keybindings();
 
-        Assert.AreEqual(2, shortcuts.Count);
-        Assert.AreSame(viewModel.PrimaryCommand, shortcuts[primaryKey]);
-        Assert.AreSame(viewModel.SecondaryCommand, shortcuts[secondaryKey]);
+        Assert.AreSame(viewModel.PrimaryCommand, ((IContextMenuContext)viewModel).FindKeybinding(primaryKey));
+        Assert.AreSame(viewModel.SecondaryCommand, ((IContextMenuContext)viewModel).FindKeybinding(secondaryKey));
+        Assert.AreEqual(primaryKey, ((CommandContextItemViewModel)viewModel.PrimaryCommand!).DisplayShortcut);
+        Assert.AreEqual(secondaryKey, ((CommandContextItemViewModel)viewModel.SecondaryCommand!).DisplayShortcut);
 
-        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new())) { SelectedItem = viewModel };
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+        menu.PrepareForOpen(viewModel);
         PerformCommandMessage? invocation = null;
         menu.CommandInvoking += (_, message) => invocation = message;
-        Assert.AreEqual(ContextKeybindingResult.Hide, menu.CheckKeybinding(false, false, false, false, VirtualKey.F6));
+        Assert.AreEqual(ContextKeybindingResult.Hide, menu.InvokeCommand(menu.FindKeybinding(primaryKey)));
         Assert.IsNotNull(invocation);
-        Assert.AreSame(primary, invocation.Context);
+        Assert.AreSame(primary, invocation.CommandContext);
 
         page.Commands = [new Separator("Empty")];
 
@@ -167,7 +309,8 @@ public partial class ContentPageViewModelTests
         Assert.IsNull(viewModel.SecondaryCommand);
         Assert.IsFalse(viewModel.HasOverflowCommands);
         Assert.IsFalse(viewModel.CanOpenContextMenu);
-        Assert.AreEqual(0, ((IContextMenuContext)viewModel).Keybindings().Count);
+        Assert.IsNull(((IContextMenuContext)viewModel).FindKeybinding(primaryKey));
+        menu.Close();
     }
 
     [TestMethod]
@@ -198,22 +341,34 @@ public partial class ContentPageViewModelTests
     [TestMethod]
     public async Task CommandVisibilityChanges_RefreshActionRoles()
     {
+        var uiTasks = new TaskFactory(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
         var first = Command("First");
         var second = Command("Second");
         var third = Command("Third");
         var page = new TestContentPage { Id = "changing.visibility", Commands = [first, second, third] };
-        var viewModel = CreateViewModel(page);
+        var viewModel = new ContentPageViewModel(page, uiTasks.Scheduler!, new TestAppExtensionHost(), CommandProviderContext.Empty);
         viewModel.InitializeProperties();
+        var commands = viewModel.AllCommands.OfType<CommandContextItemViewModel>().ToArray();
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+        await uiTasks.StartNew(() => menu.PrepareForOpen(viewModel));
         var hidden = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var restored = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        viewModel.PropertyChanged += (_, _) =>
+        viewModel.PropertyChanged += (_, args) =>
         {
-            if (!viewModel.CanOpenContextMenu && !viewModel.HasOverflowCommands)
+            if (args.PropertyName != nameof(viewModel.AllCommands))
+            {
+                return;
+            }
+
+            if (!viewModel.CanOpenContextMenu && !viewModel.HasOverflowCommands &&
+                commands.All(command => command.DisplayShortcut is null))
             {
                 hidden.TrySetResult();
             }
 
-            if (viewModel.PrimaryCommand?.Name == "Restored" && !viewModel.HasOverflowCommands)
+            if (viewModel.PrimaryCommand?.Name == "Restored" && !viewModel.HasOverflowCommands &&
+                commands[0].DisplayShortcut == CommandContextItemViewModel.PrimaryShortcut &&
+                commands[1].DisplayShortcut is null && commands[2].DisplayShortcut is null)
             {
                 restored.TrySetResult();
             }
@@ -228,15 +383,19 @@ public partial class ContentPageViewModelTests
             await hidden.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.IsNull(viewModel.PrimaryCommand);
             Assert.IsNull(viewModel.SecondaryCommand);
+            Assert.IsTrue(commands.All(command => command.DisplayShortcut is null));
 
             ((NoOpCommand)first.Command!).Name = "Restored";
             await restored.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.IsTrue(viewModel.HasCommands);
             Assert.IsTrue(viewModel.CanOpenContextMenu);
             Assert.AreEqual(3, viewModel.AllCommands.Count);
+            Assert.AreEqual(new KeyChord(0, (int)VirtualKey.Enter, 0), commands[0].DisplayShortcut);
+            Assert.IsNull(commands[1].DisplayShortcut);
         }
         finally
         {
+            await uiTasks.StartNew(menu.Close);
             viewModel.SafeCleanup();
         }
     }

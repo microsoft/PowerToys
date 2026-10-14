@@ -27,6 +27,16 @@ public sealed class SetSettingCommandLineCommand
 
     public static void Execute(string settingName, string settingValue, SettingsUtils settingsUtils)
     {
+        Execute(settingName, settingValue, settingsUtils, throwOnSaveFailure: false);
+    }
+
+    public static void ExecuteAndThrowOnSaveFailure(string settingName, string settingValue, SettingsUtils settingsUtils)
+    {
+        Execute(settingName, settingValue, settingsUtils, throwOnSaveFailure: true);
+    }
+
+    private static void Execute(string settingName, string settingValue, SettingsUtils settingsUtils, bool throwOnSaveFailure)
+    {
         Assembly settingsLibraryAssembly = CommandLineUtils.GetSettingsAssembly();
 
         var (moduleName, propertyName) = ParseSettingName(settingName);
@@ -49,6 +59,13 @@ public sealed class SetSettingCommandLineCommand
         var (settingInfo, properties) = CommandLineUtils.LocateSetting(propertyName, settingsConfig);
         settingInfo.SetValue(properties, propertyValue);
 
-        settingsUtils.SaveSettings(settingsConfig.ToJsonString(), settingsConfig.GetModuleName());
+        if (throwOnSaveFailure)
+        {
+            settingsUtils.SaveSettingsOrThrow(settingsConfig.ToJsonString(), settingsConfig.GetModuleName());
+        }
+        else
+        {
+            settingsUtils.SaveSettings(settingsConfig.ToJsonString(), settingsConfig.GetModuleName());
+        }
     }
 }

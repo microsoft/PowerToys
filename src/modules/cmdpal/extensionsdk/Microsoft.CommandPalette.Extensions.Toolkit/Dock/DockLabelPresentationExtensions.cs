@@ -26,26 +26,12 @@ public static class DockLabelPresentationExtensions
             SetHint(item, WellKnownExtensionAttributes.DockLabelTabularDigits, enabled, static target => target.NotifyDockLabelTabularDigitsChanged());
 
         /// <summary>
-        /// Removes the Dock tabular-digits hint.
-        /// </summary>
-        /// <returns>The same item, for fluent construction.</returns>
-        public TItem ClearDockLabelTabularDigits() =>
-            ClearHint(item, WellKnownExtensionAttributes.DockLabelTabularDigits, static target => target.NotifyDockLabelTabularDigitsChanged());
-
-        /// <summary>
         /// Opts the Dock label into trailing-edge alignment, independently of numeral styling.
         /// </summary>
         /// <param name="enabled">Whether trailing-edge alignment is enabled.</param>
         /// <returns>The same item, for fluent construction.</returns>
         public TItem SetDockLabelTrailingAlignment(bool enabled = true) =>
             SetHint(item, WellKnownExtensionAttributes.DockLabelTrailingAlignment, enabled, static target => target.NotifyDockLabelTrailingAlignmentChanged());
-
-        /// <summary>
-        /// Removes the Dock trailing-alignment hint.
-        /// </summary>
-        /// <returns>The same item, for fluent construction.</returns>
-        public TItem ClearDockLabelTrailingAlignment() =>
-            ClearHint(item, WellKnownExtensionAttributes.DockLabelTrailingAlignment, static target => target.NotifyDockLabelTrailingAlignmentChanged());
     }
 
     private static TItem SetHint<TItem>(TItem item, string key, bool enabled, Action<TItem> notify)

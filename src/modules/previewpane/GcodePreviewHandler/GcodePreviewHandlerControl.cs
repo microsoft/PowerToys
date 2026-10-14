@@ -17,12 +17,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         /// <summary>
         /// Picture box control to display the G-code thumbnail.
         /// </summary>
-        private PictureBox _pictureBox;
+        private PictureBox? _pictureBox;
 
         /// <summary>
         /// Text box to display the information about blocked elements from Svg.
         /// </summary>
-        private RichTextBox _textBox;
+        private RichTextBox? _textBox;
 
         /// <summary>
         /// Represent if a text box info bar is added for showing message.
@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
 
             try
             {
-                Bitmap thumbnail = null;
+                Bitmap? thumbnail = null;
 
                 if (!(dataSource is string filePath))
                 {
@@ -105,10 +105,12 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         /// </summary>
         /// <param name="sender">Reference to resized control.</param>
         /// <param name="e">Provides data for the ContentsResized event.</param>
-        private void RTBContentsResized(object sender, ContentsResizedEventArgs e)
+        private void RTBContentsResized(object? sender, ContentsResizedEventArgs e)
         {
-            var richTextBox = sender as RichTextBox;
-            richTextBox.Height = e.NewRectangle.Height + 5;
+            if (sender is RichTextBox richTextBox)
+            {
+                richTextBox.Height = e.NewRectangle.Height + 5;
+            }
         }
 
         /// <summary>
@@ -116,9 +118,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         /// </summary>
         /// <param name="sender">Reference to resized control.</param>
         /// <param name="e">Provides data for the resize event.</param>
-        private void FormResized(object sender, EventArgs e)
+        private void FormResized(object? sender, EventArgs e)
         {
-            if (_infoBarAdded)
+            if (_infoBarAdded && _textBox != null)
             {
                 _textBox.Width = Width;
             }
