@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         /// <summary>
         /// Scale of a tile right under the pointer.
         /// </summary>
-        internal const float MaxMagnification = 1.26f;
+        internal const float MaxMagnification = WelcomeHeroPointerEffects.MaxMagnification;
 
         /// <summary>
         /// Time at which the page text starts to rise into view (intro), right after the logo has landed.
@@ -74,11 +74,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private const float StarTravel = 6200f;
         private const float StarFadeInMs = 90f;
         private const float StarCullDepth = 620f;
-
-        private const float MagnifyBoost = MaxMagnification - 1f;
-        private const float MagnifyRadius = 120f;
-        private const float MaxTiltDegrees = 5f;
-        private const float BobAmplitude = 5f;
 
         private const float CornerRadius = 7f;
         private const float LightSpill = 480f;
@@ -149,6 +144,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private readonly CompositionPropertySet _interaction;
 
+        private ExpressionAnimation _magnify;
+        private ExpressionAnimation _tiltYExpression;
+        private ExpressionAnimation _tiltXExpression;
+        private ExpressionAnimation _parallax;
+        private CompositionScopedBatch _flightBatch;
+
         private WelcomeHeroPalette _palette;
         private int _highlighted = -1;
         private int _introGeneration;
@@ -180,12 +181,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             _interaction = Track(compositor.CreatePropertySet());
             _interaction.InsertScalar("Strength", 0f);
-            _interaction.InsertScalar("Boost", MagnifyBoost);
-            _interaction.InsertScalar("Radius", MagnifyRadius);
-            _interaction.InsertScalar("MaxTilt", MaxTiltDegrees);
+            _interaction.InsertScalar("Boost", WelcomeHeroPointerEffects.MagnifyBoost);
+            _interaction.InsertScalar("Radius", WelcomeHeroPointerEffects.MagnifyRadius);
+            _interaction.InsertScalar("MaxTilt", WelcomeHeroPointerEffects.MaxTiltDegrees);
             _interaction.InsertScalar("HalfWidth", 500f);
-            _interaction.InsertScalar("HalfHeight", layout.ApexY / 2f);
-            _interaction.InsertScalar("CenterY", layout.ApexY / 2f);
+            _interaction.InsertScalar("HalfHeight", layout.FunnelCenter);
+            _interaction.InsertScalar("CenterY", layout.FunnelCenter);
 
             Root = Track(compositor.CreateContainerVisual());
 
@@ -239,7 +240,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             // --- Stage: the tilting 3D plane that holds the ring, the tiles and the logo. ---
             _stage = Track(compositor.CreateContainerVisual());
-            var funnelCenter = layout.ApexY / 2f;
+            var funnelCenter = layout.FunnelCenter;
             _stage.TransformMatrix = WelcomeHeroWarp.CreateStageTransform(funnelCenter);
             _shake.Children.InsertAtTop(_stage);
 
@@ -477,7 +478,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // 1. Warp: every tool drops out of hyperspace, trailing light, through a field of rushing stars.
             //    The streaks are only needed during the flight, so they are switched off once it is over.
             StartTrails();
-            var flight = Track(_compositor.CreateScopedBatch(CompositionBatchTypes.Animation));
+            var flight = _compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
+            _flightBatch = flight;
             for (var i = 0; i < _tiles.Length; i++)
             {
                 var tile = _tiles[i];
@@ -507,6 +509,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     StopTrails();
                 }
+
+                // Every replay creates a new batch; release each one as soon as it is done.
+                if (ReferenceEquals(flight, _flightBatch))
+                {
+                    _flightBatch = null;
+                }
+
+                flight.Dispose();
             };
 
             // 2. Slam: the logo drops in last, hits the stage and pops back.
@@ -682,39 +692,60 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         /// </summary>
         public void EnablePointerEffects(CompositionPropertySet pointer)
         {
-            const string near = "Square(1 - Square(Min(Length(pointer.Position.XY - stage.Offset.XY - this.Target.Offset.XY) / h.Radius, 1)))";
-            foreach (var tile in _tiles)
+            // Mirrored on the CPU by WelcomeHeroPointerEffects for hit testing; keep the two in sync.
+            if (_magnify is null)
             {
-                if (tile.IsGhost)
-                {
-                    continue;
-                }
-
-                var magnify = Track(_compositor.CreateExpressionAnimation($"Vector3(1, 1, 1) + Vector3(1, 1, 0) * (h.Boost * h.Strength * {near})"));
-                magnify.SetReferenceParameter("pointer", pointer);
-                magnify.SetReferenceParameter("stage", _stage);
-                magnify.SetReferenceParameter("h", _interaction);
-                tile.Slot.StartAnimation("Scale", magnify);
+                const string near = "Square(1 - Square(Min(Length(pointer.Position.XY - stage.Offset.XY - this.Target.Offset.XY) / h.Radius, 1)))";
+                _magnify = CreatePointerExpression(pointer, $"Vector3(1, 1, 1) + Vector3(1, 1, 0) * (h.Boost * h.Strength * {near})");
+                _tiltYExpression = CreatePointerExpression(pointer, "h.Strength * h.MaxTilt * Clamp((pointer.Position.X - stage.Offset.X) / h.HalfWidth, -1, 1)");
+                _tiltXExpression = CreatePointerExpression(pointer, "-h.Strength * h.MaxTilt * Clamp((pointer.Position.Y - stage.Offset.Y + h.CenterY) / h.HalfHeight, -1, 1)");
+                _parallax = CreatePointerExpression(
+                    pointer,
+                    "Vector3(-h.Strength * 18 * Clamp((pointer.Position.X - stage.Offset.X) / h.HalfWidth, -1, 1), -h.Strength * 8 * Clamp((pointer.Position.Y - stage.Offset.Y + h.CenterY) / h.HalfHeight, -1, 1), 0)");
             }
 
-            var tiltY = Track(_compositor.CreateExpressionAnimation("h.Strength * h.MaxTilt * Clamp((pointer.Position.X - stage.Offset.X) / h.HalfWidth, -1, 1)"));
-            tiltY.SetReferenceParameter("pointer", pointer);
-            tiltY.SetReferenceParameter("stage", _stage);
-            tiltY.SetReferenceParameter("h", _interaction);
-            _tiltY.StartAnimation("RotationAngleInDegrees", tiltY);
+            foreach (var tile in _tiles)
+            {
+                if (!tile.IsGhost)
+                {
+                    Animate(tile.Slot, "Scale", _magnify);
+                }
+            }
 
-            var tiltX = Track(_compositor.CreateExpressionAnimation("-h.Strength * h.MaxTilt * Clamp((pointer.Position.Y - stage.Offset.Y + h.CenterY) / h.HalfHeight, -1, 1)"));
-            tiltX.SetReferenceParameter("pointer", pointer);
-            tiltX.SetReferenceParameter("stage", _stage);
-            tiltX.SetReferenceParameter("h", _interaction);
-            _tiltX.StartAnimation("RotationAngleInDegrees", tiltX);
+            Animate(_tiltY, "RotationAngleInDegrees", _tiltYExpression);
+            Animate(_tiltX, "RotationAngleInDegrees", _tiltXExpression);
+            Animate(_auroraParallax, "Offset", _parallax);
+        }
 
-            var parallax = Track(_compositor.CreateExpressionAnimation(
-                "Vector3(-h.Strength * 18 * Clamp((pointer.Position.X - stage.Offset.X) / h.HalfWidth, -1, 1), -h.Strength * 8 * Clamp((pointer.Position.Y - stage.Offset.Y + h.CenterY) / h.HalfHeight, -1, 1), 0)"));
-            parallax.SetReferenceParameter("pointer", pointer);
-            parallax.SetReferenceParameter("stage", _stage);
-            parallax.SetReferenceParameter("h", _interaction);
-            _auroraParallax.StartAnimation("Offset", parallax);
+        /// <summary>
+        /// Detaches the pointer from the scene and puts everything it moved back at rest.
+        /// </summary>
+        public void DisablePointerEffects()
+        {
+            Stop(_interaction, "Strength");
+            _interaction.InsertScalar("Strength", 0f);
+
+            foreach (var tile in _tiles)
+            {
+                Stop(tile.Slot, "Scale");
+                tile.Slot.Scale = Vector3.One;
+            }
+
+            Stop(_tiltY, "RotationAngleInDegrees");
+            _tiltY.RotationAngleInDegrees = 0f;
+            Stop(_tiltX, "RotationAngleInDegrees");
+            _tiltX.RotationAngleInDegrees = 0f;
+            Stop(_auroraParallax, "Offset");
+            _auroraParallax.Offset = Vector3.Zero;
+        }
+
+        /// <summary>
+        /// Brings a static scene back to life (Windows animations were turned back on), without another entrance.
+        /// </summary>
+        public void ResumeIdle()
+        {
+            StartShine(SettleMs);
+            StartIdle(0f);
         }
 
         /// <summary>
@@ -817,6 +848,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             _disposed = true;
+            _flightBatch?.Dispose();
+            _flightBatch = null;
             Root.Children.RemoveAll();
             for (var i = _resources.Count - 1; i >= 0; i--)
             {
@@ -860,7 +893,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 var period = 2300f + (Hash(i + 101) * 1300f);
                 var bob = CreateAnimation<Vector3KeyFrameAnimation>(period, startMs + (Hash(i + 57) * 1600f));
                 bob.InsertKeyFrame(0f, Vector3.Zero, _linear);
-                bob.InsertKeyFrame(1f, new Vector3(0f, -BobAmplitude, 0f), _easeInOutSine);
+                bob.InsertKeyFrame(1f, new Vector3(0f, -WelcomeHeroPointerEffects.BobAmplitude, 0f), _easeInOutSine);
                 bob.IterationBehavior = AnimationIterationBehavior.Forever;
                 bob.Direction = AnimationDirection.Alternate;
                 Animate(tile.Floater, "Offset", bob);
@@ -1193,15 +1226,41 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             animation.Duration = TimeSpan.FromMilliseconds(Math.Max(durationMs, 1f));
             animation.DelayTime = TimeSpan.FromMilliseconds(Math.Max(delayMs, 0f));
             animation.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
-            return Track((T)animation);
+            return (T)animation;
         }
 
+        private ExpressionAnimation CreatePointerExpression(CompositionPropertySet pointer, string expression)
+        {
+            var animation = Track(_compositor.CreateExpressionAnimation(expression));
+            animation.SetReferenceParameter("pointer", pointer);
+            animation.SetReferenceParameter("stage", _stage);
+            animation.SetReferenceParameter("h", _interaction);
+            return animation;
+        }
+
+        /// <summary>
+        /// Starts a reusable animation (an expression that lives as long as the scene).
+        /// </summary>
         private void Animate(CompositionObject target, string property, CompositionAnimation animation)
         {
             if (!_disposed)
             {
                 target.StartAnimation(property, animation);
             }
+        }
+
+        /// <summary>
+        /// Starts a one-shot key frame animation and releases it right away: StartAnimation copies the template,
+        /// so replays and hover transitions never pile up animation objects.
+        /// </summary>
+        private void Animate(CompositionObject target, string property, KeyFrameAnimation animation)
+        {
+            if (!_disposed)
+            {
+                target.StartAnimation(property, animation);
+            }
+
+            animation.Dispose();
         }
 
         private T Track<T>(T resource)

@@ -130,6 +130,136 @@ namespace Settings.UI.UnitTests
         }
 
         [TestMethod]
+        public void HitTestWithoutMotionMatchesTheFlatLayout()
+        {
+            var count = WelcomeHeroModules.All.Count;
+
+            for (var y = -Layout.ApexY; y <= 60f; y += 3.7f)
+            {
+                for (var x = -500f; x <= 500f; x += 3.7f)
+                {
+                    var point = new Vector2(x, y);
+                    Assert.AreEqual(Layout.HitTestSlot(point, count), Layout.HitTestSlot(point, count, WelcomeHeroMotion.None), $"Slot at {point}.");
+                    Assert.AreEqual(WelcomeHeroLayout.HitTestLogo(point), Layout.HitTestLogo(point, WelcomeHeroMotion.None), $"Logo at {point}.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void HitTestFollowsTheMagnifiedTile()
+        {
+            // Next to the tilt pivot, magnification is all that moves the tile: its edge grows past the flat hit area.
+            var count = WelcomeHeroModules.All.Count;
+            var center = Enumerable.Range(0, count).OrderBy(i => DistanceFromPivot(Layout.Slots[i].Offset)).First();
+            var edge = Layout.Slots[center].Offset + new Vector2((WelcomeHeroLayout.TileSize / 2f) + 8f, 0f);
+            var live = WelcomeHeroMotion.Live(1000f);
+
+            Assert.AreEqual(-1, Layout.HitTestSlot(edge, count));
+            Assert.AreEqual(center, Layout.HitTestSlot(edge, count, live));
+        }
+
+        [TestMethod]
+        public void HitTestFollowsTheTiltedTile()
+        {
+            // At the far end of the stage the tilt moves the leftmost tool (MouseJump in the default order) noticeably.
+            var count = WelcomeHeroModules.All.Count;
+            var outer = Enumerable.Range(0, count).OrderBy(i => Layout.Slots[i].Offset.X).First();
+            var live = WelcomeHeroMotion.Live(1000f);
+            var flat = Layout.Slots[outer].Offset;
+            var drawn = Layout.GetSlotCenter(outer, flat, live);
+
+            Assert.IsTrue(Vector2.Distance(flat, drawn) > 4f, $"Expected the tilt to move the tile, it is drawn at {drawn} instead of {flat}.");
+
+            // Probe just inside the drawn tile, on the side the tilt moved it to: only the tilt-aware test finds it.
+            var shift = Vector2.Normalize(drawn - flat);
+            var probe = drawn + (shift * ((WelcomeHeroLayout.TileSize / 2f) + 2f));
+            Assert.AreEqual(outer, Layout.HitTestSlot(probe, count, live));
+            Assert.AreNotEqual(outer, Layout.HitTestSlot(probe, count));
+        }
+
+        [TestMethod]
+        public void HitTestCoversTheIdleBob()
+        {
+            var count = WelcomeHeroModules.All.Count;
+            var bobOnly = new WelcomeHeroMotion(0f, 500f, WelcomeHeroPointerEffects.BobAmplitude);
+
+            for (var i = 0; i < count; i++)
+            {
+                var top = Layout.Slots[i].Offset - new Vector2(0f, (WelcomeHeroLayout.TileSize / 2f) + 6f);
+                Assert.AreEqual(-1, Layout.HitTestSlot(top, count), $"Slot {i} without bob.");
+                Assert.AreEqual(i, Layout.HitTestSlot(top, count, bobOnly), $"Slot {i} with bob.");
+            }
+        }
+
+        [TestMethod]
+        public void HitTestPrefersTheTileClosestToThePointer()
+        {
+            // Two magnified neighbors next to the tilt pivot both reach the gap between them; the closer one wins.
+            var count = WelcomeHeroModules.All.Count;
+            var live = WelcomeHeroMotion.Live(1000f);
+            var pair = (from i in Enumerable.Range(0, count)
+                        from j in Enumerable.Range(0, count)
+                        let delta = Layout.Slots[j].Offset - Layout.Slots[i].Offset
+                        where Layout.Slots[i].Row == Layout.Slots[j].Row && Math.Abs(delta.X - WelcomeHeroLayout.Spacing) <= 1f
+                        orderby DistanceFromPivot(Layout.Slots[i].Offset + (delta / 2f))
+                        select (Left: i, Right: j, Delta: delta)).First();
+
+            // Both probes sit in the gap that the flat hit areas leave between the tiles.
+            var near = Layout.Slots[pair.Left].Offset + (pair.Delta * 0.47f);
+            var far = Layout.Slots[pair.Left].Offset + (pair.Delta * 0.53f);
+
+            Assert.AreEqual(-1, Layout.HitTestSlot(near, count));
+            Assert.AreEqual(-1, Layout.HitTestSlot(far, count));
+            Assert.AreEqual(pair.Left, Layout.HitTestSlot(near, count, live));
+            Assert.AreEqual(pair.Right, Layout.HitTestSlot(far, count, live));
+        }
+
+        [TestMethod]
+        public void LogoHitTestFollowsTheTilt()
+        {
+            var live = WelcomeHeroMotion.Live(1000f);
+            var half = WelcomeHeroLayout.LogoSize / 2f;
+
+            Assert.IsTrue(Layout.HitTestLogo(Vector2.Zero, live));
+            Assert.IsFalse(Layout.HitTestLogo(new Vector2(half + 12f, 0f), live));
+        }
+
+        [TestMethod]
+        public void MagnificationPeaksUnderThePointerAndFadesOut()
+        {
+            var slot = new Vector2(40f, -80f);
+
+            Assert.AreEqual(WelcomeHeroPointerEffects.MaxMagnification, WelcomeHeroPointerEffects.GetMagnification(slot, slot, 1f), 0.0001f);
+            Assert.AreEqual(1f, WelcomeHeroPointerEffects.GetMagnification(slot, slot, 0f), 0.0001f);
+            Assert.AreEqual(1f, WelcomeHeroPointerEffects.GetMagnification(slot + new Vector2(WelcomeHeroPointerEffects.MagnifyRadius, 0f), slot, 1f), 0.0001f);
+
+            var nearer = WelcomeHeroPointerEffects.GetMagnification(slot + new Vector2(30f, 0f), slot, 1f);
+            var farther = WelcomeHeroPointerEffects.GetMagnification(slot + new Vector2(60f, 0f), slot, 1f);
+            Assert.IsTrue(nearer > farther && farther > 1f);
+        }
+
+        [TestMethod]
+        public void TiltLeansTowardsThePointer()
+        {
+            var funnelCenter = Layout.FunnelCenter;
+
+            var (aroundX, aroundY) = WelcomeHeroPointerEffects.GetTilt(new Vector2(-500f, 0f), 500f, funnelCenter, 1f);
+            Assert.AreEqual(-WelcomeHeroPointerEffects.MaxTiltDegrees, aroundY, 0.0001f);
+            Assert.AreEqual(-WelcomeHeroPointerEffects.MaxTiltDegrees, aroundX, 0.0001f);
+
+            var (restX, restY) = WelcomeHeroPointerEffects.GetTilt(new Vector2(0f, -funnelCenter), 500f, funnelCenter, 1f);
+            Assert.AreEqual(0f, restX, 0.0001f);
+            Assert.AreEqual(0f, restY, 0.0001f);
+
+            // Without tilt, the flat tile plane is not distorted at all.
+            var flat = WelcomeHeroPointerEffects.CreateStageProjection(0f, 0f, funnelCenter);
+            var point = new Vector2(123f, -45f);
+            var projected = WelcomeHeroPointerEffects.Project(point, flat);
+            Assert.AreEqual(point.X, projected.X, 0.001f);
+            Assert.AreEqual(point.Y, projected.Y, 0.001f);
+        }
+
+        [TestMethod]
         public void EdgeOpacityDissolvesTowardsTheTop()
         {
             Assert.AreEqual(0f, WelcomeHeroLayout.EdgeOpacity(-WelcomeHeroLayout.TileSize));
@@ -159,5 +289,8 @@ namespace Settings.UI.UnitTests
                     $"'{module.NavigationTag}' is not an OOBE page.");
             }
         }
+
+        // The stage tilts around the middle of the funnel, so tiles there barely move.
+        private static float DistanceFromPivot(Vector2 pointFromApex) => Vector2.Distance(pointFromApex, new Vector2(0f, -Layout.FunnelCenter));
     }
 }

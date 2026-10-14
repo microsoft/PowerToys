@@ -51,15 +51,30 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public float MaxSlotDistance { get; }
 
+        /// <summary>
+        /// Gets the height of the middle of the funnel above the logo, which the stage tilts around and the
+        /// perspective vanishes into.
+        /// </summary>
+        public float FunnelCenter => ApexY / 2f;
+
         public Vector2 GetApex(float heroWidth) => new(heroWidth / 2f, ApexY);
 
         /// <summary>
         /// Returns the index of the slot under <paramref name="pointFromApex"/>, or -1.
         /// </summary>
-        public int HitTestSlot(Vector2 pointFromApex, int slotCount)
+        public int HitTestSlot(Vector2 pointFromApex, int slotCount) => HitTestSlot(pointFromApex, slotCount, WelcomeHeroMotion.None);
+
+        /// <summary>
+        /// Returns the index of the slot whose tile is drawn under <paramref name="pointFromApex"/>, or -1, taking the
+        /// magnification, tilt and bob of <paramref name="motion"/> into account.
+        /// </summary>
+        internal int HitTestSlot(Vector2 pointFromApex, int slotCount, WelcomeHeroMotion motion)
         {
+            var projection = CreateProjection(pointFromApex, motion);
             var half = (TileSize / 2f) + HitTolerance;
             var count = Math.Min(slotCount, Slots.Count);
+            var hit = -1;
+            var hitDistance = float.MaxValue;
             for (var i = 0; i < count; i++)
             {
                 var slot = Slots[i];
@@ -68,20 +83,71 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     continue;
                 }
 
-                var delta = pointFromApex - slot.Offset;
-                if (Math.Abs(delta.X) <= half && Math.Abs(delta.Y) <= half)
+                var scale = WelcomeHeroPointerEffects.GetMagnification(pointFromApex, slot.Offset, motion.PointerStrength);
+                if (!HitTestSquare(pointFromApex, slot.Offset, half * scale, -motion.BobAmplitude * scale, projection))
                 {
-                    return i;
+                    continue;
+                }
+
+                // Magnified neighbors can touch: the tile closest to the pointer wins.
+                var distance = Vector2.DistanceSquared(pointFromApex, WelcomeHeroPointerEffects.Project(slot.Offset, projection));
+                if (distance < hitDistance)
+                {
+                    hit = i;
+                    hitDistance = distance;
                 }
             }
 
-            return -1;
+            return hit;
         }
 
         public static bool HitTestLogo(Vector2 pointFromApex)
         {
             var half = LogoSize / 2f;
             return Math.Abs(pointFromApex.X) <= half && Math.Abs(pointFromApex.Y) <= half;
+        }
+
+        /// <summary>
+        /// Returns whether the logo is drawn under <paramref name="pointFromApex"/>, taking the tilt of
+        /// <paramref name="motion"/> into account.
+        /// </summary>
+        internal bool HitTestLogo(Vector2 pointFromApex, WelcomeHeroMotion motion) =>
+            HitTestSquare(pointFromApex, Vector2.Zero, LogoSize / 2f, 0f, CreateProjection(pointFromApex, motion));
+
+        /// <summary>
+        /// Gets where the center of the slot at <paramref name="index"/> is drawn, relative to the logo center.
+        /// </summary>
+        internal Vector2 GetSlotCenter(int index, Vector2 pointerFromApex, WelcomeHeroMotion motion) =>
+            WelcomeHeroPointerEffects.Project(Slots[index].Offset, CreateProjection(pointerFromApex, motion));
+
+        private static bool HitTestSquare(Vector2 point, Vector2 center, float half, float bobOffset, Matrix4x4 projection)
+        {
+            // The tile bobs up and down while idle; accept the whole range it travels.
+            var top = center.Y - half + Math.Min(bobOffset, 0f);
+            var bottom = center.Y + half;
+            return IsInsideConvexQuad(
+                point,
+                WelcomeHeroPointerEffects.Project(new Vector2(center.X - half, top), projection),
+                WelcomeHeroPointerEffects.Project(new Vector2(center.X + half, top), projection),
+                WelcomeHeroPointerEffects.Project(new Vector2(center.X + half, bottom), projection),
+                WelcomeHeroPointerEffects.Project(new Vector2(center.X - half, bottom), projection));
+        }
+
+        private static bool IsInsideConvexQuad(Vector2 point, Vector2 a, Vector2 b, Vector2 c, Vector2 d)
+        {
+            static float Cross(Vector2 from, Vector2 to, Vector2 p) => ((to.X - from.X) * (p.Y - from.Y)) - ((to.Y - from.Y) * (p.X - from.X));
+
+            var ab = Cross(a, b, point);
+            var bc = Cross(b, c, point);
+            var cd = Cross(c, d, point);
+            var da = Cross(d, a, point);
+            return (ab >= 0f && bc >= 0f && cd >= 0f && da >= 0f) || (ab <= 0f && bc <= 0f && cd <= 0f && da <= 0f);
+        }
+
+        private Matrix4x4 CreateProjection(Vector2 pointerFromApex, WelcomeHeroMotion motion)
+        {
+            var (aroundX, aroundY) = WelcomeHeroPointerEffects.GetTilt(pointerFromApex, motion.HalfWidth, FunnelCenter, motion.PointerStrength);
+            return WelcomeHeroPointerEffects.CreateStageProjection(aroundX, aroundY, FunnelCenter);
         }
 
         /// <summary>

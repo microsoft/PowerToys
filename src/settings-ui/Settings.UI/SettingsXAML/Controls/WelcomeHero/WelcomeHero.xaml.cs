@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
+using Windows.Foundation.Metadata;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
@@ -55,6 +56,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private bool _started;
         private int _hoveredTile = -1;
         private bool _hoveringLogo;
+        private bool _pointerOver;
+        private bool _watchingAnimationsSetting;
+        private Vector2 _lastPointer;
 
         public WelcomeHero()
         {
@@ -73,6 +77,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public event EventHandler<string> ModuleInvoked;
 
         /// <summary>
+        /// Raised when the intro actually starts playing (not when it is skipped or replaced by a static hero).
+        /// </summary>
+        public event EventHandler IntroStarted;
+
+        /// <summary>
         /// Gets or sets how the hero enters the screen. Set this before the control is loaded.
         /// </summary>
         public WelcomeHeroPlayback Playback { get; set; } = WelcomeHeroPlayback.Intro;
@@ -89,6 +98,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private int IconTileCount => Math.Min(WelcomeHeroModules.All.Count, _scene?.TileCount ?? 0);
 
+        private WelcomeHeroMotion CurrentMotion => _activePlayback == WelcomeHeroPlayback.Static || !_pointerOver
+            ? WelcomeHeroMotion.None
+            : WelcomeHeroMotion.Live((float)SceneHost.ActualWidth);
+
         private static Color GetResourceColor(string key, Color fallback) =>
             Application.Current.Resources.TryGetValue(key, out var value) && value is Color color ? color : fallback;
 
@@ -101,6 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             _activePlayback = AnimationsEnabled ? Playback : WelcomeHeroPlayback.Static;
             _layout = new WelcomeHeroLayout((float)Height);
+            WatchAnimationsSetting(true);
 
             var scale = (float)(XamlRoot?.RasterizationScale ?? 1.0);
             var iconPixels = Math.Ceiling(WelcomeHeroLayout.IconSize * WelcomeHeroScene.MaxMagnification * scale);
@@ -142,6 +156,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
+            WatchAnimationsSetting(false);
             _loadTimeout?.Stop();
             _loadTimeout = null;
 
@@ -163,18 +178,80 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 _logoSurface = null;
             }
 
-            foreach (var target in RevealTargets)
-            {
-                var visual = ElementCompositionPreview.GetElementVisual(target);
-                visual.StopAnimation("Opacity");
-                visual.Opacity = 1f;
-            }
+            ShowRevealTargets();
 
             _pendingLoads = 0;
             _started = false;
             _hoveredTile = -1;
             _hoveringLogo = false;
+            _pointerOver = false;
             ProtectedCursor = null;
+        }
+
+        private void WatchAnimationsSetting(bool watch)
+        {
+            if (watch == _watchingAnimationsSetting
+                || !ApiInformation.IsEventPresent(typeof(UISettings).FullName, nameof(UISettings.AnimationsEnabledChanged)))
+            {
+                return;
+            }
+
+            if (watch)
+            {
+                _uiSettings.AnimationsEnabledChanged += OnAnimationsEnabledChanged;
+            }
+            else
+            {
+                _uiSettings.AnimationsEnabledChanged -= OnAnimationsEnabledChanged;
+            }
+
+            _watchingAnimationsSetting = watch;
+        }
+
+        private void OnAnimationsEnabledChanged(UISettings sender, UISettingsAnimationsEnabledChangedEventArgs args)
+        {
+            // Raised on a background thread.
+            DispatcherQueue.TryEnqueue(ApplyAnimationsSetting);
+        }
+
+        private void ApplyAnimationsSetting()
+        {
+            if (_scene is null)
+            {
+                return;
+            }
+
+            var enabled = AnimationsEnabled;
+            if (!enabled && _activePlayback != WelcomeHeroPlayback.Static)
+            {
+                // Animations were turned off mid-session: drop all motion, including whatever is still in flight.
+                _activePlayback = WelcomeHeroPlayback.Static;
+                _loadTimeout?.Stop();
+                _started = true;
+                _scene.DisablePointerEffects();
+                _scene.ShowFinalState();
+                ShowRevealTargets();
+                RefreshHoverLabel();
+            }
+            else if (enabled && _activePlayback == WelcomeHeroPlayback.Static)
+            {
+                _activePlayback = WelcomeHeroPlayback.Settle;
+                _scene.EnablePointerEffects(ElementCompositionPreview.GetPointerPositionPropertySet(SceneHost));
+                _scene.ResumeIdle();
+                _scene.SetPointerActive(_pointerOver);
+            }
+        }
+
+        private void ShowRevealTargets()
+        {
+            foreach (var target in RevealTargets)
+            {
+                var visual = ElementCompositionPreview.GetElementVisual(target);
+                visual.StopAnimation("Opacity");
+                visual.StopAnimation("Translation");
+                visual.Opacity = 1f;
+                visual.Properties.InsertVector3("Translation", Vector3.Zero);
+            }
         }
 
         private LoadedImageSurface LoadSurface(string assetName, double pixels)
@@ -208,6 +285,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 _scene.PlayIntro();
                 RevealContent(IntroRevealStartMs, IntroRevealStaggerMs, IntroRevealMs);
+                IntroStarted?.Invoke(this, EventArgs.Empty);
             }
             else
             {
@@ -274,6 +352,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void SceneHost_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
+            _pointerOver = true;
             if (_activePlayback != WelcomeHeroPlayback.Static)
             {
                 _scene?.SetPointerActive(true);
@@ -286,6 +365,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void SceneHost_PointerExited(object sender, PointerRoutedEventArgs e)
         {
+            _pointerOver = false;
             if (_activePlayback != WelcomeHeroPlayback.Static)
             {
                 _scene?.SetPointerActive(false);
@@ -321,15 +401,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            var (tile, logo) = HitTest(e.GetCurrentPoint(SceneHost).Position);
+            _lastPointer = ToApex(e.GetCurrentPoint(SceneHost).Position);
+            var (tile, logo) = HitTest(_lastPointer);
             SetHover(tile, logo);
         }
 
-        private (int Tile, bool Logo) HitTest(Point position)
+        private void RefreshHoverLabel()
         {
-            var fromApex = new Vector2((float)position.X, (float)position.Y) - _scene.Apex;
-            var tile = _layout.HitTestSlot(fromApex, IconTileCount);
-            return (tile, tile < 0 && WelcomeHeroLayout.HitTestLogo(fromApex));
+            if (_hoveredTile >= 0)
+            {
+                ShowLabel(_hoveredTile);
+            }
+        }
+
+        private Vector2 ToApex(Point position) => new Vector2((float)position.X, (float)position.Y) - _scene.Apex;
+
+        private (int Tile, bool Logo) HitTest(Point position) => HitTest(ToApex(position));
+
+        // Hit test what is on screen: while the hero is live, tiles are magnified, tilted and bob.
+        private (int Tile, bool Logo) HitTest(Vector2 fromApex)
+        {
+            var motion = CurrentMotion;
+            var tile = _layout.HitTestSlot(fromApex, IconTileCount, motion);
+            return (tile, tile < 0 && _layout.HitTestLogo(fromApex, motion));
         }
 
         private void SetHover(int tile, bool logo)
@@ -371,7 +465,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             LabelPill.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             var labelSize = LabelPill.DesiredSize;
 
-            var center = _scene.Apex + _layout.Slots[tile].Offset;
+            var center = _scene.Apex + _layout.GetSlotCenter(tile, _lastPointer, CurrentMotion);
             var reach = (WelcomeHeroLayout.TileSize / 2f * WelcomeHeroScene.MaxMagnification) + LabelGap;
             var left = Math.Clamp(center.X - ((float)labelSize.Width / 2f), 4f, Math.Max(4f, (float)ActualWidth - (float)labelSize.Width - 4f));
             var top = center.Y - reach - (float)labelSize.Height;
