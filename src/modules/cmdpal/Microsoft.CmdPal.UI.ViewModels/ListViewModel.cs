@@ -1310,8 +1310,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         lock (_loadMoreRequestLock)
         {
-            // LoadMore can return before ItemsChanged publishes the batch.
-            if (!_loadMoreTask.IsCompleted || _isLoadingMore.Value)
+            // Share a request until its batch publishes. LoadMore may return before or after
+            // publication; a request made after publication queues behind it on the scheduler.
+            if (_isLoadingMore.Value)
             {
                 return _loadMoreTask;
             }
@@ -1390,7 +1391,19 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             case nameof(IListPage.HasMoreItems):
                 _hasMoreItems = true;
-                _ = _loadMoreTaskFactory.StartNew(() => _hasMoreItems = ReadHasMoreItems(model));
+                var generation = Volatile.Read(ref _workState).Generation;
+                _ = _loadMoreTaskFactory.StartNew(() =>
+                {
+                    var hasMoreItems = ReadHasMoreItems(model);
+                    lock (_fetchStateLock)
+                    {
+                        // A newer fetch resets availability to unknown; an older read must not overwrite it.
+                        if (_workState.Generation == generation)
+                        {
+                            _hasMoreItems = hasMoreItems;
+                        }
+                    }
+                });
                 return;
             case nameof(GridProperties):
                 IsGridView = model.GridProperties is not null;
