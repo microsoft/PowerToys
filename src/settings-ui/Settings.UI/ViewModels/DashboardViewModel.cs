@@ -43,8 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
-
         public ObservableCollection<QuickAccessItem> QuickAccessItems => _quickAccessViewModel.Items;
 
         private readonly QuickAccessViewModel _quickAccessViewModel;
@@ -224,7 +222,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                     IsNew = moduleType == ModuleType.AltWindowCycle,
-                    DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
                 newItem.EnabledChangedCallback = EnabledChangedOnUI;
@@ -415,8 +412,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Rebuilds ShortcutModules and ActionModules collections by filtering AllModules
-        /// to only include enabled modules and their respective shortcut/action items.
+        /// Rebuilds ShortcutModules by filtering AllModules to only include enabled modules
+        /// and their respective shortcut items.
         /// </summary>
         private void RefreshShortcutModules()
         {
@@ -432,10 +429,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             ShortcutModules.Clear();
-            ActionModules.Clear();
 
             foreach (var x in AllModules.Where(x => x.IsEnabled))
             {
+                EnsureModuleItemsLoaded(x);
+
                 var filteredItems = x.DashboardModuleItems
                     .Where(m => m is DashboardModuleShortcutItem || m is DashboardModuleActivationItem)
                     .ToList();
@@ -450,35 +448,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         Tag = x.Tag,
                         IsEnabled = x.IsEnabled,
                         DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
+                        AreDashboardModuleItemsLoaded = true,
                     };
 
                     ShortcutModules.Add(newItem);
                     newItem.EnabledChangedCallback = x.EnabledChangedCallback;
                 }
             }
+        }
 
-            foreach (var x in AllModules.Where(x => x.IsEnabled))
+        private void EnsureModuleItemsLoaded(DashboardListItem item)
+        {
+            if (item.AreDashboardModuleItemsLoaded)
             {
-                var filteredItems = x.DashboardModuleItems
-                    .Where(m => m is DashboardModuleButtonItem)
-                    .ToList();
-
-                if (filteredItems.Count != 0)
-                {
-                    var newItem = new DashboardListItem
-                    {
-                        Icon = x.Icon,
-                        IsLocked = x.IsLocked,
-                        Label = x.Label,
-                        Tag = x.Tag,
-                        IsEnabled = x.IsEnabled,
-                        DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
-                    };
-
-                    ActionModules.Add(newItem);
-                    newItem.EnabledChangedCallback = x.EnabledChangedCallback;
-                }
+                return;
             }
+
+            item.DashboardModuleItems = GetModuleItems(item.Tag);
+            item.AreDashboardModuleItemsLoaded = true;
         }
 
         private ObservableCollection<DashboardModuleItem> GetModuleItems(ModuleType moduleType)
