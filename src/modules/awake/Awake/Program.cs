@@ -444,7 +444,13 @@ namespace Awake
                     {
                         DateTimeOffset expirationDateTime = DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture);
                         Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
-                        Manager.SetExpirableKeepAwake(expirationDateTime, displayOn);
+                        if (!Manager.SetExpirableKeepAwake(expirationDateTime, displayOn) && _hasDeadlineCommand)
+                        {
+                            string message = GetCommandLineNormalizationError(CommandLineNormalizationError.TimeAlreadyPassed, null);
+                            Console.Error.WriteLine(message);
+                            Exit(message, 1);
+                            return;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -518,7 +524,13 @@ namespace Awake
             // Sets the keep-awake plan and updates the tray icon.
             if (_hasDeadlineCommand && !string.IsNullOrEmpty(expireAt))
             {
-                Manager.SetExpirableKeepAwake(DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture), displayOn);
+                if (!Manager.SetExpirableKeepAwake(DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture), displayOn))
+                {
+                    string message = GetCommandLineNormalizationError(CommandLineNormalizationError.TimeAlreadyPassed, null);
+                    Console.Error.WriteLine(message);
+                    Exit(message, 1);
+                    return;
+                }
             }
             else if (_hasDeadlineCommand)
             {
