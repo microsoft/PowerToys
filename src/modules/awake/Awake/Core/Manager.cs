@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -347,11 +348,25 @@ namespace Awake.Core
 
             SetModeShellIcon();
 
-            TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
-
-            _timerSubscription = Observable.Timer(remainingTime).Subscribe(
+            _timerSubscription = CreateExpirationTimer(expireAt, Scheduler.Default).Subscribe(
                 _ => HandleTimerCompletion("expirable"));
             return true;
+        }
+
+        internal static IObservable<long> CreateExpirationTimer(DateTimeOffset expireAt, IScheduler scheduler)
+        {
+            // Rx's default scheduler uses System.Threading.Timer, whose maximum due time is
+            // uint.MaxValue - 1 milliseconds. Recheck the absolute deadline after each bounded wait.
+            TimeSpan maximumDueTime = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+            return Observable.Defer(() =>
+                {
+                    TimeSpan remaining = expireAt - scheduler.Now;
+                    TimeSpan dueTime = remaining > maximumDueTime ? maximumDueTime : remaining;
+                    return Observable.Timer(dueTime < TimeSpan.Zero ? TimeSpan.Zero : dueTime, scheduler);
+                })
+                .Repeat()
+                .Where(_ => scheduler.Now >= expireAt)
+                .Take(1);
         }
 
         internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")

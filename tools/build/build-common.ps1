@@ -229,11 +229,6 @@ function Ensure-VsDevEnvironment {
     $OriginalLocationForVsInit = Get-Location
     try {
 
-    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR) {
-        Write-Host "[VS] VS developer environment already present"
-        return $true
-    }
-
     # Locate vswhere if available
     $vswhereCandidates = @(
         "$env:ProgramFiles (x86)\Microsoft Visual Studio\Installer\vswhere.exe",
@@ -248,6 +243,11 @@ function Ensure-VsDevEnvironment {
         }
     } else {
         Write-Host "[VS] vswhere not found"
+    }
+
+    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR) {
+        Write-Host "[VS] VS developer environment already present"
+        return $true
     }
 
     # Probe for a Visual Studio install with the C++ workload. Selection is

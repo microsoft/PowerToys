@@ -5,6 +5,7 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -349,6 +350,12 @@ namespace Awake
             {
                 // Process with the specified ID is not running
                 return false;
+            }
+            catch (Win32Exception ex)
+            {
+                // An inaccessible process is not necessarily missing; let the monitor report the failure.
+                Logger.LogError($"Could not query PID {processId}; deferring to process monitoring.", ex);
+                return true;
             }
             catch (InvalidOperationException ex)
             {
