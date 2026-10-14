@@ -27,9 +27,8 @@ public partial class ShellViewModel : ObservableObject,
     public event EventHandler<ShellNavigationRequestedEventArgs>? GoBackRequested;
 
     private readonly IRootPageService _rootPageService;
-    private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
-    private readonly IPageViewModelFactoryService _pageViewModelFactory;
+    private readonly PageNavigationService _pageNavigation;
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
 
@@ -113,10 +112,9 @@ public partial class ShellViewModel : ObservableObject,
         IPageViewModelFactoryService pageViewModelFactory,
         IAppHostService appHostService)
     {
-        _pageViewModelFactory = pageViewModelFactory;
+        _pageNavigation = new(pageViewModelFactory, appHostService);
         _scheduler = scheduler;
         _rootPageService = rootPageService;
-        _appHostService = appHostService;
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
@@ -158,102 +156,47 @@ public partial class ShellViewModel : ObservableObject,
 
     private async Task LoadPageViewModelAsync(PageViewModel viewModel, CancellationToken cancellationToken = default)
     {
-        // Note: We removed the general loading state, extensions sometimes use their `IsLoading`, but it's inconsistently implemented it seems.
-        // IsInitialized is our main indicator of the general overall state of loading props/items from a page we use for the progress bar
-        // This triggers that load generally with the InitializeCommand asynchronously when we navigate to a page.
-        // We could re-track the page loading status, if we need it more granularly below again, but between the initialized and error message, we can infer some status.
-        // We could also maybe move this thread offloading we do for loading into PageViewModel and better communicate between the two... a few different options.
-
-        ////LoadedState = ViewModelLoadedState.Loading;
         if (!viewModel.IsInitialized
             && viewModel.InitializeCommand is not null)
         {
-            var outer = Task.Run(
-                async () =>
-                {
-                    // You know, this creates the situation where we wait for
-                    // both loading page properties, AND the items, before we
-                    // display anything.
-                    //
-                    // We almost need to do an async await on initialize, then
-                    // just a fire-and-forget on FetchItems.
-                    // RE: We do set the CurrentPage in ShellPage.xaml.cs as well, so, we kind of are doing two different things here.
-                    // Definitely some more clean-up to do, but at least its centralized to one spot now.
-                    viewModel.InitializeCommand.Execute(null);
-
-                    await viewModel.InitializeCommand.ExecutionTask!;
-
-                    if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
-                    {
-                        if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
-                        {
-                            CoreLogger.LogError(ex.ToString());
-                        }
-                    }
-                    else
-                    {
-                        var t = Task.Factory.StartNew(
-                            () =>
-                            {
-                                if (viewModel.IsDiscarded)
-                                {
-                                    return;
-                                }
-
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    if (viewModel is IDisposable disposable)
-                                    {
-                                        try
-                                        {
-                                            disposable.Dispose();
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            CoreLogger.LogError(ex.ToString());
-                                        }
-                                    }
-
-                                    return;
-                                }
-
-                                CurrentPage = viewModel;
-                            },
-                            cancellationToken,
-                            TaskCreationOptions.None,
-                            _scheduler);
-                        await t;
-                    }
-                },
-                cancellationToken);
-            await outer;
+            await PageNavigationService.InitializePageAsync(viewModel, cancellationToken).ConfigureAwait(false);
+            await Task.Factory.StartNew(
+                () => SetCurrentPageAfterLoad(viewModel, cancellationToken),
+                cancellationToken,
+                TaskCreationOptions.None,
+                _scheduler);
         }
         else
         {
-            if (viewModel.IsDiscarded)
-            {
-                return;
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                if (viewModel is IDisposable disposable)
-                {
-                    try
-                    {
-                        disposable.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreLogger.LogError(ex.ToString());
-                    }
-                }
-
-                return;
-            }
-
-            CurrentPage = viewModel;
+            SetCurrentPageAfterLoad(viewModel, cancellationToken);
         }
+    }
+
+    private void SetCurrentPageAfterLoad(PageViewModel viewModel, CancellationToken cancellationToken)
+    {
+        if (viewModel.IsDiscarded)
+        {
+            return;
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            if (viewModel is IDisposable disposable)
+            {
+                try
+                {
+                    disposable.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError(ex.ToString());
+                }
+            }
+
+            return;
+        }
+
+        CurrentPage = viewModel;
     }
 
     public void Receive(PerformCommandMessage message)
@@ -279,12 +222,10 @@ public partial class ShellViewModel : ObservableObject,
         // the providerContext that is passed to the new page view-model.
         var isMainPage = command == _rootPage;
 
-        var currentHost = message.Context?.ExtensionHost ?? CurrentPage.ExtensionHost;
-        var currentProviderContext = message.Context?.ProviderContext ?? CurrentPage.ProviderContext;
-        var host = _appHostService.GetHostForCommand(message.CommandContext, currentHost);
+        var host = _pageNavigation.ResolveHost(message, CurrentPage);
         var providerContext = isMainPage
             ? CommandProviderContext.Empty
-            : _appHostService.GetProviderContextForCommand(message.CommandContext, currentProviderContext);
+            : _pageNavigation.ResolveProviderContext(message, CurrentPage);
 
         try
         {
@@ -294,31 +235,13 @@ public partial class ShellViewModel : ObservableObject,
                 CoreLogger.LogDebug($"Navigating to page");
 
                 var isNested = !isMainPage;
-                if (message.ListPageOptions is { } options &&
-                    (options.IsEmpty || page is not IListPage))
-                {
-                    throw new NotSupportedException("List page launch options can only be applied to list pages and must contain a query or filter.");
-                }
-
-                // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, isNested, host!, providerContext);
+                var pageViewModel = _pageNavigation.TryPreparePage(page, isNested, host, providerContext, message.ListPageOptions);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
                 }
 
-                if (message.ListPageOptions is not null)
-                {
-                    if (pageViewModel is not ListViewModel listPageViewModel)
-                    {
-                        throw new NotSupportedException("List page launch options can only be applied to list pages.");
-                    }
-
-                    listPageViewModel.SetLaunchOptions(message.ListPageOptions);
-                }
-
-                pageViewModel.IsRootPage = isMainPage;
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
                 _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
