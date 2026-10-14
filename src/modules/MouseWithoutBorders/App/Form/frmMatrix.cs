@@ -135,7 +135,9 @@ namespace MouseWithoutBorders
         internal void UpdateKeyTextBox()
         {
             _ = Helper.GetUserName();
-            textBoxEnc.Text = Encryption.MyKey;
+            textBoxEnc.Text = ServicePairingCredentialManager.IsProtectedMode
+                ? ServicePairingCredentialStore.ConfiguredIndicator
+                : Encryption.MyKey;
         }
 
         private void InitAll()
@@ -505,6 +507,11 @@ namespace MouseWithoutBorders
 
         private bool UpdateKey(string newKey)
         {
+            if (ServicePairingCredentialManager.IsProtectedMode)
+            {
+                return false;
+            }
+
             if (!Encryption.IsKeyValid(newKey, out string rv))
             {
                 ShowKeyErrorMsg(rv);
@@ -1111,6 +1118,11 @@ namespace MouseWithoutBorders
 
         private void ButtonNewKey_Click(object sender, EventArgs e)
         {
+            if (ServicePairingCredentialManager.IsProtectedMode)
+            {
+                return;
+            }
+
             string message = "Do you really want to generate a new key?\r\n" +
                 "(You would need to enter this key in all other machines to re-establish the connections)";
 

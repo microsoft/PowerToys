@@ -42,7 +42,9 @@ namespace MouseWithoutBorders
 
         protected string GetSecureKey()
         {
-            return Encryption.MyKey;
+            return ServicePairingCredentialManager.IsProtectedMode
+                ? ServicePairingCredentialStore.ConfiguredIndicator
+                : Encryption.MyKey;
         }
 
         private void BackButton_Click(object sender, EventArgs e)

@@ -7,12 +7,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -397,6 +399,103 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.AreEqual("""{"Name":"PC","Status":9}""", JsonConvert.SerializeObject(state));
         }
 
+        [TestMethod]
+        public void PairingRpcContractMatchesApplicationContract()
+        {
+            var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic);
+            var generate = contract!.GetMethod("GenerateNewKey")!;
+            var connect = contract.GetMethod("ConnectToMachine")!;
+
+            Assert.AreEqual(typeof(Task<string>), generate.ReturnType);
+            Assert.AreEqual(0, generate.GetParameters().Length);
+            Assert.AreEqual(typeof(Task), connect.ReturnType);
+            CollectionAssert.AreEqual(
+                new[] { typeof(string), typeof(string) },
+                connect.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
+        }
+
+        [TestMethod]
+        public void ServiceKeyDisplayUsesTransientResultWithoutChangingSavedValue()
+        {
+            var state = new MouseWithoutBordersPairingState
+            {
+                TransientSecurityKey = "transient",
+            };
+
+            Assert.AreEqual("saved", state.GetDisplayValue(false, "saved"));
+            Assert.AreEqual("transient", state.GetDisplayValue(true, "configured"));
+            state.TransientSecurityKey = null;
+            Assert.AreEqual("configured", state.GetDisplayValue(true, "configured"));
+            Assert.AreEqual(string.Empty, state.GetDisplayValue(true, MouseWithoutBordersIpc.PairingSetupRequiredIndicator));
+        }
+
+        [TestMethod]
+        public void ConfiguredSettingsReloadKeepsGeneratedServiceKeyVisible()
+        {
+            var state = new MouseWithoutBordersPairingState
+            {
+                TransientSecurityKey = "transient",
+            };
+
+            Assert.IsTrue(state.ShouldPreserveTransientSecurityKey(true, MouseWithoutBordersIpc.PairingConfiguredIndicator));
+            Assert.IsFalse(state.ShouldPreserveTransientSecurityKey(true, MouseWithoutBordersIpc.PairingSetupRequiredIndicator));
+            Assert.IsFalse(state.ShouldPreserveTransientSecurityKey(false, MouseWithoutBordersIpc.PairingConfiguredIndicator));
+        }
+
+        [TestMethod]
+        public void GeneratedKeyUsesIndicatorOnlyInServiceMode()
+        {
+            Assert.AreEqual(
+                MouseWithoutBordersIpc.PairingConfiguredIndicator,
+                MouseWithoutBordersPairingState.GetSavedValueAfterGeneratedKey(true, "generated"));
+            Assert.AreEqual(
+                "generated",
+                MouseWithoutBordersPairingState.GetSavedValueAfterGeneratedKey(false, "generated"));
+        }
+
+        [TestMethod]
+        public void PairingPageLifecycleClearsTransientValues()
+        {
+            var state = new MouseWithoutBordersPairingState
+            {
+                TransientSecurityKey = "transient",
+                ConnectSecurityKey = "key",
+                ConnectPCName = "machine",
+                ConnectFieldsVisible = true,
+            };
+
+            state.Clear();
+
+            Assert.IsNull(state.TransientSecurityKey);
+            Assert.AreEqual(string.Empty, state.ConnectSecurityKey);
+            Assert.AreEqual(string.Empty, state.ConnectPCName);
+            Assert.IsFalse(state.ConnectFieldsVisible);
+        }
+
+        [TestMethod]
+        public void PairingSetupStateClearsAfterProvisioning()
+        {
+            Assert.IsTrue(MouseWithoutBordersPairingState.IsSetupRequired(true, MouseWithoutBordersIpc.PairingSetupRequiredIndicator));
+            Assert.IsFalse(MouseWithoutBordersPairingState.IsSetupRequired(true, MouseWithoutBordersIpc.PairingConfiguredIndicator));
+            Assert.IsFalse(MouseWithoutBordersPairingState.IsSetupRequired(false, MouseWithoutBordersIpc.PairingSetupRequiredIndicator));
+        }
+
+        [TestMethod]
+        public void PairingSetupResourceUsesUpgradeMessage()
+        {
+            var resourcePath = FindRepositoryFile(@"src\settings-ui\Settings.UI\Strings\en-us\Resources.resw");
+            var document = XDocument.Load(resourcePath);
+            var value = document
+                .Descendants("data")
+                .Single(element => (string)element.Attribute("name") == "MouseWithoutBorders_PairingSetupRequired.Title")
+                .Element("value")!
+                .Value;
+
+            Assert.AreEqual(
+                "Key storage has been enhanced. To continue using Mouse Without Borders in service mode, run PowerToys Settings as administrator and generate a new pairing key.",
+                value);
+        }
+
         private static async Task<(NamedPipeServerStream Server, NamedPipeClientStream Client)> CreateConnectedPairAsync(string pipeName = null)
         {
             pipeName ??= UniquePipeName();
@@ -425,6 +524,24 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         private static string UniquePipeName()
         {
             return $"PowerToys.MWB.v2.UnitTest.{Environment.ProcessId}.{Guid.NewGuid():N}";
+        }
+
+        private static string FindRepositoryFile(string relativePath)
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory != null)
+            {
+                var candidate = Path.Combine(directory.FullName, relativePath);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+
+                directory = directory.Parent;
+            }
+
+            Assert.Fail($"Could not locate {relativePath}.");
+            return string.Empty;
         }
 
         private static string GetKnownEmbeddedMicrosoftSignedDependencyPath()

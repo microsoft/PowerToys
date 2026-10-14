@@ -837,6 +837,11 @@ internal static class MachineStuff
 
     internal static void ShowMachineMatrix()
     {
+        if (ServicePairingCredentialManager.IsProtectedMode)
+        {
+            return;
+        }
+
         if (!Setting.Values.ShowOriginalUI)
         {
             return;

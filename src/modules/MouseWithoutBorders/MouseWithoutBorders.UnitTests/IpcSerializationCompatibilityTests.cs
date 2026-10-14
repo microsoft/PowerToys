@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Reflection;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseWithoutBorders.Class;
@@ -23,5 +24,20 @@ public sealed class IpcSerializationCompatibilityTests
         stateType.GetField("Status")!.SetValue(state, Enum.ToObject(stateType.GetField("Status")!.FieldType, 9));
 
         Assert.AreEqual("""{"Name":"PC","Status":9}""", JsonConvert.SerializeObject(state));
+    }
+
+    [TestMethod]
+    public void PairingRpcContractUsesAwaitableResponsesWithoutCallerFlags()
+    {
+        var contract = typeof(Program).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic)!;
+        var generate = contract.GetMethod("GenerateNewKey")!;
+        var connect = contract.GetMethod("ConnectToMachine")!;
+
+        Assert.AreEqual(typeof(Task<string>), generate.ReturnType);
+        Assert.AreEqual(0, generate.GetParameters().Length);
+        Assert.AreEqual(typeof(Task), connect.ReturnType);
+        CollectionAssert.AreEqual(
+            new[] { typeof(string), typeof(string) },
+            connect.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
     }
 }

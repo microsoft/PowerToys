@@ -43,9 +43,10 @@
                         Name="MouseWithoutBordersSecurityKey"
                         x:Uid="MouseWithoutBorders_SecurityKey"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D7;}"
+                        IsEnabled="{x:Bind ViewModel.CanManagePairing, Mode=OneWay}"
                         IsExpanded="{x:Bind ViewModel.ConnectFieldsVisible, Mode=TwoWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard ContentAlignment="Right">
+                            <tkcontrols:SettingsCard ContentAlignment="Right" IsEnabled="{x:Bind ViewModel.CanConnectPairing, Mode=OneWay}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBox
                                         x:Name="ConnectSecurityKeyTextBox"
@@ -71,10 +72,23 @@
                             <Button
                                 x:Uid="MouseWithoutBorders_Connect"
                                 Command="{x:Bind ShowConnectFieldsCommand, Mode=OneTime}"
+                                IsEnabled="{x:Bind ViewModel.CanConnectPairing, Mode=OneWay}"
                                 Style="{StaticResource AccentButtonStyle}"
                                 Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}" />
                         </StackPanel>
                     </tkcontrols:SettingsExpander>
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_PairingRequiresAdministrator"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPairingRequiresAdministrator, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPairingRequiresAdministrator, Mode=OneWay}"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_PairingSetupRequired"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.PairingSetupRequired, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.PairingSetupRequired, Mode=OneWay}"
+                        Severity="Informational" />
 
                     <tkcontrols:SettingsCard Name="MouseWithoutBordersThisMachineNameLabel" x:Uid="MouseWithoutBorders_ThisMachineNameLabel">
                         <StackPanel Orientation="Horizontal" Spacing="8">

@@ -134,6 +134,17 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
+                if (IsLocalSystemCredentialMode(currentUserSID, serviceMode))
+                {
+                    var interactiveUserSid = ResolveSettingsIpcUserSid(
+                        currentUserSID,
+                        Process.GetCurrentProcess().SessionId,
+                        GetInteractiveSessionUserSid);
+                    ServicePairingCredentialManager.InitializeForLocalSystem(
+                        interactiveUserSid.Value,
+                        ApplyServicePairingCredential);
+                }
+
                 ShutdownWithPowerToys.WaitForPowerToysRunner(etwTrace);
 
                 if (firstArg != string.Empty)
@@ -271,15 +282,27 @@ namespace MouseWithoutBorders.Class
 
             void Reconnect();
 
-            void GenerateNewKey();
+            Task<string> GenerateNewKey();
 
-            void ConnectToMachine(string machineName, string securityKey);
+            Task ConnectToMachine(string machineName, string securityKey);
 
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
 
         private sealed class SettingsSyncHelper : ISettingsSyncHelper
         {
+            private readonly ISettingsSyncAuthorization _authorization;
+
+            public SettingsSyncHelper()
+                : this(new SettingsSyncAuthorization(false))
+            {
+            }
+
+            internal SettingsSyncHelper(ISettingsSyncAuthorization authorization)
+            {
+                _authorization = authorization;
+            }
+
             public Task<ISettingsSyncHelper.MachineSocketState[]> RequestMachineSocketStateAsync()
             {
                 var machineStates = new Dictionary<string, SocketStatus>();
@@ -301,42 +324,82 @@ namespace MouseWithoutBorders.Class
                 return Task.FromResult(machineStates.Select((state) => new ISettingsSyncHelper.MachineSocketState { Name = state.Key, Status = state.Value }).ToArray());
             }
 
-            public void ConnectToMachine(string pcName, string securityKey)
+            public Task ConnectToMachine(string pcName, string securityKey)
             {
+                EnsurePairingOperationAuthorized(ServicePairingCredentialManager.IsProtectedMode, _authorization);
+                var protectedCredentialConfigured =
+                    !ServicePairingCredentialManager.IsProtectedMode ||
+                    ServicePairingCredentialManager.Current.TryLoad(out _);
+                EnsureConnectOperationAvailable(
+                    ServicePairingCredentialManager.IsProtectedMode,
+                    protectedCredentialConfigured);
+                if (!ServicePairingCredentialStore.IsValidKey(securityKey))
+                {
+                    throw new ArgumentException("A pairing credential is required.", nameof(securityKey));
+                }
+
+                var previousPauseInstantSaving = Setting.Values.PauseInstantSaving;
                 Setting.Values.PauseInstantSaving = true;
+                try
+                {
+                    MachineStuff.ClearComputerMatrix();
+                    var savedCredential = PersistPairingCredential(
+                        securityKey,
+                        applyToCurrentProcess: !ServicePairingCredentialManager.IsProtectedMode);
+                    MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
 
-                MachineStuff.ClearComputerMatrix();
-                Setting.Values.MyKey = securityKey;
-                Encryption.MyKey = securityKey;
-                Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
-                MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
+                    string[] machines = MachineStuff.MachineMatrix;
+                    MachineStuff.MachinePool.Initialize(machines);
+                    MachineStuff.UpdateMachinePoolStringSetting();
 
-                string[] machines = MachineStuff.MachineMatrix;
-                MachineStuff.MachinePool.Initialize(machines);
-                MachineStuff.UpdateMachinePoolStringSetting();
+                    if (ServicePairingCredentialManager.IsProtectedMode)
+                    {
+                        ServicePairingCredentialManager.Current.ApplyCredentialToCurrentProcess(savedCredential.Value);
+                    }
+                    else
+                    {
+                        SocketStuff.InvalidKeyFound = false;
+                        InitAndCleanup.ReopenSocketDueToReadError = true;
+                        Common.ReopenSockets(true);
+                    }
 
-                SocketStuff.InvalidKeyFound = false;
-                InitAndCleanup.ReopenSocketDueToReadError = true;
-                Common.ReopenSockets(true);
-                MachineStuff.SendMachineMatrix();
+                    MachineStuff.SendMachineMatrix();
+                    Setting.Values.SaveSettings();
+                }
+                finally
+                {
+                    Setting.Values.PauseInstantSaving = previousPauseInstantSaving;
+                }
 
-                Setting.Values.PauseInstantSaving = false;
-                Setting.Values.SaveSettings();
+                return Task.CompletedTask;
             }
 
-            public void GenerateNewKey()
+            public Task<string> GenerateNewKey()
             {
+                EnsurePairingOperationAuthorized(ServicePairingCredentialManager.IsProtectedMode, _authorization);
+                var previousPauseInstantSaving = Setting.Values.PauseInstantSaving;
                 Setting.Values.PauseInstantSaving = true;
+                string key;
+                try
+                {
+                    Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
+                    MachineStuff.ClearComputerMatrix();
+                    key = Encryption.CreateRandomKey();
+                    PersistPairingCredential(key);
+                    Encryption.GeneratedKey = true;
+                    Setting.Values.SaveSettings();
+                }
+                finally
+                {
+                    Setting.Values.PauseInstantSaving = previousPauseInstantSaving;
+                }
 
-                Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
-                MachineStuff.ClearComputerMatrix();
-                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
-                Encryption.GeneratedKey = true;
+                if (!ServicePairingCredentialManager.IsProtectedMode)
+                {
+                    Reconnect();
+                }
 
-                Setting.Values.PauseInstantSaving = false;
-                Setting.Values.SaveSettings();
-
-                Reconnect();
+                return Task.FromResult(key);
             }
 
             public void Reconnect()
@@ -422,7 +485,70 @@ namespace MouseWithoutBorders.Class
                     out var rejectionReason)
                     ? string.Empty
                     : rejectionReason,
+                stream => new SettingsSyncHelper(SettingsSyncAuthorization.FromVerifiedConnection(stream)),
                 CancellationToken.None);
+        }
+
+        internal static bool IsLocalSystemCredentialMode(SecurityIdentifier processUserSid, bool configuredServiceMode)
+        {
+            ArgumentNullException.ThrowIfNull(processUserSid);
+            _ = configuredServiceMode;
+            return processUserSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
+        }
+
+        internal static void EnsurePairingOperationAuthorized(
+            bool protectedMode,
+            ISettingsSyncAuthorization authorization)
+        {
+            ArgumentNullException.ThrowIfNull(authorization);
+            if (protectedMode && !authorization.CanManageServicePairing)
+            {
+                throw new UnauthorizedAccessException("Administrator access is required to manage service pairing.");
+            }
+        }
+
+        internal static void EnsureConnectOperationAvailable(bool protectedMode, bool protectedCredentialConfigured)
+        {
+            if (protectedMode && !protectedCredentialConfigured)
+            {
+                throw new InvalidOperationException("Generate a new pairing key before connecting another machine.");
+            }
+        }
+
+        private static ServicePairingCredential? PersistPairingCredential(string key, bool applyToCurrentProcess = true)
+        {
+            if (ServicePairingCredentialManager.IsProtectedMode)
+            {
+                var credential = ServicePairingCredentialManager.Current.Save(key, applyToCurrentProcess);
+                Setting.Values.MyKey = key;
+                return credential;
+            }
+            else
+            {
+                ApplyPairingCredential(key);
+            }
+
+            Setting.Values.MyKey = key;
+            return null;
+        }
+
+        private static void ApplyServicePairingCredential(string key)
+        {
+            ApplyPairingCredential(key);
+            if (Common.MainForm != null)
+            {
+                SocketStuff.InvalidKeyFound = false;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
+                Common.ReopenSockets(true);
+                MachineStuff.SendMachineMatrix();
+            }
+        }
+
+        private static void ApplyPairingCredential(string key)
+        {
+            Encryption.MyKey = key;
+            Encryption.MagicNumber = Encryption.Get24BitHash(key);
+            Encryption.GeneratedKey = false;
         }
 
         internal static SecurityIdentifier ResolveSettingsIpcUserSid(
