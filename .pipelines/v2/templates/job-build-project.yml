@@ -183,6 +183,21 @@ jobs:
       & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
     displayName: Audit shared common props for CSharp projects in src sub-folder
 
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.codeSign, true)) }}:
+    - powershell: |-
+        # Use the inbox Pester version without installing modules on the build agent.
+        Import-Module Pester -MinimumVersion 3.4 -MaximumVersion 4.99
+        $result = Invoke-Pester -Script @(
+            '.pipelines/tests/versionAndSignCheck.Tests.ps1',
+            '.pipelines/tests/winmdSigningPolicy.Tests.ps1'
+        ) -PassThru
+        if ($result.FailedCount -gt 0 -or $result.TotalCount -eq 0) {
+            throw 'Release signing regression tests failed.'
+        }
+        # Negative script tests set LASTEXITCODE; report the Pester result instead.
+        exit 0
+      displayName: Test release signing checks
+
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
@@ -567,6 +582,10 @@ jobs:
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_cmdpal_msix_content.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+    - pwsh: |-
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(JobOutputDirectory)/CmdPalPackageContents' -WinmdOnly
+      displayName: Verify CmdPal metadata signatures
 
     - pwsh: |-
         $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
