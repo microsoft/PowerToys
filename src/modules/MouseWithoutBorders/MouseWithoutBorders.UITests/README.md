@@ -276,6 +276,28 @@ worker snapshot is lost.
 
 ## Recorded evidence
 
+**Current-source shared Release pilot validation:** [CI build 160517346](https://dev.azure.com/microsoft/Dart/_build/results?buildId=160517346)
+succeeded at `b7be098373ebb0b41a2de352f46abf00f05e719f`.
+Win10 Legacy run `1714540311` and Win11 modern run `1714541931` each
+executed and passed all eleven cases and all eight smoke phases. Matching
+persisted key/peer acknowledgements took 271/2261 ms; both endpoints restored
+settings/clipboard, normal cleanup had zero errors, and recovery, privileged
+firewall/trust cleanup and recording finalization succeeded. Four nonempty
+smoke videos were downloaded and decoded privately. Both OS jobs used matching
+managed/runtime product manifests and valid same-cohort endpoint signatures.
+
+The queued-save snapshot fix alone still failed Win11 transport in CI4.
+The subsequent initial-readiness guard requires the actual owned MWB listeners
+before pairing; it retains the existing deadlines and assertions.
+Eligible cold local Win10 `localvm-20261014-142300-3e611e1c` passed 11/11
+without host suspension. The local Win11 VM again failed native Sandbox
+creation before product startup; the explicitly approved fresh-CI exception
+was used, not a local Win11 pass. Local pressure, installed/service/secure-desktop,
+ARM64 live and physical-device limitations remain unchanged.
+Five of the six authorized stability-cycle queues were consumed; the sixth
+was left unused after the verified pass. Historical results below are retained,
+not substituted for this exact-source CI evidence.
+
 **Current default operating-contract stability:** the final test cohort passed
 three completed, cold, clean-module-profile full suites on each OS at eight
 vCPUs/16 GB. Win10 runs were `localvm-20261012-042656-d101a85b`,
