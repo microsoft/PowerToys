@@ -200,18 +200,23 @@
 Commands:
   for &lt;duration&gt;  Keep awake for a duration, such as 45m or 1h30m.
   until &lt;time&gt;    Keep awake until a time, such as 17:30 or a future ISO 8601 date and time.</value>
+    <comment>Translate the descriptions and heading, but keep command names for and until, duration examples 45m and 1h30m, time example 17:30, and the standard identifier ISO 8601 unchanged. Duration unit suffixes d/h/m/s are parser literals and must not be translated. &lt;duration&gt; and &lt;time&gt; are display metavariables, not text typed as parser arguments: their words may be localized as appropriate, but keep the angle brackets. Keep the example syntax and line breaks.</comment>
   </data>
   <data name="AWAKE_CMD_ERROR_DURATION_REQUIRED" xml:space="preserve">
     <value>The 'for' command needs a duration, such as 45m or 1h30m.</value>
+    <comment>Keep the command name for and duration examples 45m and 1h30m unchanged; their unit suffixes are parser literals, not localized abbreviations.</comment>
   </data>
   <data name="AWAKE_CMD_ERROR_DURATION_INVALID" xml:space="preserve">
     <value>"{0}" is not a valid duration. Try 45m, 2h, or 1h30m.</value>
+    <comment>Keep {0} unchanged; it is replaced by the invalid input at runtime. Keep duration examples 45m, 2h, and 1h30m unchanged; their unit suffixes are parser literals, not localized abbreviations.</comment>
   </data>
   <data name="AWAKE_CMD_ERROR_TIME_REQUIRED" xml:space="preserve">
     <value>The 'until' command needs a time, such as 17:30 or a future ISO 8601 date and time.</value>
+    <comment>Keep the command name until, time example 17:30, and standard identifier ISO 8601 unchanged.</comment>
   </data>
   <data name="AWAKE_CMD_ERROR_TIME_INVALID" xml:space="preserve">
     <value>"{0}" is not a time Awake understands. Try 17:30 or a future ISO 8601 date and time.</value>
+    <comment>Keep {0} unchanged; it is replaced by the invalid input at runtime. Keep the time example 17:30 and standard identifier ISO 8601 unchanged.</comment>
   </data>
   <data name="AWAKE_CMD_ERROR_TIME_PAST" xml:space="preserve">
     <value>The requested time has already passed.</value>
