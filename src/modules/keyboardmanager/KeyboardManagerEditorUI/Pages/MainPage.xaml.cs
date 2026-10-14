@@ -1048,6 +1048,48 @@ namespace KeyboardManagerEditorUI.Pages
 
         #region Load Methods
 
+        /// <summary>
+        /// Settings restore can replace default.json/editorSettings.json while the editor stays open, which
+        /// would leave rows with stale mapping ids. Rebuild from disk the way startup does when either changed.
+        /// </summary>
+        internal void ReloadIfChangedOnDisk()
+        {
+            if (_mappingService == null)
+            {
+                return;
+            }
+
+            try
+            {
+                using var current = new KeyboardMappingService();
+                if (_mappingService.HasSameMappings(current) && !SettingsManager.HasSettingsChangedOnDisk())
+                {
+                    return;
+                }
+
+                // Keep the current view if the files are mid-write or locked; the next activation retries.
+                if (!SettingsManager.CorrelateServiceAndEditorMappings(regenerateUnreadableSettings: false))
+                {
+                    return;
+                }
+
+                // An open edit dialog targets a row id that may no longer exist.
+                if (_isEditMode)
+                {
+                    RemappingDialog.Hide();
+                }
+
+                KeyboardMappingService previousService = _mappingService;
+                _mappingService = new KeyboardMappingService();
+                previousService.Dispose();
+                LoadAllMappings();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to reload Keyboard Manager mappings after activation: " + ex.Message);
+            }
+        }
+
         private void LoadAllMappings()
         {
             LoadRemappings();
