@@ -61,7 +61,7 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
         {
             MoreCommands =
             [
-                new CommandContextItem(openSettings),
+                new CommandContextItem(openSettings) { Title = Properties.Resources.dock_settings_name },
                 new CommandContextItem(new ReloadExtensionsCommand()) { Title = Properties.Resources.builtin_reload_display_title },
                 new CommandContextItem(openLogCommand),
                 new CommandContextItem(quitCommand) { Title = Properties.Resources.builtin_quit_subtitle },
