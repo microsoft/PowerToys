@@ -14,6 +14,7 @@ This file contains the documentation for the Mouse Without Borders PowerToy modu
   - [Table of Contents](#table-of-contents)
   - [Status colors](#status-colors)
   - [Settings matrix reconciliation](#settings-matrix-reconciliation)
+  - [Settings persistence](#settings-persistence)
   - [Settings pairing readiness](#settings-pairing-readiness)
   - [Experimental non-console sessions](#experimental-non-console-sessions)
   - [Release, installed and physical-device validation](#release-installed-and-physical-device-validation)
@@ -42,6 +43,19 @@ not removed machines, and only an actual removal or insertion should cause a
 settings save. Rewriting an unchanged matrix retriggers the page's file watcher,
 which can repeatedly reload and save settings on the UI dispatcher. Existing
 device positions and the four-slot layout are preserved during reconciliation.
+
+## Settings persistence
+
+An asynchronous MWB settings save captures immutable JSON before queueing the
+file write. A settings reload can replace the loaded settings object, and later
+changes can mutate its properties; neither may change an already queued save's
+key, peer matrix or other values. Each save retains its own captured snapshot
+and the loaded name/version metadata. The existing write lock, I/O retries,
+JSON shape and error reporting remain unchanged.
+
+This snapshot invariant does not guarantee ordering between independently
+queued saves or establish runtime key/socket synchronization during pairing.
+Encryption, peer verification and the pairing assertions are unchanged.
 
 ## Settings pairing readiness
 

@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -44,6 +45,12 @@ namespace MouseWithoutBorders.Class
 {
     internal class Settings
     {
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            IncludeFields = true,
+        };
+
         internal bool Changed;
 
         private readonly SettingsUtils _settingsUtils;
@@ -153,7 +160,21 @@ namespace MouseWithoutBorders.Class
 
         private void SaveSettingsToJson(MouseWithoutBordersProperties properties_to_save)
         {
-            _settings.Properties = properties_to_save;
+            string serializedSettings;
+            lock (_loadingSettingsLock)
+            {
+                var currentSettings = _settings;
+                var settingsToSave = new MouseWithoutBordersSettings
+                {
+                    Name = currentSettings.Name,
+                    Version = currentSettings.Version,
+                    Properties = properties_to_save,
+                };
+
+                // Capture immutable JSON before a reload or later mutation can replace the queued snapshot.
+                serializedSettings = JsonSerializer.Serialize(settingsToSave, _serializerOptions);
+            }
+
             _ = Task.Factory.StartNew(
                 () =>
             {
@@ -165,7 +186,7 @@ namespace MouseWithoutBorders.Class
                     {
                         lock (_loadingSettingsLock)
                         {
-                            _settings.Save(_settingsUtils);
+                            _settingsUtils.SaveSettings(serializedSettings, MouseWithoutBordersSettings.ModuleName);
                         }
 
                         saved = true;
