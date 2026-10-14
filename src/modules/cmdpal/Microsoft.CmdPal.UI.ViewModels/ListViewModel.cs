@@ -371,7 +371,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
-    private void FetchItems(bool keepSelection, bool ensureSelectionVisible, int? recoveryGeneration = null, bool cacheInitialAvailability = false)
+    private void FetchItems(
+        bool keepSelection,
+        bool ensureSelectionVisible,
+        int? recoveryGeneration = null,
+        bool cacheInitialAvailability = false)
     {
         using var operation = TryBeginPageOperation();
         if (operation is null)
@@ -1276,7 +1280,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public void LoadMoreIfNeeded() => _ = RequestLoadMoreAsync(useCachedAvailability: false);
+    /// <summary>
+    /// Requests another batch, bypassing cached exhaustion and sharing any pending request.
+    /// </summary>
+    public void LoadMoreIfNeeded()
+    {
+        _ = RequestLoadMoreAsync(useCachedAvailability: false);
+    }
 
     /// <summary>
     /// Requests another batch for keyboard wrapping, using cached exhaustion when available.
@@ -1285,7 +1295,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// The shared request result: true if a batch was requested; false for exhaustion or failure.
     /// Completion does not imply that the batch has been published.
     /// </returns>
-    public Task<bool> TryLoadMoreBeforeWrapAsync() => RequestLoadMoreAsync(useCachedAvailability: true);
+    public Task<bool> TryLoadMoreBeforeWrapAsync()
+    {
+        return RequestLoadMoreAsync(useCachedAvailability: true);
+    }
 
     private Task<bool> RequestLoadMoreAsync(bool useCachedAvailability)
     {
@@ -1297,6 +1310,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         lock (_loadMoreRequestLock)
         {
+            // LoadMore can return before ItemsChanged publishes the batch.
             if (!_loadMoreTask.IsCompleted || _isLoadingMore.Value)
             {
                 return _loadMoreTask;

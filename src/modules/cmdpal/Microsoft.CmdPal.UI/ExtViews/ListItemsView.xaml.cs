@@ -689,13 +689,18 @@ public sealed partial class ListItemsView : UserControl,
 
         try
         {
-            // Keep the loaded tail selected while a batch is requested or pending.
-            if (!await page.TryLoadMoreBeforeWrapAsync() &&
-                _isLoaded && ReferenceEquals(page, ViewModel) && ReferenceEquals(view, ItemView) &&
-                itemsVersion == _itemsUpdatedVersion && navigationVersion == _keyboardNavigationVersion &&
-                _lastInputSource == InputSource.Keyboard && itemCount == view.Items.Count &&
-                selectedIndex == view.SelectedIndex && ReferenceEquals(selectedItem, view.SelectedItem) &&
-                queryContext == (page.SearchTextBox, page.Filters?.CurrentFilterId))
+            // Ignore a delayed wrap if the page, results, selection, or navigation context changed.
+            if (!await page.TryLoadMoreBeforeWrapAsync()
+                && _isLoaded
+                && ReferenceEquals(page, ViewModel)
+                && ReferenceEquals(view, ItemView)
+                && itemsVersion == _itemsUpdatedVersion
+                && navigationVersion == _keyboardNavigationVersion
+                && _lastInputSource == InputSource.Keyboard
+                && itemCount == view.Items.Count
+                && selectedIndex == view.SelectedIndex
+                && ReferenceEquals(selectedItem, view.SelectedItem)
+                && queryContext == (page.SearchTextBox, page.Filters?.CurrentFilterId))
             {
                 _scrollOnNextSelectionChange = true;
                 wrapSelection();
