@@ -199,7 +199,7 @@
 
 Commands:
   for &lt;duration&gt;  Keep awake for a duration, such as 45m or 1h30m.
-  until &lt;time&gt;    Keep awake until a time, such as 17:30 or 2026-12-24T18:00.</value>
+  until &lt;time&gt;    Keep awake until a time, such as 17:30 or a future ISO 8601 date and time.</value>
   </data>
   <data name="AWAKE_CMD_ERROR_DURATION_REQUIRED" xml:space="preserve">
     <value>The 'for' command needs a duration, such as 45m or 1h30m.</value>
@@ -208,10 +208,10 @@ Commands:
     <value>"{0}" is not a valid duration. Try 45m, 2h, or 1h30m.</value>
   </data>
   <data name="AWAKE_CMD_ERROR_TIME_REQUIRED" xml:space="preserve">
-    <value>The 'until' command needs a time, such as 17:30 or 2026-12-24T18:00.</value>
+    <value>The 'until' command needs a time, such as 17:30 or a future ISO 8601 date and time.</value>
   </data>
   <data name="AWAKE_CMD_ERROR_TIME_INVALID" xml:space="preserve">
-    <value>"{0}" is not a time Awake understands. Try 17:30 or 2026-12-24T18:00.</value>
+    <value>"{0}" is not a time Awake understands. Try 17:30 or a future ISO 8601 date and time.</value>
   </data>
   <data name="AWAKE_CMD_ERROR_TIME_PAST" xml:space="preserve">
     <value>The requested time has already passed.</value>
