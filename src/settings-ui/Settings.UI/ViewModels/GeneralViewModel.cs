@@ -1366,6 +1366,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsRepository.SettingsChanged -= OnSettingsChanged;
             }
 
+            if (_quickAccessShortcut != null)
+            {
+                _quickAccessShortcut.PropertyChanged -= QuickAccessShortcut_PropertyChanged;
+            }
+
             GC.SuppressFinalize(this);
         }
 
