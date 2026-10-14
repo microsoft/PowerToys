@@ -131,6 +131,7 @@ public class MouseButtonLockSettingsTests : UITestBase
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
 
         var group = Session.Find<Element>(By.AccessibilityId(GroupId), 10_000);
+        group.ScrollIntoView();
         Assert.IsTrue(group.Displayed, "Mouse Button Lock settings group was not visible.");
 
         MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, false);
@@ -212,9 +213,10 @@ public class MouseButtonLockSettingsTests : UITestBase
         AssertPersistedInt("move_cancel_pixels", 100);
 
         OpenOptions();
-        Assert.IsTrue(
-            Session.Has(By.Name("2200 ms"), 10_000),
-            "Hold duration label did not reflect its persisted maximum value after restart.");
+        Assert.AreEqual(
+            2200d,
+            Session.Find<Slider>(By.AccessibilityId(HoldDurationId), 5_000).Value,
+            "Hold duration slider did not reflect its persisted maximum value after restart.");
     }
 
     [TestMethod]
@@ -246,10 +248,13 @@ public class MouseButtonLockSettingsTests : UITestBase
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, true);
 
+        var expander = Session.Find<Element>(By.AccessibilityId(OptionsExpanderId), 5_000);
+        expander.ScrollIntoView();
+
         if (!Session.Has(By.AccessibilityId(LmbLockId), 500))
         {
             Session.EnsureForeground();
-            Session.Find<Element>(By.AccessibilityId(OptionsExpanderId), 5_000).MouseClick(msPostAction: 500);
+            expander.MouseClick(msPostAction: 500);
         }
 
         Assert.IsTrue(Session.Has(By.AccessibilityId(LmbLockId), 5_000), "LMB lock checkbox was not available.");
@@ -261,6 +266,9 @@ public class MouseButtonLockSettingsTests : UITestBase
 
     private void SetCheckBox(string accessibilityId, bool check)
     {
+        // The section sits at the bottom of the page and CheckBox.Click uses cached screen bounds,
+        // so scroll first and re-find to click at the element's current on-screen position.
+        Session.Find<CheckBox>(By.AccessibilityId(accessibilityId), 5_000).ScrollIntoView();
         var checkBox = Session.Find<CheckBox>(By.AccessibilityId(accessibilityId), 5_000);
         checkBox.SetCheck(check);
         Assert.AreEqual(check, checkBox.IsChecked, $"{accessibilityId} did not reach the expected checked state.");
