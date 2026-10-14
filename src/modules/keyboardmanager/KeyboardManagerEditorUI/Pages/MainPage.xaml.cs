@@ -44,6 +44,10 @@ namespace KeyboardManagerEditorUI.Pages
         private bool _isServiceRunning = true;
         private bool _isUpdatingToggle;
 
+        // Set while an external change is detected but the rows are not yet rebuilt. A failed reconcile may
+        // already have loaded the new metadata, so the on-disk comparison alone would not retry it.
+        private bool _isReloadPending;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public string MappingState
@@ -1062,10 +1066,12 @@ namespace KeyboardManagerEditorUI.Pages
             try
             {
                 using var current = new KeyboardMappingService();
-                if (_mappingService.HasSameMappings(current) && !SettingsManager.HasSettingsChangedOnDisk())
+                if (!_isReloadPending && _mappingService.HasSameMappings(current) && !SettingsManager.HasSettingsChangedOnDisk())
                 {
                     return;
                 }
+
+                _isReloadPending = true;
 
                 // Keep the current view if the files are mid-write or locked; the next activation retries.
                 if (!SettingsManager.CorrelateServiceAndEditorMappings(regenerateUnreadableSettings: false))
@@ -1083,6 +1089,7 @@ namespace KeyboardManagerEditorUI.Pages
                 _mappingService = new KeyboardMappingService();
                 previousService.Dispose();
                 LoadAllMappings();
+                _isReloadPending = false;
             }
             catch (Exception ex)
             {
