@@ -610,6 +610,38 @@ namespace KeyboardManagerEditorUI.UnitTests
         }
 
         [TestMethod]
+        public void DuplicateMapping_ShouldRejectAppTaggedSingleKeyRemapConflictingWithGlobalText()
+        {
+            var existing = CreateScopedMapping(ShortcutOperationType.RemapText, "117", string.Empty);
+            existing.TargetText = "text";
+            var settings = CreateEditorSettings(("existing-id", existing, true));
+
+            Assert.IsTrue(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, "117", isEditMode: false, appName: "notepad.exe", editingId: null, AreKeysEqual));
+
+            var proposed = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "117", "notepad.exe");
+            proposed.TargetKeys = "118";
+            Assert.IsTrue(DuplicateMappingHelper.HasDuplicateEditorMapping(
+                settings.ShortcutSettingsDictionary, proposed, null, AreKeysEqual));
+        }
+
+        [TestMethod]
+        public void DuplicateMapping_ShouldRejectGlobalSingleKeyTextConflictingWithAppTaggedRemap()
+        {
+            var existing = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "117", "notepad.exe");
+            existing.TargetKeys = "118";
+            var settings = CreateEditorSettings(("existing-id", existing, true));
+
+            Assert.IsTrue(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, "117", isEditMode: false, appName: string.Empty, editingId: null, AreKeysEqual));
+
+            var proposed = CreateScopedMapping(ShortcutOperationType.RemapText, "117", string.Empty);
+            proposed.TargetText = "text";
+            Assert.IsTrue(DuplicateMappingHelper.HasDuplicateEditorMapping(
+                settings.ShortcutSettingsDictionary, proposed, null, AreKeysEqual));
+        }
+
+        [TestMethod]
         public void DuplicateMapping_ShouldRejectMovingEditedMappingIntoOccupiedScope()
         {
             var settings = CreateIssue50933Settings();

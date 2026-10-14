@@ -17,9 +17,10 @@ namespace KeyboardManagerEditorUI.Helpers
     internal static class DuplicateMappingHelper
     {
         /// <summary>
-        /// Global mappings (null/empty target app) and each app's mappings live in separate engine tables,
-        /// and app-specific mappings take precedence over global ones. A trigger therefore only conflicts
-        /// with another mapping in the same scope. The engine lowercases app names, so compare ignoring case.
+        /// Multi-key global mappings (null/empty target app) and each app's mappings live in separate engine
+        /// tables, and app-specific mappings take precedence over global ones. Single-key mappings are always
+        /// global because the engine's single-key tables ignore TargetApp (see MainPage.AddMapping).
+        /// Compare effective scopes; the engine lowercases app names, so compare ignoring case.
         /// </summary>
         internal static bool IsSameAppScope(string? first, string? second) =>
             string.Equals(first ?? string.Empty, second ?? string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -38,7 +39,9 @@ namespace KeyboardManagerEditorUI.Helpers
                 .Where(kvp => kvp.Value.IsActive)
                 .Where(kvp => editingId == null || kvp.Key != editingId)
                 .Count(kvp => areShortcutsEqual(kvp.Value.Shortcut.OriginalKeys, shortcutKeysString) &&
-                              IsSameAppScope(kvp.Value.Shortcut.TargetApp, appName));
+                              IsSameAppScope(
+                                  EffectiveTargetApp(kvp.Value.Shortcut.OriginalKeys, kvp.Value.Shortcut.TargetApp),
+                                  EffectiveTargetApp(shortcutKeysString, appName)));
 
             // With the edited row's identity we exclude exactly that row above, so any remaining match is
             // a genuine duplicate against a *different* row. Without it, fall back to the old tolerance
@@ -60,6 +63,11 @@ namespace KeyboardManagerEditorUI.Helpers
                 // An Always and an Alone remap of the same key are distinct (separate engine tables),
                 // so only treat it as a duplicate when the condition matches too.
                 entry.Value.Shortcut.Condition == replacementMapping.Condition &&
-                IsSameAppScope(entry.Value.Shortcut.TargetApp, replacementMapping.TargetApp));
+                IsSameAppScope(
+                    EffectiveTargetApp(entry.Value.Shortcut.OriginalKeys, entry.Value.Shortcut.TargetApp),
+                    EffectiveTargetApp(replacementMapping.OriginalKeys, replacementMapping.TargetApp)));
+
+        private static string? EffectiveTargetApp(string originalKeys, string? targetApp) =>
+            originalKeys.Contains(';') ? targetApp : string.Empty;
     }
 }
