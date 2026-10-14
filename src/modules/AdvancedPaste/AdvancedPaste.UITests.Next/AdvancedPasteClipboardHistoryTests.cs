@@ -70,6 +70,8 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
     private const string ClipboardRegistryValue = "EnableClipboardHistory";
     private const int MaximumHistoryEntries = 25;
 
+    private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
+
     private readonly string historyPrefix = $"PowerToys.AdvancedPaste.UITests.{Guid.NewGuid():N}";
     private readonly HashSet<string> originalHistoryIds = new(StringComparer.Ordinal);
     private readonly HashSet<string> fixtureContents = new(StringComparer.Ordinal);
@@ -397,7 +399,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                         AfterSta = afterSta,
                         Foreground = WindowControl.GetForegroundWindowInfo().ToString(),
                     },
-                    new JsonSerializerOptions { WriteIndented = true }));
+                    IndentedJson));
             TestContext.AddResultFile(path);
             Step($"Win+V '{label}': ready={ready.Succeeded}; state={surface.State}; visible fixture count={surface.VisibleFixtureContents.Length}; after API {JsonSerializer.Serialize(after)}; evidence={path}");
         }
