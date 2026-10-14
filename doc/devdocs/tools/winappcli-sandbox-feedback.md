@@ -1,13 +1,14 @@
 # winappcli Sandbox integration feedback
 
-Date: October 5, 2026
+Updated: October 14, 2026
 
 ## Summary
 
-**Sandbox mode is viable, but automated integrations still need substantial
-lifecycle and orchestration code around it.** The highest-value improvements are
-faster cold preparation, first-class owned sessions, and an explicit
-record-and-interact workflow API.
+**Sandbox mode is viable: the complete eleven-case shared Release pilot now
+passes on both Windows versions. Automated integrations still need substantial
+lifecycle and orchestration code around it.** The highest-value improvements
+remain faster, observable cold preparation, first-class owned sessions with
+interruption-safe cleanup, and an explicit record-and-interact workflow API.
 
 This report describes our Mouse Without Borders (MWB) integration using the
 official, unpatched [winappcli v0.7.0 release][release], source commit
@@ -16,12 +17,26 @@ have the same limitations.
 
 The modern scenario runs on a Windows 11 VM with a nested Windows Sandbox as the
 second endpoint. Windows 10 uses our separate Legacy Sandbox adapter, not
-winappcli's modern Sandbox backend. This is an automated Debug pilot, not
-physical-machine, service, secure-desktop, or complete MWB module sign-off.
+winappcli's modern Sandbox backend. Both endpoints use the same coherent
+self-contained **Release** product archive, with existing authentication and
+valid matching signatures preserved. This is a dedicated-VM user-desktop pilot,
+not installed-path, physical-machine, service/System, secure-desktop, ARM64 live,
+or complete MWB module sign-off.
 
-The implementation finished with two consecutive fresh-agent CI runs passing on
-both Windows versions, including accepted pairing, owned TCP transport, real
-remote input, clipboard isolation/transfer, recordings, and clean recovery.
+[CI build 160517346][ci-full] passed **11/11 cases on Win10 and 11/11 on Win11**
+at PowerToys implementation source
+`b7be098373ebb0b41a2de352f46abf00f05e719f`. Both jobs passed all eight smoke
+phases, including real Settings pairing, owned TCP transport, physical remote
+input, clipboard isolation/bidirectional transfer, recordings, and clean
+restoration. The four injected recovery cases also passed their explicit
+expected-failure and ownership assertions. This supersedes the earlier
+smoke-only Debug evidence; it is not a universal no-flake or performance claim.
+
+The successful modern run confirms that official target transfer, attached
+guest execution, passive snapshots, cooperative UI/recording workflows and
+recording finalization can work together without patching the released binary
+or weakening authentication. The feedback below concerns the remaining
+integration burden, not a claim that these capabilities are absent or unusable.
 
 ### How to read the snippets
 
@@ -36,7 +51,7 @@ target-state contents are included.
 | Priority | Improvement | Integration code it would replace or simplify |
 | --- | --- | --- |
 | P1 | Efficient, observable cold preparation | Large bootstrap budgets and custom phase timing |
-| P1 | Owned session and expected-instance acquisition | Raw `wsb` orchestration and private state inspection |
+| P1 | Owned session, expected-instance acquisition and durable cleanup receipts | Raw `wsb` orchestration, private state inspection and interrupted-creation journals |
 | P1 | First-class cooperative recording workflow | Environment propagation across every host/guest child |
 | P2 | CI-friendly prerequisite/setup contract | Per-account installer, inventories, and setup reporting |
 | P2 | Explicit readiness and owned teardown | Logon probes, retained process ancestry, cleanup journals |
@@ -47,10 +62,11 @@ target-state contents are included.
 
 ### Observed friction
 
-Initial `target push` operations took approximately **402-744 seconds** locally.
-Later CI runs took about **76 seconds**, so the cost is highly
-environment-dependent. The first push also prepares the guest agent; it is not
-merely copying files.
+Earlier `target push` measurements were approximately **402-744 seconds**
+locally and about **76 seconds** in earlier CI. These are historical
+preparation measurements, not a new benchmark of the final green build, and
+the cost is highly environment-dependent. The first push also prepares the
+guest agent; it is not merely copying files.
 
 The [released implementation][upstream-firewall] enumerates active firewall
 rules and invokes `Get-NetFirewallApplicationFilter` separately for each rule.
@@ -58,15 +74,15 @@ This causes repeated NetSecurity/CIM work in a cold guest.
 
 ### What we implemented
 
-We enlarged the modern bootstrap allowance without changing the Legacy limits,
-kept an overall hard deadline, and gave the first push only the remaining
-bootstrap time:
+We keep separate provider-start, guest-bootstrap and whole-run ceilings, and
+give the first push only the remaining bootstrap time. Current adapter values
+are:
 
 ```csharp
 // SandboxTimeouts.cs
 internal static readonly TimeSpan ModernBootstrap = TimeSpan.FromMinutes(35);
-internal static readonly TimeSpan ModernRun = TimeSpan.FromMinutes(70);
-internal static readonly TimeSpan ModernStart = TimeSpan.FromMinutes(10);
+internal static readonly TimeSpan ModernRun = TimeSpan.FromMinutes(90);
+internal static readonly TimeSpan ModernStart = TimeSpan.FromMinutes(15);
 
 // WinAppSandbox.cs: Target/Budget clamp this call to the remaining deadline.
 Target(
@@ -79,6 +95,13 @@ Target(
 We also bundle the payload into one transfer rather than initiating a separate
 target preparation for every component. Increasing the allowance did not make
 the firewall query faster; it allowed slow preparation to finish.
+
+Later cold local Win11 runs also exhausted the **900-second raw `wsb start`**
+ceiling before the first target push or PowerToys startup. That is a separate
+Windows provider/environment boundary, not evidence that the firewall query or
+winapp transport caused those failures. The fresh CI modern run passed while
+the retained local prerequisite remained blocked; neither result erases the
+other. Lower-resource local Win11 profiles remain unvalidated.
 
 Sources: [SandboxTimeouts.cs][pt-timeouts], [WinAppSandbox.cs][pt-adapter].
 
@@ -145,6 +168,14 @@ Those files stay in private control storage and are never attached as test
 artifacts. Requiring consumers to understand this state format is still an
 integration burden.
 
+An additional case matters for automation: `wsb start` can time out after
+creation was attempted but before the caller receives confirmation. We journal
+the trusted run-derived GUID **before** the call, stop only that exact instance,
+and verify its absence. Even when owned provider cleanup completes, our
+conservative recovery keeps interrupted creation `Incomplete` and requires a
+clean baseline reset. It does not invent settings/clipboard restoration or
+adopt whatever Sandbox happens to exist afterward.
+
 Sources: [WinAppSandbox.cs][pt-adapter], [WinAppSandboxProtocol.cs][pt-protocol].
 
 ### Requested improvement
@@ -157,6 +188,14 @@ Support caller-supplied clipboard/network restrictions and folder mappings throu
 that session API. Close only resources owned by the session and return a cleanup
 receipt. Keep the existing adoption behavior as an interactive default, not an
 implicit automation policy.
+
+Publish a durable, non-secret session/operation identity before creation can
+have side effects. Let a fresh controller query whether creation never began,
+is still in progress, completed, or has unknown ownership, and request
+idempotent exact-owner cancellation/cleanup after the original CLI exits.
+A receipt should distinguish provider absence, client/process cleanup and
+private-state cleanup. It must not imply that the consumer application's
+settings or in-memory clipboard snapshot were restored.
 
 ## 3. Make record-and-interact cooperation explicit
 
@@ -272,6 +311,17 @@ Provider creation, a connected client, an interactive desktop, and a ready
 authenticated agent are different milestones. We added bounded probes between
 them. First-launch installation could also leave a client after guest shutdown.
 
+Application readiness is a further, **consumer-owned** milestone. In the later
+Release pilot, the MWB Settings RPC pipe was available before the module's main
+form and TCP listeners finished initializing. Settings UI readiness plus a live
+MWB PID therefore admitted pairing too early. The harness now requires both
+native listeners (15100/15101) on the exact owned MWB PID and two stable
+Settings/MWB identity samples before submitting real New key/Connect, within
+the existing startup ceiling. The snapshot-save fix alone still failed Win11
+transport; the subsequent readiness guard passed both full CI suites. This
+does not prove every prior invalid packet had one cause, and it is not a
+winappcli agent-readiness or networking defect.
+
 ### What we implemented
 
 After one owned connection attempt, we poll a safe no-op in the existing guest
@@ -310,13 +360,20 @@ and an empty provider inventory. A broker, system host, vmmem, or an uncorrelate
 process is never adopted or killed by name.
 
 Sources: [WinAppSandbox.cs][pt-adapter],
-[MwbSandboxClientSetup.Common.ps1][pt-setup-common].
+[MwbSandboxClientSetup.Common.ps1][pt-setup-common],
+[EndpointSupport.ps1][pt-endpoint].
 
 ### Requested improvement
 
 Expose readiness milestones and one bounded "ready for input and recording"
 operation. Track created client resources and distinguish guest stopped, owned
 client closed, and cleanup incomplete.
+
+Document that target/agent readiness does not establish readiness of an
+application launched inside the guest. A maintained example should demonstrate
+a separate caller-supplied application readiness predicate without automatically
+retrying a mutation, reconnecting, restarting the product or extending its
+deadline.
 
 Extend the existing passive `target snapshot` model. Inspection should not
 automatically mean permission to reconnect, repair, or stop unrelated work.
@@ -381,6 +438,14 @@ A versioned result discriminator such as success, no-match, busy, or error would
 make typed consumers safer. Do not reinterpret an application's exit code as a
 generic winapp infrastructure failure.
 
+Offer an allowlisted, versioned diagnostic projection with operation/session
+identity, phase, elapsed time, readiness and cleanup outcomes. Consumers should
+not need raw private target-state files, complete UI trees or process command
+lines to correlate host/guest evidence. Window titles and future provider
+fields can contain user data; Windows Sandbox client command lines can contain
+ephemeral credentials. Keep detailed raw diagnostics private and make the
+safe-to-publish projection explicit.
+
 ## 7. Ship a maintained automation integration example
 
 The existing `WINAPP_TARGET_STATE_ROOT` override already supports private
@@ -421,29 +486,58 @@ harnesses. This does not require duplicating the existing npm helpers.
 | Recording blocked mutations with different workflow IDs | Documented behavior; integration wiring mistake plus API/discoverability feedback |
 | Optional feature enabled but modern client missing | Windows image/account setup gap; needs supported setup integration |
 | Leftover first-launch client process | Windows provider lifecycle behavior; owned cleanup support would simplify consumers |
-| Final MWB Connect request lost before applying peer/key configuration | PowerToys Settings RPC lifetime bug, not winapp networking |
+| Raw `wsb start` timed out before target push or product startup | Windows provider/environment failure; root cause unproven, separate from winapp guest-agent preparation |
+| MWB Connect request lost before applying peer/key configuration | PowerToys Settings RPC lifetime bug, not winapp networking |
+| Queued settings save lost its requested snapshot after reload or later mutation | PowerToys persistence bug; fixed by immutable capture, not a winapp transport fix |
+| Live MWB PID/Settings pipe accepted before owned TCP listeners initialized | PowerToys application-readiness/harness gap; fixed by native readiness before pairing |
 | Start-menu interference with receiver foreground | Windows/harness focus problem, not a demonstrated Sandbox transport defect |
 | Error formatter assumed `matchCount` existed | PowerToys parser bug; stronger result schemas would prevent similar mistakes |
+| Long run overlapped an 8h54 host suspension | Environment interruption; excluded from eligible stability proof, not product/CLI execution latency |
+| Slow Settings startup also occurred without UIA or responsiveness probes | PowerToys/nested-environment investigation; no demonstrated winapp UIA or recording root cause |
 | Windows 10 lacks the modern Sandbox CLI backend | Documented platform boundary, not a regression |
 
-Our final connection fix was to give each disposable Settings RPC helper a fresh
-verified pipe and close its owned transport explicitly. The pairing phase now
-requires the guest's matching persisted key and exact peer configuration before
-testing TCP transport. Neither is something winappcli should fix on our behalf.
+Our earlier connection fix gave each disposable Settings RPC helper a fresh
+verified pipe and awaited acknowledged New key/Connect/Reconnect requests before
+closing its owned transport. The later persistence fix captures immutable
+settings JSON before dispatching a save. Initial endpoint readiness now waits
+for the actual owned module listeners; pairing separately requires the guest's
+matching persisted key and exact peer configuration, followed by real TCP and
+input/clipboard assertions. These consumer responsibilities are not something
+winappcli should implement on our behalf.
 
 ## Evidence and recommended order
 
-The core pairing implementation is recorded at PowerToys commit
-`90f5187c47af851fa6727fb763f5b80ba28bb187`.
-Both [CI build 159456667][ci-one] and [CI build 159461630][ci-two] passed on
-fresh Win10 and Win11 agents. CI links require authorized internal access.
-Each job passed all eight ordered smoke phases, accepted pairing, and clean
-recovery. The same refined local payload passed both unfiltered seven-test
-suites.
+The latest full Release evidence is [CI build 160517346][ci-full], completed
+October 14, 2026 UTC, at implementation source
+`b7be098373ebb0b41a2de352f46abf00f05e719f`:
 
-The measured cold-preparation delays and adapter details are documented in the
-[MWB pilot README][pt-readme]. The successful runs use the official binary,
-not the earlier privately patched preview.
+| Fresh CI job | Azure Test run | Executed/passed | Eight smoke phases | Persisted key/peer acknowledgement |
+| --- | --- | --- | --- | --- |
+| Win10 Legacy | `1714540311` | 11/11, no skipped cases | All passed | Both true, 271 ms |
+| Win11 modern | `1714541931` | 11/11, no skipped cases | All passed | Both true, 2261 ms |
+
+Normal fixture cleanup recorded zero errors; all four endpoint journals
+confirmed settings/clipboard restoration. Owned modern creation and stop,
+original-user recovery, exact firewall/task/public-trust cleanup and recording
+finalization succeeded. All four nonempty smoke videos were downloaded,
+container-probed and frame-decoded privately. Both jobs used matching managed/
+runtime product inventories and valid same-cohort endpoint signatures.
+
+Earlier [CI build 159456667][ci-one] and [CI build 159461630][ci-two] were
+green ordered Debug smokes, not the expanded eleven-case Release suite.
+CI links require authorized internal access. Recordings and private journals
+remain in access-controlled evidence; no raw media, secrets or profile backups
+are included in this report.
+
+The [maintained suite README][pt-readme] describes the current operating and
+recovery contract. The suite and its `Scripts`/`Payload` support files are now
+consolidated under `MouseWithoutBorders.UITests`; that directory cleanup is
+separate from the exact-source CI result above. All cited adapter excerpts use
+the validated implementation revision, not a claim of a new run after cleanup.
+Successful runs use the official v0.7.0 binary, not the earlier privately
+patched preview. One fresh green CI matrix establishes the stated pilot
+coverage, not repeated reliability across every image, resource profile or
+physical-device configuration.
 
 Recommended order: optimize cold preparation; expose owned session identity and
 lifecycle; make cooperative recording, readiness, and operation control easy to
@@ -456,12 +550,14 @@ default timeouts.
 [upstream-record]: https://github.com/microsoft/winappCli/blob/v0.7.0/src/winapp-CLI/WinApp.Cli/Commands/UiRecordCommand.cs#L66-L77
 [upstream-setup]: https://github.com/microsoft/winappCli/blob/v0.7.0/src/winapp-CLI/WinApp.Cli/ExecutionTargets/WindowsSandbox/WindowsSandboxSetup.cs
 [upstream-exec]: https://github.com/microsoft/winappCli/blob/v0.7.0/src/winapp-CLI/WinApp.Cli/Commands/TargetCommand.cs#L145-L237
-[pt-adapter]: https://github.com/microsoft/PowerToys/blob/90f5187c47af851fa6727fb763f5b80ba28bb187/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/WinAppSandbox.cs
-[pt-protocol]: https://github.com/microsoft/PowerToys/blob/90f5187c47af851fa6727fb763f5b80ba28bb187/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/WinAppSandboxProtocol.cs
-[pt-command]: https://github.com/microsoft/PowerToys/blob/90f5187c47af851fa6727fb763f5b80ba28bb187/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/WinAppSandboxCommand.cs
-[pt-timeouts]: https://github.com/microsoft/PowerToys/blob/90f5187c47af851fa6727fb763f5b80ba28bb187/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/SandboxTimeouts.cs
-[pt-setup]: https://github.com/microsoft/PowerToys/blob/90f5187c47af851fa6727fb763f5b80ba28bb187/.pipelines/Install-MwbSandboxClient.ps1
-[pt-setup-common]: https://github.com/microsoft/PowerToys/blob/90f5187c47af851fa6727fb763f5b80ba28bb187/.pipelines/MwbSandboxClientSetup.Common.ps1
-[pt-readme]: https://github.com/microsoft/PowerToys/blob/b84ca588bdeb6b7e4703ce1c8c1f828868611b09/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/README.md
+[pt-adapter]: https://github.com/microsoft/PowerToys/blob/b7be098373ebb0b41a2de352f46abf00f05e719f/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/WinAppSandbox.cs
+[pt-protocol]: https://github.com/microsoft/PowerToys/blob/b7be098373ebb0b41a2de352f46abf00f05e719f/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/WinAppSandboxProtocol.cs
+[pt-command]: https://github.com/microsoft/PowerToys/blob/b7be098373ebb0b41a2de352f46abf00f05e719f/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/WinAppSandboxCommand.cs
+[pt-timeouts]: https://github.com/microsoft/PowerToys/blob/b7be098373ebb0b41a2de352f46abf00f05e719f/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/SandboxTimeouts.cs
+[pt-setup]: https://github.com/microsoft/PowerToys/blob/b7be098373ebb0b41a2de352f46abf00f05e719f/.pipelines/Install-MwbSandboxClient.ps1
+[pt-setup-common]: https://github.com/microsoft/PowerToys/blob/b7be098373ebb0b41a2de352f46abf00f05e719f/.pipelines/MwbSandboxClientSetup.Common.ps1
+[pt-endpoint]: https://github.com/microsoft/PowerToys/blob/b7be098373ebb0b41a2de352f46abf00f05e719f/src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/Payload/EndpointSupport.ps1
+[pt-readme]: ..\..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\README.md
+[ci-full]: https://dev.azure.com/microsoft/Dart/_build/results?buildId=160517346
 [ci-one]: https://dev.azure.com/microsoft/Dart/_build/results?buildId=159456667
 [ci-two]: https://dev.azure.com/microsoft/Dart/_build/results?buildId=159461630
