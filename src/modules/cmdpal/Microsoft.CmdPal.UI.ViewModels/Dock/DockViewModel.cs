@@ -22,9 +22,13 @@ public sealed partial class DockViewModel : IDisposable
     private readonly IContextMenuFactory _contextMenuFactory;
     private readonly string? _monitorDeviceId;
 
+    // Only touched from the UI scheduler (ApplyBands).
+    private readonly HashSet<string> _reportedMissingBands = new(StringComparer.Ordinal);
+
     private DockSettings _settings;
     private bool _isEditing;
     private bool _disposed;
+    private int _setupBandsQueued;
 
     /// <summary>
     /// Gets the monitor device identifier this dock is associated with, or <c>null</c>
@@ -58,8 +62,21 @@ public sealed partial class DockViewModel : IDisposable
         _pageContext = new(this);
 
         _topLevelCommandManager.DockBands.CollectionChanged += DockBands_CollectionChanged;
+        _topLevelCommandManager.PropertyChanged += TopLevelCommandManager_PropertyChanged;
 
         EmitDockConfiguration();
+    }
+
+    private void TopLevelCommandManager_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // Once loading finishes, do one more (cheap) pass so that any pinned
+        // bands that still couldn't be found get reported.
+        if (e.PropertyName == nameof(TopLevelCommandManager.IsLoading) &&
+            !_topLevelCommandManager.IsLoading &&
+            !_isEditing)
+        {
+            SetupBands();
+        }
     }
 
     private void DockBands_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -232,75 +249,148 @@ public sealed partial class DockViewModel : IDisposable
         if (!_disposed)
         {
             _topLevelCommandManager.DockBands.CollectionChanged -= DockBands_CollectionChanged;
+            _topLevelCommandManager.PropertyChanged -= TopLevelCommandManager_PropertyChanged;
             _disposed = true;
         }
     }
 
+    /// <summary>
+    /// Queues a rebuild of the band collections from the current settings and
+    /// the currently loaded dock bands.
+    /// </summary>
+    /// <remarks>
+    /// During startup, every provider that finishes loading changes
+    /// <see cref="TopLevelCommandManager.DockBands"/>, and every change calls
+    /// this. Rebuilds are coalesced: if one is already queued, it will pick up
+    /// the latest state when it runs, so a burst of changes only costs one
+    /// rebuild. The rebuild itself reuses existing band view models whenever
+    /// possible, so only bands that are actually new get initialized (which
+    /// is the expensive, cross-process part).
+    /// </remarks>
     private void SetupBands()
     {
-        var (start, center, end) = GetActiveBands();
-        SetupBands(start, StartItems);
-        SetupBands(center, CenterItems);
-        SetupBands(end, EndItems);
-    }
-
-    private void SetupBands(
-        ImmutableList<DockBandSettings> bands,
-        ObservableCollection<DockBandViewModel> target)
-    {
-        List<DockBandViewModel> newBands = new();
-        foreach (var band in bands)
+        if (Interlocked.Exchange(ref _setupBandsQueued, 1) == 1)
         {
-            var commandId = band.CommandId;
-            var topLevelCommand = _topLevelCommandManager.LookupDockBand(commandId);
-
-            if (topLevelCommand is null)
-            {
-                Logger.LogWarning($"[DockDrop] DockViewModel.SetupBands: failed to find band command '{commandId}' (provider='{band.ProviderId}')");
-            }
-
-            if (topLevelCommand is not null)
-            {
-                // note: CreateBandItem doesn't actually initialize the band, it
-                // just creates the VM. Callers need to make sure to call
-                // InitializeProperties() on a BG thread elsewhere
-                var bandVm = CreateBandItem(band, topLevelCommand.ItemViewModel);
-                newBands.Add(bandVm);
-            }
+            return;
         }
-
-        var beforeCount = target.Count;
-        var afterCount = newBands.Count;
 
         DoOnUiThread(() =>
         {
-            List<DockBandViewModel> removed = new();
-            ListHelpers.InPlaceUpdateList(target, newBands, out removed);
-            var isStartBand = target == StartItems;
-            var label = isStartBand ? "Start bands:" : "End bands:";
-            Logger.LogDebug($"{label} ({beforeCount}) -> ({afterCount}), Removed {removed?.Count ?? 0} items");
-
-            // then, back to a BG thread:
-            Task.Run(() =>
-            {
-                if (removed is not null)
-                {
-                    foreach (var removedItem in removed)
-                    {
-                        removedItem.SafeCleanup();
-                    }
-                }
-            });
+            // Clear the flag before reading any state, so that changes that
+            // happen while we're applying will queue another pass.
+            Volatile.Write(ref _setupBandsQueued, 0);
+            ApplyBands();
         });
+    }
 
-        // Initialize properties on BG thread
+    private void ApplyBands()
+    {
+        if (_isEditing || _disposed)
+        {
+            return;
+        }
+
+        var (start, center, end) = GetActiveBands();
+        var defaultShowLabels = _settingsService.Settings.DockSettings.ShowLabels;
+
+        var loadedBands = new Dictionary<string, TopLevelViewModel>(StringComparer.Ordinal);
+        foreach (var band in _topLevelCommandManager.GetDockBandsSnapshot())
+        {
+            loadedBands.TryAdd(band.Id, band);
+        }
+
+        var existingBands = new Dictionary<string, DockBandViewModel>(StringComparer.Ordinal);
+        var oldBands = new List<DockBandViewModel>();
+        foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems))
+        {
+            oldBands.Add(band);
+            existingBands.TryAdd(band.Id, band);
+        }
+
+        var keptBands = new HashSet<DockBandViewModel>(ReferenceEqualityComparer.Instance);
+        var createdBands = new List<DockBandViewModel>();
+
+        List<DockBandViewModel> BuildBands(ImmutableList<DockBandSettings> bands)
+        {
+            List<DockBandViewModel> result = new();
+            foreach (var band in bands)
+            {
+                var commandId = band.CommandId;
+                if (!loadedBands.TryGetValue(commandId, out var topLevelCommand))
+                {
+                    ReportMissingBand(band);
+                    continue;
+                }
+
+                _reportedMissingBands.Remove(commandId);
+
+                var itemViewModel = topLevelCommand.ItemViewModel;
+                if (existingBands.TryGetValue(commandId, out var existing) &&
+                    existing.CanReuseFor(itemViewModel, band, defaultShowLabels) &&
+                    keptBands.Add(existing))
+                {
+                    result.Add(existing);
+                    continue;
+                }
+
+                // note: CreateBandItem doesn't actually initialize the band, it
+                // just creates the VM. We initialize the new ones on a BG
+                // thread below.
+                var bandVm = CreateBandItem(band, itemViewModel);
+                keptBands.Add(bandVm);
+                createdBands.Add(bandVm);
+                result.Add(bandVm);
+            }
+
+            return result;
+        }
+
+        var newStart = BuildBands(start);
+        var newCenter = BuildBands(center);
+        var newEnd = BuildBands(end);
+
+        ListHelpers.InPlaceUpdateList(StartItems, newStart);
+        ListHelpers.InPlaceUpdateList(CenterItems, newCenter);
+        ListHelpers.InPlaceUpdateList(EndItems, newEnd);
+
+        // A band that moved between sections is kept, so only clean up the
+        // ones that aren't in any section anymore.
+        var removedBands = oldBands.Where(b => !keptBands.Contains(b)).ToList();
+
+        if (createdBands.Count == 0 && removedBands.Count == 0)
+        {
+            return;
+        }
+
+        Logger.LogDebug($"Dock bands updated: {newStart.Count} start, {newCenter.Count} center, {newEnd.Count} end; {createdBands.Count} created, {removedBands.Count} removed");
+
         Task.Run(() =>
         {
-            foreach (var band in newBands)
+            foreach (var removedItem in removedBands)
+            {
+                removedItem.SafeCleanup();
+            }
+
+            foreach (var band in createdBands)
             {
                 band.SafeInitializePropertiesSynchronous();
             }
         });
+    }
+
+    private void ReportMissingBand(DockBandSettings band)
+    {
+        // While extensions are still loading, a pinned band that isn't loaded
+        // yet is expected - its provider just hasn't finished. Only warn once
+        // loading is done, and only once per band.
+        if (_topLevelCommandManager.IsLoading)
+        {
+            Logger.LogDebug($"[DockDrop] DockViewModel.SetupBands: band command '{band.CommandId}' (provider='{band.ProviderId}') is not loaded yet");
+        }
+        else if (_reportedMissingBands.Add(band.CommandId))
+        {
+            Logger.LogWarning($"[DockDrop] DockViewModel.SetupBands: failed to find band command '{band.CommandId}' (provider='{band.ProviderId}')");
+        }
     }
 
     /// <summary>
