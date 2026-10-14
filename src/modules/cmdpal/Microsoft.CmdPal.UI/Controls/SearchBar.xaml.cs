@@ -26,12 +26,7 @@ using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class SearchBar : UserControl,
-    INotifyPropertyChanged,
-    IRecipient<GoHomeMessage>,
-    IRecipient<UpdateSuggestionMessage>,
-    IRecipient<FocusParamMessage>,
-    ICurrentPageAware
+public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
@@ -59,6 +54,7 @@ public sealed partial class SearchBar : UserControl,
     private string? _textToSuggest;
 
     private bool _tokenSearchEnabled;
+    private int _pageVersion;
 
     private IReadOnlyList<ICommandBarElement> _additionalContextMenuItems = [];
 
@@ -81,6 +77,10 @@ public sealed partial class SearchBar : UserControl,
 
     public event EventHandler? ActiveFocusTargetChanged;
 
+    public event EventHandler<SearchBarBackRequestedEventArgs>? BackRequested;
+
+    public event EventHandler<SearchBarNavigationRequestedEventArgs>? NavigationRequested;
+
     public event EventHandler? SearchTextChanging;
 
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -88,10 +88,17 @@ public sealed partial class SearchBar : UserControl,
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
         var @this = (SearchBar)d;
 
-        if (@this is not null
-            && e.OldValue is PageViewModel old)
+        if (@this is not null)
         {
-            old.PropertyChanged -= @this.Page_PropertyChanged;
+            @this._pageVersion++;
+            @this._tokenSearchEnabled = false;
+            if (e.OldValue is PageViewModel old)
+            {
+                old.PropertyChanged -= @this.Page_PropertyChanged;
+                old.SearchSuggestionChanged -= @this.Page_SearchSuggestionChanged;
+                old.ParameterFocusRequested -= @this.Page_ParameterFocusRequested;
+                old.FocusSearchRequested -= @this.Page_FocusSearchRequested;
+            }
         }
 
         if (@this is not null
@@ -103,11 +110,16 @@ public sealed partial class SearchBar : UserControl,
             @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
 
             page.PropertyChanged += @this.Page_PropertyChanged;
+            page.SearchSuggestionChanged += @this.Page_SearchSuggestionChanged;
+            page.ParameterFocusRequested += @this.Page_ParameterFocusRequested;
+            page.FocusSearchRequested += @this.Page_FocusSearchRequested;
 
             if (page is ListViewModel listViewModel)
             {
                 @this._tokenSearchEnabled = listViewModel.IsTokenSearch;
             }
+
+            @this.ApplySuggestion(page, page.TextToSuggest, @this._pageVersion);
         }
 
         @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
@@ -131,9 +143,6 @@ public sealed partial class SearchBar : UserControl,
     public SearchBar()
     {
         this.InitializeComponent();
-        WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
-        WeakReferenceMessenger.Default.Register<FocusParamMessage>(this);
     }
 
     public void ClearSearch()
@@ -179,22 +188,22 @@ public sealed partial class SearchBar : UserControl,
             switch (Settings.EscapeKeyBehaviorSetting)
             {
                 case EscapeKeyBehavior.AlwaysGoBack:
-                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                    RequestBack();
                     break;
 
                 case EscapeKeyBehavior.AlwaysDismiss:
-                    WeakReferenceMessenger.Default.Send<DismissMessage>(new(ForceGoHome: true));
+                    BackRequested?.Invoke(this, new(SearchBarBackRequestKind.Dismiss));
                     break;
 
                 case EscapeKeyBehavior.AlwaysHide:
-                    WeakReferenceMessenger.Default.Send<HideWindowMessage>(new());
+                    BackRequested?.Invoke(this, new(SearchBarBackRequestKind.Hide));
                     break;
 
                 case EscapeKeyBehavior.ClearSearchFirstThenGoBack:
                 default:
                     if (string.IsNullOrEmpty(FilterBox.Text))
                     {
-                        WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                        RequestBack();
                     }
                     else
                     {
@@ -223,7 +232,7 @@ public sealed partial class SearchBar : UserControl,
                 if (!_isBackspaceHeld)
                 {
                     // Navigate back on single backspace when empty
-                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new(true));
+                    RequestBack(fromBackspace: true);
                 }
 
                 e.Handled = true;
@@ -366,27 +375,27 @@ public sealed partial class SearchBar : UserControl,
         switch (key)
         {
             case VirtualKey.Up when IsNoneModifierDown():
-                WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
+                RequestNavigation(SearchBarNavigationDirection.Previous);
                 return true;
 
             case VirtualKey.Down when IsNoneModifierDown():
-                WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
+                RequestNavigation(SearchBarNavigationDirection.Next);
                 return true;
 
             case VirtualKey.Left when listViewModel is { IsGridView: true } && IsNoneModifierDown():
-                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
+                RequestNavigation(SearchBarNavigationDirection.Left);
                 return true;
 
             case VirtualKey.Right when listViewModel is { IsGridView: true } && IsNoneModifierDown():
-                WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
+                RequestNavigation(SearchBarNavigationDirection.Right);
                 return true;
 
             case VirtualKey.PageUp when IsNoneModifierDown():
-                WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+                RequestNavigation(SearchBarNavigationDirection.PageUp);
                 return true;
 
             case VirtualKey.PageDown when IsNoneModifierDown():
-                WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+                RequestNavigation(SearchBarNavigationDirection.PageDown);
                 return true;
 
             default:
@@ -547,7 +556,7 @@ public sealed partial class SearchBar : UserControl,
         return res ?? new();
     }
 
-    public void Receive(GoHomeMessage message)
+    public void HandleGoHome()
     {
         if (!Settings.KeepPreviousQuery)
         {
@@ -579,18 +588,34 @@ public sealed partial class SearchBar : UserControl,
         });
     }
 
-    public void Receive(UpdateSuggestionMessage message)
+    private void Page_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
     {
-        if (!IsTextToSuggestEnabled)
+        if (sender is PageViewModel page && ReferenceEquals(page, CurrentPageViewModel))
         {
-            _textToSuggest = message.TextToSuggest;
+            ApplySuggestion(page, e.Suggestion, _pageVersion);
+        }
+    }
+
+    private void ApplySuggestion(PageViewModel source, string suggestion, int pageVersion)
+    {
+        if (pageVersion != _pageVersion || !ReferenceEquals(source, CurrentPageViewModel))
+        {
             return;
         }
 
-        var suggestion = message.TextToSuggest;
+        if (!IsTextToSuggestEnabled)
+        {
+            _textToSuggest = suggestion;
+            return;
+        }
 
         _queue.TryEnqueue(new(() =>
         {
+            if (pageVersion != _pageVersion || !ReferenceEquals(source, CurrentPageViewModel))
+            {
+                return;
+            }
+
             var clearSuggestion = string.IsNullOrEmpty(suggestion);
 
             if (clearSuggestion && _inSuggestion)
@@ -698,21 +723,23 @@ public sealed partial class SearchBar : UserControl,
 
     private void StringParameter_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is TextBox textBox &&
-            textBox.DataContext is StringParameterRunViewModel stringParam &&
-            CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        if (sender is not TextBox textBox ||
+            textBox.DataContext is not StringParameterRunViewModel stringParam ||
+            CurrentPageViewModel is not ParametersPageViewModel parametersPage)
         {
-            if (e.Key == VirtualKey.Enter)
-            {
-                if (parametersPage.ShowCommand)
-                {
-                    parametersPage.TrySubmit();
-                }
-                else
-                {
-                    parametersPage.FocusNextParameter(stringParam);
-                }
-            }
+            return;
+        }
+
+        switch (StringParameterEnterRouting.GetAction(e.Key, textBox.AcceptsReturn, parametersPage.ShowCommand))
+        {
+            case StringParameterEnterAction.Submit:
+                parametersPage.TrySubmit();
+                e.Handled = true;
+                break;
+            case StringParameterEnterAction.FocusNext:
+                parametersPage.FocusNextParameter(stringParam);
+                e.Handled = true;
+                break;
         }
     }
 
@@ -819,9 +846,8 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(FocusParamMessage message)
+    private void FocusParameter(ParameterRunViewModel? parameter)
     {
-        var parameter = message.Parameter;
         if (parameter != null)
         {
             var container = ParametersBar.ContainerFromItem(parameter);
@@ -830,5 +856,31 @@ public sealed partial class SearchBar : UserControl,
                 element.Focus(FocusState.Keyboard);
             }
         }
+    }
+
+    private void Page_ParameterFocusRequested(object? sender, ParameterFocusRequestedEventArgs e)
+    {
+        if (ReferenceEquals(sender, CurrentPageViewModel))
+        {
+            FocusParameter(e.Parameter);
+        }
+    }
+
+    private void Page_FocusSearchRequested(object? sender, EventArgs e)
+    {
+        if (ReferenceEquals(sender, CurrentPageViewModel))
+        {
+            FocusActiveControl();
+        }
+    }
+
+    private void RequestBack(bool fromBackspace = false)
+    {
+        BackRequested?.Invoke(this, new(SearchBarBackRequestKind.GoBack, fromBackspace));
+    }
+
+    private void RequestNavigation(SearchBarNavigationDirection direction)
+    {
+        NavigationRequested?.Invoke(this, new(direction));
     }
 }

@@ -11,8 +11,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
-    <!-- AssemblyInfo.cs supplies this attribute for both SDK generation and official version rewriting. -->
-    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>Microsoft.CommandPalette.Extensions.Toolkit.pri</ProjectPriFileName>
     <PlatformTarget>AnyCPU</PlatformTarget>
