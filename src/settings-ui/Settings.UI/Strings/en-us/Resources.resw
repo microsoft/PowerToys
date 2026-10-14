@@ -2831,9 +2831,11 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="MouseUtils_Enable_AutoHideCursor.Header" xml:space="preserve">
     <value>CursorHide</value>
+    <comment>Product name. Do not localize.</comment>
   </data>
   <data name="MouseUtils_AutoHideCursor.Header" xml:space="preserve">
     <value>CursorHide</value>
+    <comment>Product name. Do not localize.</comment>
   </data>
   <data name="MouseUtils_AutoHideCursor.Description" xml:space="preserve">
     <value>Hide the mouse cursor after keyboard input, inactivity, or both</value>
