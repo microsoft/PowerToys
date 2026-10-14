@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,5 +41,51 @@ public class ExitGuardTests
 
         Assert.AreEqual(1, successfulCallers);
         Assert.IsFalse(Manager.TryBeginExit(ref exitStarted));
+    }
+
+    [TestMethod]
+    public void RunExitCleanup_WhenCallersCompete_OnlyWinnerRunsBothCallbacks()
+    {
+        int exitStarted = 0;
+        int programCleanupCalls = 0;
+        int managerCleanupCalls = 0;
+
+        Parallel.For(0, 100, _ =>
+        {
+            if (Manager.TryBeginExit(ref exitStarted))
+            {
+                Manager.RunExitCleanup(
+                    () => Interlocked.Increment(ref programCleanupCalls),
+                    () => Interlocked.Increment(ref managerCleanupCalls));
+            }
+        });
+
+        Assert.AreEqual(1, programCleanupCalls);
+        Assert.AreEqual(1, managerCleanupCalls);
+    }
+
+    [TestMethod]
+    public void RunExitCleanup_WhenProgramCleanupThrows_ManagerCleanupStillRuns()
+    {
+        bool managerCleanupRan = false;
+        var failure = new InvalidOperationException("Cleanup failed.");
+
+        var thrown = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            Manager.RunExitCleanup(
+                () => throw failure,
+                () => managerCleanupRan = true));
+
+        Assert.AreSame(failure, thrown);
+        Assert.IsTrue(managerCleanupRan);
+    }
+
+    [TestMethod]
+    public void RunExitCleanup_WhenProgramCleanupIsNotRegistered_ManagerCleanupStillRuns()
+    {
+        bool managerCleanupRan = false;
+
+        Manager.RunExitCleanup(null, () => managerCleanupRan = true);
+
+        Assert.IsTrue(managerCleanupRan);
     }
 }

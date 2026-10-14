@@ -35,7 +35,6 @@ namespace Awake
 
         private static bool _startedFromPowerToys;
         private static bool _hasDeadlineCommand;
-        private static int _exitStarted;
 
         public static Mutex? LockMutex { get; set; }
 
@@ -48,6 +47,7 @@ namespace Awake
 
             Bridge.AttachConsole(Core.Native.Constants.ATTACH_PARENT_PROCESS);
             LoadConfiguredLanguage();
+            Manager.ExitCleanup = Cleanup;
             Manager.InitializeAttachedConsole();
 
             _hasDeadlineCommand = args.Length > 0 &&
@@ -310,17 +310,16 @@ namespace Awake
 
         private static void Exit(string message, int exitCode)
         {
-            if (!Manager.TryBeginExit(ref _exitStarted))
-            {
-                return;
-            }
+            Logger.LogInfo(message);
+            Manager.CompleteExit(exitCode);
+        }
 
+        private static void Cleanup()
+        {
             _etwTrace?.Dispose();
             DisposeFileSystemWatcher();
             _registeredWaitHandle?.Unregister(null);
             _exitEventHandle?.Dispose();
-            Logger.LogInfo(message);
-            Manager.CompleteExit(exitCode);
         }
 
         private static void DisposeFileSystemWatcher()
@@ -558,7 +557,10 @@ namespace Awake
                 error =>
                 {
                     Logger.LogError($"Could not monitor target PID {targetPid}.", error);
-                    Exit(Resources.AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE, 1);
+                    Exit(
+                        Resources.ResourceManager.GetString("AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE", CultureInfo.CurrentUICulture)
+                            ?? throw new InvalidOperationException("Missing resource: AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE"),
+                        1);
                 },
                 nameof(HandleProcessScopedKeepAwake));
         }

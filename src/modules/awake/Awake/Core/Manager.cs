@@ -38,6 +38,8 @@ namespace Awake.Core
 
         internal static SettingsUtils? ModuleSettings { get; set; }
 
+        internal static Action? ExitCleanup { get; set; }
+
         internal static AwakeMode CurrentOperatingMode { get; private set; }
 
         private static bool IsDisplayOn { get; set; }
@@ -432,10 +434,11 @@ namespace Awake.Core
         private static void HandleTimerCompletion(string timerType)
         {
             Logger.LogInfo($"Completed {timerType} keep-awake.");
-            CancelExistingThread();
 
             if (IsUsingPowerToysConfig)
             {
+                CancelExistingThread();
+
                 // If running under PowerToys settings, just revert to the default Passive state.
                 SetPassiveKeepAwake();
             }
@@ -458,6 +461,23 @@ namespace Awake.Core
                 return;
             }
 
+            RunExitCleanup(ExitCleanup, () => CompleteExitCore(exitCode));
+        }
+
+        internal static void RunExitCleanup(Action? programCleanup, Action managerCleanup)
+        {
+            try
+            {
+                programCleanup?.Invoke();
+            }
+            finally
+            {
+                managerCleanup();
+            }
+        }
+
+        private static void CompleteExitCore(int exitCode)
+        {
             SetPassiveKeepAwake(updateSettings: false);
 
             // Stop the monitor thread gracefully

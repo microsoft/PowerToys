@@ -173,6 +173,9 @@
   <data name="AWAKE_EXIT_BINDING_HOOK_MESSAGE" xml:space="preserve">
     <value>Terminating from process binding hook.</value>
   </data>
+  <data name="AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the requested process could not be monitored.</value>
+  </data>
   <data name="AWAKE_EXIT_MESSAGE" xml:space="preserve">
     <value>Exiting from the internal termination handler.</value>
   </data>
