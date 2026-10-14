@@ -66,6 +66,7 @@ namespace Awake.Core
 
         private static CancellationTokenSource _monitorTokenSource;
         private static IDisposable? _timerSubscription;
+        private static int _exitStarted;
 
         static Manager()
         {
@@ -452,6 +453,11 @@ namespace Awake.Core
         /// <param name="exitCode">Exit code to exit with.</param>
         internal static void CompleteExit(int exitCode)
         {
+            if (!TryBeginExit(ref _exitStarted))
+            {
+                return;
+            }
+
             SetPassiveKeepAwake(updateSettings: false);
 
             // Stop the monitor thread gracefully
@@ -477,6 +483,11 @@ namespace Awake.Core
 
             Bridge.PostQuitMessage(exitCode);
             Environment.Exit(exitCode);
+        }
+
+        internal static bool TryBeginExit(ref int exitStarted)
+        {
+            return Interlocked.CompareExchange(ref exitStarted, 1, 0) == 0;
         }
 
         /// <summary>

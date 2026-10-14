@@ -35,6 +35,7 @@ namespace Awake
 
         private static bool _startedFromPowerToys;
         private static bool _hasDeadlineCommand;
+        private static int _exitStarted;
 
         public static Mutex? LockMutex { get; set; }
 
@@ -309,6 +310,11 @@ namespace Awake
 
         private static void Exit(string message, int exitCode)
         {
+            if (!Manager.TryBeginExit(ref _exitStarted))
+            {
+                return;
+            }
+
             _etwTrace?.Dispose();
             DisposeFileSystemWatcher();
             _registeredWaitHandle?.Unregister(null);
@@ -542,11 +548,19 @@ namespace Awake
             }
 
             // Synchronize with the target process, and trigger Exit() when it finishes.
-            RunnerHelper.WaitForPowerToysRunner(targetPid, () =>
-            {
-                Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
-                Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
-            });
+            RunnerHelper.WaitForPowerToysRunner(
+                targetPid,
+                () =>
+                {
+                    Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
+                    Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+                },
+                error =>
+                {
+                    Logger.LogError($"Could not monitor target PID {targetPid}.", error);
+                    Exit(Resources.AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE, 1);
+                },
+                nameof(HandleProcessScopedKeepAwake));
         }
 
         private static void AllocateLocalConsole()
