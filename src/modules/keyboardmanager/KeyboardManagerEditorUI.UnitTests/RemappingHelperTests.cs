@@ -671,18 +671,26 @@ namespace KeyboardManagerEditorUI.UnitTests
                 settings.ShortcutSettingsDictionary, proposed, null, AreKeysEqual));
         }
 
+        // Always and Alone remaps of one key use separate engine tables, in both the dialog check and the save
+        // check; an app tag left on the single-key Always row must not change that.
         [TestMethod]
-        public void HasDuplicateEditorMapping_ShouldKeepAlwaysAndAloneConditionsDistinct()
+        [DataRow("")]
+        [DataRow("notepad.exe")]
+        public void DuplicateMapping_ShouldKeepAlwaysAndAloneConditionsDistinct(string existingApp)
         {
-            var always = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "20", string.Empty);
+            var always = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "20", existingApp);
             var settings = CreateEditorSettings(("always-id", always, true));
 
             var alone = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "20", string.Empty);
             alone.Condition = SingleKeyRemapCondition.Alone;
             Assert.IsFalse(DuplicateMappingHelper.HasDuplicateEditorMapping(settings.ShortcutSettingsDictionary, alone, null, AreKeysEqual));
+            Assert.IsFalse(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, "20", isEditMode: false, appName: string.Empty, editingId: null, AreKeysEqual, SingleKeyRemapCondition.Alone));
 
             var secondAlways = CreateScopedMapping(ShortcutOperationType.RemapShortcut, "20", string.Empty);
             Assert.IsTrue(DuplicateMappingHelper.HasDuplicateEditorMapping(settings.ShortcutSettingsDictionary, secondAlways, null, AreKeysEqual));
+            Assert.IsTrue(DuplicateMappingHelper.IsDuplicateMapping(
+                settings.ShortcutSettingsDictionary, "20", isEditMode: false, appName: string.Empty, editingId: null, AreKeysEqual, SingleKeyRemapCondition.Always));
         }
 
         private static EditorSettings CreateEditorSettings(string mappingId, ShortcutOperationType operationType, string originalKeys, string targetKeys) =>
