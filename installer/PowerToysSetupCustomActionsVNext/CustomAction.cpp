@@ -1586,6 +1586,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.AdvancedPaste.exe",
+        L"PowerToys.AdvancedPaste.Cli.exe",
         L"PowerToys.Awake.exe",
         L"PowerToys.FancyZones.exe",
         L"PowerToys.FancyZonesEditor.exe",
@@ -1605,9 +1606,13 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.ImageResizerCLI.exe",
         L"PowerToys.ImageResizer.CLI.exe",
         L"PowerToys.LightSwitchService.exe",
+        // Also matches the installed shim PowerToys.LightSwitch.CLI.exe.
+        L"PowerToys.LightSwitch.Cli.exe",
         L"PowerToys.PowerDisplay.exe",
         // Also matches the installed shim PowerToys.PowerDisplay.CLI.exe.
         L"PowerToys.PowerDisplay.Cli.exe",
+        // Also matches the installed shim PowerToys.Settings.CLI.exe.
+        L"PowerToys.Settings.Cli.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
         L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",

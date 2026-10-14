@@ -54,13 +54,13 @@ public sealed class CommandContextSourceTests
             }
 
             var message = new PerformCommandMessage(new(item.Command), new ExtensionObject<IListItem>(item));
-            var contextSource = message.Context as ICommandContextSource;
+            var contextSource = message.CommandContext as ICommandContextSource;
 
             Assert.IsNotNull(contextSource);
             Assert.AreSame(host, contextSource.ExtensionHost);
             Assert.AreSame(provider, contextSource.ProviderContext);
             Assert.AreSame(page, message.Command.Unsafe);
-            Assert.AreSame(item, message.Context);
+            Assert.AreSame(item, message.CommandContext);
         }
         finally
         {

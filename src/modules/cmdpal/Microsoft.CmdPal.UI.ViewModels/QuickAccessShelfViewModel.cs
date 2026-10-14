@@ -17,6 +17,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDisposable
 {
+    public event EventHandler<bool>? RebuildCompleted;
+
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly IAppStateService _appStateService;
     private readonly ISettingsService _settingsService;
@@ -75,10 +77,11 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     public void SetItemConfiguration(
         RecentCommandsPlacement recentCommandsPlacement,
         int pinnedCommandLimit,
-        int recentCommandLimit)
+        int recentCommandLimit,
+        bool forceRebuild = false)
     {
         var configuration = CreateConfiguration(recentCommandsPlacement, pinnedCommandLimit, recentCommandLimit);
-        if (_configuration == configuration)
+        if (!forceRebuild && _configuration == configuration)
         {
             return;
         }
@@ -338,23 +341,32 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 
     private void CompleteRebuild(int rebuildVersion, Task<QuickAccessShelfItem[]> task)
     {
+        var succeeded = false;
         try
         {
             if (task.IsFaulted)
             {
                 CoreLogger.LogError("Failed to rebuild quick access shelf", task.Exception.GetBaseException());
             }
-            else if (!_isDisposed && rebuildVersion == Volatile.Read(ref _rebuildVersion))
+            else if (task.IsCompletedSuccessfully && !_isDisposed && rebuildVersion == Volatile.Read(ref _rebuildVersion))
             {
                 ApplyRebuild(task.Result);
+                succeeded = true;
             }
         }
         finally
         {
             Interlocked.Exchange(ref _rebuildRunning, 0);
-            if (!_isDisposed && rebuildVersion != Volatile.Read(ref _rebuildVersion))
+            if (!_isDisposed)
             {
-                TryStartRebuild();
+                if (rebuildVersion != Volatile.Read(ref _rebuildVersion))
+                {
+                    TryStartRebuild();
+                }
+                else
+                {
+                    RebuildCompleted?.Invoke(this, succeeded);
+                }
             }
         }
     }

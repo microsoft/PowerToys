@@ -1105,7 +1105,6 @@ public partial class CachedIconSourceProviderTests
             _ = scale;
             _ = priority;
             _ = diagnostics;
-            Interlocked.Increment(ref _shellEnqueueCount);
             Volatile.Write(ref _lastShellEnqueueThreadId, Environment.CurrentManagedThreadId);
             if (request.LocationMode == ShellItemIconLocationMode.ExactItem)
             {
@@ -1115,6 +1114,7 @@ public partial class CachedIconSourceProviderTests
             LastDemand = demand;
             if (!AcceptLoads)
             {
+                Interlocked.Increment(ref _shellEnqueueCount);
                 return false;
             }
 
@@ -1129,6 +1129,7 @@ public partial class CachedIconSourceProviderTests
                 _pendingShellOwners.Enqueue(load);
             }
 
+            Interlocked.Increment(ref _shellEnqueueCount);
             return true;
         }
 

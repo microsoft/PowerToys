@@ -215,6 +215,8 @@ public class ItemActionControllerTests
     [DataRow(VirtualKey.F6, VirtualKeyModifiers.None, true)]
     [DataRow(VirtualKey.K, VirtualKeyModifiers.Control, false)]
     [DataRow(VirtualKey.K, VirtualKeyModifiers.Control, true)]
+    [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, false)]
+    [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, true)]
     public void RequestedShortcut_InvokesOrDefersItsSubmenu(VirtualKey key, VirtualKeyModifiers modifiers, bool hasSubmenu)
     {
         var chord = new KeyChord(modifiers, (int)key, 0);
@@ -249,7 +251,7 @@ public class ItemActionControllerTests
             {
                 Assert.IsEmpty(_opened);
                 Assert.HasCount(1, invocations);
-                Assert.AreSame(model, invocations[0].Context);
+                Assert.AreSame(model, invocations[0].CommandContext);
             }
         }
         finally

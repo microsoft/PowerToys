@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.Settings.SettingsSearchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:cpControls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels">
+    <ScrollViewer>
+        <StackPanel
+            MaxWidth="1000"
+            Margin="16,16,16,24"
+            HorizontalAlignment="Stretch"
+            Spacing="16">
+            <TextBlock x:Name="QueryText" TextWrapping="Wrap" />
+            <TextBlock
+                x:Name="EmptyState"
+                x:Uid="SettingsWindow_SearchEmptyState"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+            <ItemsRepeater x:Name="ResultsRepeater">
+                <ItemsRepeater.Layout>
+                    <StackLayout Spacing="24" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:SettingsSearchResultGroup">
+                        <StackPanel Spacing="8">
+                            <TextBlock
+                                AutomationProperties.HeadingLevel="Level2"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind Title}"
+                                TextWrapping="Wrap" />
+                            <ItemsRepeater ItemsSource="{x:Bind Results}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="{StaticResource SettingsCardSpacing}" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:SettingsSearchResult">
+                                        <controls:SettingsCard
+                                            Click="Result_Click"
+                                            DataContext="{x:Bind}"
+                                            Description="{x:Bind Breadcrumb}"
+                                            Header="{x:Bind Title}"
+                                            IsClickEnabled="True">
+                                            <controls:SettingsCard.HeaderIcon>
+                                                <cpControls:ContentIcon>
+                                                    <cpControls:ContentIcon.Content>
+                                                        <controls:SwitchPresenter
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            TargetType="x:Boolean"
+                                                            Value="{x:Bind HasIcon}">
+                                                            <controls:Case Value="True">
+                                                                <cpControls:IconBox
+                                                                    Width="20"
+                                                                    Height="20"
+                                                                    DiagnosticScope="SettingsSearch"
+                                                                    RequestSite="Settings"
+                                                                    SourceKey="{x:Bind Icon}"
+                                                                    SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}">
+                                                                    <cpControls:IconBox.FallbackSource>
+                                                                        <FontIconSource Glyph="{x:Bind IconGlyph}" />
+                                                                    </cpControls:IconBox.FallbackSource>
+                                                                </cpControls:IconBox>
+                                                            </controls:Case>
+                                                            <controls:Case Value="False">
+                                                                <FontIcon FontSize="20" Glyph="{x:Bind IconGlyph}" />
+                                                            </controls:Case>
+                                                        </controls:SwitchPresenter>
+                                                    </cpControls:ContentIcon.Content>
+                                                </cpControls:ContentIcon>
+                                            </controls:SettingsCard.HeaderIcon>
+                                        </controls:SettingsCard>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

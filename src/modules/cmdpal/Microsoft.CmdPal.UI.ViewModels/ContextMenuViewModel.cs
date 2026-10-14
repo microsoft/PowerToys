@@ -329,7 +329,7 @@ public partial class ContextMenuViewModel : ObservableObject
             return ContextKeybindingResult.KeepOpen;
         }
 
-        var message = new PerformCommandMessage(command.Command.Model, command.Model);
+        var message = new PerformCommandMessage(command);
         CommandInvoking?.Invoke(this, message);
         WeakReferenceMessenger.Default.Send(message);
         CommandInvoked?.Invoke(this, command);

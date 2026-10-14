@@ -4,6 +4,7 @@
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
+    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PowerToys.MonacoPreviewHandler</AssemblyTitle>

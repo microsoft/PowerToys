@@ -17,8 +17,10 @@ public record SettingsModel
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    public const int DefaultCompactCenterHeightPercentage = 75;
+
     internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
-    internal const int MaxQuickAccessShelfPinnedCommandLimit = 9;
+    internal const int MaxQuickAccessShelfPinnedCommandLimit = 99;
     internal const int DefaultQuickAccessShelfPinnedCommandLimit = 9;
     internal const int MinRecentCommandsDisplayLimit = 1;
     internal const int MaxRecentCommandsDisplayLimit = 10;
@@ -54,6 +56,12 @@ public record SettingsModel
         init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
     }
 
+    public bool DockFocusPrimaryFirst { get; init; }
+
+    public bool DockFocusAcrossMonitors { get; init; } = true;
+
+    public bool DockRememberLastFocusedItem { get; init; } = true;
+
     public bool UseLowLevelGlobalHotkey { get; init; }
 
     public bool ShowAppDetails { get; init; }
@@ -87,6 +95,8 @@ public record SettingsModel
 
     public bool ShowQuickAccessShelf { get; init; }
 
+    public AltNumberShortcutBehavior ListItemAltNumberBehavior { get; init; }
+
     public RecentCommandsPlacement RecentCommandsOnQuickAccessShelf { get; init; }
 
     public RecentCommandsPlacement RecentCommandsOnHome { get; init; }
@@ -117,7 +127,7 @@ public record SettingsModel
     // height from the bottom of the screen (as a percentage) at which the collapsed search
     // box is vertically centered. 75 places it in the upper portion of the display. Ignored
     // when compact mode is off.
-    public int CompactCenterHeightPercentage { get; set; } = 75;
+    public int CompactCenterHeightPercentage { get; set; } = DefaultCompactCenterHeightPercentage;
 
     private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -240,7 +250,10 @@ public record SettingsModel
           ImmutableList<TopLevelHotkey>? commandHotkeys = null,
           bool enableExternalCommandLinks = true,
           int quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit,
-          int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit)
+          int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit,
+          bool dockFocusAcrossMonitors = true,
+          bool dockRememberLastFocusedItem = true,
+          bool dockFocusPrimaryFirst = false)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -250,6 +263,9 @@ public record SettingsModel
         EnableExternalCommandLinks = enableExternalCommandLinks;
         QuickAccessShelfPinnedCommandLimit = quickAccessShelfPinnedCommandLimit;
         RecentCommandsDisplayLimit = recentCommandsDisplayLimit;
+        DockFocusAcrossMonitors = dockFocusAcrossMonitors;
+        DockRememberLastFocusedItem = dockRememberLastFocusedItem;
+        DockFocusPrimaryFirst = dockFocusPrimaryFirst;
     }
 
     public SettingsModel()
@@ -588,4 +604,10 @@ public enum RecentCommandsPlacement
     Hidden = 0,
     BeforePinned = 1,
     AfterPinned = 2,
+}
+
+public enum AltNumberShortcutBehavior
+{
+    Run = 0,
+    Select = 1,
 }

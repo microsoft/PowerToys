@@ -106,6 +106,7 @@
                                 <StackPanel local:SettingsPageTarget.Id="commands">
                                     <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                                     <ItemsRepeater
+                                        x:Name="CommandSettingsRepeater"
                                         ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}"
                                         Layout="{StaticResource VerticalStackLayout}">
                                         <ItemsRepeater.ItemTemplate>

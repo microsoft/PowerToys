@@ -68,12 +68,24 @@
                     </InfoBar>
 
                     <!--  Focus Dock shortcut  -->
-                    <controls:SettingsCard
+                    <controls:SettingsExpander
                         x:Uid="Settings_DockPage_FocusShortcut_SettingsCard"
+                        AutomationProperties.AutomationId="CmdPal_DockSettingsPage_FocusShortcutOptions"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE765;}"
                         local:SettingsPageTarget.Id="focus-shortcut">
                         <cpControls:ShortcutControl AutomationProperties.AutomationId="CmdPal_DockSettingsPage_FocusShortcut" HotkeySettings="{x:Bind ViewModel.Dock_FocusHotkey, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard x:Uid="Settings_DockPage_FocusPrimaryFirst_SettingsCard">
+                                <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_FocusPrimaryFirst" IsOn="{x:Bind ViewModel.Dock_FocusPrimaryFirst, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="Settings_DockPage_FocusAcrossMonitors_SettingsCard">
+                                <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_FocusAcrossMonitors" IsOn="{x:Bind ViewModel.Dock_FocusAcrossMonitors, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="Settings_DockPage_RememberLastFocusedItem_SettingsCard">
+                                <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_RememberLastFocusedItem" IsOn="{x:Bind ViewModel.Dock_RememberLastFocusedItem, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <!--  Appearance Section  -->
                     <TextBlock
