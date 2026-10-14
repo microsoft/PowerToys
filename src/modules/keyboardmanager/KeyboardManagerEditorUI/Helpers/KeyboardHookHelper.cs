@@ -17,11 +17,15 @@ namespace KeyboardManagerEditorUI.Helpers
     {
         private static KeyboardHookHelper? _instance;
 
+        private readonly KeyboardRecordingState _recordingState = new();
+
         public static KeyboardHookHelper Instance => _instance ??= new KeyboardHookHelper();
 
         private KeyboardMappingService? _mappingService;
 
         private HotkeySettingsControlHook? _keyboardHook;
+
+        private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         // The active page using this keyboard hook
         private IKeyboardHookTarget? _activeTarget;
@@ -31,17 +35,22 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private bool _disposed;
 
-        private bool _exitRequested;
-
         private bool _hasCapturedKeys;
 
-        private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
+        private bool _hasCapturedNonShiftKeys;
+
+        private bool _restorePreviousKeys;
+
+        private bool _moveFocusBackward;
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern uint SendInput(uint count, NativeKeyboardHelper.INPUT[] inputs, int size);
 
         // Singleton to make sure only one instance of the hook is active
         private KeyboardHookHelper()
@@ -58,53 +67,53 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public void ActivateHook(IKeyboardHookTarget target)
         {
-            CleanupHook(notifyTarget: false);
+            StopRecording(notifyTarget: false);
 
             _activeTarget = target;
             _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-
-            _currentlyPressedKeys.Clear();
-            _keyPressOrder.Clear();
-            _hasCapturedKeys = false;
+            _recordingState.StartRecording();
 
             try
             {
-                _keyboardHook = new HotkeySettingsControlHook(
-                    KeyDown,
-                    KeyUp,
-                    IsEditorForeground,
-                    ShouldHandleKeyboardEvent);
+                if (_keyboardHook == null)
+                {
+                    // Dispatch in the filter so obsolete tagged input can be swallowed without
+                    // reaching KeyDown in a newer recording. The wrapper callbacks do no work.
+                    _keyboardHook = new HotkeySettingsControlHook(
+                        _ => { },
+                        _ => { },
+                        () => _recordingState.NeedsHook,
+                        ShouldHandleKeyboardEvent);
+                }
             }
             catch (Exception ex)
             {
+                StopRecording(notifyTarget: false);
+                QueueCleanup();
                 Logger.LogWarning($"Keyboard hook unavailable: {ex.Message}");
             }
         }
 
         public void CleanupHook()
         {
-            CleanupHook(cancelRecording: false, notifyTarget: true);
+            StopRecording();
+            QueueCleanup();
         }
 
-        private void CleanupHook(bool cancelRecording = false, bool notifyTarget = true, bool moveFocusBackward = false)
+        private void StopRecording(bool restorePreviousKeys = false, bool notifyTarget = true, bool moveFocusBackward = false)
         {
             IKeyboardHookTarget? target = _activeTarget;
             _activeTarget = null;
-            _exitRequested = false;
+            _recordingState.StopRecording();
             _hasCapturedKeys = false;
-
-            if (_keyboardHook != null)
-            {
-                _keyboardHook.Dispose();
-                _keyboardHook = null;
-            }
+            _hasCapturedNonShiftKeys = false;
 
             _currentlyPressedKeys.Clear();
             _keyPressOrder.Clear();
 
             if (notifyTarget)
             {
-                target?.OnRecordingStopped(cancelRecording, moveFocusBackward);
+                target?.OnRecordingStopped(restorePreviousKeys, moveFocusBackward);
             }
         }
 
@@ -122,20 +131,42 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private bool ShouldHandleKeyboardEvent(int key, UIntPtr extraInfo, bool isKeyDown)
         {
+            var virtualKey = (VirtualKey)key;
+            if (_recordingState.TryCompleteRestoration(extraInfo.ToUInt64(), _currentlyPressedKeys, out bool suppressRestoration))
+            {
+                QueueCleanup();
+                return suppressRestoration;
+            }
+
             if (_activeTarget == null)
             {
                 return false;
             }
 
-            if (_exitRequested)
+            if (_recordingState.ExitRequested)
+            {
+                if (!isKeyDown)
+                {
+                    _currentlyPressedKeys.Remove(virtualKey);
+                }
+
+                return false;
+            }
+
+            // Pending input from an older recording can keep the hook alive in the background.
+            // Only tagged input and releases during exit are handled regardless of foreground.
+            if (!IsEditorForeground())
             {
                 return false;
             }
 
-            var virtualKey = (VirtualKey)key;
+            if (!isKeyDown && !_currentlyPressedKeys.Contains(virtualKey))
+            {
+                // This press predates recording (for example, Tab held while activating with Space).
+                // Let its release update the system state without ending or changing this capture.
+                return false;
+            }
 
-            // Only a Tab press exits recording. A Tab release whose press preceded recording (e.g. Tab held
-            // while Space toggled recording on) must not stop it; it falls through to normal key-up handling.
             if (isKeyDown && IsKeyboardNavigationExit(virtualKey))
             {
                 // Shift was already swallowed by this hook, so the window would see a plain Tab and move
@@ -144,24 +175,27 @@ namespace KeyboardManagerEditorUI.Helpers
 
                 // Keep the recorded keys unless nothing was captured, or the only captured key is the
                 // Shift held for Shift+Tab.
-                bool restorePreviousKeys = moveFocusBackward
-                    ? _keyPressOrder.All(IsShiftKey)
-                    : !_hasCapturedKeys;
+                _restorePreviousKeys = !_hasCapturedKeys || (moveFocusBackward && !_hasCapturedNonShiftKeys);
+                _moveFocusBackward = moveFocusBackward;
 
-                // Defer cleanup: disposing the hook from inside its own callback is unsafe.
-                _exitRequested = true;
-                if (_dispatcherQueue == null || !_dispatcherQueue.TryEnqueue(() =>
+                _recordingState.RequestExit();
+                if (moveFocusBackward)
                 {
-                    if (_exitRequested)
-                    {
-                        CleanupHook(restorePreviousKeys, notifyTarget: true, moveFocusBackward);
-                    }
-                }))
-                {
-                    CleanupHook(restorePreviousKeys, notifyTarget: true, moveFocusBackward);
+                    RestoreShiftKeyState();
                 }
 
+                QueueCleanup();
+
                 return moveFocusBackward;
+            }
+
+            if (isKeyDown)
+            {
+                KeyDown(key);
+            }
+            else
+            {
+                KeyUp(key);
             }
 
             return true;
@@ -169,12 +203,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private bool IsKeyboardNavigationExit(VirtualKey virtualKey)
         {
-            if (virtualKey != VirtualKey.Tab)
-            {
-                return false;
-            }
-
-            return _currentlyPressedKeys.Count == 0 || _currentlyPressedKeys.All(IsShiftKey);
+            return virtualKey == VirtualKey.Tab && _currentlyPressedKeys.All(IsShiftKey);
         }
 
         private static bool IsShiftKey(VirtualKey key)
@@ -182,9 +211,68 @@ namespace KeyboardManagerEditorUI.Helpers
             return key == VirtualKey.Shift || key == VirtualKey.LeftShift || key == VirtualKey.RightShift;
         }
 
+        private void RestoreShiftKeyState()
+        {
+            // The hook swallowed these Shift presses. Hand them back to the system so holding
+            // Shift continues backward navigation. Keep observing releases until these tagged
+            // events arrive, so a release cannot be followed by a stale injected key-down.
+            var inputs = _currentlyPressedKeys.Where(IsShiftKey).Select(key => new NativeKeyboardHelper.INPUT
+            {
+                type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
+                data = new NativeKeyboardHelper.InputUnion
+                {
+                    ki = new NativeKeyboardHelper.KEYBDINPUT
+                    {
+                        wVk = (short)key,
+                        dwExtraInfo = (UIntPtr)_recordingState.AddRestoration(key),
+                    },
+                },
+            }).ToArray();
+
+            uint sent = SendInput((uint)inputs.Length, inputs, NativeKeyboardHelper.INPUT.Size);
+            if (sent != inputs.Length)
+            {
+                foreach (var input in inputs.Skip((int)sent))
+                {
+                    _recordingState.RemoveUnsentRestoration(input.data.ki.dwExtraInfo.ToUInt64());
+                }
+
+                Logger.LogWarning($"Unable to restore Shift after recording: {Marshal.GetLastWin32Error()}");
+            }
+        }
+
+        private void QueueCleanup()
+        {
+            int generation = _recordingState.Generation;
+            if (_keyboardHook == null || (_recordingState.NeedsHook && !_recordingState.CanCompleteExit(generation)))
+            {
+                return;
+            }
+
+            if (_dispatcherQueue == null || !_dispatcherQueue.TryEnqueue(() =>
+            {
+                if (_recordingState.CanCompleteExit(generation))
+                {
+                    StopRecording(_restorePreviousKeys, moveFocusBackward: _moveFocusBackward);
+                }
+
+                // Recheck after notifying the target: it can start another recording. Native
+                // disposal always runs here, outside the filter and any target callback it invokes.
+                if (!_recordingState.NeedsHook)
+                {
+                    _keyboardHook?.Dispose();
+                    _keyboardHook = null;
+                }
+            }))
+            {
+                // Never dispose the native hook from inside its filter when the dispatcher is shutting down.
+                Logger.LogWarning("Unable to queue keyboard recording cleanup");
+            }
+        }
+
         private void KeyDown(int key)
         {
-            if (_activeTarget == null || _exitRequested)
+            if (_activeTarget == null || _recordingState.ExitRequested)
             {
                 return;
             }
@@ -201,6 +289,7 @@ namespace KeyboardManagerEditorUI.Helpers
             {
                 _activeTarget.ClearKeys();
                 _keyPressOrder.Clear();
+                _hasCapturedNonShiftKeys = false;
             }
 
             // Count current modifiers
@@ -225,6 +314,7 @@ namespace KeyboardManagerEditorUI.Helpers
             if (_currentlyPressedKeys.Add(virtualKey))
             {
                 _hasCapturedKeys = true;
+                _hasCapturedNonShiftKeys |= !IsShiftKey(virtualKey);
                 _keyPressOrder.Add(virtualKey);
 
                 // When building chords, cap at 2 action keys: if a third action key arrives,
@@ -245,7 +335,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private void KeyUp(int key)
         {
-            if (_activeTarget == null || _exitRequested)
+            if (_activeTarget == null || _recordingState.ExitRequested)
             {
                 return;
             }
