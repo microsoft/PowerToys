@@ -60,26 +60,9 @@ bool LauncherUIHelper::LaunchUI(const std::function<bool()>& isCanceled)
     m_process.reset(result.value().hProcess);
     m_processId = GetProcessId(m_process.get());
     Logger::info(L"WorkspacesLauncherUI started with pid {}", m_processId);
-    const auto pipe = IPCHelperStrings::UIPipeName + m_operationId;
-    const auto deadline = GetTickCount64() + 10000;
     // Process creation precedes the managed IPC server. Do not enqueue a first message into that gap.
-    while (IsRunning() && GetTickCount64() < deadline && !(isCanceled && isCanceled()))
-    {
-        if (WaitNamedPipeW(pipe.c_str(), 20))
-        {
-            m_ready = true;
-            return true;
-        }
-        const auto error = GetLastError();
-        if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PIPE_BUSY && error != ERROR_SEM_TIMEOUT)
-        {
-            Logger::error(L"Workspaces confirmation pipe readiness failed: {}", error);
-            return false;
-        }
-        Sleep(20);
-    }
-    Logger::warn("Workspaces confirmation UI did not become ready before startup stopped.");
-    return false;
+    m_ready = m_ipcHelper.WaitForReady(10000, [&] { return !IsRunning() || (isCanceled && isCanceled()); });
+    return m_ready;
 }
 
 bool LauncherUIHelper::IsRunning() const

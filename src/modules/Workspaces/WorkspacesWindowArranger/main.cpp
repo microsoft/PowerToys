@@ -65,10 +65,13 @@ namespace
                     received.notify_one();
                 },
                 IPCHelper::ModulePeer(L"PowerToys.WorkspacesLauncher.exe", parentPid));
+            const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+            if (!pipe->WaitForReady(10000))
+                throw WorkspacesCli::Error(9, L"outcomeUnknown", "Operation snapshot pipes did not become ready.");
             pipe->send(L"snapshot-request");
             {
                 std::unique_lock lock(mutex);
-                if (!received.wait_for(lock, std::chrono::seconds(10), [&] { return project.has_value() || invalid; }) || invalid)
+                if (!received.wait_until(lock, deadline, [&] { return project.has_value() || invalid; }) || invalid)
                     throw WorkspacesCli::Error(9, L"outcomeUnknown", "No valid operation snapshot received.");
             }
             WindowArranger arranger(*project, std::move(pipe), operationId);

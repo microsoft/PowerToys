@@ -193,6 +193,31 @@ namespace WorkspacesLibUnitTests
             }
         }
 
+        TEST_METHOD (FinalArrangerResultRejectsFractionalAndOutOfRangeNumbers)
+        {
+            auto project = Project();
+            project.apps[1].id = L"{682A3A9E-D18D-4DC6-B2AF-E6ABD92F42A9}";
+            LaunchingStatus status(project);
+            const auto expected = status.Get();
+            for (const double state : { 1.5, 2.9, 5.5, -0.5, 1e100 })
+            {
+                auto message = FinalResult(project, { LaunchingState::LaunchedAndMoved, LaunchingState::Launched });
+                message.GetNamedArray(L"applications").GetObjectAt(1).SetNamedValue(L"state", json::value(state));
+                try
+                {
+                    WorkspacesCli::ParseArrangerResult(message, expected, L"operation");
+                    Assert::Fail(L"A fractional or out-of-range number cannot be a final application state.");
+                }
+                catch (const WorkspacesCli::Error& error)
+                {
+                    Assert::AreEqual(9, error.exitCode);
+                    Assert::AreEqual(std::wstring(L"outcomeUnknown"), error.code);
+                }
+                Assert::IsTrue(expected.at(project.apps[0]).state == LaunchingState::Waiting);
+                Assert::IsTrue(expected.at(project.apps[1]).state == LaunchingState::Waiting);
+            }
+        }
+
         TEST_METHOD (LaunchResultRejectsPendingOrMissingOutcomes)
         {
             auto project = Project();

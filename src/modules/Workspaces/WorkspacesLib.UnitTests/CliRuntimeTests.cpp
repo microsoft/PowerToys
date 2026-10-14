@@ -76,6 +76,16 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (SharedIpcDeliversFirstSnapshotExchangeAfterColdStartup)
+        {
+            Run(L"pipe-startup");
+        }
+
+        TEST_METHOD (SharedIpcStartupTimeoutAndCancellationAreBounded)
+        {
+            Run(L"pipe-startup-canceled");
+        }
+
 #ifdef _DEBUG
         TEST_METHOD (SharedSessionEntryRunsBothGuiAndCliModes)
         {

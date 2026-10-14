@@ -7,7 +7,7 @@
   <data name="CliHelp" xml:space="preserve"><value>PowerToys Workspaces CLI\n  list [--id GUID | --name NAME] [--details] [--json]\n  launch (--id GUID | --name NAME) [--timeout 1..600] [--json]\nDetails require a selector. Launch waits for window arrangement and permits normal Windows UAC.\nUnverified elevated EXEs use the existing Workspaces confirmation dialog. Closing it or choosing Skip does not approve the application.\nAdministrator terminals use the shared non-elevated process helper in the same user's desktop session.\nCtrl+C stops further launches when acknowledged; existing applications are not closed.\n</value><comment>Do not translate executable names, commands or options beginning with --.</comment></data>
   <data name="CliTableHeader" xml:space="preserve"><value>ID\tNAME\tAPPLICATIONS\n</value></data>
   <data name="CliWarningPrefix" xml:space="preserve"><value>Warning: </value></data>
-  <data name="CliInvalidArguments" xml:space="preserve"><value>Invalid command or arguments. Run --help for supported commands, selectors and timeout values.</value></data>
+  <data name="CliInvalidArguments" xml:space="preserve"><value>Invalid command or arguments. Run --help for supported commands, selectors and timeout values.</value><comment>Do not translate the --help option.</comment></data>
   <data name="CliDisabledByUser" xml:space="preserve"><value>Workspaces is disabled. Enable it in PowerToys Settings before using this command.</value></data>
   <data name="CliDisabledByPolicy" xml:space="preserve"><value>Workspaces is disabled by policy. Contact your system administrator.</value></data>
   <data name="CliPolicyError" xml:space="preserve"><value>The Workspaces policy could not be determined.</value></data>

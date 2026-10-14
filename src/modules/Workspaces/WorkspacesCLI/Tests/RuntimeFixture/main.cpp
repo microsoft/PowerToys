@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <sddl.h>
 #include <filesystem>
+#include <future>
 #include <iostream>
 #include <atomic>
 #include <sstream>
@@ -52,7 +53,7 @@ namespace
         wchar_t module[32768]{};
         Check(GetModuleFileNameW(nullptr, module, ARRAYSIZE(module)) != 0);
         const auto executable = std::filesystem::path(module).parent_path().parent_path().parent_path() / L"PowerToys.WorkspacesCLI.exe";
-        for (const auto argument : { L"--version", L"--invalid", L"--launch-worker" })
+        for (const auto argument : { L"--help", L"--version", L"--invalid", L"--launch-worker" })
         {
             SECURITY_ATTRIBUTES attributes{ sizeof(attributes), nullptr, TRUE };
             wil::unique_handle nul(CreateFileW(L"NUL", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -74,9 +75,56 @@ namespace
             Check(WaitForSingleObject(process.hProcess, 5000) == WAIT_OBJECT_0);
             DWORD exitCode{};
             Check(GetExitCodeProcess(process.hProcess, &exitCode) != FALSE);
-            Check(exitCode == (std::wstring_view(argument) == L"--version" ? 0ul : 2ul));
+            Check(exitCode == (std::wstring_view(argument) == L"--help" || std::wstring_view(argument) == L"--version" ? 0ul : 2ul));
             Check(GetConsoleOutputCP() == 437);
         }
+    }
+
+    void CheckPipeStartup(bool cancelStartup)
+    {
+        Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
+        GUID guid{};
+        winrt::check_hresult(CoCreateGuid(&guid));
+        wchar_t id[40]{};
+        StringFromGUID2(guid, id, ARRAYSIZE(id));
+        const auto prefix = std::wstring(L"\\\\.\\pipe\\WorkspacesCliPipeStartup-") + id;
+        wil::unique_handle request(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+        wil::unique_handle reply(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+        wil::unique_handle finish(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+        Check(request && reply && finish);
+        IPCHelper client(prefix + L"-client", prefix + L"-server", [&](const std::wstring& message) {
+            if (message == L"snapshot")
+                SetEvent(reply.get());
+        });
+        if (cancelStartup)
+        {
+            const auto started = GetTickCount64();
+            Check(!client.WaitForReady(100));
+            int checks = 0;
+            Check(!client.WaitForReady(10000, [&] { return ++checks > 1; }));
+            Check(GetTickCount64() - started < 2000);
+            return;
+        }
+        auto peer = std::async(std::launch::async, [&] {
+            Sleep(200);
+            IPCHelper server(prefix + L"-server", prefix + L"-client", [&](const std::wstring& message) {
+                if (message == L"snapshot-request")
+                    SetEvent(request.get());
+            });
+            Check(WaitForSingleObject(request.get(), 5000) == WAIT_OBJECT_0);
+            server.send(L"snapshot");
+            Check(WaitForSingleObject(finish.get(), 5000) == WAIT_OBJECT_0);
+        });
+        auto cleanup = wil::scope_exit([&] {
+            SetEvent(finish.get());
+            if (peer.valid())
+                peer.wait();
+        });
+        Check(client.WaitForReady(5000));
+        client.send(L"snapshot-request");
+        Check(WaitForSingleObject(reply.get(), 5000) == WAIT_OBJECT_0);
+        SetEvent(finish.get());
+        peer.get();
     }
 
     void CheckUiStartup(bool cancelStartup, bool restrictedOwner)
@@ -181,6 +229,12 @@ int wmain(int argc, wchar_t** argv)
             return canceled ? 12 : 9;
         }
         Check(argc == 2);
+        if (std::wstring_view(argv[1]).starts_with(L"pipe-startup"))
+        {
+            CheckPipeStartup(std::wstring_view(argv[1]) == L"pipe-startup-canceled");
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
         if (std::wstring_view(argv[1]).starts_with(L"session-"))
         {
             const bool gui = std::wstring_view(argv[1]) != L"session-cli";

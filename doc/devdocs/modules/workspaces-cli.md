@@ -96,8 +96,8 @@ Aggregate state distinguishes launch progress from fully confirmed restoration:
 Thus `skipped` plus `launched` is `partial`, not `failed`. Exit codes remain unchanged:
 unconfirmed arrangement is not counted as a fully restored workspace.
 Final arranger responses must contain a known outcome for every requested application.
-`Waiting`, missing/duplicate applications and invalid results are rejected before applying or
-acknowledging completion. They produce `outcomeUnknown` (exit 9), not an application-level
+`Waiting`, fractional/out-of-range numeric states, missing/duplicate applications and invalid results
+are rejected before applying or acknowledging completion. They produce `outcomeUnknown` (exit 9), not an application-level
 `unknown` with exit 10. Native `Launched` remains valid and is reported as `launched`.
 
 ## Launch behavior
@@ -123,12 +123,15 @@ acknowledging completion. They produce `outcomeUnknown` (exit 9), not an applica
   launch is not idempotent and repeating it may open more applications.
 - The worker and arranger use the same immutable selected snapshot. Final history writes read
   the current file under a shared writer lock and do not replace it with the old launch snapshot.
+  The initial snapshot exchange waits for both IPC endpoints within its startup deadline before
+  sending the first request, so asynchronous pipe creation cannot discard it or its reply.
 - Before launching legacy workspaces, the non-elevated worker assigns and safely persists only
   missing application IDs. Existing IDs are preserved; malformed or duplicate existing IDs are
   errors. Concurrent edits or failed ID persistence stop the launch before applications start.
   Listing remains read-only, and a later canceled/timed-out launch does not undo completed ID initialization.
-- The foreground CLI restores the console's original output code page on exit. The shared host
-  uses an explicit private result pipe, independent of console output and CLI localization.
+- The foreground CLI changes the console output code page only while writing output, flushes
+  those writes and restores it before returning to other work; launch waits leave it unchanged.
+  The shared host uses an explicit private result pipe, independent of console output and CLI localization.
 - File logging is best-effort. An unavailable log directory/file does not prevent launching;
   the final launch result includes a `loggingUnavailable` warning without changing application outcomes.
 

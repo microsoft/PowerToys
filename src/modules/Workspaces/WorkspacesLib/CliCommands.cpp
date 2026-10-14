@@ -4,6 +4,7 @@
 #include "WorkspaceStore.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cwctype>
 #include <set>
 #include <shlobj.h>
@@ -363,9 +364,13 @@ namespace WorkspacesCli
             WorkspacesData::LaunchingAppStateMap result;
             for (const auto& value : applications)
             {
-                const auto item = WorkspacesData::AppLaunchInfoJSON::FromJson(value.GetObjectW());
-                if (!item || !remaining.erase(item->application) ||
-                    item->state <= LaunchingState::Waiting || item->state > LaunchingState::Skipped)
+                const auto object = value.GetObjectW();
+                const auto state = object.GetNamedNumber(L"state");
+                if (!std::isfinite(state) || std::trunc(state) != state ||
+                    state <= static_cast<int>(LaunchingState::Waiting) || state > static_cast<int>(LaunchingState::Skipped))
+                    throw Error(9, L"outcomeUnknown", "Invalid final arranger application state.");
+                const auto item = WorkspacesData::AppLaunchInfoJSON::FromJson(object);
+                if (!item || !remaining.erase(item->application))
                     throw Error(9, L"outcomeUnknown", "Invalid final arranger application outcome.");
                 result.emplace(item->application, *item);
             }

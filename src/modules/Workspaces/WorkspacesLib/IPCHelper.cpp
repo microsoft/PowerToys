@@ -6,6 +6,8 @@
 #include <filesystem>
 
 IPCHelper::IPCHelper(const std::wstring& currentPipeName, const std::wstring receiverPipeName, std::function<void(const std::wstring&)> messageCallback, const interop_auth::CallerPolicy& peerPolicy) :
+    m_currentPipeName(currentPipeName),
+    m_receiverPipeName(receiverPipeName),
     callback(messageCallback)
 {
     wil::unique_handle token;
@@ -33,6 +35,36 @@ IPCHelper::~IPCHelper()
 void IPCHelper::send(const std::wstring& message) const
 {
     ipc->send(message);
+}
+
+bool IPCHelper::WaitForReady(DWORD timeoutMs, const std::function<bool()>& isCanceled) const
+{
+    const auto deadline = GetTickCount64() + timeoutMs;
+    for (const auto pipe : { m_currentPipeName.c_str(), m_receiverPipeName.c_str() })
+    {
+        bool ready = false;
+        while (GetTickCount64() < deadline && !(isCanceled && isCanceled()))
+        {
+            if (WaitNamedPipeW(pipe, 20))
+            {
+                ready = true;
+                break;
+            }
+            const auto error = GetLastError();
+            if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PIPE_BUSY && error != ERROR_SEM_TIMEOUT)
+            {
+                Logger::error(L"Workspaces IPC pipe readiness failed: {}", error);
+                return false;
+            }
+            Sleep(20);
+        }
+        if (!ready)
+        {
+            Logger::warn("Workspaces IPC pipes did not become ready before startup stopped.");
+            return false;
+        }
+    }
+    return true;
 }
 
 void IPCHelper::receive(const std::wstring& msg)

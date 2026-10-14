@@ -30,6 +30,11 @@ namespace
     void Print(const json::JsonObject& output, bool asJson)
     {
         CliResources::LocalizeForOutput(output, false);
+        WorkspacesCli::ConsoleOutputCodePage consoleCodePage;
+        auto flushOutput = wil::scope_exit([] {
+            std::cout.flush();
+            std::cerr.flush();
+        });
         if (asJson)
         {
             std::cout << WorkspacesCli::FormatJson(output) << '\n';
@@ -83,14 +88,15 @@ int wmain(int argc, wchar_t** argv)
     const bool asJson = WorkspacesCli::WantsJson(args);
     const std::wstring command = args.empty() ? L"" : args.front();
     Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
-    WorkspacesCli::ConsoleOutputCodePage consoleCodePage;
     try
     {
         winrt::init_apartment();
         const auto options = WorkspacesCli::Parse(args);
         if (options.command == L"--help")
         {
-            std::cout << winrt::to_string(CliResources::Get(IDS_CLIHELP));
+            const auto help = winrt::to_string(CliResources::Get(IDS_CLIHELP));
+            WorkspacesCli::ConsoleOutputCodePage consoleCodePage;
+            std::cout << help << std::flush;
             return 0;
         }
         if (options.command == L"--version")
