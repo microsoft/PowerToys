@@ -75,7 +75,7 @@ PowerToys.Awake.exe until 18:00
 
 Keep awake until a specific date and time:
 ```powershell
-PowerToys.Awake.exe until "2026-12-31 23:59:59"
+PowerToys.Awake.exe until ([DateTimeOffset]::Now.AddDays(1).ToString('o'))
 ```
 
 Keep awake while another process is running:
@@ -85,8 +85,10 @@ PowerToys.Awake.exe --pid 1234
 
 Put `for` or `until` before the options. Durations accept whole-number `d`, `h`, `m`,
 and `s` components (for example, `1h30m`); zero, fractional, and overflowing durations
-are rejected. A time without a date means its next local occurrence. Nonexistent
-daylight-saving times are rejected, and explicit dates must be in the future.
+are rejected. A time without a date means its next local occurrence. If that future
+occurrence falls in a daylight-saving gap, it is rejected. An already-passed clock
+time today rolls to tomorrow, even if today's time fell in that gap. Explicit dates
+must be in the future.
 
 Combining a modern command with `--pid` or `--parent` ends the session at the deadline
 or when the process exits, whichever comes first. Do not combine these commands with
