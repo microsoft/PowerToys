@@ -49,7 +49,7 @@ The module on/off state lives in `EnabledModules.MouseButtonLock` in the global 
 
 ## Settings UI
 
-Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on. Expanding it shows the button checkboxes, the hold-duration slider, and the drag-threshold box. Settings copy is kept short on purpose; explanations such as the overlap with Windows' built-in left-button ClickLock belong in the user docs.
+Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on. Expanding it shows the button checkboxes, the hold-duration slider, and the drag-threshold box. The left-button option also notes Windows' built-in ClickLock and links to the Windows mouse settings.
 
 ```text
 Settings  >  Mouse utilities
