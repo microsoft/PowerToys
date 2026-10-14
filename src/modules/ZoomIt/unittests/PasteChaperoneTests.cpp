@@ -4,15 +4,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-void TestOutputDebug( const TCHAR* format, ... )
-{
-    wchar_t message[1024]{};
-    va_list arguments;
-    va_start( arguments, format );
-    _vsnwprintf_s( message, ARRAYSIZE( message ), _TRUNCATE, format, arguments );
-    va_end( arguments );
-    Logger::WriteMessage( message );
-}
+void TestOutputDebug( const TCHAR*, ... ) {}
 
 namespace
 {
