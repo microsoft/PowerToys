@@ -3,6 +3,8 @@
 #include <WorkspacesLib/CliCommands.h>
 #include <wil/resource.h>
 #include <algorithm>
+#include <tlhelp32.h>
+#include <UIAutomation.h>
 #include <WorkspacesLib/LaunchSession.h>
 #include <workspaces-common/MonitorUtils.h>
 
@@ -28,6 +30,45 @@ namespace WorkspacesLibUnitTests
                 DWORD_PTR result{};
                 SendMessageTimeoutW(window, WM_CLOSE, 0, 0, SMTO_ABORTIFHUNG, 2000, &result);
             }
+        }
+
+        static void CancelGuiLaunch(DWORD launcherPid)
+        {
+            wil::unique_handle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
+            Assert::IsTrue(snapshot.get() != INVALID_HANDLE_VALUE);
+            PROCESSENTRY32W entry{ sizeof(entry) };
+            DWORD uiPid{};
+            for (BOOL found = Process32FirstW(snapshot.get(), &entry); found; found = Process32NextW(snapshot.get(), &entry))
+            {
+                if (entry.th32ParentProcessID == launcherPid && _wcsicmp(entry.szExeFile, L"PowerToys.WorkspacesLauncherUI.exe") == 0)
+                {
+                    uiPid = entry.th32ProcessID;
+                    break;
+                }
+            }
+            Assert::IsTrue(uiPid != 0, L"The progress UI must belong to this session host.");
+            winrt::com_ptr<IUIAutomation> automation;
+            winrt::check_hresult(CoCreateInstance(__uuidof(CUIAutomation), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(automation.put())));
+            winrt::com_ptr<IUIAutomationElement> desktop, window, button;
+            winrt::check_hresult(automation->GetRootElement(desktop.put()));
+            VARIANT processId{};
+            processId.vt = VT_I4;
+            processId.lVal = static_cast<LONG>(uiPid);
+            winrt::com_ptr<IUIAutomationCondition> processCondition, buttonCondition;
+            winrt::check_hresult(automation->CreatePropertyCondition(UIA_ProcessIdPropertyId, processId, processCondition.put()));
+            winrt::check_hresult(desktop->FindFirst(TreeScope_Children, processCondition.get(), window.put()));
+            Assert::IsNotNull(window.get(), L"The owned progress window must be visible.");
+            wil::unique_bstr cancelId(SysAllocString(L"CancelButton"));
+            Assert::IsNotNull(cancelId.get());
+            VARIANT automationId{};
+            automationId.vt = VT_BSTR;
+            automationId.bstrVal = cancelId.get();
+            winrt::check_hresult(automation->CreatePropertyCondition(UIA_AutomationIdPropertyId, automationId, buttonCondition.put()));
+            winrt::check_hresult(window->FindFirst(TreeScope_Descendants, buttonCondition.get(), button.put()));
+            Assert::IsNotNull(button.get(), L"The real progress Cancel button must be available.");
+            winrt::com_ptr<IUIAutomationInvokePattern> invoke;
+            winrt::check_hresult(button->GetCurrentPatternAs(UIA_InvokePatternId, IID_PPV_ARGS(invoke.put())));
+            winrt::check_hresult(invoke->Invoke());
         }
 
         static void CheckCompletion(const std::wstring& mode, bool cancelRequested, const wchar_t* expectedCode)
@@ -76,8 +117,7 @@ namespace WorkspacesLibUnitTests
                            L"An elapsed deadline must not become an explicit cancellation.");
         }
 
-        static std::pair<DWORD, json::JsonObject> Run(bool fixture, bool canceled, bool cancelAfterStart = false, bool expired = false,
-                                                   ULONGLONG* cancellationLatency = nullptr, bool minimized = false, bool maximized = false)
+        static std::pair<DWORD, json::JsonObject> Run(bool fixture, bool canceled, bool cancelAfterStart = false, bool expired = false, ULONGLONG* cancellationLatency = nullptr, bool minimized = false, bool maximized = false, bool guiCanceled = false)
         {
             RequireOptIn();
             wchar_t module[MAX_PATH]{};
@@ -113,14 +153,29 @@ namespace WorkspacesLibUnitTests
             const auto startedName = std::wstring(L"Local\\WorkspacesCliFixtureStarted-") + operation;
             wil::unique_handle started(CreateEventW(nullptr, TRUE, FALSE, startedName.c_str()));
             Assert::IsTrue(static_cast<bool>(started));
-            if (cancelAfterStart)
+            if (cancelAfterStart || guiCanceled)
                 project.apps[0].commandLineArgs = L"--delay-window " + startedName;
+            std::vector<wil::unique_handle> pendingStarted;
+            if (guiCanceled)
+            {
+                for (const auto id : { L"{59330ECB-5917-4DF3-B70A-1F2D7FE4899B}", L"{69330ECB-5917-4DF3-B70A-1F2D7FE4899B}" })
+                {
+                    auto pending = project.apps.front();
+                    pending.id = id;
+                    const auto pendingName = startedName + L"-" + pending.id;
+                    pendingStarted.emplace_back(CreateEventW(nullptr, TRUE, FALSE, pendingName.c_str()));
+                    Assert::IsTrue(static_cast<bool>(pendingStarted.back()));
+                    pending.commandLineArgs = L"--delay-window " + pendingName;
+                    project.apps.push_back(std::move(pending));
+                }
+            }
             json::JsonObject request;
             request.SetNamedValue(L"protocolVersion", json::value(1));
             request.SetNamedValue(L"operationId", json::value(operation));
-            request.SetNamedValue(L"timeout", json::value(20));
-            request.SetNamedValue(L"deadline", json::value(expired ? GetTickCount64() - 1 : GetTickCount64() + 20000));
-            request.SetNamedValue(L"presentation", json::value(static_cast<int>(WorkspacesSession::Presentation::ConfirmationOnly)));
+            request.SetNamedValue(L"timeout", json::value(guiCanceled ? 0 : 20));
+            request.SetNamedValue(L"deadline", json::value(guiCanceled ? 0 : expired ? GetTickCount64() - 1 :
+                                                                                       GetTickCount64() + 20000));
+            request.SetNamedValue(L"presentation", json::value(static_cast<int>(guiCanceled ? WorkspacesSession::Presentation::Progress : WorkspacesSession::Presentation::ConfirmationOnly)));
             request.SetNamedValue(L"invokePoint", json::value(static_cast<int>(InvokePoint::EditorButton)));
             request.SetNamedValue(L"editorDraft", json::value(false));
             request.SetNamedValue(L"workspace", WorkspacesData::WorkspacesProjectJSON::ToJson(project));
@@ -165,10 +220,13 @@ namespace WorkspacesLibUnitTests
             const auto deadline = GetTickCount64() + 25000;
             while (GetTickCount64() < deadline)
             {
-                if (cancelAfterStart && !cancellationAt && WaitForSingleObject(started.get(), 0) == WAIT_OBJECT_0)
+                if ((cancelAfterStart || guiCanceled) && !cancellationAt && WaitForSingleObject(started.get(), 0) == WAIT_OBJECT_0)
                 {
                     cancellationAt = GetTickCount64();
-                    SetEvent(cancel.get());
+                    if (guiCanceled)
+                        CancelGuiLaunch(GetProcessId(process.hProcess));
+                    else
+                        SetEvent(cancel.get());
                 }
                 DWORD available{};
                 if (PeekNamedPipe(read.get(), nullptr, 0, nullptr, &available, nullptr) && available)
@@ -192,8 +250,14 @@ namespace WorkspacesLibUnitTests
             GetExitCodeProcess(process.hProcess, &code);
             Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(output.c_str());
             Assert::IsFalse(output.empty());
-            if (cancelAfterStart)
+            if (cancelAfterStart || guiCanceled)
                 Assert::IsTrue(cancellationAt != 0, L"Fixture must signal startup before requesting cancellation.");
+            if (guiCanceled)
+            {
+                Assert::AreEqual(DWORD{ WAIT_TIMEOUT }, WaitForSingleObject(cancel.get(), 0), L"The GUI must cancel without the frontend signaling its cancellation event.");
+                for (const auto& pending : pendingStarted)
+                    Assert::AreEqual(DWORD{ WAIT_TIMEOUT }, WaitForSingleObject(pending.get(), 0), L"Pending applications must not start.");
+            }
             if (cancellationLatency)
                 *cancellationLatency = GetTickCount64() - cancellationAt;
             try
@@ -234,6 +298,27 @@ namespace WorkspacesLibUnitTests
         }
 
 #ifdef _DEBUG
+        TEST_METHOD (GuiCancellationAcknowledgesPendingAppsAndReleasesLaunchSession)
+        {
+            RequireOptIn();
+            Assert::IsNull(FindWindowW(L"WorkspacesCliIsolatedFixture", nullptr));
+            auto cleanup = wil::scope_exit([] { CloseFixture(); });
+            ULONGLONG latency{};
+            const auto [code, result] = Run(true, false, false, false, &latency, false, false, true);
+            Assert::AreEqual(DWORD{ 12 }, code);
+            Assert::AreEqual(std::wstring(L"canceled"), std::wstring(result.GetNamedObject(L"error").GetNamedString(L"code")));
+            Assert::IsTrue(latency < 5000, L"GUI cancellation must not wait for an ordinary arranger completion.");
+            const auto deadline = GetTickCount64() + 5000;
+            while (!FindWindowW(L"WorkspacesCliIsolatedFixture", nullptr) && GetTickCount64() < deadline)
+                Sleep(20);
+            Assert::IsNotNull(FindWindowW(L"WorkspacesCliIsolatedFixture", nullptr), L"The already-started fixture must survive cancellation.");
+            CloseFixture();
+            const auto [nextCode, nextResult] = Run(false, false);
+            Assert::AreEqual(DWORD{ 10 }, nextCode, L"A following launch must run instead of reporting busy.");
+            Assert::AreEqual(std::wstring(L"launchFailed"),
+                             std::wstring(nextResult.GetNamedObject(L"result").GetNamedArray(L"applications").GetObjectAt(0).GetNamedString(L"state")));
+        }
+
         TEST_METHOD (MissingApplicationProducesRealNonzeroResult)
         {
             const auto [code, result] = Run(false, false);

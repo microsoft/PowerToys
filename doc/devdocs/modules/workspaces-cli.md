@@ -144,6 +144,11 @@ session outcome; only the CLI adapter creates the public JSON, text and exit-cod
 The GUI retains progress presentation and its invocation context, including unsaved Launch-and-Edit
 drafts; CLI mode only displays required confirmation UI. No Editor save-workflow changes are added.
 
+The progress window's Cancel button and CLI cancellation both stop the shared launch wait and return
+an acknowledged `canceled` result without requiring normal arranger completion. Pending application
+launches stop, already-started applications remain open, and operation-owned workers and the launch
+lock are released. Non-canceled launches still require a complete, validated arranger result.
+
 The caller remains in its original context. Shared session routing validates the desktop shell's
 user/session/Medium integrity for administrator callers, creates a suspended host through the common
 Explorer-parent helper, and verifies the actual child's token before allowing execution. Ordinary

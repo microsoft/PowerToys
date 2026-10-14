@@ -22,6 +22,7 @@ public:
     std::map<std::wstring, LaunchDecision> GetApprovalDecisions();
     DWORD GetArrangerError() const { return m_arrangerError; }
     bool HasArrangerResult() const { return m_arrangerCompleted; }
+    bool IsCanceled() const;
 
 private:
     WorkspacesData::WorkspacesProject m_project;
@@ -45,6 +46,7 @@ private:
     std::map<std::wstring, DWORD> m_applicationErrors;
     std::map<std::wstring, LaunchDecision> m_approvalDecisions;
     const WorkspacesSession::ExecutionOptions& m_options;
+    std::atomic<bool> m_uiCanceled{};
     std::atomic<bool> m_stopping{};
     std::atomic<bool> m_arrangerCompleted{};
     DWORD m_arrangerError = ERROR_SUCCESS;

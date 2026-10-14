@@ -30,11 +30,11 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     // main thread
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
 
-    if (m_options.presentation == WorkspacesSession::Presentation::Progress && m_uiHelper->LaunchUI())
+    if (m_options.presentation == WorkspacesSession::Presentation::Progress && m_uiHelper->LaunchUI([&] { return ShouldStop(); }))
     {
         m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
     }
-    else if (m_options.presentation == WorkspacesSession::Presentation::Progress)
+    else if (m_options.presentation == WorkspacesSession::Presentation::Progress && !ShouldStop())
     {
         Logger::error(L"Workspaces UI is unavailable; unverified elevated applications will not launch");
     }
@@ -126,7 +126,7 @@ void Launcher::Launch() // Launching thread
         
         long waitingTime = 0;
         bool additionalWait = false;
-        while (!m_launchingStatus.AllInstancesOfTheAppLaunchedAndMoved(app) && waitingTime < maxWaitTimeMs)
+        while (!ShouldStop() && !m_launchingStatus.AllInstancesOfTheAppLaunchedAndMoved(app) && waitingTime < maxWaitTimeMs)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(ms));
             waitingTime += ms;
@@ -139,7 +139,8 @@ void Launcher::Launch() // Launching thread
             // Launching Outlook instances right one after another causes error message.
             // Launching Outlook instances with less than 1-second delay causes the second window not to appear
             // even though there wasn't a launch error.
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            for (long elapsed = 0; elapsed < 1000 && !ShouldStop(); elapsed += ms)
+                std::this_thread::sleep_for(std::chrono::milliseconds(ms));
         }
 
         if (ShouldStop())
@@ -297,6 +298,7 @@ void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
     }
     if (message->type == LauncherUiMessage::Type::Cancel)
     {
+        m_uiCanceled = true;
         m_approval.Cancel();
         m_launchingStatus.Cancel();
         return;
@@ -366,8 +368,13 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
 
 bool Launcher::ShouldStop() const
 {
-    return m_stopping || WaitForSingleObject(m_options.cancelEvent, 0) == WAIT_OBJECT_0 ||
+    return m_stopping || IsCanceled() ||
            (m_options.deadline && GetTickCount64() >= m_options.deadline);
+}
+
+bool Launcher::IsCanceled() const
+{
+    return m_uiCanceled || WaitForSingleObject(m_options.cancelEvent, 0) == WAIT_OBJECT_0;
 }
 
 WorkspacesData::LaunchingAppStateMap Launcher::GetResult()

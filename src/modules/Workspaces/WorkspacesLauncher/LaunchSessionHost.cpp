@@ -152,6 +152,8 @@ namespace WorkspacesSession
             SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             {
                 Launcher launcher(*project, invoke, options);
+                if (launcher.IsCanceled())
+                    throw Error(12, L"canceled", "Further application launches were canceled.");
                 if (launcher.GetArrangerError() != ERROR_SUCCESS)
                     throw Error(7, launcher.GetArrangerError() == ERROR_CANCELLED ? L"consentDenied" : L"arrangerFailed", "Window arranger could not start or elevation was declined.");
                 checkLifetime();
