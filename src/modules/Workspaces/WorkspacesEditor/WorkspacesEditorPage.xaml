@@ -144,6 +144,7 @@
                             <ComboBox
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="WindowPositionComboBox"
                                 SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <ComboBoxItem Content="{x:Static props:Resources.Custom}" />
                                 <ComboBoxItem Content="{x:Static props:Resources.Maximized}" />
@@ -297,6 +298,7 @@
                     Width="{Binding PreviewImageWidth, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     Height="200"
                     Margin="2"
+                    AutomationProperties.AutomationId="WorkspacePreviewImage"
                     DockPanel.Dock="Top"
                     Source="{Binding PreviewImage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     Stretch="Fill" />

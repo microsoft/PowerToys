@@ -75,6 +75,43 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["log10 (3)", 0.47712125471966M],
 
             ["cosh(0)", 1M],
+
+            // Inverse trigonometric/hyperbolic functions must evaluate, not just
+            // pass input validation (regression test: the names were left unmapped
+            // after the mages -> exprtk migration and produced a parse error).
+            ["arcsin(0.5)", 0.523598775598299M],
+            ["arccos(0.5)", 1.047197551196598M],
+            ["arctan(1)", 0.785398163397448M],
+            ["arsinh(1)", 0.881373587019543M],
+            ["arcosh(2)", 1.316957896924817M],
+            ["artanh(0.5)", 0.549306144334055M],
+
+            // Reciprocal trigonometric/hyperbolic functions and their inverses
+            ["cot(1)", 0.642092615934331M],
+            ["sec(1)", 1.850815717680925M],
+            ["csc(1)", 1.188395105778121M],
+            ["cot(pi/4)", 1M],
+            ["sec(0)", 1M],
+            ["csc(pi/2)", 1M],
+            ["coth(1)", 1.313035285499331M],
+            ["sech(0)", 1M],
+            ["csch(1)", 0.850918128239322M],
+            ["arccot(1)", 0.785398163397448M],
+            ["arccot(0)", 1.570796326794897M],
+            ["arccot(-1)", 2.356194490192345M], // continuous (0, pi) branch
+            ["arcsec(2)", 1.047197551196598M],
+            ["arccsc(2)", 0.523598775598299M],
+            ["arcoth(2)", 0.549306144334055M],
+            ["arsech(1)", 0M],
+            ["arcsch(1)", 0.881373587019543M],
+
+            // n-th logarithm and n-th root
+            ["logn(8, 2)", 3M],
+            ["logn(81, 3)", 4M],
+            ["root(27, 3)", 3M],
+            ["root(2, 2)", 1.414213562373095M],
+            ["root(-27, 3)", -3M],
+
             ["1*10^(-5)", 0.00001M],
             ["1*10^(-15)", 0.0000000000000001M],
             ["1*10^(-16)", 0M],
@@ -164,6 +201,23 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     [DataRow("sinh(1)", true)]
     [DataRow("tanh(0)", true)]
     [DataRow("artanh(pi/2)", true)]
+    [DataRow("cot(1)", true)]
+    [DataRow("sec(1)", true)]
+    [DataRow("csc(1)", true)]
+    [DataRow("arccot(1)", true)]
+    [DataRow("arcsec(2)", true)]
+    [DataRow("arccsc(2)", true)]
+    [DataRow("coth(1)", true)]
+    [DataRow("sech(1)", true)]
+    [DataRow("csch(1)", true)]
+    [DataRow("arcoth(2)", true)]
+    [DataRow("arsech(1)", true)]
+    [DataRow("arcsch(1)", true)]
+    [DataRow("logn(8, 2)", true)]
+    [DataRow("root(27, 3)", true)]
+    [DataRow("cot", false)]
+    [DataRow("sec", false)]
+    [DataRow("csc", false)]
     [DataRow("cosh", false)]
     [DataRow("cos", false)]
     [DataRow("abs", false)]
@@ -210,6 +264,10 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["(2+3)!", 120M],
             ["sign(-2)", -1M],
             ["sign(2)", +1M],
+            ["sgn(-2)", -1M],
+            ["sgn(2)", +1M],
+            ["sign(sqrt(-1))", 0M],
+            ["sgn(sqrt(-1))", 0M],
             ["abs(-2)", 2M],
             ["abs(2)", 2M],
             ["0+(1*2)/(0+1)", 2M], // Validate that division by "(0+1)" is not interpret as division by zero.
@@ -280,6 +338,15 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     [DataRow("cos(1/2)", "cos((pi / 180) * (1/2))")]
     [DataRow("sin ( 90 )", "sin ((pi / 180) * ( 90 ))")]
     [DataRow("cos(arcsin(sin(45)))", "cos((pi / 180) * ((180 / pi) * (arcsin(sin((pi / 180) * (45))))))")]
+    [DataRow("cot(45)", "cot((pi / 180) * (45))")]
+    [DataRow("sec(60)", "sec((pi / 180) * (60))")]
+    [DataRow("csc(30)", "csc((pi / 180) * (30))")]
+    [DataRow("arccot(1)", "(180 / pi) * (arccot(1))")]
+    [DataRow("arcsec(2)", "(180 / pi) * (arcsec(2))")]
+    [DataRow("arccsc(2)", "(180 / pi) * (arccsc(2))")]
+    [DataRow("sec(arcsec(2))", "sec((pi / 180) * ((180 / pi) * (arcsec(2))))")]
+    [DataRow("coth(1)", "coth(1)")] // hyperbolic functions take no angle argument
+    [DataRow("arcoth(2)", "arcoth(2)")]
     public void UpdateTrigFunctions_Degrees(string input, string expectedResult)
     {
         // Call UpdateTrigFunctions in degrees mode
@@ -311,6 +378,15 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     [DataRow("cos(1/2)", "cos((pi / 200) * (1/2))")]
     [DataRow("sin ( 90 )", "sin ((pi / 200) * ( 90 ))")]
     [DataRow("cos(arcsin(sin(45)))", "cos((pi / 200) * ((200 / pi) * (arcsin(sin((pi / 200) * (45))))))")]
+    [DataRow("cot(50)", "cot((pi / 200) * (50))")]
+    [DataRow("sec(50)", "sec((pi / 200) * (50))")]
+    [DataRow("csc(50)", "csc((pi / 200) * (50))")]
+    [DataRow("arccot(1)", "(200 / pi) * (arccot(1))")]
+    [DataRow("arcsec(2)", "(200 / pi) * (arcsec(2))")]
+    [DataRow("arccsc(2)", "(200 / pi) * (arccsc(2))")]
+    [DataRow("sec(arcsec(2))", "sec((pi / 200) * ((200 / pi) * (arcsec(2))))")]
+    [DataRow("coth(1)", "coth(1)")] // hyperbolic functions take no angle argument
+    [DataRow("arcoth(2)", "arcoth(2)")]
     public void UpdateTrigFunctions_Gradians(string input, string expectedResult)
     {
         // Call UpdateTrigFunctions in gradians mode
@@ -423,6 +499,8 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     [DataTestMethod]
     [DataRow("exp(99999)")]
     [DataRow("-exp(99999)")]
+    [DataRow("cot(0)")]
+    [DataRow("csch(0)")]
     public void Interpret_ReturnsOutOfBoundsError_WhenResultIsInfinity(string input)
     {
         var settings = new Settings();
@@ -460,7 +538,9 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     [DataRow("factorial(-1)")]
     [DataRow("factorial(0.5)")]
     [DataRow("factorial(sqrt(-1))")]
-    [DataRow("sign(sqrt(-1))")]
+    [DataRow("arcsin(2)")] // inverse sine/cosine are undefined outside [-1, 1]
+    [DataRow("arcsec(0.5)")] // inverse secant/cosecant are undefined inside (-1, 1)
+    [DataRow("arcoth(0.5)")] // inverse hyperbolic cotangent is undefined inside [-1, 1]
     public void Interpret_ReturnsNotANumberError_WhenCustomFunctionArgumentInvalid(string input)
     {
         var settings = new Settings();

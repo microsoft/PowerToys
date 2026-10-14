@@ -38,6 +38,10 @@ internal sealed partial class IndexerListItem : ListItem
 
         Title = indexerItem.FileName;
         Subtitle = indexerItem.FullPath;
+        if (!string.IsNullOrEmpty(FilePath))
+        {
+            Icon = new IconInfo(ShellItemIconProtocol.Create(FilePath));
+        }
 
         DataPackage = DataPackageHelper.CreateDataPackageForPath(this, FilePath);
 
@@ -93,6 +97,11 @@ internal sealed partial class IndexerListItem : ListItem
         else
         {
             commands.Add(new CommandContextItem(openCommand));
+
+            if (RunAsAdministratorCommand.IsSupportedFileType(fullPath))
+            {
+                commands.Add(new CommandContextItem(new RunAsAdministratorCommand(fullPath)) { RequestedShortcut = KeyChords.RunAsAdministrator });
+            }
         }
 
         commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));

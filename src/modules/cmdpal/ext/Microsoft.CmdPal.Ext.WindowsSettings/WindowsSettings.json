@@ -916,6 +916,7 @@
       "Areas": [ "AreaSystem" ],
       "Type": "AppSettingsApp",
       "AltNames": [ "NightLight", "BlueLight", "WarmerColor", "RedEye" ],
+      "IsPreferredForNameSearch": true,
       "Command": "ms-settings:display"
     },
     {

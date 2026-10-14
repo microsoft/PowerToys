@@ -4,11 +4,9 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text.Json.Serialization;
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using EnvironmentVariablesUILib.ViewModels;
 
 namespace EnvironmentVariablesUILib.Models
 {
@@ -58,14 +56,9 @@ namespace EnvironmentVariablesUILib.Models
             };
         }
 
-        private bool Validate()
-        {
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                return false;
-            }
-
-            return true;
-        }
+        private bool Validate() =>
+            Type == VariablesSetType.Profile
+                ? Helpers.EnvironmentVariablesHelper.TryValidateProfileName(Name, out _)
+                : !string.IsNullOrWhiteSpace(Name);
     }
 }

@@ -34,6 +34,11 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
+        private readonly IKnownGoodVcpStore _knownGoodStore;
+        private readonly IVcpFeatureReader _vcpReader;
+        private readonly VcpFeatureProbeService _probeService;
+        private readonly ContinuousVcpInitializer _continuousInitializer;
+        private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
 
         private bool _disposed;
 
@@ -44,10 +49,38 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public bool MaxCompatibilityMode { get; set; }
 
-        public DdcCiController()
+        /// <param name="knownGoodStore">
+        /// Persisted store for known-good VCP observations. Required: a controller without one
+        /// silently loses the discovery cache that maximum compatibility mode depends on.
+        /// </param>
+        public DdcCiController(IKnownGoodVcpStore knownGoodStore)
+            : this(
+                knownGoodStore,
+                new NativeVcpFeatureReader())
         {
+        }
+
+        /// <param name="knownGoodStore">Persisted store for known-good VCP observations.</param>
+        /// <param name="reader">VCP feature reader; the production implementation wraps Dxva2.</param>
+        /// <param name="delayAsync">
+        /// Pacing delay for the capabilities retry loop and the VCP probe. Injected so tests can
+        /// drive the discovery pipeline without waiting out the real inter-transaction intervals.
+        /// </param>
+        internal DdcCiController(
+            IKnownGoodVcpStore knownGoodStore,
+            IVcpFeatureReader reader,
+            Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
+        {
+            _knownGoodStore = knownGoodStore;
+            _vcpReader = reader;
+            _delayAsync = delayAsync ?? Task.Delay;
+            _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync);
+            _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore);
             _discoveryHelper = new MonitorDiscoveryHelper();
         }
+
+        internal static string DeriveMonitorId(MonitorDisplayInfo info) =>
+            MonitorIdentity.FromDevicePath(info.DevicePath);
 
         public string Name => "DDC/CI Monitor Controller";
 
@@ -270,10 +303,11 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Construct a Monitor and initialize its VCP feature values using pre-fetched
-        /// capabilities (obtained on the async side via <see cref="FetchCapabilitiesWithFallbackAsync"/>).
-        /// Returns null when caps are null. The "must advertise brightness" gate has been removed —
-        /// any monitor with at least one supported VCP code (real or probed) is kept; the per-feature
-        /// SupportsXxx flags on Monitor already gate UI controls correctly.
+        /// evidence (obtained on the async side via <see cref="FetchCapabilitiesWithFallbackAsync"/>).
+        /// Returns null when capabilities are unavailable or the physical-monitor handle becomes
+        /// invalid during initialization. Any monitor with at least one supported VCP code from
+        /// capabilities, a live probe, or the exact monitor's cache is otherwise kept; the
+        /// per-feature SupportsXxx flags on Monitor gate UI controls.
         /// </summary>
         /// <remarks>
         /// Pure synchronous work — callers wrap this in <see cref="Task.Run"/> to dispatch
@@ -283,47 +317,44 @@ namespace PowerDisplay.Common.Drivers.DDC
         private Monitor? BuildMonitorFromPhysical(
             PHYSICAL_MONITOR physical,
             MonitorDisplayInfo info,
-            string capsString,
-            VcpCapabilities? caps)
+            string monitorId,
+            VcpDiscoveryEvidence evidence)
         {
-            if (caps == null)
+            // The caller already skipped the unusable-capabilities and dead-handle cases, each with
+            // its own log line; this null check only carries that contract into the nullable flow.
+            if (evidence.Capabilities == null)
             {
                 return null;
             }
 
             try
             {
-                var monitor = _discoveryHelper.CreateMonitorFromPhysical(physical, info);
+                var monitor = _discoveryHelper.CreateMonitorFromPhysical(physical, info, monitorId);
                 if (monitor == null)
                 {
                     return null;
                 }
 
-                if (!string.IsNullOrEmpty(capsString))
+                if (!string.IsNullOrEmpty(evidence.CapabilitiesRaw))
                 {
-                    monitor.CapabilitiesRaw = capsString;
+                    monitor.CapabilitiesRaw = evidence.CapabilitiesRaw;
                 }
 
-                monitor.VcpCapabilitiesInfo = caps;
-                UpdateMonitorCapabilitiesFromVcp(monitor, caps);
+                monitor.VcpCapabilitiesInfo = evidence.Capabilities;
+                UpdateMonitorCapabilitiesFromVcp(monitor, evidence.Capabilities);
 
-                // Initialize current values for every VCP feature the device reports
-                // support for, ordered continuous-range first (percent-scaled),
-                // then discrete-enum VCPs. Each guard is independent — a controller
-                // can support any subset.
-                if (monitor.SupportsBrightness)
+                // Continuous (percent-scaled) VCPs first, then the discrete-enum ones. Only the
+                // continuous stage can discard the monitor, and that is a policy choice rather
+                // than a property of the stage: losing a whole display because 0xD6 answered
+                // badly is worse than showing it without a power control. Note the check is not
+                // on every path — a caps string that parses but advertises none of 0x10/0x12/0x62
+                // leaves the continuous stage nothing to read and suppresses the probe, so such a
+                // monitor is published with a handle no VCP read has exercised.
+                if (!_continuousInitializer.Initialize(monitor, evidence))
                 {
-                    InitializeBrightness(monitor, physical.HPhysicalMonitor);
-                }
-
-                if (monitor.SupportsContrast)
-                {
-                    InitializeContrast(monitor, physical.HPhysicalMonitor);
-                }
-
-                if (monitor.SupportsVolume)
-                {
-                    InitializeVolume(monitor, physical.HPhysicalMonitor);
+                    Logger.LogWarning(
+                        $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle became unavailable during continuous VCP initialization");
+                    return null;
                 }
 
                 if (monitor.SupportsColorTemperature)
@@ -352,18 +383,54 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Releases a physical-monitor handle that discovery abandoned.
+        /// </summary>
+        /// <remarks>
+        /// Handles only reach <see cref="PhysicalMonitorHandleManager"/> through monitors that were
+        /// successfully built: the map is rebuilt from the returned monitor list, and its cleanup pass
+        /// only destroys handles that were in the previous map. A handle dropped on an abandon path
+        /// therefore never gets destroyed, and every discovery over a monitor that keeps failing leaks
+        /// one more — and a discovery runs on every display-topology change, so a docking-station
+        /// user accumulates them for the process lifetime.
+        /// </remarks>
+        private static void ReleaseAbandonedPhysical(PHYSICAL_MONITOR physical)
+        {
+            if (physical.HPhysicalMonitor == IntPtr.Zero)
+            {
+                return;
+            }
+
+            try
+            {
+                DestroyPhysicalMonitor(physical.HPhysicalMonitor);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogWarning(
+                    $"DDC: failed to destroy abandoned physical monitor handle 0x{physical.HPhysicalMonitor:X}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Fetches DDC/CI capabilities with retry, falling back to direct VCP probing
         /// when <see cref="MaxCompatibilityMode"/> is on and the cap string is missing
         /// or unparsable. Cancellation is honored both during the cap-string fetch
         /// (cooperative — checked between attempts) and during the 1 s delay between
         /// retries.
         /// </summary>
-        private async Task<(string CapsString, VcpCapabilities? Caps)> FetchCapabilitiesWithFallbackAsync(
+        internal async Task<VcpDiscoveryEvidence> FetchCapabilitiesWithFallbackAsync(
             IntPtr hPhysicalMonitor,
+            string monitorId,
             CancellationToken cancellationToken)
         {
             const int maxAttempts = 3;
             const int retryDelayMs = 1000;
+
+            // Snapshot the mode once. The property is settable from the UI thread whenever settings
+            // are reloaded, and this method awaits several times, so reading it at each decision
+            // point could let one monitor's evidence be gathered under one mode and reconciled under
+            // the other.
+            var maxCompatibility = MaxCompatibilityMode;
 
             string? capsString = null;
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
@@ -386,7 +453,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     Logger.LogWarning(
                         $"DDC: cap string fetch attempt {attempt} returned empty " +
                         $"(handle=0x{hPhysicalMonitor:X}); retrying in {retryDelayMs}ms");
-                    await Task.Delay(retryDelayMs, cancellationToken);
+                    await _delayAsync(TimeSpan.FromMilliseconds(retryDelayMs), cancellationToken);
                 }
             }
 
@@ -411,29 +478,76 @@ namespace PowerDisplay.Common.Drivers.DDC
                     $"DDC: cap string still empty after {maxAttempts} attempts (handle=0x{hPhysicalMonitor:X})");
             }
 
-            if (caps == null && MaxCompatibilityMode)
+            IReadOnlyDictionary<byte, VcpProbeObservation> live =
+                new Dictionary<byte, VcpProbeObservation>();
+
+            if (caps == null && maxCompatibility)
             {
                 Logger.LogInfo(
                     $"DDC: [max-compat] caps unusable for handle=0x{hPhysicalMonitor:X}; probing VCP features directly");
 
-                caps = await Task.Run(
-                    () => DdcCiNative.ProbeSupportedVcpFeatures(hPhysicalMonitor),
-                    cancellationToken);
+                live = await _probeService.ProbeAsync(hPhysicalMonitor, cancellationToken);
+            }
 
-                if (caps != null)
+            var cached = maxCompatibility
+                ? _knownGoodStore.GetKnownGoodFeatures(monitorId)
+                : new Dictionary<byte, KnownGoodVcpFeature>();
+
+            var evidence = VcpDiscoveryEvidence.Reconcile(
+                capsString ?? string.Empty,
+                caps,
+                live,
+                cached);
+
+            // Persisted even when Reconcile discarded this pass. ProbeAsync stops at the first
+            // handle-class failure, so every successful observation here was answered while the
+            // handle was still live — the value is proven, only the pass is not. Reconcile empties
+            // InitialValues to tell BuildMonitorFromPhysical to skip this monitor, which is a
+            // different question from whether the reading was real. Keeping it is the point: a dead
+            // handle usually means a cable or KVM switch, and the next rediscovery is exactly the
+            // pass that wants the value this one managed to read.
+            foreach (var observation in live.Values.Where(value => value.IsSuccess))
+            {
+                _knownGoodStore.UpsertKnownGoodFeature(
+                    monitorId,
+                    KnownGoodVcpFeature.From(observation.Code, observation.Value));
+            }
+
+            if (live.Count > 0)
+            {
+                var liveSuccessCount = live.Values.Count(value => value.IsSuccess);
+                var cachedValueCount = evidence.InitialValues.Values.Count(value => !value.IsLive);
+                var message =
+                    $"DDC: [max-compat] probe outcome for handle=0x{hPhysicalMonitor:X}: " +
+                    $"{liveSuccessCount}/{live.Count} live feature(s), {cachedValueCount} cached feature(s)";
+
+                if (liveSuccessCount > 0)
                 {
-                    Logger.LogInfo(
-                        $"DDC: [max-compat] recovered monitor (handle=0x{hPhysicalMonitor:X}) " +
-                        $"with {caps.SupportedVcpCodes.Count} probed feature(s)");
+                    Logger.LogInfo(message);
                 }
                 else
                 {
-                    Logger.LogWarning(
-                        $"DDC: [max-compat] probe returned no supported features for handle=0x{hPhysicalMonitor:X}");
+                    Logger.LogWarning(message);
                 }
             }
 
-            return (capsString ?? string.Empty, caps);
+            if (evidence.CacheSupplementedCodes.Count > 0)
+            {
+                // Logged on its own rather than folded into the probe-outcome block above, which is
+                // gated on live.Count and therefore silent on the caps-parsed path. The two overlap
+                // when a probe ran but no reply proved the code — a duplicate line is cheaper than a
+                // support log that cannot tell a cache-supplied control from an advertised one. See
+                // VcpDiscoveryEvidence.CacheSupplementedCodes.
+                var detail = string.Join(
+                    ", ",
+                    evidence.CacheSupplementedCodes.Select(code => $"0x{code:X2}"));
+
+                Logger.LogInfo(
+                    $"DDC: [max-compat] cached evidence added feature(s) not advertised by capabilities " +
+                    $"for handle=0x{hPhysicalMonitor:X}: {detail}");
+            }
+
+            return evidence;
         }
 
         /// <summary>
@@ -444,6 +558,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (TryGetVcpFeature(handle, VcpCodeInputSource, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentInputSource = (int)current;
+                monitor.ReadValues |= MonitorReadFlags.InputSource;
             }
         }
 
@@ -455,6 +570,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (TryGetVcpFeature(handle, VcpCodeSelectColorPreset, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentColorTemperature = (int)current;
+                monitor.ReadValues |= MonitorReadFlags.ColorTemperature;
             }
         }
 
@@ -466,55 +582,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (TryGetVcpFeature(handle, VcpCodePowerMode, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentPowerState = (int)current;
-            }
-        }
-
-        /// <summary>
-        /// Initialize brightness value for a monitor using VCP 0x10.
-        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
-        /// </summary>
-        private static void InitializeBrightness(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeBrightness, monitor.Id, out uint current, out uint max))
-            {
-                var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
-                if (!brightnessInfo.IsValid)
-                {
-                    Logger.LogWarning(
-                        $"DDC: [{monitor.Id}] Ignoring invalid brightness range current={current}, max={max}");
-                    return;
-                }
-
-                monitor.BrightnessVcpMax = (int)max;
-                monitor.CurrentBrightness = brightnessInfo.ToPercentage();
-            }
-        }
-
-        /// <summary>
-        /// Initialize contrast value for a monitor using VCP 0x12.
-        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
-        /// </summary>
-        private static void InitializeContrast(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeContrast, monitor.Id, out uint current, out uint max))
-            {
-                monitor.ContrastVcpMax = (int)max;
-                var contrastInfo = new VcpFeatureValue((int)current, 0, (int)max);
-                monitor.CurrentContrast = contrastInfo.ToPercentage();
-            }
-        }
-
-        /// <summary>
-        /// Initialize volume value for a monitor using VCP 0x62.
-        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
-        /// </summary>
-        private static void InitializeVolume(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeVolume, monitor.Id, out uint current, out uint max))
-            {
-                monitor.VolumeVcpMax = (int)max;
-                var volumeInfo = new VcpFeatureValue((int)current, 0, (int)max);
-                monitor.CurrentVolume = volumeInfo.ToPercentage();
+                monitor.ReadValues |= MonitorReadFlags.PowerState;
             }
         }
 
@@ -685,12 +753,34 @@ namespace PowerDisplay.Common.Drivers.DDC
                         Logger.LogWarning(
                             $"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries " +
                             $"({matchingInfos.Count}) for {gdiName}");
+
+                        for (int unmatched = i; unmatched < physicals.Length; unmatched++)
+                        {
+                            ReleaseAbandonedPhysical(physicals[unmatched]);
+                        }
+
                         break;
                     }
 
                     cancellationToken.ThrowIfCancellationRequested();
                     var physical = physicals[i];
                     var info = matchingInfos[i];
+                    var monitorId = DeriveMonitorId(info);
+
+                    // No DevicePath means no stable Id, and every later stage needs one: settings
+                    // persisted under an unstable key would not survive the next reboot, and the
+                    // known-good store rejects an empty key outright. Deciding it here — before any
+                    // I2C traffic — is what keeps that rejection from surfacing as an exception
+                    // mid-pipeline, which the catch below would turn into "drop this hMonitor's
+                    // remaining physicals and leak their handles".
+                    if (string.IsNullOrEmpty(monitorId))
+                    {
+                        Logger.LogWarning(
+                            $"DDC: Skipping monitor #{info.MonitorNumber} (name='{info.FriendlyName}') — " +
+                            $"DevicePath unavailable, cannot derive a stable Id");
+                        ReleaseAbandonedPhysical(physical);
+                        continue;
+                    }
 
 #if DEBUG
                     if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
@@ -716,26 +806,44 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                     // Async caps fetch (retry + max-compat probe). Awaits Task.Delay between
                     // retries instead of blocking the threadpool.
-                    var (capsString, caps) = await FetchCapabilitiesWithFallbackAsync(
-                        physical.HPhysicalMonitor, cancellationToken);
+                    var evidence = await FetchCapabilitiesWithFallbackAsync(
+                        physical.HPhysicalMonitor,
+                        monitorId,
+                        cancellationToken);
 
-                    if (caps == null)
+                    if (evidence.IsPhysicalMonitorUnavailable)
                     {
                         Logger.LogWarning(
-                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle is no longer valid");
+                        ReleaseAbandonedPhysical(physical);
                         continue;
                     }
 
-                    // Heavy sync block (~6 × ~100 ms VCP reads on this one I2C bus).
-                    // Dispatch to the threadpool; await before the next physical because
-                    // they share the same hMonitor's I2C arbitration.
+                    if (evidence.Capabilities == null)
+                    {
+                        Logger.LogWarning(
+                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                        ReleaseAbandonedPhysical(physical);
+                        continue;
+                    }
+
+                    // Heavy sync block (VCP reads on this one I2C bus, minus whatever the probe
+                    // already answered). Dispatch to the threadpool; await before the next physical
+                    // because they share the same hMonitor's I2C arbitration.
                     var monitor = await Task.Run(
-                        () => BuildMonitorFromPhysical(physical, info, capsString, caps),
+                        () => BuildMonitorFromPhysical(physical, info, monitorId, evidence),
                         cancellationToken);
 
                     if (monitor != null)
                     {
                         monitors.Add(monitor);
+                    }
+                    else
+                    {
+                        // Construction failed, threw, or the handle died during continuous VCP
+                        // initialization. Either way this physical never becomes a Monitor, so it
+                        // never reaches the handle manager.
+                        ReleaseAbandonedPhysical(physical);
                     }
                 }
 
@@ -769,11 +877,14 @@ namespace PowerDisplay.Common.Drivers.DDC
                         return VcpFeatureValue.Invalid;
                     }
 
-                    if (TryGetVcpFeature(monitor.Handle, vcpCode, monitor.Id, out uint current, out uint max))
+                    var read = _vcpReader.Read(monitor.Handle, vcpCode);
+                    if (read.IsSuccess)
                     {
-                        return new VcpFeatureValue((int)current, 0, (int)max);
+                        return new VcpFeatureValue((int)read.Current, 0, (int)read.Maximum);
                     }
 
+                    var monitorPrefix = string.IsNullOrEmpty(monitor.Id) ? string.Empty : $"[{monitor.Id}] ";
+                    Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {read.ErrorCode}");
                     return VcpFeatureValue.Invalid;
                 },
                 cancellationToken);
@@ -802,6 +913,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         if (SetVCPFeature(monitor.Handle, vcpCode, (uint)value))
                         {
+                            RefreshKnownGoodAfterWrite(monitor, vcpCode, value);
                             return MonitorOperationResult.Success();
                         }
 
@@ -814,6 +926,51 @@ namespace PowerDisplay.Common.Drivers.DDC
                     }
                 },
                 cancellationToken);
+        }
+
+        /// <summary>
+        /// Keeps an existing known-good cache entry aligned with a successful write. The cache is
+        /// otherwise only refreshed by a successful read, so a slider move would leave it holding the
+        /// pre-write value; maximum compatibility mode then republishes that stale value on a later
+        /// discovery whose probe touched the code but could not read it, and
+        /// <see cref="ContinuousVcpInitializer"/> applies it without re-reading.
+        /// </summary>
+        /// <remarks>
+        /// Only an entry a real read already established is refreshed, and only when the value was
+        /// scaled against the very maximum that entry holds. A successful SetVCPFeature is not
+        /// evidence that the device implements the code, and a monitor whose discovery read failed
+        /// still carries the placeholder <see cref="Monitor.BrightnessVcpMax"/> of 100 — writing that
+        /// back would replace a read-proven device range (e.g. 0-50) with the placeholder and
+        /// mis-scale every later write.
+        /// </remarks>
+        /// <param name="monitor">The monitor that just accepted the write.</param>
+        /// <param name="vcpCode">The VCP code written.</param>
+        /// <param name="rawValue">The device-native value handed to SetVCPFeature.</param>
+        internal void RefreshKnownGoodAfterWrite(Monitor monitor, byte vcpCode, int rawValue)
+        {
+            if (string.IsNullOrEmpty(monitor.Id) ||
+                !_knownGoodStore.GetKnownGoodFeatures(monitor.Id).TryGetValue(vcpCode, out var existing))
+            {
+                return;
+            }
+
+            var maximum = vcpCode switch
+            {
+                VcpCodeBrightness => monitor.BrightnessVcpMax,
+                VcpCodeContrast => monitor.ContrastVcpMax,
+                VcpCodeVolume => monitor.VolumeVcpMax,
+                _ => 0,
+            };
+
+            var written = new VcpFeatureValue(rawValue, 0, existing.Maximum);
+            if (maximum != existing.Maximum || !written.IsValid)
+            {
+                return;
+            }
+
+            _knownGoodStore.UpsertKnownGoodFeature(
+                monitor.Id,
+                KnownGoodVcpFeature.From(vcpCode, written));
         }
 
         public void Dispose()

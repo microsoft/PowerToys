@@ -162,7 +162,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         foreach (var b in bookmarks)
         {
             var id = CommandIds.GetLaunchBookmarkItemId(b.BookmarkId);
-            var wrapped = new WrappedDockItem(items: [b], id: id, displayTitle: b.Title);
+            var wrapped = new BookmarkDockItem(b, id);
             bands.Add(wrapped);
         }
 
@@ -202,6 +202,6 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
             _placeholderParser,
             asBand: true);
 
-        return new WrappedDockItem(items: [listItem], id: id, displayTitle: listItem.BookmarkTitle);
+        return new BookmarkDockItem(listItem, id);
     }
 }

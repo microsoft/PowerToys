@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 
@@ -12,25 +13,29 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AliasManager : ObservableObject
 {
+    private const string DeprecatedShellCommandId = "com.microsoft.cmdpal.shell";
+
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly ISettingsService _settingsService;
 
     private static readonly ImmutableList<CommandAlias> _defaultAliases = new List<CommandAlias>
     {
-        new CommandAlias(":", "com.microsoft.cmdpal.registry", true),
-        new CommandAlias("$", "com.microsoft.cmdpal.windowsSettings", true),
-        new CommandAlias("=", "com.microsoft.cmdpal.calculator", true),
-        new CommandAlias(">", "com.microsoft.cmdpal.shell", true),
-        new CommandAlias("<", "com.microsoft.cmdpal.windowwalker", true),
-        new CommandAlias("??", "com.microsoft.cmdpal.websearch", true),
-        new CommandAlias("file", "com.microsoft.indexer.fileSearch", false),
-        new CommandAlias(")", "com.microsoft.cmdpal.timedate", true),
+        new CommandAlias(":", BuiltInCommandIds.Registry, true),
+        new CommandAlias("$", BuiltInCommandIds.WindowsSettings, true),
+        new CommandAlias("=", BuiltInCommandIds.Calculator, true),
+        new CommandAlias(">", BuiltInCommandIds.Run, true),
+        new CommandAlias("<", BuiltInCommandIds.WindowWalker, true),
+        new CommandAlias("??", BuiltInCommandIds.WebSearch, true),
+        new CommandAlias("file", BuiltInCommandIds.FileSearch, false),
+        new CommandAlias(")", BuiltInCommandIds.TimeDate, true),
     }.ToImmutableList();
 
     public AliasManager(TopLevelCommandManager tlcManager, ISettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
         _settingsService = settingsService;
+
+        MigrateRenamedRunAliases();
 
         if (_settingsService.Settings.Aliases.Count == 0)
         {
@@ -70,6 +75,37 @@ public partial class AliasManager : ObservableObject
                     .AddRange(_defaultAliases.ToDictionary(a => a.SearchPrefix, a => a)),
             },
             hotReload: false);
+    }
+
+    private void MigrateRenamedRunAliases()
+    {
+        var aliases = _settingsService.Settings.Aliases;
+        var migratedAliases = MigrateRenamedRunAliases(aliases);
+        if (ReferenceEquals(aliases, migratedAliases))
+        {
+            return;
+        }
+
+        _settingsService.UpdateSettings(
+            static s => s with { Aliases = MigrateRenamedRunAliases(s.Aliases) },
+            hotReload: false);
+    }
+
+    private static ImmutableDictionary<string, CommandAlias> MigrateRenamedRunAliases(ImmutableDictionary<string, CommandAlias> aliases)
+    {
+        var runCommandHasAlias = aliases.Values.Any(alias => alias.CommandId == BuiltInCommandIds.Run);
+        var migratedAliases = aliases;
+        foreach (var alias in aliases)
+        {
+            if (alias.Value.CommandId == DeprecatedShellCommandId)
+            {
+                migratedAliases = runCommandHasAlias
+                    ? migratedAliases.Remove(alias.Key)
+                    : migratedAliases.SetItem(alias.Key, alias.Value with { CommandId = BuiltInCommandIds.Run });
+            }
+        }
+
+        return migratedAliases;
     }
 
     public string? KeysFromId(string commandId)

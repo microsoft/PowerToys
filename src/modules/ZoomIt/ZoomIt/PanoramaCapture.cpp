@@ -10344,7 +10344,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 
     g_RecordCropping = TRUE;
     g_SelectRectangle.AspectRatio( 0.0 );
-    const bool started = g_SelectRectangle.Start( hWnd );
+    // Panorama uses a blue bounding rectangle to distinguish it from the yellow
+    // recording-region selection.
+    const bool started = g_SelectRectangle.Start( hWnd, false, RGB( 0, 120, 215 ) );
     g_RecordCropping = FALSE;
     if( !started )
     {

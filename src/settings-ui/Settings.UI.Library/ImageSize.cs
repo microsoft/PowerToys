@@ -129,5 +129,11 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     [JsonIgnore]
     public ImageSize AccessibleTextHelper => this;
 
+    /// <summary>
+    /// Creates a copy of this <see cref="ImageSize"/>. Used to build a working copy for editing
+    /// so changes can be discarded (on cancel) without touching the original preset.
+    /// </summary>
+    public ImageSize Clone() => new ImageSize(_id, _name, _fit, _width, _height, _unit);
+
     public string ToJsonString() => JsonSerializer.Serialize(this);
 }

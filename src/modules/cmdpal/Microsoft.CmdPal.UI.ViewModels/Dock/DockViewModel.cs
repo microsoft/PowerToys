@@ -536,10 +536,11 @@ public sealed partial class DockViewModel : IDisposable
     /// </summary>
     public void SaveBandOrder()
     {
-        // Save ShowLabels for all bands
+        var pendingBandSettings = new Dictionary<string, DockBandSettings>(StringComparer.Ordinal);
         foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems).Concat(TaskbarItems))
         {
-            band.SaveShowLabels();
+            var settings = band.SaveShowLabels();
+            pendingBandSettings[settings.CommandId] = settings;
         }
 
         var taskbarChanged = _snapshotDockSettings is not null
@@ -553,11 +554,11 @@ public sealed partial class DockViewModel : IDisposable
         var latestBandSettings = BuildBandSettingsLookup(latestStart, latestCenter, latestEnd, latestSettings.TaskbarBands);
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
         _settings = WithActiveBands(
-            MergeBandSettings(activeStart, latestBandSettings),
-            MergeBandSettings(activeCenter, latestBandSettings),
-            MergeBandSettings(activeEnd, latestBandSettings)) with
+            MergeBandSettings(activeStart, latestBandSettings, pendingBandSettings),
+            MergeBandSettings(activeCenter, latestBandSettings, pendingBandSettings),
+            MergeBandSettings(activeEnd, latestBandSettings, pendingBandSettings)) with
         {
-            TaskbarBands = MergeBandSettings(_settings.TaskbarBands, latestBandSettings),
+            TaskbarBands = MergeBandSettings(_settings.TaskbarBands, latestBandSettings, pendingBandSettings),
         };
 
         _snapshotDockSettings = null;
@@ -656,15 +657,17 @@ public sealed partial class DockViewModel : IDisposable
 
     private static ImmutableList<DockBandSettings> MergeBandSettings(
         ImmutableList<DockBandSettings> targetBands,
-        IReadOnlyDictionary<string, DockBandSettings> latestBandSettings)
+        IReadOnlyDictionary<string, DockBandSettings> latestBandSettings,
+        IReadOnlyDictionary<string, DockBandSettings> pendingBandSettings)
     {
         var merged = targetBands;
         for (var i = 0; i < merged.Count; i++)
         {
             var commandId = merged[i].CommandId;
-            if (latestBandSettings.TryGetValue(commandId, out var latestSettings))
+            if (latestBandSettings.TryGetValue(commandId, out var settings)
+                || pendingBandSettings.TryGetValue(commandId, out settings))
             {
-                merged = merged.SetItem(i, latestSettings);
+                merged = merged.SetItem(i, settings);
             }
         }
 
@@ -1087,7 +1090,7 @@ public sealed partial class DockViewModel : IDisposable
             var openSettingsCommand = new AnonymousCommand(
                 action: () =>
                 {
-                    WeakReferenceMessenger.Default.Send(new OpenSettingsMessage("Dock"));
+                    WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(SettingsPageTags.Dock));
                 })
             {
                 Name = Properties.Resources.dock_settings_name,

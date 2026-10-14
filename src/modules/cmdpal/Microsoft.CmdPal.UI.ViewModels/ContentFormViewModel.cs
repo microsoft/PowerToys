@@ -47,7 +47,16 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         {
             var template = new AdaptiveCardTemplate(templateJson);
             var cardJson = template.Expand(dataJson);
-            card = AdaptiveCard.FromJsonString(cardJson);
+            card = AdaptiveCard.FromJsonString(
+                cardJson,
+                AdaptiveCardParserRegistrations.ElementParsers,
+                AdaptiveCardParserRegistrations.ActionParsers);
+
+            foreach (var warning in card.Warnings)
+            {
+                Logger.LogWarning($"Adaptive Card parse warning ({warning.StatusCode}): {warning.Message}");
+            }
+
             return true;
         }
         catch (Exception ex)
@@ -155,6 +164,9 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
             // Get the data and inputs
             var dataString = (action as AdaptiveSubmitAction)?.DataJson.Stringify() ?? string.Empty;
             var inputString = inputs.Stringify();
+            var sourcePage = PageContext.TryGetTarget(out var pageContext) && pageContext is PageViewModel page
+                ? page
+                : null;
 
             _ = Task.Run(() =>
             {
@@ -163,8 +175,11 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
                     var model = _formModel.Unsafe!;
                     if (model != null)
                     {
-                        var result = model.SubmitForm(inputString, dataString);
-                        WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
+                        var result = model is IFormContent2 form2
+                            ? form2.SubmitAction(action.Id, inputString, dataString)
+                            : model.SubmitForm(inputString, dataString);
+                        var message = new HandleCommandResultMessage(new(result), sourcePage);
+                        WeakReferenceMessenger.Default.Send(message);
                     }
                 }
                 catch (Exception ex)

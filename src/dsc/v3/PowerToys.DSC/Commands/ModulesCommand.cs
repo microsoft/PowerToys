@@ -4,7 +4,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Diagnostics;
 using PowerToys.DSC.Properties;
 
@@ -24,8 +23,10 @@ public sealed class ModulesCommand : BaseCommand
     }
 
     /// <inheritdoc/>
-    public override void CommandHandlerInternal(InvocationContext context)
+    public override int CommandHandlerInternal(ParseResult parseResult)
     {
+        var output = parseResult.InvocationConfiguration.Output;
+
         // Module is optional, if not provided, all supported modules for the
         // resource will be printed. If provided, it must be one of the
         // supported modules since it has been validated before this command is
@@ -33,15 +34,17 @@ public sealed class ModulesCommand : BaseCommand
         if (!string.IsNullOrEmpty(Module))
         {
             Debug.Assert(Resource!.GetSupportedModules().Contains(Module), "Module must be present in the list of supported modules.");
-            context.Console.WriteLine(Module);
+            output.WriteLine(Module);
         }
         else
         {
             // Print the supported modules for the specified resource
             foreach (var module in Resource!.GetSupportedModules())
             {
-                context.Console.WriteLine(module);
+                output.WriteLine(module);
             }
         }
+
+        return 0;
     }
 }

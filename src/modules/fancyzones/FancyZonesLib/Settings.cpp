@@ -18,6 +18,7 @@ namespace NonLocalizable
     const wchar_t ShiftDragID[] = L"fancyzones_shiftDrag";
     const wchar_t MouseSwitchID[] = L"fancyzones_mouseSwitch";
     const wchar_t MouseMiddleClickSpanningMultipleZonesID[] = L"fancyzones_mouseMiddleClickSpanningMultipleZones";
+    const wchar_t MouseWheelLayoutSwitchID[] = L"fancyzones_mouseWheelLayoutSwitch";
     const wchar_t OverrideSnapHotKeysID[] = L"fancyzones_overrideSnapHotkeys";
     const wchar_t MoveWindowAcrossMonitorsID[] = L"fancyzones_moveWindowAcrossMonitors";
     const wchar_t MoveWindowsBasedOnPositionID[] = L"fancyzones_moveWindowsBasedOnPosition";
@@ -45,9 +46,18 @@ namespace NonLocalizable
     const wchar_t WindowSwitchingToggleID[] = L"fancyzones_windowSwitching";
     const wchar_t NextTabHotkeyID[] = L"fancyzones_nextTab_hotkey";
     const wchar_t PrevTabHotkeyID[] = L"fancyzones_prevTab_hotkey";
+    const wchar_t MonitorRotationID[] = L"fancyzones_monitorRotation";
+    const wchar_t MonitorRotationHotkeyID[] = L"fancyzones_monitorRotation_hotkey";
     const wchar_t ExcludedAppsID[] = L"fancyzones_excluded_apps";
     const wchar_t ZoneHighlightOpacityID[] = L"fancyzones_highlight_opacity";
     const wchar_t ShowZoneNumberID[] = L"fancyzones_showZoneNumber";
+    const wchar_t LayoutNameLabelEnabledID[] = L"fancyzones_layoutNameLabelEnabled";
+    const wchar_t LayoutNameLabelPlacementID[] = L"fancyzones_layoutNameLabelPlacement";
+    const wchar_t LayoutNameLabelTextColorID[] = L"fancyzones_layoutNameLabelTextColor";
+    const wchar_t LayoutNameLabelBackgroundColorID[] = L"fancyzones_layoutNameLabelBackgroundColor";
+    const wchar_t LayoutNameLabelFontSizeID[] = L"fancyzones_layoutNameLabelFontSize";
+    const wchar_t LayoutNameLabelPaddingID[] = L"fancyzones_layoutNameLabelPadding";
+    const wchar_t LayoutNameLabelDurationID[] = L"fancyzones_layoutNameLabelDuration";
 }
 
 FancyZonesSettings::FancyZonesSettings()
@@ -109,6 +119,7 @@ void FancyZonesSettings::LoadSettings()
         SetBoolFlag(values, NonLocalizable::ShiftDragID, SettingId::ShiftDrag, m_settings.shiftDrag);
         SetBoolFlag(values, NonLocalizable::MouseSwitchID, SettingId::MouseSwitch, m_settings.mouseSwitch);
         SetBoolFlag(values, NonLocalizable::MouseMiddleClickSpanningMultipleZonesID, SettingId::MouseMiddleClickSpanningMultipleZones, m_settings.mouseMiddleClickSpanningMultipleZones);
+        SetBoolFlag(values, NonLocalizable::MouseWheelLayoutSwitchID, SettingId::MouseWheelLayoutSwitch, m_settings.mouseWheelLayoutSwitch);
         SetBoolFlag(values, NonLocalizable::OverrideSnapHotKeysID, SettingId::OverrideSnapHotkeys, m_settings.overrideSnapHotkeys);
         SetBoolFlag(values, NonLocalizable::MoveWindowAcrossMonitorsID, SettingId::MoveWindowAcrossMonitors, m_settings.moveWindowAcrossMonitors);
         SetBoolFlag(values, NonLocalizable::MoveWindowsBasedOnPositionID, SettingId::MoveWindowsBasedOnPosition, m_settings.moveWindowsBasedOnPosition);
@@ -124,6 +135,7 @@ void FancyZonesSettings::LoadSettings()
         SetBoolFlag(values, NonLocalizable::SpanZonesAcrossMonitorsID, SettingId::SpanZonesAcrossMonitors, m_settings.spanZonesAcrossMonitors);
         SetBoolFlag(values, NonLocalizable::MakeDraggedWindowTransparentID, SettingId::MakeDraggedWindowsTransparent, m_settings.makeDraggedWindowTransparent);
         SetBoolFlag(values, NonLocalizable::WindowSwitchingToggleID, SettingId::WindowSwitching, m_settings.windowSwitching);
+        SetBoolFlag(values, NonLocalizable::MonitorRotationID, SettingId::MonitorRotation, m_settings.monitorRotation);
         SetBoolFlag(values, NonLocalizable::SystemThemeID, SettingId::SystemTheme, m_settings.systemTheme);
         SetBoolFlag(values, NonLocalizable::ShowZoneNumberID, SettingId::ShowZoneNumber, m_settings.showZoneNumber);
         SetBoolFlag(values, NonLocalizable::AllowChildWindowSnapID, SettingId::AllowSnapChildWindows, m_settings.allowSnapChildWindows);
@@ -175,6 +187,71 @@ void FancyZonesSettings::LoadSettings()
             }
         }
 
+        // layout name label
+        SetBoolFlag(values, NonLocalizable::LayoutNameLabelEnabledID, SettingId::LayoutNameLabelEnabled, m_settings.layoutNameLabelEnabled);
+
+        if (auto val = values.get_int_value(NonLocalizable::LayoutNameLabelPlacementID))
+        {
+            // Avoid undefined behavior
+            if (*val >= 0 && *val < static_cast<int>(LayoutNameLabelPlacement::EnumElements))
+            {
+                auto placement = (LayoutNameLabelPlacement)*val;
+                if (m_settings.layoutNameLabelPlacement != placement)
+                {
+                    m_settings.layoutNameLabelPlacement = placement;
+                    NotifyObservers(SettingId::LayoutNameLabelPlacement);
+                }
+            }
+        }
+
+        if (auto val = values.get_string_value(NonLocalizable::LayoutNameLabelTextColorID))
+        {
+            if (m_settings.layoutNameLabelTextColor != *val)
+            {
+                m_settings.layoutNameLabelTextColor = std::move(*val);
+                NotifyObservers(SettingId::LayoutNameLabelTextColor);
+            }
+        }
+
+        if (auto val = values.get_string_value(NonLocalizable::LayoutNameLabelBackgroundColorID))
+        {
+            if (m_settings.layoutNameLabelBackgroundColor != *val)
+            {
+                m_settings.layoutNameLabelBackgroundColor = std::move(*val);
+                NotifyObservers(SettingId::LayoutNameLabelBackgroundColor);
+            }
+        }
+
+        if (auto val = values.get_int_value(NonLocalizable::LayoutNameLabelFontSizeID))
+        {
+            auto fontSize = std::clamp(*val, 8, 128);
+            if (m_settings.layoutNameLabelFontSize != fontSize)
+            {
+                m_settings.layoutNameLabelFontSize = fontSize;
+                NotifyObservers(SettingId::LayoutNameLabelFontSize);
+            }
+        }
+
+        if (auto val = values.get_int_value(NonLocalizable::LayoutNameLabelPaddingID))
+        {
+            auto padding = std::clamp(*val, 0, 64);
+            if (m_settings.layoutNameLabelPadding != padding)
+            {
+                m_settings.layoutNameLabelPadding = padding;
+                NotifyObservers(SettingId::LayoutNameLabelPadding);
+            }
+        }
+
+        if (auto val = values.get_int_value(NonLocalizable::LayoutNameLabelDurationID))
+        {
+            auto duration = std::clamp(*val, 300, 10000);
+            if (m_settings.layoutNameLabelDuration != duration)
+            {
+                m_settings.layoutNameLabelDuration = duration;
+                NotifyObservers(SettingId::LayoutNameLabelDuration);
+            }
+        }
+
         // hotkeys
         if (const auto val = values.get_json(NonLocalizable::EditorHotkeyID))
         {
@@ -203,6 +280,16 @@ void FancyZonesSettings::LoadSettings()
             {
                 m_settings.prevTabHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
                 NotifyObservers(SettingId::PrevTabHotkey);
+            }
+        }
+
+        if (const auto val = values.get_json(NonLocalizable::MonitorRotationHotkeyID))
+        {
+            auto hotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+            if (m_settings.monitorRotationHotkey.get_modifiers() != hotkey.get_modifiers() || m_settings.monitorRotationHotkey.get_key() != hotkey.get_key() || m_settings.monitorRotationHotkey.get_code() != hotkey.get_code())
+            {
+                m_settings.monitorRotationHotkey = PowerToysSettings::HotkeyObject::from_json(*val);
+                NotifyObservers(SettingId::MonitorRotationHotkey);
             }
         }
 

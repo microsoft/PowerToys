@@ -44,7 +44,10 @@ namespace ShortcutGuide.Helpers
         {
             try
             {
-                string serialized = JsonSerializer.Serialize(App.PinnedShortcuts);
+                string serialized = JsonSerializer.Serialize(
+                    App.PinnedShortcuts,
+                    typeof(Dictionary<string, List<ShortcutEntry>>),
+                    ShortcutGuideJsonContext.Default);
                 string pinnedPath = SettingsUtils.Default.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
                 File.WriteAllText(pinnedPath, serialized);
             }

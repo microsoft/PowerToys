@@ -4,7 +4,11 @@
 
 using System;
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
 using CoreWidgetProvider.Helpers;
+using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
@@ -12,6 +16,9 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 internal sealed class SettingsManager : JsonSettingsManager
 {
     private const string Namespace = "performanceMonitor";
+    private static readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
+    private readonly Lock _fileLock = new();
+    private string _defaultNetworkAdapterId = NetworkStats.AllPhysicalAdaptersId;
 
     private static string Namespaced(string propertyName) => $"{Namespace}.{propertyName}";
 
@@ -20,15 +27,32 @@ internal sealed class SettingsManager : JsonSettingsManager
         Resources.GetResource("Network_Speed_Unit_Setting_Title"),
         Resources.GetResource("Network_Speed_Unit_Setting_Description"),
         [
-            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BitsPerSec"), NetworkSpeedUnit.BitsPerSecond.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BytesPerSec"), NetworkSpeedUnit.BytesPerSecond.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BinaryBytesPerSec"), NetworkSpeedUnit.BinaryBytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BitsPerSec"), SpeedUnit.BitsPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BytesPerSec"), SpeedUnit.BytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BinaryBytesPerSec"), SpeedUnit.BinaryBytesPerSecond.ToString("G")),
         ]);
 
-    public NetworkSpeedUnit NetworkSpeedUnit =>
-        Enum.TryParse<NetworkSpeedUnit>(_networkSpeedUnit.Value, out var unit)
+    public SpeedUnit NetworkSpeedUnit =>
+        Enum.TryParse<SpeedUnit>(_networkSpeedUnit.Value, out var unit)
             ? unit
-            : NetworkSpeedUnit.BitsPerSecond;
+            : SpeedUnit.BitsPerSecond;
+
+    public string DefaultNetworkAdapterId => _defaultNetworkAdapterId;
+
+    private readonly ChoiceSetSetting _diskSpeedUnit = new(
+        Namespaced(nameof(DiskSpeedUnit)),
+        Resources.GetResource("Disk_Speed_Unit_Setting_Title"),
+        Resources.GetResource("Disk_Speed_Unit_Setting_Description"),
+        [
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BitsPerSec"), SpeedUnit.BitsPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BytesPerSec"), SpeedUnit.BytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BinaryBytesPerSec"), SpeedUnit.BinaryBytesPerSecond.ToString("G")),
+        ]);
+
+    public SpeedUnit DiskSpeedUnit =>
+        Enum.TryParse<SpeedUnit>(_diskSpeedUnit.Value, out var unit)
+            ? unit
+            : SpeedUnit.BytesPerSecond;
 
     private static string SettingsJsonPath()
     {
@@ -38,13 +62,82 @@ internal sealed class SettingsManager : JsonSettingsManager
     }
 
     public SettingsManager()
+        : this(SettingsJsonPath())
     {
-        FilePath = SettingsJsonPath();
+    }
+
+    internal SettingsManager(string filePath)
+    {
+        FilePath = filePath;
 
         Settings.Add(_networkSpeedUnit);
+        Settings.Add(_diskSpeedUnit);
 
         LoadSettings();
+        LoadDefaultNetworkAdapterId();
 
         Settings.SettingsChanged += (_, _) => SaveSettings();
+    }
+
+    public void SetDefaultNetworkAdapterId(string adapterId)
+    {
+        if (string.IsNullOrWhiteSpace(adapterId) || string.Equals(_defaultNetworkAdapterId, adapterId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _defaultNetworkAdapterId = adapterId;
+        SaveSettings();
+    }
+
+    public override void SaveSettings()
+    {
+        lock (_fileLock)
+        {
+            base.SaveSettings();
+            SaveDefaultNetworkAdapterId();
+        }
+    }
+
+    private void LoadDefaultNetworkAdapterId()
+    {
+        try
+        {
+            if (File.Exists(FilePath) && JsonNode.Parse(File.ReadAllText(FilePath)) is JsonObject savedSettings)
+            {
+                var value = savedSettings[Namespaced(nameof(DefaultNetworkAdapterId))]?.GetValue<string>();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    _defaultNetworkAdapterId = value;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to load the default network adapter setting.", ex);
+        }
+    }
+
+    private void SaveDefaultNetworkAdapterId()
+    {
+        try
+        {
+            var savedSettings = File.Exists(FilePath)
+                ? JsonNode.Parse(File.ReadAllText(FilePath)) as JsonObject
+                : new JsonObject();
+
+            if (savedSettings is null)
+            {
+                CoreLogger.LogError("Failed to parse the performance monitor settings file as a JSON object.");
+                return;
+            }
+
+            savedSettings[Namespaced(nameof(DefaultNetworkAdapterId))] = _defaultNetworkAdapterId;
+            File.WriteAllText(FilePath, savedSettings.ToJsonString(_serializerOptions));
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to save the default network adapter setting.", ex);
+        }
     }
 }

@@ -24,7 +24,7 @@ public enum PasteFormats
         IconGlyph = "\ue8a5",
         RequiresAIService = false,
         CanPreview = false,
-        SupportedClipboardFormats = ClipboardFormat.Text,
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html,
         KernelFunctionDescription = "Takes clipboard text and formats it as markdown text.")]
     Markdown,
 
@@ -37,6 +37,17 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Text,
         KernelFunctionDescription = "Takes clipboard text and formats it as JSON text.")]
     Json,
+
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        ResourceId = "FixSpellingAndGrammar",
+        IconGlyph = "\uE8E2",
+        RequiresAIService = true,
+        CanPreview = true,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        IPCKey = AdvancedPasteAdditionalActions.PropertyNames.FixSpellingAndGrammar,
+        KernelFunctionDescription = "Fixes all spelling and grammar errors in the clipboard text and returns the corrected version.")]
+    FixSpellingAndGrammar,
 
     [PasteFormatMetadata(
         IsCoreAction = false,
@@ -118,7 +129,7 @@ public enum PasteFormats
         IconGlyph = "\uE945",
         RequiresAIService = true,
         CanPreview = true,
-        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Image,
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Image,
         KernelFunctionDescription = "Takes user instructions and applies them to the current clipboard content (text or image). Use this function for image analysis, description, or transformation tasks beyond simple OCR.",
         RequiresPrompt = true)]
     CustomTextTransformation,

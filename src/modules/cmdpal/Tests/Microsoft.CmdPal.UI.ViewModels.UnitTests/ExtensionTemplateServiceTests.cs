@@ -52,6 +52,7 @@ public class ExtensionTemplateServiceTests
             Path.Combine(templateProjectRoot, "Program.cs"),
             "TemplateCmdPalExtension TemplateDisplayName FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
         File.WriteAllBytes(Path.Combine(templateProjectRoot, "Assets", "Logo.png"), [0x89, 0x50, 0x4E, 0x47]);
+        File.WriteAllText(Path.Combine(archiveRoot, "TemplateCmdPalExtension", ".vsconfig"), "vsconfig contents");
 
         var templateZipPath = Path.Combine(_templateRoot, "template.zip");
         ZipFile.CreateFromDirectory(archiveRoot, templateZipPath);
@@ -64,13 +65,16 @@ public class ExtensionTemplateServiceTests
         // Assert
         var programFile = Path.Combine(_outputRoot, "MyExtension", "MyExtension", "Program.cs");
         var imageFile = Path.Combine(_outputRoot, "MyExtension", "MyExtension", "Assets", "Logo.png");
+        var vsConfigFile = Path.Combine(_outputRoot, "MyExtension", ".vsconfig");
 
         Assert.IsTrue(File.Exists(programFile));
         Assert.IsTrue(File.Exists(imageFile));
+        Assert.IsTrue(File.Exists(vsConfigFile));
         StringAssert.Contains(File.ReadAllText(programFile), "MyExtension");
         StringAssert.Contains(File.ReadAllText(programFile), "My Display Name");
         Assert.IsFalse(File.ReadAllText(programFile).Contains("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", StringComparison.Ordinal));
         CollectionAssert.AreEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, File.ReadAllBytes(imageFile));
+        Assert.AreEqual("vsconfig contents", File.ReadAllText(vsConfigFile));
     }
 
     [TestMethod]

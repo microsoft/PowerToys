@@ -38,7 +38,8 @@ internal static class Encryption
     private const int SaltSize = 16;
 
     // Number of PBKDF2 iterations used to derive the symmetric key from the shared secret.
-    private const int KeyDerivationIterations = 50000;
+    // Use at least 100,000 iterations to strengthen the derived key against brute-force attempts.
+    private const int KeyDerivationIterations = 100000;
 
     // Length (in bytes) of the derived AES-256 key.
     private const int DerivedKeyLength = 32;

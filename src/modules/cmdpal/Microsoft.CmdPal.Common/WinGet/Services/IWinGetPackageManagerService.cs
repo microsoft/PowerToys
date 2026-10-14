@@ -43,17 +43,29 @@ public interface IWinGetPackageManagerService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Resolves packages by Microsoft Store id.
+    /// </summary>
+    /// <param name="storeIds">The store ids to resolve.</param>
+    /// <param name="cancellationToken">A token that cancels the lookup.</param>
+    /// <returns>A query result containing the resolved packages keyed by store id.</returns>
+    Task<WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>> GetStorePackagesByIdAsync(
+        IEnumerable<string> storeIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Installs or updates the provided package and refreshes package catalogs when possible.
     /// </summary>
     /// <param name="package">The package to install or update.</param>
     /// <param name="skipDependencies">True to skip dependent packages when supported.</param>
     /// <param name="progressHandler">An optional callback that receives install progress updates.</param>
+    /// <param name="source">The surface that initiated the operation.</param>
     /// <param name="cancellationToken">A token that cancels the install or update.</param>
     /// <returns>The final result of the install or update operation.</returns>
     Task<WinGetPackageOperationResult> InstallPackageAsync(
         CatalogPackage package,
         bool skipDependencies = false,
         Action<InstallProgress>? progressHandler = null,
+        WinGetPackageOperationSource source = WinGetPackageOperationSource.Unspecified,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -61,11 +73,13 @@ public interface IWinGetPackageManagerService
     /// </summary>
     /// <param name="package">The package to uninstall.</param>
     /// <param name="progressHandler">An optional callback that receives uninstall progress updates.</param>
+    /// <param name="source">The surface that initiated the operation.</param>
     /// <param name="cancellationToken">A token that cancels the uninstall.</param>
     /// <returns>The final result of the uninstall operation.</returns>
     Task<WinGetPackageOperationResult> UninstallPackageAsync(
         CatalogPackage package,
         Action<UninstallProgress>? progressHandler = null,
+        WinGetPackageOperationSource source = WinGetPackageOperationSource.Unspecified,
         CancellationToken cancellationToken = default);
 
     /// <summary>

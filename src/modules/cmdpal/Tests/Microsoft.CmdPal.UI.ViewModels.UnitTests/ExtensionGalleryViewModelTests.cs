@@ -220,6 +220,29 @@ public class ExtensionGalleryViewModelTests
     }
 
     [TestMethod]
+    public async Task FindById_ReturnsMatchingEntryCaseInsensitively()
+    {
+        var galleryService = CreateGalleryService(
+            CreateGalleryEntry("first-extension", "First", "Author"),
+            CreateGalleryEntry("second-extension", "Second", "Author"));
+
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            [],
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
+
+        await viewModel.LoadAsync();
+
+        var result = viewModel.FindById("SECOND-EXTENSION");
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("second-extension", result.Id);
+        Assert.IsNull(viewModel.FindById("missing-extension"));
+        Assert.IsNull(viewModel.FindById(string.Empty));
+    }
+
+    [TestMethod]
     public async Task LoadAsync_DoesNotShowFallbackCacheWarning_ForNormalCacheHits()
     {
         var galleryService = new Mock<IExtensionGalleryService>();

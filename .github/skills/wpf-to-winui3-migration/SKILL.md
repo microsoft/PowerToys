@@ -57,6 +57,7 @@ These rules capture human judgment and must be applied consistently across every
 - **Do NOT instantiate services directly** — Use DI and CommunityToolkit.Mvvm patterns.
 - **Do NOT create a `Window` subclass for every dialog or sub-page** — use `ContentDialog` for in-app dialogs and `Frame`/`Page` navigation for sub-views. Separate `Window` classes are reserved for distinct top-level surfaces (e.g., FancyZones editor, OOBE).
 - **Do NOT omit `WindowsPackageType=None` and `WindowsAppSDKSelfContained=true`** — Both are mandatory in the csproj for every WinUI 3 module in PowerToys. Without them the app crashes at startup with `COMException: ClassFactory cannot supply requested class` because the WinUI 3 runtime DLLs are not found.
+- **Do NOT default to a bare `Window`, and do NOT hand-write code-behind for windowing that XAML can express** — For a top-level window in a WinUI 3 module, use `WinUIEx.WindowEx` or an existing PowerToys base derived from it (for example, `TransparentWindow` for transient overlays). `WindowEx` restores WPF-like `Window` members as XAML properties (`MinWidth`/`MinHeight`, `Width`/`Height`, `IsResizable`, `IsMaximizable`/`IsMinimizable`, `IsTitleBarVisible`, `IsAlwaysOnTop`, `IsShownInSwitchers`, `WindowState`, `SystemBackdrop`) plus helpers (`CenterOnScreen()`, `PersistenceId`), so windowing is declared in XAML instead of manual `AppWindow`/`OverlappedPresenter` code-behind. This is the established PowerToys convention across ImageResizer, PowerDisplay, Peek, AdvancedPaste, MeasureTool, ShortcutGuide, Settings, Hosts, FileLocksmith, QuickAccess, and other WinUI 3 modules. Only drop to raw `AppWindow`/presenter code for behavior `WindowEx` does not expose. See [Threading and Window Management → WindowEx](./references/threading-and-windowing.md#prefer-windowex-over-bare-window).
 
 **XAML prohibitions:**
 - **Do NOT use `{DynamicResource}`** — Replace with `{ThemeResource}` (theme-reactive) or `{StaticResource}`.
@@ -66,6 +67,7 @@ These rules capture human judgment and must be applied consistently across every
 - **Do NOT use `clr-namespace:`** — Replace with `using:` in all xmlns declarations.
 - **Do NOT use `Style.Triggers` / `DataTrigger` / `EventTrigger`** — Replace with `VisualStateManager`.
 - **Do NOT use `MultiBinding`** — Replace with `x:Bind` function binding or computed ViewModel property.
+- **Do NOT mechanically port WPF `IValueConverter` classes** — Prefer control `VisualState`s, direct `{x:Bind}` Boolean-to-`Visibility` conversion, resources supplied by `XamlControlsResources`, or `CommunityToolkit.WinUI.Converters`. Reuse converter instances and invert them with `ConverterParameter=True` when supported; write a custom converter only for app-specific conversion logic. See [Value Converter Decision Guide](./references/xaml-migration.md#value-converter-decision-guide).
 - **Do NOT use `Visibility="Hidden"`** — WinUI only has `Visible` and `Collapsed`. Use `Opacity="0"` if layout must be preserved.
 - **Do NOT use `IsDefault` / `IsCancel`** — Use `AccentButtonStyle` for primary button; handle Enter/Escape in code-behind.
 - **Do NOT omit `BasedOn` when overriding default styles** — Without it, your style replaces the entire default. Always use `BasedOn="{StaticResource DefaultButtonStyle}"` etc.
@@ -212,7 +214,7 @@ These WPF features have no WinUI counterpart and require redesign, not find-and-
 | `Microsoft.Toolkit.Wpf.*` | `CommunityToolkit.WinUI.*` | |
 | (none) | `Microsoft.WindowsAppSDK` | Required |
 | (none) | `Microsoft.Windows.SDK.BuildTools` | Required |
-| (none) | `WinUIEx` | Optional, window helpers |
+| (none) | `WinUIEx` | **Recommended for top-level windows in WinUI 3 modules** — add `<PackageReference Include="WinUIEx" />` (the version is centrally managed), then use `WindowEx` or an existing PowerToys base derived from it. It exposes WPF-like window properties in XAML (size, min/max, resizable, title-bar visibility, backdrop, always-on-top) plus `CenterOnScreen()`/`PersistenceId`; prefer it over bare `Window` and manual `AppWindow` code-behind |
 | (none) | `CommunityToolkit.WinUI.Converters` | Optional |
 | (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox` |
 | (none) | `CommunityToolkit.WinUI.Controls.HeaderedControls` | Optional — `HeaderedContentControl`, `HeaderedItemsControl`, `HeaderedTreeView` |

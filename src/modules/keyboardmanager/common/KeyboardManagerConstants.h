@@ -43,6 +43,13 @@ namespace KeyboardManagerConstants
     // Name of the property use to store new remap keys.
     inline const std::wstring NewRemapKeysSettingName = L"newRemapKeys";
 
+    // Name of the optional property that stores a single key remap's condition for dual-key remaps.
+    // Missing/"always" -> applied unconditionally (legacy behavior); "alone" -> applied only when the
+    // source key is tapped alone. Kept backward compatible: old settings files omit this field.
+    inline const std::wstring RemapConditionSettingName = L"condition";
+    inline const std::wstring RemapConditionAlways = L"always";
+    inline const std::wstring RemapConditionAlone = L"alone";
+
     // Name of the property use to store new remapped string.
     inline const std::wstring NewTextSettingName = L"unicodeText";
 

@@ -16,6 +16,12 @@ namespace ImageResizer.Cli.Commands
         public ImageResizerRootCommand()
             : base("PowerToys Image Resizer - Resize images from command line")
         {
+            // This CLI has its own help option and uses -h for --height, so drop RootCommand's built-ins.
+            Options.Clear();
+
+            // This CLI handles execution itself; completion directives must not suppress parse errors.
+            Directives.Clear();
+
             HelpOption = new HelpOption();
             ShowConfigOption = new ShowConfigOption();
             DestinationOption = new DestinationOption();
@@ -34,23 +40,23 @@ namespace ImageResizer.Cli.Commands
             ProgressLinesOption = new ProgressLinesOption();
             FilesArgument = new FilesArgument();
 
-            AddOption(HelpOption);
-            AddOption(ShowConfigOption);
-            AddOption(DestinationOption);
-            AddOption(WidthOption);
-            AddOption(HeightOption);
-            AddOption(UnitOption);
-            AddOption(FitOption);
-            AddOption(SizeOption);
-            AddOption(ShrinkOnlyOption);
-            AddOption(ReplaceOption);
-            AddOption(IgnoreOrientationOption);
-            AddOption(RemoveMetadataOption);
-            AddOption(QualityOption);
-            AddOption(KeepDateModifiedOption);
-            AddOption(FileNameOption);
-            AddOption(ProgressLinesOption);
-            AddArgument(FilesArgument);
+            Options.Add(HelpOption);
+            Options.Add(ShowConfigOption);
+            Options.Add(DestinationOption);
+            Options.Add(WidthOption);
+            Options.Add(HeightOption);
+            Options.Add(UnitOption);
+            Options.Add(FitOption);
+            Options.Add(SizeOption);
+            Options.Add(ShrinkOnlyOption);
+            Options.Add(ReplaceOption);
+            Options.Add(IgnoreOrientationOption);
+            Options.Add(RemoveMetadataOption);
+            Options.Add(QualityOption);
+            Options.Add(KeepDateModifiedOption);
+            Options.Add(FileNameOption);
+            Options.Add(ProgressLinesOption);
+            Arguments.Add(FilesArgument);
         }
 
         public HelpOption HelpOption { get; }

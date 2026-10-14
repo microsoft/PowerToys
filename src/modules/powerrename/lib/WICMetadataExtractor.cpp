@@ -401,46 +401,23 @@ namespace
 
         return localTime;
     }
-// Global WIC factory management with thread-safe access
-    CComPtr<IWICImagingFactory> g_wicFactory;
-    std::once_flag g_wicInitFlag;
-    std::mutex g_wicFactoryMutex;  // Protect access to g_wicFactory
 }
 
-WICMetadataExtractor::WICMetadataExtractor()
-{
-    InitializeWIC();
-}
+WICMetadataExtractor::WICMetadataExtractor() = default;
 
-WICMetadataExtractor::~WICMetadataExtractor()
-{
-    // WIC cleanup handled statically
-}
-
-void WICMetadataExtractor::InitializeWIC()
-{
-    std::call_once(g_wicInitFlag, []() {
-        // Don't initialize COM in library code - assume caller has done it
-        // Just create the WIC factory
-        HRESULT hr = CoCreateInstance(
-            CLSID_WICImagingFactory,
-            nullptr,
-            CLSCTX_INPROC_SERVER,
-            IID_IWICImagingFactory,
-            reinterpret_cast<LPVOID*>(&g_wicFactory)
-        );
-
-        if (FAILED(hr))
-        {
-            g_wicFactory = nullptr;
-        }
-    });
-}
+WICMetadataExtractor::~WICMetadataExtractor() = default;
 
 CComPtr<IWICImagingFactory> WICMetadataExtractor::GetWICFactory()
 {
-    std::lock_guard<std::mutex> lock(g_wicFactoryMutex);
-    return g_wicFactory;
+    // The caller owns COM initialization. Cached extractors can be static,
+    // so keep factories operation-local: releasing WIC at DLL detach can invoke
+    // Media Foundation shutdown under the loader lock.
+    CComPtr<IWICImagingFactory> factory;
+    if (FAILED(factory.CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER)))
+    {
+        return nullptr;
+    }
+    return factory;
 }
 
 bool WICMetadataExtractor::ExtractEXIFMetadata(
@@ -1104,9 +1081,6 @@ void WICMetadataExtractor::ExtractAllXMPFields(IWICMetadataQueryReader* reader, 
     metadata.originalDocumentID = ReadString(reader, XMP_MM_ORIGINAL_DOCUMENT_ID);
     metadata.versionID = ReadString(reader, XMP_MM_VERSION_ID);
 }
-
-
-
 
 
 

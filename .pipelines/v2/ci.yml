@@ -12,10 +12,11 @@ trigger:
 #      - '**.md'
 
 pr:
-  branches:
-    include:
-      - main
-      - stable
+# Used to filter this to main & stable. However, this would bypass CI for stacked PRs.
+#  branches:
+#    include:
+#      - main
+#      - stable
   drafts: false
 #  paths:
 #    exclude:
@@ -38,6 +39,10 @@ parameters:
     type: boolean
     displayName: "Run Tests"
     default: true
+  - name: runAffectedUiTests
+    type: boolean
+    displayName: "Run affected UI tests for pull requests"
+    default: true
   - name: useVSPreview
     type: boolean
     displayName: "Build Using Visual Studio Preview"
@@ -50,4 +55,5 @@ extends:
     ${{ if eq(variables['System.PullRequest.IsFork'], 'False') }}:
       enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
+    runAffectedUiTests: ${{ parameters.runAffectedUiTests }}
     useVSPreview: ${{ parameters.useVSPreview }}

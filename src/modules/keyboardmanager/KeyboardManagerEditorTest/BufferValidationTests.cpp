@@ -940,6 +940,36 @@ namespace RemappingUITests
                 });
             }
 
+            // Test if the ValidateShortcutBufferElement method returns WinL error on setting a drop down resulting in a chord involving Win+L (e.g. Win+Ctrl+L)
+            TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnWinLError_OnSettingDropDownResultingInChordInvolvingWinL)
+            {
+                std::vector<ValidateShortcutBufferElementArgs> testCases;
+                // Case 1: Validate the element when selecting L (0x4C) on third dropdown of first column of LWin + Ctrl + Empty shortcut
+                testCases.push_back({ 0, 0, 2, std::vector<int32_t>{ VK_LWIN, VK_CONTROL, 0x4C }, std::wstring(), false, RemapBufferRow{ RemapBufferItem{ std::vector<int32_t>{ VK_LWIN, VK_CONTROL }, Shortcut() }, std::wstring() } });
+                // Case 2: Validate the element when selecting L (0x4C) on third dropdown of second column of LWin + Ctrl + Empty shortcut
+                testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_LWIN, VK_CONTROL, 0x4C }, std::wstring(), false, RemapBufferRow{ RemapBufferItem{ Shortcut(), std::vector<int32_t>{ VK_LWIN, VK_CONTROL } }, std::wstring() } });
+                // Case 3: Validate the element when selecting L (0x4C) on third dropdown of second column of hybrid LWin + Ctrl + Empty shortcut
+                testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ VK_LWIN, VK_CONTROL, 0x4C }, std::wstring(), true, RemapBufferRow{ RemapBufferItem{ Shortcut(), std::vector<int32_t>{ VK_LWIN, VK_CONTROL } }, std::wstring() } });
+                // Case 4: Validate the element when selecting L (0x4C) on third dropdown of first column of Win + Shift + Empty shortcut
+                testCases.push_back({ 0, 0, 2, std::vector<int32_t>{ CommonSharedConstants::VK_WIN_BOTH, VK_SHIFT, 0x4C }, std::wstring(), false, RemapBufferRow{ RemapBufferItem{ std::vector<int32_t>{ CommonSharedConstants::VK_WIN_BOTH, VK_SHIFT }, Shortcut() }, std::wstring() } });
+                // Case 5: Validate the element when selecting L (0x4C) on third dropdown of second column of Win + Shift + Empty shortcut
+                testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ CommonSharedConstants::VK_WIN_BOTH, VK_SHIFT, 0x4C }, std::wstring(), false, RemapBufferRow{ RemapBufferItem{ Shortcut(), std::vector<int32_t>{ CommonSharedConstants::VK_WIN_BOTH, VK_SHIFT } }, std::wstring() } });
+                // Case 6: Validate the element when selecting L (0x4C) on third dropdown of second column of hybrid Win + Shift + Empty shortcut
+                testCases.push_back({ 0, 1, 2, std::vector<int32_t>{ CommonSharedConstants::VK_WIN_BOTH, VK_SHIFT, 0x4C }, std::wstring(), true, RemapBufferRow{ RemapBufferItem{ Shortcut(), std::vector<int32_t>{ CommonSharedConstants::VK_WIN_BOTH, VK_SHIFT } }, std::wstring() } });
+
+                RunTestCases(testCases, [this](const ValidateShortcutBufferElementArgs& testCase) {
+                    // Arrange
+                    RemapBuffer remapBuffer;
+                    remapBuffer.push_back(testCase.bufferRow);
+
+                    // Act
+                    std::pair<ShortcutErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
+
+                    // Assert that the element is invalid
+                    Assert::AreEqual(true, result.first == ShortcutErrorType::WinL);
+                });
+            }
+
             // Test if the ValidateShortcutBufferElement method returns CtrlAltDel error on setting a drop down to Ctrl, Alt or Del on a column resulting in Ctrl+Alt+Del
             TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnCtrlAltDelError_OnSettingDropDownToCtrlAltOrDelOnColumnResultingInCtrlAltDel)
             {

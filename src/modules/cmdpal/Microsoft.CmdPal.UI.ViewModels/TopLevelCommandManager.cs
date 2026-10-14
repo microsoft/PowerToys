@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -35,6 +36,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     private readonly List<CommandProviderWrapper> _commandProviders = [];
     private readonly Lock _commandProvidersLock = new();
+    private readonly Lock _pinnedCommandsUpdateLock = new();
 
     // watch out: if you add code that locks CommandProviders, be sure to always
     // lock CommandProviders before locking DockBands, or you will cause a
@@ -43,8 +45,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private readonly SupersedingAsyncGate _reloadCommandsGate;
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
+    private IReadOnlyList<PinnedCommandSettings> _pinnedCommands = [];
 
-    private HashSet<(string ProviderId, string CommandId)> _pinnedCommandSet = [];
+    internal event EventHandler? PinnedCommandsChanged;
 
     public TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices)
     {
@@ -66,8 +69,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             service.OnProviderRemoved += ExtensionService_OnProviderRemoved;
         }
     }
-
-    public ObservableCollection<PinnedCommandSettings> PinnedCommands { get; } = [];
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
@@ -92,16 +93,24 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    internal bool IsPinned(string providerId, string commandId)
-    {
-        return _pinnedCommandSet.Contains((providerId, commandId));
-    }
+    internal IReadOnlyList<PinnedCommandSettings> GetPinnedCommandsSnapshot() => Volatile.Read(ref _pinnedCommands);
 
     internal void RebuildPinnedCache()
     {
-        var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
-        _pinnedCommandSet = new(settings.PinnedCommands.Select(p => (p.ProviderId, p.CommandId)));
-        ListHelpers.InPlaceUpdateList(PinnedCommands, settings.PinnedCommands);
+        bool changed;
+        var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
+
+        lock (_pinnedCommandsUpdateLock)
+        {
+            var pinnedCommands = settingsService.Settings.PinnedCommands;
+            changed = !_pinnedCommands.SequenceEqual(pinnedCommands);
+            Volatile.Write(ref _pinnedCommands, pinnedCommands);
+        }
+
+        if (changed)
+        {
+            PinnedCommandsChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     // May be called from a background thread
@@ -181,6 +190,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
         // TopLevelCommands to get modified while we're working on it. Otherwise, we might
         // out clone would be stale at the end of this method.
+        List<TopLevelViewModel> removedTopLevel;
         lock (TopLevelCommands)
         {
             // Work on a clone of the list, so that we can just do one atomic
@@ -193,9 +203,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
             clone.InsertRange(startIndex, newItems);
 
-            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone, out removedTopLevel);
         }
 
+        List<TopLevelViewModel> removedDockBands;
         lock (_dockBandsLock)
         {
             // Same idea as TopLevelCommands above, but we deliberately use
@@ -205,7 +216,23 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
             dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
             dockClone.InsertRange(dockStartIndex, newBands);
+
+            // ReplaceWith doesn't report what it dropped, so diff the current
+            // contents against the new ones before we overwrite them. Bands
+            // that get re-inserted from newBands are correctly not reported.
+            removedDockBands = [.. DockBands.Except(dockClone)];
+
             DockBands.ReplaceWith(dockClone);
+        }
+
+        foreach (var item in removedTopLevel)
+        {
+            item.Cleanup();
+        }
+
+        foreach (var item in removedDockBands)
+        {
+            item.Cleanup();
         }
 
         return;
@@ -298,19 +325,33 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 await service.SignalStopAsync().ConfigureAwait(false);
             }
 
+            List<TopLevelViewModel> removedTopLevel;
             lock (TopLevelCommands)
             {
+                removedTopLevel = [.. TopLevelCommands];
                 TopLevelCommands.Clear();
             }
 
+            List<TopLevelViewModel> removedDockBands;
             lock (_dockBandsLock)
             {
+                removedDockBands = [.. DockBands];
                 DockBands.Clear();
             }
 
             lock (_commandProvidersLock)
             {
                 _commandProviders.Clear();
+            }
+
+            foreach (var item in removedTopLevel)
+            {
+                item.Cleanup();
+            }
+
+            foreach (var item in removedDockBands)
+            {
+                item.Cleanup();
             }
 
             var ct = _currentExtensionLoadCancellationToken;
@@ -338,31 +379,37 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             // If disabled, we'll remove that providers commands from top level commands, dock bands, and pinned commands.
             if (!isEnabled)
             {
+                List<TopLevelViewModel> commandsToRemove;
                 lock (TopLevelCommands)
                 {
-                    var commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId).ToList();
+                    commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId).ToList();
                     foreach (var command in commandsToRemove)
                     {
                         TopLevelCommands.Remove(command);
                     }
                 }
 
+                List<TopLevelViewModel> dockBandsToRemove;
                 lock (_dockBandsLock)
                 {
-                    var dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
+                    dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
                     foreach (var band in dockBandsToRemove)
                     {
                         DockBands.Remove(band);
                     }
                 }
 
-                lock (PinnedCommands)
+                // Re-enabling the provider reloads its commands, which builds
+                // brand new view-models, so the ones we just dropped are never
+                // coming back and can release their extension event handlers.
+                foreach (var command in commandsToRemove)
                 {
-                    var pinnedToRemove = PinnedCommands.Where(p => p.ProviderId == providerId).ToList();
-                    foreach (var command in pinnedToRemove)
-                    {
-                        PinnedCommands.Remove(command);
-                    }
+                    command.Cleanup();
+                }
+
+                foreach (var band in dockBandsToRemove)
+                {
+                    band.Cleanup();
                 }
             }
             else
@@ -644,6 +691,16 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                             }
                         }
                     }
+
+                    foreach (var deleted in commandsToRemove)
+                    {
+                        deleted.Cleanup();
+                    }
+
+                    foreach (var deleted in bandsToRemove)
+                    {
+                        deleted.Cleanup();
+                    }
                 },
                 CancellationToken.None,
                 TaskCreationOptions.None,
@@ -665,6 +722,163 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
 
         return null;
+    }
+
+    public TopLevelViewModel? LookupCommand(string providerId, string commandId)
+    {
+        lock (TopLevelCommands)
+        {
+            foreach (var command in TopLevelCommands)
+            {
+                if (!command.IsFallback &&
+                    string.Equals(command.CommandProviderId, providerId, StringComparison.Ordinal) &&
+                    string.Equals(command.Id, commandId, StringComparison.Ordinal))
+                {
+                    return command;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public bool IsProviderEnabled(string providerId)
+    {
+        // A loaded wrapper can retain IsActive after its provider is disabled.
+        var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
+        return !settings.ProviderSettings.TryGetValue(providerId, out var providerSettings) || providerSettings.IsEnabled;
+    }
+
+    public async Task<CommandResolution?> ResolveCommandAsync(
+        string providerId,
+        string commandId,
+        CancellationToken cancellationToken = default)
+    {
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            if (attempt > 0)
+            {
+                await WaitForCurrentLoadAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            var provider = LookupProvider(providerId);
+            if (provider is null || !IsProviderEnabled(providerId))
+            {
+                return null;
+            }
+
+            // 1. Check if the command is already loaded in memory (TopLevelCommands or DockBands)
+            var command = LookupCommand(providerId, commandId) ?? LookupDockBand(providerId, commandId);
+            if (command is not null && ReferenceEquals(command.ProviderContext, provider))
+            {
+                return new(command, provider, ownsCommand: false);
+            }
+
+            // 2. If not found, ask the provider to resolve the command (may involve async loading)
+            cancellationToken.ThrowIfCancellationRequested();
+            var resolveCommandFromProviderTask = Task.Run(() => provider.ResolveCommandItem(commandId, _serviceProvider), cancellationToken);
+            try
+            {
+                // Get the task from provider
+                command = await resolveCommandFromProviderTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                // The provider may have been disabled or replaced while we were waiting for the command to resolve
+                var actualProviderNow = LookupProvider(providerId);
+                var isProviderEnabled = IsProviderEnabled(providerId);
+                if (!ReferenceEquals(actualProviderNow, provider) || !isProviderEnabled)
+                {
+                    if (command is not null)
+                    {
+                        _ = CleanupThreadPool.Queue(command.Cleanup, $"Stale command '{commandId}' from provider '{providerId}'");
+                    }
+
+                    if (!isProviderEnabled)
+                    {
+                        return null;
+                    }
+
+                    continue;
+                }
+
+                return command is null ? null : new(command, provider, ownsCommand: true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Release a result that arrives after the caller stops waiting.
+                _ = resolveCommandFromProviderTask.ContinueWith(
+                    task =>
+                    {
+                        if (task.Status == TaskStatus.RanToCompletion)
+                        {
+                            if (task.Result is { } lateCommand)
+                            {
+                                _ = CleanupThreadPool.Queue(lateCommand.Cleanup, $"Late command '{commandId}' from provider '{providerId}'");
+                            }
+                        }
+                        else if (task.IsFaulted)
+                        {
+                            _ = task.Exception;
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskContinuationOptions.None,
+                    TaskScheduler.Default);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to resolve command {commandId} from provider {providerId}.", ex);
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    private TopLevelViewModel? LookupDockBand(string providerId, string commandId)
+    {
+        lock (_dockBandsLock)
+        {
+            return DockBands.FirstOrDefault(command =>
+                string.Equals(command.CommandProviderId, providerId, StringComparison.Ordinal) &&
+                string.Equals(command.Id, commandId, StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>Waits for the command load active at call time, excluding late provider continuations.</summary>
+    public async Task WaitForCurrentLoadAsync(CancellationToken cancellationToken = default)
+    {
+        if (!IsLoading)
+        {
+            return;
+        }
+
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        PropertyChangedEventHandler? handler = null;
+        handler = (_, args) =>
+        {
+            if (args.PropertyName == nameof(IsLoading) && !IsLoading)
+            {
+                completion.TrySetResult();
+            }
+        };
+
+        PropertyChanged += handler;
+        try
+        {
+            // IsLoading may have changed between the first check and subscribing.
+            if (!IsLoading)
+            {
+                return;
+            }
+
+            await completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            PropertyChanged -= handler;
+        }
     }
 
     public TopLevelViewModel? LookupDockBand(string id)

@@ -4,26 +4,55 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:ShortcutGuide"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid HorizontalAlignment="Stretch">
+    <!--
+        Each indicator is a standalone tooltip-style element with a body
+        (rounded rect) and a triangle tail, similar to TeachingTip's visual.
+        The tail points toward the taskbar; its direction (down/up/left/right)
+        and the slide-in animation are configured in code-behind from the
+        TailDirection property so the same control works for a taskbar docked
+        on any screen edge.
+    -->
+    <Grid
+        x:Name="RootGrid"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center">
+
+        <!--  Body  -->
         <Border
             x:Name="IndicatorRectangle"
-            Width="36"
-            Height="36"
+            MinWidth="40"
+            MinHeight="40"
+            Padding="8"
             Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="{StaticResource ControlCornerRadius}">
+            CornerRadius="8"
+            Translation="0,0,32">
+            <Border.Shadow>
+                <ThemeShadow />
+            </Border.Shadow>
             <TextBlock
                 x:Name="IndicatorText"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                FontSize="18"
+                FontSize="16"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="{x:Bind Label, Mode=OneWay}"
                 TextAlignment="Center" />
         </Border>
+
+        <!--
+            Triangle tail — only the two diagonal edges are stroked (no base
+            line) so it seamlessly blends with the body border. A 1px negative
+            margin overlaps the body's border to hide the seam. Its geometry,
+            placement and margin are set in code-behind per TailDirection.
+        -->
+        <Path
+            x:Name="Tail"
+            Fill="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+            Stroke="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+            StrokeThickness="1" />
     </Grid>
 </UserControl>

@@ -22,11 +22,58 @@ internal sealed partial class SampleListPageWithDetails : ListPage
         return [
             new ListItem(new NoOpCommand())
             {
-                Title = "Details on ListItems (Small)",
+                Title = "Details with rich content (Small)",
                 Details = new Details()
                 {
-                    Title = "This item has default details size",
-                    Body = "Each of these items can have a `Body` formatted with **Markdown**",
+                    Title = "Details can contain rich content",
+                    Body = "The content below is provided through `IDetails2`.",
+                    Content = [
+                        new FormContent()
+                        {
+                            TemplateJson = """
+                                {
+                                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                                    "type": "AdaptiveCard",
+                                    "version": "1.6",
+                                    "body": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "Person card",
+                                            "size": "Medium",
+                                            "weight": "Bolder"
+                                        },
+                                        {
+                                            "type": "Input.Text",
+                                            "id": "name",
+                                            "label": "Name",
+                                            "value": "Ada Lovelace"
+                                        },
+                                        {
+                                            "type": "Input.Text",
+                                            "id": "role",
+                                            "label": "Role",
+                                            "value": "Mathematician"
+                                        },
+                                        {
+                                            "type": "Input.Text",
+                                            "id": "email",
+                                            "label": "Email",
+                                            "style": "Email",
+                                            "value": "ada@example.com"
+                                        }
+                                    ],
+                                    "actions": [
+                                        {
+                                            "type": "Action.Submit",
+                                            "title": "Save person"
+                                        }
+                                    ]
+                                }
+                                """,
+                        },
+                        new MarkdownContent() { Body = "### Markdown content\nDetails can render the same content types as content pages." },
+                        new PlainTextContent() { Text = "Plain text content in the details pane", FontFamily = FontFamily.Monospace },
+                    ],
                 },
             },
             new ListItem(new NoOpCommand())

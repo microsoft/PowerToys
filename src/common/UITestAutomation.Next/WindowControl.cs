@@ -8,9 +8,8 @@ using System.Runtime.InteropServices;
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// Fault-tolerant window cleanup helpers. Every method swallows exceptions and returns a
-/// boolean — they're designed for test <c>finally</c> blocks where a cleanup failure must
-/// never mask the real test failure.
+/// Window cleanup and input-readiness helpers. Cleanup methods report failure without throwing,
+/// so a cleanup failure in a test <c>finally</c> block does not mask the original test failure.
 /// </summary>
 /// <remarks>
 /// winappcli has no <c>close</c> verb, so closing goes through Win32 <c>WM_CLOSE</c>
@@ -21,7 +20,7 @@ public static class WindowControl
 {
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool PostMessageW(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+    private static extern bool PostMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -42,6 +41,10 @@ public static class WindowControl
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO lpgui);
+
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern int GetClassNameW(IntPtr hWnd, [Out] char[] lpClassName, int nMaxCount);
 
@@ -58,6 +61,12 @@ public static class WindowControl
 
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr WindowFromPoint(POINT point);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -76,8 +85,15 @@ public static class WindowControl
 
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint WM_CLOSE = 0x0010;
+    private const uint WM_CONTEXTMENU = 0x007B;
+#pragma warning restore SA1310
+    private const uint GaParent = 1;
+    private const uint GaRoot = 2;
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant name
     private const int SW_RESTORE = 9;
+#pragma warning restore SA1310
 
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT
@@ -88,11 +104,35 @@ public static class WindowControl
         public int Bottom;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct GUITHREADINFO
+    {
+        public int Size;
+        public uint Flags;
+        public IntPtr ActiveWindow;
+        public IntPtr FocusedWindow;
+        public IntPtr CaptureWindow;
+        public IntPtr MenuOwnerWindow;
+        public IntPtr MoveSizeWindow;
+        public IntPtr CaretWindow;
+        public RECT CaretRectangle;
+    }
+
     /// <summary>
     /// A top-level window discovered by <see cref="EnumerateProcessWindows"/> / <see cref="EnumerateAllWindows"/>:
     /// its native handle, owning process id, window class, title, size in physical pixels, and visibility.
     /// </summary>
     public readonly record struct ProcessWindow(IntPtr Hwnd, int ProcessId, string ClassName, string Title, int Width, int Height, bool IsVisible);
+
+    /// <summary>Diagnostic details for the current foreground window.</summary>
+    public readonly record struct ForegroundWindowInfo(IntPtr Hwnd, int ProcessId, string ProcessName, string ClassName, string Title, bool? IsElevated);
 
     /// <summary>
     /// Enumerate the top-level windows owned by any process in <paramref name="processIds"/> using the
@@ -116,9 +156,28 @@ public static class WindowControl
     /// </summary>
     public static IReadOnlyList<ProcessWindow> EnumerateAllWindows() => EnumerateTopLevelWindows(null);
 
-    private static IReadOnlyList<ProcessWindow> EnumerateTopLevelWindows(Func<int, bool>? pidFilter)
+    /// <summary>
+    /// Whether any top-level window of <paramref name="className"/> is currently visible.
+    /// </summary>
+    /// <remarks>
+    /// Cheap enough to poll: it reads class names only, never window titles, so it avoids the
+    /// cross-process <c>WM_GETTEXT</c> that <see cref="EnumerateAllWindows"/> performs per window.
+    /// For a window that only appears briefly, prefer <see cref="WindowShowWatcher"/> — no poll can
+    /// tell "never shown" apart from "shown between two samples".
+    /// </remarks>
+    public static bool IsAnyWindowOfClassVisible(string className) =>
+        AnyWindowOfClass(className, requireVisible: true);
+
+    /// <summary>Whether any top-level window of <paramref name="className"/> exists, visible or not.</summary>
+    public static bool AnyWindowOfClassExists(string className) =>
+        AnyWindowOfClass(className, requireVisible: false);
+
+    private static bool AnyWindowOfClass(string className, bool requireVisible)
     {
-        var result = new List<ProcessWindow>();
+        // EnumWindows rather than chained FindWindowEx calls: when several windows share a class (the
+        // caller's product may pool and recycle them) the chained form is easy to get subtly wrong and
+        // end up only ever inspecting the first match.
+        var found = false;
 
         try
         {
@@ -127,7 +186,44 @@ public static class WindowControl
                 {
                     try
                     {
-                        GetWindowThreadProcessId(hWnd, out var pid);
+                        if ((!requireVisible || IsWindowVisible(hWnd)) &&
+                            GetWindowClassName(hWnd).Equals(className, StringComparison.OrdinalIgnoreCase))
+                        {
+                            found = true;
+                            return false;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore any single window we can't read; keep enumerating.
+                    }
+
+                    return true;
+                },
+                IntPtr.Zero);
+        }
+        catch
+        {
+            // Best-effort: report whatever was determined before the failure.
+        }
+
+        return found;
+    }
+
+    private static IReadOnlyList<ProcessWindow> EnumerateTopLevelWindows(Func<int, bool>? pidFilter)
+    {
+        var result = new List<ProcessWindow>();
+
+        try
+        {
+            EnumWindows(
+                (hWnd, lParam) =>
+                {
+                    try
+                    {
+                        // A zero return (window already gone) leaves pid at 0; the window is then
+                        // filtered out by pid or reported with pid 0, same as before.
+                        _ = GetWindowThreadProcessId(hWnd, out var pid);
                         var pidInt = (int)pid;
                         if (pidFilter is null || pidFilter(pidInt))
                         {
@@ -258,6 +354,37 @@ public static class WindowControl
         }
     }
 
+    /// <summary>Send <c>WM_CLOSE</c> to one exact HWND and wait for it to be destroyed.</summary>
+    public static bool TryCloseWindow(long hwnd, int timeoutMS = 5_000)
+    {
+        try
+        {
+            var handle = new IntPtr(hwnd);
+            if (!IsWindow(handle))
+            {
+                return true;
+            }
+
+            PostMessageW(handle, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+            var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMS);
+            while (DateTime.UtcNow < deadline)
+            {
+                if (!IsWindow(handle))
+                {
+                    return true;
+                }
+
+                Thread.Sleep(100);
+            }
+
+            return !IsWindow(handle);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// Bring the first window owned by <paramref name="appNameOrPid"/> to the foreground.
     /// If the window is minimized it's first restored. Tolerant.
@@ -319,11 +446,157 @@ public static class WindowControl
         }
     }
 
+    /// <summary>Return the current foreground window handle.</summary>
+    public static IntPtr GetForegroundWindowHandle() => GetForegroundWindow();
+
+    /// <summary>
+    /// Whether keyboard focus belongs to a descendant with the specified native window class,
+    /// inside the exact foreground window. This also handles empty Shell views without a
+    /// keyboard-focusable UIA element.
+    /// </summary>
+    public static bool IsKeyboardFocusWithinClass(IntPtr window, string className)
+    {
+        if (window == IntPtr.Zero)
+        {
+            throw new ArgumentException("The foreground window must not be zero.", nameof(window));
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(className);
+        if (GetForegroundWindow() != window)
+        {
+            return false;
+        }
+
+        var threadId = GetWindowThreadProcessId(window, out _);
+        var threadInfo = new GUITHREADINFO { Size = Marshal.SizeOf<GUITHREADINFO>() };
+        return threadId != 0 && GetGUIThreadInfo(threadId, ref threadInfo) &&
+            IsKeyboardFocusWithinClass(
+                window,
+                className,
+                threadInfo.FocusedWindow,
+                child => GetAncestor(child, GaParent),
+                GetWindowClassName);
+    }
+
+    internal static bool IsKeyboardFocusWithinClass(
+        IntPtr window,
+        string className,
+        IntPtr focusedWindow,
+        Func<IntPtr, IntPtr> getParent,
+        Func<IntPtr, string> getClassName)
+    {
+        ArgumentNullException.ThrowIfNull(getParent);
+        ArgumentNullException.ThrowIfNull(getClassName);
+
+        var matchesClass = false;
+        while (focusedWindow != IntPtr.Zero && focusedWindow != window)
+        {
+            matchesClass |= string.Equals(getClassName(focusedWindow), className, StringComparison.OrdinalIgnoreCase);
+            focusedWindow = getParent(focusedWindow);
+        }
+
+        return focusedWindow == window && matchesClass;
+    }
+
+    /// <summary>Whether the root window under a screen point is the expected HWND.</summary>
+    public static bool IsPointOwnedByWindow(IntPtr window, int x, int y)
+    {
+        if (window == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        try
+        {
+            var atPoint = WindowFromPoint(new POINT { X = x, Y = y });
+            return atPoint != IntPtr.Zero && GetAncestor(atPoint, GaRoot) == window;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Open the context menu owned by the control that currently has focus in a foreground window.</summary>
+    public static bool TryOpenContextMenuForFocusedControl(IntPtr ownerWindow)
+    {
+        if (ownerWindow == IntPtr.Zero || !IsWindow(ownerWindow) || !TryBringToForeground(ownerWindow))
+        {
+            return false;
+        }
+
+        var threadId = GetWindowThreadProcessId(ownerWindow, out _);
+        var threadInfo = new GUITHREADINFO { Size = Marshal.SizeOf<GUITHREADINFO>() };
+        var targetWindow = GetGUIThreadInfo(threadId, ref threadInfo) && threadInfo.FocusedWindow != IntPtr.Zero
+            ? threadInfo.FocusedWindow
+            : ownerWindow;
+        return PostMessageW(targetWindow, WM_CONTEXTMENU, targetWindow, new IntPtr(-1));
+    }
+
+    /// <summary>Return process, class, title, and elevation details for the current foreground HWND.</summary>
+    public static ForegroundWindowInfo GetForegroundWindowInfo()
+    {
+        var hwnd = GetForegroundWindow();
+        if (hwnd == IntPtr.Zero)
+        {
+            return new ForegroundWindowInfo(IntPtr.Zero, 0, string.Empty, string.Empty, string.Empty, null);
+        }
+
+        var foregroundThreadId = GetWindowThreadProcessId(hwnd, out var processId);
+        if (foregroundThreadId == 0)
+        {
+            processId = 0;
+        }
+
+        var processName = string.Empty;
+        if (processId != 0)
+        {
+            try
+            {
+                using var process = Process.GetProcessById((int)processId);
+                processName = process.ProcessName;
+            }
+            catch
+            {
+            }
+        }
+
+        return new ForegroundWindowInfo(
+            hwnd,
+            (int)processId,
+            processName,
+            GetWindowClassName(hwnd),
+            GetWindowTitle(hwnd),
+            processId == 0 ? null : ElevationHelper.IsProcessElevated((int)processId));
+    }
+
+    /// <summary>Bring an HWND forward until it owns foreground for the requested consecutive samples.</summary>
+    public static bool WaitForForeground(
+        IntPtr hwnd,
+        int timeoutMS = 5_000,
+        int requiredConsecutiveMatches = 1,
+        int pollIntervalMS = 100)
+    {
+        if (hwnd == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        return WaitHelper.WaitForStable(
+            observe: GetForegroundWindow,
+            isMatch: foreground => foreground == hwnd,
+            timeoutMS: timeoutMS,
+            requiredConsecutiveMatches: requiredConsecutiveMatches,
+            pollIntervalMS: pollIntervalMS,
+            recover: _ => TryBringToForeground(hwnd)).Succeeded;
+    }
+
     public static bool TryFocusByApp(string appNameOrPid)
     {
         try
         {
-            var w = WindowsFinder.ListByApp(appNameOrPid).FirstOrDefault();
+            var windows = WindowsFinder.ListByApp(appNameOrPid);
+            var w = windows.Count > 0 ? windows[0] : null;
             if (w is null || w.Hwnd == 0)
             {
                 return false;
@@ -429,6 +702,79 @@ public static class WindowControl
         catch
         {
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Force-terminate every exact-name process tree and wait until no matching process remains.
+    /// Unlike <see cref="TryKillProcessByName"/>, this also treats an already-absent process as success.
+    /// </summary>
+    public static bool TryKillProcessTreeByNameAndWait(string exactProcessName, int timeoutMS = 10_000)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(exactProcessName);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(timeoutMS);
+
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        while (DateTime.UtcNow < deadline)
+        {
+            var processes = Process.GetProcessesByName(exactProcessName);
+            if (processes.Length == 0)
+            {
+                return true;
+            }
+
+            try
+            {
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        if (!process.HasExited)
+                        {
+                            process.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        var remainingMS = Math.Max(0, (int)(deadline - DateTime.UtcNow).TotalMilliseconds);
+                        if (!process.WaitForExit(remainingMS))
+                        {
+                            return false;
+                        }
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+        }
+
+        var remainingProcesses = Process.GetProcessesByName(exactProcessName);
+        try
+        {
+            return remainingProcesses.Length == 0;
+        }
+        finally
+        {
+            foreach (var process in remainingProcesses)
+            {
+                process.Dispose();
+            }
         }
     }
 

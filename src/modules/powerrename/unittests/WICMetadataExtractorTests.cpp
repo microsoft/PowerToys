@@ -29,6 +29,21 @@ namespace WICMetadataExtractorTests
         return testDataPath.wstring();
     }
 
+    TEST_CLASS (FactoryLifetimeTests)
+    {
+    public:
+        TEST_METHOD (FactoryHasNoPersistentOwner)
+        {
+            WICMetadataExtractor extractor;
+            auto factory = extractor.GetWICFactory();
+            Assert::IsTrue(factory != nullptr, L"WIC factory creation should succeed");
+
+            // Release's test-only reference count exposes a hidden static owner.
+            const auto remainingReferences = factory.Detach()->Release();
+            Assert::AreEqual(0UL, remainingReferences, L"The WIC factory must not survive its operation scope");
+        }
+    };
+
     TEST_CLASS(ExtractEXIFMetadataTests)
     {
     public:

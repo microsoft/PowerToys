@@ -138,6 +138,25 @@ public class TaskbarBandPinningTests
         Assert.AreEqual(taskbar ? 0 : 1, fixture.Settings.DockSettings.TaskbarBands.Count);
     }
 
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public void SaveBandOrder_NewTaskbarBandPersistsLabelVisibility(bool showTitles, bool showSubtitles)
+    {
+        using var fixture = new TestFixture();
+        fixture.ViewModel.AddBandToSection(fixture.TaskbarBand, DockPinSide.Taskbar);
+        var band = fixture.ViewModel.TaskbarItems.Single();
+        band.ShowTitles = showTitles;
+        band.ShowSubtitles = showSubtitles;
+
+        fixture.ViewModel.SaveBandOrder();
+
+        var savedBand = fixture.Settings.DockSettings.TaskbarBands.Single();
+        Assert.AreEqual(showTitles, savedBand.ShowTitles);
+        Assert.AreEqual(showSubtitles, savedBand.ShowSubtitles);
+    }
+
     private sealed class TestFixture : IDisposable, IPageContext
     {
         private readonly Mock<ISettingsService> _settingsService = new();

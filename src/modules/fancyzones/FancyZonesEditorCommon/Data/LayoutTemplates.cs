@@ -33,7 +33,7 @@ namespace FancyZonesEditorCommon.Data
 
         public struct TemplateLayoutsListWrapper
         {
-            public List<TemplateLayoutWrapper> LayoutTemplates { get; set; }
+            public List<TemplateLayoutWrapper> LayoutTemplates { get; init; }
         }
     }
 }

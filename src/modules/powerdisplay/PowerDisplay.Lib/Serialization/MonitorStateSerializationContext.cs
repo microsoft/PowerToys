@@ -19,6 +19,8 @@ namespace PowerDisplay.Common.Serialization
         IncludeFields = true)]
     [JsonSerializable(typeof(MonitorStateFile))]
     [JsonSerializable(typeof(MonitorStateEntry))]
+    [JsonSerializable(typeof(KnownGoodVcpFeature))]
+    [JsonSerializable(typeof(List<KnownGoodVcpFeature>))]
     [JsonSerializable(typeof(Dictionary<string, MonitorStateEntry>))]
     public partial class MonitorStateSerializationContext : JsonSerializerContext
     {
