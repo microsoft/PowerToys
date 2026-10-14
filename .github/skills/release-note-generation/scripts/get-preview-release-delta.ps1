@@ -208,17 +208,26 @@ function Get-HistoryPrIdentitySet {
     return ,$set
 }
 
-function Get-EquivalentCommitSet {
-    param(
-        [Parameter(Mandatory)][string]$Upstream,
-        [Parameter(Mandatory)][string]$Head
-    )
+function Get-HistoryPatchIdSet {
+    param([Parameter(Mandatory)][string]$Commit)
+
+    # Stream each full history once instead of spawning git for every commit.
+    $patchOutput = & {
+        & git -C $RepoPath log --format=%H --patch --cc --no-ext-diff --binary $Commit
+        if ($LASTEXITCODE -ne 0) {
+            throw "git log failed while collecting patches reachable from $Commit."
+        }
+    } | & git -C $RepoPath patch-id --stable
+    if ($LASTEXITCODE -ne 0) {
+        throw "git patch-id failed for history reachable from $Commit."
+    }
 
     $set = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-    foreach ($line in @(Invoke-Git cherry $Upstream $Head)) {
-        if ([string]$line -match "^-\s+([0-9a-fA-F]{40})$") {
-            [void]$set.Add($matches[1])
+    foreach ($line in $patchOutput) {
+        if ([string]$line -notmatch "^([0-9a-fA-F]{40})\s+[0-9a-fA-F]{40}$") {
+            throw "Unexpected git patch-id output: $line"
         }
+        [void]$set.Add($matches[1])
     }
     return ,$set
 }
@@ -238,12 +247,12 @@ function Test-PromotionMerge {
         return $false
     }
 
-    foreach ($parent in $parents) {
-        if (Test-Ancestor -Ancestor $parent -Descendant $OtherTip) {
-            return $true
+    foreach ($parent in $parents[1..($parents.Count - 1)]) {
+        if (-not (Test-Ancestor -Ancestor $parent -Descendant $OtherTip)) {
+            return $false
         }
     }
-    return $false
+    return $true
 }
 
 function Resolve-CrossSidePatchIdentities {
@@ -336,16 +345,16 @@ if ($deltaMode -eq "branch-transition") {
         [void]$targetIdentities.Add($identity)
     }
 
-    $previousEquivalentCommits = Get-EquivalentCommitSet -Upstream $targetSha -Head $previousSha
-    $targetEquivalentCommits = Get-EquivalentCommitSet -Upstream $previousSha -Head $targetSha
+    $previousHistoryPatchIds = Get-HistoryPatchIdSet -Commit $previousSha
+    $targetHistoryPatchIds = Get-HistoryPatchIdSet -Commit $targetSha
     foreach ($record in $previousRecords) {
-        if ($previousEquivalentCommits.Contains([string]$record.sha) -or
+        if (($record.patchId -and $targetHistoryPatchIds.Contains([string]$record.patchId)) -or
             (Test-PromotionMerge -Record $record -OtherTip $targetSha)) {
             [void]$targetIdentities.Add([string]$record.identity)
         }
     }
     foreach ($record in $targetRecords) {
-        if ($targetEquivalentCommits.Contains([string]$record.sha) -or
+        if (($record.patchId -and $previousHistoryPatchIds.Contains([string]$record.patchId)) -or
             (Test-PromotionMerge -Record $record -OtherTip $previousSha)) {
             [void]$previousIdentities.Add([string]$record.identity)
         }

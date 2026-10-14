@@ -24,8 +24,13 @@ Compare each side against the other commit's full reachable history, not only
 the commits after the merge base. Stable cherry-picks can appear after the
 merge base even when the same PR was merged into `main` earlier. Equal PR
 identities or equivalent patches anywhere in the opposite history cancel.
-Aggregate merge commits that only promote an ancestor of the opposite branch
-also cancel; they are not independent release-note changes.
+Compare delta records against stable patch-ID sets built from each tip's full
+reachable history, including root commits. Do not use `git cherry` for this:
+it excludes shared history before the merge base from patch comparison.
+Aggregate merge commits with no independent patch also cancel when all
+merged-in parents (excluding the first parent) are ancestors of the opposite
+tip; they are not independent release-note changes. A shared first parent
+alone does not make a feature merge a promotion.
 
 Resolve commit identity in this order:
 

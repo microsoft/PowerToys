@@ -469,6 +469,108 @@ Describe "preview release delta" {
         $result.removedPrNumbers.Count | Should Be 0
     }
 
+    It "matches unattributed patches before the merge base in either direction" -TestCases @(
+        @{ Reverse = $false; AddedCount = 1; RemovedCount = 0 }
+        @{ Reverse = $true; AddedCount = 0; RemovedCount = 1 }
+    ) {
+        param($Reverse, $AddedCount, $RemovedCount)
+
+        $repo = Join-Path $TestDrive "full-history-patch-$Reverse"
+        New-Item -ItemType Directory -Path $repo | Out-Null
+        Invoke-TestGit -Repository $repo init -q | Out-Null
+        Invoke-TestGit -Repository $repo config user.email "test@example.com" | Out-Null
+        Invoke-TestGit -Repository $repo config user.name "Test User" | Out-Null
+        $original = Add-TestCommit -Repository $repo -FileName "shared.txt" -Content "shared" -Message "Original shared change"
+        Invoke-TestGit -Repository $repo revert --no-edit $original | Out-Null
+        $anchor = Add-TestCommit -Repository $repo -FileName "anchor.txt" -Content "anchor" -Message "Shared anchor"
+        Invoke-TestGit -Repository $repo checkout -q -b stable | Out-Null
+        Invoke-TestGit -Repository $repo cherry-pick --no-commit $original | Out-Null
+        Invoke-TestGit -Repository $repo commit -q -m "Reapplied shared change" | Out-Null
+        $previous = ([string](Invoke-TestGit -Repository $repo rev-parse HEAD)).Trim()
+        Invoke-TestGit -Repository $repo checkout -q -b main $anchor | Out-Null
+        $unique = Add-TestCommit -Repository $repo -FileName "unique.txt" -Content "unique" -Message "Unique main change"
+        $target = $unique
+        if ($Reverse) {
+            $target = $previous
+            $previous = $unique
+        }
+        $output = Join-Path $TestDrive "full-history-patch-output-$Reverse"
+
+        $result = & (Join-Path $scripts "get-preview-release-delta.ps1") `
+            -PreviousCommit $previous `
+            -TargetCommit $target `
+            -RepoPath $repo `
+            -OutputDirectory $output `
+            -NoGitHubLookup
+
+        $result.deltaMode | Should Be "branch-transition"
+        $result.addedPrNumbers.Count | Should Be 0
+        $result.removedPrNumbers.Count | Should Be 0
+        $result.unattributedCommitCount | Should Be $AddedCount
+        $commits = Get-Content -LiteralPath (Join-Path $output "delta-commits.json") -Raw | ConvertFrom-Json
+        $commits.removedUnattributedCommits.Count | Should Be $RemovedCount
+        $added = Get-Content -LiteralPath (Join-Path $output "unattributed-commits.json") -Raw | ConvertFrom-Json
+        $unmatched = @($added) + @($commits.removedUnattributedCommits) | Where-Object { $_ }
+        @($unmatched).Count | Should Be 1
+        $unmatched.sha | Should Be $unique
+    }
+
+    It "retains a PR merge when only its first parent is in the opposite history" {
+        $repo = Join-Path $TestDrive "feature-merge"
+        New-Item -ItemType Directory -Path $repo | Out-Null
+        Invoke-TestGit -Repository $repo init -q | Out-Null
+        Invoke-TestGit -Repository $repo config user.email "test@example.com" | Out-Null
+        Invoke-TestGit -Repository $repo config user.name "Test User" | Out-Null
+        $root = Add-TestCommit -Repository $repo -FileName "root.txt" -Content "root" -Message "Root"
+        Invoke-TestGit -Repository $repo checkout -q -b feature | Out-Null
+        Add-TestCommit -Repository $repo -FileName "feature.txt" -Content "feature" -Message "Feature implementation" | Out-Null
+        Invoke-TestGit -Repository $repo checkout -q -b stable $root | Out-Null
+        Invoke-TestGit -Repository $repo merge -q --no-ff feature -m "Merge pull request #401 from feature" | Out-Null
+        $previous = ([string](Invoke-TestGit -Repository $repo rev-parse HEAD)).Trim()
+        Invoke-TestGit -Repository $repo checkout -q -b main $root | Out-Null
+        $target = Add-TestCommit -Repository $repo -FileName "main.txt" -Content "main" -Message "Main addition (#402)"
+        $output = Join-Path $TestDrive "feature-merge-output"
+
+        $result = & (Join-Path $scripts "get-preview-release-delta.ps1") `
+            -PreviousCommit $previous `
+            -TargetCommit $target `
+            -RepoPath $repo `
+            -OutputDirectory $output `
+            -NoGitHubLookup
+
+        ($result.addedPrNumbers -join ",") | Should Be "402"
+        ($result.removedPrNumbers -join ",") | Should Be "401"
+    }
+
+    It "retains an octopus merge when a merged-in parent is absent from the opposite history" {
+        $repo = Join-Path $TestDrive "octopus-merge"
+        New-Item -ItemType Directory -Path $repo | Out-Null
+        Invoke-TestGit -Repository $repo init -q | Out-Null
+        Invoke-TestGit -Repository $repo config user.email "test@example.com" | Out-Null
+        Invoke-TestGit -Repository $repo config user.name "Test User" | Out-Null
+        $root = Add-TestCommit -Repository $repo -FileName "root.txt" -Content "root" -Message "Root"
+        Invoke-TestGit -Repository $repo checkout -q -b main | Out-Null
+        Add-TestCommit -Repository $repo -FileName "shared.txt" -Content "shared" -Message "Shared feature (#501)" | Out-Null
+        Invoke-TestGit -Repository $repo checkout -q -b feature $root | Out-Null
+        Add-TestCommit -Repository $repo -FileName "feature.txt" -Content "feature" -Message "Feature implementation" | Out-Null
+        Invoke-TestGit -Repository $repo checkout -q -b stable $root | Out-Null
+        Invoke-TestGit -Repository $repo merge -q --no-ff main feature -m "Merge features (#502)" | Out-Null
+        $previous = ([string](Invoke-TestGit -Repository $repo rev-parse HEAD)).Trim()
+        Invoke-TestGit -Repository $repo checkout -q main | Out-Null
+        $target = Add-TestCommit -Repository $repo -FileName "later.txt" -Content "later" -Message "Later main feature (#503)"
+        $output = Join-Path $TestDrive "octopus-merge-output"
+
+        $result = & (Join-Path $scripts "get-preview-release-delta.ps1") `
+            -PreviousCommit $previous `
+            -TargetCommit $target `
+            -RepoPath $repo `
+            -OutputDirectory $output `
+            -NoGitHubLookup
+
+        ($result.addedPrNumbers -join ",") | Should Be "503"
+        ($result.removedPrNumbers -join ",") | Should Be "502"
+    }
+
     It "does not report a merge that only promotes the other branch" {
         $repo = Join-Path $TestDrive "promotion-merge"
         New-Item -ItemType Directory -Path $repo | Out-Null
