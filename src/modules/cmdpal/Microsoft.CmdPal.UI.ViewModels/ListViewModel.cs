@@ -1027,7 +1027,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         item.PropertyChanged += SelectedItemPropertyChanged;
 
-        SendPageUiMessage(new UpdateCommandBarMessage(item));
+        SetCommandBarContext(item);
+        SetDetails(null);
 
         // Cancel any in-flight slow init from a previous selection and defer
         // the expensive work (extension IPC for MoreCommands, details) so
@@ -1052,7 +1053,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         if (!ct.IsCancellationRequested)
                         {
-                            SendPageUiMessage(new HideDetailsMessage());
+                            SetDetails(null);
                         }
 
                         return;
@@ -1065,7 +1066,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                             return;
                         }
 
-                        SendPageUiMessage(new HideDetailsMessage());
+                        SetDetails(null);
 
                         return;
                     }
@@ -1079,11 +1080,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     // messages will be marshalled to the UI thread by the receiver.
                     if (ShowDetails && item.HasDetails)
                     {
-                        SendPageUiMessage(new ShowDetailsMessage(item.Details));
+                        SetDetails(item.Details);
                     }
                     else
                     {
-                        SendPageUiMessage(new HideDetailsMessage());
+                        SetDetails(null);
                     }
 
                     var suggestion = item.TextToSuggest;
@@ -1095,7 +1096,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         }
 
                         TextToSuggest = suggestion;
-                        SendPageUiMessage(new UpdateSuggestionMessage(suggestion));
+                        SetSearchSuggestion(suggestion);
                     });
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -1106,7 +1107,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     CoreLogger.LogError("Failed to initialize the selected list item", ex);
                     if (!ct.IsCancellationRequested)
                     {
-                        SendPageUiMessage(new HideDetailsMessage());
+                        SetDetails(null);
                     }
                 }
             },
@@ -1128,21 +1129,22 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(item.SecondaryCommand):
             case nameof(item.AllCommands):
             case nameof(item.Name):
-                SendPageUiMessage(new UpdateCommandBarMessage(item));
+                SetCommandBarContext(item);
                 break;
             case nameof(item.Details):
                 if (ShowDetails && item.HasDetails)
                 {
-                    SendPageUiMessage(new ShowDetailsMessage(item.Details));
+                    SetDetails(item.Details);
                 }
                 else
                 {
-                    SendPageUiMessage(new HideDetailsMessage());
+                    SetDetails(null);
                 }
 
                 break;
             case nameof(item.TextToSuggest):
                 TextToSuggest = item.TextToSuggest;
+                SetSearchSuggestion(TextToSuggest);
                 break;
         }
     }
@@ -1151,9 +1153,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
-        SendPageUiMessage(new UpdateCommandBarMessage(null));
-        SendPageUiMessage(new HideDetailsMessage());
-        SendPageUiMessage(new UpdateSuggestionMessage(string.Empty));
+        SetCommandBarContext(null);
+        SetDetails(null);
+        SetSearchSuggestion(string.Empty);
         TextToSuggest = string.Empty;
     }
 
@@ -1452,7 +1454,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         DoOnActivePage(
            () =>
            {
-               SendPageUiMessage(new UpdateCommandBarMessage(EmptyContent));
+               SetCommandBarContext(EmptyContent);
            });
     }
 
