@@ -203,12 +203,10 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
             {
                 Path = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath()),
                 Filter = Path.GetFileName(settingsUtils.GetSettingsFilePath()),
-                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
+                NotifyFilter = NotifyFilters.LastWrite,
             };
 
             _watcher.Changed += (s, e) => ReloadUtilities();
-            _watcher.Created += (s, e) => ReloadUtilities();
-            _watcher.Renamed += (s, e) => ReloadUtilities();
             _watcher.EnableRaisingEvents = true;
         }
 
