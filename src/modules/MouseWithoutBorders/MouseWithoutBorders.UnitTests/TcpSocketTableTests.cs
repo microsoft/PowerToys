@@ -13,6 +13,53 @@ namespace MouseWithoutBorders.UnitTests;
 public sealed class TcpSocketTableTests
 {
     [DataTestMethod]
+    [DataRow("0.0.0.0")]
+    [DataRow("::")]
+    public void ModuleReadinessRequiresBothOwnedListeners(string address)
+    {
+        var sockets = new[]
+        {
+            new TcpSocketTable.SocketInfo { OwningProcess = 123, LocalAddress = address, LocalPort = 15100, State = "Listen" },
+            new TcpSocketTable.SocketInfo { OwningProcess = 123, LocalAddress = address, LocalPort = 15101, State = "Listen" },
+        };
+        Assert.IsTrue(TcpSocketTable.HasMwbListeners(123, sockets));
+    }
+
+    [DataTestMethod]
+    [DataRow(123, 15100, 15100, "Listen")]
+    [DataRow(123, 15101, 15101, "Listen")]
+    [DataRow(456, 15100, 15101, "Listen")]
+    [DataRow(123, 15100, 15101, "Established")]
+    public void PartialForeignOrConnectedSocketsDoNotEstablishModuleReadiness(int owner, int firstPort, int secondPort, string state)
+    {
+        var sockets = new[]
+        {
+            new TcpSocketTable.SocketInfo { OwningProcess = owner, LocalPort = firstPort, State = state },
+            new TcpSocketTable.SocketInfo { OwningProcess = owner, LocalPort = secondPort, State = state },
+        };
+        Assert.IsFalse(TcpSocketTable.HasMwbListeners(123, sockets));
+        Assert.IsFalse(TcpSocketTable.HasMwbListeners(123, []));
+    }
+
+    [TestMethod]
+    public void ListenersFromDifferentOwnersCannotBeCombined()
+    {
+        var sockets = new[]
+        {
+            new TcpSocketTable.SocketInfo { OwningProcess = 123, LocalPort = 15100, State = "Listen" },
+            new TcpSocketTable.SocketInfo { OwningProcess = 456, LocalPort = 15101, State = "Listen" },
+        };
+        Assert.IsFalse(TcpSocketTable.HasMwbListeners(123, sockets));
+    }
+
+    [TestMethod]
+    public void ModuleReadinessRejectsInvalidOwnerOrMissingSnapshot()
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => TcpSocketTable.HasMwbListeners(0, []));
+        Assert.ThrowsExactly<ArgumentNullException>(() => TcpSocketTable.HasMwbListeners(123, null!));
+    }
+
+    [DataTestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void NativeSnapshotKeepsSocketAddressesPortsStatesAndOwner(bool ipv6)

@@ -74,7 +74,10 @@ Home-to-module navigation. Navigation invocation alone does not establish that
 the destination page loaded.
 
 The autonomous suite allows 15 minutes for each endpoint's initial
-Runner/MWB/Settings readiness, with a separate 20-minute Start-request envelope
+Runner/MWB/Settings readiness, requiring the initialized Settings window and
+both TCP listeners (15100/15101) on the exact owned MWB PID before pairing.
+An early Settings RPC pipe or a live MWB process alone is not initialization
+proof. The suite keeps a separate 20-minute Start-request envelope
 for preparation and reply delivery. This is a nested-Sandbox test allowance,
 not a product startup-performance guarantee. UIA, input, clipboard and
 the 45-second ownership lease retain their existing deadlines. Independent

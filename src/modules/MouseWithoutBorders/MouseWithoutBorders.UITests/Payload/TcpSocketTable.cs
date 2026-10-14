@@ -40,6 +40,35 @@ namespace Microsoft.MouseWithoutBorders.UITests
             return sockets.ToArray();
         }
 
+        [SuppressMessage("Maintainability", "CA1507", Justification = "This source must compile with the C# 5 compiler in Windows PowerShell 5.1.")]
+        [SuppressMessage("Maintainability", "CA1512", Justification = "Windows PowerShell 5.1 uses .NET Framework without ThrowIfNegativeOrZero.")]
+        [SuppressMessage("Maintainability", "CA1510", Justification = "Windows PowerShell 5.1 uses .NET Framework without ThrowIfNull.")]
+        public static bool HasMwbListeners(int processId, SocketInfo[] sockets)
+        {
+            if (processId <= 0)
+            {
+                throw new ArgumentOutOfRangeException("processId");
+            }
+
+            if (sockets == null)
+            {
+                throw new ArgumentNullException("sockets");
+            }
+
+            bool clipboard = false;
+            bool messages = false;
+            foreach (SocketInfo socket in sockets)
+            {
+                if (socket.OwningProcess == processId && socket.State == "Listen")
+                {
+                    clipboard |= socket.LocalPort == 15100;
+                    messages |= socket.LocalPort == 15101;
+                }
+            }
+
+            return clipboard && messages;
+        }
+
         private static void ReadFamily(List<SocketInfo> sockets, int processId, uint family)
         {
             const uint insufficientBuffer = 122;

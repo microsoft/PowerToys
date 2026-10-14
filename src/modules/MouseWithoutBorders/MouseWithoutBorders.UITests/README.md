@@ -113,6 +113,14 @@ smoke.
 | CI interactive suite/outer Run step | 70/103 minutes | 100/103 minutes |
 | Lease freshness | 45 seconds, no grace | 45 seconds, no grace |
 
+Endpoint startup requires two stable samples of both the owned initialized
+Settings window and both MWB TCP listeners (15100/15101) belonging to the same
+owned MWB PID. A process or early Settings RPC pipe is not module readiness:
+MWB publishes that pipe before its main form and socket initialization finish.
+`mwb-readiness.json` records the listener boundary without UIA, keys or clipboard
+contents. Real New key/Connect is submitted only after this initial readiness;
+no pairing retry, runtime-settings repair or extra deadline is introduced.
+
 The endpoint startup allowance was increased explicitly after observing a
 9m 16s Settings initialization without UIA or native responsiveness probes.
 It is a readiness ceiling, not a fixed sleep or a startup-performance fix:

@@ -159,7 +159,7 @@ Describe 'MWB owned Settings readiness' {
         $diagnostics | Should Not Match 'Invoke-GuestUi|inspect|search'
     }
 
-    It 'allows fifteen minutes for either endpoint without changing the readiness predicate' -TestCases @(
+    It 'allows fifteen minutes for either endpoint with stable Settings and actual owned MWB listeners' -TestCases @(
         @{ Role = 'Host' }
         @{ Role = 'Guest' }
     ) {
@@ -178,6 +178,10 @@ Describe 'MWB owned Settings readiness' {
         $startupBudgetMinutes | Should Be 15
         $start.Extent.Text | Should Match '\$deadline = \[DateTime\]::UtcNow.AddMinutes\(\$startupBudgetMinutes\)'
         $start.Extent.Text | Should Match '\$readyCandidates = @\(Get-ReadySettingsCandidates \$candidateStates\)'
+        $start.Extent.Text | Should Match 'TcpSocketTable\]::Read\(\$mwb\[0\].Id\)'
+        $start.Extent.Text | Should Match 'HasMwbListeners\(\$mwb\[0\].Id, \$mwbSockets\)'
+        $start.Extent.Text | Should Match '\$settingsReady -and \$mwbReady'
+        $start.Extent.Text | Should Match '\$readyMwbPid -eq \$mwb\[0\].Id'
         $start.Extent.Text | Should Match '\$readySamples -ge 2'
     }
 

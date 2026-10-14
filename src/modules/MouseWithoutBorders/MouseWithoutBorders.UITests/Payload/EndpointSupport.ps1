@@ -759,6 +759,7 @@ function Start-Endpoint {
     $deadline = [DateTime]::UtcNow.AddMinutes($startupBudgetMinutes)
     $lastTraceUtc = [DateTime]::MinValue
     $readySettingsPid = 0
+    $readyMwbPid = 0
     $readySamples = 0
     do {
         Update-OwnedProcesses
@@ -780,11 +781,18 @@ function Start-Endpoint {
         # Bind UI Automation to the one initialized window owner, not a process count.
         $readyCandidates = @(Get-ReadySettingsCandidates $candidateStates)
         $settingsReady = $readyCandidates.Count -eq 1
-        if ($settingsReady -and $mwb.Count -eq 1) {
-            if ($readySettingsPid -eq $readyCandidates[0].ProcessId) { $readySamples++ }
-            else { $readySettingsPid = $readyCandidates[0].ProcessId; $readySamples = 1 }
+        $mwbSockets = @()
+        $mwbReady = $false
+        if ($mwb.Count -eq 1) {
+            $mwbSockets = [Microsoft.MouseWithoutBorders.UITests.TcpSocketTable]::Read($mwb[0].Id)
+            $mwbReady = [Microsoft.MouseWithoutBorders.UITests.TcpSocketTable]::HasMwbListeners($mwb[0].Id, $mwbSockets)
         }
-        else { $readySettingsPid = 0; $readySamples = 0 }
+        # Settings IPC is available before MWB finishes initializing its main form and sockets.
+        if ($settingsReady -and $mwbReady) {
+            if ($readySettingsPid -eq $readyCandidates[0].ProcessId -and $readyMwbPid -eq $mwb[0].Id) { $readySamples++ }
+            else { $readySettingsPid = $readyCandidates[0].ProcessId; $readyMwbPid = $mwb[0].Id; $readySamples = 1 }
+        }
+        else { $readySettingsPid = 0; $readyMwbPid = 0; $readySamples = 0 }
         if ($readySamples -ge 2) {
             # Confirm Settings is still alive right before committing to success: it has been
             # observed to exit again (another self-relaunch generation, or a genuine crash)
@@ -792,7 +800,7 @@ function Start-Endpoint {
             $stillAlive = $false
             try {
                 $confirm = Get-Process -Id $readySettingsPid -ErrorAction Stop
-                $stillAlive = -not $confirm.HasExited
+                $stillAlive = -not $confirm.HasExited -and $mwb[0].IsCurrent()
             }
             catch [Microsoft.PowerShell.Commands.ProcessCommandException] { $stillAlive = $false }
             if ($stillAlive) {
@@ -814,9 +822,14 @@ function Start-Endpoint {
             $liveCandidates = @(Get-Process | Where-Object { $_.ProcessName -match '^PowerToys($|\.)' } |
                 ForEach-Object { '{0}:{1}' -f $_.Id, $_.ProcessName })
             $ownedSummary = @($script:owned | ForEach-Object { '{0}:{1}' -f $_.Id, [IO.Path]::GetFileName($_.Path) })
-            Write-Trace ("Poll: live=[{0}] owned=[{1}] settingsOwned={2} mwbOwned={3} settingsReady={4} readySamples={5} readyCandidates={6}" -f `
-                ($liveCandidates -join ', '), ($ownedSummary -join ', '), $settingsProcess.Count, $mwb.Count, $settingsReady, $readySamples, $readyCandidates.Count)
+            Write-Trace ("Poll: live=[{0}] owned=[{1}] settingsOwned={2} mwbOwned={3} settingsReady={4} readySamples={5} readyCandidates={6} mwbReady={7}" -f `
+                ($liveCandidates -join ', '), ($ownedSummary -join ', '), $settingsProcess.Count, $mwb.Count, $settingsReady, $readySamples, $readyCandidates.Count, $mwbReady)
             Write-RunJson "$OutputRoot\settings-readiness.json" @{ Candidates = $candidateStates; TimestampUtc = [DateTime]::UtcNow.ToString('o') }
+            Write-RunJson "$OutputRoot\mwb-readiness.json" @{
+                Ready = $mwbReady; ProcessId = $(if ($mwb.Count -eq 1) { $mwb[0].Id } else { 0 })
+                Sockets = @($mwbSockets | Where-Object { $_.State -eq 'Listen' -and $_.LocalPort -in 15100,15101 })
+                TimestampUtc = [DateTime]::UtcNow.ToString('o')
+            }
         }
         Start-Sleep -Milliseconds 250
     } while ([DateTime]::UtcNow -lt $deadline)
@@ -824,7 +837,7 @@ function Start-Endpoint {
     # window at all is a very different problem than one that simply never launched.
     $diagnostic = [ordered]@{
         Role = $script:config.Role; TimestampUtc = [DateTime]::UtcNow.ToString('o')
-        SettingsOwnedCount = $settingsProcess.Count; MwbOwnedCount = $mwb.Count
+        SettingsOwnedCount = $settingsProcess.Count; MwbOwnedCount = $mwb.Count; MwbListenersReady = $mwbReady
     }
     if ($settingsProcess.Count -eq 1) {
         $settingsInfo = Get-Process -Id $settingsProcess[0].Id -ErrorAction SilentlyContinue
@@ -837,7 +850,7 @@ function Start-Endpoint {
         }
     }
     Write-RunJson "$OutputRoot\startup-timeout-diagnostics.json" $diagnostic
-    throw "Owned MWB and responsive, initialized Settings did not both start within $startupBudgetMinutes minutes."
+    throw "Owned MWB listeners and responsive, initialized Settings did not both start within $startupBudgetMinutes minutes."
 }
 
 function Stop-Endpoint {
