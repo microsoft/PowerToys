@@ -4,6 +4,7 @@
 #include <sddl.h>
 #include <shellapi.h>
 #include <filesystem>
+#include <algorithm>
 #include <future>
 #include <iostream>
 #include <atomic>
@@ -88,12 +89,14 @@ namespace CliTelemetryProbe
         using Presentation = WorkspacesSession::Presentation;
         WorkspacesSession::Result Start(const Request&, HANDLE)
         {
-            if (launchExit != 0 && launchExit != 10)
+            if (launchExit != 0 && launchExit != 10 && launchExit != 11)
                 throw WorkspacesSession::Error(launchExit, L"controlledError", "Controlled test error.", launchExit == 9);
             WorkspacesSession::Result result;
             result.project.apps.emplace_back();
             result.project.apps[0].id = L"test-app";
-            result.applications.emplace(result.project.apps[0], WorkspacesData::LaunchingAppState{ result.project.apps[0], nullptr, launchExit == 0 ? LaunchingState::LaunchedAndMoved : LaunchingState::Launched });
+            result.applications.emplace(result.project.apps[0], WorkspacesData::LaunchingAppState{ result.project.apps[0], nullptr, launchExit == 10 ? LaunchingState::Launched : LaunchingState::LaunchedAndMoved });
+            if (launchExit == 11)
+                result.persistence = WorkspaceStore::UpdateResult::Unverified;
             return result;
         }
         void ExitIfExecutionUnresponsive(const WorkspacesSession::Error& error)
@@ -243,6 +246,116 @@ namespace
         }
     }
 
+    void CheckPersistenceOutput()
+    {
+        for (const bool asJson : { false, true })
+        {
+            CliTelemetryProbe::launchExit = 11;
+            std::vector<std::wstring> arguments{ L"PowerToys.WorkspacesCLI.exe", L"launch", L"--name", L"Controlled workspace" };
+            if (asJson)
+                arguments.push_back(L"--json");
+            std::vector<wchar_t*> argv;
+            for (auto& argument : arguments)
+                argv.push_back(argument.data());
+            std::ostringstream output, errors;
+            const auto previousOutput = std::cout.rdbuf(output.rdbuf());
+            const auto previousError = std::cerr.rdbuf(errors.rdbuf());
+            auto restore = wil::scope_exit([&] {
+                std::cout.rdbuf(previousOutput);
+                std::cerr.rdbuf(previousError);
+            });
+            Check(CliMainForTelemetryTest(static_cast<int>(argv.size()), argv.data()) == 11);
+            if (output.str().empty())
+                throw std::runtime_error("Persistence failure hid the observed application results.");
+            const auto printed = json::JsonObject::Parse(winrt::to_hstring(output.str()));
+            const auto result = asJson ? printed.GetNamedObject(L"result") : printed;
+            Check(result.GetNamedString(L"persistenceStatus") == L"unverified");
+            const auto app = result.GetNamedArray(L"applications").GetObjectAt(0);
+            Check(app.GetNamedString(L"id") == L"test-app" && app.GetNamedString(L"state") == L"arranged");
+            if (asJson)
+                Check(errors.str().empty() && printed.GetNamedObject(L"error").GetNamedString(L"code") == L"persistenceUnverified");
+            else
+                Check(errors.str().find("persistenceUnverified") != std::string::npos);
+        }
+    }
+
+    struct ConsoleProbeResult
+    {
+        DWORD processCount{};
+        bool parentAttached{};
+    };
+
+    void RunConsoleChild(DWORD parentPid, const std::wstring& name)
+    {
+        wil::unique_handle mapping(OpenFileMappingW(FILE_MAP_WRITE, FALSE, name.c_str()));
+        wil::unique_handle ready(OpenEventW(EVENT_MODIFY_STATE, FALSE, (name + L"-ready").c_str()));
+        wil::unique_handle stop(OpenEventW(SYNCHRONIZE, FALSE, (name + L"-stop").c_str()));
+        Check(mapping && ready && stop);
+        wil::unique_mapview_ptr<ConsoleProbeResult> result(static_cast<ConsoleProbeResult*>(MapViewOfFile(mapping.get(), FILE_MAP_WRITE, 0, 0, sizeof(ConsoleProbeResult))));
+        Check(static_cast<bool>(result));
+        std::vector<DWORD> processes(16);
+        DWORD count = GetConsoleProcessList(processes.data(), static_cast<DWORD>(processes.size()));
+        if (count > processes.size())
+        {
+            processes.resize(count);
+            count = GetConsoleProcessList(processes.data(), static_cast<DWORD>(processes.size()));
+        }
+        Check(count > 0 && count <= processes.size());
+        result->processCount = count;
+        result->parentAttached = std::find(processes.begin(), processes.begin() + count, parentPid) != processes.begin() + count;
+        Check(SetEvent(ready.get()) != FALSE);
+        Check(WaitForSingleObject(stop.get(), 10000) == WAIT_OBJECT_0);
+    }
+
+    void CheckConsoleLaunch()
+    {
+        Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
+        const auto console = GetConsoleWindow();
+        const auto codePage = GetConsoleOutputCP();
+        const auto input = GetStdHandle(STD_INPUT_HANDLE);
+        const auto output = GetStdHandle(STD_OUTPUT_HANDLE);
+        const auto foreground = GetForegroundWindow();
+        Check(console != nullptr && codePage != 0);
+        auto restoreForeground = wil::scope_exit([&] {
+            if (foreground && IsWindow(foreground))
+                SetForegroundWindow(foreground);
+        });
+        GUID guid{};
+        winrt::check_hresult(CoCreateGuid(&guid));
+        wchar_t id[40]{}, module[32768]{};
+        StringFromGUID2(guid, id, ARRAYSIZE(id));
+        Check(GetModuleFileNameW(nullptr, module, ARRAYSIZE(module)) != 0);
+        const auto name = std::wstring(L"Local\\WorkspacesConsoleProbe-") + id;
+        wil::unique_handle mapping(CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(ConsoleProbeResult), name.c_str()));
+        wil::unique_handle ready(CreateEventW(nullptr, TRUE, FALSE, (name + L"-ready").c_str()));
+        wil::unique_handle stop(CreateEventW(nullptr, TRUE, FALSE, (name + L"-stop").c_str()));
+        Check(mapping && ready && stop);
+        wil::unique_mapview_ptr<ConsoleProbeResult> result(static_cast<ConsoleProbeResult*>(MapViewOfFile(mapping.get(), FILE_MAP_READ, 0, 0, sizeof(ConsoleProbeResult))));
+        Check(static_cast<bool>(result));
+        const auto launched = AppLauncher::LaunchApp(module, L"console-child " + std::to_wstring(GetCurrentProcessId()) + L" " + name, false);
+        Check(launched.isOk());
+        wil::unique_handle child(launched.value().hProcess);
+        Check(static_cast<bool>(child));
+        auto cleanup = wil::scope_exit([&] {
+            SetEvent(stop.get());
+            if (WaitForSingleObject(child.get(), 5000) == WAIT_TIMEOUT)
+            {
+                TerminateProcess(child.get(), 1);
+                WaitForSingleObject(child.get(), 2000);
+            }
+        });
+        Check(WaitForSingleObject(ready.get(), 10000) == WAIT_OBJECT_0);
+        Check(result->processCount > 0);
+        if (result->parentAttached)
+            throw std::runtime_error("The workspace application inherited the frontend console.");
+        Check(GetConsoleWindow() == console && GetConsoleOutputCP() == codePage);
+        Check(GetStdHandle(STD_INPUT_HANDLE) == input && GetStdHandle(STD_OUTPUT_HANDLE) == output);
+        Check(SetEvent(stop.get()) != FALSE);
+        Check(WaitForSingleObject(child.get(), 5000) == WAIT_OBJECT_0);
+        DWORD exitCode{};
+        Check(GetExitCodeProcess(child.get(), &exitCode) != FALSE && exitCode == 0);
+    }
+
     void CheckPipeStartup(bool cancelStartup)
     {
         Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
@@ -372,6 +485,11 @@ int wmain(int argc, wchar_t** argv)
     try
     {
         winrt::init_apartment();
+        if (argc == 4 && std::wstring_view(argv[1]) == L"console-child")
+        {
+            RunConsoleChild(std::stoul(argv[2]), argv[3]);
+            return 0;
+        }
         if (argc == 6 && std::wstring_view(argv[2]) == L"--session-worker")
         {
             // Controlled arranger startup stall; the shared session must stop only this owned process.
@@ -398,6 +516,15 @@ int wmain(int argc, wchar_t** argv)
             return canceled ? 12 : 9;
         }
         Check(argc == 2);
+        if (std::wstring_view(argv[1]) == L"persistence-output" || std::wstring_view(argv[1]) == L"console-launch")
+        {
+            if (std::wstring_view(argv[1]) == L"persistence-output")
+                CheckPersistenceOutput();
+            else
+                CheckConsoleLaunch();
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
         if (std::wstring_view(argv[1]) == L"telemetry")
         {
             CheckTelemetry();

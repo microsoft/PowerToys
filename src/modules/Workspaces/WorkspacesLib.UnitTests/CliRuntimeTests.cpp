@@ -78,8 +78,7 @@ namespace WorkspacesLibUnitTests
                     WaitForSingleObject(process.hProcess, 2000);
                 }
             });
-            Assert::AreEqual(DWORD{ WAIT_OBJECT_0 }, WaitForSingleObject(process.hProcess,
-                scenario.starts_with(L"ui-startup") || scenario.starts_with(L"session-") ? 35000 : 12000), scenario.c_str());
+            Assert::AreEqual(DWORD{ WAIT_OBJECT_0 }, WaitForSingleObject(process.hProcess, scenario.starts_with(L"ui-startup") || scenario.starts_with(L"session-") || scenario == L"console-launch" ? 35000 : 12000), scenario.c_str());
             DWORD code{};
             GetExitCodeProcess(process.hProcess, &code);
             char buffer[4096]{};
@@ -103,6 +102,16 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (PersistenceVerificationFailureRetainsObservedApplicationsInTextAndJson)
+        {
+            Run(L"persistence-output");
+        }
+
+        TEST_METHOD (ConsoleWorkspaceAppDoesNotInheritTheFrontendConsole)
+        {
+            Run(L"console-launch");
+        }
+
         TEST_METHOD (CliTelemetryIsRecordedOnceAcrossSuccessFailureAndForcedExit)
         {
             Run(L"telemetry");

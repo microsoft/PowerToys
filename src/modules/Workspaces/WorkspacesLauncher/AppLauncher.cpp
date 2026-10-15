@@ -35,7 +35,7 @@ namespace AppLauncher
         SHELLEXECUTEINFO sei = { 0 };
         sei.cbSize = sizeof(SHELLEXECUTEINFO);
         sei.hwnd = nullptr;
-        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
         sei.lpVerb = elevated ? L"runas" : L"open";
         sei.lpFile = appPath.c_str();
         sei.lpParameters = commandLineArgs.c_str();

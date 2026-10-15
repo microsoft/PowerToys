@@ -80,6 +80,9 @@ part of stored workspace JSON.
 Launch results contain the workspace and operation IDs, per-application results and a separate
 persistence status. An observed arranged state does not certify that a document/tab has loaded
 or that an application is ready for business use.
+If launch-history verification fails with `persistenceUnverified`, exit code 11 is preserved:
+text mode writes the error to stderr and the observed application results to stdout; JSON mode
+includes both in its single response. Do not rerun the workspace merely to recover those results.
 
 Per-application `launched` preserves the native `Launched` state: the application launch succeeded,
 but window arrangement was not confirmed. A localized `message` explains this distinction.
@@ -111,6 +114,8 @@ are rejected before applying or acknowledging completion. They produce `outcomeU
   returns or the one-shot adapter exits after reporting the error; no unsafe thread termination is used.
 - Workspaces progress/editor windows are suppressed. The existing Workspaces signature confirmation
   dialog, application windows and normal Windows UAC remain possible.
+- Console applications launched as workspace targets get their own console rather than sharing
+  the CLI's console. The CLI keeps its original console and standard streams.
 - Both ordinary and administrator terminals use the same command. The shared session layer runs
   directly inside a verified Medium caller; only an elevated caller starts a Medium Launcher host
   in the same user's desktop session. Existing saved elevation flags still determine individual app/UAC

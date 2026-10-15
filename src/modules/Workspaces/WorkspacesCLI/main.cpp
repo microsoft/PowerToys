@@ -46,6 +46,8 @@ namespace
             const auto error = output.GetNamedObject(L"error");
             std::cerr << winrt::to_string(error.GetNamedString(L"code")) << ": "
                       << winrt::to_string(error.GetNamedString(L"message")) << '\n';
+            if (output.HasKey(L"result"))
+                std::cout << winrt::to_string(output.GetNamedObject(L"result").Stringify()) << '\n';
         }
         else if (output.HasKey(L"workspaces") && output.GetNamedString(L"view") == L"summary")
         {
