@@ -115,6 +115,28 @@ public sealed class SettingsIpcIdentityTests
         Assert.IsFalse(inspectionCalled);
     }
 
+    [TestMethod]
+    public void CurrentProcessPrimaryTokenSupportsMembershipCheckWithoutElevation()
+    {
+        Assert.IsTrue(
+            SettingsSyncAuthorization.TryOpenProcessTokenForMembership(unchecked((uint)Environment.ProcessId), out var token),
+            "The current process primary token must be accessible with the production access rights.");
+
+        using (token)
+        using (var identity = new WindowsIdentity(token.DangerousGetHandle()))
+        using (var currentIdentity = WindowsIdentity.GetCurrent())
+        {
+            Assert.AreEqual(TokenImpersonationLevel.None, identity.ImpersonationLevel);
+
+            // Do not gate membership on elevation: unelevated test runs must also exercise token duplication.
+            var isAdministrator = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+
+            Assert.AreEqual(
+                new WindowsPrincipal(currentIdentity).IsInRole(WindowsBuiltInRole.Administrator),
+                isAdministrator);
+        }
+    }
+
     [DataTestMethod]
     [DataRow(5)]
     [DataRow(87)]

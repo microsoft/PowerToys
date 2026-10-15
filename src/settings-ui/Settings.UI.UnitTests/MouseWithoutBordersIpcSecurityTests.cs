@@ -694,6 +694,87 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
+        public void NewKeyReplyLoadsCommittedSettingsWithoutSavingCachedState()
+        {
+            var source = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
+            var start = source.IndexOf("public async Task SubmitNewKeyRequestAsync()", StringComparison.Ordinal);
+            var end = source.IndexOf("public bool HasPairingError", start, StringComparison.Ordinal);
+            var request = source.Substring(start, end - start);
+            StringAssert.Contains(request, "_pairingState.TransientSecurityKey = generatedKey;");
+            StringAssert.Contains(request, "OnPropertyChanged(nameof(SecurityKey));");
+            Assert.IsFalse(request.Contains("NotifyPropertyChanged(", StringComparison.Ordinal));
+            Assert.IsFalse(request.Contains("Settings.Properties.SecurityKey.Value =", StringComparison.Ordinal));
+            StringAssert.Contains(request, "savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>");
+            StringAssert.Contains(request, "LoadViewModelFromSettings(savedSettings);");
+
+            var notifyStart = source.IndexOf("public void NotifyPropertyChanged(", StringComparison.Ordinal);
+            var save = source.IndexOf("SettingsUtils.SaveSettings(", notifyStart, StringComparison.Ordinal);
+            var beforeSave = source.Substring(notifyStart, save - notifyStart).Replace("\r\n", "\n");
+            Assert.IsFalse(beforeSave.Contains("_pairingState.TransientSecurityKey != null", StringComparison.Ordinal));
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task NormalKeyReplyAndWatcherNeverReplaceApplicationPairingSnapshot(bool watcherBeforeReply)
+        {
+            var state = new MouseWithoutBordersPairingState();
+            var cached = new MouseWithoutBordersSettings();
+            cached.Properties.SecurityKey.Value = "old-key";
+            cached.Properties.MachinePool.Value = "old-pool";
+            cached.Properties.MachineMatrixString = new() { "old-machine" };
+            cached.Properties.EasyMouse.Value = 1;
+            var application = new MouseWithoutBordersSettings();
+            application.Properties.SecurityKey.Value = "generated-key";
+            application.Properties.MachinePool.Value = "new-pool";
+            application.Properties.MachineMatrixString = new() { "new-machine" };
+            application.Properties.EasyMouse.Value = 2;
+            var savedSnapshot = application.ToJsonString();
+            var acknowledgement = new TaskCompletionSource<bool>();
+            MouseWithoutBordersSettings committedSettings = null;
+            var update = state.TryUpdateAsync(
+                async () =>
+                {
+                    await acknowledgement.Task;
+                    committedSettings = System.Text.Json.JsonSerializer.Deserialize<MouseWithoutBordersSettings>(application.ToJsonString());
+                },
+                () => cached = committedSettings,
+                _ => Assert.Fail("The operation should complete."));
+
+            void Reload()
+            {
+                if (state.ShouldClearForSettingsReload(false, cached.Properties.SecurityKey.Value, false, application.Properties.SecurityKey.Value))
+                {
+                    state.Clear();
+                }
+
+                cached = application;
+            }
+
+            if (watcherBeforeReply)
+            {
+                Reload();
+            }
+
+            acknowledgement.SetResult(true);
+            Assert.AreEqual(!watcherBeforeReply, await update);
+            Assert.AreEqual("generated-key", cached.Properties.SecurityKey.Value);
+
+            cached.Properties.ShowOriginalUI = !cached.Properties.ShowOriginalUI;
+            savedSnapshot = cached.ToJsonString();
+
+            StringAssert.Contains(savedSnapshot, "generated-key");
+            StringAssert.Contains(savedSnapshot, "new-pool");
+            StringAssert.Contains(savedSnapshot, "new-machine");
+            Assert.IsFalse(savedSnapshot.Contains("old-key", StringComparison.Ordinal));
+            Assert.AreEqual(cached.Properties.ShowOriginalUI, System.Text.Json.JsonSerializer.Deserialize<MouseWithoutBordersSettings>(savedSnapshot).Properties.ShowOriginalUI);
+            Reload();
+            Assert.IsNull(state.TransientSecurityKey);
+            Assert.AreEqual("generated-key", cached.Properties.SecurityKey.Value);
+            Assert.AreEqual(2, cached.Properties.EasyMouse.Value);
+        }
+
+        [TestMethod]
         public void ServiceKeyDisplayUsesTransientResultWithoutChangingSavedValue()
         {
             var state = new MouseWithoutBordersPairingState

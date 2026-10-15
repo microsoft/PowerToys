@@ -421,6 +421,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             var useService = UseService;
             string generatedKey = null;
+            MouseWithoutBordersSettings savedSettings = null;
             var updateTask = _pairingState.TryUpdateAsync(
                 async () =>
                 {
@@ -434,19 +435,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             throw new InvalidOperationException("Pairing key was not returned.");
                         }
                     }
+
+                    if (!useService)
+                    {
+                        savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
+                    }
                 },
                 () =>
                 {
                     if (useService)
                     {
                         _pairingState.TransientSecurityKey = generatedKey;
-                        OnPropertyChanged(nameof(SecurityKey));
                     }
                     else
                     {
-                        Settings.Properties.SecurityKey.Value = generatedKey;
-                        NotifyPropertyChanged(nameof(SecurityKey));
+                        LoadViewModelFromSettings(savedSettings);
+                        NotifyUpdatedSettings();
                     }
+
+                    OnPropertyChanged(nameof(SecurityKey));
 
                     OnPropertyChanged(nameof(PairingSetupRequired));
                     OnPropertyChanged(nameof(ShowPairingSetupRequired));
@@ -799,7 +806,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string SecurityKey => _pairingState.GetDisplayValue(IsElevated, UseService, Settings.Properties.SecurityKey.Value);
+        public string SecurityKey => !UseService && _pairingState.TransientSecurityKey != null
+            ? _pairingState.TransientSecurityKey
+            : _pairingState.GetDisplayValue(IsElevated, UseService, Settings.Properties.SecurityKey.Value);
 
         public bool WrapMouse
         {

@@ -48,7 +48,13 @@ public sealed class IpcSerializationCompatibilityTests
     public async Task ConnectRejectsMissingMachineNameBeforeChangingSettings(string? machineName)
     {
         var helperType = typeof(Program).GetNestedType("SettingsSyncHelper", BindingFlags.NonPublic)!;
-        var helper = Activator.CreateInstance(helperType, nonPublic: true)!;
+        var settings = (MouseWithoutBorders.Class.Settings)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(MouseWithoutBorders.Class.Settings));
+        var helper = Activator.CreateInstance(
+            helperType,
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            binder: null,
+            args: new object[] { new SettingsSyncAuthorization(false), settings },
+            culture: System.Globalization.CultureInfo.InvariantCulture)!;
         var connect = helperType.GetMethod("ConnectToMachine")!;
         var request = (Task)connect.Invoke(helper, new object?[] { machineName, "TEST-KEY" })!;
         if (machineName == null)

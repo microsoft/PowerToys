@@ -281,6 +281,7 @@ namespace MouseWithoutBorders.Class
         private sealed class SettingsSyncHelper : ISettingsSyncHelper
         {
             private readonly ISettingsSyncAuthorization _authorization;
+            private readonly Settings _settings;
 
             public SettingsSyncHelper()
                 : this(new SettingsSyncAuthorization(false))
@@ -288,8 +289,14 @@ namespace MouseWithoutBorders.Class
             }
 
             internal SettingsSyncHelper(ISettingsSyncAuthorization authorization)
+                : this(authorization, Setting.Values)
+            {
+            }
+
+            internal SettingsSyncHelper(ISettingsSyncAuthorization authorization, Settings settings)
             {
                 _authorization = authorization;
+                _settings = settings;
             }
 
             public Task<ISettingsSyncHelper.MachineSocketState[]> RequestMachineSocketStateAsync()
@@ -318,7 +325,7 @@ namespace MouseWithoutBorders.Class
                 ArgumentException.ThrowIfNullOrWhiteSpace(pcName);
                 EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);
                 var protectedCredentialConfigured = !Settings.IsProtectedMode ||
-                    Setting.Values.HasPairingKey;
+                    _settings.HasPairingKey;
                 EnsureConnectOperationAvailable(
                     Settings.IsProtectedMode,
                     protectedCredentialConfigured);
@@ -327,53 +334,30 @@ namespace MouseWithoutBorders.Class
                     throw new ArgumentException("A pairing credential is required.", nameof(securityKey));
                 }
 
-                var previousPauseInstantSaving = Setting.Values.PauseInstantSaving;
-                Setting.Values.PauseInstantSaving = true;
-                try
+                var machines = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
+                await _settings.SavePairingSettingsAsync(securityKey, machines, false, key =>
                 {
-                    MachineStuff.ClearComputerMatrix();
-                    Setting.Values.MyKey = securityKey;
-                    MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
-
-                    string[] machines = MachineStuff.MachineMatrix;
+                    MachineStuff.MachineMatrix = null;
                     MachineStuff.MachinePool.Initialize(machines);
-                    MachineStuff.UpdateMachinePoolStringSetting();
-
-                    var key = Setting.Values.MyKey;
-                    await Setting.Values.SaveSettingsAsync();
                     ApplyPairingCredential(key);
-                    SocketStuff.InvalidKeyFound = false;
-                    InitAndCleanup.ReopenSocketDueToReadError = true;
-                    Common.ReopenSockets(true);
-                    MachineStuff.SendMachineMatrix();
-                }
-                finally
-                {
-                    Setting.Values.PauseInstantSaving = previousPauseInstantSaving;
-                }
+                });
+                SocketStuff.InvalidKeyFound = false;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
+                Common.ReopenSockets(true);
+                MachineStuff.SendMachineMatrix();
             }
 
             public async Task<string> GenerateNewKey()
             {
                 EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);
-                var previousPauseInstantSaving = Setting.Values.PauseInstantSaving;
-                Setting.Values.PauseInstantSaving = true;
-                string key;
-                try
+                var machines = new string[MachineStuff.MAX_MACHINE] { Common.MachineName.Trim(), string.Empty, string.Empty, string.Empty };
+                var key = await _settings.SavePairingSettingsAsync(Encryption.CreateRandomKey(), machines, true, plaintext =>
                 {
-                    Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
-                    MachineStuff.ClearComputerMatrix();
-                    key = Encryption.CreateRandomKey();
-                    Setting.Values.MyKey = key;
-                    key = Setting.Values.MyKey;
-                    await Setting.Values.SaveSettingsAsync();
-                    ApplyPairingCredential(key);
+                    MachineStuff.MachineMatrix = null;
+                    MachineStuff.MachinePool.Initialize(machines);
+                    ApplyPairingCredential(plaintext);
                     Encryption.GeneratedKey = true;
-                }
-                finally
-                {
-                    Setting.Values.PauseInstantSaving = previousPauseInstantSaving;
-                }
+                });
 
                 Reconnect();
 

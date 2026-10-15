@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -53,6 +54,8 @@ namespace MouseWithoutBorders.Class
 
         private MouseWithoutBordersProperties _properties;
         private MouseWithoutBordersSettings _settings;
+        private Task _saveSettingsTask = Task.CompletedTask;
+        private Task _pairingSettingsTask = Task.CompletedTask;
 
         internal static bool IsProtectedMode
         {
@@ -87,9 +90,11 @@ namespace MouseWithoutBorders.Class
 
                     var last_properties = _properties;
 
-                    _settings = settings;
-
-                    _properties = settings.Properties;
+                    lock (_loadingSettingsLock)
+                    {
+                        _settings = settings;
+                        _properties = settings.Properties;
+                    }
 
                     // Keep track of the need to resend the machine matrix.
                     bool shouldSendMachineMatrix = false;
@@ -159,61 +164,141 @@ namespace MouseWithoutBorders.Class
         {
             if (!Common.RunOnLogonDesktop)
             {
-                var propertiesToSave = (MouseWithoutBordersProperties)_properties.Clone();
-                return SaveSettingsToJson(propertiesToSave);
+                lock (_loadingSettingsLock)
+                {
+                    var propertiesToSave = SnapshotProperties();
+                    var pairingPending = !_pairingSettingsTask.IsCompleted;
+                    return QueueSettingsOperation(() =>
+                    {
+                        lock (_loadingSettingsLock)
+                        {
+                            // Saves requested during pairing must retain its acknowledged values.
+                            if (pairingPending)
+                            {
+                                CopyPairingProperties(_properties, propertiesToSave);
+                            }
+                        }
+
+                        WriteSettings(new MouseWithoutBordersSettings { Properties = propertiesToSave }.ToJsonString());
+                    });
+                }
             }
 
             return Task.FromException(new InvalidOperationException("Settings cannot be saved on this desktop."));
         }
 
-        private Task SaveSettingsToJson(MouseWithoutBordersProperties properties_to_save)
+        private MouseWithoutBordersProperties SnapshotProperties() =>
+            JsonSerializer.Deserialize<MouseWithoutBordersSettings>(_settings.ToJsonString()).Properties;
+
+        private static void CopyPairingProperties(MouseWithoutBordersProperties source, MouseWithoutBordersProperties destination, bool copyEasyMouse = true)
         {
-            string json;
+            destination.SecurityKey.Value = source.SecurityKey.Value;
+            destination.MachineMatrixString = new List<string>(source.MachineMatrixString);
+            destination.MachinePool.Value = source.MachinePool.Value;
+            if (copyEasyMouse)
+            {
+                destination.EasyMouse.Value = source.EasyMouse.Value;
+            }
+        }
+
+        private Task QueueSettingsOperation(Action operation)
+        {
             lock (_loadingSettingsLock)
             {
-                _settings.Properties = properties_to_save;
-                json = _settings.ToJsonString();
+                // Queue the whole retry operation, not individual write attempts.
+                return _saveSettingsTask = _saveSettingsTask.ContinueWith(
+                previous =>
+                {
+                    _ = previous.Exception;
+                    operation();
+                },
+                System.Threading.CancellationToken.None,
+                TaskContinuationOptions.None,
+                TaskScheduler.Default);
+            }
+        }
+
+        internal Task<string> SavePairingSettingsAsync(string key, string[] machines, bool enableEasyMouse, Action<string> publish)
+        {
+            if (Common.RunOnLogonDesktop)
+            {
+                return Task.FromException<string>(new InvalidOperationException("Settings cannot be saved on this desktop."));
             }
 
-            return Task.Factory.StartNew(
-                () =>
+            var pool = new MachinePool();
+            pool.Initialize(machines);
+            var poolString = pool.SerializedAsString();
+            var matrix = new List<string>(machines);
+            lock (_loadingSettingsLock)
             {
-                bool saved = false;
-
-                for (int i = 0; i < 5; ++i)
+                string plaintext = null;
+                var save = QueueSettingsOperation(() =>
                 {
-                    try
+                    MouseWithoutBordersProperties staged;
+                    lock (_loadingSettingsLock)
                     {
-                        lock (_loadingSettingsLock)
+                        staged = SnapshotProperties();
+                        staged.SecurityKey.Value = _pairingKeyCodec.Encrypt(key);
+                        plaintext = _pairingKeyCodec.Decrypt(staged.SecurityKey.Value);
+                        staged.MachineMatrixString = matrix;
+                        staged.MachinePool.Value = poolString;
+                        if (enableEasyMouse)
                         {
-                            _settingsUtils.SaveSettingsOrThrow(json, MouseWithoutBordersSettings.ModuleName);
+                            staged.EasyMouse.Value = (int)EasyMouseOption.Enable;
                         }
-
-                        saved = true;
-                    }
-                    catch (IOException ex)
-                    {
-                        EventLogger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
                     }
 
-                    if (saved)
+                    WriteSettings(new MouseWithoutBordersSettings { Properties = staged }.ToJsonString());
+                    lock (_loadingSettingsLock)
                     {
-                        break;
+                        CopyPairingProperties(staged, _properties, enableEasyMouse);
                     }
-                    else
-                    {
-                        Thread.Sleep(500);
-                    }
-                }
 
-                if (!saved)
+                    // Matrix and pool locks must never be taken under the settings lock.
+                    publish(plaintext);
+                });
+                _pairingSettingsTask = save;
+                return save.ContinueWith(
+                    completed =>
+                    {
+                        completed.GetAwaiter().GetResult();
+                        return plaintext;
+                    },
+                    TaskScheduler.Default);
+            }
+        }
+
+        private void WriteSettings(string json)
+        {
+            bool saved = false;
+
+            for (int i = 0; i < 5; ++i)
+            {
+                try
                 {
-                    throw new IOException("Settings could not be saved.");
+                    _settingsUtils.SaveSettingsOrThrow(json, MouseWithoutBordersSettings.ModuleName);
+
+                    saved = true;
                 }
-            },
-                System.Threading.CancellationToken.None,
-                TaskCreationOptions.None,
-                TaskScheduler.Default);
+                catch (IOException ex)
+                {
+                    EventLogger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
+                }
+
+                if (saved)
+                {
+                    break;
+                }
+                else
+                {
+                    Thread.Sleep(500);
+                }
+            }
+
+            if (!saved)
+            {
+                throw new IOException("Settings could not be saved.");
+            }
         }
 
         internal Settings()
@@ -226,7 +311,13 @@ namespace MouseWithoutBorders.Class
             _pairingKeyCodec = DpapiPairingKeyCodec.CreateForCurrentIdentity(ownerSid);
             _settingsUtils = SettingsUtils.Default;
 
-            _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
+            UpdateSettingsFromJson();
+
+            _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () => _ = ReloadSettingsAsync());
+        }
+
+        internal Task ReloadSettingsAsync() =>
+            QueueSettingsOperation(() =>
             {
                 try
                 {
@@ -237,9 +328,6 @@ namespace MouseWithoutBorders.Class
                     EventLogger.LogEvent($"Failed to update settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
                 }
             });
-
-            UpdateSettingsFromJson();
-        }
 
         internal string Username { get; set; }
 

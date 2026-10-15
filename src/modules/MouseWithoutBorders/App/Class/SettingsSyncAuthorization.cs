@@ -54,9 +54,7 @@ namespace MouseWithoutBorders.Class
 
         private static bool CanProcessManageServicePairing(uint processId)
         {
-            using var process = NativeMethods.OpenProcess(NativeMethods.ProcessQueryLimitedInformation, false, processId);
-            if (process.IsInvalid ||
-                !NativeMethods.OpenProcessToken(process, NativeMethods.TokenQuery, out var token))
+            if (!TryOpenProcessTokenForMembership(processId, out var token))
             {
                 return false;
             }
@@ -68,6 +66,19 @@ namespace MouseWithoutBorders.Class
                 return IsElevated(token) &&
                     principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
+        }
+
+        internal static bool TryOpenProcessTokenForMembership(uint processId, out SafeAccessTokenHandle token)
+        {
+            using var process = NativeMethods.OpenProcess(NativeMethods.ProcessQueryLimitedInformation, false, processId);
+            if (process.IsInvalid)
+            {
+                token = SafeAccessTokenHandle.InvalidHandle;
+                return false;
+            }
+
+            // WindowsPrincipal duplicates a primary token before checking membership.
+            return NativeMethods.OpenProcessToken(process, NativeMethods.TokenQuery | NativeMethods.TokenDuplicate, out token);
         }
 
         private static bool IsElevated(SafeAccessTokenHandle token)
@@ -85,6 +96,7 @@ namespace MouseWithoutBorders.Class
         {
             internal const uint ProcessQueryLimitedInformation = 0x1000;
             internal const uint TokenQuery = 0x0008;
+            internal const uint TokenDuplicate = 0x0002;
             internal const int TokenElevation = 20;
 
             [DllImport("kernel32.dll", SetLastError = true)]
