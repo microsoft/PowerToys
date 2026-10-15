@@ -281,6 +281,34 @@ namespace ImageResizer.Tests.Models
         }
 
         [DataTestMethod]
+        [DataRow("--size", "abc")]
+        [DataRow("--quality", "abc")]
+        [DataRow("-q", "abc")]
+        [DataRow("--quality", "99999999999")]
+        public void Parse_WithUnparsableIntegerValue_ReturnsParseError(string option, string value)
+        {
+            var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], value);
+            Assert.IsNull(options.SizeIndex);
+            Assert.IsNull(options.JpegQualityLevel);
+        }
+
+        [DataTestMethod]
+        [DataRow("--size", "-1")]
+        [DataRow("--quality", "0")]
+        [DataRow("--quality", "101")]
+        public void Parse_WithOutOfRangeIntegerValue_ReturnsValidationError(string option, string value)
+        {
+            var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.IsNull(options.SizeIndex);
+            Assert.IsNull(options.JpegQualityLevel);
+        }
+
+        [DataTestMethod]
         [DataRow("[suggest]", "abc")]
         [DataRow("[suggest:30]", "abc")]
         [DataRow("[suggest]", "-1")]
