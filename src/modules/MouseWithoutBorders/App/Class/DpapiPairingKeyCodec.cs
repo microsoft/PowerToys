@@ -37,7 +37,7 @@ internal sealed class DpapiPairingKeyCodec : PairingKeyCodec
     public override string Encrypt(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        if (!IsOrdinaryKey(value))
+        if (IsEncrypted(value))
         {
             throw new ArgumentException("Expected an ordinary pairing key.", nameof(value));
         }
@@ -63,7 +63,7 @@ internal sealed class DpapiPairingKeyCodec : PairingKeyCodec
                 out var protectedLength));
             var encrypted = new byte[checked((int)protectedLength)];
             Marshal.Copy(protectedBlob, encrypted, 0, encrypted.Length);
-            return EncryptedPrefix +
+            return EncryptedPrefix + EncryptedVersion +
                 Convert.ToBase64String(encrypted);
         }
         finally
@@ -83,12 +83,27 @@ internal sealed class DpapiPairingKeyCodec : PairingKeyCodec
 
     public override string Decrypt(string value)
     {
-        if (!HasValidEncryptedFormat(value))
+        const string prefix = EncryptedPrefix + EncryptedVersion;
+        if (value?.StartsWith(prefix, StringComparison.Ordinal) != true)
         {
-            throw new CryptographicException("Missing or malformed encrypted pairing key.");
+            throw new CryptographicException("Missing or unsupported encrypted pairing key prefix.");
         }
 
-        var encrypted = Convert.FromBase64String(value.Substring(EncryptedPrefix.Length));
+        byte[] encrypted;
+        try
+        {
+            encrypted = Convert.FromBase64String(value.Substring(prefix.Length));
+        }
+        catch (FormatException exception)
+        {
+            throw new CryptographicException("Malformed encrypted pairing key payload.", exception);
+        }
+
+        if (encrypted.Length == 0)
+        {
+            throw new CryptographicException("Missing encrypted pairing key payload.");
+        }
+
         ValidateProtectionPolicy(encrypted);
         IntPtr descriptor = IntPtr.Zero;
         IntPtr nativePlaintext = IntPtr.Zero;
@@ -115,7 +130,7 @@ internal sealed class DpapiPairingKeyCodec : PairingKeyCodec
             }
 
             var key = new UTF8Encoding(false, true).GetString(plaintext.AsSpan(1 + _interactiveUserSid.Length));
-            if (!IsOrdinaryKey(key))
+            if (string.IsNullOrWhiteSpace(key) || IsEncrypted(key))
             {
                 throw new CryptographicException("Invalid protected pairing key.");
             }

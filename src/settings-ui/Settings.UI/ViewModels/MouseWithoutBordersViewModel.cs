@@ -27,6 +27,7 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
+using MouseWithoutBorders.Class;
 using StreamJsonRpc;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -62,15 +63,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             { SocketStatus.Connected, new SolidColorBrush(Colors.Green) },
         };
 
-        private readonly MouseWithoutBordersPairingState _pairingState = new();
+        private string _transientSecurityKey;
+        private string _connectSecurityKey;
+        private string _connectPCName;
+        private bool _connectFieldsVisible;
+        private bool _isPairingPending;
+        private bool _hasPairingError;
 
         public bool IsElevated { get => GeneralSettingsConfig.IsElevated; }
 
-        public bool CanEditSettings => !_pairingState.IsUpdating;
+        public bool CanManagePairing => !_isPairingPending && (!UseService || IsElevated);
 
-        public bool CanManagePairing => CanEditSettings && (!UseService || IsElevated);
-
-        public bool PairingSetupRequired => MouseWithoutBordersPairingState.PairingSetupRequired(Settings.Properties.SecurityKey.Value, UseService);
+        public bool PairingSetupRequired => UseService
+            ? !PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value)
+            : string.IsNullOrWhiteSpace(Settings.Properties.SecurityKey.Value) ||
+                PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ||
+                Settings.Properties.SecurityKey.Value == MouseWithoutBordersIpc.PairingConfiguredIndicator ||
+                Settings.Properties.SecurityKey.Value == MouseWithoutBordersIpc.PairingSetupRequiredIndicator;
 
         public bool ShowPairingSetupRequired => PairingSetupRequired;
 
@@ -160,13 +169,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ConnectFieldsVisible
         {
-            get => _pairingState.ConnectFieldsVisible;
+            get => _connectFieldsVisible;
 
             set
             {
-                if (_pairingState.ConnectFieldsVisible != value)
+                if (_connectFieldsVisible != value)
                 {
-                    _pairingState.ConnectFieldsVisible = value;
+                    _connectFieldsVisible = value;
                     OnPropertyChanged(nameof(ConnectFieldsVisible));
                 }
             }
@@ -174,13 +183,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string ConnectSecurityKey
         {
-            get => _pairingState.ConnectSecurityKey;
+            get => _connectSecurityKey;
 
             set
             {
-                if (_pairingState.ConnectSecurityKey != value)
+                if (_connectSecurityKey != value)
                 {
-                    _pairingState.ConnectSecurityKey = value;
+                    _connectSecurityKey = value;
                     OnPropertyChanged(nameof(ConnectSecurityKey));
                 }
             }
@@ -188,13 +197,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string ConnectPCName
         {
-            get => _pairingState.ConnectPCName;
+            get => _connectPCName;
 
             set
             {
-                if (_pairingState.ConnectPCName != value)
+                if (_connectPCName != value)
                 {
-                    _pairingState.ConnectPCName = value;
+                    _connectPCName = value;
                     OnPropertyChanged(nameof(ConnectPCName));
                 }
             }
@@ -422,55 +431,47 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var useService = UseService;
-            string generatedKey = null;
-            MouseWithoutBordersSettings savedSettings = null;
-            var updateTask = _pairingState.TryUpdateAsync(
-                async () =>
+            _isPairingPending = true;
+            _hasPairingError = false;
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(CanConnectPairing));
+            OnPropertyChanged(nameof(HasPairingError));
+            try
+            {
+                using (await _ipcSemaphore.EnterAsync())
+                using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    using (await _ipcSemaphore.EnterAsync())
-                    using (var syncHelper = await GetSettingsSyncHelperAsync())
+                    var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
+                    var generatedKey = await endpoint.GenerateNewKey();
+                    if (string.IsNullOrWhiteSpace(generatedKey))
                     {
-                        var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
-                        generatedKey = await endpoint.GenerateNewKey();
-                        if (!MouseWithoutBordersPairingState.IsInputKey(generatedKey))
-                        {
-                            throw new InvalidOperationException("Pairing key was not returned.");
-                        }
+                        throw new InvalidOperationException("Pairing key was not returned.");
                     }
 
-                    savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
-                    LoadViewModelFromSettings(savedSettings);
-                    NotifyUpdatedSettings();
-                },
-                () =>
-                {
-                    if (useService)
+                    if (_disposed || UseService != useService)
                     {
-                        _pairingState.TransientSecurityKey = generatedKey;
+                        return;
                     }
 
+                    _transientSecurityKey = generatedKey;
                     OnPropertyChanged(nameof(SecurityKey));
-
-                    OnPropertyChanged(nameof(PairingSetupRequired));
-                    OnPropertyChanged(nameof(ShowPairingSetupRequired));
-                    OnPropertyChanged(nameof(CanConnectPairing));
-                },
-                ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
-                () => UseService == useService
-                    && (savedSettings == null || (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled ? false : savedSettings.Properties.UseService) == useService));
-            OnPropertyChanged(nameof(CanEditSettings));
-            OnPropertyChanged(nameof(CanManagePairing));
-            OnPropertyChanged(nameof(CanConnectPairing));
-            OnPropertyChanged(nameof(HasPairingError));
-            await updateTask;
-            OnPropertyChanged(nameof(CanEditSettings));
-            OnPropertyChanged(nameof(CanManagePairing));
-            OnPropertyChanged(nameof(CanConnectPairing));
-            OnPropertyChanged(nameof(HasPairingError));
-            OnPropertyChanged(nameof(SecurityKey));
+                }
+            }
+            catch (Exception ex)
+            {
+                _hasPairingError = true;
+                Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name}).");
+            }
+            finally
+            {
+                _isPairingPending = false;
+                OnPropertyChanged(nameof(CanManagePairing));
+                OnPropertyChanged(nameof(CanConnectPairing));
+                OnPropertyChanged(nameof(HasPairingError));
+            }
         }
 
-        public bool HasPairingError => _pairingState.HasError;
+        public bool HasPairingError => _hasPairingError;
 
         public async Task<bool> SubmitConnectionRequestAsync()
         {
@@ -479,48 +480,58 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return false;
             }
 
-            if (!_pairingState.TryGetConnectionInputs(out var pcName, out var securityKey))
+            var pcName = ConnectPCName?.Trim();
+            var securityKey = ConnectSecurityKey?.Trim();
+            if (string.IsNullOrWhiteSpace(pcName) || string.IsNullOrWhiteSpace(securityKey) ||
+                PairingKeyCodec.IsEncryptedValue(securityKey) ||
+                securityKey == MouseWithoutBordersIpc.PairingConfiguredIndicator ||
+                securityKey == MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
             {
+                _hasPairingError = true;
                 OnPropertyChanged(nameof(HasPairingError));
                 return false;
             }
 
             var useService = UseService;
-            MouseWithoutBordersSettings savedSettings = null;
-            var updateTask = _pairingState.TryUpdateAsync(
-                async () =>
+            _isPairingPending = true;
+            _hasPairingError = false;
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(CanConnectPairing));
+            OnPropertyChanged(nameof(HasPairingError));
+            try
+            {
+                using (await _ipcSemaphore.EnterAsync())
+                using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    using (await _ipcSemaphore.EnterAsync())
-                    using (var syncHelper = await GetSettingsSyncHelperAsync())
+                    var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
+                    await endpoint.ConnectToMachine(pcName, securityKey);
+                    if (_disposed || UseService != useService)
                     {
-                        var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
-                        await endpoint.ConnectToMachine(pcName, securityKey);
+                        return false;
                     }
 
-                    savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
-                    LoadViewModelFromSettings(savedSettings);
-                    NotifyUpdatedSettings();
-                },
-                () =>
-                {
-                    _pairingState.TransientSecurityKey = null;
+                    _transientSecurityKey = null;
+                    OnPropertyChanged(nameof(SecurityKey));
                     ConnectSecurityKey = string.Empty;
                     ConnectPCName = string.Empty;
                     ConnectFieldsVisible = false;
-                },
-                ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
-                () => UseService == useService
-                    && (savedSettings == null || (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled ? false : savedSettings.Properties.UseService) == useService));
-            OnPropertyChanged(nameof(CanEditSettings));
-            OnPropertyChanged(nameof(CanManagePairing));
-            OnPropertyChanged(nameof(CanConnectPairing));
-            OnPropertyChanged(nameof(HasPairingError));
-            var succeeded = await updateTask;
-            OnPropertyChanged(nameof(CanEditSettings));
-            OnPropertyChanged(nameof(CanManagePairing));
-            OnPropertyChanged(nameof(CanConnectPairing));
-            OnPropertyChanged(nameof(HasPairingError));
-            return succeeded;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _hasPairingError = true;
+                Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name}).");
+                return false;
+            }
+            finally
+            {
+                _isPairingPending = false;
+                OnPropertyChanged(nameof(CanManagePairing));
+                OnPropertyChanged(nameof(CanConnectPairing));
+                OnPropertyChanged(nameof(HasPairingError));
+            }
         }
 
         private async Task<ISettingsSyncHelper.MachineSocketState[]> PollMachineSocketStateAsync()
@@ -823,9 +834,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string SecurityKey => !UseService && _pairingState.TransientSecurityKey != null
-            ? _pairingState.TransientSecurityKey
-            : _pairingState.GetDisplayValue(IsElevated, UseService, Settings.Properties.SecurityKey.Value);
+        public string SecurityKey => _transientSecurityKey != null && (!UseService || IsElevated)
+            ? _transientSecurityKey
+            : UseService
+                ? PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ? MouseWithoutBordersIpc.PairingConfiguredIndicator : string.Empty
+                : PairingSetupRequired ? string.Empty : Settings.Properties.SecurityKey.Value;
 
         public bool WrapMouse
         {
@@ -1365,17 +1378,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var updatedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
-                if (_pairingState.ShouldClearForSettingsReload(
-                    Settings.Properties.UseService,
-                    Settings.Properties.SecurityKey.Value,
-                    updatedSettings.Properties.UseService,
-                    updatedSettings.Properties.SecurityKey.Value))
+                var useService = UseService;
+                LoadViewModelFromSettings(SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders"));
+                if (UseService != useService)
                 {
-                    ClearTransientPairingState();
+                    _transientSecurityKey = null;
                 }
 
-                LoadViewModelFromSettings(updatedSettings);
+                OnPropertyChanged(nameof(SecurityKey));
                 return true;
             }
             catch (System.Exception ex)
@@ -1424,8 +1434,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void ClearTransientPairingState()
         {
-            _pairingState.Clear();
-            OnPropertyChanged(nameof(CanEditSettings));
+            _transientSecurityKey = null;
+            _hasPairingError = false;
+            ConnectSecurityKey = string.Empty;
+            ConnectPCName = string.Empty;
+            ConnectFieldsVisible = false;
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(HasPairingError));
             OnPropertyChanged(nameof(ConnectSecurityKey));

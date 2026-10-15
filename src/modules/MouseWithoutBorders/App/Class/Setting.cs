@@ -12,7 +12,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -54,8 +53,6 @@ namespace MouseWithoutBorders.Class
 
         private MouseWithoutBordersProperties _properties;
         private MouseWithoutBordersSettings _settings;
-        private Task _saveSettingsTask = Task.CompletedTask;
-        private Task _pairingSettingsTask = Task.CompletedTask;
 
         internal static bool IsProtectedMode
         {
@@ -71,7 +68,6 @@ namespace MouseWithoutBorders.Class
 
         private void UpdateSettingsFromJson()
         {
-            var previousPauseInstantSaving = PauseInstantSaving;
             try
             {
                 if (!_settingsUtils.SettingsExists("MouseWithoutBorders"))
@@ -90,11 +86,9 @@ namespace MouseWithoutBorders.Class
 
                     var last_properties = _properties;
 
-                    lock (_loadingSettingsLock)
-                    {
-                        _settings = settings;
-                        _properties = settings.Properties;
-                    }
+                    _settings = settings;
+
+                    _properties = settings.Properties;
 
                     // Keep track of the need to resend the machine matrix.
                     bool shouldSendMachineMatrix = false;
@@ -149,161 +143,55 @@ namespace MouseWithoutBorders.Class
             {
                 EventLogger.LogEvent($"Failed to read settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
             }
-            finally
-            {
-                PauseInstantSaving = previousPauseInstantSaving;
-            }
+
+            PauseInstantSaving = false;
         }
 
         public void SaveSettings()
         {
-            _ = SaveSettingsAsync();
-        }
-
-        internal Task SaveSettingsAsync()
-        {
             if (!Common.RunOnLogonDesktop)
             {
-                lock (_loadingSettingsLock)
+                SaveSettingsToJson((MouseWithoutBordersProperties)_properties.Clone());
+            }
+        }
+
+        private void SaveSettingsToJson(MouseWithoutBordersProperties properties_to_save)
+        {
+            _settings.Properties = properties_to_save;
+            _ = Task.Factory.StartNew(
+                () =>
+            {
+                bool saved = false;
+
+                for (int i = 0; i < 5; ++i)
                 {
-                    var propertiesToSave = SnapshotProperties();
-                    var pairingPending = !_pairingSettingsTask.IsCompleted;
-                    return QueueSettingsOperation(() =>
+                    try
                     {
                         lock (_loadingSettingsLock)
                         {
-                            // Saves requested during pairing must retain its acknowledged values.
-                            if (pairingPending)
-                            {
-                                CopyPairingProperties(_properties, propertiesToSave);
-                            }
+                            _settings.Save(_settingsUtils);
                         }
 
-                        WriteSettings(new MouseWithoutBordersSettings { Properties = propertiesToSave }.ToJsonString());
-                    });
+                        saved = true;
+                    }
+                    catch (IOException ex)
+                    {
+                        EventLogger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
+                    }
+
+                    if (saved)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Thread.Sleep(500);
+                    }
                 }
-            }
-
-            return Task.FromException(new InvalidOperationException("Settings cannot be saved on this desktop."));
-        }
-
-        private MouseWithoutBordersProperties SnapshotProperties() =>
-            JsonSerializer.Deserialize<MouseWithoutBordersSettings>(_settings.ToJsonString()).Properties;
-
-        private static void CopyPairingProperties(MouseWithoutBordersProperties source, MouseWithoutBordersProperties destination, bool copyEasyMouse = true)
-        {
-            destination.SecurityKey.Value = source.SecurityKey.Value;
-            destination.MachineMatrixString = new List<string>(source.MachineMatrixString);
-            destination.MachinePool.Value = source.MachinePool.Value;
-            if (copyEasyMouse)
-            {
-                destination.EasyMouse.Value = source.EasyMouse.Value;
-            }
-        }
-
-        private Task QueueSettingsOperation(Action operation)
-        {
-            lock (_loadingSettingsLock)
-            {
-                // Queue the whole retry operation, not individual write attempts.
-                return _saveSettingsTask = _saveSettingsTask.ContinueWith(
-                previous =>
-                {
-                    _ = previous.Exception;
-                    operation();
-                },
+            },
                 System.Threading.CancellationToken.None,
-                TaskContinuationOptions.None,
+                TaskCreationOptions.None,
                 TaskScheduler.Default);
-            }
-        }
-
-        internal Task<string> SavePairingSettingsAsync(string key, string[] machines, bool enableEasyMouse, Action<string> publish)
-        {
-            if (key == MouseWithoutBordersIpc.PairingConfiguredIndicator || key == MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
-            {
-                return Task.FromException<string>(new ArgumentException("Expected a pairing key.", nameof(key)));
-            }
-
-            if (Common.RunOnLogonDesktop)
-            {
-                return Task.FromException<string>(new InvalidOperationException("Settings cannot be saved on this desktop."));
-            }
-
-            var pool = new MachinePool();
-            pool.Initialize(machines);
-            var poolString = pool.SerializedAsString();
-            var matrix = new List<string>(machines);
-            lock (_loadingSettingsLock)
-            {
-                string plaintext = null;
-                var save = QueueSettingsOperation(() =>
-                {
-                    MouseWithoutBordersProperties staged;
-                    lock (_loadingSettingsLock)
-                    {
-                        staged = SnapshotProperties();
-                        staged.SecurityKey.Value = _pairingKeyCodec.Encrypt(key);
-                        plaintext = _pairingKeyCodec.Decrypt(staged.SecurityKey.Value);
-                        staged.MachineMatrixString = matrix;
-                        staged.MachinePool.Value = poolString;
-                        if (enableEasyMouse)
-                        {
-                            staged.EasyMouse.Value = (int)EasyMouseOption.Enable;
-                        }
-                    }
-
-                    WriteSettings(new MouseWithoutBordersSettings { Properties = staged }.ToJsonString());
-                    lock (_loadingSettingsLock)
-                    {
-                        CopyPairingProperties(staged, _properties, enableEasyMouse);
-                    }
-
-                    // Matrix and pool locks must never be taken under the settings lock.
-                    publish(plaintext);
-                });
-                _pairingSettingsTask = save;
-                return save.ContinueWith(
-                    completed =>
-                    {
-                        completed.GetAwaiter().GetResult();
-                        return plaintext;
-                    },
-                    TaskScheduler.Default);
-            }
-        }
-
-        private void WriteSettings(string json)
-        {
-            bool saved = false;
-
-            for (int i = 0; i < 5; ++i)
-            {
-                try
-                {
-                    _settingsUtils.SaveSettingsOrThrow(json, MouseWithoutBordersSettings.ModuleName);
-
-                    saved = true;
-                }
-                catch (IOException ex)
-                {
-                    EventLogger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
-                }
-
-                if (saved)
-                {
-                    break;
-                }
-                else
-                {
-                    Thread.Sleep(500);
-                }
-            }
-
-            if (!saved)
-            {
-                throw new IOException("Settings could not be saved.");
-            }
         }
 
         internal Settings(IPairingKeyCodec pairingKeyCodec)
@@ -312,13 +200,7 @@ namespace MouseWithoutBorders.Class
             _pairingKeyCodec = pairingKeyCodec;
             _settingsUtils = SettingsUtils.Default;
 
-            UpdateSettingsFromJson();
-
-            _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () => _ = ReloadSettingsAsync());
-        }
-
-        internal Task ReloadSettingsAsync() =>
-            QueueSettingsOperation(() =>
+            _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
             {
                 try
                 {
@@ -329,6 +211,9 @@ namespace MouseWithoutBorders.Class
                     EventLogger.LogEvent($"Failed to update settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
                 }
             });
+
+            UpdateSettingsFromJson();
+        }
 
         internal string Username { get; set; }
 
@@ -605,13 +490,13 @@ namespace MouseWithoutBorders.Class
                 {
                     if (IsProtectedMode || _pairingKeyCodec.IsEncrypted(_properties.SecurityKey.Value))
                     {
-                        return PairingKeyCodec.HasValidEncryptedFormat(_properties.SecurityKey.Value)
+                        return PairingKeyCodec.IsEncryptedValue(_properties.SecurityKey.Value)
                             ? MouseWithoutBordersIpc.PairingConfiguredIndicator
                             : string.Empty;
                     }
 
                     var value = _properties.SecurityKey.Value;
-                    return PairingKeyCodec.IsOrdinaryKey(value) &&
+                    return !string.IsNullOrWhiteSpace(value) &&
                         value != MouseWithoutBordersIpc.PairingConfiguredIndicator &&
                         value != MouseWithoutBordersIpc.PairingSetupRequiredIndicator
                         ? value
@@ -629,17 +514,11 @@ namespace MouseWithoutBorders.Class
                     if (!IsProtectedMode && string.IsNullOrEmpty(_properties.SecurityKey.Value))
                     {
                         string randomKey = Encryption.CreateDefaultKey();
-                        MyKey = randomKey;
+                        _properties.SecurityKey.Value = _pairingKeyCodec.Encrypt(randomKey);
                     }
 
                     // Only the settings JSON carries the encoded value; callers always receive plaintext.
-                    var key = _pairingKeyCodec.Decrypt(_properties.SecurityKey.Value);
-                    if (key == MouseWithoutBordersIpc.PairingConfiguredIndicator || key == MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
-                    {
-                        throw new ArgumentException("Pairing setup is required.");
-                    }
-
-                    return key;
+                    return _pairingKeyCodec.Decrypt(_properties.SecurityKey.Value);
                 }
             }
 
@@ -647,31 +526,11 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    if (value == MouseWithoutBordersIpc.PairingConfiguredIndicator || value == MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
-                    {
-                        throw new ArgumentException("Expected a pairing key.", nameof(value));
-                    }
-
                     _properties.SecurityKey.Value = _pairingKeyCodec.Encrypt(value);
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();
                     }
-                }
-            }
-        }
-
-        internal bool HasPairingKey
-        {
-            get
-            {
-                try
-                {
-                    return !string.IsNullOrWhiteSpace(MyKey);
-                }
-                catch (Exception ex) when (ex is CryptographicException or ArgumentException or FormatException)
-                {
-                    return false;
                 }
             }
         }

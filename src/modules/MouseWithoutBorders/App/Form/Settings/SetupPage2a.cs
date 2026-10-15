@@ -91,7 +91,7 @@ namespace MouseWithoutBorders
         internal static bool TryGetSecurityCode(string value, out string securityCode)
         {
             securityCode = Regex.Replace(value, @"\s+", string.Empty);
-            return Encryption.IsKeyValid(securityCode, out _) && PairingKeyCodec.IsOrdinaryKey(securityCode) &&
+            return Encryption.IsKeyValid(securityCode, out _) && !PairingKeyCodec.IsEncryptedValue(securityCode) &&
                 securityCode != MouseWithoutBordersIpc.PairingSetupRequiredIndicator.Replace(" ", string.Empty);
         }
 

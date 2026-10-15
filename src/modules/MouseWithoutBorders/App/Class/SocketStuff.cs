@@ -224,7 +224,7 @@ namespace MouseWithoutBorders.Class
                     throw new System.Security.Cryptography.CryptographicException("Pairing setup is required.");
                 }
 
-                if (!Settings.IsProtectedMode && Setting.Values.IsMyKeyRandom)
+                if (Setting.Values.IsMyKeyRandom)
                 {
                     Setting.Values.MyKey = Encryption.MyKey;
                 }

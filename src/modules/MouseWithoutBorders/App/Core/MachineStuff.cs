@@ -798,8 +798,7 @@ internal static class MachineStuff
         }
 
         Logger.LogDebug("========== BEGIN THE SETUP EXPERIENCE ==========", true);
-        Setting.Values.MyKey = Encryption.CreateRandomKey();
-        Encryption.MyKey = Setting.Values.MyKey;
+        Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
         Encryption.GeneratedKey = true;
 
         if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())

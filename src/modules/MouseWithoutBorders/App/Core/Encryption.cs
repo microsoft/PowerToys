@@ -9,8 +9,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 
-using MouseWithoutBorders.Class;
-
 // <summary>
 //     Encrypt/decrypt implementation.
 // </summary>
@@ -61,10 +59,7 @@ internal static class Encryption
     internal static string MyKey
     {
         get => Encryption.myKey;
-        set
-        {
-            Encryption.myKey = value;
-        }
+        set => Encryption.myKey = value;
     }
 
     private static string KeyDisplayedText(string key)

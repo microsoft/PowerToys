@@ -23,19 +23,21 @@ public sealed class PairingKeyCodecTests
     }
 
     [DataTestMethod]
-    [DataRow("mwb-dpapi:v1:TEST", true, true)]
-    [DataRow("mwb-dpapi:v1:", true, false)]
-    [DataRow("mwb-dpapi:v1:!", true, false)]
-    [DataRow("mwb-dpapi:v2:TEST", true, false)]
-    [DataRow("MWB-DPAPI:v1:TEST", true, false)]
-    [DataRow("mwb-dpapi:v1:A QID", true, false)]
-    [DataRow("ordinary", false, false)]
-    [DataRow(null, false, false)]
-    public void ProvidersShareReservedFamilyAndEnvelopeRecognition(string value, bool reserved, bool valid)
+    [DataRow("mwb-dpapi:v1:TEST", true)]
+    [DataRow("mwb-dpapi:v1:", true)]
+    [DataRow("mwb-dpapi:v1:!", true)]
+    [DataRow("mwb-dpapi:v2:TEST", true)]
+    [DataRow("mwb-dpapi:", true)]
+    [DataRow("mwb-dpapi:v99:TEST", true)]
+    [DataRow("mwb-dpapi", false)]
+    [DataRow("MWB-DPAPI:v1:TEST", true)]
+    [DataRow("mwb-dpapi:v1:A QID", true)]
+    [DataRow("ordinary", false)]
+    [DataRow(null, false)]
+    public void ProvidersRecognizeReservedFamilyWithoutValidatingPayload(string value, bool reserved)
     {
         Assert.AreEqual(reserved, CreateCodec().IsEncrypted(value));
         Assert.AreEqual(reserved, new PassthroughPairingKeyCodec().IsEncrypted(value));
-        Assert.AreEqual(valid, PairingKeyCodec.HasValidEncryptedFormat(value));
     }
 
     [TestMethod]
@@ -43,10 +45,22 @@ public sealed class PairingKeyCodecTests
     {
         var codec = CreateCodec();
         var encrypted = codec.Encrypt("TEST-KEY");
-        Assert.IsTrue(PairingKeyCodec.HasValidEncryptedFormat(encrypted));
-        Assert.AreNotEqual("TEST-KEY", encrypted);
+        StringAssert.StartsWith(encrypted, PairingKeyCodec.EncryptedPrefix + PairingKeyCodec.EncryptedVersion);
         Assert.AreEqual("TEST-KEY", codec.Decrypt(encrypted));
         Assert.IsTrue(codec.IsEncrypted(encrypted));
+        Assert.ThrowsException<ArgumentException>(() => codec.Encrypt(encrypted));
+        var passthrough = new PassthroughPairingKeyCodec();
+        Assert.ThrowsException<ArgumentException>(() => passthrough.Encrypt(encrypted));
+        Assert.ThrowsException<ArgumentException>(() => passthrough.Decrypt(encrypted));
+    }
+
+    [TestMethod]
+    public void DecryptAcceptsBase64WhitespaceInProtectedPayload()
+    {
+        var codec = CreateCodec();
+        var encrypted = codec.Encrypt("TEST-KEY");
+        var withWhitespace = encrypted.Insert(PairingKeyCodec.EncryptedPrefix.Length + PairingKeyCodec.EncryptedVersion.Length + 4, " \r\n");
+        Assert.AreEqual("TEST-KEY", codec.Decrypt(withWhitespace));
     }
 
     [TestMethod]
@@ -80,7 +94,7 @@ public sealed class PairingKeyCodecTests
         var sid = identity.User!;
         var entropy = Encoding.UTF8.GetBytes("PowerToys.MouseWithoutBorders.Pairing.v1:" + sid.Value);
         var payload = ProtectedData.Protect(Encoding.UTF8.GetBytes("TEST-KEY"), entropy, DataProtectionScope.LocalMachine);
-        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(PairingKeyCodec.EncryptedPrefix + Convert.ToBase64String(payload)));
+        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(PairingKeyCodec.EncryptedPrefix + PairingKeyCodec.EncryptedVersion + Convert.ToBase64String(payload)));
     }
 
     [DataTestMethod]
@@ -92,6 +106,8 @@ public sealed class PairingKeyCodecTests
     [DataRow("mwb-dpapi:v1:!")]
     [DataRow("mwb-dpapi:v1:TEST")]
     [DataRow("mwb-dpapi:v2:TEST")]
+    [DataRow("MWB-DPAPI:v1:TEST")]
+    [DataRow("mwb-dpapi:v1:A QID")]
     public void MissingMalformedOrInvalidProtectedDataIsRejected(string value)
     {
         Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(value));
@@ -116,8 +132,8 @@ public sealed class PairingKeyCodecTests
     {
         Assert.ThrowsException<ArgumentNullException>(() => CreateCodec().Encrypt(null));
         var passthrough = new PassthroughPairingKeyCodec();
-        Assert.ThrowsException<ArgumentException>(() => passthrough.Encrypt(null));
-        Assert.ThrowsException<ArgumentException>(() => passthrough.Decrypt(null));
+        Assert.ThrowsException<ArgumentNullException>(() => passthrough.Encrypt(null));
+        Assert.ThrowsException<ArgumentNullException>(() => passthrough.Decrypt(null));
     }
 
     [TestMethod]
@@ -182,7 +198,7 @@ public sealed class PairingKeyCodecTests
             var provider = new DataProtectionProvider(descriptor);
             var protectedBuffer = provider.ProtectAsync(CryptographicBuffer.CreateFromByteArray(plaintext)).AsTask().GetAwaiter().GetResult();
             CryptographicBuffer.CopyToByteArray(protectedBuffer, out var encrypted);
-            return PairingKeyCodec.EncryptedPrefix + Convert.ToBase64String(encrypted);
+            return PairingKeyCodec.EncryptedPrefix + PairingKeyCodec.EncryptedVersion + Convert.ToBase64String(encrypted);
         }
         finally
         {

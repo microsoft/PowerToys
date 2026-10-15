@@ -6,8 +6,10 @@ namespace MouseWithoutBorders.Class;
 
 internal interface IPairingKeyCodec
 {
+    /// <summary>Converts an input key to its complete stored representation.</summary>
     string Encrypt(string value);
 
+    /// <summary>Converts a complete stored representation to a key, or throws if it cannot be used in this mode.</summary>
     string Decrypt(string value);
 
     bool IsEncrypted(string value);

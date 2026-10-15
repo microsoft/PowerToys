@@ -103,7 +103,7 @@ public sealed class SettingsIpcIdentityTests
         using var server = new NamedPipeServerStream($"PowerToys.MWB.v2.UnitTest.{Guid.NewGuid():N}");
         var inspectionCalled = false;
 
-        var authorization = SettingsSyncAuthorization.FromVerifiedConnection(
+        var canManageServicePairing = Program.CanVerifiedClientManageServicePairing(
             server,
             _ =>
             {
@@ -111,16 +111,14 @@ public sealed class SettingsIpcIdentityTests
                 return true;
             });
 
-        Assert.IsFalse(authorization.CanManageServicePairing);
+        Assert.IsFalse(canManageServicePairing);
         Assert.IsFalse(inspectionCalled);
     }
 
     [TestMethod]
     public void CurrentProcessPrimaryTokenSupportsMembershipCheckWithoutElevation()
     {
-        Assert.IsTrue(
-            SettingsSyncAuthorization.TryOpenProcessTokenForMembership(unchecked((uint)Environment.ProcessId), out var token),
-            "The current process primary token must be accessible with the production access rights.");
+        var token = Program.OpenProcessTokenForMembership(unchecked((uint)Environment.ProcessId));
 
         using (token)
         using (var identity = new WindowsIdentity(token.DangerousGetHandle()))
@@ -155,14 +153,14 @@ public sealed class SettingsIpcIdentityTests
             stream => VerifyCurrentProcessClient(stream, Path.GetFileName(executablePath), identity.User!.Value, sessionId),
             stream =>
             {
-                var authorization = SettingsSyncAuthorization.FromVerifiedConnection(
+                var canManageServicePairing = Program.CanVerifiedClientManageServicePairing(
                     stream,
                     processId =>
                     {
                         inspectedProcessId.TrySetResult(processId);
                         throw new Win32Exception(errorCode);
                     });
-                Assert.IsFalse(authorization.CanManageServicePairing);
+                Assert.IsFalse(canManageServicePairing);
                 return new TestRpcTarget();
             },
             cancellation.Token);

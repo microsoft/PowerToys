@@ -8,13 +8,12 @@ namespace MouseWithoutBorders.Class;
 
 internal sealed class PassthroughPairingKeyCodec : PairingKeyCodec
 {
-    public override string Encrypt(string value) => Validate(value);
+    public override string Encrypt(string value) => Decrypt(value);
 
-    public override string Decrypt(string value) => Validate(value);
-
-    private static string Validate(string value)
+    public override string Decrypt(string value)
     {
-        if (!IsOrdinaryKey(value))
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        if (IsEncrypted(value))
         {
             throw new ArgumentException("Expected an ordinary pairing key; pairing setup is required.", nameof(value));
         }

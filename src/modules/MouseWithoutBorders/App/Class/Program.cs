@@ -21,6 +21,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using System.ServiceProcess;
@@ -32,6 +33,7 @@ using System.Xml.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.Win32.SafeHandles;
 using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
 using StreamJsonRpc;
@@ -280,23 +282,16 @@ namespace MouseWithoutBorders.Class
 
         private sealed class SettingsSyncHelper : ISettingsSyncHelper
         {
-            private readonly ISettingsSyncAuthorization _authorization;
-            private readonly Settings _settings;
+            private readonly bool _canManageServicePairing;
 
             public SettingsSyncHelper()
-                : this(new SettingsSyncAuthorization(false))
+                : this(false)
             {
             }
 
-            internal SettingsSyncHelper(ISettingsSyncAuthorization authorization)
-                : this(authorization, Setting.Values)
+            internal SettingsSyncHelper(bool canManageServicePairing)
             {
-            }
-
-            internal SettingsSyncHelper(ISettingsSyncAuthorization authorization, Settings settings)
-            {
-                _authorization = authorization;
-                _settings = settings;
+                _canManageServicePairing = canManageServicePairing;
             }
 
             public Task<ISettingsSyncHelper.MachineSocketState[]> RequestMachineSocketStateAsync()
@@ -320,38 +315,60 @@ namespace MouseWithoutBorders.Class
                 return Task.FromResult(machineStates.Select((state) => new ISettingsSyncHelper.MachineSocketState { Name = state.Key, Status = state.Value }).ToArray());
             }
 
-            public async Task ConnectToMachine(string pcName, string securityKey)
+            public Task ConnectToMachine(string pcName, string securityKey)
             {
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
                 ArgumentException.ThrowIfNullOrWhiteSpace(pcName);
-                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);
-                var machines = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
-                await _settings.SavePairingSettingsAsync(securityKey, machines, false, key =>
+                Setting.Values.PauseInstantSaving = true;
+                try
                 {
-                    MachineStuff.MachineMatrix = null;
+                    MachineStuff.ClearComputerMatrix();
+                    Setting.Values.MyKey = securityKey;
+                    Encryption.MyKey = securityKey;
+                    Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
+                    MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
+
+                    string[] machines = MachineStuff.MachineMatrix;
                     MachineStuff.MachinePool.Initialize(machines);
-                    ApplyPairingCredential(key);
-                });
-                SocketStuff.InvalidKeyFound = false;
-                InitAndCleanup.ReopenSocketDueToReadError = true;
-                Common.ReopenSockets(true);
-                MachineStuff.SendMachineMatrix();
+                    MachineStuff.UpdateMachinePoolStringSetting();
+
+                    SocketStuff.InvalidKeyFound = false;
+                    InitAndCleanup.ReopenSocketDueToReadError = true;
+                    Common.ReopenSockets(true);
+                    MachineStuff.SendMachineMatrix();
+                }
+                finally
+                {
+                    Setting.Values.PauseInstantSaving = false;
+                }
+
+                Setting.Values.SaveSettings();
+                return Task.CompletedTask;
             }
 
-            public async Task<string> GenerateNewKey()
+            public Task<string> GenerateNewKey()
             {
-                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);
-                var machines = new string[MachineStuff.MAX_MACHINE] { Common.MachineName.Trim(), string.Empty, string.Empty, string.Empty };
-                var key = await _settings.SavePairingSettingsAsync(Encryption.CreateRandomKey(), machines, true, plaintext =>
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
+                Setting.Values.PauseInstantSaving = true;
+                string key;
+                try
                 {
-                    MachineStuff.MachineMatrix = null;
-                    MachineStuff.MachinePool.Initialize(machines);
-                    ApplyPairingCredential(plaintext);
+                    Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
+                    MachineStuff.ClearComputerMatrix();
+                    key = Encryption.CreateRandomKey();
+                    Setting.Values.MyKey = Encryption.MyKey = key;
                     Encryption.GeneratedKey = true;
-                });
+                }
+                finally
+                {
+                    Setting.Values.PauseInstantSaving = false;
+                }
+
+                Setting.Values.SaveSettings();
 
                 Reconnect();
 
-                return key;
+                return Task.FromResult(key);
             }
 
             public void Reconnect()
@@ -437,34 +454,86 @@ namespace MouseWithoutBorders.Class
                     out var rejectionReason)
                     ? string.Empty
                     : rejectionReason,
-                stream => new SettingsSyncHelper(SettingsSyncAuthorization.FromVerifiedConnection(stream)),
+                stream => new SettingsSyncHelper(CanVerifiedClientManageServicePairing(stream, CanProcessManageServicePairing)),
                 CancellationToken.None);
         }
 
-        internal static bool IsLocalSystemCredentialMode(SecurityIdentifier processUserSid, bool configuredServiceMode)
+        internal static bool CanVerifiedClientManageServicePairing(NamedPipeServerStream stream, Func<uint, bool> inspectProcess)
         {
-            ArgumentNullException.ThrowIfNull(processUserSid);
-            _ = configuredServiceMode;
-            return processUserSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
+            if (!NamedPipePeerVerification.TryGetClientProcessId(stream, out var processId))
+            {
+                return false;
+            }
+
+            try
+            {
+                return inspectProcess(processId);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception or UnauthorizedAccessException or SecurityException)
+            {
+                Logger.Log($"Cannot inspect settings IPC caller token: {ex.Message}");
+                return false;
+            }
         }
 
         internal static void EnsurePairingOperationAuthorized(
             bool protectedMode,
-            ISettingsSyncAuthorization authorization)
+            bool canManageServicePairing)
         {
-            ArgumentNullException.ThrowIfNull(authorization);
-            if (protectedMode && !authorization.CanManageServicePairing)
+            if (protectedMode && !canManageServicePairing)
             {
                 throw new UnauthorizedAccessException("Administrator access is required to manage service pairing.");
             }
         }
 
-        private static void ApplyPairingCredential(string key)
+        private static bool CanProcessManageServicePairing(uint processId)
         {
-            Encryption.MyKey = key;
-            Encryption.MagicNumber = Encryption.Get24BitHash(key);
-            Encryption.GeneratedKey = false;
-            Encryption.KeyCorrupted = false;
+            using var token = OpenProcessTokenForMembership(processId);
+            using var identity = new WindowsIdentity(token.DangerousGetHandle());
+            if (!PairingClientNativeMethods.GetTokenInformation(token, PairingClientNativeMethods.TokenElevation, out var elevation, Marshal.SizeOf<uint>(), out _))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            return elevation != 0 && new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
+        internal static SafeAccessTokenHandle OpenProcessTokenForMembership(uint processId)
+        {
+            using var process = PairingClientNativeMethods.OpenProcess(PairingClientNativeMethods.ProcessQueryLimitedInformation, false, processId);
+            if (process.IsInvalid)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            // WindowsPrincipal duplicates a primary token before checking membership.
+            if (!PairingClientNativeMethods.OpenProcessToken(process, PairingClientNativeMethods.TokenQuery | PairingClientNativeMethods.TokenDuplicate, out var token))
+            {
+                var error = Marshal.GetLastWin32Error();
+                token.Dispose();
+                throw new Win32Exception(error);
+            }
+
+            return token;
+        }
+
+        private static class PairingClientNativeMethods
+        {
+            internal const uint ProcessQueryLimitedInformation = 0x1000;
+            internal const uint TokenQuery = 0x0008;
+            internal const uint TokenDuplicate = 0x0002;
+            internal const int TokenElevation = 20;
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            internal static extern SafeProcessHandle OpenProcess(uint processAccess, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
+
+            [DllImport("advapi32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool OpenProcessToken(SafeProcessHandle processHandle, uint desiredAccess, out SafeAccessTokenHandle tokenHandle);
+
+            [DllImport("advapi32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool GetTokenInformation(SafeAccessTokenHandle tokenHandle, int tokenInformationClass, out uint tokenInformation, int tokenInformationLength, out int returnLength);
         }
 
         internal static SecurityIdentifier ResolveSettingsIpcUserSid(

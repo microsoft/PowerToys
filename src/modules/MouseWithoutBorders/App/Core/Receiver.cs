@@ -215,11 +215,7 @@ internal static class Receiver
 
                 if (Encryption.GeneratedKey)
                 {
-                    if (!MouseWithoutBorders.Class.Settings.IsProtectedMode)
-                    {
-                        Setting.Values.MyKey = Encryption.MyKey;
-                    }
-
+                    Setting.Values.MyKey = Encryption.MyKey;
                     Common.SendPackage(ID.ALL, PackageType.Heartbeat_ex_l2);
                 }
 
@@ -235,21 +231,14 @@ internal static class Receiver
 
             case PackageType.Heartbeat_ex_l2:
                 Encryption.GeneratedKey = true;
-                if (!MouseWithoutBorders.Class.Settings.IsProtectedMode)
-                {
-                    Setting.Values.MyKey = Encryption.MyKey;
-                }
-
+                Setting.Values.MyKey = Encryption.MyKey;
                 Common.SendPackage(ID.ALL, PackageType.Heartbeat_ex_l3);
 
                 break;
 
             case PackageType.Heartbeat_ex_l3:
                 Encryption.GeneratedKey = true;
-                if (!MouseWithoutBorders.Class.Settings.IsProtectedMode)
-                {
-                    Setting.Values.MyKey = Encryption.MyKey;
-                }
+                Setting.Values.MyKey = Encryption.MyKey;
 
                 break;
 
