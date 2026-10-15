@@ -134,17 +134,6 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
-                if (IsLocalSystemCredentialMode(currentUserSID, serviceMode))
-                {
-                    var interactiveUserSid = ResolveSettingsIpcUserSid(
-                        currentUserSID,
-                        Process.GetCurrentProcess().SessionId,
-                        GetInteractiveSessionUserSid);
-                    ServicePairingCredentialManager.InitializeForLocalSystem(
-                        interactiveUserSid.Value,
-                        ApplyServicePairingCredential);
-                }
-
                 ShutdownWithPowerToys.WaitForPowerToysRunner(etwTrace);
 
                 if (firstArg != string.Empty)
@@ -324,16 +313,16 @@ namespace MouseWithoutBorders.Class
                 return Task.FromResult(machineStates.Select((state) => new ISettingsSyncHelper.MachineSocketState { Name = state.Key, Status = state.Value }).ToArray());
             }
 
-            public Task ConnectToMachine(string pcName, string securityKey)
+            public async Task ConnectToMachine(string pcName, string securityKey)
             {
-                EnsurePairingOperationAuthorized(ServicePairingCredentialManager.IsProtectedMode, _authorization);
-                var protectedCredentialConfigured =
-                    !ServicePairingCredentialManager.IsProtectedMode ||
-                    ServicePairingCredentialManager.Current.TryLoad(out _);
+                ArgumentException.ThrowIfNullOrWhiteSpace(pcName);
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);
+                var protectedCredentialConfigured = !Settings.IsProtectedMode ||
+                    Setting.Values.HasPairingKey;
                 EnsureConnectOperationAvailable(
-                    ServicePairingCredentialManager.IsProtectedMode,
+                    Settings.IsProtectedMode,
                     protectedCredentialConfigured);
-                if (!ServicePairingCredentialStore.IsValidKey(securityKey))
+                if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(securityKey))
                 {
                     throw new ArgumentException("A pairing credential is required.", nameof(securityKey));
                 }
@@ -343,40 +332,30 @@ namespace MouseWithoutBorders.Class
                 try
                 {
                     MachineStuff.ClearComputerMatrix();
-                    var savedCredential = PersistPairingCredential(
-                        securityKey,
-                        applyToCurrentProcess: !ServicePairingCredentialManager.IsProtectedMode);
+                    Setting.Values.MyKey = securityKey;
                     MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
 
                     string[] machines = MachineStuff.MachineMatrix;
                     MachineStuff.MachinePool.Initialize(machines);
                     MachineStuff.UpdateMachinePoolStringSetting();
 
-                    if (ServicePairingCredentialManager.IsProtectedMode)
-                    {
-                        ServicePairingCredentialManager.Current.ApplyCredentialToCurrentProcess(savedCredential.Value);
-                    }
-                    else
-                    {
-                        SocketStuff.InvalidKeyFound = false;
-                        InitAndCleanup.ReopenSocketDueToReadError = true;
-                        Common.ReopenSockets(true);
-                    }
-
+                    var key = Setting.Values.MyKey;
+                    await Setting.Values.SaveSettingsAsync();
+                    ApplyPairingCredential(key);
+                    SocketStuff.InvalidKeyFound = false;
+                    InitAndCleanup.ReopenSocketDueToReadError = true;
+                    Common.ReopenSockets(true);
                     MachineStuff.SendMachineMatrix();
-                    Setting.Values.SaveSettings();
                 }
                 finally
                 {
                     Setting.Values.PauseInstantSaving = previousPauseInstantSaving;
                 }
-
-                return Task.CompletedTask;
             }
 
-            public Task<string> GenerateNewKey()
+            public async Task<string> GenerateNewKey()
             {
-                EnsurePairingOperationAuthorized(ServicePairingCredentialManager.IsProtectedMode, _authorization);
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);
                 var previousPauseInstantSaving = Setting.Values.PauseInstantSaving;
                 Setting.Values.PauseInstantSaving = true;
                 string key;
@@ -385,21 +364,20 @@ namespace MouseWithoutBorders.Class
                     Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
                     MachineStuff.ClearComputerMatrix();
                     key = Encryption.CreateRandomKey();
-                    PersistPairingCredential(key);
+                    Setting.Values.MyKey = key;
+                    key = Setting.Values.MyKey;
+                    await Setting.Values.SaveSettingsAsync();
+                    ApplyPairingCredential(key);
                     Encryption.GeneratedKey = true;
-                    Setting.Values.SaveSettings();
                 }
                 finally
                 {
                     Setting.Values.PauseInstantSaving = previousPauseInstantSaving;
                 }
 
-                if (!ServicePairingCredentialManager.IsProtectedMode)
-                {
-                    Reconnect();
-                }
+                Reconnect();
 
-                return Task.FromResult(key);
+                return key;
             }
 
             public void Reconnect()
@@ -515,40 +493,12 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        private static ServicePairingCredential? PersistPairingCredential(string key, bool applyToCurrentProcess = true)
-        {
-            if (ServicePairingCredentialManager.IsProtectedMode)
-            {
-                var credential = ServicePairingCredentialManager.Current.Save(key, applyToCurrentProcess);
-                Setting.Values.MyKey = key;
-                return credential;
-            }
-            else
-            {
-                ApplyPairingCredential(key);
-            }
-
-            Setting.Values.MyKey = key;
-            return null;
-        }
-
-        private static void ApplyServicePairingCredential(string key)
-        {
-            ApplyPairingCredential(key);
-            if (Common.MainForm != null)
-            {
-                SocketStuff.InvalidKeyFound = false;
-                InitAndCleanup.ReopenSocketDueToReadError = true;
-                Common.ReopenSockets(true);
-                MachineStuff.SendMachineMatrix();
-            }
-        }
-
         private static void ApplyPairingCredential(string key)
         {
             Encryption.MyKey = key;
             Encryption.MagicNumber = Encryption.Get24BitHash(key);
             Encryption.GeneratedKey = false;
+            Encryption.KeyCorrupted = false;
         }
 
         internal static SecurityIdentifier ResolveSettingsIpcUserSid(
@@ -579,7 +529,7 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        private static SecurityIdentifier GetInteractiveSessionUserSid(int sessionId)
+        internal static SecurityIdentifier GetInteractiveSessionUserSid(int sessionId)
         {
             IntPtr userToken = IntPtr.Zero;
             try

@@ -3,9 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Principal;
 
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -29,6 +30,13 @@ namespace MouseWithoutBorders.Class
 
         internal static SettingsSyncAuthorization FromVerifiedConnection(NamedPipeServerStream stream)
         {
+            return FromVerifiedConnection(stream, CanProcessManageServicePairing);
+        }
+
+        internal static SettingsSyncAuthorization FromVerifiedConnection(
+            NamedPipeServerStream stream,
+            Func<uint, bool> inspectProcess)
+        {
             if (!NamedPipePeerVerification.TryGetClientProcessId(stream, out var processId))
             {
                 return new SettingsSyncAuthorization(false);
@@ -36,24 +44,29 @@ namespace MouseWithoutBorders.Class
 
             try
             {
-                using var process = Process.GetProcessById(unchecked((int)processId));
-                if (!NativeMethods.OpenProcessToken(process.Handle, NativeMethods.TokenQuery, out var token))
-                {
-                    return new SettingsSyncAuthorization(false);
-                }
-
-                using (token)
-                using (var identity = new WindowsIdentity(token.DangerousGetHandle()))
-                {
-                    var principal = new WindowsPrincipal(identity);
-                    return new SettingsSyncAuthorization(
-                        IsElevated(token) &&
-                        principal.IsInRole(WindowsBuiltInRole.Administrator));
-                }
+                return new SettingsSyncAuthorization(inspectProcess(processId));
             }
-            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception or UnauthorizedAccessException or SecurityException)
             {
                 return new SettingsSyncAuthorization(false);
+            }
+        }
+
+        private static bool CanProcessManageServicePairing(uint processId)
+        {
+            using var process = NativeMethods.OpenProcess(NativeMethods.ProcessQueryLimitedInformation, false, processId);
+            if (process.IsInvalid ||
+                !NativeMethods.OpenProcessToken(process, NativeMethods.TokenQuery, out var token))
+            {
+                return false;
+            }
+
+            using (token)
+            using (var identity = new WindowsIdentity(token.DangerousGetHandle()))
+            {
+                var principal = new WindowsPrincipal(identity);
+                return IsElevated(token) &&
+                    principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
         }
 
@@ -70,13 +83,20 @@ namespace MouseWithoutBorders.Class
 
         private static class NativeMethods
         {
+            internal const uint ProcessQueryLimitedInformation = 0x1000;
             internal const uint TokenQuery = 0x0008;
             internal const int TokenElevation = 20;
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            internal static extern SafeProcessHandle OpenProcess(
+                uint processAccess,
+                [MarshalAs(UnmanagedType.Bool)] bool inheritHandle,
+                uint processId);
 
             [DllImport("advapi32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             internal static extern bool OpenProcessToken(
-                IntPtr processHandle,
+                SafeProcessHandle processHandle,
                 uint desiredAccess,
                 out SafeAccessTokenHandle tokenHandle);
 

@@ -66,9 +66,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsElevated { get => GeneralSettingsConfig.IsElevated; }
 
-        public bool CanManagePairing => !UseService || IsElevated;
+        public bool CanManagePairing => MouseWithoutBordersPairingHelper.CanManagePairing(IsElevated, UseService);
 
-        public bool PairingSetupRequired => MouseWithoutBordersPairingState.IsSetupRequired(UseService, Settings.Properties.SecurityKey.Value);
+        public bool PairingSetupRequired => MouseWithoutBordersPairingHelper.PairingSetupRequired(Settings.Properties.SecurityKey.Value, UseService);
+
+        public bool ShowPairingSetupRequired => UseService && PairingSetupRequired;
 
         public bool CanConnectPairing => CanManagePairing && !PairingSetupRequired;
 
@@ -412,44 +414,89 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task SubmitNewKeyRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            if (!CanManagePairing)
             {
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
-                {
-                    var task = syncHelper?.Endpoint?.GenerateNewKey();
-                    if (task != null)
-                    {
-                        var generatedKey = await task;
-                        SecurityKey = generatedKey;
-                        Settings.Properties.SecurityKey.Value =
-                            MouseWithoutBordersPairingState.GetSavedValueAfterGeneratedKey(UseService, generatedKey);
-                        OnPropertyChanged(nameof(PairingSetupRequired));
-                        OnPropertyChanged(nameof(CanConnectPairing));
-                    }
-                }
+                return;
             }
-        }
 
-        public async Task SubmitConnectionRequestAsync(string pcName, string securityKey)
-        {
-            using (await _ipcSemaphore.EnterAsync())
-            {
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
+            var useService = UseService;
+            string generatedKey = null;
+            var updateTask = _pairingState.TryUpdateAsync(
+                async () =>
                 {
-                    var task = syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
-                    if (task != null)
+                    using (await _ipcSemaphore.EnterAsync())
+                    using (var syncHelper = await GetSettingsSyncHelperAsync())
                     {
-                        await task;
-                        ClearTransientPairingState();
-                        if (UseService)
+                        var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
+                        generatedKey = await endpoint.GenerateNewKey();
+                        if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(generatedKey))
                         {
-                            Settings.Properties.SecurityKey.Value = MouseWithoutBordersIpc.PairingConfiguredIndicator;
-                            OnPropertyChanged(nameof(PairingSetupRequired));
-                            OnPropertyChanged(nameof(CanConnectPairing));
+                            throw new InvalidOperationException("Pairing key was not returned.");
                         }
                     }
-                }
+                },
+                () =>
+                {
+                    if (useService)
+                    {
+                        _pairingState.TransientSecurityKey = generatedKey;
+                        OnPropertyChanged(nameof(SecurityKey));
+                    }
+                    else
+                    {
+                        Settings.Properties.SecurityKey.Value = generatedKey;
+                        NotifyPropertyChanged(nameof(SecurityKey));
+                    }
+
+                    OnPropertyChanged(nameof(PairingSetupRequired));
+                    OnPropertyChanged(nameof(ShowPairingSetupRequired));
+                    OnPropertyChanged(nameof(CanConnectPairing));
+                },
+                ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
+                () => UseService == useService,
+                isServiceKeyGeneration: useService);
+            OnPropertyChanged(nameof(HasPairingError));
+            await updateTask;
+            OnPropertyChanged(nameof(HasPairingError));
+            OnPropertyChanged(nameof(SecurityKey));
+        }
+
+        public bool HasPairingError => _pairingState.HasError;
+
+        public async Task<bool> SubmitConnectionRequestAsync()
+        {
+            if (!CanConnectPairing)
+            {
+                return false;
             }
+
+            if (!_pairingState.TryGetConnectionInputs(out var pcName, out var securityKey))
+            {
+                OnPropertyChanged(nameof(HasPairingError));
+                return false;
+            }
+
+            var useService = UseService;
+            var updateTask = _pairingState.TryUpdateAsync(
+                async () =>
+                {
+                    using (await _ipcSemaphore.EnterAsync())
+                    using (var syncHelper = await GetSettingsSyncHelperAsync())
+                    {
+                        var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
+                        await endpoint.ConnectToMachine(pcName, securityKey);
+                    }
+                },
+                () =>
+                {
+                    ClearTransientPairingState();
+                },
+                ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
+                () => UseService == useService);
+            OnPropertyChanged(nameof(HasPairingError));
+            var succeeded = await updateTask;
+            OnPropertyChanged(nameof(HasPairingError));
+            return succeeded;
         }
 
         private async Task<ISettingsSyncHelper.MachineSocketState[]> PollMachineSocketStateAsync()
@@ -752,29 +799,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string SecurityKey
-        {
-            get => _pairingState.GetDisplayValue(UseService, Settings.Properties.SecurityKey.Value);
-
-            set
-            {
-                if (UseService)
-                {
-                    if (_pairingState.TransientSecurityKey != value)
-                    {
-                        _pairingState.TransientSecurityKey = value;
-                        OnPropertyChanged(nameof(SecurityKey));
-                        OnPropertyChanged(nameof(PairingSetupRequired));
-                        OnPropertyChanged(nameof(CanConnectPairing));
-                    }
-                }
-                else if (value != Settings.Properties.SecurityKey.Value)
-                {
-                    Settings.Properties.SecurityKey.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
+        public string SecurityKey => _pairingState.GetDisplayValue(IsElevated, UseService, Settings.Properties.SecurityKey.Value);
 
         public bool WrapMouse
         {
@@ -1315,7 +1340,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 var updatedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
-                if (!_pairingState.ShouldPreserveTransientSecurityKey(
+                if (_pairingState.ShouldClearForSettingsReload(
+                    Settings.Properties.UseService,
+                    Settings.Properties.SecurityKey.Value,
                     updatedSettings.Properties.UseService,
                     updatedSettings.Properties.SecurityKey.Value))
                 {
@@ -1372,10 +1399,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void ClearTransientPairingState()
         {
             _pairingState.Clear();
+            OnPropertyChanged(nameof(HasPairingError));
             OnPropertyChanged(nameof(ConnectSecurityKey));
             OnPropertyChanged(nameof(ConnectPCName));
             OnPropertyChanged(nameof(ConnectFieldsVisible));
             OnPropertyChanged(nameof(SecurityKey));
+            OnPropertyChanged(nameof(PairingSetupRequired));
+            OnPropertyChanged(nameof(ShowPairingSetupRequired));
+            OnPropertyChanged(nameof(CanConnectPairing));
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)

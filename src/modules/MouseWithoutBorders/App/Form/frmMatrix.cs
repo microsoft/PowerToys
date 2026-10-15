@@ -135,8 +135,12 @@ namespace MouseWithoutBorders
         internal void UpdateKeyTextBox()
         {
             _ = Helper.GetUserName();
-            textBoxEnc.Text = ServicePairingCredentialManager.IsProtectedMode
-                ? ServicePairingCredentialStore.ConfiguredIndicator
+            textBoxEnc.ReadOnly = Class.Settings.IsProtectedMode;
+            buttonNewKey.Enabled = !Class.Settings.IsProtectedMode;
+            textBoxEnc.Text = Class.Settings.IsProtectedMode
+                ? (Setting.Values.HasPairingKey
+                    ? Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersIpc.PairingConfiguredIndicator
+                    : Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
                 : Encryption.MyKey;
         }
 
@@ -507,7 +511,7 @@ namespace MouseWithoutBorders
 
         private bool UpdateKey(string newKey)
         {
-            if (ServicePairingCredentialManager.IsProtectedMode)
+            if (Class.Settings.IsProtectedMode)
             {
                 return false;
             }
@@ -520,7 +524,8 @@ namespace MouseWithoutBorders
 
             if (!newKey.Equals(Encryption.MyKey, StringComparison.OrdinalIgnoreCase))
             {
-                Encryption.MyKey = newKey;
+                Setting.Values.MyKey = newKey;
+                Encryption.MyKey = Setting.Values.MyKey;
                 Encryption.GeneratedKey = false;
             }
 
@@ -1118,7 +1123,7 @@ namespace MouseWithoutBorders
 
         private void ButtonNewKey_Click(object sender, EventArgs e)
         {
-            if (ServicePairingCredentialManager.IsProtectedMode)
+            if (Class.Settings.IsProtectedMode)
             {
                 return;
             }
@@ -1128,7 +1133,8 @@ namespace MouseWithoutBorders
 
             if (MessageBox.Show(message, Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
-                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+                Setting.Values.MyKey = Encryption.CreateRandomKey();
+                Encryption.MyKey = Setting.Values.MyKey;
                 textBoxEnc.Text = Encryption.MyKey;
                 checkBoxShowKey.Checked = true;
                 Encryption.GeneratedKey = true;

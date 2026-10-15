@@ -40,4 +40,24 @@ public sealed class IpcSerializationCompatibilityTests
             new[] { typeof(string), typeof(string) },
             connect.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
     }
+
+    [DataTestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public async Task ConnectRejectsMissingMachineNameBeforeChangingSettings(string? machineName)
+    {
+        var helperType = typeof(Program).GetNestedType("SettingsSyncHelper", BindingFlags.NonPublic)!;
+        var helper = Activator.CreateInstance(helperType, nonPublic: true)!;
+        var connect = helperType.GetMethod("ConnectToMachine")!;
+        var request = (Task)connect.Invoke(helper, new object?[] { machineName, "TEST-KEY" })!;
+        if (machineName == null)
+        {
+            await Assert.ThrowsExceptionAsync<ArgumentNullException>(() => request);
+        }
+        else
+        {
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() => request);
+        }
+    }
 }

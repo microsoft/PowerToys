@@ -94,30 +94,17 @@ internal static class InitAndCleanup
         try
         {
             Encryption.MyKey = Setting.Values.MyKey;
-            if (ServicePairingCredentialManager.IsProtectedMode &&
-                !ServicePairingCredentialStore.IsValidKey(Encryption.MyKey))
-            {
-                Encryption.GeneratedKey = false;
-            }
-
             int tmp = Setting.Values.MyKeyDaysToExpire;
         }
-        catch (FormatException e)
+        catch (Exception e) when (e is FormatException or CryptographicException or ArgumentException)
         {
             Encryption.KeyCorrupted = true;
-            if (!ServicePairingCredentialManager.IsProtectedMode)
+            Encryption.MyKey = string.Empty;
+            Encryption.GeneratedKey = false;
+            if (!MouseWithoutBorders.Class.Settings.IsProtectedMode)
             {
-                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
-            }
-
-            Logger.Log(e.Message);
-        }
-        catch (CryptographicException e)
-        {
-            Encryption.KeyCorrupted = true;
-            if (!ServicePairingCredentialManager.IsProtectedMode)
-            {
-                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+                Setting.Values.MyKey = Encryption.CreateRandomKey();
+                Encryption.MyKey = Setting.Values.MyKey;
             }
 
             Logger.Log(e.Message);

@@ -42,8 +42,10 @@ namespace MouseWithoutBorders
 
         protected string GetSecureKey()
         {
-            return ServicePairingCredentialManager.IsProtectedMode
-                ? ServicePairingCredentialStore.ConfiguredIndicator
+            return Class.Settings.IsProtectedMode
+                ? (Setting.Values.HasPairingKey
+                    ? Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersIpc.PairingConfiguredIndicator
+                    : Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
                 : Encryption.MyKey;
         }
 

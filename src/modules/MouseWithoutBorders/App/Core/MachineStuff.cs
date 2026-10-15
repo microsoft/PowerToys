@@ -792,8 +792,14 @@ internal static class MachineStuff
 
     internal static void ShowSetupForm(bool reopenSockets = false)
     {
+        if (Class.Settings.IsProtectedMode)
+        {
+            return;
+        }
+
         Logger.LogDebug("========== BEGIN THE SETUP EXPERIENCE ==========", true);
-        Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+        Setting.Values.MyKey = Encryption.CreateRandomKey();
+        Encryption.MyKey = Setting.Values.MyKey;
         Encryption.GeneratedKey = true;
 
         if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
@@ -837,7 +843,7 @@ internal static class MachineStuff
 
     internal static void ShowMachineMatrix()
     {
-        if (ServicePairingCredentialManager.IsProtectedMode)
+        if (Class.Settings.IsProtectedMode)
         {
             return;
         }

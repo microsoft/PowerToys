@@ -51,11 +51,13 @@
                                     <TextBox
                                         x:Name="ConnectSecurityKeyTextBox"
                                         x:Uid="MWB_SecurityKeyLabel"
-                                        Width="248" />
+                                        Width="248"
+                                        Text="{x:Bind ViewModel.ConnectSecurityKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     <TextBox
                                         x:Name="ConnectPCNameTextBox"
                                         x:Uid="MWB_PCNameLabel"
-                                        Width="248" />
+                                        Width="248"
+                                        Text="{x:Bind ViewModel.ConnectPCName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     <Button
                                         x:Uid="MouseWithoutBorders_Connect"
                                         Command="{x:Bind ConnectCommand, Mode=OneTime}"
@@ -64,7 +66,7 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=TwoWay}" />
+                            <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=OneWay}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
                                 Command="{x:Bind GenerateNewKeyCommand, Mode=OneTime}"
@@ -78,6 +80,12 @@
                         </StackPanel>
                     </tkcontrols:SettingsExpander>
                     <InfoBar
+                        x:Uid="MouseWithoutBorders_PairingUpdateFailed"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasPairingError, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.HasPairingError, Mode=OneWay}"
+                        Severity="Error" />
+                    <InfoBar
                         x:Uid="MouseWithoutBorders_PairingRequiresAdministrator"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.ShowPairingRequiresAdministrator, Mode=OneWay}"
@@ -86,8 +94,8 @@
                     <InfoBar
                         x:Uid="MouseWithoutBorders_PairingSetupRequired"
                         IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.PairingSetupRequired, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.PairingSetupRequired, Mode=OneWay}"
+                        IsOpen="{x:Bind ViewModel.ShowPairingSetupRequired, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPairingSetupRequired, Mode=OneWay}"
                         Severity="Informational" />
 
                     <tkcontrols:SettingsCard Name="MouseWithoutBordersThisMachineNameLabel" x:Uid="MouseWithoutBorders_ThisMachineNameLabel">

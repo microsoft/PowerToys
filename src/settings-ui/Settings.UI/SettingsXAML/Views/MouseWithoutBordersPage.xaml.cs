@@ -147,7 +147,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ICommand ConnectCommand => new AsyncCommand(Connect);
 
-        public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync, () => ViewModel.CanManagePairing);
+        public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync);
 
         public ICommand CopyPCNameCommand => new RelayCommand(ViewModel.CopyMachineNameToClipboard);
 
@@ -163,18 +163,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async Task Connect()
         {
-            if (ViewModel.CanConnectPairing &&
-                ConnectPCNameTextBox.Text.Length != 0 &&
-                ConnectSecurityKeyTextBox.Text.Length != 0)
-            {
-                string pcName = ConnectPCNameTextBox.Text;
-                string securityKey = ConnectSecurityKeyTextBox.Text.Trim();
-
-                await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
-
-                ConnectPCNameTextBox.Text = string.Empty;
-                ConnectSecurityKeyTextBox.Text = string.Empty;
-            }
+            await ViewModel.SubmitConnectionRequestAsync();
         }
 
         private void ClearPairingUI()

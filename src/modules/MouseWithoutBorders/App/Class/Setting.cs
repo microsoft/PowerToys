@@ -49,9 +49,19 @@ namespace MouseWithoutBorders.Class
         private readonly SettingsUtils _settingsUtils;
         private readonly Lock _loadingSettingsLock = new Lock();
         private readonly IFileSystemWatcher _watcher;
+        private readonly IPairingKeyCodec _pairingKeyCodec;
 
         private MouseWithoutBordersProperties _properties;
         private MouseWithoutBordersSettings _settings;
+
+        internal static bool IsProtectedMode
+        {
+            get
+            {
+                using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+                return identity.IsSystem;
+            }
+        }
 
         // Avoid instantly saving every change to the file when updating properties.
         public bool PauseInstantSaving { get; set; }
@@ -74,25 +84,12 @@ namespace MouseWithoutBorders.Class
                 if (settings != null)
                 {
                     PauseInstantSaving = true;
-                    var sharedCredentialIndicatorChanged = false;
 
                     var last_properties = _properties;
 
                     _settings = settings;
 
                     _properties = settings.Properties;
-                    if (ServicePairingCredentialManager.IsProtectedMode)
-                    {
-                        var sharedCredentialIndicator = GetSharedSecurityKeySettingValue(
-                            protectedMode: true,
-                            ServicePairingCredentialManager.Current.TryLoad(out _),
-                            _properties.SecurityKey.Value);
-                        sharedCredentialIndicatorChanged = !string.Equals(
-                            _properties.SecurityKey.Value,
-                            sharedCredentialIndicator,
-                            StringComparison.Ordinal);
-                        _properties.SecurityKey.Value = sharedCredentialIndicator;
-                    }
 
                     // Keep track of the need to resend the machine matrix.
                     bool shouldSendMachineMatrix = false;
@@ -121,14 +118,7 @@ namespace MouseWithoutBorders.Class
                             shouldSendMachineMatrix = true;
                         }
 
-                        var shouldReopenSockets = false;
-
-                        if (!ServicePairingCredentialManager.IsProtectedMode &&
-                            Encryption.MyKey != _properties.SecurityKey.Value)
-                        {
-                            Encryption.MyKey = _properties.SecurityKey.Value;
-                            shouldReopenSockets = true;
-                        }
+                        var shouldReopenSockets = UpdateRuntimeKey();
 
                         if (shouldReopenSockets)
                         {
@@ -148,11 +138,6 @@ namespace MouseWithoutBorders.Class
                             SaveSettings();
                         }
                     }
-
-                    if (sharedCredentialIndicatorChanged)
-                    {
-                        SaveSettings();
-                    }
                 }
             }
             catch (IOException ex)
@@ -167,25 +152,30 @@ namespace MouseWithoutBorders.Class
 
         public void SaveSettings()
         {
+            _ = SaveSettingsAsync();
+        }
+
+        internal Task SaveSettingsAsync()
+        {
             if (!Common.RunOnLogonDesktop)
             {
                 var propertiesToSave = (MouseWithoutBordersProperties)_properties.Clone();
-                if (ServicePairingCredentialManager.IsProtectedMode)
-                {
-                    propertiesToSave.SecurityKey.Value = GetSharedSecurityKeySettingValue(
-                        protectedMode: true,
-                        ServicePairingCredentialManager.Current.TryLoad(out _),
-                        propertiesToSave.SecurityKey.Value);
-                }
-
-                SaveSettingsToJson(propertiesToSave);
+                return SaveSettingsToJson(propertiesToSave);
             }
+
+            return Task.FromException(new InvalidOperationException("Settings cannot be saved on this desktop."));
         }
 
-        private void SaveSettingsToJson(MouseWithoutBordersProperties properties_to_save)
+        private Task SaveSettingsToJson(MouseWithoutBordersProperties properties_to_save)
         {
-            _settings.Properties = properties_to_save;
-            _ = Task.Factory.StartNew(
+            string json;
+            lock (_loadingSettingsLock)
+            {
+                _settings.Properties = properties_to_save;
+                json = _settings.ToJsonString();
+            }
+
+            return Task.Factory.StartNew(
                 () =>
             {
                 bool saved = false;
@@ -196,7 +186,7 @@ namespace MouseWithoutBorders.Class
                     {
                         lock (_loadingSettingsLock)
                         {
-                            _settings.Save(_settingsUtils);
+                            _settingsUtils.SaveSettingsOrThrow(json, MouseWithoutBordersSettings.ModuleName);
                         }
 
                         saved = true;
@@ -215,6 +205,11 @@ namespace MouseWithoutBorders.Class
                         Thread.Sleep(500);
                     }
                 }
+
+                if (!saved)
+                {
+                    throw new IOException("Settings could not be saved.");
+                }
             },
                 System.Threading.CancellationToken.None,
                 TaskCreationOptions.None,
@@ -223,6 +218,12 @@ namespace MouseWithoutBorders.Class
 
         internal Settings()
         {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var ownerSid = Program.ResolveSettingsIpcUserSid(
+                identity.User,
+                System.Diagnostics.Process.GetCurrentProcess().SessionId,
+                Program.GetInteractiveSessionUserSid);
+            _pairingKeyCodec = DpapiPairingKeyCodec.CreateForCurrentIdentity(ownerSid);
             _settingsUtils = SettingsUtils.Default;
 
             _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
@@ -513,24 +514,14 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    if (ServicePairingCredentialManager.IsProtectedMode)
-                    {
-                        return ServicePairingCredentialManager.Current.TryLoad(out var protectedKey)
-                            ? protectedKey
-                            : string.Empty;
-                    }
-
-                    if (_properties.SecurityKey.Value.Length != 0)
-                    {
-                        return _properties.SecurityKey.Value;
-                    }
-                    else
+                    if (!IsProtectedMode && string.IsNullOrEmpty(_properties.SecurityKey.Value))
                     {
                         string randomKey = Encryption.CreateDefaultKey();
-                        _properties.SecurityKey.Value = randomKey;
-
-                        return randomKey;
+                        MyKey = randomKey;
                     }
+
+                    // Only the settings JSON carries the encoded value; callers always receive plaintext.
+                    return _pairingKeyCodec.Decrypt(_properties.SecurityKey.Value);
                 }
             }
 
@@ -538,18 +529,51 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.SecurityKey.Value = ServicePairingCredentialManager.IsProtectedMode
-                        ? GetSharedSecurityKeySettingValue(
-                            protectedMode: true,
-                            ServicePairingCredentialManager.Current.TryLoad(out _),
-                            _properties.SecurityKey.Value)
-                        : value;
+                    _properties.SecurityKey.Value = _pairingKeyCodec.Encrypt(value);
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();
                     }
                 }
             }
+        }
+
+        internal bool HasPairingKey
+        {
+            get
+            {
+                try
+                {
+                    return MouseWithoutBordersPairingHelper.IsOrdinaryKey(MyKey);
+                }
+                catch (Exception ex) when (ex is CryptographicException or ArgumentException or FormatException)
+                {
+                    return false;
+                }
+            }
+        }
+
+        internal bool UpdateRuntimeKey()
+        {
+            string key;
+            try
+            {
+                key = MyKey;
+            }
+            catch (Exception ex) when (ex is CryptographicException or ArgumentException or FormatException)
+            {
+                key = string.Empty;
+            }
+
+            if (Encryption.MyKey == key)
+            {
+                return false;
+            }
+
+            Encryption.MyKey = key;
+            Encryption.MagicNumber = string.IsNullOrEmpty(key) ? 0 : Encryption.Get24BitHash(key);
+            Encryption.KeyCorrupted = string.IsNullOrEmpty(key);
+            return true;
         }
 
         internal int MyKeyDaysToExpire
@@ -561,18 +585,6 @@ namespace MouseWithoutBorders.Class
                     return int.MaxValue; // TODO(@yuyoyuppe): do we still need expiration mechanics now?
                 }
             }
-        }
-
-        internal static string GetSharedSecurityKeySettingValue(bool protectedMode, bool protectedCredentialConfigured, string currentValue)
-        {
-            if (!protectedMode)
-            {
-                return currentValue;
-            }
-
-            return protectedCredentialConfigured
-                ? MouseWithoutBordersIpc.PairingConfiguredIndicator
-                : MouseWithoutBordersIpc.PairingSetupRequiredIndicator;
         }
 
         // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()

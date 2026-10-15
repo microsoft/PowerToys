@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseWithoutBorders.Class;
+using StreamJsonRpc;
 
 namespace MouseWithoutBorders.UnitTests;
 
@@ -93,6 +95,71 @@ public sealed class SettingsIpcIdentityTests
                 identity.User!,
                 null!,
                 CancellationToken.None));
+    }
+
+    [TestMethod]
+    public void DisconnectedPipeDoesNotInspectCallerCapability()
+    {
+        using var server = new NamedPipeServerStream($"PowerToys.MWB.v2.UnitTest.{Guid.NewGuid():N}");
+        var inspectionCalled = false;
+
+        var authorization = SettingsSyncAuthorization.FromVerifiedConnection(
+            server,
+            _ =>
+            {
+                inspectionCalled = true;
+                return true;
+            });
+
+        Assert.IsFalse(authorization.CanManageServicePairing);
+        Assert.IsFalse(inspectionCalled);
+    }
+
+    [DataTestMethod]
+    [DataRow(5)]
+    [DataRow(87)]
+    public async Task CallerInspectionFailurePreservesVerifiedRpc(int errorCode)
+    {
+        var pipeName = $"PowerToys.MWB.v2.UnitTest.{Environment.ProcessId}.{Guid.NewGuid():N}";
+        using var identity = WindowsIdentity.GetCurrent();
+        using var cancellation = new CancellationTokenSource();
+        var executablePath = GetCurrentExecutablePath();
+        var sessionId = Process.GetCurrentProcess().SessionId;
+        var inspectedProcessId = new TaskCompletionSource<uint>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        IpcChannel<TestRpcTarget>.StartVerifiedIpcServer(
+            pipeName,
+            identity.User!,
+            stream => VerifyCurrentProcessClient(stream, Path.GetFileName(executablePath), identity.User!.Value, sessionId),
+            stream =>
+            {
+                var authorization = SettingsSyncAuthorization.FromVerifiedConnection(
+                    stream,
+                    processId =>
+                    {
+                        inspectedProcessId.TrySetResult(processId);
+                        throw new Win32Exception(errorCode);
+                    });
+                Assert.IsFalse(authorization.CanManageServicePairing);
+                return new TestRpcTarget();
+            },
+            cancellation.Token);
+
+        try
+        {
+            await using var client = await ConnectVerifiedClientAsync(
+                pipeName,
+                Path.GetFileName(executablePath),
+                identity.User!.Value,
+                sessionId);
+            using var rpc = JsonRpc.Attach(client);
+            await rpc.InvokeAsync(nameof(TestRpcTarget.Ping)).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.AreEqual(unchecked((uint)Environment.ProcessId), await inspectedProcessId.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        }
+        finally
+        {
+            cancellation.Cancel();
+        }
     }
 
     [TestMethod]

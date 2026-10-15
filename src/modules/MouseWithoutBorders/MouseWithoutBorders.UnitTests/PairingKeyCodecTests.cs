@@ -1,0 +1,179 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Security.Cryptography;
+using System.Security.Principal;
+using System.Text;
+
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MouseWithoutBorders.Class;
+using Windows.Security.Cryptography;
+using Windows.Security.Cryptography.DataProtection;
+
+namespace MouseWithoutBorders.UnitTests;
+
+[TestClass]
+public sealed class PairingKeyCodecTests
+{
+    private static DpapiPairingKeyCodec CreateCodec()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        return new(identity.User!);
+    }
+
+    [TestMethod]
+    public void CurrentTestUserDpapiRoundTrip()
+    {
+        var codec = CreateCodec();
+        var encrypted = codec.Encrypt("TEST-KEY");
+        Assert.IsTrue(MouseWithoutBordersPairingHelper.HasValidEncryptedFormat(encrypted));
+        Assert.AreNotEqual("TEST-KEY", encrypted);
+        Assert.AreEqual("TEST-KEY", codec.Decrypt(encrypted));
+        Assert.IsTrue(codec.IsEncrypted(encrypted));
+    }
+
+    [TestMethod]
+    public void FactoryUsesActualExecutingIdentity()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var codec = DpapiPairingKeyCodec.CreateForCurrentIdentity(identity.User!);
+        Assert.AreEqual(identity.IsSystem, codec is DpapiPairingKeyCodec);
+        Assert.AreEqual(!identity.IsSystem, codec is PassthroughPairingKeyCodec);
+    }
+
+    [TestMethod]
+    public void DifferentInteractiveUserPayloadBindingIsRejected()
+    {
+        var encrypted = CreateCodec().Encrypt("TEST-KEY");
+        var other = new DpapiPairingKeyCodec(new SecurityIdentifier("S-1-5-21-1-2-3-1001"));
+        Assert.ThrowsException<CryptographicException>(() => other.Decrypt(encrypted));
+    }
+
+    [TestMethod]
+    public void WrongScopeIsRejected()
+    {
+        var payload = ProtectWithWindowsProvider("LOCAL=machine", CreatePayload("TEST-KEY"));
+        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(payload));
+    }
+
+    [TestMethod]
+    public void ClassicLocalMachineScopeIsRejected()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var sid = identity.User!;
+        var entropy = Encoding.UTF8.GetBytes("PowerToys.MouseWithoutBorders.Pairing.v1:" + sid.Value);
+        var payload = ProtectedData.Protect(Encoding.UTF8.GetBytes("TEST-KEY"), entropy, DataProtectionScope.LocalMachine);
+        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(MouseWithoutBordersPairingHelper.EncryptedPrefix + Convert.ToBase64String(payload)));
+    }
+
+    [DataTestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow("ordinary")]
+    [DataRow("mwb-dpapi:v1:")]
+    [DataRow("mwb-dpapi:v1:!")]
+    [DataRow("mwb-dpapi:v1:AQID")]
+    [DataRow("mwb-dpapi:v2:AQID")]
+    public void MissingMalformedOrInvalidProtectedDataIsRejected(string value)
+    {
+        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(value));
+    }
+
+    [DataTestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow("********")]
+    [DataRow("Pairing setup required")]
+    [DataRow("mwb-dpapi:v1:AQID")]
+    [DataRow("mwb-dpapi:v2:invalid")]
+    public void NonKeysAreRejectedByBothCodecs(string value)
+    {
+        Assert.ThrowsException<ArgumentException>(() => CreateCodec().Encrypt(value));
+        var passthrough = new PassthroughPairingKeyCodec();
+        Assert.ThrowsException<ArgumentException>(() => passthrough.Encrypt(value));
+        Assert.ThrowsException<ArgumentException>(() => passthrough.Decrypt(value));
+    }
+
+    [TestMethod]
+    public void NullKeysAreRejectedByBothCodecs()
+    {
+        Assert.ThrowsException<ArgumentNullException>(() => CreateCodec().Encrypt(null));
+        var passthrough = new PassthroughPairingKeyCodec();
+        Assert.ThrowsException<ArgumentException>(() => passthrough.Encrypt(null));
+        Assert.ThrowsException<ArgumentException>(() => passthrough.Decrypt(null));
+    }
+
+    [TestMethod]
+    public void OrdinaryValuesRemainUnchanged()
+    {
+        var codec = new PassthroughPairingKeyCodec();
+        Assert.AreEqual(" Original-Key ", codec.Encrypt(" Original-Key "));
+        Assert.AreEqual(" Original-Key ", codec.Decrypt(" Original-Key "));
+        Assert.IsFalse(codec.IsEncrypted("Original-Key"));
+    }
+
+    [DataTestMethod]
+    [DataRow("")]
+    [DataRow("********")]
+    [DataRow("mwb-dpapi:v1:AQID")]
+    public void ProtectedNonKeyPlaintextIsRejected(string value)
+    {
+        var payload = ProtectWithWindowsProvider("LOCAL=user", CreatePayload(value));
+        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(payload));
+    }
+
+    [TestMethod]
+    public void IndependentUserPolicyPayloadRoundTrips()
+    {
+        var payload = ProtectWithWindowsProvider("LOCAL=user", CreatePayload("TEST-KEY"));
+        Assert.AreEqual("TEST-KEY", CreateCodec().Decrypt(payload));
+    }
+
+    [TestMethod]
+    public void InvalidProtectedPayloadLayoutIsRejected()
+    {
+        foreach (var plaintext in new[] { new byte[] { 0 }, new byte[] { 255, 1, 2 }, Encoding.UTF8.GetBytes("TEST-KEY") })
+        {
+            var payload = ProtectWithWindowsProvider("LOCAL=user", plaintext);
+            Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(payload));
+        }
+    }
+
+    [TestMethod]
+    public void InvalidProtectedUtf8IsRejected()
+    {
+        var plaintext = CreatePayload("X");
+        plaintext[^1] = 0xff;
+        var payload = ProtectWithWindowsProvider("LOCAL=user", plaintext);
+        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(payload));
+    }
+
+    private static byte[] CreatePayload(string value)
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var sid = identity.User!;
+        var plaintext = new byte[1 + sid.BinaryLength + Encoding.UTF8.GetByteCount(value)];
+        plaintext[0] = checked((byte)sid.BinaryLength);
+        sid.GetBinaryForm(plaintext, 1);
+        Encoding.UTF8.GetBytes(value, plaintext.AsSpan(1 + sid.BinaryLength));
+        return plaintext;
+    }
+
+    private static string ProtectWithWindowsProvider(string descriptor, byte[] plaintext)
+    {
+        try
+        {
+            var provider = new DataProtectionProvider(descriptor);
+            var protectedBuffer = provider.ProtectAsync(CryptographicBuffer.CreateFromByteArray(plaintext)).AsTask().GetAwaiter().GetResult();
+            CryptographicBuffer.CopyToByteArray(protectedBuffer, out var encrypted);
+            return MouseWithoutBordersPairingHelper.EncryptedPrefix + Convert.ToBase64String(encrypted);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
+    }
+}
