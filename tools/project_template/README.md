@@ -45,10 +45,6 @@ A PowerToy can define settings of the following types:
   - **[color_picker](#color_picker)**: A color property, edited with a ColorPicker control.
   - **[custom_action](#custom_action)**: A custom action property, invoked from the settings by a Button control.
 
-Here's an example of what the settings look like in the Settings screen:
-
-![Image of the Options](/doc/images/settings/example_settings.png)
-
 ### How to add your module's settings page
 
 The PowerToy can set its settings information and controls by overriding the [PowerToy's Interface `get_config` method](/src/modules/interface/README.md#get_config) and returning a serialized [`PowerToysSettings::Settings`](/src/common/settings_object.h) object that's been filled with the required information and controls.
