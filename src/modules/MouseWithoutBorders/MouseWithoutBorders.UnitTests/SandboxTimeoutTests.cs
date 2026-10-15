@@ -41,6 +41,13 @@ public sealed class SandboxTimeoutTests
     }
 
     [TestMethod]
+    public void EvidenceCollectionHasItsOwnBoundedRequestBudget()
+    {
+        Assert.AreEqual(180, SandboxTimeouts.EndpointEvidenceRequestSeconds);
+        Assert.IsTrue(SandboxTimeouts.EndpointEvidenceRequestSeconds < SandboxTimeouts.GuestStopRequestSeconds);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void RunBudgetEnclosesBootstrapAndBothEndpointStartRequests(bool modern)

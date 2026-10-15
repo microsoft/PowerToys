@@ -106,14 +106,14 @@ internal sealed class TwoEndpointFixture : IDisposable
         {
             if (guest?.Ready == true)
             {
-                guest.Request("Evidence");
+                guest.Request("Evidence", timeoutSeconds: SandboxTimeouts.EndpointEvidenceRequestSeconds);
             }
         });
         Attempt("Capture host evidence before teardown", () =>
         {
             if (host?.Ready == true)
             {
-                host.Request("Evidence");
+                host.Request("Evidence", timeoutSeconds: SandboxTimeouts.EndpointEvidenceRequestSeconds);
             }
         });
 

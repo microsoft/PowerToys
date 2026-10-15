@@ -68,7 +68,7 @@ public sealed class ReceiverInfrastructureTests
             try
             {
                 acquired.Set();
-                Thread.Sleep(2000);
+                Thread.Sleep(8000);
             }
             finally
             {

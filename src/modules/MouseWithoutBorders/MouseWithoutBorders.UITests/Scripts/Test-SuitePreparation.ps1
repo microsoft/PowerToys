@@ -162,6 +162,33 @@ try {
         $ready = @(Get-ReadySettingsCandidates @($launcher, $windowOwner))
         Assert-Check ($ready.Count -eq 1 -and $ready[0].ProcessId -eq 20) 'a surviving launcher does not hide the initialized window owner'
         Assert-Check (@(Get-ReadySettingsCandidates @($windowOwner, $windowOwner)).Count -eq 2) 'multiple initialized window owners remain ambiguous'
+        & {
+            $script:connectActions = [Collections.Generic.List[string]]::new()
+            function Wait-GuestMwbControl {
+                param([string]$AutomationId)
+                $script:connectActions.Add("wait:$AutomationId")
+            }
+            function Invoke-GuestUi {
+                param([string[]]$Arguments)
+                $script:connectActions.Add("$($Arguments[0]):$($Arguments[1])")
+            }
+            function Assert-PeerMapping { @{ MatchesExpected = $true } }
+            function Get-GuestConnectAcknowledgement { @{ KeyMatches = $false; PeerConfigured = $false } }
+            function Wait-GuestConnectAcknowledgement { @{ Acknowledged = $true } }
+            function Write-RunJson { }
+            $connected = Connect-Guest 'fixture-key' 'PEER'
+            $expected = @(
+                'wait:MouseWithoutBordersShowConnectFieldsButton',
+                'click:MouseWithoutBordersShowConnectFieldsButton',
+                'wait:ConnectSecurityKeyTextBox',
+                'wait:ConnectPCNameTextBox',
+                'set-value:ConnectSecurityKeyTextBox',
+                'set-value:ConnectPCNameTextBox',
+                'invoke:MouseWithoutBordersConnectButton'
+            )
+            Assert-Check (($script:connectActions -join '|') -ceq ($expected -join '|')) 'guest opens the ready input row with one click, waits for both fields, and invokes the real Connect command'
+            Assert-Check ($connected.Submitted -and $connected.Acknowledged) 'guest connection still requires the persisted pairing acknowledgement'
+        }
         $script:config = @{ RunId = [Guid]::NewGuid().ToString(); Role = 'Guest' }
         $script:bootstrapStageNumber = 0
         $script:bootstrapWatch = [Diagnostics.Stopwatch]::StartNew()

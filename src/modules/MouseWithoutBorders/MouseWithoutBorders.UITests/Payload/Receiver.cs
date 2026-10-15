@@ -252,8 +252,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
             DataObject data = new DataObject();
             data.SetText(token, TextDataFormat.UnicodeText);
             clipboardChanged = true;
-            // Keep the same token while OLE's bounded retry handles an open clipboard.
-            Clipboard.SetDataObject(data, true, 50, 100);
+            // Keep the same token while bounded OLE retries cover slow clipboard owners.
+            Clipboard.SetDataObject(data, true, 150, 100);
             // An immediate OLE clipboard read can still be empty on a cold desktop.
             // Acknowledge the generated value; the controller verifies its publication.
             return Digest(token);

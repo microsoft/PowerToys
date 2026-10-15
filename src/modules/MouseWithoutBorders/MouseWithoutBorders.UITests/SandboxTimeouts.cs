@@ -8,6 +8,7 @@ internal static class SandboxTimeouts
 {
     internal const int EndpointStartupMinutes = 15;
     internal const int EndpointStartRequestSeconds = (EndpointStartupMinutes + 5) * 60;
+    internal const int EndpointEvidenceRequestSeconds = 180;
     internal const int GuestStopRequestSeconds = 300;
 
     internal static readonly TimeSpan LegacyBootstrap = TimeSpan.FromMinutes(20);

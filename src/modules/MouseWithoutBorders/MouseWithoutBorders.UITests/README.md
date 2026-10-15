@@ -139,6 +139,8 @@ overlay obstructs a hit, the real mouse moves within safe receiver positions.
 Clipboard sources publish distinct synthetic tokens and acknowledge local
 observation before negative/transfer assertions; expected destination payloads
 are never injected through the control channel.
+Publication retries the same token when Windows temporarily holds the clipboard;
+the independent 15-second transfer assertions are unchanged.
 
 ## Backends and deadlines
 
@@ -156,11 +158,17 @@ separate from MWB's ports. Only child processes receive run-derived
 `WINAPP_TARGET_STATE_ROOT` / `WINAPP_UI_WORKFLOW_ID` values; default-profile
 state and parent/user/machine environments are untouched.
 
+The guest clicks the visible Connect row opener once after its readiness wait,
+then waits for both input fields before typing. This avoids a synchronous
+InvokePattern call for the row expansion; the actual Connect submission and
+persisted pairing acknowledgement remain unchanged.
+
 | Deadline | Legacy | Modern |
 |---|---|---|
 | Guest bootstrap | 20 minutes | 35 minutes, including at most 15 minutes for provider creation |
 | Endpoint native Settings/MWB readiness | 15 minutes | 15 minutes |
 | Enclosing endpoint Start request | 20 minutes | 20 minutes |
+| Read-only evidence request, per endpoint | 3 minutes | 3 minutes |
 | Fixture/worker hard run deadline | 65 minutes | 90 minutes |
 | Local suite/controller | 70/85 minutes | 95/110 minutes |
 | CI interactive suite / outer Run step | 70/103 minutes | 100/103 minutes |
@@ -172,6 +180,9 @@ script remains bounded to three minutes. Legacy abort-test viewer readiness
 allows three minutes. UIA ceilings remain 90/180 seconds, clipboard transfer
 15 seconds and mouse settling 20 seconds. These are readiness ceilings, not
 fixed sleeps or claims that startup slowness has been solved.
+Evidence collection has its own bounded request budget because it captures a
+desktop image, reads Application events and copies redacted logs; it does not
+use the 40-second default for ordinary endpoint commands.
 
 ## Build and local execution
 
