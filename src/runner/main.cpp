@@ -128,9 +128,10 @@ void DetectAiCapabilitiesAsync(bool skipSettingsCheck)
 
             if (ShellExecuteExW(&sei))
             {
+                const wil::unique_handle process{ sei.hProcess };
+
                 // Wait for detection to complete (with timeout)
-                DWORD waitResult = WaitForSingleObject(sei.hProcess, 30000); // 30 second timeout
-                CloseHandle(sei.hProcess);
+                DWORD waitResult = WaitForSingleObject(process.get(), 30000); // 30 second timeout
 
                 if (waitResult == WAIT_OBJECT_0)
                 {

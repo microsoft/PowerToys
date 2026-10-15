@@ -62,7 +62,7 @@ bool                    g_Clipboard = false;
 TCHAR                   g_LastFilePath[MAX_PATH] = {0};
 HHOOK                   g_hHook = nullptr;
 size_t                  g_TextLen = 0;
-wchar_t*                g_ClipboardCache = nullptr;
+std::unique_ptr<wchar_t[]> g_ClipboardCache;
 std::wstring            g_Text = L"";
 std::vector<size_t>     g_TextSegments;
 std::wstring            g_BaselineIndentation = L"";
@@ -358,7 +358,7 @@ DWORD GetClipboardSequence()
 // GetClipboard
 //
 //----------------------------------------------------------------------------
-wchar_t* GetClipboard()
+std::unique_ptr<wchar_t[]> GetClipboard()
 {
     // Confirm clipboard accessibility and data format
     if( !OpenClipboard( nullptr ) && !IsClipboardFormatAvailable( CF_UNICODETEXT ) )
@@ -390,8 +390,8 @@ wchar_t* GetClipboard()
         return nullptr;
     }
 
-    wchar_t* data = new wchar_t[size / sizeof(wchar_t)];
-    wcscpy( data, pData );
+    auto data = std::make_unique<wchar_t[]>( size / sizeof(wchar_t) );
+    wcscpy( data.get(), pData );
     GlobalUnlock( hData );
     CloseClipboard();
     return data;
@@ -449,7 +449,7 @@ void GetBaselineIndentation()
     size_t len = 0;
     size_t lastLen = 0;
     bool resetCursor = true;
-    wchar_t* seekBuffer = nullptr;
+    std::unique_ptr<wchar_t[]> seekBuffer;
     static const WORD VK_C = static_cast<WORD>(LOBYTE( VkKeyScan( L'c' ) ));
 
     // VS fakes newline indentation until the user adds input. Notepad has no virtual
@@ -477,14 +477,13 @@ void GetBaselineIndentation()
         std::this_thread::sleep_for( std::chrono::milliseconds( CLIPBOARD_REFRESH ) );
 
         len = 0;
-        delete[] seekBuffer;
         seekBuffer = GetClipboard();        
         if( seekBuffer == nullptr )
         {
             resetCursor = false;
             break;
         }
-        len = wcslen( seekBuffer );
+        len = wcslen( seekBuffer.get() );
 
         if( g_LastClipboardSeq == GetClipboardSequence() )
         {
@@ -525,8 +524,6 @@ void GetBaselineIndentation()
             g_BaselineIndentation.push_back( seekBuffer[i] );
         }
     }
-
-    delete[] seekBuffer;
 }
 
 //----------------------------------------------------------------------------
@@ -1058,7 +1055,7 @@ void DemoTypeController()
 
     if( g_ClipboardCache != nullptr )
     {
-        SetClipboard( g_ClipboardCache );
+        SetClipboard( g_ClipboardCache.get() );
         g_LastClipboardSeq = GetClipboardSequence();
     }
 
@@ -1212,7 +1209,6 @@ bool GetDemoTypeClipboard()
     }
     g_LastClipboardSeq = sequenceNum;
 
-    delete[] g_ClipboardCache;
     g_ClipboardCache = GetClipboard();
 
     // Confirm clipboard data begins with the safety prefix
@@ -1230,7 +1226,7 @@ bool GetDemoTypeClipboard()
         }
     }
     
-    g_Text.assign( g_ClipboardCache + safetyPrefixLen );
+    g_Text.assign( g_ClipboardCache.get() + safetyPrefixLen );
     g_Clipboard = true;
     g_Index = 0;
     return CleanDemoTypeText();
@@ -1407,16 +1403,15 @@ int StartDemoType( const TCHAR* filePath, const DWORD speedSlider, const BOOLEAN
         // Check if the file has been updated since last read
         if( !g_Text.empty() )
         {
-            HANDLE hFile = CreateFile( filePath, GENERIC_READ, FILE_SHARE_READ,
-                nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
-            if( hFile == INVALID_HANDLE_VALUE )
+            wil::unique_hfile hFile{ CreateFile( filePath, GENERIC_READ, FILE_SHARE_READ,
+                nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr ) };
+            if( !hFile )
             {
-                CloseHandle( hFile );
                 return ERROR_LOADING_FILE;
             }
 
             FILETIME latestFileWrite;
-            if( GetFileTime( hFile, nullptr, nullptr, &latestFileWrite ) )
+            if( GetFileTime( hFile.get(), nullptr, nullptr, &latestFileWrite ) )
             {
                 if( CompareFileTime( &latestFileWrite, &lastFileWrite ) == 1 )
                 {
@@ -1424,7 +1419,6 @@ int StartDemoType( const TCHAR* filePath, const DWORD speedSlider, const BOOLEAN
                     lastFileWrite = latestFileWrite;
                 }
             }
-            CloseHandle( hFile );
         }
 
         if( g_Text.empty() )
