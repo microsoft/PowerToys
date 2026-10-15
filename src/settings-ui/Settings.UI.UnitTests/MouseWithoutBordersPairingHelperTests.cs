@@ -11,11 +11,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests;
 public sealed class MouseWithoutBordersPairingHelperTests
 {
     [DataTestMethod]
-    [DataRow("mwb-dpapi:v1:AQID", true, true)]
+    [DataRow("mwb-dpapi:v1:TEST", true, true)]
     [DataRow("mwb-dpapi:v1:", true, false)]
     [DataRow("mwb-dpapi:v1:!", true, false)]
-    [DataRow("mwb-dpapi:v2:AQID", true, false)]
-    [DataRow("MWB-DPAPI:v1:AQID", true, false)]
+    [DataRow("mwb-dpapi:v2:TEST", true, false)]
+    [DataRow("MWB-DPAPI:v1:TEST", true, false)]
     [DataRow("mwb-dpapi:v1:A QID", true, false)]
     [DataRow("ordinary", false, false)]
     [DataRow(null, false, false)]
@@ -28,7 +28,7 @@ public sealed class MouseWithoutBordersPairingHelperTests
     [TestMethod]
     public void ServiceDisplayRequiresFreshRpcResultForPlaintext()
     {
-        const string encrypted = "mwb-dpapi:v1:AQID";
+        const string encrypted = "mwb-dpapi:v1:TEST";
         Assert.AreEqual("********", MouseWithoutBordersPairingHelper.GetDisplayValue(encrypted, true, true));
         Assert.AreEqual("********", MouseWithoutBordersPairingHelper.GetDisplayValue(encrypted, false, true, "RPC-KEY"));
         Assert.AreEqual("RPC-KEY", MouseWithoutBordersPairingHelper.GetDisplayValue(encrypted, true, true, "RPC-KEY"));
@@ -39,11 +39,11 @@ public sealed class MouseWithoutBordersPairingHelperTests
     [TestMethod]
     public void ModeTransitionsRequireSetupRatherThanAcceptingMarkers()
     {
-        Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:AQID", false));
+        Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:TEST", false));
         Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("ordinary", true));
         Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("********", false));
         Assert.IsFalse(MouseWithoutBordersPairingHelper.PairingSetupRequired("ordinary", false));
-        Assert.IsFalse(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:AQID", true));
+        Assert.IsFalse(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:TEST", true));
         Assert.IsFalse(MouseWithoutBordersPairingHelper.CanManagePairing(false, true));
         Assert.IsTrue(MouseWithoutBordersPairingHelper.CanManagePairing(true, true));
         Assert.IsTrue(MouseWithoutBordersPairingHelper.CanManagePairing(false, false));
@@ -54,10 +54,10 @@ public sealed class MouseWithoutBordersPairingHelperTests
     [DataRow(true, false, "ordinary", true, false, "ordinary")]
     [DataRow(false, true, "ordinary", false, true, "")]
     [DataRow(true, true, "ordinary", true, true, "")]
-    [DataRow(false, true, "mwb-dpapi:v1:AQID", false, false, "********")]
-    [DataRow(true, true, "mwb-dpapi:v1:AQID", true, false, "********")]
-    [DataRow(false, false, "mwb-dpapi:v1:AQID", true, true, "")]
-    [DataRow(true, false, "mwb-dpapi:v1:AQID", true, true, "")]
+    [DataRow(false, true, "mwb-dpapi:v1:TEST", false, false, "********")]
+    [DataRow(true, true, "mwb-dpapi:v1:TEST", true, false, "********")]
+    [DataRow(false, false, "mwb-dpapi:v1:TEST", true, true, "")]
+    [DataRow(true, false, "mwb-dpapi:v1:TEST", true, true, "")]
     [DataRow(true, true, "mwb-dpapi:v1:!", true, true, "")]
     [DataRow(true, true, "********", true, true, "")]
     public void PresentationUsesPersistedFormatAndSettingsElevation(bool elevated, bool serviceEnabled, string persisted, bool canManage, bool setupRequired, string display)

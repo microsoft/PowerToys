@@ -24,6 +24,12 @@ public sealed class SettingsKeyTests
     private static readonly string[] UnpairedMachineMatrix = ["LOCAL", string.Empty, string.Empty, string.Empty];
 
     [TestMethod]
+    public void SettingsRequiresPairingKeyCodec()
+    {
+        Assert.ThrowsException<ArgumentNullException>(() => new Class.Settings(null!));
+    }
+
+    [TestMethod]
     public void SettingsPropertySerializesProtectedValueAndReadsPlaintext()
     {
         using var identity = WindowsIdentity.GetCurrent();
@@ -479,7 +485,7 @@ public sealed class SettingsKeyTests
     [DataTestMethod]
     [DataRow("")]
     [DataRow("********")]
-    [DataRow("mwb-dpapi:v1:AQID")]
+    [DataRow("mwb-dpapi:v1:TEST")]
     public void UnavailableRuntimeKeyDoesNotStartCryptoStreams(string key)
     {
         var previousKey = Encryption.MyKey;

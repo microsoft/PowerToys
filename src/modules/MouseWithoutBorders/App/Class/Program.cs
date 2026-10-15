@@ -324,15 +324,9 @@ namespace MouseWithoutBorders.Class
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(pcName);
                 EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);
-                var protectedCredentialConfigured = !Settings.IsProtectedMode ||
-                    _settings.HasPairingKey;
                 EnsureConnectOperationAvailable(
                     Settings.IsProtectedMode,
-                    protectedCredentialConfigured);
-                if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(securityKey))
-                {
-                    throw new ArgumentException("A pairing credential is required.", nameof(securityKey));
-                }
+                    _settings.HasPairingKey);
 
                 var machines = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
                 await _settings.SavePairingSettingsAsync(securityKey, machines, false, key =>

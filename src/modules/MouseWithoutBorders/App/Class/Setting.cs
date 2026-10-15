@@ -301,14 +301,10 @@ namespace MouseWithoutBorders.Class
             }
         }
 
-        internal Settings()
+        internal Settings(IPairingKeyCodec pairingKeyCodec)
         {
-            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
-            var ownerSid = Program.ResolveSettingsIpcUserSid(
-                identity.User,
-                System.Diagnostics.Process.GetCurrentProcess().SessionId,
-                Program.GetInteractiveSessionUserSid);
-            _pairingKeyCodec = DpapiPairingKeyCodec.CreateForCurrentIdentity(ownerSid);
+            ArgumentNullException.ThrowIfNull(pairingKeyCodec);
+            _pairingKeyCodec = pairingKeyCodec;
             _settingsUtils = SettingsUtils.Default;
 
             UpdateSettingsFromJson();
@@ -1338,6 +1334,16 @@ namespace MouseWithoutBorders.Class
 
     public static class Setting
     {
-        internal static Settings Values = new Settings();
+        internal static Settings Values = new Settings(CreatePairingKeyCodec());
+
+        private static IPairingKeyCodec CreatePairingKeyCodec()
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var ownerSid = Program.ResolveSettingsIpcUserSid(
+                identity.User,
+                System.Diagnostics.Process.GetCurrentProcess().SessionId,
+                Program.GetInteractiveSessionUserSid);
+            return DpapiPairingKeyCodec.CreateForCurrentIdentity(ownerSid);
+        }
     }
 }

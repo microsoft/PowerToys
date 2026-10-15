@@ -427,7 +427,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.AreEqual("machine", pcName);
             Assert.AreEqual("key", key);
 
-            foreach (var inputs in new[] { ("   ", "key"), ("machine", " \t "), ("machine", "mwb-dpapi:v1:AQID"), ("machine", "********") })
+            foreach (var inputs in new[] { ("   ", "key"), ("machine", " \t "), ("machine", "mwb-dpapi:v1:TEST"), ("machine", "********") })
             {
                 state.ConnectPCName = inputs.Item1;
                 state.ConnectSecurityKey = inputs.Item2;
@@ -579,7 +579,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
 
         [DataTestMethod]
         [DataRow("legacy-plaintext")]
-        [DataRow("mwb-dpapi:v1:BAUG")]
+        [DataRow("mwb-dpapi:v1:DATA")]
         public async Task PendingServiceKeyAcceptsEncryptedSettingsReload(string savedValue)
         {
             var state = new MouseWithoutBordersPairingState();
@@ -593,7 +593,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 _ => Assert.Fail("The operation should complete."),
                 isServiceKeyGeneration: true);
 
-            var configuredValue = "mwb-dpapi:v1:AQID";
+            var configuredValue = "mwb-dpapi:v1:TEST";
             if (state.ShouldClearForSettingsReload(true, savedValue, true, configuredValue))
             {
                 state.Clear();
@@ -614,7 +614,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         {
             var state = new MouseWithoutBordersPairingState();
             var setupValue = MouseWithoutBordersIpc.PairingSetupRequiredIndicator;
-            var configuredValue = "mwb-dpapi:v1:AQID";
+            var configuredValue = "mwb-dpapi:v1:TEST";
             Assert.IsTrue(state.ShouldClearForSettingsReload(true, setupValue, true, configuredValue));
 
             var acknowledgement = new TaskCompletionSource<bool>();
@@ -642,9 +642,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 _ => Assert.Fail("The operation should complete."),
                 isServiceKeyGeneration: true));
 
-            Assert.IsFalse(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:AQID", true, "mwb-dpapi:v1:BAUG"));
-            Assert.AreEqual("fresh-rpc-key", state.GetDisplayValue(true, true, "mwb-dpapi:v1:BAUG"));
-            Assert.IsTrue(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:BAUG", true, "mwb-dpapi:v1:BwgJ"));
+            Assert.IsFalse(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:TEST", true, "mwb-dpapi:v1:DATA"));
+            Assert.AreEqual("fresh-rpc-key", state.GetDisplayValue(true, true, "mwb-dpapi:v1:DATA"));
+            Assert.IsTrue(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:DATA", true, "mwb-dpapi:v1:KEYS"));
         }
 
         [TestMethod]
@@ -664,14 +664,14 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 _ => { },
                 isServiceKeyGeneration: true);
 
-            Assert.IsFalse(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:AQID", true, "mwb-dpapi:v1:BAUG"));
+            Assert.IsFalse(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:TEST", true, "mwb-dpapi:v1:DATA"));
             Assert.IsNull(state.TransientSecurityKey);
             acknowledgement.SetException(new InvalidOperationException("Pairing reply unavailable."));
 
             Assert.IsFalse(await update);
             Assert.IsTrue(state.HasError);
             Assert.IsNull(state.TransientSecurityKey);
-            Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, state.GetDisplayValue(true, true, "mwb-dpapi:v1:BAUG"));
+            Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, state.GetDisplayValue(true, true, "mwb-dpapi:v1:DATA"));
             Assert.AreEqual("machine", state.ConnectPCName);
             Assert.AreEqual("entered-key", state.ConnectSecurityKey);
             Assert.IsTrue(state.ConnectFieldsVisible);
@@ -783,12 +783,12 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             };
 
             Assert.AreEqual("saved", state.GetDisplayValue(false, false, "saved"));
-            Assert.AreEqual("transient", state.GetDisplayValue(true, true, "mwb-dpapi:v1:AQID"));
-            Assert.AreEqual("********", state.GetDisplayValue(false, true, "mwb-dpapi:v1:AQID"));
+            Assert.AreEqual("transient", state.GetDisplayValue(true, true, "mwb-dpapi:v1:TEST"));
+            Assert.AreEqual("********", state.GetDisplayValue(false, true, "mwb-dpapi:v1:TEST"));
             state.TransientSecurityKey = null;
-            Assert.AreEqual("********", state.GetDisplayValue(true, true, "mwb-dpapi:v1:AQID"));
+            Assert.AreEqual("********", state.GetDisplayValue(true, true, "mwb-dpapi:v1:TEST"));
             Assert.AreEqual(string.Empty, state.GetDisplayValue(true, true, "legacy-plaintext"));
-            Assert.AreEqual(string.Empty, state.GetDisplayValue(true, false, "mwb-dpapi:v1:AQID"));
+            Assert.AreEqual(string.Empty, state.GetDisplayValue(true, false, "mwb-dpapi:v1:TEST"));
         }
 
         [TestMethod]
@@ -799,7 +799,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 TransientSecurityKey = "transient",
             };
 
-            var savedValue = "mwb-dpapi:v1:AQID";
+            var savedValue = "mwb-dpapi:v1:TEST";
             Assert.IsFalse(MouseWithoutBordersPairingState.HasPairingContextChanged(true, savedValue, true, savedValue));
             Assert.AreEqual("transient", state.GetDisplayValue(true, true, savedValue));
             Assert.IsTrue(MouseWithoutBordersPairingState.HasPairingContextChanged(true, savedValue, true, MouseWithoutBordersIpc.PairingSetupRequiredIndicator));
@@ -839,10 +839,10 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         public void TransientServiceKeyIsNeverPartOfSerializedSettings()
         {
             var settings = new MouseWithoutBordersSettings();
-            settings.Properties.SecurityKey.Value = "mwb-dpapi:v1:AQID";
+            settings.Properties.SecurityKey.Value = "mwb-dpapi:v1:TEST";
             var state = new MouseWithoutBordersPairingState { TransientSecurityKey = "fresh-rpc-key" };
             var serialized = settings.ToJsonString();
-            StringAssert.Contains(serialized, "mwb-dpapi:v1:AQID");
+            StringAssert.Contains(serialized, "mwb-dpapi:v1:TEST");
             Assert.IsFalse(serialized.Contains("fresh-rpc-key", StringComparison.Ordinal));
             Assert.AreEqual("fresh-rpc-key", state.GetDisplayValue(true, true, settings.Properties.SecurityKey.Value));
             state.Clear();
@@ -873,8 +873,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         public void PairingSetupStateClearsAfterProvisioning()
         {
             Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("legacy-plaintext", true));
-            Assert.IsFalse(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:AQID", true));
-            Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:AQID", false));
+            Assert.IsFalse(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:TEST", true));
+            Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:TEST", false));
             Assert.IsFalse(MouseWithoutBordersPairingHelper.PairingSetupRequired("ordinary-key", false));
         }
 

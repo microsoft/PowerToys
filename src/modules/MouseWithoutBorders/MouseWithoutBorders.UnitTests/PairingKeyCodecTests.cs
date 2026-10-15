@@ -75,8 +75,8 @@ public sealed class PairingKeyCodecTests
     [DataRow("ordinary")]
     [DataRow("mwb-dpapi:v1:")]
     [DataRow("mwb-dpapi:v1:!")]
-    [DataRow("mwb-dpapi:v1:AQID")]
-    [DataRow("mwb-dpapi:v2:AQID")]
+    [DataRow("mwb-dpapi:v1:TEST")]
+    [DataRow("mwb-dpapi:v2:TEST")]
     public void MissingMalformedOrInvalidProtectedDataIsRejected(string value)
     {
         Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(value));
@@ -87,7 +87,7 @@ public sealed class PairingKeyCodecTests
     [DataRow(" ")]
     [DataRow("********")]
     [DataRow("Pairing setup required")]
-    [DataRow("mwb-dpapi:v1:AQID")]
+    [DataRow("mwb-dpapi:v1:TEST")]
     [DataRow("mwb-dpapi:v2:invalid")]
     public void NonKeysAreRejectedByBothCodecs(string value)
     {
@@ -118,7 +118,7 @@ public sealed class PairingKeyCodecTests
     [DataTestMethod]
     [DataRow("")]
     [DataRow("********")]
-    [DataRow("mwb-dpapi:v1:AQID")]
+    [DataRow("mwb-dpapi:v1:TEST")]
     public void ProtectedNonKeyPlaintextIsRejected(string value)
     {
         var payload = ProtectWithWindowsProvider("LOCAL=user", CreatePayload(value));
