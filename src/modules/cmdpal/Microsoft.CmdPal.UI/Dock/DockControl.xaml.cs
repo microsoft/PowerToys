@@ -35,11 +35,16 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
 {
+    private static readonly TimeSpan DropTimeout = TimeSpan.FromSeconds(3);
+
     private readonly ContextMenuHost _menuHost;
 
     private DockViewModel _viewModel;
+    private WeakReference<DockItemViewModel>? _lastFocusedItem;
 
     internal DockViewModel ViewModel => _viewModel;
+
+    internal bool HasRememberedFocus => _lastFocusedItem?.TryGetTarget(out _) == true;
 
     /// <summary>
     /// Gets or sets the HWND of the parent DockWindow that owns this control.
@@ -309,10 +314,19 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         }
     }
 
+    private void BandItem_GotFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is DockItemControl { Tag: DockItemViewModel item })
+        {
+            _lastFocusedItem = new(item);
+        }
+    }
+
+    internal void ResetRememberedFocus() => _lastFocusedItem = null;
+
     private void BandItem_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        // Escape is how the user backs out of the dock after the focus shortcut put them
-        // there. Edit mode already owns Escape, so leave it alone in that case.
+        // Edit mode owns Escape while bands are being edited.
         if (!IsEditMode && e.Key == VirtualKey.Escape)
         {
             KeyboardFocusReleaseRequested?.Invoke(this, EventArgs.Empty);
@@ -340,26 +354,74 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     internal event EventHandler? KeyboardFocusReleaseRequested;
 
     /// <summary>
-    /// Moves keyboard focus to the first dock item. Returns false when there is nothing to
-    /// focus, which tells the caller to leave the user where they were.
+    /// Moves focus across bands in either direction, optionally wrapping within this dock.
     /// </summary>
-    internal bool TryFocusFirstItem()
+    internal bool TryFocusNextItem(bool moveFromCurrent, bool wrap, bool reverse, bool restoreLastFocus)
     {
         ListView[] listViews = [StartListView, CenterListView, EndListView];
+        List<(ItemsRepeater Repeater, int Index)> items = [];
+        var focusedItem = moveFromCurrent ? FocusManager.GetFocusedElement(XamlRoot) as DockItemControl : null;
+        var focusedIndex = -1;
+        var rememberedIndex = -1;
+        DockItemViewModel? rememberedItem = null;
+        if (restoreLastFocus)
+        {
+            _lastFocusedItem?.TryGetTarget(out rememberedItem);
+        }
 
         foreach (var listView in listViews)
         {
-            var item = listView.FindDescendant<DockItemControl>();
-
-            // Keyboard, not Programmatic. Programmatic focus draws no focus rect, so on a
-            // pinned dock the shortcut would work and look like it did nothing.
-            if (item is not null && item.Focus(FocusState.Keyboard))
+            for (var bandIndex = 0; bandIndex < listView.Items.Count; bandIndex++)
             {
-                return true;
+                var container = listView.ContainerFromIndex(bandIndex) as ListViewItem;
+                var repeater = container?.FindDescendant<ItemsRepeater>();
+                if (repeater?.ItemsSourceView is not { } source)
+                {
+                    continue;
+                }
+
+                // Recycled visual children need not be in data order.
+                for (var itemIndex = 0; itemIndex < source.Count; itemIndex++)
+                {
+                    if (focusedItem is not null && ReferenceEquals(repeater.TryGetElement(itemIndex), focusedItem))
+                    {
+                        focusedIndex = items.Count;
+                    }
+
+                    if (rememberedItem is not null && ReferenceEquals(source.GetAt(itemIndex), rememberedItem))
+                    {
+                        rememberedIndex = items.Count;
+                    }
+
+                    items.Add((repeater, itemIndex));
+                }
             }
         }
 
-        return false;
+        return DockFocusNavigation.TryFocusNext(
+            items.Count,
+            focusedIndex,
+            index =>
+            {
+                var (repeater, itemIndex) = items[index];
+                if (repeater.GetOrCreateElement(itemIndex) is not DockItemControl item)
+                {
+                    return false;
+                }
+
+                // Realized items need a layout position before focus can scroll them into view.
+                item.UpdateLayout();
+                if (!item.Focus(FocusState.Keyboard))
+                {
+                    return false;
+                }
+
+                item.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
+                return true;
+            },
+            wrap,
+            reverse,
+            rememberedIndex);
     }
 
     private bool TryInvokeBandItem(object sender)
@@ -910,6 +972,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
         e.Handled = true;
 
+        using var timeout = new CancellationTokenSource(DropTimeout);
+        var deferral = e.GetDeferral();
         try
         {
             var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
@@ -919,10 +983,10 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
                 return;
             }
 
-            var foundItem = false;
             if (hasStorageItems)
             {
-                var items = await e.DataView.GetStorageItemsAsync();
+                var items = await e.DataView.GetStorageItemsAsync().AsTask().WaitAsync(timeout.Token);
+                var bookmarks = new List<(string Name, string Target)>();
                 foreach (var item in items)
                 {
                     var path = item.Path;
@@ -931,28 +995,42 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
                         continue;
                     }
 
-                    var name = Path.GetFileNameWithoutExtension(path);
-                    AddBookmarkAndPinToDock(bookmarksManager, name, path);
-                    foundItem = true;
+                    bookmarks.Add(await DockDropHelper.GetBookmarkAsync(path, timeout.Token));
                 }
-            }
 
-            if (foundItem)
-            {
-                return;
+                timeout.Token.ThrowIfCancellationRequested();
+                foreach (var (name, target) in bookmarks)
+                {
+                    AddBookmarkAndPinToDock(bookmarksManager, name, target);
+                }
+
+                if (bookmarks.Count > 0)
+                {
+                    return;
+                }
             }
 
             if (hasUri)
             {
-                var uri = await e.DataView.GetUriAsync();
+                var uri = await e.DataView.GetUriAsync().AsTask().WaitAsync(timeout.Token);
+                timeout.Token.ThrowIfCancellationRequested();
                 var url = uri.AbsoluteUri;
                 var name = uri.Host;
                 AddBookmarkAndPinToDock(bookmarksManager, name, url);
             }
         }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+        {
+            Logger.LogWarning("[DockDrop] Timed out resolving dropped items");
+            WeakReferenceMessenger.Default.Send(new ShowToastMessage(RS_.GetString("Dock_Drop_TimedOut")));
+        }
         catch (Exception ex)
         {
             Logger.LogError("[DockDrop] Error handling file drop on dock", ex);
+        }
+        finally
+        {
+            deferral.Complete();
         }
     }
 

@@ -77,6 +77,22 @@ public class AllAppsPageTests : AppsTestBase
     }
 
     [TestMethod]
+    public async Task AllAppsPage_TryGetCurrentItemUsesPublishedCatalogWithoutReloading()
+    {
+        var mockCache = new MockAppCache();
+        mockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe"));
+        var page = new AllAppsPage(mockCache);
+        await Task.Delay(100);
+
+        var expected = page.GetItems().OfType<AppListItem>().Single();
+
+        Assert.IsTrue(page.TryGetCurrentItem(expected.Command.Id, out var actual));
+        Assert.AreSame(expected, actual);
+        Assert.IsFalse(page.TryGetCurrentItem("missing", out var missing));
+        Assert.IsNull(missing);
+    }
+
+    [TestMethod]
     public async Task AllAppsPage_GetItems_HidesSubtitlesWhenSettingEnabled()
     {
         // Arrange
@@ -158,6 +174,68 @@ public class AllAppsPageTests : AppsTestBase
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var heroJumbo));
         Assert.IsTrue(heroJumbo);
         CollectionAssert.AreEqual(new[] { app.JumboIconPath, app.IcoPath, app.ExePath }, heroCandidates);
+    }
+
+    [TestMethod]
+    [DataRow(".lnk")]
+    [DataRow(".LNK")]
+    public void AppListItem_ShortcutHeroPrefersShellRenderingAndKeepsResourceFallbacks(string extension)
+    {
+        var app = new AppItem
+        {
+            Name = "Java",
+            IcoPath = @"C:\Program Files\Java\java.exe,0",
+            ExePath = @"C:\Start Menu\Java" + extension,
+            FullExecutablePath = @"C:\Program Files\Java\javacpl.exe",
+        };
+        var item = new AppListItem(app, useThumbnails: true);
+
+        var rowIcon = (IconInfo)item.Icon!;
+        Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
+        Assert.IsFalse(rowJumbo);
+        CollectionAssert.AreEqual(new[] { app.IcoPath, app.FullExecutablePath }, rowCandidates);
+
+        var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
+        Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var heroJumbo));
+        Assert.IsTrue(heroJumbo);
+        CollectionAssert.AreEqual(new[] { app.ExePath, app.IcoPath, app.FullExecutablePath }, heroCandidates);
+    }
+
+    [TestMethod]
+    public void AppListItem_ShortcutHeroKeepsExplicitJumboSourceFirst()
+    {
+        var app = new AppItem
+        {
+            Name = "Custom App",
+            IcoPath = @"C:\Icons\small.ico,0",
+            JumboIconPath = @"C:\Icons\large.ico,0",
+            ExePath = @"C:\Start Menu\Custom App.lnk",
+            FullExecutablePath = @"C:\Apps\custom.exe",
+        };
+        var item = new AppListItem(app, useThumbnails: true);
+        var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
+
+        Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var candidates, out var jumbo));
+        Assert.IsTrue(jumbo);
+        CollectionAssert.AreEqual(new[] { app.JumboIconPath, app.IcoPath, app.FullExecutablePath }, candidates);
+    }
+
+    [TestMethod]
+    public void AppListItem_NamespaceShortcutHeroUsesOneShellCandidate()
+    {
+        var shortcutPath = @"C:\Desktop\About Java - Shortcut.lnk";
+        var app = new AppItem
+        {
+            Name = "About Java",
+            IcoPath = shortcutPath,
+            ExePath = shortcutPath,
+        };
+        var item = new AppListItem(app, useThumbnails: true);
+        var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
+
+        Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var candidates, out var jumbo));
+        Assert.IsTrue(jumbo);
+        CollectionAssert.AreEqual(new[] { shortcutPath }, candidates);
     }
 
     [TestMethod]

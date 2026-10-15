@@ -17,6 +17,15 @@ public record SettingsModel
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    public const int DefaultCompactCenterHeightPercentage = 75;
+
+    internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
+    internal const int MaxQuickAccessShelfPinnedCommandLimit = 99;
+    internal const int DefaultQuickAccessShelfPinnedCommandLimit = 9;
+    internal const int MinRecentCommandsDisplayLimit = 1;
+    internal const int MaxRecentCommandsDisplayLimit = 10;
+    internal const int DefaultRecentCommandsDisplayLimit = 5;
+
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
     /// <summary>
@@ -46,6 +55,12 @@ public record SettingsModel
         get => _dockFocusHotkey;
         init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
     }
+
+    public bool DockFocusPrimaryFirst { get; init; }
+
+    public bool DockFocusAcrossMonitors { get; init; } = true;
+
+    public bool DockRememberLastFocusedItem { get; init; } = true;
 
     public bool UseLowLevelGlobalHotkey { get; init; }
 
@@ -80,11 +95,39 @@ public record SettingsModel
 
     public bool ShowQuickAccessShelf { get; init; }
 
+    public AltNumberShortcutBehavior ListItemAltNumberBehavior { get; init; }
+
+    public RecentCommandsPlacement RecentCommandsOnQuickAccessShelf { get; init; }
+
+    public RecentCommandsPlacement RecentCommandsOnHome { get; init; }
+
+    private int _quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit;
+
+    public int QuickAccessShelfPinnedCommandLimit
+    {
+        get => _quickAccessShelfPinnedCommandLimit;
+        init => _quickAccessShelfPinnedCommandLimit = Math.Clamp(
+            value,
+            MinQuickAccessShelfPinnedCommandLimit,
+            MaxQuickAccessShelfPinnedCommandLimit);
+    }
+
+    private int _recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit;
+
+    public int RecentCommandsDisplayLimit
+    {
+        get => _recentCommandsDisplayLimit;
+        init => _recentCommandsDisplayLimit = Math.Clamp(
+            value,
+            MinRecentCommandsDisplayLimit,
+            MaxRecentCommandsDisplayLimit);
+    }
+
     // When compact mode is on and the palette is centered on launch, this is the relative
     // height from the bottom of the screen (as a percentage) at which the collapsed search
     // box is vertically centered. 75 places it in the upper portion of the display. Ignored
     // when compact mode is off.
-    public int CompactCenterHeightPercentage { get; set; } = 75;
+    public int CompactCenterHeightPercentage { get; set; } = DefaultCompactCenterHeightPercentage;
 
     private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -205,7 +248,12 @@ public record SettingsModel
           string[]? fallbackRanks = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
           ImmutableList<TopLevelHotkey>? commandHotkeys = null,
-          bool enableExternalCommandLinks = true)
+          bool enableExternalCommandLinks = true,
+          int quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit,
+          int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit,
+          bool dockFocusAcrossMonitors = true,
+          bool dockRememberLastFocusedItem = true,
+          bool dockFocusPrimaryFirst = false)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -213,6 +261,11 @@ public record SettingsModel
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
         EnableExternalCommandLinks = enableExternalCommandLinks;
+        QuickAccessShelfPinnedCommandLimit = quickAccessShelfPinnedCommandLimit;
+        RecentCommandsDisplayLimit = recentCommandsDisplayLimit;
+        DockFocusAcrossMonitors = dockFocusAcrossMonitors;
+        DockRememberLastFocusedItem = dockRememberLastFocusedItem;
+        DockFocusPrimaryFirst = dockFocusPrimaryFirst;
     }
 
     public SettingsModel()
@@ -406,11 +459,47 @@ public record SettingsModel
         return WithPinnedCommands(pinnedCommands);
     }
 
-    private int FindPinnedCommandIndex(string providerId, string commandId)
+    public SettingsModel TryPlacePinnedCommand(
+        string providerId,
+        string commandId,
+        string targetProviderId,
+        string targetCommandId,
+        bool placeAfter)
     {
-        for (var i = 0; i < PinnedCommands.Count; i++)
+        var sourceIndex = FindPinnedCommandIndex(providerId, commandId);
+        var targetIndex = FindPinnedCommandIndex(targetProviderId, targetCommandId);
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex == targetIndex)
         {
-            var pinnedCommand = PinnedCommands[i];
+            return this;
+        }
+
+        var pinnedCommand = PinnedCommands[sourceIndex];
+        var pinnedCommands = PinnedCommands.RemoveAt(sourceIndex);
+
+        targetIndex = FindPinnedCommandIndex(pinnedCommands, targetProviderId, targetCommandId);
+        if (targetIndex < 0)
+        {
+            return this;
+        }
+
+        var insertionIndex = targetIndex + (placeAfter ? 1 : 0);
+        pinnedCommands = pinnedCommands.Insert(insertionIndex, pinnedCommand);
+        return PinnedCommands.SequenceEqual(pinnedCommands)
+            ? this
+            : WithPinnedCommands(pinnedCommands);
+    }
+
+    private int FindPinnedCommandIndex(string providerId, string commandId)
+        => FindPinnedCommandIndex(PinnedCommands, providerId, commandId);
+
+    private static int FindPinnedCommandIndex(
+        IReadOnlyList<PinnedCommandSettings> pinnedCommands,
+        string providerId,
+        string commandId)
+    {
+        for (var i = 0; i < pinnedCommands.Count; i++)
+        {
+            var pinnedCommand = pinnedCommands[i];
             if (pinnedCommand.ProviderId == providerId &&
                 pinnedCommand.CommandId == commandId)
             {
@@ -508,4 +597,17 @@ public enum EscapeKeyBehavior
     AlwaysGoBack = 1,
     AlwaysDismiss = 2,
     AlwaysHide = 3,
+}
+
+public enum RecentCommandsPlacement
+{
+    Hidden = 0,
+    BeforePinned = 1,
+    AfterPinned = 2,
+}
+
+public enum AltNumberShortcutBehavior
+{
+    Run = 0,
+    Select = 1,
 }

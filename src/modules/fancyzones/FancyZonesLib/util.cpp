@@ -267,4 +267,29 @@ namespace FancyZonesUtils
         inputKey[0].ki.dwExtraInfo = PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG; // Prevent hook re-trigger if this utility is used in the future
         SendInput(1, inputKey, sizeof(INPUT));
     }
+
+    std::optional<GUID> PickNextLayoutId(const std::vector<GUID>& layoutIds, const std::optional<GUID>& current, bool reverse) noexcept
+    {
+        const auto size = static_cast<int>(layoutIds.size());
+        if (size < 2)
+        {
+            return std::nullopt;
+        }
+
+        // When the currently applied layout is not part of the cycle, start from its beginning (or end)
+        int next = reverse ? size - 1 : 0;
+        if (current.has_value())
+        {
+            for (int i = 0; i < size; ++i)
+            {
+                if (layoutIds[i] == current.value())
+                {
+                    next = (i + (reverse ? size - 1 : 1)) % size;
+                    break;
+                }
+            }
+        }
+
+        return layoutIds[next];
+    }
 }

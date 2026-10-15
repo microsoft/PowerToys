@@ -3,12 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class ExtensionPage : Page
+public sealed partial class ExtensionPage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -19,11 +22,46 @@ public sealed partial class ExtensionPage : Page
         this.InitializeComponent();
     }
 
+    public void Dispose()
+    {
+        ViewModel?.Dispose();
+        FallbackRankerDialog?.Dispose();
+    }
+
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        ViewModel = e.Parameter is ProviderSettingsViewModel vm
-            ? vm
-            : throw new ArgumentException($"{nameof(ExtensionPage)} navigation args should be passed a {nameof(ProviderSettingsViewModel)}");
+        var provider = e.Parameter as CommandProviderWrapper
+            ?? throw new ArgumentException($"{nameof(ExtensionPage)} navigation args should be passed a {nameof(CommandProviderWrapper)}");
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+
+        var settings = settingsService.Settings;
+        var (model, providerSettings) = settings.GetProviderSettings(provider);
+        if (!ReferenceEquals(model, settings))
+        {
+            settingsService.UpdateSettings(current => current.GetProviderSettings(provider).Model, hotReload: false);
+            providerSettings = settingsService.Settings.ProviderSettings[provider.ProviderId];
+        }
+
+        // Navigation retains the shared provider, while each page owns its own settings view model.
+        ViewModel = new ProviderSettingsViewModel(provider, providerSettings, settingsService);
+    }
+
+    internal FrameworkElement? FindCommandTarget(string commandId)
+    {
+        if (ViewModel?.IsEnabled != true || CommandSettingsRepeater?.ItemsSource is not IReadOnlyList<TopLevelViewModel> commands)
+        {
+            return null;
+        }
+
+        for (var index = 0; index < commands.Count; index++)
+        {
+            if (string.Equals(commands[index].Id, commandId, StringComparison.Ordinal))
+            {
+                return CommandSettingsRepeater.GetOrCreateElement(index) as FrameworkElement;
+            }
+        }
+
+        return null;
     }
 
     private async void RankButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

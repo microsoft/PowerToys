@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Numerics;
+using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI.Controls;
 using ManagedCommon;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Dispatching;
@@ -40,6 +42,17 @@ internal sealed class SettingsTargetHighlighter
 
         try
         {
+            // The expander's outer bounds include animated content; highlight its header row.
+            if (target is SettingsExpander)
+            {
+                if (target.FindDescendant("ExpanderHeader") is not { } header)
+                {
+                    return;
+                }
+
+                target = header;
+            }
+
             // Preserve controls that already own a composition child visual; a leftover
             // glow of ours is replaced instead.
             if (ElementCompositionPreview.GetElementChildVisual(target) is { } existing &&
@@ -60,9 +73,8 @@ internal sealed class SettingsTargetHighlighter
             spriteVisual.Comment = HighlightVisualComment;
             spriteVisual.Offset = new Vector3(-HighlightPadding, -HighlightPadding, 0);
             spriteVisual.Shadow = dropShadow;
-            spriteVisual.Size = new Vector2(
-                (float)target.ActualWidth + (HighlightPadding * 2),
-                (float)target.ActualHeight + (HighlightPadding * 2));
+            spriteVisual.RelativeSizeAdjustment = Vector2.One;
+            spriteVisual.Size = new Vector2(HighlightPadding * 2);
 
             var timer = target.DispatcherQueue.CreateTimer();
             timer.Interval = HighlightDuration;

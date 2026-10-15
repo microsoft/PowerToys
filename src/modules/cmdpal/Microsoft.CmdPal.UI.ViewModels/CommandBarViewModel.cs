@@ -146,11 +146,14 @@ public sealed partial class CommandBarViewModel : ObservableObject
         PerformCommand(SecondaryCommand);
     }
 
+    public void InvokeContextCommand(CommandContextItemViewModel command) => PerformCommand(command);
+
     private void PerformCommand(CommandItemViewModel? command)
     {
         if (command is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+            var message = new PerformCommandMessage(command);
+            WeakReferenceMessenger.Default.Send(message);
         }
     }
 }

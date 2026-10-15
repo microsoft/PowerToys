@@ -36,7 +36,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     private FuzzyTargetCache _titleCache;
     private FuzzyTargetCache _subtitleCache;
 
+    private ExtensionPropertySubscription _modelSubscription;
+
     internal InitializedState Initialized { get; private set; } = InitializedState.Uninitialized;
+
+    // Use this atomic gate for lifetime checks; InitializedState.CleanedUp is recorded after teardown.
+    protected bool IsCleanedUp => _modelSubscription.IsClosed;
 
     protected bool IsFastInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.FastInitialized);
 
@@ -148,7 +153,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public void FastInitializeProperties()
     {
-        if (IsFastInitialized)
+        if (IsFastInitialized || IsCleanedUp)
         {
             return;
         }
@@ -160,7 +165,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var command = model.Command;
-        ReplaceCommand(command);
+        if (!ReplaceCommand(command))
+        {
+            return;
+        }
 
         _itemTitle = model.Title;
         Subtitle = model.Subtitle;
@@ -174,7 +182,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     //// Called from ListViewModel on background thread started in ListPage.xaml.cs
     public override void InitializeProperties()
     {
-        if (IsInitialized)
+        if (IsInitialized || IsCleanedUp)
         {
             return;
         }
@@ -185,7 +193,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var model = _commandItemModel.Unsafe;
-        if (model is null)
+        if (model is null || IsCleanedUp)
         {
             return;
         }
@@ -200,8 +208,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         // TODO: Do these need to go into FastInit?
-        model.PropChanged += Model_PropChanged;
-        Command.PropertyChanged += Command_PropertyChanged;
+        SubscribeToChanges(model);
+        if (IsCleanedUp)
+        {
+            return;
+        }
 
         UpdateProperty(nameof(Name));
         UpdateProperty(nameof(Title));
@@ -224,7 +235,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public virtual void SlowInitializeProperties()
     {
-        if (IsSelectedInitialized)
+        if (IsSelectedInitialized || IsCleanedUp)
         {
             return;
         }
@@ -235,7 +246,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var model = _commandItemModel.Unsafe;
-        if (model is null)
+        if (model is null || IsCleanedUp)
         {
             return;
         }
@@ -316,8 +327,35 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         return false;
     }
 
+    private void SubscribeToChanges(ICommandItem model)
+    {
+        if (_modelSubscription.TrySubscribe(model, Model_PropChanged))
+        {
+            SubscribeToCommand(Command);
+        }
+    }
+
+    private void SubscribeToCommand(CommandViewModel command)
+    {
+        if (IsCleanedUp)
+        {
+            return;
+        }
+
+        command.PropertyChanged += Command_PropertyChanged;
+        if (IsCleanedUp || !ReferenceEquals(command, Command))
+        {
+            command.PropertyChanged -= Command_PropertyChanged;
+        }
+    }
+
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
+        if (IsCleanedUp)
+        {
+            return;
+        }
+
         try
         {
             FetchProperty(args.PropertyName);
@@ -343,10 +381,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 // ReplaceCommand detaches this item's handler from the command it
                 // displaces, so there is no manual unsubscribe to remember here.
-                ReplaceCommand(command);
+                if (!ReplaceCommand(command))
+                {
+                    return;
+                }
 
                 Command.InitializeProperties();
-                Command.PropertyChanged += Command_PropertyChanged;
+                SubscribeToCommand(Command);
 
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
@@ -414,6 +455,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private void Command_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        if (IsCleanedUp)
+        {
+            return;
+        }
+
         var propertyName = e.PropertyName;
         var model = _commandItemModel.Unsafe;
         if (model is null)
@@ -459,7 +505,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     /// </summary>
     private void TryCreateDefaultCommandContextItem(ICommand? commandModel)
     {
-        if (_defaultCommandContextItemViewModel is not null)
+        if (IsCleanedUp || _defaultCommandContextItemViewModel is not null)
         {
             return;
         }
@@ -467,7 +513,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // We only synthesize the primary entry when the command is already
         // usable; a null/empty primary must still fall back to late
         // menu opening through child actions.
-        if (string.IsNullOrEmpty(Command.Name) || commandModel is null)
+        var command = Command;
+        if (string.IsNullOrEmpty(command.Name) || commandModel is null)
         {
             return;
         }
@@ -484,17 +531,26 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // The synthesized entry stands in for this item's own command, so it
         // shares the view-model rather than building a second one for the same
         // extension object.
-        defaultContextItem.BorrowCommand(Command);
+        defaultContextItem.BorrowCommand(command);
 
-        _defaultCommandContextItemViewModel = defaultContextItem;
-
-        UpdateDefaultContextItemIcon();
-
+        var published = false;
         lock (_contextItemsLock)
         {
-            RefreshContextMenuSnapshotUnsafe();
+            if (!IsCleanedUp && _defaultCommandContextItemViewModel is null && ReferenceEquals(command, Command))
+            {
+                _defaultCommandContextItemViewModel = defaultContextItem;
+                RefreshContextMenuSnapshotUnsafe();
+                published = true;
+            }
         }
 
+        if (!published)
+        {
+            defaultContextItem.SafeCleanup();
+            return;
+        }
+
+        UpdateDefaultContextItemIcon();
         UpdateProperty(nameof(AllCommands));
     }
 
@@ -547,15 +603,34 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     /// <remarks>
     /// Takes the extension command instead of a view-model - the view-model is built here so that we can guarantee ownership..
     /// </remarks>
-    private void ReplaceCommand(ICommand? model)
+    private bool ReplaceCommand(ICommand? model)
     {
+        if (IsCleanedUp)
+        {
+            return false;
+        }
+
         var command = new CommandViewModel(model, PageContext);
 
         // Publish only after the command's cached identity and type flags are ready.
         command.FastInitializeProperties();
-        var replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: true));
+        CommandOwnership? replaced = null;
+        lock (_contextItemsLock)
+        {
+            if (!IsCleanedUp)
+            {
+                replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: true));
+            }
+        }
+
+        if (replaced is null)
+        {
+            command.SafeCleanup();
+            return false;
+        }
 
         ReleaseReplaced(replaced, command);
+        return !IsCleanedUp;
     }
 
     /// <summary>
@@ -566,7 +641,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     /// </remarks>
     private void BorrowCommand(CommandViewModel command)
     {
-        var replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: false));
+        CommandOwnership replaced;
+        lock (_contextItemsLock)
+        {
+            if (IsCleanedUp)
+            {
+                return;
+            }
+
+            replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: false));
+        }
 
         ReleaseReplaced(replaced, command);
     }
@@ -642,6 +726,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     protected override void UnsafeCleanup()
     {
+        var wasSubscribed = _modelSubscription.Close();
         base.UnsafeCleanup();
 
         List<IContextItemViewModel> freedItems;
@@ -681,10 +766,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             commandState.Command.SafeCleanup();
         }
 
-        var model = _commandItemModel.Unsafe;
-        if (model is not null)
+        if (wasSubscribed)
         {
-            model.PropChanged -= Model_PropChanged;
+            var model = _commandItemModel.Unsafe;
+            if (model is not null)
+            {
+                model.PropChanged -= Model_PropChanged;
+            }
         }
     }
 

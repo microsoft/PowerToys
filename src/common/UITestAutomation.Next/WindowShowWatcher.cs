@@ -18,6 +18,7 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// </remarks>
 public sealed class WindowShowWatcher : IDisposable
 {
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint EVENT_OBJECT_DESTROY = 0x8001;
     private const uint EVENT_OBJECT_SHOW = 0x8002;
     private const uint EVENT_OBJECT_HIDE = 0x8003;
@@ -25,6 +26,7 @@ public sealed class WindowShowWatcher : IDisposable
     private const uint WINEVENT_OUTOFCONTEXT = 0x0000;
     private const uint WINEVENT_SKIPOWNPROCESS = 0x0002;
     private const uint PM_REMOVE = 1;
+#pragma warning restore SA1310
 
     private readonly string className;
     private readonly long? windowHandle;

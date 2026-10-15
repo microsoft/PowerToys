@@ -93,10 +93,11 @@ public static class FancyZonesTestHelper
     public static void RestartPowerToys(UITestBase testBase)
     {
         Step(testBase, $"Stopping {FancyZonesProcess} before restarting PowerToys");
-        Assert.IsTrue(
-            WindowControl.TryKillProcessTreeByNameAndWait(FancyZonesProcess, 10_000),
+        bool stopped = WindowControl.TryKillProcessTreeByNameAndWait(FancyZonesProcess, 10_000);
+        string stoppedMessage =
             $"Could not stop {FancyZonesProcess} before restarting PowerToys. " +
-            $"Live instances: {DescribeProcesses(FancyZonesProcess)}.");
+            $"Live instances: {DescribeProcesses(FancyZonesProcess)}.";
+        Assert.IsTrue(stopped, stoppedMessage);
 
         testBase.RestartScope();
     }
@@ -575,10 +576,10 @@ public static class FancyZonesTestHelper
                     requiredConsecutiveMatches: 3,
                     pollIntervalMS: 200);
 
-                Assert.IsTrue(
-                    ready.Succeeded,
+                string readyMessage =
                     $"Explorer window {fresh.Hwnd} appeared but its title and bounds never stabilized. " +
-                    $"Last title: '{GetWindowTitle(fresh.Hwnd)}'; bounds: {WindowHelper.GetWindowBounds(fresh.Hwnd)}.");
+                    $"Last title: '{GetWindowTitle(fresh.Hwnd)}'; bounds: {WindowHelper.GetWindowBounds(fresh.Hwnd)}.";
+                Assert.IsTrue(ready.Succeeded, readyMessage);
 
                 Step(testBase, $"Explorer window {fresh.Hwnd} ready ('{GetWindowTitle(fresh.Hwnd)}')");
                 return fresh.Hwnd;
@@ -693,10 +694,10 @@ public static class FancyZonesTestHelper
 
             if (!TryGetStableGrabPoint(window, candidateIndex, preferredOffsets, out var grabPoint))
             {
-                Step(
-                    testBase,
+                string candidateMessage =
                     $"Candidate {candidateIndex + 1}/{candidateCount} never became owned by HWND {window}; " +
-                    $"bounds {WindowHelper.GetWindowBounds(window)}, foreground {WindowControl.GetForegroundWindowInfo()}");
+                    $"bounds {WindowHelper.GetWindowBounds(window)}, foreground {WindowControl.GetForegroundWindowInfo()}";
+                Step(testBase, candidateMessage);
                 continue;
             }
 
@@ -735,10 +736,10 @@ public static class FancyZonesTestHelper
             Thread.Sleep(400);
         }
 
-        Step(
-            testBase,
+        string noDragMessage =
             $"Could not start a title-bar drag: none of {candidateCount} recomputed candidate points moved HWND {window}. " +
-            $"Bounds: {WindowHelper.GetWindowBounds(window)}. Foreground owner: {WindowControl.GetForegroundWindowInfo()}");
+            $"Bounds: {WindowHelper.GetWindowBounds(window)}. Foreground owner: {WindowControl.GetForegroundWindowInfo()}";
+        Step(testBase, noDragMessage);
         return false;
     }
 
