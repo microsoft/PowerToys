@@ -39,6 +39,12 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: .\steps-ensure-dotnet-version.yml
+      parameters:
+        sdk: true
+        version: '6.0' # Required by the Guardian tool used for ESRP code signing.
+
   - template: .\steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
