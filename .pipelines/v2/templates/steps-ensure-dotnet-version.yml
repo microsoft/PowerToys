@@ -8,6 +8,9 @@ parameters:
 - name: sdk
   type: boolean
   default: false
+- name: useExistingInstallation
+  type: boolean
+  default: false
 
 # You might be wondering, "Why didn't they use UseDotNet?"
 # Azure Pipelines is practically unmaintained, that's why.
@@ -23,15 +26,25 @@ steps:
       Write-Error "Failed to download dotnet-install.ps1"
       exit 1
     }
-    $NEW_DOTNET_ROOT = "$(Agent.ToolsDirectory)\dotnet"
+    $useExistingInstallation = "${{parameters.useExistingInstallation}}" -eq "True"
+    $installOptions = @{ InstallDir = "$(Agent.ToolsDirectory)\dotnet" }
+    if ($useExistingInstallation) {
+      $installOptions.InstallDir = Split-Path (Get-Command dotnet.exe -CommandType Application).Source
+      $installOptions.NoPath = $true
+      $installOptions.SkipNonVersionedFiles = $true
+      Write-Host "Using existing .NET installation: $($installOptions.InstallDir)"
+    }
+    $NEW_DOTNET_ROOT = $installOptions.InstallDir
     $EXACT_VERSION = "${{parameters.exactVersion}}"
     if ([string]::IsNullOrWhiteSpace($EXACT_VERSION)) {
-      & ./dotnet-install.ps1 -Channel "${{parameters.version}}" -InstallDir $NEW_DOTNET_ROOT
+      & ./dotnet-install.ps1 -Channel "${{parameters.version}}" @installOptions
     } else {
-      & ./dotnet-install.ps1 -Version $EXACT_VERSION -InstallDir $NEW_DOTNET_ROOT
+      & ./dotnet-install.ps1 -Version $EXACT_VERSION @installOptions
     }
-    Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
-    Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
+    if (-not $useExistingInstallation) {
+      Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
+      Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
+    }
     Remove-Item dotnet-install.ps1 -ErrorAction:Ignore
   ${{ if eq(parameters.sdk, true) }}:
     displayName: "Install .NET ${{parameters.version}} SDK"
