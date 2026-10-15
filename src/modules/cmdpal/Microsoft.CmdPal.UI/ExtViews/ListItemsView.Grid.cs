@@ -314,6 +314,8 @@ public sealed partial class ListItemsView
 
         var current = ItemsGrid.SelectedIndex;
         var target = current;
+        var loadMore = false;
+        var wrapForward = false;
         if (current < 0)
         {
             target = 0;
@@ -327,12 +329,20 @@ public sealed partial class ListItemsView
             }
 
             target = GridNavigationLayout.MoveHorizontal(current, increaseIndex, GridItems.ItemCount);
+            wrapForward = increaseIndex && current == GridItems.ItemCount - 1;
+            loadMore = increaseIndex && target == GridItems.ItemCount - 1;
             _gridNavigationColumn = null;
         }
         else
         {
             if (!TryGetGridNavigationLayout(out var layout) || layout is null)
             {
+                return false;
+            }
+
+            if (layout.ItemCount != GridItems.ItemCount)
+            {
+                _gridNavigationLayout = null;
                 return false;
             }
 
@@ -371,11 +381,22 @@ public sealed partial class ListItemsView
                 VirtualKey.PageDown => layout.MovePage(current, down: true, column, viewportHeight),
                 _ => current,
             };
+            wrapForward = (key is VirtualKey.Down or VirtualKey.PageDown) &&
+                layout.MoveVertical(current, down: true, column, wrap: false) == current;
+            loadMore = (key is VirtualKey.Down or VirtualKey.PageDown) &&
+                layout.MoveVertical(target, down: true, column, wrap: false) == target;
         }
 
-        if (target >= 0 && target != current)
+        if (wrapForward)
         {
-            SelectGridItem(target);
+            _ = LoadMoreBeforeWrappingAsync(() => SelectGridItem(target));
+            return true;
+        }
+
+        SelectGridItem(target);
+        if (loadMore)
+        {
+            ViewModel?.LoadMoreIfNeeded();
         }
 
         return true;
@@ -469,13 +490,17 @@ public sealed partial class ListItemsView
 
         if (wrap)
         {
-            for (var i = 0; i <= groupIndex; i++)
+            _ = LoadMoreBeforeWrappingAsync(() =>
             {
-                if (TrySelectFirstTargetInGridGroup(GridItems.Groups[i], column))
+                for (var i = 0; i <= groupIndex; i++)
                 {
-                    return true;
+                    if (TrySelectFirstTargetInGridGroup(GridItems.Groups[i], column))
+                    {
+                        return;
+                    }
                 }
-            }
+            });
+            return true;
         }
 
         return false;
@@ -515,6 +540,11 @@ public sealed partial class ListItemsView
         if (target < 0 || target >= ItemsGrid.Items.Count)
         {
             return false;
+        }
+
+        if (target == ItemsGrid.SelectedIndex)
+        {
+            return true;
         }
 
         SetSectionCommandSelection(null, null);
@@ -586,6 +616,12 @@ public sealed partial class ListItemsView
         if (!wrap)
         {
             return false;
+        }
+
+        if (step > 0)
+        {
+            _ = LoadMoreBeforeWrappingAsync(() => TrySelectGridSectionCommand(0, step, column));
+            return true;
         }
 
         var wrappedStart = step > 0 ? 0 : GridItems.Groups.Count - 1;

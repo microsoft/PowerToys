@@ -60,6 +60,9 @@ public sealed class GridNavigationLayout
         }
     }
 
+    /// <summary>Gets the number of items represented by this layout.</summary>
+    public int ItemCount => _itemCount;
+
     public bool TryGetHeaderOffset(GridItemGroupViewModel group, out double offset)
         => _headerOffsets.TryGetValue(group, out offset);
 
