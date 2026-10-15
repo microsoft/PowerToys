@@ -7,7 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LightSwitch.Cli.Ipc;
+using LightSwitch.Cli.Telemetry;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 
 namespace LightSwitch.Cli;
 
@@ -27,7 +29,59 @@ public static class Program
         return true;
     });
 
-    public static async Task<int> Main(string[] args)
+    public static Task<int> Main(string[] args)
+        => RunWithTelemetryAsync(args, RunAsync, static telemetryEvent => PowerToysTelemetry.Log.WriteEvent(telemetryEvent));
+
+    internal static async Task<int> RunWithTelemetryAsync(
+        string[] args,
+        Func<string[], Task<int>> run,
+        Action<LightSwitchCLICommandEvent> writeTelemetry)
+    {
+        int exitCode = 1;
+        try
+        {
+            exitCode = await run(args).ConfigureAwait(false);
+            return exitCode;
+        }
+        finally
+        {
+            try
+            {
+                writeTelemetry(new LightSwitchCLICommandEvent
+                {
+                    CommandName = GetTelemetryCommandName(args),
+                    Successful = exitCode == 0,
+                });
+            }
+            catch (Exception)
+            {
+                // Telemetry must not change the command's result or console output.
+            }
+        }
+    }
+
+    internal static string GetTelemetryCommandName(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            return "none";
+        }
+
+        // Match only known command names; never send user-supplied values or response-file paths.
+        return args[0].ToLowerInvariant() switch
+        {
+            "status" => "status",
+            "light" => "light",
+            "dark" => "dark",
+            "toggle" => "toggle",
+            "schedule" => "schedule",
+            "--help" or "-h" or "-?" => "help",
+            "--version" => "version",
+            _ => "unknown",
+        };
+    }
+
+    private static async Task<int> RunAsync(string[] args)
     {
         try
         {
