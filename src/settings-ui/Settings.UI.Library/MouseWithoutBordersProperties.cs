@@ -48,6 +48,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowOriginalUI { get; set; }
 
+        [JsonPropertyName("show_theme_adaptive_tray_icon")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool ShowThemeAdaptiveTrayIcon { get; set; }
+
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool WrapMouse { get; set; }
 
