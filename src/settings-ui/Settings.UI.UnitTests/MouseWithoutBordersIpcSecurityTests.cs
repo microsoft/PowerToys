@@ -491,23 +491,28 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
-        public void NewKeyUsesReactiveParentStateAndChecksCurrentPermission()
+        public void PageEditGateSourceContractUsesReactiveStateAndChecksCurrentPermission()
         {
             var page = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml.cs"));
             StringAssert.Contains(page, "new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync)");
             var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
             StringAssert.Contains(viewModel.Replace("\r\n", "\n"), "public async Task SubmitNewKeyRequestAsync()\n        {\n            if (!CanManagePairing)");
-            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_pairingState.IsUpdating &&");
+            StringAssert.Contains(viewModel, "public bool CanEditSettings => !_pairingState.IsUpdating;");
+            StringAssert.Contains(viewModel, "public bool CanManagePairing => CanEditSettings &&");
             foreach (var method in new[] { "public async Task SubmitNewKeyRequestAsync()", "public async Task<bool> SubmitConnectionRequestAsync()" })
             {
                 var start = viewModel.IndexOf(method, StringComparison.Ordinal);
                 var admission = viewModel.IndexOf("var updateTask = _pairingState.TryUpdateAsync(", start, StringComparison.Ordinal);
                 var awaiting = viewModel.IndexOf("await updateTask", admission, StringComparison.Ordinal);
                 var beforeAwait = viewModel.Substring(admission, awaiting - admission);
+                StringAssert.Contains(beforeAwait, "OnPropertyChanged(nameof(CanEditSettings));");
                 StringAssert.Contains(beforeAwait, "OnPropertyChanged(nameof(CanManagePairing));");
                 StringAssert.Contains(beforeAwait, "OnPropertyChanged(nameof(CanConnectPairing));");
                 StringAssert.Contains(beforeAwait, "savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>");
                 StringAssert.Contains(beforeAwait, "LoadViewModelFromSettings(savedSettings);");
+                var expectedReload = "savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>(\"MouseWithoutBorders\");\n"
+                    + "                    LoadViewModelFromSettings(savedSettings);";
+                StringAssert.Contains(beforeAwait.Replace("\r\n", "\n"), expectedReload);
                 var expectedModeCheck = "() => UseService == useService\n"
                     + "                    && (savedSettings == null || (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled ? false : savedSettings.Properties.UseService) == useService)";
                 StringAssert.Contains(beforeAwait.Replace("\r\n", "\n"), expectedModeCheck);
@@ -518,11 +523,18 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 }
 
                 var afterAwait = viewModel.Substring(awaiting, end - awaiting);
+                StringAssert.Contains(afterAwait, "OnPropertyChanged(nameof(CanEditSettings));");
                 StringAssert.Contains(afterAwait, "OnPropertyChanged(nameof(CanManagePairing));");
                 StringAssert.Contains(afterAwait, "OnPropertyChanged(nameof(CanConnectPairing));");
             }
 
             var document = XDocument.Load(FindRepositoryFile(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml"));
+            var content = document.Descendants().Single(element => element.Name.LocalName == "SettingsPageControl");
+            Assert.AreEqual("{x:Bind ViewModel.CanEditSettings, Mode=OneWay}", (string)content.Attribute("IsEnabled"));
+            Assert.IsTrue(content.Descendants().Any(element => (string)element.Attribute("Name") == "MouseWithoutBordersWrapMouse"));
+            var clearStart = viewModel.IndexOf("public void ClearTransientPairingState()", StringComparison.Ordinal);
+            var clearEnd = viewModel.IndexOf("\n        }", clearStart, StringComparison.Ordinal);
+            StringAssert.Contains(viewModel.Substring(clearStart, clearEnd - clearStart), "OnPropertyChanged(nameof(CanEditSettings));");
             var expander = document.Descendants().Single(element => (string)element.Attribute("Name") == "MouseWithoutBordersSecurityKey");
             Assert.AreEqual("{x:Bind ViewModel.CanManagePairing, Mode=OneWay}", (string)expander.Attribute("IsEnabled"));
         }
@@ -670,39 +682,54 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
-        public async Task ClearedOperationCannotReleaseNewerPairingAdmission(bool oldFails)
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public async Task ClearedOperationRetainsAdmissionUntilItSettles(bool oldFails, bool awaitingRead)
         {
             var state = new MouseWithoutBordersPairingState();
             var oldReply = new TaskCompletionSource<bool>();
+            var read = new TaskCompletionSource<bool>();
             var oldUpdate = state.TryUpdateAsync(
-                () => oldReply.Task,
+                async () =>
+                {
+                    await oldReply.Task;
+                    await read.Task;
+                },
                 () => Assert.Fail("An old context cannot publish a key."),
                 _ => Assert.Fail("An old context cannot publish an error."));
-            state.Clear();
-            var newReply = new TaskCompletionSource<bool>();
-            var newUpdate = state.TryUpdateAsync(
-                () => newReply.Task,
-                () => state.TransientSecurityKey = "new-key",
-                _ => Assert.Fail("The current operation should complete."));
-            if (oldFails)
-            {
-                oldReply.SetException(new IOException("Old connection closed."));
-            }
-            else
+            if (awaitingRead)
             {
                 oldReply.SetResult(true);
             }
 
-            Assert.IsFalse(await oldUpdate);
+            state.Clear();
             Assert.IsTrue(state.IsUpdating);
             Assert.IsFalse(await state.TryUpdateAsync(
                 () => Task.CompletedTask,
-                () => Assert.Fail("The newer operation still owns admission."),
+                () => Assert.Fail("The outstanding operation still owns admission."),
                 _ => Assert.Fail()));
-            newReply.SetResult(true);
-            Assert.IsTrue(await newUpdate);
+            if (oldFails)
+            {
+                (awaitingRead ? read : oldReply).SetException(new IOException("Old connection closed."));
+            }
+            else
+            {
+                if (!awaitingRead)
+                {
+                    oldReply.SetResult(true);
+                }
+
+                read.SetResult(true);
+            }
+
+            Assert.IsFalse(await oldUpdate);
+            Assert.IsFalse(state.IsUpdating);
+            Assert.IsTrue(await state.TryUpdateAsync(
+                () => Task.CompletedTask,
+                () => state.TransientSecurityKey = "new-key",
+                _ => Assert.Fail()));
             Assert.IsFalse(state.IsUpdating);
             Assert.AreEqual("new-key", state.TransientSecurityKey);
         }
@@ -738,6 +765,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 _ => Assert.Fail("A cleared context must not receive errors."));
 
             state.Clear();
+            Assert.IsTrue(state.IsUpdating);
             if (fails)
             {
                 acknowledgement.SetException(new IOException("Connection closed."));
@@ -750,6 +778,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.IsFalse(await update);
             Assert.IsNull(state.TransientSecurityKey);
             Assert.IsFalse(state.HasError);
+            Assert.IsFalse(state.IsUpdating);
         }
 
         [DataTestMethod]
@@ -833,9 +862,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.IsTrue(state.ShouldClearForSettingsReload(true, setupValue, false, configuredValue));
             Assert.IsTrue(state.ShouldClearForSettingsReload(true, setupValue, true, "other-key"));
             state.Clear();
-            Assert.IsTrue(state.ShouldClearForSettingsReload(true, setupValue, true, configuredValue));
+            Assert.IsTrue(state.IsUpdating);
+            Assert.IsFalse(state.ShouldClearForSettingsReload(true, setupValue, true, configuredValue));
             acknowledgement.SetResult(true);
             Assert.IsFalse(await update);
+            Assert.IsFalse(state.IsUpdating);
         }
 
         [TestMethod]
@@ -921,6 +952,71 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var save = source.IndexOf("SettingsUtils.SaveSettings(", notifyStart, StringComparison.Ordinal);
             var beforeSave = source.Substring(notifyStart, save - notifyStart).Replace("\r\n", "\n");
             Assert.IsFalse(beforeSave.Contains("_pairingState.TransientSecurityKey != null", StringComparison.Ordinal));
+        }
+
+        [DataTestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        public async Task PageEditGateStateSimulationPreventsOrdinaryEditFromOverwritingPersistedPairing(bool useService, bool clearContext)
+        {
+            // Headless state simulation; the source contract above checks the actual page/VM wiring.
+            var state = new MouseWithoutBordersPairingState();
+            var cached = new MouseWithoutBordersSettings();
+            cached.Properties.UseService = useService;
+            cached.Properties.SecurityKey.Value = useService ? "mwb-dpapi:v1:TEST" : "old-key";
+            var application = new MouseWithoutBordersSettings();
+            application.Properties.UseService = useService;
+            application.Properties.SecurityKey.Value = useService ? "mwb-dpapi:v1:DATA" : "new-key";
+            application.Properties.MachinePool.Value = "new-machine:1";
+            application.Properties.MachineMatrixString = new() { "new-machine" };
+            var persisted = application.ToJsonString();
+            var pairingSnapshot = persisted;
+            var acknowledgement = new TaskCompletionSource<bool>();
+            var read = new TaskCompletionSource<MouseWithoutBordersSettings>();
+            MouseWithoutBordersSettings committed = null;
+            var update = state.TryUpdateAsync(
+                async () =>
+                {
+                    await acknowledgement.Task;
+                    committed = await read.Task;
+                    cached = committed;
+                },
+                () => { },
+                _ => Assert.Fail("The operation should complete."));
+
+            bool TryOrdinaryEdit()
+            {
+                if (state.IsUpdating)
+                {
+                    return false;
+                }
+
+                cached.Properties.WrapMouse = !cached.Properties.WrapMouse;
+                persisted = cached.ToJsonString();
+                return true;
+            }
+
+            Assert.AreNotEqual(application.Properties.SecurityKey.Value, cached.Properties.SecurityKey.Value);
+            Assert.IsFalse(TryOrdinaryEdit(), "The parent page gate blocks edits after persist, before acknowledgement or watcher.");
+            Assert.AreEqual(pairingSnapshot, persisted);
+            acknowledgement.SetResult(true);
+            if (clearContext)
+            {
+                state.Clear();
+            }
+
+            Assert.IsFalse(TryOrdinaryEdit(), "The page remains gated through the committed-settings read.");
+            Assert.AreEqual(pairingSnapshot, persisted);
+            read.SetResult(System.Text.Json.JsonSerializer.Deserialize<MouseWithoutBordersSettings>(persisted));
+            Assert.AreEqual(!clearContext, await update);
+            Assert.IsTrue(TryOrdinaryEdit());
+            var saved = System.Text.Json.JsonSerializer.Deserialize<MouseWithoutBordersSettings>(persisted);
+            Assert.AreEqual(application.Properties.SecurityKey.Value, saved.Properties.SecurityKey.Value);
+            Assert.AreEqual(application.Properties.MachinePool.Value, saved.Properties.MachinePool.Value);
+            CollectionAssert.AreEqual(application.Properties.MachineMatrixString, saved.Properties.MachineMatrixString);
+            Assert.AreEqual(cached.Properties.WrapMouse, saved.Properties.WrapMouse);
         }
 
         [DataTestMethod]
@@ -1110,7 +1206,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
             StringAssert.Contains(viewModel, "public bool ShowPairingSetupRequired => PairingSetupRequired;");
             StringAssert.Contains(viewModel, "public bool CanConnectPairing => CanManagePairing;");
-            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_pairingState.IsUpdating && (!UseService || IsElevated);");
+            StringAssert.Contains(viewModel, "public bool CanManagePairing => CanEditSettings && (!UseService || IsElevated);");
 
             var program = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Class\Program.cs"));
             var start = program.IndexOf("public async Task ConnectToMachine(", StringComparison.Ordinal);

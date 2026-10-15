@@ -19,7 +19,10 @@
             FalseValue="2"
             TrueValue="4" />
     </local:NavigablePage.Resources>
-    <controls:SettingsPageControl x:Uid="MouseWithoutBorders" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
+    <controls:SettingsPageControl
+        x:Uid="MouseWithoutBorders"
+        IsEnabled="{x:Bind ViewModel.CanEditSettings, Mode=OneWay}"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">

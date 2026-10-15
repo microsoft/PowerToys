@@ -123,8 +123,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void Clear()
         {
+            // Invalidate the display, but keep edits blocked until the pending operation settles.
             _context = new object();
-            _activeUpdate = null;
             HasError = false;
             TransientSecurityKey = null;
             ConnectSecurityKey = string.Empty;

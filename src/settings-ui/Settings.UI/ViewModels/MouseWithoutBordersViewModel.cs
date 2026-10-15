@@ -66,7 +66,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsElevated { get => GeneralSettingsConfig.IsElevated; }
 
-        public bool CanManagePairing => !_pairingState.IsUpdating && (!UseService || IsElevated);
+        public bool CanEditSettings => !_pairingState.IsUpdating;
+
+        public bool CanManagePairing => CanEditSettings && (!UseService || IsElevated);
 
         public bool PairingSetupRequired => MouseWithoutBordersPairingState.PairingSetupRequired(Settings.Properties.SecurityKey.Value, UseService);
 
@@ -437,16 +439,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
+                    LoadViewModelFromSettings(savedSettings);
+                    NotifyUpdatedSettings();
                 },
                 () =>
                 {
-                    LoadViewModelFromSettings(savedSettings);
                     if (useService)
                     {
                         _pairingState.TransientSecurityKey = generatedKey;
                     }
-
-                    NotifyUpdatedSettings();
 
                     OnPropertyChanged(nameof(SecurityKey));
 
@@ -457,10 +458,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
                 () => UseService == useService
                     && (savedSettings == null || (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled ? false : savedSettings.Properties.UseService) == useService));
+            OnPropertyChanged(nameof(CanEditSettings));
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
             await updateTask;
+            OnPropertyChanged(nameof(CanEditSettings));
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
@@ -495,23 +498,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
+                    LoadViewModelFromSettings(savedSettings);
+                    NotifyUpdatedSettings();
                 },
                 () =>
                 {
-                    LoadViewModelFromSettings(savedSettings);
                     _pairingState.TransientSecurityKey = null;
                     ConnectSecurityKey = string.Empty;
                     ConnectPCName = string.Empty;
                     ConnectFieldsVisible = false;
-                    NotifyUpdatedSettings();
                 },
                 ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
                 () => UseService == useService
                     && (savedSettings == null || (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled ? false : savedSettings.Properties.UseService) == useService));
+            OnPropertyChanged(nameof(CanEditSettings));
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
             var succeeded = await updateTask;
+            OnPropertyChanged(nameof(CanEditSettings));
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
@@ -1420,6 +1425,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void ClearTransientPairingState()
         {
             _pairingState.Clear();
+            OnPropertyChanged(nameof(CanEditSettings));
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(HasPairingError));
             OnPropertyChanged(nameof(ConnectSecurityKey));
