@@ -41,6 +41,20 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     public string Id => _rootItem.Command.Id;
 
     /// <summary>
+    /// Returns whether this (already created) band can keep representing
+    /// <paramref name="rootItem"/> with <paramref name="settings"/>, so the
+    /// dock doesn't need to tear it down and rebuild it from the extension.
+    /// </summary>
+    internal bool CanReuseFor(CommandItemViewModel rootItem, DockBandSettings settings, bool defaultShowLabels)
+    {
+        return !_cleanupStarted.Value
+            && ReferenceEquals(_rootItem, rootItem)
+            && _bandSettings == settings
+            && _showTitles == settings.ResolveShowTitles(defaultShowLabels)
+            && _showSubtitles == settings.ResolveShowSubtitles(defaultShowLabels);
+    }
+
+    /// <summary>
     /// Gets or sets a value indicating whether titles are shown for items in this band.
     /// This is a preview value - call <see cref="SaveLabelSettings"/> to persist or
     /// <see cref="RestoreLabelSettings"/> to discard changes.
