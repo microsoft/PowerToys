@@ -34,6 +34,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultSnipOcrToggleKey => new HotkeySettings(false, true, true, false, '6'); // Ctrl+Alt+6
 
+        // Dictation is normally armed by pressing Space during the snip drag.
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipDictateToggleKey => new HotkeySettings();
+
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultSnipPanoramaToggleKey => new HotkeySettings(false, true, false, false, '8'); // Ctrl+8
 
@@ -62,6 +66,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public KeyboardKeysProperty SnipSaveToggleKey { get; set; }
 
         public KeyboardKeysProperty SnipOcrToggleKey { get; set; }
+
+        public KeyboardKeysProperty SnipDictateToggleKey { get; set; }
 
         public KeyboardKeysProperty SnipPanoramaToggleKey { get; set; }
 
@@ -123,6 +129,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty MicMonoMix { get; set; }
 
         public StringProperty MicrophoneDeviceId { get; set; }
+
+        public BoolProperty SnipDictateEnabled { get; set; }
+
+        public BoolProperty SnipDictateOnSnip { get; set; }
+
+        public IntProperty SnipDictateGrace { get; set; }
+
+        public StringProperty SnipDictatePrefix { get; set; }
 
         public BoolProperty WebcamOverlay { get; set; }
 
