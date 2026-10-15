@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class ReplaceOption : Option<bool>
     {
-        private static readonly string[] _aliases = ["--replace", "-r"];
-
         public ReplaceOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Replace)
+            : base("--replace", "-r")
         {
+            Description = Properties.Resources.CLI_Option_Replace;
         }
     }
 }

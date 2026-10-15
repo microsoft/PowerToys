@@ -19,6 +19,12 @@
     <Filter Include="Header Files\rnnoise">
       <UniqueIdentifier>{7795b908-e073-46ed-b209-c07ac0324adb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\whisper">
+      <UniqueIdentifier>{63e7ba62-0ac8-4afe-aa65-e2732356399c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\whisper">
+      <UniqueIdentifier>{d956a9bb-c8d5-45fb-a948-d404ca56e2e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zoomit.cpp">
@@ -123,6 +129,36 @@
     <ClCompile Include="NoiseSuppressor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ClipboardPayload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PasteChaperone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DictationBadge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DictationSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WhisperRecognizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\ggml.c">
+      <Filter>Source Files\whisper</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\ggml-alloc.c">
+      <Filter>Source Files\whisper</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\ggml-backend.c">
+      <Filter>Source Files\whisper</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\ggml-quants.c">
+      <Filter>Source Files\whisper</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\whisper\whisper.cpp">
+      <Filter>Source Files\whisper</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Registry.h">
@@ -132,6 +168,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ZoomIt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ZoomItMessages.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -149,6 +188,51 @@
     <ClInclude Include="AudioSampleGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AudioSamplePacer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioQueueLimits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ClipboardPayload.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PasteChaperone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DictationBadge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DictationSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WhisperRecognizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\whisper\ggml.h">
+      <Filter>Header Files\whisper</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\whisper\ggml-alloc.h">
+      <Filter>Header Files\whisper</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\whisper\ggml-backend.h">
+      <Filter>Header Files\whisper</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\whisper\ggml-backend-impl.h">
+      <Filter>Header Files\whisper</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\whisper\ggml-common.h">
+      <Filter>Header Files\whisper</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\whisper\ggml-impl.h">
+      <Filter>Header Files\whisper</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\whisper\ggml-quants.h">
+      <Filter>Header Files\whisper</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\whisper\whisper.h">
+      <Filter>Header Files\whisper</Filter>
+    </ClInclude>
     <ClInclude Include="LoopbackCapture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -162,6 +246,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ZoomAnimation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DictationFinalization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\ZoomItModuleInterface\Trace.h">

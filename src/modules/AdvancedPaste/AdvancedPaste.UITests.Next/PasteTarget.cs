@@ -101,6 +101,17 @@ internal sealed class PasteTarget : IDisposable
         });
     }
 
+    internal void CopyText(string text)
+    {
+        Focus();
+        Invoke(() =>
+        {
+            editor!.Text = text;
+            editor.SelectAll();
+            KeyboardHelper.SendChord(Key.Ctrl, Key.C);
+        });
+    }
+
     internal Task<DataPackage> CaptureClipboardAsync() =>
         CaptureClipboardAsync((content, format) => content.GetDataAsync(format).AsTask());
 

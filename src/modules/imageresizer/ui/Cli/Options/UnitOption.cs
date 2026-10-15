@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class UnitOption : Option<ImageResizer.Models.ResizeUnit?>
     {
-        private static readonly string[] _aliases = ["--unit", "-u"];
-
         public UnitOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Unit)
+            : base("--unit", "-u")
         {
+            Description = Properties.Resources.CLI_Option_Unit;
         }
     }
 }

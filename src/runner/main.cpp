@@ -295,6 +295,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.MousePointerCrosshairs.dll",
             L"PowerToys.AutoHideCursor.dll",
             L"PowerToys.CursorWrap.dll",
+            L"PowerToys.MouseButtonLock.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
             L"PowerToys.AdvancedPasteModuleInterface.dll",
@@ -349,24 +350,33 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);
 
-        if (openSettings)
+        std::optional<std::wstring> window;
+        if (!settingsWindow.empty())
         {
-            std::optional<std::wstring> window;
-            if (!settingsWindow.empty())
-            {
-                window = winrt::to_hstring(settingsWindow);
-            }
-            open_settings_window(window);
+            window = winrt::to_hstring(settingsWindow);
         }
 
-        if (openOobe)
+        // Settings saves runtime module state when it starts, so defer early opens
+        // until initialization finishes. Explicit requests take precedence over
+        // automatic onboarding, avoiding two Settings processes at startup.
+        const auto settings_startup = complete_settings_window_startup(openSettings, std::move(window));
+        if (!settings_startup.canceled)
         {
-            PTSettingsHelper::save_oobe_opened_state();
-            open_oobe_window();
-        }
-        else if (openScoobe)
-        {
-            open_scoobe_window();
+            if (settings_startup.request)
+            {
+                open_settings_window(settings_startup.request->page);
+            }
+            else if (openOobe)
+            {
+                if (open_oobe_window())
+                {
+                    PTSettingsHelper::save_oobe_opened_state();
+                }
+            }
+            else if (openScoobe)
+            {
+                open_scoobe_window();
+            }
         }
 
         settings_telemetry::init();
@@ -636,12 +646,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             }
 
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe, showRestartNotificationAfterUpdate);
-
-            if (result == 0)
-            {
-                // Save settings on closing, if closed 'normal'
-                PTSettingsHelper::save_general_settings(get_general_settings().to_json());
-            }
         }
         else
         {

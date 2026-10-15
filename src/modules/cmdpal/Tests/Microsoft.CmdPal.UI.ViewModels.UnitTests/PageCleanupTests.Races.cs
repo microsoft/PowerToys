@@ -289,20 +289,20 @@ public sealed partial class PageCleanupTests
         var recipient = new object();
         var focusUpdates = 0;
         var commandUpdates = 0;
-        WeakReferenceMessenger.Default.Register<FocusParamMessage>(recipient, (_, message) =>
+        viewModel.ParameterFocusRequested += (_, message) =>
         {
             if (ReferenceEquals(message.Parameter, nextParameter))
             {
                 focusUpdates++;
             }
-        });
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, message) =>
+        };
+        viewModel.CommandBarContextChanged += (_, message) =>
         {
-            if (ReferenceEquals(message.ViewModel, viewModel.Command))
+            if (ReferenceEquals(message.Context, viewModel.Command))
             {
                 commandUpdates++;
             }
-        });
+        };
 
         try
         {
@@ -310,6 +310,7 @@ public sealed partial class PageCleanupTests
             viewModel.SetActiveListParameter(parameterViewModel);
             scheduler.Drain();
             Assert.IsTrue(viewModel.HasActiveList);
+            commandUpdates = 0;
             if (suspendBeforeCompletion)
             {
                 viewModel.SuspendForNavigation();
@@ -359,23 +360,22 @@ public sealed partial class PageCleanupTests
         page.Setup(p => p.GetContent()).Returns([]);
         page.SetupGet(p => p.Details).Returns(Mock.Of<IDetails>());
         var viewModel = new ContentPageViewModel(page.Object, scheduler, new TestHost(), CommandProviderContext.Empty);
-        var recipient = new object();
         var commandUpdates = 0;
         var detailsUpdates = 0;
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, message) =>
+        viewModel.CommandBarContextChanged += (_, message) =>
         {
-            if (ReferenceEquals(message.ViewModel, viewModel))
+            if (ReferenceEquals(message.Context, viewModel))
             {
                 commandUpdates++;
             }
-        });
-        WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(recipient, (_, message) =>
+        };
+        viewModel.DetailsChanged += (_, message) =>
         {
             if (ReferenceEquals(message.Details, viewModel.Details))
             {
                 detailsUpdates++;
             }
-        });
+        };
 
         try
         {
@@ -403,7 +403,6 @@ public sealed partial class PageCleanupTests
         }
         finally
         {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
             await viewModel.CleanupAsync().WaitAsync(TestTimeout);
         }
     }
