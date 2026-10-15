@@ -8,9 +8,11 @@ using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using PowerToys.Interop;
 using WinRT.Interop;
 using WinUIEx;
@@ -52,16 +54,23 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public static bool WelcomeIntroPlayed { get; set; }
 
+        private static readonly TimeSpan RevealFallbackTimeout = TimeSpan.FromSeconds(1);
+
+        private bool _isCloaked;
+        private DispatcherQueueTimer _revealFallbackTimer;
+
         public OobeWindow()
         {
-            App.ThemeService.ThemeChanged += OnThemeChanged;
-            App.ThemeService.ApplyTheme();
-
             WelcomeIntroPlayed = false;
 
             this.InitializeComponent();
 
+            // Apply the theme after the content exists so the first rendered frame already uses it.
+            App.ThemeService.ThemeChanged += OnThemeChanged;
+            App.ThemeService.ApplyTheme();
+
             SetTitleBar();
+            CloakUntilFirstFrame();
 
             RootGrid.DataContext = ViewModel;
 
@@ -103,6 +112,56 @@ namespace Microsoft.PowerToys.Settings.UI
             TitleBarHelper.SetPreferredTheme(this);
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("OobeWindow_Title");
+        }
+
+        // Keep the window invisible until XAML has rendered the first page; otherwise DWM shows
+        // the default white surface before the content and Mica backdrop are ready.
+        private void CloakUntilFirstFrame()
+        {
+            _isCloaked = SetCloak(true);
+            if (!_isCloaked)
+            {
+                return;
+            }
+
+            CompositionTarget.Rendering += OnCompositionTargetRendering;
+
+            _revealFallbackTimer = DispatcherQueue.CreateTimer();
+            _revealFallbackTimer.Interval = RevealFallbackTimeout;
+            _revealFallbackTimer.IsRepeating = false;
+            _revealFallbackTimer.Tick += (_, _) => Reveal();
+            _revealFallbackTimer.Start();
+        }
+
+        private void OnCompositionTargetRendering(object sender, object e)
+        {
+            if (NavigationFrame.Content is not FrameworkElement { IsLoaded: true })
+            {
+                return;
+            }
+
+            CompositionTarget.Rendering -= OnCompositionTargetRendering;
+
+            // Rendering is raised before the frame is committed, so reveal once the dispatcher is idle.
+            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, Reveal);
+        }
+
+        private void Reveal()
+        {
+            CompositionTarget.Rendering -= OnCompositionTargetRendering;
+            _revealFallbackTimer?.Stop();
+            _revealFallbackTimer = null;
+
+            if (_isCloaked)
+            {
+                _isCloaked = !SetCloak(false);
+            }
+        }
+
+        private bool SetCloak(bool cloak)
+        {
+            int value = cloak ? 1 : 0;
+            return NativeMethods.DwmSetWindowAttribute(WindowNative.GetWindowHandle(this), NativeMethods.DWMWA_CLOAK, ref value, sizeof(int)) == 0;
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -177,6 +236,10 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
+            CompositionTarget.Rendering -= OnCompositionTargetRendering;
+            _revealFallbackTimer?.Stop();
+            _revealFallbackTimer = null;
+
             if (navigationView.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is string tag)
             {
                 App.OobeShellViewModel.GetModuleFromTag(tag).LogClosingModuleEvent();

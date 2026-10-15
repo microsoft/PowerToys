@@ -19,6 +19,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         internal const int SW_SHOWMAXIMIZED = 3;
         internal const int SW_HIDE = 0;
         internal const int WM_COMMAND = 0x0111; // https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command
+        internal const int DWMWA_CLOAK = 13;
+
+        [DllImport("dwmapi.dll")]
+        internal static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
 
         [DllImport("user32.dll")]
         internal static extern IntPtr GetActiveWindow();
