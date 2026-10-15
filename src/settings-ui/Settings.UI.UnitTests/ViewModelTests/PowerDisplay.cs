@@ -172,6 +172,24 @@ public class PowerDisplay
         Assert.AreEqual(0, namedEvents.Count);
     }
 
+    [TestMethod]
+    public void SettingsSave_SharedFlyoutSettings_PreservesExclusions()
+    {
+        using var viewModel = CreateViewModel(out var settings, out var settingsUtils, out var ipcMessages);
+        settings.Properties.ExcludedFromSyncMonitorIds.Add("MON1");
+        settings.Properties.LinkedLevelsActive = true;
+        settingsUtils.Setup(utils => utils.GetSettingsOrDefault<PowerDisplaySettings>(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(settings);
+
+        viewModel.MouseWheelControlModeIndex = (int)MouseWheelControlMode.PrimaryDisplay;
+
+        var saved = GetSavedSettings(settingsUtils);
+        Assert.IsTrue(saved.Properties.LinkedLevelsActive);
+        Assert.AreEqual("MON1", settings.Properties.ExcludedFromSyncMonitorIds.Single());
+        Assert.AreEqual("MON1", saved.Properties.ExcludedFromSyncMonitorIds.Single());
+        Assert.AreEqual(1, ipcMessages.Count);
+    }
+
     private static MonitorInfo CreateMonitor()
     {
         return new MonitorInfo

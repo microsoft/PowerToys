@@ -94,7 +94,7 @@ public partial class ImageResizerViewModel : Observable
 
         InitializeEnabledValue();
 
-        Sizes = new ObservableCollection<ImageSize>(Settings.Properties.ImageresizerSizes.Value);
+        ReplaceSizes(new ObservableCollection<ImageSize>(Settings.Properties.ImageresizerSizes.Value));
 
         // Initialize the next ID to be one greater than the current maximum ID.
         _nextId = Sizes.Count > 0 ? Sizes.Max(x => x.Id) + 1 : 0;
@@ -169,32 +169,29 @@ public partial class ImageResizerViewModel : Observable
         get => _enabledStateIsGPOConfigured;
     }
 
-    public ObservableCollection<ImageSize> Sizes
+    public ObservableCollection<ImageSize> Sizes => _sizes;
+
+    private void ReplaceSizes(ObservableCollection<ImageSize> value)
     {
-        get => _sizes;
-
-        set
+        if (_sizes != null)
         {
-            if (_sizes != null)
-            {
-                _sizes.CollectionChanged -= Sizes_CollectionChanged;
-                UnsubscribeFromItemPropertyChanged(_sizes);
-            }
+            _sizes.CollectionChanged -= Sizes_CollectionChanged;
+            UnsubscribeFromItemPropertyChanged(_sizes);
+        }
 
-            _sizes = value;
+        _sizes = value;
 
-            if (_sizes != null)
-            {
-                _sizes.CollectionChanged += Sizes_CollectionChanged;
-                SubscribeToItemPropertyChanged(_sizes);
-            }
+        if (_sizes != null)
+        {
+            _sizes.CollectionChanged += Sizes_CollectionChanged;
+            SubscribeToItemPropertyChanged(_sizes);
+        }
 
-            OnPropertyChanged(nameof(Sizes));
+        OnPropertyChanged(nameof(Sizes));
 
-            if (!_isInitializing)
-            {
-                SaveImageSizes();
-            }
+        if (!_isInitializing)
+        {
+            SaveImageSizes();
         }
     }
 
