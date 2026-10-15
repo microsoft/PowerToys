@@ -82,13 +82,14 @@ namespace MouseWithoutBorders.Class
                 var settings = _settingsUtils.GetSettingsOrDefault<MouseWithoutBordersSettings>("MouseWithoutBorders");
                 if (settings != null)
                 {
-                    PauseInstantSaving = true;
-
-                    var last_properties = _properties;
-
-                    _settings = settings;
-
-                    _properties = settings.Properties;
+                    MouseWithoutBordersProperties last_properties;
+                    lock (_loadingSettingsLock)
+                    {
+                        PauseInstantSaving = true;
+                        last_properties = _properties;
+                        _settings = settings;
+                        _properties = settings.Properties;
+                    }
 
                     // Keep track of the need to resend the machine matrix.
                     bool shouldSendMachineMatrix = false;
@@ -526,7 +527,8 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.SecurityKey.Value = _pairingKeyCodec.Encrypt(value);
+                    var storedKey = _pairingKeyCodec.Encrypt(value);
+                    _properties.SecurityKey.Value = storedKey;
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();

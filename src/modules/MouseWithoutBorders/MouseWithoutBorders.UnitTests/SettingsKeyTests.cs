@@ -115,6 +115,28 @@ public sealed class SettingsKeyTests
     }
 
     [TestMethod]
+    public void KeyConversionResolvesCurrentPropertiesAfterCodecReturns()
+    {
+        var previous = new MouseWithoutBordersProperties();
+        previous.SecurityKey.Value = "PREVIOUS";
+        var loaded = new MouseWithoutBordersSettings();
+        loaded.Properties.SecurityKey.Value = "RELOADED";
+        Class.Settings settings = null!;
+        var codec = new CallbackPairingKeyCodec(() =>
+        {
+            SetField(settings, "_settings", loaded);
+            SetField(settings, "_properties", loaded.Properties);
+        });
+        settings = CreateSettings(previous, codec);
+
+        settings.MyKey = "ACCEPTED";
+
+        Assert.AreEqual("ACCEPTED", loaded.Properties.SecurityKey.Value);
+        Assert.AreEqual("ACCEPTED", settings.MyKey);
+        Assert.AreEqual("PREVIOUS", previous.SecurityKey.Value);
+    }
+
+    [TestMethod]
     public void ReloadComparesDecodedKeyRatherThanCiphertext()
     {
         using var identity = WindowsIdentity.GetCurrent();
@@ -271,4 +293,17 @@ public sealed class SettingsKeyTests
 
     private static void SetField(Class.Settings settings, string name, object value) =>
         typeof(Class.Settings).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(settings, value);
+
+    private sealed class CallbackPairingKeyCodec(Action duringEncryption) : IPairingKeyCodec
+    {
+        public string Encrypt(string value)
+        {
+            duringEncryption();
+            return value;
+        }
+
+        public string Decrypt(string value) => value;
+
+        public bool IsEncrypted(string value) => false;
+    }
 }

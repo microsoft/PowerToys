@@ -64,6 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         };
 
         private string _transientSecurityKey;
+        private int _pairingDisplayGeneration;
         private string _connectSecurityKey;
         private string _connectPCName;
         private bool _connectFieldsVisible;
@@ -431,6 +432,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var useService = UseService;
+            var displayGeneration = _pairingDisplayGeneration;
             _isPairingPending = true;
             _hasPairingError = false;
             OnPropertyChanged(nameof(CanManagePairing));
@@ -448,7 +450,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         throw new InvalidOperationException("Pairing key was not returned.");
                     }
 
-                    if (_disposed || UseService != useService)
+                    if (_disposed || UseService != useService || _pairingDisplayGeneration != displayGeneration)
                     {
                         return;
                     }
@@ -1434,6 +1436,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void ClearTransientPairingState()
         {
+            _pairingDisplayGeneration++;
             _transientSecurityKey = null;
             _hasPairingError = false;
             ConnectSecurityKey = string.Empty;

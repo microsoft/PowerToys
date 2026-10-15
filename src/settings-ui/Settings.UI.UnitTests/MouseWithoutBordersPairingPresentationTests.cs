@@ -47,6 +47,33 @@ public sealed class MouseWithoutBordersPairingPresentationTests
     }
 
     [TestMethod]
+    public void PairingViewModelSourceWiringInvalidatesPendingDisplayOnClear()
+    {
+        var source = ReadSource(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs").Replace("\r\n", "\n");
+        var start = source.IndexOf("public async Task SubmitNewKeyRequestAsync()", StringComparison.Ordinal);
+        var end = source.IndexOf("public bool HasPairingError", start, StringComparison.Ordinal);
+        var request = source.Substring(start, end - start);
+        var capture = request.IndexOf("var displayGeneration = _pairingDisplayGeneration;", StringComparison.Ordinal);
+        var awaitResult = request.IndexOf("var generatedKey = await endpoint.GenerateNewKey();", StringComparison.Ordinal);
+        var guard = request.IndexOf("if (_disposed || UseService != useService || _pairingDisplayGeneration != displayGeneration)\n                    {\n                        return;\n                    }", StringComparison.Ordinal);
+        var display = request.IndexOf("_transientSecurityKey = useService ? generatedKey : null;", StringComparison.Ordinal);
+        Assert.IsTrue(capture >= 0 && capture < awaitResult && awaitResult < guard && guard < display);
+        StringAssert.Contains(request, "finally\n            {\n                _isPairingPending = false;");
+        var clearStart = source.IndexOf("public void ClearTransientPairingState()", StringComparison.Ordinal);
+        var clearEnd = source.IndexOf("public void NotifyPropertyChanged(", clearStart, StringComparison.Ordinal);
+        var clear = source.Substring(clearStart, clearEnd - clearStart);
+        StringAssert.Contains(clear, "_pairingDisplayGeneration++;");
+        Assert.IsFalse(clear.Contains("_isPairingPending =", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void SettingsReloadSourceContractPublishesUnderExistingSettingsLock()
+    {
+        var source = ReadSource(@"src\modules\MouseWithoutBorders\App\Class\Setting.cs").Replace("\r\n", "\n");
+        StringAssert.Contains(source, "lock (_loadingSettingsLock)\n                    {\n                        PauseInstantSaving = true;\n                        last_properties = _properties;\n                        _settings = settings;\n                        _properties = settings.Properties;\n                    }");
+    }
+
+    [TestMethod]
     public void PairingPageSourceWiringDisablesOnlyPairingControlsAndShowsLocalizedErrors()
     {
         var page = XDocument.Parse(ReadSource(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml"));
