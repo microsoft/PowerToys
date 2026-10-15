@@ -105,3 +105,10 @@ interop_auth::CallerPolicy IPCHelper::ModulePeer(const std::wstring& executable,
     };
     return policy;
 }
+
+interop_auth::CallerPolicy IPCHelper::SessionPeer(DWORD pid)
+{
+    auto policy = ModulePeer(L"PowerToys.WorkspacesLauncher.exe", pid);
+    policy.allowedBasenames.push_back(L"PowerToys.WorkspacesCLI.exe");
+    return policy;
+}

@@ -28,7 +28,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\;$(RepoRoot)src\;$(RepoRoot)src\common;$(RepoRoot)src\common\Telemetry;..\..\;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\WorkspacesLauncher;$(RepoRoot)src\;$(RepoRoot)src\common;$(RepoRoot)src\common\Telemetry;..\..\;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -63,6 +63,22 @@
     <ClCompile Include="AppUtils.cpp" />
     <ClCompile Include="CliCommands.cpp" />
     <ClCompile Include="LaunchSession.cpp" />
+    <ClCompile Include="LaunchExecution.cpp" />
+    <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\Launcher.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\LauncherUIHelper.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\RegistryUtils.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\WindowArrangerHelper.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="SessionHandoff.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -88,6 +104,12 @@
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\common\Display\Display.vcxproj">
+      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
+    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\common\interop\PowerToys.Interop.vcxproj">
       <Project>{f055103b-f80b-4d0c-bf48-057c55620033}</Project>
     </ProjectReference>

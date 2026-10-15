@@ -276,7 +276,9 @@ jobs:
 
       if ($allModules -or $selectedModules -contains 'Workspaces.UITests.Next') {
         $requiredPackages += 'Workspaces.TestApp.msix'
-        $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe'
+        $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe', 'PowerToys.WorkspacesCLI.exe',
+          'PowerToys.WorkspacesLauncher.exe', 'PowerToys.WorkspacesWindowArranger.exe',
+          'PowerToys.WorkspacesLauncherUI.exe'
       }
 
       if ($requiresAuthenticatedSettingsIpc) {

@@ -17,8 +17,15 @@ namespace WorkspacesLibUnitTests
             auto executable = std::filesystem::path(module).parent_path() / L"WorkspacesCliRuntimeFixture.exe";
             Assert::IsTrue(std::filesystem::is_regular_file(executable));
             std::filesystem::path staged;
+            std::filesystem::path stagedDirectory;
             auto removeStaged = wil::scope_exit([&] {
-                if (!staged.empty())
+                if (!stagedDirectory.empty())
+                {
+                    std::error_code error;
+                    std::filesystem::remove_all(stagedDirectory, error);
+                    Assert::IsFalse(static_cast<bool>(error), L"Could not remove the owned inline-session fixture directory.");
+                }
+                else if (!staged.empty())
                     DeleteFileW(staged.c_str());
             });
             if (scenario.starts_with(L"ui-startup") || scenario.starts_with(L"session-"))
@@ -27,8 +34,25 @@ namespace WorkspacesLibUnitTests
                 Assert::IsTrue(SUCCEEDED(CoCreateGuid(&guid)));
                 wchar_t id[40]{};
                 StringFromGUID2(guid, id, ARRAYSIZE(id));
-                // The real helper resolves the UI beside its executable, as it does in the CLI worker.
-                staged = executable.parent_path().parent_path().parent_path() / (std::wstring(L"WorkspacesUiStartupTest-") + id + L".exe");
+                const auto root = executable.parent_path().parent_path().parent_path();
+                if (scenario.starts_with(L"session-"))
+                {
+                    stagedDirectory = executable.parent_path() / (std::wstring(L"InlineSession-") + id);
+                    Assert::IsTrue(std::filesystem::create_directory(stagedDirectory));
+                    for (const auto& file : std::filesystem::directory_iterator(root))
+                    {
+                        if (file.is_regular_file() && file.path().filename() != L"PowerToys.WorkspacesLauncher.exe" &&
+                            file.path().filename() != L"PowerToys.WorkspacesCLI.exe" &&
+                            !(scenario == L"session-timeout" && file.path().filename() == L"PowerToys.WorkspacesWindowArranger.exe"))
+                            std::filesystem::create_hard_link(file.path(), stagedDirectory / file.path().filename());
+                    }
+                    if (scenario == L"session-timeout")
+                        Assert::IsTrue(CopyFileW(executable.c_str(), (stagedDirectory / L"PowerToys.WorkspacesWindowArranger.exe").c_str(), TRUE) != FALSE);
+                    const bool gui = scenario == L"session-gui" || scenario == L"session-draft";
+                    staged = stagedDirectory / (gui ? L"PowerToys.WorkspacesLauncher.exe" : L"PowerToys.WorkspacesCLI.exe");
+                }
+                else
+                    staged = root / (std::wstring(L"WorkspacesUiStartupTest-") + id + L".exe");
                 Assert::IsTrue(CopyFileW(executable.c_str(), staged.c_str(), TRUE) != FALSE);
                 executable = staged;
             }
@@ -63,7 +87,10 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(ReadFile(read.get(), buffer, sizeof(buffer), &received, nullptr) != FALSE);
             const std::string output(buffer, received);
             Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(output.c_str());
-            Assert::AreEqual(DWORD{ workerError ? 2ul : 0ul }, code, scenario.c_str());
+            Assert::AreEqual(DWORD{ workerError ? 2ul : scenario == L"session-unresponsive" ? 9ul :
+                                                                                              0ul },
+                             code,
+                             scenario.c_str());
             const auto result = json::JsonObject::Parse(winrt::to_hstring(output));
             if (workerError)
             {
@@ -76,6 +103,11 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (CliTelemetryIsRecordedOnceAcrossSuccessFailureAndForcedExit)
+        {
+            Run(L"telemetry");
+        }
+
         TEST_METHOD (SharedIpcDeliversFirstSnapshotExchangeAfterColdStartup)
         {
             Run(L"pipe-startup");
@@ -87,7 +119,7 @@ namespace WorkspacesLibUnitTests
         }
 
 #ifdef _DEBUG
-        TEST_METHOD (SharedSessionEntryRunsBothGuiAndCliModes)
+        TEST_METHOD (MediumSessionEntryRunsInBothCallersWithoutAnotherLauncher)
         {
             Run(L"session-cli");
             Run(L"session-gui");
@@ -96,6 +128,22 @@ namespace WorkspacesLibUnitTests
         TEST_METHOD (SharedSessionDraftPreparationDoesNotPersistUserConfiguration)
         {
             Run(L"session-draft");
+        }
+
+        TEST_METHOD (InlineSessionCancellationAndDeadlineRemainBounded)
+        {
+            Run(L"session-canceled");
+            Run(L"session-timeout");
+        }
+
+        TEST_METHOD (UnresponsiveInlineShellReportsUnknownBeforeExitingTheAdapter)
+        {
+            Run(L"session-unresponsive");
+        }
+
+        TEST_METHOD (InlineSnapshotRetainsTheSharedPayloadLimit)
+        {
+            Run(L"session-oversized");
         }
 #endif
 

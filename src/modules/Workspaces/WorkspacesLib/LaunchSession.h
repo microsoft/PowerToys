@@ -18,9 +18,10 @@ namespace WorkspacesSession
     {
         int exitCode;
         std::wstring code;
+        bool executionStillRunning;
 
-        Error(int exitCode, std::wstring code, const char* message) :
-            std::runtime_error(message), exitCode(exitCode), code(std::move(code))
+        Error(int exitCode, std::wstring code, const char* message, bool executionStillRunning = false) :
+            std::runtime_error(message), exitCode(exitCode), code(std::move(code)), executionStillRunning(executionStillRunning)
         {
         }
     };
@@ -62,6 +63,9 @@ namespace WorkspacesSession
 
     Result Start(const Request& request, HANDLE cancelEvent = nullptr);
     Result StartSnapshot(const Request& request, const WorkspacesData::WorkspacesProject& snapshot, bool editorDraft, HANDLE cancelEvent = nullptr);
+    Result Execute(WorkspacesData::WorkspacesProject project, InvokePoint invokePoint, bool editorDraft, const ExecutionOptions& options);
+    // One-shot adapters call this only after flushing the error response.
+    void ExitIfExecutionUnresponsive(const Error& error);
 
     // Internal operation protocol shared by the entry adapter and the Medium host.
     json::JsonObject SerializeResult(const Result& result);

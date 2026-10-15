@@ -14,6 +14,7 @@ public:
     {
     public:
         static void Enable(bool enabled) noexcept;
+        static void CLICommand(const std::vector<std::wstring>& arguments, bool successful) noexcept;
         static void Launch(bool success,
                            const WorkspacesData::WorkspacesProject& project,
                            InvokePoint invokePoint,

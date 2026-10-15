@@ -31,14 +31,6 @@ namespace WorkspacesSession
             return std::filesystem::path(path).parent_path() / L"PowerToys.WorkspacesLauncher.exe";
         }
 
-        wil::unique_handle InheritableCopy(HANDLE handle, DWORD access)
-        {
-            wil::unique_handle result;
-            Check(DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(), result.put(), access, TRUE, 0),
-                  "Cannot prepare a restricted session handle.");
-            return result;
-        }
-
         void CheckRequest(const Request& request)
         {
             CheckContext(false);
@@ -321,9 +313,8 @@ namespace WorkspacesSession
         const auto deadline = request.timeoutSeconds ? GetTickCount64() + request.timeoutSeconds * 1000ULL : 0;
         WorkspacesCli::ValidateLaunch(project, true);
         const auto executable = HostPath();
-        if (!std::filesystem::is_regular_file(executable) ||
-            !std::filesystem::is_regular_file(executable.parent_path() / L"PowerToys.WorkspacesWindowArranger.exe"))
-            throw Error(6, L"unavailable", "The matching Workspaces execution host or arranger is unavailable.");
+        if (!std::filesystem::is_regular_file(executable.parent_path() / L"PowerToys.WorkspacesWindowArranger.exe"))
+            throw Error(6, L"unavailable", "The matching Workspaces arranger is unavailable.");
         GUID guid{};
         winrt::check_hresult(CoCreateGuid(&guid));
         wchar_t text[40]{};
@@ -341,6 +332,18 @@ namespace WorkspacesSession
         const auto bytes = winrt::to_string(payload.Stringify());
         if (bytes.size() > MaxPayload)
             throw Error(8, L"invalidData", "Workspace exceeds the session payload limit.");
+        if (!is_process_elevated())
+        {
+            ExecutionOptions options;
+            options.operationId = operationId;
+            options.cancelEvent = cancelEvent;
+            options.deadline = deadline;
+            options.timeoutSeconds = request.timeoutSeconds;
+            options.presentation = request.presentation;
+            return Execute(project, request.invokePoint, draft, options);
+        }
+        if (!std::filesystem::is_regular_file(executable))
+            throw Error(6, L"unavailable", "The matching Medium execution host is unavailable.");
         wil::unique_handle mapping(CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, static_cast<DWORD>(sizeof(DWORD) + bytes.size()), nullptr));
         wil::unique_handle cancel;
         if (cancelEvent)
@@ -371,48 +374,7 @@ namespace WorkspacesSession
                 }
             }
         });
-        if (is_process_elevated())
-            process = StartMediumWorker(executable.wstring(), operationId, { mapping.get(), cancel.get(), write.get() }, deadline);
-        else
-        {
-            auto snapshot = InheritableCopy(mapping.get(), FILE_MAP_READ);
-            auto canceled = InheritableCopy(cancel.get(), SYNCHRONIZE);
-            auto owner = InheritableCopy(GetCurrentProcess(), SYNCHRONIZE);
-            wil::unique_handle nul(CreateFileW(L"NUL", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, &attributes, OPEN_EXISTING, 0, nullptr));
-            Check(static_cast<bool>(nul), "Cannot create private host streams.");
-            SIZE_T size{};
-            InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
-            std::vector<char> storage(size);
-            auto list = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(storage.data());
-            Check(InitializeProcThreadAttributeList(list, 1, 0, &size), "Cannot initialize session inheritance.");
-            auto release = wil::scope_exit([&] { DeleteProcThreadAttributeList(list); });
-            HANDLE inherited[] = { snapshot.get(), canceled.get(), write.get(), owner.get(), nul.get() };
-            Check(UpdateProcThreadAttribute(list, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST, inherited, sizeof(inherited), nullptr, nullptr),
-                  "Cannot restrict session inheritance.");
-            STARTUPINFOEXW startup{};
-            startup.StartupInfo.cb = sizeof(startup);
-            startup.StartupInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-            startup.StartupInfo.wShowWindow = SW_HIDE;
-            startup.StartupInfo.hStdInput = startup.StartupInfo.hStdOutput = startup.StartupInfo.hStdError = nul.get();
-            startup.lpAttributeList = list;
-            auto arguments = L"\"" + executable.wstring() + L"\" --session-worker " + operationId + L" " +
-                             std::to_wstring(reinterpret_cast<uintptr_t>(snapshot.get())) + L" " +
-                             std::to_wstring(reinterpret_cast<uintptr_t>(canceled.get())) + L" " +
-                             std::to_wstring(reinterpret_cast<uintptr_t>(write.get())) + L" " +
-                             std::to_wstring(reinterpret_cast<uintptr_t>(owner.get())) + L" " + std::to_wstring(GetCurrentProcessId());
-            Check(CreateProcessW(executable.c_str(), arguments.data(), nullptr, nullptr, TRUE, EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW | CREATE_SUSPENDED, nullptr, executable.parent_path().c_str(), &startup.StartupInfo, &process),
-                  "Cannot start the Workspaces session host.");
-            if (!SameUserSession(GetCurrentProcess(), process.hProcess) || !IsMediumProcess(process.hProcess))
-            {
-                TerminateProcess(process.hProcess, 7);
-                throw Error(7, L"unsupportedContext", "Session host is not a Medium process in the same user session.");
-            }
-            if (ResumeThread(process.hThread) == static_cast<DWORD>(-1))
-            {
-                TerminateProcess(process.hProcess, 7);
-                throw Error(7, L"unavailable", "Cannot resume the session host.");
-            }
-        }
+        process = StartMediumWorker(executable.wstring(), operationId, { mapping.get(), cancel.get(), write.get() }, deadline);
         write.reset();
         auto result = ReadResult(process.hProcess, read.get(), cancel.get(), deadline, operationId);
         if (WorkspacesCli::NormalizeId(result.project.id) != WorkspacesCli::NormalizeId(project.id))

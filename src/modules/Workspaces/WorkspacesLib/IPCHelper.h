@@ -22,6 +22,7 @@ public:
     bool WaitForReady(DWORD timeoutMs, const std::function<bool()>& isCanceled = {}) const;
     void SetCallback(std::function<void(const std::wstring&)> messageCallback);
     static interop_auth::CallerPolicy ModulePeer(const std::wstring& executable, std::optional<DWORD> pid = std::nullopt);
+    static interop_auth::CallerPolicy SessionPeer(DWORD pid);
 
 private:
     void receive(const std::wstring& msg);

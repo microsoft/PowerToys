@@ -9,6 +9,7 @@
 #include <common/version/version.h>
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/LaunchSession.h>
+#include <WorkspacesLib/trace.h>
 #include "Resources.h"
 #include "JsonOutput.h"
 
@@ -88,6 +89,13 @@ int wmain(int argc, wchar_t** argv)
     const bool asJson = WorkspacesCli::WantsJson(args);
     const std::wstring command = args.empty() ? L"" : args.front();
     Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
+    Trace::Workspaces::RegisterProvider();
+    bool successful = false;
+    const auto reportTelemetry = [&] {
+        Trace::Workspaces::CLICommand(args, successful);
+        Trace::Workspaces::UnregisterProvider();
+    };
+    auto telemetry = wil::scope_exit([&] { reportTelemetry(); });
     try
     {
         winrt::init_apartment();
@@ -97,11 +105,13 @@ int wmain(int argc, wchar_t** argv)
             const auto help = winrt::to_string(CliResources::Get(IDS_CLIHELP));
             WorkspacesCli::ConsoleOutputCodePage consoleCodePage;
             std::cout << help << std::flush;
+            successful = true;
             return 0;
         }
         if (options.command == L"--version")
         {
             std::cout << "PowerToys Workspaces CLI " << FILE_VERSION_STRING << '\n';
+            successful = true;
             return 0;
         }
         int exitCode{};
@@ -129,11 +139,18 @@ int wmain(int argc, wchar_t** argv)
             request.timeoutSeconds = options.timeoutSeconds;
             Print(WorkspacesCli::SessionResult(WorkspacesSession::Start(request, cancel.get()), exitCode), options.json);
         }
+        successful = exitCode == 0;
         return exitCode;
     }
     catch (const WorkspacesCli::Error& error)
     {
         Print(WorkspacesCli::Failure(command, error), asJson);
+        if (error.executionStillRunning)
+        {
+            reportTelemetry();
+            telemetry.release();
+        }
+        WorkspacesSession::ExitIfExecutionUnresponsive(error);
         return error.exitCode;
     }
     catch (const std::exception&)

@@ -299,6 +299,8 @@ void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
     if (message->type == LauncherUiMessage::Type::Cancel)
     {
         m_uiCanceled = true;
+        if (!SetEvent(m_options.cancelEvent))
+            Logger::error(L"Unable to signal session cancellation: {}", GetLastError());
         m_approval.Cancel();
         m_launchingStatus.Cancel();
         return;

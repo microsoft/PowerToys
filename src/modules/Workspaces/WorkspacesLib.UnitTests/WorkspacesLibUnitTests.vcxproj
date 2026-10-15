@@ -57,9 +57,6 @@
     <ClCompile Include="AppUtilsTests.cpp" />
     <ClCompile Include="PwaHelperTests.cpp" />
     <ClCompile Include="SignatureVerificationTests.cpp" />
-    <ClCompile Include="..\WorkspacesLauncher\RegistryUtils.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

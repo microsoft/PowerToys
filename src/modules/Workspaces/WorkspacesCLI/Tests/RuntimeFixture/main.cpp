@@ -2,6 +2,7 @@
 // Exercises CLI process/stream behavior without launching workspace applications or requesting UAC.
 #include <windows.h>
 #include <sddl.h>
+#include <shellapi.h>
 #include <filesystem>
 #include <future>
 #include <iostream>
@@ -16,6 +17,114 @@
 #include <WorkspacesCLI/JsonOutput.h>
 #include <WorkspacesCLI/Resources.h>
 #include <WorkspacesLib/CliCommands.h>
+#include <WorkspacesLib/trace.h>
+
+namespace
+{
+    std::atomic<bool> stallShell{};
+    std::atomic<bool> shellEntered{};
+
+    BOOL WINAPI FixtureShellExecute(SHELLEXECUTEINFO* information)
+    {
+        if (stallShell)
+        {
+            shellEntered = true;
+            Sleep(10000);
+            SetLastError(ERROR_CANCELLED);
+            return FALSE;
+        }
+        return ShellExecuteExW(information);
+    }
+}
+
+// Compile the existing launcher with a test-only Shell stall; normal fixture modes use the real API.
+#pragma push_macro("ShellExecuteEx")
+#undef ShellExecuteEx
+#define ShellExecuteEx FixtureShellExecute
+#include <WorkspacesLauncher/AppLauncher.cpp>
+#pragma pop_macro("ShellExecuteEx")
+
+namespace CliTelemetryProbe
+{
+    struct Event
+    {
+        std::wstring command;
+        bool successful;
+    };
+    std::vector<Event> events;
+    int registered{};
+    int unregistered{};
+    int launchExit{};
+    struct AdapterExited
+    {
+    };
+
+    struct Trace
+    {
+        struct Workspaces
+        {
+            static void RegisterProvider() { ++registered; }
+            static void UnregisterProvider() { ++unregistered; }
+            static void CLICommand(const std::vector<std::wstring>& arguments, bool successful)
+            {
+                events.push_back({ WorkspacesCli::TelemetryCommandName(arguments), successful });
+            }
+        };
+    };
+
+    namespace Commands
+    {
+        using namespace WorkspacesCli;
+        void CheckEnabled() {}
+        std::vector<WorkspacesData::WorkspacesProject> LoadWorkspaces()
+        {
+            return {};
+        }
+    }
+
+    namespace Session
+    {
+        using Request = WorkspacesSession::Request;
+        using Presentation = WorkspacesSession::Presentation;
+        WorkspacesSession::Result Start(const Request&, HANDLE)
+        {
+            if (launchExit != 0 && launchExit != 10)
+                throw WorkspacesSession::Error(launchExit, L"controlledError", "Controlled test error.", launchExit == 9);
+            WorkspacesSession::Result result;
+            result.project.apps.emplace_back();
+            result.project.apps[0].id = L"test-app";
+            result.applications.emplace(result.project.apps[0], WorkspacesData::LaunchingAppState{ result.project.apps[0], nullptr, launchExit == 0 ? LaunchingState::LaunchedAndMoved : LaunchingState::Launched });
+            return result;
+        }
+        void ExitIfExecutionUnresponsive(const WorkspacesSession::Error& error)
+        {
+            if (error.executionStillRunning)
+                throw AdapterExited{};
+        }
+    }
+
+    namespace Resources
+    {
+        std::wstring Get(UINT)
+        {
+            return L"Test";
+        }
+        void LocalizeForOutput(const json::JsonObject&, bool) {}
+    }
+}
+
+// Exercise the real frontend's telemetry lifetime without launching apps or emitting diagnostics.
+#define wmain CliMainForTelemetryTest
+#define Trace CliTelemetryProbe::Trace
+#define WorkspacesCli CliTelemetryProbe::Commands
+#define WorkspacesSession CliTelemetryProbe::Session
+#define CliResources CliTelemetryProbe::Resources
+#include <WorkspacesCLI/main.cpp>
+#undef CliResources
+#undef WorkspacesSession
+#undef WorkspacesCli
+#undef Trace
+#undef wmain
 
 namespace
 {
@@ -23,6 +132,60 @@ namespace
     {
         if (!value)
             throw std::runtime_error("CLI runtime fixture assertion failed.");
+    }
+
+    void CheckTelemetry()
+    {
+        struct Case
+        {
+            std::vector<std::wstring> arguments;
+            const wchar_t* category;
+            int exitCode;
+        };
+        const auto id = L"{49330ECB-5917-4DF3-B70A-1F2D7FE4899B}";
+        const Case cases[] = {
+            { { L"list", L"--json" }, L"list", 0 },
+            { { L"launch", L"--id", id, L"--json" }, L"launch", 0 },
+            { { L"launch", L"--id", id, L"--json" }, L"launch", 10 },
+            { { L"launch", L"--id", id, L"--json" }, L"launch", 12 },
+            { { L"launch", L"--id", id, L"--json" }, L"launch", 9 },
+            { { L"launch", L"--json" }, L"launch", 2 },
+            { { L"private-command", L"--json" }, L"unknown", 2 },
+            { { L"--help" }, L"help", 0 },
+            { { L"--version" }, L"version", 0 },
+        };
+        for (const auto& test : cases)
+        {
+            CliTelemetryProbe::events.clear();
+            CliTelemetryProbe::registered = CliTelemetryProbe::unregistered = 0;
+            CliTelemetryProbe::launchExit = test.exitCode;
+            auto arguments = test.arguments;
+            arguments.insert(arguments.begin(), L"PowerToys.WorkspacesCLI.exe");
+            std::vector<wchar_t*> argv;
+            for (auto& argument : arguments)
+                argv.push_back(argument.data());
+            std::ostringstream output, errors;
+            const auto previousOutput = std::cout.rdbuf(output.rdbuf());
+            const auto previousError = std::cerr.rdbuf(errors.rdbuf());
+            auto restore = wil::scope_exit([&] {
+                std::cout.rdbuf(previousOutput);
+                std::cerr.rdbuf(previousError);
+            });
+            bool exited = false;
+            try
+            {
+                Check(CliMainForTelemetryTest(static_cast<int>(argv.size()), argv.data()) == test.exitCode);
+            }
+            catch (const CliTelemetryProbe::AdapterExited&)
+            {
+                exited = true;
+            }
+            Check(exited == (test.exitCode == 9));
+            Check(CliTelemetryProbe::registered == 1 && CliTelemetryProbe::unregistered == 1);
+            Check(CliTelemetryProbe::events.size() == 1);
+            Check(CliTelemetryProbe::events[0].command == test.category);
+            Check(CliTelemetryProbe::events[0].successful == (test.exitCode == 0));
+        }
     }
 
     void CheckCodePage()
@@ -209,6 +372,12 @@ int wmain(int argc, wchar_t** argv)
     try
     {
         winrt::init_apartment();
+        if (argc == 6 && std::wstring_view(argv[2]) == L"--session-worker")
+        {
+            // Controlled arranger startup stall; the shared session must stop only this owned process.
+            Sleep(10000);
+            return 1;
+        }
         if (argc == 3 && std::wstring_view(argv[1]).starts_with(L"worker-result-"))
         {
             const std::wstring_view mode(argv[1]);
@@ -229,6 +398,12 @@ int wmain(int argc, wchar_t** argv)
             return canceled ? 12 : 9;
         }
         Check(argc == 2);
+        if (std::wstring_view(argv[1]) == L"telemetry")
+        {
+            CheckTelemetry();
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
         if (std::wstring_view(argv[1]).starts_with(L"pipe-startup"))
         {
             CheckPipeStartup(std::wstring_view(argv[1]) == L"pipe-startup-canceled");
@@ -237,8 +412,12 @@ int wmain(int argc, wchar_t** argv)
         }
         if (std::wstring_view(argv[1]).starts_with(L"session-"))
         {
-            const bool gui = std::wstring_view(argv[1]) != L"session-cli";
+            const bool gui = std::wstring_view(argv[1]) == L"session-gui" || std::wstring_view(argv[1]) == L"session-draft";
             const bool draft = std::wstring_view(argv[1]) == L"session-draft";
+            const bool canceled = std::wstring_view(argv[1]) == L"session-canceled";
+            const bool timedOut = std::wstring_view(argv[1]) == L"session-timeout";
+            const bool unresponsive = std::wstring_view(argv[1]) == L"session-unresponsive";
+            const bool oversized = std::wstring_view(argv[1]) == L"session-oversized";
             GUID guid{};
             winrt::check_hresult(CoCreateGuid(&guid));
             wchar_t id[40]{};
@@ -253,13 +432,51 @@ int wmain(int argc, wchar_t** argv)
             app.path = L"C:\\Workspaces.NoExecution.Fixture.DoesNotExist.exe";
             app.position = { 10, 10, 640, 400 };
             app.monitor = 1;
+            if (oversized)
+                app.commandLineArgs.assign(WorkspacesSession::MaxPayload, L'x');
             project.apps.push_back(app);
             WorkspacesSession::Request request;
             request.id = project.id;
             request.presentation = gui ? WorkspacesSession::Presentation::Progress : WorkspacesSession::Presentation::ConfirmationOnly;
             request.invokePoint = draft ? InvokePoint::LaunchAndEdit : InvokePoint::EditorButton;
-            request.timeoutSeconds = 20;
-            const auto result = WorkspacesSession::StartSnapshot(request, project, draft);
+            request.timeoutSeconds = timedOut || unresponsive ? 1 : gui ? 0 :
+                                                                          20;
+            wchar_t module[32768]{};
+            Check(GetModuleFileNameW(nullptr, module, ARRAYSIZE(module)) != 0);
+            const auto directory = std::filesystem::path(module).parent_path();
+            if (!gui)
+                Check(!std::filesystem::exists(directory / L"PowerToys.WorkspacesLauncher.exe"));
+            wil::unique_handle cancel(CreateEventW(nullptr, TRUE, canceled, nullptr));
+            Check(static_cast<bool>(cancel));
+            const auto began = GetTickCount64();
+            if (canceled || timedOut || unresponsive || oversized)
+            {
+                stallShell = unresponsive;
+                try
+                {
+                    WorkspacesSession::StartSnapshot(request, project, draft, cancel.get());
+                    throw std::runtime_error("The stopped session unexpectedly completed.");
+                }
+                catch (const WorkspacesSession::Error& error)
+                {
+                    Check(error.exitCode == (canceled ? 12 : oversized ? 8 :
+                                                                         9));
+                    Check(error.code == (canceled ? L"canceled" : oversized ? L"invalidData" :
+                                                              unresponsive  ? L"outcomeUnknown" :
+                                                                              L"timeout"));
+                    Check(GetTickCount64() - began < 5000);
+                    if (unresponsive)
+                    {
+                        Check(shellEntered && error.executionStillRunning);
+                        std::cout << "{\"passed\":true}\n"
+                                  << std::flush;
+                        WorkspacesSession::ExitIfExecutionUnresponsive(error);
+                    }
+                }
+                std::cout << "{\"passed\":true}\n";
+                return 0;
+            }
+            const auto result = WorkspacesSession::StartSnapshot(request, project, draft, cancel.get());
             Check(result.project.id == project.id);
             Check(result.applications.size() == 1 && result.applications.begin()->second.state == LaunchingState::Failed);
             Check(!result.project.apps[0].id.empty());

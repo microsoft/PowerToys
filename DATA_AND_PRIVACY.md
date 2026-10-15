@@ -467,6 +467,7 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
+| Microsoft.PowerToys.Workspaces_CLICommand | Triggered once per Workspaces CLI invocation when optional diagnostics are enabled. Records only a fixed command category (list, launch, help, version, none, or unknown) and success status. Workspace names and IDs, application paths, arguments, and error text are not collected. |
 | Microsoft.PowerToys.Workspaces_CreateEvent | Triggered when a new workspace is created. |
 | Microsoft.PowerToys.Workspaces_DeleteEvent | Triggered when a workspace is deleted. |
 | Microsoft.PowerToys.Workspaces_EditEvent | Triggered when a workspace is edited or modified. |

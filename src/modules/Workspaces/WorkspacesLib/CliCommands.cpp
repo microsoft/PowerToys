@@ -78,6 +78,23 @@ namespace WorkspacesCli
         return value;
     }
 
+    const wchar_t* TelemetryCommandName(const std::vector<std::wstring>& arguments) noexcept
+    {
+        if (arguments.empty())
+            return L"none";
+        const auto& command = arguments.front();
+        if (command == L"--help" ||
+            (arguments.size() == 2 && (command == L"list" || command == L"launch") && arguments[1] == L"--help"))
+            return L"help";
+        if (command == L"--version")
+            return L"version";
+        if (command == L"list")
+            return L"list";
+        if (command == L"launch")
+            return L"launch";
+        return L"unknown";
+    }
+
     bool WantsJson(const std::vector<std::wstring>& arguments)
     {
         for (size_t i = 1; i < arguments.size(); ++i)

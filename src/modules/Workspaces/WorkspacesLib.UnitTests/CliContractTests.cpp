@@ -388,6 +388,38 @@ namespace WorkspacesLibUnitTests
             Assert::AreEqual(std::wstring(L"--help"), WorkspacesCli::Parse({ L"launch", L"--help" }).command);
         }
 
+        TEST_METHOD (TelemetryCommandCategoryNeverContainsUserArguments)
+        {
+            struct Case
+            {
+                std::vector<std::wstring> arguments;
+                const wchar_t* category;
+            };
+            const Case cases[] = {
+                { {}, L"none" },
+                { { L"list", L"--name", L"Private workspace", L"--json" }, L"list" },
+                { { L"launch", L"--id", Project().id, L"--timeout", L"42" }, L"launch" },
+                { { L"--help" }, L"help" },
+                { { L"list", L"--help" }, L"help" },
+                { { L"launch", L"--help" }, L"help" },
+                { { L"--version" }, L"version" },
+                { { L"C:\\private\\document.txt", L"private argument" }, L"unknown" },
+                { { std::wstring(L"launch\0private", 14) }, L"unknown" },
+            };
+            for (const auto& test : cases)
+                Assert::AreEqual(std::wstring(test.category), std::wstring(WorkspacesCli::TelemetryCommandName(test.arguments)));
+        }
+
+        TEST_METHOD (TelemetryDoesNotInterpretSelectorValuesAsHelpOrCommands)
+        {
+            Assert::AreEqual(std::wstring(L"list"),
+                             std::wstring(WorkspacesCli::TelemetryCommandName({ L"list", L"--name", L"--help" })));
+            Assert::AreEqual(std::wstring(L"launch"),
+                             std::wstring(WorkspacesCli::TelemetryCommandName({ L"launch", L"--name", L"list" })));
+            Assert::AreEqual(std::wstring(L"unknown"),
+                             std::wstring(WorkspacesCli::TelemetryCommandName({ L"private-value", L"launch" })));
+        }
+
         TEST_METHOD (UserDisabledAndMalformedSettingsAreErrors)
         {
             Assert::ExpectException<WorkspacesCli::Error>([] { WorkspacesCli::CheckUserSetting(std::nullopt); });

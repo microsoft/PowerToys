@@ -64,7 +64,7 @@ namespace
                     }
                     received.notify_one();
                 },
-                IPCHelper::ModulePeer(L"PowerToys.WorkspacesLauncher.exe", parentPid));
+                IPCHelper::SessionPeer(parentPid));
             const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
             if (!pipe->WaitForReady(10000))
                 throw WorkspacesCli::Error(9, L"outcomeUnknown", "Operation snapshot pipes did not become ready.");

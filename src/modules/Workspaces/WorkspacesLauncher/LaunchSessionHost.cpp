@@ -1,17 +1,10 @@
 // Copyright (c) Microsoft Corporation. Licensed under the MIT license.
 #include "pch.h"
 #include "LaunchSessionHost.h"
-#include "Launcher.h"
-
-#include <common/Telemetry/EtwTrace/EtwTrace.h>
-#include <common/utils/gpo.h>
-#include <common/utils/logger_helper.h>
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/LaunchSession.h>
 #include <WorkspacesLib/OperationLifetime.h>
 #include <WorkspacesLib/SessionHandoff.h>
-#include <WorkspacesLib/SessionLogging.h>
-#include <WorkspacesLib/trace.h>
 #include <wil/resource.h>
 
 namespace WorkspacesSession
@@ -68,7 +61,7 @@ namespace WorkspacesSession
             return json::JsonObject::Parse(winrt::to_hstring(std::string(view.get() + sizeof(DWORD), size)));
         }
 
-        Result Execute(const json::JsonObject& request, const ReceivedWorkerHandles& handles, const std::wstring& operationId)
+        Result ExecuteRequest(const json::JsonObject& request, const ReceivedWorkerHandles& handles, const std::wstring& operationId)
         {
             CheckContext(true);
             if (request.GetNamedNumber(L"protocolVersion") != 1 ||
@@ -101,77 +94,11 @@ namespace WorkspacesSession
             OperationLifetime lifetime(handles.ownerPid,
                                        options.timeoutSeconds ? options.timeoutSeconds * 1000 + 5000 : INFINITE,
                                        handles.ownerLifetime.get());
-            if (options.presentation == Presentation::ConfirmationOnly)
-                WorkspacesCli::CheckEnabled();
-            else if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
-                throw Error(6, L"disabledByPolicy", "Workspaces is disabled by policy.");
             auto project = WorkspacesData::WorkspacesProjectJSON::FromJson(request.GetNamedObject(L"workspace"));
             if (!project)
                 throw Error(8, L"invalidData", "Invalid session workspace.");
             const bool draft = request.GetNamedBoolean(L"editorDraft");
-            if (draft && (options.presentation != Presentation::Progress || invoke != InvokePoint::LaunchAndEdit))
-                throw Error(8, L"invalidData", "Invalid editor draft session.");
-            wil::unique_mutex_nothrow mutex(CreateMutexW(nullptr, TRUE, L"Local\\PowerToys_WorkspacesLauncher_InstanceMutex"));
-            const auto mutexError = GetLastError();
-            if (!mutex || mutexError == ERROR_ALREADY_EXISTS)
-                throw Error(5, L"busy", "Another workspace launch is running.");
-            auto release = wil::scope_exit([&] { ReleaseMutex(mutex.get()); });
-            auto checkLifetime = [&] {
-                if (WaitForSingleObject(handles.cancel.get(), 0) == WAIT_OBJECT_0)
-                    throw Error(12, L"canceled", "Further application launches were canceled.");
-                if (options.deadline && GetTickCount64() >= options.deadline)
-                    throw Error(9, L"timeout", "Session deadline has expired. Already launched applications remain open.");
-            };
-            checkLifetime();
-            PrepareProject(*project, draft, options.presentation);
-            checkLifetime();
-            Result result;
-            result.operationId = operationId;
-            result.project = *project;
-            const bool gui = options.presentation == Presentation::Progress;
-            if (gui)
-                LoggerHelpers::init_logger(L"Workspaces\\WorkspacesLauncher", L"", LogSettings::workspacesLauncherLoggerName);
-            else
-                result.loggingAvailable = Logging::Initialize();
-            Logger::info("Workspaces CLI: shared session host verified Medium/non-elevated.");
-            std::optional<Shared::Trace::ETWTrace> trace;
-            if (gui)
-            {
-                Trace::Workspaces::RegisterProvider();
-                trace.emplace();
-                trace->UpdateState(true);
-            }
-            auto finishTrace = wil::scope_exit([&] {
-                if (trace)
-                {
-                    trace->Flush();
-                    trace->UpdateState(false);
-                    Trace::Workspaces::UnregisterProvider();
-                }
-            });
-            SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-            {
-                Launcher launcher(*project, invoke, options);
-                if (launcher.IsCanceled())
-                    throw Error(12, L"canceled", "Further application launches were canceled.");
-                if (launcher.GetArrangerError() != ERROR_SUCCESS)
-                    throw Error(7, launcher.GetArrangerError() == ERROR_CANCELLED ? L"consentDenied" : L"arrangerFailed", "Window arranger could not start or elevation was declined.");
-                checkLifetime();
-                if (!launcher.HasArrangerResult())
-                    throw Error(9, L"outcomeUnknown", "Arranger exited without a conclusive result.");
-                result.applications = launcher.GetResult();
-                result.applicationErrors = launcher.GetApplicationErrors();
-                result.approvals = launcher.GetApprovalDecisions();
-            }
-            if (!draft && invoke != InvokePoint::LaunchAndEdit)
-            {
-                result.persistence = WorkspaceStore::UpdateLastLaunched(WorkspacesData::WorkspacesFile(), project->id, std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
-                if (*result.persistence != WorkspaceStore::UpdateResult::Updated)
-                    Logger::warn("Workspace launch history could not be saved.");
-            }
-            Logger::info("Workspaces CLI: shared session host finished.");
-            Logger::flush();
-            return result;
+            return Execute(std::move(*project), invoke, draft, options);
         }
     }
 
@@ -202,12 +129,13 @@ namespace WorkspacesSession
                         throw Error(8, L"invalidData", "Invalid inherited session capability.");
                 }
             }
-            WriteResponse(handles.result.get(), SerializeResult(Execute(ReadRequest(handles.snapshot.get()), handles, operationId)));
+            WriteResponse(handles.result.get(), SerializeResult(ExecuteRequest(ReadRequest(handles.snapshot.get()), handles, operationId)));
             return 0;
         }
         catch (const Error& error)
         {
             ReportError(handles.result.get(), error, operationId);
+            ExitIfExecutionUnresponsive(error);
             return error.exitCode;
         }
         catch (const winrt::hresult_error&)

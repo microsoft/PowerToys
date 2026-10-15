@@ -106,6 +106,24 @@
     <ClCompile Include="LaunchSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LaunchExecution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\Launcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\LauncherUIHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\RegistryUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\WindowArrangerHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="SessionHandoff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

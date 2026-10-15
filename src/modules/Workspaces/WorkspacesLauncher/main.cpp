@@ -43,6 +43,8 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     catch (const WorkspacesSession::Error& error)
     {
         Logger::error("Workspace session failed: {}", error.what());
+        Logger::flush();
+        WorkspacesSession::ExitIfExecutionUnresponsive(error);
         if (error.code == L"busy" || error.code == L"disabledByPolicy" || error.code == L"canceled")
             return 0;
         std::wstring message;

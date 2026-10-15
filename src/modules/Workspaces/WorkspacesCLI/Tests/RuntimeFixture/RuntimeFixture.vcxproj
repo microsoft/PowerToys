@@ -29,9 +29,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="..\..\..\WorkspacesLauncher\LauncherUIHelper.cpp" />
-    <ClCompile Include="..\..\..\WorkspacesLauncher\AppLauncher.cpp" />
-    <ClCompile Include="..\..\..\WorkspacesLauncher\RegistryUtils.cpp" />
     <ResourceCompile Include="version.rc" />
     <ProjectReference Include="..\..\WorkspacesCLI.vcxproj">
       <Project>{a3f4cd35-a455-41e7-bc03-1214cb841c9a}</Project>

@@ -30,16 +30,16 @@ The Editor also resolves its Launcher and Snapshot Tool beside its own executabl
 explicit module working directory; it does not rely on the directory of the invoking terminal.
 
 The CLI only parses commands, owns console cancellation and formats public output. Both the CLI
-and the GUI launcher call `WorkspacesSession::Start` in `WorkspacesLib`; the CLI no longer compiles
-launcher sources or implements a private worker.
+and the GUI launcher call `WorkspacesSession::Start` in `WorkspacesLib`. The library compiles the
+existing execution engine once; neither adapter duplicates launcher sources or orchestration.
 
 ```text
 CLI adapter --------------------+
-                                +--> shared session entry / Medium host routing
-GUI launcher adapter -----------+                |
-                                                 v
-                                  WorkspacesLauncher.exe session host
-                                                 |
+                                +--> shared session entry / context check
+GUI launcher adapter -----------+          |
+                                 Medium --+--> in-process Execute()
+                                 High ----+--> Medium Launcher host --> same Execute()
+                                                        |
                                   shared project preparation + Launcher
                                      /                       \
                              AppLauncher                  Arranger / UI IPC
@@ -47,13 +47,13 @@ GUI launcher adapter -----------+                |
                                     typed outcome + one history-update path
 ```
 
-The shared session entry captures the selected workspace and owns the execution process, restricted
-handles, cancellation and typed result protocol. Normal callers use restricted inherited handles;
-administrator callers use module-shared `SessionHandoff` and the existing `run_non_elevated` helper.
-Both paths verify the created host's actual Medium token before running it. GUI and CLI use the same
-host and business flow, with only presentation/invocation/deadline policy differences.
+The shared session entry captures the selected workspace and validates execution context. Medium
+callers execute in their own process without creating a Launcher host or session transport.
+Administrator callers use module-shared `SessionHandoff` and the existing `run_non_elevated` helper,
+verifying the created host's actual Medium token before running it. Both paths invoke the same
+execution core, with only presentation/invocation/deadline policy differences.
 
-The host receives a read-only snapshot, wait-only cancel/owner handles and a result writer.
+Only the elevated path needs a host, read-only snapshot mapping, wait-only cancel/owner handles and a result writer.
 It writes an internal session response to that explicit pipe, not to public CLI stdout. The CLI maps
 the typed outcome to its existing JSON/exit-code contract. No general administrator handle, new
 daemon or privileged Runner endpoint is added; identity failures never fall back to elevated work.
@@ -108,7 +108,7 @@ and unknown fields are preserved. Missing/ambiguous apps or changed target metad
 the launcher stops rather than overwriting newer data or giving the arranger stale metadata.
 For legacy ID-less applications, ordinal matching is allowed only when the complete current
 application list matches the original snapshot; otherwise a unique unchanged match is required.
-The session host initializes missing IDs through this same transaction before launching, keeps existing IDs
+The shared execution core initializes missing IDs through this same transaction before launching, keeps existing IDs
 unchanged, and rejects malformed/duplicate IDs. Failed persistence leaves the in-memory snapshot
 unchanged and prevents application startup. Lists do not initialize IDs or write configuration.
 General Editor snapshot-conflict detection and save-workflow changes are outside this CLI's scope.
@@ -127,11 +127,16 @@ asserted rollback. Additional Editor conflict notifications and edit-retention g
 CLI diagnostics in `Workspaces\Logs\cli.log` include only fixed command metadata. Shared domain
 messages that could contain app names, titles or arguments are not forwarded verbatim. Public
 errors are structured in JSON or emitted on stderr.
+Separately, optional usage telemetry emits one `Workspaces_CLICommand` event in the frontend with
+only a fixed command category and success status, following the Settings CLI. The Medium host does
+not emit this command event. Workspace names/IDs, paths, argument values and error text are excluded.
 File-log initialization is optional: filesystem/sink failures retain the installed logger, emit
 debugger diagnostics and add `loggingUnavailable` to completed launch results instead of aborting startup.
 Private host errors use the session protocol; console/resource diagnostics cannot contaminate its explicit result pipe.
-The frontend restores its console output code page after success or failure and allows a bounded
-two-second completion acknowledgement after a launch deadline without extending approval time.
+The frontend changes its console output code page only while writing output. Both paths allow a bounded
+two-second completion acknowledgement after cancellation or a launch deadline without extending approval time.
+The in-process worker owns all execution state. If a Shell call cannot acknowledge stopping, the adapter
+reports `outcomeUnknown` and exits; it does not force-kill a thread or report successful cancellation.
 
 ## Tests and release gates
 
@@ -140,7 +145,8 @@ and manifest-driven `CliShim` tests cover their respective boundaries.
 `WorkspacesLauncherUI.UnitTests` covers the existing dialog, rendered acknowledgement, Allow/Skip,
 dismissal and replay rules, including confirmation-only mode without a visible status owner.
 Opt-in `CliRuntimeTests` builds `Tests\RuntimeFixture` to verify code-page restoration and the shared
-GUI/CLI session entry with synthetic snapshots. `CliWorkerTests` retains bounded completion, timeout
+GUI/CLI session entry with synthetic snapshots and no additional Launcher host, plus inline cancellation
+and startup deadlines. `CliWorkerTests` retains bounded completion, timeout
 acknowledgement and actual Launcher-host/arranger coverage.
 
 Real worker tests use synthetic snapshots and a disposable window fixture, not saved user launch

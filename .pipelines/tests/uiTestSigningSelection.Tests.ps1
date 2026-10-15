@@ -131,6 +131,21 @@ Describe 'UI test signing selection' {
         ($result.Files -contains 'PowerToys.Settings.exe') | Should Be $true
     }
 
+    It 'signs the shared Workspaces session peers on <Platform>' -TestCases @(
+        'x64Win10', 'x64Win11', 'ARM64' | ForEach-Object { @{ Platform = $_ } }
+    ) {
+        param($Platform)
+        foreach ($modules in @(@('Workspaces.UITests.Next'), @())) {
+            $result = Get-UITestSigningSelection -Modules $modules -Platform $Platform
+            foreach ($file in @('PowerToys.WorkspacesCLI.exe', 'PowerToys.WorkspacesLauncher.exe',
+                    'PowerToys.WorkspacesWindowArranger.exe', 'PowerToys.WorkspacesLauncherUI.exe')) {
+                ($result.Files -contains $file) | Should Be $true
+            }
+        }
+        $unrelated = Get-UITestSigningSelection -Modules 'Workspaces.Editor.UITests' -Platform $Platform
+        ($unrelated.Files -contains 'PowerToys.WorkspacesCLI.exe') | Should Be $false
+    }
+
     It 'accepts mixed module selections and preserves case-insensitive matching' {
         $result = Get-UITestSigningSelection -Modules @(
             'FancyZones.UITests.Next',
