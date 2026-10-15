@@ -28,6 +28,7 @@ namespace Microsoft.Workspaces.UITests
             "PowerToys.WorkspacesSnapshotTool",
             EditorProcess,
         ];
+
         private static WorkspaceTestState? state;
         private Session? editor;
         private Session? settingsUi;
