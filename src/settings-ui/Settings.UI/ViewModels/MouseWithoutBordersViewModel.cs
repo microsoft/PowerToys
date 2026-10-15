@@ -453,7 +453,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         return;
                     }
 
-                    _transientSecurityKey = generatedKey;
+                    _transientSecurityKey = useService ? generatedKey : null;
                     OnPropertyChanged(nameof(SecurityKey));
                 }
             }
@@ -834,7 +834,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string SecurityKey => _transientSecurityKey != null && (!UseService || IsElevated)
+        public string SecurityKey => _transientSecurityKey != null && UseService && IsElevated
             ? _transientSecurityKey
             : UseService
                 ? PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ? MouseWithoutBordersIpc.PairingConfiguredIndicator : string.Empty

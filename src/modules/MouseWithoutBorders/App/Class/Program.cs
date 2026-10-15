@@ -322,8 +322,8 @@ namespace MouseWithoutBorders.Class
                 Setting.Values.PauseInstantSaving = true;
                 try
                 {
-                    MachineStuff.ClearComputerMatrix();
                     Setting.Values.MyKey = securityKey;
+                    MachineStuff.ClearComputerMatrix();
                     Encryption.MyKey = securityKey;
                     Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
                     MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
@@ -353,10 +353,11 @@ namespace MouseWithoutBorders.Class
                 string key;
                 try
                 {
+                    key = Encryption.CreateRandomKey();
+                    Setting.Values.MyKey = key;
                     Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
                     MachineStuff.ClearComputerMatrix();
-                    key = Encryption.CreateRandomKey();
-                    Setting.Values.MyKey = Encryption.MyKey = key;
+                    Encryption.MyKey = key;
                     Encryption.GeneratedKey = true;
                 }
                 finally

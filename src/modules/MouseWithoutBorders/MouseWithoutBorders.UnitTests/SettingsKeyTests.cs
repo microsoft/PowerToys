@@ -97,6 +97,24 @@ public sealed class SettingsKeyTests
     }
 
     [TestMethod]
+    public void FailedKeyConversionDoesNotReplaceStoredValue()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        foreach (IPairingKeyCodec codec in new IPairingKeyCodec[] { new PassthroughPairingKeyCodec(), new DpapiPairingKeyCodec(identity.User!) })
+        {
+            var properties = new MouseWithoutBordersProperties();
+            var settings = CreateSettings(properties, codec);
+            settings.MyKey = "PREVIOUS-KEY";
+            var stored = properties.SecurityKey.Value;
+
+            Assert.ThrowsException<ArgumentException>(() => settings.MyKey = "mwb-dpapi:v1:TEST");
+
+            Assert.AreEqual(stored, properties.SecurityKey.Value);
+            Assert.AreEqual("PREVIOUS-KEY", settings.MyKey);
+        }
+    }
+
+    [TestMethod]
     public void ReloadComparesDecodedKeyRatherThanCiphertext()
     {
         using var identity = WindowsIdentity.GetCurrent();

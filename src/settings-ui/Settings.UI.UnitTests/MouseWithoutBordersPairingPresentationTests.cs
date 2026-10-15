@@ -35,7 +35,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         StringAssert.Contains(source, "PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value)");
         StringAssert.Contains(source, "public bool CanManagePairing => !_isPairingPending && (!UseService || IsElevated);");
         StringAssert.Contains(source, "var generatedKey = await endpoint.GenerateNewKey();");
-        StringAssert.Contains(source, "_transientSecurityKey = generatedKey;");
+        StringAssert.Contains(source, "_transientSecurityKey = useService ? generatedKey : null;");
         StringAssert.Contains(source, "await endpoint.ConnectToMachine(pcName, securityKey);");
         StringAssert.Contains(source.Replace("\r\n", "\n"), "_transientSecurityKey = null;\n                    OnPropertyChanged(nameof(SecurityKey));");
         StringAssert.Contains(source, "var pcName = ConnectPCName?.Trim();");
@@ -76,11 +76,29 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         StringAssert.Contains(reload, "if (UseService != useService)");
         Assert.IsFalse(reload.Contains("ClearTransientPairingState();", StringComparison.Ordinal));
         StringAssert.Contains(source.Replace("\r\n", "\n"), "Settings.Properties.UseService = value;\n                    ClearTransientPairingState();");
-        StringAssert.Contains(source, "_transientSecurityKey != null && (!UseService || IsElevated)");
+        StringAssert.Contains(source, "_transientSecurityKey != null && UseService && IsElevated");
         Assert.IsFalse(source.Contains("FromBase64String", StringComparison.Ordinal));
         Assert.IsFalse(source.Contains("Unprotect", StringComparison.Ordinal));
         var page = ReadSource(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml.cs");
         StringAssert.Contains(page, "Unloaded += (s, e) => ClearPairingUI();");
+    }
+
+    [DataTestMethod]
+    [DataRow("public Task ConnectToMachine(", "Setting.Values.MyKey = securityKey;")]
+    [DataRow("public Task<string> GenerateNewKey()", "Setting.Values.MyKey = key;")]
+    public void PairingRequestSourceContractProtectsKeyBeforeChangingOtherState(string signature, string assignment)
+    {
+        var source = ReadSource(@"src\modules\MouseWithoutBorders\App\Class\Program.cs");
+        var start = source.IndexOf(signature, StringComparison.Ordinal);
+        var key = source.IndexOf(assignment, start, StringComparison.Ordinal);
+        var matrix = source.IndexOf("MachineStuff.ClearComputerMatrix();", start, StringComparison.Ordinal);
+        var runtime = source.IndexOf("Encryption.MyKey =", start, StringComparison.Ordinal);
+        Assert.IsTrue(key >= start && key < matrix && key < runtime);
+        if (signature.Contains("GenerateNewKey", StringComparison.Ordinal))
+        {
+            var options = source.IndexOf("Setting.Values.EasyMouse =", start, StringComparison.Ordinal);
+            Assert.IsTrue(key < options);
+        }
     }
 
     private static string ReadSource(string relativePath)
