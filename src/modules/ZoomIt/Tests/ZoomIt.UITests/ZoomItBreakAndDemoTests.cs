@@ -17,11 +17,11 @@ namespace Microsoft.PowerToys.ZoomIt.UITests;
 public sealed partial class ZoomItTests
 {
     private readonly string fixtureDirectory = Path.Combine(Path.GetTempPath(), "PowerToys.ZoomIt.UITests", Guid.NewGuid().ToString("N"));
+    private readonly Dictionary<string, bool> notepadEditingOptions = [];
     private Session? notepad;
     private string? notepadPath;
     private bool notepadSettingsOpen;
     private IntPtr notepadEditorWindow;
-    private readonly Dictionary<string, bool> notepadEditingOptions = [];
 
     [TestMethod]
     [DataRow("Top left corner", 0)]
