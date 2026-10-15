@@ -3,6 +3,10 @@ parameters:
     type: object
     default:
       - Release
+  # Keep aligned with job-build-project.yml and DotNetRuntimePackageVersion.
+  - name: dotNetSdkVersion
+    type: string
+    default: '10.0.303'
   - name: official
     type: boolean
     default: false
@@ -39,6 +43,12 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
+  - template: .\steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '10.0'
+      exactVersion: ${{ parameters.dotNetSdkVersion }}
+
   - template: .\steps-ensure-nuget-version.yml
 
   - task: NuGetAuthenticate@1
@@ -51,7 +61,7 @@ jobs:
   - ${{ parameters.beforeBuildSteps }}
 
   - pwsh: |-
-      & "$(build.sourcesdirectory)\src\modules\cmdpal\extensionsdk\nuget\BuildSDKHelper.ps1" -Configuration "Release" -BuildStep "build" -IsAzurePipelineBuild
+      & "$(build.sourcesdirectory)\src\modules\cmdpal\extensionsdk\nuget\BuildSDKHelper.ps1" -Configuration "Release" -BuildStep "build" -IsAzurePipelineBuild -ExpectedDotNetSdkVersion '${{ parameters.dotNetSdkVersion }}'
     displayName: Build SDK
 
   - ${{ if eq(parameters.codeSign, true) }}:
