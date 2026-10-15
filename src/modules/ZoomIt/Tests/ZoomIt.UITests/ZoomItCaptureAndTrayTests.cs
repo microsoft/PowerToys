@@ -278,24 +278,50 @@ public sealed partial class ZoomItTests
         Element? FindChevron() => TrayChevronNames
             .SelectMany(name => explorer.FindAll<Element>(By.Name(name), 0))
             .FirstOrDefault(item => item.ControlType == "Button" && item.Width > 0 && item.Height > 0 && item.Displayed);
-        var hasOverflow = FindChevron() is not null;
-        var opening = false;
+        var hasOverflow = false;
+        var lastChevronClick = (System.Diagnostics.Stopwatch?)null;
+        var mismatch = "no observation";
+
+        bool Matches(Element[]? icons)
+        {
+            var expectedCount = expected ? 1 : 0;
+            if (icons is null || icons.Length != expectedCount)
+            {
+                mismatch = $"expected {expectedCount} ZoomIt icon(s), found {icons?.Length.ToString(CultureInfo.InvariantCulture) ?? "none"}";
+                return false;
+            }
+
+            if (hasOverflow && OverflowWindow() is null)
+            {
+                mismatch = $"found {icons.Length} icon(s), but the notification overflow flyout is not open";
+                return false;
+            }
+
+            if (expected)
+            {
+                var x = icons[0].X + (icons[0].Width / 2);
+                var y = icons[0].Y + (icons[0].Height / 2);
+                if (!WindowsFinder.ListByApp("explorer").Any(window =>
+                    window.ClassName is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" or "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
+                    WindowControl.IsPointOwnedByWindow(new IntPtr(window.Hwnd), x, y)))
+                {
+                    mismatch = $"found 1 icon at ({x}, {y}), but that point is not hit-testable in the taskbar or overflow";
+                    return false;
+                }
+            }
+
+            mismatch = "matched";
+            return true;
+        }
 
         var result = WaitHelper.WaitForStable(
             () =>
             {
-                if (OverflowWindow() is not null)
-                {
-                    opening = false;
-                }
-
+                // The chevron can appear or disappear as the restored icon lands in the taskbar or overflow.
+                hasOverflow = FindChevron() is not null || OverflowWindow() is not null;
                 return FindTrayIcons(explorer);
             },
-            icons => icons is not null && icons.Length == (expected ? 1 : 0) &&
-                (!hasOverflow || OverflowWindow() is not null) &&
-                (!expected || WindowsFinder.ListByApp("explorer").Any(window =>
-                    window.ClassName is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" or "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
-                    WindowControl.IsPointOwnedByWindow(new IntPtr(window.Hwnd), icons[0].X + (icons[0].Width / 2), icons[0].Y + (icons[0].Height / 2)))),
+            Matches,
             30_000,
             3,
             pollIntervalMS: 250,
@@ -304,11 +330,14 @@ public sealed partial class ZoomItTests
                 var overflow = OverflowWindow();
                 if (overflow is not null)
                 {
+                    lastChevronClick = null;
+
                     // An open flyout can be behind the source window; do not toggle it closed.
                     WindowControl.TryBringToForeground(new IntPtr(overflow.Hwnd));
                 }
-                else if (!opening && FindChevron() is { } chevron)
+                else if ((lastChevronClick is null || lastChevronClick.ElapsedMilliseconds >= 3_000) && FindChevron() is { } chevron)
                 {
+                    // Retry when a previous chevron click raced the shell and never opened the flyout.
                     var x = chevron.X + (chevron.Width / 2);
                     var y = chevron.Y + (chevron.Height / 2);
                     if (WindowsFinder.ListByApp("explorer").Any(window =>
@@ -317,7 +346,7 @@ public sealed partial class ZoomItTests
                     {
                         ui.Step($"Opening the notification overflow with '{chevron.Name}'.");
                         MouseHelper.LeftClickAt(x, y);
-                        opening = true;
+                        lastChevronClick = System.Diagnostics.Stopwatch.StartNew();
                     }
                 }
             },
@@ -327,7 +356,7 @@ public sealed partial class ZoomItTests
             ui.Step($"Shell notification tree: {explorer.Inspect(depth: 12)}");
         }
 
-        Assert.IsTrue(result.Succeeded, $"Expected {(expected ? "one" : "no")} ZoomIt notification icon in the taskbar or opened overflow, found {result.LastObservation?.Length}.");
+        Assert.IsTrue(result.Succeeded, $"Expected {(expected ? "one" : "no")} ZoomIt notification icon in the taskbar or opened overflow: {mismatch}.");
         return result.LastObservation!.SingleOrDefault();
     }
 
