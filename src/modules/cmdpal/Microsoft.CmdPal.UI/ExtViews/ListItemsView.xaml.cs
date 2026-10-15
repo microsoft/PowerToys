@@ -47,6 +47,7 @@ public sealed partial class ListItemsView : UserControl
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
+    private int _keyboardNavigationVersion;
     private bool _suppressSelectionChanged;
 
     private bool _scrollOnNextSelectionChange;
@@ -625,7 +626,54 @@ public sealed partial class ListItemsView : UserControl
     }
 
     // Navigation requested by the owner should count as keyboard input.
-    private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
+    private void MarkKeyboardNavigation()
+    {
+        _lastInputSource = InputSource.Keyboard;
+        _keyboardNavigationVersion++;
+    }
+
+    private async Task LoadMoreBeforeWrappingAsync(Action wrapSelection)
+    {
+        var page = ViewModel;
+        if (page is null)
+        {
+            wrapSelection();
+            return;
+        }
+
+        var view = ItemView;
+        var selectedItem = view.SelectedItem;
+        var selectedIndex = view.SelectedIndex;
+        var itemCount = view.Items.Count;
+        var itemsVersion = _itemsUpdatedVersion;
+        var navigationVersion = _keyboardNavigationVersion;
+        var queryContext = (page.SearchTextBox, page.Filters?.CurrentFilterId);
+        _scrollOnNextSelectionChange = false;
+
+        try
+        {
+            // Ignore a delayed wrap if the page, results, selection, or navigation context changed.
+            if (!await page.TryLoadMoreBeforeWrapAsync()
+                && _isLoaded
+                && ReferenceEquals(page, ViewModel)
+                && ReferenceEquals(view, ItemView)
+                && itemsVersion == _itemsUpdatedVersion
+                && navigationVersion == _keyboardNavigationVersion
+                && _lastInputSource == InputSource.Keyboard
+                && itemCount == view.Items.Count
+                && selectedIndex == view.SelectedIndex
+                && ReferenceEquals(selectedItem, view.SelectedItem)
+                && queryContext == (page.SearchTextBox, page.Filters?.CurrentFilterId))
+            {
+                _scrollOnNextSelectionChange = true;
+                wrapSelection();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to load more items before wrapping selection", ex);
+        }
+    }
 
     private void PushSelectionToVm(bool force = false)
     {
@@ -794,6 +842,11 @@ public sealed partial class ListItemsView : UserControl
         }
 
         PushSelectionToVm();
+
+        if (indexes.Value.TargetIndex == FindSelectableIndex(ItemView.Items.Count - 1, -1))
+        {
+            ViewModel?.LoadMoreIfNeeded();
+        }
     }
 
     public void NavigatePageUp()
@@ -1648,7 +1701,7 @@ public sealed partial class ListItemsView : UserControl
         // Track keyboard as the last input source for activation logic.
         if (e.Key is VirtualKey.Enter or VirtualKey.Space)
         {
-            _lastInputSource = InputSource.Keyboard;
+            MarkKeyboardNavigation();
             return;
         }
 
@@ -1663,7 +1716,7 @@ public sealed partial class ListItemsView : UserControl
                 case VirtualKey.Down:
                 case VirtualKey.PageUp:
                 case VirtualKey.PageDown:
-                    _lastInputSource = InputSource.Keyboard;
+                    MarkKeyboardNavigation();
                     _scrollOnNextSelectionChange = true;
                     HandleGridArrowNavigation(e.Key);
                     e.Handled = true;
@@ -1739,12 +1792,23 @@ public sealed partial class ListItemsView : UserControl
 
         if (newIndex == -1)
         {
-            newIndex = FindSelectableIndex(0, 1);
+            var firstIndex = FindSelectableIndex(0, 1);
+            if (firstIndex != -1)
+            {
+                _ = LoadMoreBeforeWrappingAsync(() =>
+                {
+                    ItemView.SelectedIndex = firstIndex;
+                    PushSelectionToVm();
+                });
+            }
+
+            return;
         }
 
-        if (newIndex != -1)
+        ItemView.SelectedIndex = newIndex;
+        if (newIndex == FindSelectableIndex(ItemView.Items.Count - 1, -1))
         {
-            ItemView.SelectedIndex = newIndex;
+            ViewModel?.LoadMoreIfNeeded();
         }
     }
 
