@@ -4,21 +4,17 @@
 
 using System;
 
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-
 namespace MouseWithoutBorders.Class;
 
-internal sealed class PassthroughPairingKeyCodec : IPairingKeyCodec
+internal sealed class PassthroughPairingKeyCodec : PairingKeyCodec
 {
-    public bool IsEncrypted(string value) => MouseWithoutBordersPairingHelper.IsEncrypted(value);
+    public override string Encrypt(string value) => Validate(value);
 
-    public string Encrypt(string value) => Validate(value);
-
-    public string Decrypt(string value) => Validate(value);
+    public override string Decrypt(string value) => Validate(value);
 
     private static string Validate(string value)
     {
-        if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(value))
+        if (!IsOrdinaryKey(value))
         {
             throw new ArgumentException("Expected an ordinary pairing key; pairing setup is required.", nameof(value));
         }

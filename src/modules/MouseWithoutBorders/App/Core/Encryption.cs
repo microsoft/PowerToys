@@ -111,7 +111,7 @@ internal static class Encryption
 
     private static void EnsurePairingKeyAvailable()
     {
-        if (!Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersPairingHelper.IsOrdinaryKey(MyKey))
+        if (string.IsNullOrWhiteSpace(MyKey))
         {
             throw new CryptographicException("Pairing setup is required.");
         }

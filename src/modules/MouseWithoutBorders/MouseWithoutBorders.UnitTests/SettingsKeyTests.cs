@@ -29,6 +29,36 @@ public sealed class SettingsKeyTests
         Assert.ThrowsException<ArgumentNullException>(() => new Class.Settings(null!));
     }
 
+    [DataTestMethod]
+    [DataRow(MouseWithoutBordersIpc.PairingConfiguredIndicator)]
+    [DataRow(MouseWithoutBordersIpc.PairingSetupRequiredIndicator)]
+    public async Task PresentationIndicatorsCannotBecomePairingKeys(string indicator)
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        foreach (IPairingKeyCodec codec in new IPairingKeyCodec[] { new PassthroughPairingKeyCodec(), new DpapiPairingKeyCodec(identity.User!) })
+        {
+            var properties = new MouseWithoutBordersProperties();
+            var settings = CreateSettings(properties, codec);
+            Assert.ThrowsException<ArgumentException>(() => settings.MyKey = indicator);
+            await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
+                settings.SavePairingSettingsAsync(indicator, PairedMachineMatrix, false, _ => Assert.Fail("Invalid input was published.")));
+
+            properties.SecurityKey.Value = codec.Encrypt(indicator);
+            Assert.ThrowsException<ArgumentException>(() => _ = settings.MyKey);
+            Assert.IsFalse(settings.HasPairingKey);
+        }
+    }
+
+    [TestMethod]
+    public void EmptyDisplayDoesNotGenerateOrSaveAKey()
+    {
+        var properties = new MouseWithoutBordersProperties();
+        properties.SecurityKey.Value = string.Empty;
+        var settings = CreateSettings(properties, new PassthroughPairingKeyCodec());
+        Assert.AreEqual(string.Empty, settings.PairingKeyDisplayText);
+        Assert.AreEqual(string.Empty, properties.SecurityKey.Value);
+    }
+
     [TestMethod]
     public void DisplayTextDoesNotChangeRuntimeKeySemantics()
     {
@@ -62,7 +92,7 @@ public sealed class SettingsKeyTests
 
         var document = new MouseWithoutBordersSettings { Properties = properties };
         var json = document.ToJsonString();
-        StringAssert.Contains(json, MouseWithoutBordersPairingHelper.EncryptedPrefix);
+        StringAssert.Contains(json, PairingKeyCodec.EncryptedPrefix);
         Assert.IsFalse(json.Contains("TEST-KEY", StringComparison.Ordinal));
         Assert.AreEqual("TEST-KEY", settings.MyKey);
         Assert.AreEqual("TEST-KEY", settings.MyKey);
@@ -147,7 +177,7 @@ public sealed class SettingsKeyTests
         var properties = new MouseWithoutBordersProperties();
         properties.SecurityKey.Value = string.Empty;
         var settings = CreateSettings(properties, new PassthroughPairingKeyCodec());
-        Assert.IsTrue(MouseWithoutBordersPairingHelper.IsOrdinaryKey(settings.MyKey));
+        Assert.IsTrue(PairingKeyCodec.IsOrdinaryKey(settings.MyKey));
         Assert.AreEqual(settings.MyKey, properties.SecurityKey.Value);
     }
 
@@ -212,7 +242,7 @@ public sealed class SettingsKeyTests
             Assert.IsTrue(settings.HasPairingKey);
             Assert.AreEqual(1, writer.Writes.Count);
             Assert.AreEqual(properties.SecurityKey.Value, JsonSerializer.Deserialize<MouseWithoutBordersSettings>(writer.Json!)!.Properties.SecurityKey.Value);
-            Assert.AreEqual(serviceMode, MouseWithoutBordersPairingHelper.HasValidEncryptedFormat(properties.SecurityKey.Value));
+            Assert.AreEqual(serviceMode, PairingKeyCodec.HasValidEncryptedFormat(properties.SecurityKey.Value));
             if (serviceMode)
             {
                 Assert.IsFalse(properties.SecurityKey.Value.Contains("EXPLICIT-REPLACEMENT", StringComparison.Ordinal));
@@ -573,9 +603,9 @@ public sealed class SettingsKeyTests
 
     [DataTestMethod]
     [DataRow("")]
-    [DataRow("********")]
-    [DataRow("mwb-dpapi:v1:TEST")]
-    public void UnavailableRuntimeKeyDoesNotStartCryptoStreams(string key)
+    [DataRow(null)]
+    [DataRow(" \t\r\n")]
+    public void EmptyDecodedRuntimeKeyDoesNotStartCryptoStreams(string key)
     {
         var previousKey = Encryption.MyKey;
         try

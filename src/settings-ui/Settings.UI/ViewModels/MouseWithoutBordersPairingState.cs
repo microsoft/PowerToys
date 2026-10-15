@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using MouseWithoutBorders.Class;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -30,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             pcName = ConnectPCName?.Trim();
             securityKey = ConnectSecurityKey?.Trim();
-            HasError = string.IsNullOrEmpty(pcName) || !MouseWithoutBordersPairingHelper.IsOrdinaryKey(securityKey);
+            HasError = string.IsNullOrEmpty(pcName) || !IsInputKey(securityKey);
             return !HasError;
         }
 
@@ -82,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (IsUpdating &&
                 previousUseService == useService &&
                 !string.Equals(previousSavedValue, savedValue, StringComparison.Ordinal) &&
-                (useService ? MouseWithoutBordersPairingHelper.HasValidEncryptedFormat(savedValue) : MouseWithoutBordersPairingHelper.IsOrdinaryKey(savedValue)))
+                (useService ? PairingKeyCodec.HasValidEncryptedFormat(savedValue) : IsInputKey(savedValue)))
             {
                 TransientSecurityKey = null;
                 return false;
@@ -91,8 +92,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return HasPairingContextChanged(previousUseService, previousSavedValue, useService, savedValue);
         }
 
-        internal string GetDisplayValue(bool isElevated, bool useService, string savedValue) =>
-            MouseWithoutBordersPairingHelper.GetDisplayValue(savedValue, isElevated, useService, TransientSecurityKey);
+        internal static bool IsInputKey(string value) =>
+            PairingKeyCodec.IsOrdinaryKey(value) &&
+            value != MouseWithoutBordersIpc.PairingConfiguredIndicator &&
+            value != MouseWithoutBordersIpc.PairingSetupRequiredIndicator;
+
+        internal static bool PairingSetupRequired(string savedValue, bool useService) =>
+            useService ? !PairingKeyCodec.HasValidEncryptedFormat(savedValue) : !IsInputKey(savedValue);
+
+        internal string GetDisplayValue(bool isElevated, bool useService, string savedValue)
+        {
+            if (!useService)
+            {
+                return IsInputKey(savedValue) ? savedValue : string.Empty;
+            }
+
+            if (isElevated && IsInputKey(TransientSecurityKey))
+            {
+                return TransientSecurityKey;
+            }
+
+            return PairingKeyCodec.HasValidEncryptedFormat(savedValue) ? MouseWithoutBordersIpc.PairingConfiguredIndicator : string.Empty;
+        }
 
         internal static bool HasPairingContextChanged(bool previousUseService, string previousSavedValue, bool useService, string savedValue)
         {

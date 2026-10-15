@@ -3,6 +3,11 @@
 	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 	<Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
+	<ItemGroup>
+		<Compile Include="..\..\modules\MouseWithoutBorders\App\Class\IPairingKeyCodec.cs" Link="MouseWithoutBorders\IPairingKeyCodec.cs" />
+		<Compile Include="..\..\modules\MouseWithoutBorders\App\Class\PairingKeyCodec.cs" Link="MouseWithoutBorders\PairingKeyCodec.cs" />
+	</ItemGroup>
+
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>

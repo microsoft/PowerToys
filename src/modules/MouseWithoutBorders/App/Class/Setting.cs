@@ -220,6 +220,11 @@ namespace MouseWithoutBorders.Class
 
         internal Task<string> SavePairingSettingsAsync(string key, string[] machines, bool enableEasyMouse, Action<string> publish)
         {
+            if (key == MouseWithoutBordersIpc.PairingConfiguredIndicator || key == MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
+            {
+                return Task.FromException<string>(new ArgumentException("Expected a pairing key.", nameof(key)));
+            }
+
             if (Common.RunOnLogonDesktop)
             {
                 return Task.FromException<string>(new InvalidOperationException("Settings cannot be saved on this desktop."));
@@ -598,10 +603,19 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    return MouseWithoutBordersPairingHelper.GetDisplayValue(
-                        _properties.SecurityKey.Value,
-                        isElevated: false,
-                        serviceEnabled: IsProtectedMode || _pairingKeyCodec.IsEncrypted(_properties.SecurityKey.Value));
+                    if (IsProtectedMode || _pairingKeyCodec.IsEncrypted(_properties.SecurityKey.Value))
+                    {
+                        return PairingKeyCodec.HasValidEncryptedFormat(_properties.SecurityKey.Value)
+                            ? MouseWithoutBordersIpc.PairingConfiguredIndicator
+                            : string.Empty;
+                    }
+
+                    var value = _properties.SecurityKey.Value;
+                    return PairingKeyCodec.IsOrdinaryKey(value) &&
+                        value != MouseWithoutBordersIpc.PairingConfiguredIndicator &&
+                        value != MouseWithoutBordersIpc.PairingSetupRequiredIndicator
+                        ? value
+                        : string.Empty;
                 }
             }
         }
@@ -619,7 +633,13 @@ namespace MouseWithoutBorders.Class
                     }
 
                     // Only the settings JSON carries the encoded value; callers always receive plaintext.
-                    return _pairingKeyCodec.Decrypt(_properties.SecurityKey.Value);
+                    var key = _pairingKeyCodec.Decrypt(_properties.SecurityKey.Value);
+                    if (key == MouseWithoutBordersIpc.PairingConfiguredIndicator || key == MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
+                    {
+                        throw new ArgumentException("Pairing setup is required.");
+                    }
+
+                    return key;
                 }
             }
 
@@ -627,6 +647,11 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
+                    if (value == MouseWithoutBordersIpc.PairingConfiguredIndicator || value == MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
+                    {
+                        throw new ArgumentException("Expected a pairing key.", nameof(value));
+                    }
+
                     _properties.SecurityKey.Value = _pairingKeyCodec.Encrypt(value);
                     if (!PauseInstantSaving)
                     {
@@ -642,7 +667,7 @@ namespace MouseWithoutBorders.Class
             {
                 try
                 {
-                    return MouseWithoutBordersPairingHelper.IsOrdinaryKey(MyKey);
+                    return !string.IsNullOrWhiteSpace(MyKey);
                 }
                 catch (Exception ex) when (ex is CryptographicException or ArgumentException or FormatException)
                 {

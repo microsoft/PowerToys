@@ -508,7 +508,9 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 StringAssert.Contains(beforeAwait, "OnPropertyChanged(nameof(CanConnectPairing));");
                 StringAssert.Contains(beforeAwait, "savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>");
                 StringAssert.Contains(beforeAwait, "LoadViewModelFromSettings(savedSettings);");
-                StringAssert.Contains(beforeAwait, "(savedSettings == null || savedSettings.Properties.UseService == useService)");
+                var expectedModeCheck = "() => UseService == useService\n"
+                    + "                    && (savedSettings == null || (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled ? false : savedSettings.Properties.UseService) == useService)";
+                StringAssert.Contains(beforeAwait.Replace("\r\n", "\n"), expectedModeCheck);
                 var end = viewModel.IndexOf("return succeeded;", awaiting, StringComparison.Ordinal);
                 if (method == "public async Task SubmitNewKeyRequestAsync()")
                 {
@@ -1080,10 +1082,10 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         [TestMethod]
         public void PairingSetupStateClearsAfterProvisioning()
         {
-            Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("legacy-plaintext", true));
-            Assert.IsFalse(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:TEST", true));
-            Assert.IsTrue(MouseWithoutBordersPairingHelper.PairingSetupRequired("mwb-dpapi:v1:TEST", false));
-            Assert.IsFalse(MouseWithoutBordersPairingHelper.PairingSetupRequired("ordinary-key", false));
+            Assert.IsTrue(MouseWithoutBordersPairingState.PairingSetupRequired("legacy-plaintext", true));
+            Assert.IsFalse(MouseWithoutBordersPairingState.PairingSetupRequired("mwb-dpapi:v1:TEST", true));
+            Assert.IsTrue(MouseWithoutBordersPairingState.PairingSetupRequired("mwb-dpapi:v1:TEST", false));
+            Assert.IsFalse(MouseWithoutBordersPairingState.PairingSetupRequired("ordinary-key", false));
         }
 
         [TestMethod]
@@ -1108,7 +1110,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
             StringAssert.Contains(viewModel, "public bool ShowPairingSetupRequired => PairingSetupRequired;");
             StringAssert.Contains(viewModel, "public bool CanConnectPairing => CanManagePairing;");
-            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_pairingState.IsUpdating && MouseWithoutBordersPairingHelper.CanManagePairing(IsElevated, UseService);");
+            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_pairingState.IsUpdating && (!UseService || IsElevated);");
 
             var program = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Class\Program.cs"));
             var start = program.IndexOf("public async Task ConnectToMachine(", StringComparison.Ordinal);

@@ -17,6 +17,8 @@ public sealed class LegacySecurityCodeTests
     [DataRow("mwb-dpapi:v1:TEST")]
     [DataRow("MWB-DPAPI:v2:TEST")]
     [DataRow("mwb- dpapi:v1:TEST")]
+    [DataRow("Pairing setup required")]
+    [DataRow("Pairingsetuprequired")]
     public void InvalidNormalizedCodeIsRejected(string value)
     {
         Assert.IsFalse(SetupPage2a.TryGetSecurityCode(value, out _));

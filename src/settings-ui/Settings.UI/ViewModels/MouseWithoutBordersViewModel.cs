@@ -66,9 +66,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsElevated { get => GeneralSettingsConfig.IsElevated; }
 
-        public bool CanManagePairing => !_pairingState.IsUpdating && MouseWithoutBordersPairingHelper.CanManagePairing(IsElevated, UseService);
+        public bool CanManagePairing => !_pairingState.IsUpdating && (!UseService || IsElevated);
 
-        public bool PairingSetupRequired => MouseWithoutBordersPairingHelper.PairingSetupRequired(Settings.Properties.SecurityKey.Value, UseService);
+        public bool PairingSetupRequired => MouseWithoutBordersPairingState.PairingSetupRequired(Settings.Properties.SecurityKey.Value, UseService);
 
         public bool ShowPairingSetupRequired => PairingSetupRequired;
 
@@ -430,7 +430,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
                         generatedKey = await endpoint.GenerateNewKey();
-                        if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(generatedKey))
+                        if (!MouseWithoutBordersPairingState.IsInputKey(generatedKey))
                         {
                             throw new InvalidOperationException("Pairing key was not returned.");
                         }
@@ -455,7 +455,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(CanConnectPairing));
                 },
                 ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
-                () => UseService == useService && (savedSettings == null || savedSettings.Properties.UseService == useService));
+                () => UseService == useService
+                    && (savedSettings == null || (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled ? false : savedSettings.Properties.UseService) == useService));
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
@@ -505,7 +506,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyUpdatedSettings();
                 },
                 ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
-                () => UseService == useService && (savedSettings == null || savedSettings.Properties.UseService == useService));
+                () => UseService == useService
+                    && (savedSettings == null || (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled ? false : savedSettings.Properties.UseService) == useService));
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));

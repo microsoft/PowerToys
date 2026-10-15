@@ -1292,7 +1292,7 @@ internal static class Common
     {
         // Pairing setup can leave the runtime key unavailable. Wait for a valid key
         // without treating each automatic reopen as a connection failure.
-        return Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersPairingHelper.IsOrdinaryKey(Encryption.MyKey)
+        return !string.IsNullOrWhiteSpace(Encryption.MyKey)
             ? createSocket()
             : null;
     }

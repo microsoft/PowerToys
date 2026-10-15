@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseWithoutBorders.Class;
 using Windows.Security.Cryptography;
@@ -23,12 +22,28 @@ public sealed class PairingKeyCodecTests
         return new(identity.User!);
     }
 
+    [DataTestMethod]
+    [DataRow("mwb-dpapi:v1:TEST", true, true)]
+    [DataRow("mwb-dpapi:v1:", true, false)]
+    [DataRow("mwb-dpapi:v1:!", true, false)]
+    [DataRow("mwb-dpapi:v2:TEST", true, false)]
+    [DataRow("MWB-DPAPI:v1:TEST", true, false)]
+    [DataRow("mwb-dpapi:v1:A QID", true, false)]
+    [DataRow("ordinary", false, false)]
+    [DataRow(null, false, false)]
+    public void ProvidersShareReservedFamilyAndEnvelopeRecognition(string value, bool reserved, bool valid)
+    {
+        Assert.AreEqual(reserved, CreateCodec().IsEncrypted(value));
+        Assert.AreEqual(reserved, new PassthroughPairingKeyCodec().IsEncrypted(value));
+        Assert.AreEqual(valid, PairingKeyCodec.HasValidEncryptedFormat(value));
+    }
+
     [TestMethod]
     public void CurrentTestUserDpapiRoundTrip()
     {
         var codec = CreateCodec();
         var encrypted = codec.Encrypt("TEST-KEY");
-        Assert.IsTrue(MouseWithoutBordersPairingHelper.HasValidEncryptedFormat(encrypted));
+        Assert.IsTrue(PairingKeyCodec.HasValidEncryptedFormat(encrypted));
         Assert.AreNotEqual("TEST-KEY", encrypted);
         Assert.AreEqual("TEST-KEY", codec.Decrypt(encrypted));
         Assert.IsTrue(codec.IsEncrypted(encrypted));
@@ -65,7 +80,7 @@ public sealed class PairingKeyCodecTests
         var sid = identity.User!;
         var entropy = Encoding.UTF8.GetBytes("PowerToys.MouseWithoutBorders.Pairing.v1:" + sid.Value);
         var payload = ProtectedData.Protect(Encoding.UTF8.GetBytes("TEST-KEY"), entropy, DataProtectionScope.LocalMachine);
-        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(MouseWithoutBordersPairingHelper.EncryptedPrefix + Convert.ToBase64String(payload)));
+        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(PairingKeyCodec.EncryptedPrefix + Convert.ToBase64String(payload)));
     }
 
     [DataTestMethod]
@@ -85,10 +100,9 @@ public sealed class PairingKeyCodecTests
     [DataTestMethod]
     [DataRow("")]
     [DataRow(" ")]
-    [DataRow("********")]
-    [DataRow("Pairing setup required")]
     [DataRow("mwb-dpapi:v1:TEST")]
     [DataRow("mwb-dpapi:v2:invalid")]
+    [DataRow("MWB-DPAPI:v1:TEST")]
     public void NonKeysAreRejectedByBothCodecs(string value)
     {
         Assert.ThrowsException<ArgumentException>(() => CreateCodec().Encrypt(value));
@@ -117,7 +131,6 @@ public sealed class PairingKeyCodecTests
 
     [DataTestMethod]
     [DataRow("")]
-    [DataRow("********")]
     [DataRow("mwb-dpapi:v1:TEST")]
     public void ProtectedNonKeyPlaintextIsRejected(string value)
     {
@@ -169,7 +182,7 @@ public sealed class PairingKeyCodecTests
             var provider = new DataProtectionProvider(descriptor);
             var protectedBuffer = provider.ProtectAsync(CryptographicBuffer.CreateFromByteArray(plaintext)).AsTask().GetAwaiter().GetResult();
             CryptographicBuffer.CopyToByteArray(protectedBuffer, out var encrypted);
-            return MouseWithoutBordersPairingHelper.EncryptedPrefix + Convert.ToBase64String(encrypted);
+            return PairingKeyCodec.EncryptedPrefix + Convert.ToBase64String(encrypted);
         }
         finally
         {

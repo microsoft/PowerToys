@@ -8,11 +8,9 @@ using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-
 namespace MouseWithoutBorders.Class;
 
-internal sealed class DpapiPairingKeyCodec : IPairingKeyCodec
+internal sealed class DpapiPairingKeyCodec : PairingKeyCodec
 {
     private const string ProtectionDescriptor = "LOCAL=user";
 
@@ -36,12 +34,10 @@ internal sealed class DpapiPairingKeyCodec : IPairingKeyCodec
         return identity.IsSystem ? new DpapiPairingKeyCodec(interactiveUserSid) : new PassthroughPairingKeyCodec();
     }
 
-    public bool IsEncrypted(string value) => MouseWithoutBordersPairingHelper.IsEncrypted(value);
-
-    public string Encrypt(string value)
+    public override string Encrypt(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(value))
+        if (!IsOrdinaryKey(value))
         {
             throw new ArgumentException("Expected an ordinary pairing key.", nameof(value));
         }
@@ -67,7 +63,7 @@ internal sealed class DpapiPairingKeyCodec : IPairingKeyCodec
                 out var protectedLength));
             var encrypted = new byte[checked((int)protectedLength)];
             Marshal.Copy(protectedBlob, encrypted, 0, encrypted.Length);
-            return MouseWithoutBordersPairingHelper.EncryptedPrefix +
+            return EncryptedPrefix +
                 Convert.ToBase64String(encrypted);
         }
         finally
@@ -85,14 +81,14 @@ internal sealed class DpapiPairingKeyCodec : IPairingKeyCodec
         }
     }
 
-    public string Decrypt(string value)
+    public override string Decrypt(string value)
     {
-        if (!MouseWithoutBordersPairingHelper.HasValidEncryptedFormat(value))
+        if (!HasValidEncryptedFormat(value))
         {
             throw new CryptographicException("Missing or malformed encrypted pairing key.");
         }
 
-        var encrypted = Convert.FromBase64String(value.Substring(MouseWithoutBordersPairingHelper.EncryptedPrefix.Length));
+        var encrypted = Convert.FromBase64String(value.Substring(EncryptedPrefix.Length));
         ValidateProtectionPolicy(encrypted);
         IntPtr descriptor = IntPtr.Zero;
         IntPtr nativePlaintext = IntPtr.Zero;
@@ -119,7 +115,7 @@ internal sealed class DpapiPairingKeyCodec : IPairingKeyCodec
             }
 
             var key = new UTF8Encoding(false, true).GetString(plaintext.AsSpan(1 + _interactiveUserSid.Length));
-            if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(key))
+            if (!IsOrdinaryKey(key))
             {
                 throw new CryptographicException("Invalid protected pairing key.");
             }

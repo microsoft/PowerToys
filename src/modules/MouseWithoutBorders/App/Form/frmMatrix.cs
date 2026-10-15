@@ -520,7 +520,7 @@ namespace MouseWithoutBorders
                 return false;
             }
 
-            if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(newKey))
+            if (!PairingKeyCodec.IsOrdinaryKey(newKey) || newKey == MouseWithoutBordersIpc.PairingSetupRequiredIndicator.Replace(" ", string.Empty))
             {
                 ShowKeyErrorMsg("Key must be auto generated in one of the machines.");
                 return false;

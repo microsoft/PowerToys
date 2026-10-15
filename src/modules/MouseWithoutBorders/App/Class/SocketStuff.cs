@@ -219,7 +219,7 @@ namespace MouseWithoutBorders.Class
                 bool dummy1 = Setting.Values.MatrixOneRow; // Reading from reg to variable
                 dummy1 = Setting.Values.MatrixCircle;
 
-                if (!Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersPairingHelper.IsOrdinaryKey(Encryption.MyKey))
+                if (string.IsNullOrWhiteSpace(Encryption.MyKey))
                 {
                     throw new System.Security.Cryptography.CryptographicException("Pairing setup is required.");
                 }
