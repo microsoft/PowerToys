@@ -78,6 +78,8 @@ internal sealed partial class SampleListPage : ListPage
                 Title = "You can add context menu items too. Press Ctrl+k",
                 Subtitle = "Try pressing Ctrl+1 with me selected",
                 Icon = new IconInfo("\uE712"),  // "More" dots
+                // Guidance: a MoreCommands entry acting as the item's secondary action
+                // should request Ctrl+Enter, matching the footer hint.
                 MoreCommands = [
                     new CommandContextItem(
                         new ToastCommand("Secondary command invoked", MessageState.Warning) { Name = "Secondary command", Icon = new IconInfo("\uF147") }) // dial 2
