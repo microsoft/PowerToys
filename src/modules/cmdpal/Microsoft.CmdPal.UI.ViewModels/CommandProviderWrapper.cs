@@ -261,7 +261,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             return;
         }
 
-        // UpdateSettings always writes the file, so skip it when every fallback is already known.
+        // Skip the update when every fallback and the provider connection are already known.
         var current = settingsService.Settings;
         if (ReferenceEquals(current.GetProviderSettings(this).Model, current))
         {
