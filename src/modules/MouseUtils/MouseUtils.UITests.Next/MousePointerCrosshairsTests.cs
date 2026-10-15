@@ -44,6 +44,16 @@ public class MousePointerCrosshairsTests : UITestBase
                 FixedLength: 120),
             nameof(OpacityBlendsWithDesktop) => new CrosshairsConfiguration(Opacity: 50),
             nameof(AutoActivateStartsVisible) => new CrosshairsConfiguration(AutoActivate: true),
+            nameof(SpanAllMonitorsReachesCursorMonitorEdges) => new CrosshairsConfiguration(SpanAllMonitors: true),
+            nameof(ArmsStopAtCursorMonitorEdgeByDefault) => new CrosshairsConfiguration(),
+            nameof(SpanAllMonitorsExtendsArmsOntoNeighborMonitor) => new CrosshairsConfiguration(SpanAllMonitors: true),
+            nameof(FixedLengthIsCutAtCursorMonitorEdge) => new CrosshairsConfiguration(
+                FixedLengthEnabled: true,
+                FixedLength: GetFixedLengthReachingPastNeighborProbe()),
+            nameof(FixedLengthCrossesMonitorsWhenSpanning) => new CrosshairsConfiguration(
+                FixedLengthEnabled: true,
+                FixedLength: GetFixedLengthReachingPastNeighborProbe(),
+                SpanAllMonitors: true),
             _ => new CrosshairsConfiguration(),
         };
 
@@ -251,6 +261,50 @@ public class MousePointerCrosshairsTests : UITestBase
 
     [TestMethod]
     [TestCategory("MouseUtils")]
+    public void SpanAllMonitorsReachesCursorMonitorEdges()
+    {
+        WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+        var monitor = MonitorInfo.GetPrimary()!;
+        var (centerX, centerY) = WindowHelper.GetScreenCenter();
+        MouseHelper.MoveTo(centerX, centerY);
+        Assert.IsTrue(NamedEventHelper.WaitAndSignal(NamedEventHelper.MouseCrosshairsToggle), "Crosshairs trigger event was unavailable.");
+        AssertCrosshairsAt(centerX, centerY);
+
+        // Spanning must never draw less than the cursor monitor: the arms still reach both of its edges.
+        var result = WaitHelper.WaitForStable(
+            () => new[]
+            {
+                WindowHelper.GetPixelColorHex(monitor.Left + 5, centerY),
+                WindowHelper.GetPixelColorHex(monitor.Right - 6, centerY),
+            },
+            colors => colors is not null && colors.All(color => color.Equals(CrosshairsColor, StringComparison.OrdinalIgnoreCase)),
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 3,
+            pollIntervalMS: 100);
+
+        Assert.IsTrue(
+            result.Succeeded,
+            $"Spanning Crosshairs did not reach the cursor monitor edges; last samples: {string.Join(", ", result.LastObservation ?? Array.Empty<string>())}");
+    }
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    public void ArmsStopAtCursorMonitorEdgeByDefault() => AssertNeighborMonitorProbe(expectCrosshairs: false);
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    public void SpanAllMonitorsExtendsArmsOntoNeighborMonitor() => AssertNeighborMonitorProbe(expectCrosshairs: true);
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    public void FixedLengthIsCutAtCursorMonitorEdge() => AssertNeighborMonitorProbe(expectCrosshairs: false);
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    public void FixedLengthCrossesMonitorsWhenSpanning() => AssertNeighborMonitorProbe(expectCrosshairs: true);
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
     public void GlidingCursorMovesAndEscapeCancels()
     {
         WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
@@ -320,6 +374,77 @@ public class MousePointerCrosshairsTests : UITestBase
             $"Expected red Crosshairs arms around ({cursorX},{cursorY}); last samples: {string.Join(", ", result.LastObservation ?? Array.Empty<string>())}");
     }
 
+    private void AssertNeighborMonitorProbe(bool expectCrosshairs)
+    {
+        var probe = FindNeighborMonitorProbe();
+        if (probe is null)
+        {
+            Assert.Inconclusive("This scenario requires two side-by-side monitors that share at least 100px of height.");
+            return;
+        }
+
+        WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+        MouseHelper.MoveTo(probe.CursorX, probe.Y);
+        Assert.IsTrue(NamedEventHelper.WaitAndSignal(NamedEventHelper.MouseCrosshairsToggle), "Crosshairs trigger event was unavailable.");
+        AssertCrosshairsAt(probe.CursorX, probe.Y);
+
+        var result = WaitHelper.WaitForStable(
+            () => WindowHelper.GetPixelColorHex(probe.ProbeX, probe.Y),
+            color => color.Equals(CrosshairsColor, StringComparison.OrdinalIgnoreCase) == expectCrosshairs,
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 5,
+            pollIntervalMS: 100);
+
+        Assert.IsTrue(
+            result.Succeeded,
+            $"Expected the neighbor monitor pixel ({probe.ProbeX},{probe.Y}) to {(expectCrosshairs ? string.Empty : "not ")}show Crosshairs; last sample: {result.LastObservation}.");
+    }
+
+    // A fixed length that ends 30px past the neighbor monitor probe, so only the monitor-edge cut can hide the probe.
+    private static int GetFixedLengthReachingPastNeighborProbe()
+    {
+        const int defaultRadius = 20;
+        var probe = FindNeighborMonitorProbe();
+        return probe is null ? 100 : Math.Abs(probe.ProbeX - probe.CursorX) - defaultRadius + 30;
+    }
+
+    // Finds a monitor with a horizontal neighbor, a cursor position at its center and a pixel 50px into the neighbor.
+    private static NeighborMonitorProbe? FindNeighborMonitorProbe()
+    {
+        const int probeInset = 50;
+        var monitors = MonitorInfo.GetAll();
+        foreach (var source in monitors)
+        {
+            foreach (var neighbor in monitors.Where(monitor => monitor != source))
+            {
+                var sharedTop = Math.Max(source.Top, neighbor.Top);
+                var sharedBottom = Math.Min(source.Bottom, neighbor.Bottom);
+                if (sharedBottom - sharedTop < 100)
+                {
+                    continue;
+                }
+
+                int probeX;
+                if (neighbor.Left == source.Right)
+                {
+                    probeX = neighbor.Left + probeInset;
+                }
+                else if (neighbor.Right == source.Left)
+                {
+                    probeX = neighbor.Right - probeInset - 1;
+                }
+                else
+                {
+                    continue;
+                }
+
+                return new NeighborMonitorProbe((source.Left + source.Right) / 2, (sharedTop + sharedBottom) / 2, probeX);
+            }
+        }
+
+        return null;
+    }
+
     private static CrosshairsOrigin AssertCrosshairsNear(int cursorX, int cursorY)
     {
         const int searchRadius = 80;
@@ -381,6 +506,7 @@ public class MousePointerCrosshairsTests : UITestBase
                         "crosshairs_auto_hide": { "value": {{configuration.AutoHide.ToString().ToLowerInvariant()}} },
                         "crosshairs_is_fixed_length_enabled": { "value": {{configuration.FixedLengthEnabled.ToString().ToLowerInvariant()}} },
                         "crosshairs_fixed_length": { "value": {{configuration.FixedLength}} },
+                        "crosshairs_span_all_monitors": { "value": {{configuration.SpanAllMonitors.ToString().ToLowerInvariant()}} },
                         "auto_activate": { "value": {{configuration.AutoActivate.ToString().ToLowerInvariant()}} },
                         "gliding_travel_speed": { "value": 25 },
                         "gliding_delay_speed": { "value": 5 }
@@ -389,6 +515,8 @@ public class MousePointerCrosshairsTests : UITestBase
                 """;
 
     private sealed record CrosshairsOrigin(int X, int Y);
+
+    private sealed record NeighborMonitorProbe(int CursorX, int Y, int ProbeX);
 
     private sealed record CrosshairsConfiguration(
         int ShortcutCode = (int)Key.P,
@@ -402,5 +530,6 @@ public class MousePointerCrosshairsTests : UITestBase
         bool AutoHide = false,
         bool FixedLengthEnabled = false,
         int FixedLength = 100,
+        bool SpanAllMonitors = false,
         bool AutoActivate = false);
 }

@@ -109,6 +109,15 @@ Sets the fixed length of crosshairs when fixed length mode is enabled.
 **Range:** `0` to `9999`  
 **Default:** `100`
 
+### CrosshairsSpanAllMonitors
+
+Controls whether crosshairs extend across all monitors or stop at the edges of
+the monitor containing the mouse pointer. A fixed length is cut at the same
+edges.
+
+**Type:** boolean  
+**Default:** `false`
+
 ## Examples
 
 ### Example 1 - Configure crosshair appearance with direct execution
