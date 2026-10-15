@@ -170,6 +170,11 @@ namespace DictationBadgeTests
             Assert::AreEqual( static_cast<LONG>( ScaleForDpi( 520, dpi ) ), rect.right - rect.left );
         }
 
+        BEGIN_TEST_METHOD_ATTRIBUTE(TranscribingSpinnerRepaintsAtFixedSizeWithoutPumpingMessages)
+            TEST_IGNORE()
+            TEST_DESCRIPTION(L"Requires an interactive desktop; disabled pending UI-test migration.")
+        END_TEST_METHOD_ATTRIBUTE()
+
         TEST_METHOD(TranscribingSpinnerRepaintsAtFixedSizeWithoutPumpingMessages)
         {
             wil::unique_hwnd owner{ CreateWindowExW(

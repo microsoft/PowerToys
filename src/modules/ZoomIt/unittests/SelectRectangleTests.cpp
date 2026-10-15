@@ -97,6 +97,11 @@ namespace SelectRectangleTests
     TEST_CLASS(SelectionWindowTests)
     {
     public:
+        BEGIN_TEST_METHOD_ATTRIBUTE(RetainedSelectionKeepsOpacityAndCanBeCapturedWithoutHiding)
+            TEST_IGNORE()
+            TEST_DESCRIPTION(L"Requires an interactive desktop; disabled pending UI-test migration.")
+        END_TEST_METHOD_ATTRIBUTE()
+
         TEST_METHOD(RetainedSelectionKeepsOpacityAndCanBeCapturedWithoutHiding)
         {
             const auto previousDpi = SetThreadDpiAwarenessContext( DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 );
