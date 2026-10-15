@@ -312,6 +312,7 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
+| Microsoft.PowerToys.LightSwitch_CLICommand | Triggered when the Light Switch CLI is invoked, logging only a fixed command category and success status based on the final exit code. Raw arguments, schedule values, and file paths are not collected. |
 | Microsoft.PowerToys.LightSwitch_EnableLightSwitch | Triggered when Light Switch is enabled or disabled. |
 | Microsoft.PowerToys.LightSwitch_ScheduleModeToggled | Occurs when a new schedule mode is selected for Light Switch. |
 | Microsoft.PowerToys.LightSwitch_ShortcutInvoked | Occurs when the shortcut for Light Switch is invoked. |
@@ -392,6 +393,7 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
+| Microsoft.PowerToys.PowerDisplay_CLICommand | Triggered when the PowerDisplay CLI is invoked, logging only a fixed command category and success status based on the final exit code. Raw arguments, monitor IDs, profile values, and file paths are not collected. |
 | Microsoft.PowerToys.PowerDisplay_EnablePowerDisplay | Triggered when Power Display is enabled or disabled. |
 | Microsoft.PowerToys.PowerDisplay_Activate | Triggered when Power Display is activated via hotkey or tray toggle. |
 | Microsoft.PowerToys.PowerDisplay_Start | Triggered when the Power Display application process starts. |
