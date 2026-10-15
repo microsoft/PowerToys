@@ -28,8 +28,8 @@ Most of the sub-modules (Find My Mouse, Mouse Highlighter, Mouse Pointer Crossha
 
 #### Settings UI
 - [MouseUtilsPage.xaml](/src/settings-ui/Settings.UI/SettingsXAML/Views/MouseUtilsPage.xaml)
-- [MouseJumpPanel.xaml](/src/settings-ui/Settings.UI/SettingsXAML/Panels/MouseJumpPanel.xaml)
-- [MouseJumpPanel.xaml.cs](/src/settings-ui/Settings.UI/SettingsXAML/Panels/MouseJumpPanel.xaml.cs)
+- [MouseJumpPanel.xaml](/src/settings-ui/Settings.UI/SettingsXAML/Controls/MouseJump/MouseJumpPanel.xaml)
+- [MouseJumpPanel.xaml.cs](/src/settings-ui/Settings.UI/SettingsXAML/Controls/MouseJump/MouseJumpPanel.xaml.cs)
 - [MouseUtilsViewModel.cs](/src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel.cs)
 - [MouseUtilsViewModel_MouseJump.cs](/src/settings-ui/Settings.UI/ViewModels/MouseUtilsViewModel_MouseJump.cs)
 

@@ -5,15 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using global::PowerToys.GPOWrapper;
 
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -21,7 +20,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using MouseJump.Common.Helpers;
-using MouseJump.Common.Imaging;
 using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
 using MouseJump.Models.Settings;
@@ -126,61 +124,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private static Bitmap LoadImageResource(string filename)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var assemblyName = new AssemblyName(assembly.FullName ?? throw new InvalidOperationException());
-
-            // Build the fully-qualified manifest resource name. Historically, subtle casing differences
-            // (e.g. folder names or the assembly name) caused exact (case-sensitive) lookup failures on
-            // some developer machines when the embedded resource's actual name differed only by case.
-            // Manifest resource name comparison here does not need to be case-sensitive, so we resolve
-            // the actual name using an OrdinalIgnoreCase match, then use the real casing for the stream.
-            var resourceName = $"Microsoft.{assemblyName.Name}.{filename.Replace("/", ".")}";
-            var resourceNames = assembly.GetManifestResourceNames();
-            var actualResourceName = resourceNames.FirstOrDefault(n => string.Equals(n, resourceName, StringComparison.OrdinalIgnoreCase));
-            if (actualResourceName is null)
-            {
-                throw new InvalidOperationException($"Embedded resource '{resourceName}' (case-insensitive) does not exist.");
-            }
-
-            var stream = assembly.GetManifestResourceStream(actualResourceName)
-                ?? throw new InvalidOperationException();
-            var image = (Bitmap)Image.FromStream(stream);
-            return image;
-        }
-
-        private static Lazy<Bitmap> MouseJumpDesktopImage => new(
-            () => MouseUtilsViewModel.LoadImageResource("UI/Images/MouseJump-Desktop.png")
-        );
-
         public ImageSource MouseJumpPreviewImage
         {
             get
             {
                 // build the display info used to generate the preview image in the settings dialog
-                // (keep the values in sync with the layout of "Images\MouseJump-Desktop.png")
+                // (a fake two-screen desktop showing the user's wallpaper - see MouseJumpPreviewDesktop)
+                var primaryScreen = MouseJumpPreviewDesktop.PrimaryScreen;
+                var secondaryScreen = MouseJumpPreviewDesktop.SecondaryScreen;
                 var displayInfo = new DisplayInfo([
                     new DeviceInfo(
                         hostname: "FakeDisplay1",
                         localhost: true,
                         screens: [
-                            /*
-                                these magic numbers are the pixel dimensions of the individual screens on the
-                                fake desktop image - "Images\MouseJump-Desktop.png" - used to generate the
-                                preview image in the Settings UI properties page for Mouse Jump. if you update
-                                the fake desktop image be sure to update these values as well.
-                            */
                             new(
                                 handle: IntPtr.Zero,
                                 primary: false,
-                                displayArea: new RectangleInfo(635, 172, 272, 168),
-                                workingArea: new RectangleInfo(635, 172, 272, 168)),
+                                displayArea: new RectangleInfo(secondaryScreen.X, secondaryScreen.Y, secondaryScreen.Width, secondaryScreen.Height),
+                                workingArea: new RectangleInfo(secondaryScreen.X, secondaryScreen.Y, secondaryScreen.Width, secondaryScreen.Height)),
                             new(
                                 handle: IntPtr.Zero,
                                 primary: true,
-                                displayArea: new RectangleInfo(0, 0, 635, 339),
-                                workingArea: new RectangleInfo(0, 0, 635, 339)),
+                                displayArea: new RectangleInfo(primaryScreen.X, primaryScreen.Y, primaryScreen.Width, primaryScreen.Height),
+                                workingArea: new RectangleInfo(primaryScreen.X, primaryScreen.Y, primaryScreen.Width, primaryScreen.Height)),
                         ]),
                 ]);
 
@@ -270,8 +236,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     displayInfo: displayInfo,
                     maximumSize: canvasSize);
 
-                var desktopImage = MouseUtilsViewModel.MouseJumpDesktopImage.Value;
-                var imageCopyService = new StaticImageRegionCopyService(desktopImage);
+                var imageCopyService = new SmoothImageRegionCopyService(MouseJumpPreviewDesktop.Image);
                 var previewImageTask = DrawingHelper.RenderPreviewAsync(
                     previewLayout.CanvasLayout,
                     activatedScreen,

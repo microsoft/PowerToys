@@ -69,10 +69,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Images\MouseJump-Desktop.png" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
@@ -218,7 +214,7 @@
 		<Page Update="SettingsXAML\OOBE\Views\OobeWorkspaces.xaml">
 			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>
-		<Page Update="SettingsXAML\Panels\MouseJumpPanel.xaml">
+		<Page Update="SettingsXAML\Controls\MouseJump\MouseJumpPanel.xaml">
 			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>
 		<Page Update="SettingsXAML\Views\WorkspacesPage.xaml">
