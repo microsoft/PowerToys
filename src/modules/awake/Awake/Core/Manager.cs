@@ -15,6 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
@@ -67,9 +68,13 @@ namespace Awake.Core
         // caller that already holds it may call into another guarded method.
         private static readonly Lock StateLock = new();
 
+        private static readonly TaskCompletionSource<int> _shutdownCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         private static CancellationTokenSource _monitorTokenSource;
         private static IDisposable? _timerSubscription;
         private static int _exitStarted;
+
+        internal static Task<int> ShutdownCompletion => _shutdownCompletion.Task;
 
         static Manager()
         {
@@ -517,6 +522,7 @@ namespace Awake.Core
             }
 
             Bridge.PostQuitMessage(exitCode);
+            _shutdownCompletion.SetResult(exitCode);
             Environment.Exit(exitCode);
         }
 

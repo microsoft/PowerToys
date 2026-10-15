@@ -134,9 +134,16 @@ namespace Awake
 
                     var result = await parseResult.InvokeAsync();
                     LogCLITelemetry(successful: result == 0);
-                    return result;
+
+                    // Keep Main alive while cleanup stops the last foreground monitor thread.
+                    return await WaitForShutdownAsync(result, Manager.ShutdownCompletion);
                 }
             }
+        }
+
+        internal static Task<int> WaitForShutdownAsync(int commandExitCode, Task<int> shutdownCompletion)
+        {
+            return commandExitCode == 0 ? shutdownCompletion : Task.FromResult(commandExitCode);
         }
 
         internal static RootCommand BuildRootCommand()
