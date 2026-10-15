@@ -42,11 +42,7 @@ namespace MouseWithoutBorders
 
         protected string GetSecureKey()
         {
-            return Class.Settings.IsProtectedMode
-                ? (Setting.Values.HasPairingKey
-                    ? Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersIpc.PairingConfiguredIndicator
-                    : Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
-                : Encryption.MyKey;
+            return Setting.Values.PairingKeyDisplayText;
         }
 
         private void BackButton_Click(object sender, EventArgs e)

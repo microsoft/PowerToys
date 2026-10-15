@@ -1087,7 +1087,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
-        public void PairingSetupResourceUsesUpgradeMessage()
+        public void PairingSetupResourceExplainsExplicitRepairInEitherMode()
         {
             var resourcePath = FindRepositoryFile(@"src\settings-ui\Settings.UI\Strings\en-us\Resources.resw");
             var document = XDocument.Load(resourcePath);
@@ -1098,8 +1098,39 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 .Value;
 
             Assert.AreEqual(
-                "Key storage has been enhanced. To continue using Mouse Without Borders in service mode, run PowerToys Settings as administrator and generate a new pairing key.",
+                "The saved pairing key cannot be used in the current mode. Generate a new key or connect using a key from another computer.",
                 value);
+        }
+
+        [TestMethod]
+        public void PairingSetupWarningAndConnectDoNotRequireServiceModeOrAnExistingKey()
+        {
+            var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
+            StringAssert.Contains(viewModel, "public bool ShowPairingSetupRequired => PairingSetupRequired;");
+            StringAssert.Contains(viewModel, "public bool CanConnectPairing => CanManagePairing;");
+            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_pairingState.IsUpdating && MouseWithoutBordersPairingHelper.CanManagePairing(IsElevated, UseService);");
+
+            var program = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Class\Program.cs"));
+            var start = program.IndexOf("public async Task ConnectToMachine(", StringComparison.Ordinal);
+            var end = program.IndexOf("public async Task<string> GenerateNewKey(", start, StringComparison.Ordinal);
+            var connect = program.Substring(start, end - start);
+            StringAssert.Contains(connect, "EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);");
+            StringAssert.Contains(connect, "_settings.SavePairingSettingsAsync(securityKey,");
+            Assert.IsFalse(connect.Contains("_settings.HasPairingKey", StringComparison.Ordinal));
+            Assert.IsFalse(program.Contains("EnsureConnectOperationAvailable", StringComparison.Ordinal));
+        }
+
+        [TestMethod]
+        public void StartupDoesNotReplaceUnavailableSavedPairingKey()
+        {
+            var source = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Core\InitAndCleanup.cs"));
+            var start = source.IndexOf("catch (Exception e) when (e is FormatException or CryptographicException or ArgumentException)", StringComparison.Ordinal);
+            var end = source.IndexOf("Logger.Log(e.Message);", start, StringComparison.Ordinal);
+            var failure = source.Substring(start, end - start);
+            StringAssert.Contains(failure, "Encryption.MyKey = string.Empty;");
+            StringAssert.Contains(failure, "Encryption.GeneratedKey = false;");
+            Assert.IsFalse(failure.Contains("Setting.Values.MyKey =", StringComparison.Ordinal));
+            Assert.IsFalse(failure.Contains("CreateRandomKey", StringComparison.Ordinal));
         }
 
         private static async Task<(NamedPipeServerStream Server, NamedPipeClientStream Client)> CreateConnectedPairAsync(string pipeName = null)

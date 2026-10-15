@@ -592,6 +592,20 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        internal string PairingKeyDisplayText
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return MouseWithoutBordersPairingHelper.GetDisplayValue(
+                        _properties.SecurityKey.Value,
+                        isElevated: false,
+                        serviceEnabled: IsProtectedMode || _pairingKeyCodec.IsEncrypted(_properties.SecurityKey.Value));
+                }
+            }
+        }
+
         internal string MyKey
         {
             get

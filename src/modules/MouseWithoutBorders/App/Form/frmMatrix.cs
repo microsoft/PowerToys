@@ -139,11 +139,7 @@ namespace MouseWithoutBorders
             _ = Helper.GetUserName();
             textBoxEnc.ReadOnly = Class.Settings.IsProtectedMode;
             buttonNewKey.Enabled = !Class.Settings.IsProtectedMode;
-            textBoxEnc.Text = Class.Settings.IsProtectedMode
-                ? (Setting.Values.HasPairingKey
-                    ? Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersIpc.PairingConfiguredIndicator
-                    : Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
-                : Encryption.MyKey;
+            textBoxEnc.Text = Setting.Values.PairingKeyDisplayText;
         }
 
         private void InitAll()

@@ -101,12 +101,6 @@ internal static class InitAndCleanup
             Encryption.KeyCorrupted = true;
             Encryption.MyKey = string.Empty;
             Encryption.GeneratedKey = false;
-            if (!MouseWithoutBorders.Class.Settings.IsProtectedMode)
-            {
-                Setting.Values.MyKey = Encryption.CreateRandomKey();
-                Encryption.MyKey = Setting.Values.MyKey;
-            }
-
             Logger.Log(e.Message);
         }
 

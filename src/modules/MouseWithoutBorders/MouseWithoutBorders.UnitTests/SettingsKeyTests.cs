@@ -30,6 +30,29 @@ public sealed class SettingsKeyTests
     }
 
     [TestMethod]
+    public void DisplayTextDoesNotChangeRuntimeKeySemantics()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var properties = new MouseWithoutBordersProperties();
+        var settings = CreateSettings(properties, new DpapiPairingKeyCodec(identity.User!));
+        settings.MyKey = "TEST-KEY";
+
+        Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, settings.PairingKeyDisplayText);
+        Assert.AreEqual("TEST-KEY", settings.MyKey);
+    }
+
+    [TestMethod]
+    public void OrdinaryDisplayUsesSettingsValue()
+    {
+        var properties = new MouseWithoutBordersProperties();
+        var settings = CreateSettings(properties, new PassthroughPairingKeyCodec());
+        settings.MyKey = "TEST-KEY";
+
+        Assert.AreEqual("TEST-KEY", settings.PairingKeyDisplayText);
+        Assert.AreEqual("TEST-KEY", settings.MyKey);
+    }
+
+    [TestMethod]
     public void SettingsPropertySerializesProtectedValueAndReadsPlaintext()
     {
         using var identity = WindowsIdentity.GetCurrent();
@@ -139,7 +162,73 @@ public sealed class SettingsKeyTests
             Program.EnsurePairingOperationAuthorized(true, new SettingsSyncAuthorization(false)));
         Program.EnsurePairingOperationAuthorized(false, new SettingsSyncAuthorization(false));
         Program.EnsurePairingOperationAuthorized(true, new SettingsSyncAuthorization(true));
-        Assert.ThrowsException<InvalidOperationException>(() => Program.EnsureConnectOperationAvailable(true, false));
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ModeMismatchLeavesSavedKeyUnusedUntilExplicitReplacement(bool serviceMode)
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var properties = new MouseWithoutBordersProperties();
+        var serviceCodec = new DpapiPairingKeyCodec(identity.User!);
+        var normalCodec = new PassthroughPairingKeyCodec();
+        properties.SecurityKey.Value = serviceMode ? "OLD-NORMAL-KEY" : serviceCodec.Encrypt("OLD-SERVICE-KEY");
+        var savedValue = properties.SecurityKey.Value;
+        var settings = CreateSettings(properties, serviceMode ? serviceCodec : normalCodec);
+        var writer = new TestSettingsUtils(() => { });
+        SetField(settings, "_settings", new MouseWithoutBordersSettings { Properties = properties });
+        SetField(settings, "_settingsUtils", writer);
+        var previousKey = Encryption.MyKey;
+        var previousMagic = Encryption.MagicNumber;
+        var previousCorrupted = Encryption.KeyCorrupted;
+        var previousDesktop = Common.RunOnLogonDesktop;
+        Common.RunOnLogonDesktop = false;
+        try
+        {
+            if (serviceMode)
+            {
+                Assert.ThrowsException<CryptographicException>(() => _ = settings.MyKey);
+            }
+            else
+            {
+                Assert.ThrowsException<ArgumentException>(() => _ = settings.MyKey);
+            }
+
+            Assert.IsFalse(settings.HasPairingKey);
+            Encryption.MyKey = "PREVIOUS-RUNTIME-KEY";
+            Assert.IsTrue(settings.UpdateRuntimeKey());
+            Assert.AreEqual(string.Empty, Encryption.MyKey);
+            Assert.AreEqual(0u, Encryption.MagicNumber);
+            Assert.IsFalse(settings.UpdateRuntimeKey());
+            Assert.AreEqual(savedValue, properties.SecurityKey.Value);
+            Assert.AreEqual(0, writer.Writes.Count);
+
+            Program.EnsurePairingOperationAuthorized(serviceMode, new SettingsSyncAuthorization(true));
+            await settings.SavePairingSettingsAsync("EXPLICIT-REPLACEMENT", PairedMachineMatrix, false, _ => { });
+            Assert.IsTrue(settings.UpdateRuntimeKey());
+            Assert.AreEqual("EXPLICIT-REPLACEMENT", settings.MyKey);
+            Assert.AreEqual("EXPLICIT-REPLACEMENT", Encryption.MyKey);
+            Assert.IsTrue(settings.HasPairingKey);
+            Assert.AreEqual(1, writer.Writes.Count);
+            Assert.AreEqual(properties.SecurityKey.Value, JsonSerializer.Deserialize<MouseWithoutBordersSettings>(writer.Json!)!.Properties.SecurityKey.Value);
+            Assert.AreEqual(serviceMode, MouseWithoutBordersPairingHelper.HasValidEncryptedFormat(properties.SecurityKey.Value));
+            if (serviceMode)
+            {
+                Assert.IsFalse(properties.SecurityKey.Value.Contains("EXPLICIT-REPLACEMENT", StringComparison.Ordinal));
+            }
+            else
+            {
+                Assert.AreEqual("EXPLICIT-REPLACEMENT", properties.SecurityKey.Value);
+            }
+        }
+        finally
+        {
+            Encryption.MyKey = previousKey;
+            Encryption.MagicNumber = previousMagic;
+            Encryption.KeyCorrupted = previousCorrupted;
+            Common.RunOnLogonDesktop = previousDesktop;
+        }
     }
 
     [TestMethod]

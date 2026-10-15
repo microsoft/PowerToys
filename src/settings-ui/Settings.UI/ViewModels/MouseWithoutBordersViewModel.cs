@@ -70,9 +70,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool PairingSetupRequired => MouseWithoutBordersPairingHelper.PairingSetupRequired(Settings.Properties.SecurityKey.Value, UseService);
 
-        public bool ShowPairingSetupRequired => UseService && PairingSetupRequired;
+        public bool ShowPairingSetupRequired => PairingSetupRequired;
 
-        public bool CanConnectPairing => CanManagePairing && !PairingSetupRequired;
+        public bool CanConnectPairing => CanManagePairing;
 
         public bool CanUninstallService { get => GeneralSettingsConfig.IsElevated && !UseService; }
 

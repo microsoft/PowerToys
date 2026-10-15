@@ -324,10 +324,6 @@ namespace MouseWithoutBorders.Class
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(pcName);
                 EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _authorization);
-                EnsureConnectOperationAvailable(
-                    Settings.IsProtectedMode,
-                    _settings.HasPairingKey);
-
                 var machines = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
                 await _settings.SavePairingSettingsAsync(securityKey, machines, false, key =>
                 {
@@ -460,14 +456,6 @@ namespace MouseWithoutBorders.Class
             if (protectedMode && !authorization.CanManageServicePairing)
             {
                 throw new UnauthorizedAccessException("Administrator access is required to manage service pairing.");
-            }
-        }
-
-        internal static void EnsureConnectOperationAvailable(bool protectedMode, bool protectedCredentialConfigured)
-        {
-            if (protectedMode && !protectedCredentialConfigured)
-            {
-                throw new InvalidOperationException("Generate a new pairing key before connecting another machine.");
             }
         }
 
