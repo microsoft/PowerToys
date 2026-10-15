@@ -49,6 +49,21 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: false))
+        {
+            Title = "Small-batch incremental loading (list)",
+            Subtitle = "Starts with one item and loads up to eight per batch, up to 512. Type to reset; use Ctrl+K to restart or switch layouts.",
+        },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: true))
+        {
+            Title = "Small-batch incremental loading (grid)",
+            Subtitle = "Starts with one tile and loads up to eight per batch, up to 512. Check keyboard navigation, viewport resizing, and switching layouts.",
+        },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: true, initialItemCount: 0))
+        {
+            Title = "Incremental loading from an empty grid",
+            Subtitle = "Starts empty and loads up to eight items per batch, up to 512. The first batch should appear without input.",
+        },
         new ListItem(new SampleGridsListPage())
         {
             Title = "Grid views and galleries",
