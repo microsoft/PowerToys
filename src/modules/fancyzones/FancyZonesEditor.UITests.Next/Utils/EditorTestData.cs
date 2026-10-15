@@ -778,7 +778,6 @@ public static class EditorTestData
         }));
     }
 
-
     public static void WriteForLayoutHotkeysTests(FancyZonesEditorFiles files)
     {
         files.Parameters.Write(new EditorParameters().Serialize(new EditorParameters.ParamsWrapper
