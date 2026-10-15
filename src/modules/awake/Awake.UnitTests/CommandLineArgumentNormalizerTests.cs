@@ -5,6 +5,7 @@
 using System;
 using System.CommandLine;
 using System.Globalization;
+using System.IO;
 using Awake.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -251,6 +252,80 @@ public class CommandLineArgumentNormalizerTests
         var command = Program.BuildRootCommand();
         string[] arguments = ["--parent"];
         Assert.AreEqual(0, command.Parse(arguments).Errors.Count);
+    }
+
+    [DataRow("for", "-cd")]
+    [DataRow("for", "-dc")]
+    [DataRow("for", "-dc:false")]
+    [DataRow("for", "-de2027-01-01")]
+    [DataRow("for", "-dt20")]
+    [DataRow("until", "-cd")]
+    [DataRow("until", "-dc")]
+    [DataRow("until", "-dc:false")]
+    [DataRow("until", "-dt20")]
+    [DataRow("until", "-de2027-01-01")]
+    [DataTestMethod]
+    public void RootCommand_ModernCommandWithBundledConflict_IsRejected(string deadlineCommand, string option)
+    {
+        Assert.IsTrue(TryNormalize(
+            [deadlineCommand, deadlineCommand == "for" ? "10s" : "2027-01-01", option],
+            out string[] arguments,
+            out _));
+
+        Assert.IsTrue(Program.BuildRootCommand(hasDeadlineCommand: true).Parse(arguments).Errors.Count > 0);
+    }
+
+    [DataRow("for", "--use-pt-config", true)]
+    [DataRow("for", "--use-pt-config=false", true)]
+    [DataRow("for", "--expire-at\n2027-01-01", true)]
+    [DataRow("for", "--time-limit\n20", true)]
+    [DataRow("until", "--use-pt-config", true)]
+    [DataRow("until", "--use-pt-config=false", true)]
+    [DataRow("until", "--time-limit\n20", true)]
+    [DataRow("until", "--expire-at\n2027-01-01", true)]
+    [DataRow("for", "--display-on\nfalse\n--parent", false)]
+    [DataRow("until", "--display-on\nfalse\n--parent", false)]
+    [DataRow("for", "", false)]
+    [DataRow("until", "", false)]
+    [DataTestMethod]
+    public void RootCommand_ModernCommandResponseFile_ValidatesResolvedOptions(string deadlineCommand, string contents, bool rejected)
+    {
+        string responseFile = Path.Combine(Path.GetTempPath(), $"awake-arguments-{Guid.NewGuid():N}.rsp");
+        try
+        {
+            File.WriteAllText(responseFile, contents);
+            Assert.IsTrue(TryNormalize(
+                [deadlineCommand, deadlineCommand == "for" ? "10s" : "2027-01-01", $"@{responseFile}"],
+                out string[] arguments,
+                out _));
+
+            Assert.AreEqual(rejected, Program.BuildRootCommand(hasDeadlineCommand: true).Parse(arguments).Errors.Count > 0);
+        }
+        finally
+        {
+            File.Delete(responseFile);
+        }
+    }
+
+    [DataRow("for")]
+    [DataRow("until")]
+    [DataTestMethod]
+    public void RootCommand_ModernCommandWithLegitimateOptions_IsAccepted(string deadlineCommand)
+    {
+        Assert.IsTrue(TryNormalize(
+            [deadlineCommand, deadlineCommand == "for" ? "10s" : "2027-01-01", "-d:false", "--parent", "--pid", "42"],
+            out string[] arguments,
+            out _));
+
+        Assert.AreEqual(0, Program.BuildRootCommand(hasDeadlineCommand: true).Parse(arguments).Errors.Count);
+    }
+
+    [TestMethod]
+    public void RootCommand_LegacyConflictingOptions_RemainAccepted()
+    {
+        string[] arguments = ["-dc:false", "--time-limit", "10", "--expire-at", "2027-01-01"];
+
+        Assert.AreEqual(0, Program.BuildRootCommand().Parse(arguments).Errors.Count);
     }
 
     [TestMethod]

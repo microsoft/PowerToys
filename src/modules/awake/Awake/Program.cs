@@ -68,7 +68,7 @@ namespace Awake
                 return 1;
             }
 
-            var rootCommand = BuildRootCommand();
+            var rootCommand = BuildRootCommand(_hasDeadlineCommand);
             var parseResult = rootCommand.Parse(args);
 
             if (parseResult.Tokens.Any(t => t.Value.ToLowerInvariant() is "--help" or "-h" or "-?"))
@@ -146,7 +146,7 @@ namespace Awake
             return commandExitCode == 0 ? shutdownCompletion : Task.FromResult(commandExitCode);
         }
 
-        internal static RootCommand BuildRootCommand()
+        internal static RootCommand BuildRootCommand(bool hasDeadlineCommand = false)
         {
             Option<bool> configOption = new("--use-pt-config", "-c")
             {
@@ -238,6 +238,19 @@ namespace Awake
 
             rootCommand.Description = Resources.ResourceManager.GetString("AWAKE_CMD_DESCRIPTION", CultureInfo.CurrentUICulture)
                 ?? Core.Constants.AppName;
+            if (hasDeadlineCommand)
+            {
+                rootCommand.Validators.Add(result =>
+                {
+                    if (result.GetResult(configOption) is { Implicit: false } ||
+                        (result.GetResult(timeOption) is { Implicit: false } &&
+                         result.GetResult(expireAtOption) is { Implicit: false }))
+                    {
+                        result.AddError(GetCommandLineNormalizationError(CommandLineNormalizationError.ConflictingOptions, null));
+                    }
+                });
+            }
+
             rootCommand.SetAction(parseResult => HandleCommandLineArguments(
                 parseResult.GetValue(configOption),
                 parseResult.GetValue(displayOption),
