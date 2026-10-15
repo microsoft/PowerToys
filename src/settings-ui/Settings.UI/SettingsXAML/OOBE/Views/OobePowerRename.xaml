@@ -8,7 +8,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_PowerRename" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/PowerRename.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_PowerRename" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/PowerRename.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />

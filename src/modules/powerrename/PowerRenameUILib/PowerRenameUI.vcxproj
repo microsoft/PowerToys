@@ -43,11 +43,12 @@
     <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
     <PackageReference Include="boost" GeneratePathProperty="true" />
-    <PackageReference Include="boost_regex-vc143" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <!-- Keep a private UCRT: PowerRenameLib's std::locale::global would otherwise change the C locale WinUI 3 uses. -->
+    <EnableHybridCRT>false</EnableHybridCRT>
     
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>

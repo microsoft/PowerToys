@@ -1070,7 +1070,6 @@ public sealed partial class ListViewModelNavigationTests
         var page = new StaticPage([alpha, beta]);
         var viewModel = CreateViewModel(page, scheduler);
         viewModel.IsRootPage = isRootPage;
-        var recipient = new object();
         var commandBars = 0;
         var details = 0;
         var suggestions = 0;
@@ -1082,10 +1081,9 @@ public sealed partial class ListViewModelNavigationTests
             scheduler.Drain();
             var first = viewModel.FilteredItems[0];
             var later = viewModel.FilteredItems[1];
-            WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, _) => Interlocked.Increment(ref commandBars));
-            WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(recipient, (_, _) => Interlocked.Increment(ref details));
-            WeakReferenceMessenger.Default.Register<HideDetailsMessage>(recipient, (_, _) => Interlocked.Increment(ref details));
-            WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(recipient, (_, _) => Interlocked.Increment(ref suggestions));
+            viewModel.CommandBarContextChanged += OnCommandBarContextChanged;
+            viewModel.DetailsChanged += OnDetailsChanged;
+            viewModel.SearchSuggestionChanged += OnSearchSuggestionChanged;
             viewModel.UpdateSelectedItemCommand.Execute(first);
             scheduler.DrainUntil(() => Volatile.Read(ref suggestions) > 0);
             var selectedWork = GetPrivateField<CancellationTokenSource>(viewModel, "_selectedItemCts");
@@ -1123,11 +1121,19 @@ public sealed partial class ListViewModelNavigationTests
         }
         finally
         {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            viewModel.CommandBarContextChanged -= OnCommandBarContextChanged;
+            viewModel.DetailsChanged -= OnDetailsChanged;
+            viewModel.SearchSuggestionChanged -= OnSearchSuggestionChanged;
             viewModel.Dispose();
             scheduler.Drain();
             viewModel.SafeCleanup();
         }
+
+        void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e) => Interlocked.Increment(ref commandBars);
+
+        void OnDetailsChanged(object? sender, PageDetailsChangedEventArgs e) => Interlocked.Increment(ref details);
+
+        void OnSearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e) => Interlocked.Increment(ref suggestions);
     }
 
     [DataTestMethod]
@@ -1483,7 +1489,6 @@ public sealed partial class ListViewModelNavigationTests
         var scheduler = new QueuedTaskScheduler();
         var page = new StaticPage([CreateItem("Alpha"), CreateItem("Beta")]);
         var viewModel = CreateViewModel(page, scheduler);
-        var recipient = new object();
         var contexts = new List<ICommandBarContext?>();
 
         try
@@ -1493,7 +1498,7 @@ public sealed partial class ListViewModelNavigationTests
             viewModel.UpdateSelectedItemCommand.Execute(viewModel.FilteredItems[0]);
             scheduler.Drain();
             viewModel.SuspendForNavigation();
-            WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, message) => contexts.Add(message.ViewModel));
+            viewModel.CommandBarContextChanged += OnCommandBarContextChanged;
 
             var requested = clearSelection ? null : viewModel.FilteredItems[1];
             viewModel.UpdateSelectedItemCommand.Execute(requested);
@@ -1506,11 +1511,13 @@ public sealed partial class ListViewModelNavigationTests
         }
         finally
         {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            viewModel.CommandBarContextChanged -= OnCommandBarContextChanged;
             viewModel.Dispose();
             scheduler.Drain();
             viewModel.SafeCleanup();
         }
+
+        void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e) => contexts.Add(e.Context);
     }
 
     private static ListPageWorkState GetWorkState(ListViewModel viewModel) =>

@@ -639,7 +639,7 @@ public partial class CommandItemViewModelTests
 
                 Assert.AreEqual(ContextKeybindingResult.Hide, menu.InvokeCommand(childMatch));
                 Assert.IsNotNull(invocation);
-                Assert.AreSame(child, invocation.Context);
+                Assert.AreSame(child, invocation.CommandContext);
                 string[] expected = ["invoking", "dispatch", "invoked"];
                 CollectionAssert.AreEqual(expected, events);
             }
@@ -726,62 +726,67 @@ public partial class CommandItemViewModelTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void SecondaryActivation_UsesCurrentMenuAndExecutesAnActionWithChildren(bool inSubmenu)
+    public async Task SecondaryActivation_UsesRootMenuAndExecutesAnActionWithChildren(bool afterSubmenu)
     {
-        var pageContext = new TestPageContext();
-        var child = new CommandContextItem(new NoOpCommand { Name = "Child" })
-        {
-            RequestedShortcut = CommandContextItemViewModel.PrimaryShortcut,
-            MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Grandchild" })],
-        };
-        var parent = new CommandContextItem(new NoOpCommand { Name = "Parent" })
-        {
-            RequestedShortcut = CommandContextItemViewModel.SecondaryShortcut,
-            MoreCommands = [child],
-        };
-        var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
-        viewModel.SlowInitializeProperties();
-        var parentCommand = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
-        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
-        menu.PrepareForOpen(viewModel);
-        var invocations = new List<PerformCommandMessage>();
-        menu.CommandInvoking += (_, message) => invocations.Add(message);
+        var uiTasks = new TaskFactory(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+        var pageContext = new TestPageContext(uiTasks.Scheduler);
 
-        try
+        // Serialize menu operations with the view model's UI notifications.
+        await uiTasks.StartNew(() =>
         {
-            if (inSubmenu)
+            var child = new CommandContextItem(new NoOpCommand { Name = "Child" })
             {
-                Assert.AreEqual(ContextKeybindingResult.KeepOpen, menu.InvokeCommand(parentCommand));
-                Assert.AreSame(child, menu.SecondaryCommand?.Model.Unsafe);
-                menu.PopContextStack();
-                Assert.AreSame(parentCommand, menu.SecondaryCommand);
-                Assert.AreEqual(ContextKeybindingResult.KeepOpen, menu.InvokeCommand(parentCommand));
+                RequestedShortcut = CommandContextItemViewModel.PrimaryShortcut,
+                MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Grandchild" })],
+            };
+            var parent = new CommandContextItem(new NoOpCommand { Name = "Parent" })
+            {
+                RequestedShortcut = CommandContextItemViewModel.SecondaryShortcut,
+                MoreCommands = [child],
+            };
+            var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
+            var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+            viewModel.SlowInitializeProperties();
+            var parentCommand = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
+            var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+            menu.PrepareForOpen(viewModel);
+            var invocations = new List<PerformCommandMessage>();
+            menu.CommandInvoking += (_, message) => invocations.Add(message);
+
+            try
+            {
+                if (afterSubmenu)
+                {
+                    Assert.AreEqual(ContextKeybindingResult.KeepOpen, menu.InvokeCommand(parentCommand));
+                    Assert.IsNotNull(parentCommand.SecondaryCommand);
+                    Assert.IsNull(menu.SecondaryCommand, "A submenu's first command must not take the item's secondary action.");
+                    menu.PopContextStack();
+                }
+
+                var secondary = menu.SecondaryCommand;
+                Assert.IsNotNull(secondary, "Action roles must not depend on the displayed shortcut hints.");
+                Assert.IsNull(menu.FindKeybinding(CommandContextItemViewModel.PrimaryShortcut));
+                Assert.IsNull(menu.FindKeybinding(CommandContextItemViewModel.SecondaryShortcut));
+                Assert.AreSame(parent, secondary.Model.Unsafe);
+                Assert.IsTrue(secondary.HasSubmenu);
+                menu.SetSearchText("No matching commands");
+                Assert.AreEqual(0, menu.FilteredItems.Count);
+                Assert.AreSame(secondary, menu.SecondaryCommand, "Filtering must not change the secondary action.");
+
+                Assert.AreEqual(ContextKeybindingResult.Hide, menu.InvokeCommand(secondary, navigateSubmenus: false));
+                Assert.AreEqual(1, invocations.Count);
+                Assert.AreSame(parent, invocations[0].CommandContext);
+                menu.Close();
+                Assert.IsFalse(menu.CanPopContextStack());
+                Assert.IsNull(menu.SecondaryCommand);
             }
-
-            var secondary = menu.SecondaryCommand;
-            Assert.IsNotNull(secondary, "Action roles must not depend on the displayed shortcut hints.");
-            Assert.IsNull(menu.FindKeybinding(CommandContextItemViewModel.PrimaryShortcut));
-            Assert.IsNull(menu.FindKeybinding(CommandContextItemViewModel.SecondaryShortcut));
-            Assert.AreSame(inSubmenu ? child : parent, secondary.Model.Unsafe);
-            Assert.IsTrue(secondary.HasSubmenu);
-            menu.SetSearchText("No matching commands");
-            Assert.AreEqual(inSubmenu ? 1 : 0, menu.FilteredItems.Count);
-            Assert.AreSame(secondary, menu.SecondaryCommand, "Filtering must not change the secondary action.");
-
-            Assert.AreEqual(ContextKeybindingResult.Hide, menu.InvokeCommand(secondary, navigateSubmenus: false));
-            Assert.AreEqual(1, invocations.Count);
-            Assert.AreSame(inSubmenu ? child : parent, invocations[0].Context);
-            menu.Close();
-            Assert.IsFalse(menu.CanPopContextStack());
-            Assert.IsNull(menu.SecondaryCommand);
-        }
-        finally
-        {
-            menu.Close();
-            viewModel.SafeCleanup();
-            GC.KeepAlive(pageContext);
-        }
+            finally
+            {
+                menu.Close();
+                viewModel.SafeCleanup();
+                GC.KeepAlive(pageContext);
+            }
+        });
     }
 
     [TestMethod]
@@ -857,7 +862,7 @@ public partial class CommandItemViewModelTests
     }
 
     [TestMethod]
-    public void CommandBarMessages_DoNotPrepareOrRetargetMenu()
+    public void ContextMenu_PreparesOnlyOnExplicitOpen()
     {
         var pageContext = new TestPageContext();
         var parent = new CommandContextItem(new NoOpCommand { Name = "Submenu" })
@@ -872,7 +877,6 @@ public partial class CommandItemViewModelTests
 
         try
         {
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(viewModel));
             Assert.IsNull(menu.SelectedItem);
             Assert.AreEqual(0, menu.FilteredItems.Count);
             menu.PrepareForOpen(viewModel, parentViewModel);
@@ -881,8 +885,6 @@ public partial class CommandItemViewModelTests
             Assert.AreEqual(2, filteredItems.Length);
             Assert.IsInstanceOfType<ContextMenuBackItemViewModel>(filteredItems[0]);
 
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(viewModel));
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(null));
             Assert.AreSame(viewModel, menu.SelectedItem);
             Assert.IsTrue(menu.CanPopContextStack());
             CollectionAssert.AreEqual(filteredItems, menu.FilteredItems.ToArray());
@@ -1140,6 +1142,78 @@ public partial class CommandItemViewModelTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
+    public async Task Submenu_DoesNotAssignSecondaryShortcut(bool openDirectly)
+    {
+        var uiTasks = new TaskFactory(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+        var pageContext = new TestPageContext(uiTasks.Scheduler);
+
+        // Serialize menu operations with the view model's UI notifications.
+        await uiTasks.StartNew(() =>
+        {
+            var parent = new CommandContextItem(new NoOpCommand { Name = "Parent" })
+            {
+                MoreCommands =
+                [
+                    new CommandContextItem(new NoOpCommand { Name = "First child" }),
+                    new CommandContextItem(new NoOpCommand { Name = "Second child" }),
+                ],
+            };
+            var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
+            var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+            viewModel.SlowInitializeProperties();
+            var parentViewModel = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
+            var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+
+            try
+            {
+                if (openDirectly)
+                {
+                    menu.PrepareForOpen(viewModel, parentViewModel);
+                }
+                else
+                {
+                    menu.PrepareForOpen(viewModel);
+                    Assert.AreEqual(CommandContextItemViewModel.SecondaryShortcut, parentViewModel.DisplayShortcut);
+                    Assert.AreEqual(ContextKeybindingResult.KeepOpen, menu.InvokeCommand(parentViewModel));
+                }
+
+                Assert.IsTrue(menu.IsSubmenu);
+                Assert.IsNotNull(parentViewModel.SecondaryCommand, "The submenu still has a first visible command.");
+                Assert.IsNull(menu.SecondaryCommand, "Ctrl+Enter must not invoke a submenu's first command.");
+                Assert.IsTrue(menu.FilteredItems.OfType<CommandContextItemViewModel>().All(command => command.DisplayShortcut is null));
+
+                menu.PopContextStack();
+                Assert.AreSame(parentViewModel, menu.SecondaryCommand);
+                Assert.AreEqual(CommandContextItemViewModel.SecondaryShortcut, parentViewModel.DisplayShortcut);
+            }
+            finally
+            {
+                menu.Close();
+                viewModel.SafeCleanup();
+                GC.KeepAlive(pageContext);
+            }
+        });
+    }
+
+    [TestMethod]
+    public void Close_NotifiesThatTheContextWasReleased()
+    {
+        var context = new Mock<ICommandBarContext>();
+        context.SetupGet(value => value.AllCommands).Returns(Array.Empty<IContextItemViewModel>());
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+        menu.PrepareForOpen(context.Object);
+        var notifications = new List<string?>();
+        menu.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+
+        menu.Close();
+
+        Assert.IsNull(menu.CurrentContext);
+        CollectionAssert.Contains(notifications, nameof(menu.CurrentContext), "Views must be able to drop state that refers to the closed menu.");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     public void OpenOrContextUpdate_RefreshesDisplayedRows(bool changeContext)
     {
         IContextItemViewModel[] commands = [Mock.Of<IContextItemViewModel>()];
@@ -1263,7 +1337,6 @@ public partial class CommandItemViewModelTests
             Assert.AreSame(commands[0], menu.SecondaryCommand);
             first.Name = string.Empty;
             await secondaryChanged.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(viewModel));
             Assert.AreSame(snapshot, viewModel.AllCommands);
             Assert.AreSame(commands[1], menu.SecondaryCommand, "Renaming a row must update the role even when the menu list is unchanged.");
 
@@ -1453,7 +1526,8 @@ public partial class CommandItemViewModelTests
             {
                 Assert.IsTrue(menu.CanPopContextStack());
                 Assert.AreSame(replacement, menu.FilteredItems.OfType<CommandContextItemViewModel>().Single().Model.Unsafe, "Hydration must preserve the current level and search.");
-                Assert.AreEqual(CommandContextItemViewModel.SecondaryShortcut, ((CommandContextItemViewModel)menu.SecondaryCommand!).DisplayShortcut);
+                Assert.IsNull(menu.SecondaryCommand);
+                Assert.IsNull(menu.FilteredItems.OfType<CommandContextItemViewModel>().Single().DisplayShortcut);
             });
 
             await Task.Run(() => parent.Title = "Renamed parent");
