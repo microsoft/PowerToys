@@ -5,6 +5,8 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 
@@ -74,7 +76,7 @@ namespace MouseWithoutBorders
 
         private void SetLinkButtonState()
         {
-            LinkButton.Enabled = !Class.Settings.IsProtectedMode && SecurityCodeField.Text.Length >= 16 && ComputerNameField.Text.Trim().Length > 0;
+            LinkButton.Enabled = !Class.Settings.IsProtectedMode && TryGetSecurityCode(SecurityCodeField.Text, out _) && ComputerNameField.Text.Trim().Length > 0;
             if (!string.IsNullOrEmpty(SecurityCodeField.Text))
             {
                 _securityCode = SecurityCodeField.Text;
@@ -86,16 +88,22 @@ namespace MouseWithoutBorders
             }
         }
 
+        internal static bool TryGetSecurityCode(string value, out string securityCode)
+        {
+            securityCode = Regex.Replace(value, @"\s+", string.Empty);
+            return Encryption.IsKeyValid(securityCode, out _) && MouseWithoutBordersPairingHelper.IsOrdinaryKey(securityCode);
+        }
+
         private void LinkButtonClick(object sender, System.EventArgs e)
         {
-            if (Class.Settings.IsProtectedMode)
+            if (Class.Settings.IsProtectedMode || !TryGetSecurityCode(SecurityCodeField.Text, out string securityCode))
             {
                 return;
             }
 
             if (GetSecureKey() != SecurityCodeField.Text)
             {
-                Setting.Values.MyKey = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
+                Setting.Values.MyKey = securityCode;
                 Encryption.MyKey = Setting.Values.MyKey;
                 SecurityCode = Encryption.MyKey;
             }

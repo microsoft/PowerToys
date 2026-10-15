@@ -1242,7 +1242,7 @@ internal static class Common
                     tmpSk.Close(byUser);
                 }
 
-                Sk = new SocketStuff(tcpPort, byUser);
+                Sk = CreateSocketIfPairingKeyAvailable(() => new SocketStuff(tcpPort, byUser));
             }
             catch (Exception e)
             {
@@ -1286,6 +1286,15 @@ internal static class Common
                 Common.InputCallbackForm.InstallKeyboardAndMouseHook();
             }
         });
+    }
+
+    internal static SocketStuff CreateSocketIfPairingKeyAvailable(Func<SocketStuff> createSocket)
+    {
+        // Pairing setup can leave the runtime key unavailable. Wait for a valid key
+        // without treating each automatic reopen as a connection failure.
+        return Microsoft.PowerToys.Settings.UI.Library.Utilities.MouseWithoutBordersPairingHelper.IsOrdinaryKey(Encryption.MyKey)
+            ? createSocket()
+            : null;
     }
 
     internal static string GetMyStorageDir()

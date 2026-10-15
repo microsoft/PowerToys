@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
 
 // <summary>
@@ -24,6 +25,7 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 
 using Clipboard = MouseWithoutBorders.Core.Clipboard;
+using Helper = MouseWithoutBorders.Core.Helper;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#buttonOK_Click(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
@@ -519,6 +521,12 @@ namespace MouseWithoutBorders
             if (!Encryption.IsKeyValid(newKey, out string rv))
             {
                 ShowKeyErrorMsg(rv);
+                return false;
+            }
+
+            if (!MouseWithoutBordersPairingHelper.IsOrdinaryKey(newKey))
+            {
+                ShowKeyErrorMsg("Key must be auto generated in one of the machines.");
                 return false;
             }
 

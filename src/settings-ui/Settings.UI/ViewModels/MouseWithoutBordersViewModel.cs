@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsElevated { get => GeneralSettingsConfig.IsElevated; }
 
-        public bool CanManagePairing => MouseWithoutBordersPairingHelper.CanManagePairing(IsElevated, UseService);
+        public bool CanManagePairing => !_pairingState.IsUpdating && MouseWithoutBordersPairingHelper.CanManagePairing(IsElevated, UseService);
 
         public bool PairingSetupRequired => MouseWithoutBordersPairingHelper.PairingSetupRequired(Settings.Properties.SecurityKey.Value, UseService);
 
@@ -436,22 +436,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
                     }
 
-                    if (!useService)
-                    {
-                        savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
-                    }
+                    savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
                 },
                 () =>
                 {
+                    LoadViewModelFromSettings(savedSettings);
                     if (useService)
                     {
                         _pairingState.TransientSecurityKey = generatedKey;
                     }
-                    else
-                    {
-                        LoadViewModelFromSettings(savedSettings);
-                        NotifyUpdatedSettings();
-                    }
+
+                    NotifyUpdatedSettings();
 
                     OnPropertyChanged(nameof(SecurityKey));
 
@@ -460,10 +455,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(CanConnectPairing));
                 },
                 ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
-                () => UseService == useService,
-                isServiceKeyGeneration: useService);
+                () => UseService == useService && (savedSettings == null || savedSettings.Properties.UseService == useService));
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
             await updateTask;
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
             OnPropertyChanged(nameof(SecurityKey));
         }
@@ -484,6 +482,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var useService = UseService;
+            MouseWithoutBordersSettings savedSettings = null;
             var updateTask = _pairingState.TryUpdateAsync(
                 async () =>
                 {
@@ -493,15 +492,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
                         await endpoint.ConnectToMachine(pcName, securityKey);
                     }
+
+                    savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
                 },
                 () =>
                 {
-                    ClearTransientPairingState();
+                    LoadViewModelFromSettings(savedSettings);
+                    _pairingState.TransientSecurityKey = null;
+                    ConnectSecurityKey = string.Empty;
+                    ConnectPCName = string.Empty;
+                    ConnectFieldsVisible = false;
+                    NotifyUpdatedSettings();
                 },
                 ex => Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name})."),
-                () => UseService == useService);
+                () => UseService == useService && (savedSettings == null || savedSettings.Properties.UseService == useService));
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
             var succeeded = await updateTask;
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
             return succeeded;
         }
@@ -1408,6 +1418,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void ClearTransientPairingState()
         {
             _pairingState.Clear();
+            OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(HasPairingError));
             OnPropertyChanged(nameof(ConnectSecurityKey));
             OnPropertyChanged(nameof(ConnectPCName));

@@ -12,8 +12,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     internal sealed class MouseWithoutBordersPairingState
     {
         private object _context = new();
-        private bool _awaitingServiceKeyReload;
-        private bool _serviceKeyRequestPending;
+        private object _activeUpdate;
+
+        internal bool IsUpdating => _activeUpdate != null;
 
         internal string TransientSecurityKey { get; set; }
 
@@ -33,65 +34,57 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return !HasError;
         }
 
-        internal async Task<bool> TryUpdateAsync(Func<Task> operation, Action onSuccess, Action<Exception> onFailure, Func<bool> isContextCurrent = null, bool isServiceKeyGeneration = false)
+        internal async Task<bool> TryUpdateAsync(Func<Task> operation, Action onSuccess, Action<Exception> onFailure, Func<bool> isContextCurrent = null)
         {
-            var context = _context;
-            if (isServiceKeyGeneration)
+            if (IsUpdating)
             {
-                _awaitingServiceKeyReload = true;
-                _serviceKeyRequestPending = true;
+                return false;
             }
 
+            var context = _context;
+            var update = new object();
+            _activeUpdate = update;
             HasError = false;
             try
             {
                 await operation();
+                if (!ReferenceEquals(context, _context) || !(isContextCurrent?.Invoke() ?? true))
+                {
+                    return false;
+                }
+
+                onSuccess();
+                return true;
             }
             catch (Exception ex)
             {
                 if (ReferenceEquals(context, _context) && (isContextCurrent?.Invoke() ?? true))
                 {
-                    if (isServiceKeyGeneration)
-                    {
-                        _awaitingServiceKeyReload = false;
-                        _serviceKeyRequestPending = false;
-                    }
-
                     HasError = true;
                     onFailure(ex);
                 }
 
                 return false;
             }
-
-            if (!ReferenceEquals(context, _context) || !(isContextCurrent?.Invoke() ?? true))
+            finally
             {
-                return false;
+                if (ReferenceEquals(update, _activeUpdate))
+                {
+                    _activeUpdate = null;
+                }
             }
-
-            if (isServiceKeyGeneration)
-            {
-                _serviceKeyRequestPending = false;
-            }
-
-            onSuccess();
-            return true;
         }
 
         internal bool ShouldClearForSettingsReload(bool previousUseService, string previousSavedValue, bool useService, string savedValue)
         {
-            // The service can persist the encrypted value before or after the RPC reply.
-            if (_awaitingServiceKeyReload &&
-                previousUseService && useService &&
+            // A save notification can precede the reply. The owner reads committed settings
+            // after acknowledgement before admitting another pairing update.
+            if (IsUpdating &&
+                previousUseService == useService &&
                 !string.Equals(previousSavedValue, savedValue, StringComparison.Ordinal) &&
-                MouseWithoutBordersPairingHelper.HasValidEncryptedFormat(savedValue))
+                (useService ? MouseWithoutBordersPairingHelper.HasValidEncryptedFormat(savedValue) : MouseWithoutBordersPairingHelper.IsOrdinaryKey(savedValue)))
             {
-                _awaitingServiceKeyReload = false;
-                if (_serviceKeyRequestPending)
-                {
-                    TransientSecurityKey = null;
-                }
-
+                TransientSecurityKey = null;
                 return false;
             }
 
@@ -110,8 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         internal void Clear()
         {
             _context = new object();
-            _awaitingServiceKeyReload = false;
-            _serviceKeyRequestPending = false;
+            _activeUpdate = null;
             HasError = false;
             TransientSecurityKey = null;
             ConnectSecurityKey = string.Empty;

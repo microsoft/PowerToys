@@ -433,6 +433,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 state.ConnectSecurityKey = inputs.Item2;
                 Assert.IsFalse(state.TryGetConnectionInputs(out _, out _));
                 Assert.IsTrue(state.HasError);
+                Assert.IsFalse(state.IsUpdating);
                 Assert.AreEqual(inputs.Item1, state.ConnectPCName);
                 Assert.AreEqual(inputs.Item2, state.ConnectSecurityKey);
             }
@@ -496,9 +497,212 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             StringAssert.Contains(page, "new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync)");
             var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
             StringAssert.Contains(viewModel.Replace("\r\n", "\n"), "public async Task SubmitNewKeyRequestAsync()\n        {\n            if (!CanManagePairing)");
+            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_pairingState.IsUpdating &&");
+            foreach (var method in new[] { "public async Task SubmitNewKeyRequestAsync()", "public async Task<bool> SubmitConnectionRequestAsync()" })
+            {
+                var start = viewModel.IndexOf(method, StringComparison.Ordinal);
+                var admission = viewModel.IndexOf("var updateTask = _pairingState.TryUpdateAsync(", start, StringComparison.Ordinal);
+                var awaiting = viewModel.IndexOf("await updateTask", admission, StringComparison.Ordinal);
+                var beforeAwait = viewModel.Substring(admission, awaiting - admission);
+                StringAssert.Contains(beforeAwait, "OnPropertyChanged(nameof(CanManagePairing));");
+                StringAssert.Contains(beforeAwait, "OnPropertyChanged(nameof(CanConnectPairing));");
+                StringAssert.Contains(beforeAwait, "savedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>");
+                StringAssert.Contains(beforeAwait, "LoadViewModelFromSettings(savedSettings);");
+                StringAssert.Contains(beforeAwait, "(savedSettings == null || savedSettings.Properties.UseService == useService)");
+                var end = viewModel.IndexOf("return succeeded;", awaiting, StringComparison.Ordinal);
+                if (method == "public async Task SubmitNewKeyRequestAsync()")
+                {
+                    end = viewModel.IndexOf("public bool HasPairingError", awaiting, StringComparison.Ordinal);
+                }
+
+                var afterAwait = viewModel.Substring(awaiting, end - awaiting);
+                StringAssert.Contains(afterAwait, "OnPropertyChanged(nameof(CanManagePairing));");
+                StringAssert.Contains(afterAwait, "OnPropertyChanged(nameof(CanConnectPairing));");
+            }
+
             var document = XDocument.Load(FindRepositoryFile(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml"));
             var expander = document.Descendants().Single(element => (string)element.Attribute("Name") == "MouseWithoutBordersSecurityKey");
             Assert.AreEqual("{x:Bind ViewModel.CanManagePairing, Mode=OneWay}", (string)expander.Attribute("IsEnabled"));
+        }
+
+        [TestMethod]
+        public async Task PairingDoubleClickAdmitsOnlyOneUpdateIncludingConnection()
+        {
+            var state = new MouseWithoutBordersPairingState();
+            var acknowledgement = new TaskCompletionSource<bool>();
+            var calls = 0;
+            var update = state.TryUpdateAsync(
+                () =>
+                {
+                    calls++;
+                    return acknowledgement.Task;
+                },
+                () => state.TransientSecurityKey = "acknowledged-key",
+                _ => Assert.Fail("The operation should complete."));
+
+            Assert.IsTrue(state.IsUpdating);
+            Assert.IsFalse(await state.TryUpdateAsync(
+                () =>
+                {
+                    calls++;
+                    return Task.CompletedTask;
+                },
+                () => Assert.Fail("A second update must not change the display."),
+                _ => Assert.Fail("A rejected update must not report an error.")));
+            Assert.AreEqual(1, calls);
+            acknowledgement.SetResult(true);
+            Assert.IsTrue(await update);
+            Assert.AreEqual("acknowledged-key", state.TransientSecurityKey);
+            Assert.IsFalse(state.IsUpdating);
+        }
+
+        [DataTestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
+        public async Task SequentialPairingUpdatesSettleOwnedReadBeforeNextAdmission(bool useService, bool watcherBeforeReply)
+        {
+            var state = new MouseWithoutBordersPairingState();
+            var cached = new MouseWithoutBordersSettings();
+            cached.Properties.UseService = useService;
+            cached.Properties.SecurityKey.Value = useService ? "mwb-dpapi:v1:TEST" : "old-key";
+            foreach (var suffix in new[] { "AAAA", "BBBB" })
+            {
+                var committed = new MouseWithoutBordersSettings();
+                committed.Properties.UseService = useService;
+                committed.Properties.SecurityKey.Value = useService ? "mwb-dpapi:v1:" + suffix : suffix;
+                committed.Properties.MachinePool.Value = suffix + ":1";
+                committed.Properties.MachineMatrixString = new() { suffix, string.Empty, string.Empty, string.Empty };
+                committed.Properties.EasyMouse.Value = 2;
+                var acknowledgement = new TaskCompletionSource<bool>();
+                var read = new TaskCompletionSource<MouseWithoutBordersSettings>();
+                MouseWithoutBordersSettings saved = null;
+                var update = state.TryUpdateAsync(
+                    async () =>
+                    {
+                        await acknowledgement.Task;
+                        saved = await read.Task;
+                    },
+                    () =>
+                    {
+                        cached = saved;
+                        state.TransientSecurityKey = useService ? suffix : null;
+                    },
+                    _ => Assert.Fail("The operation should complete."));
+
+                void Reload()
+                {
+                    if (state.ShouldClearForSettingsReload(useService, cached.Properties.SecurityKey.Value, useService, committed.Properties.SecurityKey.Value))
+                    {
+                        state.Clear();
+                    }
+
+                    cached = committed;
+                }
+
+                if (watcherBeforeReply)
+                {
+                    Reload();
+                }
+
+                acknowledgement.SetResult(true);
+                Assert.IsTrue(state.IsUpdating, "Admission includes the committed-settings read.");
+                Assert.IsFalse(await state.TryUpdateAsync(
+                    () => Task.CompletedTask,
+                    () => Assert.Fail("The owned read has not finished."),
+                    _ => Assert.Fail("A duplicate must not run.")));
+                read.SetResult(committed);
+                Assert.IsTrue(await update);
+                Assert.IsFalse(state.IsUpdating);
+                if (!watcherBeforeReply)
+                {
+                    Reload();
+                }
+
+                Assert.AreEqual(suffix, state.GetDisplayValue(true, useService, cached.Properties.SecurityKey.Value));
+                cached.Properties.ShowOriginalUI = !cached.Properties.ShowOriginalUI;
+                var serialized = cached.ToJsonString();
+                var persisted = System.Text.Json.JsonSerializer.Deserialize<MouseWithoutBordersSettings>(serialized);
+                Assert.AreEqual(committed.Properties.SecurityKey.Value, persisted.Properties.SecurityKey.Value);
+                Assert.AreEqual(suffix + ":1", persisted.Properties.MachinePool.Value);
+                CollectionAssert.AreEqual(committed.Properties.MachineMatrixString, persisted.Properties.MachineMatrixString);
+                Assert.AreEqual(2, persisted.Properties.EasyMouse.Value);
+                Assert.AreEqual(cached.Properties.ShowOriginalUI, persisted.Properties.ShowOriginalUI);
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task PairingSettlesWithoutWatcherAndReleasesAdmissionAfterReadFailure(bool readFails)
+        {
+            var state = new MouseWithoutBordersPairingState();
+            var acknowledgement = new TaskCompletionSource<bool>();
+            var read = new TaskCompletionSource<string>();
+            string committed = null;
+            var update = state.TryUpdateAsync(
+                async () =>
+                {
+                    await acknowledgement.Task;
+                    committed = await read.Task;
+                },
+                () => state.TransientSecurityKey = committed,
+                _ => { });
+            acknowledgement.SetResult(true);
+            Assert.IsTrue(state.IsUpdating);
+            if (readFails)
+            {
+                read.SetException(new IOException("Settings read failed."));
+            }
+            else
+            {
+                read.SetResult("acknowledged-key");
+            }
+
+            Assert.AreEqual(!readFails, await update);
+            Assert.IsFalse(state.IsUpdating);
+            Assert.AreEqual(readFails, state.HasError);
+            Assert.AreEqual(readFails ? null : "acknowledged-key", state.TransientSecurityKey);
+            Assert.IsTrue(await state.TryUpdateAsync(() => Task.CompletedTask, () => { }, _ => Assert.Fail()));
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task ClearedOperationCannotReleaseNewerPairingAdmission(bool oldFails)
+        {
+            var state = new MouseWithoutBordersPairingState();
+            var oldReply = new TaskCompletionSource<bool>();
+            var oldUpdate = state.TryUpdateAsync(
+                () => oldReply.Task,
+                () => Assert.Fail("An old context cannot publish a key."),
+                _ => Assert.Fail("An old context cannot publish an error."));
+            state.Clear();
+            var newReply = new TaskCompletionSource<bool>();
+            var newUpdate = state.TryUpdateAsync(
+                () => newReply.Task,
+                () => state.TransientSecurityKey = "new-key",
+                _ => Assert.Fail("The current operation should complete."));
+            if (oldFails)
+            {
+                oldReply.SetException(new IOException("Old connection closed."));
+            }
+            else
+            {
+                oldReply.SetResult(true);
+            }
+
+            Assert.IsFalse(await oldUpdate);
+            Assert.IsTrue(state.IsUpdating);
+            Assert.IsFalse(await state.TryUpdateAsync(
+                () => Task.CompletedTask,
+                () => Assert.Fail("The newer operation still owns admission."),
+                _ => Assert.Fail()));
+            newReply.SetResult(true);
+            Assert.IsTrue(await newUpdate);
+            Assert.IsFalse(state.IsUpdating);
+            Assert.AreEqual("new-key", state.TransientSecurityKey);
         }
 
         [TestMethod]
@@ -512,9 +716,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 _ => Assert.Fail("The operation should complete."));
             Assert.AreEqual("displayed", state.TransientSecurityKey);
             Assert.IsFalse(update.IsCompleted);
+            Assert.IsTrue(state.IsUpdating);
             acknowledgement.SetResult(true);
             Assert.IsTrue(await update);
             Assert.AreEqual("updated", state.TransientSecurityKey);
+            Assert.IsFalse(state.IsUpdating);
         }
 
         [DataTestMethod]
@@ -558,8 +764,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 () => acknowledgement.Task,
                 () => state.TransientSecurityKey = "generated",
                 _ => Assert.Fail("A different mode must not receive errors."),
-                () => useService == startingUseService,
-                isServiceKeyGeneration: startingUseService);
+                () => useService == startingUseService);
 
             useService = false;
             if (fails)
@@ -575,6 +780,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.AreEqual("normal-key", savedValue);
             Assert.IsNull(state.TransientSecurityKey);
             Assert.IsFalse(state.HasError);
+            Assert.IsFalse(state.IsUpdating);
         }
 
         [DataTestMethod]
@@ -590,8 +796,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 {
                     state.TransientSecurityKey = "generated";
                 },
-                _ => Assert.Fail("The operation should complete."),
-                isServiceKeyGeneration: true);
+                _ => Assert.Fail("The operation should complete."));
 
             var configuredValue = "mwb-dpapi:v1:TEST";
             if (state.ShouldClearForSettingsReload(true, savedValue, true, configuredValue))
@@ -621,8 +826,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var update = state.TryUpdateAsync(
                 () => acknowledgement.Task,
                 () => Assert.Fail("A cleared context must not receive a generated key."),
-                _ => Assert.Fail("The operation should complete."),
-                isServiceKeyGeneration: true);
+                _ => Assert.Fail("The operation should complete."));
 
             Assert.IsTrue(state.ShouldClearForSettingsReload(true, setupValue, false, configuredValue));
             Assert.IsTrue(state.ShouldClearForSettingsReload(true, setupValue, true, "other-key"));
@@ -636,13 +840,18 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         public async Task GeneratedServiceKeySurvivesLateEncryptedWatcherUpdate()
         {
             var state = new MouseWithoutBordersPairingState();
+            var cachedValue = "mwb-dpapi:v1:TEST";
+            var committedValue = "mwb-dpapi:v1:DATA";
             Assert.IsTrue(await state.TryUpdateAsync(
                 () => Task.CompletedTask,
-                () => state.TransientSecurityKey = "fresh-rpc-key",
-                _ => Assert.Fail("The operation should complete."),
-                isServiceKeyGeneration: true));
+                () =>
+                {
+                    cachedValue = committedValue;
+                    state.TransientSecurityKey = "fresh-rpc-key";
+                },
+                _ => Assert.Fail("The operation should complete.")));
 
-            Assert.IsFalse(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:TEST", true, "mwb-dpapi:v1:DATA"));
+            Assert.IsFalse(state.ShouldClearForSettingsReload(true, cachedValue, true, committedValue));
             Assert.AreEqual("fresh-rpc-key", state.GetDisplayValue(true, true, "mwb-dpapi:v1:DATA"));
             Assert.IsTrue(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:DATA", true, "mwb-dpapi:v1:KEYS"));
         }
@@ -661,8 +870,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var update = state.TryUpdateAsync(
                 () => acknowledgement.Task,
                 () => Assert.Fail("A failed reply must not apply a generated key."),
-                _ => { },
-                isServiceKeyGeneration: true);
+                _ => { });
 
             Assert.IsFalse(state.ShouldClearForSettingsReload(true, "mwb-dpapi:v1:TEST", true, "mwb-dpapi:v1:DATA"));
             Assert.IsNull(state.TransientSecurityKey);
@@ -757,7 +965,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
 
             acknowledgement.SetResult(true);
-            Assert.AreEqual(!watcherBeforeReply, await update);
+            Assert.IsTrue(await update);
             Assert.AreEqual("generated-key", cached.Properties.SecurityKey.Value);
 
             cached.Properties.ShowOriginalUI = !cached.Properties.ShowOriginalUI;
