@@ -3,6 +3,13 @@
 #include <mutex>
 #include <common/interop/two_way_pipe_message_ipc.h>
 
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+namespace workspaces_ipc_test
+{
+    void SetCallbackTeardownEvents(HANDLE entered, HANDLE allowDispatch, HANDLE stopping, bool finalResult);
+}
+#endif
+
 namespace IPCHelperStrings
 {
     static std::wstring LauncherUIPipeName(L"\\\\.\\pipe\\powertoys_workspaces_launcher_ui_");
@@ -18,6 +25,7 @@ public:
     IPCHelper(const std::wstring& currentPipeName, const std::wstring receiverPipeName, std::function<void(const std::wstring&)> messageCallback, const interop_auth::CallerPolicy& peerPolicy = {});
     ~IPCHelper();
 
+    void Stop();
     void send(const std::wstring& message) const;
     bool WaitForReady(DWORD timeoutMs, const std::function<bool()>& isCanceled = {}) const;
     void SetCallback(std::function<void(const std::wstring&)> messageCallback);

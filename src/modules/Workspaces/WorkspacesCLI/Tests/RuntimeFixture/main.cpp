@@ -545,6 +545,7 @@ int wmain(int argc, wchar_t** argv)
             const bool timedOut = std::wstring_view(argv[1]) == L"session-timeout";
             const bool unresponsive = std::wstring_view(argv[1]) == L"session-unresponsive";
             const bool oversized = std::wstring_view(argv[1]) == L"session-oversized";
+            const bool teardown = std::wstring_view(argv[1]).starts_with(L"session-teardown-");
             GUID guid{};
             winrt::check_hresult(CoCreateGuid(&guid));
             wchar_t id[40]{};
@@ -576,6 +577,44 @@ int wmain(int argc, wchar_t** argv)
             wil::unique_handle cancel(CreateEventW(nullptr, TRUE, canceled, nullptr));
             Check(static_cast<bool>(cancel));
             const auto began = GetTickCount64();
+            if (teardown)
+            {
+                SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
+                wil::unique_handle entered(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+                wil::unique_handle allowDispatch(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+                wil::unique_handle stopping(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+                Check(entered && allowDispatch && stopping);
+                workspaces_ipc_test::SetCallbackTeardownEvents(
+                    entered.get(), allowDispatch.get(), stopping.get(), std::wstring_view(argv[1]) == L"session-teardown-result");
+                auto driver = std::async(std::launch::async, [&] {
+                    const bool paused = WaitForSingleObject(entered.get(), 10000) == WAIT_OBJECT_0;
+                    SetEvent(cancel.get());
+                    const bool stopped = paused && WaitForSingleObject(stopping.get(), 1000) == WAIT_OBJECT_0;
+                    SetEvent(allowDispatch.get());
+                    return paused && stopped;
+                });
+                auto cleanup = wil::scope_exit([&] {
+                    SetEvent(allowDispatch.get());
+                    SetEvent(cancel.get());
+                    if (driver.valid())
+                        driver.wait();
+                    workspaces_ipc_test::SetCallbackTeardownEvents(nullptr, nullptr, nullptr, false);
+                });
+                try
+                {
+                    WorkspacesSession::StartSnapshot(request, project, draft, cancel.get());
+                    throw std::runtime_error("Controlled teardown unexpectedly completed instead of acknowledging cancellation.");
+                }
+                catch (const WorkspacesSession::Error& error)
+                {
+                    Check(error.exitCode == 12 && error.code == L"canceled" && !error.executionStillRunning);
+                    const auto response = WorkspacesCli::Failure(L"launch", error);
+                    Check(response.GetNamedObject(L"error").GetNamedString(L"code") == L"canceled");
+                }
+                Check(driver.get());
+                std::cout << "{\"passed\":true}\n";
+                return 0;
+            }
             if (canceled || timedOut || unresponsive || oversized)
             {
                 stallShell = unresponsive;

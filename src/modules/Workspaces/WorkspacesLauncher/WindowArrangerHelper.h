@@ -12,6 +12,7 @@ public:
     WindowArrangerHelper(std::function<void(const std::wstring&)> ipcCallback, std::wstring operationId = L"");
     ~WindowArrangerHelper();
 
+    void StopCallbacks();
     DWORD Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback, DWORD timeoutSeconds = 0);
     void UpdateLaunchStatus(const WorkspacesData::LaunchingAppState& appState) const;
     void KeepLaunchingAlive() const;

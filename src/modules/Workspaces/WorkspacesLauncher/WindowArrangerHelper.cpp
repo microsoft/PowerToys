@@ -19,6 +19,7 @@ WindowArrangerHelper::WindowArrangerHelper(std::function<void(const std::wstring
 
 WindowArrangerHelper::~WindowArrangerHelper()
 {
+    StopCallbacks();
     if (!m_process)
         return;
     Logger::info(L"Stopping WorkspacesWindowArranger with pid {}", m_processId);
@@ -30,6 +31,11 @@ WindowArrangerHelper::~WindowArrangerHelper()
             Logger::error(L"Unable to terminate PowerToys.WorkspacesWindowArranger process: {}", get_last_error_or_default(GetLastError()));
         }
     }
+}
+
+void WindowArrangerHelper::StopCallbacks()
+{
+    m_ipcHelper.Stop();
 }
 
 DWORD WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback, DWORD timeoutSeconds)

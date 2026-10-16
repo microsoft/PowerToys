@@ -45,6 +45,11 @@ namespace
 {
     std::atomic_int thread_start_failure_after{ -1 };
     std::atomic<HANDLE> wait_named_pipe_entered_event{ nullptr };
+    std::atomic<HANDLE> callback_entered_event{ nullptr };
+    std::atomic<HANDLE> allow_callback_event{ nullptr };
+    std::atomic<HANDLE> callback_stopping_event{ nullptr };
+    std::atomic<const void*> paused_callback_owner{ nullptr };
+    std::atomic<bool> pause_final_result{ false };
 
     void inject_thread_start_failure()
     {
@@ -60,6 +65,18 @@ namespace
                 return;
             }
         }
+    }
+}
+
+namespace workspaces_ipc_test
+{
+    void SetCallbackTeardownEvents(HANDLE entered, HANDLE allowDispatch, HANDLE stopping, bool finalResult)
+    {
+        paused_callback_owner.store(nullptr);
+        pause_final_result.store(finalResult);
+        callback_entered_event.store(entered);
+        allow_callback_event.store(allowDispatch);
+        callback_stopping_event.store(stopping);
     }
 }
 
@@ -216,6 +233,13 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_threads(HANDLE token)
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::stop_started_threads()
 {
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+    if (paused_callback_owner.load() == this)
+    {
+        if (const auto event = callback_stopping_event.load())
+            SetEvent(event);
+    }
+#endif
     input_queue.interrupt();
     if (input_queue_thread.joinable())
     {
@@ -903,6 +927,16 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_input_queue_thread(
         // otherwise just store the response message in a variable.
         if (dispatch_inc_message_function != nullptr)
         {
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+            if (const auto entered = callback_entered_event.load();
+                entered && (pause_final_result.load() ? message.find(L"\"arranger-result\"") != std::wstring::npos : message == L"snapshot-request"))
+            {
+                paused_callback_owner.store(this);
+                SetEvent(entered);
+                if (WaitForSingleObject(allow_callback_event.load(), 10000) != WAIT_OBJECT_0)
+                    throw std::runtime_error("Timed out releasing the controlled Workspaces IPC callback.");
+            }
+#endif
             dispatch_inc_message_function(message);
         }
         outgoing_message = message;

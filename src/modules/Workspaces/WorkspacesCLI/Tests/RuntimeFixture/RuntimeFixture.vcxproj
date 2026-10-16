@@ -17,7 +17,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(RepoRoot)src\modules\Workspaces;$(RepoRoot)src\modules\Workspaces\WorkspacesLauncher;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TWO_WAY_PIPE_MESSAGE_IPC_TESTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(RepoRoot)src\modules\Workspaces;$(RepoRoot)src\modules\Workspaces\WorkspacesLauncher;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -29,6 +30,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\..\..\WorkspacesLib\two_way_pipe_message_ipc.cpp" />
     <ResourceCompile Include="version.rc" />
     <ProjectReference Include="..\..\WorkspacesCLI.vcxproj">
       <Project>{a3f4cd35-a455-41e7-bc03-1214cb841c9a}</Project>

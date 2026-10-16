@@ -24,11 +24,15 @@ IPCHelper::IPCHelper(const std::wstring& currentPipeName, const std::wstring rec
 
 IPCHelper::~IPCHelper()
 {
+    Stop();
+}
+
+void IPCHelper::Stop()
+{
     std::unique_lock lock{ ipcMutex };
     if (ipc)
     {
         ipc->end();
-        ipc = nullptr;
     }
 }
 

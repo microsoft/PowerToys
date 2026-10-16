@@ -68,6 +68,7 @@ Launcher::~Launcher()
         }
     }
     // Stop callbacks while all launch state and synchronization objects are still alive.
+    m_windowArrangerHelper->StopCallbacks();
     m_windowArrangerHelper.reset();
     m_uiHelper.reset();
     if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)

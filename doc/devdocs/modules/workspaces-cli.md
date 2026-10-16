@@ -174,6 +174,8 @@ The progress window's Cancel button and CLI cancellation both stop the shared la
 an acknowledged `canceled` result without requiring normal arranger completion. Pending application
 launches stop, already-started applications remain open, and operation-owned workers and the launch
 lock are released. Non-canceled launches still require a complete, validated arranger result.
+Teardown stops and joins arranger callbacks before releasing their helper owner, so an
+in-flight snapshot or final-result callback cannot access an already-cleared helper pointer.
 
 For elevated callers, shared session routing validates the desktop shell's
 user/session/Medium integrity, creates a suspended host through the common

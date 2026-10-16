@@ -83,7 +83,8 @@ namespace WorkspacesLibUnitTests
             GetExitCodeProcess(process.hProcess, &code);
             char buffer[4096]{};
             DWORD received{};
-            Assert::IsTrue(ReadFile(read.get(), buffer, sizeof(buffer), &received, nullptr) != FALSE);
+            Assert::IsTrue(ReadFile(read.get(), buffer, sizeof(buffer), &received, nullptr) != FALSE,
+                           (L"No fixture response; process exit code: " + std::to_wstring(code)).c_str());
             const std::string output(buffer, received);
             Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(output.c_str());
             Assert::AreEqual(DWORD{ workerError ? 2ul : scenario == L"session-unresponsive" ? 9ul :
@@ -128,6 +129,16 @@ namespace WorkspacesLibUnitTests
         }
 
 #ifdef _DEBUG
+        TEST_METHOD (CancellationJoinsSnapshotCallbackBeforeReleasingItsOwner)
+        {
+            Run(L"session-teardown-snapshot");
+        }
+
+        TEST_METHOD (CancellationJoinsFinalResultCallbackBeforeReleasingItsOwner)
+        {
+            Run(L"session-teardown-result");
+        }
+
         TEST_METHOD (MediumSessionEntryRunsInBothCallersWithoutAnotherLauncher)
         {
             Run(L"session-cli");
