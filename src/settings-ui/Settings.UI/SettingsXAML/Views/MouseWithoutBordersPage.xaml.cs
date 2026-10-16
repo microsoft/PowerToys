@@ -86,16 +86,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return null;
         }
 
-        private int GetDeviceIndex(FrameworkElement element)
+        private int GetDeviceIndex(Border b)
         {
-            return element.DataContext.As<IndexedItem<DeviceViewModel>>().Index;
+            return b.DataContext.As<IndexedItem<DeviceViewModel>>().Index;
         }
 
         private void Device_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             args.Data.RequestedOperation = DataPackageOperation.Move;
             args.Data.Properties.Add("check-usage", MouseWithoutBordersDragDropCheckString);
-            args.Data.Properties.Add("index", GetDeviceIndex((FrameworkElement)sender));
+            args.Data.Properties.Add("index", GetDeviceIndex((Border)sender));
         }
 
         private void Device_Drop(object sender, DragEventArgs e)
@@ -125,10 +125,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            var targetDeviceIndex = GetDeviceIndex((FrameworkElement)sender);
+            var targetDeviceIndex = GetDeviceIndex((Border)e.OriginalSource);
 
             ViewModel.MachineMatrixString.Swap(draggedDeviceIndex, targetDeviceIndex);
-            var binding = DevicesItemsView.GetBindingExpression(ItemsView.ItemsSourceProperty);
+            var itemsControl = (ItemsControl)FindName("DevicesItemsControl");
+            var binding = itemsControl.GetBindingExpression(ItemsControl.ItemsSourceProperty);
             binding.UpdateSource();
         }
 
