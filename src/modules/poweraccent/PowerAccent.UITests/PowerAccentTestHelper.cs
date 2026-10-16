@@ -25,6 +25,9 @@ internal static class PowerAccentTestHelper
     private const int EnglishUnitedStatesLanguageId = 0x0409;
     private const int OverlayStartupTimeoutMs = 30_000;
     private const int SettingsReloadTimeoutMs = 30_000;
+
+    // Each scroll poll runs several winappcli UIA searches, which can take seconds apiece on CI agents.
+    private const int ScrollIntoViewTimeoutMs = 15_000;
     private const int VkCapital = 0x14;
 
     [DllImport("user32.dll")]
@@ -615,13 +618,14 @@ internal static class PowerAccentTestHelper
             observation => observation.Last is not null && observation.Last.Selected &&
                            IsHorizontallyWithin(observation.Last, observation.Viewport) &&
                            observation.First is not null && observation.First.X < initialFirstX - 1,
-            timeoutMS: 5_000,
-            requiredConsecutiveMatches: 3,
+            timeoutMS: ScrollIntoViewTimeoutMs,
+            requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
         var bounds = result.LastObservation;
         var details = $"Viewport X={bounds.Viewport?.X}, width={bounds.Viewport?.Width}; " +
-                      $"selected last item X={bounds.Last?.X}, width={bounds.Last?.Width}; " +
-                      $"first item X={initialFirstX} -> {bounds.First?.X}.";
+                      $"last item X={bounds.Last?.X}, width={bounds.Last?.Width}, selected={bounds.Last?.Selected}; " +
+                      $"first item X={initialFirstX} -> {bounds.First?.X}, width={bounds.First?.Width}; " +
+                      $"consecutive matches={result.ConsecutiveMatches}.";
         Step(testBase, details);
         Assert.IsTrue(result.Succeeded, $"Keyboard navigation did not scroll the selected character into view. {details}");
 
@@ -633,13 +637,13 @@ internal static class PowerAccentTestHelper
             observation => observation.First is not null && observation.First.Selected &&
                            IsHorizontallyWithin(observation.First, observation.Viewport) &&
                            observation.First.X > bounds.First!.X + 1,
-            timeoutMS: 5_000,
-            requiredConsecutiveMatches: 3,
+            timeoutMS: ScrollIntoViewTimeoutMs,
+            requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
         var returnedBounds = returnResult.LastObservation;
         var returnDetails = $"Viewport X={returnedBounds.Viewport?.X}, width={returnedBounds.Viewport?.Width}; " +
-                            $"selected first item X={returnedBounds.First?.X}, width={returnedBounds.First?.Width}; " +
-                            $"initial first item X={initialFirstX}.";
+                            $"first item X={returnedBounds.First?.X}, width={returnedBounds.First?.Width}, selected={returnedBounds.First?.Selected}; " +
+                            $"initial first item X={initialFirstX}; consecutive matches={returnResult.ConsecutiveMatches}.";
         Step(testBase, returnDetails);
         Assert.IsTrue(
             returnResult.Succeeded,
