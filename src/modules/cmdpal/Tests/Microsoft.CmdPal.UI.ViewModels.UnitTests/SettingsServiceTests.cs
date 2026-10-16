@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Immutable;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -42,7 +45,13 @@ public class SettingsServiceTests
             .Setup(p => p.Load(
                 It.IsAny<string>(),
                 It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
-            .Returns(_testSettings);
+            .Returns(() => _testSettings);
+        _mockPersistence
+            .Setup(p => p.Save(
+                It.IsAny<SettingsModel>(),
+                It.IsAny<string>(),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
+            .Returns(true);
     }
 
     [TestCleanup]
@@ -303,6 +312,180 @@ public class SettingsServiceTests
         // Assert
         Assert.AreSame(service, receivedSender);
         Assert.AreSame(service.Settings, receivedSettings);
+    }
+
+    [TestMethod]
+    public void Save_UnchangedSettings_AlwaysPersists()
+    {
+        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+
+        service.Save(hotReload: false);
+        service.Save(hotReload: false);
+
+        _mockPersistence.Verify(
+            p => p.Save(
+                It.IsAny<SettingsModel>(),
+                It.IsAny<string>(),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
+            Times.Exactly(2));
+    }
+
+    [TestMethod]
+    public void UpdateSettings_UnchangedPersistedValues_DoNotSave()
+    {
+        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+        var notifications = 0;
+        service.SettingsChanged += (_, _) => notifications++;
+
+        service.UpdateSettings(s => s);
+        service.UpdateSettings(s => s with { });
+
+        _mockPersistence.Verify(
+            p => p.Save(
+                It.IsAny<SettingsModel>(),
+                It.IsAny<string>(),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
+            Times.Never);
+        Assert.AreEqual(2, notifications, "Skipping persistence must not suppress requested hot reloads.");
+    }
+
+    [TestMethod]
+    public void UpdateSettings_ProviderMetadataAndEquivalentCollections_DoNotSave()
+    {
+        _testSettings = _testSettings with
+        {
+            ProviderSettings = ImmutableDictionary<string, ProviderSettings>.Empty.Add("test-provider", new ProviderSettings()),
+        };
+        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+
+        for (var i = 0; i < 100; i++)
+        {
+            var displayName = $"Provider {i}";
+            service.UpdateSettings(
+                s => s with
+                {
+                    ProviderSettings = s.ProviderSettings.SetItem(
+                        "test-provider",
+                        s.ProviderSettings["test-provider"] with
+                        {
+                            ProviderId = "test-provider",
+                            IsBuiltin = true,
+                            ProviderDisplayName = displayName,
+                        }),
+                    DockSettings = s.DockSettings with { StartBands = s.DockSettings.StartBands.ConvertAll(b => b with { }) },
+                },
+                hotReload: false);
+        }
+
+        Assert.AreEqual("Provider 99", service.Settings.ProviderSettings["test-provider"].ProviderDisplayName);
+        _mockPersistence.Verify(
+            p => p.Save(
+                It.IsAny<SettingsModel>(),
+                It.IsAny<string>(),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
+            Times.Never);
+    }
+
+    [TestMethod]
+    public void UpdateSettings_ChangedValues_SaveOnceAndSaveAgainWhenReverted()
+    {
+        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+
+        service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false);
+        service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false);
+        service.UpdateSettings(s => s with { ShowAppDetails = false }, hotReload: false);
+
+        _mockPersistence.Verify(
+            p => p.Save(
+                It.IsAny<SettingsModel>(),
+                It.IsAny<string>(),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
+            Times.Exactly(2));
+    }
+
+    [TestMethod]
+    public void UpdateSettings_FailedSave_IsRetriedForUnchangedSettings()
+    {
+        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+        _mockPersistence.SetupSequence(p => p.Save(
+            It.IsAny<SettingsModel>(),
+            It.IsAny<string>(),
+            It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
+            .Returns(false)
+            .Returns(true);
+
+        service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false);
+        service.UpdateSettings(s => s, hotReload: false);
+        service.UpdateSettings(s => s, hotReload: false);
+
+        _mockPersistence.Verify(
+            p => p.Save(
+                It.IsAny<SettingsModel>(),
+                It.IsAny<string>(),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
+            Times.Exactly(2));
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task UpdateSettings_ConcurrentSavesDoNotOverlapOrPersistAnOlderSnapshotLast()
+    {
+        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+        using var firstSaveEntered = new ManualResetEventSlim();
+        using var releaseFirstSave = new ManualResetEventSlim();
+        using var secondTransformEntered = new ManualResetEventSlim();
+        using var secondSaveEntered = new ManualResetEventSlim();
+        var saveCount = 0;
+        SettingsModel? lastSaved = null;
+
+        _mockPersistence.Setup(p => p.Save(
+            It.IsAny<SettingsModel>(),
+            It.IsAny<string>(),
+            It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
+            .Callback<SettingsModel, string, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>((model, _, _) =>
+            {
+                if (Interlocked.Increment(ref saveCount) == 1)
+                {
+                    firstSaveEntered.Set();
+                    Assert.IsTrue(releaseFirstSave.Wait(TimeSpan.FromSeconds(5)));
+                }
+                else
+                {
+                    secondSaveEntered.Set();
+                }
+
+                Volatile.Write(ref lastSaved, model);
+            })
+            .Returns(true);
+
+        var first = Task.Run(() => service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false));
+        var second = Task.CompletedTask;
+        var savesOverlapped = false;
+        try
+        {
+            Assert.IsTrue(firstSaveEntered.Wait(TimeSpan.FromSeconds(5)));
+            second = Task.Run(() => service.UpdateSettings(
+                s =>
+                {
+                    secondTransformEntered.Set();
+                    return s with { SingleClickActivates = true };
+                },
+                hotReload: false));
+
+            Assert.IsTrue(secondTransformEntered.Wait(TimeSpan.FromSeconds(5)));
+            savesOverlapped = secondSaveEntered.Wait(TimeSpan.FromMilliseconds(250));
+        }
+        finally
+        {
+            releaseFirstSave.Set();
+            await Task.WhenAll(first, second);
+        }
+
+        Assert.IsFalse(savesOverlapped, "Concurrent updates must not write the settings file at the same time.");
+        Assert.AreSame(service.Settings, lastSaved);
+        Assert.IsNotNull(lastSaved);
+        Assert.IsTrue(lastSaved.ShowAppDetails);
+        Assert.IsTrue(lastSaved.SingleClickActivates);
     }
 
     [TestMethod]

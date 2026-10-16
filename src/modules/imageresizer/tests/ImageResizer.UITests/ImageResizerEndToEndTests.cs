@@ -713,12 +713,12 @@ public sealed class ImageResizerEndToEndTests : UITestBase
                 StringComparison.OrdinalIgnoreCase) &&
             WindowControl.GetForegroundWindowHandle() == new IntPtr(explorer.WindowHandle);
 
-        Assert.IsTrue(
-            selection.Succeeded || exactTerminalSelection,
+        string selectionMessage =
             $"Explorer selection did not settle. Last selected paths: [{selectedPaths}]. " +
             $"Last focused path: '{observedSelection?.FocusedPath ?? "<none>"}'. " +
             $"Expected Explorer HWND: {explorer.WindowHandle}. " +
-            $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.";
+        Assert.IsTrue(selection.Succeeded || exactTerminalSelection, selectionMessage);
         return explorer;
     }
 

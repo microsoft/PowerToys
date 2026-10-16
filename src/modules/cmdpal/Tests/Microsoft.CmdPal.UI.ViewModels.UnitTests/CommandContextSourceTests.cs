@@ -41,7 +41,7 @@ public sealed class CommandContextSourceTests
         var pageContext = new TestPageContext();
         var page = new ListPage { Id = "test.page", Name = "Test page" };
         var model = new CommandItem(page);
-        var itemViewModel = new CommandItemViewModel(new(model), new(pageContext), DefaultContextMenuFactory.Instance);
+        var itemViewModel = new CommandItemViewModel(new(model), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         itemViewModel.SlowInitializeProperties();
         var topLevel = new TopLevelViewModel(itemViewModel, TopLevelType.Normal, host, provider, new ProviderSettings(), services, model, DefaultContextMenuFactory.Instance);
 
@@ -54,17 +54,18 @@ public sealed class CommandContextSourceTests
             }
 
             var message = new PerformCommandMessage(new(item.Command), new ExtensionObject<IListItem>(item));
-            var contextSource = message.Context as ICommandContextSource;
+            var contextSource = message.CommandContext as ICommandContextSource;
 
             Assert.IsNotNull(contextSource);
             Assert.AreSame(host, contextSource.ExtensionHost);
             Assert.AreSame(provider, contextSource.ProviderContext);
             Assert.AreSame(page, message.Command.Unsafe);
-            Assert.AreSame(item, message.Context);
+            Assert.AreSame(item, message.CommandContext);
         }
         finally
         {
             topLevel.Cleanup();
+            GC.KeepAlive(pageContext);
         }
     }
 

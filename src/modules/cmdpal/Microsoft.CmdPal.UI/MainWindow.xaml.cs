@@ -51,13 +51,10 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
-    IRecipient<NavigateToPageMessage>,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
     IRecipient<ErrorOccurredMessage>,
     IRecipient<TelemetryCommandStartedMessage>,
-    IRecipient<DragStartedMessage>,
-    IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
     IRecipient<ExpandCompactModeMessage>,
@@ -83,6 +80,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly AccessKeyModeController _accessKeyMode;
     private readonly ShortcutBreakthroughDetector _breakthrough = new();
+    private readonly ShellViewModel _shellViewModel;
     private ShellIconCacheInvalidator? _shellIconCacheInvalidator;
 
     private bool _ignoreHotKeyWhenFullScreen = true;
@@ -147,6 +145,11 @@ public sealed partial class MainWindow : WindowEx,
 
     public MainWindow()
     {
+        if (!ShellIconCacheInvalidator.InitializeShellIconCache())
+        {
+            Logger.LogWarning("Failed to initialize the Shell image lists");
+        }
+
         _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
         _monitorService = App.Current.Services.GetRequiredService<ViewModels.Models.IMonitorService>();
         _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
@@ -154,6 +157,9 @@ public sealed partial class MainWindow : WindowEx,
         InitializeComponent();
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+        _shellViewModel = App.Current.Services.GetRequiredService<ShellViewModel>();
+        _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged += ShellContent_DragStateChanged;
 
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
@@ -219,13 +225,10 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
         WeakReferenceMessenger.Default.Register<TelemetryCommandStartedMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
@@ -280,7 +283,7 @@ public sealed partial class MainWindow : WindowEx,
 
         // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
         // and prevent the user from opening its context menu.
-        WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
+        _shellViewModel.GoHome(withAnimation: false, focusSearch: false);
     }
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -320,11 +323,11 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    private void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
         if (e.Key == VirtualKey.GoBack)
         {
-            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+            _shellViewModel.GoBack();
         }
     }
 
@@ -414,10 +417,12 @@ public sealed partial class MainWindow : WindowEx,
             {
                 var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                 var workArea = displayArea.WorkArea;
+                var targetDpi = WindowPositionHelper.GetDpiForDisplay(displayArea);
+                var workAreaHeightDip = workArea.Height * 96.0 / targetDpi;
 
                 // The setting is the relative height measured from the *bottom* of the screen,
                 // so a larger percentage places the search box higher up the display.
-                var fractionFromTop = GetCompactCenterFractionFromTop(settings);
+                var fractionFromTop = GetCompactCenterFractionFromTop(settings, workAreaHeightDip);
                 var desiredCardCenterY = workArea.Y + (int)Math.Round(workArea.Height * fractionFromTop);
                 finalRect.Y = desiredCardCenterY - searchRowCenterFromHwndTop;
 
@@ -479,9 +484,11 @@ public sealed partial class MainWindow : WindowEx,
     // Converts the "center height" setting (a percentage measured up from the bottom of the
     // screen) into the fraction of the work area, measured from the top, at which the
     // collapsed search box should be centered.
-    private static double GetCompactCenterFractionFromTop(SettingsModel settings)
+    private static double GetCompactCenterFractionFromTop(SettingsModel settings, double workAreaHeightDip)
     {
-        var pct = Math.Clamp(settings.CompactCenterHeightPercentage, 0, 100);
+        var pct = CompactPositionConstraints.ClampPercentageFromBottom(
+            settings.CompactCenterHeightPercentage,
+            workAreaHeightDip);
         return 1.0 - (pct / 100.0);
     }
 
@@ -1084,7 +1091,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (message.ForceGoHome)
         {
-            RunOnUiThread(() => WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false)));
+            RunOnUiThread(() => _shellViewModel.GoHome(withAnimation: false, focusSearch: false));
         }
 
         // This might come in off the UI thread. Make sure to hop back.
@@ -1097,7 +1104,7 @@ public sealed partial class MainWindow : WindowEx,
 
     // Session telemetry: Track metrics during the Command Palette session
     // These receivers increment counters that are sent when EndSession is called
-    public void Receive(NavigateToPageMessage message)
+    private void ShellViewModel_PageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e)
     {
         RunOnUiThread(() => _sessionPagesVisited++);
     }
@@ -1569,9 +1576,11 @@ public sealed partial class MainWindow : WindowEx,
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
-        else if (!IsVisibleToUser && !_isShowing)
+        else if (_copilotKeyRegistration is null && !IsVisibleToUser && !_isShowing)
         {
-            // External activation (e.g. the Copilot key) must restore search selection and focus.
+            // LOAD BEARING
+            // This fallback is a footgun I'd rather remove entirely, but it must remain when Copilot fast path registration fails.
+            // If Copilot key fast-path is not registered, external activation (e.g. the Copilot key) must restore search selection and focus.
             Summon(string.Empty);
         }
 
@@ -1980,6 +1989,10 @@ public sealed partial class MainWindow : WindowEx,
                 _monitorService.NotifyMonitorsChanged();
                 break;
 
+            case PInvoke.WM_SETTINGCHANGE when wParam == (uint)SYSTEM_PARAMETERS_INFO_ACTION.SPI_SETNONCLIENTMETRICS:
+                _shellIconCacheInvalidator?.OnNonClientMetricsChanged();
+                break;
+
             default:
                 if (_shellIconCacheInvalidator?.TryHandleMessage(
                         uMsg,
@@ -2115,6 +2128,8 @@ public sealed partial class MainWindow : WindowEx,
     {
         _isClosing = true;
         _globalHotkeys.Dispose();
+        _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
         _accessKeyMode.Dispose();
         _copilotKeyRegistration?.Dispose();
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
@@ -2137,18 +2152,15 @@ public sealed partial class MainWindow : WindowEx,
         });
     }
 
-    public void Receive(DragStartedMessage message)
+    private void ShellContent_DragStateChanged(object? sender, PageDragStateChangedEventArgs e)
     {
-        RunOnUiThread(() => _preventHideWhenDeactivated = true);
-    }
-
-    public void Receive(DragCompletedMessage message)
-    {
-        RunOnUiThread(() =>
+        _preventHideWhenDeactivated = e.IsDragging;
+        if (e.IsDragging)
         {
-            _preventHideWhenDeactivated = false;
-            Task.Delay(200).ContinueWith(_ => RunOnUiThread(StealForeground));
-        });
+            return;
+        }
+
+        Task.Delay(200).ContinueWith(_ => RunOnUiThread(StealForeground));
     }
 
     private unsafe void StealForeground()

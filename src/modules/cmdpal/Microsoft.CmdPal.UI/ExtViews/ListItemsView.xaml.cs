@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
@@ -32,15 +33,7 @@ namespace Microsoft.CmdPal.UI;
 /// empty-content branch. Hosted by both <see cref="ListPage"/> and
 /// <see cref="ParametersPage"/> so list rendering behavior stays in one place.
 /// </summary>
-public sealed partial class ListItemsView : UserControl,
-    IRecipient<NavigateNextCommand>,
-    IRecipient<NavigatePreviousCommand>,
-    IRecipient<NavigateLeftCommand>,
-    IRecipient<NavigateRightCommand>,
-    IRecipient<NavigatePageDownCommand>,
-    IRecipient<NavigatePageUpCommand>,
-    IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>
+public sealed partial class ListItemsView : UserControl
 {
     private const double ListShortcutCueHorizontalOffset = -16;
 
@@ -54,6 +47,7 @@ public sealed partial class ListItemsView : UserControl,
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
+    private int _keyboardNavigationVersion;
     private bool _suppressSelectionChanged;
 
     private bool _scrollOnNextSelectionChange;
@@ -63,17 +57,16 @@ public sealed partial class ListItemsView : UserControl,
     private long _pendingContextMenuOpenRequestId;
     private Action? _cancelPendingContextMenuOpen;
 
-    // A single search-text change can produce multiple ItemsUpdated calls
-    // dispatched as separate UI-thread callbacks. A later "soft" update
-    // (ForceFirstItem = false) must not overwrite a prior force-first
-    // intent. This flag latches true whenever any update requests
-    // force-first and is only cleared once selection stabilizes.
+    // Retain reset intent until selection is applied. The main page keeps following
+    // the first result as late results arrive, until the user changes selection.
     private bool _forceFirstPending;
 
     private bool _isLoaded;
-    private bool _isMessengerRegistered;
     private ScrollViewer? _itemsScrollViewer;
     private ListViewBase? _itemsScrollViewerOwner;
+    private bool _viewportFillCheckQueued;
+    private int _lastViewportFillItemCount = -1;
+    private (string SearchText, string? FilterId) _viewportFillQueryContext;
     private bool _areNumberedShortcutCuesVisible;
     private bool _numberedShortcutCueUpdatePending;
     private Border[]? _numberedShortcutCues;
@@ -94,6 +87,16 @@ public sealed partial class ListItemsView : UserControl,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListItemsView), new PropertyMetadata(null, OnViewModelChanged));
 
+    public event EventHandler<ListItemsSelectionChangedEventArgs>? SelectionChanged;
+
+    public event EventHandler<ListItemsContextMenuRequestedEventArgs>? ContextMenuRequested;
+
+    public event EventHandler? ContextMenuCloseRequested;
+
+    public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
+
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
     private ScrollViewer? CurrentScrollViewer
@@ -111,6 +114,7 @@ public sealed partial class ListItemsView : UserControl,
 
         this.Loaded += OnLoaded;
         this.Unloaded += OnUnloaded;
+        this.LayoutUpdated += Items_LayoutUpdated;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -122,10 +126,10 @@ public sealed partial class ListItemsView : UserControl,
 
         _isLoaded = true;
         SynchronizeGridItems();
-        RegisterMessenger();
         RegisterExistingRealizedItems();
         _accessKeyMode.IsActiveChanged += AccessKeyMode_IsActiveChanged;
         SetNumberedShortcutCuesVisibility(_accessKeyMode.IsActive);
+        QueueViewportFillCheck();
     }
 
     internal void DetachFromPage()
@@ -146,46 +150,8 @@ public sealed partial class ListItemsView : UserControl,
         // its groups from the source, which is what it does after any teardown.
         ReleaseGridProjection();
         SetItemsScrollViewer(null);
-        UnregisterMessenger();
         CancelPendingContextMenuOpen();
         ReleaseRealizedItems();
-    }
-
-    private void RegisterMessenger()
-    {
-        if (_isMessengerRegistered)
-        {
-            return;
-        }
-
-        // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigateLeftCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigateRightCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePageDownCommand>(this);
-        WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
-        _isMessengerRegistered = true;
-    }
-
-    private void UnregisterMessenger()
-    {
-        if (!_isMessengerRegistered)
-        {
-            return;
-        }
-
-        WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigateLeftCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigateRightCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePageDownCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
-        _isMessengerRegistered = false;
     }
 
     /// <summary>
@@ -295,20 +261,32 @@ public sealed partial class ListItemsView : UserControl,
                 _scrollOnNextSelectionChange = true;
 
                 ViewModel?.UpdateSelectedItemCommand.Execute(item);
-                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                RequestSearchFocus();
             }
         }
     }
 
     private void Items_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (ItemView.SelectedItem is ListItemViewModel vm)
+        if (sender is not ListViewBase itemView || !ReferenceEquals(itemView, ItemView) || ViewModel is not { } viewModel)
         {
-            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-            if (!settings.SingleClickActivates)
-            {
-                ViewModel?.InvokeItemCommand.Execute(vm);
-            }
+            return;
+        }
+
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        var item = ListItemDoubleTapTarget.Resolve<DependencyObject, SelectorItem>(
+            e.OriginalSource as DependencyObject,
+            itemView,
+            settings.SingleClickActivates,
+            VisualTreeHelper.GetParent,
+            container => ReferenceEquals(ItemsControl.ItemsControlFromItemContainer(container), itemView)
+                ? itemView.ItemFromContainer(container) as ListItemViewModel
+                : null);
+
+        if (item is not null)
+        {
+            viewModel.InvokeItemCommand.Execute(item);
+            e.Handled = true;
         }
     }
 
@@ -342,6 +320,7 @@ public sealed partial class ListItemsView : UserControl,
 
         // Do not Task.Run (it reorders selection updates).
         vm?.UpdateSelectedItemCommand.Execute(li);
+        SelectionChanged?.Invoke(this, new(li));
 
         // Only scroll when explicitly requested by navigation/click handlers.
         if (_scrollOnNextSelectionChange)
@@ -460,6 +439,8 @@ public sealed partial class ListItemsView : UserControl,
         {
             _itemsScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
         }
+
+        QueueViewportFillCheck();
     }
 
     private void Items_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
@@ -579,33 +560,169 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    // Message-driven navigation should count as keyboard.
-    private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
+    private void Items_LayoutUpdated(object? sender, object e)
+    {
+        QueueViewportFillCheck();
+    }
 
-    private void PushSelectionToVm()
+    private void ViewportFill_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ViewModel)
+            && e.PropertyName is nameof(ListViewModel.IsInitialized) or nameof(ListViewModel.IsLoading))
+        {
+            QueueViewportFillCheck();
+        }
+    }
+
+    private void QueueViewportFillCheck()
+    {
+        if (!_isLoaded
+            || _viewportFillCheckQueued
+            || ViewModel is not { IsInitialized: true, IsLoading: false } page
+            || page.FilteredItems.Count == _lastViewportFillItemCount
+            || (page.FilteredItems.Count > 0 && CurrentScrollViewer is not { ViewportHeight: > 0, ScrollableHeight: 0 }))
+        {
+            return;
+        }
+
+        _viewportFillCheckQueued = true;
+        if (!DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, FillViewport))
+        {
+            _viewportFillCheckQueued = false;
+        }
+    }
+
+    private void FillViewport()
+    {
+        try
+        {
+            if (!_isLoaded || ViewModel is not { IsInitialized: true, IsLoading: false } page || ActualHeight <= 0 || ActualWidth <= 0)
+            {
+                return;
+            }
+
+            // Settle layout after publication before deciding whether another batch fits.
+            ItemView.UpdateLayout();
+            if (!ReferenceEquals(page, ViewModel) || !_isLoaded)
+            {
+                return;
+            }
+
+            var itemCount = page.FilteredItems.Count;
+            if (itemCount == _lastViewportFillItemCount ||
+                (itemCount > 0 && CurrentScrollViewer is not { IsLoaded: true, ViewportHeight: > 0, ScrollableHeight: 0 }))
+            {
+                return;
+            }
+
+            // Do not chain requests when the last batch left the visible count unchanged.
+            _lastViewportFillItemCount = itemCount;
+            page.LoadMoreIfNeeded();
+        }
+        finally
+        {
+            _viewportFillCheckQueued = false;
+        }
+    }
+
+    // Navigation requested by the owner should count as keyboard input.
+    private void MarkKeyboardNavigation()
+    {
+        _lastInputSource = InputSource.Keyboard;
+        _keyboardNavigationVersion++;
+    }
+
+    private async Task LoadMoreBeforeWrappingAsync(Action wrapSelection)
+    {
+        var page = ViewModel;
+        if (page is null)
+        {
+            wrapSelection();
+            return;
+        }
+
+        var view = ItemView;
+        var selectedItem = view.SelectedItem;
+        var selectedIndex = view.SelectedIndex;
+        var itemCount = view.Items.Count;
+        var itemsVersion = _itemsUpdatedVersion;
+        var navigationVersion = _keyboardNavigationVersion;
+        var queryContext = (page.SearchTextBox, page.Filters?.CurrentFilterId);
+        _scrollOnNextSelectionChange = false;
+
+        try
+        {
+            // Ignore a delayed wrap if the page, results, selection, or navigation context changed.
+            if (!await page.TryLoadMoreBeforeWrapAsync()
+                && _isLoaded
+                && ReferenceEquals(page, ViewModel)
+                && ReferenceEquals(view, ItemView)
+                && itemsVersion == _itemsUpdatedVersion
+                && navigationVersion == _keyboardNavigationVersion
+                && _lastInputSource == InputSource.Keyboard
+                && itemCount == view.Items.Count
+                && selectedIndex == view.SelectedIndex
+                && ReferenceEquals(selectedItem, view.SelectedItem)
+                && queryContext == (page.SearchTextBox, page.Filters?.CurrentFilterId))
+            {
+                _scrollOnNextSelectionChange = true;
+                wrapSelection();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to load more items before wrapping selection", ex);
+        }
+    }
+
+    private void PushSelectionToVm(bool force = false)
     {
         if (ViewModel is null)
         {
             return;
         }
 
-        if (ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
+        var li = ItemView.SelectedItem as ListItemViewModel;
+        if (li is not null && !IsSeparator(li))
         {
-            ViewModel.UpdateSelectedItemCommand.Execute(null);
+            if (!force && ReferenceEquals(_lastPushedToVm, li))
+            {
+                return;
+            }
+
+            _lastPushedToVm = li;
+            _stickySelectedItem = li;
+        }
+        else
+        {
+            li = null;
+            _lastPushedToVm = null;
+            if (force)
+            {
+                ViewModel.AcknowledgeSelection(li);
+            }
+            else
+            {
+                ViewModel.UpdateSelectedItemCommand.Execute(li);
+            }
+
+            SelectionChanged?.Invoke(this, new(ViewModel.ShowEmptyContent ? ViewModel.EmptyContent : null));
             return;
         }
 
-        if (ReferenceEquals(_lastPushedToVm, li))
+        if (force)
         {
-            return;
+            ViewModel.AcknowledgeSelection(li);
+        }
+        else
+        {
+            ViewModel.UpdateSelectedItemCommand.Execute(li);
         }
 
-        _lastPushedToVm = li;
-        _stickySelectedItem = li;
-        ViewModel.UpdateSelectedItemCommand.Execute(li);
+        SelectionChanged?.Invoke(this, new(li));
     }
 
-    public void Receive(NavigateNextCommand message)
+    public void NavigateNext()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -624,7 +741,7 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
     }
 
-    public void Receive(NavigatePreviousCommand message)
+    public void NavigatePrevious()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -642,7 +759,7 @@ public sealed partial class ListItemsView : UserControl,
         PushSelectionToVm();
     }
 
-    public void Receive(NavigateLeftCommand message)
+    public void NavigateLeft()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -660,7 +777,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(NavigateRightCommand message)
+    public void NavigateRight()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -678,7 +795,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(ActivateSelectedListItemMessage message)
+    public void ActivatePrimary()
     {
         if (ViewModel?.ShowEmptyContent ?? false)
         {
@@ -690,7 +807,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(ActivateSecondaryCommandMessage message)
+    public void ActivateSecondary()
     {
         if (ViewModel?.ShowEmptyContent ?? false)
         {
@@ -702,7 +819,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    public void Receive(NavigatePageDownCommand message)
+    public void NavigatePageDown()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -725,9 +842,14 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         PushSelectionToVm();
+
+        if (indexes.Value.TargetIndex == FindSelectableIndex(ItemView.Items.Count - 1, -1))
+        {
+            ViewModel?.LoadMoreIfNeeded();
+        }
     }
 
-    public void Receive(NavigatePageUpCommand message)
+    public void NavigatePageUp()
     {
         MarkKeyboardNavigation();
         _scrollOnNextSelectionChange = true;
@@ -898,6 +1020,7 @@ public sealed partial class ListItemsView : UserControl,
         if (d is ListItemsView @this)
         {
             @this._lastInputSource = InputSource.None;
+            @this._lastViewportFillItemCount = -1;
             Interlocked.Increment(ref @this._itemsUpdatedVersion);
             @this.CancelPendingGridActions();
             @this.CancelPendingContextMenuOpen();
@@ -906,6 +1029,7 @@ public sealed partial class ListItemsView : UserControl,
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
+                old.PropertyChanged -= @this.ViewportFill_PropertyChanged;
             }
 
             // Reset latched state — selection sticky/last-pushed only make sense
@@ -926,6 +1050,7 @@ public sealed partial class ListItemsView : UserControl,
             if (e.NewValue is ListViewModel page)
             {
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
+                page.PropertyChanged += @this.ViewportFill_PropertyChanged;
 
                 // When the hosted ViewModel is swapped while we're already on
                 // screen (e.g. ParametersPage activating a list parameter), the
@@ -938,6 +1063,7 @@ public sealed partial class ListItemsView : UserControl,
             }
             else if (e.NewValue is null)
             {
+                @this.SelectionChanged?.Invoke(@this, new(null));
                 Logger.LogDebug("cleared view model");
             }
 
@@ -958,8 +1084,16 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        var queryContext = (sender.SearchTextBox, sender.Filters?.CurrentFilterId);
+        if (_viewportFillQueryContext != queryContext)
+        {
+            _viewportFillQueryContext = queryContext;
+            _lastViewportFillItemCount = -1;
+        }
+
         var version = Interlocked.Increment(ref _itemsUpdatedVersion);
         ProcessItemsUpdated(sender, args, version);
+        QueueViewportFillCheck();
     }
 
     private void ProcessItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args, long version)
@@ -988,8 +1122,8 @@ public sealed partial class ListItemsView : UserControl,
 
         // Try to handle selection immediately after updating the presentation.
         // The grouped CollectionViewSource may still be processing its changes.
-        // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
-        // selection stabilizes (no repair needed), so we don't clear it here.
+        // TrySetSelectionAfterUpdate consumes resets once selection is applied
+        // and retains main-page tracking until user navigation.
         if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible))
         {
             return;
@@ -1352,8 +1486,7 @@ public sealed partial class ListItemsView : UserControl,
                 _lastPushedToVm = null;
             }
 
-            PushSelectionToVm();
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
         // If ItemView.Items hasn't caught up with the ObservableCollection yet,
@@ -1374,10 +1507,11 @@ public sealed partial class ListItemsView : UserControl,
                 _lastPushedToVm = null;
             }
 
-            PushSelectionToVm();
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
+        // User navigation can cancel a reset while its retry is queued.
+        forceFirstItem &= _forceFirstPending;
         var shouldUpdateSelection = forceFirstItem;
 
         if (!shouldUpdateSelection)
@@ -1458,10 +1592,6 @@ public sealed partial class ListItemsView : UserControl,
         }
         else
         {
-            // Selection is valid and unchanged: the force-first intent (if any)
-            // has been fully delivered and selection has stabilized.
-            _forceFirstPending = false;
-
             if (ensureSelectionVisible && _stickySelectedItem is ListItemViewModel selectedItem)
             {
                 _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
@@ -1480,7 +1610,17 @@ public sealed partial class ListItemsView : UserControl,
             }
         }
 
-        PushSelectionToVm();
+        return CompleteSelectionUpdate(sender, version, forceFirstItem);
+    }
+
+    private bool CompleteSelectionUpdate(ListViewModel sender, long version, bool forceSelection)
+    {
+        if (version == Volatile.Read(ref _itemsUpdatedVersion) && ReferenceEquals(sender, ViewModel))
+        {
+            _forceFirstPending &= sender.IsMainPage;
+            PushSelectionToVm(forceSelection);
+        }
+
         return true;
     }
 
@@ -1548,7 +1688,7 @@ public sealed partial class ListItemsView : UserControl,
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
         CancelPendingContextMenuOpen();
-        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<ClosePaletteContextMenuMessage>());
+        _ = DispatcherQueue.TryEnqueue(RequestContextMenuClose);
     }
 
     private void TrackPointerInput(object sender, PointerRoutedEventArgs e)
@@ -1561,7 +1701,7 @@ public sealed partial class ListItemsView : UserControl,
         // Track keyboard as the last input source for activation logic.
         if (e.Key is VirtualKey.Enter or VirtualKey.Space)
         {
-            _lastInputSource = InputSource.Keyboard;
+            MarkKeyboardNavigation();
             return;
         }
 
@@ -1576,7 +1716,7 @@ public sealed partial class ListItemsView : UserControl,
                 case VirtualKey.Down:
                 case VirtualKey.PageUp:
                 case VirtualKey.PageDown:
-                    _lastInputSource = InputSource.Keyboard;
+                    MarkKeyboardNavigation();
                     _scrollOnNextSelectionChange = true;
                     HandleGridArrowNavigation(e.Key);
                     e.Handled = true;
@@ -1622,18 +1762,18 @@ public sealed partial class ListItemsView : UserControl,
 
             DataPackageTransfer.Copy(item.DataPackage, e.Data);
 
-            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
+            DragStateChanged?.Invoke(this, new(true));
         }
         catch (Exception ex)
         {
-            WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+            DragStateChanged?.Invoke(this, new(false));
             Logger.LogError("Failed to start dragging an item", ex);
         }
     }
 
     private void Items_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
     {
-        WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+        DragStateChanged?.Invoke(this, new(false));
     }
 
     /// <summary>
@@ -1652,12 +1792,23 @@ public sealed partial class ListItemsView : UserControl,
 
         if (newIndex == -1)
         {
-            newIndex = FindSelectableIndex(0, 1);
+            var firstIndex = FindSelectableIndex(0, 1);
+            if (firstIndex != -1)
+            {
+                _ = LoadMoreBeforeWrappingAsync(() =>
+                {
+                    ItemView.SelectedIndex = firstIndex;
+                    PushSelectionToVm();
+                });
+            }
+
+            return;
         }
 
-        if (newIndex != -1)
+        ItemView.SelectedIndex = newIndex;
+        if (newIndex == FindSelectableIndex(ItemView.Items.Count - 1, -1))
         {
-            ItemView.SelectedIndex = newIndex;
+            ViewModel?.LoadMoreIfNeeded();
         }
     }
 
@@ -1747,16 +1898,14 @@ public sealed partial class ListItemsView : UserControl,
                     return;
                 }
 
-                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
-                    new OpenContextMenuMessage(
-                        new ContextMenuRequest(item)
-                        {
-                            Anchor = new ContextMenuAnchor(
-                                element,
-                                pos,
-                                FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                                ContextMenuFilterLocation.Top),
-                        }));
+                ContextMenuRequested?.Invoke(
+                    this,
+                    new(
+                        item,
+                        element,
+                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
             });
 
         return true;
@@ -1803,6 +1952,16 @@ public sealed partial class ListItemsView : UserControl,
         Interlocked.Increment(ref _pendingContextMenuOpenRequestId);
         _cancelPendingContextMenuOpen?.Invoke();
         _cancelPendingContextMenuOpen = null;
+    }
+
+    private void RequestSearchFocus()
+    {
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void RequestContextMenuClose()
+    {
+        ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private IDisposable SuppressSelectionChangedScope()
