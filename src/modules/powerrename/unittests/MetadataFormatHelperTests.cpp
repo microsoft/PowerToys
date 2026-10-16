@@ -267,7 +267,7 @@ namespace MetadataFormatHelperTests
 
     TEST_CLASS(ParseGPSCoordinatesTests)
     {
-        static ULARGE_INTEGER Rational(DWORD numerator, DWORD denominator)
+        static constexpr ULARGE_INTEGER Rational(DWORD numerator, DWORD denominator) noexcept
         {
             ULARGE_INTEGER value{};
             value.LowPart = numerator;
@@ -275,7 +275,7 @@ namespace MetadataFormatHelperTests
             return value;
         }
 
-        static PROPVARIANT RationalVector(ULARGE_INTEGER* values, ULONG count)
+        static constexpr PROPVARIANT RationalVector(ULARGE_INTEGER* values, ULONG count) noexcept
         {
             PROPVARIANT value{};
             value.vt = VT_VECTOR | VT_UI8;

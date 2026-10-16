@@ -12,7 +12,7 @@ using namespace PowerRenameLib;
 
 namespace
 {
-    double ParsePackedRational(ULONGLONG value)
+    constexpr double ParsePackedRational(ULONGLONG value) noexcept
     {
         // WIC stores a RATIONAL's numerator in the low DWORD and denominator in the high DWORD.
         const auto numerator = static_cast<uint32_t>(value);
