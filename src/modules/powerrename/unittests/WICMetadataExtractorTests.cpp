@@ -60,9 +60,10 @@ namespace WICMetadataExtractorTests
         Assert::IsTrue(SUCCEEDED(factory->CreateQueryWriter(GUID_MetadataFormatXMPSeq, nullptr, &sequenceWriter)));
         for (size_t i = 0; i < creators.size(); ++i)
         {
+            auto creatorText = creators[i];
             PROPVARIANT creator{};
             creator.vt = VT_LPWSTR;
-            creator.pwszVal = const_cast<wchar_t*>(creators[i].c_str());
+            creator.pwszVal = creatorText.data();
             const std::wstring path = L"/{ulong=" + std::to_wstring(i) + L"}";
             Assert::IsTrue(SUCCEEDED(sequenceWriter->SetMetadataByName(path.c_str(), &creator)));
         }
