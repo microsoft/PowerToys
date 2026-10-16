@@ -44,14 +44,7 @@ public abstract partial class CommandProvider :
 
     protected void RaiseItemsChanged(int totalItems = -1)
     {
-        try
-        {
-            // TODO #181 - This is the same thing that BaseObservable has to deal with.
-            ItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
-        }
-        catch
-        {
-        }
+        EventHelpers.Raise(ItemsChanged, this, new ItemsChangedEventArgs(totalItems), handler => ItemsChanged -= handler);
     }
 
     /// <summary>
@@ -81,6 +74,8 @@ public abstract partial class CommandProvider :
         return
         [
             new SupportCommandsWithProperties(),
+            new SupportFormActions(),
+            new SupportDetailsContent(),
 
             // The host receives fallbacks as IFallbackCommandItem, then asks each one
             // for IFallbackCommandItem3. It reaches the newer interfaces only by that
@@ -194,5 +189,35 @@ public abstract partial class CommandProvider :
 
         public IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
             => throw new NotSupportedException("This type only populates the type cache.");
+    }
+
+    private sealed partial class SupportDetailsContent : IDetails2
+    {
+        public IIconInfo? HeroImage => null;
+
+        public string Title => string.Empty;
+
+        public string Body => string.Empty;
+
+        public IDetailsElement[] Metadata => [];
+
+        public IContent[] GetContent() => [];
+    }
+
+    private sealed partial class SupportFormActions : IFormContent2
+    {
+        public string TemplateJson => string.Empty;
+
+        public string DataJson => string.Empty;
+
+        public string StateJson => string.Empty;
+
+        public ICommandResult SubmitForm(string inputs, string data) => CommandResult.KeepOpen();
+
+        public ICommandResult SubmitAction(string actionId, string inputs, string data) => CommandResult.KeepOpen();
+
+#pragma warning disable CS0067
+        public event Windows.Foundation.TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
+#pragma warning restore CS0067
     }
 }

@@ -15,7 +15,10 @@ public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
 
     public override ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
     {
-        var viewModel = ContentViewModelFactory.Create(content, context);
+        var viewModel = CreateViewModel(content, context);
         return viewModel is null ? null : ShareFallbackContext(viewModel);
     }
+
+    public static ContentViewModel? CreateViewModel(IContent content, WeakReference<IPageContext> context)
+        => ContentViewModelFactory.Create(content, context);
 }

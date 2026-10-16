@@ -8,4 +8,9 @@ public record ShowToastMessage(
     string Message,
     IconInfoViewModel? Icon = null,
     CommandViewModel? Command = null,
-    IDisposable? SnapshotLease = null);
+    IDisposable? SnapshotLease = null)
+{
+    public TimeSpan? Duration { get; init; }
+
+    public TimeSpan VisibleDuration => Duration ?? TimeSpan.FromMilliseconds(Command is not null ? 5000 : 2500);
+}

@@ -18,3 +18,6 @@ GetFileAttributes
 FILE_FLAGS_AND_ATTRIBUTES
 INVALID_FILE_ATTRIBUTES
 CoCreateInstance
+
+CommandLineToArgvW
+LocalFree

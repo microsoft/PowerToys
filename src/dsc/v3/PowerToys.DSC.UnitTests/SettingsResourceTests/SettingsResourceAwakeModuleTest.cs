@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -27,12 +26,10 @@ public sealed class SettingsResourceAwakeModuleTest : SettingsResourceModuleTest
             s.Properties.IntervalMinutes = DefaultSettings.Properties.IntervalMinutes + 1;
             s.Properties.Mode = s.Properties.Mode == AwakeMode.PASSIVE ? AwakeMode.TIMED : AwakeMode.PASSIVE;
             s.Properties.KeepDisplayOn = !s.Properties.KeepDisplayOn;
-            s.Properties.CustomTrayTimes = new Dictionary<string, uint>
-            {
-                { "08:00", 1 },
-                { "12:00", 2 },
-                { "16:00", 3 },
-            };
+            s.Properties.CustomTrayTimes.Clear();
+            s.Properties.CustomTrayTimes.Add("08:00", 1);
+            s.Properties.CustomTrayTimes.Add("12:00", 2);
+            s.Properties.CustomTrayTimes.Add("16:00", 3);
         };
     }
 }

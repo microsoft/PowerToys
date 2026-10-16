@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Synthetic test markers only. This file is not a translation and is consumed only by the unit test project. -->
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="SignatureWarningTitle" xml:space="preserve">
+    <value>[TEST ar-SA] Warning title</value>
+    <comment>Synthetic satellite-lookup marker, not an Arabic translation.</comment>
+  </data>
+  <data name="SignatureWarningSkip" xml:space="preserve">
+    <value>[TEST ar-SA] Skip this application with deliberately expanded synthetic action text that must wrap completely inside the available button width even when the warning content is only three hundred and sixty device independent pixels wide</value>
+    <comment>Synthetic expansion fixture for measured right-to-left layout, not an Arabic translation.</comment>
+  </data>
+  <data name="SignatureWarningRunAnyway" xml:space="preserve">
+    <value>[TEST ar-SA] Continue this application with deliberately expanded synthetic action text that must wrap completely inside the available button width even when the warning content is only three hundred and sixty device independent pixels wide</value>
+    <comment>Synthetic expansion fixture for measured right-to-left layout, not an Arabic translation.</comment>
+  </data>
+</root>

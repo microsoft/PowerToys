@@ -8,9 +8,8 @@ using System.Runtime.InteropServices;
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// Fault-tolerant window cleanup helpers. Every method swallows exceptions and returns a
-/// boolean — they're designed for test <c>finally</c> blocks where a cleanup failure must
-/// never mask the real test failure.
+/// Window cleanup and input-readiness helpers. Cleanup methods report failure without throwing,
+/// so a cleanup failure in a test <c>finally</c> block does not mask the original test failure.
 /// </summary>
 /// <remarks>
 /// winappcli has no <c>close</c> verb, so closing goes through Win32 <c>WM_CLOSE</c>
@@ -21,7 +20,7 @@ public static class WindowControl
 {
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool PostMessageW(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+    private static extern bool PostMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -86,10 +85,15 @@ public static class WindowControl
 
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint WM_CLOSE = 0x0010;
     private const uint WM_CONTEXTMENU = 0x007B;
+#pragma warning restore SA1310
+    private const uint GaParent = 1;
     private const uint GaRoot = 2;
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant name
     private const int SW_RESTORE = 9;
+#pragma warning restore SA1310
 
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT
@@ -213,11 +217,13 @@ public static class WindowControl
         try
         {
             EnumWindows(
-                (hWnd, _) =>
+                (hWnd, lParam) =>
                 {
                     try
                     {
-                        GetWindowThreadProcessId(hWnd, out var pid);
+                        // A zero return (window already gone) leaves pid at 0; the window is then
+                        // filtered out by pid or reported with pid 0, same as before.
+                        _ = GetWindowThreadProcessId(hWnd, out var pid);
                         var pidInt = (int)pid;
                         if (pidFilter is null || pidFilter(pidInt))
                         {
@@ -443,6 +449,55 @@ public static class WindowControl
     /// <summary>Return the current foreground window handle.</summary>
     public static IntPtr GetForegroundWindowHandle() => GetForegroundWindow();
 
+    /// <summary>
+    /// Whether keyboard focus belongs to a descendant with the specified native window class,
+    /// inside the exact foreground window. This also handles empty Shell views without a
+    /// keyboard-focusable UIA element.
+    /// </summary>
+    public static bool IsKeyboardFocusWithinClass(IntPtr window, string className)
+    {
+        if (window == IntPtr.Zero)
+        {
+            throw new ArgumentException("The foreground window must not be zero.", nameof(window));
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(className);
+        if (GetForegroundWindow() != window)
+        {
+            return false;
+        }
+
+        var threadId = GetWindowThreadProcessId(window, out _);
+        var threadInfo = new GUITHREADINFO { Size = Marshal.SizeOf<GUITHREADINFO>() };
+        return threadId != 0 && GetGUIThreadInfo(threadId, ref threadInfo) &&
+            IsKeyboardFocusWithinClass(
+                window,
+                className,
+                threadInfo.FocusedWindow,
+                child => GetAncestor(child, GaParent),
+                GetWindowClassName);
+    }
+
+    internal static bool IsKeyboardFocusWithinClass(
+        IntPtr window,
+        string className,
+        IntPtr focusedWindow,
+        Func<IntPtr, IntPtr> getParent,
+        Func<IntPtr, string> getClassName)
+    {
+        ArgumentNullException.ThrowIfNull(getParent);
+        ArgumentNullException.ThrowIfNull(getClassName);
+
+        var matchesClass = false;
+        while (focusedWindow != IntPtr.Zero && focusedWindow != window)
+        {
+            matchesClass |= string.Equals(getClassName(focusedWindow), className, StringComparison.OrdinalIgnoreCase);
+            focusedWindow = getParent(focusedWindow);
+        }
+
+        return focusedWindow == window && matchesClass;
+    }
+
     /// <summary>Whether the root window under a screen point is the expected HWND.</summary>
     public static bool IsPointOwnedByWindow(IntPtr window, int x, int y)
     {
@@ -540,7 +595,8 @@ public static class WindowControl
     {
         try
         {
-            var w = WindowsFinder.ListByApp(appNameOrPid).FirstOrDefault();
+            var windows = WindowsFinder.ListByApp(appNameOrPid);
+            var w = windows.Count > 0 ? windows[0] : null;
             if (w is null || w.Hwnd == 0)
             {
                 return false;

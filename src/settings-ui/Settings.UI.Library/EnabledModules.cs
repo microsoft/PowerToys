@@ -529,6 +529,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool autoHideCursor; // defaulting to off
+
+        [JsonPropertyName("AutoHideCursor")]
+        public bool AutoHideCursor
+        {
+            get => autoHideCursor;
+            set
+            {
+                if (autoHideCursor != value)
+                {
+                    LogTelemetryEvent(value);
+                    autoHideCursor = value;
+                }
+            }
+        }
+
         private bool cursorWrap; // defaulting to off
 
         [JsonPropertyName("CursorWrap")]
@@ -541,6 +557,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     cursorWrap = value;
+                }
+            }
+        }
+
+        private bool mouseButtonLock; // defaulting to off
+
+        [JsonPropertyName("MouseButtonLock")]
+        public bool MouseButtonLock
+        {
+            get => mouseButtonLock;
+            set
+            {
+                if (mouseButtonLock != value)
+                {
+                    LogTelemetryEvent(value);
+                    mouseButtonLock = value;
+                    NotifyChange();
                 }
             }
         }

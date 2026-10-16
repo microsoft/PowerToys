@@ -315,14 +315,15 @@ internal sealed partial class PreviewWindow : Window
         var formLayout = LayoutHelper.GetFormLayout(
             previewStyle,
             displayInfo,
-            activatedScreen: activatedScreen,
-            activatedLocation: activatedLocation);
+            maximumSize: activatedScreen.DisplayArea.Size);
 
         // remember the layout so we can map the mouse clicks back to
         // the appropriate device and screen location
         this.FormLayout = formLayout;
 
-        await this.PositionWindowAsync(formLayout.FormBounds)
+        var formBounds = LayoutHelper.PositionOnScreen(
+            formLayout.CanvasLayout.CanvasBounds.OuterBounds, activatedScreen, activatedLocation);
+        await this.PositionWindowAsync(formBounds)
             .ConfigureAwait(false);
 
         var imageCopyServices = displayInfo.Devices

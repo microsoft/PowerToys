@@ -22,6 +22,8 @@ public class ClipboardItem
 
     public RandomAccessStreamReference? ImageData { get; set; }
 
+    public string? ImagePath { get; set; }
+
     public string GetDataType()
     {
         // Check if there is valid image data
