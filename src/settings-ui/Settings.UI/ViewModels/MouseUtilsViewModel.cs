@@ -123,6 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsAutoHide = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value;
             _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
+            _mousePointerCrosshairsSpanAllMonitors = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsSpanAllMonitors.Value;
             _mousePointerCrosshairsOrientation = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsOrientation.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
 
@@ -1101,6 +1102,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MousePointerCrosshairsSpanAllMonitors
+        {
+            get
+            {
+                return _mousePointerCrosshairsSpanAllMonitors;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsSpanAllMonitors)
+                {
+                    _mousePointerCrosshairsSpanAllMonitors = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsSpanAllMonitors.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public int MousePointerCrosshairsOrientation
         {
             get
@@ -1643,6 +1662,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mousePointerCrosshairsAutoHide;
         private bool _mousePointerCrosshairsIsFixedLengthEnabled;
         private int _mousePointerCrosshairsFixedLength;
+        private bool _mousePointerCrosshairsSpanAllMonitors;
         private int _mousePointerCrosshairsOrientation;
         private bool _mousePointerCrosshairsAutoActivate;
         private bool _isAnimationEnabledBySystem;

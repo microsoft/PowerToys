@@ -52,6 +52,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("crosshairs_fixed_length")]
         public IntProperty CrosshairsFixedLength { get; set; }
 
+        [JsonPropertyName("crosshairs_span_all_monitors")]
+        public BoolProperty CrosshairsSpanAllMonitors { get; set; }
+
         [JsonPropertyName("auto_activate")]
         public BoolProperty AutoActivate { get; set; }
 
@@ -75,6 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CrosshairsAutoHide = new BoolProperty(false);
             CrosshairsIsFixedLengthEnabled = new BoolProperty(false);
             CrosshairsFixedLength = new IntProperty(1);
+            CrosshairsSpanAllMonitors = new BoolProperty(false);
             AutoActivate = new BoolProperty(false);
             GlidingTravelSpeed = new IntProperty(25);
             GlidingDelaySpeed = new IntProperty(5);

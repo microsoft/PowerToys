@@ -3292,6 +3292,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs border size (px)</value>
     <comment>px = pixels</comment>
   </data>
+  <data name="MouseUtils_MousePointerCrosshairs_SpanAllMonitors.Header" xml:space="preserve">
+    <value>Extend crosshairs across all monitors</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_SpanAllMonitors.Description" xml:space="preserve">
+    <value>When off, crosshairs stop at the edges of the monitor with the mouse pointer. A fixed length is cut at the same edges.</value>
+  </data>
   <data name="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled.Header" xml:space="preserve">
     <value>Fix crosshairs length</value>
   </data>

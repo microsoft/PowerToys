@@ -122,6 +122,14 @@ private:
     void StopDrawing();
     bool CreateInclusiveCrosshairs();
     void UpdateCrosshairsPosition();
+
+    // Drawn length of one crosshairs arm and of its border, given the space available before the arm must stop.
+    struct ArmLengths
+    {
+        float line;
+        float border;
+    };
+    ArmLengths GetArmLengths(float availableLength) const noexcept;
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
 
@@ -162,6 +170,7 @@ private:
     int m_crosshairs_border_size = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE;
     bool m_crosshairs_is_fixed_length_enabled = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED;
     int m_crosshairs_fixed_length = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH;
+    bool m_crosshairs_span_all_monitors = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_SPAN_ALL_MONITORS;
     CrosshairsOrientation m_crosshairs_orientation = static_cast<CrosshairsOrientation>(INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_ORIENTATION);
     float m_crosshairs_opacity = max(0.f, min(1.f, (float)INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_OPACITY / 100.0f));
     bool m_crosshairs_auto_hide = INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE;
@@ -270,33 +279,47 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
 
     GetCursorPos(&ptCursor);
 
-    HMONITOR cursorMonitor = MonitorFromPoint(ptCursor, MONITOR_DEFAULTTONEAREST);
-
-    if (cursorMonitor == NULL)
+    // The arms stop at the edges of either the whole virtual screen or the monitor containing the cursor.
+    RECT rcBounds;
+    if (m_crosshairs_span_all_monitors)
     {
-        return;
+        rcBounds.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+        rcBounds.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        rcBounds.right = rcBounds.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        rcBounds.bottom = rcBounds.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    }
+    else
+    {
+        HMONITOR cursorMonitor = MonitorFromPoint(ptCursor, MONITOR_DEFAULTTONEAREST);
+
+        if (cursorMonitor == NULL)
+        {
+            return;
+        }
+
+        MONITORINFO monitorInfo;
+        monitorInfo.cbSize = sizeof(monitorInfo);
+
+        if (!GetMonitorInfo(cursorMonitor, &monitorInfo))
+        {
+            return;
+        }
+
+        rcBounds = monitorInfo.rcMonitor;
     }
 
-    MONITORINFO monitorInfo;
-    monitorInfo.cbSize = sizeof(monitorInfo);
+    POINT ptBoundsUpperLeft;
+    ptBoundsUpperLeft.x = rcBounds.left;
+    ptBoundsUpperLeft.y = rcBounds.top;
 
-    if (!GetMonitorInfo(cursorMonitor, &monitorInfo))
-    {
-        return;
-    }
-
-    POINT ptMonitorUpperLeft;
-    ptMonitorUpperLeft.x = monitorInfo.rcMonitor.left;
-    ptMonitorUpperLeft.y = monitorInfo.rcMonitor.top;
-
-    POINT ptMonitorBottomRight;
-    ptMonitorBottomRight.x = monitorInfo.rcMonitor.right;
-    ptMonitorBottomRight.y = monitorInfo.rcMonitor.bottom;
+    POINT ptBoundsBottomRight;
+    ptBoundsBottomRight.x = rcBounds.right;
+    ptBoundsBottomRight.y = rcBounds.bottom;
 
     // Convert everything to client coordinates.
     ScreenToClient(m_hwnd, &ptCursor);
-    ScreenToClient(m_hwnd, &ptMonitorUpperLeft);
-    ScreenToClient(m_hwnd, &ptMonitorBottomRight);
+    ScreenToClient(m_hwnd, &ptBoundsUpperLeft);
+    ScreenToClient(m_hwnd, &ptBoundsBottomRight);
 
     // Crosshair position should receive a minor adjustment for odd values to prevent anti-aliasing due to half pixels, while still looking like it's centered around the mouse pointer.
     float halfPixelAdjustment = m_crosshairs_thickness % 2 == 1 ? 0.5f : 0.0f;
@@ -305,21 +328,17 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     // Left and Right crosshairs (horizontal line)
     if (m_crosshairs_orientation == CrosshairsOrientation::Both || m_crosshairs_orientation == CrosshairsOrientation::HorizontalOnly)
     {
-        float leftCrosshairsFullScreenLength = ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2.f;
-        float leftCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : leftCrosshairsFullScreenLength;
-        float leftCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : leftCrosshairsFullScreenLength + m_crosshairs_border_size;
+        ArmLengths left = GetArmLengths(ptCursor.x - ptBoundsUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2.f);
         m_left_crosshairs_border.Offset({ ptCursor.x - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
-        m_left_crosshairs_border.Size({ leftCrosshairsBorderLength, m_crosshairs_thickness + borderSizePadding });
+        m_left_crosshairs_border.Size({ left.border, m_crosshairs_thickness + borderSizePadding });
         m_left_crosshairs.Offset({ ptCursor.x - m_crosshairs_radius + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
-        m_left_crosshairs.Size({ leftCrosshairsLength, static_cast<float>(m_crosshairs_thickness) });
+        m_left_crosshairs.Size({ left.line, static_cast<float>(m_crosshairs_thickness) });
 
-        float rightCrosshairsFullScreenLength = static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius;
-        float rightCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : rightCrosshairsFullScreenLength;
-        float rightCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : rightCrosshairsFullScreenLength + m_crosshairs_border_size;
+        ArmLengths right = GetArmLengths(static_cast<float>(ptBoundsBottomRight.x) - ptCursor.x - m_crosshairs_radius);
         m_right_crosshairs_border.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius - m_crosshairs_border_size, ptCursor.y + halfPixelAdjustment, .0f });
-        m_right_crosshairs_border.Size({ rightCrosshairsBorderLength, m_crosshairs_thickness + borderSizePadding });
+        m_right_crosshairs_border.Size({ right.border, m_crosshairs_thickness + borderSizePadding });
         m_right_crosshairs.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius, ptCursor.y + halfPixelAdjustment, .0f });
-        m_right_crosshairs.Size({ rightCrosshairsLength, static_cast<float>(m_crosshairs_thickness) });
+        m_right_crosshairs.Size({ right.line, static_cast<float>(m_crosshairs_thickness) });
     }
     else
     {
@@ -333,21 +352,17 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     // Top and Bottom crosshairs (vertical line)
     if (m_crosshairs_orientation == CrosshairsOrientation::Both || m_crosshairs_orientation == CrosshairsOrientation::VerticalOnly)
     {
-        float topCrosshairsFullScreenLength = ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2.f;
-        float topCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : topCrosshairsFullScreenLength;
-        float topCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : topCrosshairsFullScreenLength + m_crosshairs_border_size;
+        ArmLengths top = GetArmLengths(ptCursor.y - ptBoundsUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2.f);
         m_top_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + m_crosshairs_border_size + halfPixelAdjustment * 2.f, .0f });
-        m_top_crosshairs_border.Size({ m_crosshairs_thickness + borderSizePadding, topCrosshairsBorderLength });
+        m_top_crosshairs_border.Size({ m_crosshairs_thickness + borderSizePadding, top.border });
         m_top_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + halfPixelAdjustment * 2.f, .0f });
-        m_top_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), topCrosshairsLength });
+        m_top_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), top.line });
 
-        float bottomCrosshairsFullScreenLength = static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius;
-        float bottomCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : bottomCrosshairsFullScreenLength;
-        float bottomCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : bottomCrosshairsFullScreenLength + m_crosshairs_border_size;
+        ArmLengths bottom = GetArmLengths(static_cast<float>(ptBoundsBottomRight.y) - ptCursor.y - m_crosshairs_radius);
         m_bottom_crosshairs_border.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius - m_crosshairs_border_size, .0f });
-        m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + borderSizePadding, bottomCrosshairsBorderLength });
+        m_bottom_crosshairs_border.Size({ m_crosshairs_thickness + borderSizePadding, bottom.border });
         m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
-        m_bottom_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), bottomCrosshairsLength });
+        m_bottom_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), bottom.line });
     }
     else
     {
@@ -357,6 +372,19 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
         m_bottom_crosshairs_border.Size({ 0.0f, 0.0f });
         m_bottom_crosshairs.Size({ 0.0f, 0.0f });
     }
+}
+
+InclusiveCrosshairs::ArmLengths InclusiveCrosshairs::GetArmLengths(float availableLength) const noexcept
+{
+    // A fixed-length arm that ends before the boundary shows its border on both ends.
+    if (m_crosshairs_is_fixed_length_enabled && m_crosshairs_fixed_length < availableLength)
+    {
+        float length = static_cast<float>(m_crosshairs_fixed_length);
+        return { length, length + m_crosshairs_border_size * 2.f };
+    }
+
+    // Otherwise the arm is cut at the boundary, where its outer end is off-screen.
+    return { availableLength, availableLength + m_crosshairs_border_size };
 }
 
 LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
@@ -430,6 +458,7 @@ void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, b
     m_crosshairs_auto_hide = settings.crosshairsAutoHide;
     m_crosshairs_is_fixed_length_enabled = settings.crosshairsIsFixedLengthEnabled;
     m_crosshairs_fixed_length = settings.crosshairsFixedLength;
+    m_crosshairs_span_all_monitors = settings.crosshairsSpanAllMonitors;
     m_crosshairs_orientation = settings.crosshairsOrientation;
 
     if (applyToRunTimeObjects)

@@ -10,6 +10,7 @@ constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE = 1;
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE = false;
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED = false;
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH = 1;
+constexpr bool INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_SPAN_ALL_MONITORS = false;
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_ORIENTATION = 0; // 0=Both, 1=Vertical, 2=Horizontal
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_AUTO_ACTIVATE = false;
 
@@ -31,6 +32,7 @@ struct InclusiveCrosshairsSettings
     bool crosshairsAutoHide = INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE;
     bool crosshairsIsFixedLengthEnabled = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED;
     int crosshairsFixedLength = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH;
+    bool crosshairsSpanAllMonitors = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_SPAN_ALL_MONITORS;
     CrosshairsOrientation crosshairsOrientation = static_cast<CrosshairsOrientation>(INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_ORIENTATION);
     bool autoActivate = INCLUSIVE_MOUSE_DEFAULT_AUTO_ACTIVATE;
 };
