@@ -100,18 +100,15 @@ public sealed class SettingsKeyTests
     public void FailedKeyConversionDoesNotReplaceStoredValue()
     {
         using var identity = WindowsIdentity.GetCurrent();
-        foreach (IPairingKeyCodec codec in new IPairingKeyCodec[] { new PassthroughPairingKeyCodec(), new DpapiPairingKeyCodec(identity.User!) })
-        {
-            var properties = new MouseWithoutBordersProperties();
-            var settings = CreateSettings(properties, codec);
-            settings.MyKey = "PREVIOUS-KEY";
-            var stored = properties.SecurityKey.Value;
+        var properties = new MouseWithoutBordersProperties();
+        var settings = CreateSettings(properties, new DpapiPairingKeyCodec(identity.User!));
+        settings.MyKey = "PREVIOUS-KEY";
+        var stored = properties.SecurityKey.Value;
 
-            Assert.ThrowsException<ArgumentException>(() => settings.MyKey = "mwb-dpapi:v1:TEST");
+        Assert.ThrowsException<ArgumentException>(() => settings.MyKey = "mwb-dpapi:v1:TEST");
 
-            Assert.AreEqual(stored, properties.SecurityKey.Value);
-            Assert.AreEqual("PREVIOUS-KEY", settings.MyKey);
-        }
+        Assert.AreEqual(stored, properties.SecurityKey.Value);
+        Assert.AreEqual("PREVIOUS-KEY", settings.MyKey);
     }
 
     [TestMethod]
@@ -169,14 +166,17 @@ public sealed class SettingsKeyTests
     }
 
     [TestMethod]
-    public void SwitchingToNormalModeDoesNotUseCiphertextAsKey()
+    public void SwitchingToNormalModePassesThroughStoredValueButHidesItFromDisplay()
     {
         using var identity = WindowsIdentity.GetCurrent();
         var properties = new MouseWithoutBordersProperties();
         var service = CreateSettings(properties, new DpapiPairingKeyCodec(identity.User!));
         service.MyKey = "SERVICE-KEY";
+        var stored = properties.SecurityKey.Value;
         var normal = CreateSettings(properties, new PassthroughPairingKeyCodec());
-        Assert.ThrowsException<ArgumentException>(() => _ = normal.MyKey);
+        Assert.AreEqual(stored, normal.MyKey);
+        Assert.AreEqual(stored, properties.SecurityKey.Value);
+        Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, normal.PairingKeyDisplayText);
         normal.MyKey = "NORMAL-KEY";
         Assert.AreEqual("NORMAL-KEY", properties.SecurityKey.Value);
         Assert.AreEqual("NORMAL-KEY", normal.MyKey);
@@ -225,7 +225,7 @@ public sealed class SettingsKeyTests
     [DataTestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void ModeMismatchLeavesSavedKeyUnusedUntilExplicitReplacement(bool serviceMode)
+    public void ModeMismatchPreservesSavedValueUntilExplicitReplacement(bool serviceMode)
     {
         using var identity = WindowsIdentity.GetCurrent();
         var properties = new MouseWithoutBordersProperties();
@@ -241,8 +241,17 @@ public sealed class SettingsKeyTests
         {
             Encryption.MyKey = "PREVIOUS-RUNTIME-KEY";
             Assert.IsTrue(settings.UpdateRuntimeKey());
-            Assert.AreEqual(string.Empty, Encryption.MyKey);
-            Assert.AreEqual(0u, Encryption.MagicNumber);
+            Assert.AreEqual(serviceMode ? string.Empty : savedValue, Encryption.MyKey);
+            if (serviceMode)
+            {
+                Assert.AreEqual(0u, Encryption.MagicNumber);
+            }
+            else
+            {
+                Assert.AreEqual(savedValue, settings.MyKey);
+                Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, settings.PairingKeyDisplayText);
+            }
+
             Assert.IsFalse(settings.UpdateRuntimeKey());
             Assert.AreEqual(savedValue, properties.SecurityKey.Value);
 

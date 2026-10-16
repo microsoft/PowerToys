@@ -219,11 +219,6 @@ namespace MouseWithoutBorders.Class
                 bool dummy1 = Setting.Values.MatrixOneRow; // Reading from reg to variable
                 dummy1 = Setting.Values.MatrixCircle;
 
-                if (string.IsNullOrWhiteSpace(Encryption.MyKey))
-                {
-                    throw new System.Security.Cryptography.CryptographicException("Pairing setup is required.");
-                }
-
                 if (Setting.Values.IsMyKeyRandom)
                 {
                     Setting.Values.MyKey = Encryption.MyKey;

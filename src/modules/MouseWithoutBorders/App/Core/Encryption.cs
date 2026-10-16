@@ -114,7 +114,6 @@ internal static class Encryption
 
     private static byte[] GenLegalKey(byte[] salt)
     {
-        EnsurePairingKeyAvailable();
         return Rfc2898DeriveBytes.Pbkdf2(
             Encryption.MyKey,
             salt,

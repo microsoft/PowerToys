@@ -50,8 +50,8 @@ public sealed class PairingKeyCodecTests
         Assert.IsTrue(codec.IsEncrypted(encrypted));
         Assert.ThrowsException<ArgumentException>(() => codec.Encrypt(encrypted));
         var passthrough = new PassthroughPairingKeyCodec();
-        Assert.ThrowsException<ArgumentException>(() => passthrough.Encrypt(encrypted));
-        Assert.ThrowsException<ArgumentException>(() => passthrough.Decrypt(encrypted));
+        Assert.AreEqual(encrypted, passthrough.Encrypt(encrypted));
+        Assert.AreEqual(encrypted, passthrough.Decrypt(encrypted));
     }
 
     [TestMethod]
@@ -119,30 +119,30 @@ public sealed class PairingKeyCodecTests
     [DataRow("mwb-dpapi:v1:TEST")]
     [DataRow("mwb-dpapi:v2:invalid")]
     [DataRow("MWB-DPAPI:v1:TEST")]
-    public void NonKeysAreRejectedByBothCodecs(string value)
+    public void NonKeysAreRejectedByProtectedCodec(string value)
     {
         Assert.ThrowsException<ArgumentException>(() => CreateCodec().Encrypt(value));
-        var passthrough = new PassthroughPairingKeyCodec();
-        Assert.ThrowsException<ArgumentException>(() => passthrough.Encrypt(value));
-        Assert.ThrowsException<ArgumentException>(() => passthrough.Decrypt(value));
     }
 
     [TestMethod]
-    public void NullKeysAreRejectedByBothCodecs()
+    public void NullKeysAreRejectedByProtectedCodec()
     {
         Assert.ThrowsException<ArgumentNullException>(() => CreateCodec().Encrypt(null));
-        var passthrough = new PassthroughPairingKeyCodec();
-        Assert.ThrowsException<ArgumentNullException>(() => passthrough.Encrypt(null));
-        Assert.ThrowsException<ArgumentNullException>(() => passthrough.Decrypt(null));
     }
 
-    [TestMethod]
-    public void OrdinaryValuesRemainUnchanged()
+    [DataTestMethod]
+    [DataRow(" Original-Key ")]
+    [DataRow("mwb-dpapi:v1:TEST")]
+    [DataRow("mwb-dpapi:v2:invalid")]
+    [DataRow("MWB-DPAPI:v1:TEST")]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" \t\r\n")]
+    public void PassthroughPreservesEveryValueUnchanged(string value)
     {
         var codec = new PassthroughPairingKeyCodec();
-        Assert.AreEqual(" Original-Key ", codec.Encrypt(" Original-Key "));
-        Assert.AreEqual(" Original-Key ", codec.Decrypt(" Original-Key "));
-        Assert.IsFalse(codec.IsEncrypted("Original-Key"));
+        Assert.AreEqual(value, codec.Encrypt(value));
+        Assert.AreEqual(value, codec.Decrypt(value));
     }
 
     [DataTestMethod]

@@ -67,6 +67,19 @@ public sealed class MouseWithoutBordersPairingPresentationTests
     }
 
     [TestMethod]
+    public void SocketReopenSourceContractSkipsConstructionQuietlyWithoutRuntimeKey()
+    {
+        var source = ReadSource(@"src\modules\MouseWithoutBorders\App\Core\Common.cs");
+        var start = source.IndexOf("internal static void ReopenSockets(bool byUser)", StringComparison.Ordinal);
+        var end = source.IndexOf("internal static string GetMyStorageDir()", start, StringComparison.Ordinal);
+        var reopen = source.Substring(start, end - start).Replace("\r\n", "\n");
+        StringAssert.Contains(reopen, "Sk = !string.IsNullOrWhiteSpace(Encryption.MyKey)\n                    ? new SocketStuff(tcpPort, byUser)\n                    : null;");
+        var close = reopen.IndexOf("tmpSk.Close(byUser);", StringComparison.Ordinal);
+        var construct = reopen.IndexOf("new SocketStuff(tcpPort, byUser)", StringComparison.Ordinal);
+        Assert.IsTrue(close >= 0 && close < construct);
+    }
+
+    [TestMethod]
     public void SettingsReloadSourceContractPublishesUnderExistingSettingsLock()
     {
         var source = ReadSource(@"src\modules\MouseWithoutBorders\App\Class\Setting.cs").Replace("\r\n", "\n");

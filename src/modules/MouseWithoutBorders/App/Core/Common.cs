@@ -1242,7 +1242,10 @@ internal static class Common
                     tmpSk.Close(byUser);
                 }
 
-                Sk = CreateSocketIfPairingKeyAvailable(() => new SocketStuff(tcpPort, byUser));
+                // Wait quietly for pairing setup instead of logging each automatic reopen.
+                Sk = !string.IsNullOrWhiteSpace(Encryption.MyKey)
+                    ? new SocketStuff(tcpPort, byUser)
+                    : null;
             }
             catch (Exception e)
             {
@@ -1286,15 +1289,6 @@ internal static class Common
                 Common.InputCallbackForm.InstallKeyboardAndMouseHook();
             }
         });
-    }
-
-    internal static SocketStuff CreateSocketIfPairingKeyAvailable(Func<SocketStuff> createSocket)
-    {
-        // Pairing setup can leave the runtime key unavailable. Wait for a valid key
-        // without treating each automatic reopen as a connection failure.
-        return !string.IsNullOrWhiteSpace(Encryption.MyKey)
-            ? createSocket()
-            : null;
     }
 
     internal static string GetMyStorageDir()
