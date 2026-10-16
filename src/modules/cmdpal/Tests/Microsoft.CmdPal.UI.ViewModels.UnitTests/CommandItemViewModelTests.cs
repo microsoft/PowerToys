@@ -69,13 +69,14 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
 
         var allCommands = viewModel.AllCommands;
 
         Assert.AreSame(allCommands, viewModel.AllCommands);
         Assert.AreEqual(2, allCommands.Count);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -85,10 +86,11 @@ public partial class CommandItemViewModelTests
         var item = new ListItem(new NoOpCommand { Name = "Primary" });
         item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.item.dock";
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.InitializeProperties();
 
         Assert.AreEqual("provider.item.dock", viewModel.DockCommandId);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -98,7 +100,7 @@ public partial class CommandItemViewModelTests
         var item = new PropertiesTestItem();
         item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.item.dock";
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         try
         {
             viewModel.InitializeProperties();
@@ -116,6 +118,7 @@ public partial class CommandItemViewModelTests
         finally
         {
             viewModel.SafeCleanup();
+            GC.KeepAlive(pageContext);
         }
     }
 
@@ -125,13 +128,14 @@ public partial class CommandItemViewModelTests
         var pageContext = new TestPageContext();
         var child = new ListItem(new NoOpCommand()) { Title = "Child" };
         var band = new WrappedDockItem([child], "provider.band", "Band");
-        var viewModel = new CommandItemViewModel(new(band), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(band), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.InitializeProperties();
 
         var items = DockBandViewModel.GetItemsForDisplay(viewModel);
 
         Assert.AreEqual(1, items.Length);
         Assert.AreSame(child, items[0]);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -149,12 +153,13 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
 
         Assert.IsTrue(viewModel.HasSubmenu);
         Assert.IsNotNull(viewModel.SecondaryCommand);
         Assert.AreEqual("Secondary", viewModel.SecondaryCommand.Name);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -176,11 +181,12 @@ public partial class CommandItemViewModelTests
             MoreCommands = [.. moreCommands],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
 
         Assert.IsFalse(viewModel.HasOverflowCommands);
         Assert.IsTrue(viewModel.CanOpenContextMenu);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -197,10 +203,11 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
 
         Assert.IsTrue(viewModel.HasOverflowCommands);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -214,7 +221,7 @@ public partial class CommandItemViewModelTests
             Title = "Primary",
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.FastInitializeProperties();
 
         Assert.AreEqual(1, viewModel.AllCommands.Count);
@@ -223,6 +230,7 @@ public partial class CommandItemViewModelTests
         Assert.IsTrue(viewModel.Command.IsInvokableCommand);
         Assert.IsFalse(viewModel.Command.IsPage);
         Assert.IsFalse(viewModel.Command.IsListPage);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -234,13 +242,14 @@ public partial class CommandItemViewModelTests
             Name = "List page",
         };
         var item = new CommandItem(page) { Title = page.Name };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
 
         viewModel.FastInitializeProperties();
 
         Assert.IsTrue(viewModel.Command.IsPage);
         Assert.IsTrue(viewModel.Command.IsListPage);
         Assert.IsFalse(viewModel.Command.IsInvokableCommand);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -258,7 +267,7 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
 
         Assert.AreEqual(1, viewModel.AllCommands.Count);
@@ -271,6 +280,7 @@ public partial class CommandItemViewModelTests
         Assert.AreEqual("Secondary", ((CommandContextItemViewModel)viewModel.AllCommands[1]).Name);
         Assert.IsTrue(viewModel.HasSubmenu);
         Assert.AreEqual("Secondary", viewModel.SecondaryCommand?.Name);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -288,7 +298,7 @@ public partial class CommandItemViewModelTests
             ],
         };
 
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
 
         var primaryContextItem = (CommandContextItemViewModel)viewModel.AllCommands[0];
@@ -301,6 +311,7 @@ public partial class CommandItemViewModelTests
 
         Assert.AreEqual("after unique", primaryContextItem.Subtitle);
         Assert.AreEqual("after unique", primaryContextItem.GetSubtitleTarget(matcher).Original);
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -331,8 +342,8 @@ public partial class CommandItemViewModelTests
             MoreCommands = [.. entries],
         };
         var viewModel = isDock
-            ? new DockItemViewModel(new(item), new(pageContext), true, true, DefaultContextMenuFactory.Instance)
-            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+            ? new DockItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), true, true, DefaultContextMenuFactory.Instance)
+            : new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
 
         Assert.AreSame(viewModel, viewModel.PrimaryCommand);
@@ -360,6 +371,7 @@ public partial class CommandItemViewModelTests
         Assert.IsNull(((IContextMenuContext)viewModel).FindKeybinding(CommandContextItemViewModel.SecondaryShortcut));
         menu.Close();
         Assert.IsTrue(viewModel.AllCommands.OfType<CommandContextItemViewModel>().All(command => command.DisplayShortcut is null));
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -418,8 +430,8 @@ public partial class CommandItemViewModelTests
             MoreCommands = [new Separator("Group"), secondary],
         };
         var viewModel = isDock
-            ? new DockItemViewModel(new(item), new(pageContext), true, true, DefaultContextMenuFactory.Instance)
-            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+            ? new DockItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), true, true, DefaultContextMenuFactory.Instance)
+            : new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
         var readCount = item.MenuReadCount;
         var snapshot = viewModel.AllCommands;
@@ -446,6 +458,7 @@ public partial class CommandItemViewModelTests
 
         Assert.AreEqual(readCount, item.MenuReadCount, "Presentation reads must not fetch SDK menu entries again.");
         Assert.AreEqual(1, secondary.ShortcutReadCount, "Read the extension shortcut once during initialization; menu preparation, filtering and lookups use its cached value.");
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
@@ -850,7 +863,7 @@ public partial class CommandItemViewModelTests
         }
 
         var item = new CommandItem(new NoOpCommand { Name = hasPrimary ? "Primary" : string.Empty }) { MoreCommands = [.. entries] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
 
         Assert.IsTrue(viewModel.HasSubmenu);
@@ -859,6 +872,7 @@ public partial class CommandItemViewModelTests
         Assert.AreEqual(visibleChildren > 0 ? "Visible 0" : null, viewModel.SecondaryCommand?.Name);
         Assert.AreEqual(entries.Count + (hasPrimary ? 1 : 0), viewModel.AllCommands.Count);
         viewModel.SafeCleanup();
+        GC.KeepAlive(pageContext);
     }
 
     [TestMethod]
