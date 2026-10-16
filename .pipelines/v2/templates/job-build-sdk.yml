@@ -41,24 +41,24 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: .\steps-ensure-dotnet-version.yml
+      parameters:
+        sdk: true
+        version: '6.0' # Required by the Guardian tool used for ESRP code signing.
+
   - template: .\steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
       version: '10.0'
       exactVersion: $(SdkDotNetVersion)
-      useExistingInstallation: true
 
-  - pwsh: |-
-      $path = "$(Build.SourcesDirectory)\global.json"
-      if (Test-Path -LiteralPath $path) {
-        throw "Cannot override an existing global.json."
-      }
-      @{
-        sdk = @{
-          version = "$(SdkDotNetVersion)"
-          rollForward = "disable"
-        }
-      } | ConvertTo-Json | Set-Content -LiteralPath $path -Encoding utf8
+  - pwsh: >
+      dotnet new globaljson
+      --sdk-version "$(SdkDotNetVersion)"
+      --roll-forward disable
+      --output "$(Build.SourcesDirectory)"
+      --no-update-check
     displayName: Select .NET SDK $(SdkDotNetVersion) for this job
 
   - template: .\steps-ensure-nuget-version.yml
