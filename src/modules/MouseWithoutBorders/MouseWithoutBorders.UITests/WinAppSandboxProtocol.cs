@@ -10,6 +10,25 @@ namespace Microsoft.MouseWithoutBorders.UITests;
 internal static class WinAppSandboxProtocol
 {
     public const int NoSuchLogonSession = unchecked((int)0x80070520);
+    public const string ExpectedInstanceOption = "--expect-sandbox";
+
+    public static string[] BindExpectedInstance(string[] arguments, Guid instanceId)
+    {
+        ArgumentNullException.ThrowIfNull(arguments);
+        if (instanceId == Guid.Empty || arguments is not ["target", _, "sandbox", ..])
+        {
+            throw new WinAppSandboxException("expected_instance_command_invalid");
+        }
+
+        var separator = Array.IndexOf(arguments, "--");
+        if (arguments.Take(separator < 0 ? arguments.Length : separator).Any(argument =>
+            argument == ExpectedInstanceOption || argument.StartsWith(ExpectedInstanceOption + "=", StringComparison.Ordinal)))
+        {
+            throw new WinAppSandboxException("expected_instance_already_bound");
+        }
+
+        return ["target", ExpectedInstanceOption, instanceId.ToString("D"), .. arguments[1..]];
+    }
 
     public static void RequireGuestCommandSuccess(string json)
     {
@@ -104,6 +123,19 @@ internal static class WinAppSandboxProtocol
             throw new WinAppSandboxException("preview_capabilities_missing");
         }
 
+        if (!TryObject(target, "options", out var targetOptions) ||
+            !TryObject(targetOptions, ExpectedInstanceOption, out var expectation) ||
+            ReadString(expectation, "valueType") != "System.String" ||
+            !ReadBoolean(expectation, "recursive") ||
+            !TryObject(expectation, "arity", out var arity) ||
+            !arity.TryGetProperty("minimum", out var minimum) || minimum.ValueKind != JsonValueKind.Number ||
+            !minimum.TryGetInt32(out var minimumCount) || minimumCount != 1 ||
+            !arity.TryGetProperty("maximum", out var maximum) || maximum.ValueKind != JsonValueKind.Number ||
+            !maximum.TryGetInt32(out var maximumCount) || maximumCount != 1)
+        {
+            throw new WinAppSandboxException("expected_instance_binding_missing");
+        }
+
         foreach (var name in new[] { "exec", "push", "pull", "snapshot", "screenshot", "record" })
         {
             if (!TryObject(targets, name, out var command) ||
@@ -125,6 +157,20 @@ internal static class WinAppSandboxProtocol
             {
                 throw new WinAppSandboxException("preview_capabilities_missing");
             }
+        }
+    }
+
+    public static void RequireUnpreparedSnapshot(string json)
+    {
+        var snapshot = ReadObject(json);
+        if (!ReadBoolean(snapshot, "running") ||
+            !snapshot.TryGetProperty("attached", out var attached) || attached.ValueKind != JsonValueKind.False ||
+            !TryObject(snapshot, "executionTarget", out var target) ||
+            ReadString(target, "kind") != "sandbox" || ReadString(target, "id") != "default" ||
+            (target.TryGetProperty("epoch", out var epoch) && epoch.ValueKind != JsonValueKind.Null &&
+                (epoch.ValueKind != JsonValueKind.String || epoch.GetString() != string.Empty)))
+        {
+            throw new WinAppSandboxException("target_snapshot_not_unprepared");
         }
     }
 
@@ -241,7 +287,7 @@ internal static class WinAppSandboxProtocol
                 "sandbox_agent_incompatible" or "sandbox_agent_upgrade_failed" or "sandbox_agent_busy" or
                 "sandbox_transport_failed" or "sandbox_transfer_interrupted" or "sandbox_runtime_provision_failed" or
                 "sandbox_deployment_dirty" or "sandbox_package_conflict" or "sandbox_provisioned_package_conflict" or
-                "sandbox_target_ambiguous" or "sandbox_target_stale" or "sandbox_stale_handle" or
+                "sandbox_target_ambiguous" or "sandbox_target_stale" or "sandbox_stale_handle" or "sandbox_instance_mismatch" or
                 "sandbox_artifact_failed" or "sandbox_setup_required" or "sandbox_setup_requires_restart" or
                 "sandbox_setup_incomplete" or "target_invalid" or "target_invalid_arguments" => code,
                 _ => "command_failed",

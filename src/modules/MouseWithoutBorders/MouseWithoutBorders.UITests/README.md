@@ -1,8 +1,14 @@
 # Mouse Without Borders UI tests
 
 This is the **maintained twelve-case UI-test suite**. It uses
-`Microsoft.PowerToys.UITest.Next` and unmodified official winappcli v0.7.1.
+`Microsoft.PowerToys.UITest.Next`.
 There is no separate manual Debug experiment to build or run.
+
+This branch locally validates unreleased winappcli expected-instance binding and
+cold-preparation improvements. Windows 11 requires a locally built CLI containing
+both microsoft/winappCli#1105 and microsoft/winappCli#1106. The released v0.7.1
+pilot is maintained separately on `gleb/ui-tests-mouse-borders`. Do not queue CI
+for this unreleased integration; do not weaken the official release pin.
 
 ## Project layout
 
@@ -35,7 +41,7 @@ guest peer. The physical development machine is never a peer.
 | Windows 11 x64 | 24H2+ modern backend; locally demonstrated on build 26200.9457 |
 | Local default resources | Eight vCPUs / 16 GiB static RAM; nested virtualization enabled |
 | Modern client | Healthy `MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy` registration for the actual standard test user; demonstrated version 0.8.107.0 |
-| UI/Sandbox CLI | Official winappcli v0.7.1; release/native-closure hashes checked against `.pipelines\winapp-cli\release.json` |
+| UI/Sandbox CLI | Locally built expected-instance/cold-preparation candidate; exact archive and executable hashes checked against protected local provisioning |
 | Execution identity | Unlocked English standard-user Default desktop on the outer VM, no existing PowerToys or Sandbox; run-owned guest desktop |
 | Payload | Same coherent self-contained Release runtime archive on both endpoints |
 | Privileged boundary | Separate protected setup/cleanup; no test-side elevation, feature enablement, reboot or GPO edit |
@@ -154,13 +160,21 @@ OLE reads can otherwise return empty data when another thread owns the clipboard
 Windows 10 uses `WindowsSandbox.exe`, a hardened `.wsb`, mapped endpoint
 channels and native viewer ownership. It never invokes unsupported
 `--on sandbox` targeting. Windows 11 precreates an exclusive provider GUID,
-verifies official winapp target adoption, and uses target push/attached exec
+verifies winapp target adoption, and uses target push/attached exec
 and guest-native capture. No silent backend or local fallback is allowed.
 
 The modern client must already be registered for the standard test user.
-Provider ID, epoch, CLI path/hash and private target state are checked before
-and after operations; v0.7.1 has no atomic attach-only acquisition fence, so
-use a dedicated single-Sandbox VM. Its authenticated agent transport is
+Every host-side winapp target command, including the first push, attached worker
+and recording, passes the run's provider GUID through `--expect-sandbox`.
+The schema check requires that option; an older released CLI is rejected rather
+than used without the fence. Before connecting the client or preparing an agent,
+a passive snapshot must report running, unattached, and without an epoch or a
+new ownership record.
+
+Provider ID, epoch, CLI path/hash and private target state remain checked before
+and after operations. A provider GUID is not a boot identity: each `wsb start`
+uses a new GUID, and restarting a guest under the same ID is not claimed to be
+detectable. Use a dedicated single-Sandbox VM. Its authenticated agent transport is
 separate from MWB's ports. Only child processes receive run-derived
 `WINAPP_TARGET_STATE_ROOT` / `WINAPP_UI_WORKFLOW_ID` values; default-profile
 state and parent/user/machine environments are untouched.
@@ -226,9 +240,9 @@ restore checkpoints implicitly or change credentials.
   -VmName PowerToysUiTest-Win11 `
   -ConfigurationPath C:\PowerToysUiTestVm\vm.config.psd1 `
   -CredentialPath "$env:LOCALAPPDATA\PowerToysUiTestVm\admin.win11.credential.xml" `
-  -ExchangeRoot C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders `
+  -ExchangeRoot C:\PowerToysUiTestVm\shared\PowerToysUiTests\MwbUnreleased `
   -Configuration Release -Platform x64Win11 `
-  -SandboxWinAppArchive winappcli-official-0.7.1-x64-runtime.zip `
+  -SandboxWinAppArchive winappcli-local-integrated.zip `
   -ProductArchive powertoys-runtime.zip -GuestRuntimeArchive powertoys-runtime.zip `
   -TestsArchive ui-tests.zip -ReuseStagedPayload -PlanOnly
 ```
@@ -237,9 +251,13 @@ Inspect the exact source/hash, empty filter, platform, configuration and resourc
 profile in the plan/request, then repeat without `-PlanOnly`.
 For Win10, select its independent VM/config/credential and `-Platform x64Win10`;
 omit the modern Sandbox archive. The wrapper's `Auto` backend selects correctly.
-Use the official archive's three verified runtime files (`winapp.exe`,
-`libSkiaSharp.dll`, `libHarfBuzzSharp.dll`), not PDBs or a patched CLI. A derived
-portable ZIP has its own hash, distinct from the official release asset hash.
+Build the candidate with winappcli's `scripts\build-cli.ps1 -SkipAll`, then package
+its native runtime files (`winapp.exe`, `libSkiaSharp.dll`,
+`libHarfBuzzSharp.dll`), not PDBs. Put the same archive at the exchange's
+`winappcli.zip` for ordinary host/guest UI commands and pass its named copy as
+`-SandboxWinAppArchive`. Record the source revision and archive/executable hashes
+with local evidence. These private build artifacts are not committed or added to
+the official release pin.
 
 For an already-provisioned standard-user VM desktop, the executable can run
 directly with `POWERTOYS_INSTALL_DIR`, `WINAPP_CLI_PATH` and optional
@@ -249,6 +267,10 @@ beside the MTP run directory, outside its disposable deployment tree.
 Never use a focused filter as full-suite evidence.
 
 ## CI wiring
+
+This experimental branch is local-validation-only. The following wiring belongs
+to the released pilot on `gleb/ui-tests-mouse-borders`; its v0.7.1 pin and verified
+release provenance remain unchanged.
 
 `mwbSandboxExperiment` defaults to true. Current-source `buildNow`/`buildNowSlim`
 supports all, explicit, mixed and affected module selections: ordinary suites

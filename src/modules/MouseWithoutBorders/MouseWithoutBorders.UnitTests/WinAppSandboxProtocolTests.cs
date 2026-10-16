@@ -16,6 +16,49 @@ public sealed class WinAppSandboxProtocolTests
     private static readonly Guid UnrelatedInstance = Guid.Parse("638638e2-b7c3-4f31-b779-cb7715cb0145");
 
     [DataTestMethod]
+    [DataRow("exec")]
+    [DataRow("push")]
+    [DataRow("pull")]
+    [DataRow("snapshot")]
+    [DataRow("screenshot")]
+    [DataRow("record")]
+    public void EverySandboxOperationUsesTheExplicitProviderGuid(string verb)
+    {
+        string[] arguments = ["target", verb, "sandbox", "--json"];
+        CollectionAssert.AreEqual(
+            new[] { "target", "--expect-sandbox", Instance.ToString("D"), verb, "sandbox", "--json" },
+            WinAppSandboxProtocol.BindExpectedInstance(arguments, Instance));
+        CollectionAssert.AreEqual(new[] { "target", verb, "sandbox", "--json" }, arguments);
+    }
+
+    [TestMethod]
+    public void ExpectedInstanceOptionPrecedesAndDoesNotRewriteTheGuestCommand()
+    {
+        string[] arguments = ["target", "exec", "sandbox", "--", "powershell.exe", "--expect-sandbox", "guest-argument"];
+        CollectionAssert.AreEqual(
+            new[] { "target", "--expect-sandbox", Instance.ToString("D"), "exec", "sandbox", "--", "powershell.exe", "--expect-sandbox", "guest-argument" },
+            WinAppSandboxProtocol.BindExpectedInstance(arguments, Instance));
+    }
+
+    [TestMethod]
+    public void ExpectedBindingRejectsMissingIdentityOtherTargetsAndDuplicateHostOptions()
+    {
+        Assert.ThrowsExactly<WinAppSandboxException>(() =>
+            WinAppSandboxProtocol.BindExpectedInstance(["target", "snapshot", "sandbox"], Guid.Empty));
+        foreach (var arguments in new[]
+        {
+            new[] { "--cli-schema" },
+            new[] { "start", "--id", Instance.ToString("D") },
+            new[] { "target", "snapshot", "other" },
+            new[] { "target", "snapshot", "sandbox", "--expect-sandbox", UnrelatedInstance.ToString("D") },
+            new[] { "target", "snapshot", "sandbox", "--expect-sandbox=" + UnrelatedInstance },
+        })
+        {
+            Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.BindExpectedInstance(arguments, Instance));
+        }
+    }
+
+    [DataTestMethod]
     [DataRow(nameof(WinAppSandboxPrerequisite.UserPackageRegistration), "Exactly one", "registered for this user")]
     [DataRow(nameof(WinAppSandboxPrerequisite.UserExecutionAlias), "WindowsApps", "reparse point")]
     [DataRow(nameof(WinAppSandboxPrerequisite.PackageExecutable), "registered modern Sandbox package", "wsb.exe")]
@@ -204,6 +247,54 @@ public sealed class WinAppSandboxProtocolTests
     }
 
     [TestMethod]
+    public void ModernBackendRequiresTheActualExpectedInstanceCapabilityNotACompatibleVersionString()
+    {
+        var released = Schema();
+        released["version"] = "0.7.1";
+        released["subcommands"]!["target"]!["options"]!.AsObject().Remove("--expect-sandbox");
+        var error = Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireCapabilities(released.ToJsonString()));
+        Assert.AreEqual("expected_instance_binding_missing", error.Code);
+        foreach (var property in new[] { "recursive", "valueType", "arity" })
+        {
+            var malformed = Schema();
+            malformed["subcommands"]!["target"]!["options"]!["--expect-sandbox"]!.AsObject().Remove(property);
+            Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireCapabilities(malformed.ToJsonString()));
+        }
+
+        foreach (var value in new JsonNode?[] { JsonValue.Create("1"), JsonValue.Create(0), null })
+        {
+            var malformed = Schema();
+            malformed["subcommands"]!["target"]!["options"]!["--expect-sandbox"]!["arity"]!["minimum"] = value;
+            Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireCapabilities(malformed.ToJsonString()));
+        }
+    }
+
+    [TestMethod]
+    public void ExpectedUnpreparedSnapshotMustBeRunningUnattachedAndWithoutAnEpoch()
+    {
+        var snapshot = Snapshot();
+        snapshot["attached"] = false;
+        snapshot["executionTarget"]!.AsObject().Remove("epoch");
+        WinAppSandboxProtocol.RequireUnpreparedSnapshot(snapshot.ToJsonString());
+        snapshot["executionTarget"]!["epoch"] = string.Empty;
+        WinAppSandboxProtocol.RequireUnpreparedSnapshot(snapshot.ToJsonString());
+        snapshot["executionTarget"]!["epoch"] = null;
+        WinAppSandboxProtocol.RequireUnpreparedSnapshot(snapshot.ToJsonString());
+        snapshot["executionTarget"]!["epoch"] = 1;
+        Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireUnpreparedSnapshot(snapshot.ToJsonString()));
+        snapshot["executionTarget"]!["epoch"] = Epoch;
+        Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireUnpreparedSnapshot(snapshot.ToJsonString()));
+        snapshot["executionTarget"]!.AsObject().Remove("epoch");
+        snapshot["running"] = false;
+        Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireUnpreparedSnapshot(snapshot.ToJsonString()));
+        snapshot["running"] = true;
+        snapshot["attached"] = true;
+        Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireUnpreparedSnapshot(snapshot.ToJsonString()));
+        snapshot.Remove("attached");
+        Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireUnpreparedSnapshot(snapshot.ToJsonString()));
+    }
+
+    [TestMethod]
     public void SnapshotIsPassiveEvidenceNotAnAlternativeOwnershipProof()
     {
         var snapshot = Snapshot();
@@ -239,6 +330,8 @@ public sealed class WinAppSandboxProtocolTests
         Assert.AreEqual("command_failed", WinAppSandboxProtocol.SafeErrorCode("""{"error":"secret"}"""));
         Assert.AreEqual("command_failed", WinAppSandboxProtocol.SafeErrorCode(
             """{"error":{"code":"sandbox_unsupported","code":"secret"}}"""));
+        Assert.AreEqual("sandbox_instance_mismatch", WinAppSandboxProtocol.SafeErrorCode(
+            """{"error":{"code":"sandbox_instance_mismatch","context":{"psk":"secret","expectedSandboxId":"private"}}}"""));
     }
 
     [TestMethod]
@@ -284,7 +377,25 @@ public sealed class WinAppSandboxProtocolTests
             };
         }
 
-        return new JsonObject { ["subcommands"] = new JsonObject { ["target"] = new JsonObject { ["subcommands"] = commands } } };
+        return new JsonObject
+        {
+            ["subcommands"] = new JsonObject
+            {
+                ["target"] = new JsonObject
+                {
+                    ["options"] = new JsonObject
+                    {
+                        ["--expect-sandbox"] = new JsonObject
+                        {
+                            ["valueType"] = "System.String",
+                            ["recursive"] = true,
+                            ["arity"] = new JsonObject { ["minimum"] = 1, ["maximum"] = 1 },
+                        },
+                    },
+                    ["subcommands"] = commands,
+                },
+            },
+        };
     }
 
     private static JsonObject Snapshot() => new()

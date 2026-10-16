@@ -108,7 +108,7 @@ $backend = if ($SandboxBackend -eq 'Auto') {
 if ($backend -eq 'WinApp' -and
     ([string]::IsNullOrWhiteSpace($SandboxWinAppArchive) -or
         -not (Test-Path -LiteralPath (Join-Path $ExchangeRoot $SandboxWinAppArchive) -PathType Leaf))) {
-    throw 'Stage the official winappcli runtime archive and pass -SandboxWinAppArchive for the WinApp backend.'
+    throw 'Stage the locally built winappcli runtime archive with expected-instance binding and pass -SandboxWinAppArchive for the WinApp backend.'
 }
 $parameters = @{
     VmRoot = $VmRoot; VmName = $VmName; ConfigurationPath = $ConfigurationPath

@@ -132,11 +132,26 @@ internal sealed class WinAppSandbox : ISandboxSession
             creationConfirmed = true;
             saveJournal();
             created?.Invoke();
+            var unprepared = Run(winappPath, ["target", "snapshot", "sandbox", "--json"],
+                Budget(TimeSpan.FromSeconds(90), bootstrap: true));
+            WinAppSandboxProtocol.RequireUnpreparedSnapshot(unprepared);
+            if (WinAppSandboxPayload.PlainFiles(targetStateRoot).Any(path => Path.GetFileName(path) == "target-state.json"))
+            {
+                throw new WinAppSandboxException("unprepared_snapshot_created_ownership");
+            }
+
+            RunFiles.Write(Path.Combine(runRoot, "winapp-sandbox-unprepared-snapshot.json"), new
+            {
+                Running = true,
+                Attached = false,
+                EpochAbsent = true,
+                OwnershipWrites = 0,
+                ExpectedProviderInstance = instanceId,
+            });
             ConnectOwnedClient();
 
-            // The first target command also installs the released guest agent. Keep it
-            // within the endpoint deadline, not a shorter transfer cap. Released
-            // v0.7.1 enumerates firewall application filters individually on cold guests.
+            // The first transfer installs the guest agent. Keep it within the endpoint
+            // deadline, not a shorter transfer cap.
             // A single transfer avoids repeating target preparation for each part
             // of the same immutable bootstrap input.
             Target(["push", "sandbox", stagedPayload, "MwbBootstrap", "--json"], SandboxTimeouts.ModernBootstrap, bootstrap: true, firstBootstrap: true);
@@ -602,7 +617,10 @@ internal sealed class WinAppSandbox : ISandboxSession
         var timer = Stopwatch.StartNew();
         try
         {
-            using var command = WinAppSandboxCommand.Start(executable, arguments, targetStateRoot, controlRoot, instanceId);
+            var boundArguments = string.Equals(executable, winappPath, StringComparison.OrdinalIgnoreCase) && arguments[0] == "target"
+                ? WinAppSandboxProtocol.BindExpectedInstance(arguments, instanceId)
+                : arguments;
+            using var command = WinAppSandboxCommand.Start(executable, boundArguments, targetStateRoot, controlRoot, instanceId);
             var result = command.CompleteAndDispose(timeout);
             trace["ExitCode"] = result.ExitCode;
             observe?.Invoke(result);
@@ -677,7 +695,8 @@ internal sealed class WinAppSandbox : ISandboxSession
 
     private WinAppSandboxCommand StartAttached(string[] arguments)
     {
-        var command = WinAppSandboxCommand.Start(winappPath, arguments, targetStateRoot, controlRoot, instanceId);
+        var command = WinAppSandboxCommand.Start(winappPath,
+            WinAppSandboxProtocol.BindExpectedInstance(arguments, instanceId), targetStateRoot, controlRoot, instanceId);
         try
         {
             if (command.HasExited)
