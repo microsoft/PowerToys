@@ -25,4 +25,3 @@ For existing manual test-cases, we will convert them to UI-Tests and run them in
 - [x] Should show empty view if no entries. (**HostModuleTests.TestEntryButtonsAndEmptyView**)
 - [x] Add a new entry from both the empty-view link and toolbar button. (**HostModuleTests.TestEntryButtonsAndEmptyView**)
 - [x] Show save host file error if not run as Administrator. (**HostModuleTests.TestErrorMessageWithNonAdminPermission**)
-<!-- TEMP: no-op to trigger UI tests for #51370; revert before merge -->
