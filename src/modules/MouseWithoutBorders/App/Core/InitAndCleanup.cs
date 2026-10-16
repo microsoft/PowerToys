@@ -94,18 +94,32 @@ internal static class InitAndCleanup
         try
         {
             Encryption.MyKey = Setting.Values.MyKey;
+            if (ServicePairingCredentialManager.IsProtectedMode &&
+                !ServicePairingCredentialStore.IsValidKey(Encryption.MyKey))
+            {
+                Encryption.GeneratedKey = false;
+            }
+
             int tmp = Setting.Values.MyKeyDaysToExpire;
         }
         catch (FormatException e)
         {
             Encryption.KeyCorrupted = true;
-            Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+            if (!ServicePairingCredentialManager.IsProtectedMode)
+            {
+                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+            }
+
             Logger.Log(e.Message);
         }
         catch (CryptographicException e)
         {
             Encryption.KeyCorrupted = true;
-            Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+            if (!ServicePairingCredentialManager.IsProtectedMode)
+            {
+                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+            }
+
             Logger.Log(e.Message);
         }
 

@@ -58,6 +58,7 @@ namespace MouseWithoutBorders.Class
 
         private void UpdateSettingsFromJson()
         {
+            var previousPauseInstantSaving = PauseInstantSaving;
             try
             {
                 if (!_settingsUtils.SettingsExists("MouseWithoutBorders"))
@@ -73,12 +74,25 @@ namespace MouseWithoutBorders.Class
                 if (settings != null)
                 {
                     PauseInstantSaving = true;
+                    var sharedCredentialIndicatorChanged = false;
 
                     var last_properties = _properties;
 
                     _settings = settings;
 
                     _properties = settings.Properties;
+                    if (ServicePairingCredentialManager.IsProtectedMode)
+                    {
+                        var sharedCredentialIndicator = GetSharedSecurityKeySettingValue(
+                            protectedMode: true,
+                            ServicePairingCredentialManager.Current.TryLoad(out _),
+                            _properties.SecurityKey.Value);
+                        sharedCredentialIndicatorChanged = !string.Equals(
+                            _properties.SecurityKey.Value,
+                            sharedCredentialIndicator,
+                            StringComparison.Ordinal);
+                        _properties.SecurityKey.Value = sharedCredentialIndicator;
+                    }
 
                     // Keep track of the need to resend the machine matrix.
                     bool shouldSendMachineMatrix = false;
@@ -109,7 +123,8 @@ namespace MouseWithoutBorders.Class
 
                         var shouldReopenSockets = false;
 
-                        if (Encryption.MyKey != _properties.SecurityKey.Value)
+                        if (!ServicePairingCredentialManager.IsProtectedMode &&
+                            Encryption.MyKey != _properties.SecurityKey.Value)
                         {
                             Encryption.MyKey = _properties.SecurityKey.Value;
                             shouldReopenSockets = true;
@@ -133,21 +148,37 @@ namespace MouseWithoutBorders.Class
                             SaveSettings();
                         }
                     }
+
+                    if (sharedCredentialIndicatorChanged)
+                    {
+                        SaveSettings();
+                    }
                 }
             }
             catch (IOException ex)
             {
                 EventLogger.LogEvent($"Failed to read settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
             }
-
-            PauseInstantSaving = false;
+            finally
+            {
+                PauseInstantSaving = previousPauseInstantSaving;
+            }
         }
 
         public void SaveSettings()
         {
             if (!Common.RunOnLogonDesktop)
             {
-                SaveSettingsToJson((MouseWithoutBordersProperties)_properties.Clone());
+                var propertiesToSave = (MouseWithoutBordersProperties)_properties.Clone();
+                if (ServicePairingCredentialManager.IsProtectedMode)
+                {
+                    propertiesToSave.SecurityKey.Value = GetSharedSecurityKeySettingValue(
+                        protectedMode: true,
+                        ServicePairingCredentialManager.Current.TryLoad(out _),
+                        propertiesToSave.SecurityKey.Value);
+                }
+
+                SaveSettingsToJson(propertiesToSave);
             }
         }
 
@@ -482,9 +513,15 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
+                    if (ServicePairingCredentialManager.IsProtectedMode)
+                    {
+                        return ServicePairingCredentialManager.Current.TryLoad(out var protectedKey)
+                            ? protectedKey
+                            : string.Empty;
+                    }
+
                     if (_properties.SecurityKey.Value.Length != 0)
                     {
-                        Logger.LogDebug("GETSECKEY: Key was already loaded/set: " + _properties.SecurityKey.Value);
                         return _properties.SecurityKey.Value;
                     }
                     else
@@ -501,7 +538,12 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.SecurityKey.Value = value;
+                    _properties.SecurityKey.Value = ServicePairingCredentialManager.IsProtectedMode
+                        ? GetSharedSecurityKeySettingValue(
+                            protectedMode: true,
+                            ServicePairingCredentialManager.Current.TryLoad(out _),
+                            _properties.SecurityKey.Value)
+                        : value;
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();
@@ -519,6 +561,18 @@ namespace MouseWithoutBorders.Class
                     return int.MaxValue; // TODO(@yuyoyuppe): do we still need expiration mechanics now?
                 }
             }
+        }
+
+        internal static string GetSharedSecurityKeySettingValue(bool protectedMode, bool protectedCredentialConfigured, string currentValue)
+        {
+            if (!protectedMode)
+            {
+                return currentValue;
+            }
+
+            return protectedCredentialConfigured
+                ? MouseWithoutBordersIpc.PairingConfiguredIndicator
+                : MouseWithoutBordersIpc.PairingSetupRequiredIndicator;
         }
 
         // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()

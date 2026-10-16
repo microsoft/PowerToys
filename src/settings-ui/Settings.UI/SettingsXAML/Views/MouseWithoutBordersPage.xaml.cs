@@ -48,7 +48,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
 
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Loaded += (s, e) =>
+            {
+                ClearPairingUI();
+                ViewModel.OnPageLoaded();
+            };
+            Unloaded += (s, e) => ClearPairingUI();
         }
 
         private void OnConfigFileUpdate()
@@ -142,7 +147,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ICommand ConnectCommand => new AsyncCommand(Connect);
 
-        public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync);
+        public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync, () => ViewModel.CanManagePairing);
 
         public ICommand CopyPCNameCommand => new RelayCommand(ViewModel.CopyMachineNameToClipboard);
 
@@ -150,12 +155,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ShowConnectFields()
         {
-            ViewModel.ConnectFieldsVisible = true;
+            if (ViewModel.CanConnectPairing)
+            {
+                ViewModel.ConnectFieldsVisible = true;
+            }
         }
 
         private async Task Connect()
         {
-            if (ConnectPCNameTextBox.Text.Length != 0 && ConnectSecurityKeyTextBox.Text.Length != 0)
+            if (ViewModel.CanConnectPairing &&
+                ConnectPCNameTextBox.Text.Length != 0 &&
+                ConnectSecurityKeyTextBox.Text.Length != 0)
             {
                 string pcName = ConnectPCNameTextBox.Text;
                 string securityKey = ConnectSecurityKeyTextBox.Text.Trim();
@@ -163,6 +173,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
 
                 ConnectPCNameTextBox.Text = string.Empty;
+                ConnectSecurityKeyTextBox.Text = string.Empty;
+            }
+        }
+
+        private void ClearPairingUI()
+        {
+            ViewModel.ClearTransientPairingState();
+            if (ConnectPCNameTextBox != null)
+            {
+                ConnectPCNameTextBox.Text = string.Empty;
+            }
+
+            if (ConnectSecurityKeyTextBox != null)
+            {
                 ConnectSecurityKeyTextBox.Text = string.Empty;
             }
         }

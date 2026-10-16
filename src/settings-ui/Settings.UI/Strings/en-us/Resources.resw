@@ -314,6 +314,12 @@
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
     <value>To set up, generate the key on one machine, and enter it manually on other machines</value>
   </data>
+  <data name="MouseWithoutBorders_PairingRequiresAdministrator.Title" xml:space="preserve">
+    <value>In service mode, pairing settings can only be changed when running as administrator.</value>
+  </data>
+  <data name="MouseWithoutBorders_PairingSetupRequired.Title" xml:space="preserve">
+    <value>Key storage has been enhanced. To continue using Mouse Without Borders in service mode, run PowerToys Settings as administrator and generate a new pairing key.</value>
+  </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
   </data>

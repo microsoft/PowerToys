@@ -218,7 +218,17 @@ WellKnownSidType.AuthenticatedUserSid, null);
             Func<NamedPipeServerStream, string> verifyClientConnection,
             CancellationToken cancellationToken)
         {
-            return StartVerifiedIpcServer(pipeName, allowedUser, verifyClientConnection, null, cancellationToken);
+            return StartVerifiedIpcServer(pipeName, allowedUser, verifyClientConnection, _ => new T(), null, cancellationToken);
+        }
+
+        public static T StartVerifiedIpcServer(
+            string pipeName,
+            SecurityIdentifier allowedUser,
+            Func<NamedPipeServerStream, string> verifyClientConnection,
+            Func<NamedPipeServerStream, T> targetFactory,
+            CancellationToken cancellationToken)
+        {
+            return StartVerifiedIpcServer(pipeName, allowedUser, verifyClientConnection, targetFactory, null, cancellationToken);
         }
 
         internal static T StartVerifiedIpcServer(
@@ -228,7 +238,19 @@ WellKnownSidType.AuthenticatedUserSid, null);
             Action<Exception> serverErrorObserver,
             CancellationToken cancellationToken)
         {
+            return StartVerifiedIpcServer(pipeName, allowedUser, verifyClientConnection, _ => new T(), serverErrorObserver, cancellationToken);
+        }
+
+        internal static T StartVerifiedIpcServer(
+            string pipeName,
+            SecurityIdentifier allowedUser,
+            Func<NamedPipeServerStream, string> verifyClientConnection,
+            Func<NamedPipeServerStream, T> targetFactory,
+            Action<Exception> serverErrorObserver,
+            CancellationToken cancellationToken)
+        {
             ArgumentNullException.ThrowIfNull(verifyClientConnection);
+            ArgumentNullException.ThrowIfNull(targetFactory);
 
             _ = Task.Run(
                 async () =>
@@ -255,7 +277,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
                                 continue;
                             }
 
-                            var taskRpc = JsonRpc.Attach(serverChannel, new T());
+                            var taskRpc = JsonRpc.Attach(serverChannel, targetFactory(serverChannel));
                             await taskRpc.Completion;
                         }
                         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

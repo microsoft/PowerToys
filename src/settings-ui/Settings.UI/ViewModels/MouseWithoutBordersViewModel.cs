@@ -62,9 +62,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             { SocketStatus.Connected, new SolidColorBrush(Colors.Green) },
         };
 
-        private bool _connectFieldsVisible;
+        private readonly MouseWithoutBordersPairingState _pairingState = new();
 
         public bool IsElevated { get => GeneralSettingsConfig.IsElevated; }
+
+        public bool CanManagePairing => !UseService || IsElevated;
+
+        public bool PairingSetupRequired => MouseWithoutBordersPairingState.IsSetupRequired(UseService, Settings.Properties.SecurityKey.Value);
+
+        public bool CanConnectPairing => CanManagePairing && !PairingSetupRequired;
 
         public bool CanUninstallService { get => GeneralSettingsConfig.IsElevated && !UseService; }
 
@@ -123,8 +129,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (valueChanged)
                 {
                     Settings.Properties.UseService = value;
+                    ClearTransientPairingState();
                     OnPropertyChanged(nameof(UseService));
                     OnPropertyChanged(nameof(CanUninstallService));
+                    OnPropertyChanged(nameof(CanManagePairing));
+                    OnPropertyChanged(nameof(CanConnectPairing));
+                    OnPropertyChanged(nameof(ShowPairingRequiresAdministrator));
                     OnPropertyChanged(nameof(ShowInfobarRunAsAdminText));
 
                     // Must block here until the process exits
@@ -146,45 +156,41 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ConnectFieldsVisible
         {
-            get => _connectFieldsVisible;
+            get => _pairingState.ConnectFieldsVisible;
 
             set
             {
-                if (_connectFieldsVisible != value)
+                if (_pairingState.ConnectFieldsVisible != value)
                 {
-                    _connectFieldsVisible = value;
+                    _pairingState.ConnectFieldsVisible = value;
                     OnPropertyChanged(nameof(ConnectFieldsVisible));
                 }
             }
         }
 
-        private string _connectSecurityKey;
-
         public string ConnectSecurityKey
         {
-            get => _connectSecurityKey;
+            get => _pairingState.ConnectSecurityKey;
 
             set
             {
-                if (_connectSecurityKey != value)
+                if (_pairingState.ConnectSecurityKey != value)
                 {
-                    _connectSecurityKey = value;
+                    _pairingState.ConnectSecurityKey = value;
                     OnPropertyChanged(nameof(ConnectSecurityKey));
                 }
             }
         }
 
-        private string _connectPCName;
-
         public string ConnectPCName
         {
-            get => _connectPCName;
+            get => _pairingState.ConnectPCName;
 
             set
             {
-                if (_connectPCName != value)
+                if (_pairingState.ConnectPCName != value)
                 {
-                    _connectPCName = value;
+                    _pairingState.ConnectPCName = value;
                     OnPropertyChanged(nameof(ConnectPCName));
                 }
             }
@@ -271,9 +277,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             void Reconnect();
 
-            void GenerateNewKey();
+            Task<string> GenerateNewKey();
 
-            void ConnectToMachine(string machineName, string securityKey);
+            Task ConnectToMachine(string machineName, string securityKey);
 
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
@@ -410,11 +416,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.GenerateNewKey();
-                    var task = syncHelper?.Stream.FlushAsync();
+                    var task = syncHelper?.Endpoint?.GenerateNewKey();
                     if (task != null)
                     {
-                        await task;
+                        var generatedKey = await task;
+                        SecurityKey = generatedKey;
+                        Settings.Properties.SecurityKey.Value =
+                            MouseWithoutBordersPairingState.GetSavedValueAfterGeneratedKey(UseService, generatedKey);
+                        OnPropertyChanged(nameof(PairingSetupRequired));
+                        OnPropertyChanged(nameof(CanConnectPairing));
                     }
                 }
             }
@@ -426,11 +436,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
-                    var task = syncHelper?.Stream.FlushAsync();
+                    var task = syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
                     if (task != null)
                     {
                         await task;
+                        ClearTransientPairingState();
+                        if (UseService)
+                        {
+                            Settings.Properties.SecurityKey.Value = MouseWithoutBordersIpc.PairingConfiguredIndicator;
+                            OnPropertyChanged(nameof(PairingSetupRequired));
+                            OnPropertyChanged(nameof(CanConnectPairing));
+                        }
                     }
                 }
             }
@@ -738,11 +754,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string SecurityKey
         {
-            get => Settings.Properties.SecurityKey.Value;
+            get => _pairingState.GetDisplayValue(UseService, Settings.Properties.SecurityKey.Value);
 
             set
             {
-                if (value != Settings.Properties.SecurityKey.Value)
+                if (UseService)
+                {
+                    if (_pairingState.TransientSecurityKey != value)
+                    {
+                        _pairingState.TransientSecurityKey = value;
+                        OnPropertyChanged(nameof(SecurityKey));
+                        OnPropertyChanged(nameof(PairingSetupRequired));
+                        OnPropertyChanged(nameof(CanConnectPairing));
+                    }
+                }
+                else if (value != Settings.Properties.SecurityKey.Value)
                 {
                     Settings.Properties.SecurityKey.Value = value;
                     NotifyPropertyChanged();
@@ -1288,7 +1314,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                LoadViewModelFromSettings(SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders"));
+                var updatedSettings = SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders");
+                if (!_pairingState.ShouldPreserveTransientSecurityKey(
+                    updatedSettings.Properties.UseService,
+                    updatedSettings.Properties.SecurityKey.Value))
+                {
+                    ClearTransientPairingState();
+                }
+
+                LoadViewModelFromSettings(updatedSettings);
                 return true;
             }
             catch (System.Exception ex)
@@ -1327,6 +1361,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void NotifyUpdatedSettings()
         {
             OnPropertyChanged(null); // Notify all properties might have changed.
+        }
+
+        public override void OnPageLoaded()
+        {
+            ClearTransientPairingState();
+            base.OnPageLoaded();
+        }
+
+        public void ClearTransientPairingState()
+        {
+            _pairingState.Clear();
+            OnPropertyChanged(nameof(ConnectSecurityKey));
+            OnPropertyChanged(nameof(ConnectPCName));
+            OnPropertyChanged(nameof(ConnectFieldsVisible));
+            OnPropertyChanged(nameof(SecurityKey));
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
@@ -1433,5 +1482,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get { return !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
         }
+
+        public bool ShowPairingRequiresAdministrator => IsEnabled && UseService && !IsElevated;
     }
 }
