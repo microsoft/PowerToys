@@ -22,6 +22,7 @@ namespace ImageResizer.Utilities
             [new Guid("1b7cfaf4-713f-473c-bbcd-6137425faeaf")] = BitmapEncoder.PngEncoderId,
             [new Guid("0af1d87e-fcfe-4188-bdeb-a7906471cbe3")] = BitmapEncoder.BmpEncoderId,
             [new Guid("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3")] = BitmapEncoder.TiffEncoderId,
+            [new Guid("57a37caa-367a-4540-916b-f183c5093a4b")] = BitmapEncoder.JpegXREncoderId,
             [new Guid("1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5")] = BitmapEncoder.GifEncoderId,
         };
 
