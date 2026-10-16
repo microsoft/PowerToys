@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Assets\Images\**\*" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -22,6 +23,15 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\Images\PlainSampleIcon.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Images\ThemedSampleIcon.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +86,14 @@
 
     <!-- When publishing trimmed, make sure to treat trimming warnings as build errors -->
     <ILLinkTreatWarningsAsErrors>true</ILLinkTreatWarningsAsErrors>
+
+    <!--
+      Don't let ILLink rewrite debug symbols, so the trimmed publish output has no PDBs. Release builds of this
+      project and the Toolkit use Windows PDBs (DebugType=pdbonly in Common.Dotnet.props), which ILLink can only
+      rewrite through the native DiaSymReader COM writer, and that writer intermittently crashes ILLink in CI with
+      an access violation (MSB6006: "dotnet.exe" exited with code 57005).
+    -->
+    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
 
   </PropertyGroup>
 

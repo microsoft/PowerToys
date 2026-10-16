@@ -20,7 +20,7 @@ The Calculator plugin as the name suggests is used to perform calculations on th
 - This helper validates the bracket usage in the input string.
 
 ### [`CalculateHelper`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs)
-- The [`CalculateHelper.cs`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs) class checks to see if the user entered query is a valid input to the calculator and only if the input is valid does it perform the operation.
+- The [`CalculateHelper.cs`](../../../../../src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateHelper.cs) class checks to see if the user entered query is a valid input to the calculator and only if the input is valid does it perform the operation.
   - It does so by matching the user query to a valid regex.
 - This class also handles some human multiplication expression like `2(1+2)` and `(2+3)(3+4)` in order to be computed by `Mages` lib.
   - It does so by matching some regex and inserting `'*'` where appropriate, e.g: `2(1+2) -> 2 * (1+2)`
@@ -28,14 +28,14 @@ The Calculator plugin as the name suggests is used to perform calculations on th
   - The blank spaces between them are also considered.
   - Some combinations were not handled as they are not common such as `'const num'` or `'func const'`
 
-### [`CalculateEngine`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs)
-- The main computation is done in the [`CalculateEngine.cs`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs) file using the `Mages` library.
+### [`CalculateEngine`](../../../../../src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs)
+- The main computation is done in the [`CalculateEngine.cs`](../../../../../src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateEngine.cs) file using the `Mages` library.
 
 ```csharp
 var result = CalculateEngine.Interpret(query.Search, CultureInfo.CurrentUICulture);
 ```
 
-### [`CalculateResult`](src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateResult.cs)
+### [`CalculateResult`](../../../../../src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateResult.cs)
 - The class which encapsulates the result of the computation.
 - It comprises of the `Result` and `RoundedResult` properties.
 

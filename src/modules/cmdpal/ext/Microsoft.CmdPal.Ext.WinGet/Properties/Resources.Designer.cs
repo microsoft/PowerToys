@@ -196,6 +196,24 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Operation canceled for {0}.
+        /// </summary>
+        public static string winget_operation_canceled {
+            get {
+                return ResourceManager.GetString("winget_operation_canceled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Operation failed for {0}.
+        /// </summary>
+        public static string winget_operation_failed {
+            get {
+                return ResourceManager.GetString("winget_operation_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Find apps on WinGet.
         /// </summary>
         public static string winget_page_name {

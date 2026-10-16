@@ -125,6 +125,39 @@ namespace ImageResizer.Cli
             Assert.AreEqual(1, directory.FileNames.Count());
         }
 
+        [DataTestMethod]
+        [DataRow("--unit", "99", false)]
+        [DataRow("--unit", "99", true)]
+        [DataRow("--fit", "99", false)]
+        [DataRow("--fit", "99", true)]
+        [DataRow("-u", "-1", false)]
+        [DataRow("-u", "-1", true)]
+        [DataRow("-f", "-1", false)]
+        [DataRow("-f", "-1", true)]
+        [DataRow("--unit", "2147483648", false)]
+        [DataRow("--unit", "2147483648", true)]
+        [DataRow("--fit", "2147483648", false)]
+        [DataRow("--fit", "2147483648", true)]
+        public void Run_WithInvalidEnum_DoesNotCreateOutputOrModifySource(string option, string value, bool replace)
+        {
+            using var directory = new TestDirectory();
+            var testDirectory = Path.GetDirectoryName(typeof(ImageResizerCliExecutorTests).Assembly.Location);
+            var source = Path.Combine(directory, "source.png");
+            File.Copy(Path.Combine(testDirectory, "Test.png"), source);
+            var bytesBefore = File.ReadAllBytes(source);
+            var executor = new ImageResizerCliExecutor();
+            string[] arguments = replace
+                ? [option, value, "--width", "1", "--height", "1", "--destination", directory, "--filename", "result", "--replace", source]
+                : [option, value, "--width", "1", "--height", "1", "--destination", directory, "--filename", "result", source];
+
+            var exitCode = executor.Run(arguments);
+
+            Assert.AreEqual(1, exitCode);
+            Assert.AreEqual("error", executor.CommandName);
+            CollectionAssert.AreEqual(bytesBefore, File.ReadAllBytes(source));
+            Assert.AreEqual(1, directory.FileNames.Count());
+        }
+
         [TestMethod]
         [Timeout(10000)]
         public async Task Run_WithEmptyNamedPipe_ReturnsError()

@@ -20,6 +20,13 @@ For new or migrated tests, use both skills. Build first, then use the local VMs 
 agentic loop: run one deterministic test, diagnose and fix it, and finally widen to the complete
 module suite on both supported Windows versions.
 
+Module-specific constraints are documented with the module; for example, see the
+[PowerRename UI-test notes](../modules/powerrename.md#ui-tests) for command-line selection, Boost
+engine lifetime, and signed shell-extension requirements.
+Read the [Environment Variables safety notes](../modules/environmentvariables.md#ui-tests) before
+running that suite: it temporarily replaces the real User PATH and must run only in a disposable VM,
+not on a working machine.
+
 ## Before running tests
 
 ### `.Next` tests

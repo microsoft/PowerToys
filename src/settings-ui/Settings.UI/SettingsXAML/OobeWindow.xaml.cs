@@ -4,6 +4,7 @@
 
 using System;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
@@ -41,10 +42,22 @@ namespace Microsoft.PowerToys.Settings.UI
             OpenMainWindowCallback = implementation;
         }
 
+        /// <summary>
+        /// Gets or sets the callback that selects the OOBE page of a module, by its navigation tag.
+        /// </summary>
+        public static Action<string> NavigateToModuleCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Welcome intro animation already played in this OOBE window.
+        /// </summary>
+        public static bool WelcomeIntroPlayed { get; set; }
+
         public OobeWindow()
         {
             App.ThemeService.ThemeChanged += OnThemeChanged;
             App.ThemeService.ApplyTheme();
+
+            WelcomeIntroPlayed = false;
 
             this.InitializeComponent();
 
@@ -66,6 +79,20 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 App.OpenSettingsWindow(type);
             });
+
+            NavigateToModuleCallback = NavigateToModule;
+        }
+
+        private void NavigateToModule(string tag)
+        {
+            foreach (var item in navigationView.MenuItems)
+            {
+                if (item is NavigationViewItem navigationItem && navigationItem.Tag is string itemTag && itemTag == tag)
+                {
+                    navigationView.SelectedItem = navigationItem;
+                    return;
+                }
+            }
         }
 
         private void SetTitleBar()
@@ -73,6 +100,8 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             Title = ResourceLoaderInstance.ResourceLoader.GetString("OobeWindow_Title");
         }
 
@@ -159,6 +188,11 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             App.ThemeService.ThemeChanged -= OnThemeChanged;
+
+            if (NavigateToModuleCallback == NavigateToModule)
+            {
+                NavigateToModuleCallback = null;
+            }
         }
 
         private void OnThemeChanged(object sender, ElementTheme theme)

@@ -76,8 +76,10 @@ namespace WorkspacesEditor.Utils
         public void SerializeWorkspaces(List<Project> workspaces, bool useTempFile = false)
         {
             WorkspacesData serializer = new();
-            WorkspacesData.WorkspacesListWrapper workspacesWrapper = new() { };
-            workspacesWrapper.Workspaces = [];
+            WorkspacesData.WorkspacesListWrapper workspacesWrapper = new()
+            {
+                Workspaces = [],
+            };
 
             foreach (Project project in workspaces)
             {

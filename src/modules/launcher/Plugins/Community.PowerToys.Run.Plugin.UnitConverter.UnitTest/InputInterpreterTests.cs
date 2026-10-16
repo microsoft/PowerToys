@@ -77,6 +77,27 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
             CollectionAssert.AreEqual(expectedResult, input);
         }
 
+        [TestMethod]
+        public void PrefixesDegreesWithTurkishCulture()
+        {
+            CultureInfo originalCulture = CultureInfo.CurrentCulture;
+
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("tr-TR");
+                string[] input = new string[] { "5", "CELSIUS", "in", "FAHRENHEIT" };
+                string[] expectedResult = new string[] { "5", "DegreeCelsius", "in", "DegreeFahrenheit" };
+
+                InputInterpreter.DegreePrefixer(ref input);
+
+                CollectionAssert.AreEqual(expectedResult, input);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
+        }
+
         [DataTestMethod]
         [DataRow(new string[] { "7", "cm/sqs", "in", "m/s^2" }, new string[] { "7", "cm/s²", "in", "m/s^2" })]
         [DataRow(new string[] { "7", "sqft", "in", "sqcm" }, new string[] { "7", "ft²", "in", "cm²" })]

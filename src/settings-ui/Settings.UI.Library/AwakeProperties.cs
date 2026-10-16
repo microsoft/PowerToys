@@ -12,6 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class AwakeProperties
     {
+        private readonly Dictionary<string, uint> _customTrayTimes = [];
+
         public AwakeProperties()
         {
             KeepDisplayOn = false;
@@ -19,7 +21,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IntervalHours = 0;
             IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
-            CustomTrayTimes = [];
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -39,6 +40,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("customTrayTimes")]
         [CmdConfigureIgnore]
-        public Dictionary<string, uint> CustomTrayTimes { get; set; }
+        public Dictionary<string, uint> CustomTrayTimes
+        {
+            get => _customTrayTimes;
+            init => _customTrayTimes = value ?? [];
+        }
     }
 }

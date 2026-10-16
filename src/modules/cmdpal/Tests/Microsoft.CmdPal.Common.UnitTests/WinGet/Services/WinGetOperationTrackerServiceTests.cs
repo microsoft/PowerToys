@@ -23,7 +23,34 @@ public class WinGetOperationTrackerServiceTests
         Assert.AreEqual(1, service.Operations.Count);
         Assert.AreEqual(operation, service.Operations[0]);
         Assert.AreEqual(WinGetPackageOperationState.Queued, operation.State);
+        Assert.AreEqual(WinGetPackageOperationSource.Unspecified, operation.Source);
         Assert.IsTrue(operation.IsIndeterminate);
+    }
+
+    [TestMethod]
+    [DataRow(WinGetPackageOperationSource.Unspecified)]
+    [DataRow(WinGetPackageOperationSource.WinGetExtension)]
+    public void OperationSourceIsPreservedThroughoutTracking(WinGetPackageOperationSource source)
+    {
+        var service = new WinGetOperationTrackerService();
+        var events = new List<WinGetPackageOperation>();
+        service.OperationStarted += (_, e) => events.Add(e.Operation);
+        service.OperationUpdated += (_, e) => events.Add(e.Operation);
+        service.OperationCompleted += (_, e) => events.Add(e.Operation);
+
+        var operation = service.StartOperation("Microsoft.PowerToys", "PowerToys", WinGetPackageOperationKind.Install, source);
+        service.RegisterCancellationHandler(operation.OperationId, () => { });
+        Assert.IsTrue(service.TryCancelOperation(operation.OperationId));
+        service.UpdateOperation(operation.OperationId, WinGetPackageOperationState.Installing, isIndeterminate: true);
+        service.CompleteOperation(operation.OperationId, WinGetPackageOperationState.Succeeded);
+
+        Assert.HasCount(5, events);
+        foreach (var snapshot in events)
+        {
+            Assert.AreEqual(source, snapshot.Source);
+        }
+
+        Assert.AreEqual(source, service.Operations[0].Source);
     }
 
     [TestMethod]

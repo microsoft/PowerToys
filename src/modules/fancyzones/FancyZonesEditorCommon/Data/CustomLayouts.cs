@@ -39,7 +39,7 @@ namespace FancyZonesEditorCommon.Data
 
             public int RefHeight { get; set; }
 
-            public List<CanvasZoneWrapper> Zones { get; set; }
+            public List<CanvasZoneWrapper> Zones { get; init; }
 
             public int SensitivityRadius { get; set; } = LayoutDefaultSettings.DefaultSensitivityRadius;
         }
@@ -50,9 +50,9 @@ namespace FancyZonesEditorCommon.Data
 
             public int Columns { get; set; }
 
-            public List<int> RowsPercentage { get; set; }
+            public List<int> RowsPercentage { get; init; }
 
-            public List<int> ColumnsPercentage { get; set; }
+            public List<int> ColumnsPercentage { get; init; }
 
             public int[][] CellChildMap { get; set; }
 
@@ -76,7 +76,7 @@ namespace FancyZonesEditorCommon.Data
 
         public struct CustomLayoutListWrapper
         {
-            public List<CustomLayoutWrapper> CustomLayouts { get; set; }
+            public List<CustomLayoutWrapper> CustomLayouts { get; init; }
         }
 
         public JsonElement ToJsonElement(CanvasInfoWrapper info)

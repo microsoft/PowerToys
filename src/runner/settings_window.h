@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include <string>
+#include "settings_window_startup.h"
 
 enum class ESettingsWindowNames
 {
@@ -44,7 +45,9 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);
 ESettingsWindowNames ESettingsWindowNames_from_string(std::string value);
 
 void open_settings_window(std::optional<std::wstring> settings_window);
+SettingsWindowStartup::Completion complete_settings_window_startup(bool openSettings, std::optional<std::wstring> settings_window);
+void cancel_settings_window_startup();
 void close_settings_window();
 
-void open_oobe_window();
+bool open_oobe_window();
 void open_scoobe_window();

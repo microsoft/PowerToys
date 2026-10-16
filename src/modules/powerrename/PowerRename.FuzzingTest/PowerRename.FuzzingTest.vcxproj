@@ -96,7 +96,6 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="$(RepoRoot)packages\boost.1.87.0\build\boost.targets" Condition="Exists('$(RepoRoot)packages\boost.1.87.0\build\boost.targets')" />
-    <Import Project="$(RepoRoot)packages\boost_regex-vc143.1.87.0\build\boost_regex-vc143.targets" Condition="Exists('$(RepoRoot)packages\boost_regex-vc143.1.87.0\build\boost_regex-vc143.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -105,6 +104,5 @@
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\boost.1.87.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\boost.1.87.0\build\boost.targets'))" />
-    <Error Condition="!Exists('$(RepoRoot)packages\boost_regex-vc143.1.87.0\build\boost_regex-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\boost_regex-vc143.1.87.0\build\boost_regex-vc143.targets'))" />
   </Target>
 </Project>

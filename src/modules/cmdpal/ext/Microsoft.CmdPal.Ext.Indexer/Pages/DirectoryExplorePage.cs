@@ -5,12 +5,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Storage.Streams;
 
 #nullable enable
 namespace Microsoft.CmdPal.Ext.Indexer;
@@ -111,28 +109,6 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
         {
             i.PathChangeRequested += HandlePathChangeRequested;
         }
-
-        _ = Task.Run(() =>
-        {
-            foreach (var item in _directoryContents)
-            {
-                IconInfo? icon = null;
-                try
-                {
-                    var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
-                    if (stream is not null)
-                    {
-                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                        icon = new IconInfo(data, data);
-                    }
-                }
-                catch
-                {
-                }
-
-                item.Icon = icon;
-            }
-        });
 
         IsLoading = false;
 

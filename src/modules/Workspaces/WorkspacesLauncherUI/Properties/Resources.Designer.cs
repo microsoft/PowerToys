@@ -10,8 +10,8 @@
 
 namespace WorkspacesLauncherUI.Properties {
     using System;
-    
-    
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -19,19 +19,19 @@ namespace WorkspacesLauncherUI.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Resources() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,7 +45,7 @@ namespace WorkspacesLauncherUI.Properties {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -59,7 +59,7 @@ namespace WorkspacesLauncherUI.Properties {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Cancel launch.
         /// </summary>
@@ -68,7 +68,7 @@ namespace WorkspacesLauncherUI.Properties {
                 return ResourceManager.GetString("CancelLaunch", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Dismiss.
         /// </summary>
@@ -77,13 +77,292 @@ namespace WorkspacesLauncherUI.Properties {
                 return ResourceManager.GetString("Dismiss", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Your workspace is launching. Waiting on ....
         /// </summary>
         public static string LauncherWindowTitle {
             get {
                 return ResourceManager.GetString("LauncherWindowTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Canceled.
+        /// </summary>
+        public static string LaunchStateCanceled {
+            get {
+                return ResourceManager.GetString("LaunchStateCanceled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed.
+        /// </summary>
+        public static string LaunchStateFailed {
+            get {
+                return ResourceManager.GetString("LaunchStateFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Launched.
+        /// </summary>
+        public static string LaunchStateLaunched {
+            get {
+                return ResourceManager.GetString("LaunchStateLaunched", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Launched and positioned.
+        /// </summary>
+        public static string LaunchStateLaunchedAndMoved {
+            get {
+                return ResourceManager.GetString("LaunchStateLaunchedAndMoved", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Skipped.
+        /// </summary>
+        public static string LaunchStateSkipped {
+            get {
+                return ResourceManager.GetString("LaunchStateSkipped", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Waiting to launch.
+        /// </summary>
+        public static string LaunchStateWaiting {
+            get {
+                return ResourceManager.GetString("LaunchStateWaiting", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to App.
+        /// </summary>
+        public static string SignatureWarningApp {
+            get {
+                return ResourceManager.GetString("SignatureWarningApp", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Command-line arguments.
+        /// </summary>
+        public static string SignatureWarningArguments {
+            get {
+                return ResourceManager.GetString("SignatureWarningArguments", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The certificate used to sign this app could not be validated under the configured trust policy..
+        /// </summary>
+        public static string SignatureWarningCertificate {
+            get {
+                return ResourceManager.GetString("SignatureWarningCertificate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Copy details.
+        /// </summary>
+        public static string SignatureWarningCopyDetails {
+            get {
+                return ResourceManager.GetString("SignatureWarningCopyDetails", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not copy the details to the clipboard. Try again..
+        /// </summary>
+        public static string SignatureWarningCopyDetailsError {
+            get {
+                return ResourceManager.GetString("SignatureWarningCopyDetailsError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Details.
+        /// </summary>
+        public static string SignatureWarningDetails {
+            get {
+                return ResourceManager.GetString("SignatureWarningDetails", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This app&apos;s signature or signing certificate has been explicitly distrusted..
+        /// </summary>
+        public static string SignatureWarningDistrusted {
+            get {
+                return ResourceManager.GetString("SignatureWarningDistrusted", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Formatting and control characters are shown as escape sequences. Copy details preserves the original text..
+        /// </summary>
+        public static string SignatureWarningEscapedDisplay {
+            get {
+                return ResourceManager.GetString("SignatureWarningEscapedDisplay", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This signature could not be validated because a required certificate has expired..
+        /// </summary>
+        public static string SignatureWarningExpired {
+            get {
+                return ResourceManager.GetString("SignatureWarningExpired", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys could not verify this app&apos;s digital signature. Running it as administrator can allow it to change your system. Do you want to continue?.
+        /// </summary>
+        public static string SignatureWarningExplanation {
+            get {
+                return ResourceManager.GetString("SignatureWarningExplanation", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This app&apos;s digital signature does not match its contents. The file may have changed since it was signed..
+        /// </summary>
+        public static string SignatureWarningInvalid {
+            get {
+                return ResourceManager.GetString("SignatureWarningInvalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Location.
+        /// </summary>
+        public static string SignatureWarningPath {
+            get {
+                return ResourceManager.GetString("SignatureWarningPath", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Reason.
+        /// </summary>
+        public static string SignatureWarningReason {
+            get {
+                return ResourceManager.GetString("SignatureWarningReason", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate revocation information is unavailable in the Windows cache. PowerToys could not complete signature verification..
+        /// </summary>
+        public static string SignatureWarningRevocationUnavailable {
+            get {
+                return ResourceManager.GetString("SignatureWarningRevocationUnavailable", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A certificate used to verify this app&apos;s signature has been revoked..
+        /// </summary>
+        public static string SignatureWarningRevoked {
+            get {
+                return ResourceManager.GetString("SignatureWarningRevoked", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Run anyway.
+        /// </summary>
+        public static string SignatureWarningRunAnyway {
+            get {
+                return ResourceManager.GetString("SignatureWarningRunAnyway", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Continue with this app for this launch only. Windows may still ask for administrator permission. This choice does not remember trust for future launches..
+        /// </summary>
+        public static string SignatureWarningRunAnywayHelp {
+            get {
+                return ResourceManager.GetString("SignatureWarningRunAnywayHelp", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Skip this app.
+        /// </summary>
+        public static string SignatureWarningSkip {
+            get {
+                return ResourceManager.GetString("SignatureWarningSkip", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Do not launch this app. Continue launching the other apps in this workspace..
+        /// </summary>
+        public static string SignatureWarningSkipHelp {
+            get {
+                return ResourceManager.GetString("SignatureWarningSkipHelp", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Windows verification status.
+        /// </summary>
+        public static string SignatureWarningStatus {
+            get {
+                return ResourceManager.GetString("SignatureWarningStatus", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Run this app as administrator?.
+        /// </summary>
+        public static string SignatureWarningTitle {
+            get {
+                return ResourceManager.GetString("SignatureWarningTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Signature checks use this computer&apos;s Windows trust settings and cached certificate information. They do not guarantee that an app or its command-line arguments are safe. Your choice applies to this launch only. Windows may still ask for administrator permission..
+        /// </summary>
+        public static string SignatureWarningTrustLimits {
+            get {
+                return ResourceManager.GetString("SignatureWarningTrustLimits", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Signature verification could not be completed..
+        /// </summary>
+        public static string SignatureWarningUnavailable {
+            get {
+                return ResourceManager.GetString("SignatureWarningUnavailable", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The executable file could not be located or verified..
+        /// </summary>
+        public static string SignatureWarningUnresolvedTarget {
+            get {
+                return ResourceManager.GetString("SignatureWarningUnresolvedTarget", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This app does not have a digital signature..
+        /// </summary>
+        public static string SignatureWarningUnsigned {
+            get {
+                return ResourceManager.GetString("SignatureWarningUnsigned", resourceCulture);
             }
         }
     }
