@@ -678,8 +678,8 @@ internal sealed class TwoEndpointFixture : IDisposable
         var negative = Stopwatch.StartNew();
         do
         {
-            Assert.AreEqual(baseline, Observe(guest!)["ClipboardDigest"]!.GetValue<string>(), "Clipboard-sharing-off did not preserve the guest's independent baseline.");
-            Assert.AreEqual(source, Observe(host!)["ClipboardDigest"]!.GetValue<string>(), "Clipboard-sharing-off changed the source.");
+            Assert.AreEqual(baseline, RequireClipboardDigest(guest!), "Clipboard-sharing-off did not preserve the guest's independent baseline.");
+            Assert.AreEqual(source, RequireClipboardDigest(host!), "Clipboard-sharing-off changed the source.");
             Thread.Sleep(250);
         }
         while (negative.Elapsed < TimeSpan.FromSeconds(5));
@@ -708,10 +708,35 @@ internal sealed class TwoEndpointFixture : IDisposable
         Thread.Sleep(1500);
         var digest = endpoint.Request("PublishClipboard")["Digest"]!.GetValue<string>();
         Assert.AreEqual(64, digest.Length, "The source must acknowledge its generated synthetic clipboard digest.");
-        RunFiles.Wait(() => Observe(endpoint)["ClipboardDigest"]!.GetValue<string>() == digest,
+        var publication = Stopwatch.StartNew();
+        RunFiles.Wait(() => ClipboardMatches(ReadClipboardDigest(Observe(endpoint)), digest, publication.Elapsed),
             TimeSpan.FromSeconds(15), "The source did not publish its acknowledged synthetic clipboard.");
         return digest;
     }
+
+    private string RequireClipboardDigest(EndpointChannel endpoint)
+    {
+        string? digest = null;
+        RunFiles.Wait(() => (digest = ReadClipboardDigest(Observe(endpoint))) is not null,
+            TimeSpan.FromSeconds(15), "Clipboard remained unavailable for the sharing-off assertion.");
+        return digest!;
+    }
+
+    internal static string? ReadClipboardDigest(JsonObject observation)
+    {
+        if (!observation["ClipboardAvailable"]!.GetValue<bool>())
+        {
+            Assert.AreEqual(unchecked((int)0x800401D0), observation["ClipboardErrorHResult"]!.GetValue<int>());
+            Assert.IsNull(observation["ClipboardDigest"], "An unavailable clipboard must not supply a digest.");
+            return null;
+        }
+
+        Assert.IsNull(observation["ClipboardErrorHResult"], "An available clipboard must not carry a read error.");
+        return observation["ClipboardDigest"]!.GetValue<string>();
+    }
+
+    internal static bool ClipboardMatches(string? digest, string expectedDigest, TimeSpan elapsed) =>
+        digest == expectedDigest && elapsed <= TimeSpan.FromSeconds(15);
 
     private JsonElement InspectSubtree(Element element) => WinappCli.InvokeJson(
         "ui", "inspect", element.Selector, settings!.TargetFlag, settings.TargetValue, "--json", "-d", "6");
@@ -747,6 +772,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         var watch = Stopwatch.StartNew();
         var direction = ReferenceEquals(destination, guest) ? "HostToGuest" : "GuestToHost";
         var observations = 0;
+        var busyObservations = 0;
         var matched = false;
         try
         {
@@ -754,7 +780,13 @@ internal sealed class TwoEndpointFixture : IDisposable
                 () =>
                 {
                     observations++;
-                    matched = Observe(destination)["ClipboardDigest"]!.GetValue<string>() == sourceDigest;
+                    var digest = ReadClipboardDigest(Observe(destination));
+                    if (digest is null)
+                    {
+                        busyObservations++;
+                    }
+
+                    matched = ClipboardMatches(digest, sourceDigest, watch.Elapsed);
                     return matched;
                 },
                 TimeSpan.FromSeconds(15),
@@ -773,6 +805,7 @@ internal sealed class TwoEndpointFixture : IDisposable
                     ElapsedMilliseconds = watch.Elapsed.TotalMilliseconds,
                     TimeoutMilliseconds = 15_000,
                     Observations = observations,
+                    BusyObservations = busyObservations,
                     Matched = matched,
                 });
             }

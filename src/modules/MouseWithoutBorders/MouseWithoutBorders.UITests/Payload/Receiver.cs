@@ -4,8 +4,10 @@
 
 // Compiled by Windows PowerShell 5.1. The request channel cannot write text or mouse counters.
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -13,6 +15,38 @@ using System.Windows.Forms;
 
 namespace Microsoft.MouseWithoutBorders.UITests
 {
+    public sealed class ClipboardObservation
+    {
+        private ClipboardObservation(string digest, int? errorHResult)
+        {
+            Digest = digest;
+            ErrorHResult = errorHResult;
+        }
+
+        public string Digest { get; private set; }
+
+        public int? ErrorHResult { get; private set; }
+
+        public bool Available { get { return !ErrorHResult.HasValue; } }
+
+        internal static ClipboardObservation Read(Func<string> readDigest)
+        {
+            try
+            {
+                return new ClipboardObservation(readDigest(), null);
+            }
+            catch (ExternalException error)
+            {
+                if (error.ErrorCode != unchecked((int)0x800401D0))
+                {
+                    throw;
+                }
+
+                return new ClipboardObservation(null, error.ErrorCode);
+            }
+        }
+    }
+
     // Keep the receiver's message pump responsive while PowerShell waits for
     // winapp: UIA desktop enumeration can also query this WinForms window.
     public sealed class ReceiverController : IDisposable
@@ -85,6 +119,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
         public string PublishClipboard() { return Invoke(delegate { return receiver.PublishClipboard(); }); }
 
         public string ClipboardDigest() { return Invoke(delegate { return receiver.ClipboardDigest(); }); }
+
+        public ClipboardObservation ObserveClipboard() { return Invoke(delegate { return receiver.ObserveClipboard(); }); }
 
         public void RestoreClipboard() { Invoke(delegate { receiver.RestoreClipboard(); return true; }); }
 
@@ -261,7 +297,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public string ClipboardDigest()
         {
-            string text = Clipboard.ContainsText() ? Clipboard.GetText() : string.Empty;
+            string text = ReadClipboardText();
             if (!text.StartsWith("mwb-test-", StringComparison.Ordinal) ||
                 text.IndexOf("-" + runId + "-", StringComparison.Ordinal) < 0)
             {
@@ -271,6 +307,107 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
             return Digest(text);
         }
+
+        public ClipboardObservation ObserveClipboard()
+        {
+            return ClipboardObservation.Read(ClipboardDigest);
+        }
+
+        private string ReadClipboardText()
+        {
+            if (!OpenClipboard(Handle))
+            {
+                int error = Marshal.GetLastWin32Error();
+                if (error == 5)
+                {
+                    throw new ExternalException("The clipboard is currently owned.", unchecked((int)0x800401D0));
+                }
+
+                throw new Win32Exception(error, "OpenClipboard failed.");
+            }
+
+            try
+            {
+                const uint unicodeText = 13;
+                if (!IsClipboardFormatAvailable(unicodeText))
+                {
+                    return string.Empty;
+                }
+
+                IntPtr data = GetClipboardData(unicodeText);
+                if (data == IntPtr.Zero)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "GetClipboardData failed.");
+                }
+
+                ulong bytes = GlobalSize(data).ToUInt64();
+                if (bytes == 0 || bytes % 2 != 0 || bytes / 2 > int.MaxValue)
+                {
+                    throw new InvalidOperationException("The Unicode clipboard allocation has an invalid size.");
+                }
+
+                IntPtr memory = GlobalLock(data);
+                if (memory == IntPtr.Zero)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "GlobalLock failed for clipboard data.");
+                }
+
+                try
+                {
+                    string text = Marshal.PtrToStringUni(memory, (int)(bytes / 2));
+                    int terminator = text.IndexOf('\0');
+                    if (terminator < 0)
+                    {
+                        throw new InvalidOperationException("The Unicode clipboard data is not terminated.");
+                    }
+
+                    return text.Substring(0, terminator);
+                }
+                finally
+                {
+                    SetNativeLastError(0);
+                    if (!GlobalUnlock(data) && Marshal.GetLastWin32Error() != 0)
+                    {
+                        throw new Win32Exception(Marshal.GetLastWin32Error(), "GlobalUnlock failed for clipboard data.");
+                    }
+                }
+            }
+            finally
+            {
+                if (!CloseClipboard())
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "CloseClipboard failed.");
+                }
+            }
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool OpenClipboard(IntPtr owner);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool CloseClipboard();
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsClipboardFormatAvailable(uint format);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr GetClipboardData(uint format);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern UIntPtr GlobalSize(IntPtr memory);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GlobalLock(IntPtr memory);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GlobalUnlock(IntPtr memory);
+
+        [DllImport("kernel32.dll", EntryPoint = "SetLastError")]
+        private static extern void SetNativeLastError(uint error);
 
         private static string Digest(string text)
         {

@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -32,9 +33,18 @@ public sealed class ReceiverInfrastructureTests
 
         try
         {
-            var digest = PublishWhileClipboardIsOwned(receiver);
+            var digest = WhileClipboardIsOwned(receiver.PublishClipboard);
             Assert.AreEqual(64, digest.Length, "Publication must acknowledge the generated token, not an empty transient read.");
             RunFiles.Wait(() => receiver.ClipboardDigest() == digest, TimeSpan.FromSeconds(15), "The receiver did not publish its synthetic clipboard token.");
+
+            var contended = WhileClipboardIsOwned(receiver.ObserveClipboard);
+            Assert.IsFalse(contended.Available, "A held clipboard must be reported as unavailable, not empty.");
+            Assert.IsNull(contended.Digest);
+            Assert.AreEqual(unchecked((int)0x800401D0), contended.ErrorHResult);
+            var available = receiver.ObserveClipboard();
+            Assert.IsTrue(available.Available);
+            Assert.IsNull(available.ErrorHResult);
+            Assert.AreEqual(digest, available.Digest, "Contention must not replace or republish the existing token.");
         }
         finally
         {
@@ -48,7 +58,39 @@ public sealed class ReceiverInfrastructureTests
         TestContext.AddResultFile(evidence);
     }
 
-    private static string PublishWhileClipboardIsOwned(ReceiverController receiver)
+    [TestMethod]
+    [TestCategory("MwbInfrastructure")]
+    public void ClipboardObservationDistinguishesContentionFromReadableData()
+    {
+        var busy = ClipboardObservation.Read(() => throw new ExternalException("Clipboard is owned.", unchecked((int)0x800401D0)));
+        Assert.IsFalse(busy.Available);
+        Assert.IsNull(busy.Digest);
+        Assert.AreEqual(unchecked((int)0x800401D0), busy.ErrorHResult);
+        var unrelated = new ExternalException("Unrelated clipboard failure.", unchecked((int)0x80004005));
+        Assert.AreSame(unrelated, Assert.ThrowsExactly<ExternalException>(() => ClipboardObservation.Read(() => throw unrelated)));
+
+        var observation = new JsonObject
+        {
+            ["ClipboardAvailable"] = false,
+            ["ClipboardErrorHResult"] = unchecked((int)0x800401D0),
+            ["ClipboardDigest"] = null,
+        };
+        Assert.IsNull(TwoEndpointFixture.ReadClipboardDigest(observation));
+        observation["ClipboardErrorHResult"] = unchecked((int)0x80004005);
+        Assert.ThrowsExactly<AssertFailedException>(() => TwoEndpointFixture.ReadClipboardDigest(observation));
+        observation["ClipboardAvailable"] = true;
+        Assert.ThrowsExactly<AssertFailedException>(() => TwoEndpointFixture.ReadClipboardDigest(observation));
+        observation["ClipboardErrorHResult"] = null;
+        observation["ClipboardDigest"] = string.Empty;
+        Assert.AreEqual(string.Empty, TwoEndpointFixture.ReadClipboardDigest(observation));
+        observation["ClipboardDigest"] = new string('A', 64);
+        Assert.AreEqual(new string('A', 64), TwoEndpointFixture.ReadClipboardDigest(observation));
+        Assert.IsFalse(TwoEndpointFixture.ClipboardMatches(null, new string('A', 64), TimeSpan.Zero));
+        Assert.IsTrue(TwoEndpointFixture.ClipboardMatches(new string('A', 64), new string('A', 64), TimeSpan.FromSeconds(15)));
+        Assert.IsFalse(TwoEndpointFixture.ClipboardMatches(new string('A', 64), new string('A', 64), TimeSpan.FromSeconds(15) + TimeSpan.FromTicks(1)));
+    }
+
+    private static T WhileClipboardIsOwned<T>(Func<T> action)
     {
         using var acquired = new ManualResetEventSlim();
         var locker = Task.Run(() =>
@@ -83,7 +125,7 @@ public sealed class ReceiverInfrastructureTests
         try
         {
             Assert.IsTrue(acquired.Wait(TimeSpan.FromSeconds(10)), "The real Windows clipboard lock did not acknowledge ownership.");
-            return receiver.PublishClipboard();
+            return action();
         }
         finally
         {

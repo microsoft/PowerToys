@@ -141,6 +141,13 @@ observation before negative/transfer assertions; expected destination payloads
 are never injected through the control channel.
 Publication retries the same token when Windows temporarily holds the clipboard;
 the independent 15-second transfer assertions are unchanged.
+Observations report `CLIPBRD_E_CANT_OPEN` as explicitly unavailable, with its
+HRESULT and no digest, rather than as empty clipboard data. Transfer polling
+keeps its original 15-second deadline and records busy observations. The
+sharing-off negative control requires readable data before each assertion;
+other clipboard errors still fail the endpoint request.
+Text observations hold one native clipboard lock while reading Unicode data;
+OLE reads can otherwise return empty data when another thread owns the clipboard.
 
 ## Backends and deadlines
 

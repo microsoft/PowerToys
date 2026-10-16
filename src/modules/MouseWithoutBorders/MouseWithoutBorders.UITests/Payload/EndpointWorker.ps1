@@ -220,9 +220,12 @@ try {
                     'Observe' {
                         $point = [Windows.Forms.Cursor]::Position
                         $bounds = $script:receiver.ClickBounds
+                        $clipboard = $script:receiver.ObserveClipboard()
                         $response.Result = @{
                             Text = $script:receiver.ReceivedText; Clicks = $script:receiver.Clicks
-                            ClipboardDigest = $script:receiver.ClipboardDigest()
+                            ClipboardDigest = $clipboard.Digest
+                            ClipboardAvailable = $clipboard.Available
+                            ClipboardErrorHResult = $clipboard.ErrorHResult
                             CursorX = $point.X; CursorY = $point.Y
                             ClickLeft = $bounds.Left; ClickTop = $bounds.Top; ClickRight = $bounds.Right; ClickBottom = $bounds.Bottom
                             ForegroundHwnd = [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::GetForegroundWindow().ToInt64()
