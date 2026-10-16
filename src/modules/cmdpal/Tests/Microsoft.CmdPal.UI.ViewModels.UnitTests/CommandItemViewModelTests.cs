@@ -13,7 +13,6 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -743,24 +742,6 @@ public partial class CommandItemViewModelTests
     {
         var uiTasks = new TaskFactory(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
         var pageContext = new TestPageContext(uiTasks.Scheduler);
-        var child = new CommandContextItem(new NoOpCommand { Name = "Child" })
-        {
-            RequestedShortcut = CommandContextItemViewModel.PrimaryShortcut,
-            MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Grandchild" })],
-        };
-        var parent = new CommandContextItem(new NoOpCommand { Name = "Parent" })
-        {
-            RequestedShortcut = CommandContextItemViewModel.SecondaryShortcut,
-            MoreCommands = [child],
-        };
-        var item = new CommandItem(new NoOpCommand { Name = "Root" }) { MoreCommands = [parent] };
-        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
-        viewModel.SlowInitializeProperties();
-        var parentCommand = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
-        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
-        menu.PrepareForOpen(viewModel);
-        var invocations = new List<PerformCommandMessage>();
-        menu.CommandInvoking += (_, e) => invocations.Add(e.Message);
 
         // Serialize menu operations with the view model's UI notifications.
         await uiTasks.StartNew(() =>
@@ -781,7 +762,7 @@ public partial class CommandItemViewModelTests
             var parentCommand = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
             var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
             menu.PrepareForOpen(viewModel);
-            var invocations = new List<PerformCommandMessage>();
+            var invocations = new List<CommandInvokingEventArgs>();
             menu.CommandInvoking += (_, message) => invocations.Add(message);
 
             try
@@ -806,7 +787,8 @@ public partial class CommandItemViewModelTests
 
                 Assert.AreEqual(ContextKeybindingResult.Hide, menu.InvokeCommand(secondary, navigateSubmenus: false));
                 Assert.AreEqual(1, invocations.Count);
-                Assert.AreSame(parent, invocations[0].CommandContext);
+
+                Assert.AreSame(parent, invocations[0].Message.CommandContext);
                 menu.Close();
                 Assert.IsFalse(menu.CanPopContextStack());
                 Assert.IsNull(menu.SecondaryCommand);
