@@ -488,6 +488,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (!_disposed && IsEnabled && UseService == useService && IsElevated)
                 {
+                    if (_servicePairingKey != null)
+                    {
+                        _servicePairingKey = null;
+                        OnPropertyChanged(nameof(SecurityKey));
+                    }
+
                     _hasPairingError = true;
                     OnPropertyChanged(nameof(HasPairingError));
                 }
@@ -1398,10 +1404,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 var useService = UseService;
-                var storedKey = Settings.Properties.SecurityKey.Value;
                 var displayedKey = SecurityKey;
                 LoadViewModelFromSettings(SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders"));
-                if (UseService != useService || Settings.Properties.SecurityKey.Value != storedKey)
+                if (UseService != useService || PairingSetupRequired || !IsEnabled)
                 {
                     _servicePairingKey = null;
                 }
