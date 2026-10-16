@@ -31,6 +31,7 @@ internal enum PerformanceMetricKind
     Cpu,
     Memory,
     Network,
+    NetworkSpeed,
     Disk,
     Gpu,
     Battery,
@@ -42,10 +43,10 @@ internal enum PerformanceMetricKind
 /// By using OnLoadStaticListPage, we can get onload/onunload events to start/stop
 /// the data gathering.
 ///
-/// When <paramref name="singleMetric"/> is supplied, the page only initializes
+/// When <code>singleMetric</code> is supplied, the page only initializes
 /// and surfaces a single metric — used to back per-metric dock bands. When
-/// null, the page surfaces all metrics (the default behavior for both the main
-/// list page and the all-metrics dock band).
+/// null, the main list page surfaces all metrics, while the default dock band
+/// surfaces only CPU and memory. Other metrics have their own dock bands.
 /// </summary>
 internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDisposable
 {
@@ -60,6 +61,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         PerformanceMetricKind.Cpu => Icons.CpuIcon,
         PerformanceMetricKind.Memory => Icons.MemoryIcon,
         PerformanceMetricKind.Network => Icons.NetworkIcon,
+        PerformanceMetricKind.NetworkSpeed => Icons.NetworkIcon,
         PerformanceMetricKind.Disk => Icons.HardDriveIcon,
         PerformanceMetricKind.Gpu => Icons.GpuIcon,
         PerformanceMetricKind.Battery => _batteryPage?.CurrentIcon ?? Icons.BatteryIcon,
@@ -88,11 +90,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemBatteryUsageWidgetPage? _batteryPage;
     private readonly ListItem? _batteryItem;
 
-    // For bands, we want two bands, one for up and one for down
+    // For the network band, show one item for upload and one for download.
     private ListItem? _networkUpItem;
     private ListItem? _networkDownItem;
-    private string _networkUpSpeed = string.Empty;
-    private string _networkDownSpeed = string.Empty;
 
     // For bands, we want two bands, one for read and one for write
     private ListItem? _diskReadItem;
@@ -145,32 +145,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage.Commands,
             };
 
-            if (isBandPage)
-            {
-                _networkUpItem = new ListItem(_networkPage)
-                {
-                    Title = $"{_networkUpSpeed}",
-                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                    Icon = Icons.NetworkUpIcon,
-                    MoreCommands = _networkPage.Commands,
-                };
-
-                _networkDownItem = new ListItem(_networkPage)
-                {
-                    Title = $"{_networkDownSpeed}",
-                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                    Icon = Icons.NetworkDownIcon,
-                    MoreCommands = _networkPage.Commands,
-                };
-            }
-
             _networkPage.Updated += (s, e) =>
             {
                 _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
-                _networkUpSpeed = _networkPage.GetUpSpeed();
-                _networkDownSpeed = _networkPage.GetDownSpeed();
-                _networkDownItem?.Title = $"{_networkDownSpeed}";
-                _networkUpItem?.Title = $"{_networkUpSpeed}";
+                _networkUpItem?.Title = _networkPage.GetUpSpeed();
+                _networkDownItem?.Title = _networkPage.GetDownSpeed();
             };
         }
 
@@ -190,7 +169,6 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _diskWriteSpeed = _diskPage.GetWriteSpeed();
                 _diskReadItem?.Title = $"{_diskReadSpeed}";
                 _diskWriteItem?.Title = $"{_diskWriteSpeed}";
-                RaiseItemsChanged();
             };
         }
 
@@ -208,11 +186,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
                 if (_isBandPage)
                 {
-                    // Bands only show the usage percentage as the title, so put
-                    // the active GPU's name in the subtitle - otherwise cycling
-                    // Prev/Next GPU between two idle adapters looks like nothing
-                    // changed.
-                    _gpuItem.Subtitle = _gpuPage.GetBandSubtitle();
+                    _gpuPage.ConfigureBandItem(_gpuItem);
                 }
             };
         }
@@ -244,32 +218,47 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             if (_cpuItem is not null)
             {
                 _cpuItem.Subtitle = Resources.GetResource("CPU_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _cpuItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_memoryItem is not null)
             {
                 _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _memoryItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_networkItem is not null)
             {
                 _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _networkItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_diskItem is not null)
             {
                 _diskItem.Subtitle = Resources.GetResource("Disk_Active_Time_Subtitle");
                 _diskItem.Icon = Icons.HardDriveIcon;
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _diskItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_gpuItem is not null)
             {
-                _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
+                _gpuPage!.ConfigureBandItem(_gpuItem);
             }
 
             if (_batteryItem is not null)
             {
                 _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _batteryItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
         }
     }
@@ -296,12 +285,20 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     public override IListItem[] GetItems()
     {
-        // Per-metric pages just return the single matching item.
+        // Per-metric pages return only the items for that metric.
         if (_singleMetric is PerformanceMetricKind metric)
         {
-            if (metric == PerformanceMetricKind.Disk && _isBandPage)
+            if (_isBandPage)
             {
-                return CreateDiskBandItems();
+                if (metric == PerformanceMetricKind.NetworkSpeed)
+                {
+                    return CreateNetworkBandItems();
+                }
+
+                if (metric == PerformanceMetricKind.Disk)
+                {
+                    return CreateDiskBandItems();
+                }
             }
 
             return metric switch
@@ -309,6 +306,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 PerformanceMetricKind.Cpu => new IListItem[] { _cpuItem! },
                 PerformanceMetricKind.Memory => new IListItem[] { _memoryItem! },
                 PerformanceMetricKind.Network => new IListItem[] { _networkItem! },
+                PerformanceMetricKind.NetworkSpeed => new IListItem[] { _networkItem! },
                 PerformanceMetricKind.Disk => new IListItem[] { _diskItem! },
                 PerformanceMetricKind.Gpu => new IListItem[] { _gpuItem! },
                 PerformanceMetricKind.Battery => new IListItem[] { _batteryItem! },
@@ -323,57 +321,55 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem!, _batteryItem! }
                 : new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem! };
         }
-        else
-        {
-            if (_networkUpItem is null)
+
+        return [_cpuItem!, _memoryItem!];
+    }
+
+    private IListItem[] CreateNetworkBandItems()
+    {
+        _networkUpItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_networkPage!)
             {
-                _networkUpItem = new ListItem(_networkPage!)
-                {
-                    Title = $"{_networkUpSpeed}",
-                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                    Icon = Icons.NetworkUpIcon,
-                    MoreCommands = _networkPage!.Commands,
-                };
-            }
+                Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                Icon = Icons.NetworkUpIcon,
+                MoreCommands = _networkPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
+        _networkUpItem.Title = _networkPage!.GetUpSpeed();
 
-            _networkUpItem.Title = _networkUpSpeed;
-
-            if (_networkDownItem is null)
+        _networkDownItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_networkPage!)
             {
-                _networkDownItem = new ListItem(_networkPage!)
-                {
-                    Title = $"{_networkDownSpeed}",
-                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                    Icon = Icons.NetworkDownIcon,
-                    MoreCommands = _networkPage!.Commands,
-                };
-            }
+                Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                Icon = Icons.NetworkDownIcon,
+                MoreCommands = _networkPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
+        _networkDownItem.Title = _networkPage!.GetDownSpeed();
 
-            _networkDownItem.Title = _networkDownSpeed;
-
-            CreateDiskBandItems();
-            return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _diskReadItem!, _diskWriteItem!, _diskItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _diskReadItem!, _diskWriteItem!, _diskItem!, _gpuItem! };
-        }
+        return [_networkUpItem, _networkDownItem];
     }
 
     private IListItem[] CreateDiskBandItems()
     {
-        _diskReadItem ??= new ListItem(_diskPage!)
-        {
-            Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
-            Icon = Icons.FileReadIcon,
-            MoreCommands = _diskPage!.Commands,
-        };
+        _diskReadItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_diskPage!)
+            {
+                Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
+                Icon = Icons.FileReadIcon,
+                MoreCommands = _diskPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _diskReadItem.Title = _diskReadSpeed;
 
-        _diskWriteItem ??= new ListItem(_diskPage!)
-        {
-            Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
-            Icon = Icons.FileWriteIcon,
-            MoreCommands = _diskPage!.Commands,
-        };
+        _diskWriteItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_diskPage!)
+            {
+                Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
+                Icon = Icons.FileWriteIcon,
+                MoreCommands = _diskPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _diskWriteItem.Title = _diskWriteSpeed;
 
         return [_diskReadItem, _diskWriteItem, _diskItem!];
@@ -396,7 +392,13 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private bool IncludesMetric(PerformanceMetricKind metric)
     {
-        return _singleMetric is null || _singleMetric == metric;
+        if (_singleMetric is PerformanceMetricKind singleMetric)
+        {
+            return singleMetric == metric
+                || (singleMetric == PerformanceMetricKind.NetworkSpeed && metric == PerformanceMetricKind.Network);
+        }
+
+        return !_isBandPage || metric is PerformanceMetricKind.Cpu or PerformanceMetricKind.Memory;
     }
 
     private static string GetMetricSuffix(PerformanceMetricKind metric)
@@ -406,6 +408,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             PerformanceMetricKind.Cpu => "cpu",
             PerformanceMetricKind.Memory => "memory",
             PerformanceMetricKind.Network => "network",
+            PerformanceMetricKind.NetworkSpeed => "networkSpeed",
             PerformanceMetricKind.Disk => "disk",
             PerformanceMetricKind.Gpu => "gpu",
             PerformanceMetricKind.Battery => "battery",
@@ -421,6 +424,12 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 /// </summary>
 internal abstract partial class WidgetPage : OnLoadContentPage
 {
+    private readonly Lock _activationLock = new();
+    private int _loadCount;
+
+    // null means that the last transition failed and the applied state is unknown.
+    private bool? _isActive = false;
+
     internal event EventHandler? Updated;
 
     protected Dictionary<string, string> ContentData { get; } = new();
@@ -507,19 +516,85 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     /// active. When either is activated, we'll start updating. When both are
     /// removed, we'll stop updating.
     /// </summary>
-    internal virtual void PushActivate()
+    internal void PushActivate()
     {
-        Interlocked.Increment(ref _loadCount);
+        (Exception Exception, bool Activating)? failure;
+        lock (_activationLock)
+        {
+            _loadCount++;
+            failure = ReconcileActivation();
+        }
+
+        LogTransitionFailure(failure);
     }
 
-    internal virtual void PopActivate()
+    internal void PopActivate()
     {
-        Interlocked.Decrement(ref _loadCount);
+        (Exception Exception, bool Activating)? failure;
+        lock (_activationLock)
+        {
+            if (_loadCount > 0)
+            {
+                _loadCount--;
+            }
+
+            failure = ReconcileActivation();
+        }
+
+        LogTransitionFailure(failure);
     }
 
-    private int _loadCount;
+    protected virtual void OnActivated()
+    {
+    }
 
-    protected bool IsActive => Volatile.Read(ref _loadCount) > 0;
+    protected virtual void OnDeactivated()
+    {
+    }
+
+    private (Exception Exception, bool Activating)? ReconcileActivation()
+    {
+        var shouldBeActive = _loadCount > 0;
+        if (_isActive == shouldBeActive)
+        {
+            return null;
+        }
+
+        try
+        {
+            if (shouldBeActive)
+            {
+                OnActivated();
+            }
+            else
+            {
+                OnDeactivated();
+            }
+
+            _isActive = shouldBeActive;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // The hook may have failed after doing some work. Keep the state
+            // unknown so the next activation change reasserts the desired state.
+            _isActive = null;
+            return (ex, shouldBeActive);
+        }
+    }
+
+    private void LogTransitionFailure((Exception Exception, bool Activating)? failure)
+    {
+        if (failure is not { } transitionFailure)
+        {
+            return;
+        }
+
+        var state = transitionFailure.Activating ? "active" : "inactive";
+        CoreLogger.LogError(
+            $"Failed to transition performance widget {GetType().Name} to the {state} state. A later activation change will retry the transition.",
+            transitionFailure.Exception);
+    }
 
     protected override void Loaded()
     {
@@ -621,23 +696,9 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         return string.Format(CultureInfo.InvariantCulture, "{0:0.00} GHz", cpuSpeed / 1000);
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     public void Dispose()
     {
@@ -745,23 +806,9 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         return memSize.ToString("0.00", CultureInfo.InvariantCulture) + " GB";
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     public void Dispose()
     {
@@ -885,23 +932,9 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         };
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     private void HandlePrevDisk()
     {
@@ -972,6 +1005,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
     private int _networkIndex;
+    private bool _defaultNetworkInitialized;
 
     public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
     {
@@ -980,6 +1014,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         Commands = [
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
             new CommandContextItem(new NextNetworkCommand(this) { Name = Resources.GetResource("Next_Network_Title") }),
+            new CommandContextItem(new SetDefaultNetworkCommand(this) { Name = Resources.GetResource("Set_Default_Network_Title") }),
             new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
@@ -994,6 +1029,16 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var timer = Stopwatch.StartNew();
 
             var currentData = _dataManager.GetNetworkStats();
+
+            if (!_defaultNetworkInitialized)
+            {
+                var defaultNetworkIndex = currentData.GetNetworkIndex(_settingsManager.DefaultNetworkAdapterId);
+                if (defaultNetworkIndex >= 0)
+                {
+                    _networkIndex = defaultNetworkIndex;
+                    _defaultNetworkInitialized = true;
+                }
+            }
 
             var dataDuration = timer.ElapsedMilliseconds;
 
@@ -1042,29 +1087,14 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
-    // up/down speed is always used for bands
     public string GetUpSpeed()
     {
-        if (ContentData.TryGetValue("netSent", out var upSpeed))
-        {
-            return upSpeed;
-        }
-        else
-        {
-            return "???";
-        }
+        return ContentData.TryGetValue("netSent", out var upSpeed) ? upSpeed : "???";
     }
 
     public string GetDownSpeed()
     {
-        if (ContentData.TryGetValue("netReceived", out var downSpeed))
-        {
-            return downSpeed;
-        }
-        else
-        {
-            return "???";
-        }
+        return ContentData.TryGetValue("netReceived", out var downSpeed) ? downSpeed : "???";
     }
 
     private string SpeedToString(float bytesPerSec)
@@ -1077,34 +1107,36 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         };
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     private void HandlePrevNetwork()
     {
+        _defaultNetworkInitialized = true;
         _networkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_networkIndex);
         UpdateWidget();
     }
 
     private void HandleNextNetwork()
     {
+        _defaultNetworkInitialized = true;
         _networkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_networkIndex);
         UpdateWidget();
+    }
+
+    private ICommandResult HandleSetDefaultNetwork()
+    {
+        _defaultNetworkInitialized = true;
+        var networkStats = _dataManager.GetNetworkStats();
+        var networkName = networkStats.GetNetworkName(_networkIndex);
+        _settingsManager.SetDefaultNetworkAdapterId(networkStats.GetNetworkId(_networkIndex));
+
+        return CommandResult.ShowToast(new ToastArgs
+        {
+            Message = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Set_Default_Network_Success"), networkName),
+            Result = CommandResult.KeepOpen(),
+        });
     }
 
     public void Dispose()
@@ -1151,6 +1183,25 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             return CommandResult.KeepOpen();
         }
     }
+
+    private sealed partial class SetDefaultNetworkCommand : InvokableCommand
+    {
+        private readonly SystemNetworkUsageWidgetPage _page;
+
+        public SetDefaultNetworkCommand(SystemNetworkUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.network_widget.setDefault";
+
+        public override IconInfo Icon => Icons.SetDefaultIcon;
+
+        public override ICommandResult Invoke()
+        {
+            return _page.HandleSetDefaultNetwork();
+        }
+    }
 }
 
 internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
@@ -1164,6 +1215,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     private readonly DataManager _dataManager;
     private readonly string _gpuActiveEngType = "3D";
     private int _gpuActiveIndex;
+    private GPUStats.DisplayInfo? _gpuDisplayInfo;
 
     public SystemGPUUsageWidgetPage()
     {
@@ -1189,10 +1241,10 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
             var dataDuration = timer.ElapsedMilliseconds;
 
-            var gpuName = stats.GetGPUName(_gpuActiveIndex);
+            _gpuDisplayInfo = stats.GetGPUDisplayInfo(_gpuActiveIndex);
 
             ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
-            ContentData["gpuName"] = gpuName;
+            ContentData["gpuName"] = _gpuDisplayInfo.Name;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
             ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
@@ -1205,6 +1257,11 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         catch (Exception e)
         {
             ContentData.Clear();
+            if (_gpuDisplayInfo is { } previous)
+            {
+                _gpuDisplayInfo = previous with { Name = string.Empty, ShortName = string.Empty };
+            }
+
             ContentData["errorMessage"] = e.Message;
             return;
         }
@@ -1232,33 +1289,11 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         }
     }
 
-    public string GetBandSubtitle()
-    {
-        if (ContentData.TryGetValue("gpuName", out var name) && !string.IsNullOrEmpty(name))
-        {
-            return name;
-        }
+    public void ConfigureBandItem(ListItem item) => PerformanceMonitorDockItemPresentation.ConfigureGpuValueLabel(item, _gpuDisplayInfo);
 
-        return Resources.GetResource("GPU_Usage_Subtitle");
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
-
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     private void HandlePrevGPU()
     {
@@ -1451,23 +1486,9 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             minutes);
     }
 
-    internal override void PushActivate()
-    {
-        base.PushActivate();
-        if (IsActive)
-        {
-            _dataManager.Start();
-        }
-    }
+    protected override void OnActivated() => _dataManager.Start();
 
-    internal override void PopActivate()
-    {
-        base.PopActivate();
-        if (!IsActive)
-        {
-            _dataManager.Stop();
-        }
-    }
+    protected override void OnDeactivated() => _dataManager.Stop();
 
     public void Dispose()
     {

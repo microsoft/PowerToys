@@ -442,6 +442,12 @@
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
+                        Name="ZoomItSnipDictate"
+                        x:Uid="ZoomIt_SnipDictate"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE720;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SnipDictateEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         Name="ZoomItPanoramaShortcut"
                         x:Uid="ZoomIt_Panorama_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}">
@@ -457,7 +463,7 @@
             <controls:PageLink x:Uid="LearnMore_ZoomIt" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://learn.microsoft.com/sysinternals/downloads/zoomit" Text="Sysinternals ZoomIt by Mark Russinovich, Alex Mihaiuc, John Stephens" />
+            <controls:PageLink x:Uid="Attribution_ZoomIt" Link="https://learn.microsoft.com/sysinternals/downloads/zoomit" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

@@ -27,6 +27,7 @@
             <Grid Padding="16,0" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
@@ -40,10 +41,30 @@
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     Style="{ThemeResource CaptionTextBlockStyle}" />
+                <AutoSuggestBox
+                    x:Name="SearchBox"
+                    x:Uid="SearchBox"
+                    Grid.Column="2"
+                    MinWidth="120"
+                    MaxWidth="220"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AutomationId="ShortcutGuide_SearchBox"
+                    TextChanged="SearchBox_TextChanged">
+                    <AutoSuggestBox.QueryIcon>
+                        <SymbolIcon Symbol="Find" />
+                    </AutoSuggestBox.QueryIcon>
+                    <AutoSuggestBox.KeyboardAccelerators>
+                        <KeyboardAccelerator
+                            Key="F"
+                            Invoked="OnFindInvoked"
+                            Modifiers="Control" />
+                    </AutoSuggestBox.KeyboardAccelerators>
+                </AutoSuggestBox>
                 <Button
                     x:Name="CloseButton"
                     x:Uid="CloseButton"
-                    Grid.Column="2"
+                    Grid.Column="3"
                     Width="32"
                     Height="32"
                     Padding="0"

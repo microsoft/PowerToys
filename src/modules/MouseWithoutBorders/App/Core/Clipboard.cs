@@ -372,8 +372,7 @@ internal static class Clipboard
         }
     }
 
-    private static readonly Lock ClipboardThreadOldLock = new();
-    private static System.Threading.Thread clipboardThreadOld;
+    private static readonly SemaphoreSlim ClipboardReceiveGate = new(initialCount: 1, maxCount: 1);
 
     internal static void GetRemoteClipboard(string postAction)
     {
@@ -398,8 +397,6 @@ internal static class Clipboard
             }).Start();
         }
     }
-
-    private static Stream m;
 
     private static void ConnectAndGetData(object postAction)
     {
@@ -489,25 +486,77 @@ internal static class Clipboard
 
     internal static void ReceiveAndProcessClipboardData(string remoteMachine, Socket s, Stream enStream, Stream deStream, string postAct)
     {
-        lock (ClipboardThreadOldLock)
+        if (!ExecuteClipboardReceive(
+                () => ReceiveAndProcessClipboardDataCore(remoteMachine, s, enStream, deStream, postAct),
+                waitMilliseconds: 3000))
         {
-            // Do not enable two connections at the same time.
-            if (clipboardThreadOld != null && clipboardThreadOld.ThreadState != System.Threading.ThreadState.AbortRequested
-                && clipboardThreadOld.ThreadState != System.Threading.ThreadState.Aborted && clipboardThreadOld.IsAlive
-                && clipboardThreadOld.ManagedThreadId != Thread.CurrentThread.ManagedThreadId)
+            Logger.Log("Rejecting clipboard transfer because the previous transfer is still active.");
+            s.Close();
+        }
+    }
+
+    private static void ReceiveAndProcessClipboardDataCore(string remoteMachine, Socket s, Stream enStream, Stream deStream, string postAct)
+    {
+        ReceivedDestinationFile destinationFile = null;
+        Stream m = null;
+
+        void CloseDestinationFile()
+        {
+            destinationFile?.Dispose();
+            destinationFile = null;
+            m?.Close();
+            m = null;
+        }
+
+        void DeleteDestinationFile(string path)
+        {
+            try
             {
-                if (clipboardThreadOld.Join(3000))
+                bool success;
+                if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
                 {
-                    if (m != null)
-                    {
-                        m.Flush();
-                        m.Close();
-                        m = null;
-                    }
+                    File.Delete(path);
+                    success = true;
+                }
+                else
+                {
+                    success = Launch.ImpersonateLoggedOnUserAndDoSomething(() => File.Delete(path));
+                }
+
+                if (!success)
+                {
+                    Logger.Log($"Could not delete incomplete destination file: {path}");
                 }
             }
+            catch (Exception e)
+            {
+                Logger.Log(e);
+            }
+        }
 
-            clipboardThreadOld = Thread.CurrentThread;
+        void CommitDestinationFile(string sourcePath, string destinationPath)
+        {
+            bool success;
+            if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
+            {
+                File.Move(sourcePath, destinationPath, overwrite: true);
+                success = true;
+            }
+            else
+            {
+                success = Launch.ImpersonateLoggedOnUserAndDoSomething(() => File.Move(sourcePath, destinationPath, overwrite: true));
+            }
+
+            if (!success)
+            {
+                throw new IOException($"Could not replace destination file: {destinationPath}");
+            }
+        }
+
+        void CreateDestinationFile(string path)
+        {
+            destinationFile = new ReceivedDestinationFile(path, DeleteDestinationFile, CommitDestinationFile);
+            m = destinationFile.Stream;
         }
 
         try
@@ -574,32 +623,115 @@ internal static class Clipboard
             }
             else
             {
+                // Create received files in the same context that the destination folder is created
+                // in. For per-user storage (the user's Desktop) that means as the logged-on user, so
+                // the file ends up owned by that user and inherits the folder's permissions. On the
+                // logon/screen-saver desktop the storage lives under Program Files where there is no
+                // interactive user to impersonate, so create the file directly.
+                bool TryCreateDestinationFile(string path)
+                {
+                    CloseDestinationFile();
+
+                    bool success = false;
+                    try
+                    {
+                        if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
+                        {
+                            CreateDestinationFile(path);
+                            success = true;
+                        }
+                        else
+                        {
+                            success = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                            {
+                                CreateDestinationFile(path);
+                            });
+                        }
+
+                        if (!success || m == null)
+                        {
+                            CloseDestinationFile();
+                            Logger.Log(string.Format(
+                                CultureInfo.CurrentCulture,
+                                "Could not create destination file: {0}",
+                                path));
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e);
+                        CloseDestinationFile();
+                    }
+
+                    return success && m != null;
+                }
+
                 if (postAct.Equals("desktop", StringComparison.OrdinalIgnoreCase))
                 {
-                    _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                    // Create the folder and open the file in a single impersonated scope so both
+                    // are owned by the logged-on user. This branch always targets the user's Desktop.
+                    CloseDestinationFile();
+                    bool success = false;
+                    try
                     {
-                        savingFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\MouseWithoutBorders\\";
-
-                        if (!Directory.Exists(savingFolder))
+                        success = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                         {
-                            _ = Directory.CreateDirectory(savingFolder);
-                        }
-                    });
+                            savingFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\MouseWithoutBorders\\";
+                            tempFile = savingFolder + Path.GetFileName(fileName);
 
-                    tempFile = savingFolder + Path.GetFileName(fileName);
-                    m = new FileStream(tempFile, FileMode.Create);
+                            if (!Directory.Exists(savingFolder))
+                            {
+                                _ = Directory.CreateDirectory(savingFolder);
+                            }
+
+                            CreateDestinationFile(tempFile);
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e);
+                        CloseDestinationFile();
+                    }
+
+                    if (!success || m == null)
+                    {
+                        CloseDestinationFile();
+                        string destinationPath = tempFile.Equals("data", StringComparison.Ordinal)
+                            ? Path.GetFileName(fileName)
+                            : tempFile;
+                        Logger.Log(string.Format(
+                            CultureInfo.CurrentCulture,
+                            "Could not create desktop destination file while impersonating the logged-on user: {0}",
+                            destinationPath));
+                        Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_ERROR, -1, Common.ICON_ERROR, -1 });
+                        Common.ShowToolTip("Could not create the destination file.", 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+                        s.Close();
+                        return;
+                    }
                 }
                 else if (postAct.Contains("mspaint"))
                 {
                     tempFile = Common.GetMyStorageDir() + @"ScreenCapture-" +
                         remoteMachine + ".png";
-                    m = new FileStream(tempFile, FileMode.Create);
+                    if (!TryCreateDestinationFile(tempFile))
+                    {
+                        Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_ERROR, -1, Common.ICON_ERROR, -1 });
+                        Common.ShowToolTip("Could not create the destination file.", 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+                        s.Close();
+                        return;
+                    }
                 }
                 else
                 {
                     tempFile = Common.GetMyStorageDir();
                     tempFile += Path.GetFileName(fileName);
-                    m = new FileStream(tempFile, FileMode.Create);
+                    if (!TryCreateDestinationFile(tempFile))
+                    {
+                        Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_ERROR, -1, Common.ICON_ERROR, -1 });
+                        Common.ShowToolTip("Could not create the destination file.", 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+                        s.Close();
+                        return;
+                    }
                 }
 
                 Logger.Log("==> " + tempFile);
@@ -621,14 +753,7 @@ internal static class Clipboard
 
                 if (rv > 0)
                 {
-                    receivedCount += rv;
-
-                    if (receivedCount > dataSize)
-                    {
-                        rv -= (int)(receivedCount - dataSize);
-                    }
-
-                    m.Write(buf, 0, rv);
+                    rv = WriteReceivedData(m, buf, rv, dataSize, ref receivedCount);
                 }
 
                 if (Common.ToggleIcons == null)
@@ -649,15 +774,34 @@ internal static class Clipboard
             }
             while (rv > 0);
 
+            if (!HasExpectedReceivedDataLength(m, dataSize))
+            {
+                Logger.Log($"Received incomplete file: expected {dataSize} bytes, wrote {m.Length} bytes.");
+                CloseDestinationFile();
+                Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_ERROR, -1, Common.ICON_ERROR, -1 });
+                Common.ShowToolTip("Could not receive the complete destination file.", 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+                s.Close();
+                return;
+            }
+
             if (m != null && fileName != null)
             {
-                m.Flush();
-                Logger.LogDebug(m.Length.ToString(CultureInfo.CurrentCulture) + " bytes received.");
+                long receivedLength = m.Length;
+                if (destinationFile != null)
+                {
+                    destinationFile.Complete();
+                }
+                else
+                {
+                    m.Flush();
+                }
+
+                Logger.LogDebug(receivedLength.ToString(CultureInfo.CurrentCulture) + " bytes received.");
                 Clipboard.LastClipboardEventTime = Common.GetTick();
                 string toolTipText = null;
-                string sizeText = m.Length >= 1024
-                    ? (m.Length / 1024).ToString(CultureInfo.CurrentCulture) + "KB"
-                    : m.Length.ToString(CultureInfo.CurrentCulture) + "Bytes";
+                string sizeText = receivedLength >= 1024
+                    ? (receivedLength / 1024).ToString(CultureInfo.CurrentCulture) + "KB"
+                    : receivedLength.ToString(CultureInfo.CurrentCulture) + "Bytes";
 
                 PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersClipboardFileTransferEvent());
 
@@ -741,20 +885,14 @@ internal static class Clipboard
                     Common.MainForm.UpdateNotifyIcon();
                 });
 
-                m?.Close();
-                m = null;
+                CloseDestinationFile();
             }
         }
         catch (ThreadAbortException)
         {
             Logger.Log("The current thread is being aborted (3).");
             s.Close();
-
-            if (m != null)
-            {
-                m.Close();
-                m = null;
-            }
+            CloseDestinationFile();
 
             return;
         }
@@ -776,17 +914,48 @@ internal static class Clipboard
                 -1, Common.ICON_BIG_CLIPBOARD, -1,
             });
             Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus);
-
-            if (m != null)
-            {
-                m.Close();
-                m = null;
-            }
+            CloseDestinationFile();
 
             return;
         }
 
         s.Close();
+    }
+
+    internal static bool ExecuteClipboardReceive(Action receiveAction, int waitMilliseconds)
+    {
+        if (!ClipboardReceiveGate.Wait(waitMilliseconds))
+        {
+            return false;
+        }
+
+        try
+        {
+            receiveAction();
+            return true;
+        }
+        finally
+        {
+            ClipboardReceiveGate.Release();
+        }
+    }
+
+    internal static bool HasExpectedReceivedDataLength(Stream destination, long expectedLength)
+    {
+        return destination.Length == expectedLength;
+    }
+
+    internal static int WriteReceivedData(Stream destination, byte[] buffer, int bytesReceived, long expectedLength, ref long receivedCount)
+    {
+        receivedCount += bytesReceived;
+
+        if (receivedCount > expectedLength)
+        {
+            bytesReceived -= (int)(receivedCount - expectedLength);
+        }
+
+        destination.Write(buffer, 0, bytesReceived);
+        return bytesReceived;
     }
 
     internal static bool ShakeHand(ref string remoteName, Socket s, out Stream enStream, out Stream deStream, ref bool clientPushData, ref ClipboardPostAction postAction)
@@ -891,12 +1060,6 @@ internal static class Clipboard
             });
             Common.MainForm.UpdateNotifyIcon();
             Common.ShowToolTip(e.Message + "\r\n\r\nMake sure you run the same version in all machines.", 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
-
-            if (m != null)
-            {
-                m.Close();
-                m = null;
-            }
         }
 
         return handShaken;

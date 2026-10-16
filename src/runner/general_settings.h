@@ -24,6 +24,7 @@ struct GeneralSettings
     PowerToysSettings::HotkeyObject quickAccessShortcut;
     bool showNewUpdatesToastNotification;
     bool downloadUpdatesAutomatically;
+    bool includePrereleaseUpdates;
     bool showWhatsNewAfterUpdates;
     bool enableExperimentation;
     DashboardSortOrder dashboardSortOrder;
@@ -31,6 +32,9 @@ struct GeneralSettings
     std::wstring systemTheme;
     std::wstring powerToysVersion;
     json::JsonObject ignoredConflictProperties;
+
+    // Flag to indicate whether durable settings were successfully read from disk.
+    bool isDataLoadedSuccessfully = true;
 
     json::JsonObject to_json();
 };

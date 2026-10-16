@@ -115,7 +115,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select a file.
+        ///   Looks up a localized string similar to Select file.
         /// </summary>
         internal static string FilePickerParameterRun_PlaceholderText {
             get {
@@ -165,6 +165,24 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         internal static string OpenWithCommand_Name {
             get {
                 return ResourceManager.GetString("OpenWithCommand_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;{0}&quot; needs a newer version of Command Palette to be edited here..
+        /// </summary>
+        internal static string Setting_UnsupportedByHost {
+            get {
+                return ResourceManager.GetString("Setting_UnsupportedByHost", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This setting needs a newer version of Command Palette to be edited here..
+        /// </summary>
+        internal static string Setting_UnsupportedByHostNoLabel {
+            get {
+                return ResourceManager.GetString("Setting_UnsupportedByHostNoLabel", resourceCulture);
             }
         }
         

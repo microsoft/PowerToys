@@ -556,6 +556,33 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Display {0}.
+        /// </summary>
+        public static string dock_monitor_display_name {
+            get {
+                return ResourceManager.GetString("dock_monitor_display_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Display.
+        /// </summary>
+        public static string dock_monitor_display_name_default {
+            get {
+                return ResourceManager.GetString("dock_monitor_display_name_default", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} (Primary).
+        /// </summary>
+        public static string dock_monitor_primary_display_name {
+            get {
+                return ResourceManager.GetString("dock_monitor_primary_display_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string dock_settings_name {
@@ -1184,7 +1211,25 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
                 return ResourceManager.GetString("home_sections_pinned_title", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to The requested filter is no longer available..
+        /// </summary>
+        public static string list_page_requested_filter_unavailable {
+            get {
+                return ResourceManager.GetString("list_page_requested_filter_unavailable", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Recent.
+        /// </summary>
+        public static string home_sections_recent_title {
+            get {
+                return ResourceManager.GetString("home_sections_recent_title", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Pinned.
         /// </summary>
@@ -1200,6 +1245,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string results {
             get {
                 return ResourceManager.GetString("results", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Windows display language.
+        /// </summary>
+        public static string Language_Default {
+            get {
+                return ResourceManager.GetString("Language_Default", resourceCulture);
             }
         }
 

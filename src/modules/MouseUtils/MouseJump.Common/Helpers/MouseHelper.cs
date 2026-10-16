@@ -5,10 +5,12 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-using MouseJump.Common.Models.Drawing;
-using MouseJump.Common.NativeMethods;
-using static MouseJump.Common.NativeMethods.Core;
-using static MouseJump.Common.NativeMethods.User32;
+using MouseJump.Common.Interop;
+using MouseJump.Models.Drawing;
+
+using Windows.Win32;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace MouseJump.Common.Helpers;
 
@@ -35,19 +37,9 @@ public static class MouseHelper
     /// </summary>
     public static PointInfo GetCursorPosition()
     {
-        var lpPoint = new LPPOINT(new POINT(0, 0));
-        var result = User32.GetCursorPos(lpPoint);
-        if (!result)
-        {
-            throw new Win32Exception(
-                Marshal.GetLastWin32Error());
-        }
-
-        var point = lpPoint.ToStructure();
-        lpPoint.Free();
-
-        return new PointInfo(
-            point.x, point.y);
+        var result = PInvoke.GetCursorPos(out var point);
+        ResultHandler.ThrowIfZero(result: result, getLastError: true, memberName: nameof(PInvoke.GetCursorPos));
+        return new(point.X, point.Y);
     }
 
     /// <summary>
@@ -56,43 +48,52 @@ public static class MouseHelper
     /// <remarks>
     /// See https://github.com/mikeclayton/FancyMouse/pull/3
     /// </remarks>
-    public static void SetCursorPosition(PointInfo location)
+    public static void SetCursorPosition(PointInfo position)
+    {
+        MouseHelper.SetCursorPositionInternal(position);
+
+        // temporary workaround for issue #1273
+        MouseHelper.SimulateMouseMovementEvent(position);
+    }
+
+    private static void SetCursorPositionInternal(PointInfo position)
     {
         // set the new cursor position *twice* - the cursor sometimes end up in
         // the wrong place if we try to cross the dead space between non-aligned
-        // monitors - e.g. when trying to move the cursor from (a) to (b) we can
-        // *sometimes* - for no clear reason - end up at (c) instead.
+        // monitors - e.g. when trying to move the cursor from (a) to (b) through
+        // the dotted area we can *sometimes* - for no clear reason - end up at
+        // (c) instead.
         //
-        //           +----------------+
-        //           |(c)    (b)      |
-        //           |                |
-        //           |                |
-        //           |                |
+        // ..........+----------------+
+        // ..........|(c)    (b)      |
+        // ..........|                |
+        // ..........|                |
+        // ..........|                |
         // +---------+                |
         // |  (a)    |                |
         // +---------+----------------+
         //
-        // setting the position again seems to fix this and moves the
+        // setting the position more than once seems to fix this and moves the
         // cursor to the expected location (b)
-        var target = location.ToPoint();
+        var targetPosition = position.ToPoint();
         for (var i = 0; i < 2; i++)
         {
-            var result = User32.SetCursorPos(target.X, target.Y);
-            if (!result)
+            // SetCursorPos has been known to return zero (i.e. an error),
+            // with GetLastError also returning zero to indicate success
+            var result1 = PInvoke.SetCursorPos(targetPosition.X, targetPosition.Y);
+            if (result1 == 0)
             {
-                throw new Win32Exception(
-                    Marshal.GetLastWin32Error());
+                var lastError = Marshal.GetLastPInvokeError();
+                ResultHandler.HandleResult(result: result1, success: lastError == 0, lastError: lastError, memberName: nameof(PInvoke.SetCursorPos));
             }
 
-            var current = MouseHelper.GetCursorPosition();
-            if ((current.X == target.X) || (current.Y == target.Y))
+            var result2 = PInvoke.GetCursorPos(out var currentPosition);
+            ResultHandler.ThrowIfZero(result: result2, getLastError: true, memberName: nameof(PInvoke.GetCursorPos));
+            if ((currentPosition.X == position.X) && (currentPosition.Y == position.Y))
             {
                 break;
             }
         }
-
-        // temporary workaround for issue #1273
-        MouseHelper.SimulateMouseMovementEvent(location);
     }
 
     /// <summary>
@@ -104,27 +105,31 @@ public static class MouseHelper
     /// </remarks>
     private static void SimulateMouseMovementEvent(PointInfo location)
     {
-        var inputs = new User32.INPUT[]
+        var inputs = new INPUT[]
         {
-            new(
-                type: INPUT_TYPE.INPUT_MOUSE,
-                data: new INPUT.DUMMYUNIONNAME(
-                    mi: new MOUSEINPUT(
-                        dx: (int)MouseHelper.CalculateAbsoluteCoordinateX(location.X),
-                        dy: (int)MouseHelper.CalculateAbsoluteCoordinateY(location.Y),
-                        mouseData: 0,
-                        dwFlags: MOUSE_EVENT_FLAGS.MOUSEEVENTF_MOVE | MOUSE_EVENT_FLAGS.MOUSEEVENTF_ABSOLUTE,
-                        time: 0,
-                        dwExtraInfo: ULONG_PTR.Null))),
+            new()
+            {
+                type = INPUT_TYPE.INPUT_MOUSE,
+                Anonymous = new()
+                {
+                    mi = new MOUSEINPUT
+                    {
+                        dx = (int)MouseHelper.CalculateAbsoluteCoordinateX(location.X),
+                        dy = (int)MouseHelper.CalculateAbsoluteCoordinateY(location.Y),
+                        mouseData = 0,
+                        dwFlags = MOUSE_EVENT_FLAGS.MOUSEEVENTF_MOVE | MOUSE_EVENT_FLAGS.MOUSEEVENTF_ABSOLUTE,
+                        time = 0,
+                        dwExtraInfo = default,
+                    },
+                },
+            },
         };
-        var result = User32.SendInput(
-            (UINT)inputs.Length,
-            new LPINPUT(inputs),
-            INPUT.Size * inputs.Length);
+
+        var cbSize = Marshal.SizeOf<INPUT>();
+        var result = PInvoke.SendInput(inputs, cbSize);
         if (result != inputs.Length)
         {
-            throw new Win32Exception(
-                Marshal.GetLastWin32Error());
+            ResultHandler.HandleFailure(result: result, getLastError: true, memberName: nameof(PInvoke.SendInput));
         }
     }
 
@@ -132,13 +137,17 @@ public static class MouseHelper
     {
         // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
         // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
-        return (x * 65535) / User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+        var result = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+        ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.GetSystemMetrics));
+        return (x * 65535) / result;
     }
 
     private static decimal CalculateAbsoluteCoordinateY(decimal y)
     {
         // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
         // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
-        return (y * 65535) / User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+        var result = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+        ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.GetSystemMetrics));
+        return (y * 65535) / result;
     }
 }

@@ -34,6 +34,8 @@ namespace ShortcutGuide.Controls
         private List<string> _lastNavItemIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = string.Empty;
+        private string _searchQuery = string.Empty;
+        private int _openGeneration;
 
         /// <summary>
         /// Raised whenever the user selects a different app in the nav list.
@@ -52,7 +54,6 @@ namespace ShortcutGuide.Controls
         public MainPaneControl()
         {
             this.InitializeComponent();
-            Program.CopyAndIndexGenerationThread.Join();
             this.TitleTextBlock.Text = ResourceLoaderInstance.ResourceLoader.GetString("Title");
 
             this.Unloaded += OnUnloaded;
@@ -60,20 +61,25 @@ namespace ShortcutGuide.Controls
 
         public async Task Open()
         {
-            // Same background work the original MainWindow ran in its
-            // constructor: wait for the index-generation thread to finish
-            // and then enumerate the apps to populate the nav list.
+            int generation = ++_openGeneration;
+            this.ResetSearch();
+
+            // Wait for the index-generation to complete, then enumerate the current
+            // apps to populate the nav list.
             _getAppIdsTask = Task.Run(async () =>
             {
-                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds(Program.ForegroundWindowHandle);
-                return _currentApplicationIds;
+                await Program.ManifestInitializationTask.ConfigureAwait(false);
+                return ManifestInterpreter.GetAllCurrentApplicationIds(Program.ForegroundWindowHandle);
             });
 
-            await InitializeNavItemsAsync();
+            await InitializeNavItemsAsync(generation);
         }
 
         public void Hide()
         {
+            // Invalidate any in-flight Open/InitializeNavItemsAsync runs.
+            _openGeneration++;
+
             // Keep the single ShortcutsPage instance alive and just drop its
             // data. Re-navigating the frame (to a blank page, then back to a
             // fresh ShortcutsPage on the next open) created a new page +
@@ -94,36 +100,70 @@ namespace ShortcutGuide.Controls
 
             _shortcutFile = null;
             _currentApplicationIds.Clear();
+            this.ResetSearch();
 
-            _getAppIdsTask?.Dispose();
             _getAppIdsTask = null;
+        }
+
+        internal bool TryClearSearch()
+        {
+            if (string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                return false;
+            }
+
+            this.SearchBox.Text = string.Empty;
+            this.SearchBox.Focus(FocusState.Programmatic);
+            return true;
+        }
+
+        internal void FocusSearch()
+        {
+            this.SearchBox.Focus(FocusState.Programmatic);
         }
 
         internal string SelectedAppName => _selectedAppName;
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            _getAppIdsTask?.Dispose();
+            _openGeneration++;
+            _getAppIdsTask = null;
         }
 
         /// <summary>
         /// Awaits the background app-id enumeration and populates the nav
         /// list. Safe to call repeatedly: the work only runs once.
         /// </summary>
-        private async Task InitializeNavItemsAsync()
+        private async Task InitializeNavItemsAsync(int generation)
         {
-            if (_getAppIdsTask == null)
+            // Capture to a local so Hide()/OnUnloaded() setting the field to
+            // null on the UI thread between this check and the await below
+            // cannot turn this into a NullReferenceException.
+            var appIdsTask = _getAppIdsTask;
+            if (appIdsTask == null)
             {
                 return;
             }
 
             try
             {
-                _currentApplicationIds = await _getAppIdsTask.ConfigureAwait(true);
+                var appIds = await appIdsTask.ConfigureAwait(true);
+                if (generation != _openGeneration)
+                {
+                    Logger.LogInfo($"MainPaneControl: Stale nav item initialization ignored (generation {generation} vs current {_openGeneration}).");
+                    return;
+                }
+
+                _currentApplicationIds = appIds;
                 this.SetNavItems();
             }
             catch (Exception ex)
             {
+                if (generation != _openGeneration)
+                {
+                    return;
+                }
+
                 Logger.LogError("Failed to initialize navigation items.", ex);
 
                 // Surface the failure so the overlay can close itself,
@@ -247,7 +287,7 @@ namespace ShortcutGuide.Controls
                 // alive by live ComWrappers CCWs), leaking ~one page per open.
                 ShortcutsPage page = this.ContentFrame.Content as ShortcutsPage
                     ?? this.NavigateToShortcutsPage();
-                page.SetShortcuts(file, this._selectedAppName);
+                page.SetShortcuts(file, this._selectedAppName, _searchQuery);
             }
 
             SelectedAppTaskbarVisibilityChanged?.Invoke(this, exposesTaskbarSection);
@@ -267,6 +307,30 @@ namespace ShortcutGuide.Controls
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            _searchQuery = sender.Text;
+            if (this.ContentFrame.Content is ShortcutsPage currentPage)
+            {
+                currentPage.SetSearchQuery(_searchQuery);
+            }
+        }
+
+        private void OnFindInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            this.SearchBox.Focus(FocusState.Programmatic);
+            args.Handled = true;
+        }
+
+        private void ResetSearch()
+        {
+            _searchQuery = string.Empty;
+            if (!string.IsNullOrEmpty(this.SearchBox.Text))
+            {
+                this.SearchBox.Text = string.Empty;
+            }
         }
     }
 }

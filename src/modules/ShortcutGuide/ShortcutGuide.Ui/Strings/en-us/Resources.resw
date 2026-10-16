@@ -165,6 +165,9 @@
   <data name="SearchBox.PlaceholderText" xml:space="preserve">
     <value>Search shortcuts</value>
   </data>
+  <data name="SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search shortcuts</value>
+  </data>
   <data name="SettingsButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Open settings</value>
   </data>

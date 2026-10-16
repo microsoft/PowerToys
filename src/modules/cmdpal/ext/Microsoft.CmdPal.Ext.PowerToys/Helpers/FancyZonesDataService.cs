@@ -187,7 +187,10 @@ internal static class FancyZonesDataService
             appliedFile = existingFile;
         }
 
-        appliedFile.AppliedLayouts ??= new List<AppliedLayouts.AppliedLayoutWrapper>();
+        appliedFile = new AppliedLayouts.AppliedLayoutsListWrapper
+        {
+            AppliedLayouts = appliedFile.AppliedLayouts ?? new List<AppliedLayouts.AppliedLayoutWrapper>(),
+        };
 
         var currentVirtualDesktop = FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString();
 

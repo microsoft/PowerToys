@@ -82,6 +82,11 @@
                                                 Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                Style="{ThemeResource SecondaryTextStyle}"
+                                                Text="-" />
+                                            <TextBlock
+                                                Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Width, Mode=OneWay, Converter={StaticResource ImageResizerDoubleToAutoConverter}, ConverterParameter=Auto}" />
@@ -290,7 +295,7 @@
             <controls:PageLink x:Uid="LearnMore_ImageResizer" Link="https://aka.ms/PowerToysOverview_ImageResizer" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://github.com/bricelam/ImageResizer/" Text="Brice Lambson's ImageResizer" />
+            <controls:PageLink x:Uid="Attribution_ImageResizer" Link="https://github.com/bricelam/ImageResizer/" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

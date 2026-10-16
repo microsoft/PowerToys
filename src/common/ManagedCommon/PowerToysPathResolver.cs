@@ -17,7 +17,7 @@ namespace ManagedCommon
         private const string PowerToysExe = "PowerToys.exe";
 
         /// <summary>
-        /// Gets the PowerToys installation path by checking registry entries
+        /// Gets the PowerToys installation path from the running process or registry entries.
         /// </summary>
         /// <returns>The path to PowerToys installation directory, or null if not found</returns>
         public static string GetPowerToysInstallPath()
@@ -26,11 +26,26 @@ namespace ManagedCommon
             // In debug builds, resolve directly from the running process (no installer/registry involved).
             return GetPathFromCurrentProcess();
 #else
-            // Try to get path from Per-User installation first
-            string path = GetPathFromRegistry(RegistryHive.CurrentUser);
+            // Prefer resolving from the running process' own location. This is a trusted source
+            // (the OS loaded the binary from the install directory) and works for both per-user and
+            // per-machine installs, regardless of elevation.
+            string path = GetPathFromCurrentProcess();
             if (!string.IsNullOrEmpty(path))
             {
                 return path;
+            }
+
+            // Fall back to the registry. The per-user (HKCU) hive is writable by a standard user, so an
+            // attacker could point the "powertoys" protocol command at an arbitrary local or UNC
+            // PowerToys.exe. When this process is elevated, never trust HKCU: only the per-machine
+            // (HKLM) hive, which requires administrator rights to write, is considered trustworthy.
+            if (!IsProcessElevated())
+            {
+                path = GetPathFromRegistry(RegistryHive.CurrentUser);
+                if (!string.IsNullOrEmpty(path))
+                {
+                    return path;
+                }
             }
 
             // Fall back to Per-Machine installation
@@ -42,6 +57,40 @@ namespace ManagedCommon
 
             return null;
 #endif
+        }
+
+        private const uint TokenQuery = 0x0008;
+        private const int TokenElevation = 20;
+
+        [System.Runtime.InteropServices.DllImport("advapi32.dll", SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool OpenProcessToken(IntPtr processHandle, uint desiredAccess, out Microsoft.Win32.SafeHandles.SafeAccessTokenHandle tokenHandle);
+
+        [System.Runtime.InteropServices.DllImport("advapi32.dll", SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool GetTokenInformation(Microsoft.Win32.SafeHandles.SafeAccessTokenHandle tokenHandle, int tokenInformationClass, out uint tokenInformation, uint tokenInformationLength, out uint returnLength);
+
+        private static bool IsProcessElevated()
+        {
+            try
+            {
+                using var process = Process.GetCurrentProcess();
+                if (!OpenProcessToken(process.Handle, TokenQuery, out var token))
+                {
+                    return true;
+                }
+
+                using (token)
+                {
+                    return !GetTokenInformation(token, TokenElevation, out var elevation, sizeof(uint), out _) || elevation != 0;
+                }
+            }
+            catch (Exception)
+            {
+                // If elevation can't be determined, fail safe by treating the process as elevated so the
+                // user-writable HKCU hive is never trusted.
+                return true;
+            }
         }
 
         private static string GetPathFromRegistry(RegistryHive hive)

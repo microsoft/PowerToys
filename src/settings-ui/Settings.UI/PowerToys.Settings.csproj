@@ -30,8 +30,6 @@
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
 		<None Remove="Assets\Settings\Modules\LightSwitch.png" />
-		<None Remove="Assets\Settings\Modules\OOBE\pt-hero.dark.png" />
-		<None Remove="Assets\Settings\Modules\OOBE\pt-hero.light.png" />
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
@@ -64,6 +62,50 @@
 	<ItemGroup>
 		<!-- AI Model Provider Icons - SVG files -->
 		<Content Include="Assets\Settings\Icons\Models\*.svg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- OOBE Welcome hero: high-res module icons, linked from doc\images\icons (single source of truth) -->
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\PowerToys icon\PNG\PowerToysAppList.targetsize-256.png" LinkName="PowerToys.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\AdvancedPaste.png" LinkName="AdvancedPaste.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Always On Top.png" LinkName="AlwaysOnTop.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Awake.png" LinkName="Awake.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Color Picker.png" LinkName="ColorPicker.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Command Not Found.png" LinkName="CommandNotFound.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Command Palette.png" LinkName="CommandPalette.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Crop And Lock.png" LinkName="CropAndLock.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\CursorWrap.png" LinkName="CursorWrap.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Environment Manager.png" LinkName="EnvironmentVariables.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\FancyZones.png" LinkName="FancyZones.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\File Explorer Preview.png" LinkName="FileExplorerPreview.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\File Locksmith.png" LinkName="FileLocksmith.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Find My Mouse.png" LinkName="FindMyMouse.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\GrabAndMove.png" LinkName="GrabAndMove.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Host File Editor.png" LinkName="Hosts.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Image Resizer.png" LinkName="ImageResizer.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Keyboard Manager.png" LinkName="KeyboardManager.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Light Switch.png" LinkName="LightSwitch.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\MeasureTool.png" LinkName="MeasureTool.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Mouse Crosshairs.png" LinkName="MouseCrosshairs.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Mouse Highlighter.png" LinkName="MouseHighlighter.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\MouseJump.png" LinkName="MouseJump.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\MouseWithoutBorders.png" LinkName="MouseWithoutBorders.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\NewPlus.png" LinkName="NewPlus.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Peek.png" LinkName="Peek.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\PowerAccent.png" LinkName="QuickAccent.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\PowerDisplay.png" LinkName="PowerDisplay.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\PowerOCR.png" LinkName="TextExtractor.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\PowerRename.png" LinkName="PowerRename.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\PowerToys Run.png" LinkName="PowerToysRun.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Registry Preview.png" LinkName="RegistryPreview.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Shortcut Guide.png" LinkName="ShortcutGuide.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\WindowHopper.png" LinkName="WindowHopper.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\Workspaces.png" LinkName="Workspaces.png" />
+		<WelcomeHeroIcon Include="$(RepoRoot)doc\images\icons\ZoomIt.png" LinkName="ZoomIt.png" />
+		<Content Include="@(WelcomeHeroIcon)">
+			<Link>Assets\Settings\Modules\OOBE\Welcome\%(LinkName)</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
@@ -109,18 +151,23 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="Settings.UI.UnitTests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
 		<ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
 		<ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
+		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Models\MouseJump.Models.csproj" />
 		<ProjectReference Include="..\..\modules\poweraccent\PowerAccent.Common\PowerAccent.Common.csproj" />
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
 		<ProjectReference Include="..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
-		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
 		<ProjectReference Include="..\..\modules\powerdisplay\PowerDisplay.Models\PowerDisplay.Models.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
 		<ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
@@ -129,6 +176,11 @@
 	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->
 	<PropertyGroup>
 		<GeneratedJsonFile>$(MSBuildProjectDirectory)\Assets\Settings\search.index.json</GeneratedJsonFile>
+		<!-- Generate Settings search index in Release and Custom builds. Debug builds skip index generation for faster builds. 
+		     To enable index generation in Debug, uncomment the line below: -->
+		<!-- <GenerateSettingsSearchIndex>true</GenerateSettingsSearchIndex> -->
+		<GenerateSettingsSearchIndex Condition="'$(GenerateSettingsSearchIndex)' == '' and '$(Configuration)' != 'Debug'">true</GenerateSettingsSearchIndex>
+		<GenerateSettingsSearchIndex Condition="'$(GenerateSettingsSearchIndex)' == ''">false</GenerateSettingsSearchIndex>
 	</PropertyGroup>
 
 	<!-- No RID/Platform plumbing needed here. XamlIndexBuilder handles generation after its own Build. -->
@@ -140,21 +192,24 @@
 		<NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
 	</PropertyGroup>
 
-	<!-- Removed hard-coded resource exclusion. -->
+	<!-- Include the search index only if generation is enabled and the file exists (prevents accidentally embedding stale indices) -->
 
 	<ItemGroup>
 		<!-- Ensure the generated search index is present in the project; only if it exists to prevent CS1566 in clean CI -->
-		<Content Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')">
+		<Content Include="$(GeneratedJsonFile)" Condition="'$(GenerateSettingsSearchIndex)' == 'true' and Exists('$(GeneratedJsonFile)')">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<!-- Embed the generated search index; logical name must match PrebuiltIndexResourceName -->
-		<EmbeddedResource Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')">
+		<EmbeddedResource Include="$(GeneratedJsonFile)" Condition="'$(GenerateSettingsSearchIndex)' == 'true' and Exists('$(GeneratedJsonFile)')">
 			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
 		</EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="Assets\Settings\icon.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\Settings\Icons\QuickAccent.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
@@ -175,7 +230,13 @@
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="SettingsXAML\Views\PowerAccentReferenceGuideWindow.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Controls\CopyButton\CopyButton.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="SettingsXAML\Controls\GPOInfoControl.xaml">
@@ -207,8 +268,8 @@
 		</Page>
 	</ItemGroup>
 
-	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true' and '$(GenerateSettingsSearchIndex)' == 'true'">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
-		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=$(CoreTargetFramework);XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
+		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=$(CoreTargetFramework);XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile);GenerateSettingsSearchIndex=$(GenerateSettingsSearchIndex)" />
 	</Target>
 </Project>

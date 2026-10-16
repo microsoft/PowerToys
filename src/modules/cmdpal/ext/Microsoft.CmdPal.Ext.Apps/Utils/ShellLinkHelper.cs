@@ -20,6 +20,8 @@ public class ShellLinkHelper : IShellLinkHelper
 
     public bool HasArguments { get; set; }
 
+    public string IconLocation { get; private set; } = string.Empty;
+
     // Retrieve the target path using Shell Link
     public unsafe string RetrieveTargetPath(string path)
     {
@@ -58,6 +60,16 @@ public class ShellLinkHelper : IShellLinkHelper
         var hr = link->GetPath((PWSTR)buffer, MAX_PATH, null, 0x1);
 
         target = hr.Succeeded ? new string(buffer) : string.Empty;
+
+        buffer[0] = '\0';
+        IconLocation = string.Empty;
+        var iconIndex = 0;
+        var iconResult = link->GetIconLocation(buffer, MAX_PATH, &iconIndex);
+        if (iconResult.Succeeded && buffer[0] != '\0')
+        {
+            var iconPath = Environment.ExpandEnvironmentVariables(new string(buffer));
+            IconLocation = FormattableString.Invariant($"{iconPath},{iconIndex}");
+        }
 
         // To set the app description
         if (!string.IsNullOrEmpty(target))

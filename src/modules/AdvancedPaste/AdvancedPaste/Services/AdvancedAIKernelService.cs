@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services.CustomActions;
@@ -18,6 +17,7 @@ namespace AdvancedPaste.Services;
 public sealed class AdvancedAIKernelService : KernelServiceBase
 {
     private sealed record RuntimeConfiguration(
+        string ProviderId,
         AIServiceType ServiceType,
         string ModelName,
         string Endpoint,
@@ -27,37 +27,35 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         bool ModerationEnabled) : IKernelRuntimeConfiguration;
 
     private readonly IAICredentialsProvider credentialsProvider;
+    private readonly Func<PasteAIProviderDefinition, bool> isProviderAllowed;
 
     public AdvancedAIKernelService(
         IAICredentialsProvider credentialsProvider,
         IKernelQueryCacheService queryCacheService,
         IPromptModerationService promptModerationService,
         IUserSettings userSettings,
-        ICustomActionTransformService customActionTransformService)
+        ICustomActionTransformService customActionTransformService,
+        Func<PasteAIProviderDefinition, bool> isProviderAllowed = null)
         : base(queryCacheService, promptModerationService, userSettings, customActionTransformService)
     {
         ArgumentNullException.ThrowIfNull(credentialsProvider);
 
         this.credentialsProvider = credentialsProvider;
+        this.isProviderAllowed = isProviderAllowed ?? AdvancedPastePolicy.IsProviderAllowed;
     }
 
-    protected override string AdvancedAIModelName => GetRuntimeConfiguration().ModelName;
-
-    protected override PromptExecutionSettings PromptExecutionSettings => CreatePromptExecutionSettings();
-
-    protected override void AddChatCompletionService(IKernelBuilder kernelBuilder)
+    protected override void AddChatCompletionService(IKernelBuilder kernelBuilder, IKernelRuntimeConfiguration runtimeConfig)
     {
         ArgumentNullException.ThrowIfNull(kernelBuilder);
+        ArgumentNullException.ThrowIfNull(runtimeConfig);
 
-        var runtimeConfig = GetRuntimeConfiguration();
         var serviceType = runtimeConfig.ServiceType;
         var modelName = runtimeConfig.ModelName;
         var requiresApiKey = RequiresApiKey(serviceType);
         var apiKey = string.Empty;
         if (requiresApiKey)
         {
-            this.credentialsProvider.Refresh();
-            apiKey = (this.credentialsProvider.GetKey() ?? string.Empty).Trim();
+            apiKey = (this.credentialsProvider.GetKey(serviceType, runtimeConfig.ProviderId) ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
@@ -85,13 +83,8 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return AIServiceUsageHelper.GetOpenAIServiceUsage(chatMessage);
     }
 
-    protected override bool ShouldModerateAdvancedAI()
+    protected override bool ShouldModerateAdvancedAI(IKernelRuntimeConfiguration runtimeConfig)
     {
-        if (!TryGetRuntimeConfiguration(out var runtimeConfig))
-        {
-            return false;
-        }
-
         return runtimeConfig.ModerationEnabled && (runtimeConfig.ServiceType == AIServiceType.OpenAI || runtimeConfig.ServiceType == AIServiceType.AzureOpenAI);
     }
 
@@ -105,9 +98,9 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return "gpt-4o";
     }
 
-    protected override IKernelRuntimeConfiguration GetRuntimeConfiguration()
+    protected override IKernelRuntimeConfiguration GetRuntimeConfiguration(string providerIdOverride)
     {
-        if (TryGetRuntimeConfiguration(out var runtimeConfig))
+        if (TryGetRuntimeConfiguration(providerIdOverride, out var runtimeConfig))
         {
             return runtimeConfig;
         }
@@ -115,11 +108,11 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         throw new InvalidOperationException("No Advanced AI provider is configured.");
     }
 
-    private bool TryGetRuntimeConfiguration(out IKernelRuntimeConfiguration runtimeConfig)
+    private bool TryGetRuntimeConfiguration(string providerIdOverride, out IKernelRuntimeConfiguration runtimeConfig)
     {
         runtimeConfig = null;
 
-        if (!TryResolveAdvancedProvider(out var provider))
+        if (!AdvancedAIProviderResolver.TryResolveAdvancedProvider(this.UserSettings?.PasteAIConfiguration, providerIdOverride, out var provider))
         {
             return false;
         }
@@ -130,7 +123,13 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
             return false;
         }
 
+        if (!this.isProviderAllowed(provider))
+        {
+            throw new ProviderPolicyDisabledException();
+        }
+
         runtimeConfig = new RuntimeConfiguration(
+            provider.Id,
             serviceType,
             GetModelName(provider),
             provider.EndpointUrl,
@@ -139,49 +138,6 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
             provider.SystemPrompt,
             provider.ModerationEnabled);
         return true;
-    }
-
-    private bool TryResolveAdvancedProvider(out PasteAIProviderDefinition provider)
-    {
-        provider = null;
-
-        var configuration = this.UserSettings?.PasteAIConfiguration;
-        if (configuration is null)
-        {
-            return false;
-        }
-
-        var activeProvider = configuration.ActiveProvider;
-        if (IsAdvancedProvider(activeProvider))
-        {
-            provider = activeProvider;
-            return true;
-        }
-
-        if (activeProvider is not null)
-        {
-            return false;
-        }
-
-        var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedProvider);
-        if (fallback is not null)
-        {
-            provider = fallback;
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool IsAdvancedProvider(PasteAIProviderDefinition provider)
-    {
-        if (provider is null || !provider.EnableAdvancedAI)
-        {
-            return false;
-        }
-
-        var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
-        return IsServiceTypeSupported(serviceType);
     }
 
     private static bool IsServiceTypeSupported(AIServiceType serviceType)
@@ -209,9 +165,8 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         throw new InvalidOperationException($"Endpoint is required for {serviceType} configuration but was not provided.");
     }
 
-    private PromptExecutionSettings CreatePromptExecutionSettings()
+    protected override PromptExecutionSettings GetPromptExecutionSettings(IKernelRuntimeConfiguration runtimeConfig)
     {
-        var serviceType = GetRuntimeConfiguration().ServiceType;
         return new OpenAIPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),

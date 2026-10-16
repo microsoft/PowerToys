@@ -105,13 +105,34 @@ resources:
 
 ## Important notes
 
-> **Note:** The Keyboard Manager module DSC configuration controls the enabled state only. Key remappings and shortcut definitions are managed through the Keyboard Manager UI and stored separately. This design ensures that complex remapping configurations are not accidentally overwritten by DSC operations.
+> **Note:** The Keyboard Manager module `settings` resource controls the enabled state and editor options only. Key remappings and shortcut definitions are stored separately in the remapping profile and are managed by the dedicated [`profile` resource][05] (`Microsoft.PowerToys/KeyboardManagerProfile`).
 
-To configure key remappings:
-1. Enable Keyboard Manager using DSC
-2. Open PowerToys Settings
-3. Navigate to Keyboard Manager
-4. Use "Remap a key" or "Remap a shortcut" to configure specific mappings
+To configure key remappings declaratively, combine both resources:
+
+```yaml
+resources:
+  - name: Enable Keyboard Manager
+    type: Microsoft.PowerToys/KeyboardManagerSettings
+    properties:
+      settings:
+        properties:
+          Enabled: true
+        name: KeyboardManager
+        version: 1.0
+
+  - name: Deploy key remappings
+    type: Microsoft.PowerToys/KeyboardManagerProfile
+    properties:
+      profile:
+        keys:
+          - { from: CapsLock, to: Esc }
+        shortcuts:
+          - { from: "Ctrl+Shift+A", to: "Ctrl+V" }
+```
+
+Alternatively, remappings can still be configured interactively through the
+Keyboard Manager editor in PowerToys Settings. Note that applying the
+`profile` resource replaces all existing remappings with the declared state.
 
 ## Use cases
 
@@ -133,6 +154,7 @@ resources:
 
 ## See also
 
+- [Keyboard Manager Profile Resource][05]
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
 - [PowerOCR][03]
@@ -143,3 +165,4 @@ resources:
 [02]: ../overview.md
 [03]: ./PowerOCR.md
 [04]: https://learn.microsoft.com/windows/powertoys/keyboard-manager
+[05]: ../profile-resource.md

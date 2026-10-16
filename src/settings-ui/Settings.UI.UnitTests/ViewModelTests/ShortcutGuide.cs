@@ -7,6 +7,7 @@ using System.IO.Abstractions;
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -24,12 +25,12 @@ namespace ViewModelTests
         /// Test if the original settings files were modified.
         /// </summary>
         [TestMethod]
-        [DataRow("v0.18.2", "settings.json")]
-        [DataRow("v0.19.2", "settings.json")]
-        [DataRow("v0.20.1", "settings.json")]
-        [DataRow("v0.21.1", "settings.json")]
-        [DataRow("v0.22.0", "settings.json")]
-        public void OriginalFilesModificationTest(string version, string fileName)
+        [DataRow("v0.18.2", "settings.json", 100)]
+        [DataRow("v0.19.2", "settings.json", 1150)]
+        [DataRow("v0.20.1", "settings.json", 650)]
+        [DataRow("v0.21.1", "settings.json", 1050)]
+        [DataRow("v0.22.0", "settings.json", 850)]
+        public void OriginalFilesModificationTest(string version, string fileName, int expectedPressTime)
         {
             var settingPathMock = new Mock<SettingPath>();
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ShortcutGuideSettings.ModuleName, fileName);
@@ -48,6 +49,9 @@ namespace ViewModelTests
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ShortcutGuide, viewModel.IsEnabled);
+            Assert.AreEqual(expectedPressTime, viewModel.PressTime);
+            Assert.AreEqual((int)ShortcutGuideWindowsKeyAction.TaskbarIndicators, viewModel.WindowsKeyActionIndex);
+            Assert.IsTrue(viewModel.CloseOnWindowsKeyRelease);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
@@ -103,6 +107,132 @@ namespace ViewModelTests
             // Assert
             Func<string, bool> isDark = s => JsonSerializer.Deserialize<ShortcutGuideSettings>(s).Properties.Theme.Value == "dark";
             settingsUtilsMock.Verify(x => x.SaveSettings(It.Is<string>(y => isDark(y)), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [TestMethod]
+        public void WindowsKeySettingsShouldUseExpectedDefaults()
+        {
+            var properties = new ShortcutGuideProperties();
+
+            Assert.AreEqual((int)ShortcutGuideWindowsKeyAction.TaskbarIndicators, properties.WindowsKeyAction.Value);
+            Assert.AreEqual(ShortcutGuideProperties.DefaultPressTimeMs, properties.PressTime.Value);
+            Assert.IsTrue(properties.CloseOnWindowsKeyRelease.Value);
+        }
+
+        [TestMethod]
+        public void InvalidWindowsKeySettingsShouldBeNormalizedOnInitialization()
+        {
+            var settings = new ShortcutGuideSettings();
+            settings.Properties.WindowsKeyAction.Value = 42;
+            settings.Properties.PressTime.Value = ShortcutGuideProperties.MaximumPressTimeMs + 1;
+
+            int ipcMessageCount = 0;
+            var viewModel = CreateViewModel(settings, out var settingsUtilsMock, _ => ipcMessageCount++);
+
+            Assert.AreEqual((int)ShortcutGuideWindowsKeyAction.TaskbarIndicators, viewModel.WindowsKeyActionIndex);
+            Assert.AreEqual(ShortcutGuideProperties.MaximumPressTimeMs, viewModel.PressTime);
+            Assert.AreEqual((int)ShortcutGuideWindowsKeyAction.TaskbarIndicators, settings.Properties.WindowsKeyAction.Value);
+            Assert.AreEqual(ShortcutGuideProperties.MaximumPressTimeMs, settings.Properties.PressTime.Value);
+            Assert.IsTrue(viewModel.IsWindowsKeyHoldEnabled);
+            Assert.IsFalse(viewModel.IsOpenShortcutGuideWindowsKeyAction);
+            Assert.AreEqual(1, ipcMessageCount);
+            settingsUtilsMock.Verify(
+                x => x.SaveSettings(
+                    It.Is<string>(json => JsonSerializer.Deserialize<ShortcutGuideSettings>(json).Properties.WindowsKeyAction.Value == (int)ShortcutGuideWindowsKeyAction.TaskbarIndicators),
+                    ShortcutGuideSettings.ModuleName,
+                    It.IsAny<string>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public void WindowsKeyActionShouldUpdateConditionalStateAndPersist()
+        {
+            var settings = new ShortcutGuideSettings();
+            int ipcMessageCount = 0;
+            var viewModel = CreateViewModel(settings, out var settingsUtilsMock, _ => ipcMessageCount++);
+
+            viewModel.WindowsKeyActionIndex = (int)ShortcutGuideWindowsKeyAction.Off;
+
+            Assert.IsFalse(viewModel.IsWindowsKeyHoldEnabled);
+            Assert.IsFalse(viewModel.IsOpenShortcutGuideWindowsKeyAction);
+            Assert.AreEqual((int)ShortcutGuideWindowsKeyAction.Off, settings.Properties.WindowsKeyAction.Value);
+            Assert.AreEqual(1, ipcMessageCount);
+            settingsUtilsMock.Verify(
+                x => x.SaveSettings(
+                    It.Is<string>(json => JsonSerializer.Deserialize<ShortcutGuideSettings>(json).Properties.WindowsKeyAction.Value == (int)ShortcutGuideWindowsKeyAction.Off),
+                    ShortcutGuideSettings.ModuleName,
+                    It.IsAny<string>()),
+                Times.Once);
+
+            viewModel.WindowsKeyActionIndex = (int)ShortcutGuideWindowsKeyAction.OpenShortcutGuide;
+
+            Assert.IsTrue(viewModel.IsWindowsKeyHoldEnabled);
+            Assert.IsTrue(viewModel.IsOpenShortcutGuideWindowsKeyAction);
+        }
+
+        [TestMethod]
+        public void PressTimeShouldClampAtBothBoundariesAndPersist()
+        {
+            var settings = new ShortcutGuideSettings();
+            var viewModel = CreateViewModel(settings, out var settingsUtilsMock);
+
+            viewModel.PressTime = ShortcutGuideProperties.MinimumPressTimeMs - 1;
+
+            Assert.AreEqual(ShortcutGuideProperties.MinimumPressTimeMs, viewModel.PressTime);
+            Assert.AreEqual(ShortcutGuideProperties.MinimumPressTimeMs, settings.Properties.PressTime.Value);
+
+            viewModel.PressTime = ShortcutGuideProperties.MaximumPressTimeMs + 1;
+
+            Assert.AreEqual(ShortcutGuideProperties.MaximumPressTimeMs, viewModel.PressTime);
+            Assert.AreEqual(ShortcutGuideProperties.MaximumPressTimeMs, settings.Properties.PressTime.Value);
+            settingsUtilsMock.Verify(
+                x => x.SaveSettings(
+                    It.Is<string>(json => JsonSerializer.Deserialize<ShortcutGuideSettings>(json).Properties.PressTime.Value == ShortcutGuideProperties.MaximumPressTimeMs),
+                    ShortcutGuideSettings.ModuleName,
+                    It.IsAny<string>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public void CloseOnWindowsKeyReleaseShouldPersist()
+        {
+            var settings = new ShortcutGuideSettings();
+            var viewModel = CreateViewModel(settings, out var settingsUtilsMock);
+
+            viewModel.CloseOnWindowsKeyRelease = false;
+
+            Assert.IsFalse(settings.Properties.CloseOnWindowsKeyRelease.Value);
+            settingsUtilsMock.Verify(
+                x => x.SaveSettings(
+                    It.Is<string>(json => JsonSerializer.Deserialize<ShortcutGuideSettings>(json).Properties.CloseOnWindowsKeyRelease.Value == false),
+                    ShortcutGuideSettings.ModuleName,
+                    It.IsAny<string>()),
+                Times.Once);
+        }
+
+        private static ShortcutGuideViewModel CreateViewModel(
+            ShortcutGuideSettings settings,
+            out Mock<SettingsUtils> settingsUtilsMock,
+            Action<string> ipcMessageReceived = null)
+        {
+            settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
+
+            var generalSettingsRepository = new Mock<ISettingsRepository<GeneralSettings>>();
+            generalSettingsRepository.SetupGet(x => x.SettingsConfig).Returns(new GeneralSettings());
+
+            var shortcutGuideSettingsRepository = new Mock<ISettingsRepository<ShortcutGuideSettings>>();
+            shortcutGuideSettingsRepository.SetupGet(x => x.SettingsConfig).Returns(settings);
+
+            return new ShortcutGuideViewModel(
+                settingsUtilsMock.Object,
+                generalSettingsRepository.Object,
+                shortcutGuideSettingsRepository.Object,
+                message =>
+                {
+                    ipcMessageReceived?.Invoke(message);
+                    return 0;
+                },
+                ShortCutGuideTestFolderName);
         }
     }
 }

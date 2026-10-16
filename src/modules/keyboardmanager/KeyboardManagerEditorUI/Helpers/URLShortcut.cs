@@ -52,5 +52,8 @@ namespace KeyboardManagerEditorUI.Helpers
                 return string.Join(Environment.NewLine, urls.Select(u => u.Trim()));
             }
         }
+        public IReadOnlyList<int> TriggerKeyCodes { get; set; } = Array.Empty<int>();
+
+        public string SearchableText { get; set; } = string.Empty;
     }
 }

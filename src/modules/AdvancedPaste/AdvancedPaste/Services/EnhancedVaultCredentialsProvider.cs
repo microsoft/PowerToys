@@ -55,6 +55,13 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         return !string.IsNullOrEmpty(GetKey());
     }
 
+    public string GetKey(AIServiceType serviceType, string providerId)
+    {
+        var normalizedType = NormalizeServiceType(serviceType);
+        var entry = BuildCredentialEntry(normalizedType, providerId ?? string.Empty);
+        return LoadKey(entry);
+    }
+
     public bool Refresh()
     {
         using (_syncRoot.EnterScope())
@@ -121,6 +128,7 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         try
         {
             var credential = new PasswordVault().Retrieve(entry.Value.Resource, entry.Value.Username);
+            credential?.RetrievePassword();
             return credential?.Password ?? string.Empty;
         }
         catch (Exception)
@@ -160,6 +168,7 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
             case AIServiceType.ML:
             case AIServiceType.Onnx:
             case AIServiceType.Ollama:
+            case AIServiceType.PhiSilica:
                 return null;
             default:
                 return null;

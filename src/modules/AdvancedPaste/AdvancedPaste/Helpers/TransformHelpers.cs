@@ -23,8 +23,8 @@ public static class TransformHelpers
         return format switch
         {
             PasteFormats.PlainText => await ToPlainTextAsync(clipboardData),
-            PasteFormats.Markdown => await ToMarkdownAsync(clipboardData),
-            PasteFormats.Json => await ToJsonAsync(clipboardData),
+            PasteFormats.Markdown => CreateDataPackageFromText(await MarkdownHelper.ToMarkdownAsync(clipboardData, cancellationToken)),
+            PasteFormats.Json => CreateDataPackageFromText(await JsonHelper.ToJsonFromXmlOrCsvAsync(clipboardData, cancellationToken)),
             PasteFormats.ImageToText => await ImageToTextAsync(clipboardData, cancellationToken),
             PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData, cancellationToken),
             PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData, cancellationToken),
@@ -41,18 +41,6 @@ public static class TransformHelpers
     {
         Logger.LogTrace();
         return CreateDataPackageFromText(await clipboardData.GetTextOrEmptyAsync());
-    }
-
-    private static async Task<DataPackage> ToMarkdownAsync(DataPackageView clipboardData)
-    {
-        Logger.LogTrace();
-        return CreateDataPackageFromText(await MarkdownHelper.ToMarkdownAsync(clipboardData));
-    }
-
-    private static async Task<DataPackage> ToJsonAsync(DataPackageView clipboardData)
-    {
-        Logger.LogTrace();
-        return CreateDataPackageFromText(await JsonHelper.ToJsonFromXmlOrCsvAsync(clipboardData));
     }
 
     private static async Task<DataPackage> ImageToTextAsync(DataPackageView clipboardData, CancellationToken cancellationToken)
@@ -91,30 +79,9 @@ public static class TransformHelpers
         Logger.LogTrace();
 
         var cfHtml = await clipboardData.GetHtmlContentAsync();
-        var html = RemoveHtmlMetadata(cfHtml);
+        var html = HtmlFormatHelper.GetStaticFragment(cfHtml);
 
         return await CreateDataPackageFromFileContentAsync(html, "html", cancellationToken);
-    }
-
-    /// <summary>
-    /// Removes leading CF_HTML metadata from HTML clipboard data.
-    /// See: https://learn.microsoft.com/en-us/windows/win32/dataxchg/html-clipboard-format
-    /// </summary>
-    private static string RemoveHtmlMetadata(string cfHtml)
-    {
-        int? GetIntTagValue(string tagName)
-        {
-            var tagNameWithColon = tagName + ":";
-            int tagStartPos = cfHtml.IndexOf(tagNameWithColon, StringComparison.InvariantCulture);
-
-            const int tagValueLength = 10;
-            return tagStartPos != -1 && int.TryParse(cfHtml.AsSpan(tagStartPos + tagNameWithColon.Length, tagValueLength), CultureInfo.InvariantCulture, out int result) ? result : null;
-        }
-
-        var startFragmentIndex = GetIntTagValue("StartFragment");
-        var endFragmentIndex = GetIntTagValue("EndFragment");
-
-        return (startFragmentIndex == null || endFragmentIndex == null) ? cfHtml : cfHtml[startFragmentIndex.Value..endFragmentIndex.Value];
     }
 
     private static async Task<DataPackage> CreateDataPackageFromFileContentAsync(string data, string fileExtension, CancellationToken cancellationToken)
@@ -145,7 +112,7 @@ public static class TransformHelpers
         var prefix = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsFile_FilePrefix");
         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
 
-        return Path.Combine(Path.GetTempPath(), $"{prefix}{timestamp}.{fileExtension}");
+        return Path.Combine(AdvancedPasteTempFileManager.CreateDirectory().FullName, $"{prefix}{timestamp}.{fileExtension}");
     }
 
     private static DataPackage CreateDataPackageFromText(string content) => DataPackageHelpers.CreateFromText(content);

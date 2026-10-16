@@ -34,7 +34,7 @@ private:
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         LowlevelKeyboardEvent event;
-        if (nCode == HC_ACTION && wParam == WM_KEYDOWN)
+        if (nCode == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN || wParam == WM_KEYUP || wParam == WM_SYSKEYUP))
         {
             event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
             event.wParam = wParam;

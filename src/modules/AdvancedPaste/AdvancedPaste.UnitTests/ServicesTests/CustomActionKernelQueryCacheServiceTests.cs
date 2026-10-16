@@ -30,6 +30,16 @@ public sealed class CustomActionKernelQueryCacheServiceTests
     private static readonly CacheValue TestValue = new([new(PasteFormats.PlainText, [])]);
     private static readonly CacheValue TestValue2 = new([new(PasteFormats.KernelQuery, new() { { "a", "b" }, { "c", "d" } })]);
 
+    private static string LocalizeResourceId(string resourceId) => resourceId switch
+    {
+        "PasteAsPlainText" => "Paste as plain text",
+        "PasteAsMarkdown" => MarkdownTestKey.Prompt,
+        "PasteAsJson" => JSONTestKey.Prompt,
+        "PasteAsTxtFile" => PasteAsTxtFileKey.Prompt,
+        "PasteAsPngFile" => PasteAsPngFileKey.Prompt,
+        _ => resourceId,
+    };
+
     private CustomActionKernelQueryCacheService _cacheService;
     private Mock<IUserSettings> _userSettings;
     private MockFileSystem _fileSystem;
@@ -41,7 +51,7 @@ public sealed class CustomActionKernelQueryCacheServiceTests
         UpdateUserActions([], []);
 
         _fileSystem = new();
-        _cacheService = new(_userSettings.Object, _fileSystem);
+        _cacheService = new(_userSettings.Object, _fileSystem, LocalizeResourceId);
     }
 
     [TestMethod]
@@ -122,7 +132,7 @@ public sealed class CustomActionKernelQueryCacheServiceTests
         await _cacheService.WriteAsync(JSONTestKey, TestValue);
         await _cacheService.WriteAsync(MarkdownTestKey, TestValue2);
 
-        _cacheService = new(_userSettings.Object, _fileSystem); // recreate using same mock file-system to simulate app restart
+        _cacheService = new(_userSettings.Object, _fileSystem, LocalizeResourceId); // recreate using same mock file-system to simulate app restart
 
         AssertAreEqual(TestValue, _cacheService.ReadOrNull(JSONTestKey));
         AssertAreEqual(TestValue2, _cacheService.ReadOrNull(MarkdownTestKey));

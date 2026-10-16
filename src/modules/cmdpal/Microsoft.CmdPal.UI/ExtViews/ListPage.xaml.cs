@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -17,7 +17,7 @@ namespace Microsoft.CmdPal.UI;
 /// <see cref="ListItemsView"/> so it can be reused (for example, by
 /// <see cref="ParametersPage"/>).
 /// </summary>
-public sealed partial class ListPage : Page
+public sealed partial class ListPage : Page, IPageInteractionTarget, IListInteractionSource
 {
     internal ListViewModel? ViewModel
     {
@@ -33,6 +33,42 @@ public sealed partial class ListPage : Page
     {
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
+        ListView.SelectionChanged += (_, e) => SelectionChanged?.Invoke(this, e);
+        ListView.ContextMenuRequested += (_, e) => ContextMenuRequested?.Invoke(this, e);
+        ListView.ContextMenuCloseRequested += (_, _) => ContextMenuCloseRequested?.Invoke(this, EventArgs.Empty);
+        ListView.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+        ListView.DragStateChanged += (_, e) => DragStateChanged?.Invoke(this, e);
+    }
+
+    public event EventHandler<ListItemsSelectionChangedEventArgs>? SelectionChanged;
+
+    public event EventHandler<ListItemsContextMenuRequestedEventArgs>? ContextMenuRequested;
+
+    public event EventHandler? ContextMenuCloseRequested;
+
+    public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
+
+    public void NavigatePrevious() => ListView.NavigatePrevious();
+
+    public void NavigateNext() => ListView.NavigateNext();
+
+    public void NavigateLeft() => ListView.NavigateLeft();
+
+    public void NavigateRight() => ListView.NavigateRight();
+
+    public void NavigatePageUp() => ListView.NavigatePageUp();
+
+    public void NavigatePageDown() => ListView.NavigatePageDown();
+
+    public void ActivatePrimary() => ListView.ActivatePrimary();
+
+    public void ActivateSecondary() => ListView.ActivateSecondary();
+
+    internal void HandleNumberedShortcut(NumberedItemShortcuts.Shortcut shortcut)
+    {
+        ListView.HandleNumberedShortcut(shortcut);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -61,20 +97,22 @@ public sealed partial class ListPage : Page
         base.OnNavigatedTo(e);
     }
 
-    protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
-        base.OnNavigatingFrom(e);
+        base.OnNavigatedFrom(e);
+
+        var viewModel = ViewModel;
+        Bindings.StopTracking();
+        ViewModel = null;
+        ListView.DetachFromPage();
+        CleanupHelper.ClearItemsSources(this);
 
         if (e.NavigationMode != NavigationMode.New)
         {
-            ViewModel?.SafeCleanup();
-            CleanupHelper.Cleanup(this);
+            _ = viewModel?.CleanupAsync();
         }
 
-        // Clean-up event listeners
-        ViewModel = null;
-
-        GC.Collect();
+        ExtensionObjectReleaser.AfterNavigation();
     }
 
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

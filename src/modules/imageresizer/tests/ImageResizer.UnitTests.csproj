@@ -13,6 +13,7 @@
     <AssemblyName>ImageResizer.Test</AssemblyName>
 
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\$(AssemblyName)\</OutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);ImageResizer.UITests\**</DefaultItemExcludes>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

@@ -3,9 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using ImageResizer.Cli.Commands;
 using ImageResizer.Models;
+using ImageResizer.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Tests.Models
@@ -15,6 +19,7 @@ namespace ImageResizer.Tests.Models
     {
         private static readonly string[] _multiFileArgs = new[] { "test1.jpg", "test2.jpg", "test3.jpg" };
         private static readonly string[] _mixedOptionsArgs = new[] { "--width", "800", "test1.jpg", "--height", "600", "test2.jpg" };
+        private static readonly Lazy<CompositeFormat> _invalidEnumValueFormat = new(() => CompositeFormat.Parse(Resources.CLI_ErrorInvalidEnumValue));
 
         [TestMethod]
         public void Parse_WithValidWidth_SetsWidth()
@@ -56,22 +61,40 @@ namespace ImageResizer.Tests.Models
             Assert.AreEqual(longForm.Height, shortForm.Height);
         }
 
-        [TestMethod]
-        public void Parse_WithValidUnit_SetsUnit()
+        [DataTestMethod]
+        [DataRow("--unit", "Centimeter", ResizeUnit.Centimeter)]
+        [DataRow("--unit", "Inch", ResizeUnit.Inch)]
+        [DataRow("--unit", "Percent", ResizeUnit.Percent)]
+        [DataRow("--unit", "Pixel", ResizeUnit.Pixel)]
+        [DataRow("-u", "piXEl", ResizeUnit.Pixel)]
+        [DataRow("--unit", "0", ResizeUnit.Centimeter)]
+        [DataRow("--unit", "1", ResizeUnit.Inch)]
+        [DataRow("--unit", "2", ResizeUnit.Percent)]
+        [DataRow("--unit", "3", ResizeUnit.Pixel)]
+        [DataRow("-u", "3", ResizeUnit.Pixel)]
+        public void Parse_WithValidUnit_SetsUnit(string option, string value, ResizeUnit expected)
         {
-            var args = new[] { "--unit", "Percent", "test.jpg" };
-            var options = CliOptions.Parse(args);
+            var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
 
-            Assert.AreEqual(ResizeUnit.Percent, options.Unit);
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(expected, options.Unit);
         }
 
-        [TestMethod]
-        public void Parse_WithValidFit_SetsFit()
+        [DataTestMethod]
+        [DataRow("--fit", "Fill", ResizeFit.Fill)]
+        [DataRow("--fit", "Fit", ResizeFit.Fit)]
+        [DataRow("--fit", "Stretch", ResizeFit.Stretch)]
+        [DataRow("-f", "fIt", ResizeFit.Fit)]
+        [DataRow("--fit", "0", ResizeFit.Fill)]
+        [DataRow("--fit", "1", ResizeFit.Fit)]
+        [DataRow("--fit", "2", ResizeFit.Stretch)]
+        [DataRow("-f", "2", ResizeFit.Stretch)]
+        public void Parse_WithValidFit_SetsFit(string option, string value, ResizeFit expected)
         {
-            var args = new[] { "--fit", "Fill", "test.jpg" };
-            var options = CliOptions.Parse(args);
+            var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
 
-            Assert.AreEqual(ResizeFit.Fill, options.Fit);
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(expected, options.Fit);
         }
 
         [TestMethod]
@@ -233,6 +256,8 @@ namespace ImageResizer.Tests.Models
 
             Assert.IsNotNull(options);
             Assert.AreEqual(0, options.Files.Count);
+            Assert.IsNull(options.Unit);
+            Assert.IsNull(options.Fit);
         }
 
         [TestMethod]
@@ -263,6 +288,372 @@ namespace ImageResizer.Tests.Models
 
             Assert.AreEqual(ResizeUnit.Pixel, options.Unit);
             Assert.AreEqual(ResizeFit.Fit, options.Fit);
+        }
+
+        [DataTestMethod]
+        [DataRow("--unit", "Bogus")]
+        [DataRow("--fit", "Bogus")]
+        [DataRow("--unit", "99")]
+        [DataRow("--fit", "99")]
+        [DataRow("--unit", "4")]
+        [DataRow("--fit", "3")]
+        [DataRow("--unit", "-1")]
+        [DataRow("--fit", "-1")]
+        [DataRow("--unit", "2147483647")]
+        [DataRow("--fit", "2147483647")]
+        [DataRow("--unit", "-2147483648")]
+        [DataRow("--fit", "-2147483648")]
+        [DataRow("--unit", "2147483648")]
+        [DataRow("--fit", "2147483648")]
+        [DataRow("--unit", "-2147483649")]
+        [DataRow("--fit", "-2147483649")]
+        public void Parse_WithInvalidEnumValue_ReturnsError(string option, string value)
+        {
+            var options = CliOptions.ParseForCli([option, value, "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], option);
+            StringAssert.Contains(options.ParseErrors[0], value);
+            Assert.IsNull(options.Unit);
+            Assert.IsNull(options.Fit);
+        }
+
+        [DataTestMethod]
+        [DataRow("-u", "--unit")]
+        [DataRow("-f", "--fit")]
+        public void Parse_WithUndefinedEnumAndShortAlias_ReturnsLocalizedError(string alias, string option)
+        {
+            var options = CliOptions.ParseForCli([alias, "99", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.AreEqual(
+                string.Format(CultureInfo.InvariantCulture, _invalidEnumValueFormat.Value, "99", option),
+                options.ParseErrors[0]);
+            Assert.IsNull(options.Unit);
+            Assert.IsNull(options.Fit);
+        }
+
+        [TestMethod]
+        public void Parse_WithAttachedDefinedEnumValues_PreservesCompatibility()
+        {
+            var options = CliOptions.ParseForCli(["-u3", "-f2", "test.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(ResizeUnit.Pixel, options.Unit);
+            Assert.AreEqual(ResizeFit.Stretch, options.Fit);
+        }
+
+        [TestMethod]
+        public void Parse_WithInvalidUnit_PreservesValidFitAndInput()
+        {
+            var options = CliOptions.ParseForCli(["--unit", "99", "--fit", "Stretch", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.IsNull(options.Unit);
+            Assert.AreEqual(ResizeFit.Stretch, options.Fit);
+            CollectionAssert.Contains(options.Files.ToList(), "test.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithInvalidUnitAndFit_ReturnsBothErrors()
+        {
+            var options = CliOptions.ParseForCli(["--unit", "99", "--fit", "99", "test.jpg"]);
+
+            Assert.AreEqual(2, options.ParseErrors.Count);
+            Assert.IsNull(options.Unit);
+            Assert.IsNull(options.Fit);
+        }
+
+        [DataTestMethod]
+        [DataRow("[suggest]", "abc")]
+        [DataRow("[suggest:30]", "abc")]
+        [DataRow("[suggest]", "-1")]
+        [DataRow("[suggest:30]", "-1")]
+        public void Parse_WithCompletionDirectiveAndInvalidWidth_ReturnsError(string directive, string width)
+        {
+            var options = CliOptions.ParseForCli([directive, "--width", width, "--replace", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.IsNull(options.Width);
+        }
+
+        [DataTestMethod]
+        [DataRow("[suggest]")]
+        [DataRow("[suggest:30]")]
+        public void Parse_WithCompletionDirectiveAndMissingResponseFile_ReturnsError(string directive)
+        {
+            using var directory = new TestDirectory();
+            var responseFile = Path.Combine(directory, "missing.rsp");
+
+            var options = CliOptions.ParseForCli([directive, "@" + responseFile, "--replace", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "missing.rsp");
+        }
+
+        [TestMethod]
+        public void Parse_WithUnknownLongOption_ReturnsError()
+        {
+            var options = CliOptions.ParseForCli(["--bogus", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "--bogus");
+        }
+
+        [TestMethod]
+        public void Parse_WithUnknownOptionAfterFile_ReturnsError()
+        {
+            var options = CliOptions.ParseForCli(["test.jpg", "--bogus"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "--bogus");
+        }
+
+        [TestMethod]
+        public void Parse_WithRootRelativeSlashPath_AllowsFile()
+        {
+            var options = CliOptions.ParseForCli(["/bogus", "test.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.Contains(options.Files.ToList(), "/bogus");
+        }
+
+        [TestMethod]
+        public void Parse_WithPrefixedDashFileName_AllowsFile()
+        {
+            var options = CliOptions.ParseForCli([@".\-photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.Contains(options.Files.ToList(), @".\-photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithEndOfOptions_AllowsOptionLikeFileName()
+        {
+            var options = CliOptions.ParseForCli(["--", "--photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.Contains(options.Files.ToList(), "--photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_LenientModePreservesOptionLikeFileForGui()
+        {
+            var options = CliOptions.Parse(["--photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.Contains(options.Files.ToList(), "--photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithUnknownBundledOption_ReturnsError()
+        {
+            var options = CliOptions.ParseForCli(["-replace", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "-replace");
+        }
+
+        [TestMethod]
+        public void Parse_WithBundledValueOption_PreservesCompatibility()
+        {
+            var options = CliOptions.ParseForCli(["-w100", "test.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(100.0, options.Width);
+        }
+
+        [TestMethod]
+        public void Parse_WithBundledFlagAndValueOption_PreservesCompatibility()
+        {
+            var options = CliOptions.ParseForCli(["-rq85", "test.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(true, options.Replace);
+            Assert.AreEqual(85, options.JpegQualityLevel);
+        }
+
+        [TestMethod]
+        public void Parse_WithInvalidBundleInResponseFile_ReturnsError()
+        {
+            var responseFile = Path.Combine(Path.GetTempPath(), $"ImageResizer-{Guid.NewGuid():N}.rsp");
+            try
+            {
+                File.WriteAllLines(responseFile, ["-rphoto.jpg", "photo.jpg"]);
+
+                var options = CliOptions.ParseForCli(["@" + responseFile]);
+
+                Assert.AreEqual(1, options.ParseErrors.Count);
+                StringAssert.Contains(options.ParseErrors[0], "-rphoto.jpg");
+            }
+            finally
+            {
+                File.Delete(responseFile);
+            }
+        }
+
+        [TestMethod]
+        public void Parse_WithEndOfOptionsInResponseFile_AllowsOptionLikeFiles()
+        {
+            var responseFile = Path.Combine(Path.GetTempPath(), $"ImageResizer-{Guid.NewGuid():N}.rsp");
+            try
+            {
+                File.WriteAllLines(responseFile, ["--"]);
+
+                var options = CliOptions.ParseForCli(["@" + responseFile, "-rphoto.jpg", "photo.jpg"]);
+
+                Assert.AreEqual(0, options.ParseErrors.Count);
+                CollectionAssert.Contains(options.Files.ToList(), "-rphoto.jpg");
+                CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+            }
+            finally
+            {
+                File.Delete(responseFile);
+            }
+        }
+
+        [TestMethod]
+        public void Parse_WithConversionError_PreservesFilesAndPipeForLenientCallers()
+        {
+            var options = CliOptions.Parse(["--width", "abc", "good.jpg", @"\\.\pipe\ImageResizerTest"]);
+
+            Assert.IsTrue(options.ParseErrors.Count > 0);
+            CollectionAssert.Contains(options.Files.ToList(), "good.jpg");
+            Assert.AreEqual("ImageResizerTest", options.PipeName);
+        }
+
+        [TestMethod]
+        public void Parse_WithConversionError_PreservesValidDestinationForLenientCallers()
+        {
+            var options = CliOptions.Parse(["/d", @"C:\Output", "--width", "bad", "good.jpg"]);
+
+            Assert.IsTrue(options.ParseErrors.Count > 0);
+            Assert.AreEqual(@"C:\Output", options.DestinationDirectory);
+            CollectionAssert.Contains(options.Files.ToList(), "good.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithOptionLikeFilenameValue_DoesNotReportBundleError()
+        {
+            var options = CliOptions.ParseForCli(["--filename", "-rphoto.jpg", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual("-rphoto.jpg", options.FileName);
+        }
+
+        [TestMethod]
+        public void Parse_WithEmptyLongOptionSeparator_ConsumesFollowingOptionLikeValue()
+        {
+            var options = CliOptions.ParseForCli(["--filename=", "-rphoto.jpg", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual("-rphoto.jpg", options.FileName);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithEmptyShortOptionSeparator_ConsumesFollowingOptionLikeValue()
+        {
+            var options = CliOptions.ParseForCli(["-n=", "-rphoto.jpg", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual("-rphoto.jpg", options.FileName);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithExplicitBundledBooleanValue_PreservesCompatibility()
+        {
+            var options = CliOptions.ParseForCli(["-r=false", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsNull(options.Replace);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
+        [DataTestMethod]
+        [DataRow("-rtrue")]
+        [DataRow("-rTRUE")]
+        public void Parse_WithAttachedTrueBooleanValue_PreservesCompatibility(string argument)
+        {
+            var options = CliOptions.ParseForCli([argument, "-q85", "photo.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(true, options.Replace);
+            Assert.AreEqual(85, options.JpegQualityLevel);
+            CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithBundledEmptyValue_DoesNotSkipFollowingInvalidBundle()
+        {
+            var options = CliOptions.ParseForCli(["-rn=", "-rphoto.jpg", "photo.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "-rphoto.jpg");
+        }
+
+        [TestMethod]
+        public void Parse_WithNegativeWidth_ReturnsError()
+        {
+            var options = CliOptions.Parse(["--width", "-100", "--height", "100", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [DataTestMethod]
+        [DataRow("NaN")]
+        [DataRow("Infinity")]
+        [DataRow("-Infinity")]
+        public void Parse_WithNonFiniteDimension_ReturnsError(string value)
+        {
+            var options = CliOptions.Parse(["--width", value, "--height", "100", "test.jpg"]);
+
+            Assert.IsTrue(options.ParseErrors.Count > 0);
+        }
+
+        [TestMethod]
+        public void Parse_WithBothCustomDimensionsZero_ReturnsError()
+        {
+            var options = CliOptions.Parse(["--width", "0", "--height", "0", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [TestMethod]
+        public void Parse_WithOnlyZeroWidth_ReturnsError()
+        {
+            var options = CliOptions.Parse(["--width", "0", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [TestMethod]
+        public void Parse_WithDimensionAboveInt32Range_ReturnsError()
+        {
+            var options = CliOptions.Parse(["--width", "2147483648", "--height", "100", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+        }
+
+        [DataTestMethod]
+        [DataRow("en-US")]
+        [DataRow("en-HK")]
+        public void Parse_WithGroupedDimensionAboveInt32Range_ReturnsError(string cultureName)
+        {
+            var originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+
+                var options = CliOptions.Parse(["--width", "2,147,483,648", "--height", "100", "test.jpg"]);
+
+                Assert.AreEqual(1, options.ParseErrors.Count);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
     }
 }

@@ -18,10 +18,18 @@ public static class ClipboardHelper
     public static string GetText() => RunSTA(() => FormsClipboard.ContainsText() ? FormsClipboard.GetText() : string.Empty) ?? string.Empty;
 
     /// <summary>Clear the clipboard. Returns true on success, false on error.</summary>
-    public static bool Clear() => RunSTA(() => { FormsClipboard.Clear(); return true; });
+    public static bool Clear() => RunSTA(() =>
+    {
+        FormsClipboard.Clear();
+        return true;
+    });
 
     /// <summary>Set the clipboard text. Returns true on success, false on error.</summary>
-    public static bool SetText(string value) => RunSTA(() => { FormsClipboard.SetText(value); return true; });
+    public static bool SetText(string value) => RunSTA(() =>
+    {
+        FormsClipboard.SetText(value);
+        return true;
+    });
 
     /// <summary>
     /// Poll the clipboard up to <paramref name="timeoutMS"/> for the first non-empty text

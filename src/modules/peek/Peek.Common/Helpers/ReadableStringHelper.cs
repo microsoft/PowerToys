@@ -62,6 +62,34 @@ namespace Peek.Common.Helpers
             return formattedString;
         }
 
+        public static string FormatFolderContents(ulong files, ulong directories, bool isScanning, bool isPartial)
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+
+            if (isScanning && files == 0 && directories == 0)
+            {
+                return resourceLoader.GetString("UnsupportedFile_FolderContains_Scanning");
+            }
+
+            string formattedFiles = (files == 1)
+                ? resourceLoader.GetString("UnsupportedFile_FolderFileCount_Single")
+                : string.Format(CultureInfo.CurrentCulture, resourceLoader.GetString("UnsupportedFile_FolderFileCount_Plural"), files);
+
+            string formattedDirectories = (directories == 1)
+                ? resourceLoader.GetString("UnsupportedFile_FolderDirectoryCount_Single")
+                : string.Format(CultureInfo.CurrentCulture, resourceLoader.GetString("UnsupportedFile_FolderDirectoryCount_Plural"), directories);
+
+            string result = $"{formattedFiles}, {formattedDirectories}";
+
+            if (isPartial)
+            {
+                string incomplete = resourceLoader.GetString("UnsupportedFile_FolderContains_Incomplete");
+                result += $" ({incomplete})";
+            }
+
+            return result;
+        }
+
         public static int GetPrecision(int index, double number)
         {
             int numberOfDigits = MathHelper.NumberOfDigits((int)number);

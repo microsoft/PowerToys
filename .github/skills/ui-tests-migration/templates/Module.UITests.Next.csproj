@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
-    TEMPLATE — copy into src/modules/<Module>/Tests/<Module>.UITests.Next/ and replace:
+    TEMPLATE — copy this file and app.manifest into src/modules/<Module>/Tests/<Module>.UITests.Next/
+    and replace:
       __MODULE__   ->  the module name used for the project/assembly (e.g. ColorPicker, ScreenRuler)
+      __ASSEMBLY_NAME__ in app.manifest -> the final AssemblyName from this project
       the ProjectReference ..\ depth  ->  enough ..\ to reach src\common from THIS folder
                                           (see references/project-setup.md §2)
     For a GREENFIELD project (module had no UI tests), rename the file and AssemblyName to drop
@@ -20,6 +22,8 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.__MODULE__.UITests</RootNamespace>
     <AssemblyName>__MODULE__.UITests.Next</AssemblyName>
+    <!-- Element.Click uses physical winappcli bounds with Win32 cursor input. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <!--
       Microsoft.Testing.Platform: the modern runner Directory.Build.props enables repo-wide, so this

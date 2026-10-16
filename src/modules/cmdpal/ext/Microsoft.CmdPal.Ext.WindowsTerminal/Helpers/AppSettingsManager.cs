@@ -28,8 +28,13 @@ public sealed class AppSettingsManager
     public AppSettings Current { get; private set; } = new();
 
     public AppSettingsManager()
+        : this(SettingsPath())
     {
-        _filePath = SettingsPath();
+    }
+
+    internal AppSettingsManager(string filePath)
+    {
+        _filePath = filePath;
         Load();
     }
 

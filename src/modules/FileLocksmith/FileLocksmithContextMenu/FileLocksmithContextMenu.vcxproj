@@ -86,7 +86,8 @@ MakeAppx.exe pack /d . /p $(OutDir)FileLocksmithContextMenuPackage.msix /nv</Com
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.base.h" />
+    <None Include="resource.base.h" />
+    <ClInclude Include="Generated Files/resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -97,6 +98,10 @@ MakeAppx.exe pack /d . /p $(OutDir)FileLocksmithContextMenuPackage.msix /nv</Com
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files/FileLocksmithContextMenu.rc" />
+    <None Include="FileLocksmithContextMenu.base.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\FileLocksmith\FileLocksmith.ico">
@@ -137,9 +142,6 @@ MakeAppx.exe pack /d . /p $(OutDir)FileLocksmithContextMenuPackage.msix /nv</Com
     <ProjectReference Include="..\FileLocksmithLib\FileLocksmithLib.vcxproj">
       <Project>{9d52fd25-ef90-4f9a-a015-91efc5daf54f}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="FileLocksmithContextMenu.base.rc" />
   </ItemGroup>
   <Import Project="$(RepoRoot)deps\spdlog.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -22,7 +22,11 @@
                 </Grid.RowDefinitions>
                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
                 <StackPanel Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="-" />
                     <TextBlock
                         Margin="4,0,0,0"
                         Style="{StaticResource BodyStrongTextBlockStyle}"

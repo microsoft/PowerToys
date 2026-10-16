@@ -13,6 +13,7 @@
 void OutputDebug(const TCHAR* format, ...);
 #include "CaptureFrameWait.h"
 #include "Utility.h"
+#include "ZoomItMessages.h"
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <winrt/Windows.Media.h>
 #include <cstdlib>
@@ -39,14 +40,6 @@ extern class ClassRegistry reg;
 extern REG_SETTING RegSettings[];
 extern HINSTANCE g_hInstance;
 extern HWND g_hWndMain;
-
-// Must match the definition in ZoomIt.h.
-#ifndef WM_USER_RECORDING_STARTED
-#define WM_USER_RECORDING_STARTED (WM_USER + 111)
-#endif
-#ifndef WM_USER_RECORDING_NO_FRAMES
-#define WM_USER_RECORDING_NO_FRAMES (WM_USER + 112)
-#endif
 
 HWND hDlgTrimDialog = nullptr;
 
@@ -1021,6 +1014,21 @@ VideoRecordingSession::VideoRecordingSession(
     RecDiag( L"Constructor: audio generator received (init %s)\n",
              m_audioInitAction ? L"pending" : L"none" );
 
+    // If the rest of construction throws, member destruction would run
+    // ~AudioSampleGenerator -> Stop(), which waits on m_asyncInitialized.  That
+    // event is only signalled by the still-pending InitializeAsync
+    // continuation, and on an STA that continuation is queued back to this very
+    // thread - so the wait would never be satisfied.  Hand the generator to the
+    // async disposer instead; the guard runs before any member destructor.
+    auto disposeAudioGenerator = wil::scope_exit( [this]
+    {
+        if( m_audioGenerator )
+        {
+            AudioSampleGenerator::DisposeAsync( std::move( m_audioGenerator ), m_audioInitAction );
+            m_audioInitAction = nullptr;
+        }
+    } );
+
     m_device = device;
     m_d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     m_d3dDevice->GetImmediateContext(m_d3dContext.put());
@@ -1227,6 +1235,8 @@ VideoRecordingSession::VideoRecordingSession(
         }
     }
     RecDiag( L"Constructor: exit\n" );
+
+    disposeAudioGenerator.release();
 }
 
 
@@ -1266,10 +1276,23 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
             }
             RecDiag( L"StartAsync: audio initialized\n" );
 
+            const WPARAM unavailableAudio =
+                (m_audioGenerator->MicrophoneUnavailable() ? 1 : 0) |
+                (m_audioGenerator->SystemAudioUnavailable() ? 2 : 0);
+            if (unavailableAudio && !PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, unavailableAudio, 0))
+            {
+                RecDiag(L"StartAsync: failed to notify user of unavailable audio (error %lu)\n", GetLastError());
+            }
+
+            if (!m_audioGenerator->HasAudio())
+            {
+                m_audioGenerator.reset();
+            }
+        }
+
+        if (m_audioGenerator) {
             // Set up the audio encoding profile now that the audio graph is
-            // fully initialized.  GetEncodingProperties() requires
-            // m_audioOutputNode to be valid, which is only guaranteed after
-            // InitializeAsync completes.
+            // fully initialized, or the loopback-only output format is known.
             auto audioProps = m_audioGenerator->GetEncodingProperties();
             m_encodingProfile.Audio(winrt::AudioEncodingProperties::CreateAac(
                 audioProps.SampleRate(), audioProps.ChannelCount(), 192000));
@@ -1336,6 +1359,18 @@ void VideoRecordingSession::Close()
 {
     RecDiag( L"Close: totalVideoFrames=%d totalAudioSamples=%d\n",
              s_diagVideoCount, s_diagAudioCount );
+
+    // If audio initialization never completed, dispose of the generator
+    // asynchronously.  Stop() - called below from CloseInternal, or later from
+    // the member destructor - would otherwise block on m_asyncInitialized,
+    // which only the still-pending InitializeAsync continuation can signal.
+    // Nothing can be consuming samples in this state: StartAsync creates the
+    // MediaStreamSource only after that initialization has completed.
+    if( m_audioGenerator && m_audioInitAction )
+    {
+        AudioSampleGenerator::DisposeAsync( std::move( m_audioGenerator ), m_audioInitAction );
+        m_audioInitAction = nullptr;
+    }
 
     // Stop webcam capture before closing the main session.
     if( m_webcamCapture )

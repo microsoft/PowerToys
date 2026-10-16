@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using ShortcutGuide.Controls;
@@ -22,6 +23,7 @@ namespace ShortcutGuide.Pages
 
         private ShortcutFile? _shortcutFile;
         private string _appName = string.Empty;
+        private string _searchQuery = string.Empty;
         private bool _isEventSubscribed;
 
         public ObservableCollection<ShortcutListItem> Rows { get; } = new();
@@ -63,10 +65,22 @@ namespace ShortcutGuide.Pages
         /// (and its <c>ItemsRepeater</c>) is reused across opens instead of
         /// being recreated, so only the <see cref="Rows"/> collection changes.
         /// </summary>
-        public void SetShortcuts(ShortcutFile file, string appName)
+        public void SetShortcuts(ShortcutFile file, string appName, string searchQuery)
         {
             this._appName = appName;
             this._shortcutFile = file;
+            this._searchQuery = searchQuery;
+            this.RebuildRows();
+        }
+
+        public void SetSearchQuery(string searchQuery)
+        {
+            if (string.Equals(this._searchQuery, searchQuery, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            this._searchQuery = searchQuery;
             this.RebuildRows();
         }
 
@@ -80,8 +94,10 @@ namespace ShortcutGuide.Pages
         {
             // Clear the collection to trigger ElementClearing for all items
             this.Rows.Clear();
+            this.UpdateNoResultsState(false);
             _shortcutFile = null;
             _appName = string.Empty;
+            _searchQuery = string.Empty;
         }
 
         private void UnsubscribeFromEvents()
@@ -99,40 +115,53 @@ namespace ShortcutGuide.Pages
 
             if (this._shortcutFile is not { } file)
             {
+                this.UpdateNoResultsState(false);
                 return;
             }
 
-            // 1. Pinned (always shown, with empty-state placeholder).
-            this.Rows.Add(ShortcutListItem.Header(
-                ResourceLoaderInstance.ResourceLoader.GetString("PinnedHeaderTxt/Text")));
+            string normalizedQuery = this._searchQuery.Trim();
+            bool isSearchActive = normalizedQuery.Length > 0;
+            bool hasMatches = false;
+
+            // 1. Pinned (always shown with an empty-state placeholder when not searching).
             var pinned = App.PinnedShortcuts.TryGetValue(this._appName, out var pinnedItems)
                 ? (IReadOnlyList<ShortcutEntry>)pinnedItems
                 : Array.Empty<ShortcutEntry>();
-            if (pinned.Count == 0)
+            var filteredPinned = FilterShortcuts(pinned, normalizedQuery);
+            if (filteredPinned.Count > 0 || !isSearchActive)
             {
-                this.Rows.Add(ShortcutListItem.Empty(
-                    ResourceLoaderInstance.ResourceLoader.GetString("PinnedEmptyText/Text")));
-            }
-            else
-            {
-                foreach (var s in pinned)
+                this.Rows.Add(ShortcutListItem.Header(
+                    ResourceLoaderInstance.ResourceLoader.GetString("PinnedHeaderTxt/Text")));
+                if (filteredPinned.Count == 0)
                 {
-                    this.Rows.Add(ShortcutListItem.ForShortcut(s));
+                    this.Rows.Add(ShortcutListItem.Empty(
+                        ResourceLoaderInstance.ResourceLoader.GetString("PinnedEmptyText/Text")));
+                }
+                else
+                {
+                    AddShortcuts(filteredPinned);
                 }
             }
 
-            // 2. Recommended (only if non-empty).
+            // 2. Recommended (only if matching shortcuts are present).
             var recommended = file.Shortcuts?
                 .SelectMany(c => c.Properties ?? Array.Empty<ShortcutEntry>())
                 .Where(s => s.Recommended)
                 .ToList() ?? new List<ShortcutEntry>();
-            if (recommended.Count > 0)
+            var filteredRecommended = FilterShortcuts(recommended, normalizedQuery);
+            if (filteredRecommended.Count > 0)
             {
                 this.Rows.Add(ShortcutListItem.Header(
                     ResourceLoaderInstance.ResourceLoader.GetString("RecommendedHeaderText/Text")));
-                foreach (var s in recommended)
+                AddShortcuts(filteredRecommended);
+            }
+
+            void AddShortcuts(IReadOnlyList<ShortcutEntry> shortcuts)
+            {
+                foreach (var shortcut in shortcuts)
                 {
-                    this.Rows.Add(ShortcutListItem.ForShortcut(s));
+                    this.Rows.Add(ShortcutListItem.ForShortcut(shortcut));
+                    hasMatches = true;
                 }
             }
 
@@ -155,32 +184,69 @@ namespace ShortcutGuide.Pages
                         continue;
                     }
 
-                    var items = category.Properties ?? Array.Empty<ShortcutEntry>();
-                    if (items.Length == 0)
+                    var items = FilterShortcuts(category.Properties ?? Array.Empty<ShortcutEntry>(), normalizedQuery);
+                    if (items.Count == 0)
                     {
                         continue;
                     }
 
                     this.Rows.Add(ShortcutListItem.Header(name));
-                    foreach (var s in items)
-                    {
-                        this.Rows.Add(ShortcutListItem.ForShortcut(s));
-                    }
+                    AddShortcuts(items);
                 }
             }
 
             // 4. Taskbar (Windows only).
             if (taskbarCategory is { } tb && tb.Properties is { Length: > 0 } taskbarItems)
             {
-                this.Rows.Add(ShortcutListItem.Header(
-                    ResourceLoaderInstance.ResourceLoader.GetString("TaskbarHeaderTxt/Text")));
-                this.Rows.Add(ShortcutListItem.Subtitle(
-                    ResourceLoaderInstance.ResourceLoader.GetString("TaskbarDescriptionTxt/Text")));
-                foreach (var s in taskbarItems)
+                var filteredTaskbarItems = FilterShortcuts(taskbarItems, normalizedQuery);
+                if (filteredTaskbarItems.Count > 0)
                 {
-                    this.Rows.Add(ShortcutListItem.ForShortcut(s));
+                    this.Rows.Add(ShortcutListItem.Header(
+                        ResourceLoaderInstance.ResourceLoader.GetString("TaskbarHeaderTxt/Text")));
+                    this.Rows.Add(ShortcutListItem.Subtitle(
+                        ResourceLoaderInstance.ResourceLoader.GetString("TaskbarDescriptionTxt/Text")));
+                    AddShortcuts(filteredTaskbarItems);
                 }
             }
+
+            this.UpdateNoResultsState(isSearchActive && !hasMatches);
+        }
+
+        private void UpdateNoResultsState(bool isVisible)
+        {
+            if (isVisible)
+            {
+                if (this.NoResultsTextBlock.Visibility == Visibility.Visible)
+                {
+                    return;
+                }
+
+                this.NoResultsTextBlock.Visibility = Visibility.Visible;
+                this.NoResultsTextBlock.Text = ResourceLoaderInstance.ResourceLoader.GetString("SearchBlank");
+                var peer = FrameworkElementAutomationPeer.FromElement(this.NoResultsTextBlock)
+                    ?? FrameworkElementAutomationPeer.CreatePeerForElement(this.NoResultsTextBlock);
+                if (peer is not null && AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+                {
+                    peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+                }
+            }
+            else
+            {
+                this.NoResultsTextBlock.Visibility = Visibility.Collapsed;
+                this.NoResultsTextBlock.Text = string.Empty;
+            }
+        }
+
+        private static IReadOnlyList<ShortcutEntry> FilterShortcuts(IReadOnlyList<ShortcutEntry> shortcuts, string query)
+        {
+            if (query.Length == 0)
+            {
+                return shortcuts;
+            }
+
+            return shortcuts
+                .Where(shortcut => ShortcutSearchMatcher.Matches(shortcut, query))
+                .ToArray();
         }
 
         private void OnPinnedShortcutsChanged(object? sender, string appName)
