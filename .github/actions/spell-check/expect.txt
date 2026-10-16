@@ -2239,7 +2239,6 @@ WTSAT
 Wubi
 WUX
 Wwanpp
-Wzhudev
 xap
 Xbuttondown
 xclip

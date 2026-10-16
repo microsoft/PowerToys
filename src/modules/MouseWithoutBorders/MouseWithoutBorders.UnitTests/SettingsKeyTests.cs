@@ -64,15 +64,18 @@ public sealed class SettingsKeyTests
         Assert.AreEqual(value, properties.SecurityKey.Value);
     }
 
-    [TestMethod]
-    public void OrdinaryDisplayUsesSettingsValue()
+    [DataTestMethod]
+    [DataRow("TEST-KEY")]
+    [DataRow("********")]
+    [DataRow("                ")]
+    public void OrdinaryDisplayUsesSettingsValue(string value)
     {
         var properties = new MouseWithoutBordersProperties();
         var settings = CreateSettings(properties, new PassthroughPairingKeyCodec());
-        settings.MyKey = "TEST-KEY";
+        settings.MyKey = value;
 
-        Assert.AreEqual("TEST-KEY", settings.PairingKeyDisplayText);
-        Assert.AreEqual("TEST-KEY", settings.MyKey);
+        Assert.AreEqual(value, settings.PairingKeyDisplayText);
+        Assert.AreEqual(value, settings.MyKey);
     }
 
     [TestMethod]

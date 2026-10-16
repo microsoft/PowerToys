@@ -496,12 +496,7 @@ namespace MouseWithoutBorders.Class
                             : string.Empty;
                     }
 
-                    var value = _properties.SecurityKey.Value;
-                    return !string.IsNullOrWhiteSpace(value) &&
-                        value != MouseWithoutBordersIpc.PairingConfiguredIndicator &&
-                        value != MouseWithoutBordersIpc.PairingSetupRequiredIndicator
-                        ? value
-                        : string.Empty;
+                    return _properties.SecurityKey.Value;
                 }
             }
         }

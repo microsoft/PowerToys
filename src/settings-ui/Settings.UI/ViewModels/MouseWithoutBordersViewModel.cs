@@ -79,8 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ? !PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value)
             : string.IsNullOrWhiteSpace(Settings.Properties.SecurityKey.Value) ||
                 PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ||
-                Settings.Properties.SecurityKey.Value == MouseWithoutBordersIpc.PairingConfiguredIndicator ||
-                Settings.Properties.SecurityKey.Value == MouseWithoutBordersIpc.PairingSetupRequiredIndicator;
+                Settings.Properties.SecurityKey.Value == MouseWithoutBordersIpc.PairingConfiguredIndicator;
 
         public bool ShowPairingSetupRequired => PairingSetupRequired;
 
@@ -486,8 +485,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var securityKey = ConnectSecurityKey?.Trim();
             if (string.IsNullOrWhiteSpace(pcName) || string.IsNullOrWhiteSpace(securityKey) ||
                 PairingKeyCodec.IsEncryptedValue(securityKey) ||
-                securityKey == MouseWithoutBordersIpc.PairingConfiguredIndicator ||
-                securityKey == MouseWithoutBordersIpc.PairingSetupRequiredIndicator)
+                securityKey == MouseWithoutBordersIpc.PairingConfiguredIndicator)
             {
                 _hasPairingError = true;
                 OnPropertyChanged(nameof(HasPairingError));

@@ -29,6 +29,26 @@ public sealed class MouseWithoutBordersPairingPresentationTests
     }
 
     [TestMethod]
+    public void LegacyPairingSourceWiringPreservesNormalInputAndGuardsServiceMode()
+    {
+        var setup = ReadSource(@"src\modules\MouseWithoutBorders\App\Form\Settings\SetupPage2a.cs");
+        StringAssert.Contains(setup, "SecurityCodeField.Enabled = !Class.Settings.IsProtectedMode;");
+        StringAssert.Contains(setup, "LinkButton.Enabled = !Class.Settings.IsProtectedMode && SecurityCodeField.Text.Length >= 16 && ComputerNameField.Text.Trim().Length > 0;");
+        StringAssert.Contains(setup, "if (Class.Settings.IsProtectedMode)");
+        StringAssert.Contains(setup, "Encryption.MyKey = Regex.Replace(SecurityCodeField.Text, @\"\\s+\", string.Empty);");
+        StringAssert.Contains(setup, "Setting.Values.MyKey = Encryption.MyKey;");
+        var matrix = ReadSource(@"src\modules\MouseWithoutBorders\App\Form\frmMatrix.cs");
+        StringAssert.Contains(matrix, "textBoxEnc.ReadOnly = Class.Settings.IsProtectedMode;");
+        StringAssert.Contains(matrix, "buttonNewKey.Enabled = !Class.Settings.IsProtectedMode;");
+        StringAssert.Contains(matrix, "textBoxEnc.Text = Setting.Values.PairingKeyDisplayText;");
+        StringAssert.Contains(matrix, "if (Class.Settings.IsProtectedMode)");
+        StringAssert.Contains(matrix, "if (!Encryption.IsKeyValid(newKey, out string rv))");
+        StringAssert.Contains(matrix, "Setting.Values.MyKey = newKey;");
+        StringAssert.Contains(matrix, "Encryption.MyKey = newKey;");
+        StringAssert.Contains(matrix, "Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();");
+    }
+
+    [TestMethod]
     public void PairingViewModelSourceWiringKeepsUiStateOutOfSettings()
     {
         var source = ReadSource(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs");

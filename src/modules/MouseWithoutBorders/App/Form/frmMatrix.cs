@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
 
 // <summary>
@@ -25,7 +24,6 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 
 using Clipboard = MouseWithoutBorders.Core.Clipboard;
-using Helper = MouseWithoutBorders.Core.Helper;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#buttonOK_Click(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
@@ -520,16 +518,10 @@ namespace MouseWithoutBorders
                 return false;
             }
 
-            if (PairingKeyCodec.IsEncryptedValue(newKey) || newKey == MouseWithoutBordersIpc.PairingSetupRequiredIndicator.Replace(" ", string.Empty))
-            {
-                ShowKeyErrorMsg("Key must be auto generated in one of the machines.");
-                return false;
-            }
-
             if (!newKey.Equals(Encryption.MyKey, StringComparison.OrdinalIgnoreCase))
             {
                 Setting.Values.MyKey = newKey;
-                Encryption.MyKey = Setting.Values.MyKey;
+                Encryption.MyKey = newKey;
                 Encryption.GeneratedKey = false;
             }
 
@@ -1137,8 +1129,7 @@ namespace MouseWithoutBorders
 
             if (MessageBox.Show(message, Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
-                Setting.Values.MyKey = Encryption.CreateRandomKey();
-                Encryption.MyKey = Setting.Values.MyKey;
+                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
                 textBoxEnc.Text = Encryption.MyKey;
                 checkBoxShowKey.Checked = true;
                 Encryption.GeneratedKey = true;
