@@ -63,8 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             { SocketStatus.Connected, new SolidColorBrush(Colors.Green) },
         };
 
-        private string _transientSecurityKey;
-        private int _pairingDisplayGeneration;
+        private string _servicePairingKey;
         private bool _connectFieldsVisible;
         private bool _isPairingPending;
         private bool _hasPairingError;
@@ -140,7 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (valueChanged)
                 {
                     Settings.Properties.UseService = value;
-                    ClearTransientPairingState();
+                    ResetPairingUiState();
                     OnPropertyChanged(nameof(UseService));
                     OnPropertyChanged(nameof(CanUninstallService));
                     OnPropertyChanged(nameof(CanManagePairing));
@@ -261,6 +260,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             void Reconnect();
 
             Task<string> GenerateNewKey();
+
+            Task<string> GetCurrentPairingKey();
 
             Task ConnectToMachine(string machineName, string securityKey);
 
@@ -401,7 +402,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var useService = UseService;
-            var displayGeneration = _pairingDisplayGeneration;
             _isPairingPending = true;
             _hasPairingError = false;
             OnPropertyChanged(nameof(CanManagePairing));
@@ -419,12 +419,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         throw new InvalidOperationException("Pairing key was not returned.");
                     }
 
-                    if (_disposed || UseService != useService || _pairingDisplayGeneration != displayGeneration)
+                    if (_disposed || UseService != useService || (useService && !IsElevated))
                     {
                         return;
                     }
 
-                    _transientSecurityKey = useService ? generatedKey : null;
+                    _servicePairingKey = useService ? generatedKey : null;
                     OnPropertyChanged(nameof(SecurityKey));
                 }
             }
@@ -443,6 +443,56 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public bool HasPairingError => _hasPairingError;
+
+        public async Task LoadPairingKeyAsync()
+        {
+            if (_disposed || !UseService || !IsElevated || PairingSetupRequired)
+            {
+                return;
+            }
+
+            var useService = UseService;
+            try
+            {
+                using (await _ipcSemaphore.EnterAsync())
+                {
+                    if (_disposed || !UseService || !IsElevated || PairingSetupRequired)
+                    {
+                        return;
+                    }
+
+                    _servicePairingKey = null;
+                    OnPropertyChanged(nameof(SecurityKey));
+                    using var syncHelper = await GetSettingsSyncHelperAsync();
+                    var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
+                    var key = await endpoint.GetCurrentPairingKey();
+                    if (_disposed || UseService != useService || !IsElevated)
+                    {
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(key) || PairingKeyCodec.IsEncryptedValue(key))
+                    {
+                        throw new InvalidOperationException("Pairing key was not returned.");
+                    }
+
+                    _servicePairingKey = key;
+                    _hasPairingError = false;
+                    OnPropertyChanged(nameof(SecurityKey));
+                    OnPropertyChanged(nameof(HasPairingError));
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!_disposed && UseService == useService && IsElevated)
+                {
+                    _hasPairingError = true;
+                    OnPropertyChanged(nameof(HasPairingError));
+                }
+
+                Logger.LogError($"Couldn't load Mouse Without Borders pairing ({ex.GetType().Name}).");
+            }
+        }
 
         public async Task<bool> SubmitConnectionRequestAsync(string pcName, string securityKey)
         {
@@ -475,12 +525,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
                     await endpoint.ConnectToMachine(pcName, securityKey);
-                    if (_disposed || UseService != useService)
+                    if (_disposed || UseService != useService || (useService && !IsElevated))
                     {
                         return false;
                     }
 
-                    _transientSecurityKey = null;
+                    _servicePairingKey = null;
                     OnPropertyChanged(nameof(SecurityKey));
                 }
 
@@ -801,11 +851,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string SecurityKey => _transientSecurityKey != null && UseService && IsElevated
-            ? _transientSecurityKey
-            : UseService
-                ? PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ? MouseWithoutBordersIpc.PairingConfiguredIndicator : string.Empty
-                : PairingSetupRequired ? string.Empty : Settings.Properties.SecurityKey.Value;
+        public string SecurityKey => UseService
+            ? IsElevated
+                ? _servicePairingKey ?? string.Empty
+                : PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ? MouseWithoutBordersIpc.PairingConfiguredIndicator : string.Empty
+            : PairingSetupRequired ? string.Empty : Settings.Properties.SecurityKey.Value;
 
         public bool WrapMouse
         {
@@ -1349,7 +1399,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 LoadViewModelFromSettings(SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders"));
                 if (UseService != useService)
                 {
-                    _transientSecurityKey = null;
+                    _servicePairingKey = null;
                 }
 
                 OnPropertyChanged(nameof(SecurityKey));
@@ -1395,14 +1445,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public override void OnPageLoaded()
         {
-            ClearTransientPairingState();
+            ResetPairingUiState();
             base.OnPageLoaded();
         }
 
-        public void ClearTransientPairingState()
+        public void ResetPairingUiState()
         {
-            _pairingDisplayGeneration++;
-            _transientSecurityKey = null;
+            _servicePairingKey = null;
             _hasPairingError = false;
             ConnectFieldsVisible = false;
             OnPropertyChanged(nameof(CanManagePairing));

@@ -6923,6 +6923,6 @@ Text uses the current drawing color.</value>
     <comment>{Locked="game.exe"}</comment>
   </data>
   <data name="MouseWithoutBorders_PairingUpdateFailed.Message" xml:space="preserve">
-    <value>Pairing could not be updated. Check your inputs and try again.</value>
+    <value>Pairing could not be loaded or updated. Try again.</value>
   </data>
 </root>

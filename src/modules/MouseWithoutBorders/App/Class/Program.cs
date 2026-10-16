@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Authentication.ExtendedProtection;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.ServiceProcess;
 using System.Threading;
@@ -275,6 +276,8 @@ namespace MouseWithoutBorders.Class
 
             Task<string> GenerateNewKey();
 
+            Task<string> GetCurrentPairingKey();
+
             Task ConnectToMachine(string machineName, string securityKey);
 
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
@@ -313,6 +316,18 @@ namespace MouseWithoutBorders.Class
                 }
 
                 return Task.FromResult(machineStates.Select((state) => new ISettingsSyncHelper.MachineSocketState { Name = state.Key, Status = state.Value }).ToArray());
+            }
+
+            public Task<string> GetCurrentPairingKey()
+            {
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
+                var key = Encryption.MyKey;
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    throw new CryptographicException("Pairing setup is required.");
+                }
+
+                return Task.FromResult(key);
             }
 
             public Task ConnectToMachine(string pcName, string securityKey)

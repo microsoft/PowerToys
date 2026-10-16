@@ -48,10 +48,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
 
-            Loaded += (s, e) =>
+            Loaded += async (s, e) =>
             {
                 ClearPairingUI();
                 ViewModel.OnPageLoaded();
+                await ViewModel.LoadPairingKeyAsync();
             };
             Unloaded += (s, e) => ClearPairingUI();
         }
@@ -60,11 +61,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             // Note: FileSystemWatcher raise notification multiple times for single update operation.
             // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration every time since we will be updating the UI only if something is changed.
-            this.DispatcherQueue.TryEnqueue(() =>
+            this.DispatcherQueue.TryEnqueue(async () =>
             {
                 if (ViewModel.LoadUpdatedSettings())
                 {
                     ViewModel.NotifyUpdatedSettings();
+                    await ViewModel.LoadPairingKeyAsync();
                 }
             });
         }
@@ -173,14 +175,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void ServiceMode_Toggled(object sender, RoutedEventArgs e)
+        private async void ServiceMode_Toggled(object sender, RoutedEventArgs e)
         {
             ClearPairingUI();
+            await ViewModel.LoadPairingKeyAsync();
         }
 
         private void ClearPairingUI()
         {
-            ViewModel.ClearTransientPairingState();
+            ViewModel.ResetPairingUiState();
             if (ConnectPCNameTextBox != null)
             {
                 ConnectPCNameTextBox.Text = string.Empty;
