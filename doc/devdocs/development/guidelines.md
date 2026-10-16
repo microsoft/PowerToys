@@ -25,9 +25,11 @@
   - For external DLLs, verify they're safe to sign before including
 
 ### File Signing Requirements
-- All DLLs and executables must be signed
+- All DLLs, executables, and Windows Runtime metadata (`.winmd`) files must be signed
 - New files need to be added to the signing configuration
-- CI checks if all files are signed
+- Add metadata to the appropriate first-party or third-party signing batch before packaging; preserve existing upstream signatures
+- CI checks signatures in the extracted MSI payload and the unpacked Command Palette MSIX metadata
+- Metadata does not require a `FileVersion` resource, but must still have a valid Authenticode signature
 - Even Microsoft-sourced dependencies are signed if they aren't already
 
 ## Performance Measurement
