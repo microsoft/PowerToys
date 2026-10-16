@@ -578,6 +578,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool seamlessCursor; // defaulting to off
+
+        [JsonPropertyName("SeamlessCursor")]
+        public bool SeamlessCursor
+        {
+            get => seamlessCursor;
+            set
+            {
+                if (seamlessCursor != value)
+                {
+                    LogTelemetryEvent(value);
+                    seamlessCursor = value;
+                }
+            }
+        }
+
         private bool lightSwitch;
 
         [JsonPropertyName("LightSwitch")]

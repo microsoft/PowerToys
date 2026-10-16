@@ -2972,6 +2972,59 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Holding Shift</value>
     <comment>CursorWrap: Activation mode - wrap only when Shift held</comment>
   </data>
+  <data name="MouseUtils_Enable_SeamlessCursor.Header" xml:space="preserve">
+    <value>Seamless Multi-Screen Cursor</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor.Header" xml:space="preserve">
+    <value>Seamless Multi-Screen Cursor</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor.Description" xml:space="preserve">
+    <value>Move the pointer between monitors at the same physical position, even when monitors differ in size or resolution</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_Calibrate.Header" xml:space="preserve">
+    <value>Calibrate monitors</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_Calibrate.Description" xml:space="preserve">
+    <value>Align lines across each shared border so the cursor moves smoothly between monitors.</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_CalibrateButton.Content" xml:space="preserve">
+    <value>Calibrate</value>
+    <comment>Seamless Multi-Screen Cursor: Button that opens the monitor calibration overlay</comment>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_StopAtEmptyEdges.Header" xml:space="preserve">
+    <value>Stop the pointer where no monitor is physically across</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_StopAtEmptyEdges.Description" xml:space="preserve">
+    <value>When off, the pointer moves to the nearest monitor instead. At outer edges, Windows decides, including its "Ease cursor movement between displays" setting.</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_MapCursorWrap.Header" xml:space="preserve">
+    <value>Keep the physical position when CursorWrap wraps the pointer</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_MapCursorWrap.Description" xml:space="preserve">
+    <value>When CursorWrap moves the pointer to the opposite edge, it lands at the same physical position on calibrated monitors. When off, it keeps the pixel position. Works only while CursorWrap is on.</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_ResetCalibration.Header" xml:space="preserve">
+    <value>Reset calibration</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_ResetCalibration.Description" xml:space="preserve">
+    <value>Remove all saved monitor alignments.</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_ResetCalibrationButton.Content" xml:space="preserve">
+    <value>Reset</value>
+    <comment>Seamless Multi-Screen Cursor: Button that removes all saved monitor alignments</comment>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_SingleMonitor.Title" xml:space="preserve">
+    <value>Only one monitor is connected.</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_SingleMonitor.Message" xml:space="preserve">
+    <value>Seamless Multi-Screen Cursor works between monitors that share a border.</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_NotCalibrated.Title" xml:space="preserve">
+    <value>Monitors are not calibrated yet.</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_NotCalibrated.Message" xml:space="preserve">
+    <value>Select Calibrate to align the monitors. Until then, the pointer moves between monitors as usual.</value>
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -3011,6 +3064,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MouseUtils_CursorWrap_Description.Text" xml:space="preserve">
     <value>Move the mouse pointer past a screen edge to wrap it around to the opposite side.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_SeamlessCursor.Text" xml:space="preserve">
+    <value>Seamless Multi-Screen Cursor</value>
+  </data>
+  <data name="Oobe_MouseUtils_SeamlessCursor_Description.Text" xml:space="preserve">
+    <value>Move the pointer between monitors of different sizes or resolutions without a jump.</value>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Open PowerToys Run</value>
