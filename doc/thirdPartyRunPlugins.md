@@ -33,7 +33,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Clipboard Manager](https://github.com/CoreyHayward/PowerToys-Run-ClipboardManager) | [CoreyHayward](https://github.com/CoreyHayward) | Search and paste text from your clipboard history |
 | [Currency Converter](https://github.com/Advaith3600/PowerToys-Run-Currency-Converter) | [advaith3600](https://github.com/advaith3600) | Convert real and crypto currencies |
 | [FastWeb](https://github.com/CCcat8059/FastWeb) | [CCcat](https://github.com/CCcat8059) | Open website in browser |
-| [WebSearchShortcut](https://github.com/Daydreamer-riri/PowerToys-Run-WebSearchShortcut) | [Riri](https://github.com/Daydreamer-riri) | Select a specific search engine to perform searches. |
+| [WebSearchShortcut](https://github.com/Daydreamer-riri/CmdPal-WebSearchShortcut) | [Daydreamer-riri](https://github.com/Daydreamer-riri) | Web Search Shortcut Plugin for PowerToys Run |
 | [UnicodeInput](https://github.com/nathancartlidge/powertoys-run-unicode) | [nathancartlidge](https://github.com/nathancartlidge) | Copy Unicode characters to the clipboard |
 | [PowerHexInspector](https://github.com/NaroZeol/PowerHexInspector) | [NaroZeol](https://github.com/NaroZeol) | Peek other forms of an input number |
 | [GitHubRepo](https://github.com/8LWXpg/PowerToysRun-GitHubRepo) | [8LWXpg](https://github.com/8LWXpg) | Search and open GitHub repositories |
@@ -82,7 +82,7 @@ Below are community created plugins that target a website or software.  They are
 | [YubicoOauthOTP](https://github.com/dlnilsson/Community.PowerToys.Run.Plugin.YubicoOauthOTP) | [dlnilsson](https://github.com/dlnilsson) | Display generated codes from OATH accounts stored on the YubiKey in powerToys Run  |
 | [Firefox Bookmark](https://github.com/8LWXpg/PowerToysRun-FirefoxBookmark) | [8LWXpg](https://github.com/8LWXpg) | Open bookmarks in Firefox based browser |
 | [Linear](https://github.com/vednig/powertoys-linear) | [vednig](https://github.com/vednig) | Create Linear Issues directly from Powertoys Run |
-| [PerplexitySearchShortcut](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut) | [0x6f677548](https://github.com/0x6f677548) | Search Perplexity |
+| [PerplexitySearchShortcut](https://github.com/hugobatista/PowerToys-Run-PerplexitySearchShortcut) | [hugobatista](https://github.com/hugobatista) | Search Perplexity |
 | [SpeedTest](https://github.com/ruslanlap/PowerToysRun-SpeedTest) | [ruslanlap](https://github.com/ruslanlap) | One-command internet speed tests with real-time results, modern UI, and shareable links. |
 | [DiskAnalyzer](https://github.com/valley-soft/powertoys-diskanalyzer) | [ValleySoft](https://github.com/valley-soft) | Scan folders, find the largest files, and view drive space usage. |
 | [New Chat for Claude](https://github.com/tit-exe/PowerToys-Run-for-Claude) | [tit-exe](https://github.com/tit-exe) | Start a new Claude conversation in the desktop app or the browser. |

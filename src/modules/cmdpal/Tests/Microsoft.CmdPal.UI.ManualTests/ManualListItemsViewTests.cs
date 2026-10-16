@@ -144,11 +144,10 @@ public sealed partial class ManualListItemsViewTests
     public Task ForcedRefreshAcknowledgesDirectSelectionWithoutReplayingEffects(bool isGrid) => OnUiThread(async () =>
     {
         using var fixture = await ShowAsync(isGrid, isRootPage: true);
-        var recipient = new object();
         var commandBars = 0;
         var suggestions = 0;
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, _) => commandBars++);
-        WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(recipient, (_, _) => suggestions++);
+        fixture.ViewModel.CommandBarContextChanged += OnCommandBarContextChanged;
+        fixture.ViewModel.SearchSuggestionChanged += OnSearchSuggestionChanged;
         try
         {
             var later = fixture.ViewModel.FilteredItems[1];
@@ -172,8 +171,13 @@ public sealed partial class ManualListItemsViewTests
         }
         finally
         {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            fixture.ViewModel.CommandBarContextChanged -= OnCommandBarContextChanged;
+            fixture.ViewModel.SearchSuggestionChanged -= OnSearchSuggestionChanged;
         }
+
+        void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e) => commandBars++;
+
+        void OnSearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e) => suggestions++;
     });
 
     [DataTestMethod]

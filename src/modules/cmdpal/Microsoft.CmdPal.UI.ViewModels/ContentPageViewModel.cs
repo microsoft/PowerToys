@@ -164,7 +164,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         DoOnActivePage(
         () =>
         {
-            SendPageUiMessage(new UpdateCommandBarMessage(this));
+            SetCommandBarContext(this);
         });
     }
 
@@ -214,14 +214,17 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 DoOnActivePage(
                 () =>
                 {
-                    SendPageUiMessage(new UpdateCommandBarMessage(this));
+                    SetCommandBarContext(this);
                 });
 
                 break;
             case nameof(Details):
+                var existingReference = Details;
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
+                Details?.InitializeProperties();
                 UpdateDetails();
+                existingReference?.SafeCleanup();
                 break;
         }
 
@@ -236,14 +239,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         DoOnActivePage(
             () =>
             {
-                if (HasDetails)
-                {
-                    SendPageUiMessage(new ShowDetailsMessage(Details));
-                }
-                else
-                {
-                    SendPageUiMessage(new HideDetailsMessage());
-                }
+                SetDetails(Details);
             });
     }
 
@@ -404,7 +400,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         base.ResumeAfterNavigation();
         UpdateDetails();
-        DoOnActivePage(() => WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(this)));
+        DoOnActivePage(() => SetCommandBarContext(this));
         return Task.CompletedTask;
     }
 
