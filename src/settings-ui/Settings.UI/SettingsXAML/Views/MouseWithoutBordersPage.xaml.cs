@@ -163,7 +163,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async Task Connect()
         {
-            await ViewModel.SubmitConnectionRequestAsync();
+            var pcName = ConnectPCNameTextBox.Text;
+            var securityKey = ConnectSecurityKeyTextBox.Text.Trim();
+            if (await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey))
+            {
+                ConnectPCNameTextBox.Text = string.Empty;
+                ConnectSecurityKeyTextBox.Text = string.Empty;
+                ViewModel.ConnectFieldsVisible = false;
+            }
+        }
+
+        private void ServiceMode_Toggled(object sender, RoutedEventArgs e)
+        {
+            ClearPairingUI();
         }
 
         private void ClearPairingUI()

@@ -53,13 +53,11 @@
                                     <TextBox
                                         x:Name="ConnectSecurityKeyTextBox"
                                         x:Uid="MWB_SecurityKeyLabel"
-                                        Width="248"
-                                        Text="{x:Bind ViewModel.ConnectSecurityKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        Width="248" />
                                     <TextBox
                                         x:Name="ConnectPCNameTextBox"
                                         x:Uid="MWB_PCNameLabel"
-                                        Width="248"
-                                        Text="{x:Bind ViewModel.ConnectPCName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        Width="248" />
                                     <Button
                                         x:Uid="MouseWithoutBorders_Connect"
                                         Command="{x:Bind ConnectCommand, Mode=OneTime}"
@@ -212,7 +210,10 @@
                             Name="MouseWithoutBordersUseService"
                             x:Uid="MouseWithoutBorders_UseService"
                             IsEnabled="{x:Bind ViewModel.UseServiceSettingIsEnabled, Mode=OneWay}">
-                            <ToggleSwitch x:Uid="MouseWithoutBorders_UseService_ToggleSwitch" IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}" />
+                            <ToggleSwitch
+                                x:Uid="MouseWithoutBorders_UseService_ToggleSwitch"
+                                IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}"
+                                Toggled="ServiceMode_Toggled" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
                                     Name="MouseWithoutBordersUninstallService"

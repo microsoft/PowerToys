@@ -58,12 +58,64 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         StringAssert.Contains(source, "_transientSecurityKey = useService ? generatedKey : null;");
         StringAssert.Contains(source, "await endpoint.ConnectToMachine(pcName, securityKey);");
         StringAssert.Contains(source.Replace("\r\n", "\n"), "_transientSecurityKey = null;\n                    OnPropertyChanged(nameof(SecurityKey));");
-        StringAssert.Contains(source, "var pcName = ConnectPCName?.Trim();");
-        StringAssert.Contains(source, "var securityKey = ConnectSecurityKey?.Trim();");
+        StringAssert.Contains(source, "public async Task<bool> SubmitConnectionRequestAsync(string pcName, string securityKey)");
+        StringAssert.Contains(source, "pcName = pcName?.Trim();");
+        StringAssert.Contains(source, "securityKey = securityKey?.Trim();");
+        foreach (var removedInput in new[] { "_connectSecurityKey", "_connectPCName", "ConnectSecurityKey", "ConnectPCName" })
+        {
+            Assert.IsFalse(source.Contains(removedInput, StringComparison.Ordinal));
+        }
+
         StringAssert.Contains(source, "if (_disposed || UseService != useService)");
         Assert.IsFalse(source.Contains("TryUpdateAsync", System.StringComparison.Ordinal));
         Assert.IsFalse(source.Contains("Settings.Properties.SecurityKey.Value = ", System.StringComparison.Ordinal));
         Assert.IsFalse(source.Contains("CanEditSettings", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void PairingPageSourceContractPassesInputsAndClearsOnlyAfterSuccessfulConnect()
+    {
+        var page = ReadSource(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml.cs").Replace("\r\n", "\n");
+        var start = page.IndexOf("private async Task Connect()", StringComparison.Ordinal);
+        var end = page.IndexOf("private void ServiceMode_Toggled(", start, StringComparison.Ordinal);
+        Assert.AreEqual(
+            """
+            private async Task Connect()
+                    {
+                        var pcName = ConnectPCNameTextBox.Text;
+                        var securityKey = ConnectSecurityKeyTextBox.Text.Trim();
+                        if (await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey))
+                        {
+                            ConnectPCNameTextBox.Text = string.Empty;
+                            ConnectSecurityKeyTextBox.Text = string.Empty;
+                            ViewModel.ConnectFieldsVisible = false;
+                        }
+                    }
+            """.Replace("\r\n", "\n"),
+            page.Substring(start, end - start).Trim());
+        var clearStart = page.IndexOf("private void ClearPairingUI()", end, StringComparison.Ordinal);
+        var clear = page.Substring(clearStart, page.IndexOf("public void RefreshEnabledState()", clearStart, StringComparison.Ordinal) - clearStart);
+        StringAssert.Contains(clear, "ViewModel.ClearTransientPairingState();");
+        StringAssert.Contains(clear, "ConnectPCNameTextBox.Text = string.Empty;");
+        StringAssert.Contains(clear, "ConnectSecurityKeyTextBox.Text = string.Empty;");
+        StringAssert.Contains(page, "Loaded += (s, e) =>\n            {\n                ClearPairingUI();");
+        StringAssert.Contains(page, "Unloaded += (s, e) => ClearPairingUI();");
+        StringAssert.Contains(page.Substring(end, clearStart - end), "ClearPairingUI();");
+        var xaml = XDocument.Parse(ReadSource(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml"));
+        var serviceToggle = xaml.Descendants().Single(element => (string)element.Attribute("IsOn") == "{x:Bind ViewModel.UseService, Mode=TwoWay}");
+        Assert.AreEqual("ServiceMode_Toggled", (string)serviceToggle.Attribute("Toggled"));
+
+        var source = ReadSource(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs");
+        start = source.IndexOf("public async Task<bool> SubmitConnectionRequestAsync(", StringComparison.Ordinal);
+        end = source.IndexOf("private async Task<ISettingsSyncHelper.MachineSocketState[]>", start, StringComparison.Ordinal);
+        var request = source.Substring(start, end - start);
+        StringAssert.Contains(request, "if (!CanConnectPairing)");
+        StringAssert.Contains(request, "_isPairingPending = true;");
+        StringAssert.Contains(request, "_hasPairingError = true;");
+        StringAssert.Contains(request, "catch (Exception ex)");
+        StringAssert.Contains(request, "return false;");
+        StringAssert.Contains(request, "return true;");
+        Assert.IsFalse(request.Contains("ConnectFieldsVisible =", StringComparison.Ordinal));
     }
 
     [TestMethod]

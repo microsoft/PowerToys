@@ -65,8 +65,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string _transientSecurityKey;
         private int _pairingDisplayGeneration;
-        private string _connectSecurityKey;
-        private string _connectPCName;
         private bool _connectFieldsVisible;
         private bool _isPairingPending;
         private bool _hasPairingError;
@@ -177,34 +175,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _connectFieldsVisible = value;
                     OnPropertyChanged(nameof(ConnectFieldsVisible));
-                }
-            }
-        }
-
-        public string ConnectSecurityKey
-        {
-            get => _connectSecurityKey;
-
-            set
-            {
-                if (_connectSecurityKey != value)
-                {
-                    _connectSecurityKey = value;
-                    OnPropertyChanged(nameof(ConnectSecurityKey));
-                }
-            }
-        }
-
-        public string ConnectPCName
-        {
-            get => _connectPCName;
-
-            set
-            {
-                if (_connectPCName != value)
-                {
-                    _connectPCName = value;
-                    OnPropertyChanged(nameof(ConnectPCName));
                 }
             }
         }
@@ -474,15 +444,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool HasPairingError => _hasPairingError;
 
-        public async Task<bool> SubmitConnectionRequestAsync()
+        public async Task<bool> SubmitConnectionRequestAsync(string pcName, string securityKey)
         {
             if (!CanConnectPairing)
             {
                 return false;
             }
 
-            var pcName = ConnectPCName?.Trim();
-            var securityKey = ConnectSecurityKey?.Trim();
+            pcName = pcName?.Trim();
+            securityKey = securityKey?.Trim();
             if (string.IsNullOrWhiteSpace(pcName) || string.IsNullOrWhiteSpace(securityKey) ||
                 PairingKeyCodec.IsEncryptedValue(securityKey) ||
                 securityKey == MouseWithoutBordersIpc.PairingConfiguredIndicator)
@@ -512,9 +482,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     _transientSecurityKey = null;
                     OnPropertyChanged(nameof(SecurityKey));
-                    ConnectSecurityKey = string.Empty;
-                    ConnectPCName = string.Empty;
-                    ConnectFieldsVisible = false;
                 }
 
                 return true;
@@ -1437,13 +1404,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _pairingDisplayGeneration++;
             _transientSecurityKey = null;
             _hasPairingError = false;
-            ConnectSecurityKey = string.Empty;
-            ConnectPCName = string.Empty;
             ConnectFieldsVisible = false;
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(HasPairingError));
-            OnPropertyChanged(nameof(ConnectSecurityKey));
-            OnPropertyChanged(nameof(ConnectPCName));
             OnPropertyChanged(nameof(ConnectFieldsVisible));
             OnPropertyChanged(nameof(SecurityKey));
             OnPropertyChanged(nameof(PairingSetupRequired));

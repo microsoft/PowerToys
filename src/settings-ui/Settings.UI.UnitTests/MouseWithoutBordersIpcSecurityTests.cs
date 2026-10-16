@@ -416,16 +416,17 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
-        public void ConnectTextFieldsBindToTransientPairingState()
+        public void ConnectTextFieldsRemainOwnedByPageWithoutBindings()
         {
             var document = XDocument.Load(FindRepositoryFile(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml"));
             XNamespace xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
             foreach (var property in new[] { "ConnectSecurityKey", "ConnectPCName" })
             {
                 var textBox = document.Descendants().Single(element => (string)element.Attribute(xaml + "Name") == property + "TextBox");
+                Assert.IsNull(textBox.Attribute("Text"));
                 Assert.AreEqual(
-                    "{x:Bind ViewModel." + property + ", Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}",
-                    (string)textBox.Attribute("Text"));
+                    "{x:Bind ViewModel.CanConnectPairing, Mode=OneWay}",
+                    (string)textBox.Ancestors().Single(element => element.Name.LocalName == "SettingsCard").Attribute("IsEnabled"));
             }
         }
 
