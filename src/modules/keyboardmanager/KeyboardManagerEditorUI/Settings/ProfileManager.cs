@@ -294,8 +294,6 @@ namespace KeyboardManagerEditorUI.Settings
 
             try
             {
-                bool wasActive = GetActiveProfile().Equals(profile, StringComparison.OrdinalIgnoreCase);
-
                 // Abort before touching any other store if the config file can't be removed:
                 // otherwise we'd unregister the profile while its {name}.json stays on disk, and
                 // the directory scan in GetProfiles() would resurrect it on the next refresh.
@@ -324,7 +322,22 @@ namespace KeyboardManagerEditorUI.Settings
                 JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
                 JsonObject properties = EnsureObject(root, "properties");
                 RemoveFromConfigurationList(properties, profile);
-                if (wasActive)
+
+                // Decide the fallback from the state on disk RIGHT NOW, not from a snapshot taken at
+                // the top of this method: an engine auto-switch in another process can set
+                // activeConfiguration to this very profile in the window between that snapshot and
+                // here (the switch writes active=profile while its {name}.json still exists, then we
+                // delete the file). A stale "was it active when I started?" check misses that and would
+                // persist a just-deleted profile as active. Re-reading activeConfiguration here and
+                // normalizing when it names the deleted profile closes that interleaving; the mirror
+                // ordering (we delete first, the switch fires after) is refused by the engine's
+                // commit-time validation in SwitchActiveProfile. Basing the decision purely on the
+                // fresh value also avoids wrongly forcing "default" when an in-between switch moved the
+                // active profile to a different, still-valid one.
+                string? currentActive = properties["activeConfiguration"]?["value"]?.GetValue<string>();
+                bool activeIsDeleted = !string.IsNullOrEmpty(currentActive)
+                    && currentActive.Equals(profile, StringComparison.OrdinalIgnoreCase);
+                if (activeIsDeleted)
                 {
                     // Guarantee the fallback target exists before we point activeConfiguration at it.
                     // The engine resolves activeConfiguration by opening {name}.json and, on a failed
@@ -337,7 +350,7 @@ namespace KeyboardManagerEditorUI.Settings
 
                 WriteSettingsRoot(root);
 
-                if (wasActive)
+                if (activeIsDeleted)
                 {
                     SignalEngineReload();
                 }
