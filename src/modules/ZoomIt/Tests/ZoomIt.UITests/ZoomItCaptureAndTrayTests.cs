@@ -266,6 +266,7 @@ public sealed partial class ZoomItTests
 
     private Element? WaitForTrayIcon(bool expected)
     {
+        const int requiredConsecutiveMatches = 3;
         ui.Step($"Waiting for the real Shell ZoomIt tray icon to be {(expected ? "present" : "absent")}");
         ShellMenu.Dismiss();
         KeyboardHelper.SendKeys(Key.LWin, Key.B);
@@ -280,20 +281,20 @@ public sealed partial class ZoomItTests
             .FirstOrDefault(item => item.ControlType == "Button" && item.Width > 0 && item.Height > 0 && item.Displayed);
         var hasOverflow = false;
         var lastChevronClick = (System.Diagnostics.Stopwatch?)null;
-        var mismatch = "no observation";
+        var lastMismatch = "none";
 
         bool Matches(Element[]? icons)
         {
             var expectedCount = expected ? 1 : 0;
             if (icons is null || icons.Length != expectedCount)
             {
-                mismatch = $"expected {expectedCount} ZoomIt icon(s), found {icons?.Length.ToString(CultureInfo.InvariantCulture) ?? "none"}";
+                lastMismatch = $"expected {expectedCount} ZoomIt icon(s), found {icons?.Length.ToString(CultureInfo.InvariantCulture) ?? "none"}";
                 return false;
             }
 
             if (hasOverflow && OverflowWindow() is null)
             {
-                mismatch = $"found {icons.Length} icon(s), but the notification overflow flyout is not open";
+                lastMismatch = $"found {icons.Length} icon(s), but the notification overflow flyout is not open";
                 return false;
             }
 
@@ -305,12 +306,11 @@ public sealed partial class ZoomItTests
                     window.ClassName is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" or "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
                     WindowControl.IsPointOwnedByWindow(new IntPtr(window.Hwnd), x, y)))
                 {
-                    mismatch = $"found 1 icon at ({x}, {y}), but that point is not hit-testable in the taskbar or overflow";
+                    lastMismatch = $"found 1 icon at ({x}, {y}), but that point is not hit-testable in the taskbar or overflow";
                     return false;
                 }
             }
 
-            mismatch = "matched";
             return true;
         }
 
@@ -323,7 +323,7 @@ public sealed partial class ZoomItTests
             },
             Matches,
             30_000,
-            3,
+            requiredConsecutiveMatches,
             pollIntervalMS: 250,
             recover: _ =>
             {
@@ -356,7 +356,10 @@ public sealed partial class ZoomItTests
             ui.Step($"Shell notification tree: {explorer.Inspect(depth: 12)}");
         }
 
-        Assert.IsTrue(result.Succeeded, $"Expected {(expected ? "one" : "no")} ZoomIt notification icon in the taskbar or opened overflow: {mismatch}.");
+        var failureMessage = $"Expected {(expected ? "one" : "no")} ZoomIt notification icon in the taskbar or opened overflow. " +
+            $"Last mismatch: {lastMismatch}. Consecutive matches: {result.ConsecutiveMatches}/{requiredConsecutiveMatches}. " +
+            $"Last transient error: {result.LastException?.Message ?? "none"}.";
+        Assert.IsTrue(result.Succeeded, failureMessage);
         return result.LastObservation!.SingleOrDefault();
     }
 
