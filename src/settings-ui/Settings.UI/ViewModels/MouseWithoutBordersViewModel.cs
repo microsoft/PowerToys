@@ -446,7 +446,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task LoadPairingKeyAsync()
         {
-            if (_disposed || !UseService || !IsElevated || PairingSetupRequired)
+            if (_disposed || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)
             {
                 return;
             }
@@ -456,17 +456,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (await _ipcSemaphore.EnterAsync())
                 {
-                    if (_disposed || !UseService || !IsElevated || PairingSetupRequired)
+                    if (_disposed || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)
                     {
                         return;
                     }
 
-                    _servicePairingKey = null;
-                    OnPropertyChanged(nameof(SecurityKey));
                     using var syncHelper = await GetSettingsSyncHelperAsync();
                     var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
                     var key = await endpoint.GetCurrentPairingKey();
-                    if (_disposed || UseService != useService || !IsElevated)
+                    if (_disposed || !IsEnabled || UseService != useService || !IsElevated)
                     {
                         return;
                     }
@@ -476,15 +474,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         throw new InvalidOperationException("Pairing key was not returned.");
                     }
 
-                    _servicePairingKey = key;
+                    if (_servicePairingKey != key)
+                    {
+                        _servicePairingKey = key;
+                        OnPropertyChanged(nameof(SecurityKey));
+                    }
+
                     _hasPairingError = false;
-                    OnPropertyChanged(nameof(SecurityKey));
                     OnPropertyChanged(nameof(HasPairingError));
                 }
             }
             catch (Exception ex)
             {
-                if (!_disposed && UseService == useService && IsElevated)
+                if (!_disposed && IsEnabled && UseService == useService && IsElevated)
                 {
                     _hasPairingError = true;
                     OnPropertyChanged(nameof(HasPairingError));
@@ -530,7 +532,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         return false;
                     }
 
-                    _servicePairingKey = null;
+                    _servicePairingKey = useService ? securityKey : null;
                     OnPropertyChanged(nameof(SecurityKey));
                 }
 
@@ -1396,13 +1398,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 var useService = UseService;
+                var storedKey = Settings.Properties.SecurityKey.Value;
+                var displayedKey = SecurityKey;
                 LoadViewModelFromSettings(SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders"));
-                if (UseService != useService)
+                if (UseService != useService || Settings.Properties.SecurityKey.Value != storedKey)
                 {
                     _servicePairingKey = null;
                 }
 
-                OnPropertyChanged(nameof(SecurityKey));
+                if (SecurityKey != displayedKey)
+                {
+                    OnPropertyChanged(nameof(SecurityKey));
+                }
+
                 return true;
             }
             catch (System.Exception ex)
