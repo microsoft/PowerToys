@@ -166,6 +166,9 @@ flowchart TD
 
 The GUI retains progress presentation and its invocation context, including unsaved Launch-and-Edit
 drafts; CLI mode only displays required confirmation UI. No Editor save-workflow changes are added.
+Launch and Edit can start an already-saved workspace without a temporary draft. A missing
+`temp-workspaces.json` falls back to saved configuration; an existing malformed draft remains an
+error, and a valid matching draft takes precedence.
 
 The progress window's Cancel button and CLI cancellation both stop the shared launch wait and return
 an acknowledged `canceled` result without requiring normal arranger completion. Pending application

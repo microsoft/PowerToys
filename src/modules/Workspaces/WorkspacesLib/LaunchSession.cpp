@@ -2,7 +2,6 @@
 #include "pch.h"
 #include "LaunchSession.h"
 #include "CliCommands.h"
-#include "JsonUtils.h"
 #include "AppUtils.h"
 #include "SessionHandoff.h"
 
@@ -88,14 +87,17 @@ namespace WorkspacesSession
         editorDraft = false;
         if (request.invokePoint == InvokePoint::LaunchAndEdit)
         {
-            auto loaded = JsonUtils::ReadSingleWorkspace(WorkspacesData::TempWorkspacesFile());
-            if (loaded.isError())
-                throw Error(8, L"invalidData", "The editor workspace draft could not be read.");
-            auto draft = loaded.getValue();
-            if (WorkspacesCli::NormalizeId(draft.id) == WorkspacesCli::NormalizeId(request.id))
+            const auto loaded = WorkspacesCli::ReadJson(WorkspacesData::TempWorkspacesFile());
+            if (loaded)
             {
-                editorDraft = true;
-                return draft;
+                auto draft = WorkspacesData::WorkspacesProjectJSON::FromJson(*loaded);
+                if (!draft)
+                    throw Error(8, L"invalidData", "The editor workspace draft could not be read.");
+                if (WorkspacesCli::NormalizeId(draft->id) == WorkspacesCli::NormalizeId(request.id))
+                {
+                    editorDraft = true;
+                    return *draft;
+                }
             }
         }
         WorkspacesCli::Options selection;
