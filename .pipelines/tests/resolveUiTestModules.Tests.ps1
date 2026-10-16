@@ -68,4 +68,47 @@ Describe 'resolveUiTestModules' {
         $result.TouchedModules | Should Be @('Example')
         @($result.UiTestModules).Count | Should Be 0
     }
+
+    It 'selects the smoke set when UI-test infrastructure changes' {
+        New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
+        New-UITestProject 'src\modules\Hosts\Hosts.UITests.Next\Hosts.UITests.Next.csproj'
+        New-UITestProject 'src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj'
+
+        foreach ($file in @(
+            '.pipelines/v2/templates/job-test-project.yml',
+            '.pipelines\signSparsePackages.ps1',
+            'src/common/UITestAutomation.Next/Session.cs'
+        )) {
+            $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $file
+
+            $result.InfrastructureChanged | Should Be $true
+            $result.UiTestModules | Should Be @('CropAndLock.UITests', 'Hosts.UITests.Next')
+        }
+    }
+
+    It 'merges the smoke set with touched module UI tests' {
+        New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
+        New-UITestProject 'src\modules\Hosts\Hosts.UITests.Next\Hosts.UITests.Next.csproj'
+        New-UITestProject 'src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj'
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
+            '.pipelines/resolveUiTestModules.ps1',
+            'src/modules/ZoomIt/ZoomIt/Zoomit.cpp',
+            'src/modules/Hosts/HostsUILib/Host.cs'
+        )
+
+        $result.UiTestModules | Should Be @('CropAndLock.UITests', 'Hosts.UITests.Next', 'ZoomIt.UITests')
+    }
+
+    It 'does not select the smoke set for unrelated pipeline changes' {
+        New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
+            '.pipelines/v2/templates/job-build-project.yml',
+            'src/common/UITestAutomation/Session.cs'
+        )
+
+        $result.InfrastructureChanged | Should Be $false
+        @($result.UiTestModules).Count | Should Be 0
+    }
 }

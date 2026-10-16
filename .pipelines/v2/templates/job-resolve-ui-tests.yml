@@ -47,6 +47,7 @@ jobs:
         $hasUiTests = if ($modules.Count -gt 0) { 'true' } else { 'false' }
 
         Write-Host "Touched modules: $($result.TouchedModules -join ', ')"
+        Write-Host "UI test infrastructure changed: $($result.InfrastructureChanged)"
         Write-Host "Selected UI tests: $($modules -join ', ')"
         Write-Host "##vso[task.setvariable variable=hasUiTests;isOutput=true]$hasUiTests"
         Write-Host "##vso[task.setvariable variable=uiTestModules;isOutput=true]$modulesValue"
