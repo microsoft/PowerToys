@@ -2024,12 +2024,12 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition_Description.Text" xml:space="preserve">
-    <value>Windows key +    or </value>
-    <comment>{Locked="Windows key +   ",""}</comment>
+    <value>Windows key + ↑ ↓ ← or →</value>
+    <comment>{Locked="Windows key + ↑ ↓ ←","→"}</comment>
   </data>
   <data name="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description.Text" xml:space="preserve">
-    <value>Windows key +  or </value>
-    <comment>{Locked="Windows key + ",""}</comment>
+    <value>Windows key + ← or →</value>
+    <comment>{Locked="Windows key + ←","→"}</comment>
   </data>
   <data name="FancyZones_MoveWindowBasedOnRelativePosition.Text" xml:space="preserve">
     <value>Relative position</value>

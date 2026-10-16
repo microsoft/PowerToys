@@ -51,21 +51,26 @@
                             Click="AddSizeButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
                     </tkcontrols:SettingsCard>
-                    <ListView
-                        x:Name="ImagesSizesListView"
+                    <ItemsRepeater
+                        x:Name="ImageSizesRepeater"
                         x:Uid="ImagesSizesListView"
-                        ContainerContentChanging="ImagesSizesListView_ContainerContentChanging"
-                        ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
-                        SelectionMode="None">
-                        <ListView.ItemTemplate>
+                        AutomationProperties.AutomationControlType="List"
+                        AutomationProperties.AutomationId="ImagesSizesListView"
+                        ItemsSource="{x:Bind ViewModel.Sizes, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="2" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
                                 <tkcontrols:SettingsCard
+                                    AutomationProperties.AutomationControlType="ListItem"
                                     AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
                                     AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
                                     Click="EditSize_Click"
                                     Header="{x:Bind Name, Mode=OneWay}"
                                     IsActionIconVisible="False"
-                                    IsClickEnabled="True">
+                                    IsClickEnabled="True"
+                                    PreviewKeyDown="ImageSizeCard_PreviewKeyDown">
                                     <tkcontrols:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
                                         <x:Double x:Key="SettingsCardActionButtonWidth">0</x:Double>
@@ -133,8 +138,8 @@
                                     </Button>
                                 </tkcontrols:SettingsCard>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

@@ -13,7 +13,9 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
+using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -124,8 +126,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void Add()
         {
+            int newSizeIndex = ViewModel.Sizes.Count;
             ViewModel.AddImageSize(EditingSize);
             EditSizeDialog.Hide();
+            DispatcherQueue.TryEnqueue(() => FocusSizeCard(newSizeIndex, FocusState.Programmatic));
         }
 
         private void Update()
@@ -138,17 +142,39 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             EditSizeDialog.Hide();
         }
 
-        private void ImagesSizesListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        private void ImageSizeCard_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (ViewModel.IsListViewFocusRequested)
+            if (e.Handled || sender is not SettingsCard card || !ReferenceEquals(e.OriginalSource, card))
             {
-                // Set focus to the last item in the ListView
-                int size = ImagesSizesListView.Items.Count;
-                ((ListViewItem)ImagesSizesListView.ContainerFromIndex(size - 1)).Focus(FocusState.Programmatic);
-
-                // Reset the focus requested flag
-                ViewModel.IsListViewFocusRequested = false;
+                return;
             }
+
+            int currentIndex = ImageSizesRepeater.GetElementIndex(card);
+            int targetIndex = e.OriginalKey switch
+            {
+                VirtualKey.Up => currentIndex - 1,
+                VirtualKey.Down => currentIndex + 1,
+                VirtualKey.Home => 0,
+                VirtualKey.End => ViewModel.Sizes.Count - 1,
+                _ => currentIndex,
+            };
+
+            if (targetIndex >= 0 && targetIndex < ViewModel.Sizes.Count && targetIndex != currentIndex)
+            {
+                e.Handled = FocusSizeCard(targetIndex, FocusState.Keyboard);
+            }
+        }
+
+        private bool FocusSizeCard(int index, FocusState focusState)
+        {
+            if (index < 0 || index >= ViewModel.Sizes.Count)
+            {
+                return false;
+            }
+
+            UIElement element = ImageSizesRepeater.GetOrCreateElement(index);
+            element.StartBringIntoView();
+            return element.Focus(focusState);
         }
 
         public void RefreshEnabledState()

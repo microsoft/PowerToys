@@ -137,8 +137,6 @@ public partial class ImageResizerViewModel : Observable
     private bool _keepDateModified;
     private int _encoderGuidId;
 
-    public bool IsListViewFocusRequested { get; set; }
-
     public bool IsEnabled
     {
         get => _isEnabled;
@@ -355,9 +353,6 @@ public partial class ImageResizerViewModel : Observable
         Sizes.Add(size);
 
         _nextId++;
-
-        // Set the focus requested flag to indicate that an add operation has occurred during the ContainerContentChanging event
-        IsListViewFocusRequested = true;
     }
 
     /// <summary>

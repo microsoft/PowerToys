@@ -15,9 +15,17 @@
     <local:NavigablePage.Resources>
         <tkconverters:BoolToVisibilityConverter x:Key="negativeBoolToVisibilityConverter" />
         <tkconverters:BoolToObjectConverter
-            x:Key="OneRowMatrixBoolToNumberOfRowsConverter"
+            x:Key="OneRowMatrixBoolToLayoutHeightConverter"
+            FalseValue="196"
+            TrueValue="98" />
+        <tkconverters:BoolToObjectConverter
+            x:Key="OneRowMatrixBoolToColumnCountConverter"
             FalseValue="2"
             TrueValue="4" />
+        <tkconverters:BoolToObjectConverter
+            x:Key="OneRowMatrixBoolToLayoutWidthConverter"
+            FalseValue="288"
+            TrueValue="576" />
     </local:NavigablePage.Resources>
     <controls:SettingsPageControl x:Uid="MouseWithoutBorders" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -106,17 +114,24 @@
                         Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                         ContentAlignment="Vertical">
                         <StackPanel Orientation="Vertical" Spacing="8">
-                            <ItemsControl
-                                x:Name="DevicesItemsControl"
+                            <ItemsView
+                                x:Name="DevicesItemsView"
+                                Width="{x:Bind ViewModel.MatrixOneRow, Mode=OneWay, Converter={StaticResource OneRowMatrixBoolToLayoutWidthConverter}}"
+                                Height="{x:Bind ViewModel.MatrixOneRow, Mode=OneWay, Converter={StaticResource OneRowMatrixBoolToLayoutHeightConverter}}"
                                 HorizontalAlignment="Center"
                                 IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                                IsItemInvokedEnabled="False"
+                                IsTabStop="False"
                                 ItemsSource="{Binding MachineMatrixString, Mode=TwoWay}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapGrid MaximumRowsOrColumns="{Binding MatrixOneRow, Mode=OneWay, Converter={StaticResource OneRowMatrixBoolToNumberOfRowsConverter}}" Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
+                                <ItemsView.Layout>
+                                    <UniformGridLayout
+                                        ItemsStretch="None"
+                                        MaximumRowsOrColumns="{x:Bind ViewModel.MatrixOneRow, Mode=OneWay, Converter={StaticResource OneRowMatrixBoolToColumnCountConverter}}"
+                                        MinItemHeight="98"
+                                        MinItemWidth="144"
+                                        Orientation="Horizontal" />
+                                </ItemsView.Layout>
+                                <ItemsView.ItemTemplate>
                                     <DataTemplate>
                                         <!--  TODO: colors?  -->
                                         <!--
@@ -124,43 +139,48 @@
                                             Background="#d4d4d4"
                                         -->
                                         <!--  Dragging while elevated crashes on WinUI3: https://github.com/microsoft/microsoft-ui-xaml/issues/7690  -->
-                                        <Border
-                                            Width="136"
-                                            Height="90"
+                                        <ItemContainer
                                             Margin="4"
                                             AllowDrop="{Binding Item.CanDragDrop, Mode=OneWay}"
-                                            Background="{ThemeResource SolidBackgroundFillColorBaseAltBrush}"
-                                            BorderBrush="{Binding Item.StatusBrush}"
-                                            BorderThickness="2"
+                                            AllowFocusOnInteraction="False"
+                                            AutomationProperties.Name="{Binding Item.Name, Mode=OneWay}"
                                             CanDrag="{Binding Item.CanDragDrop, Mode=OneWay}"
-                                            CornerRadius="4"
                                             DataContext="{Binding}"
                                             DragOver="Device_DragOver"
                                             DragStarting="Device_DragStarting"
                                             Drop="Device_Drop"
+                                            IsTabStop="False"
                                             ToolTipService.ToolTip="{Binding Item.Name, Mode=OneWay}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="*" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-                                                <FontIcon
-                                                    Margin="0,12,0,0"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="32"
-                                                    Glyph="&#xE7F8;" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Margin="12"
-                                                    HorizontalAlignment="Center"
-                                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                                    Tag="DeviceName"
-                                                    Text="{Binding Item.Name}" />
-                                            </Grid>
-                                        </Border>
+                                            <Border
+                                                Width="136"
+                                                Height="90"
+                                                Background="{ThemeResource SolidBackgroundFillColorBaseAltBrush}"
+                                                BorderBrush="{Binding Item.StatusBrush}"
+                                                BorderThickness="2"
+                                                CornerRadius="4">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <FontIcon
+                                                        Margin="0,12,0,0"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="32"
+                                                        Glyph="&#xE7F8;" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Margin="12"
+                                                        HorizontalAlignment="Center"
+                                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                                        Tag="DeviceName"
+                                                        Text="{Binding Item.Name}" />
+                                                </Grid>
+                                            </Border>
+                                        </ItemContainer>
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                </ItemsView.ItemTemplate>
+                            </ItemsView>
                             <Button HorizontalAlignment="Right" Command="{x:Bind ReconnectCommand, Mode=OneTime}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" TextWrapping="Wrap" />
