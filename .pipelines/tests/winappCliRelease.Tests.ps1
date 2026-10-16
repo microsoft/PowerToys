@@ -29,18 +29,18 @@ function New-WinAppCliReleaseFixture {
 
 Describe 'Official winapp CLI central dependency pin' {
     It 'pins the public tag and published SHA256 for each native architecture' -TestCases @(
-        @{ Platform = 'x64'; Hash = '236e35173f85a88a62cb030bdc07db6590fb7790514d530a050482a0da80313b' }
-        @{ Platform = 'arm64'; Hash = '37532ac2a7fd50234230b3aa21605133491a289cb585fe6340442e2eb97956b5' }
+        @{ Platform = 'x64'; Hash = 'd925d1e32cdc320b6d271f653fd2cd3c05b5d7558deb20d1b548bead77900fcf' }
+        @{ Platform = 'arm64'; Hash = '4ed1edcc6d4a1a7c75bb70dbdbf77a69b3c650823c7e8061aa66f8adb1017f2e' }
     ) {
         param($Platform, $Hash)
         $release = Get-WinAppCliRelease -Platform $Platform
         $release.Repository | Should Be 'https://github.com/microsoft/winappCli'
-        $release.Tag | Should Be 'v0.7.0'
-        $release.Version | Should Be '0.7.0'
+        $release.Tag | Should Be 'v0.7.1'
+        $release.Version | Should Be '0.7.1'
         $release.Platform | Should Be $Platform
         $release.Asset | Should Be "winappcli-$Platform.zip"
         $release.Sha256 | Should Be $Hash
-        $release.DownloadUrl | Should Be "https://github.com/microsoft/winappCli/releases/download/v0.7.0/winappcli-$Platform.zip"
+        $release.DownloadUrl | Should Be "https://github.com/microsoft/winappCli/releases/download/v0.7.1/winappcli-$Platform.zip"
         $release.Files.Count | Should Be 3
         $release.ArchiveFiles.Count | Should Be 6
     }
@@ -83,7 +83,7 @@ Describe 'Hash-verified official winapp CLI release extraction' {
         $script:releaseFixturePin.Sha256 = (Get-FileHash -LiteralPath $archive).Hash
         $script:releaseFixtureArchive = $archive
         Mock Get-WinAppCliRelease { $script:releaseFixturePin }
-        Mock Get-WinAppCliFileVersion { '0.7.0' }
+        Mock Get-WinAppCliFileVersion { '0.7.1' }
         Mock Expand-WinAppCliFile {
             param($Entry, $Destination)
             [IO.Compression.ZipFileExtensions]::ExtractToFile($Entry, $Destination, $false)
@@ -96,7 +96,7 @@ Describe 'Hash-verified official winapp CLI release extraction' {
 
     It 'verifies the download and emits official metadata plus each native file hash without deploying PDBs' {
         $release = Save-WinAppCliRelease -Destination $destination -WorkRoot $work
-        $release.Tag | Should Be 'v0.7.0'
+        $release.Tag | Should Be 'v0.7.1'
         $release.Sha256 | Should Be (Get-FileHash -LiteralPath $archive).Hash
         $release.Asset | Should Be 'winappcli-x64.zip'
         $release.Files.Count | Should Be 3
@@ -106,7 +106,7 @@ Describe 'Hash-verified official winapp CLI release extraction' {
             $file.Sha256 | Should Be (Get-FileHash -LiteralPath (Join-Path $destination $file.Path)).Hash
         }
         Assert-MockCalled Invoke-WebRequest -Times 1 -Exactly -Scope It -ParameterFilter {
-            $Uri -ceq 'https://github.com/microsoft/winappCli/releases/download/v0.7.0/winappcli-x64.zip'
+            $Uri -ceq 'https://github.com/microsoft/winappCli/releases/download/v0.7.1/winappcli-x64.zip'
         }
         ($release.Keys -contains 'Commit') | Should Be $false
         ($release.Keys -contains 'PatchSha256') | Should Be $false
@@ -119,6 +119,16 @@ Describe 'Hash-verified official winapp CLI release extraction' {
         $release.Sha256 | Should Be $script:releaseFixturePin.Sha256
         Assert-MockCalled Invoke-WebRequest -Times 0 -Exactly -Scope It
         Test-Path -LiteralPath $work | Should Be $false
+    }
+
+    It 'accepts the stable pinned executable with or without source metadata' -TestCases @(
+        @{ Version = '0.7.1' }; @{ Version = '0.7.1+e3cd0b94f3e7b776ac51ba0564f4908094e979b5' }
+    ) {
+        param($Version)
+        $script:releaseFixtureVersion = $Version
+        Mock Get-WinAppCliFileVersion { $script:releaseFixtureVersion }
+        $release = Save-WinAppCliRelease -Destination $destination -WorkRoot $work -ArchivePath $archive
+        $release.Version | Should Be '0.7.1'
     }
 
     It 'rejects a changed SHA256 before extraction or executable-version inspection' {
@@ -185,8 +195,8 @@ Describe 'Hash-verified official winapp CLI release extraction' {
     }
 
     It 'removes output when the executable version is not the stable pinned release' -TestCases @(
-        @{ Version = '0.6.3-prerelease.52' }; @{ Version = '0.7.0-prerelease.3' }
-        @{ Version = '0.7.1' }; @{ Version = '' }
+        @{ Version = '0.6.3-prerelease.52' }; @{ Version = '0.7.1-prerelease.3' }
+        @{ Version = '0.7.0' }; @{ Version = '0.7.2' }; @{ Version = '' }
     ) {
         param($Version)
         $script:releaseFixtureVersion = $Version
@@ -200,13 +210,13 @@ Describe 'Hash-verified official winapp CLI release extraction' {
         New-WinAppCliReleaseFixture $archive $script:releaseFixturePin.ArchiveFiles -Platform arm64
         $script:releaseFixturePin.Platform = 'arm64'
         $script:releaseFixturePin.Asset = 'winappcli-arm64.zip'
-        $script:releaseFixturePin.DownloadUrl = 'https://github.com/microsoft/winappCli/releases/download/v0.7.0/winappcli-arm64.zip'
+        $script:releaseFixturePin.DownloadUrl = 'https://github.com/microsoft/winappCli/releases/download/v0.7.1/winappcli-arm64.zip'
         $script:releaseFixturePin.Sha256 = (Get-FileHash -LiteralPath $archive).Hash
         $release = Save-WinAppCliRelease -Destination $destination -WorkRoot $work -Platform arm64
         $release.Asset | Should Be 'winappcli-arm64.zip'
         Assert-MockCalled Get-WinAppCliRelease -Times 1 -Exactly -Scope It -ParameterFilter { $Platform -eq 'arm64' }
         Assert-MockCalled Invoke-WebRequest -Times 1 -Exactly -Scope It -ParameterFilter {
-            $Uri -like '*/v0.7.0/winappcli-arm64.zip'
+            $Uri -like '*/v0.7.1/winappcli-arm64.zip'
         }
     }
 

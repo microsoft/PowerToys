@@ -1,7 +1,7 @@
 # Mouse Without Borders UI tests
 
-This is the **maintained eleven-case UI-test suite**. It uses
-`Microsoft.PowerToys.UITest.Next` and unmodified official winappcli v0.7.0.
+This is the **maintained twelve-case UI-test suite**. It uses
+`Microsoft.PowerToys.UITest.Next` and unmodified official winappcli v0.7.1.
 There is no separate manual Debug experiment to build or run.
 
 ## Project layout
@@ -35,7 +35,7 @@ guest peer. The physical development machine is never a peer.
 | Windows 11 x64 | 24H2+ modern backend; locally demonstrated on build 26200.9457 |
 | Local default resources | Eight vCPUs / 16 GiB static RAM; nested virtualization enabled |
 | Modern client | Healthy `MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy` registration for the actual standard test user; demonstrated version 0.8.107.0 |
-| UI/Sandbox CLI | Official winappcli v0.7.0; release/native-closure hashes checked against `.pipelines\winapp-cli\release.json` |
+| UI/Sandbox CLI | Official winappcli v0.7.1; release/native-closure hashes checked against `.pipelines\winapp-cli\release.json` |
 | Execution identity | Unlocked English standard-user Default desktop on the outer VM, no existing PowerToys or Sandbox; run-owned guest desktop |
 | Payload | Same coherent self-contained Release runtime archive on both endpoints |
 | Privileged boundary | Separate protected setup/cleanup; no test-side elevation, feature enablement, reboot or GPO edit |
@@ -159,7 +159,7 @@ and guest-native capture. No silent backend or local fallback is allowed.
 
 The modern client must already be registered for the standard test user.
 Provider ID, epoch, CLI path/hash and private target state are checked before
-and after operations; v0.7.0 has no atomic attach-only acquisition fence, so
+and after operations; v0.7.1 has no atomic attach-only acquisition fence, so
 use a dedicated single-Sandbox VM. Its authenticated agent transport is
 separate from MWB's ports. Only child processes receive run-derived
 `WINAPP_TARGET_STATE_ROOT` / `WINAPP_UI_WORKFLOW_ID` values; default-profile
@@ -228,7 +228,7 @@ restore checkpoints implicitly or change credentials.
   -CredentialPath "$env:LOCALAPPDATA\PowerToysUiTestVm\admin.win11.credential.xml" `
   -ExchangeRoot C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders `
   -Configuration Release -Platform x64Win11 `
-  -SandboxWinAppArchive winappcli-official-0.7.0-x64-runtime.zip `
+  -SandboxWinAppArchive winappcli-official-0.7.1-x64-runtime.zip `
   -ProductArchive powertoys-runtime.zip -GuestRuntimeArchive powertoys-runtime.zip `
   -TestsArchive ui-tests.zip -ReuseStagedPayload -PlanOnly
 ```

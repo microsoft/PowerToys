@@ -136,7 +136,7 @@ internal sealed class WinAppSandbox : ISandboxSession
 
             // The first target command also installs the released guest agent. Keep it
             // within the endpoint deadline, not a shorter transfer cap. Released
-            // v0.7.0 enumerates firewall application filters individually on cold guests.
+            // v0.7.1 enumerates firewall application filters individually on cold guests.
             // A single transfer avoids repeating target preparation for each part
             // of the same immutable bootstrap input.
             Target(["push", "sandbox", stagedPayload, "MwbBootstrap", "--json"], SandboxTimeouts.ModernBootstrap, bootstrap: true, firstBootstrap: true);

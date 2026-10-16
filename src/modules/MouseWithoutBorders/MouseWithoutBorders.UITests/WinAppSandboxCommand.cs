@@ -57,14 +57,14 @@ internal sealed class WinAppSandboxCommand : IDisposable
             RedirectStandardError = true,
         };
 
-        // Official v0.7.0 retains this documented override even though its default
+        // Official v0.7.1 retains this documented override even though its default
         // moved to %USERPROFILE%\.winapp\state\targets. Never redirect the profile.
         start.Environment["WINAPP_TARGET_STATE_ROOT"] = targetStateRoot;
         start.Environment["WINAPP_CLI_TELEMETRY_OPTOUT"] = "1";
         start.Environment["WINAPP_CLI_UPDATE_CHECK"] = "0";
         if (workflowId is { } id)
         {
-            // v0.7.0 recordings pin their desktop turn. The attached worker and
+            // v0.7.1 recordings pin their desktop turn. The attached worker and
             // recorder must be one explicit workflow so guest UI actions can run.
             start.Environment["WINAPP_UI_WORKFLOW_ID"] = id.ToString("D");
         }

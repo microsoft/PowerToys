@@ -8,7 +8,7 @@ release tag, verifies its published SHA256 **before extraction**, and rejects
 changed layouts, native architectures or executable versions. Both callers
 default to x64 and support native ARM64.
 
-The v0.7.0 ZIPs contain six root files: `winapp.exe`, `libHarfBuzzSharp.dll`,
+The v0.7.1 ZIPs contain six root files: `winapp.exe`, `libHarfBuzzSharp.dll`,
 `libSkiaSharp.dll`, and their three PDBs. The deployed closure is the three native
 binaries, not the debugging symbols. Their PE headers must have the requested
 machine type and no managed CLR directory. No source checkout, private patch,

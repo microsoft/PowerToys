@@ -1,15 +1,15 @@
 {
   "Repository": "https://github.com/microsoft/winappCli",
-  "Tag": "v0.7.0",
-  "Version": "0.7.0",
+  "Tag": "v0.7.1",
+  "Version": "0.7.1",
   "Assets": {
     "x64": {
       "Name": "winappcli-x64.zip",
-      "Sha256": "236e35173f85a88a62cb030bdc07db6590fb7790514d530a050482a0da80313b"
+      "Sha256": "d925d1e32cdc320b6d271f653fd2cd3c05b5d7558deb20d1b548bead77900fcf"
     },
     "arm64": {
       "Name": "winappcli-arm64.zip",
-      "Sha256": "37532ac2a7fd50234230b3aa21605133491a289cb585fe6340442e2eb97956b5"
+      "Sha256": "4ed1edcc6d4a1a7c75bb70dbdbf77a69b3c650823c7e8061aa66f8adb1017f2e"
     }
   },
   "Files": [
