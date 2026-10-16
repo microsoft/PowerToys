@@ -128,6 +128,7 @@ basenames
 bbwe
 BCIE
 Belarusian
+benq
 BESTEFFORT
 bezelled
 bhid
@@ -1299,6 +1300,7 @@ OFN
 ofs
 OICI
 OICIIO
+okabe
 olditem
 oldpath
 oldtheme
@@ -1591,6 +1593,7 @@ RENDERFULLCONTENT
 renumbers
 reparented
 reparenting
+replug
 reportfileaccesses
 requery
 requerying
@@ -1660,6 +1663,7 @@ scrollviewer
 sddl
 SDKDDK
 sdns
+seamlesscursor
 searchterm
 SEARCHUI
 secondaryclickaction

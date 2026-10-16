@@ -43,6 +43,7 @@ public class SettingsConfigHelperTests
         "PowerToys Run",
         "QuickAccent",
         "RegistryPreview",
+        "SeamlessCursor",
         "Shortcut Guide",
         "TextExtractor",
         "Workspaces",
