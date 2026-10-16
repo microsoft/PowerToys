@@ -196,3 +196,5 @@ For a focused iteration, add
 Validate the same complete fourteen-test executable (six UI scenarios, four
 pixel-comparison checks and four signing-policy checks) on Windows 10 and Windows 11, recording the actual
 Windows edition/build. A build or a focused run alone is not end-to-end sign-off.
+
+<!-- TEMP: no-op to trigger UI tests for #51370; revert before merge -->
