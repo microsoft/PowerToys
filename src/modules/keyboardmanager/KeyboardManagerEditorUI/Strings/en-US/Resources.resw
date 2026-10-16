@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -295,10 +295,10 @@
     <value>Enter the text to type when triggered</value>
   </data>
   <data name="UrlPathInput.Header" xml:space="preserve">
-    <value>URL to open</value>
+    <value>URLs to open</value>
   </data>
   <data name="UrlPathInput.PlaceholderText" xml:space="preserve">
-    <value>https://example.com</value>
+    <value>Enter URLs, one per line</value>
   </data>
   <data name="ProgramPathInput.Header" xml:space="preserve">
     <value>Program path</value>

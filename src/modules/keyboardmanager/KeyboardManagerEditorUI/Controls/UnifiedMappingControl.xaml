@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="KeyboardManagerEditorUI.Controls.UnifiedMappingControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -291,10 +291,14 @@
                     <TextBox
                         x:Name="UrlPathInput"
                         x:Uid="UrlPathInput"
+                        MinHeight="86"
+                        MaxHeight="200"
+                        AcceptsReturn="True"
                         Background="{ThemeResource TextControlBackgroundFocused}"
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         GotFocus="UrlPathInput_GotFocus"
-                        TextChanged="UrlPathInput_TextChanged" />
+                        TextChanged="UrlPathInput_TextChanged"
+                        TextWrapping="NoWrap" />
                 </tkcontrols:Case>
                 <!--  Open App Action  -->
                 <tkcontrols:Case Value="OpenApp">

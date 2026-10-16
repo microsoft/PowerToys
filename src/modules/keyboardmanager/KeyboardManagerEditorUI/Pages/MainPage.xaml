@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="KeyboardManagerEditorUI.Pages.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -496,8 +496,9 @@
                                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                 <controls:IconLabelControl
                                                                     ActionType="Url"
-                                                                    Label="{x:Bind URL}"
-                                                                    Style="{StaticResource RemappedIconLabelControlStyle}" />
+                                                                    Label="{x:Bind DisplayUrl}"
+                                                                    Style="{StaticResource RemappedIconLabelControlStyle}"
+                                                                    ToolTipService.ToolTip="{x:Bind TooltipText}" />
                                                                 <StackPanel
                                                                     Orientation="Horizontal"
                                                                     Spacing="8"
