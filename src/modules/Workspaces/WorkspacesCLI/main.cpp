@@ -94,7 +94,7 @@ int wmain(int argc, wchar_t** argv)
     Trace::Workspaces::RegisterProvider();
     bool successful = false;
     const auto reportTelemetry = [&] {
-        Trace::Workspaces::CLICommand(args, successful);
+        Trace::Workspaces::CLICommand(WorkspacesCli::TelemetryCommandName(args), successful);
         Trace::Workspaces::UnregisterProvider();
     };
     auto telemetry = wil::scope_exit([&] { reportTelemetry(); });

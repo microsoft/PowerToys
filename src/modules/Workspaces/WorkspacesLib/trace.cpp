@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "trace.h"
-#include "CliCommands.h"
 
 #include <ProjectTelemetry.h>
 
@@ -24,14 +23,14 @@ void Trace::Workspaces::Enable(bool enabled) noexcept
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
-void Trace::Workspaces::CLICommand(const std::vector<std::wstring>& arguments, bool successful) noexcept
+void Trace::Workspaces::CLICommand(_In_ PCWSTR commandName, _In_ bool successful) noexcept
 {
     TraceLoggingWriteWrapper(
         g_hProvider,
         "Workspaces_CLICommand",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingWideString(WorkspacesCli::TelemetryCommandName(arguments), "CommandName"),
+        TraceLoggingWideString(commandName, "CommandName"),
         TraceLoggingBoolean(successful, "Successful"));
 }
 

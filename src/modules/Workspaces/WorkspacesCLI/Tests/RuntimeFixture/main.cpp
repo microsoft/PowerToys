@@ -66,9 +66,9 @@ namespace CliTelemetryProbe
         {
             static void RegisterProvider() { ++registered; }
             static void UnregisterProvider() { ++unregistered; }
-            static void CLICommand(const std::vector<std::wstring>& arguments, bool successful)
+            static void CLICommand(PCWSTR commandName, bool successful)
             {
-                events.push_back({ WorkspacesCli::TelemetryCommandName(arguments), successful });
+                events.push_back({ commandName, successful });
             }
         };
     };
