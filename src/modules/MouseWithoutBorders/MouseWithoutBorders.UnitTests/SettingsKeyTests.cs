@@ -100,6 +100,121 @@ public sealed class SettingsKeyTests
     }
 
     [TestMethod]
+    public void RepeatedServiceKeyReusesCiphertextAndChangedKeyReplacesIt()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var properties = new MouseWithoutBordersProperties();
+        properties.SecurityKey.Value = string.Empty;
+        var codec = new DpapiPairingKeyCodec(identity.User!);
+        var settings = CreateSettings(properties, codec);
+        settings.MyKey = "TEST-KEY";
+        var stored = properties.SecurityKey.Value;
+
+        settings.MyKey = "TEST-KEY";
+
+        Assert.AreEqual(stored, properties.SecurityKey.Value);
+        Assert.AreEqual("TEST-KEY", codec.Decrypt(properties.SecurityKey.Value));
+        settings.MyKey = "test-key";
+        Assert.AreNotEqual(stored, properties.SecurityKey.Value);
+        Assert.AreEqual("test-key", codec.Decrypt(properties.SecurityKey.Value));
+    }
+
+    [TestMethod]
+    public void KeySetterKeepsInstantSavingOutsideCiphertextReplacement()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        const string relativePath = @"src\modules\MouseWithoutBorders\App\Class\Setting.cs";
+        while (directory != null && !File.Exists(Path.Combine(directory.FullName, relativePath)))
+        {
+            directory = directory.Parent;
+        }
+
+        Assert.IsNotNull(directory, "Repository source must be available for the settings save wiring check.");
+        var source = File.ReadAllText(Path.Combine(directory.FullName, relativePath)).Replace("\r\n", "\n", StringComparison.Ordinal);
+        var start = source.IndexOf("internal string MyKey\n", StringComparison.Ordinal);
+        var end = source.IndexOf("internal bool UpdateRuntimeKey()", start, StringComparison.Ordinal);
+        var setter = source.Substring(start, end - start);
+        setter = setter.Substring(setter.IndexOf("set\n", StringComparison.Ordinal));
+
+        Assert.IsFalse(setter.Contains("return", StringComparison.Ordinal));
+        StringAssert.Contains(
+            setter,
+            "_properties.SecurityKey.Value = storedKey;\n                    }\n\n                    if (!PauseInstantSaving)\n                    {\n                        SaveSettings();\n                    }");
+    }
+
+    [TestMethod]
+    public void IdenticalKeyDoesNotInvokeEncryptionAgain()
+    {
+        var encryptions = 0;
+        var codec = new CallbackPairingKeyCodec(() => encryptions++);
+        var properties = new MouseWithoutBordersProperties();
+        properties.SecurityKey.Value = string.Empty;
+        var settings = CreateSettings(properties, codec);
+
+        settings.MyKey = "TEST-KEY";
+        settings.MyKey = "TEST-KEY";
+
+        Assert.AreEqual(1, encryptions);
+        Assert.AreEqual("TEST-KEY", properties.SecurityKey.Value);
+    }
+
+    [DataTestMethod]
+    [DataRow("mwb-dpapi:v1:!")]
+    [DataRow("mwb-dpapi:v1:")]
+    [DataRow("mwb-dpapi:v2:TEST")]
+    [DataRow("OLD-PLAINTEXT")]
+    public void ExplicitServiceKeyReplacesUnreadableStoredValue(string stored)
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var properties = new MouseWithoutBordersProperties();
+        properties.SecurityKey.Value = stored;
+        var codec = new DpapiPairingKeyCodec(identity.User!);
+        var settings = CreateSettings(properties, codec);
+
+        settings.MyKey = "REPLACEMENT";
+
+        Assert.AreNotEqual(stored, properties.SecurityKey.Value);
+        Assert.AreEqual("REPLACEMENT", codec.Decrypt(properties.SecurityKey.Value));
+    }
+
+    [DataTestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("mwb-dpapi:v1:!")]
+    public void PassthroughSetterPreservesExactInput(string value)
+    {
+        var properties = new MouseWithoutBordersProperties();
+        var settings = CreateSettings(properties, new PassthroughPairingKeyCodec());
+
+        settings.MyKey = value;
+        Assert.AreEqual(value, properties.SecurityKey.Value);
+        settings.MyKey = value;
+        Assert.AreEqual(value, properties.SecurityKey.Value);
+    }
+
+    [DataTestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    public void InvalidNewServiceKeyDoesNotReuseUnreadableStoredValue(string value)
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var properties = new MouseWithoutBordersProperties();
+        properties.SecurityKey.Value = "mwb-dpapi:v1:!";
+        var settings = CreateSettings(properties, new DpapiPairingKeyCodec(identity.User!));
+
+        if (value is null)
+        {
+            Assert.ThrowsException<ArgumentNullException>(() => settings.MyKey = value);
+        }
+        else
+        {
+            Assert.ThrowsException<ArgumentException>(() => settings.MyKey = value);
+        }
+
+        Assert.AreEqual("mwb-dpapi:v1:!", properties.SecurityKey.Value);
+    }
+
+    [TestMethod]
     public void FailedKeyConversionDoesNotReplaceStoredValue()
     {
         using var identity = WindowsIdentity.GetCurrent();

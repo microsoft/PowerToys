@@ -522,8 +522,25 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    var storedKey = _pairingKeyCodec.Encrypt(value);
-                    _properties.SecurityKey.Value = storedKey;
+                    bool reuseStoredKey = false;
+                    if (!string.IsNullOrEmpty(_properties.SecurityKey.Value))
+                    {
+                        try
+                        {
+                            reuseStoredKey = string.Equals(_pairingKeyCodec.Decrypt(_properties.SecurityKey.Value), value, StringComparison.Ordinal);
+                        }
+                        catch (Exception ex) when (ex is CryptographicException or ArgumentException or FormatException)
+                        {
+                            EventLogger.LogEvent($"Failed to compare stored pairing key: {ex.GetType().Name}", System.Diagnostics.EventLogEntryType.Warning);
+                        }
+                    }
+
+                    if (!reuseStoredKey)
+                    {
+                        var storedKey = _pairingKeyCodec.Encrypt(value);
+                        _properties.SecurityKey.Value = storedKey;
+                    }
+
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();
