@@ -35,6 +35,7 @@ public sealed partial class TaskbarWindow : WindowEx,
     IDisposable
 {
     private readonly uint wMTASKBARRESTART;
+    private readonly uint _foregroundChangedMessage;
     private readonly HWND _hwnd;
     private readonly TaskbarMetrics _taskbarMetrics;
     private readonly TaskbarBandControl _bandsControl;
@@ -46,8 +47,14 @@ public sealed partial class TaskbarWindow : WindowEx,
     private readonly DispatcherQueueTimer _updateLayoutDebouncer;
     private readonly DispatcherQueueTimer _autoHidePollTimer;
     private readonly DispatcherQueueTimer _taskbarChangeTimer;
+    private readonly DispatcherQueueTimer _bandPromotionTimer;
 
     private TaskbarWatcher? _taskbarWatcher;
+    private TaskbarForegroundWatcher? _foregroundWatcher;
+    private TaskbarBandPromotion? _bandPromotion;
+    private nint _promotionForeground;
+    private bool _changingBand;
+    private bool _bandPromotionDisabled;
 
     private double _lastContentSpace;
     private int _clipVersion;
@@ -83,6 +90,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         MainContent.Content = _bandsControl;
 
         wMTASKBARRESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
+        _foregroundChangedMessage = PInvoke.RegisterWindowMessage("PowerToys.CommandPalette.TaskbarForegroundChanged");
 
         _hwnd = new HWND(WindowNative.GetWindowHandle(this));
         _bandsControl.OwnerHwnd = (nint)_hwnd;
@@ -102,6 +110,10 @@ public sealed partial class TaskbarWindow : WindowEx,
         _taskbarChangeTimer = DispatcherQueue.CreateTimer();
         _taskbarChangeTimer.Interval = TimeSpan.FromMilliseconds(100);
         _taskbarChangeTimer.Tick += TaskbarChangeTick;
+
+        _bandPromotionTimer = DispatcherQueue.CreateTimer();
+        _bandPromotionTimer.Interval = TimeSpan.FromMilliseconds(10);
+        _bandPromotionTimer.Tick += (_, _) => AdvanceBandPromotion();
 
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
@@ -134,6 +146,7 @@ public sealed partial class TaskbarWindow : WindowEx,
             }
 
             MoveToTaskbar();
+            _foregroundWatcher = new TaskbarForegroundWatcher(_hwnd, _foregroundChangedMessage);
         }
         catch
         {
@@ -158,6 +171,11 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void UpdateFrame()
     {
+        if (_changingBand || _bandPromotion is not null)
+        {
+            return;
+        }
+
         // These are used for removing the very subtle shadow/border that we get from Windows 11
         HwndExtensions.ToggleWindowStyle(_hwnd, false, WindowStyle.TiledWindow);
         unsafe
@@ -169,7 +187,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void MainContent_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (_disposed || _clipSuspended || _updateLayoutDebouncer is null)
+        if (_disposed || _clipSuspended || _changingBand || _bandPromotion is not null || _updateLayoutDebouncer is null)
         {
             return;
         }
@@ -200,7 +218,10 @@ public sealed partial class TaskbarWindow : WindowEx,
             // Explorer can raise the taskbar without a layout WinEvent, including
             // when it is already foreground. Keep this independent of clipping
             // and edit mode, which must not suspend z-order maintenance.
-            TaskbarZOrder.EnsureAboveTaskbar((nint)_hwnd, (nint)PInvoke.FindWindow("Shell_TrayWnd", null));
+            if (!_changingBand && _bandPromotion is null)
+            {
+                TaskbarZOrder.EnsureAboveTaskbar((nint)_hwnd, (nint)PInvoke.FindWindow("Shell_TrayWnd", null));
+            }
 
             if (_taskbarWatcher?.ConsumeChanges() == true)
             {
@@ -211,6 +232,118 @@ public sealed partial class TaskbarWindow : WindowEx,
         {
             sender.Stop();
             Logger.LogError("Failed to process taskbar changes.", ex);
+        }
+    }
+
+    private void OnForegroundChanged(nint foreground)
+    {
+        if (_disposed || _changingBand || _bandPromotionDisabled || foreground != (nint)PInvoke.GetForegroundWindow())
+        {
+            return;
+        }
+
+        if (_bandPromotion is not null)
+        {
+            if (foreground != _promotionForeground)
+            {
+                FinishBandPromotion();
+            }
+
+            return;
+        }
+
+        if (_isFullScreenAppOpen)
+        {
+            return;
+        }
+
+        _changingBand = true;
+        try
+        {
+            _bandPromotion = TaskbarBandPromotion.TryBegin(
+                (nint)_hwnd,
+                (nint)PInvoke.FindWindow("Shell_TrayWnd", null),
+                foreground);
+            if (_bandPromotion is not null)
+            {
+                _promotionForeground = foreground;
+                if (_disposed)
+                {
+                    _bandPromotion.Dispose();
+                    _bandPromotion = null;
+                }
+                else
+                {
+                    _bandPromotionTimer.Start();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _bandPromotionDisabled = true;
+            Logger.LogError("Failed to prepare the taskbar window for shell band promotion.", ex);
+            if (((WINDOW_STYLE)PInvoke.GetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE) & WINDOW_STYLE.WS_CHILD) != 0)
+            {
+                // If rollback failed, closing releases the cross-process relationship.
+                Close();
+            }
+        }
+        finally
+        {
+            _changingBand = false;
+        }
+    }
+
+    private void AdvanceBandPromotion()
+    {
+        try
+        {
+            if (_bandPromotion?.ShouldRestore == true)
+            {
+                FinishBandPromotion();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to monitor taskbar window band promotion.", ex);
+            FinishBandPromotion();
+        }
+    }
+
+    private void FinishBandPromotion()
+    {
+        _bandPromotionTimer?.Stop();
+        var promotion = _bandPromotion;
+        _bandPromotion = null;
+        if (promotion is null)
+        {
+            return;
+        }
+
+        _changingBand = true;
+        try
+        {
+            promotion.Dispose();
+            if (!_disposed)
+            {
+                TaskbarZOrder.EnsureAboveTaskbar((nint)_hwnd, (nint)PInvoke.FindWindow("Shell_TrayWnd", null));
+            }
+        }
+        catch (Exception ex)
+        {
+            _bandPromotionDisabled = true;
+            Logger.LogError("Failed to detach the taskbar window after shell band promotion.", ex);
+            Close();
+        }
+        finally
+        {
+            _changingBand = false;
+        }
+
+        if (!_disposed)
+        {
+            UpdateFrame();
+            RequestClip();
         }
     }
 
@@ -226,6 +359,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         _isFullScreenAppOpen = isFullScreenAppOpen;
         if (isFullScreenAppOpen)
         {
+            FinishBandPromotion();
             _autoHidePollTimer.Stop();
             PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
             return;
@@ -258,7 +392,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void OnTaskbarChanged()
     {
-        if (_disposed || _isFullScreenAppOpen || _bandsControl.IsEditMode || _clipSuspended)
+        if (_disposed || _isFullScreenAppOpen || _bandsControl.IsEditMode || _clipSuspended || _changingBand || _bandPromotion is not null)
         {
             return;
         }
@@ -410,7 +544,20 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private LRESULT CustomWndProc(HWND hwnd, uint uMsg, WPARAM wParam, LPARAM lParam)
     {
-        if (uMsg == PInvoke.WM_DISPLAYCHANGE || uMsg == PInvoke.WM_DPICHANGED)
+        if (uMsg == _foregroundChangedMessage)
+        {
+            OnForegroundChanged((nint)wParam.Value);
+            return (LRESULT)0;
+        }
+        else if (uMsg == PInvoke.WM_CLOSE)
+        {
+            FinishBandPromotion();
+            if (_disposed)
+            {
+                return (LRESULT)0;
+            }
+        }
+        else if (uMsg == PInvoke.WM_DISPLAYCHANGE || uMsg == PInvoke.WM_DPICHANGED)
         {
             // Display resolution or DPI changed — reposition and reclip.
             // DPI changes invalidate clip regions (physical pixels) and
@@ -452,6 +599,12 @@ public sealed partial class TaskbarWindow : WindowEx,
             return;
         }
 
+        FinishBandPromotion();
+        if (_disposed)
+        {
+            return;
+        }
+
         // Dispose the old watcher — its hooks target the old explorer PID.
         _taskbarWatcher?.Dispose();
 
@@ -482,11 +635,23 @@ public sealed partial class TaskbarWindow : WindowEx,
             return;
         }
 
+        if (_changingBand)
+        {
+            return;
+        }
+
+        FinishBandPromotion();
+        if (_disposed)
+        {
+            return;
+        }
+
         var taskbarWindow = PInvoke.FindWindow("Shell_TrayWnd", null);
         var reBarWindow = PInvoke.FindWindowEx(taskbarWindow, HWND.Null, "ReBarWindow32", null);
 
-        // No parent/child/owner relationship — fully independent window.
-        // TaskbarChangeTick maintains our position above the topmost taskbar.
+        // Normally independent. A shell foreground notification may briefly attach
+        // us during band promotion; geometry changes cancel that attachment first.
+        // TaskbarChangeTick maintains our relative order within the current band.
         // Auto-hide sync via TaskbarWatcher + EVENT_OBJECT_LOCATIONCHANGE.
         PInvoke.GetWindowRect(taskbarWindow, out var taskbarRect);
         PInvoke.GetWindowRect(reBarWindow, out var reBarRect);
@@ -641,7 +806,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         // Run UIA enumeration on a background thread.
         var changed = await _taskbarMetrics.UpdateAsync();
-        if (_disposed)
+        if (_disposed || _changingBand || _bandPromotion is not null)
         {
             return false;
         }
@@ -653,7 +818,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         {
             await dispatcher.EnqueueAsync(() =>
             {
-                if (_disposed)
+                if (_disposed || _changingBand || _bandPromotion is not null)
                 {
                     return;
                 }
@@ -670,7 +835,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         return await dispatcher.EnqueueAsync(() =>
         {
-            if (_disposed)
+            if (_disposed || _changingBand || _bandPromotion is not null)
             {
                 return false;
             }
@@ -765,6 +930,11 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private async Task ClipWindow(bool onlyIfButtonsChanged = false)
     {
+        if (_changingBand || _bandPromotion is not null)
+        {
+            return;
+        }
+
         // Increment version so that any older in-flight ClipWindow calls
         // will see a stale version and skip applying their clip region.
         var myVersion = Interlocked.Increment(ref _clipVersion);
@@ -780,7 +950,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         await Task.Delay(100);
 
         // If another ClipWindow was started while we were waiting, bail.
-        if (_disposed || Volatile.Read(ref _clipVersion) != myVersion)
+        if (_disposed || _changingBand || _bandPromotion is not null || Volatile.Read(ref _clipVersion) != myVersion)
         {
             return;
         }
@@ -788,7 +958,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         await dispatcher.EnqueueAsync(() =>
         {
             // Check again on the UI thread.
-            if (_disposed || Volatile.Read(ref _clipVersion) != myVersion)
+            if (_disposed || _changingBand || _bandPromotion is not null || Volatile.Read(ref _clipVersion) != myVersion)
             {
                 return;
             }
@@ -1049,14 +1219,35 @@ public sealed partial class TaskbarWindow : WindowEx,
         if (!_disposed)
         {
             _disposed = true;
+            FinishBandPromotion();
             Interlocked.Increment(ref _clipVersion);
             _themeService.ThemeChanged -= ThemeService_ThemeChanged;
             _updateLayoutDebouncer?.Stop();
             _autoHidePollTimer?.Stop();
             _taskbarChangeTimer?.Stop();
             _taskbarWatcher?.Dispose();
+            _ = DisposeForegroundWatcherAsync();
             _ = DisposeMetricsAsync();
             WeakReferenceMessenger.Default.UnregisterAll(this);
+        }
+    }
+
+    private async Task DisposeForegroundWatcherAsync()
+    {
+        var watcher = _foregroundWatcher;
+        _foregroundWatcher = null;
+        if (watcher is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await watcher.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to release the taskbar foreground watcher.", ex);
         }
     }
 

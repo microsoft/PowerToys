@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -11,7 +10,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Microsoft.CmdPal.UI.Utilities;
 
-public static unsafe class TaskbarZOrder
+public static class TaskbarZOrder
 {
     public static bool EnsureAboveTaskbar(nint windowHandle, nint taskbarHandle)
     {
@@ -22,13 +21,7 @@ public static unsafe class TaskbarZOrder
             return false;
         }
 
-        var order = new WindowOrder { Window = window, Taskbar = taskbar };
-        if (!PInvoke.EnumWindows(&FindFirstWindow, (LPARAM)(nint)(&order)) && !order.Found)
-        {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to check taskbar window z-order.");
-        }
-
-        if (!order.TaskbarIsAbove)
+        if (!IsTaskbarAbove(window, taskbar))
         {
             return false;
         }
@@ -50,25 +43,40 @@ public static unsafe class TaskbarZOrder
         return true;
     }
 
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
-    private static BOOL FindFirstWindow(HWND hwnd, LPARAM lParam)
+    private static bool IsTaskbarAbove(HWND window, HWND taskbar)
     {
-        var order = (WindowOrder*)lParam.Value;
-        if (hwnd == order->Window || hwnd == order->Taskbar)
+        // EnumWindows (and GetWindow's sibling traversal) can omit windows after
+        // shell-band promotion. Walk the desktop's direct children instead.
+        var desktop = PInvoke.GetDesktopWindow();
+        var visited = new HashSet<HWND>();
+        var taskbarSeen = false;
+        var windowSeen = false;
+        for (var hwnd = PInvoke.FindWindowEx(desktop, HWND.Null, null, null);
+            !hwnd.IsNull && visited.Add(hwnd);
+            hwnd = PInvoke.FindWindowEx(desktop, hwnd, null, null))
         {
-            order->Found = true;
-            order->TaskbarIsAbove = hwnd == order->Taskbar;
-            return false;
+            if (hwnd == window)
+            {
+                if (taskbarSeen)
+                {
+                    return true;
+                }
+
+                windowSeen = true;
+            }
+            else if (hwnd == taskbar)
+            {
+                if (windowSeen)
+                {
+                    return false;
+                }
+
+                taskbarSeen = true;
+            }
         }
 
-        return true;
-    }
-
-    private struct WindowOrder
-    {
-        public HWND Window;
-        public HWND Taskbar;
-        public bool Found;
-        public bool TaskbarIsAbove;
+        // A window disappeared, was reparented, or reordered during the walk.
+        // Leave the order alone until the next update rather than raise blindly.
+        return false;
     }
 }
