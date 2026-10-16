@@ -11,6 +11,7 @@ Following tools are currently available:
 * [BugReportTool](bug-report-tool.md) - A tool to collect logs and system information for bug reports.
 * [Build tools](build-tools.md) - A set of scripts that help building PowerToys.
 * [Monitor info report](monitor-info-report.md) - A small diagnostic tool which helps identifying WinAPI bugs related to the physical monitor detection.
+* [Performance tools](/tools/performance/README.md) - Scripts that measure the startup time and memory of the runner and the published .NET apps.
 * [project template](/tools/project_template/README.md) - A Visual Studio project template for a new PowerToys project.
 * [StylesReportTool](styles-report-tool.md) - A tool to collect information about an open window.
 * [Verification scripts](verification-scripts.md) - A set of scripts that help verifying the PowerToys installation.
