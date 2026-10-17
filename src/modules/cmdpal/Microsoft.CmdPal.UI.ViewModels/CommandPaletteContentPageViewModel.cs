@@ -14,22 +14,11 @@ public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
     }
 
     public override ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
-        => CreateViewModel(content, context, FallbackContext);
-
-    internal static ContentViewModel? CreateViewModel(
-        IContent content,
-        WeakReference<IPageContext> context,
-        FallbackQueryContext? fallbackContext = null)
     {
-        ContentViewModel? viewModel = content switch
-        {
-            IFormContent form => new ContentFormViewModel(form, context, fallbackContext),
-            IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
-            ITreeContent tree => new ContentTreeViewModel(tree, context, fallbackContext),
-            IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
-            IImageContent image => new ContentImageViewModel(image, context),
-            _ => null,
-        };
-        return viewModel;
+        var viewModel = CreateViewModel(content, context);
+        return viewModel is null ? null : ShareFallbackContext(viewModel);
     }
+
+    public static ContentViewModel? CreateViewModel(IContent content, WeakReference<IPageContext> context)
+        => ContentViewModelFactory.Create(content, context);
 }

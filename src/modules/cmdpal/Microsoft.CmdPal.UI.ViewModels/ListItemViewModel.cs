@@ -51,8 +51,10 @@ public partial class ListItemViewModel : CommandItemViewModel
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (field != value)
             {
+                field = value;
+                UpdateProperty(nameof(LayoutShowsTitle));
                 UpdateShowsTitle();
             }
         }
@@ -63,8 +65,10 @@ public partial class ListItemViewModel : CommandItemViewModel
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (field != value)
             {
+                field = value;
+                UpdateProperty(nameof(LayoutShowsSubtitle));
                 UpdateShowsSubtitle();
             }
         }
@@ -102,7 +106,7 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public override void InitializeProperties()
     {
-        if (IsInitialized)
+        if (IsInitialized || IsCleanedUp)
         {
             return;
         }
@@ -111,7 +115,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         base.InitializeProperties();
 
         var li = Model.Unsafe;
-        if (li is null)
+        if (li is null || IsCleanedUp)
         {
             return; // throw?
         }
@@ -135,7 +139,7 @@ public partial class ListItemViewModel : CommandItemViewModel
     {
         base.SlowInitializeProperties();
         var model = Model.Unsafe;
-        if (model is null)
+        if (model is null || IsCleanedUp)
         {
             return;
         }
@@ -143,7 +147,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
         {
-            Details = new(extensionDetails, PageContext, FallbackContext);
+            Details = ShareFallbackContext(new DetailsViewModel(extensionDetails, PageContext));
             Details.InitializeProperties();
             UpdateProperty(nameof(Details), nameof(HasDetails));
         }
@@ -159,7 +163,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         base.FetchProperty(propertyName);
 
         var model = this.Model.Unsafe;
-        if (model is null)
+        if (model is null || IsCleanedUp)
         {
             return; // throw?
         }
@@ -185,7 +189,7 @@ public partial class ListItemViewModel : CommandItemViewModel
             case nameof(Details):
                 var existingReference = Details;
                 var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? new(extensionDetails, PageContext, FallbackContext) : null;
+                Details = extensionDetails is not null ? ShareFallbackContext(new DetailsViewModel(extensionDetails, PageContext)) : null;
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
@@ -228,29 +232,28 @@ public partial class ListItemViewModel : CommandItemViewModel
             !listViewModel.ShowDetails)
         {
             var addedCommand = false;
-            lock (MoreCommandsLock)
+            lock (ContextItemsLock)
             {
                 // Check if "Show Details" action already exists to prevent duplicates
-                if (!UnsafeMoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
+                if (!UnsafeContextItems.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
                                                   contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
                 {
-                    var showDetailsCommand = new ShowDetailsCommand(Details);
+                    var showDetailsCommand = new ShowDetailsCommand(Details, listViewModel.SetDetails);
                     var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
                     {
                         Icon = showDetailsCommand.Icon,
                     };
                     var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
                     showDetailsContextItemViewModel.SlowInitializeProperties();
-                    UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
-                    RefreshMoreCommandStateUnsafe();
+                    UnsafeContextItems.Add(showDetailsContextItemViewModel);
+                    RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
                     addedCommand = true;
                 }
             }
 
             if (addedCommand)
             {
-                UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
-                UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
+                NotifyContextMenuChanged();
             }
         }
     }
@@ -267,32 +270,31 @@ public partial class ListItemViewModel : CommandItemViewModel
             !listViewModel.ShowDetails)
         {
             CommandContextItemViewModel? oldCommand = null;
-            lock (MoreCommandsLock)
+            lock (ContextItemsLock)
             {
-                oldCommand = UnsafeMoreCommands
+                oldCommand = UnsafeContextItems
                     .OfType<CommandContextItemViewModel>()
                     .FirstOrDefault(contextItemViewModel => contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
 
                 if (oldCommand is not null)
                 {
-                    UnsafeMoreCommands.Remove(oldCommand);
+                    UnsafeContextItems.Remove(oldCommand);
                 }
 
-                var showDetailsCommand = new ShowDetailsCommand(Details);
+                var showDetailsCommand = new ShowDetailsCommand(Details, listViewModel.SetDetails);
                 var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
                 {
                     Icon = showDetailsCommand.Icon,
                 };
                 var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
                 showDetailsContextItemViewModel.SlowInitializeProperties();
-                UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
-                RefreshMoreCommandStateUnsafe();
+                UnsafeContextItems.Add(showDetailsContextItemViewModel);
+                RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
             }
 
             oldCommand?.SafeCleanup();
 
-            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
-            UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
+            NotifyContextMenuChanged();
         }
     }
 
@@ -373,6 +375,8 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     protected override void UnsafeCleanup()
     {
+        CleanupInitializationState();
+
         base.UnsafeCleanup();
 
         // Tags don't have event handlers or anything to cleanup

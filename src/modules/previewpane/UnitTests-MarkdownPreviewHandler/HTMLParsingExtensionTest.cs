@@ -111,7 +111,7 @@ namespace PreviewPaneUnitTests
         [DataRow("../test.png", @"\\server\share\sub", @"\\server\share", "https://localmdimages/test.png")]
         public void TryGetLocalImageVirtualUrlAllowsContainedPaths(string url, string markdownDirectory, string basePath, string expectedVirtualUrl)
         {
-            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryGetLocalImageVirtualUrl(url, markdownDirectory, basePath, out string virtualUrl);
+            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryGetLocalImageVirtualUrl(url, markdownDirectory, basePath, out string? virtualUrl);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expectedVirtualUrl, virtualUrl);
@@ -131,7 +131,7 @@ namespace PreviewPaneUnitTests
         [DataRow("", @"C:\docs", @"C:\docs")]
         public void TryGetLocalImageVirtualUrlBlocksUnsafeUrls(string url, string markdownDirectory, string basePath)
         {
-            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryGetLocalImageVirtualUrl(url, markdownDirectory, basePath, out string virtualUrl);
+            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryGetLocalImageVirtualUrl(url, markdownDirectory, basePath, out string? virtualUrl);
 
             Assert.IsFalse(result);
             Assert.IsNull(virtualUrl);
@@ -147,12 +147,12 @@ namespace PreviewPaneUnitTests
         {
             string root = Path.Combine(Path.GetTempPath(), "ptmd-" + Guid.NewGuid().ToString("N"));
             string expectedPath = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
-            Directory.CreateDirectory(Path.GetDirectoryName(expectedPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(expectedPath)!);
             File.WriteAllText(expectedPath, "not really an image");
 
             try
             {
-                bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(requestUri, root, out string resolvedPath);
+                bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(requestUri, root, out string? resolvedPath);
 
                 Assert.IsTrue(result);
                 Assert.AreEqual(expectedPath, resolvedPath);
@@ -178,7 +178,7 @@ namespace PreviewPaneUnitTests
             try
             {
                 bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(
-                    "https://localmdimages/does-not-exist.png", root, out string resolvedPath);
+                    "https://localmdimages/does-not-exist.png", root, out string? resolvedPath);
 
                 Assert.IsFalse(result, "a path that cannot be inspected must fail closed");
                 Assert.IsNull(resolvedPath);
@@ -205,7 +205,7 @@ namespace PreviewPaneUnitTests
         [DataRow("", @"C:\docs")]
         public void TryResolveVirtualUrlBlocksUnsafeRequests(string requestUri, string basePath)
         {
-            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(requestUri, basePath, out string resolvedPath);
+            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(requestUri, basePath, out string? resolvedPath);
 
             Assert.IsFalse(result);
             Assert.IsNull(resolvedPath);
@@ -301,7 +301,7 @@ namespace PreviewPaneUnitTests
                 // Lexically "link/secret.png" sits inside the allowed directory, but the read would
                 // follow the link outside it.
                 bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(
-                    "https://localmdimages/link/secret.png", allowed, out string resolvedPath);
+                    "https://localmdimages/link/secret.png", allowed, out string? resolvedPath);
 
                 Assert.IsFalse(result, "a path traversing a reparse point must be rejected");
                 Assert.IsNull(resolvedPath);
@@ -361,18 +361,18 @@ namespace PreviewPaneUnitTests
         {
             string root = Path.Combine(Path.GetTempPath(), "ptmd-" + Guid.NewGuid().ToString("N"));
             string onDisk = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
-            Directory.CreateDirectory(Path.GetDirectoryName(onDisk));
+            Directory.CreateDirectory(Path.GetDirectoryName(onDisk)!);
             File.WriteAllText(onDisk, "not really an image");
 
             try
             {
                 bool built = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryGetLocalImageVirtualUrl(
-                    relativePath, root, root, out string virtualUrl);
+                    relativePath, root, root, out string? virtualUrl);
                 Assert.IsTrue(built, "the URL should be produced");
 
                 // A URL carrying a raw '#' or '%' would be truncated or misparsed here.
                 bool resolved = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(
-                    virtualUrl, root, out string resolvedPath);
+                    virtualUrl, root, out string? resolvedPath);
 
                 Assert.IsTrue(resolved, $"the escaped URL '{virtualUrl}' should resolve back");
                 Assert.AreEqual(onDisk, resolvedPath);

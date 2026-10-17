@@ -16,33 +16,26 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
 {
     private string? _extensionIdToOpen;
     private bool _isGalleryLoaded;
+    private bool _disposed;
 
     public ExtensionGalleryViewModel ViewModel { get; }
 
     public ExtensionGalleryPage()
     {
-        // The page owns and disposes its view model when unloaded.
+        // SettingsWindow disposes the page and its view model when navigating away.
         NavigationCacheMode = NavigationCacheMode.Disabled;
         ViewModel = App.Current.Services.GetRequiredService<ExtensionGalleryViewModel>();
 
         this.InitializeComponent();
 
         Loaded += ExtensionGalleryPage_Loaded;
-        Unloaded += ExtensionGalleryPage_Unloaded;
-    }
-
-    private void ExtensionGalleryPage_Unloaded(object sender, RoutedEventArgs e)
-    {
-        _extensionIdToOpen = null;
-        _isGalleryLoaded = false;
-        ViewModel.Dispose();
     }
 
     private async void ExtensionGalleryPage_Loaded(object sender, RoutedEventArgs e)
     {
         await ViewModel.LoadAsync();
 
-        if (!IsLoaded)
+        if (_disposed || !IsLoaded)
         {
             return;
         }
@@ -115,6 +108,10 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
 
     public void Dispose()
     {
+        _disposed = true;
+        Loaded -= ExtensionGalleryPage_Loaded;
+        _extensionIdToOpen = null;
+        _isGalleryLoaded = false;
         ViewModel.Dispose();
     }
 }

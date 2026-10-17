@@ -81,11 +81,15 @@
                         Name="MeasureToolUnitsOfMeasure"
                         x:Uid="MeasureTool_UnitsOfMeasure"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="ComboBox_ScreenRuler_UnitsOfMeasure"
+                            SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Pixels" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Inches" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Centimeters" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Millimeters" />
+                            <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_DIP" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 

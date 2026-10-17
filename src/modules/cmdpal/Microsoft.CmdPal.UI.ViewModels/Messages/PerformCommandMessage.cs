@@ -14,13 +14,17 @@ public record PerformCommandMessage
 {
     public ExtensionObject<ICommand> Command { get; }
 
-    public object? Context { get; }
+    public object? CommandContext { get; }
+
+    public SourceContext? Context { get; private set; }
 
     internal FallbackQueryContext? FallbackContext { get; }
 
     public bool WithAnimation { get; set; } = true;
 
     public bool TransientPage { get; set; }
+
+    public Func<ICommandResult, bool>? ResultHandler { get; set; }
 
     /// <summary>
     /// Optional callback raised by <see cref="ShellViewModel"/> just before a
@@ -38,55 +42,69 @@ public record PerformCommandMessage
     /// </summary>
     public bool ShowWindowIfPage { get; set; }
 
-    public PerformCommandMessage(ExtensionObject<ICommand> command)
+    /// <summary>
+    /// Gets or sets initial state that must be applied before a list page fetches its first items.
+    /// </summary>
+    public ListPageLaunchOptions? ListPageOptions { get; set; }
+
+    public PerformCommandMessage(ExtensionObject<ICommand> command, PageViewModel? sourcePage = null)
     {
         Command = command;
-        Context = null;
+        Context = sourcePage is null ? null : new(sourcePage);
+        FallbackContext = sourcePage?.FallbackContext;
+        CommandContext = FallbackContext?.InvocationContext;
     }
 
-    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context)
+    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context, PageViewModel? sourcePage = null)
+        : this(command, sourcePage)
     {
-        Command = command;
-        Context = context.Unsafe;
+        CommandContext = FallbackContext?.InvocationContext ?? context.Unsafe;
     }
 
-    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandItem> context)
+    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandItem> context, PageViewModel? sourcePage = null)
+        : this(command, sourcePage)
     {
-        Command = command;
-        Context = context.Unsafe;
+        CommandContext = FallbackContext?.InvocationContext ?? context.Unsafe;
     }
 
-    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandContextItem> context)
+    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandContextItem> context, PageViewModel? sourcePage = null)
+        : this(command, sourcePage)
     {
-        Command = command;
-        Context = context.Unsafe;
+        CommandContext = FallbackContext?.InvocationContext ?? context.Unsafe;
     }
 
-    public PerformCommandMessage(CommandContextItemViewModel contextCommand)
+    public PerformCommandMessage(CommandItemViewModel contextCommand)
+        : this(
+            contextCommand.Command.Model,
+            contextCommand.Model,
+            contextCommand.PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null)
     {
-        Command = contextCommand.Command.Model;
-        FallbackContext = contextCommand.FallbackContext;
-        Context = FallbackContext?.InvocationContext ?? contextCommand.Model.Unsafe;
+        FallbackContext = contextCommand.FallbackContext ?? FallbackContext;
+        CommandContext = FallbackContext?.InvocationContext ?? contextCommand.Model.Unsafe;
     }
 
-    internal PerformCommandMessage(CommandItemViewModel command, object? context)
+    internal PerformCommandMessage(CommandItemViewModel command, object? context, PageViewModel? sourcePage = null)
+        : this(
+            command.Command.Model,
+            sourcePage ?? (command.PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null))
     {
-        Command = command.Command.Model;
-        FallbackContext = command.FallbackContext;
-        Context = FallbackContext?.InvocationContext ?? context;
+        FallbackContext = command.FallbackContext ?? FallbackContext;
+        CommandContext = FallbackContext?.InvocationContext ?? context;
     }
 
-    public PerformCommandMessage(CommandViewModel command)
+    public PerformCommandMessage(CommandViewModel command, PageViewModel? sourcePage = null)
+        : this(
+            command.Model,
+            sourcePage ?? (command.PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null))
     {
-        Command = command.Model;
-        FallbackContext = command.FallbackContext;
-        Context = FallbackContext?.InvocationContext;
+        FallbackContext = command.FallbackContext ?? FallbackContext;
+        CommandContext = FallbackContext?.InvocationContext;
     }
 
-    public PerformCommandMessage(ConfirmResultViewModel vm)
+    public PerformCommandMessage(ConfirmResultViewModel vm, PageViewModel? sourcePage = null)
+        : this(vm.PrimaryCommand.Model, sourcePage)
     {
-        Command = vm.PrimaryCommand.Model;
-        FallbackContext = vm.FallbackContext;
-        Context = FallbackContext?.InvocationContext;
+        FallbackContext = vm.FallbackContext ?? FallbackContext;
+        CommandContext = FallbackContext?.InvocationContext;
     }
 }

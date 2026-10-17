@@ -14,14 +14,17 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 internal sealed partial class FallbackResultQueryManager : IDisposable
 {
     internal const uint InitialRequestedItemCount = 5;
+
+    // Fallback queries cross the process boundary and can be slow. This cap keeps a slow
+    // extension from holding every thread that other sources need.
     private const int MaximumConcurrentQueries = 8;
-    private const uint MaximumSuggestedDelayMilliseconds = 2000;
 
     private readonly SemaphoreSlim _querySlots = new(MaximumConcurrentQueries);
     private readonly ConcurrentDictionary<string, byte> _loadingSources = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _sourceLocks = new(StringComparer.Ordinal);
     private readonly Action<TopLevelViewModel, IFallbackCommandResult, bool, uint, CancellationToken> _publishSnapshot;
     private readonly Action<IFallbackCommandResult> _discardSnapshot;
+    private volatile bool _disposed;
 
     internal FallbackResultQueryManager(
         Action<TopLevelViewModel, IFallbackCommandResult, bool, uint, CancellationToken> publishSnapshot,
@@ -37,6 +40,11 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
         IReadOnlyList<TopLevelViewModel> sources,
         CancellationToken cancellationToken)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         foreach (var source in sources)
         {
             _ = Task.Run(() => RunSourceAsync(source, query, queryId, cancellationToken), CancellationToken.None);
@@ -49,6 +57,11 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
         int acceptedItemCount,
         CancellationToken cancellationToken)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         var operationLease = resultLease.Acquire();
         if (operationLease is null)
         {
@@ -139,7 +152,7 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
                 return;
             }
 
-            var delay = Math.Min(source.EffectiveQueryDelayMilliseconds, MaximumSuggestedDelayMilliseconds);
+            var delay = Math.Min(source.EffectiveQueryDelayMilliseconds, FallbackSettings.MaximumQueryDelayMilliseconds);
             if (delay > 0)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(delay), cancellationToken).ConfigureAwait(false);
@@ -220,43 +233,32 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
         _publishSnapshot(source, snapshot, isFinal, maximumItemCount, cancellationToken);
     }
 
-    private static async Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeQueryAsync(
+    private static Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeQueryAsync(
         IFallbackHandler2 handler,
         IFallbackQueryArgs args,
         CancellationToken cancellationToken)
-    {
-        var callTask = Task.Run(() => handler.QueryAsync(args), CancellationToken.None);
-        try
-        {
-            return await callTask.WaitAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            _ = callTask.ContinueWith(
-                static task =>
-                {
-                    if (task.Status == TaskStatus.RanToCompletion)
-                    {
-                        task.Result?.Cancel();
-                    }
-                    else
-                    {
-                        _ = task.Exception;
-                    }
-                },
-                CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
-            throw;
-        }
-    }
+        => StartCancelableAsync(() => handler.QueryAsync(args), cancellationToken);
 
-    private static async Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeLoadMoreAsync(
+    private static Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeLoadMoreAsync(
         IFallbackCommandResult result,
         uint requestedItemCount,
         CancellationToken cancellationToken)
+        => StartCancelableAsync(() => result.LoadMoreItemsAsync(requestedItemCount), cancellationToken);
+
+    /// <summary>
+    /// Starts a call into an extension and stops waiting for it when the query is cancelled.
+    /// </summary>
+    /// <remarks>
+    /// The call itself can block, so it runs on a pool thread. A cancelled query stops
+    /// waiting at once, but the call keeps running. The continuation cancels whatever the
+    /// call returns later, so the extension does not keep working for a query the user
+    /// already replaced.
+    /// </remarks>
+    private static async Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> StartCancelableAsync(
+        Func<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> start,
+        CancellationToken cancellationToken)
     {
-        var callTask = Task.Run(() => result.LoadMoreItemsAsync(requestedItemCount), CancellationToken.None);
+        var callTask = Task.Run(start, CancellationToken.None);
         try
         {
             return await callTask.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -272,6 +274,7 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
                     }
                     else
                     {
+                        // Observe the fault so it does not surface as unhandled.
                         _ = task.Exception;
                     }
                 },
@@ -284,7 +287,15 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
 
     public void Dispose()
     {
+        // Stop new queries. The caller cancels the query token before it disposes us,
+        // so work that is already running unwinds on its own.
+        _disposed = true;
         _loadingSources.Clear();
+
+        // Do not dispose the semaphores. A query that is still unwinding releases the
+        // one it holds, and a disposed SemaphoreSlim throws on Release. They hold no
+        // unmanaged handle, because this class never reads AvailableWaitHandle, so the
+        // garbage collector reclaims them after the last query lets go.
         _sourceLocks.Clear();
     }
 

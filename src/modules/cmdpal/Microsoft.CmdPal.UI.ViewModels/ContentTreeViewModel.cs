@@ -10,23 +10,10 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentTreeViewModel : ContentViewModel
+public partial class ContentTreeViewModel(ITreeContent tree, WeakReference<IPageContext> context)
+    : ContentViewModel(context)
 {
-    public ExtensionObject<ITreeContent> Model { get; }
-
-    public ContentTreeViewModel(ITreeContent tree, WeakReference<IPageContext> context)
-        : this(tree, context, null)
-    {
-    }
-
-    internal ContentTreeViewModel(
-        ITreeContent tree,
-        WeakReference<IPageContext> context,
-        FallbackQueryContext? fallbackContext)
-        : base(context, fallbackContext)
-    {
-        Model = new(tree);
-    }
+    public ExtensionObject<ITreeContent> Model { get; } = new(tree);
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -62,20 +49,10 @@ public partial class ContentTreeViewModel : ContentViewModel
         model.ItemsChanged += Model_ItemsChanged;
     }
 
-    // Theoretically, we should unify this with the one in CommandPalettePageViewModelFactory
-    // and maybe just have a ContentViewModelFactory or something
     public ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
     {
-        ContentViewModel? viewModel = content switch
-        {
-            IFormContent form => new ContentFormViewModel(form, context, FallbackContext),
-            IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
-            ITreeContent tree => new ContentTreeViewModel(tree, context, FallbackContext),
-            IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
-            IImageContent image => new ContentImageViewModel(image, context),
-            _ => null,
-        };
-        return viewModel;
+        var viewModel = ContentViewModelFactory.Create(content, context);
+        return viewModel is null ? null : ShareFallbackContext(viewModel);
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?

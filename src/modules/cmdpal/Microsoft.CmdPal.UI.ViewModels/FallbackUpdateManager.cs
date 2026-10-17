@@ -102,7 +102,10 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                         continue;
                     }
 
-                    var delay = TimeSpan.FromMilliseconds(Math.Min(command.EffectiveQueryDelayMilliseconds, 2000));
+                    // This worker owns a pool thread for the whole call, so the wait
+                    // blocks instead of using await. The cap keeps that block short.
+                    var delay = TimeSpan.FromMilliseconds(
+                        Math.Min(command.EffectiveQueryDelayMilliseconds, FallbackSettings.MaximumQueryDelayMilliseconds));
                     if (delay > TimeSpan.Zero && cancellationToken.WaitHandle.WaitOne(delay))
                     {
                         return;

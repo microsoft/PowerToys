@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,6 +13,22 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 [TestClass]
 public class FallbackV2Tests
 {
+    private sealed partial class StubProvider : CommandProvider
+    {
+        public override ICommandItem[] TopLevelCommands() => [];
+    }
+
+    [TestMethod]
+    public void ApiExtensionStubs_IncludeFallbackV2Interfaces()
+    {
+        var stubs = new StubProvider().GetApiExtensionStubs();
+
+        Assert.IsTrue(stubs.Any(stub => stub is IFallbackCommandItem2 and not IFallbackCommandItem3));
+        Assert.IsTrue(stubs.Any(stub => stub is IFallbackCommandItem3));
+        Assert.IsTrue(stubs.Any(stub => stub is IFallbackHandler2));
+        Assert.IsTrue(stubs.Any(stub => stub is IFallbackCommandResult));
+    }
+
     [TestMethod]
     public void PassiveFallback_UsesPassiveDefaults()
     {

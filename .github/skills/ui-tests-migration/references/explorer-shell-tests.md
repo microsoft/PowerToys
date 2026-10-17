@@ -5,6 +5,24 @@ preview or thumbnail handler, change Explorer's view, or restart the Explorer sh
 implementation is
 [FileExplorerAddonsTests.cs](../../../../src/modules/previewpane/PreviewPane.UITests/FileExplorerAddonsTests.cs).
 
+## Reuse the shared primitives
+
+Do not add another module-private implementation of Explorer launch/close/restart, popup
+classification, visible menu-item polling, or menu caption parsing. `UITestAutomation.Next` owns
+these operations:
+
+| Helper | Responsibility |
+|---|---|
+| `ExplorerControl` | Open fresh file windows, close file windows, find replacements, and restart only this session's Explorer processes with fresh-taskbar readiness |
+| `ShellMenu` | Classic/modern popup classes, bounded visible-item lookup, content-ready submenu discovery, focused-control menu opening, classic navigation, and UIA/native caption inventories |
+| `ExplorerShell` | Authoritative file selection/focus and view mode/icon size |
+| `FileSystemAssert` | Byte-exact file and recursive tree assertions, including empty directories and shared reads that do not block producers |
+
+Keep registration, once-per-class restart flags, module command captions, fixture-specific
+background-click locations, exact selection sets, modifier holds, and output expectations in the
+module suite. Opening a folder does not implicitly restart Explorer, close unrelated file windows,
+change selection, or resize/foreground it.
+
 ## Model three independent lifetimes
 
 Do not treat "Explorer test" as one process lifecycle:
@@ -38,16 +56,16 @@ launched after the final test.
 If a Shell restart is required, terminate only `explorer.exe`, not its process tree:
 
 ```csharp
-foreach (var process in Process.GetProcessesByName("explorer"))
-{
-    process.Kill();
-    process.WaitForExit(10_000);
-}
+Assert.IsTrue(
+    ExplorerControl.RestartShell(log: message => TestContext.WriteLine(message)),
+    "Explorer did not expose a taskbar in a fresh process.");
 ```
 
+`ExplorerControl.RestartShell` tolerates exited-process races and never kills descendants.
 `Kill(entireProcessTree: true)` also terminates processes launched from Explorer. In a validation VM
 that included `msvsmon`; the apparent remote-debugger "auto stop" was caused by the test itself.
-Guard the restart with a class-wide flag so it occurs once.
+Do not substitute `WindowControl.TryKillProcessByName`, which terminates process trees. Guard the
+shared restart primitive with a caller-owned class-wide flag and set that flag only after success.
 
 ## Use the Shell view as the selection authority
 

@@ -23,12 +23,10 @@ public partial class ConfirmResultViewModel : ExtensionObjectViewModel
         : base(context)
     {
         _args = args;
-        FallbackContext = fallbackContext;
+        InheritFallbackContext(fallbackContext);
         Model = new(args);
-        PrimaryCommand = new(null, context, fallbackContext);
+        PrimaryCommand = ShareFallbackContext(new CommandViewModel(null, context));
     }
-
-    internal FallbackQueryContext? FallbackContext { get; }
 
     public ExtensionObject<IConfirmationArgs> Model { get; }
 
@@ -53,7 +51,7 @@ public partial class ConfirmResultViewModel : ExtensionObjectViewModel
         Title = model.Title;
         Description = model.Description;
         IsPrimaryCommandCritical = model.IsPrimaryCommandCritical;
-        PrimaryCommand = new(model.PrimaryCommand, PageContext, FallbackContext);
+        PrimaryCommand = ShareFallbackContext(new CommandViewModel(model.PrimaryCommand, PageContext));
         PrimaryCommand.InitializeProperties();
 
         UpdateProperty(nameof(Title));
