@@ -1388,6 +1388,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -1399,10 +1400,30 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
             ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
             ContentData["gpuName"] = _gpuDisplayInfo.Name;
+            ContentData["gpuShortName"] = _gpuDisplayInfo.ShortName;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
-            ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentJson["gpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
+                PerformanceChartData.GpuColor,
+                stats.GetGPUHistory(_gpuActiveIndex)));
+            ContentJson["gpuEngines"] = CreateEngines(stats, _gpuActiveIndex);
+
+            var memory = stats.GetGPUMemory(_gpuActiveIndex);
+            var dedicated = FormatUsedOfTotal(memory.DedicatedUsed, memory.DedicatedTotal);
+            var shared = FormatUsedOfTotal(memory.SharedUsed, memory.SharedTotal);
+            ContentJson["hasDedicatedMemory"] = memory.DedicatedTotal > 0;
+            ContentJson["hasSharedMemory"] = memory.SharedTotal > 0;
+            ContentData["gpuDedicatedMemory"] = dedicated;
+            ContentJson["gpuDedicatedPercent"] = GetPercent(memory.DedicatedUsed, memory.DedicatedTotal);
+            ContentData["gpuSharedMemory"] = shared;
+            ContentJson["gpuSharedPercent"] = GetPercent(memory.SharedUsed, memory.SharedTotal);
+            if (memory.DedicatedTotal > 0 || memory.SharedTotal > 0)
+            {
+                ContentData["gpuMemoryLabel"] = Resources.GetResource(memory.DedicatedTotal > 0
+                    ? "GPUUsage_Widget_Template/Dedicated_Memory"
+                    : "GPUUsage_Widget_Template/Shared_Memory");
+                ContentData["gpuMemory"] = memory.DedicatedTotal > 0 ? dedicated : shared;
+            }
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1411,6 +1432,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         catch (Exception e)
         {
             ContentData.Clear();
+            ContentJson.Clear();
             if (_gpuDisplayInfo is { } previous)
             {
                 _gpuDisplayInfo = previous with { Name = string.Empty, ShortName = string.Empty };
@@ -1430,6 +1452,30 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             _ => throw new NotImplementedException(),
         };
     }
+
+    /// <summary>Lists each engine type, such as 3D and Copy, with its utilization and history, as in Task Manager.</summary>
+    private static JsonArray CreateEngines(GPUStats stats, int gpuIndex)
+    {
+        var array = new JsonArray();
+        foreach (var engine in stats.GetGPUEngines(gpuIndex))
+        {
+            array.Add((JsonNode)CreateEngine(
+                Resources.GetResource($"GPUUsage_Widget_Template/Engine_{GPUStats.EngineTypes[engine.Type]}"),
+                engine.Percent,
+                stats.GetGPUEngineHistory(gpuIndex, engine.Type)));
+        }
+
+        return array;
+    }
+
+    /// <summary>One engine tile: its name, its utilization, and a sparkline of its history.</summary>
+    internal static JsonObject CreateEngine(string name, float percent, float[] history) => new()
+    {
+        ["name"] = name,
+        ["text"] = FloatToPercentString(percent / 100f),
+        ["chartMax"] = PerformanceChartData.GetSparklineMax(PerformanceChartData.Max(history)),
+        ["series"] = PerformanceChartData.Create(new PerformanceChartData.Series(name, PerformanceChartData.GpuColor, history)),
+    };
 
     public string GetItemTitle(bool isBandPage)
     {
