@@ -29,6 +29,7 @@ This section contains documentation for individual PowerToys modules, including 
 | [Registry Preview](registrypreview.md) | Tool for visualizing and editing Registry files |
 | [Screen Ruler](screenruler.md) | Tool for measuring pixel distances and color boundaries on screen |
 | [Shortcut Guide](shortcut_guide.md) | Tool for displaying Windows keyboard shortcuts when holding the Windows key |
+| [Text Expander](textexpander.md) | Tool for expanding short typed triggers into longer snippets |
 | [Text Extractor](textextractor.md) | Tool for extracting text from images and screenshots |
 | [Workspaces](workspaces.md) | Tool for saving and restoring window layouts for different projects |
 | [ZoomIt](zoomit.md) | Screen zoom and annotation tool |

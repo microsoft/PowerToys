@@ -151,6 +151,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}"
                     Tag="QuickAccent" />
                 <NavigationViewItem
+                    x:Uid="Shell_TextExpander"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}"
+                    Tag="TextExpander" />
+                <NavigationViewItem
                     x:Uid="Shell_RegistryPreview"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}"
                     Tag="RegistryPreview" />
