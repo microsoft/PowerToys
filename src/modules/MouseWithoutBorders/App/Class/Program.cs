@@ -275,6 +275,8 @@ namespace MouseWithoutBorders.Class
 
             void ConnectToMachine(string machineName, string securityKey);
 
+            void RestoreSecurityKey(string previousSecurityKey);
+
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
 
@@ -319,6 +321,23 @@ namespace MouseWithoutBorders.Class
                 InitAndCleanup.ReopenSocketDueToReadError = true;
                 Common.ReopenSockets(true);
                 MachineStuff.SendMachineMatrix();
+
+                Setting.Values.PauseInstantSaving = false;
+                Setting.Values.SaveSettings();
+            }
+
+            public void RestoreSecurityKey(string previousSecurityKey)
+            {
+                if (string.IsNullOrEmpty(previousSecurityKey) || Setting.Values.MyKey == previousSecurityKey)
+                {
+                    return;
+                }
+
+                Setting.Values.PauseInstantSaving = true;
+
+                Setting.Values.MyKey = previousSecurityKey;
+                Encryption.MyKey = previousSecurityKey;
+                Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
 
                 Setting.Values.PauseInstantSaving = false;
                 Setting.Values.SaveSettings();
