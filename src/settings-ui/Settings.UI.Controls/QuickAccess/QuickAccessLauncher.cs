@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -18,7 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _isElevated = isElevated;
         }
 
-        public virtual bool Launch(ModuleType moduleType)
+        public bool Launch(ModuleType moduleType) => Launch(moduleType, null);
+
+        public virtual bool Launch(ModuleType moduleType, string? action)
         {
             switch (moduleType)
             {
@@ -110,6 +112,21 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent()))
                     {
                         eventHandle.Set();
+                    }
+
+                    return true;
+                case ModuleType.LaserPointer:
+                    // Two one-way entries rather than a toggle, matching the shortcuts:
+                    // one shares (starting, or moving an existing share), one stops.
+                    {
+                        string eventName = action == LaserPointerActions.StopSharing
+                            ? Constants.LaserPointerPresenterStopEvent()
+                            : Constants.LaserPointerPresenterEvent();
+
+                        using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+                        {
+                            eventHandle.Set();
+                        }
                     }
 
                     return true;

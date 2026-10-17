@@ -61,6 +61,7 @@ struct LogSettings
     inline const static std::string mousePointerCrosshairsLoggerName = "mouse-pointer-crosshairs";
     inline const static std::string autoHideCursorLoggerName = "auto-hide-cursor";
     inline const static std::string cursorWrapLoggerName = "cursor-wrap";
+    inline const static std::string laserPointerLoggerName = "laser-pointer";
     inline const static std::string mouseButtonLockLoggerName = "mouse-button-lock";
     inline const static std::string imageResizerLoggerName = "imageresizer";
     inline const static std::string powerRenameLoggerName = "powerrename";

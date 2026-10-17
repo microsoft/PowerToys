@@ -22,6 +22,7 @@ namespace ManagedCommon
         Hosts,
         ImageResizer,
         KeyboardManager,
+        LaserPointer,
         LightSwitch,
         MouseHighlighter,
         MouseJump,

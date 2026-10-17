@@ -18,6 +18,7 @@ Mouse Utilities includes the following sub-modules:
 - **[Mouse Highlighter](mousehighlighter.md)**: Visualizes mouse clicks with customizable highlights
 - **[Mouse Jump](mousejump.md)**: Allows quick cursor movement to specific screen locations
 - **[Mouse Pointer Crosshairs](mousepointer.md)**: Displays crosshair lines that follow the mouse cursor
+- **[Laser Pointer](laserpointer.md)**: Draws a fading trail behind the pointer, and can mirror a window so the trail survives per-window screen sharing
 - **[Mouse Button Lock](mousebuttonlock.md)**: A ClickLock equivalent for the left, right, and middle mouse buttons - hold a button to lock it down for hands-free dragging, then click any button to release (left is optional and off by default)
 
 ## Architecture

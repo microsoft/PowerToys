@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsRepository<MouseJumpSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils),
                 SettingsRepository<CursorWrapSettings>.GetInstance(settingsUtils),
+                SettingsRepository<LaserPointerSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MouseButtonLockSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
