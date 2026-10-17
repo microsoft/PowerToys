@@ -173,7 +173,7 @@ jobs:
           $modules = @($modulesRaw -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 
           if ($modules.Count -eq 0) {
-            $pattern = '**/tests/*UITest*/**'
+            $patterns = @('**/tests/*UITest*/**')
           } else {
             # Map each selected project (csproj or assembly name) to its OutputPath folder under tests\.
             $projects = @(Get-ChildItem -Path "$(Build.SourcesDirectory)\src" -Filter '*.csproj' -File -Recurse)
@@ -192,11 +192,14 @@ jobs:
               $folder
             }
             $folders = @($folders | Sort-Object -Unique)
-            $pattern = if ($folders.Count -eq 1) { "**/tests/$($folders[0])/**" } else { "**/tests/{$($folders -join ',')}/**" }
+            $patterns = @($folders | ForEach-Object { "**/tests/$_/**" })
           }
 
-          Write-Host "UI test artifact pattern: $pattern"
-          Write-Host "##vso[task.setvariable variable=UiTestArtifactPattern]$pattern"
+          # One pattern per line: the artifact download does not expand {a,b} braces, and
+          # setvariable decodes %0A to a newline that the task splits into separate patterns.
+          Write-Host "UI test artifact patterns:"
+          $patterns | ForEach-Object { Write-Host "  $_" }
+          Write-Host "##vso[task.setvariable variable=UiTestArtifactPattern]$($patterns -join '%0A')"
         displayName: Compute UI test artifact pattern
         ${{ if eq(parameters.autoSelectUiTests, true) }}:
           env:
