@@ -189,6 +189,11 @@ void TwoWayPipeMessageIPC::send(std::wstring msg)
     impl->send(msg);
 }
 
+bool TwoWayPipeMessageIPC::send_and_wait(std::wstring msg, std::chrono::milliseconds timeout)
+{
+    return impl->send_and_wait(std::move(msg), timeout);
+}
+
 void TwoWayPipeMessageIPC::start(HANDLE _restricted_pipe_token)
 {
     impl->start(_restricted_pipe_token);
@@ -216,7 +221,31 @@ TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::TwoWayPipeMessageIPCImpl(
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send(std::wstring msg)
 {
-    output_queue.queue_message(msg);
+    queue_output_message(OutputMessage{ std::move(msg), nullptr, std::nullopt });
+}
+
+bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_and_wait(std::wstring msg, std::chrono::milliseconds timeout)
+{
+    if (timeout <= std::chrono::milliseconds::zero())
+    {
+        return false;
+    }
+
+    auto completion = std::make_shared<SendCompletion>();
+    completion->event.reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+    if (!completion->event.valid())
+    {
+        return false;
+    }
+
+    queue_output_message(OutputMessage{
+        std::move(msg),
+        completion,
+        std::chrono::steady_clock::now() + timeout,
+    });
+
+    const auto wait_result = WaitForSingleObject(completion->event.get(), static_cast<DWORD>(timeout.count()));
+    return wait_result == WAIT_OBJECT_0 && completion->result.load();
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token)
@@ -323,7 +352,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::stop_started_threads()
     {
         input_queue_thread.join();
     }
-    output_queue.interrupt();
+    interrupt_output_queue();
     cancel_active_output_io();
     if (output_queue_thread.joinable())
     {
@@ -358,12 +387,28 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::cancel_active_output_io()
     }
 }
 
-void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstring message)
+bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(const OutputMessage& output_message)
 {
     // Adapted from https://learn.microsoft.com/windows/win32/ipc/named-pipe-client
+    const std::wstring& message = output_message.message;
     const wchar_t* message_send = message.c_str();
     const wchar_t* lpszPipename = output_pipe_name.c_str();
     OwnedPipeHandle output_pipe;
+    const auto get_remaining_wait = [&]() -> DWORD {
+        if (!output_message.deadline.has_value())
+        {
+            return PipeWaitIntervalMs;
+        }
+
+        const auto now = std::chrono::steady_clock::now();
+        if (now >= output_message.deadline.value())
+        {
+            return 0;
+        }
+
+        const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(output_message.deadline.value() - now);
+        return static_cast<DWORD>(std::min<std::chrono::milliseconds>(remaining, std::chrono::milliseconds{ PipeWaitIntervalMs }).count());
+    };
 
     // Try to open a named pipe; wait for it, if necessary.
 
@@ -385,9 +430,9 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
 
         // Exit if an error other than ERROR_PIPE_BUSY occurs.
         DWORD curr_error = 0;
-        if ((curr_error = GetLastError()) != ERROR_PIPE_BUSY)
+        if ((curr_error = GetLastError()) != ERROR_PIPE_BUSY && curr_error != ERROR_FILE_NOT_FOUND)
         {
-            return;
+            return false;
         }
 
         // Use short waits so end() can promptly join the output thread instead of waiting for a
@@ -398,14 +443,30 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
             SetEvent(event);
         }
 #endif
-        if (!WaitNamedPipe(lpszPipename, PipeWaitIntervalMs) && GetLastError() != ERROR_SEM_TIMEOUT)
+        const DWORD wait_interval = get_remaining_wait();
+        if (wait_interval == 0)
         {
-            return;
+            return false;
+        }
+
+        if (curr_error == ERROR_FILE_NOT_FOUND)
+        {
+            Sleep(wait_interval);
+            continue;
+        }
+
+        if (!WaitNamedPipe(lpszPipename, wait_interval))
+        {
+            const DWORD wait_error = GetLastError();
+            if (wait_error != ERROR_SEM_TIMEOUT && wait_error != ERROR_FILE_NOT_FOUND)
+            {
+                return false;
+            }
         }
     }
     if (closed.load() || !output_pipe.valid())
     {
-        return;
+        return false;
     }
 
     const HANDLE output_pipe_handle = output_pipe.get();
@@ -425,20 +486,38 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
         NULL)) // don't set maximum time
     {
         clear_active_output_pipe();
-        return;
+        return false;
     }
 
-    HANDLE write_complete_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    if (!write_complete_event)
+    auto pending_write = std::make_shared<PendingWriteContext>();
+    pending_write->completed_event.reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+    if (!pending_write->completed_event.valid())
     {
-        return;
+        return false;
     }
+    pending_write->overlapped.hEvent = pending_write->completed_event.get();
 
-    OVERLAPPED write_overlapped{};
-    write_overlapped.hEvent = write_complete_event;
     DWORD bytes_written = 0;
     const DWORD bytes_to_write = (lstrlen(message_send)) * sizeof(WCHAR);
     BOOL write_succeeded = FALSE;
+    const auto cancel_pending_write_without_wait = [&]() {
+        if (!CancelIoEx(output_pipe_handle, &pending_write->overlapped))
+        {
+            return;
+        }
+
+        HANDLE duplicate_output_pipe = INVALID_HANDLE_VALUE;
+        if (DuplicateHandle(GetCurrentProcess(),
+                            output_pipe_handle,
+                            GetCurrentProcess(),
+                            &duplicate_output_pipe,
+                            0,
+                            FALSE,
+                            DUPLICATE_SAME_ACCESS))
+        {
+            queue_canceled_write_cleanup(duplicate_output_pipe, pending_write);
+        }
+    };
     {
         // Begin the overlapped write while holding the same mutex end() uses for
         // cancellation. This closes the check-to-write race where shutdown could
@@ -446,23 +525,21 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
         std::scoped_lock lock(output_pipe_mutex);
         if (closed.load())
         {
-            CloseHandle(write_complete_event);
-            return;
+            return false;
         }
         active_output_pipe_handle = output_pipe_handle;
         write_succeeded = WriteFile(output_pipe_handle,
                                     message_send,
                                     bytes_to_write,
                                     &bytes_written,
-                                    &write_overlapped);
+                                    &pending_write->overlapped);
     }
     if (!write_succeeded)
     {
         if (GetLastError() != ERROR_IO_PENDING)
         {
-            CloseHandle(write_complete_event);
             clear_active_output_pipe();
-            return;
+            return false;
         }
 #ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
         if (const HANDLE pending_event = output_write_pending_event.load())
@@ -470,24 +547,163 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
             SetEvent(pending_event);
         }
 #endif
-        GetOverlappedResult(output_pipe_handle, &write_overlapped, &bytes_written, TRUE);
+        if (output_message.deadline.has_value())
+        {
+            const auto now = std::chrono::steady_clock::now();
+            if (now >= output_message.deadline.value())
+            {
+                cancel_pending_write_without_wait();
+                clear_active_output_pipe();
+                return false;
+            }
+
+            const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(output_message.deadline.value() - now);
+            const DWORD wait_result = WaitForSingleObject(pending_write->completed_event.get(), static_cast<DWORD>(remaining.count()));
+            if (wait_result != WAIT_OBJECT_0)
+            {
+                if (wait_result == WAIT_TIMEOUT)
+                {
+                    cancel_pending_write_without_wait();
+                }
+                clear_active_output_pipe();
+                return false;
+            }
+
+            if (!GetOverlappedResult(output_pipe_handle, &pending_write->overlapped, &bytes_written, FALSE))
+            {
+                clear_active_output_pipe();
+                return false;
+            }
+        }
+        else if (!GetOverlappedResult(output_pipe_handle, &pending_write->overlapped, &bytes_written, TRUE))
+        {
+            clear_active_output_pipe();
+            return false;
+        }
     }
 
-    CloseHandle(write_complete_event);
     clear_active_output_pipe();
+    return true;
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::queue_output_message(OutputMessage&& message)
+{
+    std::scoped_lock lock(output_queue_mutex);
+    if (closed.load() || output_queue_interrupted)
+    {
+        if (message.completion)
+        {
+            message.completion->result.store(false);
+            SetEvent(message.completion->event.get());
+        }
+        return;
+    }
+
+    output_queue.push(std::move(message));
+    output_queue_ready.notify_one();
+}
+
+bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::pop_output_message(OutputMessage& message)
+{
+    std::unique_lock lock(output_queue_mutex);
+    output_queue_ready.wait(lock, [this] {
+        return output_queue_interrupted || !output_queue.empty();
+    });
+
+    if (output_queue.empty())
+    {
+        return false;
+    }
+
+    message = std::move(output_queue.front());
+    output_queue.pop();
+    return true;
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::interrupt_output_queue()
+{
+    std::queue<OutputMessage> pending_messages;
+    {
+        std::scoped_lock lock(output_queue_mutex);
+        output_queue_interrupted = true;
+        std::swap(pending_messages, output_queue);
+    }
+    output_queue_ready.notify_all();
+
+    while (!pending_messages.empty())
+    {
+        auto& message = pending_messages.front();
+        if (message.completion)
+        {
+            message.completion->result.store(false);
+            SetEvent(message.completion->event.get());
+        }
+        pending_messages.pop();
+    }
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::queue_canceled_write_cleanup(HANDLE pipe_handle, const std::shared_ptr<PendingWriteContext>& pending_write)
+{
+    std::scoped_lock lock(canceled_writes_mutex);
+    canceled_writes.push_back(CanceledWriteCleanup{
+        OwnedPipeHandle(pipe_handle),
+        pending_write,
+    });
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::reap_canceled_write_cleanups(bool wait_for_completion)
+{
+    std::vector<CanceledWriteCleanup> pending_cleanups;
+    {
+        std::scoped_lock lock(canceled_writes_mutex);
+        if (canceled_writes.empty())
+        {
+            return;
+        }
+        pending_cleanups.swap(canceled_writes);
+    }
+
+    std::vector<CanceledWriteCleanup> incomplete_cleanups;
+    for (auto& cleanup : pending_cleanups)
+    {
+        DWORD ignored = 0;
+        const BOOL completed = GetOverlappedResult(cleanup.pipe_handle.get(),
+                                                   &cleanup.pending_write->overlapped,
+                                                   &ignored,
+                                                   wait_for_completion ? TRUE : FALSE);
+        if (!completed && !wait_for_completion && GetLastError() == ERROR_IO_INCOMPLETE)
+        {
+            incomplete_cleanups.push_back(std::move(cleanup));
+        }
+    }
+
+    if (!incomplete_cleanups.empty())
+    {
+        std::scoped_lock lock(canceled_writes_mutex);
+        for (auto& cleanup : incomplete_cleanups)
+        {
+            canceled_writes.push_back(std::move(cleanup));
+        }
+    }
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_output_queue_thread()
 {
-    while (!closed.load())
+    OutputMessage output_message;
+    while (pop_output_message(output_message))
     {
-        std::wstring message = output_queue.pop_message();
-        if (message.length() == 0)
+        const bool send_result = send_pipe_message(output_message);
+        if (output_message.completion)
         {
-            break;
+            output_message.completion->result.store(send_result);
+            SetEvent(output_message.completion->event.get());
         }
-        send_pipe_message(message);
+
+        output_message = {};
+        reap_canceled_write_cleanups(false);
     }
+
+    reap_canceled_write_cleanups(true);
 }
 
 BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, PSID* ppsid)
