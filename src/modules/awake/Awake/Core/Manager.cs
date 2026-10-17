@@ -9,12 +9,13 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
@@ -31,13 +32,15 @@ namespace Awake.Core
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
     /// of the codebase.
     /// </summary>
-    public class Manager : IDisposable
+    public partial class Manager : IDisposable
     {
         private bool _disposed;
 
         internal static bool IsUsingPowerToysConfig { get; set; }
 
         internal static SettingsUtils? ModuleSettings { get; set; }
+
+        internal static Action? ExitCleanup { get; set; }
 
         internal static AwakeMode CurrentOperatingMode { get; private set; }
 
@@ -65,8 +68,13 @@ namespace Awake.Core
         // caller that already holds it may call into another guarded method.
         private static readonly Lock StateLock = new();
 
+        private static readonly TaskCompletionSource<int> _shutdownCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         private static CancellationTokenSource _monitorTokenSource;
         private static IDisposable? _timerSubscription;
+        private static int _exitStarted;
+
+        internal static Task<int> ShutdownCompletion => _shutdownCompletion.Task;
 
         static Manager()
         {
@@ -132,7 +140,13 @@ namespace Awake.Core
 
             Bridge.SetStdHandle(Native.Constants.STD_OUTPUT_HANDLE, outputFilePointer);
 
+            InitializeAttachedConsole();
+        }
+
+        internal static void InitializeAttachedConsole()
+        {
             Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), Console.OutputEncoding) { AutoFlush = true });
+            Console.SetError(new StreamWriter(Console.OpenStandardError(), Console.OutputEncoding) { AutoFlush = true });
         }
 
         /// <summary>
@@ -255,7 +269,7 @@ namespace Awake.Core
                     {
                         currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
                         currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the indefinite keep-awake will kick-in properly
@@ -283,7 +297,7 @@ namespace Awake.Core
             SetModeShellIcon();
         }
 
-        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
+        internal static bool SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
         {
             Logger.LogInfo($"Expirable keep-awake invoked by {callerName}. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeExpirableKeepAwakeEvent());
@@ -304,12 +318,12 @@ namespace Awake.Core
                         currentSettings.Properties.Mode = AwakeMode.EXPIRABLE;
                         currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
                         currentSettings.Properties.ExpirationDateTime = expireAt;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the expirable keep-awake will kick-in properly
                         // and we avoid double execution.
-                        return;
+                        return true;
                     }
                 }
                 catch (Exception ex)
@@ -323,7 +337,7 @@ namespace Awake.Core
             if (expireAt <= DateTimeOffset.Now)
             {
                 Logger.LogError($"The specified target date and time is not in the future. Current time: {DateTimeOffset.Now}, Target time: {expireAt}");
-                return;
+                return false;
             }
 
             Logger.LogInfo($"Starting expirable log for {expireAt}");
@@ -339,10 +353,25 @@ namespace Awake.Core
 
             SetModeShellIcon();
 
-            TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
-
-            _timerSubscription = Observable.Timer(remainingTime).Subscribe(
+            _timerSubscription = CreateExpirationTimer(expireAt, Scheduler.Default).Subscribe(
                 _ => HandleTimerCompletion("expirable"));
+            return true;
+        }
+
+        internal static IObservable<long> CreateExpirationTimer(DateTimeOffset expireAt, IScheduler scheduler)
+        {
+            // Rx's default scheduler uses System.Threading.Timer, whose maximum due time is
+            // uint.MaxValue - 1 milliseconds. Recheck the absolute deadline after each bounded wait.
+            TimeSpan maximumDueTime = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+            return Observable.Defer(() =>
+                {
+                    TimeSpan remaining = expireAt - scheduler.Now;
+                    TimeSpan dueTime = remaining > maximumDueTime ? maximumDueTime : remaining;
+                    return Observable.Timer(dueTime < TimeSpan.Zero ? TimeSpan.Zero : dueTime, scheduler);
+                })
+                .Repeat()
+                .Where(_ => scheduler.Now >= expireAt)
+                .Take(1);
         }
 
         internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
@@ -373,7 +402,7 @@ namespace Awake.Core
                         currentSettings.Properties.Mode = AwakeMode.TIMED;
                         currentSettings.Properties.IntervalHours = totalHours;
                         currentSettings.Properties.IntervalMinutes = remainingMinutes;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the timed keep-awake will kick-in properly
@@ -425,10 +454,11 @@ namespace Awake.Core
         private static void HandleTimerCompletion(string timerType)
         {
             Logger.LogInfo($"Completed {timerType} keep-awake.");
-            CancelExistingThread();
 
             if (IsUsingPowerToysConfig)
             {
+                CancelExistingThread();
+
                 // If running under PowerToys settings, just revert to the default Passive state.
                 SetPassiveKeepAwake();
             }
@@ -445,6 +475,28 @@ namespace Awake.Core
         /// </summary>
         /// <param name="exitCode">Exit code to exit with.</param>
         internal static void CompleteExit(int exitCode)
+        {
+            if (!TryBeginExit(ref _exitStarted))
+            {
+                return;
+            }
+
+            RunExitCleanup(ExitCleanup, () => CompleteExitCore(exitCode));
+        }
+
+        internal static void RunExitCleanup(Action? programCleanup, Action managerCleanup)
+        {
+            try
+            {
+                programCleanup?.Invoke();
+            }
+            finally
+            {
+                managerCleanup();
+            }
+        }
+
+        private static void CompleteExitCore(int exitCode)
         {
             SetPassiveKeepAwake(updateSettings: false);
 
@@ -470,7 +522,13 @@ namespace Awake.Core
             }
 
             Bridge.PostQuitMessage(exitCode);
+            _shutdownCompletion.SetResult(exitCode);
             Environment.Exit(exitCode);
+        }
+
+        internal static bool TryBeginExit(ref int exitStarted)
+        {
+            return Interlocked.CompareExchange(ref exitStarted, 1, 0) == 0;
         }
 
         /// <summary>
@@ -536,7 +594,7 @@ namespace Awake.Core
                     if (currentSettings.Properties.Mode != AwakeMode.PASSIVE)
                     {
                         currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the passive keep-awake will kick-in properly
@@ -589,12 +647,12 @@ namespace Awake.Core
 
                         // Save settings - ProcessSettings will skip reinitialization
                         // since we're already in TIMED mode
-                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
 
                         return;
                     }
 
-                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                    ModuleSettings!.SaveSettings(AwakeJson.Serialize(currentSettings), Constants.AppName);
                 }
                 catch (Exception ex)
                 {
