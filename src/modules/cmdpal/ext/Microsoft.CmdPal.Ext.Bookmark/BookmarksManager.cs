@@ -11,11 +11,11 @@ using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
+internal sealed partial class BookmarksManager : IDisposable, IAsyncDisposable, IBookmarksManager
 {
     private readonly IBookmarkDataSource _dataSource;
     private readonly BookmarkJsonParser _parser = new();
-    private readonly SupersedingAsyncGate _savingGate;
+    private readonly CoalescingAsyncRunner _saveRunner;
     private readonly Lock _lock = new();
     private BookmarksData _bookmarksData = new();
 
@@ -40,7 +40,7 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
     {
         ArgumentNullException.ThrowIfNull(dataSource);
         _dataSource = dataSource;
-        _savingGate = new SupersedingAsyncGate(WriteData);
+        _saveRunner = new CoalescingAsyncRunner(WriteData);
         LoadBookmarksFromFile();
     }
 
@@ -138,7 +138,7 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
         }
     }
 
-    private Task WriteData(CancellationToken arg)
+    private Task WriteData()
     {
         List<BookmarkData> dataToSave;
         lock (_lock)
@@ -159,10 +159,19 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
         return Task.CompletedTask;
     }
 
-    private async Task SaveChangesAsync()
+    private Task SaveChangesAsync()
     {
-        await _savingGate.ExecuteAsync(CancellationToken.None);
+        return _saveRunner.RequestAsync();
     }
 
-    public void Dispose() => _savingGate.Dispose();
+    /// <inheritdoc/>
+    public ValueTask DisposeAsync()
+    {
+        return _saveRunner.DisposeAsync();
+    }
+
+    public void Dispose()
+    {
+        _saveRunner.Dispose();
+    }
 }
