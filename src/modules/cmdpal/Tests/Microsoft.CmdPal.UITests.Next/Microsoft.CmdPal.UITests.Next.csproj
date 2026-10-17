@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Microsoft.CmdPal.UITests</RootNamespace>
+    <AssemblyName>Microsoft.CmdPal.UITests.Next</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RunVSTest>false</RunVSTest>
+    <!-- SamplePagesExtension is a self-contained exe referenced for build order only. -->
+    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Microsoft.CmdPal.UITests.Next\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+
+    <!-- Supplies the Windows App Runtime framework MSIX that SamplePagesExtension depends on. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.Runtime" GeneratePathProperty="true" ExcludeAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+
+    <!-- Build-order only: package this extension for installation by SamplePagesTests. -->
+    <ProjectReference Include="..\..\ext\SamplePagesExtension\SamplePagesExtension.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="CollectSamplePagesExtensionLayout">
+    <PropertyGroup>
+      <_SamplePagesLayoutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\SamplePagesExtension\</_SamplePagesLayoutDir>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_SamplePagesLayoutDir)AppxManifest.xml')" Text="SamplePagesExtension layout not found at $(_SamplePagesLayoutDir)." />
+    <ItemGroup>
+      <_SamplePagesLayoutFile Include="$(_SamplePagesLayoutDir)**\*" Exclude="$(_SamplePagesLayoutDir)**\*.pdb;$(_SamplePagesLayoutDir)AppPackages\**\*;$(_SamplePagesLayoutDir)**\*.msix;$(_SamplePagesLayoutDir)**\*.appx" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Build unsigned; the elevated test-agent setup signs and trusts it, never the test itself. -->
+  <Target Name="BuildSamplePagesExtensionPackage" AfterTargets="Build"
+          DependsOnTargets="CollectSamplePagesExtensionLayout"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(_IsSkippedTestProject)' != 'true'"
+          Inputs="@(_SamplePagesLayoutFile);$(MSBuildProjectFullPath);$(MSBuildProjectDirectory)\BuildSamplePagesExtensionPackage.ps1"
+          Outputs="$(OutDir)SamplePagesExtension.msix">
+    <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\BuildSamplePagesExtensionPackage.ps1&quot; -LayoutDirectory &quot;$(_SamplePagesLayoutDir).&quot; -PackagePath &quot;$(OutDir)SamplePagesExtension.msix&quot;" />
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)SamplePagesExtension.msix" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    SamplePagesExtension's manifest depends on the Microsoft.WindowsAppRuntime.2 framework package,
+    which clean machines (for example Windows 10 test agents) do not have. Ship the framework MSIX
+    so registration can supply it as a dependency.
+  -->
+  <Target Name="CopyWindowsAppRuntimeFramework" AfterTargets="Build">
+    <PropertyGroup>
+      <_WindowsAppRuntimeMsix>$(PkgMicrosoft_WindowsAppSDK_Runtime)\tools\MSIX\win10-$(Platform.ToLowerInvariant())\Microsoft.WindowsAppRuntime.2.msix</_WindowsAppRuntimeMsix>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_WindowsAppRuntimeMsix)')" Text="Windows App Runtime framework MSIX not found at $(_WindowsAppRuntimeMsix)." />
+    <Copy SourceFiles="$(_WindowsAppRuntimeMsix)" DestinationFolder="$(OutDir)SamplePagesExtensionDependencies" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

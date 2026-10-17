@@ -279,6 +279,10 @@ jobs:
         $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe'
       }
 
+      if ($allModules -or $selectedModules -contains 'Microsoft.CmdPal.UITests.Next') {
+        $requiredPackages += 'SamplePagesExtension.msix'
+      }
+
       if ($requiresAuthenticatedSettingsIpc) {
         $requiredAuthenticodeFiles += 'PowerToys.exe', 'PowerToys.Settings.exe'
       }
