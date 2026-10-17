@@ -417,10 +417,8 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         _extensionHost = extensionHost;
         _providerContext = providerContext;
         _contextMenuFactory = contextMenuFactory;
-        FallbackContext = fallbackContext;
+        InheritFallbackContext(fallbackContext);
     }
-
-    internal FallbackQueryContext? FallbackContext { get; }
 
     public override void InitializeProperties()
     {
@@ -446,14 +444,22 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         {
             if (PageContext.TryGetTarget(out var pageContext))
             {
+                // The list stays valid only while the snapshot that produced this
+                // parameter is open. Take the reference before building the list.
+                IDisposable? snapshotLease = null;
+                if (FallbackContext is not null && !FallbackContext.TryAcquireSnapshotLease(out snapshotLease))
+                {
+                    return;
+                }
+
                 _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
-                _listViewModel.AttachFallbackContext(FallbackContext);
+                _listViewModel.AttachFallbackContext(FallbackContext, snapshotLease);
                 _listViewModel.InitializeProperties();
             }
         }
         else if (command is IInvokableCommand invokable)
         {
-            _commandViewModel = new CommandViewModel(invokable, this.PageContext, FallbackContext);
+            _commandViewModel = ShareFallbackContext(new CommandViewModel(invokable, this.PageContext));
             _commandViewModel.InitializeProperties();
         }
 
@@ -523,16 +529,19 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             return;
         }
 
-        PerformCommandMessage m = new(this._commandViewModel);
-        WeakReferenceMessenger.Default.Send(m);
+        var sourcePage = PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null;
+        var message = new PerformCommandMessage(this._commandViewModel, sourcePage);
+        WeakReferenceMessenger.Default.Send(message);
     }
 
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
 
-        _listViewModel?.Dispose();
+        _ = _listViewModel?.CleanupAsync();
         _listViewModel = null;
+        _commandViewModel?.SafeCleanup();
+        _commandViewModel = null;
     }
 
     public void Dispose()
@@ -582,16 +591,48 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         get => _activeListViewModel;
         private set
         {
-            if (_activeListViewModel != value)
+            if (ReferenceEquals(_activeListViewModel, value))
             {
-                _activeListViewModel = value;
-                UpdateProperty(nameof(ActiveListViewModel));
-                UpdateProperty(nameof(HasActiveList));
+                return;
             }
+
+            _activeListViewModel?.SuspendForNavigation();
+            if (_activeListViewModel is not null)
+            {
+                _activeListViewModel.CommandBarContextChanged -= ActiveList_CommandBarContextChanged;
+                _activeListViewModel.DetailsChanged -= ActiveList_DetailsChanged;
+                _activeListViewModel.SearchSuggestionChanged -= ActiveList_SearchSuggestionChanged;
+            }
+
+            _activeListViewModel = value;
+
+            if (_activeListViewModel is not null)
+            {
+                _activeListViewModel.CommandBarContextChanged += ActiveList_CommandBarContextChanged;
+                _activeListViewModel.DetailsChanged += ActiveList_DetailsChanged;
+                _activeListViewModel.SearchSuggestionChanged += ActiveList_SearchSuggestionChanged;
+                if (IsPageActive)
+                {
+                    _ = _activeListViewModel.ResumeAfterNavigation();
+                }
+            }
+
+            if (IsPageActive)
+            {
+                SetCommandBarContext(_activeListViewModel is null && ShowCommand ? Command : null);
+                SetDetails(null);
+                SetSearchSuggestion(_activeListViewModel?.TextToSuggest ?? string.Empty);
+            }
+
+            UpdateProperty(nameof(ActiveListViewModel));
+            UpdateProperty(nameof(HasActiveList));
         }
     }
 
     public bool HasActiveList => _activeListViewModel != null;
+
+    internal override bool OwnsCommandSource(PageViewModel source) =>
+        base.OwnsCommandSource(source) || ReferenceEquals(ActiveListViewModel, source);
 
     private CommandParameterRunViewModel? _activeListParam;
 
@@ -602,16 +643,43 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         ActiveListViewModel = param?.ListViewModel;
     }
 
+    private void ActiveList_CommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetCommandBarContext(e.Context);
+        }
+    }
+
+    private void ActiveList_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetDetails(e.Details);
+        }
+    }
+
+    private void ActiveList_SearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveListViewModel))
+        {
+            SetSearchSuggestion(e.Suggestion);
+        }
+    }
+
     private readonly Lock _listLock = new();
 
     private readonly IContextMenuFactory _contextMenuFactory;
 
-    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory, FallbackQueryContext? fallbackContext = null)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        _command = new(new(null), PageContext, _contextMenuFactory, FallbackContext);
+
+        // Take the context as a parameter. PageViewModel.FallbackContext is not set
+        // until the factory attaches it, which happens after this constructor returns.
+        _command = new(new(null), PageContext, _contextMenuFactory, fallbackContext);
     }
 
     /// <summary>
@@ -631,6 +699,12 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     //// Run on background thread, from InitializeAsync
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -683,6 +757,12 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
                     if (itemVm is CommandParameterRunViewModel cmdParamVm)
                     {
+                        // Lists load eagerly on entry; switching parameters suspends the previous list.
+                        if (!IsPageActive)
+                        {
+                            cmdParamVm.ListViewModel?.SuspendForNavigation();
+                        }
+
                         cmdParamVm.ValueChanged += ListParamValueChanged;
                     }
                 }
@@ -731,14 +811,14 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             }
         }
 
-        DoOnUiThread(
+        DoOnActivePage(
             () =>
             {
                 CoreLogger.LogDebug($"raising parameter items changed, {Items.Count} parameters");
                 OnPropertyChanged(nameof(Items)); // This _could_ be promoted to a dedicated ItemsUpdated event if needed
                 UpdateCommand();
 
-                WeakReferenceMessenger.Default.Send(new FocusSearchBoxMessage());
+                RequestSearchFocus();
             });
     }
 
@@ -779,10 +859,10 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
         UpdateProperty(nameof(Command));
 
-        DoOnUiThread(
+        DoOnActivePage(
            () =>
            {
-               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(Command));
+               SetCommandBarContext(Command);
            });
     }
 
@@ -802,7 +882,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             // fires for NeedsValue, DisplayText, and Icon changes, so it
             // covers both first-pick and re-pick. Handling it here as well
             // would risk a double-advance race.
-            DoOnUiThread(() =>
+            DoOnActivePage(() =>
             {
                 UpdateCommand();
             });
@@ -813,21 +893,29 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         CoreLogger.LogDebug($"[ParametersPageVM] ListParamValueChanged from {sender?.GetType().Name}, _activeListParam set: {_activeListParam != null}, same: {sender == _activeListParam}");
 
-        // Marshal to UI thread — ValueChanged is raised from the extension's
+        // Marshal to UI thread - ValueChanged is raised from the extension's
         // PropChanged callback on a background thread, but FocusNextParameter
         // sends a message that ultimately calls ContainerFromItem on a UI control.
         DoOnUiThread(() =>
         {
-            // The extension confirmed a value on a list param. If it's the
-            // active one (whether first pick or re-pick), clear the list and
-            // move focus forward.
+            using var operation = TryBeginPageOperation();
+            if (operation is null)
+            {
+                return;
+            }
+
+            // Reconcile a completed picker while suspended, but only advance focus on the active page.
             if (sender is CommandParameterRunViewModel cmdParam &&
                 cmdParam == _activeListParam &&
                 !cmdParam.NeedsValue)
             {
                 CoreLogger.LogDebug($"[ParametersPageVM] Clearing active list param after value change");
                 SetActiveListParameter(null);
-                FocusNextParameter(cmdParam);
+                if (IsPageActive)
+                {
+                    FocusNextParameter(cmdParam);
+                }
+
                 UpdateCommand();
             }
             else
@@ -858,8 +946,8 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         if (ShowCommand)
         {
-            PerformCommandMessage m = new(this.Command, this.Command.Model.Unsafe);
-            WeakReferenceMessenger.Default.Send(m);
+            var message = new PerformCommandMessage(this.Command, this.Command.Model.Unsafe, this);
+            WeakReferenceMessenger.Default.Send(message);
         }
     }
 
@@ -880,7 +968,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     if (found)
                     {
-                        WeakReferenceMessenger.Default.Send(new FocusParamMessage(pv));
+                        RequestParameterFocus(pv);
                         return;
                     }
                     else if (firstWithoutValue is null && pv.NeedsValue)
@@ -892,7 +980,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
             if (firstWithoutValue is not null)
             {
-                WeakReferenceMessenger.Default.Send(new FocusParamMessage(firstWithoutValue));
+                RequestParameterFocus(firstWithoutValue);
             }
         }
     }
@@ -903,6 +991,36 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         SafeCleanup();
     }
 
+    internal override void SuspendForNavigation()
+    {
+        base.SuspendForNavigation();
+        lock (_listLock)
+        {
+            foreach (var item in Items.OfType<CommandParameterRunViewModel>())
+            {
+                item.ListViewModel?.SuspendForNavigation();
+            }
+        }
+    }
+
+    internal override Task ResumeAfterNavigation()
+    {
+        base.ResumeAfterNavigation();
+        UpdateCommand();
+        return ActiveListViewModel?.ResumeAfterNavigation() ?? Task.CompletedTask;
+    }
+
+    protected override void OnCleanupRequested()
+    {
+        lock (_listLock)
+        {
+            foreach (var item in Items.OfType<CommandParameterRunViewModel>())
+            {
+                _ = item.ListViewModel?.CleanupAsync();
+            }
+        }
+    }
+
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
@@ -911,20 +1029,16 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         // don't end up pointing at a disposed ListViewModel.
         SetActiveListParameter(null);
 
+        ParameterRunViewModel[] items;
         lock (_listLock)
         {
-            foreach (var item in Items)
-            {
-                item.PropertyChanged -= ItemPropertyChanged;
-                if (item is CommandParameterRunViewModel cmdParam)
-                {
-                    cmdParam.ValueChanged -= ListParamValueChanged;
-                }
-
-                item.SafeCleanup();
-            }
-
+            items = [.. Items];
             Items.Clear();
+        }
+
+        foreach (var item in items)
+        {
+            ReleaseItem(item);
         }
 
         _command.SafeCleanup();

@@ -41,9 +41,32 @@ public sealed record FallbackQueryContext
 
     public bool CanInvoke => !QueryToken.IsCancellationRequested;
 
+    /// <summary>
+    /// Takes a reference on the snapshot, or returns null when there is nothing to hold.
+    /// </summary>
+    /// <remarks>
+    /// Prefer <see cref="TryAcquireSnapshotLease"/>. Use this only where a closed
+    /// snapshot needs no special handling, because the caller drops the result anyway.
+    /// </remarks>
     public IDisposable? AcquireSnapshotLease() => SnapshotLease?.Acquire();
 
-    internal bool HasSnapshotLease => SnapshotLease is not null;
+    /// <summary>
+    /// Takes a reference on the snapshot that produced this result, if there is one.
+    /// </summary>
+    /// <param name="lease">
+    /// Receives the new reference. It is null when this context has no snapshot,
+    /// which is the usual case for a fallback that supplies only a command.
+    /// Release it when the operation ends.
+    /// </param>
+    /// <returns>
+    /// False when the snapshot closed before the caller asked for it. The caller must
+    /// then abandon the operation: the extension objects behind the snapshot are gone.
+    /// </returns>
+    public bool TryAcquireSnapshotLease(out IDisposable? lease)
+    {
+        lease = SnapshotLease?.Acquire();
+        return lease is not null || SnapshotLease is null;
+    }
 
     internal FallbackQueryContext WithInvocationContext(object invocationContext)
         => this with { InvocationContext = invocationContext };

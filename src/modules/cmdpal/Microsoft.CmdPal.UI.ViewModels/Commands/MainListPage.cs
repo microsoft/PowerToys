@@ -48,11 +48,19 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly AliasManager _aliasManager;
     private readonly ISettingsService _settingsService;
     private readonly IAppStateService _appStateService;
+    private readonly IListPage _allAppsPage;
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
     private readonly Dictionary<string, FallbackResultState> _fallbackResultSnapshots = new(StringComparer.Ordinal);
+
+    // Snapshot identity is reference identity: two snapshots from one extension can look
+    // equal but stand for different result sets.
     private readonly Dictionary<IFallbackCommandResult, FallbackSnapshotLease> _fallbackSnapshotLeases = new(ReferenceEqualityComparer.Instance);
+
+    // Snapshots that are closed. A late progress report can still name one, and reopening
+    // it would hand out dead extension objects. This is a weak table, not a set, because
+    // the entries must not keep closed snapshots alive for the life of the process.
     private readonly ConditionalWeakTable<IFallbackCommandResult, object> _retiredFallbackSnapshots = new();
     private readonly Lock _fallbackSnapshotLeaseLock = new();
     private readonly Lock _queryGenerationLock = new();
@@ -64,13 +72,16 @@ public sealed partial class MainListPage : DynamicListPage,
     // Stable separator instances so that the VM cache and InPlaceUpdateList
     // recognise them across successive GetItems() calls
     private readonly Separator _pinnedSeparator = new(Resources.home_sections_pinned_title);
+    private readonly Separator _recentSeparator = new(Resources.home_sections_recent_title);
     private readonly Separator _resultsSeparator = new(Resources.results);
     private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
     private readonly Separator _commandsSeparator = new(Resources.home_sections_commands_title);
 
-    private TopLevelViewModel[]? _cachedPinnedViewModels;
-    private TopLevelViewModel[]? _cachedRegularViewModels;
-    private bool _defaultViewDirty = true;
+    private DefaultViewCache? _defaultViewCache;
+    private volatile RecentCommandsManager _recentCommands;
+    private int _defaultViewGeneration;
+    private RecentCommandsPlacement _recentCommandsOnHome;
+    private int _recentCommandsDisplayLimit = SettingsModel.DefaultRecentCommandsDisplayLimit;
 
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
@@ -86,7 +97,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     // Common fallbacks use query-independent scores, so freezing them is safe; only their live
     // titles decide whether they render.
-    private IEnumerable<RoScored<IListItem>>? _fallbackItems;
+    private RoScored<IListItem>[]? _fallbackItems;
     private IListItem[]? _fallbackResultItems;
     private IReadOnlyList<TopLevelViewModel> _fallbackResultSourceOrder = [];
 
@@ -121,6 +132,25 @@ public sealed partial class MainListPage : DynamicListPage,
         IFuzzyMatcherProvider fuzzyMatcherProvider,
         ISettingsService settingsService,
         IAppStateService appStateService)
+        : this(
+            topLevelCommandManager,
+            aliasManager,
+            fuzzyMatcherProvider,
+            settingsService,
+            appStateService,
+            AllAppsCommandProvider.Page)
+    {
+    }
+
+    // Temp constructor for unit tests so they can avoid AllAppsCommandProvider.Page dependency
+    // TODO: Replace with a proper abstraction during AllApps refactor.
+    internal MainListPage(
+        TopLevelCommandManager topLevelCommandManager,
+        AliasManager aliasManager,
+        IFuzzyMatcherProvider fuzzyMatcherProvider,
+        ISettingsService settingsService,
+        IAppStateService appStateService,
+        IListPage allAppsPage)
     {
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
@@ -130,6 +160,8 @@ public sealed partial class MainListPage : DynamicListPage,
         _settingsService = settingsService;
         _aliasManager = aliasManager;
         _appStateService = appStateService;
+        _allAppsPage = allAppsPage;
+        _recentCommands = _appStateService.State.RecentCommands;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
@@ -137,7 +169,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
-        _tlcManager.PinnedCommands.CollectionChanged += PinnedCommands_CollectionChanged;
+        _tlcManager.PinnedCommandsChanged += PinnedCommands_Changed;
 
         _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(
             () =>
@@ -177,11 +209,11 @@ public sealed partial class MainListPage : DynamicListPage,
         _fallbackResultQueryManager = new FallbackResultQueryManager(
             PublishFallbackResultSnapshot,
             DiscardFallbackResultSnapshot);
+        _appStateService.StateChanged += AppStateService_StateChanged;
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
-        var allApps = AllAppsCommandProvider.Page;
-        allApps.PropChanged += AllApps_PropChanged;
+        _allAppsPage.PropChanged += AllApps_PropChanged;
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -203,22 +235,27 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void AllApps_PropChanged(object? sender, IPropChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading))
+        if (e.PropertyName == nameof(IListPage.IsLoading))
         {
             IsLoading = ActuallyLoading();
+            if (!_allAppsPage.IsLoading && _recentCommandsOnHome != RecentCommandsPlacement.Hidden)
+            {
+                InvalidateDefaultView();
+                RequestRefresh(fullRefresh: false);
+            }
         }
     }
 
-    private void PinnedCommands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void PinnedCommands_Changed(object? sender, EventArgs e)
     {
-        _defaultViewDirty = true;
+        InvalidateDefaultView();
         RaiseItemsChanged();
     }
 
     private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        _defaultViewDirty = true;
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
+        InvalidateDefaultView();
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
             var currentSearch = SearchText;
@@ -232,6 +269,21 @@ public sealed partial class MainListPage : DynamicListPage,
         }
         else
         {
+            RequestRefresh(fullRefresh: false);
+        }
+    }
+
+    private void AppStateService_StateChanged(IAppStateService sender, AppStateModel args)
+    {
+        if (ReferenceEquals(_recentCommands, args.RecentCommands))
+        {
+            return;
+        }
+
+        _recentCommands = args.RecentCommands;
+        if (_recentCommandsOnHome != RecentCommandsPlacement.Hidden)
+        {
+            InvalidateDefaultView();
             RequestRefresh(fullRefresh: false);
         }
     }
@@ -293,9 +345,14 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public override IListItem[] GetItems()
     {
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            return GetDefaultViewItems();
+        }
+
         lock (_tlcManager.TopLevelCommands)
         {
-            return string.IsNullOrWhiteSpace(SearchText) ? GetDefaultViewItems() : GetSearchViewItems();
+            return GetSearchViewItems();
         }
     }
 
@@ -305,19 +362,16 @@ public sealed partial class MainListPage : DynamicListPage,
         // resolved after first paint gets the right score. Cheap: only a handful are configured.
         var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _scoringFunction);
 
-        var validFallbacks = _fallbackItems?
-            .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-            .ToList();
-
         // Remove fuzzy-only app matches for short queries so frecency-boosted weak matches don't
         // appear while typing.
         var filteredApps = FilterAppsForShortQueries(_filteredApps, _filteredAppsQueryLength);
 
+        // Create drops fallbacks whose title is still empty, so do not filter here as well.
         var result = MainListPageResultFactory.Create(
             _filteredItems,
             validScoredFallbacks,
             filteredApps,
-            validFallbacks,
+            _fallbackItems,
             _resultsSeparator,
             _fallbacksSeparator,
             AppResultLimit,
@@ -325,6 +379,9 @@ public sealed partial class MainListPage : DynamicListPage,
 
         foreach (var fallbackResultItem in result.OfType<FallbackResultListItem>())
         {
+            // A row that reaches the rendered list keeps its reference until a
+            // ListItemViewModel takes over. Rows that do not reach the list give theirs
+            // back when the query that built them is retired.
             fallbackResultItem.MarkPublished();
         }
 
@@ -430,82 +487,105 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private IListItem[] GetDefaultViewItems()
     {
-        if (_defaultViewDirty)
-        {
-            RebuildDefaultViewCache();
-        }
+        var (_, pinned, recent, regular) = GetDefaultViewCache();
 
-        var pinned = _cachedPinnedViewModels!;
-        var regular = _cachedRegularViewModels!;
         var pinnedCount = pinned.Length;
+        var recentCount = recent.Length;
         var regularCount = regular.Length;
 
-        var sectionCount = (pinnedCount > 0 ? 1 : 0) + (regularCount > 0 ? 1 : 0);
+        var sectionCount =
+            (pinnedCount > 0 ? 1 : 0) +
+            (recentCount > 0 ? 1 : 0) +
+            (regularCount > 0 ? 1 : 0);
         if (sectionCount == 0)
         {
             return [];
         }
 
-        var result = new IListItem[pinnedCount + regularCount + sectionCount];
+        var result = new IListItem[pinnedCount + recentCount + regularCount + sectionCount];
         var writeIndex = 0;
-        if (pinnedCount > 0)
+
+        void AppendSection(Separator separator, IListItem[] items)
         {
-            result[writeIndex++] = _pinnedSeparator;
-            Array.Copy(pinned, 0, result, writeIndex, pinnedCount);
-            writeIndex += pinnedCount;
+            if (items.Length == 0)
+            {
+                return;
+            }
+
+            result[writeIndex++] = separator;
+            Array.Copy(items, 0, result, writeIndex, items.Length);
+            writeIndex += items.Length;
         }
 
-        if (regularCount > 0)
+        if (_recentCommandsOnHome == RecentCommandsPlacement.BeforePinned)
         {
-            result[writeIndex++] = _commandsSeparator;
-            Array.Copy(regular, 0, result, writeIndex, regularCount);
+            AppendSection(_recentSeparator, recent);
+            AppendSection(_pinnedSeparator, pinned);
         }
+        else
+        {
+            AppendSection(_pinnedSeparator, pinned);
+            AppendSection(_recentSeparator, recent);
+        }
+
+        AppendSection(_commandsSeparator, regular);
 
         return result;
     }
 
-    private void RebuildDefaultViewCache()
+    private DefaultViewCache GetDefaultViewCache()
     {
-        var allCommands = _tlcManager.TopLevelCommands;
-        var pinnedSettings = _tlcManager.PinnedCommands;
-
-        // Resolve pinned VMs in settings order
-        var pinned = new List<TopLevelViewModel>(pinnedSettings.Count);
-        for (var i = 0; i < pinnedSettings.Count; i++)
+        var existing = Volatile.Read(ref _defaultViewCache);
+        var generation = Volatile.Read(ref _defaultViewGeneration);
+        if (existing?.Generation == generation)
         {
-            var s = pinnedSettings[i];
-            for (var j = 0; j < allCommands.Count; j++)
-            {
-                var cmd = allCommands[j];
-                if (IsEligibleTopLevelCommand(cmd) &&
-                    cmd.CommandProviderId == s.ProviderId &&
-                    cmd.Id == s.CommandId)
-                {
-                    pinned.Add(cmd);
-                    break;
-                }
-            }
+            return existing;
         }
 
-        // Single pass for regular items
-        var regular = new List<TopLevelViewModel>(allCommands.Count);
-        for (var i = 0; i < allCommands.Count; i++)
+        var rebuilt = BuildDefaultViewCache(existing, generation);
+        if (generation == Volatile.Read(ref _defaultViewGeneration))
         {
-            var candidate = allCommands[i];
-            if (IsEligibleTopLevelCommand(candidate) && !_tlcManager.IsPinned(candidate.CommandProviderId, candidate.Id))
-            {
-                regular.Add(candidate);
-            }
+            Interlocked.CompareExchange(ref _defaultViewCache, rebuilt, existing);
         }
 
-        _cachedPinnedViewModels = [.. pinned];
-        _cachedRegularViewModels = [.. regular];
-        _defaultViewDirty = false;
+        var current = Volatile.Read(ref _defaultViewCache);
+        return current?.Generation == Volatile.Read(ref _defaultViewGeneration) ? current : rebuilt;
     }
 
-    private static bool IsEligibleTopLevelCommand(TopLevelViewModel command)
+    private DefaultViewCache BuildDefaultViewCache(DefaultViewCache? existing, int generation)
     {
-        return !command.IsFallback && !string.IsNullOrEmpty(command.Title);
+        var pinnedSettings = _tlcManager.GetPinnedCommandsSnapshot();
+
+        TopLevelViewModel[] allCommands;
+        lock (_tlcManager.TopLevelCommands)
+        {
+            allCommands = [.. _tlcManager.TopLevelCommands];
+        }
+
+        IEnumerable<string> recentCommandIds = _recentCommandsOnHome == RecentCommandsPlacement.Hidden
+            ? []
+            : _recentCommands.EnumerateRecentCommandIds();
+        var sections = TopLevelCommandResolver.Resolve(
+            pinnedSettings,
+            recentCommandIds,
+            allCommands,
+            _allAppsPage,
+            includeApps: _includeApps,
+            recentCommandLimit: _recentCommandsDisplayLimit,
+            recentCommandsFirst: _recentCommandsOnHome == RecentCommandsPlacement.BeforePinned);
+
+        var recent = sections.Recent
+            .Select(item => (IListItem)RecentCommandListItem.CreateOrReuse(
+                existing?.Recent,
+                item,
+                IdForTopLevelOrAppItem(item)))
+            .ToArray();
+        return new(generation, [.. sections.Pinned], recent, [.. sections.Regular]);
+    }
+
+    private void InvalidateDefaultView()
+    {
+        Interlocked.Increment(ref _defaultViewGeneration);
     }
 
     private void ClearResults()
@@ -739,7 +819,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
                 if (includeAppsSnapshot)
                 {
-                    var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
+                    var allNewApps = _allAppsPage.GetItems().Cast<AppListItem>().ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
                     var pinnedCommandIds = _settingsService.Settings.GetPinnedCommandIds(AllAppsCommandProvider.WellKnownId);
@@ -918,8 +998,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool ActuallyLoading()
     {
-        var allApps = AllAppsCommandProvider.Page;
-        return allApps.IsLoading || _tlcManager.IsLoading;
+        return _allAppsPage.IsLoading || _tlcManager.IsLoading;
     }
 
     private void PublishFallbackResultSnapshot(
@@ -1064,7 +1143,7 @@ public sealed partial class MainListPage : DynamicListPage,
             _retiredFallbackSnapshots.Add(snapshot, new object());
         }
 
-        CloseFallbackResultSnapshot(snapshot);
+        FallbackSnapshotLease.CloseSnapshot(snapshot);
     }
 
     private IListItem[] BuildFallbackResultItems()
@@ -1148,7 +1227,16 @@ public sealed partial class MainListPage : DynamicListPage,
             : Array.IndexOf(fallbackRanks, legacyIdSelector(source));
     }
 
-    private void CloseFallbackResultSnapshots()
+    /// <summary>
+    /// Drops every published snapshot and gives back the references the page holds.
+    /// </summary>
+    /// <remarks>
+    /// Releasing a reference can close an object in the extension process, which is a
+    /// cross-process call. The keystroke path must not wait for that, so it runs the
+    /// release on a pool thread. Shutdown passes true, because the process must not end
+    /// with the calls still pending.
+    /// </remarks>
+    private void CloseFallbackResultSnapshots(bool synchronously = false)
     {
         FallbackSnapshotLease[] leases;
         lock (_tlcManager.TopLevelCommands)
@@ -1167,45 +1255,30 @@ public sealed partial class MainListPage : DynamicListPage,
             return;
         }
 
-        _ = Task.Run(() =>
+        if (synchronously)
+        {
+            ReleaseOwners(leases);
+            return;
+        }
+
+        _ = Task.Run(() => ReleaseOwners(leases));
+
+        static void ReleaseOwners(FallbackSnapshotLease[] leases)
         {
             foreach (var lease in leases)
             {
                 lease.ReleaseOwner();
             }
-        });
-    }
-
-    private static void CloseFallbackResultSnapshot(IFallbackCommandResult snapshot)
-    {
-        try
-        {
-            (snapshot as IDisposable)?.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to close a fallback result snapshot.", ex);
         }
     }
 
-    private void CloseFallbackResultSnapshotsSynchronously()
+    /// <summary>
+    /// Drops one snapshot state and gives back the reference the page holds for it.
+    /// </summary>
+    private static void RetireFallbackResultState(FallbackResultState state)
     {
-        FallbackSnapshotLease[] leases;
-        lock (_tlcManager.TopLevelCommands)
-        {
-            leases = _fallbackResultSnapshots.Values.Select(state => state.Lease).ToArray();
-            foreach (var state in _fallbackResultSnapshots.Values)
-            {
-                ReleaseUnpublishedWrapperLeases(state);
-            }
-
-            _fallbackResultSnapshots.Clear();
-        }
-
-        foreach (var lease in leases)
-        {
-            lease.ReleaseOwner();
-        }
+        ReleaseUnpublishedWrapperLeases(state);
+        state.Lease.ReleaseOwner();
     }
 
     private sealed record FallbackResultState(
@@ -1398,9 +1471,13 @@ public sealed partial class MainListPage : DynamicListPage,
         _searchTelemetry.ReportSelection(topLevelOrAppItem, _resultsSeparator, _fallbacksSeparator);
     }
 
-    private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
+    internal static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
     {
-        if (topLevelOrAppItem is TopLevelViewModel topLevel)
+        if (topLevelOrAppItem is RecentCommandListItem recentItem)
+        {
+            return recentItem.CommandId;
+        }
+        else if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
             return topLevel.Id;
         }
@@ -1444,7 +1521,7 @@ public sealed partial class MainListPage : DynamicListPage,
     public void Receive(UpdateFallbackItemsMessage message)
     {
         _tlcManager.RebuildPinnedCache();
-        _defaultViewDirty = true;
+        InvalidateDefaultView();
         RequestRefresh(fullRefresh: false);
     }
 
@@ -1453,6 +1530,15 @@ public sealed partial class MainListPage : DynamicListPage,
     private void HotReloadSettings(SettingsModel settings)
     {
         ShowDetails = settings.ShowAppDetails;
+
+        if (_recentCommandsOnHome != settings.RecentCommandsOnHome ||
+            _recentCommandsDisplayLimit != settings.RecentCommandsDisplayLimit)
+        {
+            _recentCommandsOnHome = settings.RecentCommandsOnHome;
+            _recentCommandsDisplayLimit = settings.RecentCommandsDisplayLimit;
+            InvalidateDefaultView();
+            RequestRefresh(fullRefresh: false);
+        }
 
         // A per-provider search-weight change has to reorder the query that is already on screen.
         // Scoring reads the weight live, but scored results are cached, so without an explicit
@@ -1514,16 +1600,17 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
-        CloseFallbackResultSnapshotsSynchronously();
+        CloseFallbackResultSnapshots(synchronously: true);
         _fallbackUpdateManager.Dispose();
         _fallbackResultQueryManager.Dispose();
         _searchTelemetry.Dispose();
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
-        _tlcManager.PinnedCommands.CollectionChanged -= PinnedCommands_CollectionChanged;
+        _tlcManager.PinnedCommandsChanged -= PinnedCommands_Changed;
+        _appStateService.StateChanged -= AppStateService_StateChanged;
 
-        AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
+        _allAppsPage.PropChanged -= AllApps_PropChanged;
 
         if (_settingsService is not null)
         {
@@ -1533,4 +1620,10 @@ public sealed partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.UnregisterAll(this);
         GC.SuppressFinalize(this);
     }
+
+    private sealed record DefaultViewCache(
+        int Generation,
+        IListItem[] Pinned,
+        IListItem[] Recent,
+        IListItem[] Regular);
 }

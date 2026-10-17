@@ -21,16 +21,16 @@ using WyHash;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
+public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem, ICommandContextSource
 {
     private const int MaximumFallbackRegexLength = 4096;
     private static readonly TimeSpan FallbackRegexTimeout = TimeSpan.FromMilliseconds(50);
-
     private readonly ISettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
+    private int _contextItemsVersion;
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
@@ -39,7 +39,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private string _fallbackId = string.Empty;
 
     private string _generatedId = string.Empty;
-
     private IFallbackCommandItem3? _fallbackV2;
     private IFallbackHandler2? _fallbackQueryHandler;
     private ICommand? _fallbackPlaceholderCommand;
@@ -67,6 +66,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     public string Id => string.IsNullOrWhiteSpace(IdFromModel) ? _generatedId : IdFromModel;
 
     public CommandPaletteHost ExtensionHost { get; private set; }
+
+    AppExtensionHost? ICommandContextSource.ExtensionHost => ExtensionHost;
 
     public string ExtensionName => ExtensionHost.GetExtensionDisplayName() ?? string.Empty;
 
@@ -130,8 +131,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     internal uint EffectiveMaximumVisibleItemCount => Math.Clamp(
         GetFallbackSettings()?.MaximumVisibleItemCount ?? FallbackResultQueryManager.InitialRequestedItemCount,
-        1,
-        100);
+        FallbackSettings.MinimumItemCount,
+        FallbackSettings.MaximumItemCount);
 
     public HotkeySettings? Hotkey
     {
@@ -260,6 +261,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
+        _contextItemsVersion = item.ContextItemsVersion;
 
         _contextMenuFactory = contextMenuFactory ?? DefaultContextMenuFactory.Instance;
 
@@ -326,7 +328,21 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         if (!string.IsNullOrEmpty(e.PropertyName))
         {
-            PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
+            var propertyName = e.PropertyName;
+            if (propertyName == nameof(CommandItemViewModel.AllCommands))
+            {
+                // Keep batched background delivery, but invalidate the SDK list only when its entries changed.
+                var version = _commandItemViewModel.ContextItemsVersion;
+                if (_contextItemsVersion == version)
+                {
+                    return;
+                }
+
+                _contextItemsVersion = version;
+                propertyName = nameof(ICommandItem.MoreCommands);
+            }
+
+            PropChanged?.Invoke(this, new PropChangedEventArgs(propertyName));
 
             if (e.PropertyName is nameof(CommandItemViewModel.Title) or nameof(CommandItemViewModel.Name))
             {
@@ -556,6 +572,16 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             : template.Replace("{query}", query, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Tests the query against a match pattern that an extension supplied.
+    /// </summary>
+    /// <remarks>
+    /// The pattern is untrusted input, so this method limits what it can cost. The
+    /// length check stops very large patterns, the timeout stops patterns that
+    /// backtrack, and the anchors make the pattern match the whole query. Without the
+    /// anchors an extension could claim every query with one dot. A pattern that is bad
+    /// in any of these ways matches nothing instead of failing the search.
+    /// </remarks>
     private static bool MatchesFallbackRegex(string query, string pattern)
     {
         if (string.IsNullOrEmpty(pattern) || pattern.Length > MaximumFallbackRegexLength)
@@ -569,6 +595,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
         catch (ArgumentException)
         {
+            // The extension supplied a pattern that does not parse.
             return false;
         }
         catch (RegexMatchTimeoutException)
@@ -615,10 +642,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public IDictionary<string, object?> GetProperties()
     {
-        return new Dictionary<string, object?>
-        {
-            [WellKnownExtensionAttributes.DataPackage] = _commandItemViewModel?.DataPackage,
-        };
+        return _commandItemViewModel.GetExtendedAttributes()
+               ?? new Dictionary<string, object?>();
     }
 
     public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
@@ -643,17 +668,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         List<IContextItem?> contextItems = new();
 
-        foreach (var item in _commandItemViewModel.MoreCommands)
-        {
-            if (item is ISeparatorContextItem)
-            {
-                contextItems.Add(item as IContextItem);
-            }
-            else if (item is CommandContextItemViewModel commandItem)
-            {
-                contextItems.Add(commandItem.Model.Unsafe);
-            }
-        }
+        _commandItemViewModel.CopySdkContextItemsTo(contextItems);
 
         _contextMenuFactory.AddMoreCommandsToTopLevel(this, this.ProviderContext, contextItems);
 

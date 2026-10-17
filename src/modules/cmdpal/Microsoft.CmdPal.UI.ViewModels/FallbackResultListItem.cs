@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-internal sealed partial class FallbackResultListItem : IListItem, IExtendedAttributesProvider
+internal sealed partial class FallbackResultListItem : IListItem, IExtendedAttributesProvider, IDisposable
 {
     private readonly IDictionary<string, object> _extendedProperties;
     private readonly string _title;
@@ -87,9 +87,22 @@ internal sealed partial class FallbackResultListItem : IListItem, IExtendedAttri
 
     public IDictionary<string, object> GetProperties() => _extendedProperties;
 
-    internal void ReleaseMaterializationLease()
+    /// <summary>
+    /// Gives back the reference that this wrapper took when it was built.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="ListItemViewModel"/> calls this when it takes its own reference on
+    /// the snapshot. After that the view-model controls the lifetime.
+    /// </remarks>
+    internal void ReleaseMaterializationLease() => Dispose();
+
+    public void Dispose()
     {
         Interlocked.Exchange(ref _materializationLease, null)?.Dispose();
+
+        // The finalizer only exists to catch a wrapper that nothing released.
+        // This one is released, so keep it off the finalizer queue.
+        GC.SuppressFinalize(this);
     }
 
     internal void MarkPublished() => Interlocked.Exchange(ref _published, 1);
@@ -102,6 +115,10 @@ internal sealed partial class FallbackResultListItem : IListItem, IExtendedAttri
         }
     }
 
+    // Safety net. A wrapper that reaches the rendered list but never becomes a
+    // ListItemViewModel - the query is superseded between the two steps - has no
+    // other release path. Without this the snapshot stays open for the life of the
+    // process. Normal paths call GC.SuppressFinalize, so few wrappers reach here.
     ~FallbackResultListItem()
     {
         Interlocked.Exchange(ref _materializationLease, null)?.Dispose();

@@ -1,0 +1,7 @@
+SIIGBF
+BITMAP
+GetObject
+GetDIBits
+GetDC
+ReleaseDC
+DeleteObject

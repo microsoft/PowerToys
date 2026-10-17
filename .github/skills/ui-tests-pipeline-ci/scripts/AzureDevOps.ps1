@@ -191,3 +191,65 @@ function Get-AzDevOpsPagedValues
         ContinuationToken = $continuationToken
     }
 }
+
+function ConvertTo-AzDevOpsBuildSnapshot
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [object] $Build,
+
+        [Parameter(Mandatory)]
+        [int] $RequestedId,
+
+        [Parameter(Mandatory)]
+        [string] $ExpectedBranch,
+
+        [Parameter(Mandatory)]
+        [string] $ExpectedSourceVersion
+    )
+
+    $requiredProperties = @('id', 'buildNumber', 'status', 'sourceBranch', 'sourceVersion')
+    $missingProperties = @($requiredProperties | Where-Object { $null -eq $Build.PSObject.Properties[$_] })
+    if ($missingProperties.Count -gt 0)
+    {
+        throw "Azure DevOps returned a malformed build response for requested build ${RequestedId}; missing: $($missingProperties -join ', ')."
+    }
+
+    if ([int]$Build.id -ne $RequestedId)
+    {
+        throw "Requested build $RequestedId but Azure DevOps returned build $($Build.id)."
+    }
+
+    if ([string]$Build.sourceBranch -cne $ExpectedBranch)
+    {
+        throw "Build $RequestedId source branch '$($Build.sourceBranch)' does not match '$ExpectedBranch'."
+    }
+
+    if ([string]$Build.sourceVersion -ine $ExpectedSourceVersion)
+    {
+        throw "Build $RequestedId source version '$($Build.sourceVersion)' does not match '$ExpectedSourceVersion'."
+    }
+
+    $propertyValue = {
+        param([string] $Name)
+
+        $property = $Build.PSObject.Properties[$Name]
+        if ($null -ne $property)
+        {
+            $property.Value
+        }
+    }
+
+    [pscustomobject]@{
+        Id = [int]$Build.id
+        BuildNumber = [string]$Build.buildNumber
+        Status = [string]$Build.status
+        Result = [string](& $propertyValue 'result')
+        QueueTime = & $propertyValue 'queueTime'
+        StartTime = & $propertyValue 'startTime'
+        FinishTime = & $propertyValue 'finishTime'
+        LastChangedDate = & $propertyValue 'lastChangedDate'
+        WebUrl = [string]$Build._links.web.href
+    }
+}

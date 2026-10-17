@@ -20,6 +20,7 @@ namespace EnvironmentVariablesUILib.Models
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
         [NotifyPropertyChangedFor(nameof(ShowAsList))]
+        [NotifyPropertyChangedFor(nameof(IsPath))]
         private string _name;
 
         [ObservableProperty]
@@ -62,6 +63,9 @@ namespace EnvironmentVariablesUILib.Models
 
         [JsonIgnore]
         public bool ShowAsList => IsList();
+
+        [JsonIgnore]
+        public bool IsPath => string.Equals(Name, "PATH", StringComparison.OrdinalIgnoreCase);
 
         private bool IsList()
         {

@@ -17,5 +17,8 @@ namespace KeyboardManagerEditorUI.Interop
         public string TargetKey { get; set; } = string.Empty;
 
         public bool IsShortcut { get; set; }
+
+        // True when this is an "Alone" (dual-key / tap-alone) remap rather than a regular unconditional one.
+        public bool IsAlone { get; set; }
     }
 }

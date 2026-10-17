@@ -10,7 +10,7 @@
 
 ## Overview
 
-Screen Ruler (project name: MeasureTool or Measure 2) is a PowerToys module that allows users to measure pixel distances and detect color boundaries on the screen. The tool renders an overlay UI using DirectX and provides several measurement utilities.
+Screen Ruler (project name: MeasureTool or Measure 2) is a PowerToys module that allows users to measure distances and detect color boundaries on the screen. Measurements are always displayed in physical pixels and can optionally include display-independent pixels (DIP), inches, centimeters, or millimeters. The tool renders an overlay UI using DirectX and provides several measurement utilities.
 
 ## Features
 
