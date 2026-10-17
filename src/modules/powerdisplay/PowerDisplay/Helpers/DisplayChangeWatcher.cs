@@ -41,6 +41,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     // Console-display-state subscription
     private IntPtr _displayStateRegistration;
+    private IntPtr _energySaverRegistration;
     private PowerSettingsNative.DeviceNotifyCallbackRoutine? _displayStateCallback;
     private GCHandle _displayStateCallbackHandle;
 
@@ -53,6 +54,11 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     /// Subscribers (typically the ViewModel) should re-run monitor discovery.
     /// </summary>
     public event EventHandler? DisplayChanged;
+
+    public event EventHandler? EnergySaverStatusChanged;
+
+    // Null until the newer notification supplies a state; use the legacy API in that case.
+    public uint? EnergySaverStatus { get; private set; }
 
     /// <summary>
     /// Event triggered as soon as a display configuration change is detected
@@ -202,7 +208,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     private void RegisterDisplayStateNotification()
     {
-        _displayStateCallback = OnDisplayStateChangedNative;
+        _displayStateCallback = OnPowerSettingChangedNative;
         _displayStateCallbackHandle = GCHandle.Alloc(_displayStateCallback);
 
         var subscribeParams = new PowerSettingsNative.DeviceNotifySubscribeParameters
@@ -228,15 +234,26 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         {
             Logger.LogInfo("[DisplayChangeWatcher] Subscribed to GUID_CONSOLE_DISPLAY_STATE");
         }
+
+        guid = PowerSettingsNative.GuidEnergySaverStatus;
+        result = PowerSettingsNative.PowerSettingRegisterNotification(
+            ref guid,
+            PowerSettingsNative.DeviceNotifyCallback,
+            ref subscribeParams,
+            out _energySaverRegistration);
+        if (result != 0)
+        {
+            _energySaverRegistration = IntPtr.Zero;
+            Logger.LogInfo("[DisplayChangeWatcher] Energy Saver notification unavailable; using legacy Battery Saver");
+        }
     }
 
     /// <summary>
     /// Callback invoked by Windows on an internal worker thread when the
-    /// console display power state changes. Reads the new state, marshals to
-    /// the dispatcher, and lets <see cref="HandleDisplayStateChange"/> apply
-    /// the policy.
+    /// display power state or Energy Saver changes. Reads the DWORD payload and
+    /// marshals to the dispatcher. Energy Saver bypasses the display rescan debounce.
     /// </summary>
-    private uint OnDisplayStateChangedNative(IntPtr context, uint type, IntPtr setting)
+    private unsafe uint OnPowerSettingChangedNative(IntPtr context, uint type, IntPtr setting)
     {
         if (type != PowerSettingsNative.PowerSettingChangeNotification || setting == IntPtr.Zero)
         {
@@ -244,9 +261,16 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         }
 
         uint newState;
+        Guid settingGuid;
         try
         {
-            newState = Marshal.ReadByte(setting, PowerSettingsNative.PowerBroadcastSettingDataOffset);
+            settingGuid = *(Guid*)setting;
+            if (Marshal.ReadInt32(setting, 16) < sizeof(uint))
+            {
+                return 0;
+            }
+
+            newState = unchecked((uint)Marshal.ReadInt32(setting, PowerSettingsNative.PowerBroadcastSettingDataOffset));
         }
         catch (Exception ex)
         {
@@ -261,7 +285,18 @@ public sealed partial class DisplayChangeWatcher : IDisposable
                 return;
             }
 
-            HandleDisplayStateChange(newState);
+            if (settingGuid == PowerSettingsNative.GuidEnergySaverStatus)
+            {
+                if (newState <= 2 && EnergySaverStatus != newState)
+                {
+                    EnergySaverStatus = newState;
+                    EnergySaverStatusChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            else if (settingGuid == PowerSettingsNative.GuidConsoleDisplayState)
+            {
+                HandleDisplayStateChange(newState);
+            }
         });
 
         return 0;
@@ -390,11 +425,16 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
         _disposed = true;
 
-        if (_displayStateRegistration != IntPtr.Zero)
+        foreach (var registration in new[] { _displayStateRegistration, _energySaverRegistration })
         {
+            if (registration == IntPtr.Zero)
+            {
+                continue;
+            }
+
             try
             {
-                uint unregisterResult = PowerSettingsNative.PowerSettingUnregisterNotification(_displayStateRegistration);
+                uint unregisterResult = PowerSettingsNative.PowerSettingUnregisterNotification(registration);
                 if (unregisterResult != 0)
                 {
                     Logger.LogWarning(
@@ -405,9 +445,10 @@ public sealed partial class DisplayChangeWatcher : IDisposable
             {
                 Logger.LogError($"[DisplayChangeWatcher] Unregister failed: {ex.Message}");
             }
-
-            _displayStateRegistration = IntPtr.Zero;
         }
+
+        _displayStateRegistration = IntPtr.Zero;
+        _energySaverRegistration = IntPtr.Zero;
 
         if (_displayStateCallbackHandle.IsAllocated)
         {
