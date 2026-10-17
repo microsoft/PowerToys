@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <MSTestVersion>3.8.3</MSTestVersion>
-    <!-- .NET SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with exactVersion in .pipelines/v2/templates/job-build-project.yml. -->
+    <!-- Keep this aligned with sdkVersion in .pipelines/v2/templates/steps-setup-dotnet-toolchain.yml, whose SDK contains runtime 10.0.11. -->
     <DotNetRuntimePackageVersion>10.0.11</DotNetRuntimePackageVersion>
   </PropertyGroup>
   <ItemGroup>

@@ -1,0 +1,27 @@
+parameters:
+- name: sdkVersion
+  type: string
+  # This SDK contains runtime 10.0.11. Keep aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
+  default: '10.0.303'
+
+steps:
+- template: steps-ensure-dotnet-version.yml
+  parameters:
+    sdk: true
+    version: '6.0' # .NET 6.0 is required in CI for ESRP code signing tasks. Please do not remove.
+
+- template: steps-ensure-dotnet-version.yml
+  parameters:
+    sdk: true
+    version: '8.0'
+
+- template: steps-ensure-dotnet-version.yml
+  parameters:
+    sdk: true
+    version: '10.0'
+    exactVersion: ${{ parameters.sdkVersion }}
+
+- pwsh: |-
+    dotnet new globaljson --sdk-version "${{ parameters.sdkVersion }}" --roll-forward disable
+  displayName: Select .NET SDK
+  workingDirectory: $(Build.SourcesDirectory)
