@@ -2,29 +2,33 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.UI.Xaml;
-
 namespace Microsoft.CmdPal.UI.Helpers;
 
 internal sealed class SvgIconProtocolProcessor : IIconProtocolProcessor
 {
     public static SvgIconProtocolProcessor Instance { get; } = new();
 
-    private SvgIconProtocolProcessor()
-    {
-    }
-
     public IconCachePartition CachePartition => IconCachePartition.Other;
 
     public ReadOnlySpan<string> ProtocolPrefixes => SvgIconProtocol.ProtocolPrefixes;
 
-    public string GetCacheIdentity(string value) => SvgIconProtocol.GetCacheIdentity(value);
+    private SvgIconProtocolProcessor()
+    {
+    }
 
-    public ElementTheme GetCacheTheme(string value, ElementTheme theme) =>
-        SvgIconProtocol.GetCacheTheme(value, theme);
+    public string GetCacheIdentity(string value)
+    {
+        return SvgIconProtocol.GetCacheIdentity(value);
+    }
 
-    public IconLoadInputKind ClassifyInput(string value) =>
-        SvgIconProtocol.Classify(value) switch
+    public IconRenderContext GetCacheContext(string value, IconRenderContext context)
+    {
+        return SvgIconProtocol.GetCacheContext(value, context);
+    }
+
+    public IconLoadInputKind ClassifyInput(string value)
+    {
+        return SvgIconProtocol.Classify(value) switch
         {
             SvgIconProtocol.Kind.PlainFile => IconLoadInputKind.SvgFile,
             SvgIconProtocol.Kind.PlainInline => IconLoadInputKind.SvgInline,
@@ -32,14 +36,15 @@ internal sealed class SvgIconProtocolProcessor : IIconProtocolProcessor
             SvgIconProtocol.Kind.ThemedInline => IconLoadInputKind.ThemedSvgInline,
             _ => IconLoadInputKind.String,
         };
+    }
 
     public bool TryPrepareSynchronously(
         string value,
         int targetSize,
-        ElementTheme theme,
+        IconRenderContext context,
         out IconPathConverter.PreparedIcon preparedIcon)
     {
-        preparedIcon = SvgIconProtocol.TryCreateSvg(value, theme, out var svg)
+        preparedIcon = SvgIconProtocol.TryCreateSvg(value, context, out var svg)
             ? IconPathConverter.PreparedIcon.FromSvgData(svg, targetSize)
             : IconPathConverter.PreparedIcon.Empty();
         return true;
@@ -48,9 +53,9 @@ internal sealed class SvgIconProtocolProcessor : IIconProtocolProcessor
     public ValueTask<IconProtocolProcessingResult> PrepareAsync(
         string value,
         int targetSize,
-        ElementTheme theme)
+        IconRenderContext context)
     {
-        _ = TryPrepareSynchronously(value, targetSize, theme, out var preparedIcon);
+        _ = TryPrepareSynchronously(value, targetSize, context, out var preparedIcon);
         return ValueTask.FromResult(IconProtocolProcessingResult.FromPreparedIcon(preparedIcon));
     }
 }

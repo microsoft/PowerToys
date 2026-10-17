@@ -29,12 +29,8 @@ public class IconProtocolRegistryTests
             Assert.AreSame(AppIconProtocolProcessor.Instance, processor);
             Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
             Assert.AreEqual(IconLoadInputKind.SpecializedAppIcon, processor.ClassifyInput(value));
-            Assert.AreEqual(ElementTheme.Default, processor.GetCacheTheme(value, ElementTheme.Dark));
-            Assert.IsFalse(processor.TryPrepareSynchronously(
-                value,
-                20,
-                ElementTheme.Dark,
-                out var preparedIcon));
+            Assert.AreEqual(ElementTheme.Default, processor.GetCacheContext(value, new IconRenderContext(ElementTheme.Dark, default)).Theme);
+            Assert.IsFalse(processor.TryPrepareSynchronously(value, 20, new IconRenderContext(ElementTheme.Dark, default), out var preparedIcon));
             Assert.IsNull(preparedIcon);
         }
     }
@@ -50,14 +46,10 @@ public class IconProtocolRegistryTests
         Assert.AreSame(ShellItemIconProtocolProcessor.Instance, processor);
         Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
         Assert.AreEqual(IconLoadInputKind.ShellItemIcon, processor.ClassifyInput(value));
-        Assert.AreEqual(ElementTheme.Default, processor.GetCacheTheme(value, ElementTheme.Dark));
-        Assert.IsFalse(processor.TryPrepareSynchronously(
-            value,
-            20,
-            ElementTheme.Dark,
-            out var preparedIcon));
+        Assert.AreEqual(ElementTheme.Default, processor.GetCacheContext(value, new IconRenderContext(ElementTheme.Dark, default)).Theme);
+        Assert.IsFalse(processor.TryPrepareSynchronously(value, 20, new IconRenderContext(ElementTheme.Dark, default), out var preparedIcon));
         Assert.IsNull(preparedIcon);
-        using var processingResult = await processor.PrepareAsync(value, 20, ElementTheme.Dark);
+        using var processingResult = await processor.PrepareAsync(value, 20, new IconRenderContext(ElementTheme.Dark, default));
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.Empty, processingResult.Kind);
     }
 
@@ -75,11 +67,7 @@ public class IconProtocolRegistryTests
         Assert.AreSame(GeneratedIconProtocolProcessor.Instance, processor);
         Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
         Assert.AreEqual(inputKind, processor.ClassifyInput(value).ToString());
-        Assert.AreEqual(preparesSynchronously, processor.TryPrepareSynchronously(
-            value,
-            20,
-            ElementTheme.Light,
-            out var preparedIcon));
+        Assert.AreEqual(preparesSynchronously, processor.TryPrepareSynchronously(value, 20, new IconRenderContext(ElementTheme.Light, default), out var preparedIcon));
         using (preparedIcon)
         {
             if (preparesSynchronously)
@@ -101,14 +89,10 @@ public class IconProtocolRegistryTests
         var processor = IconProtocolRegistry.Find(Value);
 
         Assert.IsNotNull(processor);
-        Assert.IsFalse(processor.TryPrepareSynchronously(
-            Value,
-            20,
-            ElementTheme.Light,
-            out var synchronousIcon));
+        Assert.IsFalse(processor.TryPrepareSynchronously(Value, 20, new IconRenderContext(ElementTheme.Light, default), out var synchronousIcon));
         Assert.IsNull(synchronousIcon);
 
-        using var result = await processor.PrepareAsync(Value, 20, ElementTheme.Light);
+        using var result = await processor.PrepareAsync(Value, 20, new IconRenderContext(ElementTheme.Light, default));
         using var preparedIcon = result.TakePreparedIcon();
         Assert.IsNotNull(preparedIcon);
         Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, preparedIcon.Kind);
@@ -136,11 +120,7 @@ public class IconProtocolRegistryTests
         var processor = IconProtocolRegistry.Find(Value);
 
         Assert.IsNotNull(processor);
-        Assert.IsTrue(processor.TryPrepareSynchronously(
-            Value,
-            20,
-            ElementTheme.Light,
-            out var preparedIcon));
+        Assert.IsTrue(processor.TryPrepareSynchronously(Value, 20, new IconRenderContext(ElementTheme.Light, default), out var preparedIcon));
         using (preparedIcon)
         {
             Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, preparedIcon.Kind);
@@ -260,14 +240,12 @@ public class IconProtocolRegistryTests
 
         public string GetCacheIdentity(string value) => value;
 
-        public ElementTheme GetCacheTheme(string value, ElementTheme theme) => ElementTheme.Default;
-
         public IconLoadInputKind ClassifyInput(string value) => IconLoadInputKind.String;
 
         public bool TryPrepareSynchronously(
             string value,
             int targetSize,
-            ElementTheme theme,
+            IconRenderContext context,
             out IconPathConverter.PreparedIcon preparedIcon)
         {
             preparedIcon = IconPathConverter.PreparedIcon.Empty();
@@ -277,7 +255,9 @@ public class IconProtocolRegistryTests
         public ValueTask<IconProtocolProcessingResult> PrepareAsync(
             string value,
             int targetSize,
-            ElementTheme theme) =>
-            ValueTask.FromResult(IconProtocolProcessingResult.Empty());
+            IconRenderContext context)
+        {
+            return ValueTask.FromResult(IconProtocolProcessingResult.Empty());
+        }
     }
 }

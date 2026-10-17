@@ -5,7 +5,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Storage.Streams;
@@ -53,12 +52,13 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
     {
     }
 
+    /// <inheritdoc />
     public Task<IconSource?> GetIconSource(
         IconDataViewModel icon,
         double scale,
+        IconRenderContext context,
         IconRequestMeasurement diagnostics = default,
-        IIconRequestDemand? demand = null,
-        ElementTheme theme = ElementTheme.Default)
+        IIconRequestDemand? demand = null)
     {
         if (icon.Icon is { } iconString)
         {
@@ -115,8 +115,8 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         var iconIdentity = icon.Icon is { } cacheIconString && protocolProcessor is not null
             ? protocolProcessor.GetCacheIdentity(cacheIconString)
             : icon.Icon;
-        var cacheTheme = protocolProcessor?.GetCacheTheme(icon.Icon!, theme) ?? ElementTheme.Default;
-        var key = new IconCacheKey(icon, iconIdentity, scale, cacheTheme);
+        var cacheContext = protocolProcessor?.GetCacheContext(icon.Icon!, context) ?? default;
+        var key = new IconCacheKey(icon, iconIdentity, scale, cacheContext);
         var partition = ClassifyCachePartition(icon.Icon, protocolProcessor);
         var cache = GetCache(partition);
         var cacheSize = GetCacheSize(partition);
@@ -129,7 +129,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         }
 
         IconLoadDiagnostics.RecordCacheLookup(_iconSize, partition, cacheSize, hit: false);
-        return GetOrCreateSlowPath(key, icon, scale, theme, partition, diagnostics, demand);
+        return GetOrCreateSlowPath(key, icon, scale, context, partition, diagnostics, demand);
     }
 
     private Task<IconSource?> GetShellItemIconSourceProgressively(
@@ -320,7 +320,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
 
         // Before Shell localization, only identical raw requests can share work. Do not
         // cache this key: once resolved, the canonical Shell identity owns the entry.
-        var rawKey = new IconCacheKey(icon, request.CacheIdentity, scale, ElementTheme.Default);
+        var rawKey = new IconCacheKey(icon, request.CacheIdentity, scale, default);
         var candidate = new InFlightIconLoad();
         var pending = _inFlight.GetOrAdd(rawKey, candidate);
         if (!ReferenceEquals(pending, candidate))
@@ -428,7 +428,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         IconCacheKey key,
         IconDataViewModel icon,
         double scale,
-        ElementTheme theme,
+        IconRenderContext context,
         IconCachePartition partition,
         IconRequestMeasurement diagnostics,
         IIconRequestDemand? demand)
@@ -477,7 +477,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
                     streamReference,
                     _iconSize,
                     scale,
-                    theme,
+                    context,
                     tcs,
                     IconLoadPriority.Low,
                     loadDiagnostics,
@@ -734,13 +734,14 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         private readonly StreamIdentity? _streamIdentity;
         private readonly ShellIconIdentity? _shellIdentity;
         private readonly int _scale;
-        private readonly ElementTheme _theme;
+        private readonly IconRenderContext _context;
 
+        /// <summary>Initializes a new instance of the <see cref="IconCacheKey"/> struct. Captures icon identity, display scale, and only the rendering context that affects cached artwork.</summary>
         public IconCacheKey(
             IconDataViewModel icon,
             string? iconIdentity,
             double scale,
-            ElementTheme cacheTheme)
+            IconRenderContext cacheContext)
         {
             _icon = iconIdentity;
             _fontFamily = icon.FontFamily;
@@ -749,7 +750,7 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
                 : null;
             _shellIdentity = null;
             _scale = (int)(100 * Math.Round(scale, 2));
-            _theme = cacheTheme;
+            _context = cacheContext;
         }
 
         public IconCacheKey(ShellIconIdentity shellIdentity, double scale)
@@ -759,21 +760,28 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
             _streamIdentity = null;
             _shellIdentity = shellIdentity;
             _scale = (int)(100 * Math.Round(scale, 2));
-            _theme = ElementTheme.Default;
+            _context = default;
         }
 
-        public bool Equals(IconCacheKey other) =>
-            _icon == other._icon &&
-            _fontFamily == other._fontFamily &&
-            ReferenceEquals(_streamIdentity, other._streamIdentity) &&
-            _shellIdentity == other._shellIdentity &&
-            _scale == other._scale &&
-            _theme == other._theme;
+        public bool Equals(IconCacheKey other)
+        {
+            return _icon == other._icon &&
+                _fontFamily == other._fontFamily &&
+                ReferenceEquals(_streamIdentity, other._streamIdentity) &&
+                _shellIdentity == other._shellIdentity &&
+                _scale == other._scale &&
+                _context == other._context;
+        }
 
-        public override bool Equals(object? obj) => obj is IconCacheKey other && Equals(other);
+        public override bool Equals(object? obj)
+        {
+            return obj is IconCacheKey other && Equals(other);
+        }
 
-        public override int GetHashCode() =>
-            HashCode.Combine(_icon, _fontFamily, _streamIdentity, _shellIdentity, _scale, _theme);
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_icon, _fontFamily, _streamIdentity, _shellIdentity, _scale, _context);
+        }
     }
 
     private sealed class ShellItemIconLoadCoordinator : IShellItemIconLoadCoordinator

@@ -6,7 +6,6 @@ using System;
 using System.Globalization;
 using System.Text;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -14,21 +13,30 @@ namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class UninstallApplicationConfirmation : InvokableCommand
 {
-    private readonly UWPApplication? _uwpTarget;
-    private readonly Win32Program? _win32Target;
+    private readonly string? _win32DisplayName;
+    private readonly string? _packagedDisplayName;
+    private readonly string? _packageFullName;
 
-    public UninstallApplicationConfirmation(UWPApplication target)
+    /// <summary>Initializes a new instance of the <see cref="UninstallApplicationConfirmation"/> class. Creates an uninstall confirmation for a desktop app handled by Windows settings.</summary>
+    public UninstallApplicationConfirmation(string win32DisplayName)
     {
+        ArgumentNullException.ThrowIfNull(win32DisplayName);
+
         Name = Resources.uninstall_application;
         Icon = Icons.UninstallApplicationIcon;
-        _uwpTarget = target ?? throw new ArgumentNullException(nameof(target));
+        _win32DisplayName = win32DisplayName;
     }
 
-    public UninstallApplicationConfirmation(Win32Program target)
+    /// <summary>Initializes a new instance of the <see cref="UninstallApplicationConfirmation"/> class. Creates an uninstall confirmation for the supplied packaged app and its full package identity.</summary>
+    public UninstallApplicationConfirmation(string displayName, string packageFullName)
     {
+        ArgumentNullException.ThrowIfNull(displayName);
+        ArgumentNullException.ThrowIfNull(packageFullName);
+
         Name = Resources.uninstall_application;
         Icon = Icons.UninstallApplicationIcon;
-        _win32Target = target ?? throw new ArgumentNullException(nameof(target));
+        _packagedDisplayName = displayName;
+        _packageFullName = packageFullName;
     }
 
     public override CommandResult Invoke()
@@ -37,15 +45,15 @@ internal sealed partial class UninstallApplicationConfirmation : InvokableComman
 
         var applicationTitle = Resources.uninstall_application;
 
-        if (_uwpTarget is not null)
+        if (_win32DisplayName is not null)
         {
-            uninstallCommand = new UninstallApplicationCommand(_uwpTarget);
-            applicationTitle = _uwpTarget.DisplayName;
+            uninstallCommand = new UninstallApplicationCommand(_win32DisplayName);
+            applicationTitle = _win32DisplayName;
         }
-        else if (_win32Target is not null)
+        else if (_packagedDisplayName is not null && _packageFullName is not null)
         {
-            uninstallCommand = new UninstallApplicationCommand(_win32Target);
-            applicationTitle = _win32Target.Name;
+            uninstallCommand = new UninstallApplicationCommand(_packagedDisplayName, _packageFullName);
+            applicationTitle = _packagedDisplayName;
         }
         else
         {

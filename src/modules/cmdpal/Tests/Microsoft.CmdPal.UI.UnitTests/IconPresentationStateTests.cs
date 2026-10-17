@@ -78,18 +78,11 @@ public class IconPresentationStateTests
         state.SetResolvedSource("recycled", expectsImageSource: true);
 
         state.BeginSourceChange();
-        Assert.IsFalse(GeneratedIconProtocolProcessor.Instance.TryPrepareSynchronously(
-            Value,
-            20,
-            ElementTheme.Light,
-            out var synchronousIcon));
+        Assert.IsFalse(GeneratedIconProtocolProcessor.Instance.TryPrepareSynchronously(Value, 20, new IconRenderContext(ElementTheme.Light, default), out var synchronousIcon));
         Assert.IsNull(synchronousIcon);
         Assert.AreEqual("placement", state.SelectSource(preferFallbackForResolvedSource: false));
 
-        using var result = await GeneratedIconProtocolProcessor.Instance.PrepareAsync(
-            Value,
-            20,
-            ElementTheme.Light);
+        using var result = await GeneratedIconProtocolProcessor.Instance.PrepareAsync(Value, 20, new IconRenderContext(ElementTheme.Light, default));
         using var preparedIcon = result.TakePreparedIcon();
         Assert.IsNotNull(preparedIcon);
         state.SetResolvedSource("initials", expectsImageSource: true);

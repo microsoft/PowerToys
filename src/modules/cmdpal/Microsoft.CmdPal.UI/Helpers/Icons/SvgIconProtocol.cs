@@ -137,12 +137,22 @@ internal static class SvgIconProtocol
         return IsInline(payload) ? Kind.ThemedInline : Kind.ThemedFile;
     }
 
-    public static ElementTheme GetCacheTheme(string? value, ElementTheme theme) =>
-        value?.StartsWith(ThemedPrefix, StringComparison.Ordinal) == true
-            ? theme == ElementTheme.Dark ? ElementTheme.Dark : ElementTheme.Light
-            : ElementTheme.Default;
+    /// <summary>Captures theme and active contrast for themed SVG requests; plain SVG requests share a context-free cache.</summary>
+    public static IconRenderContext GetCacheContext(string? value, IconRenderContext context)
+    {
+        if (value?.StartsWith(ThemedPrefix, StringComparison.Ordinal) != true)
+        {
+            return default;
+        }
 
-    public static bool TryCreateSvg(string? value, ElementTheme theme, out byte[] svg)
+        return new(
+            context.Theme == ElementTheme.Dark ? ElementTheme.Dark : ElementTheme.Light,
+            context.Contrast.IsHighContrast ? context.Contrast : default);
+    }
+
+    /// <summary>Reads or decodes SVG bytes and applies captured theme and contrast to themed requests.</summary>
+    /// <returns>False for an invalid or unreadable request, with an empty byte array.</returns>
+    public static bool TryCreateSvg(string? value, IconRenderContext context, out byte[] svg)
     {
         svg = [];
 
@@ -156,7 +166,7 @@ internal static class SvgIconProtocol
 
                 case Kind.ThemedFile:
                 case Kind.ThemedInline:
-                    return TryCreateThemedSvg(value!, theme, out svg);
+                    return TryCreateThemedSvg(value!, context, out svg);
 
                 default:
                     return false;
@@ -199,10 +209,11 @@ internal static class SvgIconProtocol
         return svg.Length > 0;
     }
 
-    private static bool TryCreateThemedSvg(string value, ElementTheme theme, out byte[] svg)
+    private static bool TryCreateThemedSvg(string value, IconRenderContext context, out byte[] svg)
     {
+        var contrast = context.Contrast;
         svg = [];
-        if (!TryParseThemedPayload(value, theme, out var payload, out var accentColor))
+        if (!TryParseThemedPayload(value, context.Theme, out var payload, out var accentColor))
         {
             return false;
         }
@@ -236,7 +247,14 @@ internal static class SvgIconProtocol
         // A source file may declare a different encoding. Drop that now-stale
         // declaration before emitting the expanded SVG as UTF-8.
         template = RemoveXmlDeclaration(template);
-        var themeColor = theme == ElementTheme.Dark ? DarkThemeColor : LightThemeColor;
+        var themeColor = contrast.IsHighContrast
+            ? FormattableString.Invariant($"#{contrast.ForegroundArgb & 0xFFFFFF:X6}")
+            : context.Theme == ElementTheme.Dark ? DarkThemeColor : LightThemeColor;
+        if (contrast.IsHighContrast)
+        {
+            accentColor = themeColor;
+        }
+
         var resolved = template
             .Replace(ThemeColorPlaceholder, themeColor, StringComparison.Ordinal)
             .Replace(AccentColorPlaceholder, accentColor, StringComparison.Ordinal);
