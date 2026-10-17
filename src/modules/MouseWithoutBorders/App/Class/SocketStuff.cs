@@ -1681,63 +1681,144 @@ namespace MouseWithoutBorders.Class
             const int CLOSE_TIMEOUT = 10;
             byte[] header = new byte[1024];
             string headerString = string.Empty;
-            if (Clipboard.LastDragDropFile != null)
+            if (Clipboard.TryAcquireLastDragDropFile(
+                out string lastDragDropFile,
+                out LocalPathLease pathLease,
+                out bool isDirectory,
+                out bool requiresLease))
             {
-                string fileName = null;
-
-                if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                string leaseValidationHeader = null;
+                if (requiresLease)
                 {
-                    if (!File.Exists(Clipboard.LastDragDropFile))
+                    if (!LocalPathLease.TryCreate(lastDragDropFile, out pathLease))
                     {
-                        headerString = Directory.Exists(Clipboard.LastDragDropFile)
-                            ? $"{0}*{Clipboard.LastDragDropFile} - Folder is not supported, zip it first!"
-                            : Clipboard.LastDragDropFile.Contains("- File too big")
-                                ? $"{0}*{Clipboard.LastDragDropFile}"
-                                : $"{0}*{Clipboard.LastDragDropFile} not found!";
+                        leaseValidationHeader = $"{0}*{lastDragDropFile} not found or unavailable!";
                     }
-                    else
+                    else if (pathLease.IsDirectory)
                     {
-                        fileName = Clipboard.LastDragDropFile;
-                        headerString = $"{new FileInfo(fileName).Length}*{fileName}";
+                        pathLease.Dispose();
+                        pathLease = null;
+                        leaseValidationHeader = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
                     }
-                }))
-                {
-                    s?.Close();
-                    return;
+                    else if (!Clipboard.IsClipboardFileSizeSupported(pathLease.Length))
+                    {
+                        pathLease.Dispose();
+                        pathLease = null;
+                        leaseValidationHeader = $"{0}*{lastDragDropFile} - File too big (greater than 100MB), please drag and drop the file instead!";
+                    }
                 }
 
-                Common.GetBytesU(headerString).CopyTo(header, 0);
-
-                try
+                using (pathLease)
                 {
-                    ecStream.Write(header, 0, header.Length);
+                    string fileName = null;
+                    FileStream leasedFileStream = null;
 
-                    if (!string.IsNullOrEmpty(fileName))
+                    try
                     {
-                        if (SendFile(s, ecStream, fileName))
+                        if (leaseValidationHeader != null)
+                        {
+                            headerString = leaseValidationHeader;
+                        }
+                        else if (isDirectory)
+                        {
+                            headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
+                        }
+                        else if (pathLease != null)
+                        {
+                            if (pathLease.IsDirectory)
+                            {
+                                headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
+                            }
+                            else if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                            {
+                                try
+                                {
+                                    leasedFileStream = pathLease.OpenReadStream(Common.NETWORK_STREAM_BUF_SIZE);
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.Log(e);
+                                }
+                            })
+                                || leasedFileStream == null)
+                            {
+                                s?.Close();
+                                return;
+                            }
+                            else
+                            {
+                                headerString = $"{leasedFileStream.Length}*{lastDragDropFile}";
+                            }
+                        }
+                        else
+                        {
+                            if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                            {
+                                if (lastDragDropFile.Contains("- File too big"))
+                                {
+                                    headerString = $"{0}*{lastDragDropFile}";
+                                }
+                                else if (!File.Exists(lastDragDropFile))
+                                {
+                                    headerString = Directory.Exists(lastDragDropFile)
+                                        ? $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!"
+                                        : $"{0}*{lastDragDropFile} not found!";
+                                }
+                                else
+                                {
+                                    fileName = lastDragDropFile;
+                                    headerString = $"{new FileInfo(fileName).Length}*{fileName}";
+                                }
+                            }))
+                            {
+                                s?.Close();
+                                return;
+                            }
+                        }
+
+                        Common.GetBytesU(headerString).CopyTo(header, 0);
+
+                        ecStream.Write(header, 0, header.Length);
+
+                        if (leasedFileStream != null)
+                        {
+                            if (SendFileEx(s, ecStream, leasedFileStream, lastDragDropFile))
+                            {
+                                s.Close(CLOSE_TIMEOUT);
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(fileName))
+                        {
+                            if (SendFile(s, ecStream, fileName))
+                            {
+                                s.Close(CLOSE_TIMEOUT);
+                            }
+                        }
+                        else
                         {
                             s.Close(CLOSE_TIMEOUT);
                         }
                     }
-                    else
+                    catch (IOException e)
                     {
-                        s.Close(CLOSE_TIMEOUT);
+                        string log = $"{nameof(SendClipboardData)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
+                        Logger.Log(log);
                     }
-                }
-                catch (IOException e)
-                {
-                    string log = $"{nameof(SendClipboardData)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
-                    Logger.Log(log);
-                }
-                catch (SocketException e)
-                {
-                    string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the connection is closed by the remote host.";
-                    Logger.Log(log);
-                }
-                catch (ObjectDisposedException e)
-                {
-                    string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the socket is disposed by a machine switch for ex..";
-                    Logger.Log(log);
+                    catch (SocketException e)
+                    {
+                        string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the connection is closed by the remote host.";
+                        Logger.Log(log);
+                    }
+                    catch (ObjectDisposedException e)
+                    {
+                        string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the socket is disposed by a machine switch for ex..";
+                        Logger.Log(log);
+                    }
+                    finally
+                    {
+                        leasedFileStream?.Dispose();
+                        Clipboard.CompleteLastDragDropFileSend(pathLease);
+                    }
                 }
             }
             else if (!Clipboard.IsClipboardDataImage && Clipboard.LastClipboardData != null)
@@ -1814,50 +1895,62 @@ namespace MouseWithoutBorders.Class
         {
             try
             {
-                using (FileStream f = File.OpenRead(fileName))
+                using FileStream fileStream = File.OpenRead(fileName);
+                return SendFileEx(s, ecStream, fileStream, fileName);
+            }
+            catch (Exception e)
+            {
+                return HandleSendFileException(s, e);
+            }
+        }
+
+        private static bool SendFileEx(Socket s, Stream ecStream, Stream fileStream, string fileName)
+        {
+            try
+            {
+                byte[] buf = new byte[Common.NETWORK_STREAM_BUF_SIZE];
+                int rv, sentCount = 0;
+
+                do
                 {
-                    byte[] buf = new byte[Common.NETWORK_STREAM_BUF_SIZE];
-                    int rv, sentCount = 0;
-
-                    do
+                    if ((rv = fileStream.Read(buf, 0, Common.NETWORK_STREAM_BUF_SIZE)) > 0)
                     {
-                        if ((rv = f.Read(buf, 0, Common.NETWORK_STREAM_BUF_SIZE)) > 0)
-                        {
-                            ecStream.Write(buf, 0, rv);
-                            sentCount += rv;
-                        }
-                    }
-                    while (rv > 0);
-
-                    if ((rv = Package.PACKAGE_SIZE - (sentCount % Package.PACKAGE_SIZE)) > 0)
-                    {
-                        Array.Clear(buf, 0, buf.Length);
                         ecStream.Write(buf, 0, rv);
+                        sentCount += rv;
                     }
+                }
+                while (rv > 0);
 
-                    ecStream.Flush();
-
-                    Logger.LogDebug("File sent: " + fileName);
+                if ((rv = Package.PACKAGE_SIZE - (sentCount % Package.PACKAGE_SIZE)) > 0)
+                {
+                    Array.Clear(buf, 0, buf.Length);
+                    ecStream.Write(buf, 0, rv);
                 }
 
+                ecStream.Flush();
+                Logger.LogDebug("File sent: " + fileName);
                 return true;
             }
             catch (Exception e)
             {
-                if (e is IOException)
-                {
-                    string log = $"{nameof(SendFileEx)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
-                    Logger.Log(log);
-                }
-                else
-                {
-                    Logger.Log(e);
-                }
+                return HandleSendFileException(s, e);
+            }
+        }
 
-                Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
-                s.Close();
+        private static bool HandleSendFileException(Socket s, Exception e)
+        {
+            if (e is IOException)
+            {
+                string log = $"{nameof(SendFileEx)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
+                Logger.Log(log);
+            }
+            else
+            {
+                Logger.Log(e);
             }
 
+            Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+            s.Close();
             return false;
         }
 
