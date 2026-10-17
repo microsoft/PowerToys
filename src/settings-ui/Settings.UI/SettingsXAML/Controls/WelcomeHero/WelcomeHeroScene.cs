@@ -78,7 +78,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private const float CornerRadius = 7f;
         private const float LightSpill = 480f;
         private const float DomeWidth = 2000f;
-        private static readonly Vector2 DomeCenter = new(DomeWidth / 2f, -90f);
+
+        // The dome reaches past the top edge, so the pointer parallax and the impact shake never uncover a gap there.
+        private const float DomeBleed = 24f;
+        private static readonly Vector2 DomeCenter = new(DomeWidth / 2f, DomeBleed - 90f);
         private static readonly Vector2 DomeRadius = new(1000f, 420f);
         private static readonly Vector2 GlowSize = new(620f, 400f);
         private static readonly float[] FlashAlphas = [1f, 0.55f, 0.18f, 0f];
@@ -117,6 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly ContainerVisual _stage;
         private readonly ContainerVisual _trails;
         private readonly Dictionary<Color, CompositionBrush> _trailBrushes = [];
+        private readonly CompositionBrush _trailMask;
         private readonly CompositionBrush _starlightBrush;
         private readonly CompositionColorGradientStop[] _starlightStops;
         private readonly WelcomeHeroWarp.Star[] _stars;
@@ -134,7 +138,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly CompositionColorBrush _tileStroke;
         private readonly CompositionColorBrush _ghostFill;
         private readonly CompositionColorBrush _ghostStroke;
-        private readonly CompositionColorGradientStop[] _highlightStops;
+        private readonly CompositionColorBrush _highlightFill;
+        private readonly CompositionColorBrush _highlightStroke;
 
         private readonly ContainerVisual _logoRig;
         private readonly ContainerVisual _logoPulse;
@@ -221,8 +226,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             _dome = Track(compositor.CreateSpriteVisual());
             _dome.Brush = _domeBrush;
-            _dome.Size = new Vector2(DomeWidth, layout.HeroHeight + LightSpill);
-            _dome.Offset = new Vector3(-DomeWidth / 2f, 0f, 0f);
+            _dome.Size = new Vector2(DomeWidth, layout.HeroHeight + LightSpill + DomeBleed);
+            _dome.Offset = new Vector3(-DomeWidth / 2f, -DomeBleed, 0f);
             _auroraParallax.Children.InsertAtTop(_dome);
 
             var brandColors = WelcomeHeroPalette.BrandColors;
@@ -252,6 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _stage.Children.InsertAtTop(_trails);
 
             var warpMs = FlightMs + (layout.Slots.Count * LaunchStaggerMs);
+            _trailMask = CreateTrailMask();
             (_starlightBrush, _starlightStops) = CreateTrailBrush(palette.Starlight);
             _stars = WelcomeHeroWarp.CreateStars(StarCount, funnelCenter, warpMs);
             _starTrails = new Trail[_stars.Length];
@@ -315,17 +321,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _ghostFill = Track(compositor.CreateColorBrush(palette.GhostFill));
             _ghostStroke = Track(compositor.CreateColorBrush(palette.GhostStroke));
 
-            const float highlightExtent = WelcomeHeroLayout.TileSize + 6f;
-            var highlightBrush = Track(compositor.CreateLinearGradientBrush());
-            highlightBrush.MappingMode = CompositionMappingMode.Absolute;
-            highlightBrush.StartPoint = new Vector2(0f, highlightExtent);
-            highlightBrush.EndPoint = new Vector2(highlightExtent, 0f);
-            _highlightStops = new CompositionColorGradientStop[palette.Highlight.Length];
-            for (var i = 0; i < _highlightStops.Length; i++)
-            {
-                _highlightStops[i] = Track(compositor.CreateColorGradientStop(i / (float)(_highlightStops.Length - 1), palette.Highlight[i]));
-                highlightBrush.ColorStops.Add(_highlightStops[i]);
-            }
+            _highlightFill = Track(compositor.CreateColorBrush(palette.HighlightFill));
+            _highlightStroke = Track(compositor.CreateColorBrush(palette.HighlightStroke));
 
             var slotCount = Math.Max(icons.Count, layout.Slots.Count);
             _tiles = new Tile[Math.Min(slotCount, layout.Slots.Count)];
@@ -334,7 +331,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 var slot = layout.Slots[i];
                 var icon = i < icons.Count ? icons[i] : null;
-                _tiles[i] = CreateTile(slot, icon, tileFill, highlightBrush, highlightExtent);
+                _tiles[i] = CreateTile(slot, icon, tileFill);
                 _tiltX.Children.InsertAtTop(_tiles[i].Slot);
 
                 _tileTrails[i] = CreateTrail(
@@ -549,7 +546,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             // 4. Sunrise: the dome of light grows out of the logo.
             var dawnStart = ImpactMs - 40f;
-            var dawnCenter = new Vector2(DomeCenter.X, _layout.ApexY);
+            var dawnCenter = new Vector2(DomeCenter.X, _layout.ApexY + DomeBleed);
             Animate(_dome, "Opacity", Scalar(200f, dawnStart, (0f, 0f, null), (1f, 1f, null)));
             Animate(_domeBrush, "EllipseCenter", Vector2D(DomeMs, dawnStart, (0f, dawnCenter, null), (1f, DomeCenter, _easeOutExpo)));
             Animate(_domeBrush, "EllipseRadius", Vector2D(DomeMs, dawnStart, (0f, new Vector2(90f, 60f), null), (1f, DomeRadius, _easeOutExpo)));
@@ -757,7 +754,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         /// <summary>
-        /// Outlines the tile at <paramref name="index"/> in the logo colors (-1 for none).
+        /// Shows the subtle hover state on the tile at <paramref name="index"/> (-1 for none).
         /// </summary>
         public void SetHighlightedTile(int index)
         {
@@ -766,15 +763,15 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            if (_highlighted >= 0)
+            if (_highlighted >= 0 && _tiles[_highlighted].Highlight is { } previous)
             {
-                Animate(_tiles[_highlighted].Highlight, "Opacity", Scalar(260f, 0f, (1f, 0f, _easeOutCubic)));
+                Animate(previous, "Opacity", Scalar(260f, 0f, (1f, 0f, _easeOutCubic)));
             }
 
             _highlighted = index;
-            if (index >= 0)
+            if (index >= 0 && _tiles[index].Highlight is { } current)
             {
-                Animate(_tiles[index].Highlight, "Opacity", Scalar(140f, 0f, (1f, 1f, _easeOutCubic)));
+                Animate(current, "Opacity", Scalar(140f, 0f, (1f, 1f, _easeOutCubic)));
             }
         }
 
@@ -803,9 +800,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             SetColor(_starlightStops[0], WithAlpha(palette.Starlight, 0f), animate);
             SetColor(_starlightStops[1], palette.Starlight, animate);
 
-            for (var i = 0; i < _highlightStops.Length && i < palette.Highlight.Length; i++)
+            SetColor(_highlightFill, palette.HighlightFill, animate);
+            SetColor(_highlightStroke, palette.HighlightStroke, animate);
+            foreach (var tile in _tiles)
             {
-                SetColor(_highlightStops[i], palette.Highlight[i], animate);
+                if (tile.HighlightShape is { } shape)
+                {
+                    shape.StrokeThickness = palette.HighlightStrokeThickness;
+                }
             }
 
             var auraAlphas = new[] { 1f, 0.4f, 0f };
@@ -1060,10 +1062,27 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 gradient.ColorStops.Add(stop);
             }
 
-            return (gradient, stops);
+            var streak = Track(_compositor.CreateMaskBrush());
+            streak.Source = gradient;
+            streak.Mask = _trailMask;
+            return (streak, stops);
         }
 
-        private Tile CreateTile(WelcomeHeroSlot slot, LoadedImageSurface icon, CompositionBrush tileFill, CompositionBrush highlightBrush, float highlightExtent)
+        // A soft ellipse that feathers the sides of a streak and rounds off its ends, so it reads as a comet of light
+        // rather than a hard edged rectangle. Its focus leans towards the head, which keeps the head bright and round.
+        private CompositionBrush CreateTrailMask()
+        {
+            var mask = Track(_compositor.CreateRadialGradientBrush());
+            mask.EllipseCenter = new Vector2(0.5f, 0.5f);
+            mask.EllipseRadius = new Vector2(0.5f, 0.5f);
+            mask.GradientOriginOffset = new Vector2(0.3f, 0f);
+            mask.ColorStops.Add(Track(_compositor.CreateColorGradientStop(0f, Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF))));
+            mask.ColorStops.Add(Track(_compositor.CreateColorGradientStop(0.4f, Color.FromArgb(0xE6, 0xFF, 0xFF, 0xFF))));
+            mask.ColorStops.Add(Track(_compositor.CreateColorGradientStop(1f, Color.FromArgb(0x00, 0xFF, 0xFF, 0xFF))));
+            return mask;
+        }
+
+        private Tile CreateTile(WelcomeHeroSlot slot, LoadedImageSurface icon, CompositionBrush tileFill)
         {
             const float size = WelcomeHeroLayout.TileSize;
             var isGhost = icon is null;
@@ -1091,31 +1110,31 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             glass.Shapes.Add(glassShape);
             body.Children.InsertAtTop(glass);
 
-            var highlightGeometry = Track(_compositor.CreateRoundedRectangleGeometry());
-            highlightGeometry.Offset = new Vector2(1.5f, 1.5f);
-            highlightGeometry.Size = new Vector2(highlightExtent - 3f);
-            highlightGeometry.CornerRadius = new Vector2(WelcomeHeroLayout.TileCornerRadius + 2f);
-            var highlightShape = Track(_compositor.CreateSpriteShape(highlightGeometry));
-            highlightShape.StrokeBrush = highlightBrush;
-            highlightShape.StrokeThickness = 2f;
-            var highlight = Track(_compositor.CreateShapeVisual());
-            highlight.Size = new Vector2(highlightExtent);
-            highlight.Offset = new Vector3(-highlightExtent / 2f, -highlightExtent / 2f, 0f);
-            highlight.Opacity = 0f;
-            highlight.Shapes.Add(highlightShape);
-
-            if (!isGhost)
+            if (isGhost)
             {
-                const float iconSize = WelcomeHeroLayout.IconSize;
-                var iconVisual = Track(_compositor.CreateSpriteVisual());
-                iconVisual.Brush = CreateSurfaceBrush(icon);
-                iconVisual.Size = new Vector2(iconSize);
-                iconVisual.Offset = new Vector3(-iconSize / 2f, -iconSize / 2f, 0f);
-                body.Children.InsertAtTop(iconVisual);
-                body.Children.InsertAtTop(highlight);
+                return new Tile(slot, isGhost, slotVisual, floater, body, null, null);
             }
 
-            return new Tile(slot, isGhost, slotVisual, floater, body, highlight);
+            // Fluent-style hover: a slightly lighter fill and a neutral stroke on the tile edge, below the icon.
+            var highlightShape = Track(_compositor.CreateSpriteShape(glassGeometry));
+            highlightShape.FillBrush = _highlightFill;
+            highlightShape.StrokeBrush = _highlightStroke;
+            highlightShape.StrokeThickness = _palette.HighlightStrokeThickness;
+            var highlight = Track(_compositor.CreateShapeVisual());
+            highlight.Size = glass.Size;
+            highlight.Offset = glass.Offset;
+            highlight.Opacity = 0f;
+            highlight.Shapes.Add(highlightShape);
+            body.Children.InsertAtTop(highlight);
+
+            const float iconSize = WelcomeHeroLayout.IconSize;
+            var iconVisual = Track(_compositor.CreateSpriteVisual());
+            iconVisual.Brush = CreateSurfaceBrush(icon);
+            iconVisual.Size = new Vector2(iconSize);
+            iconVisual.Offset = new Vector3(-iconSize / 2f, -iconSize / 2f, 0f);
+            body.Children.InsertAtTop(iconVisual);
+
+            return new Tile(slot, isGhost, slotVisual, floater, body, highlight, highlightShape);
         }
 
         private Glow CreateGlow(Color color, float alpha, Vector2 home)
@@ -1270,7 +1289,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return resource;
         }
 
-        private sealed record Tile(WelcomeHeroSlot Layout, bool IsGhost, ContainerVisual Slot, ContainerVisual Floater, ContainerVisual Body, ShapeVisual Highlight);
+        private sealed record Tile(WelcomeHeroSlot Layout, bool IsGhost, ContainerVisual Slot, ContainerVisual Floater, ContainerVisual Body, ShapeVisual Highlight, CompositionSpriteShape HighlightShape);
 
         private sealed record Glow(ContainerVisual Drift, SpriteVisual Sprite, CompositionColorGradientStop[] Stops, Vector2 Home, Vector2 Origin);
 
