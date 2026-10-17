@@ -42,6 +42,7 @@ Describe 'UI test signing selection' {
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
+        'MouseWithoutBorders.UITests',
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
         'NewPlus.UITests',
@@ -76,6 +77,7 @@ Describe 'UI test signing selection' {
         'FileLocksmith.UITests.Extra',
         'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
+        'MouseWithoutBorders.UITests.Extra',
         'ScreenRuler.UITests.Next.Extra',
         'Workspaces.Editor.UITests',
         'ZoomIt.UITests.Extra' | ForEach-Object { @{ Module = $_ } }
@@ -141,5 +143,16 @@ Describe 'UI test signing selection' {
         $result.RequiresNewPlus | Should Be $true
         $result.RequiresAuthenticatedSettingsIpc | Should Be $true
         ($result.Packages -contains 'NewPlusPackage.msix') | Should Be $true
+    }
+
+    It 'keeps shared signing defaults while allowing an owned payload-specific certificate scope' {
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\signSparsePackages.ps1') -Raw
+        $source | Should Match "\[string\]\`$CertificateFriendlyName = 'PowerToys UI Test Signing'"
+        $source | Should Match '\$testCertificateFriendlyName = \$CertificateFriendlyName'
+        $mwb = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\MwbSandboxCi.Common.ps1') -Raw
+        $mwb | Should Match '-CertificateFriendlyName "PowerToys MWB UI Test \$RunId"'
+        $mwb | Should Match "'PowerToys.MouseWithoutBorders.exe'"
+        $mwb | Should Match "'PowerToys.Settings.exe'"
+        $mwb | Should Not Match '(?i)Export-PfxCertificate'
     }
 }

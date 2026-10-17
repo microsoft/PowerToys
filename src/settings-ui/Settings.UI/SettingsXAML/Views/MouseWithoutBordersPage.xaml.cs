@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -14,6 +15,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using StreamJsonRpc;
 using Windows.ApplicationModel.DataTransfer;
 using WinRT;
 
@@ -142,15 +144,37 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ICommand ConnectCommand => new AsyncCommand(Connect);
 
-        public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync);
+        public ICommand GenerateNewKeyCommand => new AsyncCommand(() => TryExecuteSettingsCommandAsync(ViewModel.SubmitNewKeyRequestAsync, SetSettingsSyncErrorVisibility));
 
         public ICommand CopyPCNameCommand => new RelayCommand(ViewModel.CopyMachineNameToClipboard);
 
-        public ICommand ReconnectCommand => new AsyncCommand(ViewModel.SubmitReconnectRequestAsync);
+        public ICommand ReconnectCommand => new AsyncCommand(() => TryExecuteSettingsCommandAsync(ViewModel.SubmitReconnectRequestAsync, SetSettingsSyncErrorVisibility));
 
         private void ShowConnectFields()
         {
             ViewModel.ConnectFieldsVisible = true;
+        }
+
+        internal static async Task<bool> TryExecuteSettingsCommandAsync(Func<Task> command, Action<bool> setErrorVisible, Action onSuccess = null)
+        {
+            setErrorVisible(false);
+            try
+            {
+                await command();
+            }
+            catch (Exception ex) when (ex is IOException or TimeoutException or ConnectionLostException or UnauthorizedAccessException or RemoteInvocationException)
+            {
+                setErrorVisible(true);
+                return false;
+            }
+
+            onSuccess?.Invoke();
+            return true;
+        }
+
+        private void SetSettingsSyncErrorVisibility(bool visible)
+        {
+            SettingsSyncErrorInfoBar.IsOpen = visible;
         }
 
         private async Task Connect()
@@ -160,10 +184,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 string pcName = ConnectPCNameTextBox.Text;
                 string securityKey = ConnectSecurityKeyTextBox.Text.Trim();
 
-                await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
-
-                ConnectPCNameTextBox.Text = string.Empty;
-                ConnectSecurityKeyTextBox.Text = string.Empty;
+                await TryExecuteSettingsCommandAsync(
+                    () => ViewModel.SubmitConnectionRequestAsync(pcName, securityKey),
+                    SetSettingsSyncErrorVisibility,
+                    () =>
+                    {
+                        ConnectPCNameTextBox.Text = string.Empty;
+                        ConnectSecurityKeyTextBox.Text = string.Empty;
+                    });
             }
         }
 

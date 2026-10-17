@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -12,12 +14,15 @@ using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using StreamJsonRpc;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests
 {
@@ -302,14 +307,21 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
         }
 
-        [TestMethod]
-        public void CustomRootTrustChainAcceptsIntermediateFromExtraStore()
+        [DataTestMethod]
+        [DataRow(1)]
+        [DataRow(7)]
+        public void CustomRootTrustChainAcceptsIntermediateFromExtraStore(int validityDays)
         {
             using var rootKey = RSA.Create(2048);
-            using var root = CreateRootCertificate(rootKey);
+            using var root = CreateRootCertificate(rootKey, validityDays);
             using var intermediateKey = RSA.Create(2048);
             using var intermediate = CreateIntermediateCertificate(root, intermediateKey);
             using var leaf = CreateCodeSigningLeafCertificate(intermediate);
+
+            Assert.AreEqual(root.NotBefore, intermediate.NotBefore);
+            Assert.AreEqual(root.NotAfter, intermediate.NotAfter);
+            Assert.AreEqual(intermediate.NotBefore, leaf.NotBefore);
+            Assert.AreEqual(intermediate.NotAfter, leaf.NotAfter);
 
             using var chainWithoutIntermediate = CreateCodeSigningChain(root);
             Assert.IsFalse(chainWithoutIntermediate.Build(leaf));
@@ -395,6 +407,282 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             stateType.GetField("Status")!.SetValue(state, Enum.ToObject(stateType.GetField("Status")!.FieldType, 9));
 
             Assert.AreEqual("""{"Name":"PC","Status":9}""", JsonConvert.SerializeObject(state));
+        }
+
+        [DataTestMethod]
+        [DataRow("GenerateNewKey")]
+        [DataRow("ConnectToMachine")]
+        [DataRow("Reconnect")]
+        public async Task StateChangingSettingsRequestsWaitForServerCompletion(string methodName)
+        {
+            var pair = await CreateConnectedPairAsync();
+            await using var server = pair.Server;
+            await using var client = pair.Client;
+            var target = new DelayedSettingsCommandTarget();
+            using var serverRpc = JsonRpc.Attach(server, target);
+            var helperType = typeof(MouseWithoutBordersViewModel).GetNestedType("SyncHelper", BindingFlags.NonPublic);
+            var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic);
+            using var helper = (IDisposable)Activator.CreateInstance(helperType!, new object[] { client })!;
+            var endpoint = helperType!.GetProperty("Endpoint")!.GetValue(helper);
+            try
+            {
+                var arguments = methodName == "ConnectToMachine" ? new object[] { "fixture-peer", "fixture-value" } : Array.Empty<object>();
+                var invocation = contract!.GetMethod(methodName)!.Invoke(endpoint, arguments);
+                Assert.IsInstanceOfType<Task>(invocation, "State-changing requests need an acknowledgement before their channel is disposed.");
+                var operation = (Task)invocation!;
+                await target.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.IsFalse(operation.IsCompleted, "Sending the request is not completion of the remote operation.");
+                target.Release.SetResult();
+                await operation.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            finally
+            {
+                target.Release.TrySetResult();
+            }
+        }
+
+        [TestMethod]
+        public async Task DisposingSettingsSyncHelperClosesItsPipe()
+        {
+            var helperType = typeof(MouseWithoutBordersViewModel).GetNestedType("SyncHelper", BindingFlags.NonPublic);
+            var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic);
+            for (var attempt = 0; attempt < 32; attempt++)
+            {
+                var pair = await CreateConnectedPairAsync();
+                await using var server = pair.Server;
+                await using var client = pair.Client;
+                var pipeHandle = client.SafePipeHandle;
+                using var serverRpc = JsonRpc.Attach(server, new SettingsCommandTarget());
+                using var helper = (IDisposable)Activator.CreateInstance(helperType!, new object[] { client })!;
+                var endpoint = helperType!.GetProperty("Endpoint")!.GetValue(helper);
+                var polling = (Task)contract!.GetMethod("RequestMachineSocketStateAsync")!.Invoke(endpoint, null)!;
+                await polling.WaitAsync(TimeSpan.FromSeconds(5));
+
+                helper.Dispose();
+
+                // Pending RPC reads can finish disposal asynchronously; do not race the pipe's property getter.
+                await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.IsTrue(pipeHandle.IsClosed, "The owned handle must close once pending pipe I/O has completed.");
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow("ConnectToMachine")]
+        [DataRow("GenerateNewKey")]
+        [DataRow("Reconnect")]
+        public async Task SettingsRequestsAfterPollingUseFreshVerifiedRpcConnections(string methodName)
+        {
+            const int attempts = 16;
+            var pipeName = UniquePipeName();
+            var target = new SettingsCommandTarget();
+            var expectedCalls = new List<string>();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            var serverTask = RunSettingsServerAsync(pipeName, target, attempts * 2, timeout.Token);
+            NamedPipeClientStream previousStream = null;
+            try
+            {
+                for (var attempt = 0; attempt < attempts; attempt++)
+                {
+                    foreach (var request in new[] { "RequestMachineSocketStateAsync", methodName })
+                    {
+                        using (var helper = await ConnectSettingsSyncHelperAsync(pipeName))
+                        {
+                            var stream = GetSettingsSyncHelperStream(helper);
+                            Assert.AreNotSame(previousStream, stream, "Every RPC helper must have its own verified pipe.");
+                            previousStream = stream;
+                            await InvokeSettingsSyncHelperAsync(helper, request).WaitAsync(TimeSpan.FromSeconds(5));
+                            expectedCalls.Add(request);
+                        }
+
+                        if (attempt == 0 && request == "RequestMachineSocketStateAsync")
+                        {
+                            await Task.Delay(100, timeout.Token);
+                        }
+                    }
+                }
+
+                await serverTask;
+                CollectionAssert.AreEqual(expectedCalls, target.Calls.ToArray());
+                if (methodName == "ConnectToMachine")
+                {
+                    Assert.AreEqual("fixture-peer", target.MachineName);
+                    Assert.AreEqual("fixture-value", target.SecurityKey);
+                }
+            }
+            finally
+            {
+                await StopSettingsServerAsync(timeout, serverTask);
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow("ConnectToMachine")]
+        [DataRow("GenerateNewKey")]
+        [DataRow("Reconnect")]
+        public async Task SettingsRequestDisconnectIsReportedWithoutReplayAndNextConnectionRecovers(string methodName)
+        {
+            var pipeName = UniquePipeName();
+            using var currentIdentity = WindowsIdentity.GetCurrent();
+            var target = new DelayedSettingsCommandTarget();
+            await using (var server = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!))
+            {
+                var waitTask = server.WaitForConnectionAsync();
+                using var helper = await ConnectSettingsSyncHelperAsync(pipeName);
+                await waitTask.WaitAsync(TimeSpan.FromSeconds(5));
+                using var serverRpc = JsonRpc.Attach(server, target);
+                try
+                {
+                    var operation = InvokeSettingsSyncHelperAsync(helper, methodName);
+                    var errorVisible = false;
+                    var successfulCompletions = 0;
+                    var handledOperation = MouseWithoutBordersPage.TryExecuteSettingsCommandAsync(
+                        () => operation,
+                        visible => errorVisible = visible,
+                        () => successfulCompletions++);
+                    await target.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                    serverRpc.Dispose();
+                    server.Dispose();
+
+                    await Assert.ThrowsExceptionAsync<ConnectionLostException>(() => operation.WaitAsync(TimeSpan.FromSeconds(5)));
+                    Assert.IsFalse(await handledOperation.WaitAsync(TimeSpan.FromSeconds(5)));
+                    Assert.IsTrue(errorVisible);
+                    Assert.AreEqual(0, successfulCompletions);
+                    Assert.AreEqual(1, target.InvocationCount, "State-changing requests must not be retried after an ambiguous disconnect.");
+                }
+                finally
+                {
+                    target.Release.TrySetResult();
+                }
+
+                await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+
+            var recoveredTarget = new SettingsCommandTarget();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var serverTask = RunSettingsServerAsync(pipeName, recoveredTarget, 2, timeout.Token);
+            try
+            {
+                foreach (var request in new[] { "RequestMachineSocketStateAsync", methodName })
+                {
+                    using var helper = await ConnectSettingsSyncHelperAsync(pipeName);
+                    await InvokeSettingsSyncHelperAsync(helper, request).WaitAsync(TimeSpan.FromSeconds(5));
+                }
+
+                await serverTask;
+                CollectionAssert.AreEqual(new[] { "RequestMachineSocketStateAsync", methodName }, recoveredTarget.Calls.ToArray());
+                Assert.AreEqual(1, target.InvocationCount);
+            }
+            finally
+            {
+                await StopSettingsServerAsync(timeout, serverTask);
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow("image", "wrong-image")]
+        [DataRow("user", "wrong-user")]
+        [DataRow("session", "wrong-session")]
+        public async Task SettingsSyncFactoryRejectsUnexpectedPeerAndClosesCandidate(string identityMismatch, string rejectionReason)
+        {
+            var pipeName = UniquePipeName();
+            using var currentIdentity = WindowsIdentity.GetCurrent();
+            await using var server = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!);
+            var waitTask = server.WaitForConnectionAsync();
+            var expectedImage = identityMismatch == "image" ? "unexpected-settings-server.exe" : Path.GetFileName(GetCurrentExecutablePath());
+            var expectedUser = identityMismatch == "user" ? new SecurityIdentifier(WellKnownSidType.AnonymousSid, null).Value : GetCurrentUserSid();
+            var expectedSession = Process.GetCurrentProcess().SessionId + (identityMismatch == "session" ? 1 : 0);
+            var connectionTask = ConnectSettingsSyncHelperAsync(pipeName, expectedImage, expectedUser, expectedSession);
+            await waitTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+            var exception = await Assert.ThrowsExceptionAsync<UnauthorizedAccessException>(() => connectionTask);
+
+            StringAssert.Contains(exception.Message, rejectionReason);
+            var bytesRead = await server.ReadAsync(new byte[1]).AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.AreEqual(0, bytesRead, "Rejected candidate pipes must be closed.");
+        }
+
+        [TestMethod]
+        public async Task ShutdownNotificationIsDeliveredBeforeSettingsHelperDisposal()
+        {
+            var pipeName = UniquePipeName();
+            var target = new SettingsCommandTarget();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var serverTask = RunSettingsServerAsync(pipeName, target, 1, timeout.Token, target.ShutdownReceived.Task);
+            try
+            {
+                using (var helper = await ConnectSettingsSyncHelperAsync(pipeName))
+                {
+                    var shutdown = (Task)helper.GetType().GetMethod("ShutdownAsync")!.Invoke(helper, null)!;
+                    await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
+                }
+
+                await serverTask;
+                Assert.AreEqual(1, target.Calls.Count);
+                Assert.IsTrue(target.Calls.TryPeek(out var methodName));
+                Assert.AreEqual("Shutdown", methodName);
+            }
+            finally
+            {
+                await StopSettingsServerAsync(timeout, serverTask);
+            }
+        }
+
+        private static async Task StopSettingsServerAsync(CancellationTokenSource cancellation, Task serverTask)
+        {
+            await cancellation.CancelAsync();
+            try
+            {
+                await serverTask;
+            }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+            {
+            }
+        }
+
+        private static async Task RunSettingsServerAsync(string pipeName, object target, int connections, CancellationToken cancellationToken, Task notificationDelivery = null)
+        {
+            using var currentIdentity = WindowsIdentity.GetCurrent();
+            for (var connection = 0; connection < connections; connection++)
+            {
+                await using var server = RestrictedNamedPipeServer.Create(pipeName, currentIdentity.User!);
+                await server.WaitForConnectionAsync(cancellationToken);
+                using var serverRpc = JsonRpc.Attach(server, target);
+                await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+                if (notificationDelivery != null)
+                {
+                    // Pipe EOF does not mean the queued notification handler has completed.
+                    await notificationDelivery.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+                }
+            }
+        }
+
+        private static async Task<IDisposable> ConnectSettingsSyncHelperAsync(string pipeName, string expectedImage = null, string expectedUser = null, int? expectedSession = null)
+        {
+            var helperType = typeof(MouseWithoutBordersViewModel).GetNestedType("SyncHelper", BindingFlags.NonPublic);
+            var connection = (Task)helperType!.GetMethod("ConnectAsync")!.Invoke(
+                null,
+                new object[]
+                {
+                    pipeName,
+                    expectedImage ?? Path.GetFileName(GetCurrentExecutablePath()),
+                    expectedUser ?? GetCurrentUserSid(),
+                    expectedSession ?? Process.GetCurrentProcess().SessionId,
+                })!;
+            await connection.WaitAsync(TimeSpan.FromSeconds(5));
+            return (IDisposable)connection.GetType().GetProperty("Result")!.GetValue(connection)!;
+        }
+
+        private static NamedPipeClientStream GetSettingsSyncHelperStream(IDisposable helper)
+        {
+            return (NamedPipeClientStream)helper.GetType().GetProperty("Stream")!.GetValue(helper)!;
+        }
+
+        private static Task InvokeSettingsSyncHelperAsync(IDisposable helper, string methodName)
+        {
+            var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic);
+            var endpoint = helper.GetType().GetProperty("Endpoint")!.GetValue(helper);
+            var arguments = methodName == "ConnectToMachine" ? new object[] { "fixture-peer", "fixture-value" } : Array.Empty<object>();
+            return (Task)contract!.GetMethod(methodName)!.Invoke(endpoint, arguments)!;
         }
 
         private static async Task<(NamedPipeServerStream Server, NamedPipeClientStream Client)> CreateConnectedPairAsync(string pipeName = null)
@@ -525,6 +813,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, true));
             request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
+            // Use the issuer's encoded interval, not a later clock sample that can exceed its expiry.
             using var intermediate = request.Create(root, root.NotBefore.ToUniversalTime(), root.NotAfter.ToUniversalTime(), RandomNumberGenerator.GetBytes(16));
             return intermediate.CopyWithPrivateKey(intermediateKey);
         }
@@ -560,6 +849,73 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, true));
             request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
             return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(7));
+        }
+
+        private sealed class DelayedSettingsCommandTarget
+        {
+            private int _invocationCount;
+
+            public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public int InvocationCount => _invocationCount;
+
+            public Task GenerateNewKey() => WaitForRelease();
+
+            public Task ConnectToMachine(string machineName, string securityKey) => WaitForRelease();
+
+            public Task Reconnect() => WaitForRelease();
+
+            private Task WaitForRelease()
+            {
+                Interlocked.Increment(ref _invocationCount);
+                Entered.TrySetResult();
+                return Release.Task;
+            }
+        }
+
+        private sealed class SettingsCommandTarget
+        {
+            public ConcurrentQueue<string> Calls { get; } = new();
+
+            public TaskCompletionSource ShutdownReceived { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public string MachineName { get; private set; }
+
+            public string SecurityKey { get; private set; }
+
+            public Task<object[]> RequestMachineSocketStateAsync()
+            {
+                Calls.Enqueue(nameof(RequestMachineSocketStateAsync));
+                return Task.FromResult(Array.Empty<object>());
+            }
+
+            public Task ConnectToMachine(string machineName, string securityKey)
+            {
+                MachineName = machineName;
+                SecurityKey = securityKey;
+                Calls.Enqueue(nameof(ConnectToMachine));
+                return Task.CompletedTask;
+            }
+
+            public Task GenerateNewKey()
+            {
+                Calls.Enqueue(nameof(GenerateNewKey));
+                return Task.CompletedTask;
+            }
+
+            public Task Reconnect()
+            {
+                Calls.Enqueue(nameof(Reconnect));
+                return Task.CompletedTask;
+            }
+
+            public void Shutdown()
+            {
+                Calls.Enqueue(nameof(Shutdown));
+                ShutdownReceived.TrySetResult();
+            }
         }
     }
 }
