@@ -16,6 +16,7 @@
 #include <thread>
 #include <future>
 #include <chrono>
+#include <sstream>
 
 #include <winrt/Windows.UI.Notifications.h>
 #include <winrt/Windows.Data.Xml.Dom.h>
@@ -788,36 +789,54 @@ namespace KeyboardEventHandlers
                     {
                         auto shortcut = std::get<Shortcut>(it->second.targetShortcut);
 
-                        auto uri = shortcut.uriToOpen;
-                        auto newUri = uri;
-
-                        if (!PathIsURL(uri.c_str()))
+                        // Split uriToOpen by newlines to support multiple URLs
+                        std::vector<std::wstring> uris;
+                        std::wstringstream ss(shortcut.uriToOpen);
+                        std::wstring line;
+                        while (std::getline(ss, line))
                         {
-                            WCHAR url[1024];
-                            DWORD bufferSize = 1024;
-
-                            if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
+                            // Trim leading/trailing whitespace and carriage returns
+                            while (!line.empty() && (line.back() == L'\r' || line.back() == L' ' || line.back() == L'\t'))
                             {
-                                newUri = url;
-                                Logger::trace(L"ChordKeyboardHandler:ConvertPathToURI from {} to {}", uri, url);
+                                line.pop_back();
                             }
-                            else
+                            while (!line.empty() && (line.front() == L' ' || line.front() == L'\t'))
                             {
-                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
-                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
-                                toast(L"Error", L"Could not understand the Path or URI");
-                                return 1;
+                                line.erase(line.begin());
+                            }
+                            if (!line.empty())
+                            {
+                                uris.push_back(line);
                             }
                         }
 
-                        auto threadFunction = [newUri]() {
-                            HINSTANCE result = ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
-
-                            if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
+                        auto threadFunction = [uris]() {
+                            for (const auto& uri : uris)
                             {
-                                // need access to text resources, maybe "convert-resx-to-rc.ps1" is not working to get
-                                // text from KeyboardManagerEditor to here in KeyboardManagerEngineLibrary land?
-                                toast(L"Error", L"Could not understand the Path or URI");
+                                auto resolvedUri = uri;
+
+                                if (!PathIsURL(uri.c_str()))
+                                {
+                                    WCHAR url[1024];
+                                    DWORD bufferSize = 1024;
+
+                                    if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
+                                    {
+                                        resolvedUri = url;
+                                        Logger::trace(L"ChordKeyboardHandler:ConvertPathToURI from {} to {}", uri, url);
+                                    }
+                                    else
+                                    {
+                                        toast(L"Error", L"Could not understand the Path or URI");
+                                        continue;
+                                    }
+                                }
+
+                                HINSTANCE result = ShellExecute(NULL, L"open", resolvedUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                                if (result == reinterpret_cast<HINSTANCE>(HINSTANCE_ERROR))
+                                {
+                                    toast(L"Error", L"Could not understand the Path or URI");
+                                }
                             }
                         };
 
