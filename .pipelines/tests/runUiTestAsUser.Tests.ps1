@@ -536,6 +536,7 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 
 Describe 'UI-test pipeline non-elevated dispatch' {
     It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
+        @{ Suite = 'AdvancedPaste.UITests.Next' }
         @{ Suite = 'CropAndLock.UITests' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
@@ -580,6 +581,7 @@ Describe 'UI-test pipeline non-elevated dispatch' {
     }
 
     It 'scopes Workspaces authenticated Settings IPC signing without changing other families' -TestCases @(
+        @{ Modules = @('AdvancedPaste.UITests.Next'); AllModules = $false; Expected = $true }
         @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
         @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
         @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }
@@ -591,12 +593,12 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         param($Modules, $AllModules, $Expected)
 
         $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $start = $template.IndexOf('      $newPlusModules = @(')
-        $end = $template.IndexOf('      $requiredPackages = @()', $start)
-        ($start -ge 0 -and $end -gt $start) | Should Be $true
+        $start = $template.IndexOf('      $selectedModules =')
+        $end = $template.IndexOf('      $requiredPackages =', $start)
+        $start | Should BeGreaterThan -1
+        $end | Should BeGreaterThan $start
         $selection = $template.Substring($start, $end - $start).Replace('$(TestPlatform)', 'x64Win11')
-        $selectedModules = $Modules
-        $allModules = $AllModules
+        $modulesRaw = if ($AllModules) { '' } else { $Modules -join ';' }
         . ([scriptblock]::Create($selection))
 
         $requiresAuthenticatedSettingsIpc | Should Be $Expected

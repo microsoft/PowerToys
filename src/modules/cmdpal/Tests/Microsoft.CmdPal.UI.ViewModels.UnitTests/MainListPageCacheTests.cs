@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -141,11 +142,14 @@ public sealed class MainListPageCacheTests
             providerContext.ContinueRead();
             first.Cleanup();
             second.Cleanup();
+            GC.KeepAlive(pageContext);
         }
     }
 
     [TestMethod]
-    public void InvalidatedDefaultViewRebuild_IsRetriedByNextGetItemsCall()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void InvalidatedDefaultViewRebuild_IsRetriedByNextGetItemsCall(bool deliverPendingInitializationUpdates)
     {
         var settings = new SettingsModel();
         var settingsService = new Mock<ISettingsService>();
@@ -184,10 +188,23 @@ public sealed class MainListPageCacheTests
             {
                 settings = settings.TryPinCommand(ProviderId, command.Id);
                 commandManager.RebuildPinnedCache();
+                if (deliverPendingInitializationUpdates)
+                {
+                    command.ItemViewModel.ApplyPendingUpdates();
+                }
             });
 
-            _ = page.GetItems();
+            var invalidatedItems = page.GetItems();
             Assert.AreEqual(readsBeforeRebuild + 1, providerContext.ReadCount);
+            Assert.AreEqual(2, invalidatedItems.Length);
+            Assert.AreEqual(Resources.home_sections_commands_title, invalidatedItems[0].Title);
+            Assert.AreSame(command, invalidatedItems[1]);
+
+            var retriedItems = page.GetItems();
+            Assert.AreEqual(readsBeforeRebuild + 2, providerContext.ReadCount);
+            Assert.AreEqual(2, retriedItems.Length);
+            Assert.AreEqual(Resources.home_sections_pinned_title, retriedItems[0].Title);
+            Assert.AreSame(command, retriedItems[1]);
 
             _ = page.GetItems();
             Assert.AreEqual(readsBeforeRebuild + 2, providerContext.ReadCount);
@@ -195,6 +212,7 @@ public sealed class MainListPageCacheTests
         finally
         {
             command.Cleanup();
+            GC.KeepAlive(pageContext);
         }
     }
 
@@ -206,7 +224,10 @@ public sealed class MainListPageCacheTests
         ICommandProviderContext providerContext)
     {
         var model = new CommandItem(new NoOpCommand { Id = id, Name = title }) { Title = title };
-        var item = new CommandItemViewModel(new(model), new(pageContext), DefaultContextMenuFactory.Instance);
+        var item = new CommandItemViewModel(new(model), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
+
+        // Only initialize identity and title; full initialization queues provider reads that race the cache tests.
+        item.FastInitializeProperties();
         var topLevel = new TopLevelViewModel(
             item,
             TopLevelType.Normal,
@@ -216,7 +237,6 @@ public sealed class MainListPageCacheTests
             services,
             model,
             DefaultContextMenuFactory.Instance);
-        topLevel.InitializeProperties();
         return topLevel;
     }
 }

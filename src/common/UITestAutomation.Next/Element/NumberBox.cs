@@ -17,9 +17,12 @@ public class NumberBox : Element
     {
         EnsureBound();
         WinappCli.InvokeAssertSuccess(
-            "ui", "set-value", Selector,
+            "ui",
+            "set-value",
+            Selector,
             value.ToString(CultureInfo.InvariantCulture),
-            Owner!.TargetFlag, Owner!.TargetValue);
+            Owner!.TargetFlag,
+            Owner!.TargetValue);
         return this;
     }
 }

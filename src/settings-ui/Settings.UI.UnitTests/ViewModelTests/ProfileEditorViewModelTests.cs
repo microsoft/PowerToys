@@ -106,7 +106,7 @@ namespace ViewModelTests
                 }
             };
 
-            monitor.VcpCodesFormatted = CreateColorCapabilities("Renamed preset");
+            monitor.ReplaceVcpCodesFormatted(CreateColorCapabilities("Renamed preset"));
 
             Assert.IsTrue(presetChanges > 0);
             Assert.AreEqual((int?)0x08, item.ColorTemperature);
@@ -621,7 +621,7 @@ namespace ViewModelTests
                     monitor.SupportsColorTemperature = true;
                     break;
                 case "MissingCapabilities":
-                    monitor.VcpCodesFormatted = CreateColorCapabilities();
+                    monitor.ReplaceVcpCodesFormatted(CreateColorCapabilities());
                     break;
             }
 
@@ -673,7 +673,7 @@ namespace ViewModelTests
             item.PropertyChanged += (_, _) => itemChanges++;
             viewModel.PropertyChanged += (_, _) => editorChanges++;
 
-            monitor.VcpCodesFormatted = CreateColorCapabilities("Renamed preset");
+            monitor.ReplaceVcpCodesFormatted(CreateColorCapabilities("Renamed preset"));
             monitor.SupportsContrast = true;
             monitor.SupportsVolume = true;
             monitor.SupportsColorTemperature = false;
@@ -709,7 +709,7 @@ namespace ViewModelTests
                     monitor.SupportsColorTemperature = false;
                     break;
                 case "MissingCapabilities":
-                    monitor.VcpCodesFormatted = new List<VcpCodeDisplayInfo>();
+                    monitor.ReplaceVcpCodesFormatted([]);
                     break;
                 default:
                     Assert.Fail($"Unknown unavailable reason: {reason}");

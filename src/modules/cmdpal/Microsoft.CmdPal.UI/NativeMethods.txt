@@ -1,4 +1,11 @@
 GetPhysicallyInstalledSystemMemory
+SIIGBF
+BITMAP
+GetObject
+GetDIBits
+GetDC
+ReleaseDC
+DeleteObject
 GlobalMemoryStatusEx
 GetSystemInfo
 GetActiveWindow
@@ -30,6 +37,17 @@ WM_HOTKEY
 WM_NCLBUTTONDBLCLK
 SetWindowRgn
 CreateRectRgn
+GetDC
+ReleaseDC
+CreateCompatibleDC
+DeleteDC
+CreateCompatibleBitmap
+SelectObject
+DeleteObject
+StretchBlt
+SetStretchBltMode
+SetBrushOrgEx
+GetDIBits
 
 Shell_NotifyIcon
 LoadIcon
@@ -62,6 +80,11 @@ SetWindowsHookEx
 UnhookWindowsHookEx
 CallNextHookEx
 GetModuleHandle
+GetAsyncKeyState
+KBDLLHOOKSTRUCT
+SendInput
+WM_KEYDOWN
+WM_SYSKEYDOWN
 
 GetWindowLong
 SetWindowLong
@@ -110,6 +133,7 @@ WM_DISPLAYCHANGE
 WM_NCACTIVATE
 WM_SYSCOMMAND
 WM_SETTINGCHANGE
+WM_SETFOCUS
 WM_WINDOWPOSCHANGING
 WM_SHOWWINDOW
 WM_SIZE

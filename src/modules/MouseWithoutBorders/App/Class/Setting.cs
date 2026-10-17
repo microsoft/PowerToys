@@ -81,65 +81,12 @@ namespace MouseWithoutBorders.Class
                 {
                     PauseInstantSaving = true;
 
-                    var last_properties = _properties;
-
-                    _settings = settings;
-
-                    _properties = settings.Properties;
-
-                    // Keep track of the need to resend the machine matrix.
-                    bool shouldSendMachineMatrix = false;
-
-                    // Keep track of the need to save into the settings file.
-                    bool shouldSaveNewSettingsValues = false;
-
-                    if (last_properties != null)
-                    {
-                        // Same as in CheckBoxCircle_CheckedChanged
-                        if (last_properties.WrapMouse != _settings.Properties.WrapMouse)
-                        {
-                            shouldSendMachineMatrix = true;
-                        }
-
-                        // Same as CheckBoxDrawMouse_CheckedChanged
-                        if (last_properties.DrawMouseCursor != _settings.Properties.DrawMouseCursor && !_settings.Properties.DrawMouseCursor)
-                        {
-                            CustomCursor.ShowFakeMouseCursor(int.MinValue, int.MinValue);
-                        }
-
-                        if (!Enumerable.SequenceEqual(last_properties.MachineMatrixString, _settings.Properties.MachineMatrixString))
-                        {
-                            _properties.MachineMatrixString = _settings.Properties.MachineMatrixString;
-                            MachineStuff.MachineMatrix = null; // Forces read next time it's needed.
-                            shouldSendMachineMatrix = true;
-                        }
-
-                        var shouldReopenSockets = false;
-
-                        if (Encryption.MyKey != _properties.SecurityKey.Value)
-                        {
-                            Encryption.MyKey = _properties.SecurityKey.Value;
-                            shouldReopenSockets = true;
-                        }
-
-                        if (shouldReopenSockets)
-                        {
-                            SocketStuff.InvalidKeyFound = false;
-                            InitAndCleanup.ReopenSocketDueToReadError = true;
-                            Common.ReopenSockets(true);
-                        }
-
-                        if (shouldSendMachineMatrix)
-                        {
-                            MachineStuff.SendMachineMatrix();
-                            shouldSaveNewSettingsValues = true;
-                        }
-
-                        if (shouldSaveNewSettingsValues)
-                        {
-                            SaveSettings();
-                        }
-                    }
+                    ApplyLoadedSettings(
+                        settings,
+                        () => CustomCursor.ShowFakeMouseCursor(int.MinValue, int.MinValue),
+                        () => MachineStuff.MachineMatrix = null,
+                        MachineStuff.SendMachineMatrix,
+                        SaveSettings);
                 }
             }
             catch (IOException ex)
@@ -148,6 +95,77 @@ namespace MouseWithoutBorders.Class
             }
 
             PauseInstantSaving = false;
+        }
+
+        // Exercise the reload ordering with substitute cursor/cache/network/save effects in tests.
+        // Production supplies the real effects above; adoption and comparison stay in this path.
+        internal void ApplyLoadedSettings(
+            MouseWithoutBordersSettings settings,
+            Action hideFakeMouseCursor,
+            Action invalidateMachineMatrix,
+            Action sendMachineMatrix,
+            Action saveSettings)
+        {
+            var last_properties = _properties;
+
+            _settings = settings;
+            _properties = settings.Properties;
+
+            // Keep track of the need to resend the machine matrix.
+            bool shouldSendMachineMatrix = false;
+
+            // Keep track of the need to save into the settings file.
+            bool shouldSaveNewSettingsValues = false;
+
+            if (last_properties != null)
+            {
+                // Same as in CheckBoxCircle_CheckedChanged
+                if (last_properties.WrapMouse != _settings.Properties.WrapMouse)
+                {
+                    shouldSendMachineMatrix = true;
+                }
+
+                // Same as CheckBoxDrawMouse_CheckedChanged
+                if (last_properties.DrawMouseCursor != _settings.Properties.DrawMouseCursor && !_settings.Properties.DrawMouseCursor)
+                {
+                    hideFakeMouseCursor();
+                }
+
+                // The cursor path reads DrawMouse under _loadingSettingsLock. A writer may
+                // finish replacing last_properties' matrix during that wait, so compare here,
+                // not when adopting the loaded properties above.
+                if (!Enumerable.SequenceEqual(last_properties.MachineMatrixString, _settings.Properties.MachineMatrixString))
+                {
+                    invalidateMachineMatrix(); // Forces read next time it's needed.
+                    shouldSendMachineMatrix = true;
+                }
+
+                var shouldReopenSockets = false;
+
+                if (Encryption.MyKey != _properties.SecurityKey.Value)
+                {
+                    Encryption.MyKey = _properties.SecurityKey.Value;
+                    shouldReopenSockets = true;
+                }
+
+                if (shouldReopenSockets)
+                {
+                    SocketStuff.InvalidKeyFound = false;
+                    InitAndCleanup.ReopenSocketDueToReadError = true;
+                    Common.ReopenSockets(true);
+                }
+
+                if (shouldSendMachineMatrix)
+                {
+                    sendMachineMatrix();
+                    shouldSaveNewSettingsValues = true;
+                }
+
+                if (shouldSaveNewSettingsValues)
+                {
+                    saveSettings();
+                }
+            }
         }
 
         public void SaveSettings()
@@ -230,6 +248,14 @@ namespace MouseWithoutBorders.Class
             UpdateSettingsFromJson();
         }
 
+        // Initialize the same settings state without starting a file watcher or network work.
+        internal Settings(SettingsUtils settingsUtils, MouseWithoutBordersSettings settings)
+        {
+            _settingsUtils = settingsUtils;
+            _settings = settings;
+            _properties = settings.Properties;
+        }
+
         internal string Username { get; set; }
 
         internal bool IsMyKeyRandom { get; set; }
@@ -244,15 +270,20 @@ namespace MouseWithoutBorders.Class
                 }
             }
 
-            set
+            set => SetMachineMatrix(value.Split(","));
+        }
+
+        internal void SetMachineMatrix(IEnumerable<string> machineNames)
+        {
+            lock (_loadingSettingsLock)
             {
-                lock (_loadingSettingsLock)
+                // Capture one properties instance and replace its list in one assignment.
+                // Reload adoption is intentionally not under this lock: MachineStuff takes
+                // McMatrixLock before this lock, so reversing that order could deadlock.
+                _properties.ReplaceMachineMatrixString(machineNames);
+                if (!PauseInstantSaving)
                 {
-                    _properties.MachineMatrixString = new List<string>(value.Split(","));
-                    if (!PauseInstantSaving)
-                    {
-                        SaveSettings();
-                    }
+                    SaveSettings();
                 }
             }
         }
