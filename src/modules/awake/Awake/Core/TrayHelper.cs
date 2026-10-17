@@ -352,6 +352,24 @@ namespace Awake.Core
                                 break;
                             }
 
+                        case (uint)TrayCommands.TC_MODE_EXPIRABLE:
+                            {
+                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+
+                                DateTimeOffset suggestion = settings.Properties.ExpirationDateTime > DateTimeOffset.Now
+                                    ? settings.Properties.ExpirationDateTime
+                                    : DateTimeOffset.Now.AddHours(1);
+
+                                if (ExpirationDialog.TryPick(hWnd, suggestion, out DateTimeOffset expireAt))
+                                {
+                                    // The display setting may have changed while the dialog was open.
+                                    settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                                    Manager.SetExpirableKeepAwake(expireAt, keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                }
+
+                                break;
+                            }
+
                         default:
                             {
                                 // Custom tray time commands start at TC_TIME and increment by 1 for each entry.
@@ -516,7 +534,7 @@ namespace Awake.Core
 
             InsertMenuItem(0, TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF, mode == AwakeMode.PASSIVE);
             InsertMenuItem(0, TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY, mode == AwakeMode.INDEFINITE);
-            InsertMenuItem(0, TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION, mode == AwakeMode.EXPIRABLE, true);
+            InsertMenuItem(0, TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION, mode == AwakeMode.EXPIRABLE);
         }
     }
 }
