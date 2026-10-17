@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include <common/utils/file_change_stamp.h>
 #include <common/utils/gpo.h>
 
 class FileLocksmithSettings
@@ -48,7 +49,7 @@ private:
     std::wstring generalJsonFilePath;
     std::wstring jsonFilePath;
     FILETIME lastLoadedTime{};
-    FILETIME lastLoadedGeneralSettingsTime{};
+    std::optional<file_change_stamp::stamp> lastLoadedGeneralSettingsStamp;
 };
 
 FileLocksmithSettings& FileLocksmithSettingsInstance();

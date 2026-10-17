@@ -2,6 +2,7 @@
 
 #include <common/utils/json.h>
 #include <common/utils/gpo.h>
+#include <common/utils/file_change_stamp.h>
 
 class CSettings
 {
@@ -120,7 +121,7 @@ private:
     std::wstring moduleJsonFilePath;
     std::wstring UIFlagsFilePath;
     FILETIME lastLoadedTime{};
-    FILETIME lastLoadedGeneralSettingsTime{};
+    std::optional<file_change_stamp::stamp> lastLoadedGeneralSettingsStamp;
 };
 
 CSettings& CSettingsInstance();

@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         DefaultIgnoreCondition = JsonIgnoreCondition.Never,
         IncludeFields = true)]
     [JsonSerializable(typeof(BasePTSettingsTest))]
+    [JsonSerializable(typeof(CommonLibTest.SettingsRepositoryTest.WatchedSettings))]
     public partial class TestSettingsSerializationContext : JsonSerializerContext
     {
     }

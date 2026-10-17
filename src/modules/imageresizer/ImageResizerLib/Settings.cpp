@@ -84,13 +84,9 @@ void CSettings::Load()
 
 void CSettings::RefreshEnabledState()
 {
-    // Load json settings from data file if it is modified in the meantime.
-    FILETIME lastModifiedTime{};
-    if (!(LastModifiedTime(generalJsonFilePath, &lastModifiedTime) &&
-          CompareFileTime(&lastModifiedTime, &lastLoadedGeneralSettingsTime) == 1))
+    const auto currentStamp = file_change_stamp::from_file(generalJsonFilePath);
+    if (!file_change_stamp::has_changed(lastLoadedGeneralSettingsStamp, currentStamp))
         return;
-
-    lastLoadedGeneralSettingsTime = lastModifiedTime;
 
     auto json = json::from_file(generalJsonFilePath);
     if (!json)
@@ -102,6 +98,8 @@ void CSettings::RefreshEnabledState()
         json::JsonObject modulesEnabledState;
         json::get(jsonSettings, c_enabled, modulesEnabledState, json::JsonObject{});
         json::get(modulesEnabledState, c_ImageResizer, settings.enabled, true);
+        // Retry a temporarily unreadable replacement on the next query.
+        lastLoadedGeneralSettingsStamp = currentStamp;
     }
     catch (const winrt::hresult_error&)
     {
