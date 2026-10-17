@@ -73,6 +73,13 @@ namespace PowerLauncher.Helper
         [DllImport("shell32.dll")]
         public static extern int SHQueryUserNotificationState(out UserNotificationState state);
 
+        [DllImport("winmm.dll", CharSet = CharSet.Unicode)]
+        internal static extern bool PlaySound(byte[] pszSound, IntPtr hModule, uint dwFlags);
+
+        internal const uint SndAsync = 0x00000001;
+        internal const uint SndNoDefault = 0x00000002;
+        internal const uint SndMemory = 0x00000004;
+
         public static string[] CommandLineToArgvW(string cmdLine)
         {
             IntPtr argv = IntPtr.Zero;
