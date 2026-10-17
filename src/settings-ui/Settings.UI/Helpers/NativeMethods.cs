@@ -23,6 +23,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         [DllImport("user32.dll")]
         internal static extern IntPtr GetActiveWindow();
 
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        internal static extern int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
+
         [DllImport("user32.dll")]
         internal static extern bool SetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 

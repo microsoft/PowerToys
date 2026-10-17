@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 using ControlzEx.Theming;
 
-namespace Common.UI
+namespace FancyZonesEditor.Utils
 {
     public class CustomLibraryThemeProvider : LibraryThemeProvider
     {

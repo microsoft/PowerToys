@@ -5,7 +5,7 @@
 using System;
 using System.IO;
 
-using Common.UI;
+using ManagedCommon;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -16,7 +16,7 @@ namespace Peek.FilePreviewer.Previewers
         /// </summary>
         public static string PreviewTempFile(string fileText, string filePath, string tempFolder)
         {
-            string theme = ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
+            string theme = ThemeHelpers.GetWindowsBaseColor().ToLowerInvariant();
             string markdownHTML = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, theme, filePath, ImageBlockedCallback);
 
             string filename = tempFolder + "\\" + Guid.NewGuid().ToString() + ".html";
