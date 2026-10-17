@@ -93,7 +93,7 @@ TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
     std::wstring _input_pipe_name,
     std::wstring _output_pipe_name,
     callback_function p_func) :
-    impl(new TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl(
+    impl(std::make_unique<TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl>(
         _input_pipe_name,
         _output_pipe_name,
         p_func))
@@ -103,7 +103,6 @@ TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
 TwoWayPipeMessageIPC::~TwoWayPipeMessageIPC()
 {
     impl->end();
-    delete impl;
 }
 
 void TwoWayPipeMessageIPC::send(std::wstring msg)
