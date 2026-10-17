@@ -13,5 +13,7 @@ namespace Peek.FilePreviewer.Previewers.Interfaces
         public bool IsDevFilePreview { get; }
 
         public bool CustomContextMenu { get; }
+
+        public bool AllowExternalImages { get; }
     }
 }
