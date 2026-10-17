@@ -217,6 +217,11 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             var normalizedQuery = NormalizeString(query);
+            if (string.IsNullOrWhiteSpace(normalizedQuery))
+            {
+                return [];
+            }
+
             var bag = new ConcurrentBag<(SettingEntry Hit, double Score)>();
             var po = new ParallelOptions
             {
@@ -309,7 +314,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             return (headerNorm, descNorm);
         }
 
-        private static string NormalizeString(string input)
+        internal static string NormalizeString(string input)
         {
             if (string.IsNullOrEmpty(input))
             {
