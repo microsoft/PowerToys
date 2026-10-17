@@ -13,9 +13,18 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 /// <summary>Adapts the global keyboard hook to Win32 input and message-loop APIs.</summary>
 /// <remarks>Periodic renewal is a failsafe because Windows does not report silent hook removal.</remarks>
-/// <param name="renewalIntervalMilliseconds">Milliseconds between renewal attempts; defaults to 60 seconds.</param>
-internal sealed class GlobalKeyboardHook(uint renewalIntervalMilliseconds = 60_000) : IGlobalKeyboardHook
+internal sealed class GlobalKeyboardHook : IGlobalKeyboardHook
 {
+    private readonly uint _renewalIntervalMilliseconds;
+
+    /// <summary>Initializes a new instance of the <see cref="GlobalKeyboardHook"/> class.</summary>
+    /// <param name="renewalIntervalMilliseconds">Milliseconds between renewal attempts; defaults to 60 seconds.</param>
+    public GlobalKeyboardHook(uint renewalIntervalMilliseconds = 60_000)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(renewalIntervalMilliseconds);
+        _renewalIntervalMilliseconds = renewalIntervalMilliseconds;
+    }
+
     /// <inheritdoc/>
     public IDisposable Install(HOOKPROC callback)
     {
@@ -34,7 +43,7 @@ internal sealed class GlobalKeyboardHook(uint renewalIntervalMilliseconds = 60_0
     public unsafe void RunMessageLoop(WaitHandle stop, Action renewHook)
     {
         var stopHandle = new HANDLE(stop.SafeWaitHandle.DangerousGetHandle());
-        var nextRenewal = Environment.TickCount64 + renewalIntervalMilliseconds;
+        var nextRenewal = Environment.TickCount64 + _renewalIntervalMilliseconds;
         while (true)
         {
             var timeout = (uint)Math.Clamp(nextRenewal - Environment.TickCount64, 0, uint.MaxValue);
@@ -58,7 +67,7 @@ internal sealed class GlobalKeyboardHook(uint renewalIntervalMilliseconds = 60_0
             {
                 // Renew infrequently as a failsafe for silent hook removal.
                 renewHook();
-                nextRenewal = Environment.TickCount64 + renewalIntervalMilliseconds;
+                nextRenewal = Environment.TickCount64 + _renewalIntervalMilliseconds;
             }
 
             while (PInvoke.PeekMessage(out var message, HWND.Null, 0, 0, PEEK_MESSAGE_REMOVE_TYPE.PM_REMOVE))

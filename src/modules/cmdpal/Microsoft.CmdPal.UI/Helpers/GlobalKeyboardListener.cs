@@ -39,7 +39,7 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
     /// <param name="tryEnqueue">Queues work asynchronously on the UI thread and returns whether it was accepted.</param>
     /// <param name="processCommand">Runs a command on the UI thread with its original input timestamp in Stopwatch ticks.</param>
     /// <param name="hookFailed">Runs on the UI thread after a fatal message-loop failure and hook removal.</param>
-    /// <param name="reportError">Reports command, callback, dispatch, or renewal errors; must be safe to call from any thread.</param>
+    /// <param name="reportError">Reports command, callback, dispatch, or renewal errors; must be thread-safe.</param>
     /// <param name="hook">Native hook operations, or <see langword="null"/> to use Win32.</param>
     /// <param name="getTimestamp">Timestamp source in Stopwatch ticks, or <see langword="null"/> to use <see cref="Stopwatch.GetTimestamp"/>.</param>
     public GlobalKeyboardListener(
@@ -95,7 +95,8 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
             return false;
         }
 
-        ready.Wait();
+        WaitForCompletion(ready.Wait);
+
         error = _startupError;
         if (error is not null)
         {
@@ -111,27 +112,27 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
     {
         Volatile.Write(ref _activeHotkeys, null);
 
-        if (_thread is not null)
+        if (_thread is not { } thread)
         {
-            _stop.Set();
-            _thread.Join();
-            _thread = null;
+            return;
         }
+
+        _stop.Set();
+        WaitForCompletion(thread.Join);
+        _thread = null;
     }
 
     /// <inheritdoc/>
-    public bool SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys)
+    public void SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         string?[]?[] snapshot = new string?[256][];
-        var hasHotkeys = false;
         foreach (var registration in hotkeys)
         {
             var key = registration.Hotkey!;
             var commands = snapshot[key.Code] ??= new string?[16];
             var modifiers = GetModifiers(key.Win, key.Ctrl, key.Shift, key.Alt);
             commands[modifiers] ??= registration.CommandId; // First registration wins.
-            hasHotkeys = true;
         }
 
         if (!HasSameHotkeys(snapshot))
@@ -142,8 +143,6 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
                 Interlocked.CompareExchange(ref _activeHotkeys, snapshot, previous);
             }
         }
-
-        return hasHotkeys;
     }
 
     /// <inheritdoc/>
@@ -157,6 +156,34 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
         _disposed = true;
         Stop();
         _stop.Dispose();
+    }
+
+    private static void WaitForCompletion(Action wait)
+    {
+        var interrupted = false;
+        try
+        {
+            while (true)
+            {
+                try
+                {
+                    wait();
+                    return;
+                }
+                catch (ThreadInterruptedException)
+                {
+                    interrupted = true;
+                }
+            }
+        }
+        finally
+        {
+            if (interrupted)
+            {
+                // Let the caller observe its interrupt after the wait completes.
+                Thread.CurrentThread.Interrupt();
+            }
+        }
     }
 
     private bool HasSameHotkeys(string?[]?[] snapshot)
@@ -201,7 +228,7 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
                     catch (Exception ex)
                     {
                         // Keep the current hook and retry on the next renewal.
-                        _ = Task.Run(() => _reportError(new InvalidOperationException("Failed to renew the global keyboard hook; keeping the current registration", ex)));
+                        QueueErrorReport(new InvalidOperationException("Failed to renew the global keyboard hook; keeping the current registration", ex));
                         return;
                     }
 
@@ -239,7 +266,7 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
                 catch (Exception dispatchError)
                 {
                     // The hook has already been released before reaching this handler.
-                    _reportError(dispatchError);
+                    ReportError(dispatchError);
                 }
             }
         }
@@ -259,7 +286,7 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
         {
             var snapshot = Volatile.Read(ref _activeHotkeys);
             if (snapshot is not null && nCode >= 0 &&
-                (wParam.Value == PInvoke.WM_KEYDOWN || wParam.Value == PInvoke.WM_SYSKEYDOWN))
+                wParam.Value is PInvoke.WM_KEYDOWN or PInvoke.WM_SYSKEYDOWN)
             {
                 var key = ((KBDLLHOOKSTRUCT*)lParam.Value)->vkCode;
                 if (key < snapshot.Length && snapshot[key] is { } commands)
@@ -285,14 +312,16 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
         catch (Exception ex)
         {
             // Defer reporting so a slow logger cannot block keyboard input.
-            _ = Task.Run(() => _reportError(ex));
+            QueueErrorReport(ex);
         }
 
         return matched ? (LRESULT)1 : _hook.CallNext(nCode, wParam, lParam);
     }
 
-    private void EnqueueCommand(string commandId, long timestamp, string?[]?[] snapshot) =>
+    private void EnqueueCommand(string commandId, long timestamp, string?[]?[] snapshot)
+    {
         _tryEnqueue(() => ProcessCommand(commandId, timestamp, snapshot));
+    }
 
     private void ProcessCommand(string commandId, long timestamp, string?[]?[] snapshot)
     {
@@ -307,10 +336,32 @@ internal sealed partial class GlobalKeyboardListener : IGlobalKeyboardListener
         }
         catch (Exception ex)
         {
-            _reportError(ex);
+            ReportError(ex);
         }
     }
 
-    private static int GetModifiers(bool win, bool ctrl, bool shift, bool alt) =>
-        (win ? 8 : 0) | (ctrl ? 4 : 0) | (shift ? 2 : 0) | (alt ? 1 : 0);
+    private void QueueErrorReport(Exception error)
+    {
+        _ = Task.Run(() => ReportError(error));
+    }
+
+    private void ReportError(Exception error)
+    {
+        try
+        {
+            _reportError(error);
+        }
+        catch (Exception)
+        {
+            // Reporting failures must not disrupt release builds
+#if DEBUG
+            throw;
+#endif
+        }
+    }
+
+    private static int GetModifiers(bool win, bool ctrl, bool shift, bool alt)
+    {
+        return (win ? 8 : 0) | (ctrl ? 4 : 0) | (shift ? 2 : 0) | (alt ? 1 : 0);
+    }
 }

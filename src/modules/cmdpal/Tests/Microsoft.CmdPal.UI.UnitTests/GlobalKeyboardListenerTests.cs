@@ -112,15 +112,26 @@ public partial class GlobalKeyboardListenerTests
     }
 
     [TestMethod]
-    public async Task CommandExceptionIsReportedWithoutLeakingMatchedKey()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CommandExceptionIsReportedWithoutLeakingMatchedKey(bool failReporting)
     {
         var failure = new InvalidOperationException("Command failed");
-        using var harness = new Harness((_, _) => throw failure);
+        using var harness = new Harness((_, _) => throw failure) { ThrowOnReportError = failReporting };
         harness.Start(Shortcut(true, false, false, false, 0x20));
         harness.Hook.SetModifiers(win: true);
 
         Assert.AreEqual(1, harness.Hook.Key(0x20));
-        harness.Drain();
+#if DEBUG
+        if (failReporting)
+        {
+            Assert.ThrowsExactly<IOException>(harness.Drain);
+        }
+        else
+#endif
+        {
+            harness.Drain();
+        }
 
         Assert.AreEqual(0, harness.Hook.Forwarded);
         Assert.AreEqual(1, harness.Hook.DummyKeys);
@@ -340,11 +351,19 @@ public partial class GlobalKeyboardListenerTests
     }
 
     [TestMethod]
-    public void EmptyShortcutsDoNotRegisterKeys()
+    public void ClearingShortcutsPassesThroughKeysAndCancelsQueuedCommands()
     {
         using var harness = new Harness();
-        Assert.IsFalse(harness.Listener.SetHotkeys([]));
-        Assert.AreEqual(0, harness.Hook.InstallCount);
+        harness.Start(Shortcut(false, true, false, false, 0x4B));
+        harness.Hook.SetModifiers(ctrl: true);
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+
+        harness.Listener.SetHotkeys([]);
+
+        Assert.AreEqual(42, harness.Hook.Key(0x4B));
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(1, harness.Hook.InstallCount);
     }
 
     [TestMethod]
@@ -386,6 +405,184 @@ public partial class GlobalKeyboardListenerTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void InterruptedShutdownCompletesCleanupAndRestoresInterrupt(bool dispose)
+    {
+        using var harness = new Harness();
+        using var unhookStarted = new ManualResetEventSlim();
+        using var finishUnhook = new ManualResetEventSlim();
+        using var stopped = new ManualResetEventSlim();
+        var clears = 0;
+        var unhooksAtClear = 0;
+        List<Exception> serviceErrors = [];
+        List<bool> notifications = [];
+        using var service = new GlobalHotkeyService(
+            harness.Listener,
+            () =>
+            {
+                clears++;
+                unhooksAtClear = harness.Hook.UninstallCount;
+            },
+            _ => true,
+            (_, error) => serviceErrors.Add(error),
+            notifications.Add);
+        Assert.IsTrue(service.Configure(true, [Shortcut(false, true, false, false, 0x4B)]));
+        clears = 0;
+        harness.Hook.SetModifiers(ctrl: true);
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        harness.Hook.BeforeUninstall = () =>
+        {
+            unhookStarted.Set();
+            finishUnhook.Wait();
+        };
+        Exception? escaped = null;
+        var interruptRestored = false;
+        var owner = new Thread(() =>
+        {
+            try
+            {
+                if (dispose)
+                {
+                    service.Dispose();
+                }
+                else
+                {
+                    service.Stop();
+                }
+            }
+            catch (Exception ex)
+            {
+                escaped = ex;
+            }
+            finally
+            {
+                stopped.Set();
+            }
+
+            try
+            {
+                Thread.Sleep(0);
+            }
+            catch (ThreadInterruptedException)
+            {
+                interruptRestored = true;
+            }
+        });
+        owner.Start();
+        try
+        {
+            Assert.IsTrue(unhookStarted.Wait(TimeSpan.FromSeconds(5)));
+            Assert.IsTrue(SpinWait.SpinUntil(() => (owner.ThreadState & System.Threading.ThreadState.WaitSleepJoin) != 0, TimeSpan.FromSeconds(5)));
+            owner.Interrupt();
+            Assert.IsFalse(stopped.IsSet);
+        }
+        finally
+        {
+            finishUnhook.Set();
+            Assert.IsTrue(owner.Join(TimeSpan.FromSeconds(5)));
+        }
+
+        Assert.IsNull(escaped);
+        Assert.IsTrue(interruptRestored, "Cleanup must preserve the interrupt for the caller's next wait.");
+        Assert.IsFalse(harness.ReportedError.Task.IsCompleted, "Recovered interrupts must not be reported as errors.");
+        Assert.AreEqual(1, clears);
+        Assert.AreEqual(1, unhooksAtClear, "The hook must finish teardown before standard hotkeys are cleared.");
+        Assert.AreEqual(0, serviceErrors.Count);
+        Assert.AreEqual(0, notifications.Count);
+        Assert.AreEqual(1, harness.Hook.UninstallCount);
+        harness.Drain();
+        Assert.AreEqual(0, harness.Commands.Count);
+        harness.Hook.BeforeUninstall = null;
+        if (dispose)
+        {
+            Assert.ThrowsExactly<ObjectDisposedException>(() => harness.Listener.Start(out _));
+        }
+        else
+        {
+            Assert.IsTrue(service.Configure(true, [Shortcut(false, true, false, false, 0x4B)]));
+            Assert.AreEqual(2, harness.Hook.InstallCount);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void InterruptedStartupPreservesHookResultAndRestoresInterrupt(bool failInstall)
+    {
+        using var harness = new Harness();
+        using var installStarted = new ManualResetEventSlim();
+        using var finishInstall = new ManualResetEventSlim();
+        using var startupCompleted = new ManualResetEventSlim();
+        var failure = failInstall ? new Win32Exception(5) : null;
+        harness.Hook.InstallError = failure;
+        harness.Listener.SetHotkeys([Shortcut(false, true, false, false, 0x4B)]);
+        harness.Hook.BeforeInstall = () =>
+        {
+            installStarted.Set();
+            finishInstall.Wait();
+        };
+        Exception? escaped = null;
+        Exception? startupError = null;
+        var started = false;
+        var interruptRestored = false;
+        var owner = new Thread(() =>
+        {
+            try
+            {
+                started = harness.Listener.Start(out startupError);
+            }
+            catch (Exception ex)
+            {
+                escaped = ex;
+            }
+            finally
+            {
+                startupCompleted.Set();
+            }
+
+            try
+            {
+                Thread.Sleep(0);
+            }
+            catch (ThreadInterruptedException)
+            {
+                interruptRestored = true;
+            }
+        });
+        owner.Start();
+        try
+        {
+            Assert.IsTrue(installStarted.Wait(TimeSpan.FromSeconds(5)));
+            Assert.IsTrue(SpinWait.SpinUntil(() => (owner.ThreadState & System.Threading.ThreadState.WaitSleepJoin) != 0, TimeSpan.FromSeconds(5)));
+            owner.Interrupt();
+            Assert.IsFalse(startupCompleted.IsSet);
+        }
+        finally
+        {
+            finishInstall.Set();
+            Assert.IsTrue(owner.Join(TimeSpan.FromSeconds(5)));
+        }
+
+        Assert.IsNull(escaped);
+        Assert.IsTrue(interruptRestored, "Startup must preserve the interrupt for the caller's next wait.");
+        Assert.IsFalse(harness.ReportedError.Task.IsCompleted, "Recovered interrupts must not be reported as errors.");
+        Assert.AreEqual(!failInstall, started);
+        Assert.AreSame(failure, startupError);
+        Assert.AreEqual(failInstall ? 0 : 1, harness.Hook.InstallCount);
+        Assert.AreEqual(0, harness.Hook.UninstallCount);
+        Assert.IsTrue(harness.UiWork.IsEmpty);
+        harness.Hook.BeforeInstall = null;
+        harness.Hook.InstallError = null;
+        Assert.IsTrue(harness.Listener.Start(out _));
+        Assert.AreEqual(1, harness.Hook.InstallCount);
+        harness.Hook.SetModifiers(ctrl: true);
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        harness.Drain();
+        Assert.AreEqual(1, harness.Commands.Count);
+    }
+
+    [TestMethod]
     public void MessageLoopFailureUnhooksAndReportsToUi()
     {
         using var harness = new Harness();
@@ -399,9 +596,13 @@ public partial class GlobalKeyboardListenerTests
     }
 
     [TestMethod]
-    public void MessageLoopFailureCanStopWhenDispatcherThrows()
+    [DataRow(false)]
+#if !DEBUG
+    [DataRow(true)]
+#endif
+    public void MessageLoopFailureCanStopWhenDispatcherThrows(bool failReporting)
     {
-        using var harness = new Harness();
+        using var harness = new Harness { ThrowOnReportError = failReporting };
         harness.Start(Shortcut(false, true, false, false, 0x4B));
         harness.ThrowOnEnqueue = true;
         harness.Hook.FailMessageLoop();
@@ -409,6 +610,17 @@ public partial class GlobalKeyboardListenerTests
 
         harness.Listener.Stop();
         Assert.IsTrue(harness.UiWork.IsEmpty);
+        Assert.AreEqual(1, harness.Hook.UninstallCount);
+        Assert.IsTrue(harness.ReportedError.Task.IsCompletedSuccessfully);
+        Assert.IsInstanceOfType<InvalidOperationException>(harness.ReportedError.Task.Result);
+    }
+
+    [TestMethod]
+    public void NativeHookRejectsZeroRenewalInterval()
+    {
+        var error = Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _ = new GlobalKeyboardHook(0));
+
+        Assert.AreEqual("renewalIntervalMilliseconds", error.ParamName);
     }
 
     [TestMethod]
@@ -481,7 +693,15 @@ public partial class GlobalKeyboardListenerTests
                 },
                 processCommand ?? ((commandId, timestamp) => Commands.Add((commandId, timestamp))),
                 Errors.Add,
-                reportError ?? (error => ReportedError.TrySetResult(error)),
+                error =>
+                {
+                    ReportedError.TrySetResult(error);
+                    reportError?.Invoke(error);
+                    if (ThrowOnReportError)
+                    {
+                        throw new IOException("Error reporter failed");
+                    }
+                },
                 Hook,
                 () => Timestamp);
         }
@@ -503,6 +723,8 @@ public partial class GlobalKeyboardListenerTests
         public bool RejectEnqueue { get; set; }
 
         public bool ThrowOnEnqueue { get; set; }
+
+        public bool ThrowOnReportError { get; set; }
 
         public void Start(params TopLevelHotkey[] hotkeys)
         {
@@ -535,6 +757,10 @@ public partial class GlobalKeyboardListenerTests
 
         public Exception? InstallError { get; set; }
 
+        public Action? BeforeInstall { get; set; }
+
+        public Action? BeforeUninstall { get; set; }
+
         public ManualResetEventSlim Uninstalled { get; } = new();
 
         public int InstallCount { get; private set; }
@@ -561,6 +787,7 @@ public partial class GlobalKeyboardListenerTests
 
         public IDisposable Install(HOOKPROC callback)
         {
+            BeforeInstall?.Invoke();
             if (InstallError is not null)
             {
                 throw InstallError;
@@ -572,6 +799,7 @@ public partial class GlobalKeyboardListenerTests
             Priority = Thread.CurrentThread.Priority;
             return new Registration(() =>
             {
+                BeforeUninstall?.Invoke();
                 UninstallCount++;
                 UninstallThread = Environment.CurrentManagedThreadId;
                 Uninstalled.Set();
@@ -670,9 +898,16 @@ public partial class GlobalKeyboardListenerTests
             Uninstalled.Dispose();
         }
 
-        private sealed partial class Registration(Action dispose) : IDisposable
+        private sealed partial class Registration : IDisposable
         {
-            public void Dispose() => dispose();
+            private readonly Action _dispose;
+
+            public Registration(Action dispose)
+            {
+                _dispose = dispose;
+            }
+
+            public void Dispose() => _dispose();
         }
     }
 }

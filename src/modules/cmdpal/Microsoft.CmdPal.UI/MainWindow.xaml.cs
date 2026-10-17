@@ -196,7 +196,7 @@ public sealed partial class MainWindow : WindowEx,
             keyboardListener,
             UnregisterHotkeys,
             RegisterHotkey,
-            static error => Logger.LogError("Global keyboard hook failed; using standard shortcut registration", error),
+            static (message, error) => Logger.LogError(message, error),
             ShowKeyboardHookWarning);
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");

@@ -46,6 +46,7 @@ public partial class GlobalHotkeyServiceTests
         Assert.AreEqual(1, harness.Standard.Count);
         Assert.AreEqual("root", harness.Standard[0].CommandId);
         Assert.AreEqual(1, harness.Errors.Count);
+        Assert.AreEqual("Global keyboard hook failed; using standard shortcut registration", harness.LogMessages.Single());
         Assert.IsFalse(harness.Notifications.Single());
 
         Assert.IsFalse(harness.Service.Configure(true, [Shortcut("root")]));
@@ -101,6 +102,91 @@ public partial class GlobalHotkeyServiceTests
         Assert.IsFalse(harness.Listener.Running);
         Assert.AreEqual("changed", harness.Standard[0].CommandId);
         Assert.AreEqual(1, harness.Errors.Count);
+        Assert.AreEqual("Global keyboard hook failed; using standard shortcut registration", harness.LogMessages.Single());
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RuntimeFailureStillFallsBackWhenUnregistrationFails(bool summonUnavailable)
+    {
+        using var harness = new Harness();
+        var hookFailure = new Win32Exception(5);
+        var unregisterFailure = new InvalidOperationException("Hotkey unregistration failed");
+        TopLevelHotkey[] hotkeys = [Shortcut(string.Empty), Shortcut("command", 0x4C)];
+        if (summonUnavailable)
+        {
+            harness.RejectedCommands.Add(string.Empty);
+        }
+
+        harness.Service.Configure(true, hotkeys);
+        harness.NextUnregisterError = unregisterFailure;
+        harness.Service.HandleHookFailure(hookFailure);
+
+        string[] expectedCommands = summonUnavailable ? ["command"] : [string.Empty, "command"];
+        string[] expectedLogs = ["Failed to unregister global hotkeys", "Global keyboard hook failed; using standard shortcut registration"];
+        CollectionAssert.AreEqual(expectedCommands, harness.Standard.Select(hotkey => hotkey.CommandId).ToArray());
+        CollectionAssert.AreEqual(new Exception[] { unregisterFailure, hookFailure }, harness.Errors);
+        CollectionAssert.AreEqual(expectedLogs, harness.LogMessages);
+        Assert.IsTrue(harness.Service.IsUsingFallback);
+        Assert.AreEqual(summonUnavailable, harness.Service.IsSummonHotkeyUnavailable);
+        Assert.AreEqual(summonUnavailable, harness.Notifications.Single());
+
+        Assert.IsFalse(harness.Service.Configure(true, hotkeys));
+        harness.Service.HandleHookFailure(hookFailure);
+        Assert.AreEqual(2, harness.Errors.Count);
+        Assert.AreEqual(1, harness.Notifications.Count);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ConfigureAppliesNewSettingsWhenUnregistrationFails(bool useLowLevel)
+    {
+        using var harness = new Harness();
+        var failure = new InvalidOperationException("Hotkey unregistration failed");
+        harness.NextUnregisterError = failure;
+
+        Assert.IsTrue(harness.Service.Configure(useLowLevel, [Shortcut("root")]));
+
+        Assert.AreSame(failure, harness.Errors.Single());
+        Assert.AreEqual("Failed to unregister global hotkeys", harness.LogMessages.Single());
+        Assert.AreEqual(useLowLevel, harness.Listener.Running);
+        var registrations = useLowLevel ? harness.Listener.Hotkeys : harness.Standard;
+        Assert.AreEqual("root", registrations.Single().CommandId);
+        Assert.AreEqual(0, harness.Notifications.Count);
+        Assert.IsFalse(harness.Service.Configure(useLowLevel, [Shortcut("root")]));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ConfigureUpdatesRunningListenerDespiteUnregistrationFailure(bool useLowLevel)
+    {
+        using var harness = new Harness();
+        harness.Service.Configure(true, [Shortcut("old")]);
+        var failure = new InvalidOperationException("Hotkey unregistration failed");
+        harness.NextUnregisterError = failure;
+
+        Assert.IsTrue(harness.Service.Configure(useLowLevel, [Shortcut("changed", 0x4C)]));
+        Assert.AreSame(failure, harness.Errors.Single());
+        Assert.AreEqual(useLowLevel, harness.Listener.Running);
+        var registrations = useLowLevel ? harness.Listener.Hotkeys : harness.Standard;
+        Assert.AreEqual("changed", registrations.Single().CommandId);
+        Assert.AreEqual(0x4C, registrations.Single().Hotkey!.Code);
+        Assert.IsFalse(harness.Service.Configure(useLowLevel, [Shortcut("changed", 0x4C)]));
+
+        var hookFailure = new Win32Exception(5);
+        harness.Service.HandleHookFailure(hookFailure);
+        Assert.IsFalse(harness.Listener.Running);
+        Assert.AreEqual("changed", harness.Standard.Single().CommandId);
+        Assert.AreEqual(useLowLevel, harness.Service.IsUsingFallback);
+        Assert.AreEqual(useLowLevel ? 1 : 0, harness.Notifications.Count);
+        if (useLowLevel)
+        {
+            Assert.AreSame(hookFailure, harness.Errors.Last());
+            Assert.IsFalse(harness.Notifications.Single());
+        }
     }
 
     [TestMethod]
@@ -114,9 +200,123 @@ public partial class GlobalHotkeyServiceTests
         Assert.IsFalse(harness.Listener.Running);
         Assert.AreEqual(0, harness.Standard.Count);
         Assert.AreEqual(0, harness.Errors.Count);
+        Assert.IsFalse(harness.Listener.Disposed);
 
         harness.Service.Configure(true, [Shortcut("root")]);
         Assert.AreEqual(2, harness.Listener.Starts);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void StopHandlesUnregistrationFailureAndAllowsRestart(bool useLowLevel, bool failLogging)
+    {
+        using var harness = new Harness();
+        harness.Service.Configure(useLowLevel, [Shortcut("root")]);
+        var clears = harness.Clears;
+        var failure = new InvalidOperationException("Hotkey unregistration failed");
+        harness.NextUnregisterError = failure;
+        harness.LoggingError = failLogging ? new IOException("Log writer failed") : null;
+
+        harness.Service.Stop();
+
+        Assert.AreSame(failure, harness.Errors.Single());
+        Assert.AreEqual("Failed to unregister global hotkeys", harness.LogMessages.Single());
+        Assert.AreEqual(clears + 1, harness.Clears);
+        Assert.IsFalse(harness.Listener.Running);
+        Assert.IsFalse(harness.Listener.Disposed);
+        harness.Calls.Clear();
+        harness.Service.HandleHookFailure(new Win32Exception(5));
+        Assert.AreEqual(0, harness.Calls.Count);
+        Assert.AreSame(failure, harness.Errors.Single());
+        Assert.AreEqual(0, harness.Notifications.Count);
+
+        Assert.IsTrue(harness.Service.Configure(useLowLevel, [Shortcut("root")]));
+        Assert.AreEqual(useLowLevel, harness.Listener.Running);
+        Assert.AreEqual(useLowLevel ? 0 : 1, harness.Standard.Count);
+        Assert.AreEqual(useLowLevel ? 2 : 0, harness.Listener.Starts);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void DisposeClearsRegistrationsAndIgnoresLateFailure(bool useLowLevel, bool failHook)
+    {
+        using var harness = new Harness();
+        harness.Listener.Error = failHook ? new Win32Exception(5) : null;
+        harness.Service.Configure(useLowLevel, [Shortcut("root")]);
+        var clears = harness.Clears;
+        var errors = harness.Errors.Count;
+        harness.Calls.Clear();
+
+        harness.Service.Dispose();
+
+        var stop = harness.Calls.IndexOf("stop");
+        Assert.IsTrue(stop >= 0 && stop < harness.Calls.IndexOf("clear"), "The listener must stop before standard hotkeys are cleared.");
+        Assert.IsTrue(harness.Listener.Disposed);
+        Assert.AreEqual(clears + 1, harness.Clears);
+        Assert.IsFalse(harness.Listener.Running);
+        Assert.IsFalse(harness.Service.IsUsingFallback);
+        Assert.AreEqual(0, harness.Standard.Count);
+
+        harness.Calls.Clear();
+        harness.Service.Dispose();
+        harness.Service.HandleHookFailure(new Win32Exception(5));
+
+        Assert.AreEqual(errors, harness.Errors.Count);
+        Assert.ThrowsExactly<ObjectDisposedException>(() => harness.Service.Configure(useLowLevel, [Shortcut("root")]));
+        Assert.AreEqual(0, harness.Calls.Count);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void StopAfterDisposeDoesNotTouchListenerOrRegistrations(bool useLowLevel)
+    {
+        using var harness = new Harness();
+        harness.Service.Configure(useLowLevel, [Shortcut("root")]);
+        harness.Service.Dispose();
+        harness.Calls.Clear();
+
+        harness.Service.Stop();
+        harness.Service.Stop();
+
+        Assert.AreEqual(0, harness.Calls.Count);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void DisposeFinishesListenerCleanupWhenUnregistrationFails(bool useLowLevel, bool failLogging)
+    {
+        using var harness = new Harness();
+        harness.Service.Configure(useLowLevel, [Shortcut("root")]);
+        var clears = harness.Clears;
+        var failure = new InvalidOperationException("Hotkey unregistration failed");
+        harness.NextUnregisterError = failure;
+        harness.LoggingError = failLogging ? new IOException("Log writer failed") : null;
+        harness.Calls.Clear();
+
+        harness.Service.Dispose();
+
+        Assert.AreSame(failure, harness.Errors.Single());
+        Assert.AreEqual("Failed to unregister global hotkeys", harness.LogMessages.Single());
+        Assert.AreEqual(clears + 1, harness.Clears);
+        Assert.IsTrue(harness.Calls.IndexOf("stop") < harness.Calls.IndexOf("clear"));
+        Assert.IsTrue(harness.Calls.IndexOf("clear") < harness.Calls.IndexOf("dispose"));
+        Assert.IsTrue(harness.Listener.Disposed);
+        Assert.IsFalse(harness.Listener.Running);
+        harness.Calls.Clear();
+
+        harness.Service.Stop();
+        harness.Service.Dispose();
+
+        Assert.AreEqual(0, harness.Calls.Count);
     }
 
     [TestMethod]
@@ -181,11 +381,14 @@ public partial class GlobalHotkeyServiceTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void FailedSummonFallbackRequestsImmediateWarning(bool runtimeFailure)
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void FailedSummonFallbackRequestsImmediateWarning(bool runtimeFailure, bool failLogging)
     {
         using var harness = new Harness();
+        harness.LoggingError = failLogging ? new IOException("Log writer failed") : null;
         harness.RejectedCommands.Add(string.Empty);
         var error = new Win32Exception(5);
         if (!runtimeFailure)
@@ -283,11 +486,19 @@ public partial class GlobalHotkeyServiceTests
     {
         public Harness()
         {
+            Listener = new FakeListener(Calls);
             Service = new GlobalHotkeyService(
                 Listener,
                 () =>
                 {
+                    Calls.Add("clear");
                     Clears++;
+                    if (NextUnregisterError is { } error)
+                    {
+                        NextUnregisterError = null;
+                        throw error;
+                    }
+
                     Standard.Clear();
                 },
                 hotkey =>
@@ -301,15 +512,27 @@ public partial class GlobalHotkeyServiceTests
                     Standard.Add(hotkey);
                     return true;
                 },
-                Errors.Add,
+                (message, error) =>
+                {
+                    LogMessages.Add(message);
+                    Errors.Add(error);
+                    if (LoggingError is { } loggingError)
+                    {
+                        throw loggingError;
+                    }
+                },
                 Notifications.Add);
         }
 
-        public FakeListener Listener { get; } = new();
+        public FakeListener Listener { get; }
+
+        public List<string> Calls { get; } = [];
 
         public List<TopLevelHotkey> Standard { get; } = [];
 
         public List<Exception> Errors { get; } = [];
+
+        public List<string> LogMessages { get; } = [];
 
         public List<bool> Notifications { get; } = [];
 
@@ -321,16 +544,29 @@ public partial class GlobalHotkeyServiceTests
 
         public int Clears { get; private set; }
 
+        public Exception? NextUnregisterError { get; set; }
+
+        public Exception? LoggingError { get; set; }
+
         public void Dispose() => Service.Dispose();
     }
 
     private sealed partial class FakeListener : IGlobalKeyboardListener
     {
+        private readonly List<string> _calls;
+
+        public FakeListener(List<string> calls)
+        {
+            _calls = calls;
+        }
+
         public int Starts { get; private set; }
 
         public int Configurations { get; private set; }
 
         public bool Running { get; private set; }
+
+        public bool Disposed { get; private set; }
 
         public Exception? Error { get; set; }
 
@@ -338,21 +574,45 @@ public partial class GlobalHotkeyServiceTests
 
         public bool Start(out Exception? error)
         {
+            _calls.Add("start");
+            ObjectDisposedException.ThrowIf(Disposed, this);
             Starts++;
+            if (Running)
+            {
+                error = null;
+                return true;
+            }
+
+            Stop();
             error = Error;
             Running = error is null;
             return Running;
         }
 
-        public void Stop() => Running = false;
-
-        public bool SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys)
+        public void Stop()
         {
-            Configurations++;
-            Hotkeys = [.. hotkeys];
-            return Hotkeys.Count > 0;
+            _calls.Add("stop");
+            Running = false;
         }
 
-        public void Dispose() => Stop();
+        public void SetHotkeys(IEnumerable<TopLevelHotkey> hotkeys)
+        {
+            _calls.Add("set-hotkeys");
+            ObjectDisposedException.ThrowIf(Disposed, this);
+            Configurations++;
+            Hotkeys = [.. hotkeys];
+        }
+
+        public void Dispose()
+        {
+            _calls.Add("dispose");
+            if (Disposed)
+            {
+                return;
+            }
+
+            Disposed = true;
+            Stop();
+        }
     }
 }

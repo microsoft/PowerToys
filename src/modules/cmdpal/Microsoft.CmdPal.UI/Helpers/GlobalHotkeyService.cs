@@ -12,18 +12,13 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// All members and callbacks run on the UI thread. Configuration reloads retry failed standard registrations.
 /// A failed low-level installation is retried only after low-level mode is toggled off and on.
 /// </remarks>
-/// <param name="listener">Owned listener, disposed with this service.</param>
-/// <param name="unregisterHotkeys">Removes all standard hotkey registrations.</param>
-/// <param name="registerHotkey">Attempts to register a normalized shortcut and returns whether it succeeded.</param>
-/// <param name="logFailure">Logs each hook failure independently of notification suppression.</param>
-/// <param name="notifyFailure">Shows a warning; <see langword="true"/> requests an immediate warning because the summon fallback failed.</param>
-internal sealed partial class GlobalHotkeyService(
-    IGlobalKeyboardListener listener,
-    Action unregisterHotkeys,
-    Func<TopLevelHotkey, bool> registerHotkey,
-    Action<Exception> logFailure,
-    Action<bool> notifyFailure) : IDisposable
+internal sealed partial class GlobalHotkeyService : IDisposable
 {
+    private readonly IGlobalKeyboardListener _listener;
+    private readonly Action _unregisterHotkeys;
+    private readonly Func<TopLevelHotkey, bool> _registerHotkey;
+    private readonly Action<string, Exception> _logFailure;
+    private readonly Action<bool> _notifyFailure;
     private readonly List<TopLevelHotkey> _failedStandardHotkeys = [];
     private TopLevelHotkey[] _hotkeys = [];
     private bool _configured;
@@ -32,6 +27,26 @@ internal sealed partial class GlobalHotkeyService(
     private bool _failureReported;
     private bool _summonFailureReported;
     private bool _disposed;
+
+    /// <summary>Initializes a new instance of the <see cref="GlobalHotkeyService"/> class.</summary>
+    /// <param name="listener">Owned listener, disposed with this service.</param>
+    /// <param name="unregisterHotkeys">Removes all standard hotkey registrations.</param>
+    /// <param name="registerHotkey">Attempts to register a normalized shortcut and returns whether it succeeded.</param>
+    /// <param name="logFailure">Logs hook and cleanup failures independently of notification suppression.</param>
+    /// <param name="notifyFailure">Shows a warning; <see langword="true"/> requests an immediate warning because the summon fallback failed.</param>
+    public GlobalHotkeyService(
+        IGlobalKeyboardListener listener,
+        Action unregisterHotkeys,
+        Func<TopLevelHotkey, bool> registerHotkey,
+        Action<string, Exception> logFailure,
+        Action<bool> notifyFailure)
+    {
+        _listener = listener;
+        _unregisterHotkeys = unregisterHotkeys;
+        _registerHotkey = registerHotkey;
+        _logFailure = logFailure;
+        _notifyFailure = notifyFailure;
+    }
 
     /// <summary>Gets whether the current low-level configuration has fallen back to standard registration.</summary>
     public bool IsUsingFallback => _configured && _useLowLevel && _lowLevelFailed;
@@ -52,7 +67,7 @@ internal sealed partial class GlobalHotkeyService(
             return RetryStandardHotkeys();
         }
 
-        _configured = true;
+        _configured = false;
         _useLowLevel = useLowLevel;
         _hotkeys = snapshot;
         if (!useLowLevel)
@@ -60,14 +75,15 @@ internal sealed partial class GlobalHotkeyService(
             _lowLevelFailed = false;
         }
 
-        unregisterHotkeys();
+        UnregisterHotkeys();
         _failedStandardHotkeys.Clear();
         Exception? error = null;
         if (useLowLevel && !_lowLevelFailed && snapshot.Length > 0)
         {
-            listener.SetHotkeys(snapshot);
-            if (listener.Start(out error))
+            _listener.SetHotkeys(snapshot);
+            if (_listener.Start(out error))
             {
+                _configured = true;
                 return true;
             }
 
@@ -75,9 +91,10 @@ internal sealed partial class GlobalHotkeyService(
         }
 
         RegisterStandardHotkeys();
+        _configured = true;
         if (error is not null)
         {
-            logFailure(error);
+            LogFailure("Global keyboard hook failed; using standard shortcut registration", error);
         }
 
         NotifyFailureOnce();
@@ -94,20 +111,22 @@ internal sealed partial class GlobalHotkeyService(
         }
 
         _lowLevelFailed = true;
-        unregisterHotkeys();
+        UnregisterHotkeys();
         RegisterStandardHotkeys();
-        logFailure(error);
+        LogFailure("Global keyboard hook failed; using standard shortcut registration", error);
         NotifyFailureOnce();
     }
 
     /// <summary>Stops both registration paths and clears pending standard retries.</summary>
-    /// <remarks>Failure and notification state are retained across restarts.</remarks>
+    /// <remarks>Cleanup failures are logged. Failure and notification state are retained across restarts.</remarks>
     public void Stop()
     {
-        _configured = false;
-        _failedStandardHotkeys.Clear();
-        listener.Stop();
-        unregisterHotkeys();
+        if (_disposed)
+        {
+            return;
+        }
+
+        StopCore();
     }
 
     /// <inheritdoc/>
@@ -119,8 +138,40 @@ internal sealed partial class GlobalHotkeyService(
         }
 
         _disposed = true;
-        Stop();
-        listener.Dispose();
+        StopCore();
+        _listener.Dispose();
+    }
+
+    private void StopCore()
+    {
+        _configured = false;
+        _failedStandardHotkeys.Clear();
+        _listener.Stop();
+        UnregisterHotkeys();
+    }
+
+    private void UnregisterHotkeys()
+    {
+        try
+        {
+            _unregisterHotkeys();
+        }
+        catch (Exception ex)
+        {
+            LogFailure("Failed to unregister global hotkeys", ex);
+        }
+    }
+
+    private void LogFailure(string message, Exception error)
+    {
+        try
+        {
+            _logFailure(message, error);
+        }
+        catch (Exception)
+        {
+            // Logging must not prevent cleanup or fallback notifications.
+        }
     }
 
     private static TopLevelHotkey[] Normalize(IEnumerable<TopLevelHotkey> hotkeys)
@@ -146,11 +197,11 @@ internal sealed partial class GlobalHotkeyService(
 
     private void RegisterStandardHotkeys()
     {
-        listener.Stop();
+        _listener.Stop();
         _failedStandardHotkeys.Clear();
         foreach (var hotkey in _hotkeys)
         {
-            if (!registerHotkey(hotkey))
+            if (!_registerHotkey(hotkey))
             {
                 _failedStandardHotkeys.Add(hotkey);
             }
@@ -159,7 +210,7 @@ internal sealed partial class GlobalHotkeyService(
 
     private bool RetryStandardHotkeys()
     {
-        var registered = _failedStandardHotkeys.RemoveAll(hotkey => registerHotkey(hotkey)) > 0;
+        var registered = _failedStandardHotkeys.RemoveAll(hotkey => _registerHotkey(hotkey)) > 0;
         NotifyFailureOnce();
         return registered;
     }
@@ -173,6 +224,6 @@ internal sealed partial class GlobalHotkeyService(
 
         _failureReported = true;
         _summonFailureReported |= IsSummonHotkeyUnavailable;
-        notifyFailure(IsSummonHotkeyUnavailable);
+        _notifyFailure(IsSummonHotkeyUnavailable);
     }
 }
