@@ -6895,6 +6895,13 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ShowGeometry.Description" xml:space="preserve">
     <value>Display the window position and size on the overlay during drag and resize operations</value>
   </data>
+  <data name="GrabAndMove_BringToFrontOnGrab.Header" xml:space="preserve">
+    <value>Bring window to front when grabbed</value>
+    <comment>When enabled, the window being moved or resized with Grab And Move is given focus and placed above other windows, as if it had been clicked.</comment>
+  </data>
+  <data name="GrabAndMove_BringToFrontOnGrab.Description" xml:space="preserve">
+    <value>Give the window focus when a drag or resize operation starts</value>
+  </data>
   <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
     <value>Resize windows with the modifier key + right-click</value>
     <comment>Hold the modifier key and right-click, then drag from the nearest edge or corner to resize the window</comment>
