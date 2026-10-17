@@ -457,3 +457,7 @@ actioncenter
 # New+ shell PIDL type names
 PCUITEMID
 PITEMID
+# Performance / hardware terms
+acpi
+ACPI
+PDH

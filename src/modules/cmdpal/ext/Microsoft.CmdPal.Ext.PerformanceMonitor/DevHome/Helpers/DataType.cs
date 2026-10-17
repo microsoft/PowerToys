@@ -42,4 +42,6 @@ public enum DataType
     /// Disk related data.
     /// </summary>
     Disk,
+
+    Temperature,
 }

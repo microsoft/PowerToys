@@ -13,6 +13,7 @@ internal static class PerformanceMonitorDockItemPresentation
     internal static readonly DockLabelWidth PercentageTitleWidth = DockLabelWidth.Sample("100%");
     internal static readonly DockLabelWidth GpuSubtitleWidth = DockLabelWidth.Characters(12);
     internal static readonly DockLabelWidth TransferRateLabelWidth = DockLabelWidth.Characters(10);
+    internal static readonly DockLabelWidth TemperatureTitleWidth = DockLabelWidth.Sample("100.0 \u00b0C");
 
     internal static ListItem ConfigureGpuValueLabel(ListItem item, GPUStats.DisplayInfo? gpu)
     {
