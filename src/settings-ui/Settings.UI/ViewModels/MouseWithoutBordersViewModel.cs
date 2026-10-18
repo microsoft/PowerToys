@@ -571,16 +571,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task SubmitNewKeyRequestAsync()
         {
+            _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+            {
+                ShowConnectionError = false;
+            });
+
             using (await _ipcSemaphore.EnterAsync())
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.GenerateNewKey();
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    if (syncHelper == null)
                     {
-                        await task;
+                        _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                        {
+                            ConnectionErrorMessage = ResourceLoaderInstance.ResourceLoader.GetString("MouseWithoutBorders_ConnectErrorModuleUnreachable");
+                            ShowConnectionError = true;
+                        });
+                        return;
                     }
+
+                    syncHelper.Endpoint?.GenerateNewKey();
+                    await syncHelper.Stream.FlushAsync();
                 }
             }
         }

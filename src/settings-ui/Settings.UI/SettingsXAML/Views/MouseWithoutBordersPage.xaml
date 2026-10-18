@@ -90,8 +90,12 @@
                                 IsClosable="True"
                                 IsOpen="{x:Bind ViewModel.ShowConnectionError, Mode=TwoWay}"
                                 IsTabStop="{x:Bind ViewModel.ShowConnectionError, Mode=OneWay}"
-                                Message="{x:Bind ViewModel.ConnectionErrorMessage, Mode=OneWay}"
-                                Severity="Error" />
+                                Severity="Error">
+                                <TextBlock
+                                    IsTextSelectionEnabled="True"
+                                    Text="{x:Bind ViewModel.ConnectionErrorMessage, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </InfoBar>
                         </tkcontrols:SettingsExpander.ItemsFooter>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button
