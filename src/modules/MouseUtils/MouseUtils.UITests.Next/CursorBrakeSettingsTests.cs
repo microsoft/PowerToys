@@ -22,6 +22,32 @@ public class CursorBrakeSettingsTests : UITestBase
     private const string EdgeFilterId = "MouseUtils_CursorBrakeEdgeFilterId";
     private const string DisableWhileDraggingId = "MouseUtils_CursorBrakeDisableWhileDraggingId";
     private const string CrossModifierId = "MouseUtils_CursorBrakeCrossModifierId";
+    private const string EdgesExpanderId = "MouseUtils_CursorBrakeEdgesId";
+    private const string SingleDisplayId = "MouseUtils_CursorBrakeSingleDisplayId";
+    private const string EdgeMapId = "MouseUtils_CursorBrakeEdgeMapId";
+    private const string DisconnectedId = "MouseUtils_CursorBrakeDisconnectedId";
+    private const string ForgetId = "MouseUtils_CursorBrakeForgetId";
+
+    // Two monitors that are never connected, with one entry each way: a wall from the first to the
+    // second, and Off with a kept distance back. No monitor has these IDs, so Settings names them
+    // by their model codes.
+    private const string DormantEdgesJson = """
+        [
+          { "monitors": [ "\\\\?\\DISPLAY#GSM1388#5&0&0&UID1", "\\\\?\\DISPLAY#LGD0A1B#5&0&0&UID2" ], "one_way": true, "mode": 2, "push_distance": 300 },
+          { "monitors": [ "\\\\?\\DISPLAY#LGD0A1B#5&0&0&UID2", "\\\\?\\DISPLAY#GSM1388#5&0&0&UID1" ], "one_way": true, "mode": 1, "push_distance": 450 }
+        ]
+        """;
+
+    private const string DormantTitle = "GSM1388 and LGD0A1B";
+
+    // The first edge's combo box, its Wall item, and the line the module logs for each settings apply.
+    // Two saves cause two applies; the bound leaves room for the module start and a retry, and a
+    // save loop runs to hundreds.
+    private const string FirstEdgeModeId = "MouseUtils_CursorBrakeEdgeMode_A";
+    private const string SecondEdgeModeId = "MouseUtils_CursorBrakeEdgeMode_B";
+    private const string WallItemText = "Wall";
+    private const string SettingsAppliedLogText = "CursorBrake settings applied:";
+    private const int MaxSettingsApplies = 10;
 
     // Combo box item text, in index order. The index is the persisted value.
     private const string EdgeFilterAll = "All edges between monitors";
@@ -82,10 +108,17 @@ public class CursorBrakeSettingsTests : UITestBase
                 CreateSettings(pushDistance: 300, freeReturn: true, edgeFilter: 0, disableWhileDragging: false, crossModifier: TestContext.TestData is [Key.Shift] ? 1 : 0),
             nameof(StrengthPersistsAtBoundaries) =>
                 CreateSettings(pushDistance: 500, freeReturn: true, edgeFilter: 0, disableWhileDragging: false, crossModifier: 0),
+            nameof(ADormantOneWayEntrySurvivesARestart) or nameof(ForgetRemovesADormantPair) =>
+                CreateSettings(pushDistance: 300, freeReturn: true, edgeFilter: 0, disableWhileDragging: false, crossModifier: 0, edgesJson: DormantEdgesJson),
             _ =>
                 CreateSettings(pushDistance: 300, freeReturn: true, edgeFilter: 0, disableWhileDragging: false, crossModifier: 0),
         };
         MouseUtilsTestHelper.ReplaceModuleSettings(ModuleName, settings);
+
+        // Settings drops entries for pairs the module has not recorded, once the module has
+        // published after the entries were written. Without an older file, nothing is dropped
+        // before the module reads the seeded entries and records their pair.
+        File.Delete(DetectedEdgesPath);
     }
 
     [TestCleanup]
@@ -433,10 +466,301 @@ public class CursorBrakeSettingsTests : UITestBase
         });
     }
 
+    // The edge editor. CI agents have one monitor, so these cases cover what one monitor shows: the
+    // editor follows the module, the "connect another monitor" state, and entries for monitors that
+    // are not connected.
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void EdgeEditorFollowsModuleToggle()
+    {
+        MouseUtilsTestHelper.NavigateToMouseUtilities(this);
+
+        MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, false);
+        AssertEnabled(EdgesExpanderId, expected: false);
+
+        MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, true);
+        AssertEnabled(EdgesExpanderId, expected: true);
+    }
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void OneMonitorShowsTheConnectAnotherMonitorState()
+    {
+        if (GetSystemMetrics(SmCMonitors) != 1)
+        {
+            Assert.Inconclusive("This case needs exactly one monitor attached.");
+        }
+
+        OpenEdges();
+
+        Assert.IsTrue(Session.Has(By.AccessibilityId(SingleDisplayId), 10_000), "The editor did not say to connect another monitor.");
+        Assert.IsFalse(Session.Has(By.AccessibilityId(EdgeMapId), 500), "One monitor has no edge to map.");
+    }
+
+    // The entries name monitors that are not connected, one way each, with different modes. They
+    // must show under "Disconnected monitors" and survive a restart unchanged.
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void ADormantOneWayEntrySurvivesARestart()
+    {
+        OpenEdges();
+        AssertDormantRow();
+        AssertPersistedEdges(DormantEdgesJson);
+
+        RestartScope();
+        AssertPersistedEdges(DormantEdgesJson);
+
+        OpenEdges();
+        AssertDormantRow();
+    }
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void ForgetRemovesADormantPair()
+    {
+        OpenEdges();
+        AssertDormantRow();
+
+        var forget = Session.Find<Element>(By.AccessibilityId(ForgetId), 5_000);
+        forget.ScrollIntoView();
+        forget.Invoke(msPostAction: 500);
+
+        AssertPersistedEdges("[]");
+        Assert.IsFalse(Session.Has(By.AccessibilityId(ForgetId), 2_000), "The dormant row stayed after Forget.");
+    }
+
+    // Choosing Wall saves with the editor open, so the module publishes and Settings reads the
+    // editor's file again. Changing Strength saves and publishes once more. The Wall must survive
+    // both, and the module must apply the settings a handful of times, not in a loop of saves.
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void AWallChosenInTheEditorSurvivesTheSavesThatFollow()
+    {
+        if (GetSystemMetrics(SmCMonitors) < 2)
+        {
+            Assert.Inconclusive("This case needs two monitors, so the editor lists an edge.");
+        }
+
+        OpenEdges();
+        var appliesBefore = CountModuleLogLines(SettingsAppliedLogText);
+
+        SelectComboItem(FirstEdgeModeId, WallItemText);
+        AssertOneWallPersisted();
+
+        ExpandOptions();
+        SetStrength(450);
+        AssertPersistedInt("push_distance", 450);
+
+        // Each save is answered by a publish and a reload; the Wall must hold through all of them.
+        var held = WaitHelper.WaitForStable(
+            CountPersistedBothWaysWalls,
+            walls => walls == 1,
+            timeoutMS: 15_000,
+            requiredConsecutiveMatches: 10,
+            pollIntervalMS: 300);
+        Assert.IsTrue(held.Succeeded, $"The Wall did not stay in settings.json after the next save. Walls last read: {held.LastObservation}.");
+        AssertComboText(FirstEdgeModeId, WallItemText);
+
+        // Edge B's list never opened; its value must still read, with the new Strength in it.
+        Session.Find<Element>(By.AccessibilityId(SecondEdgeModeId), 5_000).ScrollIntoView();
+        AssertComboText(SecondEdgeModeId, "Default (450 px)");
+
+        // The drawing: a closed box's text is a text element of the page, so the old Default text
+        // must be gone from it. Where WinUI keeps that text out of UIA, this check passes
+        // regardless.
+        Assert.IsFalse(Session.Has(By.Name("Default (300 px)"), 2_000), "A closed edge box still draws the old Default text.");
+
+        var applies = CountModuleLogLines(SettingsAppliedLogText) - appliesBefore;
+        Assert.IsTrue(applies <= MaxSettingsApplies, $"The module applied the settings {applies} times for two saves, so Settings and the module are feeding each other.");
+    }
+
+    // Edge A's list opens for Wall and again for Default, so its Default item draws its text there.
+    // Strength then changes that text while the list is closed. The box must report the new text to
+    // UI Automation, which is what Narrator reads.
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void AnEdgeBoxWhoseListOpenedReadsTheNewStrength()
+    {
+        if (GetSystemMetrics(SmCMonitors) < 2)
+        {
+            Assert.Inconclusive("This case needs two monitors, so the editor lists an edge.");
+        }
+
+        OpenEdges();
+
+        SelectComboItem(FirstEdgeModeId, WallItemText);
+        AssertOneWallPersisted();
+        SelectComboItem(FirstEdgeModeId, "Default (300 px)");
+        var cleared = WaitHelper.WaitForStable(
+            CountPersistedBothWaysWalls,
+            walls => walls == 0,
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200);
+        Assert.IsTrue(cleared.Succeeded, $"Choosing Default did not remove the Wall from settings.json. Walls last read: {cleared.LastObservation}.");
+
+        ExpandOptions();
+        SetStrength(450);
+        AssertPersistedInt("push_distance", 450);
+
+        // A rebuilt or recycled row holds a box whose list never opened, which reads the new text
+        // without the binding. The case holds only for the box whose list opened.
+        Session.Find<Element>(By.AccessibilityId(FirstEdgeModeId), 5_000).ScrollIntoView();
+        AssertComboText(FirstEdgeModeId, "Default (450 px)");
+    }
+
+    private static void AssertOneWallPersisted()
+    {
+        var result = WaitHelper.WaitForStable(
+            CountPersistedBothWaysWalls,
+            walls => walls == 1,
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200);
+        Assert.IsTrue(result.Succeeded, $"Choosing Wall did not persist one both-ways Wall entry. Walls last read: {result.LastObservation}.");
+    }
+
+    // The both-ways Wall entries in settings.json, or -1 while it cannot be read.
+    private static int CountPersistedBothWaysWalls()
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(SettingsPath));
+            if (!document.RootElement.GetProperty("properties").TryGetProperty("edges", out var edges))
+            {
+                return 0;
+            }
+
+            return edges.GetProperty("value").EnumerateArray().Count(entry =>
+                entry.GetProperty("mode").GetInt32() == 2
+                && !(entry.TryGetProperty("one_way", out var oneWay) && oneWay.GetBoolean()));
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or KeyNotFoundException or InvalidOperationException)
+        {
+            // Settings may be mid-write; the next poll reads the whole file.
+            return -1;
+        }
+    }
+
+    // The lines in every module log that contain `text`. The runner holds the log open for writing,
+    // so it is read with sharing.
+    private static int CountModuleLogLines(string text)
+    {
+        var logRoot = Path.Combine(ModuleSettingsDirectory, "ModuleInterface", "Logs");
+        if (!Directory.Exists(logRoot))
+        {
+            return 0;
+        }
+
+        var count = 0;
+        foreach (var file in new DirectoryInfo(logRoot).EnumerateFiles("*.log", SearchOption.AllDirectories))
+        {
+            using var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var reader = new StreamReader(stream);
+            while (reader.ReadLine() is { } line)
+            {
+                if (line.Contains(text, StringComparison.Ordinal))
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private void OpenEdges()
+    {
+        MouseUtilsTestHelper.NavigateToMouseUtilities(this);
+        MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, true);
+
+        // The module writes detected-edges.json when it starts, and Settings reads it on change.
+        var published = WaitHelper.WaitForStable(() => File.Exists(DetectedEdgesPath), exists => exists, timeoutMS: HookSettleTimeoutMs, requiredConsecutiveMatches: 1, pollIntervalMS: 200);
+        Assert.IsTrue(published.Succeeded, "The module did not publish detected-edges.json.");
+
+        Session.Find<Element>(By.AccessibilityId(EdgesExpanderId), 5_000).ScrollIntoView();
+        MouseUtilsTestHelper.ExpandSettings(this, EdgesExpanderId);
+
+        Assert.IsTrue(WaitForEdgeContent(10_000), "Edges between monitors did not open.");
+    }
+
+    // Open, the editor shows one of three things: the "connect another monitor" state for one
+    // monitor, the map for several, and the disconnected monitors when an entry names one.
+    private bool WaitForEdgeContent(int timeoutMs)
+    {
+        var result = WaitHelper.WaitForStable(
+            () => Session.Has(By.AccessibilityId(SingleDisplayId), 100) || Session.Has(By.AccessibilityId(EdgeMapId), 100) || Session.Has(By.AccessibilityId(DisconnectedId), 100),
+            shown => shown,
+            timeoutMS: timeoutMs,
+            requiredConsecutiveMatches: 1,
+            pollIntervalMS: 200);
+        return result.Succeeded;
+    }
+
+    private void AssertEnabled(string accessibilityId, bool expected)
+    {
+        var result = WaitHelper.WaitForStable(
+            () => Session.Find<Element>(By.AccessibilityId(accessibilityId), 5_000).IsEnabled,
+            actual => actual == expected,
+            timeoutMS: HookSettleTimeoutMs,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200);
+        Assert.IsTrue(result.Succeeded, $"{accessibilityId} should be {(expected ? "enabled" : "disabled")} with the module {(expected ? "on" : "off")}.");
+    }
+
+    private void AssertDormantRow()
+    {
+        Assert.IsTrue(Session.Has(By.AccessibilityId(DisconnectedId), 10_000), "Disconnected monitors did not show.");
+        Assert.IsTrue(Session.Has(By.Name(DormantTitle), 5_000), $"The dormant row '{DormantTitle}' did not show.");
+        Assert.IsTrue(Session.Has(By.AccessibilityId(ForgetId), 5_000), "The dormant row has no Forget button.");
+    }
+
+    private static void AssertPersistedEdges(string expectedJson)
+    {
+        var expected = NormalizeJson(expectedJson);
+        var result = WaitHelper.WaitForStable(
+            ReadPersistedEdges,
+            actual => actual == expected,
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200);
+        Assert.IsTrue(result.Succeeded, $"edges did not persist as {expected}. Last observed value: {result.LastObservation}.");
+    }
+
+    private static string? ReadPersistedEdges()
+    {
+        if (!File.Exists(SettingsPath))
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(File.ReadAllText(SettingsPath));
+        return document.RootElement.GetProperty("properties").TryGetProperty("edges", out var edges)
+            ? NormalizeJson(edges.GetProperty("value").GetRawText())
+            : null;
+    }
+
+    private static string NormalizeJson(string json) => JsonSerializer.Serialize(JsonDocument.Parse(json).RootElement);
+
+    private static string DetectedEdgesPath => Path.Combine(ModuleSettingsDirectory, "detected-edges.json");
+
     private void OpenOptions()
     {
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, true);
+        ExpandOptions();
+    }
+
+    // Opens Resistance and behavior on the page already shown, so an expander opened before stays
+    // open.
+    private void ExpandOptions()
+    {
         MouseUtilsTestHelper.ExpandSettings(this, OptionsExpanderId);
 
         Assert.IsTrue(Session.Has(By.AccessibilityId(PushDistanceId), 5_000), "Strength slider was not available.");
@@ -499,7 +823,13 @@ public class CursorBrakeSettingsTests : UITestBase
             Assert.IsTrue(comboBox.WaitForProperty("ExpandCollapseState", "Expanded", 5_000), $"{accessibilityId} did not open.");
         }
 
-        settingsProcess.Find<Element>(By.Name(itemText), 5_000).Invoke(msPostAction: 0);
+        // A name search also finds other text that contains the item's, such as the edge editor's
+        // "Wall: hold Ctrl to cross" for "Wall", so the open list's own item is picked.
+        var matches = settingsProcess.FindAll<Element>(By.Name(itemText), 5_000);
+        var item = matches.FirstOrDefault(e => e.Name == itemText && e.ControlType.Contains("ListItem", StringComparison.OrdinalIgnoreCase))
+            ?? matches.FirstOrDefault(e => e.Name == itemText);
+        Assert.IsNotNull(item, $"{accessibilityId} has no item '{itemText}' in its open list.");
+        item.Invoke(msPostAction: 0);
 
         // Selecting through UIA can leave the dropdown open, and an open popup would cover the next step.
         if (string.Equals(comboBox.GetProperty("ExpandCollapseState"), "Expanded", StringComparison.OrdinalIgnoreCase))
@@ -866,7 +1196,7 @@ public class CursorBrakeSettingsTests : UITestBase
 
     private static string SettingsPath => Path.Combine(ModuleSettingsDirectory, "settings.json");
 
-    private static string CreateSettings(int pushDistance, bool freeReturn, int edgeFilter, bool disableWhileDragging, int crossModifier) => $$"""
+    private static string CreateSettings(int pushDistance, bool freeReturn, int edgeFilter, bool disableWhileDragging, int crossModifier, string edgesJson = "[]") => $$"""
         {
           "name": "CursorBrake",
           "version": "1.0",
@@ -875,7 +1205,8 @@ public class CursorBrakeSettingsTests : UITestBase
             "free_return": { "value": {{freeReturn.ToString().ToLowerInvariant()}} },
             "edge_filter": { "value": {{edgeFilter}} },
             "disable_while_dragging": { "value": {{disableWhileDragging.ToString().ToLowerInvariant()}} },
-            "cross_modifier": { "value": {{crossModifier}} }
+            "cross_modifier": { "value": {{crossModifier}} },
+            "edges": { "value": {{edgesJson}} }
           }
         }
         """;
@@ -886,6 +1217,7 @@ public class CursorBrakeSettingsTests : UITestBase
     private const int SmYVirtualScreen = 77;
     private const int SmCxVirtualScreen = 78;
     private const int SmCyVirtualScreen = 79;
+    private const int SmCMonitors = 80;
 
     private const uint InputMouse = 0;
     private const uint MouseEventFMove = 0x0001;

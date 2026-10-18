@@ -2897,7 +2897,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Strength</value>
   </data>
   <data name="MouseUtils_CursorBrake_PushDistance.Description" xml:space="preserve">
-    <value>How far to push past an edge before the cursor crosses, in pixels at 100% scale, with quick flicks counting for less. 0 turns the resistance off.</value>
+    <value>How far to push past an edge left at Default before the cursor crosses, in pixels at 100% scale, with quick flicks counting for less. 0 turns the resistance off.</value>
   </data>
   <data name="MouseUtils_CursorBrake_FreeReturn.Header" xml:space="preserve">
     <value>Free return</value>
@@ -2909,7 +2909,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Apply to</value>
   </data>
   <data name="MouseUtils_CursorBrake_EdgeFilter.Description" xml:space="preserve">
-    <value>Choose which edges resist the cursor</value>
+    <value>Choose which edges left at Default resist the cursor</value>
   </data>
   <data name="MouseUtils_CursorBrake_EdgeFilter_All.Content" xml:space="preserve">
     <value>All edges between monitors</value>
@@ -2931,7 +2931,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Followed by the selected key, for example "Holding Ctrl".</comment>
   </data>
   <data name="MouseUtils_CursorBrake_CrossModifier.Description" xml:space="preserve">
-    <value>Hold this key to cross any edge without resistance</value>
+    <value>Hold this key to cross any edge without resistance, walls included</value>
   </data>
   <data name="MouseUtils_CursorBrake_CrossModifier_HoldingCtrl.Content" xml:space="preserve">
     <value>Holding Ctrl</value>
@@ -2939,6 +2939,133 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="MouseUtils_CursorBrake_CrossModifier_HoldingShift.Content" xml:space="preserve">
     <value>Holding Shift</value>
+    <comment>Shift is the keyboard key.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges.Header" xml:space="preserve">
+    <value>Edges between monitors</value>
+  </data>
+  <data name="CursorBrake_Edges_Description" xml:space="preserve">
+    <value>Give an edge its own strength, turn it off, or make it a wall you cross only by holding {0}. Select an edge on the map or in the list.</value>
+    <comment>{0} is a key name such as Ctrl.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_ShowOnScreens.Content" xml:space="preserve">
+    <value>Show on screens</value>
+    <comment>Shows each edge&apos;s setting on the monitors themselves for a few seconds.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_MapName" xml:space="preserve">
+    <value>Map of the monitors and the edges between them</value>
+    <comment>Accessible name of the monitor map.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_Legend_Default.Text" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_Legend_Custom.Text" xml:space="preserve">
+    <value>Custom strength</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_Legend_Off.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="CursorBrake_Edges_WallLegend" xml:space="preserve">
+    <value>Wall: hold {0} to cross</value>
+    <comment>{0} is a key name such as Ctrl.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_Legend_OneWay.Text" xml:space="preserve">
+    <value>One way: crosses along the caret, a wall the other way</value>
+    <comment>The caret is the small triangle next to an edge&apos;s letter on the map.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_Unidentified.Title" xml:space="preserve">
+    <value>Some monitors could not be identified</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_Unidentified.Message" xml:space="preserve">
+    <value>Their edges use the settings above and cannot be set one by one until Windows identifies them.</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_SingleDisplay.Message" xml:space="preserve">
+    <value>Connect another monitor to set the edges between them.</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_Disconnected" xml:space="preserve">
+    <value>Disconnected monitors</value>
+    <comment>Heading over settings saved for monitors that are not connected now.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_Edges_Forget.Text" xml:space="preserve">
+    <value>Forget</value>
+    <comment>Removes the settings saved for a pair of monitors that are not connected.</comment>
+  </data>
+  <data name="CursorBrake_Edges_DefaultItem" xml:space="preserve">
+    <value>Default ({0} px)</value>
+    <comment>{0} is the strength in pixels that edges without their own setting use.</comment>
+  </data>
+  <data name="CursorBrake_Edges_DefaultOffItem" xml:space="preserve">
+    <value>Default (Off)</value>
+    <comment>An edge without its own setting that the Apply to setting leaves out, so it does not resist the cursor.</comment>
+  </data>
+  <data name="CursorBrake_Edges_CustomItem" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="CursorBrake_Edges_OffItem" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="CursorBrake_Edges_WallItem" xml:space="preserve">
+    <value>Wall</value>
+  </data>
+  <data name="CursorBrake_Edges_DifferentEachWayItem" xml:space="preserve">
+    <value>Different each way</value>
+  </data>
+  <data name="CursorBrake_Edges_DisplayLabel" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>{0} is a monitor&apos;s name, {1} its number in Windows display settings. Example: Dell U2724D (2).</comment>
+  </data>
+  <data name="CursorBrake_Edges_DisplayFallback" xml:space="preserve">
+    <value>Monitor {0}</value>
+    <comment>{0} is the monitor&apos;s number in Windows display settings, for a monitor without a name.</comment>
+  </data>
+  <data name="CursorBrake_Edges_PairTitle" xml:space="preserve">
+    <value>{0} and {1}</value>
+    <comment>{0} and {1} are two monitors. Example: HP E24 G5 (1) and Dell U2724D (2).</comment>
+  </data>
+  <data name="CursorBrake_Edges_DirectionHeader" xml:space="preserve">
+    <value>From {0} to {1}</value>
+    <comment>{0} and {1} are two monitors. Example: From Dell U2724D (2) to HP E24 G5 (1).</comment>
+  </data>
+  <data name="CursorBrake_Edges_SideBySide" xml:space="preserve">
+    <value>Side by side</value>
+  </data>
+  <data name="CursorBrake_Edges_Stacked" xml:space="preserve">
+    <value>Stacked</value>
+  </data>
+  <data name="CursorBrake_Edges_Shared" xml:space="preserve">
+    <value>{0} px shared</value>
+    <comment>{0} is how many pixels long the shared part of the edge is.</comment>
+  </data>
+  <data name="CursorBrake_Edges_And" xml:space="preserve">
+    <value>{0} and {1}</value>
+    <comment>Joins two items, such as two scales: 100% and 150%.</comment>
+  </data>
+  <data name="CursorBrake_Edges_WallNote" xml:space="preserve">
+    <value>Wall from {0} to {1}: hold {2} to cross</value>
+    <comment>{0} and {1} are monitor numbers, {2} is a key name such as Ctrl.</comment>
+  </data>
+  <data name="CursorBrake_Edges_TrapTitle" xml:space="preserve">
+    <value>Hold {1} to leave {0}</value>
+    <comment>{0} is a monitor, {1} is a key name such as Ctrl.</comment>
+  </data>
+  <data name="CursorBrake_Edges_TrapMessage" xml:space="preserve">
+    <value>The cursor enters it from {0} without a key, and every way out is a wall.</value>
+    <comment>{0} is one or more monitor numbers, such as 1 and 3.</comment>
+  </data>
+  <data name="CursorBrake_Edges_LastConnected" xml:space="preserve">
+    <value>Last connected {0}</value>
+    <comment>{0} is a date.</comment>
+  </data>
+  <data name="CursorBrake_Edges_Kept" xml:space="preserve">
+    <value>Removed after {0}</value>
+    <comment>{0} is a date: settings for monitors that are not connected are removed 180 days after the monitors were last next to each other.</comment>
+  </data>
+  <data name="CursorBrake_Key_Ctrl" xml:space="preserve">
+    <value>Ctrl</value>
+    <comment>Ctrl is the keyboard key.</comment>
+  </data>
+  <data name="CursorBrake_Key_Shift" xml:space="preserve">
+    <value>Shift</value>
     <comment>Shift is the keyboard key.</comment>
   </data>
   <data name="MouseUtils_MouseButtonLock.Header" xml:space="preserve">

@@ -1,6 +1,6 @@
 ## Mouse Utils
 
-The migrated suite is [MouseUtils.UITests.Next](../MouseUtils.UITests.Next/) and currently contains 56 test methods. Checked items have an automated effect-based assertion. CursorBrake items that need two monitors say so; they report Inconclusive on the single-monitor Hyper-V profile and run on a guest with several virtual displays. Unchecked items require physical hardware or desktop state that neither profile can establish faithfully.
+The migrated suite is [MouseUtils.UITests.Next](../MouseUtils.UITests.Next/) and currently contains 62 test methods. Checked items have an automated effect-based assertion. CursorBrake items that need two monitors say so; they report Inconclusive on the single-monitor Hyper-V profile and run on a guest with several virtual displays. Unchecked items require physical hardware or desktop state that neither profile can establish faithfully.
 
 ### Find My Mouse
 
@@ -113,6 +113,12 @@ Automated by [MouseButtonLockSettingsTests.cs](../MouseUtils.UITests.Next/MouseB
 - [x] Holding the cross key crosses on the first move into an inner edge, where the same move without it is held, for both Cross freely while values (Ctrl and Shift). Inconclusive on one monitor.
 - [x] Right after a crossing, the move straight back crosses without resistance, at once and after a wander 10 px short of free return's reach: 100 logical px from the crossed edge, scaled by the DPI of the monitor crossed onto. After a wander 2 px past the reach, the way back brakes again. Over an edge between monitors of different DPI, the case checks both ways, so a reach scaled by the monitor the cursor crossed from, or not scaled at all, fails. Inconclusive on one monitor.
 - [x] The push needed scales by the DPI of the monitor the cursor leaves, checked both ways over an edge between monitors of different DPI. Inconclusive where every edge joins monitors of one DPI.
-- [ ] Dragging with "Disable resistance while dragging" on crosses an inner edge without resistance; Apply to leaves the other axis's edges free; and display changes rebuild the layout. Manual: requires changing displays during the run; the drag bypass and Apply to effects have no automated case.
+- [x] The "Edges between monitors" editor follows the module toggle.
+- [x] On one monitor, the editor shows the "connect another monitor" state and no edge map. Inconclusive on more than one monitor.
+- [x] One-way entries for monitors that are not connected show under "Disconnected monitors" and persist unchanged across a restart.
+- [x] Forget removes a disconnected pair's entries from settings.json and its row from the editor.
+- [x] A Wall chosen for an edge survives the saves that follow a Strength change, the other edge's Default shows the new Strength, and the module applies the settings a bounded number of times rather than in a save loop. Inconclusive on one monitor.
+- [x] An edge box whose list opened reports the new "Default (N px)" text to UI Automation after Strength changes. Inconclusive on one monitor.
+- [ ] Dragging with "Disable resistance while dragging" on crosses an inner edge without resistance; Apply to leaves the other axis's edges free; an edge's Wall, Off and one-way values hold, free and brake one direction only; and display changes rebuild the layout. Manual: requires changing displays during the run; the drag bypass, Apply to and per-edge effects have no automated case.
 
 Automated by [CursorBrakeSettingsTests.cs](../MouseUtils.UITests.Next/CursorBrakeSettingsTests.cs).

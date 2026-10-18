@@ -160,6 +160,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(List<MonitorInfo>))]
     [JsonSerializable(typeof(List<VcpCodeDisplayInfo>))]
     [JsonSerializable(typeof(List<VcpValueInfo>))]
+    [JsonSerializable(typeof(CursorBrakeEdgeSetting))]
+    [JsonSerializable(typeof(List<CursorBrakeEdgeSetting>))]
+    [JsonSerializable(typeof(CursorBrakeDetectedEdges))]
     [JsonSerializable(typeof(SettingsUILibraryHelpers.SearchLocation))]
 
     // AdvancedPaste AI Provider Types (for AOT compatibility)

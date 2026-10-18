@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -37,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private CursorBrakeSettings CursorBrakeSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<MouseButtonLockSettings> mouseButtonLockSettingsRepository, ISettingsRepository<CursorBrakeSettings> cursorBrakeSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<MouseButtonLockSettings> mouseButtonLockSettingsRepository, ISettingsRepository<CursorBrakeSettings> cursorBrakeSettingsRepository, Func<string, int> ipcMSGCallBackFunc, IFileSystem fileSystem = null)
         {
             SettingsUtils = settingsUtils;
 
@@ -181,6 +182,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             cursorBrakeProperties.EdgeFilter ??= cursorBrakeDefaults.EdgeFilter;
             cursorBrakeProperties.DisableWhileDragging ??= cursorBrakeDefaults.DisableWhileDragging;
             cursorBrakeProperties.CrossModifier ??= cursorBrakeDefaults.CrossModifier;
+            cursorBrakeProperties.Edges ??= cursorBrakeDefaults.Edges;
+            cursorBrakeProperties.Edges.Value ??= cursorBrakeDefaults.Edges.Value;
 
             cursorBrakeProperties.PushDistance.Value = Math.Clamp(cursorBrakeProperties.PushDistance.Value, CursorBrakeProperties.MinPushDistance, CursorBrakeProperties.MaxPushDistance);
             cursorBrakeProperties.EdgeFilter.Value = RepairCursorBrakeChoice<CursorBrakeEdgeFilter>(cursorBrakeProperties.EdgeFilter.Value);
@@ -199,6 +202,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            // The edge editor can save while it loads, when it drops entries the module does not
+            // remember, so it starts once the IPC callback is set. It reads detected-edges.json
+            // through the file system given, the real one when none is.
+            InitializeCursorBrakeEdges(fileSystem ?? new FileSystem());
         }
 
         private void InitializeEnabledValues()
@@ -1657,6 +1665,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _cursorBrakePushDistance = value;
                     CursorBrakeSettingsConfig.Properties.PushDistance.Value = value;
+                    CursorBrakeEdges.GlobalPushDistance = value;
                     NotifyCursorBrakePropertyChanged();
                 }
             }
@@ -1685,6 +1694,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _cursorBrakeEdgeFilter = (CursorBrakeEdgeFilter)value;
                     CursorBrakeSettingsConfig.Properties.EdgeFilter.Value = value;
+                    CursorBrakeEdges.EdgeFilter = _cursorBrakeEdgeFilter;
                     NotifyCursorBrakePropertyChanged();
                 }
             }
@@ -1713,6 +1723,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _cursorBrakeCrossModifier = (CursorBrakeCrossModifier)value;
                     CursorBrakeSettingsConfig.Properties.CrossModifier.Value = value;
+                    CursorBrakeEdges.CrossModifier = _cursorBrakeCrossModifier;
                     NotifyCursorBrakePropertyChanged();
                 }
             }
@@ -1732,11 +1743,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void NotifyCursorBrakePropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
-
-            SndCursorBrakeSettings outsettings = new SndCursorBrakeSettings(CursorBrakeSettingsConfig);
-            SndModuleSettings<SndCursorBrakeSettings> ipcMessage = new SndModuleSettings<SndCursorBrakeSettings>(outsettings);
-            SendConfigMSG(ipcMessage.ToJsonString());
-            SettingsUtils.SaveSettings(CursorBrakeSettingsConfig.ToJsonString(), CursorBrakeSettings.ModuleName);
+            SaveCursorBrakeSettings();
         }
 
         public void RefreshEnabledState()

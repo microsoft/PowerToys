@@ -2,13 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class CursorBrakeProperties
     {
-        /// <summary>The push distance a settings file without one gets, in logical pixels.</summary>
+        /// <summary>The push distance edges at Default use, in logical pixels.</summary>
         public const int DefaultPushDistance = 300;
 
         /// <summary>The range the module clamps a push distance into, in logical pixels.</summary>
@@ -32,6 +34,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("cross_modifier")]
         public IntProperty CrossModifier { get; set; }
 
+        // Per-edge values. An edge without an entry uses the settings above. A list has no
+        // command-line form, so the command line leaves it out, like Keyboard Manager's lists. The
+        // converter reads a malformed entry alone as null, as the module skips it alone.
+        [CmdConfigureIgnore]
+        [JsonPropertyName("edges")]
+        [JsonConverter(typeof(CursorBrakeEdgesConverter))]
+        public GenericProperty<List<CursorBrakeEdgeSetting>> Edges { get; set; }
+
         public CursorBrakeProperties()
         {
             PushDistance = new IntProperty(DefaultPushDistance);
@@ -39,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EdgeFilter = new IntProperty((int)CursorBrakeEdgeFilter.All);
             DisableWhileDragging = new BoolProperty(false);
             CrossModifier = new IntProperty((int)CursorBrakeCrossModifier.Ctrl);
+            Edges = new GenericProperty<List<CursorBrakeEdgeSetting>>(new List<CursorBrakeEdgeSetting>());
         }
     }
 }
