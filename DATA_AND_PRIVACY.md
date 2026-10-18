@@ -101,11 +101,11 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.AlwaysOnTop_PinWindow | Occurs when a window is pinned to stay on top of other windows. |
 | Microsoft.PowerToys.AlwaysOnTop_UnpinWindow | Triggered when a pinned window is unpinned, allowing it to be behind other windows. |
 
-### Auto Hide Cursor
+### CursorHide
 
 | Event Name | Description |
 | --- | --- |
-| Microsoft.PowerToys.AutoHideCursor_EnableAutoHideCursor | Records whether Auto Hide Cursor is enabled or disabled (`Enabled` boolean) to understand utility usage. Does not include keystrokes, typed text, or cursor positions. |
+| Microsoft.PowerToys.AutoHideCursor_EnableAutoHideCursor | Records whether CursorHide is enabled or disabled (`Enabled` boolean) to understand utility usage. Does not include keystrokes, typed text, or cursor positions. |
 
 ### Awake
 
@@ -312,6 +312,7 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
+| Microsoft.PowerToys.LightSwitch_CLICommand | Triggered when the Light Switch CLI is invoked, logging only a fixed command category and success status based on the final exit code. Raw arguments, schedule values, and file paths are not collected. |
 | Microsoft.PowerToys.LightSwitch_EnableLightSwitch | Triggered when Light Switch is enabled or disabled. |
 | Microsoft.PowerToys.LightSwitch_ScheduleModeToggled | Occurs when a new schedule mode is selected for Light Switch. |
 | Microsoft.PowerToys.LightSwitch_ShortcutInvoked | Occurs when the shortcut for Light Switch is invoked. |
@@ -392,6 +393,7 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
+| Microsoft.PowerToys.PowerDisplay_CLICommand | Triggered when the PowerDisplay CLI is invoked, logging only a fixed command category and success status based on the final exit code. Raw arguments, monitor IDs, profile values, and file paths are not collected. |
 | Microsoft.PowerToys.PowerDisplay_EnablePowerDisplay | Triggered when Power Display is enabled or disabled. |
 | Microsoft.PowerToys.PowerDisplay_Activate | Triggered when Power Display is activated via hotkey or tray toggle. |
 | Microsoft.PowerToys.PowerDisplay_Start | Triggered when the Power Display application process starts. |

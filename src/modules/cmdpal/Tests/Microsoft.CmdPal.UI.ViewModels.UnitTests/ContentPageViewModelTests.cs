@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
@@ -53,7 +52,6 @@ public partial class ContentPageViewModelTests
         var initialDetails = new Details { Title = "Initial title", Body = "Initial body" };
         var page = new TestContentPage { Details = hasInitialDetails ? initialDetails : null };
         var viewModel = CreateViewModel(page);
-        var recipient = new object();
 
         try
         {
@@ -62,10 +60,13 @@ public partial class ContentPageViewModelTests
             var previousDetails = viewModel.Details;
             List<string?> notifications = [];
             viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
-            DetailsViewModel? shownDetails = null;
-            var hideMessages = 0;
-            WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(recipient, (_, message) => shownDetails = message.Details);
-            WeakReferenceMessenger.Default.Register<HideDetailsMessage>(recipient, (_, _) => hideMessages++);
+            DetailsViewModel? publishedDetails = null;
+            var detailsUpdates = 0;
+            viewModel.DetailsChanged += (_, args) =>
+            {
+                publishedDetails = args.Details;
+                detailsUpdates++;
+            };
 
             var updatedDetails = new Details
             {
@@ -80,6 +81,7 @@ public partial class ContentPageViewModelTests
             Assert.AreEqual(hasUpdatedDetails, viewModel.HasDetails);
             CollectionAssert.Contains(notifications, nameof(viewModel.Details));
             CollectionAssert.Contains(notifications, nameof(viewModel.HasDetails));
+            Assert.AreEqual(1, detailsUpdates);
             if (hasUpdatedDetails)
             {
                 var replacement = viewModel.Details;
@@ -88,8 +90,7 @@ public partial class ContentPageViewModelTests
                 Assert.AreEqual("Updated title", replacement.Title);
                 Assert.AreEqual("Updated body", replacement.Body);
                 Assert.AreEqual(1, replacement.Metadata.Count);
-                Assert.AreSame(replacement, shownDetails);
-                Assert.AreEqual(0, hideMessages);
+                Assert.AreSame(replacement, publishedDetails);
 
                 updatedDetails.Body = "Live update";
                 Assert.AreEqual("Live update", replacement.Body);
@@ -97,8 +98,7 @@ public partial class ContentPageViewModelTests
             else
             {
                 Assert.IsNull(viewModel.Details);
-                Assert.IsNull(shownDetails);
-                Assert.AreEqual(1, hideMessages);
+                Assert.IsNull(publishedDetails);
             }
 
             if (previousDetails is not null)
@@ -111,7 +111,6 @@ public partial class ContentPageViewModelTests
         }
         finally
         {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
             viewModel.SafeCleanup();
         }
     }

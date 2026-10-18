@@ -2,11 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using FancyZonesEditor.UITests.Utils;
 using FancyZonesEditorCommon.Data;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Globalization;
 
 namespace FancyZonesEditor.UITests;
 
@@ -254,13 +254,14 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
     private static Element RequireHotkeyOption(Session processSession, string optionName)
     {
         Element? option = null;
-        Assert.IsTrue(
-            processSession.WaitFor(() =>
+        bool found = processSession.WaitFor(
+            () =>
             {
                 option = FindHotkeyOption(processSession, optionName);
                 return option is not null;
-            }, 10_000),
-            $"Shortcut option '{optionName}' was not found in the popup.");
+            },
+            10_000);
+        Assert.IsTrue(found, $"Shortcut option '{optionName}' was not found in the popup.");
 
         return option!;
     }
