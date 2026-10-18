@@ -32,22 +32,18 @@ public class ItemActionControllerTests
     private int _closeCount;
 
     [TestMethod]
-    [DataRow(VirtualKeyModifiers.None, false, "primary")]
-    [DataRow(VirtualKeyModifiers.None, true, "primary")]
-    [DataRow(VirtualKeyModifiers.Control, false, "secondary")]
-    [DataRow(VirtualKeyModifiers.Control, true, "secondary")]
-    public void Activation_UsesPageMessagesWithoutRequiringAMenu(VirtualKeyModifiers modifiers, bool hasContext, string expected)
+    [DataRow(VirtualKeyModifiers.None, false)]
+    [DataRow(VirtualKeyModifiers.None, true)]
+    [DataRow(VirtualKeyModifiers.Control, false)]
+    [DataRow(VirtualKeyModifiers.Control, true)]
+    public void Activation_IsLeftToThePageInteractionTarget(VirtualKeyModifiers modifiers, bool hasContext)
     {
         _context = hasContext ? Mock.Of<ICommandBarContext>() : null;
-        List<string> activations = [];
-        _messenger.Register<ActivateSelectedListItemMessage>(this, (_, _) => activations.Add("primary"));
-        _messenger.Register<ActivateSecondaryCommandMessage>(this, (_, _) => activations.Add("secondary"));
-        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("Page activation must retain its existing invocation path."));
+        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("The page interaction target owns activation."));
         using var controller = CreateController();
 
-        Assert.IsTrue(controller.TryHandleKey(new KeyChord(modifiers, (int)VirtualKey.Enter, 0)));
+        Assert.IsFalse(controller.TryHandleKey(new KeyChord(modifiers, (int)VirtualKey.Enter, 0)));
 
-        CollectionAssert.AreEqual(new[] { expected }, activations);
         Assert.IsEmpty(_callbacks);
         Assert.IsEmpty(_opened);
     }
@@ -74,7 +70,8 @@ public class ItemActionControllerTests
         Assert.IsFalse(controller.TryHandleShortcut(new KeyChord(0, (int)VirtualKey.F6, 0)));
         Assert.IsFalse(controller.TryHandleKey(new KeyChord(0, (int)VirtualKey.Enter, 0)));
         Assert.IsFalse(controller.TryHandleKey(CtrlK));
-        _messenger.Send(new OpenContextMenuMessage(new ContextMenuRequest(_context!)));
+        controller.ShowContextMenu(new ContextMenuRequest(_context!));
+        controller.ShowContextMenuAfterKeyEvent(_context!);
 
         Assert.IsEmpty(_callbacks);
         Assert.IsEmpty(_opened);
@@ -114,17 +111,14 @@ public class ItemActionControllerTests
                 _canAct = false;
                 break;
             case "close":
-                _messenger.Send<ClosePaletteContextMenuMessage>();
+                controller.CloseContextMenu();
                 break;
             case "dispose":
                 controller.Dispose();
                 Assert.AreEqual(1, _closeCount);
                 Assert.IsFalse(controller.TryHandleKey(CtrlK));
-                _messenger.Send(new OpenContextMenuMessage(new ContextMenuRequest(_context!)));
-                Assert.IsFalse(_messenger.IsRegistered<OpenContextMenuMessage>(controller));
-                Assert.IsFalse(_messenger.IsRegistered<ClosePaletteContextMenuMessage>(controller));
-                _messenger.Send<ClosePaletteContextMenuMessage>();
-                Assert.AreEqual(1, _closeCount, "Disposal must unregister palette close requests too.");
+                controller.ShowContextMenu(new ContextMenuRequest(_context!));
+                controller.ShowContextMenuAfterKeyEvent(_context!);
                 break;
         }
 
@@ -142,7 +136,7 @@ public class ItemActionControllerTests
             Anchor = new ContextMenuAnchor(null!, new Point(12, 34), FlyoutPlacementMode.BottomEdgeAlignedLeft, ContextMenuFilterLocation.Top),
         };
 
-        _messenger.Send(new OpenContextMenuMessage(request));
+        controller.ShowContextMenu(request);
         DrainCallbacks();
 
         Assert.HasCount(1, _opened);
@@ -156,7 +150,7 @@ public class ItemActionControllerTests
         Assert.IsTrue(controller.TryHandleKey(CtrlK));
 
         _canAct = false;
-        _messenger.Send(new OpenContextMenuMessage(new ContextMenuRequest(Mock.Of<IContextMenuContext>())));
+        controller.ShowContextMenu(new ContextMenuRequest(Mock.Of<IContextMenuContext>()));
         _canAct = true;
         DrainCallbacks();
 
@@ -184,7 +178,7 @@ public class ItemActionControllerTests
         dockHost.ShowAfterKeyEvent(() => new ContextMenuRequest(Mock.Of<IContextMenuContext>()));
         if (closePalette)
         {
-            _messenger.Send<ClosePaletteContextMenuMessage>();
+            controller.CloseContextMenu();
         }
         else
         {
@@ -194,6 +188,43 @@ public class ItemActionControllerTests
         DrainCallbacks();
         Assert.HasCount(closePalette ? 0 : 1, _opened);
         Assert.HasCount(closePalette ? 1 : 0, dockOpened);
+    }
+
+    [TestMethod]
+    [DataRow("close")]
+    [DataRow("newer")]
+    [DataRow("selection")]
+    public void SubmenuKeyOpen_DoesNotReopenAfterCloseOrReplaceANewerRequest(string change)
+    {
+        using var controller = CreateController();
+        var submenuContext = _context!;
+        var submenu = new CommandContextItemViewModel(new CommandContextItem(new NoOpCommand()), new(_pageContext));
+        controller.ShowContextMenuAfterKeyEvent(submenuContext, submenu);
+        var newer = new ContextMenuRequest(Mock.Of<IContextMenuContext>());
+        switch (change)
+        {
+            case "close":
+                controller.CloseContextMenu();
+                break;
+            case "newer":
+                controller.ShowContextMenu(newer);
+                break;
+            case "selection":
+                _context = Mock.Of<ICommandBarContext>();
+                break;
+        }
+
+        DrainCallbacks();
+
+        if (change == "newer")
+        {
+            Assert.HasCount(1, _opened);
+            Assert.AreSame(newer, _opened[0]);
+        }
+        else
+        {
+            Assert.IsEmpty(_opened);
+        }
     }
 
     [TestMethod]

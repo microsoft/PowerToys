@@ -36,6 +36,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalKeyboardListener.cs" Link="Helpers\GlobalKeyboardListener.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalKeyboardHook.cs" Link="Helpers\GlobalKeyboardHook.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\IGlobalKeyboardHook.cs" Link="Helpers\IGlobalKeyboardHook.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\WindowsRunHistory.cs" Link="Helpers\WindowsRunHistory.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockFocusNavigation.cs" Link="Helpers\DockFocusNavigation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
@@ -46,8 +49,9 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuAnchor.cs" Link="Helpers\ContextMenuAnchor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuRequest.cs" Link="Helpers\ContextMenuRequest.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\FlyoutPlacementHelper.cs" Link="Helpers\FlyoutPlacementHelper.cs" />
-    <Compile Include="..\..\Microsoft.CmdPal.UI\Messages\OpenContextMenuMessage.cs" Link="Messages\OpenContextMenuMessage.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Messages\ContextMenuFilterLocation.cs" Link="Messages\ContextMenuFilterLocation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ContextMenuHost.cs" Link="Services\ContextMenuHost.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Services\IContextMenuOwner.cs" Link="Services\IContextMenuOwner.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ItemActionController.cs" Link="Services\ItemActionController.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRefreshState.cs" Link="Controls\IconRefreshState.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconUnloadController.cs" Link="Controls\IconUnloadController.cs" />

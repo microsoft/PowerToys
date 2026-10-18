@@ -164,7 +164,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         DoOnActivePage(
         () =>
         {
-            SendPageUiMessage(new UpdateCommandBarMessage(this));
+            SetCommandBarContext(this);
         });
     }
 
@@ -214,7 +214,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 DoOnActivePage(
                 () =>
                 {
-                    SendPageUiMessage(new UpdateCommandBarMessage(this));
+                    SetCommandBarContext(this);
                 });
 
                 break;
@@ -239,14 +239,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         DoOnActivePage(
             () =>
             {
-                if (HasDetails)
-                {
-                    SendPageUiMessage(new ShowDetailsMessage(Details));
-                }
-                else
-                {
-                    SendPageUiMessage(new HideDetailsMessage());
-                }
+                SetDetails(Details);
             });
     }
 
@@ -407,7 +400,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         base.ResumeAfterNavigation();
         UpdateDetails();
-        DoOnActivePage(() => WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(this)));
+        DoOnActivePage(() => SetCommandBarContext(this));
         return Task.CompletedTask;
     }
 

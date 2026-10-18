@@ -56,6 +56,58 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void SaveMachineMatrixPublishesNewSnapshotWithoutMutatingPreviousReaders()
+        {
+            var settings = new MouseWithoutBordersSettings();
+            settings.Properties.MachineMatrixString.Add("existing");
+            var previous = settings.Properties.MachineMatrixString;
+            var settingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
+            var expected = new List<string> { "second", "first", string.Empty, string.Empty };
+
+            MouseWithoutBordersMachineMatrixPersistence.Save(
+                settingsUtils.Object,
+                settings,
+                expected,
+                static name => name);
+
+            Assert.AreNotSame(previous, settings.Properties.MachineMatrixString);
+            CollectionAssert.AreEqual(new List<string> { "existing" }, previous);
+            CollectionAssert.AreEqual(expected, settings.Properties.MachineMatrixString);
+            settingsUtils.Verify(
+                utils => utils.SaveSettings(
+                    It.Is<string>(json => MatrixMatches(json, expected)),
+                    MouseWithoutBordersSettings.ModuleName,
+                    SettingsUtils.DefaultFileName),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public void SaveMachineMatrixAcceptsTheCurrentSettingsListAsInput()
+        {
+            var settings = new MouseWithoutBordersSettings();
+            settings.Properties.MachineMatrixString.AddRange(new List<string> { "first", "second", string.Empty, string.Empty });
+            var previous = settings.Properties.MachineMatrixString;
+            var expected = new List<string>(previous);
+            var settingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
+
+            MouseWithoutBordersMachineMatrixPersistence.Save(
+                settingsUtils.Object,
+                settings,
+                previous,
+                static name => name);
+
+            Assert.AreNotSame(previous, settings.Properties.MachineMatrixString);
+            CollectionAssert.AreEqual(expected, previous);
+            CollectionAssert.AreEqual(expected, settings.Properties.MachineMatrixString);
+            settingsUtils.Verify(
+                utils => utils.SaveSettings(
+                    It.Is<string>(json => MatrixMatches(json, expected)),
+                    MouseWithoutBordersSettings.ModuleName,
+                    SettingsUtils.DefaultFileName),
+                Times.Once);
+        }
+
+        [TestMethod]
         public void SaveMachineMatrixLeavesSettingsUnchangedWhenNameProjectionFails()
         {
             var settings = new MouseWithoutBordersSettings();

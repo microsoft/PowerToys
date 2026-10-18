@@ -45,6 +45,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         try
         {
             moduleSettingsSnapshot = SettingsConfigHelper.PreserveModuleSettings("PowerDisplay");
+
             // Module startup reconciles Light Switch references against the fixture profiles.
             lightSwitchSettingsSnapshot = SettingsConfigHelper.PreserveModuleSettings("LightSwitch");
         }

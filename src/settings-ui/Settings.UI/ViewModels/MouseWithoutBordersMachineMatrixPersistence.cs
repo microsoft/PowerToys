@@ -24,8 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(nameSelector);
 
             var machineNames = machines.Select(nameSelector).ToList();
-            settings.Properties.MachineMatrixString.Clear();
-            settings.Properties.MachineMatrixString.AddRange(machineNames);
+            settings.Properties.ReplaceMachineMatrixString(machineNames);
             settingsUtils.SaveSettings(settings.ToJsonString(), MouseWithoutBordersSettings.ModuleName);
         }
     }
