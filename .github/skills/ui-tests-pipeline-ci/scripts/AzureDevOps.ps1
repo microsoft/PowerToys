@@ -209,6 +209,13 @@ function ConvertTo-AzDevOpsBuildSnapshot
         [string] $ExpectedSourceVersion
     )
 
+    $requiredProperties = @('id', 'buildNumber', 'status', 'sourceBranch', 'sourceVersion')
+    $missingProperties = @($requiredProperties | Where-Object { $null -eq $Build.PSObject.Properties[$_] })
+    if ($missingProperties.Count -gt 0)
+    {
+        throw "Azure DevOps returned a malformed build response for requested build ${RequestedId}; missing: $($missingProperties -join ', ')."
+    }
+
     if ([int]$Build.id -ne $RequestedId)
     {
         throw "Requested build $RequestedId but Azure DevOps returned build $($Build.id)."

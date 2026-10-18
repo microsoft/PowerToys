@@ -250,6 +250,38 @@ public static class TestHelper
         return false;
     }
 
+    /// <summary>
+    /// Poll (Win32 only, no UIA walk) until a MeasureToolUI process owns a visible main window.
+    /// </summary>
+    public static bool WaitForScreenRulerWindow(int timeoutMs = 15000, int pollingIntervalMs = 200)
+    {
+        var endTime = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        while (DateTime.UtcNow < endTime)
+        {
+            foreach (var p in Process.GetProcessesByName(ScreenRulerProcess))
+            {
+                using (p)
+                {
+                    try
+                    {
+                        if (p.MainWindowHandle != IntPtr.Zero)
+                        {
+                            return true;
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Process exited between enumeration and the handle query.
+                    }
+                }
+            }
+
+            Thread.Sleep(pollingIntervalMs);
+        }
+
+        return false;
+    }
+
     public static bool WaitForScreenRulerUI(UITestBase testBase, int timeoutMs = 5000) =>
         WaitForScreenRulerUIState(testBase, shouldBeOpen: true, timeoutMs);
 
@@ -366,10 +398,18 @@ public static class TestHelper
             SendShortcutUntilVisible(testBase, activationKeys),
             $"ScreenRulerUI should appear after pressing activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");
 
+        // The readiness check above only sees the PROCESS; on slow CI agents the toolbar window can
+        // take several more seconds to be created and become UIA-visible. Wait for it cheaply via
+        // Win32 first, then give the UIA lookup a generous budget.
+        if (!WaitForScreenRulerWindow(15000))
+        {
+            Log("ActivateScreenRuler: no visible MeasureToolUI main window yet; falling back to the UIA wait");
+        }
+
         // Process-scoped session so the toolbar buttons resolve regardless of which Measure Tool
         // window owns them (the winappcli equivalent of the legacy global Find).
         Log("ActivateScreenRuler: toolbar is up; building the process-scoped session");
-        var ruler = Session.FromProcess(ScreenRulerProcess, PowerToysModule.ScreenRuler, timeoutMS: 5000);
+        var ruler = Session.FromProcess(ScreenRulerProcess, PowerToysModule.ScreenRuler, timeoutMS: 20000);
         Log("ActivateScreenRuler: session ready");
         return ruler;
     }

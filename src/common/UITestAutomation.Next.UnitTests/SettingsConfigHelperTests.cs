@@ -130,6 +130,36 @@ public class SettingsConfigHelperTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void PreserveFileRestoresAbsenceWhenParentDirectoryIsMissing(bool createThenRemoveParent)
+    {
+        var root = CreateTemporaryDirectory();
+        var parent = Path.Combine(root, "module");
+        var path = Path.Combine(parent, "settings.json");
+
+        try
+        {
+            using (SettingsConfigHelper.PreserveFile(path))
+            {
+                if (createThenRemoveParent)
+                {
+                    Directory.CreateDirectory(parent);
+                    File.WriteAllText(path, "temporary");
+                    Directory.Delete(parent, recursive: true);
+                }
+            }
+
+            Assert.IsFalse(File.Exists(path));
+            Assert.IsFalse(Directory.Exists(parent), "Restoring absence should not create the parent directory.");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void PreserveFirstRunSettingsRestoresExistingFiles()
     {
         var root = CreateTemporaryDirectory();

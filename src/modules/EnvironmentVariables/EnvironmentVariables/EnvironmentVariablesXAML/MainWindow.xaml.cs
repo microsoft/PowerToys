@@ -25,6 +25,10 @@ namespace EnvironmentVariables
         {
             this.InitializeComponent();
 
+            const string fallbackTitle = "Environment Variables";
+            Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
             TitleBarHelper.SetPreferredTheme(this);
@@ -42,7 +46,7 @@ namespace EnvironmentVariables
             // window title populated.
             if (string.IsNullOrEmpty(title))
             {
-                title = "Environment Variables";
+                title = fallbackTitle;
             }
 
             Title = title;
@@ -80,7 +84,7 @@ namespace EnvironmentVariables
             {
                 case NativeMethods.WindowMessage.WM_SETTINGSCHANGED:
                     {
-                        var lParamStr = Marshal.PtrToStringUTF8(lParam);
+                        var lParamStr = Marshal.PtrToStringUni(lParam);
                         if (lParamStr == "Environment")
                         {
                             // Do not react on self - not nice, re-check this

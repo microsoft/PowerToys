@@ -9,6 +9,7 @@
 #pragma once
 
 #include "pch.h"
+#include <functional>
 
 class SelectRectangle
 {
@@ -23,8 +24,16 @@ public:
     double AspectRatio() const { return m_aspectRatio; }
     // Sets the border color Start resets to (default: capture-API yellow).
     void BorderColor( COLORREF color ) { m_configuredBorderColor = color; m_borderColor = color; }
+    void RetainDimmedExteriorAfterSelection( bool retain ) { m_retainDimmedExterior = retain; }
     RECT SelectedRect() const { return m_selectedRect; }
     bool IsActive() const { return m_window != nullptr; }
+
+    // Optional notifications raised from the modal Start message loop.
+    void OnDragStarted( std::function<void()> callback ) { m_onDragStarted = std::move( callback ); }
+    void OnDragCompleted( std::function<void()> callback ) { m_onDragCompleted = std::move( callback ); }
+    void OnCancelled( std::function<void()> callback ) { m_onCancelled = std::move( callback ); }
+    void OnSelectionChanged( std::function<void( const RECT& )> callback ) { m_onSelectionChanged = std::move( callback ); }
+    void OnDictateRequested( std::function<void()> callback ) { m_onDictateRequested = std::move( callback ); }
 
     // borderColor sets the initial selection border color (defaults to yellow to
     // match the capture API). Panorama capture passes blue.
@@ -61,8 +70,22 @@ private:
     bool m_selected{ false };
     bool m_setClip{ false };
     bool m_stopping{ false };
+    bool m_dragStarted{ false };
+    bool m_retainDimmedExterior{ false };
     POINT m_startPoint{};
     wil::unique_hwnd m_window;
+
+    std::function<void()> m_onDragStarted;
+    std::function<void()> m_onDragCompleted;
+    std::function<void()> m_onCancelled;
+    std::function<void()> m_onDictateRequested;
+    std::function<void( const RECT& )> m_onSelectionChanged;
+
+    void NotifyDragStarted();
+    void NotifyDragCompleted();
+    void NotifyCancelled();
+    void NotifyDictateRequested();
+    void NotifySelectionChanged();
 
     void ShowSelected();
     LRESULT WindowProc( HWND window, UINT message, WPARAM wordParam, LPARAM longParam );

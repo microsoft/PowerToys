@@ -78,6 +78,13 @@ public interface IExtensionWrapper
     IExtension? GetExtensionObject();
 
     /// <summary>
+    /// Tries to allow the extension process to set the foreground window.
+    /// </summary>
+    /// <param name="checkLiveness">Whether to check liveness before attempting the grant.</param>
+    /// <returns>Whether the foreground grant succeeded.</returns>
+    bool TryAllowSetForeground(bool checkLiveness);
+
+    /// <summary>
     /// Tells the wrapper that the extension implements the given provider
     /// </summary>
     /// <param name="providerType">The type of provider to be added</param>

@@ -14,7 +14,10 @@ namespace ManagedCommon
 
     public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo);
 
-    public class HotkeySettingsControlHook : IDisposable
+    // Same as FilterAccessibleKeyboardEvents, but also reports whether the event is a key-down (including system key-down).
+    public delegate bool FilterKeyboardEventsWithKeyState(int key, UIntPtr extraInfo, bool isKeyDown);
+
+    public partial class HotkeySettingsControlHook : IDisposable
     {
         private const int WmKeyDown = 0x100;
         private const int WmKeyUp = 0x101;
@@ -27,9 +30,14 @@ namespace ManagedCommon
         private IsActive _isActive;
         private bool disposedValue;
 
-        private FilterAccessibleKeyboardEvents _filterKeyboardEvent;
+        private FilterKeyboardEventsWithKeyState _filterKeyboardEvent;
 
         public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterAccessibleKeyboardEvents filterAccessibleKeyboardEvents)
+            : this(keyDown, keyUp, isActive, (key, extraInfo, _) => filterAccessibleKeyboardEvents(key, extraInfo))
+        {
+        }
+
+        public HotkeySettingsControlHook(KeyEvent keyDown, KeyEvent keyUp, IsActive isActive, FilterKeyboardEventsWithKeyState filterAccessibleKeyboardEvents)
         {
             _keyDown = keyDown;
             _keyUp = keyUp;
@@ -62,7 +70,8 @@ namespace ManagedCommon
         private bool FilterKeyboardEvents(KeyboardEvent ev)
         {
 #pragma warning disable CA2020 // Prevent from behavioral change
-            return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo);
+            bool isKeyDown = ev.message == WmKeyDown || ev.message == WmSysKeyDown;
+            return _filterKeyboardEvent(ev.key, (UIntPtr)ev.dwExtraInfo, isKeyDown);
 #pragma warning restore CA2020 // Prevent from behavioral change
         }
 

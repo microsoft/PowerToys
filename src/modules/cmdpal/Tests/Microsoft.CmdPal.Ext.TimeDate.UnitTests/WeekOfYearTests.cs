@@ -116,11 +116,9 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         public void IsoTokensRenderTheIsoWeekDate(int year, int month, int day, string expected)
         {
             var date = new DateTime(year, month, day);
-            var weekOfYear = TimeAndDateHelper.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
 
-            var success = TimeAndDateHelper.TryFormatCustomString(date, "IWYR-\\WIWOY-IDOW", weekOfYear, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, out var result);
+            var result = CustomClockDisplay.Format(date, "IWYR-\\WIWOY-IDOW", new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1));
 
-            Assert.IsTrue(success);
             Assert.AreEqual(expected, result);
         }
 
@@ -134,11 +132,9 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         public void IwyyTokenRendersTheTwoDigitIsoWeekBasedYear(int year, int month, int day, string expected)
         {
             var date = new DateTime(year, month, day);
-            var weekOfYear = TimeAndDateHelper.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
 
-            var success = TimeAndDateHelper.TryFormatCustomString(date, "IWYY \\WIWOY", weekOfYear, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, out var result);
+            var result = CustomClockDisplay.Format(date, "IWYY \\WIWOY", new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1));
 
-            Assert.IsTrue(success);
             Assert.AreEqual(expected, result);
         }
 
@@ -162,13 +158,13 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         }
 
         [TestMethod]
-        public void IsoWeekDateModeIsIsoCompliantIndependentOfTheSettings()
+        public void IsoWeekDateFormatIsIsoCompliantIndependentOfTheSettings()
         {
             // US style calculation settings; the ISO week date entry must still
             // render the ISO compliant string.
-            var settings = new Settings(firstWeekOfYear: 0, firstDayOfWeek: 0, clockBandDateMode: 2);
+            var settings = new Settings(firstWeekOfYear: 0, firstDayOfWeek: 0);
 
-            var dateLine = TimeAndDateHelper.GetClockBandDateLine(new DateTime(2027, 1, 1), settings);
+            var dateLine = CustomClockDisplay.Format(new DateTime(2027, 1, 1), "IWYR-\\WIWOY-IDOW", settings);
 
             Assert.AreEqual("2026-W53-5", dateLine);
         }
@@ -181,9 +177,8 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             var date = new DateTime(2012, 12, 31);
             var weekOfYear = TimeAndDateHelper.GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
 
-            var success = TimeAndDateHelper.TryFormatCustomString(date, "WOY IWOY", weekOfYear, CalendarWeekRule.FirstDay, DayOfWeek.Sunday, out var result);
+            var result = CustomClockDisplay.Format(date, "WOY IWOY", new Settings(firstWeekOfYear: 0, firstDayOfWeek: 0));
 
-            Assert.IsTrue(success);
             Assert.AreEqual($"{weekOfYear.ToString(CultureInfo.CurrentCulture)} 01", result);
         }
 
@@ -191,9 +186,9 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         public void DateLineUsesTheIsoWeekNumberAtTheYearBoundary()
         {
             // ISO settings; Calendar.GetWeekOfYear would render 53 here
-            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 1);
+            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1);
 
-            var dateLine = TimeAndDateHelper.GetClockBandDateLine(new DateTime(2012, 12, 31), settings);
+            var dateLine = CustomClockDisplay.Format(new DateTime(2012, 12, 31), "\\WWOY", settings);
 
             Assert.IsTrue(dateLine.EndsWith("W1", StringComparison.Ordinal), $"Expected the date line to end with 'W1' but got '{dateLine}'");
             Assert.IsFalse(dateLine.Contains("53", StringComparison.Ordinal), $"Expected no week 53 in '{dateLine}'");
@@ -202,47 +197,50 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         [TestMethod]
         public void CustomFormatWoyPlaceholderFollowsTheFirstWeekAndFirstDaySettings()
         {
-            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 3, customDateFormatInClockBand: "\\WWOY");
+            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1);
 
-            var dateLine = TimeAndDateHelper.GetClockBandDateLine(new DateTime(2026, 7, 6), settings);
+            var dateLine = CustomClockDisplay.Format(new DateTime(2026, 7, 6), "\\WWOY", settings);
 
             Assert.AreEqual("W28", dateLine);
         }
 
         [DataTestMethod]
 
-        // A format consisting of a single token replaces to a string that is no
-        // longer a valid .NET date format (a lone digit is read as a standard
-        // format specifier and throws), so the recovery has to keep the replaced
-        // value. 2026-07-06 is a Monday in ISO week 28.
+        // Single-token values must stay literal, including one-digit values.
         [DataRow("IDOW", "1")]
         [DataRow("IWOY", "28")]
         [DataRow("WOY", "28")]
         [DataRow("IWYY", "26")]
+        [DataRow("IWYR", "2026")]
         public void SingleTokenFormatsRenderTheBareValue(string format, string expected)
         {
             var date = new DateTime(2026, 7, 6);
-            var weekOfYear = TimeAndDateHelper.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
 
-            var success = TimeAndDateHelper.TryFormatCustomString(date, format, weekOfYear, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, out var result);
+            var result = CustomClockDisplay.Format(date, format, new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1));
 
-            Assert.IsTrue(success);
+            Assert.AreEqual(expected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("\\IWOY IWOY", "IWOY 28")]
+        [DataRow("\\IWYR IWYR", "IWYR 2026")]
+        [DataRow("\\IWYY IWYY", "IWYY 26")]
+        [DataRow("\\IDOW IDOW", "IDOW 1")]
+        public void EscapedIsoTokensStayLiteral(string format, string expected)
+        {
+            var result = CustomClockDisplay.Format(new DateTime(2026, 7, 6), format, new Settings());
+
             Assert.AreEqual(expected, result);
         }
 
         [TestMethod]
-        public void InvalidFormatsRenderAsRawTextInsteadOfBeingDropped()
+        public void UtcFormatsUseTheUtcWeekDateAtTheYearBoundary()
         {
-            // Same recovery as the custom format search results: the raw pattern in
-            // the dock tells the user their format is broken, a silent fallback
-            // would be indistinguishable from an ignored setting.
-            var date = new DateTime(2026, 7, 6);
-            var weekOfYear = TimeAndDateHelper.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+            var time = new DateTimeOffset(2024, 12, 30, 1, 0, 0, TimeSpan.FromHours(2));
+            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1);
 
-            var success = TimeAndDateHelper.TryFormatCustomString(date, "'unclosed", weekOfYear, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, out var result);
-
-            Assert.IsTrue(success);
-            Assert.AreEqual("'unclosed", result);
+            Assert.AreEqual("2025-W01-1 1", CustomClockDisplay.Format(time, "IWYR-\\WIWOY-IDOW WOY", settings));
+            Assert.AreEqual("2024-W52-7 52", CustomClockDisplay.Format(time, "UTC:IWYR-\\WIWOY-IDOW WOY", settings));
         }
     }
 }

@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2026-08-28
+last updated: 2026-09-03
 issue id: n/a
 ---
 
@@ -90,6 +90,7 @@ functionality.
     - [Plain text content](#plain-text-content)
   - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
   - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
+  - [Addenda IX: Dock label layout hints](#addenda-ix-dock-label-layout-hints)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -1788,8 +1789,24 @@ However, this class comes with restrictions around the ability to call it from a
 background thread. Since extensions are always running in the background, this
 presents persistent difficulties.
 
-We'll provide a helper class that allows developers to easily use the clipboard
-in their extensions.
+The extension toolkit provides `ClipboardHelper` for this purpose. Its methods
+create the required STA work automatically, so extension code does not need to
+create a foreground window or manage a clipboard thread:
+
+```cs
+ClipboardHelper.SetText("text");
+ClipboardHelper.SetRtf("plain text", rtfText);
+ClipboardHelper.SetImage(RandomAccessStreamReference.CreateFromStream(stream));
+ClipboardHelper.SetContent(dataPackage);
+```
+
+`SetText` and `SetRtf` use the Win32 clipboard formats directly. `SetImage`
+accepts a `RandomAccessStreamReference` containing an image and writes it as
+the standard bitmap clipboard format. `SetContent` accepts a `DataPackage` for
+other Windows clipboard formats. Clipboard ownership and bounded retries are
+handled by the helper. Clipboard access can still fail when another process
+owns the shared clipboard, so callers should treat clipboard operations as
+best-effort and surface their own user-facing error when appropriate.
 
 ### Settings helpers
 
@@ -2462,6 +2479,94 @@ Should an extension want to indicate that the content has changed, they can
 raise a `INotifyPropChanged` event on the `IDetails2` object for the property
 name "Content". The host will accept that as a notification that the content has
 changed. 
+
+## Addenda IX: Dock label layout hints
+
+Optional attributes exposed through `IExtendedAttributesProvider.GetProperties()`.
+Apply to the rendered item: the root of a single-item band, or each `IListPage` child.
+
+### Width values
+
+`DockLabelWidth` is an immutable Toolkit helper with three factories:
+
+- `Dips(double value)`: device-independent pixels.
+- `Characters(double value)`: multiples of the `0` glyph width in the target font.
+- `Sample(string text)`: literal text measured in the target font; empty text reserves zero.
+
+Numeric values must be finite, non-negative, and no greater than `float.MaxValue`.
+Factories reject invalid numbers and null samples.
+Helpers serialize widths as primitive attributes; the managed `DockLabelWidth` object does not cross WinRT.
+
+### Toolkit methods
+
+Receiver: `TItem : CommandItem, IExtendedAttributesProvider` (including `ListItem`).
+Requires a persistent, writable property bag. All methods return the same `TItem`.
+
+- `SetDockLabelReservations(DockLabelWidth? titleWidth, DockLabelWidth? subtitleWidth)`:
+  replace both row reservations; `null` removes the corresponding reservation.
+- `ClearDockLabelReservations()`: remove both row reservations; preserve shared limits.
+- `SetDockLabelWidthLimits(DockLabelWidth? minimum, DockLabelWidth? maximum)`:
+  replace both shared limits; `null` removes the corresponding limit.
+- `ClearDockLabelWidthLimits()`: remove both shared limits; preserve row reservations.
+- `SetDockLabelTabularDigits(bool enabled = true)`: enable equal-width digits in both rows.
+- `SetDockLabelTrailingAlignment(bool enabled = true)`: align both rows to the trailing edge.
+
+Both width arguments are required, including explicit `null` values.
+Presentation hints are independent; `enabled: false` removes the corresponding hint.
+Number formatting and decimal precision remain the extension's responsibility.
+
+Example: `item.SetDockLabelReservations(DockLabelWidth.Sample("100%"), DockLabelWidth.Sample(localizedSubtitle))`.
+Optional cap: `item.SetDockLabelWidthLimits(null, DockLabelWidth.Characters(20))`.
+
+### Attributes
+
+Constants are defined in `WellKnownExtensionAttributes`.
+Attribute keys use the prefix `Microsoft.CommandPalette.Dock.`.
+
+| Constant | Key suffix | Value | Measurement font |
+| --- | --- | --- | --- |
+| `DockTitleWidth` | `TitleWidth` | Width | Title |
+| `DockSubtitleWidth` | `SubtitleWidth` | Width | Subtitle |
+| `DockMinLabelWidth` | `MinLabelWidth` | Width | Title |
+| `DockMaxLabelWidth` | `MaxLabelWidth` | Width | Title |
+| `DockLabelTabularDigits` | `TabularDigits` | `bool` | Both rows |
+| `DockLabelTrailingAlignment` | `TrailingAlignment` | `bool` | Both rows |
+
+Width encodings:
+
+- `double`: DIPs.
+- Invariant number followed by `ch`: character units, including fractional or exponent notation.
+- `text:` followed by literal text: sample. For example, `text:12ch` measures the characters `12ch`.
+- Unit suffixes and the sample prefix are case-sensitive. Invalid values are ignored.
+
+### Host behavior
+
+- Reservations: measure each enabled row in its own font and text scale.
+  Fix the shared label width to the largest valid reservation, clamped by explicit min/max.
+- Limits: use the title font for character units and samples.
+  Without a row reservation, constrain the content's natural width.
+  Equal limits fix the width; a maximum alone permits shrinking.
+  Ignore both limits if the resolved minimum exceeds the maximum.
+- Defaults: apply only when no enabled row has a valid reservation.
+  Minimum 24 DIPs with a title, zero for subtitle-only items; maximum 100 DIPs.
+  An explicit limit overrides a conflicting default.
+- Visibility: compact mode excludes the subtitle; settings exclude hidden rows.
+  Empty displayed text retains its row reservation. Hidden labels reserve no space.
+- Samples: independent of displayed text, never rendered or inferred from it.
+  Keep samples stable across value updates to avoid resizing.
+  Measurements include pixel rounding and are cached until hints, fonts, language,
+  direction, text scale, or display scale change.
+- Scope: label column only, excluding icons and padding. Vertical docks may shrink below the minimum.
+- Overflow: ellipsis, with full text in the tooltip.
+
+### Change notifications
+
+- Width attributes: `PropChanged("DockLabelWidth")`.
+- Tabular digits: `PropChanged("DockLabelTabularDigits")`.
+- Trailing alignment: `PropChanged("DockLabelTrailingAlignment")`.
+- Entire property bag: `PropChanged("Properties")`.
+- Helpers notify once after updating all affected keys; unchanged hints do not notify.
+- Ordinary `Title` / `Subtitle` updates require no additional hint notification.
 
 ## Class diagram
 

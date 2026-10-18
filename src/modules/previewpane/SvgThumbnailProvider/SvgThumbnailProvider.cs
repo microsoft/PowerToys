@@ -20,24 +20,24 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
     /// </summary>
     public class SvgThumbnailProvider : IDisposable
     {
-        public SvgThumbnailProvider(string filePath)
+        public SvgThumbnailProvider(string? filePath)
         {
             FilePath = filePath;
             if (FilePath != null && File.Exists(FilePath))
             {
-                Stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                Stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
             }
         }
 
         /// <summary>
         /// Gets the file path to the file creating thumbnail for.
         /// </summary>
-        public string FilePath { get; private set; }
+        public string? FilePath { get; private set; }
 
         /// <summary>
         /// Gets the stream object to access file.
         /// </summary>
-        public Stream Stream { get; private set; }
+        public Stream? Stream { get; private set; }
 
         /// <summary>
         /// Gets or sets signalled when the main thread can use preprocessed svg contents.
@@ -54,12 +54,12 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <summary>
         /// WebView2 Control to display Svg.
         /// </summary>
-        private WebView2 _browser;
+        private WebView2? _browser;
 
         /// <summary>
         /// WebView2 Environment
         /// </summary>
-        private CoreWebView2Environment _webView2Environment;
+        private CoreWebView2Environment? _webView2Environment;
 
         /// <summary>
         /// Name of the virtual host
@@ -69,7 +69,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <summary>
         /// URI of the local file saved with the contents
         /// </summary>
-        private Uri _localFileURI;
+        private Uri? _localFileURI;
 
         /// <summary>
         /// Gets the path of the current assembly.
@@ -77,7 +77,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <remarks>
         /// Source: https://stackoverflow.com/a/283917/14774889
         /// </remarks>
-        private static string AssemblyDirectory
+        private static string? AssemblyDirectory
         {
             get
             {
@@ -99,7 +99,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// preview and create Bitmap out of it.
         /// </summary>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
-        public Bitmap GetThumbnailImpl(uint cx)
+        public Bitmap? GetThumbnailImpl(uint cx)
         {
             CleanupWebView2UserDataFolder();
 
@@ -108,7 +108,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 return null;
             }
 
-            Bitmap thumbnail = null;
+            Bitmap? thumbnail = null;
 
             var thumbnailDone = new ManualResetEventSlim(false);
 
@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             _browser.Width = (int)cx;
             _browser.Height = (int)cx;
             _browser.DefaultBackgroundColor = Color.Transparent;
-            _browser.NavigationCompleted += async (object sender, CoreWebView2NavigationCompletedEventArgs args) =>
+            _browser.NavigationCompleted += async (object? sender, CoreWebView2NavigationCompletedEventArgs args) =>
             {
                 var a = await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].viewBox;");
                 if (a != null)
@@ -170,7 +170,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 
                     // Don't load any resources.
                     _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
-                    _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
+                    _browser.CoreWebView2.WebResourceRequested += (object? sender, CoreWebView2WebResourceRequestedEventArgs e) =>
                     {
                         // Show local file we've saved with the svg contents. Block all else.
                         if (new Uri(e.Request.Uri) != _localFileURI)
@@ -249,7 +249,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// <param name="width">The width to resize to.</param>
         /// <param name="height">The height to resize to.</param>
         /// <returns>The resized image.</returns>
-        public static Bitmap ResizeImage(Image image, int width, int height)
+        public static Bitmap? ResizeImage(Image image, int width, int height)
         {
             if (width <= 0 ||
                 height <= 0 ||
@@ -285,7 +285,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         /// </summary>
         /// <param name="cx">Maximum thumbnail size, in pixels.</param>
         /// <returns>Generated bitmap</returns>
-        public Bitmap GetThumbnail(uint cx)
+        public Bitmap? GetThumbnail(uint cx)
         {
             if (cx == 0 || cx > MaxThumbnailSize)
             {
@@ -302,7 +302,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             {
                 new Thread(() =>
                 {
-                    string svgData = null;
+                    string? svgData = null;
                     using (var reader = new StreamReader(Stream))
                     {
                         svgData = reader.ReadToEnd();
@@ -328,7 +328,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                 SvgContentsReady.Set();
             }
 
-            using (Bitmap thumbnail = GetThumbnailImpl(cx))
+            using (Bitmap? thumbnail = GetThumbnailImpl(cx))
             {
                 if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                 {
