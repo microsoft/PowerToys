@@ -29,6 +29,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private const string PowerToyName = "MouseWithoutBorders";
 
+        private const string CopyGlyph = "";
+
+        private const string CopiedGlyph = "";
+
         private MouseWithoutBordersViewModel ViewModel { get; set; }
 
         private readonly IFileSystemWatcher watcher;
@@ -181,9 +185,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync);
 
-        public ICommand CopyPCNameCommand => new RelayCommand(ViewModel.CopyMachineNameToClipboard);
+        public ICommand CopyPCNameCommand => new RelayCommand(() =>
+        {
+            ViewModel.CopyMachineNameToClipboard();
+            _ = ShowCopiedFeedbackAsync(CopyPCNameButton);
+        });
 
-        public ICommand CopySecurityKeyCommand => new RelayCommand(ViewModel.CopySecurityKeyToClipboard);
+        public ICommand CopySecurityKeyCommand => new RelayCommand(() =>
+        {
+            ViewModel.CopySecurityKeyToClipboard();
+            _ = ShowCopiedFeedbackAsync(CopySecurityKeyButton);
+        });
+
+        // Briefly swaps the copy icon for a checkmark so the user can see the copy happened.
+        private static async Task ShowCopiedFeedbackAsync(Button button)
+        {
+            // Each click bumps the version, so only the latest click restores the copy icon.
+            int version = (button.Tag as int? ?? 0) + 1;
+            button.Tag = version;
+            button.Content = CreateIcon(CopiedGlyph);
+
+            await Task.Delay(1500);
+
+            if (button.Tag as int? == version)
+            {
+                button.Content = CreateIcon(CopyGlyph);
+            }
+        }
+
+        private static FontIcon CreateIcon(string glyph) => new FontIcon
+        {
+            Glyph = glyph,
+            FontSize = 16,
+            FontFamily = (FontFamily)Application.Current.Resources["SymbolThemeFontFamily"],
+        };
 
         public ICommand ReconnectCommand => new AsyncCommand(ViewModel.SubmitReconnectRequestAsync);
 

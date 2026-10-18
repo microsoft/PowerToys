@@ -34,6 +34,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class MouseWithoutBordersViewModel : PageViewModelBase
     {
+        // Matches Encryption.IsKeyValid in the MouseWithoutBorders module.
+        private const int MinimumSecurityKeyLength = 16;
+
         protected override string ModuleName => MouseWithoutBordersSettings.ModuleName;
 
         // These should be in the same order as the ComboBoxItems in MouseWithoutBordersPage.xaml switch machine shortcut options
@@ -90,6 +93,72 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(ConnectionErrorMessage));
                 }
             }
+        }
+
+        // The standalone Microsoft Garage "Mouse without Borders" app listens on the same TCP ports
+        // (15100/15101), so while it is installed this module can't open its sockets and never connects.
+        private const string LegacyMouseWithoutBordersProcessName = "MouseWithoutBorders";
+        private const string LegacyMouseWithoutBordersServiceName = "MouseWithoutBordersSvc";
+
+        private bool _showLegacyAppConflictWarning;
+
+        public bool ShowLegacyAppConflictWarning
+        {
+            get => _showLegacyAppConflictWarning;
+
+            set
+            {
+                if (_showLegacyAppConflictWarning != value)
+                {
+                    _showLegacyAppConflictWarning = value;
+                    OnPropertyChanged(nameof(ShowLegacyAppConflictWarning));
+                }
+            }
+        }
+
+        public static bool IsLegacyMouseWithoutBordersPresent()
+        {
+            foreach (var processName in new[] { LegacyMouseWithoutBordersProcessName, LegacyMouseWithoutBordersServiceName })
+            {
+                try
+                {
+                    var processes = Process.GetProcessesByName(processName);
+                    var found = processes.Length != 0;
+                    foreach (var process in processes)
+                    {
+                        process.Dispose();
+                    }
+
+                    if (found)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Couldn't look for the {processName} process: {ex.Message}");
+                }
+            }
+
+            try
+            {
+                using var serviceKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{LegacyMouseWithoutBordersServiceName}");
+                return serviceKey != null;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Couldn't look for the {LegacyMouseWithoutBordersServiceName} service: {ex.Message}");
+                return false;
+            }
+        }
+
+        private void RefreshLegacyAppConflictWarning()
+        {
+            Task.Run(() =>
+            {
+                var present = IsLegacyMouseWithoutBordersPresent();
+                _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () => ShowLegacyAppConflictWarning = present);
+            });
         }
 
         private bool _isConnecting;
@@ -518,6 +587,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task SubmitConnectionRequestAsync(string pcName, string securityKey)
         {
+            if (securityKey == null || securityKey.Length < MinimumSecurityKeyLength)
+            {
+                // Reject before contacting the module: ConnectToMachine persists the key immediately,
+                // so a too-short key would replace the local one and break the existing connections.
+                _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                {
+                    IsConnecting = false;
+                    var message = ResourceLoaderInstance.ResourceLoader.GetString("MouseWithoutBorders_ConnectErrorKeyTooShort");
+                    ConnectionErrorMessage = message;
+                    ShowConnectionError = true;
+                    ConnectionFailed?.Invoke(this, new ConnectFailedEventArgs(ConnectFailureTarget.SecurityKey, message));
+                });
+                return;
+            }
+
             _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
             {
                 ShowConnectionError = false;
@@ -612,6 +696,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private static string GetConnectionErrorMessage(SocketStatus status)
         {
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+
+            // A generic failure is far more likely to be caused by the legacy app holding our ports
+            // than by the network, so point the user at the actual fix.
+            if (status != SocketStatus.InvalidKey && IsLegacyMouseWithoutBordersPresent())
+            {
+                return resourceLoader.GetString("MouseWithoutBorders_ConnectErrorLegacyAppConflict");
+            }
+
             return status switch
             {
                 SocketStatus.InvalidKey => resourceLoader.GetString("MouseWithoutBorders_ConnectErrorInvalidKey"),
@@ -672,6 +764,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _cancellationTokenSource = new CancellationTokenSource();
 
             _machinePollingThreadTask = StartMachineStatusPollingThread(_machinePollingThreadTask, _cancellationTokenSource.Token);
+
+            RefreshLegacyAppConflictWarning();
         }
 
         private Task StartMachineStatusPollingThread(Task previousThreadTask, CancellationToken token)

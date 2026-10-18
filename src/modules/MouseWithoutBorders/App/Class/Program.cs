@@ -305,6 +305,13 @@ namespace MouseWithoutBorders.Class
 
             public void ConnectToMachine(string pcName, string securityKey)
             {
+                if (!Encryption.IsKeyValid(securityKey, out string error))
+                {
+                    // Never persist an invalid key: it would replace the working local key.
+                    Logger.Log($"{nameof(ConnectToMachine)}: {error}");
+                    return;
+                }
+
                 Setting.Values.PauseInstantSaving = true;
 
                 MachineStuff.ClearComputerMatrix();

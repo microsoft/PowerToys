@@ -34,6 +34,12 @@
                                 IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_LegacyAppConflict"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowLegacyAppConflictWarning, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowLegacyAppConflictWarning, Mode=OneWay}"
+                        Severity="Warning" />
                 </controls:SettingsGroup>
                 <controls:SettingsGroup
                     x:Name="KeySettingsGroup"
@@ -89,6 +95,7 @@
                         </tkcontrols:SettingsExpander.ItemsFooter>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button
+                                x:Name="CopySecurityKeyButton"
                                 Padding="4"
                                 Command="{x:Bind CopySecurityKeyCommand, Mode=OneTime}"
                                 Content="{ui:FontIcon Glyph=&#xE8C8;,
@@ -115,6 +122,7 @@
                                 IsTextSelectionEnabled="True"
                                 Text="{x:Bind ViewModel.MachineHostName, Mode=OneTime}" />
                             <Button
+                                x:Name="CopyPCNameButton"
                                 Padding="4"
                                 Command="{x:Bind CopyPCNameCommand, Mode=OneTime}"
                                 Content="{ui:FontIcon Glyph=&#xE8C8;,
