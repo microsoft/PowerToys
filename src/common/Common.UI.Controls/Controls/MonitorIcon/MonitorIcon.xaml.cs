@@ -5,7 +5,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace PowerDisplay;
+namespace Microsoft.PowerToys.Common.UI.Controls;
 
 public sealed partial class MonitorIcon : UserControl
 {
@@ -13,6 +13,15 @@ public sealed partial class MonitorIcon : UserControl
     {
         InitializeComponent();
     }
+
+    /// <summary>Gets or sets the icon's width in effective pixels; the glyph and the number scale with it.</summary>
+    public double IconSize
+    {
+        get => (double)GetValue(IconSizeProperty);
+        set => SetValue(IconSizeProperty, value);
+    }
+
+    public static readonly DependencyProperty IconSizeProperty = DependencyProperty.Register(nameof(IconSize), typeof(double), typeof(MonitorIcon), new PropertyMetadata(16.0));
 
     public bool IsBuiltIn
     {

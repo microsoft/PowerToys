@@ -243,8 +243,7 @@ src/modules/powerdisplay/
 │   ├── PowerDisplayXAML/
 │   │   ├── App.xaml / App.xaml.cs    # Application entry point
 │   │   ├── MainWindow.xaml / .cs     # Main UI window
-│   │   ├── IdentifyWindow.xaml / .cs # Monitor identify overlay
-│   │   └── MonitorIcon.xaml / .cs    # Monitor icon control
+│   │   └── IdentifyWindow.xaml / .cs # Monitor identify overlay
 │   ├── Serialization/
 │   │   └── JsonSourceGenerationContext.cs  # JSON source generation
 │   ├── Services/
