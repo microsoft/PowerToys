@@ -27,7 +27,7 @@ namespace PowerDisplay.Cli.UnitTests;
 public class BatchMonitorTests
 {
     private static ParseResult Parse(params string[] args)
-        => new Parser(new PowerDisplayRootCommand()).Parse(args);
+        => new PowerDisplayRootCommand().Parse(args);
 
     // ── -n parsing ────────────────────────────────────────────────────────────
     [TestMethod]
@@ -36,7 +36,7 @@ public class BatchMonitorTests
         var parsed = Parse("set", "-n", "1,2,3", "--brightness", "50");
         var expected = new[] { 1, 2, 3 };
         Assert.AreEqual(0, parsed.Errors.Count);
-        CollectionAssert.AreEqual(expected, parsed.GetValueForOption(CliOptions.MonitorNumber));
+        CollectionAssert.AreEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
     }
 
     [TestMethod]
@@ -44,7 +44,7 @@ public class BatchMonitorTests
     {
         var parsed = Parse("set", "-n", "3", "--brightness", "50");
         var expected = new[] { 3 };
-        CollectionAssert.AreEqual(expected, parsed.GetValueForOption(CliOptions.MonitorNumber));
+        CollectionAssert.AreEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class BatchMonitorTests
         var parsed = Parse("up", "--brightness", "-n", "2,1,2");
         var expected = new[] { 2, 1 };
         Assert.AreEqual(0, parsed.Errors.Count);
-        CollectionAssert.AreEqual(expected, parsed.GetValueForOption(CliOptions.MonitorNumber));
+        CollectionAssert.AreEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
     }
 
     [TestMethod]
@@ -62,7 +62,7 @@ public class BatchMonitorTests
         var parsed = Parse("set", "-n", " 1 , 2 ", "--brightness", "50");
         var expected = new[] { 1, 2 };
         Assert.AreEqual(0, parsed.Errors.Count);
-        CollectionAssert.AreEqual(expected, parsed.GetValueForOption(CliOptions.MonitorNumber));
+        CollectionAssert.AreEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
     }
 
     [TestMethod]
@@ -84,7 +84,7 @@ public class BatchMonitorTests
     [TestMethod]
     public void MonitorNumber_Absent_IsNullOrEmpty()
     {
-        var value = Parse("get").GetValueForOption(CliOptions.MonitorNumber);
+        var value = Parse("get").GetValue(CliOptions.MonitorNumber);
         Assert.IsTrue(value is null || value.Length == 0);
     }
 
@@ -287,7 +287,7 @@ public class BatchMonitorTests
     {
         var root = new PowerDisplayRootCommand();
         var args = new[] { "set", "-n", "1,2,3", "-i", "MON-X", "--brightness", "50" };
-        var parseResult = new Parser(root).Parse(args);
+        var parseResult = root.Parse(args);
         var output = new RecordingCliOutput();
 
         // The send delegate is irrelevant here (a null response renders PROVIDER_UNAVAILABLE); the
@@ -314,7 +314,7 @@ public class BatchMonitorTests
     {
         var root = new PowerDisplayRootCommand();
         var args = new[] { command, "-n", "1,2" };
-        var parseResult = new Parser(root).Parse(args);
+        var parseResult = root.Parse(args);
         var output = new RecordingCliOutput();
 
         // The dispatcher must never be reached: the batch is rejected CLI-side before any IPC.

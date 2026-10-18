@@ -48,8 +48,10 @@ public abstract class KernelServiceBase(
     {
         Logger.LogTrace();
 
+        cancellationToken.ThrowIfCancellationRequested();
         var runtimeConfig = GetRuntimeConfiguration(providerIdOverride);
         var kernel = CreateKernel(runtimeConfig);
+        kernel.SetProviderId(runtimeConfig.ProviderId);
         kernel.SetDataPackageView(clipboardData);
         kernel.SetCancellationToken(cancellationToken);
         kernel.SetProgress(progress);
@@ -63,6 +65,13 @@ public abstract class KernelServiceBase(
         try
         {
             (chatHistory, var usage) = cacheUsed ? await ExecuteCachedActionChain(kernel, maybeCacheValue.ActionChain) : await ExecuteAICompletion(kernel, prompt, runtimeConfig, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+            if (kernel.GetProviderPolicyError() is ProviderPolicyDisabledException policyError)
+            {
+                // A policy denial must not be recovered using an assistant response or earlier tool output.
+                throw policyError;
+            }
 
             LogResult(cacheUsed, isSavedQuery, kernel.GetOrAddActionChain(), usage, runtimeConfig);
 
@@ -344,7 +353,7 @@ public abstract class KernelServiceBase(
                     input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
                 }
 
-                var result = await _customActionTransformService.TransformAsync(fixedPrompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress());
+                var result = await _customActionTransformService.TransformAsync(fixedPrompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress(), providerIdOverride: kernel.GetProviderId());
                 return DataPackageHelpers.CreateFromText(result?.Content ?? string.Empty);
             });
 
@@ -362,14 +371,14 @@ public abstract class KernelServiceBase(
                     input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
                 }
 
-                string output = await GetPromptBasedOutput(format, prompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress());
+                string output = await GetPromptBasedOutput(format, prompt, input, imageBytes, kernel.GetProgress(), kernel.GetProviderId(), kernel.GetCancellationToken());
                 return DataPackageHelpers.CreateFromText(output);
             });
 
-    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress) =>
+    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, byte[] imageBytes, IProgress<double> progress, string providerId, CancellationToken cancellationToken) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformAsync(prompt, input, imageBytes, cancellationToken, progress))?.Content ?? string.Empty,
+            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformAsync(prompt, input, imageBytes, cancellationToken, progress, providerIdOverride: providerId))?.Content ?? string.Empty,
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
 
@@ -381,6 +390,11 @@ public abstract class KernelServiceBase(
 
     private static async Task<string> ExecuteTransformAsync(Kernel kernel, ActionChainItem actionChainItem, Func<DataPackageView, Task<DataPackage>> transformFunc)
     {
+        if (kernel.GetProviderPolicyError() is ProviderPolicyDisabledException policyError)
+        {
+            throw policyError;
+        }
+
         kernel.GetOrAddActionChain().Add(actionChainItem);
         kernel.SetLastError(null);
 
@@ -393,6 +407,11 @@ public abstract class KernelServiceBase(
         }
         catch (Exception ex)
         {
+            if (ex is ProviderPolicyDisabledException deniedProviderError)
+            {
+                kernel.SetProviderPolicyError(deniedProviderError);
+            }
+
             kernel.SetLastError(ex);
             throw;
         }
@@ -403,32 +422,9 @@ public abstract class KernelServiceBase(
 
     private string FormatChatMessage(ChatMessageContent chatMessage)
     {
-        static string Redact(object data) =>
-#if DEBUG
-            data?.ToString();
-#else
-            "[Redacted]";
-#endif
-
-        static string FormatKernelArguments(KernelArguments kernelArguments) =>
-            string.Join(", ", kernelArguments?.Select(argument => $"{argument.Key}: {Redact(argument.Value)}") ?? []);
-
-        static string FormatKernelContent(KernelContent kernelContent) =>
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            kernelContent switch
-            {
-                FunctionCallContent functionCallContent => $"{functionCallContent.FunctionName}({FormatKernelArguments(functionCallContent.Arguments)})",
-                FunctionResultContent functionResultContent => functionResultContent.FunctionName,
-                _ => kernelContent.ToString(),
-            };
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-        var role = chatMessage.Role;
-        var content = string.Join(" / ", chatMessage.Items.Select(FormatKernelContent));
-        var redactedContent = role == AuthorRole.System || role == AuthorRole.Tool ? content : Redact(content);
         var usage = GetAIServiceUsage(chatMessage);
         var usageString = usage.HasUsage ? $" [{usage}]" : string.Empty;
-        return $"-> {role}: {redactedContent}{usageString}";
+        return $"-> {chatMessage.Role}: [Redacted]{usageString}";
     }
 
     protected virtual bool ShouldModerateAdvancedAI(IKernelRuntimeConfiguration runtimeConfig)
