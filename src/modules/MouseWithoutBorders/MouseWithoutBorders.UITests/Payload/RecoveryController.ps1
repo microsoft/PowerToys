@@ -49,10 +49,12 @@ function Save-RecoveryControllerJournal {
     Write-RunJson "$($config.RunRoot)\cleanup-journal.json" $journal
 }
 function Start-RecoveryChild {
-    param([string]$Script, [string]$Arguments)
+    param([string]$Script, [string[]]$Arguments)
     $start = [Diagnostics.ProcessStartInfo]::new()
     $start.FileName = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
-    $start.Arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -STA -WindowStyle Hidden -File "{0}\{1}" {2}' -f $PSScriptRoot, $Script, $Arguments
+    $allArguments = @('-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+        '-STA', '-WindowStyle', 'Hidden', '-File', (Join-Path $PSScriptRoot $Script)) + $Arguments
+    $start.Arguments = (@($allArguments | ForEach-Object { ConvertTo-EndpointArgument $_ })) -join ' '
     $start.UseShellExecute = $false
     $start.CreateNoWindow = $true
     $start.WorkingDirectory = $config.RunRoot
@@ -68,12 +70,12 @@ try {
         StopPath = "$($config.ControlRoot)\publisher-stop.json"
         OutputPath = "$($config.RunRoot)\Host-lease-publisher.json"
     }
-    $publisher = Start-RecoveryChild 'Publish-Leases.ps1' ('-ConfigurationPath "{0}"' -f $publisherConfig)
+    $publisher = Start-RecoveryChild 'Publish-Leases.ps1' @('-ConfigurationPath', $publisherConfig)
     $journal.LeasePublishers = @(Get-RecoveryProcessRecord $publisher.Id)
     Save-RecoveryControllerJournal
-    $worker = Start-RecoveryChild 'EndpointWorker.ps1' (
-        '-InputRoot "{0}" -OutputRoot "{1}\host" -ProductRoot "{2}" -WinApp "{3}"' -f
-        $config.InputRoot, $config.RunRoot, $config.ProductRoot, $config.WinApp)
+    $worker = Start-RecoveryChild 'EndpointWorker.ps1' @(
+        '-InputRoot', $config.InputRoot, '-OutputRoot', (Join-Path $config.RunRoot 'host'),
+        '-ProductRoot', $config.ProductRoot, '-WinApp', $config.WinApp)
     $journal.HostWorker = Get-RecoveryProcessRecord $worker.Id
     Save-RecoveryControllerJournal
     Write-RunJson "$($config.RunRoot)\controller-ready.json" $journal

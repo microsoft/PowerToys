@@ -25,7 +25,7 @@ continuation plan are retired; repository history retains them.
 ## Supported operating contract
 
 This is a **default-enabled, dedicated-VM, x64 user-desktop pilot using one
-shared Release artifact**, not complete MWB module or physical-device sign-off.
+same-source Release test artifact**, not complete MWB module or physical-device sign-off.
 The outer Windows test VM is the host peer; its nested Windows Sandbox is the
 guest peer. The physical development machine is never a peer.
 
@@ -44,7 +44,9 @@ The disposable baseline explicitly sets the hidden JSON property
 `properties.AllowNonConsoleSessions.value=true` before Runner startup. The
 product default and missing-value behavior remain **false**. There is no
 Settings UI/configure-CLI control; restart MWB after changing the property.
-Release ignores environment-only opt-in. Service/System, logon/screensaver,
+Shipping Release ignores both JSON and environment opt-in. Only the dedicated
+Release UI-test variant honors this JSON property; its assembly metadata records
+the test-build marker and checkout revision. Service/System, logon/screensaver,
 locked/secure-desktop, active/unlocked input and authentication restrictions
 remain intact. See the [module documentation](..\..\..\..\doc\devdocs\modules\mousewithoutborders.md).
 
@@ -58,7 +60,7 @@ Release retains Runner/Settings and MWB/Settings peer authentication. The
 existing disposable companion-signing mechanism signs private Runner, Settings,
 MWB, helper and Quick Access executable copies as one cohort. Only executable
 signatures may change; managed files and published build outputs remain
-unchanged. Both endpoints use the same signed archive. Public certificate trust
+unchanged after the isolated MWB test variant is packaged. Both endpoints use the same signed archive. Public certificate trust
 is installed before product startup and removed by exact ownership; private
 keys never enter a payload.
 
@@ -200,6 +202,19 @@ Build from the repository root:
 ```
 
 Build the sibling unit project separately before running its executable.
+After building the ordinary Release product, build the isolated test variant:
+
+```powershell
+$revision = git rev-parse HEAD
+.\tools\build\build.cmd -Path .\src\modules\MouseWithoutBorders\App -Platform x64 -Configuration Release /p:BuildProjectReferences=false /p:MwbUiTestBuild=true /p:MwbUiTestSourceRevision=$revision
+```
+
+This writes only `artifacts\mwb-ui-test\x64\Release\bin` and its isolated
+intermediates. Pass that directory's `PowerToys.MouseWithoutBorders.dll` to
+`New-MwbRuntimeArchive.ps1 -MwbUiTestBinaryPath <path> -SourceRevision $revision`
+(or the CI bundle script). The packager rejects unmarked or mismatched source
+binaries and fingerprints the replacement before optional ReadyToRun compilation.
+Record any uncommitted source diff alongside local payload hashes.
 Use the repository build tools; do not use `dotnet test`. The UI executable is
 under `x64\Release\tests\MouseWithoutBorders.UITests\net10.0-windows10.0.26100.0`.
 Preserve its `Payload` subdirectory. The following non-launch check works in
@@ -256,10 +271,15 @@ retain their dispatcher/installer path, MWB runs once through its two-endpoint
 flow. There is one shared Release build, not a second Debug configuration.
 Only MWB is skipped on ARM64 with `Arm64SandboxImageUnavailable`; other selected
 suites remain normal. Setting the experiment flag false disables only MWB.
-Unsupported older official/installed sources are explicit provenance blockers.
+Explicit MWB requests against older official/installed sources are provenance
+blockers. Implicit all-modules official runs skip MWB with a warning without
+blocking the other suites. The automation pipeline defaults to the latest
+official build; MWB validation selects a current-source path explicitly.
 
 `.pipelines\New-MwbSandboxCiArtifact.ps1` produces the verified runtime/tool
-bundle. `.pipelines\mwbSandboxExperiment.ps1` dispatches protected preparation,
+bundle with the isolated MWB UI-test variant, outside shipping outputs. Affected-PR
+builds prepare it only when the resolver selects MWB.
+`.pipelines\mwbSandboxExperiment.ps1` dispatches protected preparation,
 the complete suite, recovery and cleanup using this project's `Scripts` and
 `Payload`. The build artifact and installer are not modified by test signing.
 Use the `ui-tests-pipeline-ci` skill for exact pushed-source validation;

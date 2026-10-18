@@ -50,13 +50,18 @@ public sealed class SessionPolicyTests
     [DataRow("default")]
     [DataRow("Default")]
     [DataRow("DEFAULT")]
-    public void JsonOptInEnablesUserDefaultDesktop(string desktopName)
+    public void JsonOptInRequiresDebugOrDedicatedUiTestBuild(string desktopName)
     {
         var policy = SessionPolicy.FromConfiguration(null!, serviceMode: false, runningAsSystem: false, desktopName, allowNonConsoleSessions: true);
 
-        Assert.IsTrue(policy.AllowNonConsole);
-        Assert.IsTrue(policy.IsSessionAllowed(5, 1));
-        Assert.IsTrue(policy.IsSessionAllowed(1, uint.MaxValue));
+#if DEBUG
+        var expected = true;
+#else
+        var expected = SessionPolicy.IsUiTestBuild;
+#endif
+        Assert.AreEqual(expected, policy.AllowNonConsole);
+        Assert.AreEqual(expected, policy.IsSessionAllowed(5, 1));
+        Assert.AreEqual(expected, policy.IsSessionAllowed(1, uint.MaxValue));
         Assert.IsTrue(policy.IsSessionAllowed(1, 1));
     }
 

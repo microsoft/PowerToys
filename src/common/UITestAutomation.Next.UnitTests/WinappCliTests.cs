@@ -215,6 +215,11 @@ public sealed class WinappCliTests
             var encoded = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(command));
             invocation = Task.Run(() => WinappCli.InvokeExecutable(executable, "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded));
             Assert.IsTrue(SpinWait.SpinUntil(() => File.Exists(childIdFile) || invocation.IsCompleted, TimeSpan.FromSeconds(20)));
+            if (!File.Exists(childIdFile) && invocation.IsCompleted)
+            {
+                Assert.Fail($"The pipe fixture exited before publishing its child: {invocation.GetAwaiter().GetResult().DescribeFailure()}");
+            }
+
             Assert.IsTrue(File.Exists(childIdFile), "The helper must publish its direct child's identity.");
             child = System.Diagnostics.Process.GetProcessById(int.Parse(File.ReadAllText(childIdFile), System.Globalization.CultureInfo.InvariantCulture));
             _ = child.SafeHandle;

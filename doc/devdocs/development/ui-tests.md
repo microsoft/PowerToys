@@ -151,6 +151,7 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 - **buildSource**: Select the build type for testing:
   - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
   - `buildNow`: Builds PowerToys from current source code and uses it for testing
+  - `buildNowSlim`: Builds the same current-source product, but downloads and installs its installer rather than the whole artifact
   - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter
 
   **Default value**: `latestMainOfficialBuild`
@@ -173,6 +174,14 @@ The PowerToys UI test pipeline provides flexible options for building and testin
   - Leave empty to build and run all UI test modules
 
   **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
+
+- **mwbSandboxExperiment** (default `true`): Enables the dedicated x64 Mouse Without
+  Borders Sandbox suite when selected. It requires `buildNow` or `buildNowSlim` and
+  a current-source test runtime bundle. An explicit `MouseWithoutBorders.UITests`
+  selection with an official build is blocked; an empty all-modules selection
+  skips MWB with a warning and still runs the other suites. ARM64 Sandbox
+  execution is skipped independently of the other ARM64 suites. PR builds prepare
+  the bundle only when the affected-project resolver selects MWB.
 
 ### Build Modes
 

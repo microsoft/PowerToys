@@ -24,6 +24,7 @@ parameters:
     default: true
 
 stages:
+  # Stage 1: build the product and UI tests from the same source revision.
   - stage: Build_${{ parameters.platform }}
     displayName: Build PowerToys ${{ parameters.platform }}
     dependsOn: []
@@ -50,6 +51,7 @@ stages:
           useVSPreview: ${{ parameters.useVSPreview }}
           timeoutInMinutes: 90
 
+  # Stage 2: run the selected suites on each applicable Windows test image.
   - ${{ if eq(parameters.platform, 'x64') }}:
     - stage: Test_x64Win10_FullBuild
       displayName: Test x64Win10 (Full Build)

@@ -22,6 +22,8 @@ param(
     [switch]$ReadyToRun,
     [string]$Crossgen2Path,
     [string]$DebugUcrtPath,
+    [string]$MwbUiTestBinaryPath,
+    [string]$SourceRevision,
     [ValidateSet('x64', 'arm64')][string]$Platform = 'x64',
     [ValidateSet('Debug', 'Release')][string]$Configuration = 'Debug',
     [string]$RunnerSourcePath = (Join-Path $PSScriptRoot '..\..\..\..\runner\main.cpp'),
@@ -64,6 +66,23 @@ $root = (Resolve-MwbArchiveFileSystemPath $ProductRoot).TrimEnd('\')
 if (-not (Test-Path -LiteralPath $root -PathType Container)) { throw 'ProductRoot must be an existing directory.' }
 $archive = Resolve-MwbArchiveFileSystemPath $ArchivePath -AllowMissing
 $stage = "$archive.staging"
+$uiTestBuild = $null
+if ($MwbUiTestBinaryPath) {
+    . "$PSScriptRoot\MwbReadyToRun.ps1"
+    Initialize-MwbReadyToRunMetadata
+    $testBinary = Resolve-MwbArchiveFileSystemPath $MwbUiTestBinaryPath
+    $identity = [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Read($testBinary)
+    if ($Configuration -cne 'Release' -or $identity.Name -cne 'PowerToys.MouseWithoutBorders' -or
+        $identity.Configuration -cne 'Release' -or -not $identity.UiTestBuild -or
+        $SourceRevision -notmatch '^[0-9a-fA-F]{40}$' -or $identity.UiTestSourceRevision -ine $SourceRevision -or
+        $testBinary.StartsWith("$root\", [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'MWB Sandbox requires an isolated, same-source Release UI-test binary, not a shipping module.'
+    }
+    $uiTestBuild = [ordered]@{
+        SourceRevision = $SourceRevision; Path = 'PowerToys.MouseWithoutBorders.dll'
+        Sha256 = (Get-FileHash -LiteralPath $testBinary -Algorithm SHA256).Hash
+    }
+}
 if (Test-Path -LiteralPath $archive) { throw 'Use a new archive path to preserve payload provenance.' }
 if (Test-Path -LiteralPath $stage) { throw 'The staging directory already exists.' }
 if ($ReadyToRun) {
@@ -318,6 +337,13 @@ try {
             throw 'The SDK debug UCRT changed while staging the private runtime.'
         }
     }
+    if ($null -ne $uiTestBuild) {
+        $destination = Join-Path $stage $uiTestBuild.Path
+        Copy-Item -LiteralPath $testBinary -Destination $destination -Force
+        if ((Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash -ne $uiTestBuild.Sha256) {
+            throw 'The isolated MWB UI-test binary changed while staging.'
+        }
+    }
     $compilation = $null
     if ($ReadyToRun) {
         $compilation = Convert-MwbStagedRuntimeToReadyToRun -StageRoot $stage -Crossgen2Path $Crossgen2Path `
@@ -334,6 +360,7 @@ try {
         Files = @($files | Sort-Object)
     }
     if ($ReadyToRun) { $manifest.ReadyToRun = $compilation }
+    if ($null -ne $uiTestBuild) { $manifest.UiTestBuild = $uiTestBuild }
     if ($null -ne $runnerModules) { $manifest.RunnerModules = $runnerModules }
     if ($externalRuntimeFiles.Count) { $manifest.ExternalRuntimeFiles = @($externalRuntimeFiles.Values) }
     $manifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $manifestOutput

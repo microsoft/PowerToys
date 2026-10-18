@@ -45,7 +45,9 @@ function Get-MwbUiTestSelection {
         elseif ($Platform -ieq 'arm64') { 'Arm64SandboxImageUnavailable' }
         elseif ($Platform -cnotin @('x64Win10', 'x64Win11')) { 'UnsupportedPlatform' }
         elseif ($Configuration -cne 'Release') { 'RequiresReleaseArtifact' }
-        elseif ($BuildSource -cnotin @('buildNow', 'buildNowSlim')) { 'RequiresCurrentBuildBundle' }
+        elseif ($BuildSource -cnotin @('buildNow', 'buildNowSlim')) {
+            if ($all) { 'SkippedRequiresCurrentBuildBundle' } else { 'RequiresCurrentBuildBundle' }
+        }
         else { 'Selected' }
     [pscustomobject]@{
         Selected = $mwb
@@ -143,7 +145,7 @@ function Get-MwbCiBundle {
     $manifestHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($manifestBytes))
     $pin = Get-WinAppCliRelease -Platform $Platform
     if ($SourceRevision -notmatch '^[0-9a-fA-F]{40}$' -or
-        $manifest.FormatVersion -ne 2 -or $manifest.Platform -cne $Platform -or
+        $manifest.FormatVersion -ne 3 -or $manifest.Platform -cne $Platform -or
         $manifest.Configuration -cne $Configuration -or $manifest.SourceRevision -ine $SourceRevision -or
         $manifest.WinAppCli.Repository -cne $pin.Repository -or
         $manifest.WinAppCli.Tag -cne $pin.Tag -or
@@ -155,6 +157,17 @@ function Get-MwbCiBundle {
     Assert-MwbCiHash (Join-Path $bundle 'runtime.zip') $manifest.Runtime.Sha256
     Assert-MwbCiHash (Join-Path $bundle 'runtime.zip.manifest.json') $manifest.Runtime.ManifestSha256
     $runtime = Get-Content -LiteralPath (Join-Path $bundle 'runtime.zip.manifest.json') -Raw | ConvertFrom-Json
+    if ($Configuration -ceq 'Release' -and (
+        -not $runtime.PSObject.Properties['UiTestBuild'] -or
+        -not $manifest.Runtime.PSObject.Properties['UiTestBuild'] -or
+        $runtime.UiTestBuild.SourceRevision -ine $SourceRevision -or
+        $runtime.UiTestBuild.Path -cne 'PowerToys.MouseWithoutBorders.dll' -or
+        $runtime.UiTestBuild.Sha256 -notmatch '^[0-9a-fA-F]{64}$' -or
+        $manifest.Runtime.UiTestBuild.SourceRevision -ine $SourceRevision -or
+        $manifest.Runtime.UiTestBuild.Path -cne $runtime.UiTestBuild.Path -or
+        $manifest.Runtime.UiTestBuild.Sha256 -ine $runtime.UiTestBuild.Sha256)) {
+        throw 'MWB CI runtime test-build provenance is inconsistent.'
+    }
     if ($runtime.Configuration -cne $Configuration -or
         $runtime.Sha256 -ine $manifest.Runtime.Sha256 -or $runtime.FileCount -ne @($manifest.Runtime.Files).Count -or
         $manifest.Runtime.ReadyToRun -isnot [bool] -or

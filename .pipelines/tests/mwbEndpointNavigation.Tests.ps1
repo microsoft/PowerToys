@@ -119,7 +119,7 @@ Describe 'MWB owned Settings readiness' {
         $result = Connect-Guest 'private-fixture-key' 'PEER'
         $result.Submitted | Should Be $true
         $result.Acknowledged | Should Be $true
-        ($script:actions -join ',') | Should Be 'wait-for:MouseWithoutBordersShowConnectFieldsButton,invoke:MouseWithoutBordersShowConnectFieldsButton,wait-for:ConnectSecurityKeyTextBox,wait-for:ConnectPCNameTextBox,set-value:ConnectSecurityKeyTextBox,set-value:ConnectPCNameTextBox,verify:mapping,read:pairing,invoke:MouseWithoutBordersConnectButton,await:pairing'
+        ($script:actions -join ',') | Should Be 'wait-for:MouseWithoutBordersShowConnectFieldsButton,click:MouseWithoutBordersShowConnectFieldsButton,wait-for:ConnectSecurityKeyTextBox,wait-for:ConnectPCNameTextBox,set-value:ConnectSecurityKeyTextBox,set-value:ConnectPCNameTextBox,verify:mapping,read:pairing,invoke:MouseWithoutBordersConnectButton,await:pairing'
         Assert-MockCalled Invoke-GuestUi -Times 1 -Exactly -Scope It -ParameterFilter {
             $Arguments[0] -eq 'invoke' -and $Arguments[1] -eq 'MouseWithoutBordersConnectButton'
         }

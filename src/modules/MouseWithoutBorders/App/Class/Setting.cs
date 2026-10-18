@@ -12,7 +12,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -45,17 +44,14 @@ namespace MouseWithoutBorders.Class
 {
     internal class Settings
     {
-        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            IncludeFields = true,
-        };
-
         internal bool Changed;
 
         private readonly SettingsUtils _settingsUtils;
         private readonly Lock _loadingSettingsLock = new Lock();
         private readonly IFileSystemWatcher _watcher;
+        private readonly TaskScheduler _saveScheduler = TaskScheduler.Default;
+        private long _saveSequence;
+        private long _lastWrittenSequence;
 
         private MouseWithoutBordersProperties _properties;
         private MouseWithoutBordersSettings _settings;
@@ -172,13 +168,14 @@ namespace MouseWithoutBorders.Class
         {
             if (!Common.RunOnLogonDesktop)
             {
-                SaveSettingsToJson((MouseWithoutBordersProperties)_properties.Clone());
+                SaveSettingsToJson();
             }
         }
 
-        private void SaveSettingsToJson(MouseWithoutBordersProperties properties_to_save)
+        private void SaveSettingsToJson()
         {
             string serializedSettings;
+            long sequence;
             lock (_loadingSettingsLock)
             {
                 var currentSettings = _settings;
@@ -186,11 +183,12 @@ namespace MouseWithoutBorders.Class
                 {
                     Name = currentSettings.Name,
                     Version = currentSettings.Version,
-                    Properties = properties_to_save,
+                    Properties = (MouseWithoutBordersProperties)_properties.Clone(),
                 };
 
                 // Capture immutable JSON before a reload or later mutation can replace the queued snapshot.
-                serializedSettings = JsonSerializer.Serialize(settingsToSave, _serializerOptions);
+                serializedSettings = settingsToSave.ToSnapshotJson();
+                sequence = ++_saveSequence;
             }
 
             _ = Task.Factory.StartNew(
@@ -204,7 +202,14 @@ namespace MouseWithoutBorders.Class
                     {
                         lock (_loadingSettingsLock)
                         {
+                            // A newer snapshot may have finished while this task was queued or retrying.
+                            if (sequence < _lastWrittenSequence)
+                            {
+                                return;
+                            }
+
                             _settingsUtils.SaveSettings(serializedSettings, MouseWithoutBordersSettings.ModuleName);
+                            _lastWrittenSequence = sequence;
                         }
 
                         saved = true;
@@ -226,7 +231,7 @@ namespace MouseWithoutBorders.Class
             },
                 System.Threading.CancellationToken.None,
                 TaskCreationOptions.None,
-                TaskScheduler.Default);
+                _saveScheduler);
         }
 
         internal Settings()
@@ -249,11 +254,12 @@ namespace MouseWithoutBorders.Class
         }
 
         // Initialize the same settings state without starting a file watcher or network work.
-        internal Settings(SettingsUtils settingsUtils, MouseWithoutBordersSettings settings)
+        internal Settings(SettingsUtils settingsUtils, MouseWithoutBordersSettings settings, TaskScheduler saveScheduler = null)
         {
             _settingsUtils = settingsUtils;
             _settings = settings;
             _properties = settings.Properties;
+            _saveScheduler = saveScheduler ?? TaskScheduler.Default;
         }
 
         internal string Username { get; set; }

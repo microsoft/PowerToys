@@ -103,6 +103,9 @@ jobs:
       Write-Host "##vso[task.setvariable variable=RunMwbSandbox]$($selection.Run.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=RunGenericUiTests]$($selection.RunGeneric.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=MwbSelectionBlocked]$($selection.Blocked.ToString().ToLowerInvariant())"
+      if ($selection.Reason -eq 'SkippedRequiresCurrentBuildBundle') {
+        Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
+      }
       if ($selection.Run) {
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
         try {

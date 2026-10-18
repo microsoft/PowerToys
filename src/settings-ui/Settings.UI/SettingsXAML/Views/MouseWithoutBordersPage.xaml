@@ -38,6 +38,7 @@
                 <InfoBar
                     x:Name="SettingsSyncErrorInfoBar"
                     x:Uid="MouseWithoutBorders_SettingsSyncErrorInfoBar"
+                    AutomationProperties.LiveSetting="Assertive"
                     IsOpen="False"
                     Severity="Error" />
                 <controls:SettingsGroup

@@ -83,6 +83,14 @@ stages:
             runTests: ${{ parameters.runTests }}
             buildTests: true
             mwbSandboxExperiment: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
+            ${{ if and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}:
+              dependsOn:
+                - Resolve
+              # Resolve is skipped outside PR builds; the ordinary build must still run.
+              condition: and(not(failed()), not(canceled()))
+              variables:
+                MwbSandboxSelected: $[ dependencies.Resolve.outputs['resolve.hasMwbUiTests'] ]
+              mwbSandboxCondition: and(succeeded(), eq(variables['MwbSandboxSelected'], 'true'))
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:

@@ -5,9 +5,9 @@
 . "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
 
 Describe 'Shared Release MWB UI-test selection' {
-    It 'defaults automation to one current Release build rather than an incompatible older official source' {
+    It 'preserves the official-build default and makes current-source MWB runs explicit' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-automation.yml') -Raw
-        $source | Should Match '(?m)^  - name: buildSource\r?\n    type: string\r?\n    default: "buildNowSlim"'
+        $source | Should Match '(?m)^  - name: buildSource\r?\n    type: string\r?\n    default: "latestMainOfficialBuild"'
         $source | Should Match 'name: mwbSandboxExperiment\r?\n    type: boolean\r?\n    default: true'
     }
 
@@ -56,6 +56,38 @@ Describe 'Shared Release MWB UI-test selection' {
         $result.Run | Should Be $false
         $result.RunGeneric | Should Be $false
         $result.Blocked | Should Be $false
+    }
+
+    It 'skips implicit MWB without blocking official all-module runs on <Platform> from <Source>' -TestCases @(
+        foreach ($platform in @('x64Win10', 'x64Win11')) {
+            foreach ($source in @('latestMainOfficialBuild', 'specificBuildId')) {
+                @{ Platform = $platform; Source = $source }
+            }
+        }
+    ) {
+        param($Platform, $Source)
+        $result = Get-MwbUiTestSelection -Modules @() -Platform $Platform -BuildSource $Source
+        $result.Run | Should Be $false
+        $result.RunGeneric | Should Be $true
+        $result.Blocked | Should Be $false
+        $result.Reason | Should Be 'SkippedRequiresCurrentBuildBundle'
+        $emptyAffected = Get-MwbUiTestSelection -Modules @() -AutoSelect $true -Platform $Platform -BuildSource $Source
+        $emptyAffected.Selected | Should Be $false
+        $emptyAffected.RunGeneric | Should Be $false
+        $emptyAffected.Blocked | Should Be $false
+    }
+
+    It 'gates PR bundle preparation on exact resolved MWB selection while allowing non-PR builds' {
+        $resolver = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\job-resolve-ui-tests.yml') -Raw
+        $resolver | Should Match '\$modules -contains ''MouseWithoutBorders.UITests'''
+        $resolver | Should Match 'variable=hasMwbUiTests;isOutput=true'
+        $pipeline = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ci-build.yml') -Raw
+        $pipeline | Should Match 'dependsOn:\s+- Resolve'
+        $pipeline | Should Match 'condition: and\(not\(failed\(\)\), not\(canceled\(\)\)\)'
+        $pipeline | Should Match 'MwbSandboxSelected: \$\[ dependencies.Resolve.outputs\[''resolve.hasMwbUiTests''\] \]'
+        $pipeline | Should Match 'mwbSandboxCondition: and\(succeeded\(\), eq\(variables\[''MwbSandboxSelected''\], ''true''\)\)'
+        $job = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\job-build-project.yml') -Raw
+        ([regex]::Matches($job, 'condition: \$\{\{ parameters.mwbSandboxCondition \}\}')).Count | Should Be 3
     }
 
     It 'does not select MWB for unrelated or similarly named modules' -TestCases @(

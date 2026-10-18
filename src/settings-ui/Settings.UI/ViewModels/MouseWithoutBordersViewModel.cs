@@ -284,7 +284,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static Task _machinePollingThreadTask;
 
-        private static VisualStudio.Threading.AsyncSemaphore _ipcSemaphore = new VisualStudio.Threading.AsyncSemaphore(1);
+        internal static class SettingsSyncRequests
+        {
+            internal static readonly VisualStudio.Threading.AsyncSemaphore Semaphore = new(1);
+            internal static readonly TimeSpan Timeout = TimeSpan.FromSeconds(15);
+
+            internal static async Task ExecuteAsync<TConnection>(
+                Func<Task<TConnection>> connect,
+                Func<TConnection, Task> command,
+                TimeSpan timeout)
+                where TConnection : IDisposable
+            {
+                using (await Semaphore.EnterAsync())
+                {
+                    using (var connection = await connect())
+                    {
+                        await command(connection).WaitAsync(timeout);
+                    }
+                }
+            }
+        }
 
         private sealed partial class SyncHelper : IDisposable
         {
@@ -375,74 +394,53 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task SubmitShutdownRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            using (await SettingsSyncRequests.Semaphore.EnterAsync())
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
                     var task = syncHelper?.ShutdownAsync();
                     if (task != null)
                     {
-                        await task;
+                        await task.WaitAsync(SettingsSyncRequests.Timeout);
                     }
                 }
             }
         }
 
-        public async Task SubmitReconnectRequestAsync()
+        public Task SubmitReconnectRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
-            {
-                using (var syncHelper = await GetSettingsSyncHelperAsync(requireConnection: true))
-                {
-                    var task = syncHelper?.Endpoint?.Reconnect();
-                    if (task != null)
-                    {
-                        await task;
-                    }
-                }
-            }
+            return SettingsSyncRequests.ExecuteAsync(
+                () => GetSettingsSyncHelperAsync(requireConnection: true),
+                helper => helper.Endpoint.Reconnect(),
+                SettingsSyncRequests.Timeout);
         }
 
-        public async Task SubmitNewKeyRequestAsync()
+        public Task SubmitNewKeyRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
-            {
-                using (var syncHelper = await GetSettingsSyncHelperAsync(requireConnection: true))
-                {
-                    var task = syncHelper?.Endpoint?.GenerateNewKey();
-                    if (task != null)
-                    {
-                        await task;
-                    }
-                }
-            }
+            return SettingsSyncRequests.ExecuteAsync(
+                () => GetSettingsSyncHelperAsync(requireConnection: true),
+                helper => helper.Endpoint.GenerateNewKey(),
+                SettingsSyncRequests.Timeout);
         }
 
-        public async Task SubmitConnectionRequestAsync(string pcName, string securityKey)
+        public Task SubmitConnectionRequestAsync(string pcName, string securityKey)
         {
-            using (await _ipcSemaphore.EnterAsync())
-            {
-                using (var syncHelper = await GetSettingsSyncHelperAsync(requireConnection: true))
-                {
-                    var task = syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
-                    if (task != null)
-                    {
-                        await task;
-                    }
-                }
-            }
+            return SettingsSyncRequests.ExecuteAsync(
+                () => GetSettingsSyncHelperAsync(requireConnection: true),
+                helper => helper.Endpoint.ConnectToMachine(pcName, securityKey),
+                SettingsSyncRequests.Timeout);
         }
 
         private async Task<ISettingsSyncHelper.MachineSocketState[]> PollMachineSocketStateAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            using (await SettingsSyncRequests.Semaphore.EnterAsync())
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
                     var task = syncHelper?.Endpoint?.RequestMachineSocketStateAsync();
                     if (task != null)
                     {
-                        return await task;
+                        return await task.WaitAsync(SettingsSyncRequests.Timeout);
                     }
                     else
                     {
@@ -503,7 +501,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         catch (Exception ex)
                         {
                             Logger.LogInfo($"Poll ISettingsSyncHelper.MachineSocketState error: {ex}");
-                            continue;
                         }
 
                         if (states != null)
@@ -529,7 +526,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             }
                         }
 
-                        Thread.Sleep(500);
+                        try
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(2), token);
+                        }
+                        catch (OperationCanceledException) when (token.IsCancellationRequested)
+                        {
+                            break;
+                        }
                     }
                 },
                 _cancellationTokenSource.Token);
@@ -1351,9 +1355,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         // Task was cancelled, which is expected
                     }
-
-                    // Dispose the semaphore
-                    _ipcSemaphore?.Dispose();
                 }
 
                 _disposed = true;

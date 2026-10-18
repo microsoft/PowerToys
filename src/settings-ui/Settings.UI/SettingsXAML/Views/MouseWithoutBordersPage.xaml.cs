@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -15,7 +15,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using StreamJsonRpc;
 using Windows.ApplicationModel.DataTransfer;
 using WinRT;
 
@@ -162,8 +161,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 await command();
             }
-            catch (Exception ex) when (ex is IOException or TimeoutException or ConnectionLostException or UnauthorizedAccessException or RemoteInvocationException)
+            catch (Exception ex)
             {
+                // Remote exception messages can contain the submitted security key.
+                Logger.LogError($"Mouse Without Borders Settings command failed ({ex.GetType().Name}).");
                 setErrorVisible(true);
                 return false;
             }

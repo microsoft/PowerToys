@@ -254,8 +254,14 @@ public static class WinappCli
                 _ = stray.SafeHandle;
                 if (!parents.TryGetValue(stray.Id, out var parent) ||
                     parent != owner.Id ||
-                    !IsOwnedWinappChild(owner.Id, started, exited, ownerImagePath,
-                        parent, stray.StartTime.ToUniversalTime(), ResolveOwnerImagePath(stray)))
+                    !IsOwnedWinappChild(
+                        owner.Id,
+                        started,
+                        exited,
+                        ownerImagePath,
+                        parent,
+                        stray.StartTime.ToUniversalTime(),
+                        ResolveOwnerImagePath(stray)))
                 {
                     continue;
                 }
@@ -276,8 +282,14 @@ public static class WinappCli
         }
     }
 
-    internal static bool IsOwnedWinappChild(int ownerId, DateTime ownerStarted, DateTime ownerExited, string? ownerPath,
-        int parentId, DateTime childStarted, string? childPath) =>
+    internal static bool IsOwnedWinappChild(
+        int ownerId,
+        DateTime ownerStarted,
+        DateTime ownerExited,
+        string? ownerPath,
+        int parentId,
+        DateTime childStarted,
+        string? childPath) =>
         parentId == ownerId &&
         childStarted >= ownerStarted &&
         childStarted <= ownerExited &&

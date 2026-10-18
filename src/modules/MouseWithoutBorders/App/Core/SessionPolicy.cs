@@ -19,6 +19,18 @@ internal sealed class SessionPolicy
 
     internal bool AllowNonConsole { get; }
 
+    internal static bool IsUiTestBuild
+    {
+        get
+        {
+#if MWB_UI_TEST
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
+
     internal static void Initialize(bool serviceMode, bool runningAsSystem, string desktopName, bool allowNonConsoleSessions = false)
     {
         string flagValue = null;
@@ -36,7 +48,10 @@ internal sealed class SessionPolicy
 
     internal static SessionPolicy FromConfiguration(string flagValue, bool serviceMode, bool runningAsSystem, string desktopName, bool allowNonConsoleSessions = false)
     {
-        var optedIn = allowNonConsoleSessions;
+        var optedIn = false;
+#if DEBUG || MWB_UI_TEST
+        optedIn = allowNonConsoleSessions;
+#endif
 #if DEBUG
         optedIn |= string.Equals(flagValue, "1", StringComparison.Ordinal);
 #endif

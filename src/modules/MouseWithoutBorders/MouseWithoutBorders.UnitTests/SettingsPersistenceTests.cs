@@ -2,15 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Concurrent;
 using System.IO.Abstractions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
-
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using MouseWithoutBorders.Core;
 using MwbSettings = MouseWithoutBorders.Class.Settings;
 
 namespace MouseWithoutBorders.UnitTests;
@@ -25,68 +21,83 @@ public sealed class SettingsPersistenceTests
     [TestMethod]
     public void QueuedSavePreservesSnapshotWhenLoadedSettingsAreReplaced()
     {
-        using var writer = new RecordingSettingsUtils(expectedWrites: 1);
-        var gate = new System.Threading.Lock();
-        var original = CreateSettings(RequestedKey);
+        var writer = new RecordingSettingsUtils();
+        var scheduler = new QueuedSaveScheduler();
+        var original = CreateSettings(Encryption.MyKey);
         original.Version = "2.0";
-        var settings = CreateIsolatedSettings(original, writer, gate);
+        var settings = new MwbSettings(writer, original, scheduler);
 
-        lock (gate)
-        {
-            settings.SaveSettings();
-            SetField(settings, "_settings", CreateSettings(PreviousKey));
-        }
+        settings.SaveSettings();
+        settings.ApplyLoadedSettings(CreateSettings(Encryption.MyKey), () => { }, () => { }, () => { }, () => { });
+        scheduler.RunNext();
 
-        Assert.IsTrue(writer.Completed.Wait(TimeSpan.FromSeconds(10)), "The queued settings save did not complete.");
         using var saved = JsonDocument.Parse(writer.Writes.Single());
-        Assert.AreEqual(RequestedKey, GetKey(saved));
+        Assert.AreEqual(original.Properties.SecurityKey.Value, GetKey(saved));
         Assert.AreEqual(original.Name, saved.RootElement.GetProperty("name").GetString());
         Assert.AreEqual("2.0", saved.RootElement.GetProperty("version").GetString());
     }
 
     [TestMethod]
-    public void EachQueuedSavePreservesItsOwnSnapshot()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void NewestSnapshotWinsRegardlessOfQueuedTaskOrder(bool olderRunsLast)
     {
-        using var writer = new RecordingSettingsUtils(expectedWrites: 2);
-        var gate = new System.Threading.Lock();
+        var writer = new RecordingSettingsUtils();
+        var scheduler = new QueuedSaveScheduler();
         var original = CreateSettings(PreviousKey);
-        var settings = CreateIsolatedSettings(original, writer, gate);
+        var settings = new MwbSettings(writer, original, scheduler);
 
-        lock (gate)
-        {
-            settings.SaveSettings();
-            original.Properties.SecurityKey.Value = RequestedKey;
-            settings.SaveSettings();
-        }
+        settings.SaveSettings();
+        original.Properties.SecurityKey.Value = RequestedKey;
+        settings.SaveSettings();
 
-        Assert.IsTrue(writer.Completed.Wait(TimeSpan.FromSeconds(10)), "Both queued settings saves must complete.");
-        var keys = writer.Writes.Select(json =>
+        scheduler.RunNext(newest: olderRunsLast);
+        scheduler.RunNext();
+
+        Assert.AreEqual(olderRunsLast ? 1 : 2, writer.Writes.Count);
+        using var saved = JsonDocument.Parse(writer.Writes.Last());
+        Assert.AreEqual(RequestedKey, GetKey(saved));
+    }
+
+    [TestMethod]
+    public void OlderIoRetryCannotOverwriteNewerSuccessfulSave()
+    {
+        var writer = new RecordingSettingsUtils();
+        var scheduler = new QueuedSaveScheduler();
+        var original = CreateSettings(PreviousKey);
+        var settings = new MwbSettings(writer, original, scheduler);
+        settings.SaveSettings();
+        original.Properties.SecurityKey.Value = RequestedKey;
+        settings.SaveSettings();
+
+        writer.BeforeWrite = () =>
         {
-            using var saved = JsonDocument.Parse(json);
-            return GetKey(saved);
-        }).ToArray();
-        CollectionAssert.AreEquivalent(new[] { PreviousKey, RequestedKey }, keys);
+            writer.BeforeWrite = null;
+            scheduler.RunNext();
+            throw new IOException("Synthetic first-write failure.");
+        };
+        scheduler.RunNext();
+
+        using var saved = JsonDocument.Parse(writer.Writes.Single());
+        Assert.AreEqual(RequestedKey, GetKey(saved));
     }
 
     [TestMethod]
     public void QueuedSavePreservesPropertiesWhenLiveValuesChange()
     {
-        using var writer = new RecordingSettingsUtils(expectedWrites: 1);
-        var gate = new System.Threading.Lock();
+        var writer = new RecordingSettingsUtils();
+        var scheduler = new QueuedSaveScheduler();
         var original = CreateSettings(RequestedKey);
         original.Properties.MachineMatrixString.Add("OriginalPeer");
         original.Properties.AllowNonConsoleSessions.Value = true;
-        var settings = CreateIsolatedSettings(original, writer, gate);
+        var settings = new MwbSettings(writer, original, scheduler);
 
-        lock (gate)
-        {
-            settings.SaveSettings();
-            original.Properties.SecurityKey.Value = PreviousKey;
-            original.Properties.MachineMatrixString[0] = "LaterPeer";
-            original.Properties.AllowNonConsoleSessions.Value = false;
-        }
+        settings.SaveSettings();
+        original.Properties.SecurityKey.Value = PreviousKey;
+        original.Properties.MachineMatrixString[0] = "LaterPeer";
+        original.Properties.AllowNonConsoleSessions.Value = false;
+        scheduler.RunNext();
 
-        Assert.IsTrue(writer.Completed.Wait(TimeSpan.FromSeconds(10)), "The queued settings save did not complete.");
         using var saved = JsonDocument.Parse(writer.Writes.Single());
         Assert.AreEqual(RequestedKey, GetKey(saved));
         var properties = saved.RootElement.GetProperty("properties");
@@ -106,43 +117,40 @@ public sealed class SettingsPersistenceTests
         return settings;
     }
 
-    private static MwbSettings CreateIsolatedSettings(MouseWithoutBordersSettings snapshot, SettingsUtils writer, System.Threading.Lock gate)
+    private sealed class RecordingSettingsUtils : SettingsUtils
     {
-        // Avoid constructing a watcher for the real user profile; exercise the actual queued saver.
-        var settings = (MwbSettings)RuntimeHelpers.GetUninitializedObject(typeof(MwbSettings));
-        SetField(settings, "_settingsUtils", writer);
-        SetField(settings, "_loadingSettingsLock", gate);
-        SetField(settings, "_settings", snapshot);
-        SetField(settings, "_properties", snapshot.Properties);
-        return settings;
-    }
+        public List<string> Writes { get; } = new();
 
-    private static void SetField<T>(MwbSettings settings, string name, T value)
-    {
-        typeof(MwbSettings).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(settings, value);
-    }
+        public Action? BeforeWrite { get; set; }
 
-    private sealed class RecordingSettingsUtils : SettingsUtils, IDisposable
-    {
-        public ConcurrentQueue<string> Writes { get; } = new();
-
-        public CountdownEvent Completed { get; }
-
-        public RecordingSettingsUtils(int expectedWrites)
+        public RecordingSettingsUtils()
             : base(new FileSystem())
         {
-            Completed = new CountdownEvent(expectedWrites);
         }
 
         public override void SaveSettings(string json, string powertoy = "", string fileName = DefaultFileName)
         {
-            Writes.Enqueue(json);
-            Completed.Signal();
+            BeforeWrite?.Invoke();
+            Writes.Add(json);
+        }
+    }
+
+    private sealed class QueuedSaveScheduler : TaskScheduler
+    {
+        private readonly LinkedList<Task> tasks = new();
+
+        public void RunNext(bool newest = false)
+        {
+            var node = newest ? tasks.Last! : tasks.First!;
+            tasks.Remove(node);
+            Assert.IsTrue(TryExecuteTask(node.Value));
+            node.Value.GetAwaiter().GetResult();
         }
 
-        public void Dispose()
-        {
-            Completed.Dispose();
-        }
+        protected override IEnumerable<Task> GetScheduledTasks() => tasks;
+
+        protected override void QueueTask(Task task) => tasks.AddLast(task);
+
+        protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => false;
     }
 }

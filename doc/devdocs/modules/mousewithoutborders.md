@@ -53,8 +53,9 @@ key, peer matrix or other values. Each save retains its own captured snapshot
 and the loaded name/version metadata. The existing write lock, I/O retries,
 JSON shape and error reporting remain unchanged.
 
-This snapshot invariant does not guarantee ordering between independently
-queued saves or establish runtime key/socket synchronization during pairing.
+Snapshots are sequenced under the settings lock. Once a newer snapshot has been
+written successfully, an older queued write or I/O retry cannot overwrite it.
+This persistence ordering does not establish runtime key/socket synchronization during pairing.
 Encryption, peer verification and the pairing assertions are unchanged.
 
 ## Settings pairing readiness
@@ -65,6 +66,11 @@ while those fields are collapsed and hidden once they expand. Its
 input row's `MouseWithoutBordersConnectButton`, which submits the actual RPC.
 When automating this command, await both enabled fields before setting values,
 then await the matching persisted key/peer acknowledgement after submit.
+Settings commands allow 15 seconds for the server reply after the bounded pipe
+connection. Timeout or another command failure closes the request channel,
+releases the IPC semaphore and shows an assertive error notification without
+clearing inputs or replaying a possibly completed command. Socket-state polling
+also bounds replies and waits two seconds between attempts, including failures.
 The Sandbox flow starts Settings through the supported
 `--open-settings=MouseWithoutBorders` Runner deep link, maximizes the owned
 window, and waits for this field-opening command before invoking it. It avoids
@@ -88,7 +94,7 @@ suite's README.
 
 MWB normally requires its process session to match `WTSGetActiveConsoleSessionId()`.
 An active RDP desktop is not necessarily the console, and Windows Sandbox can
-report no attached console session. Both Debug and Release builds can explicitly
+report no attached console session. Only Debug and dedicated UI-test builds can
 opt in using the hidden, **default-false** `AllowNonConsoleSessions` property in
 `%LOCALAPPDATA%\Microsoft\PowerToys\MouseWithoutBorders\settings.json`:
 
@@ -105,6 +111,12 @@ MWB snapshots the setting at startup, so restart the module after changing it.
 Missing or false retains the normal console-only restriction. Ordinary Settings
 edits preserve the property, but there is no Settings UI control or command-line
 configuration option. This is an experimental opt-in, not a supported RDP mode.
+Shipping Release binaries ignore this property and remain console-only.
+The dedicated Release UI-test variant is compiled with `MwbUiTestBuild=true`
+into isolated output/intermediate directories under `artifacts\mwb-ui-test`.
+Its assembly metadata identifies the variant and source revision. The packager
+requires those markers and changes only the private Sandbox archive, never the
+ordinary product output or installer.
 
 For compatibility, Debug builds also recognize the process-local environment
 variable `POWERTOYS_MWB_ALLOW_NONCONSOLE=1`. **Release ignores environment-only
@@ -136,22 +148,21 @@ bypass. Installed/service behavior and physical two-PC sign-off remain separate.
 
 ## Release, installed and physical-device validation
 
-The hidden setting depends on the **MWB binary version**, not the installer type.
-A per-user or machine-wide installation containing this code reads the interactive
-user's MWB JSON settings. A test can set the property in its disposable baseline,
-then restore the original bytes. An older official binary does not gain this
-behavior merely because the property is added to JSON.
+Neither per-user nor machine-wide shipping Release installations honor the hidden
+setting. The dedicated UI-test variant can read it from a disposable baseline and
+restore the original bytes afterward. Adding JSON to an official installation
+does not relax its console-session policy.
 
 These are separate validation axes:
 
 | Coverage | What it proves | What it does not prove |
 |---|---|---|
-| Shared Release Sandbox suite | Real Settings pairing, authenticated same-version peers, owned TCP/input/clipboard behavior and recovery using one Release build | Installer registration, upgrade/uninstall, service/System or secure-desktop behavior |
+| Dedicated Release Sandbox suite | Real Settings pairing, authenticated same-version peers, owned TCP/input/clipboard behavior and recovery using one test-build archive | Shipping console-session policy, installer registration, upgrade/uninstall, service/System or secure-desktop behavior |
 | Installed per-user/machine checks | The actual installed paths, permissions, registration, firewall/setup and lifecycle behavior for that installer | Real two-device networking and hardware differences |
 | Focused physical two-PC checks | Real LAN/Wi-Fi, DNS/NIC selection, DPI/display differences, sleep/reconnect and input latency without a shared virtualization host | The full installer matrix or every manual checklist item |
 
 `buildNowSlim` retains installed testing for the other selected modules. The MWB
-Sandbox suite uses protected lean copies of that **same Release build**; it does
+Sandbox suite uses protected lean copies with a separately marked **same-source MWB UI-test variant**; it does
 not claim to execute MWB from the installed location. The guest's public test
 certificate and non-console opt-in are isolated prerequisites, not production
 installer changes.

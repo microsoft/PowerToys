@@ -20,6 +20,10 @@ namespace Microsoft.MouseWithoutBorders.SandboxExperiment
 
         public string Configuration { get; set; }
 
+        public bool UiTestBuild { get; set; }
+
+        public string UiTestSourceRevision { get; set; }
+
         public string Mvid { get; set; }
 
         public bool ReadyToRun { get; set; }
@@ -82,7 +86,9 @@ namespace Microsoft.MouseWithoutBorders.SandboxExperiment
                 {
                     Name = name.Name,
                     Identity = name.FullName,
-                    Configuration = ReadConfiguration(reader),
+                    Configuration = ReadAssemblyAttribute(reader, "AssemblyConfigurationAttribute"),
+                    UiTestBuild = ReadAssemblyAttribute(reader, "AssemblyMetadataAttribute", "PowerToys.MwbUiTestBuild") == "true",
+                    UiTestSourceRevision = ReadAssemblyAttribute(reader, "AssemblyMetadataAttribute", "PowerToys.MwbUiTestSourceRevision"),
                     Mvid = reader.GetGuid(reader.GetModuleDefinition().Mvid).ToString(),
                     ReadyToRun = image.PEHeaders.CorHeader.ManagedNativeHeaderDirectory.Size > 0,
                     ILOnly = (image.PEHeaders.CorHeader.Flags & CorFlags.ILOnly) != 0,
@@ -174,7 +180,7 @@ namespace Microsoft.MouseWithoutBorders.SandboxExperiment
             }
         }
 
-        private static string ReadConfiguration(MetadataReader reader)
+        private static string ReadAssemblyAttribute(MetadataReader reader, string attributeName, string key = null)
         {
             foreach (var handle in reader.GetAssemblyDefinition().GetCustomAttributes())
             {
@@ -186,7 +192,8 @@ namespace Microsoft.MouseWithoutBorders.SandboxExperiment
 
                 var member = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
                 if (member.Parent.Kind != HandleKind.TypeReference ||
-                    reader.GetString(reader.GetTypeReference((TypeReferenceHandle)member.Parent).Name) != "AssemblyConfigurationAttribute")
+                    reader.GetString(reader.GetTypeReference((TypeReferenceHandle)member.Parent).Namespace) != "System.Reflection" ||
+                    reader.GetString(reader.GetTypeReference((TypeReferenceHandle)member.Parent).Name) != attributeName)
                 {
                     continue;
                 }
@@ -194,7 +201,12 @@ namespace Microsoft.MouseWithoutBorders.SandboxExperiment
                 var blob = reader.GetBlobReader(attribute.Value);
                 if (blob.ReadUInt16() != 1)
                 {
-                    throw new BadImageFormatException("Invalid assembly configuration attribute.");
+                    throw new BadImageFormatException("Invalid assembly attribute.");
+                }
+
+                if (key != null && blob.ReadSerializedString() != key)
+                {
+                    continue;
                 }
 
                 return blob.ReadSerializedString();

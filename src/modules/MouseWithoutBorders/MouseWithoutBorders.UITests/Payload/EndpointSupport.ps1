@@ -2,6 +2,11 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
+function ConvertTo-EndpointArgument {
+    param([AllowEmptyString()][string]$Value)
+    '"' + [regex]::Replace([regex]::Replace($Value, '(\\*)"', '$1$1\"'), '(\\+)$', '$1$1') + '"'
+}
+
 Set-StrictMode -Version 2.0
 
 # A PS7 controller can pass its incompatible module search path to Windows PowerShell.
@@ -1085,9 +1090,7 @@ function Invoke-GuestUi {
     # Keep the native identity check, but preserve the proven CLI process-target semantics.
     $window = Get-GuestSettingsWindow
     $allArgs = @('ui') + $Arguments + @('-a', $script:settingsPid.ToString(), '--json')
-    $start.Arguments = (@($allArgs | ForEach-Object {
-        '"' + [regex]::Replace([regex]::Replace($_, '(\\*)"', '$1$1\"'), '(\\+)$', '$1$1') + '"'
-    })) -join ' '
+    $start.Arguments = (@($allArgs | ForEach-Object { ConvertTo-EndpointArgument $_ })) -join ' '
     Write-EndpointCommandStage 'UiProcessStarting' $Arguments[0] $script:requestNumber
     $process = [Diagnostics.Process]::Start($start)
     $watch = [Diagnostics.Stopwatch]::StartNew()

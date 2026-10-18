@@ -36,6 +36,7 @@ public sealed class ScreenRecording : IDisposable
     private Recorder? recorder;
     private TaskCompletionSource<bool>? recordingFinished;
     private bool isRecording;
+    private volatile string? failureReason;
 
     public ScreenRecording(string outputDirectory)
         : this(outputDirectory, IntPtr.Zero)
@@ -114,13 +115,20 @@ public sealed class ScreenRecording : IDisposable
     public int FrameHeight { get; }
 
     /// <summary>Whether the recorder accepted a start request.</summary>
+    /// <remarks>Await <see cref="StopRecordingAsync"/> before reading final recording status.</remarks>
     public bool WasStarted { get; private set; }
 
     /// <summary>Whether the encoder finalized a nonempty MP4 successfully.</summary>
+    /// <remarks>Await <see cref="StopRecordingAsync"/> before reading final recording status.</remarks>
     public bool CompletedSuccessfully { get; private set; }
 
     /// <summary>The recording failure, if one occurred.</summary>
-    public string? FailureReason { get; private set; }
+    /// <remarks>Await <see cref="StopRecordingAsync"/> before reading final recording status.</remarks>
+    public string? FailureReason
+    {
+        get => failureReason;
+        private set => failureReason = value;
+    }
 
     /// <summary>Start recording the selected display or window. Best-effort and non-blocking.</summary>
     public Task StartRecordingAsync()

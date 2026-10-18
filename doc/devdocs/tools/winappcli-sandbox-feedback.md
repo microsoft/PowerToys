@@ -2,6 +2,12 @@
 
 Updated: October 14, 2026
 
+The results below are historical evidence for the cited revision, not validation
+of subsequent PR changes. Current MWB validation uses a separately marked Release
+UI-test variant for non-console sessions; shipping Release remains console-only.
+See the [maintained suite](../../../src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/README.md)
+for its build and validation contract.
+
 ## Summary
 
 **Sandbox mode is viable: the complete eleven-case shared Release pilot now

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StreamJsonRpc;
@@ -21,6 +22,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         [DataRow(typeof(ConnectionLostException))]
         [DataRow(typeof(UnauthorizedAccessException))]
         [DataRow(typeof(RemoteInvocationException))]
+        [DataRow(typeof(InvalidOperationException))]
+        [DataRow(typeof(ObjectDisposedException))]
         public async Task ExpectedIpcFailureShowsErrorWithoutClearingInputsOrReplaying(Type exceptionType)
         {
             var pcName = "fixture-peer";
@@ -173,27 +176,73 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
-        public async Task UnexpectedCommandFailurePropagates()
+        public async Task UnexpectedCommandFailureShowsErrorWithoutEscapingAsyncCommand()
         {
             var errorVisible = true;
             var failure = new InvalidOperationException("Fixture unexpected failure");
-            var unexpected = await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => MouseWithoutBordersPage.TryExecuteSettingsCommandAsync(
+            var succeeded = await MouseWithoutBordersPage.TryExecuteSettingsCommandAsync(
                 () => Task.FromException(failure),
-                visible => errorVisible = visible));
+                visible => errorVisible = visible);
 
-            Assert.AreSame(failure, unexpected);
-            Assert.IsFalse(errorVisible);
+            Assert.IsFalse(succeeded);
+            Assert.IsTrue(errorVisible);
         }
 
         [TestMethod]
-        public async Task UnexpectedCancellationPropagates()
+        public async Task UnexpectedCancellationShowsError()
         {
             var errorVisible = true;
-            await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => MouseWithoutBordersPage.TryExecuteSettingsCommandAsync(
+            Assert.IsFalse(await MouseWithoutBordersPage.TryExecuteSettingsCommandAsync(
                 () => Task.FromException(new OperationCanceledException("Fixture unexpected cancellation")),
                 visible => errorVisible = visible));
 
-            Assert.IsFalse(errorVisible);
+            Assert.IsTrue(errorVisible);
+        }
+
+        [TestMethod]
+        public async Task UnresponsiveCommandTimesOutDisposesConnectionAndReleasesSemaphore()
+        {
+            var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connection = new TestConnection();
+            var invocationCount = 0;
+            var errorVisible = false;
+            try
+            {
+                Assert.AreEqual(TimeSpan.FromSeconds(15), MouseWithoutBordersViewModel.SettingsSyncRequests.Timeout);
+                Assert.IsFalse(await MouseWithoutBordersPage.TryExecuteSettingsCommandAsync(
+                    () => MouseWithoutBordersViewModel.SettingsSyncRequests.ExecuteAsync(
+                        () => Task.FromResult(connection),
+                        _ =>
+                        {
+                            invocationCount++;
+                            return pending.Task;
+                        },
+                        TimeSpan.FromMilliseconds(50)),
+                    visible => errorVisible = visible).WaitAsync(TimeSpan.FromSeconds(5)));
+
+                Assert.IsTrue(errorVisible);
+                Assert.IsTrue(connection.Disposed);
+                Assert.AreEqual(1, invocationCount);
+                Assert.IsFalse(pending.Task.IsCompleted, "A timeout must not pretend the server acknowledged the command.");
+
+                var nextConnection = new TestConnection();
+                await MouseWithoutBordersViewModel.SettingsSyncRequests.ExecuteAsync(
+                    () => Task.FromResult(nextConnection),
+                    _ => Task.CompletedTask,
+                    TimeSpan.FromSeconds(1)).WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.IsTrue(nextConnection.Disposed, "The next request must acquire the released semaphore and complete.");
+            }
+            finally
+            {
+                pending.TrySetResult();
+            }
+        }
+
+        private sealed class TestConnection : IDisposable
+        {
+            public bool Disposed { get; private set; }
+
+            public void Dispose() => Disposed = true;
         }
 
         [TestMethod]
