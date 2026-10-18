@@ -27,6 +27,7 @@
 - `generateAllFileComponents.ps1` copies the checked-in template .wxs files to `obj\<platform>\Generated` and fills them in; checked-in .wxs files are never modified
 - Component GUIDs for the `generateAllFileComponents.ps1`-generated output are UUIDv5 values derived from component ID, install scope, platform, install directory and file set, so repeated builds are reproducible
   - Exception: `MonacoSRC.wxs` is regenerated every build by `generateMonacoWxs.ps1`, which still uses `heat ... -gg` (random GUID generation) and a fresh `New-Guid` for the `RemoveMonacoSRCFolders` component, so its component GUIDs are **not** deterministic yet. This should be fixed (tracked as a follow-up) before relying on deterministic GUIDs for a `MajorUpgrade` schedule change to `afterInstallExecute`
+  - This PR does not change the `MajorUpgrade` schedule: `Product.wxs` keeps the default (remove the old product entirely, then install the new one). Because a changed file set gives a component a new GUID, that's only safe under a remove-first schedule — switching to `afterInstallExecute` (install-then-remove) would need stable per-file/per-path components, not just deterministic GUIDs, or the old product's removal could delete files the new product just installed
 - Scripts (`applyBuildInfo.ps1` and `generateFileList.ps1`) dynamically update files list for installer
   - Helps manage all self-contained dependencies (.NET, WinAppSDK DLLs, etc.)
   - Avoids manual maintenance of file lists

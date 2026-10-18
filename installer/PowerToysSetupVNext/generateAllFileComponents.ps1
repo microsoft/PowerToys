@@ -60,6 +60,13 @@ Function Get-ComponentGuid() {
     # directory, or set of files yields a different GUID, so the component rules hold if the
     # component moves to a new directory (even with the same ID and file set) or its file set
     # changes.
+    #
+    # This relies on Product.wxs's MajorUpgrade keeping its default (remove old product entirely,
+    # then install new) upgrade order: when the file set changes, the component gets a new GUID,
+    # and MSI treats it as a brand-new component rather than an update of the old one. That's safe
+    # only because the old component (old GUID) is fully uninstalled first. Don't change the
+    # upgrade schedule to afterInstallExecute without redesigning component generation (e.g. stable
+    # per-file/per-path components) — see the comment on <MajorUpgrade> in Product.wxs.
     $files = [string[]]($fileList | ForEach-Object { $_.ToLowerInvariant() })
     [Array]::Sort($files, [System.StringComparer]::Ordinal)
     $name = "$componentId|$scope|$platform|$($installPath.ToLowerInvariant())|$($files -join '|')"
