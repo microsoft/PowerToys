@@ -76,6 +76,65 @@ Selects the key that crosses any edge freely while held.
 
 **Default:** `0`
 
+### edges
+
+Gives single edges their own behavior. Each entry names two monitors and
+sets how a crossing between them behaves. An edge without an entry uses
+`push_distance` and `edge_filter`. Holding the `cross_modifier` key crosses
+every edge, walls included.
+
+**Type:** array of objects  
+**Default:** `[]`
+
+Each entry has these fields:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `monitors` | 2 strings | The two monitors, by monitor ID. |
+| `one_way` | boolean, optional | `true` covers only crossings from the first monitor to the second. Absent or `false` covers both directions. |
+| `mode` | integer | `0` Custom, `1` Off, `2` Wall. |
+| `push_distance` | integer | The distance Custom uses, `0` to `1000`. Off and Wall keep it. |
+
+- **Custom** brakes with the entry's `push_distance`.
+- **Off** lets the cursor through, as `edge_filter` does for the edges it
+  leaves out.
+- **Wall** holds the cursor until the `cross_modifier` key is held.
+
+A one-way entry for a direction outranks a both-ways entry for the same
+two monitors. Of two entries for one direction, the first applies.
+
+Entries name monitors that share an edge. Where two monitors meet only at a
+corner, a move between them passes the two edges of the first monitor at
+that corner and takes the stricter of their behaviors: Wall, then the
+larger distance, then Off. A wall on either edge holds the corner.
+
+A monitor with a wall out to any neighbor also keeps the cursor when a move
+would leave it for no monitor, such as a gap between monitors, because
+Windows can place such a cursor on the walled neighbor. Without a wall out,
+Windows handles those moves.
+
+The module reads the first 256 entries and skips an entry with an ID longer
+than 512 characters or a field of the wrong type. A field given twice takes
+its last value, and unknown fields are ignored. Settings loads the list the
+same way. Monitor IDs compare without regard to the case of ASCII letters
+only.
+
+A number outside the range of a double, such as `1e400`, makes the module
+reject the whole settings file and keep its previous settings, while
+Settings drops only that entry. JSON nested deeper than 64 levels fails the
+whole file in Settings, which then writes the defaults. Neither shape is one
+DSC can write.
+
+Monitor IDs are machine-specific: `\\?\DISPLAY#<EDID code>#<instance>`,
+where the instance follows the port the monitor is connected to. Entries
+applied on another machine, or for a monitor that is not connected, stay
+dormant. Settings removes the entries for a pair of monitors 180 days after
+the module last saw them next to each other. For a pair the module never
+saw, the 180 days start when the module first reads the entry, and an
+entry naming the pair never extends them. While the system clock runs more
+than a day behind the last time the module recorded, no pair's 180 days run
+out.
+
 ## Examples
 
 ### Example 1 - Configure strength with direct execution
@@ -122,7 +181,36 @@ resources:
         version: 1.0
 ```
 
-### Example 3 - Install and configure with WinGet
+### Example 3 - Wall one edge in one direction
+
+This example keeps the cursor from leaving the second monitor for the
+first unless the `cross_modifier` key is held. The other direction keeps the global
+strength. Replace the IDs with the ones on your machine. The module lists
+the connected monitors and their IDs in `detected-edges.json`, next to its
+`settings.json`.
+
+```yaml
+# cursorbrake-one-way-wall.dsc.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: Wall one edge
+    type: Microsoft.PowerToys/CursorBrakeSettings
+    properties:
+      settings:
+        properties:
+          edges:
+            value:
+              - monitors:
+                  - \\?\DISPLAY#LEN66F1#5&1a2b3c4d&0&UID4354
+                  - \\?\DISPLAY#DELA1B2#5&1a2b3c4d&0&UID4353
+                one_way: true
+                mode: 2
+                push_distance: 300
+        name: CursorBrake
+        version: 1.0
+```
+
+### Example 4 - Install and configure with WinGet
 
 This example installs PowerToys and configures CursorBrake to brake every
 crossing, including the way back.
