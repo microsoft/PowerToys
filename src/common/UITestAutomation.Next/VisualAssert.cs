@@ -5,6 +5,8 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,15 +24,45 @@ public static class VisualAssert
     /// Visual validation runs only in the pipeline, matching the legacy harness behavior.
     /// </summary>
     [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void AreEqual(TestContext? testContext, Session session, string scenarioSubname = "")
     {
+        AreEqualCore(testContext, session, scenarioSubname, SimilarityThreshold, new StackTrace().GetFrame(1)?.GetMethod());
+    }
+
+    /// <summary>
+    /// Asserts a visual match using an explicit similarity percentage from 1 through 100.
+    /// Visual validation runs only in the pipeline, matching the default overload.
+    /// </summary>
+    [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static void AreEqual(TestContext? testContext, Session session, string scenarioSubname, int similarityThreshold)
+    {
+        AreEqualCore(testContext, session, scenarioSubname, similarityThreshold, new StackTrace().GetFrame(1)?.GetMethod());
+    }
+
+    internal static bool IsSimilar(double similarity, int similarityThreshold = SimilarityThreshold)
+    {
+        ValidateSimilarityThreshold(similarityThreshold);
+        return similarity >= similarityThreshold;
+    }
+
+    private static void ValidateSimilarityThreshold(int similarityThreshold)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(similarityThreshold, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(similarityThreshold, 100);
+    }
+
+    [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
+    private static void AreEqualCore(TestContext? testContext, Session session, string scenarioSubname, int similarityThreshold, MethodBase? callerMethod)
+    {
+        ValidateSimilarityThreshold(similarityThreshold);
         if (!EnvironmentConfig.IsInPipeline)
         {
             Console.WriteLine("Skip visual validation in the local run.");
             return;
         }
 
-        var callerMethod = new StackTrace().GetFrame(1)?.GetMethod();
         var callerName = callerMethod?.Name;
         var callerClassName = callerMethod?.DeclaringType?.Name;
 
@@ -70,7 +102,7 @@ public static class VisualAssert
             session.ScreenshotVisibleWindow(testImagePath);
             using var testImage = new Bitmap(testImagePath);
             similarity = CalculateSimilarity(baselineImage, testImage);
-            if (similarity >= SimilarityThreshold)
+            if (IsSimilar(similarity, similarityThreshold))
             {
                 return;
             }
@@ -86,7 +118,7 @@ public static class VisualAssert
         testContext?.AddResultFile(baselineImagePath);
         testContext?.AddResultFile(testImagePath);
         Assert.Fail(
-            $"Visual result for scenario {scenarioSubname} did not reach {SimilarityThreshold}% similarity " +
+            $"Visual result for scenario {scenarioSubname} did not reach {similarityThreshold}% similarity " +
             $"within {VisualRetryTimeoutMS / 1_000}s (last similarity: {similarity:F2}%). " +
             $"Baseline: {baselineImagePath}; test image: {testImagePath}.");
     }
