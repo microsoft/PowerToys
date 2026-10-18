@@ -38,8 +38,3 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
-
-STRINGTABLE
-BEGIN
-    IDS_CURSORBRAKE_NAME L"CursorBrake"
-END

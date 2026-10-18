@@ -21,6 +21,12 @@ namespace cursorbrake
     // The DPI of 100% scaling.
     constexpr unsigned int BASE_DPI = 96;
 
+    // Accepted push distance in logical pixels. Zero removes the resistance without disabling the
+    // module.
+    constexpr int MIN_PUSH_DISTANCE = 0;
+    constexpr int MAX_PUSH_DISTANCE = 1000;
+    constexpr int DEFAULT_PUSH_DISTANCE = 300;
+
     struct PointL
     {
         long x = 0;
@@ -55,6 +61,11 @@ namespace cursorbrake
         Bottom,
     };
 
+    constexpr bool IsSideBySide(Side side)
+    {
+        return side == Side::Left || side == Side::Right;
+    }
+
     // Whether `other` lies directly across the given side of `rect`: its opposite side is on the
     // same line, and the two spans along that line overlap.
     constexpr bool Borders(const RectL& rect, const RectL& other, Side side)
@@ -75,9 +86,37 @@ namespace cursorbrake
         }
     }
 
+    // How an edge treats a crossing in one direction.
+    enum class EdgeMode
+    {
+        // Brakes with the setting's own push distance.
+        Custom,
+        // Lets the cursor through, like an edge the Apply to filter leaves out.
+        Off,
+        // Holds the cursor until a bypass, such as the cross key, lets it through.
+        Wall,
+    };
+
+    constexpr int EDGE_MODE_COUNT = 3;
+
+    // An edge the user set explicitly, between two monitors of the layout it belongs to. Without
+    // oneWay it covers both directions, with it only the crossing from `first` to `second`.
+    struct EdgeSetting
+    {
+        size_t first = 0;
+        size_t second = 0;
+        bool oneWay = false;
+        EdgeMode mode = EdgeMode::Custom;
+        int pushDistance = DEFAULT_PUSH_DISTANCE;
+
+        bool operator==(const EdgeSetting&) const = default;
+    };
+
     struct Layout
     {
         std::vector<Monitor> monitors;
+        // Indices into `monitors`, so they only mean something against this layout.
+        std::vector<EdgeSetting> edges;
 
         bool operator==(const Layout&) const = default;
     };
@@ -145,12 +184,6 @@ namespace cursorbrake
         return logical * dpi;
     }
 
-    // Accepted push distance in logical pixels. Zero removes the resistance without disabling the
-    // module.
-    constexpr int MIN_PUSH_DISTANCE = 0;
-    constexpr int MAX_PUSH_DISTANCE = 1000;
-    constexpr int DEFAULT_PUSH_DISTANCE = 300;
-
     // The most one move adds to the push, in logical pixels. A fling or a shake then adds one cap
     // per event instead of crossing in one or two, while a push slower than this is unaffected.
     constexpr int MOVE_CAP = 10;
@@ -183,6 +216,107 @@ namespace cursorbrake
 
         bool operator==(const Settings&) const = default;
     };
+
+    // What a crossing in one direction meets: the mode, and for Custom the push distance in
+    // logical pixels.
+    struct EdgeRule
+    {
+        EdgeMode mode = EdgeMode::Custom;
+        int pushDistance = 0;
+
+        bool operator==(const EdgeRule&) const = default;
+    };
+
+    // The rule for a crossing from `source` into `neighbor` over a side on the given axis. It
+    // checks, in order: a one-way entry from source to neighbor, a both-ways entry naming the two
+    // in either order, and the default. The default is the global push distance when the Apply to
+    // filter brakes the axis, and Off when it does not. Without a neighbor only the default
+    // applies. The first matching entry wins.
+    inline EdgeRule RuleFor(const Layout& layout, const Settings& settings, size_t source, std::optional<size_t> neighbor, bool sideBySide)
+    {
+        if (neighbor)
+        {
+            for (const EdgeSetting& edge : layout.edges)
+            {
+                if (edge.oneWay && edge.first == source && edge.second == *neighbor)
+                {
+                    return EdgeRule{ edge.mode, edge.pushDistance };
+                }
+            }
+            for (const EdgeSetting& edge : layout.edges)
+            {
+                const bool forward = edge.first == source && edge.second == *neighbor;
+                const bool backward = edge.first == *neighbor && edge.second == source;
+                if (!edge.oneWay && (forward || backward))
+                {
+                    return EdgeRule{ edge.mode, edge.pushDistance };
+                }
+            }
+        }
+
+        // Any filter value other than the two single-axis ones, including one a hand-edited
+        // settings file carries, brakes both axes like EdgeFilter::All.
+        const bool braked = sideBySide ? settings.edgeFilter != EdgeFilter::Stacked : settings.edgeFilter != EdgeFilter::SideBySide;
+        return braked ? EdgeRule{ EdgeMode::Custom, settings.pushDistance } : EdgeRule{ EdgeMode::Off, 0 };
+    }
+
+    // The stricter of the rules of two sides a move passes at once, through a corner: a wall
+    // first, then the larger push distance, then Off. The default is a Custom rule at the global
+    // distance, so the distance alone ranks a Custom entry against it, and a corner never asks
+    // less of the push than either side does.
+    constexpr EdgeRule Stricter(const EdgeRule& a, const EdgeRule& b)
+    {
+        const auto rank = [](const EdgeRule& rule) { return rule.mode == EdgeMode::Wall ? 2 : (rule.mode == EdgeMode::Off ? 0 : 1); };
+        if (rank(a) != rank(b))
+        {
+            return rank(a) > rank(b) ? a : b;
+        }
+        return rank(a) == 1 && b.pushDistance > a.pushDistance ? b : a;
+    }
+
+    // The monitor across one side of `source` at `along`, the coordinate along that side: the first
+    // that borders that side and whose span holds `along`.
+    inline std::optional<size_t> NeighborAcross(const Layout& layout, size_t source, Side side, long along)
+    {
+        const RectL& rect = layout.monitors[source].rect;
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            const RectL& other = layout.monitors[i].rect;
+            if (i == source)
+            {
+                continue;
+            }
+            const bool spans = IsSideBySide(side) ? along >= other.top && along < other.bottom : along >= other.left && along < other.right;
+            if (Borders(rect, other, side) && spans)
+            {
+                return i;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Whether a monitor sharing an edge with `source` meets a wall on the way out of it, by a
+    // one-way or a both-ways entry.
+    inline bool HasWallOut(const Layout& layout, const Settings& settings, size_t source)
+    {
+        const RectL& rect = layout.monitors[source].rect;
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            const RectL& other = layout.monitors[i].rect;
+            if (i == source)
+            {
+                continue;
+            }
+            for (const Side side : { Side::Left, Side::Top, Side::Right, Side::Bottom })
+            {
+                if (Borders(rect, other, side) && RuleFor(layout, settings, source, i, IsSideBySide(side)).mode == EdgeMode::Wall)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     enum class DecisionKind
     {
@@ -372,15 +506,21 @@ namespace cursorbrake
             }
 
             // Landing outside every monitor is a gap, or past an outer edge when no clip is known.
-            // Windows clamps the cursor there and applies its own edge easing, so the brake stays
-            // out of it, and a push toward a neighbor does not carry across it. Without a game's
-            // clip, Windows reports the virtual screen's bounding rect as the clip, so a move past
-            // an outer edge is judged where that rect clamps it: back on the source monitor, or on
-            // a neighbor past an inner corner.
+            // Without a game's clip, Windows reports the virtual screen's bounding rect as the
+            // clip, so a move past an outer edge is judged where that rect clamps it: back on the
+            // source monitor, or on a neighbor past an inner corner. A push toward a neighbor does
+            // not carry across a gap. Windows puts a cursor in a gap on a monitor of its own
+            // choosing, not always the nearest and sometimes a neighbor past a wall, so a source
+            // with a wall out keeps the cursor on its own last pixel. Any other source leaves the
+            // move to Windows.
             const std::optional<size_t> destination = MonitorAt(layout, judged.proposed);
             if (!destination)
             {
                 m_push.reset();
+                if (HasWallOut(layout, settings, *source))
+                {
+                    return Decision{ DecisionKind::Hold, ClampInto(judged.proposed, from.rect) };
+                }
                 return allow;
             }
             if (*destination == *source)
@@ -389,17 +529,25 @@ namespace cursorbrake
             }
 
             const std::optional<Side> pushed = m_push ? std::optional<Side>{ m_push->side } : std::nullopt;
-            const std::optional<Side> side = CrossedSide(from.rect, layout.monitors[*destination].rect, judged.current, judged.proposed, settings.edgeFilter, pushed);
-            if (!side)
+            const std::optional<Crossing> crossing = CrossedSide(layout, settings, *source, *destination, judged.current, judged.proposed, pushed);
+            if (!crossing)
             {
                 return allow;
             }
+            const Side side = crossing->side;
+            const EdgeRule& rule = crossing->rule;
 
+            // The free return is checked against the way back as it stands when it is used, so a
+            // wall in that direction holds the return like any other move, through a corner too.
             if (m_freeReturn && m_freeReturn->from == *source && m_freeReturn->to == *destination)
             {
+                const bool walled = rule.mode == EdgeMode::Wall;
                 m_freeReturn.reset();
-                m_push.reset();
-                return allow;
+                if (!walled)
+                {
+                    m_push.reset();
+                    return allow;
+                }
             }
 
             // Any neighbor past the pushed side continues the push, so a hard push into a corner
@@ -412,37 +560,43 @@ namespace cursorbrake
             // part of the distance it covers, so it is not charged again and each pixel of wobble
             // costs 1 px once. A drain against any other side moved the cursor along the new side,
             // not away from it, so it earns no credit.
-            if (!m_push || m_push->side != *side)
+            if (!m_push || m_push->side != side)
             {
                 uint64_t carried = 0;
-                const std::optional<PointL> corner = m_push ? CornerPixel(from.rect, m_push->side, *side) : std::nullopt;
+                const std::optional<PointL> corner = m_push ? CornerPixel(from.rect, m_push->side, side) : std::nullopt;
                 if (corner && previousHold)
                 {
                     const uint64_t fromCursor = Distance(judged.current, *corner);
                     const uint64_t fromHold = Distance(*previousHold, *corner);
                     const uint64_t farther = fromCursor > fromHold ? fromCursor : fromHold;
-                    const uint64_t credit = previousAwaySide == *side ? previousAway : 0;
+                    const uint64_t credit = previousAwaySide == side ? previousAway : 0;
                     const uint64_t drift = (farther > credit ? farther - credit : 0) * BASE_DPI;
                     carried = drift < m_push->amount ? m_push->amount - drift : 0;
                 }
-                m_push = Push{ *source, *side, carried };
-                m_push->open = Reaches(m_clip, from.rect, *side, judged.proposed, true);
+                m_push = Push{ *source, side, carried };
+                m_push->open = Reaches(m_clip, from.rect, side, judged.proposed, true);
             }
-            // The cap scales like the threshold, so crossing takes at least pushDistance / MOVE_CAP
-            // moves on every edge, whatever the DPI or direction.
-            const uint64_t cap = ScaledThreshold(MOVE_CAP, from.dpi);
-            const uint64_t overshoot = static_cast<uint64_t>(Overshoot(from.rect, judged.proposed, *side)) * BASE_DPI;
-            m_push->amount += overshoot < cap ? overshoot : cap;
 
-            if (m_push->amount >= ScaledThreshold(settings.pushDistance, from.dpi))
+            // A wall holds without adding to the push, so leaning on it banks nothing for a braked
+            // neighbor on the same side.
+            if (rule.mode != EdgeMode::Wall)
             {
-                m_push.reset();
-                if (settings.freeReturn)
+                // The cap scales like the threshold, so crossing takes at least pushDistance /
+                // MOVE_CAP moves on every edge, whatever the DPI or direction.
+                const uint64_t cap = ScaledThreshold(MOVE_CAP, from.dpi);
+                const uint64_t overshoot = static_cast<uint64_t>(Overshoot(from.rect, judged.proposed, side)) * BASE_DPI;
+                m_push->amount += overshoot < cap ? overshoot : cap;
+
+                if (m_push->amount >= ScaledThreshold(rule.pushDistance, from.dpi))
                 {
-                    m_freeReturn = FreeReturn{ *destination, *source, *side };
-                    m_freeReturn->open = Reaches(m_clip, from.rect, *side, judged.proposed, false);
+                    m_push.reset();
+                    if (settings.freeReturn)
+                    {
+                        m_freeReturn = FreeReturn{ *destination, *source, side };
+                        m_freeReturn->open = Reaches(m_clip, from.rect, side, judged.proposed, false);
+                    }
+                    return allow;
                 }
-                return allow;
             }
 
             m_push->held = ClampInto(judged.proposed, from.rect);
@@ -568,16 +722,53 @@ namespace cursorbrake
             return away > 0 ? static_cast<uint64_t>(away) : 0;
         }
 
-        // The side of the source rect a move into `target` leaves through, if the filter brakes
-        // it. A move that ends past two sides crossed the one that borders the target. When
-        // neither borders it and one of them is the side already being pushed (`pushed`), the
-        // push keeps that side, so a diagonal into a corner neighbor cannot flip sides and start
-        // over with every wobble of the hand. Otherwise, when both or neither border it, the
-        // move crossed the side it reached first, which is the side whose overshoot is the larger
-        // share of the move's travel along that axis. A move exactly through the corner offers
-        // both sides; the harder-pushed one wins, the side-by-side one on a tie.
-        static std::optional<Side> CrossedSide(const RectL& rect, const RectL& target, PointL from, PointL to, EdgeFilter filter, std::optional<Side> pushed)
+        // The rule for leaving `source` over `side` on a move to `to`. The neighbor is the
+        // destination when it borders that side. Otherwise it is the monitor across the side at
+        // the point's coordinate along it, clamped into the source's span, which for a move
+        // through a corner is the corner pixel.
+        static EdgeRule RuleAt(const Layout& layout, const Settings& settings, size_t source, size_t destination, Side side, PointL to)
         {
+            const RectL& rect = layout.monitors[source].rect;
+            std::optional<size_t> neighbor;
+            if (Borders(rect, layout.monitors[destination].rect, side))
+            {
+                neighbor = destination;
+            }
+            else
+            {
+                const long along = IsSideBySide(side) ? std::clamp(to.y, rect.top, rect.bottom - 1) : std::clamp(to.x, rect.left, rect.right - 1);
+                neighbor = NeighborAcross(layout, source, side, along);
+            }
+            return RuleFor(layout, settings, source, neighbor, IsSideBySide(side));
+        }
+
+        // A side a move leaves the source through, with the rule it meets there.
+        struct Crossing
+        {
+            Side side = Side::Left;
+            EdgeRule rule;
+        };
+
+        // The side of the source monitor a move into `destination` leaves through, unless its
+        // rule is Off. A move that ends past two sides crossed the one that borders the
+        // destination. When neither borders it and one of them is the side already being pushed
+        // (`pushed`), the push keeps that side, so a diagonal into a corner neighbor cannot flip
+        // sides and start over with every wobble of the hand. Otherwise, when both or neither
+        // border it, the move crossed the side it reached first, which is the side whose
+        // overshoot is the larger share of the move's travel along that axis. A move exactly
+        // through the corner offers both sides; the harder-pushed one wins, the side-by-side one
+        // on a tie.
+        //
+        // A destination that borders neither side meets the source only at the corner, so the
+        // move passes both sides there and meets the stricter of their rules (Stricter). The side
+        // is chosen as above and carries the push; only Off on both sides lets the move through.
+        // A wall on either side of the corner then holds, so a monitor walled on every side it
+        // shares cannot be left through a corner.
+        static std::optional<Crossing> CrossedSide(const Layout& layout, const Settings& settings, size_t source, size_t destination, PointL from, PointL to, std::optional<Side> pushed)
+        {
+            const RectL& rect = layout.monitors[source].rect;
+            const RectL& target = layout.monitors[destination].rect;
+
             std::optional<Side> sideX;
             if (Overshoot(rect, to, Side::Right) > 0)
             {
@@ -600,10 +791,12 @@ namespace cursorbrake
 
             bool offerX = sideX.has_value();
             bool offerY = sideY.has_value();
+            bool corner = false;
             if (offerX && offerY)
             {
                 const bool bordersX = Borders(rect, target, *sideX);
                 const bool bordersY = Borders(rect, target, *sideY);
+                corner = !bordersX && !bordersY;
                 if (bordersX != bordersY)
                 {
                     offerX = bordersX;
@@ -611,8 +804,6 @@ namespace cursorbrake
                 }
                 else if (!bordersX && pushed && (*pushed == *sideX || *pushed == *sideY))
                 {
-                    // The filter passes the pushed side, because a settings change resets the
-                    // push.
                     offerX = *pushed == *sideX;
                     offerY = *pushed == *sideY;
                 }
@@ -629,24 +820,41 @@ namespace cursorbrake
                 }
             }
 
-            // Any filter value other than the two single-axis ones, including one a hand-edited
-            // settings file carries, brakes both axes like EdgeFilter::All.
-            offerX = offerX && filter != EdgeFilter::Stacked;
-            offerY = offerY && filter != EdgeFilter::SideBySide;
-
-            if (offerX && offerY)
+            if (corner)
             {
-                return Overshoot(rect, to, *sideY) > Overshoot(rect, to, *sideX) ? sideY : sideX;
+                const EdgeRule rule = Stricter(RuleAt(layout, settings, source, destination, *sideX, to), RuleAt(layout, settings, source, destination, *sideY, to));
+                if (rule.mode == EdgeMode::Off)
+                {
+                    return std::nullopt;
+                }
+                const bool takeY = offerY && (!offerX || Overshoot(rect, to, *sideY) > Overshoot(rect, to, *sideX));
+                return Crossing{ takeY ? *sideY : *sideX, rule };
             }
+
+            std::optional<Crossing> crossX;
             if (offerX)
             {
-                return sideX;
+                crossX = Crossing{ *sideX, RuleAt(layout, settings, source, destination, *sideX, to) };
+                if (crossX->rule.mode == EdgeMode::Off)
+                {
+                    crossX.reset();
+                }
             }
+            std::optional<Crossing> crossY;
             if (offerY)
             {
-                return sideY;
+                crossY = Crossing{ *sideY, RuleAt(layout, settings, source, destination, *sideY, to) };
+                if (crossY->rule.mode == EdgeMode::Off)
+                {
+                    crossY.reset();
+                }
             }
-            return std::nullopt;
+
+            if (crossX && crossY)
+            {
+                return Overshoot(rect, to, *sideY) > Overshoot(rect, to, *sideX) ? crossY : crossX;
+            }
+            return crossX ? crossX : crossY;
         }
 
         // Whether the clip lets the cursor reach the pixel just past (`outward`) or just inside the

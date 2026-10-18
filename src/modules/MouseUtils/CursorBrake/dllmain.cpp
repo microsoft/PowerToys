@@ -8,9 +8,17 @@
 #include <common/utils/logger_helper.h>
 #include <common/logger/logger.h>
 #include "trace.h"
-#include "resource.h"
+#include "Generated Files/resource.h"
 #include "CursorBrakeCore.h"
+#include "CursorBrakeEdges.h"
+#include "DetectedEdges.h"
+#include "EdgeOverlay.h"
+#include "EdgePublisher.h"
+#include "EdgeSettings.h"
+#include "IdentityReader.h"
 #include "ModuleConstants.h"
+
+#include <common/utils/resources.h>
 
 #include <ShellScalingApi.h>
 #include <WtsApi32.h>
@@ -18,7 +26,9 @@
 
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <cmath>
+#include <mutex>
 #include <optional>
 #include <thread>
 
@@ -70,6 +80,28 @@ namespace
     // they settle.
     constexpr UINT_PTR TIMER_REBUILD_LAYOUT = 1;
     constexpr UINT DEBOUNCE_DELAY_MS = 500;
+
+    // A monitor whose identity cannot be read during a reconfiguration is read again, a few times,
+    // a second apart.
+    constexpr UINT_PTR TIMER_RETRY_IDENTITY = 2;
+    constexpr UINT IDENTITY_RETRY_DELAY_MS = 1000;
+    constexpr int MAX_IDENTITY_RETRIES = 3;
+
+    // Posted to the display change window when set_config leaves new edge settings for the hook
+    // thread.
+    constexpr UINT WM_APP_EDGES_CHANGED = WM_APP + 1;
+
+    // Posted to the display change window by the "show_edges" custom action from Settings.
+    constexpr UINT WM_APP_SHOW_EDGES = WM_APP + 2;
+    const wchar_t SHOW_EDGES_ACTION[] = L"show_edges";
+
+    // Posted to the display change window by the identity reader when a read finishes.
+    constexpr UINT WM_APP_IDENTITIES = WM_APP + 3;
+
+    std::wstring WithKey(UINT resourceId, const std::wstring& key)
+    {
+        return cursorbrake::ReplacePlaceholder(get_resource_string(resourceId, reinterpret_cast<HINSTANCE>(&__ImageBase), L""), key);
+    }
 
     // The console session's ID, from "Detecting the Remote Desktop Services environment".
     const wchar_t TERMINAL_SERVER_KEY[] = L"SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\";
@@ -133,9 +165,35 @@ private:
     cursorbrake::PointL m_lastPoint;
     bool m_remoteSession = false;
 
-    // Hook thread + lifecycle.
+    // Per-edge settings. set_config parses them on the runner thread and leaves them in
+    // m_pendingOverrides, which only m_overridesMutex guards. The hook thread takes them in a
+    // window message and resolves them into m_layout.edges, so the hook itself never locks.
+    std::mutex m_overridesMutex;
+    std::optional<std::vector<cursorbrake::EdgeOverride>> m_pendingOverrides;
+
+    // Owned by the hook thread: the overrides in effect, and per monitor of m_layout its ID
+    // (empty when unknown) and what Settings is told about it.
+    std::vector<cursorbrake::EdgeOverride> m_overrides;
+    std::vector<std::wstring> m_monitorIds;
+    std::vector<cursorbrake::DetectedMonitor> m_detected;
+    // The identified pairs sharing an edge at the last publish, stamped once more on the next one
+    // so a pair that just came apart records when it was last together.
+    std::vector<std::pair<std::wstring, std::wstring>> m_presentPairs;
+    int m_identityRetries = 0;
+    // Owned by the hook thread: each monitor's GDI device, by index of m_layout, and the number of
+    // the layout identity reads are applied to. A rebuild and a display change each advance it.
+    std::vector<std::wstring> m_devices;
+    uint64_t m_generation = 0;
+    cursorbrake::IdentityReader m_identityReader;
+    cursorbrake::EdgePublisher m_publisher;
+    cursorbrake::EdgeOverlay m_overlay;
+    // Set by call_custom_action on the runner thread, read on the hook thread.
+    cursorbrake::ShowGate m_showGate;
+
+    // Hook thread + lifecycle. The display change window is atomic because set_config posts to
+    // it from the runner thread.
     HHOOK m_mouseHook = nullptr;
-    HWND m_messageWindow = nullptr;
+    std::atomic<HWND> m_messageWindow{ nullptr };
     HDEVNOTIFY m_deviceNotify = nullptr;
     bool m_sessionNotify = false;
     HANDLE m_terminateEvent = nullptr;
@@ -150,6 +208,11 @@ private:
     void RegisterForDisplayChanges();
     void UnregisterDisplayChanges();
     void RebuildLayout();
+    void ApplyIdentities();
+    bool TakePendingOverrides();
+    void ResolveOverrides();
+    void PublishEdges();
+    void ShowEdges();
     void RefreshSessionState();
     bool HandleMove(const MSLLHOOKSTRUCT& data);
 
@@ -198,7 +261,27 @@ public:
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
-    virtual void call_custom_action(const wchar_t* /*action*/) override {}
+    virtual void call_custom_action(const wchar_t* action) override
+    {
+        try
+        {
+            PowerToysSettings::CustomActionObject actionObject = PowerToysSettings::CustomActionObject::from_json_string(action);
+            if (actionObject.get_name() == SHOW_EDGES_ACTION)
+            {
+                // The overlay is drawn from the hook thread's layout, so the request goes there.
+                // The gate lets through only a message this action asked for.
+                if (const HWND window = m_messageWindow.load())
+                {
+                    m_showGate.Request();
+                    PostMessageW(window, WM_APP_SHOW_EDGES, 0, 0);
+                }
+            }
+        }
+        catch (...)
+        {
+            Logger::error(L"Failed to parse a CursorBrake custom action.");
+        }
+    }
 
     virtual void set_config(const wchar_t* config) override
     {
@@ -256,6 +339,7 @@ public:
         {
             m_hookThread.join();
         }
+        m_overlay.Close();
         if (m_terminateEvent)
         {
             CloseHandle(m_terminateEvent);
@@ -375,6 +459,32 @@ void CursorBrake::parse_settings(PowerToysSettings::PowerToyValues& settings)
         }
     }
 
+    try
+    {
+        if (std::optional<std::vector<cursorbrake::EdgeOverride>> overrides = cursorbrake::ReadEdgesSetting(properties))
+        {
+            Logger::info(L"CursorBrake edge settings read: {} entries.", overrides->size());
+            {
+                std::lock_guard lock(m_overridesMutex);
+                m_pendingOverrides = std::move(*overrides);
+            }
+            // Before the hook thread creates its window, the pending entries wait for it to start.
+            // A post to a window whose thread is stopping is lost, and the next start takes them.
+            if (const HWND window = m_messageWindow.load())
+            {
+                PostMessageW(window, WM_APP_EDGES_CHANGED, 0, 0);
+            }
+        }
+        else
+        {
+            Logger::warn(L"Failed to read the CursorBrake edges setting; keeping the previous entries.");
+        }
+    }
+    catch (...)
+    {
+        Logger::warn(L"Failed to read the CursorBrake edges setting; keeping the previous entries.");
+    }
+
     Logger::info(L"CursorBrake settings applied: push_distance {}, edge_filter {}, cross_modifier {}, disable_while_dragging {}, free_return {}.", m_pushDistance.load(), m_edgeFilter.load(), m_crossModifier.load(), m_disableWhileDragging.load(), m_freeReturn.load());
 }
 
@@ -409,6 +519,8 @@ void CursorBrake::HookThreadMain()
     m_lastPoint = GetCursorPos(&cursor) ? cursorbrake::PointL{ cursor.x, cursor.y } : cursorbrake::PointL{};
 
     RegisterForDisplayChanges();
+    TakePendingOverrides();
+    m_identityRetries = 0;
     RebuildLayout();
     RefreshSessionState();
 
@@ -462,24 +574,25 @@ void CursorBrake::RegisterForDisplayChanges()
     wc.lpszClassName = DISPLAY_CHANGE_WINDOW_CLASS;
     RegisterClassExW(&wc);
 
-    m_messageWindow = CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE, DISPLAY_CHANGE_WINDOW_CLASS, nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
-    if (!m_messageWindow)
+    const HWND window = CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE, DISPLAY_CHANGE_WINDOW_CLASS, nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+    if (!window)
     {
-        Logger::error(L"Failed to create the CursorBrake display change window, error: {}. The layout will not follow display changes.", GetLastError());
+        Logger::error(L"Failed to create the CursorBrake display change window, error: {}. The layout will not follow display changes, and edge settings apply only when the module starts.", GetLastError());
         return;
     }
+    m_messageWindow.store(window);
 
     DEV_BROADCAST_DEVICEINTERFACE filter = {};
     filter.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
     filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
     filter.dbcc_classguid = GUID_DEVINTERFACE_MONITOR;
-    m_deviceNotify = RegisterDeviceNotificationW(m_messageWindow, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
+    m_deviceNotify = RegisterDeviceNotificationW(window, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
     if (!m_deviceNotify)
     {
         Logger::warn(L"Failed to register CursorBrake for monitor device notifications, error: {}", GetLastError());
     }
 
-    m_sessionNotify = WTSRegisterSessionNotification(m_messageWindow, NOTIFY_FOR_THIS_SESSION);
+    m_sessionNotify = WTSRegisterSessionNotification(window, NOTIFY_FOR_THIS_SESSION);
     if (!m_sessionNotify)
     {
         Logger::warn(L"Failed to register CursorBrake for session change notifications, error: {}. A later switch between local and remote will go unnoticed.", GetLastError());
@@ -493,37 +606,230 @@ void CursorBrake::UnregisterDisplayChanges()
         UnregisterDeviceNotification(m_deviceNotify);
         m_deviceNotify = nullptr;
     }
+    // No read may post to the window once it is gone.
+    m_identityReader.Cancel();
+    const HWND window = m_messageWindow.exchange(nullptr);
     if (m_sessionNotify)
     {
-        WTSUnRegisterSessionNotification(m_messageWindow);
+        WTSUnRegisterSessionNotification(window);
         m_sessionNotify = false;
     }
-    if (m_messageWindow)
+    if (window)
     {
-        KillTimer(m_messageWindow, TIMER_REBUILD_LAYOUT);
-        DestroyWindow(m_messageWindow);
-        m_messageWindow = nullptr;
+        KillTimer(window, TIMER_REBUILD_LAYOUT);
+        KillTimer(window, TIMER_RETRY_IDENTITY);
+        DestroyWindow(window);
         UnregisterClassW(DISPLAY_CHANGE_WINDOW_CLASS, GetModuleHandle(nullptr));
     }
 }
 
+namespace
+{
+    // What EnumDisplayMonitors reports, by monitor: the engine's geometry, plus the handle that
+    // matches it to its identity, its GDI device that matches it to its display path, and whether
+    // it is the main display.
+    struct MonitorEnumeration
+    {
+        std::vector<cursorbrake::Monitor> monitors;
+        std::vector<HMONITOR> handles;
+        std::vector<std::wstring> devices;
+        std::vector<bool> primary;
+    };
+}
+
 // Runs on the hook thread only (at start and from the display change window), so the hook reads
-// m_layout without a lock.
+// m_layout without a lock. The geometry comes from EnumDisplayMonitors on this per-monitor-aware
+// thread, so its rects are physical, and takes effect at once. The identities, names and numbers
+// are read on the identity reader's thread, because those reads can stall during a display change,
+// and ApplyIdentities takes them when they arrive. Until then a monitor that kept its GDI device
+// and rect keeps what was read for it, and any other monitor has no ID: its edges brake at Default
+// and no override reaches them.
 void CursorBrake::RebuildLayout()
 {
-    cursorbrake::Layout layout;
-    if (!EnumDisplayMonitors(nullptr, nullptr, AddMonitor, reinterpret_cast<LPARAM>(&layout)))
+    MonitorEnumeration enumeration;
+    if (!EnumDisplayMonitors(nullptr, nullptr, AddMonitor, reinterpret_cast<LPARAM>(&enumeration)))
     {
         Logger::warn(L"EnumDisplayMonitors failed, error: {}. Keeping the previous CursorBrake layout.", GetLastError());
         return;
     }
-    m_layout = std::move(layout);
+
+    std::vector<cursorbrake::RectL> rects;
+    for (const cursorbrake::Monitor& monitor : enumeration.monitors)
+    {
+        rects.push_back(monitor.rect);
+    }
+    std::vector<cursorbrake::RectL> previousRects;
+    for (const cursorbrake::Monitor& monitor : m_layout.monitors)
+    {
+        previousRects.push_back(monitor.rect);
+    }
+    const std::vector<std::optional<size_t>> previous = cursorbrake::MatchPrevious(enumeration.devices, rects, m_devices, previousRects);
+
+    std::vector<std::wstring> ids(enumeration.monitors.size());
+    std::vector<cursorbrake::DetectedMonitor> detected;
+    for (size_t i = 0; i < enumeration.monitors.size(); ++i)
+    {
+        const cursorbrake::Monitor& monitor = enumeration.monitors[i];
+        cursorbrake::DetectedMonitor entry{ L"", L"", monitor.rect, monitor.dpi, enumeration.primary[i], static_cast<int>(i) + 1, false };
+        if (previous[i] && *previous[i] < m_detected.size() && *previous[i] < m_monitorIds.size())
+        {
+            const cursorbrake::DetectedMonitor& kept = m_detected[*previous[i]];
+            ids[i] = m_monitorIds[*previous[i]];
+            entry.id = kept.id;
+            entry.name = kept.name;
+            entry.number = kept.number;
+            entry.builtIn = kept.builtIn;
+        }
+        detected.push_back(std::move(entry));
+    }
+
+    m_layout.monitors = std::move(enumeration.monitors);
+    m_devices = enumeration.devices;
+    m_monitorIds = std::move(ids);
+    m_detected = std::move(detected);
     Logger::info(L"CursorBrake layout rebuilt with {} monitors.", m_layout.monitors.size());
+    ResolveOverrides();
+
+    ++m_generation;
+    if (m_identityReader.Request(m_generation, std::move(enumeration.handles), std::move(enumeration.devices), m_messageWindow.load(), WM_APP_IDENTITIES))
+    {
+        // Without a work item or a window, the reader ran the read on this thread and posted
+        // nothing.
+        ApplyIdentities();
+    }
+}
+
+// Runs on the hook thread when the identity reader finishes. A read for an older layout is
+// dropped, since a read or a rebuild for the current one follows it. A read that failed, or that
+// saw other monitors than the layout holds, leaves the identities as they are and runs again.
+void CursorBrake::ApplyIdentities()
+{
+    const std::optional<cursorbrake::Identities> result = m_identityReader.Take();
+    if (!result)
+    {
+        return;
+    }
+
+    const HWND window = m_messageWindow.load();
+    const auto retry = [&] {
+        if (window && m_identityRetries < MAX_IDENTITY_RETRIES)
+        {
+            ++m_identityRetries;
+            SetTimer(window, TIMER_RETRY_IDENTITY, IDENTITY_RETRY_DELAY_MS, nullptr);
+        }
+    };
+    std::vector<cursorbrake::RectL> rects;
+    for (const cursorbrake::Monitor& monitor : m_layout.monitors)
+    {
+        rects.push_back(monitor.rect);
+    }
+    switch (cursorbrake::JudgeIdentities(*result, m_generation, m_devices, rects))
+    {
+    case cursorbrake::IdentityReadUse::Drop:
+        return;
+    case cursorbrake::IdentityReadUse::Retry:
+        Logger::warn(L"CursorBrake could not read the identities of the current monitors; the monitors keep the ones they have.");
+        retry();
+        return;
+    case cursorbrake::IdentityReadUse::Apply:
+        break;
+    }
+
+    for (size_t i = 0; i < m_layout.monitors.size(); ++i)
+    {
+        cursorbrake::DetectedMonitor& entry = m_detected[i];
+        entry.id = result->ids[i];
+        entry.name = result->names[i];
+        entry.builtIn = result->builtIn[i];
+        entry.number = result->numbers[i];
+        m_monitorIds[i] = result->ids[i];
+
+        // The EDID code only: the instance identifies the machine's ports, so it stays out of logs.
+        const std::wstring_view id = entry.id;
+        const size_t codeStart = id.find(L'#');
+        const size_t codeEnd = codeStart == std::wstring_view::npos ? codeStart : id.find(L'#', codeStart + 1);
+        const std::wstring_view model = codeEnd == std::wstring_view::npos ? std::wstring_view{ L"unknown" } : id.substr(codeStart + 1, codeEnd - codeStart - 1);
+        const cursorbrake::RectL& rect = entry.rect;
+        Logger::info(L"CursorBrake monitor {}: number {} left {} top {} right {} bottom {} dpi {} model {}{}{}", i, entry.number, rect.left, rect.top, rect.right, rect.bottom, entry.dpi, model, entry.builtIn ? L", built-in" : L"", entry.id.empty() ? L", unidentified" : L"");
+    }
+    ResolveOverrides();
+    PublishEdges();
+
+    const bool identified = std::none_of(m_monitorIds.begin(), m_monitorIds.end(), [](const std::wstring& id) { return id.empty(); });
+    if (!result->complete || !identified)
+    {
+        retry();
+    }
+}
+
+// Runs on the hook thread. Moves the entries set_config left, if any, into m_overrides and says
+// whether there were any.
+bool CursorBrake::TakePendingOverrides()
+{
+    std::optional<std::vector<cursorbrake::EdgeOverride>> pending;
+    {
+        std::lock_guard lock(m_overridesMutex);
+        pending.swap(m_pendingOverrides);
+    }
+    if (!pending)
+    {
+        return false;
+    }
+    m_overrides = std::move(*pending);
+    return true;
+}
+
+// Runs on the hook thread. A change to m_layout.edges resets the engine's push on the next move,
+// like any layout change.
+void CursorBrake::ResolveOverrides()
+{
+    m_layout.edges = cursorbrake::ResolveEdges(m_layout, m_monitorIds, m_overrides);
+    Logger::info(L"CursorBrake edge settings: {} of {} entries apply to the current monitors.", m_layout.edges.size(), m_overrides.size());
+}
+
+// Runs on the hook thread. The overlay draws on its own thread from a copy of what it needs.
+void CursorBrake::ShowEdges()
+{
+    const cursorbrake::Settings settings = SettingsSnapshot();
+    const std::wstring key = get_resource_string(settings.crossModifier == cursorbrake::CrossModifier::Shift ? IDS_CURSORBRAKE_KEY_SHIFT : IDS_CURSORBRAKE_KEY_CTRL, reinterpret_cast<HINSTANCE>(&__ImageBase), L"");
+
+    const std::vector<size_t> trapped = cursorbrake::TrappedMonitors(m_layout, settings);
+
+    cursorbrake::OverlayContent content;
+    content.wallLabel = WithKey(IDS_CURSORBRAKE_OVERLAY_WALL, key);
+    content.leaveLabel = WithKey(IDS_CURSORBRAKE_OVERLAY_LEAVE, key);
+    content.offLabel = get_resource_string(IDS_CURSORBRAKE_OVERLAY_OFF, reinterpret_cast<HINSTANCE>(&__ImageBase), L"");
+    content.pixelsFormat = get_resource_string(IDS_CURSORBRAKE_OVERLAY_PIXELS, reinterpret_cast<HINSTANCE>(&__ImageBase), L"");
     for (size_t i = 0; i < m_layout.monitors.size(); ++i)
     {
         const cursorbrake::Monitor& monitor = m_layout.monitors[i];
-        Logger::info(L"CursorBrake monitor {}: left {} top {} right {} bottom {} dpi {}", i, monitor.rect.left, monitor.rect.top, monitor.rect.right, monitor.rect.bottom, monitor.dpi);
+        const bool isTrapped = std::find(trapped.begin(), trapped.end(), i) != trapped.end();
+        const int number = i < m_detected.size() ? m_detected[i].number : static_cast<int>(i) + 1;
+        content.monitors.push_back(cursorbrake::OverlayMonitor{ monitor.rect, monitor.dpi, number, isTrapped });
     }
+    for (const cursorbrake::InnerEdge& edge : cursorbrake::InnerEdges(m_layout))
+    {
+        for (const auto [from, to] : { std::pair{ edge.first, edge.second }, std::pair{ edge.second, edge.first } })
+        {
+            const cursorbrake::Monitor& source = m_layout.monitors[from];
+            const long thickness = cursorbrake::Scaled(cursorbrake::EdgeOverlay::STRIP_THICKNESS, source.dpi);
+            const bool towardPositive = edge.sideBySide ? source.rect.right == edge.at : source.rect.bottom == edge.at;
+            content.directions.push_back(cursorbrake::OverlayDirection{ from, cursorbrake::DirectionStrip(source.rect, edge, thickness), edge.sideBySide, towardPositive ? 1 : -1, cursorbrake::RuleFor(m_layout, settings, from, to, edge.sideBySide) });
+        }
+    }
+
+    Logger::info(L"CursorBrake shows {} edges on {} displays.", content.directions.size() / 2, content.monitors.size());
+    m_overlay.Show(std::move(content));
+}
+
+// Runs on the hook thread; the write happens on the thread pool.
+void CursorBrake::PublishEdges()
+{
+    std::vector<std::pair<std::wstring, std::wstring>> current = cursorbrake::PresentPairs(m_layout, m_monitorIds);
+    std::vector<std::pair<std::wstring, std::wstring>> present = m_presentPairs;
+    present.insert(present.end(), current.begin(), current.end());
+    m_presentPairs = std::move(current);
+    m_publisher.Publish(m_detected, std::move(present), cursorbrake::NamedPairs(m_overrides));
 }
 
 // Runs on the hook thread only (at start and on WM_WTSSESSION_CHANGE), so the hook reads
@@ -542,9 +848,9 @@ void CursorBrake::RefreshSessionState()
 
 BOOL CALLBACK CursorBrake::AddMonitor(HMONITOR monitor, HDC /*hdc*/, LPRECT /*rect*/, LPARAM data)
 {
-    auto* layout = reinterpret_cast<cursorbrake::Layout*>(data);
-    MONITORINFO info{};
-    info.cbSize = sizeof(MONITORINFO);
+    auto* enumeration = reinterpret_cast<MonitorEnumeration*>(data);
+    MONITORINFOEXW info{};
+    info.cbSize = sizeof(MONITORINFOEXW);
     if (!GetMonitorInfoW(monitor, &info))
     {
         return TRUE;
@@ -558,7 +864,10 @@ BOOL CALLBACK CursorBrake::AddMonitor(HMONITOR monitor, HDC /*hdc*/, LPRECT /*re
     }
 
     const RECT& r = info.rcMonitor;
-    layout->monitors.push_back(cursorbrake::Monitor{ cursorbrake::RectL{ r.left, r.top, r.right, r.bottom }, dpiX });
+    enumeration->monitors.push_back(cursorbrake::Monitor{ cursorbrake::RectL{ r.left, r.top, r.right, r.bottom }, dpiX });
+    enumeration->handles.push_back(monitor);
+    enumeration->devices.push_back(info.szDevice);
+    enumeration->primary.push_back((info.dwFlags & MONITORINFOF_PRIMARY) != 0);
     return TRUE;
 }
 
@@ -573,6 +882,9 @@ LRESULT CALLBACK CursorBrake::MessageWindowProc(HWND hwnd, UINT msg, WPARAM wPar
     switch (msg)
     {
     case WM_DISPLAYCHANGE:
+        // A read still running was asked for the layout this change replaces, so its result is
+        // dropped rather than applied in the debounce before the rebuild.
+        ++instance->m_generation;
         SetTimer(hwnd, TIMER_REBUILD_LAYOUT, DEBOUNCE_DELAY_MS, nullptr);
         break;
 
@@ -595,9 +907,38 @@ LRESULT CALLBACK CursorBrake::MessageWindowProc(HWND hwnd, UINT msg, WPARAM wPar
         if (wParam == TIMER_REBUILD_LAYOUT)
         {
             KillTimer(hwnd, TIMER_REBUILD_LAYOUT);
+            instance->m_identityRetries = 0;
+            instance->RebuildLayout();
+        }
+        else if (wParam == TIMER_RETRY_IDENTITY)
+        {
+            KillTimer(hwnd, TIMER_RETRY_IDENTITY);
             instance->RebuildLayout();
         }
         break;
+
+    case WM_APP_EDGES_CHANGED:
+        if (instance->TakePendingOverrides())
+        {
+            instance->ResolveOverrides();
+            instance->PublishEdges();
+        }
+        return 0;
+
+    case WM_APP_SHOW_EDGES:
+        if (instance->m_showGate.Accept(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count()))
+        {
+            instance->ShowEdges();
+        }
+        else
+        {
+            Logger::info(L"CursorBrake ignored a request to show the edges that Settings did not make, or that came within a second of the last.");
+        }
+        return 0;
+
+    case WM_APP_IDENTITIES:
+        instance->ApplyIdentities();
+        return 0;
 
     case WM_WTSSESSION_CHANGE:
         instance->RefreshSessionState();

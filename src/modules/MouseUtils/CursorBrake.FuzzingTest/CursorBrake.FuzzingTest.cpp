@@ -7,16 +7,19 @@
 // CursorBrake is a user-input module, so PowerToys policy requires a fuzz target (AGENTS.md: "New
 // modules handling file I/O or user input must implement fuzzing tests"). The decision logic
 // lives in the Win32-free cursorbrake::Engine (CursorBrakeCore.h), so it runs here under ASan with
-// no OS state. The fuzzer's bytes become monitor layouts, settings snapshots, cursor clips and a
-// sequence of moves, including degenerate and overlapping rects, empty and inverted clips, extreme
-// coordinates and DPI values, and settings a hand-edited settings.json could carry, out-of-range
-// enum values among them.
+// no OS state. The fuzzer's bytes become monitor layouts with per-edge settings, settings
+// snapshots, cursor clips and a sequence of moves, including degenerate and overlapping rects,
+// entries naming missing monitors, empty and inverted clips, extreme coordinates and DPI values,
+// and settings a hand-edited settings.json could carry, out-of-range enum values among them.
 //
 // Every decision is checked against the engine's contract. Allow returns the proposed point
-// unchanged. Hold happens only for a move that lands on another monitor once the clip clamps it,
-// and returns a point inside the monitor the cursor started on, and inside the clip when the
-// cursor started inside it. A bypassed move is never held. A broken contract aborts, which
-// libFuzzer reports as a crash.
+// unchanged, and never takes a move across a shared edge whose rule in that direction is Wall, nor
+// through a corner where either side the move passes is a wall, nor onto no monitor from a monitor
+// with a wall out, unless the move is bypassed. Hold happens only for a move that lands on another
+// monitor once the clip clamps it, or on no monitor from a monitor with a wall out. It returns a
+// point inside the monitor the cursor started on, and inside the clip when the cursor started
+// inside it. A bypassed move is never held. Spelled-out forms of the same rules decide every move
+// alike (see Equivalent). A broken contract aborts, which libFuzzer reports as a crash.
 
 #include <algorithm>
 #include <crtdbg.h>
@@ -28,6 +31,7 @@
 #include <fstream>
 #include <iterator>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "CursorBrakeCore.h"
@@ -107,7 +111,136 @@ namespace
             monitor.dpi = dpi < std::size(DPI_VALUES) ? DPI_VALUES[dpi] : (dpi == 0xFFu ? r.u32() : BASE_DPI);
             layout.monitors.push_back(monitor);
         }
+
+        // Per-edge settings, one-way and both-ways, with indices that can name a missing monitor
+        // or the same monitor twice, and a mode past the known ones.
+        const size_t edgeCount = r.u8() % 9u;
+        for (size_t i = 0; i < edgeCount; ++i)
+        {
+            EdgeSetting edge;
+            edge.first = r.u8() % (count + 1u);
+            edge.second = r.u8() % (count + 1u);
+            const uint8_t flags = r.u8();
+            edge.oneWay = (flags & 0x01u) != 0u;
+            edge.mode = static_cast<EdgeMode>((flags >> 1) & 0x03u);
+            edge.pushDistance = (flags & 0x80u) != 0u ? static_cast<int>(r.u32()) : static_cast<int>(r.u8() % 64u);
+            layout.edges.push_back(edge);
+        }
         return layout;
+    }
+
+    // The engine's own rule for which monitor holds a point: the first containing it.
+    std::optional<size_t> IndexAt(const Layout& layout, PointL point)
+    {
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            const RectL& rect = layout.monitors[i].rect;
+            if (point.x >= rect.left && point.x < rect.right && point.y >= rect.top && point.y < rect.bottom)
+            {
+                return i;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // The axis of the edge two rects share, side by side (true) or stacked (false), if they
+    // share one. Two rects can share at most one edge.
+    std::optional<bool> SharedAxis(const RectL& a, const RectL& b)
+    {
+        const bool overlapX = a.left < b.right && b.left < a.right;
+        const bool overlapY = a.top < b.bottom && b.top < a.bottom;
+        if ((a.right == b.left || b.right == a.left) && overlapY)
+        {
+            return true;
+        }
+        if ((a.bottom == b.top || b.bottom == a.top) && overlapX)
+        {
+            return false;
+        }
+        return std::nullopt;
+    }
+
+    // Spelled-out forms of the same rules, which the engine must treat move for move like the
+    // layout they come from.
+    //  - Every pair sharing an edge set to Custom at the global distance, both ways, under a
+    //    different global distance, against no entries. Exact while the filter brakes both axes,
+    //    for moves onto a monitor that shares the crossed edge; a crossing onto any other monitor
+    //    has no pair and takes the global distance.
+    //  - Every both-ways entry split into two one-way entries placed after the existing one-way
+    //    entries, against the entries as given. Always exact.
+    //  - The filter replaced by All plus an Off entry for every pair sharing an edge on a
+    //    filtered axis, against the filter. Exact for moves onto a monitor that shares the
+    //    crossed edge, like the first.
+    Layout ExplicitDefaults(const Layout& layout, const Settings& settings)
+    {
+        Layout spelled{ layout.monitors, {} };
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            for (size_t j = i + 1; j < layout.monitors.size(); ++j)
+            {
+                if (SharedAxis(layout.monitors[i].rect, layout.monitors[j].rect))
+                {
+                    spelled.edges.push_back(EdgeSetting{ i, j, false, EdgeMode::Custom, settings.pushDistance });
+                }
+            }
+        }
+        return spelled;
+    }
+
+    Layout SplitBothWays(const Layout& layout)
+    {
+        Layout split{ layout.monitors, {} };
+        for (const EdgeSetting& edge : layout.edges)
+        {
+            if (edge.oneWay)
+            {
+                split.edges.push_back(edge);
+            }
+        }
+        for (const EdgeSetting& edge : layout.edges)
+        {
+            if (!edge.oneWay)
+            {
+                split.edges.push_back(EdgeSetting{ edge.first, edge.second, true, edge.mode, edge.pushDistance });
+                split.edges.push_back(EdgeSetting{ edge.second, edge.first, true, edge.mode, edge.pushDistance });
+            }
+        }
+        return split;
+    }
+
+    Layout FilterAsOff(const Layout& layout, const Settings& settings)
+    {
+        Layout spelled = layout;
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            for (size_t j = i + 1; j < layout.monitors.size(); ++j)
+            {
+                const std::optional<bool> sideBySide = SharedAxis(layout.monitors[i].rect, layout.monitors[j].rect);
+                if (sideBySide && RuleFor(Layout{}, settings, i, std::nullopt, *sideBySide).mode == EdgeMode::Off)
+                {
+                    spelled.edges.push_back(EdgeSetting{ i, j, false, EdgeMode::Off, 0 });
+                }
+            }
+        }
+        return spelled;
+    }
+
+    // A global distance other than the one given, so an entry's distance and the global one differ.
+    Settings WithOtherDistance(Settings settings)
+    {
+        settings.pushDistance = settings.pushDistance / 2 + 1;
+        return settings;
+    }
+
+    Settings WithAllEdges(Settings settings)
+    {
+        settings.edgeFilter = EdgeFilter::All;
+        return settings;
+    }
+
+    bool BrakesBothAxes(const Settings& settings)
+    {
+        return RuleFor(Layout{}, settings, 0, std::nullopt, true).mode != EdgeMode::Off && RuleFor(Layout{}, settings, 0, std::nullopt, false).mode != EdgeMode::Off;
     }
 
     Settings ReadSettings(Reader& r)
@@ -176,22 +309,112 @@ namespace
         return point.x >= rect.left && point.x < rect.right && point.y >= rect.top && point.y < rect.bottom;
     }
 
+    // Whether a move that leaves `source` past both a side-by-side side and a stacked side, onto a
+    // monitor that shares no edge with it, meets a wall at that corner. Each side's rule comes from
+    // the first monitor across it that spans the corner pixel, or the default without one.
+    bool CornerWalled(const Layout& layout, const Settings& settings, size_t source, PointL proposed)
+    {
+        const RectL& rect = layout.monitors[source].rect;
+        const bool right = proposed.x >= rect.right;
+        const bool below = proposed.y >= rect.bottom;
+        const long cornerX = right ? rect.right - 1 : rect.left;
+        const long cornerY = below ? rect.bottom - 1 : rect.top;
+        std::optional<size_t> across;
+        std::optional<size_t> stackedOn;
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            const RectL& other = layout.monitors[i].rect;
+            if (i == source)
+            {
+                continue;
+            }
+            const bool overlapY = other.top < rect.bottom && rect.top < other.bottom;
+            const bool overlapX = other.left < rect.right && rect.left < other.right;
+            if (!across && (right ? other.left == rect.right : other.right == rect.left) && overlapY && cornerY >= other.top && cornerY < other.bottom)
+            {
+                across = i;
+            }
+            if (!stackedOn && (below ? other.top == rect.bottom : other.bottom == rect.top) && overlapX && cornerX >= other.left && cornerX < other.right)
+            {
+                stackedOn = i;
+            }
+        }
+        return RuleFor(layout, settings, source, across, true).mode == EdgeMode::Wall || RuleFor(layout, settings, source, stackedOn, false).mode == EdgeMode::Wall;
+    }
+
+    // Whether some monitor sharing an edge with `source` meets a Wall on the way out of it.
+    bool WalledOut(const Layout& layout, const Settings& settings, size_t source)
+    {
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            if (i == source)
+            {
+                continue;
+            }
+            const std::optional<bool> sideBySide = SharedAxis(layout.monitors[source].rect, layout.monitors[i].rect);
+            if (sideBySide && RuleFor(layout, settings, source, i, *sideBySide).mode == EdgeMode::Wall)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Bypassed(const MoveEvent& move, const Layout& layout, const Settings& settings)
+    {
+        return layout.monitors.size() < 2 || move.input == InputKind::Absolute || move.crossModifierHeld || (move.buttonDown && settings.disableWhileDragging);
+    }
+
     // `clip` is the clip in effect: the last usable one a move carried, or none.
     void CheckContract(const MoveEvent& move, const std::optional<RectL>& clip, const Layout& layout, const Settings& settings, const Decision& decision)
     {
+        const bool bypassed = Bypassed(move, layout, settings);
         if (decision.kind == DecisionKind::Allow)
         {
             if (!(decision.point == move.proposed))
             {
                 std::abort();
             }
+
+            // A move off a monitor onto one sharing the crossed edge, in a direction whose rule is
+            // Wall, gets through only by a bypass. The free return is the only other way to an
+            // Allow, so this covers it too.
+            const PointL current = Landing(move.current, clip);
+            const PointL proposed = Landing(move.proposed, clip);
+            const std::optional<size_t> source = IndexAt(layout, current);
+            const std::optional<size_t> destination = IndexAt(layout, proposed);
+
+            // A move onto no monitor leaves the source only when no way out of it is a wall,
+            // since Windows may put the cursor on any monitor from there.
+            if (!bypassed && source && !destination && WalledOut(layout, settings, *source))
+            {
+                std::abort();
+            }
+            if (!bypassed && source && destination && *source != *destination && !Contains(layout.monitors[*source].rect, proposed))
+            {
+                const RectL& from = layout.monitors[*source].rect;
+                const std::optional<bool> sideBySide = SharedAxis(from, layout.monitors[*destination].rect);
+                if (sideBySide && RuleFor(layout, settings, *source, *destination, *sideBySide).mode == EdgeMode::Wall)
+                {
+                    std::abort();
+                }
+
+                // A move onto a monitor sharing no edge, past both axes of the source, goes through
+                // a corner, and a wall on either side there holds it.
+                const bool pastX = proposed.x < from.left || proposed.x >= from.right;
+                const bool pastY = proposed.y < from.top || proposed.y >= from.bottom;
+                if (!sideBySide && pastX && pastY && CornerWalled(layout, settings, *source, proposed))
+                {
+                    std::abort();
+                }
+            }
             return;
         }
 
-        const bool bypassed = layout.monitors.size() < 2 || move.input == InputKind::Absolute || move.crossModifierHeld || (move.buttonDown && settings.disableWhileDragging);
         const Monitor* source = MonitorAt(layout, Landing(move.current, clip));
         const Monitor* destination = MonitorAt(layout, Landing(move.proposed, clip));
-        if (bypassed || source == nullptr || destination == nullptr || destination == source || !Contains(source->rect, decision.point))
+        const bool intoGap = source != nullptr && destination == nullptr && WalledOut(layout, settings, static_cast<size_t>(source - layout.monitors.data()));
+        if (bypassed || source == nullptr || (destination == nullptr && !intoGap) || destination == source || !Contains(source->rect, decision.point))
         {
             std::abort();
         }
@@ -201,6 +424,49 @@ namespace
             std::abort();
         }
     }
+
+    // Two engines fed the same moves under inputs that must decide alike. An engine starts over
+    // when its settings or layout change, so the two stay comparable only while they start over
+    // together; one starting over alone ends the comparison until both next do.
+    struct Equivalent
+    {
+        Engine first;
+        Engine second;
+        Layout firstLayout;
+        Settings firstSettings;
+        Layout secondLayout;
+        Settings secondSettings;
+        bool comparable = true;
+
+        void Update(Layout layoutA, const Settings& settingsA, Layout layoutB, const Settings& settingsB)
+        {
+            const bool changedA = !(layoutA == firstLayout) || !(settingsA == firstSettings);
+            const bool changedB = !(layoutB == secondLayout) || !(settingsB == secondSettings);
+            if (changedA != changedB)
+            {
+                comparable = false;
+            }
+            else if (changedA)
+            {
+                comparable = true;
+            }
+            firstLayout = std::move(layoutA);
+            firstSettings = settingsA;
+            secondLayout = std::move(layoutB);
+            secondSettings = settingsB;
+        }
+
+        // Decides the move in both engines and aborts when they differ while `compare` holds.
+        void Decide(const MoveEvent& move, bool compare)
+        {
+            const Decision a = first.OnMove(move, firstLayout, firstSettings);
+            const Decision b = second.OnMove(move, secondLayout, secondSettings);
+            if (compare && comparable && !(a == b))
+            {
+                std::abort();
+            }
+        }
+    };
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
@@ -216,6 +482,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     std::optional<RectL> clip;
     PointL cursor{};
 
+    Equivalent defaults;
+    Equivalent split;
+    Equivalent filter;
+    bool changed = true;
+
     // Bound the number of moves so any single input terminates regardless of size.
     for (int step = 0; step < 4096 && !r.done(); ++step)
     {
@@ -226,10 +497,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         if ((op & 0xC0u) == 0xC0u)
         {
             layout = ReadLayout(r);
+            changed = true;
         }
         else if ((op & 0xC0u) == 0x80u)
         {
             settings = ReadSettings(r);
+            changed = true;
+        }
+        if (changed)
+        {
+            defaults.Update(Layout{ layout.monitors, {} }, settings, ExplicitDefaults(layout, settings), WithOtherDistance(settings));
+            split.Update(layout, settings, SplitBothWays(layout), settings);
+            filter.Update(layout, settings, FilterAsOff(layout, settings), WithAllEdges(settings));
+            changed = false;
         }
         bool readFailed = false;
         if ((op & 0xC0u) == 0x40u)
@@ -271,6 +551,22 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         const Decision decision = engine.OnMove(move, layout, settings);
         CheckContract(move, clip, layout, settings, decision);
         cursor = decision.point;
+
+        // An entry has a pair to stand for the default only where the move lands on a monitor that
+        // shares the crossed edge.
+        const PointL landedFrom = Landing(move.current, clip);
+        const PointL landedTo = Landing(move.proposed, clip);
+        const std::optional<size_t> source = IndexAt(layout, landedFrom);
+        const std::optional<size_t> destination = IndexAt(layout, landedTo);
+        if (!Bypassed(move, layout, settings) && source && destination && *source != *destination && !Contains(layout.monitors[*source].rect, landedTo) && !SharedAxis(layout.monitors[*source].rect, layout.monitors[*destination].rect))
+        {
+            defaults.comparable = false;
+            filter.comparable = false;
+        }
+
+        defaults.Decide(move, BrakesBothAxes(settings));
+        split.Decide(move, true);
+        filter.Decide(move, true);
     }
 
     return 0;
@@ -384,6 +680,8 @@ int main(int argc, char** argv)
         32,
         8,
         3,
+        // No per-edge settings.
+        0,
         // Side-by-side filter, 25 px.
         1,
         25,

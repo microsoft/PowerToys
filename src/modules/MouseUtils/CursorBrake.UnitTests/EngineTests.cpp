@@ -6,8 +6,10 @@
 #include "CursorBrakeCore.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -430,6 +432,182 @@ namespace
             all.push_back({ c.name + L" (bounding rect)", c.layout, c.settings, UnderClip(c.steps, BoundingRect(c.layout)) });
         }
         RunAll(all);
+    }
+
+    // Per-edge settings. Monitor indices are into the layout the setting is added to.
+    EdgeSetting BothWays(size_t first, size_t second, EdgeMode mode, int pushDistance = 25)
+    {
+        return EdgeSetting{ first, second, false, mode, pushDistance };
+    }
+
+    EdgeSetting OneWay(size_t first, size_t second, EdgeMode mode, int pushDistance = 25)
+    {
+        return EdgeSetting{ first, second, true, mode, pushDistance };
+    }
+
+    Layout WithEdges(Layout layout, std::vector<EdgeSetting> edges)
+    {
+        layout.edges = std::move(edges);
+        return layout;
+    }
+
+    // Small monitors, so a walk of hand-sized steps meets an edge on most moves. TL (100%), TR
+    // (150%), BL (100%) and BR (200%), meeting at (48, 32).
+    Layout SmallJunction()
+    {
+        return Layout{ { Mon(0, 0, 48, 32, DPI_100), Mon(48, 0, 96, 32, DPI_150), Mon(0, 32, 48, 64, DPI_100), Mon(48, 32, 96, 64, DPI_200) } };
+    }
+
+    // Three in a row at 100%, 150% and 200%, the middle one 8 px lower, so both edges are
+    // shared only in part.
+    Layout SmallRow()
+    {
+        return Layout{ { Mon(0, 0, 40, 40, DPI_100), Mon(40, 8, 80, 48, DPI_150), Mon(80, 0, 120, 40, DPI_200) } };
+    }
+
+    // A tall A with B above C on its right.
+    Layout SmallTwoOnTheRight()
+    {
+        return Layout{ { Mon(0, 0, 40, 64), Mon(40, 0, 80, 32), Mon(40, 32, 80, 64, DPI_150) } };
+    }
+
+    // Whether two rects share an edge, and on which axis: side by side (true) or stacked (false).
+    std::optional<bool> SharedEdgeAxis(const RectL& a, const RectL& b)
+    {
+        const bool overlapX = a.left < b.right && b.left < a.right;
+        const bool overlapY = a.top < b.bottom && b.top < a.bottom;
+        if ((a.right == b.left || b.right == a.left) && overlapY)
+        {
+            return true;
+        }
+        if ((a.bottom == b.top || b.bottom == a.top) && overlapX)
+        {
+            return false;
+        }
+        return std::nullopt;
+    }
+
+    // One both-ways entry per pair of monitors that share an edge on an axis `onAxis` accepts.
+    template<typename AxisTest>
+    std::vector<EdgeSetting> EverySharedEdge(const Layout& layout, EdgeMode mode, int pushDistance, AxisTest onAxis)
+    {
+        std::vector<EdgeSetting> edges;
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            for (size_t j = i + 1; j < layout.monitors.size(); ++j)
+            {
+                const std::optional<bool> sideBySide = SharedEdgeAxis(layout.monitors[i].rect, layout.monitors[j].rect);
+                if (sideBySide && onAxis(*sideBySide))
+                {
+                    edges.push_back(BothWays(i, j, mode, pushDistance));
+                }
+            }
+        }
+        return edges;
+    }
+
+    // A fixed pseudo-random walk, the same on every run.
+    struct Walk
+    {
+        uint32_t state;
+
+        uint32_t Next()
+        {
+            state = state * 1664525u + 1013904223u;
+            return state >> 8;
+        }
+
+        long Step()
+        {
+            return static_cast<long>(Next() % 25) - 12;
+        }
+    };
+
+    // Feeds the same walk to two engines, each with its own layout and settings, and names the
+    // first move where their decisions differ. Every move starts where the decisions put the
+    // cursor, so a walk keeps pushing at whatever edge it reaches. One move in sixteen holds the
+    // cross key and one in sixteen is a drag, so bypasses and their resets are in the walk too.
+    std::optional<std::wstring> FirstDifference(const Layout& first, const Settings& firstSettings, const Layout& second, const Settings& secondSettings, uint32_t seed, int count)
+    {
+        const RectL bounds = BoundingRect(first);
+        Engine a;
+        Engine b;
+        Walk walk{ seed };
+        PointL cursor{ (bounds.left + bounds.right) / 2, (bounds.top + bounds.bottom) / 2 };
+        for (int i = 0; i < count; ++i)
+        {
+            const PointL proposed{ std::clamp(cursor.x + walk.Step(), bounds.left, bounds.right - 1), std::clamp(cursor.y + walk.Step(), bounds.top, bounds.bottom - 1) };
+            MoveEvent move = Move(cursor, proposed);
+            const uint32_t kind = walk.Next() % 16;
+            move.crossModifierHeld = kind == 0;
+            move.buttonDown = kind == 1;
+
+            const Decision fromFirst = a.OnMove(move, first, firstSettings);
+            const Decision fromSecond = b.OnMove(move, second, secondSettings);
+            if (!(fromFirst == fromSecond))
+            {
+                return L"seed " + std::to_wstring(seed) + L", move " + std::to_wstring(i + 1) + L" from (" + std::to_wstring(cursor.x) + L", " + std::to_wstring(cursor.y) + L"): " + Describe(fromFirst) + L" against " + Describe(fromSecond);
+            }
+            cursor = fromFirst.point;
+        }
+        return std::nullopt;
+    }
+
+    struct Equivalence
+    {
+        std::wstring name;
+        Layout first;
+        Settings firstSettings;
+        Layout second;
+        Settings secondSettings;
+    };
+
+    // Runs every pair over 20 walks of 2,000 moves before failing.
+    void RunEquivalences(const std::vector<Equivalence>& pairs)
+    {
+        std::wstring failures;
+        for (const Equivalence& pair : pairs)
+        {
+            for (uint32_t seed = 1; seed <= 20; ++seed)
+            {
+                if (const std::optional<std::wstring> difference = FirstDifference(pair.first, pair.firstSettings, pair.second, pair.secondSettings, seed, 2000))
+                {
+                    failures += (failures.empty() ? L"" : L"; ") + pair.name + L", " + *difference;
+                    break;
+                }
+            }
+        }
+        if (!failures.empty())
+        {
+            Assert::Fail(failures.c_str());
+        }
+    }
+
+    // `count` pushes of `size` px from `edge` in the direction (dx, dy), every one held at `edge`.
+    std::vector<Step> HeldPushes(PointL edge, int dx, int dy, int size, int count)
+    {
+        std::vector<Step> steps;
+        const PointL proposed{ edge.x + dx * size, edge.y + dy * size };
+        for (int i = 0; i < count; ++i)
+        {
+            steps.push_back(Expect(Move(edge, proposed), Hold(edge)));
+        }
+        return steps;
+    }
+
+    std::wstring Describe(const EdgeRule& rule)
+    {
+        switch (rule.mode)
+        {
+        case EdgeMode::Custom:
+            return L"Custom " + std::to_wstring(rule.pushDistance);
+        case EdgeMode::Off:
+            return L"Off";
+        case EdgeMode::Wall:
+            return L"Wall";
+        default:
+            return L"mode " + std::to_wstring(static_cast<int>(rule.mode));
+        }
     }
 }
 
@@ -1376,10 +1554,11 @@ namespace CursorBrakeEngineTests
         {
             // From (1900, 1070) to (1930, 1090) the move reaches TL's bottom row before its right
             // column. Neither side borders BR, so the first-reached side, the stacked one, is the
-            // crossed edge.
+            // crossed edge, and the move meets the stricter rule of the two sides it passes: under
+            // the side-by-side filter the stacked side is Off, so the side-by-side brake holds.
             RunAll({
                 { L"all edges", Junction(), Defaults(), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Hold({ 1919, 1079 })) } },
-                { L"side-by-side filter", Junction(), WithFilter(EdgeFilter::SideBySide), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Allow({ 1930, 1090 })) } },
+                { L"side-by-side filter", Junction(), WithFilter(EdgeFilter::SideBySide), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Hold({ 1919, 1079 })) } },
                 { L"stacked filter", Junction(), WithFilter(EdgeFilter::Stacked), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Hold({ 1919, 1079 })) } },
             });
         }
@@ -2060,6 +2239,554 @@ namespace CursorBrakeEngineTests
             };
             const Layout layout = FourAround(DPI_100);
             RunAll({ { L"right monitor's top-left corner", layout, Settings{}, Replay(push, layout.monitors[1].rect) } });
+        }
+    };
+
+    // Per-edge settings. In SideBySide A is 0 and B is 1; in Junction TL, TR, BL and BR are 0 to 3;
+    // in TwoOnTheRight the tall A is 0, B above is 1 and C below is 2. Defaults() brakes every
+    // edge left at Default with 25 px.
+    TEST_CLASS (EdgeRuleLookup)
+    {
+    public:
+        TEST_METHOD (RuleForChecksOneWayThenBothWaysThenTheDefault)
+        {
+            struct LookupCase
+            {
+                const wchar_t* name;
+                std::vector<EdgeSetting> edges;
+                EdgeFilter filter;
+                size_t source;
+                std::optional<size_t> neighbor;
+                bool sideBySide;
+                EdgeRule expected;
+            };
+
+            const LookupCase cases[] = {
+                { L"no entries, all edges", {}, EdgeFilter::All, 0, 1, true, { EdgeMode::Custom, 25 } },
+                { L"no entries, side-by-side axis under the stacked filter", {}, EdgeFilter::Stacked, 0, 1, true, { EdgeMode::Off, 0 } },
+                { L"no entries, stacked axis under the side-by-side filter", {}, EdgeFilter::SideBySide, 0, 1, false, { EdgeMode::Off, 0 } },
+                { L"no entries, stacked axis under the stacked filter", {}, EdgeFilter::Stacked, 0, 1, false, { EdgeMode::Custom, 25 } },
+                { L"no entries, unknown filter value", {}, static_cast<EdgeFilter>(7), 0, 1, false, { EdgeMode::Custom, 25 } },
+                { L"an entry for the pair, but no neighbor", { BothWays(0, 1, EdgeMode::Wall) }, EdgeFilter::All, 0, std::nullopt, true, { EdgeMode::Custom, 25 } },
+                { L"both ways, named in order", { BothWays(0, 1, EdgeMode::Custom, 600) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Custom, 600 } },
+                { L"both ways, named in reverse", { BothWays(1, 0, EdgeMode::Custom, 600) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Custom, 600 } },
+                { L"one way, its direction", { OneWay(0, 1, EdgeMode::Wall) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Wall, 25 } },
+                { L"one way, the other direction", { OneWay(1, 0, EdgeMode::Wall) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Custom, 25 } },
+                { L"one way listed after both ways", { BothWays(0, 1, EdgeMode::Custom, 600), OneWay(0, 1, EdgeMode::Wall) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Wall, 25 } },
+                { L"both ways where the one way runs the other direction", { BothWays(0, 1, EdgeMode::Custom, 600), OneWay(1, 0, EdgeMode::Wall) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Custom, 600 } },
+                { L"two both-ways entries, the first wins", { BothWays(0, 1, EdgeMode::Custom, 600), BothWays(1, 0, EdgeMode::Off) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Custom, 600 } },
+                { L"two one-way entries, the first wins", { OneWay(0, 1, EdgeMode::Off), OneWay(0, 1, EdgeMode::Wall) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Off, 25 } },
+                { L"an entry on a filtered axis", { BothWays(0, 1, EdgeMode::Custom, 40) }, EdgeFilter::Stacked, 0, 1, true, { EdgeMode::Custom, 40 } },
+                { L"an entry for another pair", { BothWays(0, 2, EdgeMode::Wall), OneWay(1, 0, EdgeMode::Wall) }, EdgeFilter::All, 0, 1, true, { EdgeMode::Custom, 25 } },
+            };
+
+            std::wstring failures;
+            for (const LookupCase& c : cases)
+            {
+                Layout layout = WithEdges(TwoOnTheRight(), c.edges);
+                Settings settings = WithFilter(c.filter);
+                const EdgeRule actual = RuleFor(layout, settings, c.source, c.neighbor, c.sideBySide);
+                if (!(actual == c.expected))
+                {
+                    failures += (failures.empty() ? L"" : L"; ") + std::wstring(c.name) + L": expected " + Describe(c.expected) + L", got " + Describe(actual);
+                }
+            }
+            if (!failures.empty())
+            {
+                Assert::Fail(failures.c_str());
+            }
+        }
+
+        TEST_METHOD (TheRuleComesFromTheNeighborTheMoveLandsOn)
+        {
+            // A's right side borders B above y = 1080 and C below it. The wall from A to B holds
+            // at y = 1075 however long the push, while 2 px lower the push reaches C and crosses.
+            const Layout layout = WithEdges(TwoOnTheRight(), { OneWay(0, 1, EdgeMode::Wall) });
+            RunAll({
+                { L"into B, walled", layout, Defaults(), HeldPushes({ 1919, 1075 }, 1, 0, 10, 100) },
+                { L"into C, braked", layout, Defaults(), SlowPush({ 1919, 1085 }, 1, 0, 25, { 10 }) },
+            });
+        }
+    };
+
+    TEST_CLASS (EdgeEquivalence)
+    {
+    public:
+        TEST_METHOD (ExplicitDefaultsOnEveryEdgeMatchNoEntries)
+        {
+            // Under the All filter, Custom at the global distance on every shared edge is the
+            // default spelled out, so every move of every walk decides the same.
+            const auto any = [](bool) { return true; };
+            const std::pair<const wchar_t*, Layout> layouts[] = { { L"junction", SmallJunction() }, { L"row", SmallRow() }, { L"two on the right", SmallTwoOnTheRight() } };
+            const std::pair<const wchar_t*, Settings> settings[] = { { L"25 px", Defaults() }, { L"free return off", WithFreeReturn(false) }, { L"60 px", WithDistance(60) } };
+            std::vector<Equivalence> pairs;
+            for (const auto& [layoutName, layout] : layouts)
+            {
+                for (const auto& [settingsName, s] : settings)
+                {
+                    pairs.push_back({ std::wstring(layoutName) + L", " + settingsName, layout, s, WithEdges(layout, EverySharedEdge(layout, EdgeMode::Custom, s.pushDistance, any)), s });
+                }
+            }
+            RunEquivalences(pairs);
+        }
+
+        TEST_METHOD (TwoOneWayEntriesMatchOneBothWaysEntry)
+        {
+            const std::vector<EdgeSetting> bothWays = { OneWay(2, 3, EdgeMode::Wall), BothWays(0, 1, EdgeMode::Wall), BothWays(0, 2, EdgeMode::Custom, 40), BothWays(1, 3, EdgeMode::Off), BothWays(2, 3, EdgeMode::Custom, 5) };
+            const std::vector<EdgeSetting> oneWay = {
+                OneWay(2, 3, EdgeMode::Wall),
+                OneWay(0, 1, EdgeMode::Wall),
+                OneWay(1, 0, EdgeMode::Wall),
+                OneWay(2, 0, EdgeMode::Custom, 40),
+                OneWay(0, 2, EdgeMode::Custom, 40),
+                OneWay(1, 3, EdgeMode::Off),
+                OneWay(3, 1, EdgeMode::Off),
+                OneWay(3, 2, EdgeMode::Custom, 5),
+            };
+            RunEquivalences({
+                { L"junction", WithEdges(SmallJunction(), bothWays), Defaults(), WithEdges(SmallJunction(), oneWay), Defaults() },
+                { L"junction, free return off", WithEdges(SmallJunction(), bothWays), WithFreeReturn(false), WithEdges(SmallJunction(), oneWay), WithFreeReturn(false) },
+            });
+        }
+
+        TEST_METHOD (ExplicitOffOnFilteredEdgesMatchesTheFilter)
+        {
+            // In these layouts every crossing lands on a monitor that shares the crossed edge, so
+            // the filter's Off always has an edge to stand for.
+            const auto sideBySide = [](bool axis) { return axis; };
+            const auto stacked = [](bool axis) { return !axis; };
+            const std::pair<const wchar_t*, Layout> layouts[] = { { L"junction", SmallJunction() }, { L"two on the right", SmallTwoOnTheRight() } };
+            std::vector<Equivalence> pairs;
+            for (const auto& [name, layout] : layouts)
+            {
+                pairs.push_back({ std::wstring(name) + L", side-by-side filter", layout, WithFilter(EdgeFilter::SideBySide), WithEdges(layout, EverySharedEdge(layout, EdgeMode::Off, 25, stacked)), Defaults() });
+                pairs.push_back({ std::wstring(name) + L", stacked filter", layout, WithFilter(EdgeFilter::Stacked), WithEdges(layout, EverySharedEdge(layout, EdgeMode::Off, 25, sideBySide)), Defaults() });
+            }
+            RunEquivalences(pairs);
+        }
+    };
+
+    TEST_CLASS (PerEdgeDistance)
+    {
+    public:
+        TEST_METHOD (EachEdgeCrossesAtItsOwnDistance)
+        {
+            const Layout layout = WithEdges(TwoOnTheRight(), { BothWays(0, 1, EdgeMode::Custom, 50) });
+            RunAll({
+                { L"A to B at its 50", layout, Defaults(), SlowPush({ 1919, 500 }, 1, 0, 50, { 10 }) },
+                { L"B to A at its 50", layout, Defaults(), SlowPush({ 1920, 500 }, -1, 0, 50, { 10 }) },
+                { L"A to C at the global 25", layout, Defaults(), SlowPush({ 1919, 1500 }, 1, 0, 25, { 10 }) },
+                { L"C to A at the global 25", layout, Defaults(), SlowPush({ 1920, 1500 }, -1, 0, 25, { 10 }) },
+            });
+        }
+
+        TEST_METHOD (APerEdgeDistanceScalesByTheSourceDpi)
+        {
+            // 40 logical px is 40 physical px from A (100%) and 60 from B (150%).
+            const Layout layout = WithEdges(MixedDpi(), { BothWays(0, 1, EdgeMode::Custom, 40) });
+            RunAll({
+                { L"A (100%) to B", layout, Defaults(), SlowPush({ 1919, 500 }, 1, 0, 40, { 5 }, CapAt(DPI_100)) },
+                { L"B (150%) to A", layout, Defaults(), SlowPush({ 1920, 500 }, -1, 0, 60, { 5 }, CapAt(DPI_150)) },
+                { L"B (150%) to C at the global 25", layout, Defaults(), SlowPush({ 4799, 800 }, 1, 0, 38, { 5 }, CapAt(DPI_150)) },
+            });
+        }
+
+        TEST_METHOD (HandTravelMatchesBothWaysOverAPerEdgeDistance)
+        {
+            // A hand step of two counts is 2 px at 100%, 3 at 150% and 4 at 200%. 40 px on A|B
+            // takes 20 steps from either side (40 and 60 px), 60 px on B|C takes 30 (90 and 120).
+            const Layout layout = WithEdges(MixedDpi(), { BothWays(0, 1, EdgeMode::Custom, 40), BothWays(1, 2, EdgeMode::Custom, 60) });
+            RunAll({
+                { L"A to B", layout, Defaults(), CrossOnStep({ 1919, 500 }, 1, 0, 2, 20) },
+                { L"B to A", layout, Defaults(), CrossOnStep({ 1920, 500 }, -1, 0, 3, 20) },
+                { L"B to C", layout, Defaults(), CrossOnStep({ 4799, 800 }, 1, 0, 3, 30) },
+                { L"C to B", layout, Defaults(), CrossOnStep({ 4800, 800 }, -1, 0, 4, 30) },
+            });
+        }
+    };
+
+    TEST_CLASS (OneWayValues)
+    {
+    public:
+        TEST_METHOD (AOneWayDistanceAppliesInItsDirectionOnly)
+        {
+            const Layout layout = WithEdges(SideBySide(), { OneWay(0, 1, EdgeMode::Custom, 50) });
+            RunAll({
+                { L"A to B at 50", layout, Defaults(), SlowPush({ 1919, 500 }, 1, 0, 50, { 10 }) },
+                { L"B to A at the global 25", layout, Defaults(), SlowPush({ 1920, 500 }, -1, 0, 25, { 10 }) },
+            });
+        }
+
+        TEST_METHOD (AOneWayWallHoldsOnlyItsDirection)
+        {
+            const Layout layout = WithEdges(SideBySide(), { OneWay(0, 1, EdgeMode::Wall) });
+            RunAll({
+                { L"A to B, a thousand capped pushes", layout, Settings{}, HeldPushes({ 1919, 500 }, 1, 0, 30, 1000) },
+                { L"B to A at the global 25", layout, Defaults(), SlowPush({ 1920, 500 }, -1, 0, 25, { 10 }) },
+            });
+        }
+
+        TEST_METHOD (AOneWayOffFreesOnlyItsDirection)
+        {
+            // Off grants no free return, so the way straight back brakes.
+            const Layout layout = WithEdges(SideBySide(), { OneWay(0, 1, EdgeMode::Off) });
+            RunAll({
+                { L"A to B at once, then straight back",
+                  layout,
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })),
+                      Expect(Move({ 1925, 500 }, { 1915, 500 }), Hold({ 1920, 500 })),
+                  } },
+                { L"B to A at the global 25", layout, Defaults(), SlowPush({ 1920, 500 }, -1, 0, 25, { 10 }) },
+            });
+        }
+
+        TEST_METHOD (AOneWayEntryOutranksABothWaysEntryInItsDirectionOnly)
+        {
+            const std::vector<EdgeSetting> bothFirst = { BothWays(0, 1, EdgeMode::Custom, 50), OneWay(1, 0, EdgeMode::Wall) };
+            const std::vector<EdgeSetting> oneWayFirst = { OneWay(1, 0, EdgeMode::Wall), BothWays(0, 1, EdgeMode::Custom, 50) };
+            RunAll({
+                { L"both ways listed first, A to B at 50", WithEdges(SideBySide(), bothFirst), Defaults(), SlowPush({ 1919, 500 }, 1, 0, 50, { 10 }) },
+                { L"both ways listed first, B to A walled", WithEdges(SideBySide(), bothFirst), Defaults(), HeldPushes({ 1920, 500 }, -1, 0, 10, 100) },
+                { L"one way listed first, A to B at 50", WithEdges(SideBySide(), oneWayFirst), Defaults(), SlowPush({ 1919, 500 }, 1, 0, 50, { 10 }) },
+                { L"one way listed first, B to A walled", WithEdges(SideBySide(), oneWayFirst), Defaults(), HeldPushes({ 1920, 500 }, -1, 0, 10, 100) },
+            });
+        }
+
+        TEST_METHOD (OnlyAOneWayEntryDependsOnTheOrderOfItsMonitors)
+        {
+            RunAll({
+                { L"both ways named B, A: A to B at 50", WithEdges(SideBySide(), { BothWays(1, 0, EdgeMode::Custom, 50) }), Defaults(), SlowPush({ 1919, 500 }, 1, 0, 50, { 10 }) },
+                { L"both ways named B, A: B to A at 50", WithEdges(SideBySide(), { BothWays(1, 0, EdgeMode::Custom, 50) }), Defaults(), SlowPush({ 1920, 500 }, -1, 0, 50, { 10 }) },
+                { L"one way B to A: A to B at the global 25", WithEdges(SideBySide(), { OneWay(1, 0, EdgeMode::Wall) }), Defaults(), SlowPush({ 1919, 500 }, 1, 0, 25, { 10 }) },
+                { L"one way B to A: B to A walled", WithEdges(SideBySide(), { OneWay(1, 0, EdgeMode::Wall) }), Defaults(), HeldPushes({ 1920, 500 }, -1, 0, 10, 100) },
+            });
+        }
+    };
+
+    TEST_CLASS (FreeReturnAndWalls)
+    {
+    public:
+        TEST_METHOD (AFreeReturnIntoAWalledDirectionHolds)
+        {
+            // A to B is braked at 25, B to A is a wall. The return straight back finds the wall,
+            // keeps holding, and only the cross key gets through.
+            const Layout layout = WithEdges(SideBySide(), { OneWay(1, 0, EdgeMode::Wall) });
+            RunAll({
+                { L"straight back after the crossing",
+                  layout,
+                  Defaults(),
+                  Concat(Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }),
+                         Concat(HeldPushes({ 1920, 500 }, -1, 0, 10, 100), { Expect(ModifierMove({ 1920, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) })) },
+            });
+        }
+
+        TEST_METHOD (AFreeReturnIntoABrakedDirectionStaysFree)
+        {
+            // The way back carries its own 50, which the free return passes as in a layout with no
+            // entries.
+            RunAll({
+                { L"B to A at 50", WithEdges(SideBySide(), { OneWay(1, 0, EdgeMode::Custom, 50) }), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }) },
+                { L"both ways at 25 spelled out", WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Custom, 25) }), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }) },
+            });
+        }
+    };
+
+    TEST_CLASS (TwoNeighborsOnOneSide)
+    {
+    public:
+        TEST_METHOD (APushSurvivesAWobbleOntoAWall)
+        {
+            // 20 px against B, a move onto the wall to C holds and leaves the 20, and 5 more
+            // against B cross.
+            const Layout layout = WithEdges(TwoOnTheRight(), { OneWay(0, 2, EdgeMode::Wall) });
+            RunAll({
+                { L"B, then C, then B",
+                  layout,
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1075 }, { 1929, 1075 }), Hold({ 1919, 1075 })),
+                      Expect(Move({ 1919, 1075 }, { 1929, 1075 }), Hold({ 1919, 1075 })),
+                      Expect(Move({ 1919, 1075 }, { 1929, 1085 }), Hold({ 1919, 1085 })),
+                      Expect(Move({ 1919, 1085 }, { 1924, 1075 }), Allow({ 1924, 1075 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (ALeanOnAWallAddsNothing)
+        {
+            // Three 10 px pushes against the wall to C add nothing, so the push against B starts
+            // from 0 and needs 10 + 10 + 5.
+            const Layout layout = WithEdges(TwoOnTheRight(), { OneWay(0, 2, EdgeMode::Wall) });
+            RunAll({
+                { L"C, then B",
+                  layout,
+                  Defaults(),
+                  Concat(HeldPushes({ 1919, 1085 }, 1, 0, 10, 3),
+                         {
+                             Expect(Move({ 1919, 1085 }, { 1929, 1075 }), Hold({ 1919, 1075 })),
+                             Expect(Move({ 1919, 1075 }, { 1929, 1075 }), Hold({ 1919, 1075 })),
+                             Expect(Move({ 1919, 1075 }, { 1924, 1075 }), Allow({ 1924, 1075 })),
+                         }) },
+            });
+        }
+
+        TEST_METHOD (APushBankedAgainstAStrongNeighborCrossesAWeakOne)
+        {
+            // 20 px against B's 50 holds; one more pixel onto C reaches C's 10.
+            const Layout layout = WithEdges(TwoOnTheRight(), { BothWays(0, 1, EdgeMode::Custom, 50), BothWays(0, 2, EdgeMode::Custom, 10) });
+            RunAll({
+                { L"B, then C",
+                  layout,
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1075 }, { 1929, 1075 }), Hold({ 1919, 1075 })),
+                      Expect(Move({ 1919, 1075 }, { 1929, 1075 }), Hold({ 1919, 1075 })),
+                      Expect(Move({ 1919, 1075 }, { 1920, 1085 }), Allow({ 1920, 1085 })),
+                  } },
+            });
+        }
+    };
+
+    TEST_CLASS (Walls)
+    {
+    public:
+        TEST_METHOD (AWallHoldsEveryCappedPushBothWays)
+        {
+            const Layout layout = WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Wall) });
+            RunAll({
+                { L"A to B", layout, Settings{}, HeldPushes({ 1919, 500 }, 1, 0, 30, 1000) },
+                { L"B to A", layout, Settings{}, HeldPushes({ 1920, 500 }, -1, 0, 30, 1000) },
+                { L"a slow push", layout, Defaults(), HeldPushes({ 1919, 500 }, 1, 0, 1, 1000) },
+            });
+        }
+
+        TEST_METHOD (BypassesCrossAWall)
+        {
+            const Layout layout = WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Wall) });
+            RunAll({
+                { L"cross modifier held", layout, Defaults(), { Expect(ModifierMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+                { L"absolute input", layout, Defaults(), { Expect(AbsoluteMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+                { L"dragging with disable-while-dragging on", layout, WithDragDisable(), { Expect(DragMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+                { L"dragging with the setting off holds", layout, Defaults(), { Expect(DragMove({ 1919, 500 }, { 1925, 500 }), Hold({ 1919, 500 })) } },
+            });
+        }
+
+        TEST_METHOD (WallsAtAJunctionHoldADiagonal)
+        {
+            // Both of TL's ways out are walls, so no move toward BR gets past either side.
+            const Layout layout = WithEdges(Junction(), { OneWay(0, 1, EdgeMode::Wall), OneWay(0, 2, EdgeMode::Wall) });
+            const RectL tl = Junction().monitors[0].rect;
+            std::vector<Step> alternating;
+            for (int i = 0; i < 100; ++i)
+            {
+                alternating.push_back(Expect(Move({ 1919, 1079 }, i % 2 == 0 ? PointL{ 1925, 1079 } : PointL{ 1919, 1085 }), Hold({ 1919, 1079 })));
+            }
+            std::vector<Step> wobbling = CycleFrom(tl, { 1919, 1079 }, { { 6, -1 }, { 0, 6 } }, 101);
+            wobbling.pop_back();
+            RunAll({
+                { L"through the corner", layout, Defaults(), HeldPushes({ 1919, 1079 }, 1, 1, 10, 100) },
+                { L"reaching the bottom row first", layout, Defaults(), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Hold({ 1919, 1079 })) } },
+                { L"one axis per event", layout, Defaults(), alternating },
+                { L"wobbling", layout, Defaults(), wobbling },
+            });
+        }
+    };
+
+    TEST_CLASS (FilterAndEdgeValues)
+    {
+    public:
+        TEST_METHOD (TheFilterAppliesToDefaultDirectionsOnly)
+        {
+            RunAll({
+                { L"Default on a filtered axis is free", WithEdges(Junction(), { BothWays(0, 1, EdgeMode::Custom, 50) }), WithFilter(EdgeFilter::SideBySide), { Expect(Move({ 500, 1079 }, { 500, 1085 }), Allow({ 500, 1085 })) } },
+                { L"Custom on a filtered axis brakes", WithEdges(Stacked(), { BothWays(0, 1, EdgeMode::Custom, 25) }), WithFilter(EdgeFilter::SideBySide), SlowPush({ 500, 1079 }, 0, 1, 25, { 10 }) },
+                { L"a wall on a filtered axis holds", WithEdges(Stacked(), { BothWays(0, 1, EdgeMode::Wall) }), WithFilter(EdgeFilter::SideBySide), HeldPushes({ 500, 1079 }, 0, 1, 10, 100) },
+                { L"Off on a braked axis is free",
+                  WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Off) }),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })),
+                      Expect(Move({ 1925, 500 }, { 1915, 500 }), Allow({ 1915, 500 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (OffGrantsNoFreeReturnWhereZeroDoes)
+        {
+            // Off takes the direction out of braking, as the filter does. Custom 0 brakes with a
+            // zero threshold, so its crossing grants a free return like any other.
+            RunAll({
+                { L"Off", WithEdges(SideBySide(), { OneWay(0, 1, EdgeMode::Off) }), Defaults(), { Expect(Move({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })), Expect(Move({ 1925, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) } },
+                { L"Custom 0", WithEdges(SideBySide(), { OneWay(0, 1, EdgeMode::Custom, 0) }), Defaults(), { Expect(Move({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })), Expect(Move({ 1925, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) } },
+            });
+        }
+    };
+
+    TEST_CLASS (CornersAndEdgeValues)
+    {
+    public:
+        TEST_METHOD (AWallOnlyPushCarriesNothingAroundTheCorner)
+        {
+            // Pushes against the wall to TR banked nothing, so the push down at the corner starts
+            // from its own 6 and needs 10 four more times before 56 crosses 50. A carried push would
+            // cross on the second.
+            const Layout layout = WithEdges(Junction(), { OneWay(0, 1, EdgeMode::Wall) });
+            RunAll({
+                { L"right against the wall, then down",
+                  layout,
+                  WithDistance(50),
+                  Concat(Concat(HeldPushes({ 1919, 1075 }, 1, 0, 10, 3), { Expect(Move({ 1919, 1075 }, { 1919, 1085 }), Hold({ 1919, 1079 })) }),
+                         Concat(HeldPushes({ 1919, 1079 }, 0, 1, 10, 4), { Expect(Move({ 1919, 1079 }, { 1919, 1089 }), Allow({ 1919, 1089 })) })) },
+            });
+        }
+
+        TEST_METHOD (AnEntryForMonitorsMeetingAtACornerChangesNothing)
+        {
+            // TL and BR touch only at a corner, so no crossing looks their pair up: the diagonal
+            // behaves as with no entries.
+            RunAll({
+                { L"a wall between TL and BR",
+                  WithEdges(Junction(), { BothWays(0, 3, EdgeMode::Wall) }),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1079 }, { 1925, 1085 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1089 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1928, 1088 }), Allow({ 1928, 1088 })),
+                  } },
+                { L"the bottom side reached first, TL to BL walled", WithEdges(Junction(), { OneWay(0, 2, EdgeMode::Wall) }), Defaults(), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Hold({ 1919, 1079 })) } },
+                { L"the bottom side reached first, TL to BL off, still meets TR's brake", WithEdges(Junction(), { OneWay(0, 2, EdgeMode::Off) }), Defaults(), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Hold({ 1919, 1079 })) } },
+            });
+        }
+    };
+
+    // A monitor that touches the source only at a corner. The move into it passes two sides of the
+    // source, and takes the stricter of the rules those sides have at the corner.
+    TEST_CLASS (CornerOnlyNeighbors)
+    {
+    public:
+        // A, B on A's right, and C meeting A only at A's bottom-right corner. `shortB` ends B at
+        // y = 800, so nothing borders A's right side at the corner. `withD` adds D below A.
+        static Layout Corner(bool shortB, bool withD)
+        {
+            Layout layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 0, 3840, shortB ? 800 : 1080), Mon(1920, 1080, 3840, 2160) } };
+            if (withD)
+            {
+                layout.monitors.push_back(Mon(0, 1080, 1920, 2160));
+            }
+            return layout;
+        }
+
+        // `count` moves of (dx, dy) from A's corner pixel, every one held there.
+        static std::vector<Step> HeldDiagonal(long dx, long dy, int count)
+        {
+            std::vector<Step> steps;
+            for (int i = 0; i < count; ++i)
+            {
+                steps.push_back(Expect(Move({ 1919, 1079 }, { 1919 + dx, 1079 + dy }), Hold({ 1919, 1079 })));
+            }
+            return steps;
+        }
+
+        TEST_METHOD (AWallOnEitherSideHoldsTheCorner)
+        {
+            // At the shipping 300 px, each case would reach C on move 30 if the corner did not
+            // take the stricter side.
+            RunAll({
+                { L"only A to B walled, the diagonal down", WithEdges(Corner(false, false), { OneWay(0, 1, EdgeMode::Wall) }), Settings{}, HeldDiagonal(2, 10, 400) },
+                { L"A to B and A to D walled", WithEdges(Corner(false, true), { OneWay(0, 1, EdgeMode::Wall), OneWay(0, 3, EdgeMode::Wall) }), Settings{}, HeldDiagonal(2, 10, 400) },
+                { L"every shared edge of A walled both ways, B short", WithEdges(Corner(true, true), { BothWays(0, 1, EdgeMode::Wall), BothWays(0, 3, EdgeMode::Wall) }), Settings{}, HeldDiagonal(10, 2, 400) },
+                { L"a wall on the side with no part in the move's lead", WithEdges(Corner(false, true), { OneWay(0, 3, EdgeMode::Wall) }), Settings{}, HeldDiagonal(10, 2, 400) },
+            });
+        }
+
+        TEST_METHOD (TheCrossKeyStillCrossesAWalledCorner)
+        {
+            RunAll({ { L"only A to B walled, with the cross key", WithEdges(Corner(false, false), { OneWay(0, 1, EdgeMode::Wall) }), Settings{}, { Expect(ModifierMove({ 1919, 1079 }, { 1921, 1089 }), Allow({ 1921, 1089 })) } } });
+        }
+
+        TEST_METHOD (WithoutAWallTheCornerBrakesAtTheLargerDistance)
+        {
+            // Off ranks below any brake, so Off on one side leaves the other side's brake. Two
+            // brakes give the larger distance: 50 needs five capped 10 px pushes, where 10 would
+            // cross on the first.
+            RunAll({
+                { L"no entries brake at the global 25", Corner(false, true), Defaults(), CycleFrom(Corner(false, true).monitors[0].rect, { 1919, 1079 }, { { 10, 10 } }, 3) },
+                { L"Off below, Default right", WithEdges(Corner(false, true), { OneWay(0, 3, EdgeMode::Off) }), Defaults(), CycleFrom(Corner(false, true).monitors[0].rect, { 1919, 1079 }, { { 10, 10 } }, 3) },
+                { L"Off on both sides lets it through", WithEdges(Corner(false, true), { OneWay(0, 1, EdgeMode::Off), OneWay(0, 3, EdgeMode::Off) }), Defaults(), { Expect(Move({ 1919, 1079 }, { 1929, 1089 }), Allow({ 1929, 1089 })) } },
+                { L"Custom 50 right, Custom 10 below", WithEdges(Corner(false, true), { OneWay(0, 1, EdgeMode::Custom, 50), OneWay(0, 3, EdgeMode::Custom, 10) }), Defaults(), CycleFrom(Corner(false, true).monitors[0].rect, { 1919, 1079 }, { { 10, 10 } }, 5) },
+                { L"Custom 10 right, Custom 50 below", WithEdges(Corner(false, true), { OneWay(0, 1, EdgeMode::Custom, 10), OneWay(0, 3, EdgeMode::Custom, 50) }), Defaults(), CycleFrom(Corner(false, true).monitors[0].rect, { 1919, 1079 }, { { 10, 10 } }, 5) },
+                { L"Custom 10 right, Default 25 below", WithEdges(Corner(false, true), { OneWay(0, 1, EdgeMode::Custom, 10) }), Defaults(), CycleFrom(Corner(false, true).monitors[0].rect, { 1919, 1079 }, { { 10, 10 } }, 3) },
+            });
+        }
+
+        TEST_METHOD (AFreeReturnThroughAWalledCornerHolds)
+        {
+            // A to C through the corner crosses at the global 25. On the way back, C's top side at
+            // the corner borders B, and C to B is a wall, so the free return holds.
+            const Layout layout = WithEdges(Corner(false, false), { OneWay(2, 1, EdgeMode::Wall) });
+            RunAll({
+                { L"back through the corner",
+                  layout,
+                  Defaults(),
+                  Concat(CycleFrom(layout.monitors[0].rect, { 1919, 1079 }, { { 10, 10 } }, 3), { Expect(Move({ 1929, 1089 }, { 1915, 1075 }), Hold({ 1920, 1080 })) }) },
+                { L"the same return with no wall is free",
+                  Corner(false, false),
+                  Defaults(),
+                  Concat(CycleFrom(layout.monitors[0].rect, { 1919, 1079 }, { { 10, 10 } }, 3), { Expect(Move({ 1929, 1089 }, { 1915, 1075 }), Allow({ 1915, 1075 })) }) },
+            });
+        }
+    };
+
+    // A move whose proposed point lies on no monitor. Windows puts such a cursor on a monitor of
+    // its own choosing, the walled neighbor among them, so a source with a wall out keeps it.
+    TEST_CLASS (GapsBesideAWall)
+    {
+    public:
+        // A, B right of A and 400 px higher so a gap borders A's
+        // right side below y = 680, C meeting A only at A's bottom-right corner, and D below A.
+        static Layout Gap()
+        {
+            return Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, -400, 3840, 680), Mon(1920, 1080, 3840, 2160), Mon(-1920, 1080, 1920, 3240) } };
+        }
+
+        TEST_METHOD (AMoveIntoAGapStaysOnASourceWithAWallOut)
+        {
+            // From (1919,900), +10 proposes (1929,900) on no monitor, where Windows can place the
+            // cursor on B, through the wall from A to B.
+            const Step intoGap = Expect(Move({ 1919, 900 }, { 1929, 900 }), Hold({ 1919, 900 }));
+            RunAll({
+                { L"walls from A to B and A to D", WithEdges(Gap(), { OneWay(0, 1, EdgeMode::Wall), OneWay(0, 3, EdgeMode::Wall) }), Settings{}, { intoGap } },
+                { L"a wall on another side of A", WithEdges(Gap(), { OneWay(0, 3, EdgeMode::Wall) }), Settings{}, { intoGap } },
+                { L"a both-ways wall", WithEdges(Gap(), { BothWays(1, 0, EdgeMode::Wall) }), Settings{}, { intoGap } },
+                { L"past an outer edge", WithEdges(Gap(), { OneWay(0, 1, EdgeMode::Wall) }), Settings{}, { Expect(Move({ 0, 500 }, { -10, 500 }), Hold({ 0, 500 })) } },
+            });
+        }
+
+        TEST_METHOD (WithoutAWallOutAGapMoveIsLeftToWindows)
+        {
+            RunAll({
+                { L"no entries", Gap(), Settings{}, { Expect(Move({ 1919, 900 }, { 1929, 900 }), Allow({ 1929, 900 })) } },
+                { L"a wall into A only", WithEdges(Gap(), { OneWay(1, 0, EdgeMode::Wall), OneWay(3, 0, EdgeMode::Wall) }), Settings{}, { Expect(Move({ 1919, 900 }, { 1929, 900 }), Allow({ 1929, 900 })) } },
+                { L"Off and Custom out of A", WithEdges(Gap(), { OneWay(0, 1, EdgeMode::Off), OneWay(0, 3, EdgeMode::Custom, 600) }), Settings{}, { Expect(Move({ 1919, 900 }, { 1929, 900 }), Allow({ 1929, 900 })) } },
+                { L"a wall out of A, overridden by an earlier one-way Off", WithEdges(Gap(), { OneWay(0, 1, EdgeMode::Off), BothWays(0, 1, EdgeMode::Wall) }), Settings{}, { Expect(Move({ 1919, 900 }, { 1929, 900 }), Allow({ 1929, 900 })) } },
+                { L"the cross key", WithEdges(Gap(), { OneWay(0, 1, EdgeMode::Wall) }), Settings{}, { Expect(ModifierMove({ 1919, 900 }, { 1929, 900 }), Allow({ 1929, 900 })) } },
+            });
+        }
+    };
+
+    TEST_CLASS (EdgeChanges)
+    {
+    public:
+        TEST_METHOD (AnEdgeChangeMidPushResetsThePush)
+        {
+            // A push of 20, then a change to the entries, then 5 more: a kept push would cross.
+            RunAll({
+                { L"the default spelled out", SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Custom, 25) }), Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } },
+                { L"a value changed", WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Custom, 25) }), Defaults(), { PushTen(), PushTen(), ExpectAfter(WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Custom, 24) }), Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } },
+                { L"an entry for the other direction", SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(WithEdges(SideBySide(), { OneWay(1, 0, EdgeMode::Wall) }), Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } },
+            });
         }
     };
 }
