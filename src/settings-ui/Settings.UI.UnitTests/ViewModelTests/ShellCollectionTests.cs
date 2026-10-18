@@ -21,14 +21,17 @@ namespace ViewModelTests;
 public class ShellCollectionTests
 {
     [TestMethod]
-    [DataRow(typeof(PowerAccentShortcutControl), "Keys")]
-    [DataRow(typeof(ShortcutDialogContentControl), "Keys")]
-    [DataRow(typeof(SettingsPageControl), "PrimaryLinks")]
-    [DataRow(typeof(SettingsPageControl), "SecondaryLinks")]
-    public void DependencyPropertyWrappersRetainPublicSetterSignatures(Type controlType, string propertyName)
+    [DataRow(typeof(PowerAccentShortcutControl), "Keys", typeof(List<object>))]
+    [DataRow(typeof(ShortcutDialogContentControl), "Keys", typeof(List<object>))]
+    [DataRow(typeof(SettingsPageControl), "PrimaryLinks", typeof(ObservableCollection<PageLink>))]
+    [DataRow(typeof(SettingsPageControl), "SecondaryLinks", typeof(ObservableCollection<PageLink>))]
+    public void DependencyPropertyWrappersRetainPublicSetterSignatures(Type controlType, string propertyName, Type collectionType)
     {
         // Inspect metadata without constructing WinUI controls outside a UI thread.
-        var setter = controlType.GetProperty(propertyName)?.SetMethod;
+        var property = controlType.GetProperty(propertyName);
+        Assert.IsNotNull(property);
+        Assert.AreEqual(collectionType, property.PropertyType);
+        var setter = property.SetMethod;
 
         Assert.IsNotNull(setter);
         Assert.IsTrue(setter.IsPublic);
