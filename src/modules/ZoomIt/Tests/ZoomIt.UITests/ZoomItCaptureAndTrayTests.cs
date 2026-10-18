@@ -271,7 +271,12 @@ public sealed partial class ZoomItTests
         ShellMenu.Dismiss();
         KeyboardHelper.SendKeys(Key.LWin, Key.B);
         var screen = System.Windows.Forms.SystemInformation.PrimaryMonitorSize;
-        MouseHelper.MoveTo(screen.Width / 2, screen.Height / 2);
+
+        // Keep the cursor off the taskbar and the right half of the screen. On Windows 10, a
+        // cursor left on the chevron can end up over News and Interests when the notification
+        // area resizes; its hover feed then covers the overflow until the cursor leaves.
+        void ParkCursor() => MouseHelper.MoveTo(screen.Width / 4, screen.Height / 2);
+        ParkCursor();
         var explorer = Session.FromProcess("explorer");
         WindowsFinder.WindowInfo? OverflowWindow() => WindowsFinder.ListByApp("explorer").FirstOrDefault(window =>
             window.ClassName is "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
@@ -347,6 +352,7 @@ public sealed partial class ZoomItTests
                         ui.Step($"Opening the notification overflow with '{chevron.Name}'.");
                         MouseHelper.LeftClickAt(x, y);
                         lastChevronClick = System.Diagnostics.Stopwatch.StartNew();
+                        ParkCursor();
                     }
                 }
             },
