@@ -39,7 +39,6 @@ namespace MouseWithoutBorders
         public SetupPage2a()
         {
             InitializeComponent();
-            SecurityCodeField.Enabled = !Class.Settings.IsProtectedMode;
             BackButtonVisible = true;
             SecurityCodeField.Text = string.IsNullOrEmpty(SecurityCode) ? string.Empty : GetSecureKey();
             ComputerNameField.Text = string.IsNullOrEmpty(ComputerName) ? string.Empty : ComputerName;
@@ -74,7 +73,7 @@ namespace MouseWithoutBorders
 
         private void SetLinkButtonState()
         {
-            LinkButton.Enabled = !Class.Settings.IsProtectedMode && SecurityCodeField.Text.Length >= 16 && ComputerNameField.Text.Trim().Length > 0;
+            LinkButton.Enabled = SecurityCodeField.Text.Length >= 16 && ComputerNameField.Text.Trim().Length > 0;
             if (!string.IsNullOrEmpty(SecurityCodeField.Text))
             {
                 _securityCode = SecurityCodeField.Text;
@@ -88,15 +87,11 @@ namespace MouseWithoutBorders
 
         private void LinkButtonClick(object sender, System.EventArgs e)
         {
-            if (Class.Settings.IsProtectedMode)
-            {
-                return;
-            }
-
             if (GetSecureKey() != SecurityCodeField.Text)
             {
-                Encryption.MyKey = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
-                Setting.Values.MyKey = Encryption.MyKey;
+                var key = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
+                Setting.Values.MyKey = key;
+                Encryption.MyKey = key;
                 SecurityCode = Encryption.MyKey;
             }
 

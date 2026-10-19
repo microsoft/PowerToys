@@ -165,23 +165,48 @@ public sealed class MouseWithoutBordersPairingPresentationTests
     }
 
     [TestMethod]
-    public void LegacyPairingSourceWiringPreservesNormalInputAndGuardsServiceMode()
+    public void OriginalPairingSourceWiringPreservesKeyEditingInTheWorkerProcess()
     {
         var setup = ReadSource(@"src\modules\MouseWithoutBorders\App\Form\Settings\SetupPage2a.cs");
-        StringAssert.Contains(setup, "SecurityCodeField.Enabled = !Class.Settings.IsProtectedMode;");
-        StringAssert.Contains(setup, "LinkButton.Enabled = !Class.Settings.IsProtectedMode && SecurityCodeField.Text.Length >= 16 && ComputerNameField.Text.Trim().Length > 0;");
-        StringAssert.Contains(setup, "if (Class.Settings.IsProtectedMode)");
-        StringAssert.Contains(setup, "Encryption.MyKey = Regex.Replace(SecurityCodeField.Text, @\"\\s+\", string.Empty);");
-        StringAssert.Contains(setup, "Setting.Values.MyKey = Encryption.MyKey;");
+        Assert.IsFalse(setup.Contains("Class.Settings.IsProtectedMode", StringComparison.Ordinal));
+        StringAssert.Contains(setup, "LinkButton.Enabled = SecurityCodeField.Text.Length >= 16 && ComputerNameField.Text.Trim().Length > 0;");
+        StringAssert.Contains(setup, "var key = Regex.Replace(SecurityCodeField.Text, @\"\\s+\", string.Empty);");
+        Assert.IsTrue(setup.IndexOf("Setting.Values.MyKey = key;", StringComparison.Ordinal) < setup.IndexOf("Encryption.MyKey = key;", StringComparison.Ordinal));
         var matrix = ReadSource(@"src\modules\MouseWithoutBorders\App\Form\frmMatrix.cs");
-        StringAssert.Contains(matrix, "textBoxEnc.ReadOnly = Class.Settings.IsProtectedMode;");
-        StringAssert.Contains(matrix, "buttonNewKey.Enabled = !Class.Settings.IsProtectedMode;");
+        Assert.IsFalse(matrix.Contains("Class.Settings.IsProtectedMode", StringComparison.Ordinal));
         StringAssert.Contains(matrix, "textBoxEnc.Text = Setting.Values.PairingKeyDisplayText;");
-        StringAssert.Contains(matrix, "if (Class.Settings.IsProtectedMode)");
         StringAssert.Contains(matrix, "if (!Encryption.IsKeyValid(newKey, out string rv))");
         StringAssert.Contains(matrix, "Setting.Values.MyKey = newKey;");
         StringAssert.Contains(matrix, "Encryption.MyKey = newKey;");
-        StringAssert.Contains(matrix, "Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();");
+        Assert.IsTrue(matrix.IndexOf("Setting.Values.MyKey = key;", StringComparison.Ordinal) < matrix.IndexOf("Encryption.MyKey = key;", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void OriginalSettingsSourceContractPreservesServiceModeEntryAndProtectsBeforePublishingKeys()
+    {
+        var source = ReadSource(@"src\modules\MouseWithoutBorders\App\Core\MachineStuff.cs");
+        var start = source.IndexOf("internal static void ShowMachineMatrix()", StringComparison.Ordinal);
+        var end = source.IndexOf("private static string[] mcMatrix;", start, StringComparison.Ordinal);
+        var show = source.Substring(start, end - start);
+        Assert.IsFalse(show.Contains("if (Class.Settings.IsProtectedMode)", StringComparison.Ordinal));
+        StringAssert.Contains(show, "if (Setting.Values.FirstRun && !Common.AtLeastOneSocketConnected())");
+        StringAssert.Contains(show, "Common.MatrixForm = new FrmMatrix();");
+        StringAssert.Contains(show, "Common.MatrixForm.Show();");
+        StringAssert.Contains(show, "Common.MatrixForm.Activate();");
+
+        var setupStart = source.IndexOf("internal static void ShowSetupForm(", StringComparison.Ordinal);
+        var setup = source.Substring(setupStart, start - setupStart);
+        Assert.IsFalse(setup.Contains("Class.Settings.IsProtectedMode", StringComparison.Ordinal));
+        Assert.IsTrue(
+            setup.IndexOf("Setting.Values.MyKey = key;", StringComparison.Ordinal) <
+            setup.IndexOf("Encryption.MyKey = key;", StringComparison.Ordinal));
+        var settings = ReadSource(@"src\modules\MouseWithoutBorders\App\Class\Setting.cs");
+        var displayStart = settings.IndexOf("internal string PairingKeyDisplayText", StringComparison.Ordinal);
+        var displayEnd = settings.IndexOf("internal string MyKey", displayStart, StringComparison.Ordinal);
+        var display = settings.Substring(displayStart, displayEnd - displayStart);
+        StringAssert.Contains(display, "if (IsProtectedMode)");
+        StringAssert.Contains(display, "return Encryption.MyKey ?? string.Empty;");
+        Assert.IsFalse(display.Contains("Decrypt(", StringComparison.Ordinal));
     }
 
     [TestMethod]

@@ -487,9 +487,14 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (IsProtectedMode)
+                {
+                    return Encryption.MyKey ?? string.Empty;
+                }
+
                 lock (_loadingSettingsLock)
                 {
-                    if (IsProtectedMode || _pairingKeyCodec.IsEncrypted(_properties.SecurityKey.Value))
+                    if (_pairingKeyCodec.IsEncrypted(_properties.SecurityKey.Value))
                     {
                         return PairingKeyCodec.IsEncryptedValue(_properties.SecurityKey.Value)
                             ? MouseWithoutBordersIpc.PairingConfiguredIndicator
