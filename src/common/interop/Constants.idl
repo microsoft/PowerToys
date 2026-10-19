@@ -80,6 +80,7 @@ namespace PowerToys
             static String MWBReconnectEvent();
             static String OpenNewKeyboardManagerEvent();
             static String KeyboardManagerEngineInstanceMutex();
+            static String AdvancedPasteRichTextMessage();
         }
     }
 }
