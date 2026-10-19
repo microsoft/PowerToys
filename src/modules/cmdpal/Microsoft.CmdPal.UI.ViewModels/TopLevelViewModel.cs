@@ -95,6 +95,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     // Fallback items
     public string DisplayTitle { get; private set; } = string.Empty;
 
+    internal string FallbackKey => $"{CommandProviderId}\0{Id}";
+
+    internal bool IncludeInGlobalResults => GetFallbackSettings()?.IncludeInGlobalResults == true;
+
     public HotkeySettings? Hotkey
     {
         get => _hotkey;
@@ -464,6 +468,14 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
 
         return false;
+    }
+
+    private FallbackSettings? GetFallbackSettings()
+    {
+        var providerSettings = _settingsService.Settings.ProviderSettings.TryGetValue(CommandProviderId, out var current)
+            ? current
+            : _providerSettings;
+        return providerSettings.FallbackCommands.TryGetValue(Id, out var settings) ? settings : null;
     }
 
     public PerformCommandMessage GetPerformCommandMessage()
