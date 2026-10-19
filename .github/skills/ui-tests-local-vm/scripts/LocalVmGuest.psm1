@@ -436,8 +436,122 @@ function Read-GuestJson {
     return $null
 }
 
+function Get-GuestPowerShellPath {
+    <#
+    .SYNOPSIS
+    Returns the guest path of PowerShell 7, which every interactive guest task runs under.
+    #>
+    return 'C:\Program Files\PowerShell\7\pwsh.exe'
+}
+
+function Start-InteractiveTask {
+    <#
+    .SYNOPSIS
+    Registers and starts a one-shot limited scheduled task in the standard user's interactive session.
+
+    .DESCRIPTION
+    PowerShell Direct lands in session 0, which has no desktop. A task with an interactive principal
+    runs in the logged-on user's session instead. An earlier task of the same name is replaced.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][string]$TaskName,
+        [Parameter(Mandatory)][string]$Executable,
+        [Parameter(Mandatory)][string]$Arguments,
+        [Parameter(Mandatory)][string]$UserName,
+        [Parameter(Mandatory)][int]$ExecutionTimeLimitSeconds
+    )
+
+    # A module function does not see its caller's preference, so a guest error must stop here.
+    $ErrorActionPreference = 'Stop'
+    return Invoke-Command -Session $Session -ScriptBlock {
+        param($Name, $FilePath, $ArgumentList, $InteractiveUser, $LimitSeconds)
+
+        $ErrorActionPreference = 'Stop'
+        Unregister-ScheduledTask -TaskName $Name -Confirm:$false -ErrorAction SilentlyContinue
+        $action = New-ScheduledTaskAction -Execute $FilePath -Argument $ArgumentList
+        $principal = New-ScheduledTaskPrincipal `
+            -UserId "$env:COMPUTERNAME\$InteractiveUser" `
+            -LogonType Interactive -RunLevel Limited
+        # Priority 7 defaults to background CPU/I/O scheduling and propagates to
+        # product children. Interactive UI tests need normal scheduling under VM load.
+        $settings = New-ScheduledTaskSettingsSet -Priority 4 `
+            -ExecutionTimeLimit (New-TimeSpan -Seconds $LimitSeconds) `
+            -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+        $task = New-ScheduledTask -Action $action -Principal $principal -Settings $settings
+        Register-ScheduledTask -TaskName $Name -InputObject $task -Force | Out-Null
+        Start-ScheduledTask -TaskName $Name
+        $registered = Get-ScheduledTask -TaskName $Name
+        [pscustomobject]@{
+            TaskName = $Name
+            State = [string]$registered.State
+            UserId = $registered.Principal.UserId
+            RunLevel = [string]$registered.Principal.RunLevel
+        }
+    } -ArgumentList $TaskName, $Executable, $Arguments, $UserName, $ExecutionTimeLimitSeconds
+}
+
+function Get-InteractiveTaskInfo {
+    <#
+    .SYNOPSIS
+    Reads a guest task's state, retrying a failed read before giving up.
+
+    .DESCRIPTION
+    State is 'Missing' when no task has the name. LastRunTimeUtc is set only once the task ran. With
+    ExitCodePath, ExitCode holds that guest file's trimmed content, or $null while the file is absent.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][string]$TaskName,
+        [string]$ExitCodePath = '',
+        [ValidateRange(1, 10)][int]$Attempts = 3
+    )
+
+    # A module function does not see its caller's preference, so a guest error must stop here.
+    $ErrorActionPreference = 'Stop'
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        try {
+            return Invoke-Command -Session $Session -ScriptBlock {
+                param($Name, $CodePath)
+
+                $task = Get-ScheduledTask -TaskName $Name -ErrorAction SilentlyContinue
+                $info = Get-ScheduledTaskInfo -TaskName $Name -ErrorAction SilentlyContinue
+                $state = if ($null -ne $task) { [string]$task.State } else { 'Missing' }
+                $lastTaskResult = if ($null -ne $info) { [int]$info.LastTaskResult } else { $null }
+                $lastRunTimeUtc = if ($null -ne $info -and $info.LastRunTime.Year -gt 2000) {
+                    $info.LastRunTime.ToUniversalTime().ToString('o')
+                }
+                else {
+                    $null
+                }
+                $exitCode = $null
+                if (-not [string]::IsNullOrEmpty($CodePath) -and (Test-Path -LiteralPath $CodePath -PathType Leaf)) {
+                    $content = Get-Content -LiteralPath $CodePath -Raw
+                    if ($null -ne $content) {
+                        $exitCode = $content.Trim()
+                    }
+                }
+                [pscustomobject]@{
+                    State = $state
+                    LastTaskResult = $lastTaskResult
+                    LastRunTimeUtc = $lastRunTimeUtc
+                    ExitCode = $exitCode
+                }
+            } -ArgumentList $TaskName, $ExitCodePath -ErrorAction Stop
+        }
+        catch {
+            if ($attempt -eq $Attempts) {
+                throw
+            }
+            Start-Sleep -Milliseconds 250
+        }
+    }
+}
+
 Export-ModuleMember -Function `
     Test-HyperVAccess, Get-HyperVAccessMessage, Test-LocalVmHostSetup, Get-LocalVmSetupMessage, `
     New-LocalVmContext, New-LocalVmSession, `
     Initialize-GuestExchange, Copy-ToGuest, Copy-FromGuest, Remove-GuestItem, Write-GuestText, `
-    Read-GuestJson
+    Read-GuestJson, Get-GuestPowerShellPath, Start-InteractiveTask, Get-InteractiveTaskInfo
