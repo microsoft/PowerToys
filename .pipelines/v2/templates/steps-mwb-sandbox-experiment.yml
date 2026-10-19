@@ -33,6 +33,13 @@ steps:
       WINAPP_CLI_PATH: $(WINAPP_CLI_PATH)
 
   - pwsh: |
+      & "$(Build.SourcesDirectory)\.pipelines\Export-MwbRuntimeDiagnostics.ps1" `
+        -ResultsDirectory "$(Common.TestResultsDirectory)" -RunId "$(System.JobId)"
+    displayName: Collect bounded MWB host failure diagnostics before recovery
+    condition: and(failed(), eq(variables['RunMwbSandbox'], 'true'))
+    timeoutInMinutes: 2
+
+  - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Recover `
         -RunId "$(System.JobId)" -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Recover owned MWB desktop resources as the original standard user
