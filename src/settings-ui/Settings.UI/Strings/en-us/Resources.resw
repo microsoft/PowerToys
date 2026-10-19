@@ -366,6 +366,10 @@
   <data name="MouseWithoutBorders_ServiceSettings.Header" xml:space="preserve">
     <value>Service</value>
   </data>
+  <data name="MouseWithoutBorders_ServiceModeChangeFailed.Message" xml:space="preserve">
+    <value>Mouse Without Borders could not switch service mode. Restart PowerToys and try again.</value>
+    <comment>"Mouse Without Borders" and "PowerToys" are product names.</comment>
+  </data>
   <data name="MouseWithoutBorders_Toggle_Enable.Header" xml:space="preserve">
     <value>Mouse Without Borders</value>
   </data>

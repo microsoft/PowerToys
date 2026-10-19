@@ -39,7 +39,7 @@ internal sealed class DpapiPairingKeyCodec : PairingKeyCodec
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         if (IsEncrypted(value))
         {
-            throw new ArgumentException("Expected an ordinary pairing key.", nameof(value));
+            throw new ArgumentException("Expected an unencrypted pairing key.", nameof(value));
         }
 
         // A one-byte SID length, binary SID, and UTF-8 key are protected together.

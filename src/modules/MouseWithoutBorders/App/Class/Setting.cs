@@ -514,7 +514,13 @@ namespace MouseWithoutBorders.Class
                     }
 
                     // Only the settings JSON carries the encoded value; callers always receive plaintext.
-                    return _pairingKeyCodec.Decrypt(_properties.SecurityKey.Value);
+                    var key = _pairingKeyCodec.Decrypt(_properties.SecurityKey.Value);
+                    if (PairingKeyCodec.IsEncryptedValue(key))
+                    {
+                        throw new CryptographicException("The saved pairing key cannot be used in the current mode.");
+                    }
+
+                    return key;
                 }
             }
 

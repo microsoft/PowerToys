@@ -70,16 +70,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isPairingKeyLoading;
         private bool _pairingKeyRefreshRequested;
         private int _pairingUiVersion;
+        private bool _isServiceModeChanging;
+        private bool _hasServiceModeError;
 
         public bool IsElevated { get => GeneralSettingsConfig.IsElevated; }
 
-        private bool RequiresAdministratorForPairing => UseService || PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value);
+        public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);
 
-        public bool CanManagePairing => !_isPairingPending && (!RequiresAdministratorForPairing || IsElevated);
-
-        public bool PairingSetupRequired => RequiresAdministratorForPairing
+        public bool PairingSetupRequired => UseService
             ? !PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value)
             : string.IsNullOrWhiteSpace(Settings.Properties.SecurityKey.Value) ||
+                PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ||
                 Settings.Properties.SecurityKey.Value == MouseWithoutBordersIpc.PairingConfiguredIndicator;
 
         public bool ShowPairingSetupRequired => PairingSetupRequired;
@@ -132,41 +133,78 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                if (_allowServiceModeIsGPOConfigured)
+                if (_allowServiceModeIsGPOConfigured || _isServiceModeChanging)
                 {
                     return;
                 }
 
-                var valueChanged = Settings.Properties.UseService != value;
-
-                // Set the UI property itself instantly
-                if (valueChanged)
+                if (Settings.Properties.UseService != value)
                 {
-                    Settings.Properties.UseService = value;
-                    ResetPairingUiState();
-                    OnPropertyChanged(nameof(UseService));
-                    OnPropertyChanged(nameof(CanUninstallService));
-                    OnPropertyChanged(nameof(CanManagePairing));
-                    OnPropertyChanged(nameof(CanConnectPairing));
-                    OnPropertyChanged(nameof(ShowPairingRequiresAdministrator));
-                    OnPropertyChanged(nameof(ShowInfobarRunAsAdminText));
-
-                    // Must block here until the process exits
-                    Task.Run(async () =>
-                    {
-                        await SubmitShutdownRequestAsync();
-
-                        _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-                        {
-                            Settings.Properties.UseService = value;
-                            NotifyPropertyChanged(nameof(UseService));
-                        });
-                    });
+                    _ = ChangeServiceModeAsync(value, SubmitShutdownRequestAsync, () => WaitForRestartAsync(value));
                 }
             }
         }
 
-        public bool UseServiceSettingIsEnabled => _allowServiceModeIsGPOConfigured == false;
+        public bool UseServiceSettingIsEnabled => !_isServiceModeChanging && !_allowServiceModeIsGPOConfigured;
+
+        public bool HasServiceModeError => _hasServiceModeError;
+
+        public bool CanReconnect => IsEnabled && !_isServiceModeChanging && !_hasServiceModeError;
+
+        private async Task ChangeServiceModeAsync(bool useService, Func<Task> shutdown, Func<Task> waitForRestart)
+        {
+            _isServiceModeChanging = true;
+            _hasServiceModeError = false;
+            ResetPairingUiState();
+            NotifyUpdatedSettings();
+            try
+            {
+                await shutdown();
+                Settings.Properties.UseService = useService;
+                NotifyPropertyChanged(nameof(UseService));
+                await waitForRestart();
+            }
+            catch (Exception ex)
+            {
+                _hasServiceModeError = true;
+                Logger.LogError($"Couldn't change Mouse Without Borders service mode: {ex}");
+            }
+            finally
+            {
+                _isServiceModeChanging = false;
+                NotifyUpdatedSettings();
+            }
+
+            if (!_hasServiceModeError)
+            {
+                await LoadPairingKeyAsync();
+            }
+        }
+
+        private async Task WaitForRestartAsync(bool useService)
+        {
+            using (await _ipcSemaphore.EnterAsync())
+            using (var syncHelper = await GetSettingsSyncHelperAsync())
+            {
+                var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Restarted Mouse Without Borders is unavailable.");
+                using var identity = WindowsIdentity.GetCurrent();
+                var expectedSid = useService
+                    ? new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null)
+                    : identity.User ?? throw new InvalidOperationException("Settings process has no user SID.");
+                if (!NamedPipePeerVerification.TryVerifyServer(
+                        syncHelper.Stream,
+                        MouseWithoutBordersIpc.MouseWithoutBordersExecutableFileName,
+                        expectedSid.Value,
+                        Process.GetCurrentProcess().SessionId,
+                        allowLocalSystem: false,
+                        out var rejectionReason))
+                {
+                    throw new InvalidOperationException($"Restarted Mouse Without Borders has an unexpected identity: {rejectionReason}");
+                }
+
+                await endpoint.RequestMachineSocketStateAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            }
+        }
 
         public bool ConnectFieldsVisible
         {
@@ -357,12 +395,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.Shutdown();
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
-                    {
-                        await task;
-                    }
+                    var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Mouse Without Borders shutdown endpoint is unavailable.");
+                    await MouseWithoutBordersIpc.ShutdownAndWaitForServerExitAsync(
+                        syncHelper.Stream,
+                        endpoint.Shutdown,
+                        TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -371,6 +408,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             using (await _ipcSemaphore.EnterAsync())
             {
+                if (_isServiceModeChanging)
+                {
+                    return;
+                }
+
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
                     syncHelper?.Endpoint?.Reconnect();
@@ -390,7 +432,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            var useService = RequiresAdministratorForPairing;
+            var useService = UseService;
             var pairingUiVersion = _pairingUiVersion;
             _isPairingPending = true;
             _hasPairingError = false;
@@ -409,7 +451,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         throw new InvalidOperationException("Pairing key was not returned.");
                     }
 
-                    if (_disposed || pairingUiVersion != _pairingUiVersion || RequiresAdministratorForPairing != useService || (useService && !IsElevated))
+                    if (_disposed || pairingUiVersion != _pairingUiVersion || UseService != useService || (useService && !IsElevated))
                     {
                         return;
                     }
@@ -476,12 +518,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task LoadPairingKeyCoreAsync(Func<Task<string>> readPairingKey)
         {
-            if (_disposed || !IsEnabled || !RequiresAdministratorForPairing || !IsElevated || PairingSetupRequired)
+            if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)
             {
                 return;
             }
 
-            var useService = RequiresAdministratorForPairing;
+            var useService = UseService;
             var pairingUiVersion = _pairingUiVersion;
             try
             {
@@ -492,7 +534,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         return;
                     }
 
-                    if (_disposed || !IsEnabled || !RequiresAdministratorForPairing || !IsElevated || PairingSetupRequired)
+                    if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)
                     {
                         return;
                     }
@@ -503,7 +545,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         return;
                     }
 
-                    if (_disposed || !IsEnabled || RequiresAdministratorForPairing != useService || !IsElevated)
+                    if (_disposed || !IsEnabled || UseService != useService || !IsElevated)
                     {
                         return;
                     }
@@ -530,7 +572,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                if (!_disposed && IsEnabled && RequiresAdministratorForPairing == useService && IsElevated)
+                if (!_disposed && IsEnabled && UseService == useService && IsElevated)
                 {
                     if (_servicePairingKey != null)
                     {
@@ -564,7 +606,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return false;
             }
 
-            var useService = RequiresAdministratorForPairing;
+            var useService = UseService;
             var pairingUiVersion = _pairingUiVersion;
             _isPairingPending = true;
             _hasPairingError = false;
@@ -578,7 +620,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
                     await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(TimeSpan.FromSeconds(10));
-                    if (_disposed || pairingUiVersion != _pairingUiVersion || RequiresAdministratorForPairing != useService || (useService && !IsElevated))
+                    if (_disposed || pairingUiVersion != _pairingUiVersion || UseService != useService || (useService && !IsElevated))
                     {
                         return false;
                     }
@@ -612,6 +654,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             using (await _ipcSemaphore.EnterAsync())
             {
+                if (_isServiceModeChanging)
+                {
+                    return null;
+                }
+
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
                     var task = syncHelper?.Endpoint?.RequestMachineSocketStateAsync();
@@ -857,14 +904,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool CanBeEnabled
         {
-            get => !_enabledStateIsGPOConfigured;
+            get => !_isServiceModeChanging && !_enabledStateIsGPOConfigured;
         }
 
         public bool CanToggleUseService
         {
             get
             {
-                return IsEnabled && !(!IsElevated && !UseService);
+                return !_isServiceModeChanging && IsEnabled && !(!IsElevated && !UseService);
             }
         }
 
@@ -923,7 +970,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string SecurityKey => RequiresAdministratorForPairing
+        public string SecurityKey => UseService
             ? IsElevated
                 ? _servicePairingKey ?? string.Empty
                 : PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ? MouseWithoutBordersIpc.PairingConfiguredIndicator : string.Empty
@@ -1467,10 +1514,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var useService = RequiresAdministratorForPairing;
+                var useService = UseService;
                 var displayedKey = SecurityKey;
                 LoadViewModelFromSettings(SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders"));
-                if (RequiresAdministratorForPairing != useService || PairingSetupRequired || !IsEnabled)
+                if (UseService != useService || PairingSetupRequired || !IsEnabled)
                 {
                     _servicePairingKey = null;
                 }
@@ -1626,9 +1673,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowInfobarRunAsAdminText
         {
-            get { return !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
+            get { return !_isServiceModeChanging && !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
         }
 
-        public bool ShowPairingRequiresAdministrator => IsEnabled && RequiresAdministratorForPairing && !IsElevated;
+        public bool ShowPairingRequiresAdministrator => IsEnabled && UseService && !IsElevated;
     }
 }

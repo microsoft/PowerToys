@@ -32,7 +32,7 @@ public sealed class PairingKeyCodecTests
     [DataRow("mwb-dpapi", false)]
     [DataRow("MWB-DPAPI:v1:TEST", true)]
     [DataRow("mwb-dpapi:v1:A QID", true)]
-    [DataRow("ordinary", false)]
+    [DataRow("unencrypted-key", false)]
     [DataRow(null, false)]
     public void ProvidersRecognizeReservedFamilyWithoutValidatingPayload(string value, bool reserved)
     {
@@ -101,7 +101,7 @@ public sealed class PairingKeyCodecTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow(" ")]
-    [DataRow("ordinary")]
+    [DataRow("unencrypted-key")]
     [DataRow("mwb-dpapi:v1:")]
     [DataRow("mwb-dpapi:v1:!")]
     [DataRow("mwb-dpapi:v1:TEST")]

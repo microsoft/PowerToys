@@ -86,6 +86,58 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
+        public async Task ShutdownWaitObservesThePipeServerProcessExit()
+        {
+            var pipeName = UniquePipeName();
+            var start = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe"))
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            start.ArgumentList.Add("-NoProfile");
+            start.ArgumentList.Add("-NonInteractive");
+            start.ArgumentList.Add("-Command");
+            start.ArgumentList.Add($"$pipe = [System.IO.Pipes.NamedPipeServerStream]::new('{pipeName}'); try {{ $pipe.WaitForConnection(); [void]$pipe.ReadByte(); Start-Sleep -Milliseconds 200 }} finally {{ $pipe.Dispose() }}");
+            using var server = Process.Start(start)!;
+            using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            try
+            {
+                await client.ConnectAsync(5000);
+                await MouseWithoutBordersIpc.ShutdownAndWaitForServerExitAsync(
+                    client,
+                    () => client.WriteByte(1),
+                    TimeSpan.FromSeconds(5));
+                Assert.IsTrue(server.HasExited, "The shutdown wait must not complete before the server exits.");
+            }
+            finally
+            {
+                client.Dispose();
+                if (!server.WaitForExit(3000))
+                {
+                    server.Kill(entireProcessTree: true);
+                    Assert.Fail("The isolated pipe server did not exit within its cleanup timeout.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task ShutdownWaitReportsTimeoutWhenTheServerRemainsAlive()
+        {
+            var pair = await CreateConnectedPairAsync();
+            await using var server = pair.Server;
+            await using var client = pair.Client;
+            var shutdownRequested = false;
+
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() =>
+                MouseWithoutBordersIpc.ShutdownAndWaitForServerExitAsync(
+                    client,
+                    () => shutdownRequested = true,
+                    TimeSpan.FromMilliseconds(100)));
+
+            Assert.IsTrue(shutdownRequested);
+        }
+
+        [TestMethod]
         public void PipeNameIsStableAndSessionQualified()
         {
             Assert.AreEqual(
@@ -510,7 +562,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
             StringAssert.Contains(viewModel, "public bool ShowPairingSetupRequired => PairingSetupRequired;");
             StringAssert.Contains(viewModel, "public bool CanConnectPairing => CanManagePairing;");
-            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_isPairingPending && (!RequiresAdministratorForPairing || IsElevated);");
+            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);");
 
             var program = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Class\Program.cs"));
             var start = program.IndexOf("public Task ConnectToMachine(", StringComparison.Ordinal);

@@ -19,9 +19,7 @@
             FalseValue="2"
             TrueValue="4" />
     </local:NavigablePage.Resources>
-    <controls:SettingsPageControl
-        x:Uid="MouseWithoutBorders"
-        ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
+    <controls:SettingsPageControl x:Uid="MouseWithoutBorders" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
@@ -183,7 +181,10 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button HorizontalAlignment="Right" Command="{x:Bind ReconnectCommand, Mode=OneTime}">
+                            <Button
+                                HorizontalAlignment="Right"
+                                Command="{x:Bind ReconnectCommand, Mode=OneTime}"
+                                IsEnabled="{x:Bind ViewModel.CanReconnect, Mode=OneWay}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -241,6 +242,12 @@
                         Severity="Informational" />
                 </controls:SettingsGroup>
 
+                <InfoBar
+                    x:Uid="MouseWithoutBorders_ServiceModeChangeFailed"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.HasServiceModeError, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.HasServiceModeError, Mode=OneWay}"
+                    Severity="Error" />
 
                 <controls:SettingsGroup
                     x:Name="BehaviorSettingsGroup"

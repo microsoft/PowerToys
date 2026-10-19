@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -20,11 +22,85 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests;
 [TestClass]
 public sealed class MouseWithoutBordersPairingPresentationTests
 {
+    [DataTestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public async Task ServiceModeChangeWaitsForExitAndKeepsControlsDisabledUntilRestart(bool useService, bool elevated)
+    {
+        var model = CreateServiceModeViewModel(!useService, out var settings, out var sentModes, elevated);
+        settings.Properties.SecurityKey.Value = useService ? "unencrypted-key" : "mwb-dpapi:v1:TEST";
+        var shutdown = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var restart = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var restartEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var change = GetServiceModeChangeMethod();
+        var transition = (Task)change.Invoke(model, new object[]
+        {
+            useService,
+            (Func<Task>)(() => shutdown.Task),
+            (Func<Task>)(() =>
+            {
+                restartEntered.SetResult();
+                return restart.Task;
+            }),
+        })!;
+
+        Assert.AreEqual(!useService, settings.Properties.UseService);
+        Assert.AreEqual(0, sentModes.Count);
+        Assert.IsFalse(model.CanManagePairing);
+        Assert.IsFalse(model.CanBeEnabled);
+        Assert.IsFalse(model.CanToggleUseService);
+        Assert.IsFalse(model.CanReconnect);
+        shutdown.SetResult();
+        await restartEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        CollectionAssert.AreEqual(new[] { useService }, sentModes);
+        Assert.AreEqual(useService, settings.Properties.UseService);
+        Assert.IsFalse(model.CanReconnect);
+        restart.SetResult();
+        await transition.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.IsTrue(model.CanReconnect);
+        Assert.IsTrue(model.CanBeEnabled);
+        Assert.IsTrue(model.CanManagePairing);
+        Assert.IsTrue(model.UseServiceSettingIsEnabled);
+        Assert.IsTrue(model.ShowPairingSetupRequired);
+        Assert.AreEqual(string.Empty, model.SecurityKey);
+        Assert.IsFalse(model.HasServiceModeError);
+    }
+
+    [DataTestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task ServiceModeChangeReportsFailureWithoutPublishingBeforeShutdown(bool shutdownFails)
+    {
+        var model = CreateServiceModeViewModel(true, out var settings, out var sentModes);
+        var restartCalls = 0;
+        var transition = (Task)GetServiceModeChangeMethod().Invoke(model, new object[]
+        {
+            false,
+            (Func<Task>)(() => shutdownFails ? Task.FromException(new TimeoutException("Synthetic shutdown timeout.")) : Task.CompletedTask),
+            (Func<Task>)(() =>
+            {
+                restartCalls++;
+                return Task.FromException(new TimeoutException("Synthetic restart timeout."));
+            }),
+        })!;
+
+        await transition.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.IsTrue(model.HasServiceModeError);
+        Assert.IsFalse(model.CanManagePairing);
+        Assert.IsFalse(model.CanReconnect);
+        Assert.IsTrue(model.UseServiceSettingIsEnabled);
+        Assert.AreEqual(shutdownFails, settings.Properties.UseService);
+        Assert.AreEqual(shutdownFails ? 0 : 1, sentModes.Count);
+        Assert.AreEqual(shutdownFails ? 0 : 1, restartCalls);
+    }
+
     [TestMethod]
     public async Task ResetDuringKeyReadDrainsOneLatestRefreshWithoutConcurrentRequests()
     {
         var model = CreateUninitializedViewModel();
         var settings = new MouseWithoutBordersSettings();
+        settings.Properties.UseService = true;
         settings.Properties.SecurityKey.Value = "mwb-dpapi:v1:TEST";
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         typeof(MouseWithoutBordersViewModel).GetProperty("Settings", flags)!.SetValue(model, settings);
@@ -51,13 +127,13 @@ public sealed class MouseWithoutBordersPairingPresentationTests
     }
 
     [DataTestMethod]
-    [DataRow(false, false, "ordinary", "ordinary", true, false, false)]
-    [DataRow(false, false, "mwb-dpapi:v1:TEST", "********", false, true, false)]
+    [DataRow(false, false, "unencrypted-key", "unencrypted-key", true, false, false)]
+    [DataRow(false, false, "mwb-dpapi:v1:TEST", "", true, false, true)]
     [DataRow(true, false, "mwb-dpapi:v1:TEST", "********", false, true, false)]
-    [DataRow(false, true, "mwb-dpapi:v1:TEST", "current-key", true, false, false)]
+    [DataRow(false, true, "mwb-dpapi:v1:TEST", "", true, false, true)]
     [DataRow(true, true, "mwb-dpapi:v1:TEST", "current-key", true, false, false)]
     [DataRow(false, false, "", "", true, false, true)]
-    public void ProtectedPairingPresentationDoesNotDependOnlyOnServiceToggle(bool service, bool elevated, string storedKey, string displayedKey, bool canManage, bool requiresAdmin, bool setupRequired)
+    public void PairingPresentationRequiresAKeyUsableInTheSelectedMode(bool service, bool elevated, string storedKey, string displayedKey, bool canManage, bool requiresAdmin, bool setupRequired)
     {
         var model = CreateUninitializedViewModel();
         var settings = new MouseWithoutBordersSettings();
@@ -81,7 +157,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
     [DataRow("mwb-dpapi:v2:TEST", true)]
     [DataRow("MWB-DPAPI:v1:TEST", true)]
     [DataRow("mwb-dpapi:v1:A QID", true)]
-    [DataRow("ordinary", false)]
+    [DataRow("unencrypted-key", false)]
     [DataRow(null, false)]
     public void ClassifierRecognizesReservedFamilyWithoutValidatingPayload(string value, bool reserved)
     {
@@ -113,7 +189,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
     {
         var source = ReadSource(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs");
         StringAssert.Contains(source, "PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value)");
-        StringAssert.Contains(source, "public bool CanManagePairing => !_isPairingPending && (!RequiresAdministratorForPairing || IsElevated);");
+        StringAssert.Contains(source, "public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);");
         StringAssert.Contains(source, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(TimeSpan.FromSeconds(10));");
         StringAssert.Contains(source, "_servicePairingKey = useService ? generatedKey : null;");
         StringAssert.Contains(source, "await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(TimeSpan.FromSeconds(10));");
@@ -126,7 +202,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
             Assert.IsFalse(source.Contains(removedInput, StringComparison.Ordinal));
         }
 
-        StringAssert.Contains(source, "if (_disposed || pairingUiVersion != _pairingUiVersion || RequiresAdministratorForPairing != useService || (useService && !IsElevated))");
+        StringAssert.Contains(source, "if (_disposed || pairingUiVersion != _pairingUiVersion || UseService != useService || (useService && !IsElevated))");
         Assert.IsFalse(source.Contains("TryUpdateAsync", System.StringComparison.Ordinal));
         Assert.IsFalse(source.Contains("Settings.Properties.SecurityKey.Value = ", System.StringComparison.Ordinal));
         Assert.IsFalse(source.Contains("CanEditSettings", System.StringComparison.Ordinal));
@@ -185,11 +261,11 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var start = source.IndexOf("public async Task LoadPairingKeyAsync()", StringComparison.Ordinal);
         var end = source.IndexOf("public async Task<bool> SubmitConnectionRequestAsync(", start, StringComparison.Ordinal);
         var request = source.Substring(start, end - start);
-        var initialGuard = request.IndexOf("if (_disposed || !IsEnabled || !RequiresAdministratorForPairing || !IsElevated || PairingSetupRequired)", StringComparison.Ordinal);
+        var initialGuard = request.IndexOf("if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)", StringComparison.Ordinal);
         var semaphore = request.IndexOf("using (await _ipcSemaphore.EnterAsync())", StringComparison.Ordinal);
-        var roleGuard = request.IndexOf("if (_disposed || !IsEnabled || !RequiresAdministratorForPairing || !IsElevated || PairingSetupRequired)", semaphore, StringComparison.Ordinal);
+        var roleGuard = request.IndexOf("if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)", semaphore, StringComparison.Ordinal);
         var read = request.IndexOf("var key = await readPairingKey();", StringComparison.Ordinal);
-        var resultGuard = request.IndexOf("if (_disposed || !IsEnabled || RequiresAdministratorForPairing != useService || !IsElevated)", StringComparison.Ordinal);
+        var resultGuard = request.IndexOf("if (_disposed || !IsEnabled || UseService != useService || !IsElevated)", StringComparison.Ordinal);
         var display = request.IndexOf("_servicePairingKey = key;", StringComparison.Ordinal);
         Assert.IsTrue(initialGuard >= 0 && initialGuard < semaphore && semaphore < roleGuard && roleGuard < read && read < resultGuard && resultGuard < display);
         StringAssert.Contains(request, "catch (Exception ex)");
@@ -205,7 +281,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
             """.Replace("\r\n", "\n"));
         var failure = request.Substring(request.IndexOf("catch (Exception ex)", StringComparison.Ordinal));
         StringAssert.Contains(failure, """
-            if (!_disposed && IsEnabled && RequiresAdministratorForPairing == useService && IsElevated)
+            if (!_disposed && IsEnabled && UseService == useService && IsElevated)
                             {
                                 if (_servicePairingKey != null)
                                 {
@@ -222,7 +298,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         Assert.IsFalse(request.Contains("Settings.Properties.SecurityKey.Value", StringComparison.Ordinal));
         var getterStart = source.IndexOf("public string SecurityKey =>", StringComparison.Ordinal);
         var getter = source.Substring(getterStart, source.IndexOf("public bool WrapMouse", getterStart, StringComparison.Ordinal) - getterStart);
-        StringAssert.Contains(getter, "RequiresAdministratorForPairing\n            ? IsElevated\n                ? _servicePairingKey ?? string.Empty");
+        StringAssert.Contains(getter, "UseService\n            ? IsElevated\n                ? _servicePairingKey ?? string.Empty");
         StringAssert.Contains(getter, ": PairingSetupRequired ? string.Empty : Settings.Properties.SecurityKey.Value;");
         var page = ReadSource(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml.cs").Replace("\r\n", "\n");
         StringAssert.Contains(page, "ViewModel.OnPageLoaded();\n                await ViewModel.LoadPairingKeyAsync();");
@@ -232,7 +308,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var reloadStart = source.IndexOf("public bool LoadUpdatedSettings()", StringComparison.Ordinal);
         var reloadEnd = source.IndexOf("private void SendCustomAction(", reloadStart, StringComparison.Ordinal);
         var reload = source.Substring(reloadStart, reloadEnd - reloadStart);
-        StringAssert.Contains(reload, "if (RequiresAdministratorForPairing != useService || PairingSetupRequired || !IsEnabled)");
+        StringAssert.Contains(reload, "if (UseService != useService || PairingSetupRequired || !IsEnabled)");
         StringAssert.Contains(reload, "if (SecurityKey != displayedKey)");
     }
 
@@ -283,9 +359,11 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var reloadEnd = source.IndexOf("private void SendCustomAction(", reloadStart, StringComparison.Ordinal);
         var reload = source.Substring(reloadStart, reloadEnd - reloadStart);
         StringAssert.Contains(reload, "_servicePairingKey = null;");
-        StringAssert.Contains(reload, "if (RequiresAdministratorForPairing != useService || PairingSetupRequired || !IsEnabled)");
+        StringAssert.Contains(reload, "if (UseService != useService || PairingSetupRequired || !IsEnabled)");
         Assert.IsFalse(reload.Contains("ResetPairingUiState();", StringComparison.Ordinal));
-        StringAssert.Contains(source.Replace("\r\n", "\n"), "Settings.Properties.UseService = value;\n                    ResetPairingUiState();");
+        var transition = source.Substring(source.IndexOf("private async Task ChangeServiceModeAsync(", StringComparison.Ordinal));
+        Assert.IsTrue(transition.IndexOf("await shutdown();", StringComparison.Ordinal) < transition.IndexOf("Settings.Properties.UseService = useService;", StringComparison.Ordinal));
+        StringAssert.Contains(transition, "await waitForRestart();");
         Assert.IsFalse(source.Contains("FromBase64String", StringComparison.Ordinal));
         Assert.IsFalse(source.Contains("Unprotect", StringComparison.Ordinal));
         var page = ReadSource(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml.cs");
@@ -306,7 +384,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var reload = source.Substring(reloadStart, reloadEnd - reloadStart);
         StringAssert.Contains(reload, """
             LoadViewModelFromSettings(SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders"));
-                            if (RequiresAdministratorForPairing != useService || PairingSetupRequired || !IsEnabled)
+                            if (UseService != useService || PairingSetupRequired || !IsEnabled)
                             {
                                 _servicePairingKey = null;
                             }
@@ -342,7 +420,35 @@ public sealed class MouseWithoutBordersPairingPresentationTests
     private static MouseWithoutBordersViewModel CreateUninitializedViewModel()
     {
         var model = (MouseWithoutBordersViewModel)RuntimeHelpers.GetUninitializedObject(typeof(MouseWithoutBordersViewModel));
+        var servicePolicy = typeof(MouseWithoutBordersViewModel).GetField("_allowServiceModeGpoConfiguration", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        servicePolicy.SetValue(model, Enum.Parse(servicePolicy.FieldType, "NotConfigured"));
         GC.SuppressFinalize(model);
+        return model;
+    }
+
+    private static MethodInfo GetServiceModeChangeMethod() =>
+        typeof(MouseWithoutBordersViewModel).GetMethod("ChangeServiceModeAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+    private static MouseWithoutBordersViewModel CreateServiceModeViewModel(bool useService, out MouseWithoutBordersSettings settings, out List<bool> sentModes, bool elevated = true)
+    {
+        var model = CreateUninitializedViewModel();
+        var moduleSettings = new MouseWithoutBordersSettings();
+        moduleSettings.Properties.UseService = useService;
+        moduleSettings.Properties.SecurityKey.Value = "unencrypted-key";
+        var modes = new List<bool>();
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        typeof(MouseWithoutBordersViewModel).GetProperty("Settings", flags)!.SetValue(model, moduleSettings);
+        typeof(MouseWithoutBordersViewModel).GetProperty("SettingsUtils", flags)!.SetValue(model, new SettingsUtils(new MockFileSystem()));
+        typeof(MouseWithoutBordersViewModel).GetProperty("GeneralSettingsConfig", flags)!.SetValue(model, new GeneralSettings { IsElevated = elevated });
+        typeof(MouseWithoutBordersViewModel).GetField("_isEnabled", flags)!.SetValue(model, true);
+        Func<string, int> sendConfig = _ =>
+        {
+            modes.Add(moduleSettings.Properties.UseService);
+            return 0;
+        };
+        typeof(MouseWithoutBordersViewModel).GetField("<SendConfigMSG>k__BackingField", flags)!.SetValue(model, sendConfig);
+        settings = moduleSettings;
+        sentModes = modes;
         return model;
     }
 

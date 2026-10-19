@@ -68,7 +68,7 @@ public sealed class SettingsKeyTests
     [DataRow("TEST-KEY")]
     [DataRow("********")]
     [DataRow("                ")]
-    public void OrdinaryDisplayUsesSettingsValue(string value)
+    public void UnencryptedDisplayUsesSettingsValue(string value)
     {
         var properties = new MouseWithoutBordersProperties();
         var settings = CreateSettings(properties, new PassthroughPairingKeyCodec());
@@ -284,7 +284,7 @@ public sealed class SettingsKeyTests
     }
 
     [TestMethod]
-    public void SwitchingToNormalModePassesThroughStoredValueButHidesItFromDisplay()
+    public void SwitchingToNormalModeRequiresExplicitReplacementOfProtectedKey()
     {
         using var identity = WindowsIdentity.GetCurrent();
         var properties = new MouseWithoutBordersProperties();
@@ -292,7 +292,7 @@ public sealed class SettingsKeyTests
         service.MyKey = "SERVICE-KEY";
         var stored = properties.SecurityKey.Value;
         var normal = CreateSettings(properties, new PassthroughPairingKeyCodec());
-        Assert.AreEqual(stored, normal.MyKey);
+        Assert.ThrowsException<CryptographicException>(() => _ = normal.MyKey);
         Assert.AreEqual(stored, properties.SecurityKey.Value);
         Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, normal.PairingKeyDisplayText);
         normal.MyKey = "NORMAL-KEY";
@@ -314,7 +314,7 @@ public sealed class SettingsKeyTests
     }
 
     [TestMethod]
-    public void NormalEmptySettingsStillGenerateAnOrdinaryKey()
+    public void NormalEmptySettingsStillGenerateAnUnencryptedKey()
     {
         if (Class.Settings.IsProtectedMode)
         {
@@ -359,14 +359,11 @@ public sealed class SettingsKeyTests
         {
             Encryption.MyKey = "PREVIOUS-RUNTIME-KEY";
             Assert.IsTrue(settings.UpdateRuntimeKey());
-            Assert.AreEqual(serviceMode ? string.Empty : savedValue, Encryption.MyKey);
-            if (serviceMode)
+            Assert.AreEqual(string.Empty, Encryption.MyKey);
+            Assert.AreEqual(0u, Encryption.MagicNumber);
+            Assert.ThrowsException<CryptographicException>(() => _ = settings.MyKey);
+            if (!serviceMode)
             {
-                Assert.AreEqual(0u, Encryption.MagicNumber);
-            }
-            else
-            {
-                Assert.AreEqual(savedValue, settings.MyKey);
                 Assert.AreEqual(MouseWithoutBordersIpc.PairingConfiguredIndicator, settings.PairingKeyDisplayText);
             }
 
