@@ -150,8 +150,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             TaskCreationOptions.None,
             _taskScheduler);
 
-        commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
-        commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
+        lock (_commandProvidersLock)
+        {
+            if (!commandProvider.IsFailed)
+            {
+                commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
+                commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
+            }
+        }
 
         return commands;
     }
@@ -174,6 +180,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     /// <returns>an awaitable task</returns>
     private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
+        if (sender.IsFailed)
+        {
+            return;
+        }
+
         await sender.LoadTopLevelCommands(_serviceProvider);
 
         List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
@@ -193,6 +204,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         List<TopLevelViewModel> removedTopLevel;
         lock (TopLevelCommands)
         {
+            if (sender.IsFailed)
+            {
+                return;
+            }
+
             // Work on a clone of the list, so that we can just do one atomic
             // update to the actual observable list at the end
             // TODO: just added a lock around all of this anyway, but keeping the clone
@@ -209,6 +225,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         List<TopLevelViewModel> removedDockBands;
         lock (_dockBandsLock)
         {
+            if (sender.IsFailed)
+            {
+                newBands.Clear();
+            }
+
             // Same idea as TopLevelCommands above, but we deliberately use
             // ReplaceWith so the dock only sees one CollectionChanged event
             // for the whole rewrite instead of one per item.
@@ -341,6 +362,12 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
             lock (_commandProvidersLock)
             {
+                foreach (var provider in _commandProviders)
+                {
+                    provider.Failed -= CommandProvider_Failed;
+                    provider.CommandsChanged -= CommandProvider_CommandsChanged;
+                }
+
                 _commandProviders.Clear();
             }
 
@@ -417,12 +444,17 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                     provider = _commandProviders.FirstOrDefault(p => p.ProviderId == providerId);
                 }
 
-                if (provider != null)
+                if (provider is { IsFailed: false })
                 {
                     await provider.LoadTopLevelCommands(_serviceProvider);
 
                     lock (TopLevelCommands)
                     {
+                        if (provider.IsFailed)
+                        {
+                            return;
+                        }
+
                         foreach (var command in provider.TopLevelItems)
                         {
                             if (!TopLevelCommands.Any(a => a.Id == command.Id))
@@ -442,6 +474,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
                     lock (_dockBandsLock)
                     {
+                        if (provider.IsFailed)
+                        {
+                            return;
+                        }
+
                         var existingIds = DockBands.Select(b => b.Id).ToHashSet();
                         DockBands.AddRange(provider.DockBandItems.Where(band => existingIds.Add(band.Id)));
                     }
@@ -461,9 +498,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     private async Task<RegisterAndLoadSummary> RegisterAndLoadCommandsAsync(IEnumerable<CommandProviderWrapper> wrappers, CancellationToken ct)
     {
-        var wrapperList = wrappers.ToList();
+        var wrapperList = wrappers.Where(wrapper => !wrapper.IsFailed).ToList();
         lock (_commandProvidersLock)
         {
+            foreach (var wrapper in wrapperList)
+            {
+                wrapper.Failed += CommandProvider_Failed;
+            }
+
             _commandProviders.AddRange(wrapperList);
         }
 
@@ -510,7 +552,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             foreach (var c in commandsToAdd)
             {
-                TopLevelCommands.Add(c);
+                if (c.ProviderContext is not CommandProviderWrapper { IsFailed: true })
+                {
+                    TopLevelCommands.Add(c);
+                }
             }
         }
 
@@ -518,7 +563,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         // DockBands change, so per-item adds would rebuild it once per band.
         lock (_dockBandsLock)
         {
-            DockBands.AddRange(dockBandsToAdd);
+            DockBands.AddRange(dockBandsToAdd.Where(b => b.ProviderContext is not CommandProviderWrapper { IsFailed: true }));
         }
 
         // Fire background continuations for timed-out loads outside the lock
@@ -577,6 +622,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             {
                 lock (TopLevelCommands)
                 {
+                    if (wrapper.IsFailed)
+                    {
+                        return;
+                    }
+
                     foreach (var c in commands)
                     {
                         TopLevelCommands.Add(c);
@@ -589,6 +639,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             {
                 lock (_dockBandsLock)
                 {
+                    if (wrapper.IsFailed)
+                    {
+                        return;
+                    }
+
                     DockBands.AddRange(dockBands);
                 }
             }
@@ -619,58 +674,56 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     private void ExtensionService_OnProviderRemoved(IExtensionService sender, IEnumerable<CommandProviderWrapper> removedWrappers)
     {
-        // When we get a provider removal event, hop off to a BG thread
-        _ = Task.Run(
-            async () =>
+        var removedProviderIds = new HashSet<string>(removedWrappers.Select(w => w.ProviderId));
+        CommandProviderWrapper[] providers;
+        lock (_commandProvidersLock)
+        {
+            providers = [.. _commandProviders.Where(w => removedProviderIds.Contains(w.ProviderId))];
+        }
+
+        _ = Task.Run(() => RemoveProvidersAsync(providers));
+    }
+
+    private void CommandProvider_Failed(object? sender, EventArgs args)
+    {
+        if (sender is CommandProviderWrapper provider)
+        {
+            _ = Task.Run(() => RemoveProvidersAsync([provider]));
+        }
+    }
+
+    private async Task RemoveProvidersAsync(CommandProviderWrapper[] providers)
+    {
+        try
+        {
+            lock (_commandProvidersLock)
             {
-                var removedProviderIds = new HashSet<string>(removedWrappers.Select(w => w.ProviderId));
-
-                List<TopLevelViewModel> commandsToRemove = [];
-                List<TopLevelViewModel> bandsToRemove = [];
-
-                lock (TopLevelCommands)
+                foreach (var provider in providers)
                 {
-                    foreach (var command in TopLevelCommands)
-                    {
-                        if (removedProviderIds.Contains(command.CommandProviderId))
-                        {
-                            commandsToRemove.Add(command);
-                        }
-                    }
+                    provider.Failed -= CommandProvider_Failed;
+                    provider.CommandsChanged -= CommandProvider_CommandsChanged;
+                    _commandProviders.RemoveAll(p => ReferenceEquals(p, provider));
                 }
+            }
 
-                lock (_dockBandsLock)
-                {
-                    foreach (var band in DockBands)
-                    {
-                        if (removedProviderIds.Contains(band.CommandProviderId))
-                        {
-                            bandsToRemove.Add(band);
-                        }
-                    }
-                }
-
-                lock (_commandProvidersLock)
-                {
-                    _commandProviders.RemoveAll(w => removedProviderIds.Contains(w.ProviderId));
-                }
-
-                await Task.Factory.StartNew(
+            await Task.Factory.StartNew(
                 () =>
                 {
+                    List<TopLevelViewModel> commandsToRemove;
+                    List<TopLevelViewModel> bandsToRemove;
+
                     lock (TopLevelCommands)
                     {
-                        if (commandsToRemove.Count != 0)
+                        commandsToRemove = [.. TopLevelCommands.Where(c => providers.Any(p => ReferenceEquals(c.ProviderContext, p)))];
+                        foreach (var deleted in commandsToRemove)
                         {
-                            foreach (var deleted in commandsToRemove)
-                            {
-                                TopLevelCommands.Remove(deleted);
-                            }
+                            TopLevelCommands.Remove(deleted);
                         }
                     }
 
                     lock (_dockBandsLock)
                     {
+                        bandsToRemove = [.. DockBands.Where(b => providers.Any(p => ReferenceEquals(b.ProviderContext, p)))];
                         DockBands.RemoveRange(bandsToRemove);
                     }
 
@@ -687,7 +740,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
-            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to remove command providers", ex);
+        }
     }
 
     public TopLevelViewModel? LookupCommand(string id)
@@ -930,7 +987,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         lock (_commandProvidersLock)
         {
-            return _commandProviders.FirstOrDefault(w => w.ProviderId == providerId);
+            return _commandProviders.FirstOrDefault(w => w.ProviderId == providerId && !w.IsFailed);
         }
     }
 
@@ -938,7 +995,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         lock (_commandProvidersLock)
         {
-            return _commandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
+            return _commandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive && !wrapper.IsFailed);
         }
     }
 
@@ -991,6 +1048,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     public void Dispose()
     {
+        lock (_commandProvidersLock)
+        {
+            foreach (var provider in _commandProviders)
+            {
+                provider.Failed -= CommandProvider_Failed;
+                provider.CommandsChanged -= CommandProvider_CommandsChanged;
+            }
+        }
+
         foreach (var service in _extensionServices)
         {
             service.OnProviderAdded -= ExtensionService_OnProviderAdded;

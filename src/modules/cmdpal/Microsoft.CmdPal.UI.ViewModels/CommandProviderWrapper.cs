@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -25,6 +26,12 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     private readonly TaskScheduler _taskScheduler;
 
     private readonly ICommandProviderCache? _commandProviderCache;
+
+    private int _failed;
+
+    internal bool IsFailed => Volatile.Read(ref _failed) != 0;
+
+    internal event EventHandler? Failed;
 
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
@@ -137,6 +144,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public async Task LoadTopLevelCommands(IServiceProvider serviceProvider)
     {
+        if (IsFailed)
+        {
+            return;
+        }
+
         if (!isValid)
         {
             IsActive = false;
@@ -213,6 +225,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
                 // Load pinned commands from saved settings
                 pinnedCommands = LoadPinnedCommands(four, settingsService.Settings);
+                if (IsFailed)
+                {
+                    return;
+                }
             }
 
             Id = model.Id;
@@ -234,18 +250,43 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             // We do need to explicitly initialize commands though
             var objects = new TopLevelObjects(commands, fallbacks, pinnedCommands, dockBands);
             InitializeCommands(objects, serviceProvider, four);
+            if (IsFailed)
+            {
+                return;
+            }
+
             PersistFallbackDefaults(settingsService);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
         catch (Exception e)
         {
-            Logger.LogError($"Failed to load commands from extension {Extension!.PackageFamilyName}", e);
+            ReportFailure(e);
 
             if (!displayInfoInitialized)
             {
                 RecallFromCache();
             }
+        }
+    }
+
+    // Quarantine this wrapper only. An explicit reload can activate a fresh provider.
+    internal void ReportFailure(Exception exception)
+    {
+        if (Interlocked.Exchange(ref _failed, 1) != 0)
+        {
+            return;
+        }
+
+        Logger.LogError($"Dropping command provider {ProviderId} ({DisplayName}) until commands are reloaded", exception);
+        Failed?.Invoke(this, EventArgs.Empty);
+    }
+
+    internal void ReportDisconnectedProvider(Exception exception)
+    {
+        if (exception is COMException { HResult: unchecked((int)0x800706BA) or unchecked((int)0x800706BE) or unchecked((int)0x80010108) })
+        {
+            ReportFailure(exception);
         }
     }
 
@@ -401,7 +442,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError($"Failed to load pinned dock band command {commandId} for provider {providerId}: {e.Message}");
+                    ReportFailure(e);
+                    break;
                 }
             }
             else
@@ -415,7 +457,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     internal TopLevelViewModel? ResolveCommandItem(string commandId, IServiceProvider serviceProvider)
     {
-        if (!isValid || !IsActive || _commandProvider.Unsafe is not ICommandProvider4 provider)
+        if (!isValid || !IsActive || IsFailed || _commandProvider.Unsafe is not ICommandProvider4 provider)
         {
             return null;
         }
@@ -503,7 +545,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             }
             catch (Exception e)
             {
-                Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
+                ReportFailure(e);
+                break;
             }
         }
 

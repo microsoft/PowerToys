@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Common.Helpers;
-
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 /// <summary>
@@ -14,6 +12,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public partial class TopLevelItemPageContext : IPageContext
 {
+    private readonly CommandProviderWrapper _provider;
+
     public TaskScheduler Scheduler { get; private set; }
 
     public ICommandProviderContext ProviderContext { get; private set; }
@@ -24,13 +24,13 @@ public partial class TopLevelItemPageContext : IPageContext
 
     internal TopLevelItemPageContext(CommandProviderWrapper provider, TaskScheduler scheduler)
     {
+        _provider = provider;
         ProviderContext = provider.GetProviderContext();
         Scheduler = scheduler;
     }
 
     public void ShowException(Exception ex, string? extensionHint = null)
     {
-        var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? $"TopLevelItemPageContext({ProviderContext.ProviderId})");
-        CommandPaletteHost.Instance.Log(message);
+        _provider.ReportFailure(ex);
     }
 }

@@ -416,6 +416,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
     {
+        if (ProviderContext is CommandProviderWrapper { IsFailed: true })
+        {
+            return false;
+        }
+
         if (!IsFallback)
         {
             return false;
@@ -432,7 +437,14 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex.ToString());
+            if (ProviderContext is CommandProviderWrapper provider)
+            {
+                provider.ReportFailure(ex);
+            }
+            else
+            {
+                Logger.LogError(ex.ToString());
+            }
         }
 
         return false;
