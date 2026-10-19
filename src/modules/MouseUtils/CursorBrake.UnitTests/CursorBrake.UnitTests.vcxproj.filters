@@ -17,10 +17,16 @@
     <ClCompile Include="..\CursorBrake\EdgeSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\CursorBrake\FullScreenSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="EdgeTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EngineTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FullScreenTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">

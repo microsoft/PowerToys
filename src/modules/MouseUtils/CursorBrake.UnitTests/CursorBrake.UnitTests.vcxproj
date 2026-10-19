@@ -45,8 +45,10 @@
   <ItemGroup>
     <ClCompile Include="..\CursorBrake\DetectedEdges.cpp" />
     <ClCompile Include="..\CursorBrake\EdgeSettings.cpp" />
+    <ClCompile Include="..\CursorBrake\FullScreenSettings.cpp" />
     <ClCompile Include="EdgeTests.cpp" />
     <ClCompile Include="EngineTests.cpp" />
+    <ClCompile Include="FullScreenTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>

@@ -11,13 +11,16 @@
 #include "Generated Files/resource.h"
 #include "CursorBrakeCore.h"
 #include "CursorBrakeEdges.h"
+#include "CursorBrakeFullScreen.h"
 #include "DetectedEdges.h"
 #include "EdgeOverlay.h"
 #include "EdgePublisher.h"
 #include "EdgeSettings.h"
+#include "FullScreenSettings.h"
 #include "IdentityReader.h"
 #include "ModuleConstants.h"
 
+#include <common/utils/excluded_apps.h>
 #include <common/utils/resources.h>
 
 #include <ShellScalingApi.h>
@@ -87,6 +90,13 @@ namespace
     constexpr UINT IDENTITY_RETRY_DELAY_MS = 1000;
     constexpr int MAX_IDENTITY_RETRIES = 3;
 
+    // A UWP app's frame belongs to ApplicationFrameHost until the app's own window attaches to it,
+    // which can come after the foreground event. The app in front is then judged once more, a
+    // moment later, on a timer rather than by waiting beside the mouse hook.
+    constexpr UINT_PTR TIMER_REJUDGE_FOREGROUND = 3;
+    constexpr UINT REJUDGE_FOREGROUND_DELAY_MS = 200;
+    const wchar_t APPLICATION_FRAME_HOST[] = L"\\APPLICATIONFRAMEHOST.EXE";
+
     // Posted to the display change window when set_config leaves new edge settings for the hook
     // thread.
     constexpr UINT WM_APP_EDGES_CHANGED = WM_APP + 1;
@@ -97,6 +107,14 @@ namespace
 
     // Posted to the display change window by the identity reader when a read finishes.
     constexpr UINT WM_APP_IDENTITIES = WM_APP + 3;
+
+    // Posted to the display change window when set_config leaves a new excluded apps list for the
+    // hook thread.
+    constexpr UINT WM_APP_EXCLUDED_APPS_CHANGED = WM_APP + 4;
+
+    // Class names of the windows that draw the desktop.
+    const wchar_t PROGMAN_CLASS[] = L"Progman";
+    const wchar_t WORKERW_CLASS[] = L"WorkerW";
 
     std::wstring WithKey(UINT resourceId, const std::wstring& key)
     {
@@ -133,6 +151,59 @@ namespace
         }
         return currentSessionId != glassSessionId;
     }
+
+    // The uppercased image path of a process. Reading the name needs no right to read the
+    // process's memory, which anti-cheat drivers watch for. Empty when the process refuses even
+    // this, as a protected one can.
+    std::wstring ProcessImagePath(DWORD processId)
+    {
+        const HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
+        if (!process)
+        {
+            return {};
+        }
+        std::wstring path(MAX_PATH, L'\0');
+        DWORD length = static_cast<DWORD>(path.size());
+        if (!QueryFullProcessImageNameW(process, 0, path.data(), &length))
+        {
+            length = 0;
+        }
+        CloseHandle(process);
+        path.resize(length);
+        CharUpperBuffW(path.data(), length);
+        return path;
+    }
+
+    // The uppercased image path of the process that owns `window`. ApplicationFrameHost owns a UWP
+    // app's frame, so for a frame the path is that of the first child window another process owns.
+    // None of these calls sends a message.
+    std::wstring WindowProcessPath(HWND window)
+    {
+        DWORD frameProcessId = 0;
+        GetWindowThreadProcessId(window, &frameProcessId);
+        const std::wstring path = ProcessImagePath(frameProcessId);
+        if (!path.ends_with(APPLICATION_FRAME_HOST))
+        {
+            return path;
+        }
+
+        std::pair<DWORD, DWORD> processes{ frameProcessId, frameProcessId };
+        EnumChildWindows(
+            window,
+            [](HWND child, LPARAM data) -> BOOL {
+                auto* processes = reinterpret_cast<std::pair<DWORD, DWORD>*>(data);
+                DWORD childProcessId = 0;
+                GetWindowThreadProcessId(child, &childProcessId);
+                if (childProcessId != processes->first)
+                {
+                    processes->second = childProcessId;
+                    return FALSE;
+                }
+                return TRUE;
+            },
+            reinterpret_cast<LPARAM>(&processes));
+        return processes.second != frameProcessId ? ProcessImagePath(processes.second) : path;
+    }
 }
 
 // Forward declaration so the static hook and window procedures can reach the singleton instance.
@@ -158,6 +229,7 @@ private:
     std::atomic<bool> m_disableWhileDragging{ cursorbrake::Settings{}.disableWhileDragging };
     std::atomic<int> m_crossModifier{ static_cast<int>(cursorbrake::Settings{}.crossModifier) };
     std::atomic<bool> m_freeReturn{ cursorbrake::Settings{}.freeReturn };
+    std::atomic<int> m_fullScreenBehavior{ static_cast<int>(cursorbrake::FullScreenBehavior::Same) };
 
     // Owned by the hook thread: the engine, the layout it reads, and the cursor between callbacks.
     cursorbrake::Engine m_engine;
@@ -170,6 +242,24 @@ private:
     // window message and resolves them into m_layout.edges, so the hook itself never locks.
     std::mutex m_overridesMutex;
     std::optional<std::vector<cursorbrake::EdgeOverride>> m_pendingOverrides;
+
+    // The excluded apps take the same route: set_config leaves them here, and the hook thread takes
+    // them in a window message.
+    std::mutex m_excludedAppsMutex;
+    std::optional<std::vector<std::wstring>> m_pendingExcludedApps;
+
+    // Owned by the hook thread: the excluded apps in effect, uppercased, whether one of them is in
+    // front, the monitor holding a full-screen app as last worked out, and the foreground event
+    // hook. The foreground is judged in the event callback, outside the mouse hook, because the
+    // title fallback calls GetWindowTextW.
+    std::vector<std::wstring> m_excludedApps;
+    cursorbrake::ForegroundCache m_foreground;
+    cursorbrake::FullScreenTracker m_fullScreen;
+    HWINEVENTHOOK m_foregroundHook = nullptr;
+    // Owned by the hook thread: the last window looked up as a possible PowerToys overlay, and the
+    // answer. A window keeps its process, so each one opens its process once.
+    HWND m_overlayCheckWindow = nullptr;
+    bool m_overlayCheckResult = false;
 
     // Owned by the hook thread: the overrides in effect, and per monitor of m_layout its ID
     // (empty when unknown) and what Settings is told about it.
@@ -210,6 +300,9 @@ private:
     void RebuildLayout();
     void ApplyIdentities();
     bool TakePendingOverrides();
+    bool TakePendingExcludedApps();
+    void AdoptForeground(HWND window, cursorbrake::ForegroundReport report);
+    std::optional<size_t> FullScreenMonitor();
     void ResolveOverrides();
     void PublishEdges();
     void ShowEdges();
@@ -219,6 +312,7 @@ private:
     static BOOL CALLBACK AddMonitor(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data);
     static LRESULT CALLBACK MessageWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam);
+    static void CALLBACK ForegroundProc(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD thread, DWORD time);
 
 public:
     CursorBrake()
@@ -435,6 +529,18 @@ void CursorBrake::parse_settings(PowerToysSettings::PowerToyValues& settings)
     readChoice(JSON_KEY_EDGE_FILTER, m_edgeFilter, cursorbrake::EDGE_FILTER_COUNT);
     readChoice(JSON_KEY_CROSS_MODIFIER, m_crossModifier, cursorbrake::CROSS_MODIFIER_COUNT);
 
+    try
+    {
+        if (const std::optional<cursorbrake::FullScreenBehavior> behavior = cursorbrake::ReadFullScreenBehavior(properties))
+        {
+            m_fullScreenBehavior.store(static_cast<int>(*behavior));
+        }
+    }
+    catch (...)
+    {
+        Logger::warn(L"Failed to read the CursorBrake fullscreen_behavior setting; keeping previous value.");
+    }
+
     if (properties.HasKey(JSON_KEY_FREE_RETURN))
     {
         try
@@ -485,7 +591,27 @@ void CursorBrake::parse_settings(PowerToysSettings::PowerToyValues& settings)
         Logger::warn(L"Failed to read the CursorBrake edges setting; keeping the previous entries.");
     }
 
-    Logger::info(L"CursorBrake settings applied: push_distance {}, edge_filter {}, cross_modifier {}, disable_while_dragging {}, free_return {}.", m_pushDistance.load(), m_edgeFilter.load(), m_crossModifier.load(), m_disableWhileDragging.load(), m_freeReturn.load());
+    try
+    {
+        if (std::optional<std::vector<std::wstring>> apps = cursorbrake::ReadExcludedApps(properties))
+        {
+            Logger::info(L"CursorBrake excluded apps read: {} entries.", apps->size());
+            {
+                std::lock_guard lock(m_excludedAppsMutex);
+                m_pendingExcludedApps = std::move(*apps);
+            }
+            if (const HWND window = m_messageWindow.load())
+            {
+                PostMessageW(window, WM_APP_EXCLUDED_APPS_CHANGED, 0, 0);
+            }
+        }
+    }
+    catch (...)
+    {
+        Logger::warn(L"Failed to read the CursorBrake excluded_apps setting; keeping the previous list.");
+    }
+
+    Logger::info(L"CursorBrake settings applied: push_distance {}, edge_filter {}, cross_modifier {}, disable_while_dragging {}, free_return {}, fullscreen_behavior {}.", m_pushDistance.load(), m_edgeFilter.load(), m_crossModifier.load(), m_disableWhileDragging.load(), m_freeReturn.load(), m_fullScreenBehavior.load());
 }
 
 cursorbrake::Settings CursorBrake::SettingsSnapshot() const
@@ -520,9 +646,23 @@ void CursorBrake::HookThreadMain()
 
     RegisterForDisplayChanges();
     TakePendingOverrides();
+    TakePendingExcludedApps();
     m_identityRetries = 0;
     RebuildLayout();
     RefreshSessionState();
+
+    // The app already in front when the hook starts is judged now, not at the next foreground
+    // change, so an excluded app in front at start stands CursorBrake down from the first move.
+    m_foreground = cursorbrake::ForegroundCache{};
+    m_fullScreen.Reset();
+    m_overlayCheckWindow = nullptr;
+    m_overlayCheckResult = false;
+    m_foregroundHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr, ForegroundProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+    if (!m_foregroundHook)
+    {
+        Logger::error(L"Failed to install the CursorBrake foreground event hook, error: {}. Excluded apps apply only to the app in front at start and after a settings change.", GetLastError());
+    }
+    AdoptForeground(GetForegroundWindow(), cursorbrake::ForegroundReport::Query);
 
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(nullptr), 0);
     if (!m_mouseHook)
@@ -560,6 +700,11 @@ void CursorBrake::HookThreadMain()
     {
         UnhookWindowsHookEx(m_mouseHook);
         m_mouseHook = nullptr;
+    }
+    if (m_foregroundHook)
+    {
+        UnhookWinEvent(m_foregroundHook);
+        m_foregroundHook = nullptr;
     }
     UnregisterDisplayChanges();
 }
@@ -618,6 +763,7 @@ void CursorBrake::UnregisterDisplayChanges()
     {
         KillTimer(window, TIMER_REBUILD_LAYOUT);
         KillTimer(window, TIMER_RETRY_IDENTITY);
+        KillTimer(window, TIMER_REJUDGE_FOREGROUND);
         DestroyWindow(window);
         UnregisterClassW(DISPLAY_CHANGE_WINDOW_CLASS, GetModuleHandle(nullptr));
     }
@@ -779,6 +925,92 @@ bool CursorBrake::TakePendingOverrides()
     return true;
 }
 
+// Runs on the hook thread. Moves the excluded apps set_config left, if any, into m_excludedApps and
+// says whether there were any.
+bool CursorBrake::TakePendingExcludedApps()
+{
+    std::optional<std::vector<std::wstring>> pending;
+    {
+        std::lock_guard lock(m_excludedAppsMutex);
+        pending.swap(m_pendingExcludedApps);
+    }
+    if (!pending)
+    {
+        return false;
+    }
+    m_excludedApps = std::move(*pending);
+    return true;
+}
+
+// Runs on the hook thread, outside the mouse hook: at start, from the foreground event hook, after
+// a settings or session change, and for a second look at a UWP app.
+void CursorBrake::AdoptForeground(HWND window, cursorbrake::ForegroundReport report)
+{
+    bool frameHost = false;
+    m_foreground.Adopt(reinterpret_cast<uintptr_t>(window), report, !m_excludedApps.empty(), [&](uintptr_t value) {
+        const HWND hwnd = reinterpret_cast<HWND>(value);
+        const std::wstring path = WindowProcessPath(hwnd);
+        frameHost = path.ends_with(APPLICATION_FRAME_HOST);
+
+        // GetWindowTextW sends WM_GETTEXT to a window of this process, whose thread can be the
+        // runner's, waiting in disable() for this thread to end, so only the path is matched.
+        DWORD processId = 0;
+        GetWindowThreadProcessId(hwnd, &processId);
+        if (processId == GetCurrentProcessId())
+        {
+            return find_app_name_in_path(path, m_excludedApps);
+        }
+        return check_excluded_app(hwnd, path, m_excludedApps);
+    });
+
+    // Only a foreground event asks for the second look, so the look itself never asks again.
+    const HWND messageWindow = m_messageWindow.load();
+    if (frameHost && report == cursorbrake::ForegroundReport::Event && messageWindow)
+    {
+        SetTimer(messageWindow, TIMER_REJUDGE_FOREGROUND, REJUDGE_FOREGROUND_DELAY_MS, nullptr);
+    }
+}
+
+// Runs inside the mouse hook, only for a move that proposes a crossing. None of these calls sends
+// a message, so a hung foreground window cannot stall the hook. The rects are physical, as this
+// thread is per-monitor aware.
+std::optional<size_t> CursorBrake::FullScreenMonitor()
+{
+    const HWND window = GetForegroundWindow();
+    RECT windowRect{};
+    if (!window || !GetWindowRect(window, &windowRect))
+    {
+        return std::nullopt;
+    }
+    const HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+    MONITORINFO info{};
+    info.cbSize = sizeof(MONITORINFO);
+    if (!monitor || !GetMonitorInfoW(monitor, &info))
+    {
+        return std::nullopt;
+    }
+
+    wchar_t className[16]{};
+    const int classLength = GetClassNameW(window, className, ARRAYSIZE(className));
+    const std::wstring_view windowClass{ className, classLength > 0 ? static_cast<size_t>(classLength) : 0 };
+
+    cursorbrake::ForegroundWindow foreground;
+    foreground.rect = cursorbrake::RectL{ windowRect.left, windowRect.top, windowRect.right, windowRect.bottom };
+    foreground.monitor = cursorbrake::RectL{ info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right, info.rcMonitor.bottom };
+    foreground.hasCaption = (GetWindowLongPtrW(window, GWL_STYLE) & WS_CAPTION) == WS_CAPTION;
+    foreground.isShellOrDesktop = window == GetShellWindow() || window == GetDesktopWindow() || windowClass == PROGMAN_CLASS || windowClass == WORKERW_CLASS;
+    foreground.isToolWindow = (GetWindowLongPtrW(window, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) != 0;
+
+    return cursorbrake::FullScreenMonitorOf(m_layout, foreground, [&] {
+        if (window != m_overlayCheckWindow)
+        {
+            m_overlayCheckWindow = window;
+            m_overlayCheckResult = cursorbrake::IsPowerToysOverlay(WindowProcessPath(window));
+        }
+        return m_overlayCheckResult;
+    });
+}
+
 // Runs on the hook thread. A change to m_layout.edges resets the engine's push on the next move,
 // like any layout change.
 void CursorBrake::ResolveOverrides()
@@ -915,6 +1147,11 @@ LRESULT CALLBACK CursorBrake::MessageWindowProc(HWND hwnd, UINT msg, WPARAM wPar
             KillTimer(hwnd, TIMER_RETRY_IDENTITY);
             instance->RebuildLayout();
         }
+        else if (wParam == TIMER_REJUDGE_FOREGROUND)
+        {
+            KillTimer(hwnd, TIMER_REJUDGE_FOREGROUND);
+            instance->AdoptForeground(GetForegroundWindow(), cursorbrake::ForegroundReport::Query);
+        }
         break;
 
     case WM_APP_EDGES_CHANGED:
@@ -940,12 +1177,29 @@ LRESULT CALLBACK CursorBrake::MessageWindowProc(HWND hwnd, UINT msg, WPARAM wPar
         instance->ApplyIdentities();
         return 0;
 
+    case WM_APP_EXCLUDED_APPS_CHANGED:
+        if (instance->TakePendingExcludedApps())
+        {
+            Logger::info(L"CursorBrake excluded apps applied: {} entries.", instance->m_excludedApps.size());
+            instance->AdoptForeground(GetForegroundWindow(), cursorbrake::ForegroundReport::Query);
+        }
+        return 0;
+
     case WM_WTSSESSION_CHANGE:
         instance->RefreshSessionState();
+        instance->AdoptForeground(GetForegroundWindow(), cursorbrake::ForegroundReport::Query);
         break;
     }
 
     return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+void CALLBACK CursorBrake::ForegroundProc(HWINEVENTHOOK /*hook*/, DWORD /*event*/, HWND hwnd, LONG /*idObject*/, LONG /*idChild*/, DWORD /*thread*/, DWORD /*time*/)
+{
+    if (CursorBrake* instance = g_instance.load())
+    {
+        instance->AdoptForeground(hwnd, cursorbrake::ForegroundReport::Event);
+    }
 }
 
 LRESULT CALLBACK CursorBrake::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -978,7 +1232,26 @@ bool CursorBrake::HandleMove(const MSLLHOOKSTRUCT& data)
     move.current = GetCursorPos(&cursor) ? cursorbrake::PointL{ cursor.x, cursor.y } : m_lastPoint;
     move.proposed = proposed;
 
-    if (treatment == cursorbrake::InputTreatment::Pass)
+    // An excluded app in front stands CursorBrake down, walls included. It takes the path of
+    // absolute input, which the engine never holds and which resets it.
+    bool pass = treatment == cursorbrake::InputTreatment::Pass || m_foreground.Excluded();
+
+    // The foreground is checked for a full-screen app only on a move that proposes a crossing.
+    // Every other move carries the last answer, so the engine sees a change on the first crossing
+    // after it. No resistance passes a move leaving the full-screen app's monitor, and Wall names
+    // that monitor to the engine.
+    const auto behavior = static_cast<cursorbrake::FullScreenBehavior>(m_fullScreenBehavior.load());
+    if (!pass && behavior != cursorbrake::FullScreenBehavior::Same)
+    {
+        const std::optional<size_t> source = cursorbrake::MonitorAt(m_layout, move.current);
+        const bool crossing = cursorbrake::MonitorAt(m_layout, proposed) != source;
+        const std::optional<size_t> fullScreen = m_fullScreen.Observe(crossing, [this] { return FullScreenMonitor(); });
+        const cursorbrake::FullScreenTreatment fullScreenTreatment = cursorbrake::TreatFullScreen(behavior, fullScreen, source);
+        pass = fullScreenTreatment.pass;
+        move.wallMonitor = fullScreenTreatment.wallMonitor;
+    }
+
+    if (pass)
     {
         move.input = cursorbrake::InputKind::Absolute;
         (void)m_engine.OnMove(move, m_layout, SettingsSnapshot());

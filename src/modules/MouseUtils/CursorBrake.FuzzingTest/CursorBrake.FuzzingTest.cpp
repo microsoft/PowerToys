@@ -8,15 +8,17 @@
 // modules handling file I/O or user input must implement fuzzing tests"). The decision logic
 // lives in the Win32-free cursorbrake::Engine (CursorBrakeCore.h), so it runs here under ASan with
 // no OS state. The fuzzer's bytes become monitor layouts with per-edge settings, settings
-// snapshots, cursor clips and a sequence of moves, including degenerate and overlapping rects,
+// snapshots, cursor clips, full-screen walls and a sequence of moves, including degenerate and
+// overlapping rects, full-screen walls naming no monitor or one past the layout,
 // entries naming missing monitors, empty and inverted clips, extreme coordinates and DPI values,
 // and settings a hand-edited settings.json could carry, out-of-range enum values among them.
 //
 // Every decision is checked against the engine's contract. Allow returns the proposed point
 // unchanged, and never takes a move across a shared edge whose rule in that direction is Wall, nor
 // through a corner where either side the move passes is a wall, nor onto no monitor from a monitor
-// with a wall out, unless the move is bypassed. Hold happens only for a move that lands on another
-// monitor once the clip clamps it, or on no monitor from a monitor with a wall out. It returns a
+// with a wall out, nor off the monitor a full-screen wall names, unless the move is bypassed. Hold
+// happens only for a move that lands on another monitor once the clip clamps it, or on no monitor
+// from a monitor with a wall out, the full-screen wall's monitor included. It returns a
 // point inside the monitor the cursor started on, and inside the clip when the cursor started
 // inside it. A bypassed move is never held. Spelled-out forms of the same rules decide every move
 // alike (see Equivalent). A broken contract aborts, which libFuzzer reports as a crash.
@@ -256,13 +258,12 @@ namespace
         return settings;
     }
 
-    // A clip from a header byte: bit 0 clear means the hook could not read one. Bit 1 clips to one
-    // of the layout's monitors, the way a full-screen game confines the cursor; otherwise bit 7
-    // picks wide coordinates for a free rect, which can be empty or inverted, as a hostile caller
-    // could pass.
-    std::optional<RectL> ReadClip(Reader& r, const Layout& layout)
+    // A clip from the clip op's header byte: bit 0 clear means the hook could not read one. Bit 1
+    // clips to one of the layout's monitors, the way a full-screen game confines the cursor;
+    // otherwise bit 7 picks wide coordinates for a free rect, which can be empty or inverted, as a
+    // hostile caller could pass.
+    std::optional<RectL> ReadClip(Reader& r, const Layout& layout, uint8_t header)
     {
-        const uint8_t header = r.u8();
         if ((header & 0x01u) == 0u)
         {
             return std::nullopt;
@@ -280,6 +281,25 @@ namespace
         return clip;
     }
 
+    // The full-screen wall from the clip op's header byte, which bits 0, 1 and 7 leave free for
+    // it: bit 2 set names a wall from bits 3 to 6, and bit 2 clear keeps the wall in effect. The
+    // value picks a monitor, no wall, or an index past the layout, which must change nothing but
+    // the reset a change brings.
+    std::optional<std::optional<size_t>> ReadWall(uint8_t header, const Layout& layout)
+    {
+        if ((header & 0x04u) == 0u)
+        {
+            return std::nullopt;
+        }
+        const size_t count = layout.monitors.size();
+        const size_t value = static_cast<size_t>((header >> 3) & 0x0Fu) % (count + 2u);
+        if (value == count)
+        {
+            return std::optional<size_t>{};
+        }
+        return std::optional<size_t>{ value };
+    }
+
     // Where Windows puts a point: clamped into the clip in effect, if there is one.
     PointL Landing(PointL point, const std::optional<RectL>& clip)
     {
@@ -291,7 +311,7 @@ namespace
     }
 
     // The engine's own rule: the first monitor containing the point is the one the point is on.
-    const Monitor* MonitorAt(const Layout& layout, PointL point)
+    const Monitor* ContainingMonitor(const Layout& layout, PointL point)
     {
         for (const Monitor& monitor : layout.monitors)
         {
@@ -360,15 +380,24 @@ namespace
         return false;
     }
 
-    bool Bypassed(const MoveEvent& move, const Layout& layout, const Settings& settings)
+    // A drag is a bypass everywhere but on the monitor a full-screen wall names, whose way out
+    // only the cross key crosses. `clip` is the clip in effect, as for CheckContract.
+    bool Bypassed(const MoveEvent& move, const std::optional<RectL>& clip, const Layout& layout, const Settings& settings)
     {
-        return layout.monitors.size() < 2 || move.input == InputKind::Absolute || move.crossModifierHeld || (move.buttonDown && settings.disableWhileDragging);
+        const bool onWallMonitor = move.wallMonitor && IndexAt(layout, Landing(move.current, clip)) == move.wallMonitor;
+        return layout.monitors.size() < 2 || move.input == InputKind::Absolute || move.crossModifierHeld || (move.buttonDown && settings.disableWhileDragging && !onWallMonitor);
+    }
+
+    // Whether `source` has a wall out, from an entry or from the full-screen wall the move names.
+    bool WalledOut(const Layout& layout, const Settings& settings, size_t source, const MoveEvent& move)
+    {
+        return move.wallMonitor == source || WalledOut(layout, settings, source);
     }
 
     // `clip` is the clip in effect: the last usable one a move carried, or none.
     void CheckContract(const MoveEvent& move, const std::optional<RectL>& clip, const Layout& layout, const Settings& settings, const Decision& decision)
     {
-        const bool bypassed = Bypassed(move, layout, settings);
+        const bool bypassed = Bypassed(move, clip, layout, settings);
         if (decision.kind == DecisionKind::Allow)
         {
             if (!(decision.point == move.proposed))
@@ -386,7 +415,13 @@ namespace
 
             // A move onto no monitor leaves the source only when no way out of it is a wall,
             // since Windows may put the cursor on any monitor from there.
-            if (!bypassed && source && !destination && WalledOut(layout, settings, *source))
+            if (!bypassed && source && !destination && WalledOut(layout, settings, *source, move))
+            {
+                std::abort();
+            }
+
+            // Every way out of the monitor a full-screen wall names is a wall.
+            if (!bypassed && source && destination && *source != *destination && move.wallMonitor == source && !Contains(layout.monitors[*source].rect, proposed))
             {
                 std::abort();
             }
@@ -411,9 +446,9 @@ namespace
             return;
         }
 
-        const Monitor* source = MonitorAt(layout, Landing(move.current, clip));
-        const Monitor* destination = MonitorAt(layout, Landing(move.proposed, clip));
-        const bool intoGap = source != nullptr && destination == nullptr && WalledOut(layout, settings, static_cast<size_t>(source - layout.monitors.data()));
+        const Monitor* source = ContainingMonitor(layout, Landing(move.current, clip));
+        const Monitor* destination = ContainingMonitor(layout, Landing(move.proposed, clip));
+        const bool intoGap = source != nullptr && destination == nullptr && WalledOut(layout, settings, static_cast<size_t>(source - layout.monitors.data()), move);
         if (bypassed || source == nullptr || (destination == nullptr && !intoGap) || destination == source || !Contains(source->rect, decision.point))
         {
             std::abort();
@@ -480,6 +515,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     // an empty or inverted one ends it, and a failed read leaves it.
     std::optional<RectL> reported;
     std::optional<RectL> clip;
+    // The full-screen wall the hook passes on every move until it works out another.
+    std::optional<size_t> wall;
     PointL cursor{};
 
     Equivalent defaults;
@@ -515,8 +552,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         if ((op & 0xC0u) == 0x40u)
         {
             // A clip set or lifted between moves, the way a game confines and frees the cursor, or
-            // a read that fails for this move.
-            const std::optional<RectL> read = ReadClip(r, layout);
+            // a read that fails for this move. The same header can set or clear the full-screen
+            // wall, the way a full-screen app comes to the front or leaves it.
+            const uint8_t header = r.u8();
+            if (const std::optional<std::optional<size_t>> read = ReadWall(header, layout))
+            {
+                wall = *read;
+            }
+            const std::optional<RectL> read = ReadClip(r, layout, header);
             readFailed = !read;
             if (read)
             {
@@ -528,6 +571,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 
         MoveEvent move;
         move.clip = readFailed ? std::nullopt : reported;
+        move.wallMonitor = wall;
         move.input = (op & 0x01u) != 0u ? InputKind::Absolute : InputKind::Relative;
         move.crossModifierHeld = (op & 0x02u) != 0u;
         move.buttonDown = (op & 0x04u) != 0u;
@@ -558,7 +602,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         const PointL landedTo = Landing(move.proposed, clip);
         const std::optional<size_t> source = IndexAt(layout, landedFrom);
         const std::optional<size_t> destination = IndexAt(layout, landedTo);
-        if (!Bypassed(move, layout, settings) && source && destination && *source != *destination && !Contains(layout.monitors[*source].rect, landedTo) && !SharedAxis(layout.monitors[*source].rect, layout.monitors[*destination].rect))
+        if (!Bypassed(move, clip, layout, settings) && source && destination && *source != *destination && !Contains(layout.monitors[*source].rect, landedTo) && !SharedAxis(layout.monitors[*source].rect, layout.monitors[*destination].rect))
         {
             defaults.comparable = false;
             filter.comparable = false;
@@ -611,8 +655,9 @@ namespace
 // libFuzzer driver. Arguments name input files or folders, such as a libFuzzer corpus, to replay.
 // With none it runs one canned input: two side-by-side monitors, a run of rightward pushes that
 // crosses their shared edge, a fling straight back that takes the free return, a push under a clip
-// to the left monitor, and a diagonal held inside a clip across the edge. Every input runs under
-// the debug heap's leak check.
+// to the left monitor, a diagonal held inside a clip across the edge, and pushes against a
+// full-screen wall on the left monitor that only the cross key crosses. Every input runs under the
+// debug heap's leak check.
 int main(int argc, char** argv)
 {
     _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -746,6 +791,47 @@ int main(int argc, char** argv)
         7,
         7,
         12,
+        // A clip to the bounding rect 0, 0, 256, 64 whose header also puts a full-screen wall on A
+        // (bit 2, value 0), then a push from (127, 32) to (129, 32): held.
+        0x58,
+        0x05,
+        0,
+        0,
+        32,
+        8,
+        16,
+        7,
+        4,
+        8,
+        16,
+        9,
+        4,
+        8,
+        // Two pushes of 10 against the wall, still held.
+        0x00,
+        10,
+        0,
+        0x00,
+        10,
+        0,
+        // The cross key crosses to (137, 32).
+        0x02,
+        10,
+        0,
+        // Straight back 20 px meets B's brake into A, as the keyed crossing opened no free
+        // return: held at (128, 32).
+        0x00,
+        0xEC,
+        0,
+        // The same clip, with the wall cleared (value 2, the monitor count), then no movement.
+        0x40,
+        0x15,
+        0,
+        0,
+        32,
+        8,
+        0,
+        0,
     };
     return RunWithoutLeak(seed) ? 0 : 1;
 }

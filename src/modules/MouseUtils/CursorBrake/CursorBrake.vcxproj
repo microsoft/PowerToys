@@ -92,11 +92,13 @@
     <ClInclude Include="Generated Files\resource.h" />
     <ClInclude Include="CursorBrakeCore.h" />
     <ClInclude Include="CursorBrakeEdges.h" />
+    <ClInclude Include="CursorBrakeFullScreen.h" />
     <ClInclude Include="DetectedEdges.h" />
     <ClInclude Include="DisplayNames.h" />
     <ClInclude Include="EdgeOverlay.h" />
     <ClInclude Include="EdgePublisher.h" />
     <ClInclude Include="EdgeSettings.h" />
+    <ClInclude Include="FullScreenSettings.h" />
     <ClInclude Include="IdentityReader.h" />
     <ClInclude Include="ModuleConstants.h" />
   </ItemGroup>
@@ -107,6 +109,7 @@
     <ClCompile Include="EdgeOverlay.cpp" />
     <ClCompile Include="EdgePublisher.cpp" />
     <ClCompile Include="EdgeSettings.cpp" />
+    <ClCompile Include="FullScreenSettings.cpp" />
     <ClCompile Include="IdentityReader.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>

@@ -138,6 +138,9 @@ namespace cursorbrake
         // The rect the cursor is confined to (GetClipCursor), when the caller knows it. Windows
         // clamps the cursor into it after the hook, so the hook's proposed point can lie outside.
         std::optional<RectL> clip;
+        // The monitor a full-screen app fills while full-screen apps get a wall, by index into the
+        // layout. Every way out of it is a wall. Unlike the clip, no value means no such monitor.
+        std::optional<size_t> wallMonitor;
     };
 
     enum class EdgeFilter
@@ -227,13 +230,32 @@ namespace cursorbrake
         bool operator==(const EdgeRule&) const = default;
     };
 
-    // The rule for a crossing from `source` into `neighbor` over a side on the given axis. It
-    // checks, in order: a one-way entry from source to neighbor, a both-ways entry naming the two
-    // in either order, and the default. The default is the global push distance when the Apply to
-    // filter brakes the axis, and Off when it does not. Without a neighbor only the default
-    // applies. The first matching entry wins.
-    inline EdgeRule RuleFor(const Layout& layout, const Settings& settings, size_t source, std::optional<size_t> neighbor, bool sideBySide)
+    // The first monitor containing the point. Real layouts never overlap, so the order only
+    // matters for malformed ones.
+    inline std::optional<size_t> MonitorAt(const Layout& layout, PointL point)
     {
+        for (size_t i = 0; i < layout.monitors.size(); ++i)
+        {
+            const RectL& rect = layout.monitors[i].rect;
+            if (point.x >= rect.left && point.x < rect.right && point.y >= rect.top && point.y < rect.bottom)
+            {
+                return i;
+            }
+        }
+        return std::nullopt;
+    }
+    // The rule for a crossing from `source` into `neighbor` over a side on the given axis. It
+    // checks, in order: a full-screen wall on the source (`wallMonitor`), a one-way entry from
+    // source to neighbor, a both-ways entry naming the two in either order, and the default. The
+    // default is the global push distance when the Apply to filter brakes the axis, and Off when
+    // it does not. Without a neighbor only the full-screen wall and the default apply. The first
+    // match wins.
+    inline EdgeRule RuleFor(const Layout& layout, const Settings& settings, size_t source, std::optional<size_t> neighbor, bool sideBySide, std::optional<size_t> wallMonitor = std::nullopt)
+    {
+        if (wallMonitor && *wallMonitor == source)
+        {
+            return EdgeRule{ EdgeMode::Wall, 0 };
+        }
         if (neighbor)
         {
             for (const EdgeSetting& edge : layout.edges)
@@ -295,10 +317,15 @@ namespace cursorbrake
         return std::nullopt;
     }
 
-    // Whether a monitor sharing an edge with `source` meets a wall on the way out of it, by a
-    // one-way or a both-ways entry.
-    inline bool HasWallOut(const Layout& layout, const Settings& settings, size_t source)
+    // Whether `source` meets a wall on the way out of it: a full-screen wall on it, which covers
+    // every way out whatever it borders, or a one-way or both-ways entry toward a monitor sharing
+    // an edge with it.
+    inline bool HasWallOut(const Layout& layout, const Settings& settings, size_t source, std::optional<size_t> wallMonitor = std::nullopt)
     {
+        if (wallMonitor && *wallMonitor == source)
+        {
+            return true;
+        }
         const RectL& rect = layout.monitors[source].rect;
         for (size_t i = 0; i < layout.monitors.size(); ++i)
         {
@@ -417,11 +444,13 @@ namespace cursorbrake
         Decision OnMove(const MoveEvent& move, const Layout& layout, const Settings& settings)
         {
             // Monitor indices, thresholds and the braked axes can all differ after a change, so
-            // nothing accumulated under the old values carries over.
-            if (!(settings == m_settings) || !(layout == m_layout))
+            // nothing accumulated under the old values carries over. A full-screen wall appearing,
+            // leaving or moving to another monitor resets the same way, in either direction.
+            if (!(settings == m_settings) || !(layout == m_layout) || move.wallMonitor != m_wallMonitor)
             {
                 m_settings = settings;
                 m_layout = layout;
+                m_wallMonitor = move.wallMonitor;
                 m_push.reset();
                 m_freeReturn.reset();
             }
@@ -435,8 +464,12 @@ namespace cursorbrake
             }
 
             // A bypassed move goes wherever it likes without the engine judging it, so neither the
-            // push nor the free return survives it.
-            if (layout.monitors.size() < 2 || move.input == InputKind::Absolute || move.crossModifierHeld || (move.buttonDown && settings.disableWhileDragging))
+            // push nor the free return survives it. A drag is no bypass on the full-screen wall's
+            // monitor, since a game holds a button down most of the time; only the cross key
+            // crosses that wall.
+            const bool onWallMonitor = m_wallMonitor && MonitorAt(layout, ClampToClip(move.current, m_clip)) == m_wallMonitor;
+            const bool dragBypass = move.buttonDown && settings.disableWhileDragging && !onWallMonitor;
+            if (layout.monitors.size() < 2 || move.input == InputKind::Absolute || move.crossModifierHeld || dragBypass)
             {
                 m_push.reset();
                 m_freeReturn.reset();
@@ -517,7 +550,7 @@ namespace cursorbrake
             if (!destination)
             {
                 m_push.reset();
-                if (HasWallOut(layout, settings, *source))
+                if (HasWallOut(layout, settings, *source, m_wallMonitor))
                 {
                     return Decision{ DecisionKind::Hold, ClampInto(judged.proposed, from.rect) };
                 }
@@ -529,7 +562,7 @@ namespace cursorbrake
             }
 
             const std::optional<Side> pushed = m_push ? std::optional<Side>{ m_push->side } : std::nullopt;
-            const std::optional<Crossing> crossing = CrossedSide(layout, settings, *source, *destination, judged.current, judged.proposed, pushed);
+            const std::optional<Crossing> crossing = CrossedSide(layout, settings, m_wallMonitor, *source, *destination, judged.current, judged.proposed, pushed);
             if (!crossing)
             {
                 return allow;
@@ -641,20 +674,6 @@ namespace cursorbrake
             bool open = true;
         };
 
-        // The first monitor containing the point. Real layouts never overlap, so the order only
-        // matters for malformed ones.
-        static std::optional<size_t> MonitorAt(const Layout& layout, PointL point)
-        {
-            for (size_t i = 0; i < layout.monitors.size(); ++i)
-            {
-                const RectL& rect = layout.monitors[i].rect;
-                if (point.x >= rect.left && point.x < rect.right && point.y >= rect.top && point.y < rect.bottom)
-                {
-                    return i;
-                }
-            }
-            return std::nullopt;
-        }
 
         // How far past the given side of the rect the point lies, counted from the rect's last
         // pixel on that side: 1 for the first pixel outside, zero or less for a point inside.
@@ -726,7 +745,7 @@ namespace cursorbrake
         // destination when it borders that side. Otherwise it is the monitor across the side at
         // the point's coordinate along it, clamped into the source's span, which for a move
         // through a corner is the corner pixel.
-        static EdgeRule RuleAt(const Layout& layout, const Settings& settings, size_t source, size_t destination, Side side, PointL to)
+        static EdgeRule RuleAt(const Layout& layout, const Settings& settings, std::optional<size_t> wallMonitor, size_t source, size_t destination, Side side, PointL to)
         {
             const RectL& rect = layout.monitors[source].rect;
             std::optional<size_t> neighbor;
@@ -739,7 +758,7 @@ namespace cursorbrake
                 const long along = IsSideBySide(side) ? std::clamp(to.y, rect.top, rect.bottom - 1) : std::clamp(to.x, rect.left, rect.right - 1);
                 neighbor = NeighborAcross(layout, source, side, along);
             }
-            return RuleFor(layout, settings, source, neighbor, IsSideBySide(side));
+            return RuleFor(layout, settings, source, neighbor, IsSideBySide(side), wallMonitor);
         }
 
         // A side a move leaves the source through, with the rule it meets there.
@@ -764,7 +783,7 @@ namespace cursorbrake
         // is chosen as above and carries the push; only Off on both sides lets the move through.
         // A wall on either side of the corner then holds, so a monitor walled on every side it
         // shares cannot be left through a corner.
-        static std::optional<Crossing> CrossedSide(const Layout& layout, const Settings& settings, size_t source, size_t destination, PointL from, PointL to, std::optional<Side> pushed)
+        static std::optional<Crossing> CrossedSide(const Layout& layout, const Settings& settings, std::optional<size_t> wallMonitor, size_t source, size_t destination, PointL from, PointL to, std::optional<Side> pushed)
         {
             const RectL& rect = layout.monitors[source].rect;
             const RectL& target = layout.monitors[destination].rect;
@@ -822,7 +841,7 @@ namespace cursorbrake
 
             if (corner)
             {
-                const EdgeRule rule = Stricter(RuleAt(layout, settings, source, destination, *sideX, to), RuleAt(layout, settings, source, destination, *sideY, to));
+                const EdgeRule rule = Stricter(RuleAt(layout, settings, wallMonitor, source, destination, *sideX, to), RuleAt(layout, settings, wallMonitor, source, destination, *sideY, to));
                 if (rule.mode == EdgeMode::Off)
                 {
                     return std::nullopt;
@@ -834,7 +853,7 @@ namespace cursorbrake
             std::optional<Crossing> crossX;
             if (offerX)
             {
-                crossX = Crossing{ *sideX, RuleAt(layout, settings, source, destination, *sideX, to) };
+                crossX = Crossing{ *sideX, RuleAt(layout, settings, wallMonitor, source, destination, *sideX, to) };
                 if (crossX->rule.mode == EdgeMode::Off)
                 {
                     crossX.reset();
@@ -843,7 +862,7 @@ namespace cursorbrake
             std::optional<Crossing> crossY;
             if (offerY)
             {
-                crossY = Crossing{ *sideY, RuleAt(layout, settings, source, destination, *sideY, to) };
+                crossY = Crossing{ *sideY, RuleAt(layout, settings, wallMonitor, source, destination, *sideY, to) };
                 if (crossY->rule.mode == EdgeMode::Off)
                 {
                     crossY.reset();
@@ -913,6 +932,8 @@ namespace cursorbrake
 
         Settings m_settings;
         Layout m_layout;
+        // The full-screen wall of the last move, compared on every move like the settings.
+        std::optional<size_t> m_wallMonitor;
         // The clip in effect, from the last move that carried one.
         std::optional<RectL> m_clip;
         std::optional<Push> m_push;

@@ -191,6 +191,13 @@ namespace
         return move;
     }
 
+    MoveEvent DragModifierMove(PointL from, PointL to)
+    {
+        MoveEvent move = DragMove(from, to);
+        move.crossModifierHeld = true;
+        return move;
+    }
+
     MoveEvent ClippedMove(PointL from, PointL to, RectL clip)
     {
         MoveEvent move = Move(from, to);
@@ -595,6 +602,17 @@ namespace
         return steps;
     }
 
+    // HeldPushes with a mouse button down on every move.
+    std::vector<Step> HeldDrags(PointL edge, int dx, int dy, int size, int count)
+    {
+        std::vector<Step> steps = HeldPushes(edge, dx, dy, size, count);
+        for (Step& step : steps)
+        {
+            step.move.buttonDown = true;
+        }
+        return steps;
+    }
+
     std::wstring Describe(const EdgeRule& rule)
     {
         switch (rule.mode)
@@ -608,6 +626,22 @@ namespace
         default:
             return L"mode " + std::to_wstring(static_cast<int>(rule.mode));
         }
+    }
+
+    // The same steps with every move naming `monitor` as the full-screen wall, or none.
+    std::vector<Step> OnWall(std::vector<Step> steps, std::optional<size_t> monitor)
+    {
+        for (Step& step : steps)
+        {
+            step.move.wallMonitor = monitor;
+        }
+        return steps;
+    }
+
+    Step OnWall(Step step, std::optional<size_t> monitor)
+    {
+        step.move.wallMonitor = monitor;
+        return step;
     }
 }
 
@@ -2787,6 +2821,209 @@ namespace CursorBrakeEngineTests
                 { L"a value changed", WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Custom, 25) }), Defaults(), { PushTen(), PushTen(), ExpectAfter(WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Custom, 24) }), Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } },
                 { L"an entry for the other direction", SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(WithEdges(SideBySide(), { OneWay(1, 0, EdgeMode::Wall) }), Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } },
             });
+        }
+    };
+
+    // A full-screen app fills the monitor MoveEvent::wallMonitor names, and the user chose a wall
+    // for full-screen apps: every way out of that monitor is a wall.
+    TEST_CLASS (FullScreenWall)
+    {
+    public:
+        TEST_METHOD (RuleForChecksTheFullScreenWallFirst)
+        {
+            const Layout layout = WithEdges(SideBySide(), { OneWay(0, 1, EdgeMode::Off) });
+            const Settings settings = Defaults();
+            Assert::IsTrue(RuleFor(layout, settings, 0, 1, true, 0) == EdgeRule{ EdgeMode::Wall, 0 }, L"A full-screen wall on A outranks A's one-way Off.");
+            Assert::IsTrue(RuleFor(layout, settings, 0, std::nullopt, false, 0) == EdgeRule{ EdgeMode::Wall, 0 }, L"A full-screen wall covers a side with no neighbor.");
+            Assert::IsTrue(RuleFor(layout, settings, 1, 0, true, 0) == EdgeRule{ EdgeMode::Custom, 25 }, L"The way into the full-screen monitor keeps its rule.");
+            Assert::IsTrue(RuleFor(layout, settings, 0, 1, true, 1) == EdgeRule{ EdgeMode::Off, 25 }, L"A wall on another monitor leaves A's entry in force.");
+            Assert::IsTrue(RuleFor(layout, settings, 0, 1, true) == EdgeRule{ EdgeMode::Off, 25 }, L"No full-screen wall leaves A's entry in force.");
+        }
+
+        TEST_METHOD (HasWallOutCountsTheFullScreenWall)
+        {
+            // A and B do not touch in Gap(), so only the full-screen wall gives A a wall out.
+            Assert::IsTrue(HasWallOut(Gap(), Defaults(), 0, 0), L"A full-screen A has a wall out.");
+            Assert::IsFalse(HasWallOut(Gap(), Defaults(), 0, 1), L"A wall on B gives A none.");
+            Assert::IsFalse(HasWallOut(Gap(), Defaults(), 0), L"No wall at all.");
+        }
+
+        TEST_METHOD (AFullScreenWallHoldsEveryPush)
+        {
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"1000 capped pushes at the shipping defaults", SideBySide(), Settings{}, OnWall(HeldPushes({ 1919, 500 }, 1, 0, 30, 1000), 0) },
+                { L"1000 slow pushes", SideBySide(), Defaults(), OnWall(HeldPushes({ 1919, 500 }, 1, 0, 1, 1000), 0) },
+                { L"the right monitor full screen", SideBySide(), Settings{}, OnWall(HeldPushes({ 1920, 500 }, -1, 0, 30, 1000), 1) },
+                { L"down from the top-left of a junction", Junction(), Defaults(), OnWall(HeldPushes({ 500, 1079 }, 0, 1, 10, 100), 0) },
+                { L"right from the top-left of a junction", Junction(), Defaults(), OnWall(HeldPushes({ 1919, 500 }, 1, 0, 10, 100), 0) },
+                { L"through the corner of a junction", Junction(), Defaults(), OnWall(HeldPushes({ 1919, 1079 }, 1, 1, 10, 100), 0) },
+            });
+        }
+
+        TEST_METHOD (BypassesCrossAFullScreenWall)
+        {
+            RunAll({
+                { L"cross modifier held", SideBySide(), Defaults(), { OnWall(Expect(ModifierMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })), 0) } },
+                { L"cross modifier held while dragging", SideBySide(), WithDragDisable(), { OnWall(Expect(DragModifierMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })), 0) } },
+                { L"absolute input", SideBySide(), Defaults(), { OnWall(Expect(AbsoluteMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })), 0) } },
+            });
+        }
+
+        TEST_METHOD (DraggingNeverCrossesAFullScreenWall)
+        {
+            // A game holds a button down most of the time, so a drag must not open the wall that
+            // only the cross key crosses.
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"dragging with disable-while-dragging on", SideBySide(), WithDragDisable(), OnWall(HeldDrags({ 1919, 500 }, 1, 0, 30, 100), 0) },
+                { L"dragging with the setting off", SideBySide(), Defaults(), OnWall(HeldDrags({ 1919, 500 }, 1, 0, 30, 100), 0) },
+                { L"dragging through the corner of a junction", Junction(), WithDragDisable(), OnWall(HeldDrags({ 1919, 1079 }, 1, 1, 10, 100), 0) },
+                { L"dragging into a gap", Gap(), WithDragDisable(), { OnWall(Expect(DragMove({ 1919, 900 }, { 1929, 900 }), Hold({ 1919, 900 })), 0) } },
+            });
+        }
+
+        TEST_METHOD (DraggingStillCrossesEveryOtherWay)
+        {
+            // Only the way out of the full-screen monitor ignores the drag. The way in and a
+            // per-edge wall between two other monitors keep the drag bypass, as without a
+            // full-screen app.
+            RunAll({
+                { L"into the full-screen monitor", SideBySide(), WithDragDisable(), { OnWall(Expect(DragMove({ 1920, 500 }, { 1915, 500 }), Allow({ 1915, 500 })), 0) } },
+                { L"a per-edge wall between two other monitors", WithEdges(Junction(), { BothWays(2, 3, EdgeMode::Wall) }), WithDragDisable(), { OnWall(Expect(DragMove({ 1919, 1500 }, { 1925, 1500 }), Allow({ 1925, 1500 })), 0) } },
+                { L"a per-edge wall with no full-screen app", WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Wall) }), WithDragDisable(), { Expect(DragMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+            });
+        }
+
+        TEST_METHOD (AKeyedCrossingOpensNoFreeReturn)
+        {
+            // The way back into the full-screen monitor brakes as usual: 5 of 25 holds.
+            RunAll({
+                { L"out with the key, straight back",
+                  SideBySide(),
+                  Defaults(),
+                  OnWall({ Expect(ModifierMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })), Expect(Move({ 1925, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }, 0) },
+            });
+        }
+
+        TEST_METHOD (AFreeReturnIntoTheFullScreenWallHolds)
+        {
+            // B is full screen. The crossing from A into B brakes as usual and grants a free
+            // return, which the wall out of B refuses when it is used.
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"straight back after the crossing",
+                  SideBySide(),
+                  Defaults(),
+                  OnWall(Concat(Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }),
+                                Concat(HeldPushes({ 1920, 500 }, -1, 0, 10, 100), { Expect(ModifierMove({ 1920, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) })),
+                         1) },
+            });
+        }
+
+        TEST_METHOD (AFullScreenWallAddsNothingToThePush)
+        {
+            // 100 pushes against the wall, then the full-screen app leaves the front. The next push
+            // starts from 0 and needs 10 + 10 + 5.
+            RunAll({
+                { L"lean, clear, push",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(OnWall(HeldPushes({ 1919, 500 }, 1, 0, 10, 100), 0), { PushTen(), PushTen(), Expect(Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })) }) },
+            });
+        }
+
+        TEST_METHOD (AWallMonitorChangeResetsThePushBothWays)
+        {
+            // Junction, pushing TL's right edge at y = 500 under a 25 px push. A kept push of 20
+            // would cross on the next 5.
+            const Step along = Expect(Move({ 1919, 500 }, { 1919, 501 }), Allow({ 1919, 501 }));
+            const Step five = Expect(Move({ 1919, 501 }, { 1924, 501 }), Hold({ 1919, 501 }));
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"set on the source mid-push, then cleared",
+                  Junction(),
+                  Defaults(),
+                  Concat(Concat({ PushTen(), PushTen() }, OnWall(HeldPushes({ 1919, 500 }, 1, 0, 5, 5), 0)), { PushTen(), PushTen(), Expect(Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })) }) },
+                { L"set on another monitor and cleared, away from the pushed edge",
+                  Junction(),
+                  Defaults(),
+                  { PushTen(), PushTen(), OnWall(along, 3), five } },
+                { L"cleared after a push banked under a wall elsewhere",
+                  Junction(),
+                  Defaults(),
+                  Concat(OnWall({ PushTen(), PushTen(), along }, 3), { five }) },
+                { L"moved from one monitor to another",
+                  Junction(),
+                  Defaults(),
+                  Concat(OnWall({ PushTen(), PushTen() }, 3), { OnWall(along, 2), OnWall(five, 2) }) },
+            });
+        }
+
+        TEST_METHOD (AnUnchangedWallMonitorKeepsThePush)
+        {
+            // A wall named on every move, here on BR, resets nothing: 20 and 5 cross.
+            RunAll({
+                { L"held across moves inside the source",
+                  Junction(),
+                  Defaults(),
+                  OnWall({ PushTen(), PushTen(), Expect(Move({ 1919, 500 }, { 1919, 501 }), Allow({ 1919, 501 })), Expect(Move({ 1919, 501 }, { 1919, 500 }), Allow({ 1919, 500 })), Expect(Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })) }, 3) },
+            });
+        }
+
+        TEST_METHOD (AWallMonitorChangeClearsTheFreeReturn)
+        {
+            RunAll({
+                { L"a wall elsewhere appears before the return", Junction(), Defaults(), Concat(CrossToB(), { OnWall(Expect(Move({ 1924, 500 }, { 1915, 500 }), Hold({ 1920, 500 })), 3) }) },
+                { L"an unchanged wall elsewhere keeps it", Junction(), Defaults(), OnWall(Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }), 3) },
+            });
+        }
+
+        TEST_METHOD (TheFullScreenWallCoversOnlyTheWayOut)
+        {
+            // TL is full screen. Every other crossing brakes at the global 25: three 10 px steps.
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"TR into TL", Junction(), Defaults(), OnWall(CrossOnStep({ 1920, 500 }, -1, 0, 10, 3), 0) },
+                { L"BL into TL", Junction(), Defaults(), OnWall(CrossOnStep({ 500, 1080 }, 0, -1, 10, 3), 0) },
+                { L"TR into BR", Junction(), Defaults(), OnWall(CrossOnStep({ 2500, 1079 }, 0, 1, 10, 3), 0) },
+                { L"BL into BR", Junction(), Defaults(), OnWall(CrossOnStep({ 1919, 1500 }, 1, 0, 10, 3), 0) },
+            });
+        }
+
+        TEST_METHOD (TheFullScreenWallOutranksEveryEdgeValue)
+        {
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"a both-ways Off", WithEdges(SideBySide(), { BothWays(0, 1, EdgeMode::Off) }), Defaults(), OnWall(HeldPushes({ 1919, 500 }, 1, 0, 10, 100), 0) },
+                { L"a one-way Custom 0", WithEdges(SideBySide(), { OneWay(0, 1, EdgeMode::Custom, 0) }), Defaults(), OnWall(HeldPushes({ 1919, 500 }, 1, 0, 10, 100), 0) },
+                { L"a one-way Custom 600", WithEdges(SideBySide(), { OneWay(0, 1, EdgeMode::Custom, 600) }), Defaults(), OnWall(HeldPushes({ 1919, 500 }, 1, 0, 10, 100), 0) },
+                { L"an axis the filter leaves out", SideBySide(), WithFilter(EdgeFilter::Stacked), OnWall(HeldPushes({ 1919, 500 }, 1, 0, 10, 100), 0) },
+                { L"an entry into the full-screen monitor keeps its 50", WithEdges(Junction(), { OneWay(1, 0, EdgeMode::Custom, 50) }), Defaults(), OnWall(CrossOnStep({ 1920, 500 }, -1, 0, 10, 5), 0) },
+                { L"a wall between two other monitors still holds", WithEdges(Junction(), { BothWays(1, 3, EdgeMode::Wall) }), Defaults(), OnWall(HeldPushes({ 2500, 1079 }, 0, 1, 10, 100), 0) },
+            });
+        }
+
+        TEST_METHOD (AFullScreenWallKeepsAGapMove)
+        {
+            // In Gap(), A shares no edge, so only the full-screen wall keeps a move into the gap.
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"A shares no edge", Gap(), Defaults(), { OnWall(Expect(Move({ 1919, 500 }, { 1929, 500 }), Hold({ 1919, 500 })), 0) } },
+                { L"A shares edges elsewhere", GapsBesideAWall::Gap(), Settings{}, { OnWall(Expect(Move({ 1919, 900 }, { 1929, 900 }), Hold({ 1919, 900 })), 0) } },
+                { L"the cross key", Gap(), Defaults(), { OnWall(Expect(ModifierMove({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })), 0) } },
+                { L"a wall on the other monitor", Gap(), Defaults(), { OnWall(Expect(Move({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })), 1) } },
+            });
+        }
+
+        TEST_METHOD (AGameClipOnTheFullScreenMonitorNeverHolds)
+        {
+            // The game confines the cursor to A, so Windows clamps every move back onto A and the
+            // wall has nothing to hold.
+            std::vector<Step> steps;
+            for (int i = 0; i < 100; ++i)
+            {
+                steps.push_back(Expect(Move({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })));
+            }
+            RunAll({ { L"a clip on A", SideBySide(), Settings{}, OnWall(UnderClip(steps, SideBySide().monitors[0].rect), 0) } });
+        }
+
+        TEST_METHOD (AWallMonitorPastTheLayoutChangesNothing)
+        {
+            RunAll({ { L"index 7 of 2", SideBySide(), Defaults(), OnWall(CrossToB(), 7) } });
         }
     };
 }

@@ -36,6 +36,9 @@
     <ClCompile Include="EdgeSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FullScreenSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="IdentityReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -62,6 +65,9 @@
     <ClInclude Include="CursorBrakeEdges.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CursorBrakeFullScreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="DetectedEdges.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EdgeSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FullScreenSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IdentityReader.h">
