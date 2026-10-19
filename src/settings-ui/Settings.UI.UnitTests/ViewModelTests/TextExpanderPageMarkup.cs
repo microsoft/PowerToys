@@ -52,7 +52,24 @@ namespace ViewModelTests
             CollectionAssert.AreEqual(MenuOrder, menu.Elements().Select(item => (string)item.Attribute(XName.Get("Uid", Xaml))).ToArray());
         }
 
+        [TestMethod]
+        public void AttributionUsesTheCurrentPublicWebsite()
+        {
+            XElement link = LoadPage().Descendants()
+                .Single(element => element.Name.LocalName == "PageLink"
+                    && (string)element.Attribute(XName.Get("Uid", Xaml)) == "Attribution_TextExpander");
+
+            Assert.AreEqual("https://howdygary.github.io/text-expander/", (string)link.Attribute("Link"));
+        }
+
         private static XElement LoadRowTemplate()
+        {
+            XElement list = LoadPage().Descendants()
+                .Single(element => element.Name.LocalName == "ItemsRepeater" && ((string)element.Attribute("ItemsSource") ?? string.Empty).Contains("FilteredSnippets", StringComparison.Ordinal));
+            return list.Descendants().Single(element => element.Name.LocalName == "DataTemplate").Elements().Single();
+        }
+
+        private static XDocument LoadPage()
         {
             string page = FindPage();
             if (page == null)
@@ -60,9 +77,7 @@ namespace ViewModelTests
                 Assert.Inconclusive("The page's XAML isn't next to the tests here.");
             }
 
-            XElement list = XDocument.Load(page).Descendants()
-                .Single(element => element.Name.LocalName == "ItemsRepeater" && ((string)element.Attribute("ItemsSource") ?? string.Empty).Contains("FilteredSnippets", StringComparison.Ordinal));
-            return list.Descendants().Single(element => element.Name.LocalName == "DataTemplate").Elements().Single();
+            return XDocument.Load(page);
         }
 
         private static string FindPage()

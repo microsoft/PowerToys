@@ -470,9 +470,9 @@ internal sealed class SnippetStore : IDisposable
     // Written only when the snippet file is missing; an existing file is never replaced.
     private const string DefaultSnippets = """
         // ── PowerToys Text Expander ─────────────────────────────
-        // Built by Gary Hsu · https://github.com/howdyimgary
-        // Project: https://github.com/howdyimgary/text-expander
-        // Website: https://howdyimgary.github.io/text-expander/
+        // Built by Gary Hsu · https://github.com/howdygary
+        // Project: https://github.com/howdygary/text-expander
+        // Website: https://howdygary.github.io/text-expander/
         //
         // Type a trigger, such as !ddate, and Text Expander replaces it with its
         // snippet. The snippets at the bottom of this file work right away.

@@ -254,9 +254,9 @@ public sealed class SnippetStoreTests
 
         string[] lines = File.ReadAllLines(path);
         StringAssert.StartsWith(lines[0], "// ── PowerToys Text Expander ──");
-        Assert.AreEqual("// Built by Gary Hsu · https://github.com/howdyimgary", lines[1]);
-        Assert.AreEqual("// Project: https://github.com/howdyimgary/text-expander", lines[2]);
-        Assert.AreEqual("// Website: https://howdyimgary.github.io/text-expander/", lines[3]);
+        Assert.AreEqual("// Built by Gary Hsu · https://github.com/howdygary", lines[1]);
+        Assert.AreEqual("// Project: https://github.com/howdygary/text-expander", lines[2]);
+        Assert.AreEqual("// Website: https://howdygary.github.io/text-expander/", lines[3]);
     }
 
     [TestMethod]

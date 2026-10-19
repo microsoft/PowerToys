@@ -729,7 +729,7 @@
                 </StackPanel>
             </controls:SettingsPageControl.ModuleContent>
             <controls:SettingsPageControl.SecondaryLinks>
-                <controls:PageLink x:Uid="Attribution_TextExpander" Link="https://howdyimgary.github.io/text-expander/" />
+                <controls:PageLink x:Uid="Attribution_TextExpander" Link="https://howdygary.github.io/text-expander/" />
             </controls:SettingsPageControl.SecondaryLinks>
         </controls:SettingsPageControl>
 
