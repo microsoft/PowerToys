@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -217,6 +217,10 @@ public sealed partial class MainWindow : WindowEx, IDisposable
     private void ShowWindow()
     {
         CancelMemoryTrim();
+
+        // Re-read anything whose label depends on state owned by another process, before
+        // the window becomes visible.
+        _launcherViewModel.RefreshDynamicItems();
 
         if (_hwnd != IntPtr.Zero)
         {
