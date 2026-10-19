@@ -4,6 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -30,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private MouseWithoutBordersViewModel ViewModel { get; set; }
 
         private readonly IFileSystemWatcher watcher;
+        private int _configRefreshPending;
+        private int _configRefreshRequested;
 
         public MouseWithoutBordersPage()
         {
@@ -59,16 +62,37 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void OnConfigFileUpdate()
         {
-            // Note: FileSystemWatcher raise notification multiple times for single update operation.
-            // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration every time since we will be updating the UI only if something is changed.
-            this.DispatcherQueue.TryEnqueue(async () =>
+            Interlocked.Exchange(ref _configRefreshRequested, 1);
+            if (Interlocked.Exchange(ref _configRefreshPending, 1) != 0)
             {
-                if (ViewModel.LoadUpdatedSettings())
+                return;
+            }
+
+            if (!this.DispatcherQueue.TryEnqueue(async () =>
+            {
+                try
                 {
-                    ViewModel.NotifyUpdatedSettings();
-                    await ViewModel.LoadPairingKeyAsync();
+                    while (Interlocked.Exchange(ref _configRefreshRequested, 0) != 0 && IsLoaded)
+                    {
+                        if (ViewModel.LoadUpdatedSettings())
+                        {
+                            ViewModel.NotifyUpdatedSettings();
+                            await ViewModel.LoadPairingKeyAsync();
+                        }
+                    }
                 }
-            });
+                finally
+                {
+                    Interlocked.Exchange(ref _configRefreshPending, 0);
+                    if (Volatile.Read(ref _configRefreshRequested) != 0 && IsLoaded)
+                    {
+                        OnConfigFileUpdate();
+                    }
+                }
+            }))
+            {
+                Interlocked.Exchange(ref _configRefreshPending, 0);
+            }
         }
 
         private static T GetChildOfType<T>(DependencyObject depObj, string tag)

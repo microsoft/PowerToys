@@ -21,12 +21,50 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using StreamJsonRpc;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests
 {
     [TestClass]
     public sealed class MouseWithoutBordersIpcSecurityTests
     {
+        [TestMethod]
+        public async Task RpcHelpersOwnFreshVerifiedPipesAcrossDelayedClosureAndServerRestart()
+        {
+            var connect = typeof(MouseWithoutBordersViewModel).GetMethod("ConnectSettingsSyncHelperAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var pipeName = UniquePipeName();
+            NamedPipeClientStream previousStream = null;
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                using var identity = WindowsIdentity.GetCurrent();
+                await using var server = RestrictedNamedPipeServer.Create(pipeName, identity.User!);
+                var wait = server.WaitForConnectionAsync();
+                var task = (Task)connect.Invoke(null, new object[] { pipeName, Path.GetFileName(GetCurrentExecutablePath()) })!;
+                await wait.WaitAsync(TimeSpan.FromSeconds(5));
+                using var rpc = JsonRpc.Attach(server, new PairingRpcTarget());
+                await task.WaitAsync(TimeSpan.FromSeconds(5));
+                using var helper = (IDisposable)task.GetType().GetProperty("Result")!.GetValue(task)!;
+                var stream = (NamedPipeClientStream)helper.GetType().GetProperty("Stream")!.GetValue(helper)!;
+                var handle = stream.SafePipeHandle;
+                Assert.AreNotSame(previousStream, stream);
+                var endpoint = helper.GetType().GetProperty("Endpoint")!.GetValue(helper)!;
+                var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic)!;
+                var keyTask = (Task<string>)contract.GetMethod("GetCurrentPairingKey")!.Invoke(endpoint, null)!;
+                Assert.AreEqual("test-pairing-key", await keyTask.WaitAsync(TimeSpan.FromSeconds(5)));
+                helper.Dispose();
+                Assert.IsTrue(handle.IsClosed);
+
+                // Leave the server alive after client disposal, as RPC read-loop cleanup can finish later.
+                await Task.Delay(50);
+                previousStream = stream;
+            }
+        }
+
+        public sealed class PairingRpcTarget
+        {
+            public Task<string> GetCurrentPairingKey() => Task.FromResult("test-pairing-key");
+        }
+
         [TestMethod]
         public void PipeNameIsStableAndSessionQualified()
         {
@@ -452,7 +490,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
             StringAssert.Contains(viewModel, "public bool ShowPairingSetupRequired => PairingSetupRequired;");
             StringAssert.Contains(viewModel, "public bool CanConnectPairing => CanManagePairing;");
-            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_isPairingPending && (!UseService || IsElevated);");
+            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_isPairingPending && (!RequiresAdministratorForPairing || IsElevated);");
 
             var program = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Class\Program.cs"));
             var start = program.IndexOf("public Task ConnectToMachine(", StringComparison.Ordinal);
