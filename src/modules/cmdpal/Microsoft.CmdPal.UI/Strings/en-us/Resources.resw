@@ -1195,10 +1195,22 @@ Home: highest position. End: lowest position.</value>
     <value>Use system settings</value>
   </data>
   <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Header" xml:space="preserve">
-    <value>Include in the Global result</value>
+    <value>Include in main results</value>
   </data>
   <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Description" xml:space="preserve">
-    <value>Show results on queries without direct activation command</value>
+    <value>Show this fallback with the main search results.</value>
+  </data>
+  <data name="Settings_Fallback_QueryDelay.Header" xml:space="preserve">
+    <value>Query delay</value>
+  </data>
+  <data name="Settings_Fallback_QueryDelay.Description" xml:space="preserve">
+    <value>Set the delay, in milliseconds, before the fallback receives the query.</value>
+  </data>
+  <data name="Settings_Fallback_MinimumQueryLength.Header" xml:space="preserve">
+    <value>Minimum query length</value>
+  </data>
+  <data name="Settings_Fallback_MinimumQueryLength.Description" xml:space="preserve">
+    <value>Set the minimum number of characters that the query must contain.</value>
   </data>
   <data name="ManageFallbackRankAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Manage fallback order</value>

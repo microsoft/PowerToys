@@ -47,7 +47,7 @@ public partial class ProviderFallbackSettingsTests
         var settingsService = new FakeSettingsService();
         var saved = new ProviderSettings
         {
-            FallbackCommands = ImmutableDictionary<string, FallbackSettings>.Empty.Add(FallbackId, new FallbackSettings(isEnabled: true, includeInGlobalResults: false)),
+            FallbackCommands = ImmutableDictionary<string, FallbackSettings>.Empty.Add(FallbackId, new FallbackSettings { IsEnabled = true, IncludeInGlobalResults = false }),
         };
         settingsService.Settings = settingsService.Settings with
         {
@@ -106,7 +106,7 @@ public partial class ProviderFallbackSettingsTests
         Assert.AreEqual(2, score.Invoke(null, [first.FallbackItems[0], new[] { FallbackId }]));
 
         using var provider = new ProviderSettingsViewModel(first, new ProviderSettings(), settingsService);
-        var fallback = new FallbackSettingsViewModel(first.FallbackItems[0], new FallbackSettings(), provider, settingsService);
+        var fallback = new FallbackSettingsViewModel(first.FallbackItems[0], new FallbackSettings(), provider);
         Assert.AreEqual(first.FallbackItems[0].FallbackKey, fallback.RankId);
         Assert.AreEqual(FallbackId, fallback.Id);
     }

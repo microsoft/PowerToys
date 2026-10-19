@@ -50,6 +50,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+    private readonly Lock _queryGenerationLock = new();
 
     // All main-page search telemetry state and emission is owned by this dedicated type, keeping
     // MainListPage responsible for producing results rather than for tracking telemetry bookkeeping.
@@ -237,6 +238,13 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
         InvalidateDefaultView();
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var currentSearch = SearchText;
+            _ = Task.Run(() => UpdateSearchTextCore(currentSearch, currentSearch, isUserInput: false, forceReset: true));
+            return;
+        }
+
         if (_includeApps != _filteredItemsIncludesApps)
         {
             ReapplySearchInBackground();
@@ -580,15 +588,29 @@ public sealed partial class MainListPage : DynamicListPage,
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
     }
 
-    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput, bool forceReset = false)
     {
+        CancellationTokenSource? previousCancellationTokenSource;
+        CancellationToken token;
+        lock (_queryGenerationLock)
+        {
+            if (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var nextCancellationTokenSource = new CancellationTokenSource();
+            previousCancellationTokenSource = _cancellationTokenSource;
+            _cancellationTokenSource = nextCancellationTokenSource;
+            token = nextCancellationTokenSource.Token;
+        }
+
         var stopwatch = Stopwatch.StartNew();
 
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = new CancellationTokenSource();
+        previousCancellationTokenSource?.Cancel();
+        previousCancellationTokenSource?.Dispose();
 
-        var token = _cancellationTokenSource.Token;
+        var queryId = Guid.NewGuid().ToString("N");
         if (token.IsCancellationRequested)
         {
             return;
@@ -599,7 +621,8 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             var aliases = _aliasManager;
 
-            if (token.IsCancellationRequested)
+            if (token.IsCancellationRequested
+                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
             {
                 return;
             }
@@ -642,7 +665,8 @@ public sealed partial class MainListPage : DynamicListPage,
         // ===== SNAPSHOT PHASE (under lock) =====
         lock (commands)
         {
-            if (token.IsCancellationRequested)
+            if (token.IsCancellationRequested
+                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
             {
                 return;
             }
@@ -650,12 +674,37 @@ public sealed partial class MainListPage : DynamicListPage,
             // prefilter fallbacks
             var specialFallbacks = new List<TopLevelViewModel>();
             var commonFallbacks = new List<TopLevelViewModel>(commands.Count);
+            var activeFallbacks = new List<TopLevelViewModel>();
 
             foreach (var s in commands)
             {
                 if (!s.IsFallback)
                 {
                     continue;
+                }
+
+                if (s.IsFallbackV2)
+                {
+                    if (s.FallbackMode == FallbackCommandMode.Passive)
+                    {
+                        if (!s.PreparePassiveFallback(newSearch, queryId, token))
+                        {
+                            continue;
+                        }
+                    }
+                    else if (s.FallbackMode == FallbackCommandMode.Results)
+                    {
+                        // Result sources need the asynchronous result host, not the legacy handler.
+                        continue;
+                    }
+                    else
+                    {
+                        activeFallbacks.Add(s);
+                    }
+                }
+                else
+                {
+                    activeFallbacks.Add(s);
                 }
 
                 if (s.IncludeInGlobalResults)
@@ -668,7 +717,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
+            _fallbackUpdateManager.BeginUpdate(newSearch, queryId, activeFallbacks, token);
 
             if (token.IsCancellationRequested)
             {
@@ -695,7 +744,8 @@ public sealed partial class MainListPage : DynamicListPage,
             // A query that doesn't extend the old one, or a change in app inclusion, means we
             // can't re-use the previous results and have to rebuild from the full catalog. On an
             // extend we re-score only the previously matched subset.
-            var reset = !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
+            var reset = forceReset
+                || !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
                 || _filteredItemsIncludesApps != includeAppsSnapshot;
 
             var prevFilteredItems = reset ? null : _filteredItems;
@@ -835,7 +885,8 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             // A newer keystroke cancels this token before doing its own work, so a stale snapshot
             // can never overwrite a newer query's results.
-            if (token.IsCancellationRequested)
+            if (token.IsCancellationRequested
+                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
             {
                 return;
             }

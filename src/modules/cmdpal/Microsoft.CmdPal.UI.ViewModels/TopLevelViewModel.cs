@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -22,6 +23,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem, ICommandContextSource
 {
+    private const int MaximumFallbackRegexLength = 4096;
+    private static readonly TimeSpan FallbackRegexTimeout = TimeSpan.FromMilliseconds(50);
     private readonly ISettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
@@ -36,6 +39,14 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private string _fallbackId = string.Empty;
 
     private string _generatedId = string.Empty;
+    private IFallbackCommandItem3? _fallbackV2;
+    private ICommand? _fallbackPlaceholderCommand;
+    private HostMatchKind _fallbackMatchKind;
+    private string _fallbackMatchValue = string.Empty;
+    private string _fallbackTitleTemplate = string.Empty;
+    private string _fallbackSubtitleTemplate = string.Empty;
+    private string? _fallbackTitle;
+    private string? _fallbackSubtitle;
 
     private HotkeySettings? _hotkey;
     private IIconInfo? _initialIcon;
@@ -68,15 +79,15 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     public IconInfoViewModel IconViewModel => _commandItemViewModel.Icon;
 
     ////// ICommandItem
-    public string Title => _commandItemViewModel.Title;
+    public string Title => _fallbackTitle ?? _commandItemViewModel.Title;
 
-    public string Subtitle => _commandItemViewModel.Subtitle;
+    public string Subtitle => _fallbackSubtitle ?? _commandItemViewModel.Subtitle;
 
     public IIconInfo Icon => (IIconInfo)IconViewModel;
 
     public IIconInfo InitialIcon => _initialIcon ?? _commandItemViewModel.Icon;
 
-    ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
+    ICommand? ICommandItem.Command => _fallbackPlaceholderCommand ?? _commandItemViewModel.Command.Model.Unsafe;
 
     IContextItem?[] ICommandItem.MoreCommands => BuildContextMenu();
 
@@ -95,9 +106,25 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     // Fallback items
     public string DisplayTitle { get; private set; } = string.Empty;
 
+    internal FallbackCommandMode FallbackMode { get; private set; } = FallbackCommandMode.Active;
+
+    internal bool IsFallbackV2 => _fallbackV2 is not null;
+
+    internal uint? SuggestedQueryDelayMilliseconds { get; private set; }
+
+    internal uint? SuggestedMinQueryLength { get; private set; }
+
     internal string FallbackKey => $"{CommandProviderId}\0{Id}";
 
     internal bool IncludeInGlobalResults => GetFallbackSettings()?.IncludeInGlobalResults == true;
+
+    internal uint EffectiveQueryDelayMilliseconds => GetFallbackSettings()?.QueryDelayMilliseconds
+        ?? SuggestedQueryDelayMilliseconds
+        ?? 0;
+
+    internal uint EffectiveMinimumQueryLength => GetFallbackSettings()?.MinimumQueryLength
+        ?? SuggestedMinQueryLength
+        ?? 0;
 
     public HotkeySettings? Hotkey
     {
@@ -260,6 +287,27 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
                 DisplayTitle = fallback.DisplayTitle;
             }
 
+            if (model is IFallbackCommandItem3 fallbackV2)
+            {
+                _fallbackV2 = fallbackV2;
+                FallbackMode = fallbackV2.Mode;
+                _fallbackMatchKind = fallbackV2.MatchKind;
+                _fallbackMatchValue = fallbackV2.MatchValue;
+                _fallbackTitleTemplate = fallbackV2.TitleTemplate;
+                _fallbackSubtitleTemplate = fallbackV2.SubtitleTemplate;
+                if (FallbackMode != FallbackCommandMode.Results)
+                {
+                    _fallbackPlaceholderCommand = new NoOpCommand
+                    {
+                        Id = $"{fallbackV2.Id}.placeholder",
+                        Name = fallbackV2.Name,
+                    };
+                }
+
+                SuggestedQueryDelayMilliseconds = fallbackV2.SuggestedQueryDelayMilliseconds.ToNullableUInt32();
+                SuggestedMinQueryLength = fallbackV2.SuggestedMinQueryLength.ToNullableUInt32();
+            }
+
             UpdateInitialIcon(false);
         }
     }
@@ -418,7 +466,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
+    internal bool SafeUpdateFallbackTextSynchronous(string newQuery, string queryId, CancellationToken queryToken)
     {
         if (!IsFallback)
         {
@@ -432,7 +480,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
         try
         {
-            return UnsafeUpdateFallbackSynchronous(newQuery);
+            return UnsafeUpdateFallbackSynchronous(newQuery, queryId, queryToken);
         }
         catch (Exception ex)
         {
@@ -448,7 +496,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     /// </summary>
     /// <param name="newQuery">The new search text to pass to the extension</param>
     /// <returns>true if our Title changed across this call</returns>
-    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
+    private bool UnsafeUpdateFallbackSynchronous(string newQuery, string queryId, CancellationToken queryToken)
     {
         var model = _commandItemViewModel.Model.Unsafe;
 
@@ -459,6 +507,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
             // RPC for method
             fallback.FallbackHandler.UpdateQuery(newQuery);
+            if (queryToken.IsCancellationRequested)
+            {
+                return false;
+            }
+
+            SetFallbackQuery(newQuery, queryId, queryToken);
             var newTitle = Title;
 
             // Report any title change, not just an empty <-> non-empty flip: the render path
@@ -468,6 +522,92 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
 
         return false;
+    }
+
+    internal bool PreparePassiveFallback(string query, string queryId, CancellationToken queryToken)
+    {
+        var fallback = _fallbackV2;
+        if (fallback is null || FallbackMode != FallbackCommandMode.Passive || !IsEnabled)
+        {
+            return false;
+        }
+
+        var matches = _fallbackMatchKind != HostMatchKind.Regex || MatchesFallbackRegex(query, _fallbackMatchValue);
+        var title = matches ? FormatFallbackText(_fallbackTitleTemplate, _commandItemViewModel.Title, query) : string.Empty;
+        var subtitle = matches ? FormatFallbackText(_fallbackSubtitleTemplate, _commandItemViewModel.Subtitle, query) : string.Empty;
+        var changed = !string.Equals(_fallbackTitle, title, StringComparison.Ordinal)
+            || !string.Equals(_fallbackSubtitle, subtitle, StringComparison.Ordinal);
+
+        _fallbackTitle = title;
+        _fallbackSubtitle = subtitle;
+        SetFallbackQuery(query, queryId, queryToken);
+
+        if (changed)
+        {
+            _titleCache.Invalidate();
+            _subtitleCache.Invalidate();
+            PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Title)));
+            PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Subtitle)));
+        }
+
+        return matches;
+    }
+
+    private static string FormatFallbackText(string template, string defaultValue, string query)
+    {
+        return string.IsNullOrEmpty(template)
+            ? defaultValue
+            : template.Replace("{query}", query, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Tests the query against a match pattern that an extension supplied.
+    /// </summary>
+    /// <remarks>
+    /// The pattern is untrusted input, so this method limits what it can cost. The
+    /// length check stops very large patterns, the timeout stops patterns that
+    /// backtrack, and the anchors make the pattern match the whole query. Without the
+    /// anchors an extension could claim every query with one dot. A pattern that is bad
+    /// in any of these ways matches nothing instead of failing the search.
+    /// </remarks>
+    private static bool MatchesFallbackRegex(string query, string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern.Length > MaximumFallbackRegexLength)
+        {
+            return false;
+        }
+
+        try
+        {
+            return Regex.IsMatch(query, $"\\A(?:{pattern})\\z", RegexOptions.CultureInvariant, FallbackRegexTimeout);
+        }
+        catch (ArgumentException)
+        {
+            // The extension supplied a pattern that does not parse.
+            return false;
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
+    }
+
+    private void SetFallbackQuery(string query, string queryId, CancellationToken queryToken)
+    {
+        if (_fallbackV2 is null || FallbackMode == FallbackCommandMode.Results)
+        {
+            return;
+        }
+
+        _fallbackPlaceholderCommand = new FallbackInvocationCommand(
+            _fallbackV2,
+            this,
+            new FallbackCommandInvocationArgs(
+                query,
+                queryId,
+                global::Windows.System.UserProfile.GlobalizationPreferences.Languages.ToArray()),
+            queryToken);
+        PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(ICommandItem.Command)));
     }
 
     private FallbackSettings? GetFallbackSettings()
@@ -480,7 +620,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
-        return new PerformCommandMessage(this.CommandViewModel.Model, new Models.ExtensionObject<IListItem>(this));
+        var command = _fallbackPlaceholderCommand is null
+            ? CommandViewModel.Model
+            : new Models.ExtensionObject<ICommand>(_fallbackPlaceholderCommand);
+        return new PerformCommandMessage(command, new Models.ExtensionObject<IListItem>(this));
     }
 
     public override string ToString()

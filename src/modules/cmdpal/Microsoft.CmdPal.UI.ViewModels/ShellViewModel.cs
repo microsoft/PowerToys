@@ -206,11 +206,14 @@ public partial class ShellViewModel : ObservableObject,
 
     private void PerformCommand(PerformCommandMessage message)
     {
-        var command = message.Command.Unsafe;
-        if (command is null)
+        var requestedCommand = message.Command.Unsafe;
+        if (requestedCommand is null)
         {
             return;
         }
+
+        var commandResolver = requestedCommand as IFallbackInvocationContext;
+        var invocationContext = commandResolver?.InvocationContext ?? message.CommandContext;
 
         // Determine whether this is the root/home page navigation BEFORE
         // computing providerContext. When navigating back to the root page we
@@ -220,15 +223,21 @@ public partial class ShellViewModel : ObservableObject,
         // isMainPage must be evaluated here; if it were moved inside the
         // "if (command is IPage)" block below, it would be too late to affect
         // the providerContext that is passed to the new page view-model.
-        var isMainPage = command == _rootPage;
-
         var host = _pageNavigation.ResolveHost(message, CurrentPage);
-        var providerContext = isMainPage
-            ? CommandProviderContext.Empty
-            : _pageNavigation.ResolveProviderContext(message, CurrentPage);
 
         try
         {
+            var command = ResolveRequestedCommand(requestedCommand, commandResolver);
+            if (command is null)
+            {
+                return;
+            }
+
+            var isMainPage = command == _rootPage;
+            var providerContext = isMainPage
+                ? CommandProviderContext.Empty
+                : _pageNavigation.ResolveProviderContext(message, CurrentPage);
+
             // Report page commands only after navigation preparation succeeds.
             if (command is IPage page)
             {
@@ -244,7 +253,7 @@ public partial class ShellViewModel : ObservableObject,
 
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
-                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
 
                 // Create/replace the navigation cancellation token.
                 // If one already exists, cancel and dispose it first.
@@ -313,13 +322,13 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
-                StartInvoke(message, invokable, host);
+                StartInvoke(message, invokable, host, invocationContext);
             }
             else
             {
-                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
             }
         }
         catch (Exception ex)
@@ -330,7 +339,16 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    internal static ICommand? ResolveRequestedCommand(
+        ICommand requestedCommand,
+        IFallbackInvocationContext? fallbackContext)
+    {
+        return fallbackContext is null
+            ? requestedCommand
+            : fallbackContext.ResolveCommand(requestedCommand);
+    }
+
+    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host, object? invocationSender)
     {
         // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
@@ -345,13 +363,13 @@ public partial class ShellViewModel : ObservableObject,
                 WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host);
+                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender);
                 });
             }
         }
     }
 
-    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host, object? invocationSender)
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -369,7 +387,7 @@ public partial class ShellViewModel : ObservableObject,
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
-                result = invokable.Invoke(message.CommandContext);
+                result = invokable.Invoke(invocationSender);
                 success = true;
             }
             finally
