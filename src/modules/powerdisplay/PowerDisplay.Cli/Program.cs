@@ -14,11 +14,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using PowerDisplay.Cli.Commands;
 using PowerDisplay.Cli.Ipc;
 using PowerDisplay.Cli.Options;
 using PowerDisplay.Cli.Output;
 using PowerDisplay.Cli.Properties;
+using PowerDisplay.Cli.Telemetry;
 using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Cli;
@@ -90,7 +92,62 @@ public static class Program
         return numbers is { Length: > 1 } ? numbers.Length : 1;
     }
 
-    public static async Task<int> Main(string[] args)
+    public static Task<int> Main(string[] args)
+        => RunWithTelemetryAsync(args, RunAsync, static telemetryEvent => PowerToysTelemetry.Log.WriteEvent(telemetryEvent));
+
+    internal static async Task<int> RunWithTelemetryAsync(
+        string[] args,
+        Func<string[], Task<int>> run,
+        Action<PowerDisplayCLICommandEvent> writeTelemetry)
+    {
+        var exitCode = CliExitCodes.InternalError;
+        try
+        {
+            exitCode = await run(args);
+            return exitCode;
+        }
+        finally
+        {
+            try
+            {
+                writeTelemetry(new PowerDisplayCLICommandEvent
+                {
+                    CommandName = GetTelemetryCommandName(args),
+                    Successful = exitCode == CliExitCodes.Ok,
+                });
+            }
+            catch (Exception)
+            {
+                // Telemetry must not change the command's result or console output.
+            }
+        }
+    }
+
+    internal static string GetTelemetryCommandName(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            return "none";
+        }
+
+        // Match only known command names; never send user-supplied values or response-file paths.
+        return args[0].ToLowerInvariant() switch
+        {
+            CliCommandNames.List => CliCommandNames.List,
+            CliCommandNames.Get => CliCommandNames.Get,
+            CliCommandNames.Set => CliCommandNames.Set,
+            CliCommandNames.Up => CliCommandNames.Up,
+            CliCommandNames.Down => CliCommandNames.Down,
+            CliCommandNames.Capabilities => CliCommandNames.Capabilities,
+            CliCommandNames.Profiles => CliCommandNames.Profiles,
+            CliCommandNames.ApplyProfile => CliCommandNames.ApplyProfile,
+            "--help" or "-h" or "-?" or "/?" => "help",
+            "--version" => "version",
+            _ => "unknown",
+        };
+    }
+
+    private static async Task<int> RunAsync(string[] args)
     {
         // Emit UTF-8 so non-ASCII glyphs in human-readable output (the → arrow, ° degree sign,
         // … ellipsis) and any UTF-8 JSON render correctly instead of as '?' on legacy code pages.

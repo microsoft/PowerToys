@@ -92,6 +92,14 @@ Reference implementations:
 - Use dual output (console + log file) for errors and warnings to ensure visibility.
 - Reference: `src/modules/imageresizer/ui/Cli/CliLogger.cs`
 
+## Telemetry and Privacy Requirements
+
+- Every module CLI must record usage telemetry through the existing PowerToys telemetry infrastructure, respecting the user's diagnostic data consent.
+- Record a fixed, allowlisted command category and a success flag based on the final exit code. Do not collect raw arguments, file paths, monitor IDs, profile values, or other user-provided content.
+- Telemetry failures must not change command output, exit codes, or exception behavior.
+- Add every new CLI telemetry event to [DATA_AND_PRIVACY.md](../../DATA_AND_PRIVACY.md) in the same PR, describing its purpose and collected data.
+- Follow [Telemetry Events](events.md) for event naming, privacy tags, and implementation details.
+
 ## Error Handling
 
 ### Exit Codes

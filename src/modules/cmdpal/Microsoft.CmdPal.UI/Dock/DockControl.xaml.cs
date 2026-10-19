@@ -33,10 +33,11 @@ using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeMessage>, IRecipient<ExitEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
+public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>, IDisposable
 {
     private static readonly TimeSpan DropTimeout = TimeSpan.FromSeconds(3);
 
+    private readonly DockPageFlyoutController _pageFlyoutController;
     private readonly ContextMenuHost _menuHost;
 
     private DockViewModel _viewModel;
@@ -56,7 +57,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         ItemContextMenuFlyout.IsOpen ||
         AddBandFlyout.IsOpen ||
         EditModeContextMenu.IsOpen ||
-        EditButtonsTeachingTip.IsOpen;
+        EditButtonsTeachingTip.IsOpen ||
+        _pageFlyoutController.HasOpenTransientUi;
 
     internal bool IsDragOperationActive => _draggedBand is not null;
 
@@ -108,6 +110,17 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
     {
         _viewModel = viewModel;
         InitializeComponent();
+        var services = App.Current.Services;
+        _pageFlyoutController = new(
+            DockPageFlyout,
+            DispatcherQueue,
+            TaskScheduler.FromCurrentSynchronizationContext(),
+            services.GetRequiredService<IPageViewModelFactoryService>(),
+            services.GetRequiredService<IAppHostService>(),
+            () => OwnerHwnd,
+            () => DockSide,
+            () => !IsEditMode,
+            () => Focus(FocusState.Programmatic));
         _menuHost = new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout);
         Loaded += DockControl_Loaded;
         Unloaded += DockControl_Unloaded;
@@ -124,9 +137,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
+        _pageFlyoutController.Activate();
 
-        ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
-        ItemContextMenuFlyout.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
         ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
         ItemContextMenuFlyout.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
 
@@ -143,9 +155,9 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
     private void DockControl_Unloaded(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
+        _pageFlyoutController.Deactivate();
         _menuHost.Close();
 
-        ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
         ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
@@ -353,7 +365,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         e.Handled = DockItemActions.TryHandleKey(
             item,
             chord,
-            command => InvokeItem(command, GetDockItemCenter(dockItem)),
+            command => InvokeItem(command, dockItem, GetDockItemCenter(dockItem)),
             submenu => TryShowBandContextMenu(dockItem, item, submenu, afterKeyEvent: true));
     }
 
@@ -447,7 +459,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
 
         // Use the center of the border as the point to open at.
         var borderCenter = GetDockItemCenter(dockItem);
-        InvokeItem(item, borderCenter);
+        InvokeItem(item, dockItem, borderCenter);
         return true;
     }
 
@@ -463,10 +475,11 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
     // Stores the band that was right-clicked for edit mode context menu
     private DockBandViewModel? _editModeContextBand;
 
-    // Position (in window coords) of the dock item whose context menu is currently
-    // open, used to anchor the cmdpal palette when a Page command is invoked from
-    // the context menu. Null when the open context menu is not anchored to a band.
-    private Point? _bandContextMenuPalettePos;
+    // The dock item whose context menu is open. Page commands from that menu open at the
+    // item, and confirmations surface the palette there. Null for the dock's own menu.
+    private BandMenuInvocation? _bandContextMenu;
+
+    private sealed record BandMenuInvocation(FrameworkElement Target, DockItemViewModel Item, Point Position);
 
     private void BandItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
@@ -534,7 +547,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
             }
 
             // Anchor page commands and confirmation dialogs to the invoking dock item.
-            _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
+            _bandContextMenu = new(dockItem, item, GetDockItemCenter(dockItem));
             return new ContextMenuRequest(item)
             {
                 Anchor = GetDefaultContextMenuAnchor() with { Element = dockItem },
@@ -568,27 +581,39 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         }
     }
 
-    private void InvokeItem(CommandItemViewModel item, Point pos)
+    private void InvokeItem(CommandItemViewModel item, FrameworkElement anchor, Point pos)
     {
-        var command = item.Command;
-        var hwnd = OwnerHwnd;
         try
         {
-            var m = DockItemActions.CreateInvocationMessage(item);
-
-            // If the command requests confirmation, surface the palette at the dock item.
-            m.OnBeforeShowConfirmation = () =>
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
-            WeakReferenceMessenger.Default.Send(m);
-
-            if (DockItemActions.ShouldShowPalette(command))
+            var message = DockItemActions.CreateInvocationMessage(item);
+            if (item.Command.IsPage)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
+                _pageFlyoutController.OpenPage(message, anchor, pos);
+            }
+            else
+            {
+                SendCommand(message, item.Command, pos);
             }
         }
         catch (COMException e)
         {
             Logger.LogError("Error invoking dock command", e);
+        }
+    }
+
+    /// <summary>
+    /// Sends a command that is not a page. Confirmations, and commands that need the
+    /// palette, surface the palette at the dock item.
+    /// </summary>
+    private void SendCommand(PerformCommandMessage message, CommandViewModel command, Point pos)
+    {
+        var hwnd = OwnerHwnd;
+        message.OnBeforeShowConfirmation = () =>
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
+        WeakReferenceMessenger.Default.Send(message);
+        if (DockItemActions.ShouldShowPalette(command))
+        {
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
         }
     }
 
@@ -600,42 +625,36 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
             borderPos.Y + (dockItem.ActualHeight / 2));
     }
 
-    private void ContextMenu_CommandInvoked(object? sender, CommandItemViewModel command)
+    private void ContextMenu_CommandInvoking(object? sender, CommandInvokingEventArgs e)
     {
-        // The context menu just invoked a command. If it came from a dock band
-        // (i.e. _bandContextMenuPalettePos is set) and the command is a Page,
-        // open the cmdpal palette anchored at the dock item — mirroring what
-        // a direct click on the band does.
-        var pos = _bandContextMenuPalettePos;
-        _bandContextMenuPalettePos = null;
-
-        if (pos is null)
+        // Commands from a dock band's menu run as if the band item were invoked directly.
+        // The dock's own menu has no band, so its commands are sent unchanged.
+        if (_bandContextMenu is not { } invocation)
         {
             return;
         }
 
-        if (DockItemActions.ShouldShowPalette(command.Command))
-        {
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos.Value, OwnerHwnd));
-        }
-    }
+        _bandContextMenu = null;
+        e.Handled = true;
 
-    private void ContextMenu_CommandInvoking(object? sender, PerformCommandMessage message)
-    {
-        // The context menu is about to dispatch a command. If it was opened
-        // from a dock band, attach a callback so that an invokable command
-        // whose result is a Confirm surfaces the cmdpal window anchored at the
-        // dock item before the confirmation dialog appears.
-        var pos = _bandContextMenuPalettePos;
-        if (pos is null)
+        var message = DockItemActions.WithOwnerContext(e.Message, e.Command);
+        message = DockItemActions.WithOwnerContext(message, invocation.Item);
+        try
         {
-            return;
+            if (e.Command.Command.IsPage)
+            {
+                _menuHost.Close();
+                _pageFlyoutController.OpenPage(message, invocation.Target, invocation.Position);
+            }
+            else
+            {
+                SendCommand(message, e.Command.Command, invocation.Position);
+            }
         }
-
-        var hwnd = OwnerHwnd;
-        var capturedPos = pos.Value;
-        message.OnBeforeShowConfirmation = () =>
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
+        catch (COMException ex)
+        {
+            Logger.LogError("Error invoking dock context command", ex);
+        }
     }
 
     private void RootGrid_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
@@ -648,7 +667,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
 
         // This context menu is for the dock itself (not a band), so the palette
         // should not be opened on invocation.
-        _bandContextMenuPalettePos = null;
+        _bandContextMenu = null;
 
         var item = this.ViewModel.GetContextMenuForDock();
         if (item.CanOpenContextMenu)
@@ -1099,5 +1118,17 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         {
             ViewModel.RemoveBandById(message.BandId);
         });
+    }
+
+    public void Dispose()
+    {
+        Loaded -= DockControl_Loaded;
+        Unloaded -= DockControl_Unloaded;
+        _menuHost.Close();
+        ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        _pageFlyoutController.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

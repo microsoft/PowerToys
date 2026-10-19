@@ -76,10 +76,22 @@ internal static class DockItemActions
         var message = item is CommandContextItemViewModel contextItem
             ? new PerformCommandMessage(contextItem)
             : new PerformCommandMessage(item.Command.Model);
+        message = WithOwnerContext(message, item);
         message.WithAnimation = false;
         message.TransientPage = true;
         return message;
     }
+
+    /// <summary>
+    /// Attaches the item's owning provider when the message has no source page, so the
+    /// command runs with that provider's host and context instead of the palette's.
+    /// </summary>
+    public static PerformCommandMessage WithOwnerContext(PerformCommandMessage message, CommandItemViewModel item) =>
+        message.Context is null &&
+        item.PageContext.TryGetTarget(out var pageContext) &&
+        SourceContext.FromPageContext(pageContext) is { } source
+            ? message with { Context = source }
+            : message;
 
     /// <summary>
     /// Returns whether the cached command is set and needs the palette rather than direct invocation.

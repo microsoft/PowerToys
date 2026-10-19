@@ -2,8 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -12,6 +19,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public sealed class ContextMenuViewModelTests
 {
+    private sealed class MessageRecipient
+    {
+        public List<PerformCommandMessage> Messages { get; } = [];
+    }
+
     [TestMethod]
     public void PrepareForOpen_UpdatesOnlyThatContextMenu()
     {
@@ -27,6 +39,64 @@ public sealed class ContextMenuViewModelTests
 
         Assert.AreSame(replacementContext, firstMenu.SelectedItem);
         Assert.AreSame(secondContext, secondMenu.SelectedItem);
+    }
+
+    [TestMethod]
+    public void InvokeCommand_HandledInvocation_IsNotPublishedButStillReported()
+    {
+        var page = new PageViewModel(
+            new Page(),
+            TaskScheduler.Default,
+            new TestAppExtensionHost(),
+            CommandProviderContext.Empty)
+        {
+            DockRoute = new DockCommandRoute((nint)42, Guid.NewGuid()),
+        };
+        var model = new ListItem(new NoOpCommand { Name = "Run" });
+        var command = new CommandItemViewModel(
+            new ExtensionObject<ICommandItem>(model),
+            new(page),
+            DefaultContextMenuFactory.Instance);
+        command.SlowInitializeProperties();
+
+        var contextMenu = new ContextMenuViewModel(Mock.Of<IFuzzyMatcherProvider>());
+        var recipient = new MessageRecipient();
+        WeakReferenceMessenger.Default.Register<MessageRecipient, PerformCommandMessage>(
+            recipient,
+            static (r, message) => r.Messages.Add(message));
+        var invokedCount = 0;
+        CommandInvokingEventArgs? invoking = null;
+        EventHandler<CommandInvokingEventArgs> takeOver = (_, e) =>
+        {
+            invoking = e;
+            e.Handled = true;
+        };
+        contextMenu.CommandInvoking += takeOver;
+        contextMenu.CommandInvoked += (_, _) => invokedCount++;
+
+        try
+        {
+            Assert.AreEqual(ContextKeybindingResult.Hide, contextMenu.InvokeCommand(command));
+            Assert.AreEqual(0, recipient.Messages.Count);
+            Assert.AreEqual(1, invokedCount);
+            Assert.IsNotNull(invoking);
+            Assert.AreSame(command, invoking.Command);
+
+            contextMenu.CommandInvoking -= takeOver;
+            Assert.AreEqual(ContextKeybindingResult.Hide, contextMenu.InvokeCommand(command));
+            Assert.AreEqual(1, recipient.Messages.Count);
+            Assert.AreEqual(2, invokedCount);
+            var message = recipient.Messages[0];
+            Assert.AreEqual(page.DockRoute, message.DockRoute);
+            Assert.AreSame(page, message.Context?.Page);
+            Assert.AreSame(model, message.CommandContext);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            command.SafeCleanup();
+            page.SafeCleanup();
+        }
     }
 
     private static ICommandBarContext CreateContext()
