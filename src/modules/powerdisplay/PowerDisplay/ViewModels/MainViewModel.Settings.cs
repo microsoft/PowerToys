@@ -129,6 +129,11 @@ public partial class MainViewModel
             // RefreshMonitorsAsync, so this is a no-op-safe redundant push.
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
+            if (IsInitialized && !IsScanning)
+            {
+                ApplyBatteryRefreshRate();
+            }
+
             // Reload profiles in case they were added/updated/deleted in Settings UI.
             _ = ReloadProfilesAsync(_cancellationTokenSource.Token);
 
@@ -390,12 +395,13 @@ public partial class MainViewModel
                     continue;
                 }
 
-                var (brightness, colorTemp, contrast, volume) = savedState.Value;
+                var (brightness, colorTemp, contrast, volume, refreshRate) = savedState.Value;
 
                 TryRestore(updateTasks, brightness, monitorVm.ShowBrightness, monitorVm.SetBrightnessAsync);
                 TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.SetColorTemperatureAsync);
                 TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.SetContrastAsync);
                 TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.SetVolumeAsync);
+                TryRestore(updateTasks, refreshRate, monitorVm.SupportsRefreshRate, monitorVm.SetRefreshRateAsync);
             }
 
             if (updateTasks.Count > 0)
@@ -429,6 +435,7 @@ public partial class MainViewModel
             monitorVm.ShowVolume = monitorSettings.EnableVolume && monitorVm.SupportsVolume;
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource && monitorVm.SupportsInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
+            monitorVm.ShowRefreshRate = monitorSettings.EnableRefreshRate && monitorVm.SupportsRefreshRate;
             monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature && monitorVm.SupportsColorTemperature;
             monitorVm.ShowPowerState = monitorSettings.EnablePowerState && monitorVm.SupportsPowerState;
         }
@@ -540,6 +547,16 @@ public partial class MainViewModel
             settings.Properties.Monitors.Clear();
             settings.Properties.Monitors.AddRange(monitors);
 
+            var internalDisplays = _monitorManager.Monitors
+                .Where(m => m.CommunicationMethod == "WMI")
+                .ToList();
+            settings.Properties.InternalDisplayRefreshRates = internalDisplays.Count == 0
+                ? new List<int>()
+                : internalDisplays.Select(m => m.AvailableRefreshRates.AsEnumerable())
+                    .Aggregate((rates, next) => rates.Intersect(next))
+                    .OrderBy(rate => rate)
+                    .ToList();
+
             // Save back to settings.json using source-generated context for AOT
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
@@ -584,6 +601,7 @@ public partial class MainViewModel
             SupportsInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             SupportsPowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
+            SupportsRefreshRate = vm.SupportsRefreshRate,
 
             // Default Enable* for new monitors (first-time setup):
             // - Contrast / Volume: enabled if the monitor advertises the VCP code (low-risk features).
@@ -596,6 +614,7 @@ public partial class MainViewModel
             EnableInputSource = false,
             EnableColorTemperature = false,
             EnablePowerState = false,
+            EnableRefreshRate = vm.SupportsRefreshRate,
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
@@ -635,6 +654,7 @@ public partial class MainViewModel
         target.EnableRotation = source.EnableRotation;
         target.EnableColorTemperature = source.EnableColorTemperature;
         target.EnablePowerState = source.EnablePowerState;
+        target.EnableRefreshRate = source.EnableRefreshRate;
     }
 
     /// <summary>

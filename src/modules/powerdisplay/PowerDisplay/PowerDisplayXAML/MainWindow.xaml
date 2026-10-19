@@ -594,7 +594,42 @@
                                                         Value="{x:Bind Volume, Mode=TwoWay}" />
                                                 </Grid>
 
-                                                <!--  Rotation Controls  -->
+                                                  <!--  Refresh rate control  -->
+                                                  <Grid
+                                                      Margin="{StaticResource FlyoutSectionTopMargin}"
+                                                      ColumnSpacing="{StaticResource FlyoutStandardSpacing}"
+                                                      Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowRefreshRate), Mode=OneWay}">
+                                                      <Grid.ColumnDefinitions>
+                                                          <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
+                                                          <ColumnDefinition Width="*" />
+                                                      </Grid.ColumnDefinitions>
+                                                      <FontIcon
+                                                          x:Uid="RefreshRateTooltip"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          FontSize="{StaticResource FlyoutActionGlyphSmallFontSize}"
+                                                          Glyph="&#xE7F4;" />
+                                                      <Grid Grid.Column="1" ColumnSpacing="{StaticResource FlyoutStandardSpacing}">
+                                                          <Grid.ColumnDefinitions>
+                                                              <ColumnDefinition Width="*" />
+                                                              <ColumnDefinition Width="Auto" />
+                                                          </Grid.ColumnDefinitions>
+                                                          <StackPanel VerticalAlignment="Center" Spacing="2">
+                                                              <TextBlock x:Uid="RefreshRateLabel" />
+                                                          </StackPanel>
+                                                          <ComboBox
+                                                              x:Uid="RefreshRateComboBox"
+                                                              Grid.Column="1"
+                                                              MinWidth="112"
+                                                              DisplayMemberPath="DisplayText"
+                                                              IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                              ItemsSource="{x:Bind RefreshRateOptions, Mode=OneWay}"
+                                                              SelectedValue="{x:Bind SelectedRefreshRate, Mode=TwoWay}"
+                                                              SelectedValuePath="Rate" />
+                                                      </Grid>
+                                                  </Grid>
+
+                                                 <!--  Rotation Controls  -->
                                                 <Grid
                                                     Margin="{StaticResource FlyoutSectionTopMargin}"
                                                     ColumnSpacing="{StaticResource FlyoutStandardSpacing}"

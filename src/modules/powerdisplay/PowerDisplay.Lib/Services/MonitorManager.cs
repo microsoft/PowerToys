@@ -31,6 +31,7 @@ namespace PowerDisplay.Common.Services
         private readonly Dictionary<string, Monitor> _monitorLookup = new(MonitorIdComparer.Instance);
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
+        private readonly DisplayRefreshRateService _refreshRateService = new();
 
         // Built-in entries are loaded automatically by the service constructor.
         private readonly MonitorBlacklistService _blacklistService = new();
@@ -122,6 +123,7 @@ namespace PowerDisplay.Common.Services
                 // (the CLI relies on this for `get`/`set --orientation` round-tripping, and the GUI
                 // shows the correct value on initial load).
                 RefreshAllOrientations();
+                RefreshAllRefreshRates();
 
                 return _monitors.AsReadOnly();
             }
@@ -380,6 +382,50 @@ namespace PowerDisplay.Common.Services
             }
 
             return Task.FromResult(result);
+        }
+
+        public Task<MonitorOperationResult> SetRefreshRateAsync(string monitorId, int refreshRate, CancellationToken cancellationToken = default)
+        {
+            var monitor = GetMonitor(monitorId);
+            if (monitor == null)
+            {
+                return Task.FromResult(MonitorOperationResult.Failure("Monitor not found"));
+            }
+
+            var result = _refreshRateService.SetRefreshRate(monitor, refreshRate);
+            if (result.IsSuccess)
+            {
+                // The available-rate list was already validated by the service. Update the
+                // current value directly instead of re-enumerating modes while the WinUI
+                // ComboBox is processing its selection change. Re-enumeration can temporarily
+                // produce an empty list and clear the bound selection.
+                monitor.CurrentRefreshRate = refreshRate;
+                monitor.ReadValues |= MonitorReadFlags.RefreshRate;
+            }
+
+            return Task.FromResult(result);
+        }
+
+        public void RefreshAllRefreshRates()
+        {
+            var byDeviceName = _monitors
+                .Where(monitor => !string.IsNullOrEmpty(monitor.GdiDeviceName))
+                .GroupBy(monitor => monitor.GdiDeviceName, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var group in byDeviceName)
+            {
+                var rates = _refreshRateService.GetAvailableRefreshRates(group.Key);
+                var currentRate = _refreshRateService.GetCurrentRefreshRate(group.Key);
+                foreach (var monitor in group)
+                {
+                    monitor.AvailableRefreshRates = rates;
+                    if (currentRate >= 0)
+                    {
+                        monitor.CurrentRefreshRate = currentRate;
+                        monitor.ReadValues |= MonitorReadFlags.RefreshRate;
+                    }
+                }
+            }
         }
 
         /// <summary>
