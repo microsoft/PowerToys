@@ -404,13 +404,20 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         set => SetSearchText(value);
     }
 
-    public CommandParameterRunViewModel(ICommandParameterRun commandRun, WeakReference<IPageContext> context, AppExtensionHost extensionHost, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public CommandParameterRunViewModel(
+        ICommandParameterRun commandRun,
+        WeakReference<IPageContext> context,
+        AppExtensionHost extensionHost,
+        ICommandProviderContext providerContext,
+        IContextMenuFactory contextMenuFactory,
+        FallbackQueryContext? fallbackContext = null)
         : base(commandRun, context)
     {
         _model = new(commandRun);
         _extensionHost = extensionHost;
         _providerContext = providerContext;
         _contextMenuFactory = contextMenuFactory;
+        InheritFallbackContext(fallbackContext);
     }
 
     public override void InitializeProperties()
@@ -437,13 +444,22 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         {
             if (PageContext.TryGetTarget(out var pageContext))
             {
+                // The list stays valid only while the snapshot that produced this
+                // parameter is open. Take the reference before building the list.
+                IDisposable? snapshotLease = null;
+                if (FallbackContext is not null && !FallbackContext.TryAcquireSnapshotLease(out snapshotLease))
+                {
+                    return;
+                }
+
                 _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
+                _listViewModel.AttachFallbackContext(FallbackContext, snapshotLease);
                 _listViewModel.InitializeProperties();
             }
         }
         else if (command is IInvokableCommand invokable)
         {
-            _commandViewModel = new CommandViewModel(invokable, this.PageContext);
+            _commandViewModel = ShareFallbackContext(new CommandViewModel(invokable, this.PageContext));
             _commandViewModel.InitializeProperties();
         }
 
@@ -514,7 +530,7 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         }
 
         var sourcePage = PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null;
-        var message = new PerformCommandMessage(this._commandViewModel.Model, sourcePage);
+        var message = new PerformCommandMessage(this._commandViewModel, sourcePage);
         WeakReferenceMessenger.Default.Send(message);
     }
 
@@ -655,12 +671,15 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
     private readonly IContextMenuFactory _contextMenuFactory;
 
-    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory, FallbackQueryContext? fallbackContext = null)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        _command = new(new(null), PageContext, _contextMenuFactory);
+
+        // Take the context as a parameter. PageViewModel.FallbackContext is not set
+        // until the factory attaches it, which happens after this constructor returns.
+        _command = new(new(null), PageContext, _contextMenuFactory, fallbackContext);
     }
 
     /// <summary>
@@ -668,7 +687,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     /// </summary>
     private void ReplaceCommand(ICommandItem? model)
     {
-        var command = new CommandItemViewModel(new(model), PageContext, _contextMenuFactory);
+        var command = new CommandItemViewModel(new(model), PageContext, _contextMenuFactory, FallbackContext);
         var replaced = Interlocked.Exchange(ref _command, command);
 
         if (!ReferenceEquals(replaced, command))
@@ -717,7 +736,13 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     ILabelRun labelRun => new LabelRunViewModel(labelRun, PageContext),
                     IStringParameterRun stringRun => new StringParameterRunViewModel(stringRun, PageContext),
-                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext, this.ExtensionHost, this.ProviderContext, _contextMenuFactory),
+                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(
+                        commandRun,
+                        PageContext,
+                        this.ExtensionHost,
+                        this.ProviderContext,
+                        _contextMenuFactory,
+                        FallbackContext),
                     _ => null,
                 };
                 var t = itemVm?.ToString() ?? "unknown";
@@ -921,7 +946,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         if (ShowCommand)
         {
-            var message = new PerformCommandMessage(this.Command.Command.Model, this);
+            var message = new PerformCommandMessage(this.Command, this.Command.Model.Unsafe, this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }

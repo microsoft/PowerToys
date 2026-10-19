@@ -144,11 +144,21 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         ExtensionObject<ICommandItem> item,
         WeakReference<IPageContext> errorContext,
         IContextMenuFactory? contextMenuFactory)
+        : this(item, errorContext, contextMenuFactory, null)
+    {
+    }
+
+    internal CommandItemViewModel(
+        ExtensionObject<ICommandItem> item,
+        WeakReference<IPageContext> errorContext,
+        IContextMenuFactory? contextMenuFactory,
+        FallbackQueryContext? fallbackContext)
         : base(errorContext)
     {
         _commandItemModel = item;
         _contextMenuFactory = contextMenuFactory;
-        _commandState = new(new CommandViewModel(null, errorContext), Owned: true);
+        InheritFallbackContext(fallbackContext);
+        _commandState = new(ShareFallbackContext(new CommandViewModel(null, errorContext)), Owned: true);
     }
 
     public void FastInitializeProperties()
@@ -519,7 +529,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
+        var defaultContextItem = new CommandContextItemViewModel(
+            new CommandContextItem(commandModel),
+            PageContext,
+            FallbackContext)
         {
             _itemTitle = Name,
             Subtitle = Subtitle,
@@ -610,7 +623,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return false;
         }
 
-        var command = new CommandViewModel(model, PageContext);
+        var command = ShareFallbackContext(new CommandViewModel(model, PageContext));
 
         // Publish only after the command's cached identity and type flags are ready.
         command.FastInitializeProperties();

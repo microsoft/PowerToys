@@ -48,7 +48,15 @@ public partial class CommandContextItemViewModel : CommandItemViewModel, IContex
     };
 
     public CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context)
-        : base(new(contextItem), context, contextMenuFactory: null)
+        : this(contextItem, context, null)
+    {
+    }
+
+    internal CommandContextItemViewModel(
+        ICommandContextItem contextItem,
+        WeakReference<IPageContext> context,
+        FallbackQueryContext? fallbackContext)
+        : base(new(contextItem), context, contextMenuFactory: null, fallbackContext)
     {
         Model = new(contextItem);
         IsContextMenuItem = true;

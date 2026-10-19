@@ -18,6 +18,16 @@ public record FallbackSettings
     /// </summary>
     public const uint MaximumMinimumQueryLength = 100;
 
+    /// <summary>
+    /// Smallest number of items that one fallback can show at one time.
+    /// </summary>
+    public const uint MinimumItemCount = 1;
+
+    /// <summary>
+    /// Largest number of items that one fallback can show at one time.
+    /// </summary>
+    public const uint MaximumItemCount = 100;
+
     public bool IsEnabled { get; init; } = true;
 
     public bool IncludeInGlobalResults { get; init; }
@@ -26,6 +36,8 @@ public record FallbackSettings
 
     public uint? MinimumQueryLength { get; init; }
 
+    public uint? MaximumVisibleItemCount { get; init; }
+
     public FallbackSettings()
     {
     }
@@ -33,11 +45,13 @@ public record FallbackSettings
     public FallbackSettings(
         bool isBuiltIn,
         uint? queryDelayMilliseconds = null,
-        uint? minimumQueryLength = null)
+        uint? minimumQueryLength = null,
+        uint? maximumVisibleItemCount = null)
     {
         IncludeInGlobalResults = isBuiltIn;
         QueryDelayMilliseconds = queryDelayMilliseconds;
         MinimumQueryLength = minimumQueryLength;
+        MaximumVisibleItemCount = maximumVisibleItemCount;
     }
 
     [JsonConstructor]
@@ -45,11 +59,13 @@ public record FallbackSettings
         bool isEnabled,
         bool includeInGlobalResults,
         uint? queryDelayMilliseconds,
-        uint? minimumQueryLength)
+        uint? minimumQueryLength,
+        uint? maximumVisibleItemCount)
     {
         IsEnabled = isEnabled;
         IncludeInGlobalResults = includeInGlobalResults;
         QueryDelayMilliseconds = queryDelayMilliseconds;
         MinimumQueryLength = minimumQueryLength;
+        MaximumVisibleItemCount = maximumVisibleItemCount;
     }
 }

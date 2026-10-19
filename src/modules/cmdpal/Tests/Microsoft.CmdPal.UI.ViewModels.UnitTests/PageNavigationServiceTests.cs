@@ -5,6 +5,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -39,7 +41,7 @@ public sealed partial class PageNavigationServiceTests
         var provider = Mock.Of<ICommandProviderContext>();
         var viewModel = new PageViewModel(page, TaskScheduler.Default, host, provider);
         var factory = new Mock<IPageViewModelFactoryService>();
-        factory.Setup(f => f.TryCreatePageViewModel(page, nested, host, provider)).Returns(viewModel);
+        factory.Setup(f => f.TryCreatePageViewModel(page, nested, host, provider, null)).Returns(viewModel);
         var service = new PageNavigationService(factory.Object, Mock.Of<IAppHostService>());
 
         try
@@ -47,11 +49,59 @@ public sealed partial class PageNavigationServiceTests
             Assert.AreSame(viewModel, service.TryPreparePage(page, nested, host, provider, null));
             Assert.AreEqual(!nested, viewModel.IsRootPage);
             Assert.AreEqual(nested, viewModel.HasBackButton);
-            factory.Verify(f => f.TryCreatePageViewModel(page, nested, host, provider), Times.Once);
+            factory.Verify(f => f.TryCreatePageViewModel(page, nested, host, provider, null), Times.Once);
         }
         finally
         {
             viewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    public void TryPreparePage_PreservesFallbackContextFromSourcePage()
+    {
+        var page = new Page();
+        var host = new TestAppExtensionHost();
+        var provider = Mock.Of<ICommandProviderContext>();
+        var fallbackContext = new FallbackQueryContext(host, provider, new object(), CancellationToken.None);
+        var sourcePage = new PageViewModel(new Page(), TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+        sourcePage.InheritFallbackContext(fallbackContext);
+        var message = new PerformCommandMessage(new ExtensionObject<ICommand>(page), sourcePage);
+        var viewModel = new PageViewModel(page, TaskScheduler.Default, host, provider);
+        var factory = new Mock<IPageViewModelFactoryService>(MockBehavior.Strict);
+        factory.Setup(f => f.TryCreatePageViewModel(
+            page,
+            true,
+            host,
+            provider,
+            It.Is<FallbackQueryContext?>(context => ReferenceEquals(context, fallbackContext)))).Returns(viewModel);
+        var appHostService = new Mock<IAppHostService>(MockBehavior.Strict);
+        var service = new PageNavigationService(factory.Object, appHostService.Object);
+
+        try
+        {
+            var resolvedHost = service.ResolveHost(message, sourcePage);
+            var resolvedProvider = service.ResolveProviderContext(message, sourcePage);
+
+            Assert.AreSame(host, resolvedHost);
+            Assert.AreSame(provider, resolvedProvider);
+            Assert.AreSame(fallbackContext, message.FallbackContext);
+            Assert.AreSame(fallbackContext.InvocationContext, message.CommandContext);
+            Assert.AreSame(viewModel, service.TryPreparePage(page, true, resolvedHost, resolvedProvider, null, message.FallbackContext));
+            factory.Verify(
+                f => f.TryCreatePageViewModel(
+                    page,
+                    true,
+                    host,
+                    provider,
+                    It.Is<FallbackQueryContext?>(context => ReferenceEquals(context, fallbackContext))),
+                Times.Once);
+            appHostService.VerifyNoOtherCalls();
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            sourcePage.SafeCleanup();
         }
     }
 
@@ -78,7 +128,7 @@ public sealed partial class PageNavigationServiceTests
         var host = new TestAppExtensionHost();
         var viewModel = new PageViewModel(page, TaskScheduler.Default, host, CommandProviderContext.Empty);
         var factory = new Mock<IPageViewModelFactoryService>();
-        factory.Setup(f => f.TryCreatePageViewModel(page, false, host, CommandProviderContext.Empty)).Returns(viewModel);
+        factory.Setup(f => f.TryCreatePageViewModel(page, false, host, CommandProviderContext.Empty, null)).Returns(viewModel);
         var service = new PageNavigationService(factory.Object, Mock.Of<IAppHostService>());
 
         try

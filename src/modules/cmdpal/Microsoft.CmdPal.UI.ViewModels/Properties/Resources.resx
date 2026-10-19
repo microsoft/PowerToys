@@ -620,6 +620,10 @@
   <data name="winget_operations_recent_activity" xml:space="preserve">
     <value>Recent WinGet activity</value>
   </data>
+  <data name="fallback_load_more" xml:space="preserve">
+    <value>Load more</value>
+    <comment>Loads more results from a fallback result source.</comment>
+  </data>
   <data name="list_page_requested_filter_unavailable" xml:space="preserve">
     <value>The requested filter is no longer available.</value>
   </data>

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -124,6 +125,31 @@ public partial class DetailsViewModelTests
 
         Assert.AreEqual("Static Title", vm.Title);
         Assert.AreEqual("Static Body", vm.Body);
+        GC.KeepAlive(context);
+    }
+
+    [TestMethod]
+    public void FallbackContext_DisablesStaleDetailsLink()
+    {
+        var details = new Details
+        {
+            Metadata = [new DetailsElement { Key = "link", Data = new DetailsLink("https://example.com", "Example") }],
+        };
+        using var queryCancellation = new CancellationTokenSource();
+        queryCancellation.Cancel();
+        var fallbackContext = new FallbackQueryContext(
+            null!,
+            CommandProviderContext.Empty,
+            new object(),
+            queryCancellation.Token);
+        var context = new TestPageContext();
+        var vm = new DetailsViewModel(details, new(context));
+        vm.InheritFallbackContext(fallbackContext);
+
+        vm.InitializeProperties();
+
+        var link = (DetailsLinkViewModel)vm.Metadata[0];
+        Assert.IsFalse(link.NavigateCommand?.CanExecute(null));
         GC.KeepAlive(context);
     }
 

@@ -144,6 +144,54 @@ public partial class PageViewModelTests
     }
 
     [TestMethod]
+    public void CommandMessages_PreserveFallbackAndSourceContexts()
+    {
+        var page = new TestPageViewModel(new Page(), TaskScheduler.Default);
+        var sender = new object();
+        var fallbackContext = new FallbackQueryContext(
+            page.ExtensionHost,
+            page.ProviderContext,
+            sender,
+            System.Threading.CancellationToken.None);
+        page.InheritFallbackContext(fallbackContext);
+        var command = new NoOpCommand();
+        var item = new CommandItem(command);
+        var itemViewModel = new CommandItemViewModel(new(item), new(page), DefaultContextMenuFactory.Instance);
+        itemViewModel.InheritFallbackContext(fallbackContext);
+        itemViewModel.FastInitializeProperties();
+
+        try
+        {
+            PerformCommandMessage[] messages =
+            [
+                new(new ExtensionObject<ICommand>(command), page),
+                new(new ExtensionObject<ICommand>(command), new ExtensionObject<ICommandItem>(item), page),
+                new(itemViewModel),
+                new(itemViewModel, item, page),
+                new(itemViewModel.Command),
+            ];
+
+            foreach (var message in messages)
+            {
+                Assert.IsNotNull(message.Context);
+                Assert.AreSame(page, message.Context.Page);
+                Assert.AreSame(fallbackContext, message.FallbackContext);
+                Assert.AreSame(sender, message.CommandContext);
+                Assert.AreSame(command, message.Command.Unsafe);
+            }
+
+            var result = new HandleCommandResultMessage(new(Mock.Of<ICommandResult>()), page);
+            Assert.IsNotNull(result.Context);
+            Assert.AreSame(page, result.Context.Page);
+            Assert.AreSame(fallbackContext, result.FallbackContext);
+        }
+        finally
+        {
+            itemViewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void PerformCommandConstructors_PreserveInvocationPayload(bool withPage)

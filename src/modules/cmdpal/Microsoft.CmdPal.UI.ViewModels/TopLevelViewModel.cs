@@ -40,6 +40,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private string _generatedId = string.Empty;
     private IFallbackCommandItem3? _fallbackV2;
+    private IFallbackHandler2? _fallbackQueryHandler;
     private ICommand? _fallbackPlaceholderCommand;
     private HostMatchKind _fallbackMatchKind;
     private string _fallbackMatchValue = string.Empty;
@@ -114,6 +115,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     internal uint? SuggestedMinQueryLength { get; private set; }
 
+    internal IFallbackHandler2? FallbackQueryHandler => _fallbackQueryHandler;
+
     internal string FallbackKey => $"{CommandProviderId}\0{Id}";
 
     internal bool IncludeInGlobalResults => GetFallbackSettings()?.IncludeInGlobalResults == true;
@@ -125,6 +128,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     internal uint EffectiveMinimumQueryLength => GetFallbackSettings()?.MinimumQueryLength
         ?? SuggestedMinQueryLength
         ?? 0;
+
+    internal uint EffectiveMaximumVisibleItemCount => Math.Clamp(
+        GetFallbackSettings()?.MaximumVisibleItemCount ?? FallbackResultQueryManager.InitialRequestedItemCount,
+        FallbackSettings.MinimumItemCount,
+        FallbackSettings.MaximumItemCount);
 
     public HotkeySettings? Hotkey
     {
@@ -306,6 +314,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
                 SuggestedQueryDelayMilliseconds = fallbackV2.SuggestedQueryDelayMilliseconds.ToNullableUInt32();
                 SuggestedMinQueryLength = fallbackV2.SuggestedMinQueryLength.ToNullableUInt32();
+                if (FallbackMode == FallbackCommandMode.Results)
+                {
+                    _fallbackQueryHandler = fallbackV2.QueryHandler;
+                }
             }
 
             UpdateInitialIcon(false);

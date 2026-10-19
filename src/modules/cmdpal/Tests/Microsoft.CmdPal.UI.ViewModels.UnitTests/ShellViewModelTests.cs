@@ -95,7 +95,7 @@ public partial class ShellViewModelTests
         var appHostService = CreateAppHostService(currentHost);
         var pageFactory = new Mock<IPageViewModelFactoryService>();
         var page = new TestPage();
-        pageFactory.Setup(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty))
+        pageFactory.Setup(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty, null))
             .Returns(new TestPageViewModel(page, currentHost));
         using var shell = new ShellViewModel(
             TaskScheduler.Default,
@@ -114,7 +114,7 @@ public partial class ShellViewModelTests
 
         appHostService.Verify(service => service.GetHostForCommand(item, expectedHost), Times.Once);
         appHostService.Verify(service => service.GetProviderContextForCommand(item, expectedProvider), Times.Once);
-        pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty), Times.Once);
+        pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty, null), Times.Once);
     }
 
     [TestMethod]
@@ -124,7 +124,7 @@ public partial class ShellViewModelTests
         var page = new TestPage();
         var viewModel = new TestPageViewModel(page, host, initialized: false);
         var factory = new Mock<IPageViewModelFactoryService>();
-        factory.Setup(f => f.TryCreatePageViewModel(page, true, host, CommandProviderContext.Empty)).Returns(viewModel);
+        factory.Setup(f => f.TryCreatePageViewModel(page, true, host, CommandProviderContext.Empty, null)).Returns(viewModel);
         var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
         using var shell = new ShellViewModel(scheduler, Mock.Of<IRootPageService>(), factory.Object, CreateAppHostService(host).Object);
         var activated = new TaskCompletionSource<TaskScheduler>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -164,7 +164,7 @@ public partial class ShellViewModelTests
         rootPageService.Setup(service => service.GetRootPage()).Returns(rootPage);
         var appHostService = CreateAppHostService(host);
         var factory = new Mock<IPageViewModelFactoryService>();
-        factory.Setup(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty)).Returns(rootViewModel);
+        factory.Setup(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty, null)).Returns(rootViewModel);
         using var shell = new ShellViewModel(TaskScheduler.Default, rootPageService.Object, factory.Object, appHostService.Object);
         var nestedPage = new PageViewModel(new Page(), TaskScheduler.Default, host, provider);
 
@@ -181,7 +181,7 @@ public partial class ShellViewModelTests
             Assert.IsTrue(rootViewModel.IsRootPage);
             Assert.IsFalse(rootViewModel.HasBackButton);
             Assert.IsFalse(shell.IsNested);
-            factory.Verify(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty), Times.Once);
+            factory.Verify(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty, null), Times.Once);
             appHostService.Verify(
                 service => service.GetProviderContextForCommand(It.IsAny<object?>(), It.IsAny<ICommandProviderContext?>()),
                 Times.Never);
@@ -237,7 +237,8 @@ public partial class ShellViewModelTests
                     It.IsAny<IPage>(),
                     It.IsAny<bool>(),
                     It.IsAny<AppExtensionHost>(),
-                    It.IsAny<ICommandProviderContext>()),
+                    It.IsAny<ICommandProviderContext>(),
+                    It.IsAny<FallbackQueryContext?>()),
                 Times.Never);
             rootPageService.Verify(
                 service => service.OnPerformCommand(
@@ -272,7 +273,8 @@ public partial class ShellViewModelTests
                 page,
                 true,
                 host,
-                CommandProviderContext.Empty))
+                CommandProviderContext.Empty,
+                null))
             .Returns(pageViewModel);
         var shell = new ShellViewModel(
             TaskScheduler.Default,
@@ -500,7 +502,7 @@ public partial class ShellViewModelTests
         appHostService.Setup(service => service.GetProviderContextForCommand(It.IsAny<object?>(), It.IsAny<ICommandProviderContext?>())).Returns(CommandProviderContext.Empty);
 
         var pageFactory = new Mock<IPageViewModelFactoryService>();
-        pageFactory.Setup(factory => factory.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>()))
+        pageFactory.Setup(factory => factory.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>(), It.IsAny<FallbackQueryContext?>()))
             .Returns(new TestPageViewModel(null, host));
 
         return new ShellViewModel(
