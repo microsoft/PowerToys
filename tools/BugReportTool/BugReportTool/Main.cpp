@@ -21,6 +21,7 @@
 #include "EventViewer.h"
 #include "InstallationFolder.h"
 #include "ReportGPOValues.h"
+#include "TextExpanderPrivacy.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -47,6 +48,7 @@ map<wstring, vector<wstring>> escapeInfo = {
         L"properties/custom-actions/value/name",
         L"properties/custom-actions/value/prompt"
         } },
+    { L"TextExpander\\settings.json", { L"properties/snippets_path", L"properties/last_sync_folder" } },
 };
 
 vector<wstring> filesToDelete = {
@@ -57,6 +59,8 @@ vector<wstring> filesToDelete = {
     L"PowerRename\\search-mru.json",
     L"PowerToys Run\\Settings\\UserSelectedRecord.json",
     L"PowerToys Run\\Settings\\QueryHistory.json",
+    L"TextExpander\\PowerToysTextExpanderSnippets.txt",
+    L"TextExpander\\snippets.txt",
     L"NewPlus\\Templates",
     L"etw",
 };
@@ -329,17 +333,18 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
-        create_directory(reportDir, settingsRootPath);
-        for (const auto& entry : directory_iterator(settingsRootPath))
+        // Directory links aren't followed, the same way the snippet exclusion below walks the
+        // tree, so a link can't bring snippets into the report under a path it never checks.
+        if (!TextExpanderPrivacy::CopyWithoutDirectoryLinks(path(settingsRootPath), reportDir))
         {
-            const auto filename = entry.path().filename();
-            // Runner holds this synchronization file exclusively for its entire lifetime.
-            if (_wcsicmp(filename.c_str(), L"settings.json.cli-lock") == 0)
-            {
-                continue;
-            }
+            printf("Failed to copy PowerToys folder\n");
+            return 1;
+        }
 
-            copy(entry.path(), reportDir / filename, copy_options::recursive);
+        if (!TextExpanderPrivacy::ExcludeConfiguredSnippetFile(path(settingsRootPath), reportDir))
+        {
+            printf("Failed to exclude the Text Expander snippet file from the bug report\n");
+            return 1;
         }
 
         // Remove updates folder contents

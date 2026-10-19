@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,7 +16,6 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -26,40 +24,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private const string SnippetsFileName = "snippets.txt";
-
-        /// <summary>
-        /// The variables the engine implements in <c>Variables.Expand</c>. The sample is what the
-        /// value looks like now, so the menu answers "what will I get?" rather than only naming
-        /// a token.
-        /// </summary>
-        private static readonly TextExpanderVariable[] VariableDefinitions =
-        {
-            new TextExpanderVariable("Cursor position", "$|$", null),
-            new TextExpanderVariable("Date", "{{date}}", "MM/dd/yy"),
-            new TextExpanderVariable("Time", "{{time}}", "hh:mm tt"),
-            new TextExpanderVariable("Date and time", "{{datetime}}", "MM/dd/yy hh:mm tt"),
-            new TextExpanderVariable("ISO date", "{{isodate}}", "yyyy-MM-dd"),
-            new TextExpanderVariable("Custom date format", "{{date:dddd}}", "dddd"),
-            new TextExpanderVariable("Clipboard contents", "{{clipboard}}", null),
-            new TextExpanderVariable("Ask me when it runs", "{{prompt:Label}}", null),
-        };
+        private static readonly string[] SnippetFileNames = { TextExpanderSnippetFileNames.Current, TextExpanderSnippetFileNames.Legacy };
 
         private readonly TextExpanderSettings _settings;
         private readonly SettingsUtils _settingsUtils;
         private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
         private readonly bool _enabledStateIsGPOConfigured;
-        private readonly Func<Task<string>> _pickSingleFolderDialog;
+        private readonly bool _isElevated;
+        private readonly Func<string, Task<string>> _pickSingleFolderDialog;
+        private readonly Func<string, string> _getResourceString;
+        private readonly ITextExpanderSyncEnvironment _syncEnvironment;
 
         private Func<string, int> SendConfigMSG { get; }
 
+        private TextExpanderVariable[] _variables;
         private TextExpanderSnippetFile _file;
         private string _snippetError;
         private byte[] _loadedBytes;
         private string _newline = Environment.NewLine;
-        private bool _hadBom;
+        private System.Text.Encoding _encoding = new System.Text.UTF8Encoding(false, false);
         private bool _hadFinalNewline = true;
         private bool _isEnabled;
+        private string _searchText = string.Empty;
+        private double _keycapColumnWidth = TextExpanderKeycapLayout.MinWidth;
+        private Action<Action> _dispatch;
+        private IDisposable _snippetFileWatch;
+        private string _snippetFileWatchFolder;
 
         /// <summary>
         /// Opens a folder browser for the snippet folder.
@@ -73,15 +63,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public ButtonClickCommand BrowseForSnippetsFolderCommand { get; private set; }
 
-        public TextExpanderViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<Task<string>> pickSingleFolderDialog = null)
+        /// <param name="pickSingleFolderDialog">Shows a folder picker, opening at the folder it's given when that exists, and returns the folder picked, or null if cancelled.</param>
+        public TextExpanderViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, Task<string>> pickSingleFolderDialog, bool isElevated, Func<string, string> getResourceString = null, ITextExpanderSyncEnvironment syncEnvironment = null)
         {
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             _settingsRepository = settingsRepository;
+            _isElevated = isElevated;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             SendConfigMSG = ipcMSGCallBackFunc;
             _pickSingleFolderDialog = pickSingleFolderDialog;
+            _getResourceString = getResourceString ?? (key => ResourceLoaderInstance.ResourceLoader.GetString(key));
+            _syncEnvironment = syncEnvironment ?? new TextExpanderSyncEnvironment();
             BrowseForSnippetsFolderCommand = new ButtonClickCommand(BrowseForSnippetsFolder);
 
             // Group policy wins over anything the user picks here, so read it before the
@@ -115,9 +109,75 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             LoadSnippets();
+
+            // Created last and does nothing until the page asks it to, so constructing the view
+            // model never probes OneDrive.
+            Sync = new TextExpanderSyncViewModel(this, _syncEnvironment, _getResourceString, _pickSingleFolderDialog);
+            Sync.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName is nameof(TextExpanderSyncViewModel.IsSynced) or nameof(TextExpanderSyncViewModel.SyncedStatusText))
+                {
+                    OnPropertyChanged(nameof(SnippetFileSummary));
+                }
+
+                if (e.PropertyName is nameof(TextExpanderSyncViewModel.IsSynced) or nameof(TextExpanderSyncViewModel.IsSetupVisible) or nameof(TextExpanderSyncViewModel.IsOneDriveMissing))
+                {
+                    RaiseFolderRowChanged();
+                }
+            };
+        }
+
+        /// <summary>Gets the guided OneDrive setup ("Sync snippets across PCs").</summary>
+        public TextExpanderSyncViewModel Sync { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the box where snippets are saved and synced shows its Folder row:
+        /// while syncing; whenever a folder is set, so one outside OneDrive can be seen and cleared,
+        /// as can a typo; and when OneDrive isn't set up, so another sync app's folder can be set.
+        /// Never during the sync setup, whose own folder picker is the only one there, and never
+        /// while elevated, when the box can't be opened. With sync off and the PowerToys folder in
+        /// use, the box shows only the toggle.
+        /// </summary>
+        public bool IsFolderRowVisible => CanEditSnippets
+            && Sync?.IsSetupVisible != true
+            && (Sync?.IsSynced == true || !string.IsNullOrWhiteSpace(SnippetsPath) || Sync?.IsOneDriveMissing == true);
+
+        /// <summary>
+        /// Gets a one-line description of where the snippet file is kept and how many snippets it
+        /// has, shown on the collapsed "Where your snippets are saved and synced across PCs" setting.
+        /// </summary>
+        public string SnippetFileSummary
+        {
+            get
+            {
+                if (!CanEditSnippets)
+                {
+                    return _getResourceString("TextExpander_SnippetFile_SummaryElevated");
+                }
+
+                if (Sync?.IsSynced == true)
+                {
+                    return Sync.SyncedStatusText;
+                }
+
+                string key = IsDefaultSnippetsFile() ? "TextExpander_SnippetFile_SummaryDefault" : "TextExpander_SnippetFile_SummaryCustom";
+                if (HasSnippetError)
+                {
+                    return _getResourceString(key + "CountUnavailable");
+                }
+
+                int count = Snippets.Count;
+                return string.Format(CultureInfo.CurrentCulture, _getResourceString(count == 1 ? key + "_One" : key), count);
+            }
         }
 
         public bool IsEnabledGpoConfigured => _enabledStateIsGPOConfigured;
+
+        public bool IsElevated => _isElevated;
+
+        public bool CanEditSnippets => !_isElevated;
+
+        public bool IsSnippetEditingAvailable => CanEditSnippets && IsEnabled;
 
         public bool IsEnabled
         {
@@ -135,6 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isEnabled = value;
                     GeneralSettingsConfig.Enabled.TextExpander = value;
                     OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged(nameof(IsSnippetEditingAvailable));
 
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
@@ -168,10 +229,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _settings.Properties.InjectionBackend.Value = backend;
                     OnPropertyChanged(nameof(InjectionBackendIndex));
+                    OnPropertyChanged(nameof(IsClipboardThresholdEnabled));
                     Save();
                 }
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether Minimum length to paste applies. Only Automatic chooses
+        /// between pasting and typing by length; Always paste and Always type ignore it.
+        /// </summary>
+        public bool IsClipboardThresholdEnabled => InjectionBackendIndex == 0;
 
         /// <summary>
         /// Gets or sets the length at which a replacement is pasted rather than typed. Kept at or
@@ -230,6 +298,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _settings.Properties.RequireWordBoundary = value;
                     OnPropertyChanged(nameof(RequireWordBoundary));
                     Save();
+
+                    // Which triggers can never expand depends on this.
+                    DescribeSnippets();
                 }
             }
         }
@@ -259,11 +330,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _settings.Properties.SnippetsPath.Value;
             set
             {
+                if (!CanEditSnippets)
+                {
+                    return;
+                }
+
                 string path = value ?? string.Empty;
                 if (_settings.Properties.SnippetsPath.Value != path)
                 {
                     _settings.Properties.SnippetsPath.Value = path;
                     OnPropertyChanged(nameof(SnippetsPath));
+                    RaiseFolderRowChanged();
                     Save();
 
                     // The folder moved, so the list on screen is now showing the wrong file.
@@ -273,7 +350,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Sets <see cref="SnippetsPath"/> from a folder the user picks.
+        /// Gets the OneDrive folder the snippets were last synced in (<c>last_sync_folder</c>), so
+        /// turning Sync across PCs back on finds them there. Kept by <see cref="Sync"/>; nothing on
+        /// the page shows it, and the engine ignores it.
+        /// </summary>
+        public string LastSyncFolder
+        {
+            get => _settings.Properties.LastSyncFolder?.Value ?? string.Empty;
+            internal set
+            {
+                string folder = value ?? string.Empty;
+                if (CanEditSnippets && LastSyncFolder != folder)
+                {
+                    _settings.Properties.LastSyncFolder = new StringProperty(folder);
+                    Save();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets <see cref="SnippetsPath"/> from a folder the user picks, starting in the folder in use.
         ///
         /// <para>
         /// Silently does nothing when no picker was supplied or the dialog is cancelled, so the
@@ -282,14 +378,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private async void BrowseForSnippetsFolder()
         {
-            if (_pickSingleFolderDialog is null)
+            if (!CanEditSnippets || _pickSingleFolderDialog is null)
             {
                 return;
             }
 
             try
             {
-                string picked = await _pickSingleFolderDialog();
+                string current = SnippetsFilePath;
+                string picked = await _pickSingleFolderDialog(string.IsNullOrEmpty(current) ? null : Path.GetDirectoryName(current));
                 if (!string.IsNullOrEmpty(picked))
                 {
                     SnippetsPath = picked;
@@ -302,28 +399,145 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>Gets the snippets shown in the page, in file order.</summary>
-        public ObservableCollection<TextExpanderSnippetViewModel> Snippets { get; } = new ObservableCollection<TextExpanderSnippetViewModel>();
+        public TextExpanderRowCollection Snippets { get; } = new TextExpanderRowCollection();
+
+        /// <summary>
+        /// Gets or sets the width of the list's keycap column. The page measures the triggers it
+        /// shows and sets this; every row, including rows loaded later, uses it.
+        /// </summary>
+        public double KeycapColumnWidth
+        {
+            get => _keycapColumnWidth;
+            set
+            {
+                if (_keycapColumnWidth == value)
+                {
+                    return;
+                }
+
+                _keycapColumnWidth = value;
+                foreach (TextExpanderSnippetViewModel snippet in Snippets)
+                {
+                    snippet.KeycapColumnWidth = value;
+                }
+
+                OnPropertyChanged(nameof(KeycapColumnWidth));
+            }
+        }
+
+        /// <summary>Gets the rows the search shows, which the list displays.</summary>
+        public TextExpanderRowCollection FilteredSnippets { get; } = new TextExpanderRowCollection();
+
+        public int SnippetRevision { get; private set; }
+
+        /// <summary>
+        /// Gets or sets how a file watcher's callback reaches the UI thread. The page sets it while
+        /// it's shown, and clears it when it closes. While it's set and there is no snippet file
+        /// yet, the page watches for one, because the engine writes the starter snippets when it
+        /// starts, so they show without opening the page again.
+        /// </summary>
+        public Action<Action> Dispatch
+        {
+            get => _dispatch;
+            set
+            {
+                _dispatch = value;
+                WatchWhileMissing();
+            }
+        }
+
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                value ??= string.Empty;
+                if (_searchText != value)
+                {
+                    _searchText = value;
+                    OnPropertyChanged(nameof(SearchText));
+                    RefreshSnippetFilter();
+                }
+            }
+        }
+
+        public bool HasSearchText => !string.IsNullOrEmpty(SearchText);
+
+        public bool HasNoMatchingSnippets => CanEditSnippets && !HasSnippetError && Snippets.Count > 0 && FilteredSnippets.Count == 0;
+
+        public string SnippetCountText => !CanEditSnippets || HasSnippetError
+            ? _getResourceString("TextExpander_SnippetCountUnavailable")
+            : string.Format(
+                CultureInfo.CurrentCulture,
+                _getResourceString(Snippets.Count == 1 ? "TextExpander_SnippetCount_One" : "TextExpander_SnippetCount"),
+                FilteredSnippets.Count,
+                Snippets.Count);
 
         /// <summary>Gets a value indicating whether the snippet file could not be read or written.</summary>
-        public bool HasSnippetError => !string.IsNullOrEmpty(_snippetError);
+        public bool HasSnippetError => CanEditSnippets && !string.IsNullOrEmpty(_snippetError);
 
         /// <summary>Gets the reason the snippet file could not be read or written.</summary>
-        public string SnippetError => _snippetError ?? string.Empty;
+        public string SnippetError => _isElevated ? ElevatedSnippetAccessDeniedMessage() : _snippetError ?? string.Empty;
 
         /// <summary>Gets a value indicating whether there are no snippets to show.</summary>
-        public bool HasNoSnippets => Snippets.Count == 0 && !HasSnippetError;
+        public bool HasNoSnippets => CanEditSnippets && Snippets.Count == 0 && !HasSnippetError;
 
         /// <summary>Gets the resolved snippet file, shown so the user can find it outside the app.</summary>
         public string SnippetsFilePath => ResolveSnippetsFile();
+
+        /// <summary>
+        /// Gets the Folder row's description. It names the file in use, because a folder can hold
+        /// a file an earlier version created under the old name.
+        /// </summary>
+        public string SnippetsFolderDescription
+        {
+            get
+            {
+                string file = ResolveSnippetsFile();
+                string name = string.IsNullOrEmpty(file) ? TextExpanderSnippetFileNames.Current : Path.GetFileName(file);
+                return string.Format(CultureInfo.CurrentCulture, _getResourceString("TextExpander_SnippetsPath_Description"), name);
+            }
+        }
+
+        /// <summary>
+        /// Gets the folder used while <see cref="SnippetsPath"/> is empty, shown as the folder box's
+        /// placeholder. Empty while elevated, like every other path on the page.
+        /// </summary>
+        public string DefaultSnippetsFolder => CanEditSnippets ? _syncEnvironment.DefaultSnippetsFolder : string.Empty;
 
         /// <summary>
         /// Gets the variables the engine can expand, for the Insert variable menu.
         ///
         /// <para>
         /// Deliberately only the ones <c>Variables.Expand</c> actually implements, so the UI does not advertise variables the engine would ignore.
+        /// The sample is what the value looks like now, so the menu answers "what will I get?"
+        /// rather than only naming a token.
         /// </para>
         /// </summary>
-        public IReadOnlyList<TextExpanderVariable> Variables => VariableDefinitions;
+        public IReadOnlyList<TextExpanderVariable> Variables => _variables ??=
+        [
+            new TextExpanderVariable(_getResourceString("TextExpander_Variable_Cursor"), "$|$", null),
+            new TextExpanderVariable(_getResourceString("TextExpander_Variable_Date"), "{{date}}", "MM/dd/yy"),
+            new TextExpanderVariable(_getResourceString("TextExpander_Variable_Time"), "{{time}}", "hh:mm tt"),
+            new TextExpanderVariable(_getResourceString("TextExpander_Variable_DateTime"), "{{datetime}}", "MM/dd/yy hh:mm tt"),
+            new TextExpanderVariable(_getResourceString("TextExpander_Variable_IsoDate"), "{{isodate}}", "yyyy-MM-dd"),
+            new TextExpanderVariable(_getResourceString("TextExpander_Variable_CustomDate"), "{{date:dddd}}", "dddd"),
+            new TextExpanderVariable(_getResourceString("TextExpander_Variable_Clipboard"), "{{clipboard}}", null),
+            new TextExpanderVariable(_getResourceString("TextExpander_Variable_Prompt"), "{{prompt:Label}}", null),
+        ];
+
+        /// <summary>
+        /// Gets <paramref name="variable"/>'s Insert variable menu text, with what it gives at
+        /// <paramref name="now"/>. The page asks again each time the menu opens, so the time
+        /// and date it shows are never left over from when the page opened.
+        /// </summary>
+        public string VariableMenuText(TextExpanderVariable variable, DateTime now)
+        {
+            ArgumentNullException.ThrowIfNull(variable);
+            return variable.HasSample
+                ? string.Format(CultureInfo.CurrentCulture, _getResourceString("TextExpander_VariableWithSample"), variable.Name, variable.SampleAt(now))
+                : variable.Name;
+        }
 
         /// <summary>
         /// Resolves the snippet file the engine is using, applying the same rule the engine does.
@@ -336,13 +550,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private string ResolveSnippetsFile()
         {
+            if (!CanEditSnippets)
+            {
+                return string.Empty;
+            }
+
             string configured = _settings.Properties.SnippetsPath.Value;
 
             if (!string.IsNullOrWhiteSpace(configured))
             {
                 try
                 {
-                    string expanded = Environment.ExpandEnvironmentVariables(configured.Trim().Trim('"'));
+                    string expanded = _syncEnvironment.ExpandEnvironmentVariables(configured.Trim().Trim('"'));
 
                     // Must match the engine's rule exactly. A relative path is resolved against
                     // the *process* working directory, and the engine runs in a different process
@@ -353,8 +572,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         string full = Path.GetFullPath(expanded);
 
-                        // Accept a file too: someone will paste the path of snippets.txt itself.
-                        return File.Exists(full) ? full : Path.Combine(full, SnippetsFileName);
+                        // Accept a file too: someone will paste the path of the snippet file itself.
+                        return File.Exists(full) ? full : TextExpanderSnippetFileNames.ResolveInFolder(full, _syncEnvironment.FileExists);
                     }
                 }
                 catch (Exception ex) when (ex is ArgumentException or NotSupportedException
@@ -366,20 +585,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             // The same folder the engine derives from the settings path the shim passes it, so
-            // both sides land on one file without a second setting to disagree about.
-            return Path.Combine(
-                Helper.LocalApplicationDataFolder(),
-                "Microsoft",
-                "PowerToys",
-                TextExpanderSettings.ModuleName,
-                SnippetsFileName);
+            // both sides land on one file without a second setting to disagree about. Within a
+            // folder, both pick the file the same way (TextExpanderSnippetFileNames.ResolveInFolder).
+            return TextExpanderSnippetFileNames.ResolveInFolder(_syncEnvironment.DefaultSnippetsFolder, _syncEnvironment.FileExists);
         }
 
         /// <summary>Reads the snippet file into <see cref="Snippets"/>.</summary>
         public void LoadSnippets()
         {
+            SnippetRevision++;
+
+            if (!CanEditSnippets)
+            {
+                _file = null;
+                _loadedBytes = null;
+                Snippets.ReplaceAll(Array.Empty<TextExpanderSnippetViewModel>());
+                _snippetError = null;
+                RaiseSnippetListChanged();
+                WatchWhileMissing();
+                return;
+            }
+
             _snippetError = null;
-            Snippets.Clear();
+            var rows = new List<TextExpanderSnippetViewModel>();
 
             try
             {
@@ -387,11 +615,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (!File.Exists(path))
                 {
-                    // Not an error: nothing has been written yet. The engine creates the file
-                    // with its own header on first run, and so does the first save here.
+                    // Not an error: nothing has been written yet. The engine writes the starter
+                    // snippets when it starts and finds no file (see WatchWhileMissing); a save
+                    // here first writes just the snippets saved.
                     _file = TextExpanderSnippetFile.Parse(Array.Empty<string>());
                     _loadedBytes = null;
-                    _hadBom = false;
+                    _encoding = new System.Text.UTF8Encoding(false, false);
                     _newline = Environment.NewLine;
                     _hadFinalNewline = true;
                 }
@@ -400,12 +629,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Read the raw bytes so the file's own conventions survive a save. Reading
                     // only decoded lines would silently re-encode it: an existing BOM would be
                     // dropped and LF endings rewritten to CRLF, which is whole-file churn for
-                    // anyone keeping their snippets in git.
+                    // anyone keeping their snippets in git. The encoding is the one the engine
+                    // reads it with, so a UTF-16 file is shown, and saved, as UTF-16.
                     _loadedBytes = ReadAllBytesShared(path);
-                    _hadBom = HasUtf8Bom(_loadedBytes);
-
-                    string text = new System.Text.UTF8Encoding(false, false)
-                        .GetString(_loadedBytes, _hadBom ? 3 : 0, _loadedBytes.Length - (_hadBom ? 3 : 0));
+                    string text = TextExpanderSnippetEncoding.Decode(_loadedBytes, out _encoding);
 
                     _newline = text.Contains("\r\n", StringComparison.Ordinal) ? "\r\n"
                         : text.Contains('\n', StringComparison.Ordinal) ? "\n"
@@ -417,7 +644,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 foreach (TextExpanderSnippetFile.Entry entry in _file.Snippets)
                 {
-                    Snippets.Add(new TextExpanderSnippetViewModel(entry.Id, entry.Trigger, entry.Replacement));
+                    rows.Add(new TextExpanderSnippetViewModel(entry.Id, entry.Trigger, entry.Replacement) { KeycapColumnWidth = _keycapColumnWidth });
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
@@ -428,9 +655,84 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // and invite the user to recreate everything on top of a file that still exists.
                 _file = null;
                 _snippetError = ex.Message;
+                rows.Clear();
             }
 
+            Snippets.ReplaceAll(rows);
             RaiseSnippetListChanged();
+            WatchWhileMissing();
+        }
+
+        /// <summary>
+        /// Brings the rows in line with the snippets in memory after a save, without reading the
+        /// file again. A row whose snippet didn't change is kept as it is, so one save changes one
+        /// row of the list.
+        /// </summary>
+        private void SyncRows()
+        {
+            SnippetRevision++;
+            var current = new Dictionary<int, TextExpanderSnippetViewModel>(Snippets.Count);
+            foreach (TextExpanderSnippetViewModel row in Snippets)
+            {
+                current[row.Id] = row;
+            }
+
+            var rows = new List<TextExpanderSnippetViewModel>(_file.Snippets.Count);
+            foreach (TextExpanderSnippetFile.Entry entry in _file.Snippets)
+            {
+                rows.Add(current.TryGetValue(entry.Id, out TextExpanderSnippetViewModel row)
+                        && string.Equals(row.Trigger, entry.Trigger, StringComparison.Ordinal)
+                        && string.Equals(row.Replacement, entry.Replacement, StringComparison.Ordinal)
+                    ? row
+                    : new TextExpanderSnippetViewModel(entry.Id, entry.Trigger, entry.Replacement) { KeycapColumnWidth = _keycapColumnWidth });
+            }
+
+            Snippets.SyncTo(rows);
+            RaiseSnippetListChanged();
+            WatchWhileMissing();
+        }
+
+        /// <summary>
+        /// Watches the snippet folder while the page is shown and there is no snippet file yet,
+        /// and stops once there is one, or the page closes or can't edit snippets.
+        /// </summary>
+        private void WatchWhileMissing()
+        {
+            string folder = null;
+            if (_dispatch != null && CanEditSnippets && _file != null)
+            {
+                try
+                {
+                    string path = ResolveSnippetsFile();
+                    folder = File.Exists(path) ? null : Path.GetDirectoryName(path);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+                {
+                    folder = null;
+                }
+            }
+
+            if (folder != null && _snippetFileWatch != null && string.Equals(folder, _snippetFileWatchFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            _snippetFileWatch?.Dispose();
+            _snippetFileWatch = null;
+            _snippetFileWatchFolder = folder;
+            if (!string.IsNullOrEmpty(folder))
+            {
+                _snippetFileWatch = _syncEnvironment.WatchForFiles(folder, SnippetFileNames, () => _dispatch?.Invoke(SnippetFileMayHaveAppeared));
+            }
+        }
+
+        private void SnippetFileMayHaveAppeared()
+        {
+            // The watcher also polls, so most calls find nothing new.
+            if (_snippetFileWatch != null && _file != null && _file.Snippets.Count == 0 && File.Exists(ResolveSnippetsFile()))
+            {
+                LoadSnippets();
+            }
         }
 
         /// <summary>
@@ -439,19 +741,53 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public string SaveSnippet(int? id, string trigger, string replacement)
         {
+            if (!CanEditSnippets)
+            {
+                return ElevatedSnippetAccessDeniedMessage();
+            }
+
             trigger = trigger ?? string.Empty;
             replacement = replacement ?? string.Empty;
 
-            if (!TextExpanderSnippetFile.IsValidTrigger(trigger, out string problem))
+            string problem = ValidateSnippet(id, trigger, replacement);
+            if (problem != null)
             {
                 return problem;
             }
 
+            TextExpanderSnippetFile previousFile = _file;
+            _file = previousFile.Clone();
+            try
+            {
+                _file.Upsert(id, trigger, replacement);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                // Checked above, so what's left is a snippet that's no longer in the file.
+                _file = previousFile;
+                return _getResourceString("TextExpander_EditorFileChanged");
+            }
+
+            return WriteEditedFile(previousFile);
+        }
+
+        public string ValidateSnippet(int? id, string trigger, string replacement)
+        {
+            if (!CanEditSnippets)
+            {
+                return ElevatedSnippetAccessDeniedMessage();
+            }
+
+            if (!TextExpanderSnippetFile.IsValidTrigger(trigger, out TextExpanderSnippetProblem problem))
+            {
+                return DescribeProblem(problem);
+            }
+
             // A block body cannot contain its own terminator, and there is no escape for it, so
             // this really is unrepresentable rather than merely awkward.
-            if (!TextExpanderSnippetFile.IsValidReplacement(replacement, out string replacementProblem))
+            if (!TextExpanderSnippetFile.IsValidReplacement(replacement, out TextExpanderSnippetProblem replacementProblem))
             {
-                return replacementProblem;
+                return DescribeProblem(replacementProblem);
             }
 
             if (_file == null)
@@ -462,207 +798,231 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             TextExpanderSnippetFile.Entry clash = _file.FindDuplicate(trigger, ignoringId: id);
             if (clash != null)
             {
-                // Last-one-wins in the engine, so letting this through would quietly kill one of
-                // the two snippets with no sign anything was wrong.
-                return string.Format(CultureInfo.CurrentCulture, "Another snippet already uses the trigger '{0}'.", trigger);
+                return string.Format(
+                    CultureInfo.CurrentCulture,
+                    _getResourceString("TextExpander_DuplicateTrigger"),
+                    trigger);
             }
 
-            try
+            return null;
+        }
+
+        private string DescribeProblem(TextExpanderSnippetProblem problem) => _getResourceString(problem switch
+        {
+            TextExpanderSnippetProblem.EmptyTrigger => "TextExpander_Problem_EmptyTrigger",
+            TextExpanderSnippetProblem.TriggerHasLineBreak => "TextExpander_Problem_TriggerHasLineBreak",
+            TextExpanderSnippetProblem.TriggerStartsWithHiddenCharacter => "TextExpander_Problem_TriggerStartsWithHiddenCharacter",
+            TextExpanderSnippetProblem.TriggerHasOuterSpace => "TextExpander_Problem_TriggerHasOuterSpace",
+            TextExpanderSnippetProblem.TriggerHasEquals => "TextExpander_Problem_TriggerHasEquals",
+            TextExpanderSnippetProblem.TriggerEndsWithBlockStart => "TextExpander_Problem_TriggerEndsWithBlockStart",
+            TextExpanderSnippetProblem.TriggerStartsWithComment => "TextExpander_Problem_TriggerStartsWithComment",
+            TextExpanderSnippetProblem.ReplacementHasBlockEnd => "TextExpander_Problem_ReplacementHasBlockEnd",
+            _ => throw new ArgumentOutOfRangeException(nameof(problem)),
+        });
+
+        private void RefreshSnippetFilter()
+        {
+            string query = SearchText.Trim();
+            var matches = new List<TextExpanderSnippetViewModel>(query.Length == 0 ? Snippets.Count : 0);
+            foreach (TextExpanderSnippetViewModel snippet in Snippets)
             {
-                _file.Upsert(id, trigger, replacement);
-            }
-            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
-            {
-                // The model enforces the same rules independently; surface rather than crash.
-                return ex.Message;
+                if (query.Length == 0
+                    || snippet.Trigger.Contains(query, StringComparison.OrdinalIgnoreCase)
+                    || snippet.Summary.Contains(query, StringComparison.OrdinalIgnoreCase))
+                {
+                    matches.Add(snippet);
+                }
             }
 
-            return WriteFile();
+            // One notification for the whole change, or one per row when only a row changed.
+            FilteredSnippets.SyncTo(matches);
+
+            OnPropertyChanged(nameof(HasSearchText));
+            OnPropertyChanged(nameof(HasNoMatchingSnippets));
+            OnPropertyChanged(nameof(SnippetCountText));
         }
 
         /// <summary>Deletes the snippet with <paramref name="id"/> and writes the file.</summary>
         public string DeleteSnippet(int id)
         {
+            if (!CanEditSnippets)
+            {
+                return ElevatedSnippetAccessDeniedMessage();
+            }
+
             if (_file == null)
             {
                 return SnippetError;
             }
 
+            TextExpanderSnippetFile previousFile = _file;
+            _file = previousFile.Clone();
             _file.Remove(id);
-            return WriteFile();
+            return WriteEditedFile(previousFile);
         }
 
         /// <summary>
-        /// Copies a snippet under a free trigger, so a variation does not have to be retyped.
-        /// Returns null on success.
+        /// Suggests a trigger for a copy of the snippet with <paramref name="id"/>, which the editor
+        /// opens with. Null while elevated or when the snippet is gone.
+        ///
+        /// <para>
+        /// Not the trigger plus "2": typing <c>!mysig2</c> completes <c>!mysig</c> first, and the
+        /// engine expands as soon as the typed text ends with a trigger, so unless Wait for the whole
+        /// word is on, that copy could never fire. The number goes after any leading symbols
+        /// instead, as in <c>!2mysig</c>, and is checked by the engine's rules in the current mode.
+        /// </para>
         /// </summary>
-        public string DuplicateSnippet(int id)
+        public string SuggestDuplicateTrigger(int id)
         {
-            if (_file == null)
-            {
-                return SnippetError;
-            }
-
-            TextExpanderSnippetFile.Entry source = _file.Snippets.FirstOrDefault(s => s.Id == id);
-            if (source == null)
+            if (!CanEditSnippets || _file == null)
             {
                 return null;
             }
 
-            string candidate = source.Trigger + "2";
-            for (int n = 2; _file.FindDuplicate(candidate) != null; n++)
-            {
-                candidate = source.Trigger + n.ToString(CultureInfo.InvariantCulture);
-            }
-
-            try
-            {
-                _file.Upsert(null, candidate, source.Replacement);
-            }
-            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
-            {
-                return ex.Message;
-            }
-
-            return WriteFile();
+            TextExpanderSnippetFile.Entry source = _file.Snippets.FirstOrDefault(s => s.Id == id);
+            return source == null ? null : SuggestCopyTrigger(source.Trigger, _file.Snippets.Select(s => s.Trigger), RequireWordBoundary);
         }
 
         /// <summary>
-        /// Renders a replacement the way the engine would, for the editor's preview.
-        ///
-        /// <para>
-        /// Only the variables that resolve without asking anything are substituted.
-        /// <c>{{prompt:}}</c> and <c>{{clipboard}}</c> are shown as a description of what will
-        /// happen, because faking a value would preview a result the user will never see.
-        /// </para>
+        /// Gets a numbered copy of <paramref name="trigger"/> that isn't taken and that, by the
+        /// engine's rules in the current mode, can fire and doesn't keep a longer trigger from
+        /// firing. The number goes after any leading symbols, and a trigger that is already a copy
+        /// counts on: <c>!mysig</c> gives <c>!2mysig</c>, and <c>!2mysig</c> gives <c>!3mysig</c>.
+        /// Empty when no number up to 999 works, such as when another trigger fires inside the part
+        /// every copy shares.
         /// </summary>
-        public static string PreviewReplacement(string replacement)
+        internal static string SuggestCopyTrigger(string trigger, IEnumerable<string> triggers, bool wordMode)
         {
-            if (string.IsNullOrEmpty(replacement))
+            var taken = new TextExpanderTriggerSet(triggers);
+
+            int insertAt = 0;
+            while (insertAt < trigger.Length && !char.IsLetterOrDigit(trigger[insertAt]))
             {
-                return string.Empty;
+                insertAt++;
             }
 
-            DateTime now = DateTime.Now;
-            string text = replacement
-                .Replace("{{date}}", now.ToString("MM/dd/yy", CultureInfo.InvariantCulture), StringComparison.Ordinal)
-                .Replace("{{time}}", now.ToString("hh:mm tt", CultureInfo.InvariantCulture), StringComparison.Ordinal)
-                .Replace("{{datetime}}", now.ToString("MM/dd/yy hh:mm tt", CultureInfo.InvariantCulture), StringComparison.Ordinal)
-                .Replace("{{isodate}}", now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), StringComparison.Ordinal);
-
-            text = System.Text.RegularExpressions.Regex.Replace(
-                text,
-                @"\{\{date:([^}]*)\}\}",
-                m => FormatPreviewDate(now, m.Groups[1].Value));
-
-            text = System.Text.RegularExpressions.Regex.Replace(
-                text, @"\{\{prompt:([^}]*)\}\}", m => "<" + m.Groups[1].Value + ">");
-
-            text = text.Replace("{{clipboard}}", "<clipboard>", StringComparison.Ordinal);
-
-            // The engine honors only the first marker; any others are typed literally.
-            int cursor = text.IndexOf("$|$", StringComparison.Ordinal);
-            if (cursor >= 0)
+            if (insertAt == trigger.Length)
             {
-                text = string.Concat(text.AsSpan(0, cursor), "|", text.AsSpan(cursor + 3));
+                // Only symbols, so a number after them would extend the trigger itself.
+                insertAt = 0;
             }
 
-            return text
-                .Replace("\\n", "\n", StringComparison.Ordinal)
-                .Replace("\\t", "\t", StringComparison.Ordinal);
-        }
-
-        /// <summary>
-        /// Formats a preview date. Mirrors the engine's rule that a one-character format is a
-        /// field rather than a standard specifier, so {{date:d}} previews the day and not a
-        /// whole short date.
-        /// </summary>
-        private static string FormatPreviewDate(DateTime value, string format)
-        {
-            if (format.Length == 0)
+            // A copy made here before already has its number in that place.
+            int digits = 0;
+            while (insertAt + digits < trigger.Length && char.IsAsciiDigit(trigger[insertAt + digits]))
             {
-                return string.Empty;
+                digits++;
             }
 
-            // A '%' is unambiguous: it is not a .NET custom specifier on its own, and every
-            // strftime format has one. Returning the format verbatim here used to make
-            // {{date:%Y-%m-%d}} preview as literal "%Y-%m-%d", telling the user that a syntax
-            // the engine fully supports does not work.
-            if (format.Contains('%', StringComparison.Ordinal))
+            int first = 2;
+            if (digits is > 0 and <= 3 && trigger[insertAt] != '0')
             {
-                return FormatStrftime(value, format);
+                first = int.Parse(trigger.AsSpan(insertAt, digits), CultureInfo.InvariantCulture) + 1;
+            }
+            else
+            {
+                digits = 0;
             }
 
-            try
-            {
-                return value.ToString(format.Length == 1 ? "%" + format : format, CultureInfo.InvariantCulture);
-            }
-            catch (FormatException)
-            {
-                return format;
-            }
-        }
+            string prefix = trigger[..insertAt];
+            string rest = trigger[(insertAt + digits)..];
 
-        /// <summary>
-        /// Expands strftime specifiers for the preview.
-        ///
-        /// <para>
-        /// A deliberate second implementation of <c>Variables.FormatStrftime</c> in the engine,
-        /// because the Settings project cannot reference the engine assembly. Kept as a literal
-        /// transcription for that reason -- if the engine's table changes, this one has to change
-        /// with it, and a preview that disagrees with what gets typed is the bug this whole
-        /// method exists to fix.
-        /// </para>
-        /// </summary>
-        private static string FormatStrftime(DateTime value, string format)
-        {
-            var result = new System.Text.StringBuilder(format.Length + 16);
+            // Every copy contains the part after the number, so only these can contain a copy.
+            List<string> containingRest = taken.Triggers.Where(other => other.Contains(rest, StringComparison.Ordinal)).ToList();
 
-            for (int index = 0; index < format.Length; index++)
+            // From the next number to 999, then from 2.
+            for (int i = 0; i < 998; i++)
             {
-                if (format[index] != '%' || index + 1 >= format.Length)
+                string number = (2 + ((first - 2 + i) % 998)).ToString(CultureInfo.InvariantCulture);
+                string candidate = prefix + number + rest;
+                if (taken.Contains(candidate))
                 {
-                    result.Append(format[index]);
                     continue;
                 }
 
-                char specifier = format[++index];
-                result.Append(specifier switch
+                if (TextExpanderTriggerReach.FindBlocker(candidate, taken, wordMode, out int blockedAt) is not null)
                 {
-                    '%' => "%",
-                    'a' => value.ToString("ddd", CultureInfo.InvariantCulture),
-                    'A' => value.ToString("dddd", CultureInfo.InvariantCulture),
-                    'b' or 'h' => value.ToString("MMM", CultureInfo.InvariantCulture),
-                    'B' => value.ToString("MMMM", CultureInfo.InvariantCulture),
-                    'd' => value.ToString("dd", CultureInfo.InvariantCulture),
-                    'e' => value.Day.ToString(CultureInfo.InvariantCulture).PadLeft(2, ' '),
-                    'F' => value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    'H' => value.ToString("HH", CultureInfo.InvariantCulture),
-                    'I' => value.ToString("hh", CultureInfo.InvariantCulture),
-                    'j' => value.DayOfYear.ToString("000", CultureInfo.InvariantCulture),
-                    'm' => value.ToString("MM", CultureInfo.InvariantCulture),
-                    'M' => value.ToString("mm", CultureInfo.InvariantCulture),
-                    'p' => value.ToString("tt", CultureInfo.InvariantCulture),
-                    'R' => value.ToString("HH:mm", CultureInfo.InvariantCulture),
-                    'S' => value.ToString("ss", CultureInfo.InvariantCulture),
-                    'T' => value.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
-                    'u' => ((((int)value.DayOfWeek + 6) % 7) + 1).ToString(CultureInfo.InvariantCulture),
-                    'w' => ((int)value.DayOfWeek).ToString(CultureInfo.InvariantCulture),
-                    'x' => value.ToString("MM/dd/yy", CultureInfo.InvariantCulture),
-                    'X' => value.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
-                    'y' => value.ToString("yy", CultureInfo.InvariantCulture),
-                    'Y' => value.ToString("yyyy", CultureInfo.InvariantCulture),
-                    'n' => "\n",
-                    't' => "\t",
-                    _ => $"%{specifier}",
-                });
+                    if (blockedAt >= prefix.Length + number.Length)
+                    {
+                        // Another trigger fires inside the part every copy shares.
+                        return string.Empty;
+                    }
+
+                    continue;
+                }
+
+                if (!BlocksAnother(candidate, containingRest, taken, wordMode))
+                {
+                    return candidate;
+                }
             }
 
-            return result.ToString();
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether <paramref name="candidate"/> could be added as a trigger:
+        /// it isn't taken and, by the engine's rules in the given mode, it can fire and doesn't keep
+        /// another trigger from firing.
+        /// </summary>
+        internal static bool CanFireAlongside(string candidate, IEnumerable<string> triggers, bool wordMode)
+        {
+            var taken = new TextExpanderTriggerSet(triggers);
+            return !taken.Contains(candidate)
+                && TextExpanderTriggerReach.FindBlocker(candidate, taken, wordMode) is null
+                && !BlocksAnother(candidate, taken.Triggers.Where(other => other.Contains(candidate, StringComparison.Ordinal)).ToList(), taken, wordMode);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether adding <paramref name="candidate"/> would make it fire
+        /// while one of <paramref name="longer"/> is being typed. <paramref name="taken"/> is
+        /// changed only while this runs.
+        /// </summary>
+        private static bool BlocksAnother(string candidate, List<string> longer, TextExpanderTriggerSet taken, bool wordMode)
+        {
+            taken.Add(candidate);
+            try
+            {
+                foreach (string other in longer)
+                {
+                    if (other.Length > candidate.Length
+                        && other.Contains(candidate, StringComparison.Ordinal)
+                        && TextExpanderTriggerReach.FindBlocker(other, taken, wordMode) is { } blocker
+                        && blocker.Trigger == candidate)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            finally
+            {
+                taken.Remove(candidate);
+            }
+        }
+
+        private string WriteEditedFile(TextExpanderSnippetFile previousFile)
+        {
+            TextExpanderSnippetFile editedFile = _file;
+            string error = WriteFile();
+            if (error != null && ReferenceEquals(_file, editedFile))
+            {
+                // A failed write must not reserve a new trigger or lose a deleted row in memory.
+                // Keep a freshly reloaded file when WriteFile detected an external edit instead.
+                _file = previousFile;
+            }
+
+            return error;
         }
 
         private string WriteFile()
         {
+            if (!CanEditSnippets)
+            {
+                return ElevatedSnippetAccessDeniedMessage();
+            }
+
             try
             {
                 string path = ResolveSnippetsFile();
@@ -677,10 +1037,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // the editor at something else entirely and the next save would overwrite it.
                 if (_loadedBytes == null && File.Exists(path) && new FileInfo(path).Length > 0)
                 {
-                    return string.Format(
-                        CultureInfo.CurrentCulture,
-                        "'{0}' already exists and was not loaded as a snippet file. Refusing to overwrite it.",
-                        path);
+                    LoadSnippets();
+                    return _getResourceString("TextExpander_FileAppeared");
                 }
 
                 // Someone else changed the file since it was loaded. Rewriting our snapshot would
@@ -691,7 +1049,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     if (!current.AsSpan().SequenceEqual(_loadedBytes))
                     {
                         LoadSnippets();
-                        return "The snippet file changed on disk, so your edit was not applied. The list has been reloaded — please try again.";
+                        return _getResourceString("TextExpander_FileChangedBeforeSave");
                     }
                 }
 
@@ -702,7 +1060,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     text += _newline ?? Environment.NewLine;
                 }
 
-                byte[] payload = new System.Text.UTF8Encoding(_hadBom, false).GetBytes(text);
+                byte[] payload = TextExpanderSnippetEncoding.Encode(text, _encoding);
 
                 // Write a temp file and swap it in, so a reader can never observe the truncated
                 // window that File.WriteAllText leaves between truncate and write. The engine
@@ -721,8 +1079,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     File.Move(temp, path);
                 }
 
+                // The file now holds exactly what was written, so there is nothing to read back.
+                _loadedBytes = payload;
                 _snippetError = null;
-                LoadSnippets();
+                SyncRows();
                 return null;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
@@ -744,15 +1104,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return memory.ToArray();
         }
 
-        private static bool HasUtf8Bom(byte[] bytes)
-            => bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF;
-
         /// <summary>
         /// Splits on CRLF, LF and lone CR, matching what StreamReader.ReadLine would produce.
         /// A lone CR really is a line break on read, which is why the model refuses to emit one
         /// inside a single-line entry.
         /// </summary>
-        private static string[] SplitLines(string text)
+        internal static string[] SplitLines(string text)
         {
             var lines = new List<string>();
             int start = 0;
@@ -782,12 +1139,61 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return lines.ToArray();
         }
 
+        private string ElevatedSnippetAccessDeniedMessage() => _getResourceString("TextExpander_ElevatedSnippetAccessDenied");
+
+        private void RaiseFolderRowChanged()
+        {
+            OnPropertyChanged(nameof(IsFolderRowVisible));
+        }
+
+        /// <summary>Gets a value indicating whether the engine's own folder holds the snippet file in use.</summary>
+        private bool IsDefaultSnippetsFile()
+        {
+            string folder = Path.GetDirectoryName(ResolveSnippetsFile()) ?? string.Empty;
+            return string.Equals(
+                Path.TrimEndingDirectorySeparator(folder),
+                Path.TrimEndingDirectorySeparator(_syncEnvironment.DefaultSnippetsFolder),
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Describes every row: what it does, and whether it can ever expand. That depends on the
+        /// other triggers and on Wait for the whole word, so it is worked out for the whole list.
+        /// </summary>
+        private void DescribeSnippets()
+        {
+            var triggers = new TextExpanderTriggerSet();
+            var lastRow = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int row = 0; row < Snippets.Count; row++)
+            {
+                triggers.Add(Snippets[row].Trigger);
+                lastRow[Snippets[row].Trigger] = row;
+            }
+
+            DateTime now = DateTime.Now;
+            bool wordMode = RequireWordBoundary;
+            for (int row = 0; row < Snippets.Count; row++)
+            {
+                TextExpanderSnippetViewModel snippet = Snippets[row];
+
+                // The engine keeps the last of two rows with the same trigger.
+                bool hasLaterDuplicate = lastRow[snippet.Trigger] > row;
+                snippet.Description = TextExpanderRowDescriber.Describe(snippet.Trigger, snippet.Replacement, hasLaterDuplicate, triggers, wordMode, now, _getResourceString);
+            }
+        }
+
         private void RaiseSnippetListChanged()
         {
+            DescribeSnippets();
+            RefreshSnippetFilter();
             OnPropertyChanged(nameof(HasNoSnippets));
             OnPropertyChanged(nameof(HasSnippetError));
             OnPropertyChanged(nameof(SnippetError));
             OnPropertyChanged(nameof(SnippetsFilePath));
+            OnPropertyChanged(nameof(SnippetsFolderDescription));
+
+            // After SnippetsFilePath, so the OneDrive status has caught up with the new file.
+            OnPropertyChanged(nameof(SnippetFileSummary));
         }
 
         private void Save()

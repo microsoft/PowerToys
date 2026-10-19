@@ -106,6 +106,42 @@ public sealed class MatchingAndBoundaryTests
     }
 
     [TestMethod]
+    public void WithoutTheWordWaitATriggerThatExtendsAnotherNeverFires()
+    {
+        // Why Settings suggests !2mysig, not !mysig2, for a copy of !mysig: typing !mysig2
+        // completes !mysig first, and the engine expands at once.
+        Dictionary<string, string> store = SnippetStore.Parse(["!mysig=Regards", "!mysig2=Copy", "!2mysig=Copy"]);
+        TriggerIndex index = TriggerIndex.Build(store.Keys);
+        Assert.AreEqual("!mysig", FirstExpansion("!mysig2", index, store));
+        Assert.AreEqual("!2mysig", FirstExpansion("!2mysig", index, store));
+    }
+
+    [TestMethod]
+    public void TheIndexKeepsASingleChildWithoutADictionary()
+    {
+        // PERF-7: every node with a child had a dictionary of its own, nearly always holding one
+        // entry; about 18 MB for these 10,000 triggers.
+        string[] triggers = Enumerable.Range(0, 10_000).Select(i => "!snip_" + i.ToString("D5", System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+        _ = TriggerIndex.Build(["warm", "up"]);
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        TriggerIndex index = TriggerIndex.Build(triggers);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.AreEqual(10_000, index.Count);
+        Assert.AreEqual("!snip_04711", index.MatchLongestSuffix("typed !snip_04711"));
+        Assert.IsNull(index.MatchLongestSuffix("snip_04711"));
+        Assert.IsTrue(allocated < 8_000_000, $"{allocated} bytes");
+
+        // Branching keeps every path: one child, then a second, then a third.
+        TriggerIndex branching = TriggerIndex.Build(["ab", "cb", "db", "b"]);
+        Assert.AreEqual("ab", branching.MatchLongestSuffix("xab"));
+        Assert.AreEqual("cb", branching.MatchLongestSuffix("xcb"));
+        Assert.AreEqual("db", branching.MatchLongestSuffix("xdb"));
+        Assert.AreEqual("b", branching.MatchLongestSuffix("xeb"));
+    }
+
+    [TestMethod]
     public void WordBoundaryToggleRoundTrips()
     {
         bool original = WordBoundary.Required;
@@ -120,6 +156,19 @@ public sealed class MatchingAndBoundaryTests
         {
             WordBoundary.Required = original;
         }
+    }
+
+    private static string? FirstExpansion(string typed, TriggerIndex index, Dictionary<string, string> store)
+    {
+        for (int length = 1; length <= typed.Length; length++)
+        {
+            if (Simulate(typed[..length], false, index, store) is { } expansion)
+            {
+                return expansion.Trigger;
+            }
+        }
+
+        return null;
     }
 
     private static (string Trigger, string Erased, string Inserted)? Simulate(string typed, bool wordMode, TriggerIndex index, Dictionary<string, string> store)

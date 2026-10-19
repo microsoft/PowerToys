@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.TextExpander;
 /// arriving here looking empty — so restoring one clears the clipboard instead of leaving the
 /// expansion's text behind.
 /// </summary>
-internal sealed class ClipboardSnapshot(IReadOnlyList<ClipboardEntry> entries)
+internal sealed class ClipboardSnapshot(IReadOnlyList<ClipboardEntry> entries) : IDisposable
 {
     public IReadOnlyList<ClipboardEntry> Entries { get; } = entries;
 
@@ -19,4 +19,12 @@ internal sealed class ClipboardSnapshot(IReadOnlyList<ClipboardEntry> entries)
 
     /// <summary>Puts these contents back on the clipboard.</summary>
     public bool Restore() => Clipboard.Restore(this);
+
+    public void Dispose()
+    {
+        foreach (ClipboardEntry entry in Entries)
+        {
+            System.Security.Cryptography.CryptographicOperations.ZeroMemory(entry.Data);
+        }
+    }
 }

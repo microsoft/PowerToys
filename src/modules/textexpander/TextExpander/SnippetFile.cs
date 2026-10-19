@@ -5,7 +5,7 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// An editable view over snippets.txt that preserves everything it does not own.
+/// An editable view over the snippet file that preserves everything it does not own.
 ///
 /// <para>
 /// <see cref="SnippetStore.Parse"/> answers "what does the engine expand?" and throws the rest
@@ -81,14 +81,23 @@ public sealed class SnippetFile
     // Comments and entries interleaved, in file order, so a comment stays attached to whatever
     // it was written above.
     private readonly List<object> _items = [];
+
+    // The entries alone, in file order, and by id, kept with _items, so listing or finding an
+    // entry doesn't filter every line of the file again.
+    private readonly List<Entry> _entries = [];
+    private readonly Dictionary<int, Entry> _byId = [];
+    private System.Collections.ObjectModel.ReadOnlyCollection<Entry>? _snippets;
     private int _nextId;
 
     private SnippetFile()
     {
     }
 
-    /// <summary>Gets snippets in file order. Duplicate triggers are kept; see <see cref="FindDuplicateTrigger"/>.</summary>
-    public IReadOnlyList<Entry> Snippets => [.. _items.OfType<Entry>()];
+    /// <summary>
+    /// Gets the snippets in file order, as they are now: the list follows later changes.
+    /// Duplicate triggers are kept; see <see cref="FindDuplicate"/>.
+    /// </summary>
+    public IReadOnlyList<Entry> Snippets => _snippets ??= _entries.AsReadOnly();
 
     // ── Reading ──────────────────────────────────────────────
     public static SnippetFile Parse(string[] lines)
@@ -107,7 +116,7 @@ public sealed class SnippetFile
 
             if (stripped.Length == 0 || stripped.StartsWith("//", StringComparison.Ordinal))
             {
-                file._items.Add(new RawLine(line));
+                file.Add(new RawLine(line));
                 continue;
             }
 
@@ -136,7 +145,7 @@ public sealed class SnippetFile
                 // write something after it, which would otherwise land inside the body.
                 if (trigger.Length > 0)
                 {
-                    file._items.Add(new Entry
+                    file.Add(new Entry
                     {
                         Id = file._nextId++,
                         Trigger = trigger,
@@ -149,7 +158,7 @@ public sealed class SnippetFile
                 {
                     foreach (string skipped in lines[start..i])
                     {
-                        file._items.Add(new RawLine(skipped));
+                        file.Add(new RawLine(skipped));
                     }
                 }
 
@@ -160,7 +169,7 @@ public sealed class SnippetFile
             if (eq > 0)
             {
                 int rawEq = line.IndexOf('=');
-                file._items.Add(new Entry
+                file.Add(new Entry
                 {
                     Id = file._nextId++,
                     Trigger = stripped[..eq],
@@ -170,7 +179,7 @@ public sealed class SnippetFile
             }
             else
             {
-                file._items.Add(new RawLine(line));
+                file.Add(new RawLine(line));
             }
         }
 
@@ -215,12 +224,14 @@ public sealed class SnippetFile
             }
 
             var added = new Entry { Id = _nextId++, Trigger = trigger, Replacement = replacement };
-            _items.Add(added);
+            Add(added);
             return added;
         }
 
-        Entry existing = _items.OfType<Entry>().FirstOrDefault(e => e.Id == id.Value)
-            ?? throw new InvalidOperationException($"Snippet {id.Value} is no longer in this file.");
+        if (!_byId.TryGetValue(id.Value, out Entry? existing))
+        {
+            throw new InvalidOperationException($"Snippet {id.Value} is no longer in this file.");
+        }
 
         if (FindDuplicate(trigger, ignoringId: id.Value) is not null)
         {
@@ -242,8 +253,13 @@ public sealed class SnippetFile
     /// <summary>Removes the entry with <paramref name="id"/>. Returns true when one went.</summary>
     public bool Remove(int id)
     {
-        Entry? found = _items.OfType<Entry>().FirstOrDefault(e => e.Id == id);
-        return found is not null && _items.Remove(found);
+        if (!_byId.Remove(id, out Entry? found))
+        {
+            return false;
+        }
+
+        _entries.Remove(found);
+        return _items.Remove(found);
     }
 
     /// <summary>
@@ -263,7 +279,7 @@ public sealed class SnippetFile
     /// </summary>
     public Entry? FindDuplicate(string trigger, int? ignoringId = null)
     {
-        foreach (Entry entry in _items.OfType<Entry>())
+        foreach (Entry entry in _entries)
         {
             if (ignoringId is not null && entry.Id == ignoringId.Value)
             {
@@ -456,5 +472,16 @@ public sealed class SnippetFile
 
         problem = null;
         return true;
+    }
+
+    /// <summary>Appends a line or an entry, keeping the entry lists in step.</summary>
+    private void Add(object item)
+    {
+        _items.Add(item);
+        if (item is Entry entry)
+        {
+            _entries.Add(entry);
+            _byId[entry.Id] = entry;
+        }
     }
 }

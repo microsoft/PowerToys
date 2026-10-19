@@ -9,6 +9,8 @@ namespace Microsoft.PowerToys.TextExpander.UnitTests;
 [TestClass]
 public sealed class SnippetFileTests
 {
+    private static readonly string[] LinesAfterEdits = ["// note", "#b<<<", "two", ">>>", "#a=again", "#d=4"];
+
     [TestMethod]
     public void EditableModelAgreesWithEngineParserAndPreservesLines()
     {
@@ -23,6 +25,28 @@ public sealed class SnippetFileTests
         Dictionary<string, string> reparsed = SnippetStore.Parse(file.ToLines());
         Assert.AreEqual("Best regards,\nYu", reparsed["#sig"]);
         Assert.AreEqual("one\ntwo", reparsed["#block"]);
+    }
+
+    [TestMethod]
+    public void SnippetsFollowEditsWithoutRebuildingTheList()
+    {
+        // PERF-6: every read of Snippets filtered the whole file into a new list.
+        SnippetFile file = SnippetFile.Parse(["// note", "#a=1", "#b<<<", "two", ">>>", "#a=again"]);
+        IReadOnlyList<SnippetFile.Entry> snippets = file.Snippets;
+        Assert.AreSame(snippets, file.Snippets);
+        Assert.AreEqual("#a,#b,#a", string.Join(",", snippets.Select(entry => entry.Trigger)));
+        Assert.AreSame(snippets[0], file.FindDuplicate("#a", ignoringId: snippets[2].Id), "Found by id and file order, as before.");
+
+        SnippetFile.Entry added = file.Upsert(null, "#c", "3");
+        Assert.AreEqual("#a,#b,#a,#c", string.Join(",", snippets.Select(entry => entry.Trigger)), "The list follows an added snippet.");
+        file.Upsert(added.Id, "#d", "4");
+        Assert.AreEqual("#d", snippets[3].Trigger);
+
+        Assert.IsTrue(file.Remove(snippets[0].Id));
+        Assert.IsFalse(file.Remove(9999));
+        Assert.AreEqual("#b,#a,#d", string.Join(",", snippets.Select(entry => entry.Trigger)));
+        Assert.ThrowsException<InvalidOperationException>(() => file.Upsert(9999, "#x", "y"));
+        CollectionAssert.AreEqual(LinesAfterEdits, file.ToLines());
     }
 
     [TestMethod]

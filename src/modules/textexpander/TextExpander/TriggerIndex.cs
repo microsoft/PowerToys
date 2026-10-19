@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
@@ -34,12 +36,58 @@ internal sealed class TriggerIndex
 {
     private sealed class Node
     {
-        /// <summary>Children keyed by the next character *leftwards*. Null until one is added,
-        /// because the overwhelming majority of nodes are leaves.</summary>
-        public Dictionary<char, Node>? Children { get; set; }
+        // The only child, while there is just one. Most nodes past the first few characters of a
+        // trigger have one child, so a dictionary for each would mostly be overhead.
+        private char _onlyKey;
+        private Node? _onlyChild;
 
-        /// <summary>The trigger ending here, when this node completes one.</summary>
+        /// <summary>Children keyed by the next character *leftwards*, once there are two or more.</summary>
+        private Dictionary<char, Node>? _children;
+
+        /// <summary>Gets or sets the trigger ending here, when this node completes one.</summary>
         public string? Trigger { get; set; }
+
+        public bool TryGetChild(char key, [NotNullWhen(true)] out Node? child)
+        {
+            if (_onlyChild is not null)
+            {
+                child = _onlyKey == key ? _onlyChild : null;
+                return child is not null;
+            }
+
+            if (_children is not null)
+            {
+                return _children.TryGetValue(key, out child);
+            }
+
+            child = null;
+            return false;
+        }
+
+        public Node GetOrAddChild(char key)
+        {
+            if (TryGetChild(key, out Node? existing))
+            {
+                return existing;
+            }
+
+            var child = new Node();
+            if (_onlyChild is null && _children is null)
+            {
+                _onlyKey = key;
+                _onlyChild = child;
+                return child;
+            }
+
+            if (_children is null)
+            {
+                _children = new Dictionary<char, Node>(2) { [_onlyKey] = _onlyChild! };
+                _onlyChild = null;
+            }
+
+            _children[key] = child;
+            return child;
+        }
     }
 
     private readonly Node _root;
@@ -78,14 +126,7 @@ internal sealed class TriggerIndex
             Node node = root;
             for (int i = trigger.Length - 1; i >= 0; i--)
             {
-                var children = node.Children ??= new Dictionary<char, Node>();
-                if (!children.TryGetValue(trigger[i], out Node? next))
-                {
-                    next = new Node();
-                    children[trigger[i]] = next;
-                }
-
-                node = next;
+                node = node.GetOrAddChild(trigger[i]);
             }
 
             // Two spellings of the same trigger cannot occur — the source is a dictionary keyed by
@@ -123,8 +164,7 @@ internal sealed class TriggerIndex
         int limit = Math.Min(tail.Length, MaxTriggerLength);
         for (int i = 0; i < limit; i++)
         {
-            Dictionary<char, Node>? children = node.Children;
-            if (children is null || !children.TryGetValue(tail[tail.Length - 1 - i], out Node? next))
+            if (!node.TryGetChild(tail[tail.Length - 1 - i], out Node? next))
             {
                 break;
             }

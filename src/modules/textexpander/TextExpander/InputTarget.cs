@@ -15,8 +15,8 @@ namespace Microsoft.PowerToys.TextExpander;
 /// and the events are discarded further down. Treating that as success is how an expansion ends
 /// up having eaten the user's trigger, churned their clipboard, and inserted nothing.
 ///
-/// So the question is asked before anything is sent, by comparing integrity levels: a process
-/// may drive windows at its own level or below, and nothing above it.
+/// So the question is asked before anything is sent, by comparing integrity levels. Text Expander
+/// never drives above medium integrity, even when its host is elevated.
 /// </summary>
 internal static class InputTarget
 {
@@ -25,80 +25,22 @@ internal static class InputTarget
 
     private static uint? _ourIntegrity;
     private static bool _ourIntegrityRead;
-    private static uint _trustCeiling = uint.MaxValue;
+    private static uint _trustCeiling = MediumIntegrity;
 
     /// <summary>
-    /// Gets or sets the highest integrity level this engine is willing to type into.
-    ///
-    /// <para>
-    /// Normally irrelevant: an unelevated engine is already capped by UIPI at its own level.
-    /// It matters when the engine is <em>elevated</em> and its snippet file is somewhere a
-    /// lower-integrity process can write. The engine cannot tell a snippet the user wrote from
-    /// one an attacker appended — both arrive as the same line in the same file — so an elevated
-    /// engine reading a medium-writable file is a way to get arbitrary text typed into an
-    /// elevated window. That is a privilege escalation, and the config file is the vector.
-    /// </para>
-    ///
-    /// <para>
-    /// So the rule is: <b>drive no higher than whoever can edit your configuration.</b> Set to
-    /// <see cref="MediumIntegrity"/> when the snippet file is user-writable, which costs an
-    /// elevated user expansion inside elevated windows and costs everyone else nothing.
-    /// </para>
+    /// Gets the highest integrity level this engine may drive. It cannot be promoted by
+    /// user-controlled settings or snippet paths.
     /// </summary>
     public static uint TrustCeiling
     {
         get => Volatile.Read(ref _trustCeiling);
-        set => Volatile.Write(ref _trustCeiling, value);
     }
 
-    /// <summary>
-    /// Applies the ceiling implied by where the snippet file lives.
-    ///
-    /// <para>
-    /// Approximated by profile location rather than by reading the file's DACL. A DACL read is
-    /// the precise answer, but it is also easy to get subtly wrong, and being wrong in the
-    /// permissive direction here reopens the escalation. Anything inside the user's profile is
-    /// assumed writable at medium integrity, which is true for every default location the engine
-    /// resolves to.
-    /// </para>
-    /// </summary>
-    public static void ApplyConfigTrust(string snippetFilePath)
-        => TrustCeiling = CeilingFor(IsElevated(), snippetFilePath);
-
-    /// <summary>
-    /// The ceiling implied by an elevation state and a config location. Pure so the rule can be
-    /// tested without an elevated process.
-    /// </summary>
-    internal static uint CeilingFor(bool elevated, string snippetFilePath)
+    /// <summary>Applies a destination ceiling independent of user-controlled file paths.</summary>
+    public static bool ApplyIntegrityCeiling()
     {
-        // Unelevated, UIPI already caps us at our own level; narrowing further would only break
-        // ordinary same-level expansion.
-        if (!elevated)
-        {
-            return uint.MaxValue;
-        }
-
-        return IsUserWritableLocation(snippetFilePath) ? MediumIntegrity : uint.MaxValue;
-    }
-
-    private static bool IsElevated()
-        => OurIntegrityLevel() is uint ours && ours > MediumIntegrity;
-
-    internal static bool IsUserWritableLocation(string path)
-    {
-        try
-        {
-            string full = Path.GetFullPath(path);
-            string profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-            return !string.IsNullOrEmpty(profile)
-                && full.StartsWith(profile.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-        }
-        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or System.Security.SecurityException)
-        {
-            // Cannot tell, so assume the worse of the two readings.
-            return true;
-        }
+        Volatile.Write(ref _trustCeiling, MediumIntegrity);
+        return OurIntegrityLevel() is uint ours && ours <= MediumIntegrity;
     }
 
     /// <summary>
@@ -126,7 +68,7 @@ internal static class InputTarget
 
         if (processId == (uint)Environment.ProcessId)
         {
-            return true;
+            return OurIntegrityLevel() is uint ownLevel && ownLevel <= TrustCeiling;
         }
 
         IntPtr process = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
@@ -147,9 +89,7 @@ internal static class InputTarget
             // UIPI blocks input travelling up. Equal levels are fine, which is the ordinary
             // case: two medium-integrity desktop applications.
             //
-            // Capped by TrustCeiling so an elevated engine whose snippet file anyone can edit
-            // still refuses to type into elevated windows. Without that cap, appending a line to
-            // a file in the user's profile is enough to get text typed into an admin console.
+            // Never allow user-controlled configuration to authorize high-integrity input.
             uint ceiling = Math.Min(ours.Value, TrustCeiling);
             return theirs.Value <= ceiling;
         }
@@ -158,6 +98,38 @@ internal static class InputTarget
             Native.CloseHandle(process);
         }
     }
+
+    /// <summary>
+    /// True when <paramref name="processId"/> is PowerToys Settings, where Text Expander must not
+    /// expand: a trigger typed into the snippet editor would replace the very text being written.
+    /// Asked once per foreground change, never per key. False when the process can't be inspected;
+    /// <see cref="CanDrive"/> already refuses those.
+    /// </summary>
+    public static bool IsPowerToysSettings(uint processId)
+    {
+        IntPtr process = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+        if (process == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        try
+        {
+            char[] path = new char[1024];
+            uint length = (uint)path.Length;
+            return Native.QueryFullProcessImageNameW(process, 0, path, ref length)
+                && IsPowerToysSettingsImage(new string(path, 0, (int)length));
+        }
+        finally
+        {
+            Native.CloseHandle(process);
+        }
+    }
+
+    /// <summary>True when <paramref name="imagePath"/> is the PowerToys Settings executable.</summary>
+    internal static bool IsPowerToysSettingsImage(string? imagePath)
+        => !string.IsNullOrEmpty(imagePath)
+            && string.Equals(Path.GetFileName(imagePath), "PowerToys.Settings.exe", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Our own integrity level, read once. It cannot change while the process is running, and

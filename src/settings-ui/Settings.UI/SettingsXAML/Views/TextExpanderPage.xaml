@@ -11,6 +11,33 @@
     xmlns:vm="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+    <local:NavigablePage.Resources>
+        <!--  A snippet's trigger, drawn as the key it is typed with, in the style of a KeyVisual key: body text, 32 px tall.  -->
+        <Style x:Key="SnippetTriggerKeycapStyle" TargetType="Border">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="MinWidth" Value="32" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="10,0,10,0" />
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1,1,1,2" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        </Style>
+        <!--  The date format guide's chips, built in code: the code as the editor shows variables, then what it gives, in secondary caption text.  -->
+        <Style x:Key="TextExpanderDateCodeStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style
+            x:Key="TextExpanderDateExampleStyle"
+            BasedOn="{StaticResource CaptionTextBlockStyle}"
+            TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Style>
+    </local:NavigablePage.Resources>
     <Grid>
 
         <controls:SettingsPageControl
@@ -18,166 +45,695 @@
             IsTabStop="False"
             ModuleImageSource="ms-appx:///Assets/Settings/Modules/TextExpander.png">
 
-        <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+            <controls:SettingsPageControl.ModuleContent>
+                <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
 
-                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="TextExpanderEnable"
-                        x:Uid="TextExpander_Enable"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExpander.png}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            AutomationProperties.AutomationId="Toggle_TextExpander"
-                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                </controls:GPOInfoControl>
-
-                <controls:SettingsGroup x:Uid="TextExpander_Snippets_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="TextExpanderEnable"
+                            x:Uid="TextExpander_Enable"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExpander.png}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="Toggle_TextExpander"
+                                IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
 
                     <InfoBar
-                        x:Uid="TextExpander_SnippetError"
+                        x:Uid="TextExpander_ElevatedEditingNotice"
                         IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.HasSnippetError, Mode=OneWay}"
-                        Message="{x:Bind ViewModel.SnippetError, Mode=OneWay}"
-                        Severity="Error" />
+                        IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}"
+                        Severity="Warning" />
 
-                    <tkcontrols:SettingsCard
-                        x:Uid="TextExpander_AddSnippet"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE710;}">
-                        <Button
-                            x:Uid="TextExpander_AddSnippetButton"
-                            Click="AddSnippet_Click"
-                            Style="{StaticResource AccentButtonStyle}" />
-                    </tkcontrols:SettingsCard>
+                    <controls:SettingsGroup x:Uid="TextExpander_Snippets_GroupSettings" IsEnabled="{x:Bind ViewModel.IsSnippetEditingAvailable, Mode=OneWay}">
 
-                    <ItemsControl
-                        Margin="0,2,0,0"
-                        IsTabStop="False"
-                        ItemsSource="{x:Bind ViewModel.Snippets, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:TextExpanderSnippetViewModel">
-                                <tkcontrols:SettingsCard
-                                    Margin="0,2,0,0"
-                                    Click="EditSnippet_Click"
-                                    Description="{x:Bind Summary, Mode=OneWay}"
-                                    Header="{x:Bind Trigger, Mode=OneWay}"
-                                    HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
-                                    IsActionIconVisible="False"
-                                    IsClickEnabled="True">
-                                    <tkcontrols:SettingsCard.Resources>
-                                        <x:Double x:Key="SettingsCardActionButtonWidth">0</x:Double>
-                                    </tkcontrols:SettingsCard.Resources>
-                                    <!-- Destructive row actions belong behind a flyout on clickable rows, which also prevents competing ContentDialogs on one XamlRoot. -->
-                                    <Button
-                                        x:Uid="More_Options_Button"
-                                        VerticalAlignment="Center"
-                                        Content="&#xE712;"
-                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                        Style="{StaticResource SubtleButtonStyle}"
-                                        Tag="{x:Bind}">
-                                        <Button.Flyout>
-                                            <MenuFlyout>
-                                                <MenuFlyoutItem
-                                                    x:Uid="TextExpander_DuplicateSnippet"
-                                                    Click="DuplicateSnippet_Click"
-                                                    Icon="{ui:FontIcon Glyph=&#xE8C8;}"
-                                                    Tag="{x:Bind}" />
-                                                <MenuFlyoutItem
-                                                    x:Uid="TextExpander_DeleteSnippet"
-                                                    Click="DeleteSnippet_Click"
-                                                    Icon="{ui:FontIcon Glyph=&#xE74D;}"
-                                                    Tag="{x:Bind}" />
-                                            </MenuFlyout>
-                                        </Button.Flyout>
-                                        <ToolTipService.ToolTip>
-                                            <TextBlock x:Uid="More_Options_ButtonTooltip" />
-                                        </ToolTipService.ToolTip>
-                                    </Button>
-                                </tkcontrols:SettingsCard>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                        <!--  Collapsed while closed too, so the panel's spacing doesn't leave a gap above Add a snippet.  -->
+                        <InfoBar
+                            x:Uid="TextExpander_SnippetError"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.HasSnippetError, Mode=OneWay}"
+                            Message="{x:Bind ViewModel.SnippetError, Mode=OneWay}"
+                            Severity="Error"
+                            Visibility="{x:Bind ViewModel.HasSnippetError, Mode=OneWay}">
+                            <InfoBar.ActionButton>
+                                <Button x:Uid="TextExpander_RetrySnippets" Click="ReloadSnippets_Click" />
+                            </InfoBar.ActionButton>
+                        </InfoBar>
 
-                    <tkcontrols:SettingsCard
-                        x:Uid="TextExpander_NoSnippets"
-                        Margin="0,2,0,0"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE946;}"
-                        Visibility="{x:Bind ViewModel.HasNoSnippets, Mode=OneWay}" />
+                        <tkcontrols:SettingsCard x:Uid="TextExpander_AddSnippet" HeaderIcon="{ui:FontIcon Glyph=&#xE710;}">
+                            <Button
+                                x:Uid="TextExpander_AddSnippetButton"
+                                Click="AddSnippet_Click"
+                                IsEnabled="{x:Bind ViewModel.HasSnippetError, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
+                                Style="{StaticResource AccentButtonStyle}" />
+                        </tkcontrols:SettingsCard>
 
-                </controls:SettingsGroup>
-
-                <controls:SettingsGroup x:Uid="TextExpander_Injection_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander
-                        x:Uid="TextExpander_InjectionBackend"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}"
-                        IsExpanded="True">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.InjectionBackendIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="TextExpander_Backend_Auto" />
-                            <ComboBoxItem x:Uid="TextExpander_Backend_Clipboard" />
-                            <ComboBoxItem x:Uid="TextExpander_Backend_Type" />
-                        </ComboBox>
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard
-                                x:Uid="TextExpander_ClipboardThreshold"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}">
-                                <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    LargeChange="10"
-                                    Maximum="1000"
-                                    Minimum="1"
-                                    SmallChange="1"
-                                    SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind ViewModel.ClipboardThresholdChars, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-
-                <controls:SettingsGroup x:Uid="TextExpander_Advanced_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="TextExpander_RequireWordBoundary"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            AutomationProperties.AutomationId="Toggle_TextExpander_RequireWordBoundary"
-                            IsOn="{x:Bind ViewModel.RequireWordBoundary, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard
-                        x:Uid="TextExpander_SnippetsPath"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}">
-                        <!-- Capped width: an unconstrained TextBox measures to the full path and starves the header column in narrow windows. -->
-                        <Grid ColumnSpacing="8" MaxWidth="420">
+                        <Grid
+                            Margin="0,12,0,8"
+                            ColumnSpacing="8"
+                            RowSpacing="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
                             <TextBox
-                                x:Uid="TextExpander_SnippetsPath_TextBox"
-                                MinWidth="160"
-                                Text="{x:Bind ViewModel.SnippetsPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                ToolTipService.ToolTip="{x:Bind ViewModel.SnippetsPath, Mode=OneWay}" />
+                                x:Name="SnippetSearchBox"
+                                x:Uid="TextExpander_Search"
+                                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
-                                x:Uid="TextExpander_SnippetsPath_BrowseButton"
+                                x:Uid="TextExpander_ClearSearch"
                                 Grid.Column="1"
-                                Command="{x:Bind ViewModel.BrowseForSnippetsFolderCommand, Mode=OneWay}" />
+                                Click="ClearSearch_Click"
+                                IsEnabled="{x:Bind ViewModel.HasSearchText, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                AutomationProperties.LiveSetting="Polite"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind ViewModel.SnippetCountText, Mode=OneWay}" />
                         </Grid>
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard
-                        x:Uid="TextExpander_TreatRemapsAsTyping"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            AutomationProperties.AutomationId="Toggle_TextExpander_TreatRemapsAsTyping"
-                            IsOn="{x:Bind ViewModel.TreatRemapsAsTyping, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
 
-            </StackPanel>
-        </controls:SettingsPageControl.ModuleContent>
-    </controls:SettingsPageControl>
+                        <TextBlock
+                            x:Name="SnippetStatus"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap" />
 
-<!--
+                        <!--  Virtualized, so only the rows in view are built however long the list is. Same rows and spacing as before.  -->
+                        <ItemsRepeater Margin="0,2,0,0" ItemsSource="{x:Bind ViewModel.FilteredSnippets, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Vertical" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TextExpanderSnippetViewModel">
+                                    <!--
+                                        ItemsRepeater sets no DataContext on rows built with x:Bind, so the row and each item in
+                                        its menu carry their snippet in Tag. The pencil says that selecting the row edits it.
+                                    -->
+                                    <tkcontrols:SettingsCard
+                                        x:Uid="TextExpander_SnippetRow"
+                                        Margin="0,2,0,0"
+                                        ActionIcon="{ui:FontIcon Glyph=&#xE70F;}"
+                                        AutomationProperties.Name="{x:Bind AutomationName, Mode=OneWay}"
+                                        Click="EditSnippet_Click"
+                                        IsClickEnabled="True"
+                                        Tag="{x:Bind}">
+                                        <!--
+                                            The trigger as a keycap, then what the snippet does: a plain sentence for a
+                                            dynamic snippet with its saved text below, or the saved text itself.
+                                        -->
+                                        <tkcontrols:SettingsCard.Header>
+                                            <Grid ColumnSpacing="16">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <!--  As wide as the widest keycap in the list, so the descriptions line up.  -->
+                                                <Grid Width="{x:Bind KeycapColumnWidth, Mode=OneWay}">
+                                                    <Border Style="{StaticResource SnippetTriggerKeycapStyle}" ToolTipService.ToolTip="{x:Bind Trigger, Mode=OneWay}">
+                                                        <TextBlock
+                                                            VerticalAlignment="Center"
+                                                            FontFamily="Consolas"
+                                                            FontSize="14"
+                                                            FontWeight="SemiBold"
+                                                            Text="{x:Bind Trigger, Mode=OneWay}"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                    </Border>
+                                                </Grid>
+                                                <StackPanel
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    Spacing="3">
+                                                    <!--
+                                                        The sentence, with each variable it mentions as the same bubble the editor
+                                                        uses. Too long for its two lines, it shows as text, since a bubble past the
+                                                        ellipsis would be drawn over the start of the line.
+                                                    -->
+                                                    <controls:TextExpanderBubbleText
+                                                        MaxLines="2"
+                                                        Segments="{x:Bind SentenceParts, Mode=OneWay}"
+                                                        TextOnlyWhenTrimmed="True"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        TextWrapping="Wrap"
+                                                        Visibility="{x:Bind HasSentence, Mode=OneWay}" />
+                                                    <!--  No sentence: the saved text itself, on up to two of its lines. A cut-off line's cursor bar is a character.  -->
+                                                    <controls:TextExpanderBubbleText
+                                                        MaxLines="2"
+                                                        Segments="{x:Bind TitleSegments, Mode=OneWay}"
+                                                        TextOnlyWhenTrimmed="True"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        TextWrapping="NoWrap"
+                                                        Visibility="{x:Bind ShowsSavedTextAsTitle, Mode=OneWay}" />
+                                                    <!--
+                                                        The saved text on one line, all as text: WinUI draws a bubble that falls past
+                                                        the ellipsis at the start of the line, over the text.
+                                                    -->
+                                                    <controls:TextExpanderBubbleText
+                                                        FontFamily="Consolas"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        MaxLines="1"
+                                                        Segments="{x:Bind Segments, Mode=OneWay}"
+                                                        ShowBreaksAsMarkers="True"
+                                                        TextOnly="True"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        TextWrapping="NoWrap"
+                                                        Visibility="{x:Bind ShowsSavedTextBelow, Mode=OneWay}" />
+                                                    <!--  An icon and the reason in words, so color is never the only cue.  -->
+                                                    <Grid ColumnSpacing="6" Visibility="{x:Bind HasWarning, Mode=OneWay}">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <FontIcon
+                                                            Margin="0,2,0,0"
+                                                            VerticalAlignment="Top"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            FontSize="12"
+                                                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                            Glyph="&#xE7BA;" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                                            Text="{x:Bind Warning, Mode=OneWay}"
+                                                            TextWrapping="Wrap" />
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Grid>
+                                        </tkcontrols:SettingsCard.Header>
+                                        <!--  Destructive row actions belong behind a flyout on clickable rows, which also prevents competing ContentDialogs on one XamlRoot.  -->
+                                        <Button
+                                            x:Uid="More_Options_Button"
+                                            VerticalAlignment="Center"
+                                            Content="&#xE712;"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Tag="{x:Bind}">
+                                            <Button.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem
+                                                        x:Uid="TextExpander_EditSnippet"
+                                                        Click="EditSnippet_Click"
+                                                        Icon="{ui:FontIcon Glyph=&#xE70F;}"
+                                                        Tag="{x:Bind}" />
+                                                    <MenuFlyoutItem
+                                                        x:Uid="TextExpander_DuplicateSnippet"
+                                                        Click="DuplicateSnippet_Click"
+                                                        Icon="{ui:FontIcon Glyph=&#xE8C8;}"
+                                                        Tag="{x:Bind}" />
+                                                    <MenuFlyoutItem
+                                                        x:Uid="TextExpander_DeleteSnippet"
+                                                        Click="DeleteSnippet_Click"
+                                                        Icon="{ui:FontIcon Glyph=&#xE74D;}"
+                                                        Tag="{x:Bind}" />
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                            </ToolTipService.ToolTip>
+                                        </Button>
+                                    </tkcontrols:SettingsCard>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+
+                        <TextBlock
+                            x:Uid="TextExpander_NoSearchResults"
+                            Margin="0,12"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind ViewModel.HasNoMatchingSnippets, Mode=OneWay}" />
+
+                        <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.HasNoSnippets, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                x:Uid="TextExpander_NoSnippets"
+                                Margin="0,2,0,0"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE946;}" />
+                            <TextBlock
+                                x:Uid="TextExpander_StarterHint"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                            <Button
+                                x:Uid="TextExpander_StarterSignature"
+                                Click="StarterSnippet_Click"
+                                Tag="!mysig" />
+                            <Button
+                                x:Uid="TextExpander_StarterEmail"
+                                Click="StarterSnippet_Click"
+                                Tag="!myemail" />
+                            <Button
+                                x:Uid="TextExpander_StarterDate"
+                                Click="StarterSnippet_Click"
+                                Tag="!isodate" />
+                        </StackPanel>
+
+                    </controls:SettingsGroup>
+
+                    <controls:SettingsGroup x:Uid="TextExpander_Advanced_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="TextExpander_RequireWordBoundary" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="Toggle_TextExpander_RequireWordBoundary"
+                                IsOn="{x:Bind ViewModel.RequireWordBoundary, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander
+                            x:Uid="TextExpander_InjectionBackend"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}"
+                            IsExpanded="True">
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.InjectionBackendIndex, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="TextExpander_Backend_Auto" />
+                                <ComboBoxItem x:Uid="TextExpander_Backend_Clipboard" />
+                                <ComboBoxItem x:Uid="TextExpander_Backend_Type" />
+                            </ComboBox>
+                            <tkcontrols:SettingsExpander.Items>
+                                <!--  Only Automatic chooses by length, so the other methods disable it.  -->
+                                <tkcontrols:SettingsCard
+                                    x:Uid="TextExpander_ClipboardThreshold"
+                                    HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}"
+                                    IsEnabled="{x:Bind ViewModel.IsClipboardThresholdEnabled, Mode=OneWay}">
+                                    <NumberBox
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        LargeChange="10"
+                                        Maximum="1000"
+                                        Minimum="1"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.ClipboardThresholdChars, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                        <!--  Where the snippet file is saved: the folder (any sync app) and guided OneDrive sync.  -->
+                        <tkcontrols:SettingsExpander
+                            x:Name="SnippetFileExpander"
+                            x:Uid="TextExpander_SnippetFile"
+                            Collapsed="SnippetFileExpander_Collapsed"
+                            Description="{x:Bind ViewModel.SnippetFileSummary, Mode=OneWay}"
+                            Expanded="SnippetFileExpander_Expanded"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
+                            IsEnabled="{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Items>
+                                <!--  First, whether the snippets sync. The Folder row below covers other sync apps.  -->
+                                <tkcontrols:SettingsCard x:Uid="TextExpander_Sync" IsEnabled="{x:Bind ViewModel.Sync.CanToggle, Mode=OneWay}">
+                                    <!--  One way: the page decides what each flip does, so reverting it never restarts a flow.  -->
+                                    <ToggleSwitch
+                                        x:Name="SyncToggle"
+                                        x:Uid="ToggleSwitch"
+                                        AutomationProperties.AutomationId="Toggle_TextExpander_Sync"
+                                        IsOn="{x:Bind ViewModel.Sync.IsSyncOn, Mode=OneWay}"
+                                        Toggled="SyncToggle_Toggled" />
+                                </tkcontrols:SettingsCard>
+                                <!--  What goes with the toggle: the setup once it's turned on, and anything that needs attention. Changes are announced, not shown.  -->
+                                <tkcontrols:SettingsCard
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    Visibility="{x:Bind ViewModel.Sync.ShowDetails, Mode=OneWay}">
+                                    <StackPanel Spacing="12">
+
+                                        <!--  Closed InfoBars are collapsed too, so the panel's spacing doesn't count them.  -->
+                                        <InfoBar
+                                            x:Uid="TextExpander_Sync_Missing"
+                                            IsClosable="False"
+                                            IsOpen="{x:Bind ViewModel.Sync.IsOneDriveMissing, Mode=OneWay}"
+                                            Severity="Informational"
+                                            Visibility="{x:Bind ViewModel.Sync.IsOneDriveMissing, Mode=OneWay}">
+                                            <InfoBar.ActionButton>
+                                                <Button
+                                                    x:Uid="TextExpander_Sync_OpenOneDrive"
+                                                    Click="SyncOpenOneDrive_Click"
+                                                    Visibility="{x:Bind ViewModel.Sync.CanOpenOneDrive, Mode=OneWay}" />
+                                            </InfoBar.ActionButton>
+                                        </InfoBar>
+
+                                        <InfoBar
+                                            IsClosable="False"
+                                            IsOpen="{x:Bind ViewModel.Sync.HasSyncError, Mode=OneWay}"
+                                            Message="{x:Bind ViewModel.Sync.SyncError, Mode=OneWay}"
+                                            Severity="Error"
+                                            Visibility="{x:Bind ViewModel.Sync.HasSyncError, Mode=OneWay}" />
+
+                                        <!--  Syncing: only what needs attention. The toggle and the summary say the rest.  -->
+                                        <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsSynced, Mode=OneWay}">
+                                            <InfoBar
+                                                x:Uid="TextExpander_Sync_OnlineOnly"
+                                                IsClosable="False"
+                                                IsOpen="{x:Bind ViewModel.Sync.IsOnlineOnly, Mode=OneWay}"
+                                                Severity="Warning"
+                                                Visibility="{x:Bind ViewModel.Sync.IsOnlineOnly, Mode=OneWay}" />
+                                            <StackPanel Visibility="{x:Bind ViewModel.Sync.ShowKeepCopyOption, Mode=OneWay}">
+                                                <CheckBox x:Uid="TextExpander_Sync_KeepCopy" IsChecked="{x:Bind ViewModel.Sync.KeepCopyOnThisPc, Mode=TwoWay}" />
+                                                <TextBlock
+                                                    x:Uid="TextExpander_Sync_KeepCopyDescription"
+                                                    Margin="28,0,0,0"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!--  Setup: two questions, then the action for the answer.  -->
+                                        <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.Sync.IsSetupVisible, Mode=OneWay}">
+                                            <TextBlock
+                                                x:Uid="TextExpander_Sync_SetupHeading"
+                                                AutomationProperties.HeadingLevel="Level3"
+                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                            <RadioButtons
+                                                x:Name="SyncSetupKind"
+                                                x:Uid="TextExpander_Sync_SetupKind"
+                                                IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}"
+                                                SelectedIndex="{x:Bind ViewModel.Sync.SetupKindIndex, Mode=TwoWay}">
+                                                <RadioButton x:Uid="TextExpander_Sync_FirstPcOption" AutomationProperties.HelpText="{x:Bind ViewModel.Sync.FirstPcDescription, Mode=OneWay}">
+                                                    <StackPanel>
+                                                        <TextBlock x:Uid="TextExpander_Sync_FirstPc" />
+                                                        <TextBlock
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                                            Text="{x:Bind ViewModel.Sync.FirstPcDescription, Mode=OneWay}" />
+                                                    </StackPanel>
+                                                </RadioButton>
+                                                <RadioButton x:Uid="TextExpander_Sync_AnotherPcOption">
+                                                    <StackPanel>
+                                                        <TextBlock x:Uid="TextExpander_Sync_AnotherPc" />
+                                                        <TextBlock
+                                                            x:Uid="TextExpander_Sync_AnotherPcDescription"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Style="{ThemeResource CaptionTextBlockStyle}" />
+                                                    </StackPanel>
+                                                </RadioButton>
+                                            </RadioButtons>
+
+                                            <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.HasMultipleAccounts, Mode=OneWay}">
+                                                <TextBlock
+                                                    x:Uid="TextExpander_Sync_AccountHeading"
+                                                    AutomationProperties.HeadingLevel="Level3"
+                                                    Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                                <RadioButtons
+                                                    x:Uid="TextExpander_Sync_Accounts"
+                                                    IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}"
+                                                    ItemsSource="{x:Bind ViewModel.Sync.Accounts, Mode=OneWay}"
+                                                    SelectedIndex="{x:Bind ViewModel.Sync.SelectedAccountIndex, Mode=TwoWay}">
+                                                    <RadioButtons.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:TextExpanderSyncAccount">
+                                                            <StackPanel>
+                                                                <TextBlock Text="{x:Bind DisplayName}" />
+                                                                <TextBlock
+                                                                    FontFamily="Consolas"
+                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                    Text="{x:Bind VariablePath}" />
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </RadioButtons.ItemTemplate>
+                                                </RadioButtons>
+                                            </StackPanel>
+
+                                            <!--  First PC  -->
+                                            <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsFirstPcSelected, Mode=OneWay}">
+                                                <InfoBar
+                                                    x:Uid="TextExpander_Sync_Conflict"
+                                                    Title="{x:Bind ViewModel.Sync.ConflictTitle, Mode=OneWay}"
+                                                    IsClosable="False"
+                                                    IsOpen="{x:Bind ViewModel.Sync.HasConflict, Mode=OneWay}"
+                                                    Severity="Warning"
+                                                    Visibility="{x:Bind ViewModel.Sync.HasConflict, Mode=OneWay}" />
+                                                <RadioButtons
+                                                    x:Uid="TextExpander_Sync_ConflictChoices"
+                                                    SelectedIndex="{x:Bind ViewModel.Sync.ConflictChoiceIndex, Mode=TwoWay}"
+                                                    Visibility="{x:Bind ViewModel.Sync.HasConflict, Mode=OneWay}">
+                                                    <RadioButton AutomationProperties.Name="{x:Bind ViewModel.Sync.UseOneDriveChoiceText, Mode=OneWay}">
+                                                        <TextBlock Text="{x:Bind ViewModel.Sync.UseOneDriveChoiceText, Mode=OneWay}" />
+                                                    </RadioButton>
+                                                    <RadioButton x:Uid="TextExpander_Sync_ConflictReplaceOption" AutomationProperties.Name="{x:Bind ViewModel.Sync.ReplaceChoiceText, Mode=OneWay}">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{x:Bind ViewModel.Sync.ReplaceChoiceText, Mode=OneWay}" />
+                                                            <TextBlock
+                                                                x:Uid="TextExpander_Sync_ConflictReplaceDescription"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{ThemeResource CaptionTextBlockStyle}" />
+                                                        </StackPanel>
+                                                    </RadioButton>
+                                                    <RadioButton x:Uid="TextExpander_Sync_ConflictKeepBothOption" AutomationProperties.HelpText="{x:Bind ViewModel.Sync.KeepBothDescription, Mode=OneWay}">
+                                                        <StackPanel>
+                                                            <TextBlock x:Uid="TextExpander_Sync_ConflictKeepBoth" />
+                                                            <TextBlock
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind ViewModel.Sync.KeepBothDescription, Mode=OneWay}" />
+                                                        </StackPanel>
+                                                    </RadioButton>
+                                                </RadioButtons>
+                                                <Button
+                                                    x:Name="SyncCopyButton"
+                                                    Click="SyncCopy_Click"
+                                                    Content="{x:Bind ViewModel.Sync.FirstPcActionText, Mode=OneWay}"
+                                                    IsEnabled="{x:Bind ViewModel.Sync.CanCopy, Mode=OneWay}"
+                                                    Style="{StaticResource AccentButtonStyle}" />
+                                            </StackPanel>
+
+                                            <!--
+                                                Another PC: the folder the snippets were last synced in, then the standard one. If neither has them,
+                                                a search of OneDrive, then what it found: one file, several to choose from, or none.
+                                            -->
+                                            <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsAnotherPcSelected, Mode=OneWay}">
+                                                <!--  The only spinner: while looking. Finding nothing ends it.  -->
+                                                <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.Sync.IsSearching, Mode=OneWay}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ProgressRing
+                                                        Width="16"
+                                                        Height="16"
+                                                        Margin="0,2,0,0"
+                                                        VerticalAlignment="Top"
+                                                        IsActive="{x:Bind ViewModel.Sync.IsSearching, Mode=OneWay}" />
+                                                    <TextBlock
+                                                        x:Uid="TextExpander_Sync_WaitingTitle"
+                                                        Grid.Column="1"
+                                                        TextWrapping="Wrap" />
+                                                </Grid>
+
+                                                <!--  One file: what it is and, down to its name, where it is, so a wrong folder shows.  -->
+                                                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsFound, Mode=OneWay}">
+                                                    <!--  A grid, not a horizontal panel, so the text wraps beside the icon.  -->
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <FontIcon
+                                                            Margin="0,2,0,0"
+                                                            VerticalAlignment="Top"
+                                                            FontSize="16"
+                                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                                            Glyph="&#xE930;" />
+                                                        <StackPanel Grid.Column="1" Spacing="2">
+                                                            <TextBlock Text="{x:Bind ViewModel.Sync.FoundText, Mode=OneWay}" TextWrapping="Wrap" />
+                                                            <TextBlock
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                IsTextSelectionEnabled="True"
+                                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind ViewModel.Sync.FoundLocationText, Mode=OneWay}"
+                                                                TextWrapping="Wrap"
+                                                                ToolTipService.ToolTip="{x:Bind ViewModel.Sync.FoundFilePath, Mode=OneWay}" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                    <Button
+                                                        x:Name="SyncUseFoundButton"
+                                                        x:Uid="TextExpander_Sync_UseFound"
+                                                        Click="SyncUseFound_Click"
+                                                        Style="{StaticResource AccentButtonStyle}" />
+                                                    <HyperlinkButton
+                                                        x:Uid="TextExpander_Sync_ChooseFolder"
+                                                        Click="SyncChooseFolder_Click"
+                                                        IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}" />
+                                                </StackPanel>
+
+                                                <!--  Several files: newest first and selected. Only that one was read, so only it has a count.  -->
+                                                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.HasCandidates, Mode=OneWay}">
+                                                    <TextBlock
+                                                        x:Uid="TextExpander_Sync_FoundInOneDrive"
+                                                        AutomationProperties.HeadingLevel="Level3"
+                                                        Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                                    <RadioButtons
+                                                        x:Uid="TextExpander_Sync_Candidates"
+                                                        IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}"
+                                                        ItemsSource="{x:Bind ViewModel.Sync.Candidates, Mode=OneWay}"
+                                                        SelectedIndex="{x:Bind ViewModel.Sync.SelectedCandidateIndex, Mode=TwoWay}">
+                                                        <RadioButtons.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:TextExpanderSyncCandidate">
+                                                                <Grid ColumnSpacing="12" ToolTipService.ToolTip="{x:Bind FilePath}">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{x:Bind FolderName}" TextWrapping="Wrap" />
+                                                                        <TextBlock
+                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                            Text="{x:Bind Location}"
+                                                                            TextWrapping="Wrap" />
+                                                                    </StackPanel>
+                                                                    <TextBlock
+                                                                        Grid.Column="1"
+                                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                        Text="{x:Bind Details}" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </RadioButtons.ItemTemplate>
+                                                    </RadioButtons>
+                                                    <Button
+                                                        x:Name="SyncUseCandidateButton"
+                                                        x:Uid="TextExpander_Sync_UseFound"
+                                                        Click="SyncUseCandidate_Click"
+                                                        IsEnabled="{x:Bind ViewModel.Sync.CanUseCandidate, Mode=OneWay}"
+                                                        Style="{StaticResource AccentButtonStyle}" />
+                                                    <HyperlinkButton
+                                                        x:Uid="TextExpander_Sync_ChooseFolder"
+                                                        Click="SyncChooseFolder_Click"
+                                                        IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}" />
+                                                </StackPanel>
+
+                                                <!--  None: no spinner. It still watches where the snippets belong while the page is open.  -->
+                                                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsWaiting, Mode=OneWay}">
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <FontIcon
+                                                            Margin="0,2,0,0"
+                                                            VerticalAlignment="Top"
+                                                            FontSize="16"
+                                                            Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                                                            Glyph="&#xE946;" />
+                                                        <StackPanel Grid.Column="1" Spacing="2">
+                                                            <TextBlock
+                                                                x:Uid="TextExpander_Sync_NotFound"
+                                                                AutomationProperties.HeadingLevel="Level3"
+                                                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                                                TextWrapping="Wrap" />
+                                                            <TextBlock Text="{x:Bind ViewModel.Sync.NotFoundMessage, Mode=OneWay}" TextWrapping="Wrap" />
+                                                            <TextBlock
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                IsTextSelectionEnabled="True"
+                                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind ViewModel.Sync.WaitingLocationText, Mode=OneWay}"
+                                                                TextWrapping="Wrap"
+                                                                ToolTipService.ToolTip="{x:Bind ViewModel.Sync.WaitingFilePath, Mode=OneWay}" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <Button
+                                                            x:Name="SyncNotFoundChooseButton"
+                                                            x:Uid="TextExpander_Sync_ChooseFolderButton"
+                                                            Click="SyncChooseFolder_Click"
+                                                            IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}"
+                                                            Style="{StaticResource AccentButtonStyle}" />
+                                                        <Button
+                                                            x:Name="SyncCancelButton"
+                                                            x:Uid="TextExpander_Sync_CancelWaiting"
+                                                            Click="SyncCancel_Click" />
+                                                    </StackPanel>
+                                                    <HyperlinkButton
+                                                        x:Name="SyncFirstPcInsteadButton"
+                                                        x:Uid="TextExpander_Sync_FirstPcInstead"
+                                                        Click="SyncFirstPcInstead_Click" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                                <!--
+                                    The folder setting, with Browse. Shown while syncing, when a folder is set (so one outside
+                                    OneDrive can be seen and cleared), or when OneDrive isn't set up (for another sync app).
+                                    Never during the sync setup, which has its own folder picker. Empty means the PowerToys folder.
+                                -->
+                                <tkcontrols:SettingsCard
+                                    x:Uid="TextExpander_SnippetsPath"
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    Description="{x:Bind ViewModel.SnippetsFolderDescription, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.IsFolderRowVisible, Mode=OneWay}">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox
+                                            x:Uid="TextExpander_SnippetsPath_TextBox"
+                                            MinWidth="160"
+                                            IsEnabled="{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}"
+                                            PlaceholderText="{x:Bind ViewModel.DefaultSnippetsFolder, Mode=OneWay}"
+                                            Text="{x:Bind ViewModel.SnippetsPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                            ToolTipService.ToolTip="{x:Bind ViewModel.SnippetsFilePath, Mode=OneWay}" />
+                                        <Button
+                                            x:Uid="TextExpander_SnippetsPath_BrowseButton"
+                                            Grid.Column="1"
+                                            Command="{x:Bind ViewModel.BrowseForSnippetsFolderCommand, Mode=OneWay}"
+                                            IsEnabled="{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}" />
+                                    </Grid>
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                        <tkcontrols:SettingsCard x:Uid="TextExpander_TreatRemapsAsTyping" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="Toggle_TextExpander_TreatRemapsAsTyping"
+                                IsOn="{x:Bind ViewModel.TreatRemapsAsTyping, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+
+                        <!--  Reference, not a setting, so it comes last. The elevated warning stays at the top: it explains disabled controls.  -->
+                        <InfoBar
+                            x:Uid="TextExpander_PrivacyNotice"
+                            IsClosable="False"
+                            IsOpen="True"
+                            Severity="Informational">
+                            <!--
+                                One fact per bullet. A wrapped line lines up with its text, not with the bullet. The constructor
+                                insets the bullets the way InfoBar insets its own message, which custom content doesn't get.
+                            -->
+                            <StackPanel x:Name="PrivacyNoticeBullets" Spacing="4">
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock AutomationProperties.AccessibilityView="Raw" Text="&#x2022;" />
+                                    <TextBlock
+                                        x:Uid="TextExpander_PrivacyNotice_Expansion"
+                                        Grid.Column="1"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock AutomationProperties.AccessibilityView="Raw" Text="&#x2022;" />
+                                    <TextBlock
+                                        x:Uid="TextExpander_PrivacyNotice_Undo"
+                                        Grid.Column="1"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                            </StackPanel>
+                        </InfoBar>
+                    </controls:SettingsGroup>
+
+                </StackPanel>
+            </controls:SettingsPageControl.ModuleContent>
+            <controls:SettingsPageControl.SecondaryLinks>
+                <controls:PageLink x:Uid="Attribution_TextExpander" Link="https://howdyimgary.github.io/text-expander/" />
+            </controls:SettingsPageControl.SecondaryLinks>
+        </controls:SettingsPageControl>
+
+        <!--
             The editor. Kept in the page rather than its own window because a snippet is a small
             edit and a ContentDialog is the shape PowerToys already uses for one (Advanced Paste's
             custom actions, the profile editor).
@@ -185,10 +741,15 @@
         <ContentDialog
             x:Name="SnippetDialog"
             x:Uid="TextExpander_SnippetDialog"
+            Closing="SnippetDialog_Closing"
             DefaultButton="Primary"
-            IsPrimaryButtonEnabled="{x:Bind IsSnippetValid, Mode=OneWay}">
+            IsPrimaryButtonEnabled="{x:Bind IsSnippetValid, Mode=OneWay}"
+            PrimaryButtonClick="SnippetDialog_PrimaryButtonClick">
             <ScrollViewer>
-                <StackPanel Width="440" Spacing="14">
+                <StackPanel
+                    MinWidth="0"
+                    MaxWidth="440"
+                    Spacing="14">
 
                     <StackPanel Spacing="4">
                         <TextBlock x:Uid="TextExpander_Dialog_Trigger" Style="{ThemeResource BodyStrongTextBlockStyle}" />
@@ -196,6 +757,7 @@
                             x:Name="TriggerBox"
                             x:Uid="TextExpander_Dialog_TriggerBox"
                             FontFamily="Consolas"
+                            GotFocus="SnippetField_GotFocus"
                             TextChanged="SnippetField_Changed" />
                         <TextBlock
                             x:Uid="TextExpander_Dialog_TriggerHint"
@@ -216,34 +778,115 @@
                                 </Button.Flyout>
                             </Button>
                         </Grid>
-                        <TextBox
+                        <!--
+                            A RichEditBox only so the variables can be colored. The page's
+                            TextExpanderReplacementEditor keeps it plain text, with \n line breaks.
+                        -->
+                        <RichEditBox
                             x:Name="ReplacementBox"
                             x:Uid="TextExpander_Dialog_ReplacementBox"
-                            AcceptsReturn="True"
                             MinHeight="96"
-                            TextChanged="SnippetField_Changed"
+                            AcceptsReturn="True"
+                            ClipboardCopyFormat="PlainText"
+                            DisabledFormattingAccelerators="All"
+                            GotFocus="SnippetField_GotFocus"
+                            IsSpellCheckEnabled="False"
+                            IsTextPredictionEnabled="False"
                             TextWrapping="Wrap" />
+
+                        <!--
+                            The date format guide: shown while the caret is in a {{date:…}} variable, such as right after
+                            Custom format…. Its chips, added in code, put a code in at the caret.
+                        -->
+                        <StackPanel
+                            x:Name="DateFormatGuide"
+                            Margin="0,4,0,0"
+                            Spacing="6"
+                            Visibility="Collapsed">
+                            <TextBlock
+                                x:Uid="TextExpander_DateGuide_Title"
+                                FontWeight="SemiBold"
+                                Style="{ThemeResource CaptionTextBlockStyle}" />
+                            <StackPanel x:Name="DateFormatCodes" Spacing="4" />
+                            <TextBlock
+                                x:Name="DateFormatShowsAs"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                x:Uid="TextExpander_DateGuide_Tip"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                TextWrapping="Wrap" />
+                            <HyperlinkButton
+                                x:Uid="TextExpander_DateGuide_MoreCodes"
+                                Padding="0"
+                                FontSize="12"
+                                NavigateUri="https://learn.microsoft.com/dotnet/standard/base-types/custom-date-and-time-format-strings" />
+                        </StackPanel>
+
+                        <!--  RichEdit takes colors rather than brushes, so the editor reads the theme's from here.  -->
+                        <Border
+                            x:Name="VariableColorProbe"
+                            Background="{ThemeResource TextControlBackgroundFocused}"
+                            BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Visibility="Collapsed">
+                            <Border x:Name="VariableColorProbeBase" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" />
+                        </Border>
                     </StackPanel>
 
                     <InfoBar
                         IsClosable="False"
                         IsOpen="{x:Bind HasSnippetProblem, Mode=OneWay}"
                         Message="{x:Bind SnippetProblem, Mode=OneWay}"
-                        Severity="Warning" />
+                        Severity="Warning"
+                        Visibility="{x:Bind HasSnippetProblem, Mode=OneWay}" />
 
                     <StackPanel Spacing="4">
                         <TextBlock x:Uid="TextExpander_Dialog_Preview" Style="{ThemeResource BodyStrongTextBlockStyle}" />
                         <Border
+                            Padding="10"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            CornerRadius="4"
-                            Padding="10">
-                            <TextBlock
-                                Text="{x:Bind SnippetPreview, Mode=OneWay}"
-                                TextWrapping="Wrap" />
+                            CornerRadius="4">
+                            <controls:TextExpanderBubbleText x:Name="SnippetPreviewText" />
                         </Border>
+                        <TextBlock
+                            x:Name="PreviewHint"
+                            x:Uid="TextExpander_PreviewHint"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
                     </StackPanel>
+
+                    <!--  About closing, so last, right above Save and Cancel. The buttons wrap in a narrow window.  -->
+                    <InfoBar
+                        x:Name="DiscardWarning"
+                        x:Uid="TextExpander_DiscardWarning"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ShowDiscardWarning, Mode=OneWay}"
+                        Severity="Warning"
+                        Visibility="{x:Bind ShowDiscardWarning, Mode=OneWay}">
+                        <InfoBar.Content>
+                            <!--
+                                The constructor insets the buttons the way InfoBar insets its own message. Keep editing's
+                                margin spaces them: WrapPanel adds HorizontalSpacing after the last button too, which would
+                                push both buttons further in from the right.
+                            -->
+                            <tkcontrols:WrapPanel
+                                x:Name="DiscardWarningButtons"
+                                HorizontalAlignment="Right"
+                                VerticalSpacing="8">
+                                <Button
+                                    x:Name="KeepEditingButton"
+                                    x:Uid="TextExpander_KeepEditing"
+                                    Margin="0,0,8,0"
+                                    Click="KeepEditing_Click" />
+                                <Button x:Uid="TextExpander_DiscardChanges" Click="DiscardChanges_Click" />
+                            </tkcontrols:WrapPanel>
+                        </InfoBar.Content>
+                    </InfoBar>
 
                 </StackPanel>
             </ScrollViewer>

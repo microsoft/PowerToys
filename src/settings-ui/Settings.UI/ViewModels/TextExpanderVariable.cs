@@ -25,18 +25,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Token { get; }
 
         /// <summary>
-        /// Gets what this resolves to right now, or empty when it cannot be known ahead of time.
+        /// Gets what this resolves to at <paramref name="now"/>, or empty when it cannot be known
+        /// ahead of time.
         ///
         /// <para>
         /// Clipboard and prompt deliberately show nothing rather than a placeholder: inventing a
         /// sample would preview a result the user is never going to see.
         /// </para>
         /// </summary>
-        public string Sample => _dateFormat == null
+        public string SampleAt(DateTime now) => _dateFormat == null
             ? string.Empty
-            : DateTime.Now.ToString(_dateFormat, CultureInfo.InvariantCulture);
+            : now.ToString(_dateFormat, CultureInfo.InvariantCulture);
 
         /// <summary>Gets a value indicating whether there is a sample worth showing.</summary>
         public bool HasSample => _dateFormat != null;
+
+        /// <summary>Gets a value indicating whether this is the custom date format, which Insert variable offers ready-made formats for.</summary>
+        public bool IsCustomDate => Token.StartsWith("{{date:", StringComparison.Ordinal);
     }
 }

@@ -16,6 +16,9 @@ internal static class Program
     private const string MutexName = @"Global\PowerToys.TextExpander.SingleInstance";
     private const int WorkerDrainTimeoutMs = 2_000;
 
+    // How long, at most, the window a prompt was answered for gets to come back to the front.
+    private const int PromptRefocusTimeoutMs = 350;
+
     private static readonly uint RequestShutdownMessage =
         Native.RegisterWindowMessageW("PowerToys.TextExpander.RequestShutdown");
 
@@ -57,17 +60,24 @@ internal static class Program
             return 0;
         }
 
+        if (!InputTarget.ApplyIntegrityCeiling())
+        {
+            Error(EngineText.Get("Error_Elevated", "Text Expander can't run as administrator. Restart PowerToys without administrator rights."));
+            return 1;
+        }
+
         _hostSettings = HostSettings.Create(args);
 
-        _store = new SnippetStore(SnippetStore.ResolveConfiguredPath(_hostSettings?.Read().SnippetsPath, HostSettings.DataFolder(_hostSettings?.FilePath)));
+        SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(
+            _hostSettings?.Read().SnippetsPath,
+            HostSettings.DataFolder(_hostSettings?.FilePath));
+        _store = new SnippetStore(resolution.FilePath, resolution.ResolveFolderNames);
         _store.Load();
-
-        InputTarget.ApplyConfigTrust(_store.FilePath);
 
         IntPtr hwnd = CreateMessageWindow();
         if (hwnd == IntPtr.Zero)
         {
-            Error("Could not create the internal message window.");
+            Error(EngineText.Get("Error_MessageWindow", "Text Expander couldn't start because Windows didn't let it create a window it needs. Restart PowerToys to try again."));
             return 1;
         }
 
@@ -82,7 +92,7 @@ internal static class Program
         _hook = new KeyboardHook(_store);
         if (!_hook.Install())
         {
-            Error("Could not install the keyboard hook. Another program may be blocking it, or the process lacks permission.");
+            Error(EngineText.Get("Error_KeyboardHook", "Text Expander couldn't start watching what you type. Another app may be blocking it. Restart PowerToys to try again."));
             return 1;
         }
 
@@ -189,12 +199,10 @@ internal static class Program
 
         try
         {
-            string desired = SnippetStore.ResolveConfiguredPath(_hostSettings.Read().SnippetsPath, HostSettings.DataFolder(_hostSettings.FilePath));
-            int count = _store.Repoint(desired);
-            if (count >= 0)
-            {
-                InputTarget.ApplyConfigTrust(_store.FilePath);
-            }
+            SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(
+                _hostSettings.Read().SnippetsPath,
+                HostSettings.DataFolder(_hostSettings.FilePath));
+            int count = _store.Repoint(resolution.FilePath, resolution.ResolveFolderNames);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
@@ -302,6 +310,13 @@ internal static class Program
     {
         if (work.IsUndo)
         {
+            // Ctrl is normally still held from the Ctrl+Z that asked for this. Backspaces sent now
+            // would arrive as Ctrl+Backspace, which deletes whole words in most editors.
+            if (!Injector.WaitForModifierRelease(Injector.UndoModifierReleaseTimeoutMs))
+            {
+                return;
+            }
+
             if (work.TargetWindow != IntPtr.Zero && Native.GetForegroundWindow() != work.TargetWindow)
             {
                 return;
@@ -311,36 +326,36 @@ internal static class Program
             return;
         }
 
-        string text = Variables.NeedsPrompt(work.Replacement)
+        (string text, int cursor) = Variables.NeedsPrompt(work.Replacement)
             ? ExpandWithPrompts(work.Replacement, work.TargetWindow)
-            : Variables.Expand(work.Replacement, static _ => string.Empty, Clipboard.GetText);
+            : Variables.ExpandWithCursor(work.Replacement, static _ => string.Empty, Clipboard.GetText);
 
         if (work.TargetWindow != IntPtr.Zero && Native.GetForegroundWindow() != work.TargetWindow)
         {
             return;
         }
 
-        int cursorLeft = 0;
-        int marker = text.IndexOf("$|$", StringComparison.Ordinal);
-        if (marker >= 0)
-        {
-            cursorLeft = Injector.CountDeletableUnits(text[(marker + 3)..]);
-            text = text.Remove(marker, 3);
-        }
+        // The marker comes from the snippet's own text only; a "$|$" typed into a prompt or
+        // copied to the clipboard stays as it is.
+        int cursorLeft = cursor < 0 ? 0 : Injector.CountDeletableUnits(text[cursor..]);
 
-        if (Injector.ReplaceTyped(work.TypedPrefix, text, work.TargetWindow, cursorLeft))
+        bool inserted = Injector.ReplaceTyped(work.TypedPrefix, text, work.TargetWindow, cursorLeft);
+        if (ShouldRecordExpansion(inserted, work.Replacement))
         {
-            _hook!.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow);
+            _hook!.RecordExpansion(work.TypedText ?? work.Trigger, text, work.TargetWindow, work.UndoGeneration);
         }
     }
 
-    private static string ExpandWithPrompts(string replacement, IntPtr target)
+    internal static bool ShouldRecordExpansion(bool inserted, string sourceReplacement)
+        => inserted && !Variables.UsesSensitiveRuntimeInput(sourceReplacement);
+
+    private static (string Text, int Cursor) ExpandWithPrompts(string replacement, IntPtr target)
     {
         _hook!.Suspended = true;
-        string text;
+        (string Text, int Cursor) expanded;
         try
         {
-            text = Variables.Expand(replacement, PromptDialog.Show, Clipboard.GetText);
+            expanded = Variables.ExpandWithCursor(replacement, label => PromptDialog.Show(label, target), Clipboard.GetText);
         }
         finally
         {
@@ -350,14 +365,16 @@ internal static class Program
         if (target != IntPtr.Zero)
         {
             WindowFocus.Force(target);
-            Thread.Sleep(350);
+
+            // Types as soon as the window is in front again, instead of after a fixed 350 ms.
+            WindowFocus.WaitUntilInFront(target, PromptRefocusTimeoutMs);
         }
 
-        return text;
+        return expanded;
     }
 
     private static void ShowDiagnostics()
-        => Info("PowerToys Text Expander injection diagnostics\n\n"
+        => Info(EngineText.Get("Diagnostics_Title", "Text Expander diagnostics") + "\n\n"
             + InjectionDiagnostics.BuildReport(Injector.Backend, Injector.ClipboardThresholdChars));
 
     private static void WriteDiagnosticsFile()
@@ -419,7 +436,7 @@ internal static class Program
         {
             if (!toFile)
             {
-                Error("PowerToys Text Expander is not running, so there is nothing to report.");
+                Error(EngineText.Get("Diagnostics_NotRunning", "Text Expander isn't running, so there's nothing to report."));
             }
 
             return 1;
@@ -430,7 +447,7 @@ internal static class Program
         {
             if (!toFile)
             {
-                Error("PowerToys Text Expander is running but did not accept the request.");
+                Error(EngineText.Get("Diagnostics_NoAnswer", "Text Expander is running but didn't answer."));
             }
 
             return 1;
@@ -439,9 +456,12 @@ internal static class Program
         return 0;
     }
 
+    // The same name as the prompt window's title.
+    private static string MessageTitle => EngineText.Get("Message_Title", "Text Expander");
+
     private static void Info(string message)
-        => _ = Native.MessageBoxW(IntPtr.Zero, message, "PowerToys Text Expander", Native.MB_OK | Native.MB_ICONINFORMATION | Native.MB_SETFOREGROUND);
+        => _ = Native.MessageBoxW(IntPtr.Zero, message, MessageTitle, Native.MB_OK | Native.MB_ICONINFORMATION | Native.MB_SETFOREGROUND);
 
     private static void Error(string message)
-        => _ = Native.MessageBoxW(IntPtr.Zero, message, "PowerToys Text Expander", Native.MB_OK | Native.MB_ICONERROR | Native.MB_SETFOREGROUND);
+        => _ = Native.MessageBoxW(IntPtr.Zero, message, MessageTitle, Native.MB_OK | Native.MB_ICONERROR | Native.MB_SETFOREGROUND);
 }

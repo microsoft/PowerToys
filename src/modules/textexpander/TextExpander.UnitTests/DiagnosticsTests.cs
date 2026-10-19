@@ -16,6 +16,7 @@ public sealed class DiagnosticsTests
         Assert.AreEqual(InjectionHealth.Unknown, InjectionDiagnostics.Assess(InjectionBackend.Auto));
 
         InjectionDiagnostics.RecordOutcome(PasteOutcome.NotAttempted);
+        InjectionDiagnostics.RecordTypingSucceeded();
         Assert.AreEqual(InjectionHealth.Untested, InjectionDiagnostics.Assess(InjectionBackend.Auto));
 
         InjectionDiagnostics.Reset();
@@ -27,6 +28,7 @@ public sealed class DiagnosticsTests
         InjectionDiagnostics.Reset();
         InjectionDiagnostics.RecordClipboardOpen(ClipboardOpen.Unowned);
         InjectionDiagnostics.RecordOutcome(PasteOutcome.RefusedBeforeErase);
+        InjectionDiagnostics.RecordTypingSucceeded();
         Assert.AreEqual(InjectionHealth.ClipboardOwnershipDeclined, InjectionDiagnostics.Assess(InjectionBackend.Auto));
         InjectionDiagnostics.RecordClipboardRestoreSkipped();
         InjectionDiagnostics.RecordTypingAbandoned();
@@ -45,9 +47,19 @@ public sealed class DiagnosticsTests
         Assert.AreEqual(1, InjectionDiagnostics.ClipboardRestoresSkipped);
         Assert.AreEqual(0, InjectionDiagnostics.ClipboardRestoreFailures);
         Assert.AreEqual(1, InjectionDiagnostics.TypingAbandoned);
+        InjectionDiagnostics.RecordSendInputFailure();
+        Assert.AreEqual(1, InjectionDiagnostics.SendInputFailures);
         string report = InjectionDiagnostics.BuildMachineReport(InjectionBackend.Auto, 5);
         StringAssert.Contains(report, "restores_skipped=1\n");
         StringAssert.Contains(report, "typing_abandoned=1\n");
+        StringAssert.Contains(report, "send_input_failures=1\n");
+        InjectionDiagnostics.Reset();
+
+        InjectionDiagnostics.RecordOutcome(PasteOutcome.FailedAfterErase);
+        Assert.AreEqual(0, InjectionDiagnostics.Typed);
+        Assert.AreEqual(1, InjectionDiagnostics.Abandoned);
+        Assert.AreEqual(InjectionHealth.PasteUnavailable, InjectionDiagnostics.Assess(InjectionBackend.Auto));
+        StringAssert.Contains(InjectionDiagnostics.BuildMachineReport(InjectionBackend.Auto, 5), "failed_after_erase=1\n");
         InjectionDiagnostics.Reset();
     }
 }

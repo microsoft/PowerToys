@@ -1,0 +1,54 @@
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.TextExpanderBubbleText"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    IsTabStop="False">
+    <UserControl.Resources>
+        <!--  Each value filled in when a snippet runs is a bubble, in the style of a KeyVisual key. The editor's preview and the snippet list share these.  -->
+        <Style x:Key="BubbleStyle" TargetType="Border">
+            <Setter Property="Margin" Value="1,0,1,-5" />
+            <Setter Property="Padding" Value="5,1,6,2" />
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        </Style>
+        <Style x:Key="BubbleIconStyle" TargetType="FontIcon">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+        </Style>
+        <Style
+            x:Key="BubbleTextStyle"
+            BasedOn="{StaticResource CaptionTextBlockStyle}"
+            TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+        </Style>
+        <Style x:Key="CursorStyle" TargetType="Border">
+            <Setter Property="Width" Value="2" />
+            <Setter Property="Height" Value="16" />
+            <Setter Property="Margin" Value="1,0,1,-3" />
+            <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+            <Setter Property="CornerRadius" Value="1" />
+        </Style>
+        <!--  The line break and tab markers of a snippet shown on one line.  -->
+        <Style x:Key="MarkerStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="3,0,3,-4" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <RichTextBlock
+            x:Name="Block"
+            IsTextSelectionEnabled="False"
+            TextWrapping="Wrap" />
+        <!--  A text-only line's cursor takes the cursor bar's color from here, so it follows the theme.  -->
+        <Border
+            x:Name="CursorTextColor"
+            Background="{ThemeResource AccentFillColorDefaultBrush}"
+            Visibility="Collapsed" />
+    </Grid>
+</UserControl>

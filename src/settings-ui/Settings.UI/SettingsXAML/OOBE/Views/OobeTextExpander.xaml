@@ -8,11 +8,6 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <!--
-        HeroImage points at the Quick Accent asset as a placeholder. The PowerToys Design team
-        supplies the real module art, so a stand-in keeps the page working without inventing
-        branding that would only be replaced.
-    -->
     <controls:OOBEPageControl x:Uid="Oobe_TextExpander" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/TextExpander.png">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">

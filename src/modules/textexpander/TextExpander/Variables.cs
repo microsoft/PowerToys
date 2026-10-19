@@ -13,62 +13,151 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </summary>
 internal static partial class Variables
 {
-    [GeneratedRegex(@"\{\{prompt:([^}]*)\}\}")]
-    private static partial Regex PromptPattern();
+    /// <summary>Marks where the caret ends up after the snippet is inserted.</summary>
+    public const string CursorMarker = "$|$";
 
-    [GeneratedRegex(@"\{\{date:([^}]*)\}\}")]
-    private static partial Regex CustomDatePattern();
+    private const string ClipboardPlaceholder = "{{clipboard}}";
 
     /// <summary>
-    /// Expands <paramref name="text"/>. <paramref name="prompt"/> is invoked for each
-    /// {{prompt:Label}} occurrence and may return null when the user cancels.
-    /// <paramref name="clipboard"/> supplies {{clipboard}}; when it is null or returns null the
-    /// placeholder expands to nothing rather than being typed out literally.
+    /// Every value a snippet can hold, read in one pass from the left: {{date}}, {{time}},
+    /// {{datetime}}, {{isodate}}, {{date:FORMAT}} and {{prompt:Label}}. The Settings preview
+    /// (<c>TextExpanderSnippetPreview</c>) reads snippets with the same pattern.
+    /// </summary>
+    [GeneratedRegex(@"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt:(?<label>[^}]*))\}\}")]
+    private static partial Regex ValuePattern();
+
+    /// <summary>
+    /// Expands <paramref name="text"/>, keeping the snippet's cursor marker in place. See
+    /// <see cref="ExpandWithCursor"/>.
     /// </summary>
     public static string Expand(string text, Func<string, string?> prompt, Func<string?>? clipboard = null)
     {
+        (string expanded, int cursor) = ExpandWithCursor(text, prompt, clipboard);
+        return cursor < 0 ? expanded : expanded.Insert(cursor, CursorMarker);
+    }
+
+    /// <summary>
+    /// Expands <paramref name="text"/>. <paramref name="prompt"/> is invoked for each
+    /// {{prompt:Label}} occurrence, in order, and may return null when the user cancels, which
+    /// leaves that spot blank. Answers are inserted exactly as typed.
+    /// <paramref name="clipboard"/> supplies {{clipboard}}; when it is null or returns null the
+    /// placeholder expands to nothing rather than being typed out literally.
+    /// </summary>
+    /// <returns>
+    /// The text without the snippet's first cursor marker, and where that marker was, or -1.
+    /// Only the snippet's own text can place the cursor: a "$|$" in an answer, the clipboard or a
+    /// formatted date stays as typed.
+    /// </returns>
+    public static (string Text, int Cursor) ExpandWithCursor(string text, Func<string, string?> prompt, Func<string?>? clipboard = null)
+    {
+        // The snippet's own text, with each value kept apart from it: dates and answers here, the
+        // clipboard below. Only the snippet's text is read for codes: an answer such as "C:\temp"
+        // must not gain a tab, a date format that prints "\n" must keep it, and a typed
+        // "{{clipboard}}" must not paste what was copied. One pass, so a long snippet with many
+        // values costs no more than reading it.
+        var parts = new List<(string Text, bool IsValue)>();
         if (text.Contains("{{", StringComparison.Ordinal))
         {
             DateTime now = DateTime.Now;
-            var sb = new StringBuilder(text);
-            sb.Replace("{{date}}", now.ToString("MM/dd/yy", CultureInfo.InvariantCulture));
-            sb.Replace("{{time}}", now.ToString("hh:mm tt", CultureInfo.InvariantCulture));
-            sb.Replace("{{datetime}}", now.ToString("MM/dd/yy hh:mm tt", CultureInfo.InvariantCulture));
-            sb.Replace("{{isodate}}", now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-            text = sb.ToString();
-            text = CustomDatePattern().Replace(text, match => FormatDate(now, match.Groups[1].Value));
+            int last = 0;
 
-            // Each occurrence prompts separately, so two identical placeholders ask twice.
-            foreach (Match match in PromptPattern().Matches(text))
+            // Each question is asked as it's reached, so two identical ones ask twice.
+            foreach (Match match in ValuePattern().Matches(text))
             {
-                string label = match.Groups[1].Value;
-                string placeholder = "{{prompt:" + label + "}}";
-                string value = prompt(label) ?? string.Empty;
+                parts.Add((text[last..match.Index], false));
+                parts.Add((ValueOf(match, now, prompt), true));
+                last = match.Index + match.Length;
+            }
 
-                int index = text.IndexOf(placeholder, StringComparison.Ordinal);
-                if (index >= 0)
+            parts.Add((text[last..], false));
+        }
+        else
+        {
+            parts.Add((text, false));
+        }
+
+        var result = new StringBuilder(text.Length);
+        int cursor = -1;
+        string? copied = null;
+        bool clipboardRead = false;
+        foreach ((string part, bool isValue) in parts)
+        {
+            if (isValue)
+            {
+                result.Append(part);
+                continue;
+            }
+
+            string literal = part;
+            if (literal.Contains('\\', StringComparison.Ordinal))
+            {
+                literal = literal.Replace("\\n", "\n", StringComparison.Ordinal)
+                                 .Replace("\\t", "\t", StringComparison.Ordinal);
+            }
+
+            // Last, so clipboard contents are inserted verbatim. Substituting earlier would let a
+            // copied "\n" or "{{date}}" be re-read as markup and rewritten behind the user's back.
+            // Read here rather than at injection time because injection itself takes the clipboard
+            // over to paste; by then the user's contents are gone. Read once, however many times
+            // the snippet uses it.
+            int start = 0;
+            while (true)
+            {
+                int at = literal.IndexOf(ClipboardPlaceholder, start, StringComparison.Ordinal);
+                AppendSnippetText(result, at < 0 ? literal.AsSpan(start) : literal.AsSpan(start, at - start), ref cursor);
+                if (at < 0)
                 {
-                    text = string.Concat(text.AsSpan(0, index), value, text.AsSpan(index + placeholder.Length));
+                    break;
                 }
+
+                if (!clipboardRead)
+                {
+                    copied = clipboard?.Invoke();
+                    clipboardRead = true;
+                }
+
+                result.Append(copied);
+                start = at + ClipboardPlaceholder.Length;
             }
         }
 
-        if (text.Contains('\\', StringComparison.Ordinal))
+        return (result.ToString(), cursor);
+    }
+
+    /// <summary>The value one match of <see cref="ValuePattern"/> stands for.</summary>
+    private static string ValueOf(Match match, DateTime now, Func<string, string?> prompt)
+    {
+        if (match.Groups["label"].Success)
         {
-            text = text.Replace("\\n", "\n", StringComparison.Ordinal)
-                       .Replace("\\t", "\t", StringComparison.Ordinal);
+            return prompt(match.Groups["label"].Value) ?? string.Empty;
         }
 
-        // Last, so clipboard contents are inserted verbatim. Substituting earlier would let a
-        // copied "\n" or "{{date}}" be re-read as markup and rewritten behind the user's back.
-        // Read here rather than at injection time because injection itself takes the clipboard
-        // over to paste; by then the user's contents are gone.
-        if (text.Contains("{{clipboard}}", StringComparison.Ordinal))
+        if (match.Groups["format"].Success)
         {
-            text = text.Replace("{{clipboard}}", clipboard?.Invoke() ?? string.Empty, StringComparison.Ordinal);
+            return FormatDate(now, match.Groups["format"].Value);
         }
 
-        return text;
+        return match.Groups["fixed"].Value switch
+        {
+            "date" => now.ToString("MM/dd/yy", CultureInfo.InvariantCulture),
+            "time" => now.ToString("hh:mm tt", CultureInfo.InvariantCulture),
+            "datetime" => now.ToString("MM/dd/yy hh:mm tt", CultureInfo.InvariantCulture),
+            _ => now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        };
+    }
+
+    /// <summary>Appends the snippet's own text, taking out its first cursor marker and noting where it was.</summary>
+    private static void AppendSnippetText(StringBuilder result, ReadOnlySpan<char> text, ref int cursor)
+    {
+        int marker = cursor < 0 ? text.IndexOf(CursorMarker, StringComparison.Ordinal) : -1;
+        if (marker < 0)
+        {
+            result.Append(text);
+            return;
+        }
+
+        cursor = result.Length + marker;
+        result.Append(text[..marker]).Append(text[(marker + CursorMarker.Length)..]);
     }
 
     /// <summary>
@@ -166,4 +255,8 @@ internal static partial class Variables
     /// <summary>True when expanding this snippet requires showing UI.</summary>
     public static bool NeedsPrompt(string text)
         => text.Contains("{{prompt:", StringComparison.Ordinal);
+
+    /// <summary>True when expansion would incorporate user-supplied prompt or clipboard content.</summary>
+    public static bool UsesSensitiveRuntimeInput(string text)
+        => NeedsPrompt(text) || text.Contains("{{clipboard}}", StringComparison.Ordinal);
 }

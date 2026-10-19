@@ -17,7 +17,38 @@
     <UseWPF>false</UseWPF>
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <!--
+      WinUI 3 is used only for the {{prompt}} window, on its own thread, and loads the first time a
+      snippet asks for something. The engine already ships in WinUI3Apps beside the Windows App SDK
+      runtime that PowerToys' other WinUI utilities use.
+    -->
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- MRT from the Windows App SDK looks for a pri file named after the executable before resources.pri. -->
+    <ProjectPriFileName>PowerToys.TextExpander.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="PromptXAML\App.xaml" />
+    <ApplicationDefinition Include="PromptXAML\App.xaml" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+  </ItemGroup>
+
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.TextExpander.pri" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+  </Target>
 
   <ItemGroup>
     <None Remove="app.ico" />

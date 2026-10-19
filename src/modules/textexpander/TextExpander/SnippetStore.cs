@@ -5,10 +5,22 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// Loads and watches snippets.txt using the same grammar as the Settings editor.
+/// Loads and watches the snippet file using the same grammar as the Settings editor.
 /// </summary>
 internal sealed class SnippetStore : IDisposable
 {
+    /// <summary>
+    /// The name a new snippet file gets. Settings has the same name in
+    /// <c>TextExpanderSnippetFileNames.Current</c>, and a test checks that they match.
+    /// </summary>
+    internal const string FileName = "PowerToysTextExpanderSnippets.txt";
+
+    /// <summary>
+    /// The name earlier versions used. It is still read, and never renamed: OneDrive would sync
+    /// the rename to other PCs, and one still running an earlier version would lose its file.
+    /// </summary>
+    internal const string LegacyFileName = "snippets.txt";
+
     /// <summary>Immutable snapshot so the keyboard hook can read without locking.</summary>
     public sealed class Snapshot
     {
@@ -35,6 +47,7 @@ internal sealed class SnippetStore : IDisposable
     private volatile Snapshot _current = Snapshot.Empty;
     private FileSystemWatcher? _watcher;
     private Timer? _debounce;
+    private bool _resolveFolderNames;
 
     public string FilePath { get; private set; }
 
@@ -45,7 +58,11 @@ internal sealed class SnippetStore : IDisposable
     /// <summary>Raised after a successful reload. Fires on a thread pool thread.</summary>
     public event Action<int>? Reloaded;
 
-    public SnippetStore(string filePath) => FilePath = filePath;
+    public SnippetStore(string filePath, bool resolveFolderNames = false)
+    {
+        FilePath = filePath;
+        _resolveFolderNames = resolveFolderNames;
+    }
 
     // ── Path resolution ──────────────────────────────────────
 
@@ -77,12 +94,16 @@ internal sealed class SnippetStore : IDisposable
     /// </para>
     /// </summary>
     public static string ResolveConfiguredPath(string? configuredFolder, string? hostDataFolder)
+        => ResolveConfiguredPathInfo(configuredFolder, hostDataFolder).FilePath;
+
+    internal static SnippetPathResolution ResolveConfiguredPathInfo(string? configuredFolder, string? hostDataFolder)
     {
         if (string.IsNullOrWhiteSpace(configuredFolder))
         {
-            return string.IsNullOrWhiteSpace(hostDataFolder)
+            string fallback = string.IsNullOrWhiteSpace(hostDataFolder)
                 ? ResolveDefaultPath()
                 : ResolveHostPath(hostDataFolder!);
+            return new SnippetPathResolution(fallback, ResolveFolderNames: true);
         }
 
         try
@@ -96,14 +117,14 @@ internal sealed class SnippetStore : IDisposable
             {
                 string full = Path.GetFullPath(expanded);
 
-                // Accept a file too: someone will inevitably paste the path to snippets.txt itself.
+                // Accept a file too: someone will inevitably paste the path to the snippet file itself.
                 if (File.Exists(full))
                 {
-                    return full;
+                    return new SnippetPathResolution(full, ResolveFolderNames: false);
                 }
 
                 Directory.CreateDirectory(full);
-                return Path.Combine(full, "snippets.txt");
+                return new SnippetPathResolution(ResolveInFolder(full), ResolveFolderNames: true);
             }
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or IOException or UnauthorizedAccessException)
@@ -111,13 +132,14 @@ internal sealed class SnippetStore : IDisposable
             // An unusable setting must not prevent the host/default library from loading.
         }
 
-        return string.IsNullOrWhiteSpace(hostDataFolder)
+        string fallbackPath = string.IsNullOrWhiteSpace(hostDataFolder)
             ? ResolveDefaultPath()
             : ResolveHostPath(hostDataFolder!);
+        return new SnippetPathResolution(fallbackPath, ResolveFolderNames: true);
     }
 
     /// <summary>
-    /// snippets.txt inside the host data folder, falling back to the PowerToys per-user folder if that folder cannot be created.
+    /// The snippet file inside the host data folder, falling back to the PowerToys per-user folder if that folder cannot be created.
     /// </summary>
     private static string ResolveHostPath(string hostDataFolder)
     {
@@ -125,7 +147,7 @@ internal sealed class SnippetStore : IDisposable
         {
             string full = Path.GetFullPath(hostDataFolder);
             Directory.CreateDirectory(full);
-            return Path.Combine(full, "snippets.txt");
+            return ResolveInFolder(full);
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or IOException or UnauthorizedAccessException)
         {
@@ -140,7 +162,25 @@ internal sealed class SnippetStore : IDisposable
     {
         string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "TextExpander");
         Directory.CreateDirectory(appData);
-        return Path.Combine(appData, "snippets.txt");
+        return ResolveInFolder(appData);
+    }
+
+    /// <summary>
+    /// Returns the snippet file in <paramref name="folder"/>: <see cref="FileName"/> if it exists,
+    /// otherwise <see cref="LegacyFileName"/> if that exists, otherwise <see cref="FileName"/>,
+    /// which <see cref="Load"/> then creates with the starter snippets. Settings resolves a folder
+    /// with the same rule.
+    /// </summary>
+    internal static string ResolveInFolder(string folder)
+    {
+        string current = Path.Combine(folder, FileName);
+        if (File.Exists(current))
+        {
+            return current;
+        }
+
+        string legacy = Path.Combine(folder, LegacyFileName);
+        return File.Exists(legacy) ? legacy : current;
     }
 
     // ── Loading ──────────────────────────────────────────────
@@ -285,13 +325,16 @@ internal sealed class SnippetStore : IDisposable
             {
                 // Watch the directory rather than the file: many editors save by writing a
                 // temporary file and renaming over the original, which destroys a file-level watch.
-                Filter = Path.GetFileName(FilePath),
+                // A folder setting watches both supported names, so a later preferred file can
+                // replace a legacy one without Settings and the engine splitting onto two files.
+                Filter = _resolveFolderNames ? "*" : Path.GetFileName(FilePath),
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size,
                 IncludeSubdirectories = false,
             };
 
             watcher.Changed += OnFileEvent;
             watcher.Created += OnFileEvent;
+            watcher.Deleted += OnFileEvent;
             watcher.Renamed += OnFileEvent;
             watcher.Error += OnWatcherError;
             Volatile.Write(ref _watcher, watcher);
@@ -321,11 +364,12 @@ internal sealed class SnippetStore : IDisposable
     ///
     /// <para>Returns the number of snippets loaded, or -1 when the path did not change.</para>
     /// </summary>
-    public int Repoint(string newPath)
+    public int Repoint(string newPath, bool resolveFolderNames = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(newPath);
 
-        if (string.Equals(newPath, FilePath, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(newPath, FilePath, StringComparison.OrdinalIgnoreCase)
+            && resolveFolderNames == _resolveFolderNames)
         {
             return -1;
         }
@@ -336,12 +380,49 @@ internal sealed class SnippetStore : IDisposable
         _watcher = null;
 
         FilePath = newPath;
+        _resolveFolderNames = resolveFolderNames;
         int count = Load();
         StartWatching();
         return count;
     }
 
-    private void OnFileEvent(object sender, FileSystemEventArgs e) => ScheduleReload();
+    private void OnFileEvent(object sender, FileSystemEventArgs e)
+    {
+        if (IsRelevantFileName(e.Name)
+            || (e is RenamedEventArgs renamed && IsRelevantFileName(renamed.OldName)))
+        {
+            ScheduleReload();
+        }
+    }
+
+    private bool IsRelevantFileName(string? name)
+    {
+        if (!_resolveFolderNames)
+        {
+            return string.Equals(name, Path.GetFileName(FilePath), StringComparison.OrdinalIgnoreCase);
+        }
+
+        return string.Equals(name, FileName, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(name, LegacyFileName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal int ReloadPreferredPath()
+    {
+        if (_resolveFolderNames)
+        {
+            string? folder = Path.GetDirectoryName(FilePath);
+            if (!string.IsNullOrEmpty(folder))
+            {
+                string preferred = ResolveInFolder(folder);
+                if (!string.Equals(preferred, FilePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Repoint(preferred, resolveFolderNames: true);
+                }
+            }
+        }
+
+        return Load();
+    }
 
     private void OnWatcherError(object sender, ErrorEventArgs e)
     {
@@ -363,7 +444,7 @@ internal sealed class SnippetStore : IDisposable
             _debounce ??= new Timer(
                 _ =>
             {
-                int count = Load();
+                int count = ReloadPreferredPath();
                 Reloaded?.Invoke(count);
             },
                 null,
@@ -386,39 +467,69 @@ internal sealed class SnippetStore : IDisposable
     }
 
     // ── Default file ─────────────────────────────────────────
+    // Written only when the snippet file is missing; an existing file is never replaced.
     private const string DefaultSnippets = """
-        // ── Text Expander snippets ───────────────────────
-        // One snippet per line:  trigger=replacement
+        // ── PowerToys Text Expander ─────────────────────────────
+        // Built by Gary Hsu · https://github.com/howdyimgary
+        // Project: https://github.com/howdyimgary/text-expander
         //
-        // Dynamic variables (evaluated when the snippet fires):
-        //   {{date}}      current date  (mm/dd/yy)
-        //   {{time}}      current time  (hh:mm AM/PM)
-        //   {{datetime}}  date + time   (mm/dd/yy hh:mm AM/PM)
-        //   {{isodate}}   ISO date      (yyyy-mm-dd)
-        //   {{prompt:Label}}  popup asks you to type a value
+        // Type a trigger, such as !ddate, and Text Expander replaces it with its
+        // snippet. The snippets at the bottom of this file work right away.
         //
-        // Escape sequences:
-        //   \n           newline (for single-line snippets)
-        //   \t           tab
+        // ── How to write a snippet ──────────────────────────────
+        // One line:       trigger=replacement
+        // Several lines:  trigger<<<
+        //                 first line
+        //                 second line
+        //                 >>>
+        // Lines that start with //, like this one, are notes and are skipped.
+        // Changes work as soon as you save this file.
         //
-        // Multi-line snippets:
-        //   trigger<<<
-        //   First line
-        //   Second line
-        //   >>>
+        // ── Variables, filled in each time a snippet expands ────
+        // {{date}}           today's date, like 06/01/26
+        // {{time}}           the time, like 02:30 PM
+        // {{datetime}}       both, like 06/01/26 02:30 PM
+        // {{isodate}}        the date year first, like 2026-06-01
+        // {{date:FORMAT}}    a date your way: {{date:dddd, MMMM d}} gives Monday, June 1
+        //                    (dddd weekday, MMMM month, d day, yyyy year, HH:mm 24-hour time)
+        //                    Put words in single quotes, or they're read as codes:
+        //                    {{date:'Today is' dddd}} gives Today is Monday
+        // {{clipboard}}      the text you copied last, such as a link
+        // {{prompt:Label}}   asks you to type something, with Label as the question,
+        //                    like {{prompt:First name}}, and types what you enter
+        // $|$                where the cursor ends up: Dear $|$, leaves it after "Dear "
+        // \n and \t          a new line and a tab
         //
-        // Tips:
-        // - Start triggers with #
-        // - Comments start with //
-        // - This file auto-reloads whenever you save it
-        // ──────────────────────────────────────────────────────
+        // ── Tips ────────────────────────────────────────────────
+        // - Start triggers with ! so they don't fire in the middle of a word.
+        // - A trigger fires as soon as you type it, so one trigger can't be the start
+        //   of another: !sig would fire before you could finish typing !signature.
+        // - Same snippets on every PC: in PowerToys Settings > Text Expander, turn on
+        //   Sync across PCs.
+        //
+        // ── Examples: remove the // and the space after it to use one ──
+        // !hello=Hi {{prompt:First name}}, thanks for reaching out!
+        // !mdlink=[{{prompt:Link text}}]({{clipboard}})
+        // !longdate={{date:dddd, MMMM d, yyyy}}
+        // !time24={{date:HH:mm}}
+        // !todo=// TODO: $|$ ({{isodate}})
+        // !myaddr=123 Example Street\nSpringfield, ZZ 12345
+        // !tabhead=Name\tEmail\tTeam
+        // For !meeting, do that on all five of its lines:
+        // !meeting<<<
+        // Meeting notes · {{date:dddd, MMMM d, yyyy}}
+        // Attendees: $|$
+        // Next steps:
+        // >>>
+        //
+        // ── Your snippets ───────────────────────────────────────
 
-        #ddate={{date}}
-        #ttime={{time}}
-        #dt={{datetime}}
-        #iso={{isodate}}
-        #sig=Best regards,\nYour Name
-        #email=you@example.com
+        !ddate={{date}}
+        !ttime={{time}}
+        !ddt={{datetime}}
+        !isodate={{isodate}}
+        !mysig=Best regards,\nYour Name
+        !myemail=you@example.com
 
         """;
 }

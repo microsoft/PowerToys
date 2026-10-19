@@ -20,4 +20,9 @@
   <ItemGroup>
     <ProjectReference Include="..\TextExpander\TextExpander.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Settings' snippet file names, compiled here so a test can check that Settings and the engine agree. -->
+    <Compile Include="..\..\..\settings-ui\Settings.UI.Library\TextExpanderSnippetFileNames.cs" Link="Linked\TextExpanderSnippetFileNames.cs" />
+  </ItemGroup>
 </Project>

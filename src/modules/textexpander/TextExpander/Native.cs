@@ -81,6 +81,7 @@ internal static class Native
     public const int VK_SPACE = 0x20;
     public const int VK_PACKET = 0xE7;
     public const int VK_V = 0x56;
+    public const int VK_Z = 0x5A;
     public const int VK_LWIN = 0x5B;
     public const int VK_RWIN = 0x5C;
     public const int VK_LSHIFT = 0xA0;
@@ -89,12 +90,38 @@ internal static class Native
     public const int VK_RCONTROL = 0xA3;
     public const int VK_LMENU = 0xA4;
     public const int VK_RMENU = 0xA5;
+    public const int GWL_STYLE = -16;
+    public const int ES_PASSWORD = 0x0020;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GUITHREADINFO
+    {
+        public uint CbSize;
+        public uint Flags;
+        public IntPtr HwndActive;
+        public IntPtr HwndFocus;
+        public IntPtr HwndCapture;
+        public IntPtr HwndMenuOwner;
+        public IntPtr HwndMoveSize;
+        public IntPtr HwndCaret;
+        public RECT RcCaret;
+    }
 
     /// <summary>Do not change kernel keyboard state (Win10 1607+). Prevents dead-key corruption.</summary>
     public const uint TOUNICODE_NO_STATE_CHANGE = 0x4;
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO lpgui);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetClassNameW", SetLastError = true)]
+    public static extern unsafe int GetClassNameW(IntPtr hWnd, char* lpClassName, int nMaxCount);
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
+    public static extern int GetWindowLongW(IntPtr hWnd, int nIndex);
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -328,6 +355,29 @@ internal static class Native
 
     public const int SM_CXSCREEN = 0;
     public const int SM_CYSCREEN = 1;
+
+    // ── DPI, for placing the prompt window on the right screen ──
+    public const uint MONITOR_DEFAULTTONEAREST = 2;
+    public const int MDT_EFFECTIVE_DPI = 0;
+
+    /// <summary>DPI_AWARENESS_CONTEXT_UNAWARE: Windows scales the thread's windows as bitmaps.</summary>
+    public static readonly IntPtr DPI_AWARENESS_CONTEXT_UNAWARE = new(-1);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+    [DllImport("shcore.dll")]
+    public static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct RECT
@@ -580,6 +630,11 @@ internal static class Native
 
     [DllImport("kernel32.dll", SetLastError = true)]
     public static extern IntPtr OpenProcess(uint dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, uint dwProcessId);
+
+    /// <summary>Gets a process's executable path; needs only <see cref="PROCESS_QUERY_LIMITED_INFORMATION"/>.</summary>
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool QueryFullProcessImageNameW(IntPtr hProcess, uint dwFlags, [Out] char[] lpExeName, ref uint lpdwSize);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     public static extern IntPtr GetCurrentProcess();

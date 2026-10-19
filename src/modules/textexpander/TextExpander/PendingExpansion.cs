@@ -7,7 +7,7 @@ namespace Microsoft.PowerToys.TextExpander;
 /// <summary>
 /// A trigger match handed from the keyboard hook to the expansion worker.
 ///
-/// The replacement is captured at match time rather than looked up later, because snippets.txt
+/// The replacement is captured at match time rather than looked up later, because the snippet file
 /// hot-reloads and the trigger may no longer exist by the time the worker runs — which would
 /// silently eat the keystroke the hook already swallowed. The target window is captured for the
 /// same reason: injection is deliberately slow, and focus can move before it starts.
@@ -25,4 +25,15 @@ namespace Microsoft.PowerToys.TextExpander;
 /// Everything the user typed for this match, restored by Ctrl+Z. Null means the trigger itself;
 /// in word mode it also carries the terminator that released the trigger.
 /// </param>
-internal readonly record struct PendingExpansion(string Trigger, string TypedPrefix, string Replacement, IntPtr TargetWindow, bool IsUndo = false, string? TypedText = null);
+/// <param name="UndoGeneration">
+/// The keyboard-input generation at match time. The worker may retain undo only while it is still
+/// current; later user input invalidates a slow expansion before it can publish stale undo state.
+/// </param>
+internal readonly record struct PendingExpansion(
+    string Trigger,
+    string TypedPrefix,
+    string Replacement,
+    IntPtr TargetWindow,
+    bool IsUndo = false,
+    string? TypedText = null,
+    long UndoGeneration = 0);

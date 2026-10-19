@@ -66,6 +66,7 @@ internal static class InjectionDiagnostics
     private static int _clipboardRestoreFailures;
     private static int _clipboardRestoreSkipped;
     private static int _typingAbandoned;
+    private static int _sendInputFailures;
 
     private static int _lastOutcome = -1;
     private static int _lastOpen = -1;
@@ -98,6 +99,9 @@ internal static class InjectionDiagnostics
     /// delivered.
     /// </summary>
     public static int TypingAbandoned => Volatile.Read(ref _typingAbandoned);
+
+    /// <summary>Gets how often SendInput accepted fewer events than were requested.</summary>
+    public static int SendInputFailures => Volatile.Read(ref _sendInputFailures);
 
     /// <summary>Gets the last expansion's outcome, or null before the first expansion.</summary>
     public static PasteOutcome? LastOutcome
@@ -136,17 +140,15 @@ internal static class InjectionDiagnostics
 
             case PasteOutcome.NotAttempted:
                 Interlocked.Increment(ref _notAttempted);
-                Interlocked.Increment(ref _typed);
                 break;
 
             case PasteOutcome.RefusedBeforeErase:
                 Interlocked.Increment(ref _refusedBeforeErase);
-                Interlocked.Increment(ref _typed);
                 break;
 
             case PasteOutcome.FailedAfterErase:
                 Interlocked.Increment(ref _failedAfterErase);
-                Interlocked.Increment(ref _typed);
+                Interlocked.Increment(ref _abandoned);
                 break;
         }
     }
@@ -182,6 +184,14 @@ internal static class InjectionDiagnostics
     public static void RecordTypingAbandoned()
         => Interlocked.Increment(ref _typingAbandoned);
 
+    /// <summary>Records a typing fallback only after erase, text and cursor movement all succeeded.</summary>
+    public static void RecordTypingSucceeded()
+        => Interlocked.Increment(ref _typed);
+
+    /// <summary>Records a zero or partial SendInput result.</summary>
+    public static void RecordSendInputFailure()
+        => Interlocked.Increment(ref _sendInputFailures);
+
     /// <summary>Reads the overall verdict, which is the one line most people need.</summary>
     public static InjectionHealth Assess(InjectionBackend backend)
     {
@@ -195,7 +205,11 @@ internal static class InjectionDiagnostics
             return InjectionHealth.TypingByChoice;
         }
 
-        if (Typed == 0 && Abandoned == 0)
+        if (Typed == 0
+            && Abandoned == 0
+            && Volatile.Read(ref _notAttempted) == 0
+            && Volatile.Read(ref _refusedBeforeErase) == 0
+            && SendInputFailures == 0)
         {
             return InjectionHealth.Unknown;
         }
@@ -255,13 +269,16 @@ internal static class InjectionDiagnostics
 
         report.AppendLine();
         report.Append("Pasted   : ").Append(Pasted).AppendLine();
-        report.Append("Typed    : ").Append(Typed)
-              .Append("  (too short ").Append(Volatile.Read(ref _notAttempted))
-              .Append(", refused ").Append(Volatile.Read(ref _refusedBeforeErase))
-              .Append(", failed mid-paste ").Append(Volatile.Read(ref _failedAfterErase))
+        report.Append("Typed    : ").Append(Typed).AppendLine("  (completed)");
+        report.Append("Typing routes: too short ").Append(Volatile.Read(ref _notAttempted))
+              .Append(", paste refused ").Append(Volatile.Read(ref _refusedBeforeErase))
+              .AppendLine();
+        report.Append("Abandoned: ").Append(Abandoned)
+              .Append("  (focus moved or failed after erase; failed after erase ")
+              .Append(Volatile.Read(ref _failedAfterErase))
               .AppendLine(")");
-        report.Append("Abandoned: ").Append(Abandoned).AppendLine("  (focus moved)");
         report.Append("Cut short: ").Append(TypingAbandoned).AppendLine("  (focus moved mid-typing)");
+        report.Append("SendInput failures: ").Append(SendInputFailures).AppendLine();
 
         report.AppendLine();
         report.Append("Clipboard opens: ").Append(OpensOwned).Append(" owned, ")
@@ -294,12 +311,15 @@ internal static class InjectionDiagnostics
         report.Append("typed_refused=").Append(Volatile.Read(ref _refusedBeforeErase)).Append('\n');
         report.Append("typed_failed_mid_paste=").Append(Volatile.Read(ref _failedAfterErase))
               .Append('\n');
+        report.Append("failed_after_erase=").Append(Volatile.Read(ref _failedAfterErase))
+              .Append('\n');
         report.Append("opens_owned=").Append(OpensOwned).Append('\n');
         report.Append("opens_unowned=").Append(OpensUnowned).Append('\n');
         report.Append("opens_failed=").Append(OpensFailed).Append('\n');
         report.Append("restore_failures=").Append(ClipboardRestoreFailures).Append('\n');
         report.Append("restores_skipped=").Append(ClipboardRestoresSkipped).Append('\n');
         report.Append("typing_abandoned=").Append(TypingAbandoned).Append('\n');
+        report.Append("send_input_failures=").Append(SendInputFailures).Append('\n');
 
         return report.ToString();
     }
@@ -319,6 +339,7 @@ internal static class InjectionDiagnostics
         Volatile.Write(ref _clipboardRestoreFailures, 0);
         Volatile.Write(ref _clipboardRestoreSkipped, 0);
         Volatile.Write(ref _typingAbandoned, 0);
+        Volatile.Write(ref _sendInputFailures, 0);
         Volatile.Write(ref _lastOutcome, -1);
         Volatile.Write(ref _lastOpen, -1);
     }

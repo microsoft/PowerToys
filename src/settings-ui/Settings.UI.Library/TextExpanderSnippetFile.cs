@@ -4,12 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     /// <summary>
-    /// An editable view over snippets.txt that preserves everything it does not own.
+    /// An editable view over the snippet file that preserves everything it does not own.
     ///
     /// <para>
     /// <c>SnippetStore.Parse</c> in the engine answers "what does the engine expand?" and throws the rest
@@ -90,14 +91,34 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Comments and entries interleaved, in file order, so a comment stays attached to whatever
         // it was written above.
         private readonly List<object> _items = new List<object>();
+
+        // The entries alone, in file order, and by id, kept with _items, so listing or finding an
+        // entry doesn't filter every line of the file again.
+        private readonly List<Entry> _entries = new List<Entry>();
+        private readonly Dictionary<int, Entry> _byId = new Dictionary<int, Entry>();
+        private ReadOnlyCollection<Entry> _snippets;
         private int _nextId;
 
         private TextExpanderSnippetFile()
         {
         }
 
-        /// <summary>Snippets in file order. Duplicate triggers are kept; see <see cref="FindDuplicateTrigger"/>.</summary>
-        public IReadOnlyList<Entry> Snippets => _items.OfType<Entry>().ToList();
+        /// <summary>
+        /// Gets the snippets in file order, as they are now: the list follows later changes.
+        /// Duplicate triggers are kept; see <see cref="FindDuplicate"/>.
+        /// </summary>
+        public IReadOnlyList<Entry> Snippets => _snippets ??= _entries.AsReadOnly();
+
+        public TextExpanderSnippetFile Clone()
+        {
+            var clone = new TextExpanderSnippetFile { _nextId = _nextId };
+            foreach (object item in _items)
+            {
+                clone.Add(item is Entry entry ? entry.Clone() : item);
+            }
+
+            return clone;
+        }
 
         // ── Reading ──────────────────────────────────────────────
         public static TextExpanderSnippetFile Parse(string[] lines)
@@ -116,7 +137,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 if (stripped.Length == 0 || stripped.StartsWith("//", StringComparison.Ordinal))
                 {
-                    file._items.Add(new RawLine(line));
+                    file.Add(new RawLine(line));
                     continue;
                 }
 
@@ -145,7 +166,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     // write something after it, which would otherwise land inside the body.
                     if (trigger.Length > 0)
                     {
-                        file._items.Add(new Entry
+                        file.Add(new Entry
                         {
                             Id = file._nextId++,
                             Trigger = trigger,
@@ -158,7 +179,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     {
                         foreach (string skipped in lines[start..i])
                         {
-                                file._items.Add(new RawLine(skipped));
+                                file.Add(new RawLine(skipped));
                         }
                     }
 
@@ -169,7 +190,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (eq > 0)
                 {
                     int rawEq = line.IndexOf('=');
-                    file._items.Add(new Entry
+                    file.Add(new Entry
                     {
                         Id = file._nextId++,
                         Trigger = stripped.Substring(0, eq),
@@ -179,7 +200,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
                 else
                 {
-                    file._items.Add(new RawLine(line));
+                    file.Add(new RawLine(line));
                 }
             }
 
@@ -202,14 +223,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ArgumentException.ThrowIfNullOrEmpty(trigger);
             ArgumentNullException.ThrowIfNull(replacement);
 
-            if (!IsValidTrigger(trigger, out string triggerProblem))
+            if (!IsValidTrigger(trigger, out TextExpanderSnippetProblem triggerProblem))
             {
-                    throw new ArgumentException(triggerProblem, nameof(trigger));
+                    throw new ArgumentException(triggerProblem.ToString(), nameof(trigger));
             }
 
-            if (!IsValidReplacement(replacement, out string replacementProblem))
+            if (!IsValidReplacement(replacement, out TextExpanderSnippetProblem replacementProblem))
             {
-                    throw new ArgumentException(replacementProblem, nameof(replacement));
+                    throw new ArgumentException(replacementProblem.ToString(), nameof(replacement));
             }
 
             // Stored normalised so what the model holds is what a save/read cycle returns.
@@ -223,12 +244,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
 
                 var added = new Entry { Id = _nextId++, Trigger = trigger, Replacement = replacement };
-                _items.Add(added);
+                Add(added);
                 return added;
             }
 
-            Entry existing = _items.OfType<Entry>().FirstOrDefault(e => e.Id == id.Value)
-                ?? throw new InvalidOperationException($"Snippet {id.Value} is no longer in this file.");
+            if (!_byId.TryGetValue(id.Value, out Entry existing))
+            {
+                throw new InvalidOperationException($"Snippet {id.Value} is no longer in this file.");
+            }
 
             if (FindDuplicate(trigger, ignoringId: id.Value) is not null)
             {
@@ -251,8 +274,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>Removes the entry with <paramref name="id"/>. Returns true when one went.</summary>
         public bool Remove(int id)
         {
-            Entry found = _items.OfType<Entry>().FirstOrDefault(e => e.Id == id);
-            return found is not null && _items.Remove(found);
+            if (!_byId.Remove(id, out Entry found))
+            {
+                return false;
+            }
+
+            _entries.Remove(found);
+            return _items.Remove(found);
         }
 
         /// <summary>
@@ -272,7 +300,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public Entry FindDuplicate(string trigger, int? ignoringId = null)
         {
-            foreach (Entry entry in _items.OfType<Entry>())
+            foreach (Entry entry in _entries)
             {
                 if (ignoringId is not null && entry.Id == ignoringId.Value)
                 {
@@ -386,7 +414,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// single-line form where the terminator has no meaning.
         /// </para>
         /// </summary>
-        public static bool IsValidReplacement(string replacement, out string problem)
+        public static bool IsValidReplacement(string replacement, out TextExpanderSnippetProblem problem)
         {
             string normalised = NormaliseNewlines(replacement ?? string.Empty);
 
@@ -396,13 +424,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     if (line.Trim() == ">>>")
                     {
-                        problem = "A multi-line replacement cannot contain a line that is just '>>>'.";
+                        problem = TextExpanderSnippetProblem.ReplacementHasBlockEnd;
                         return false;
                     }
                 }
             }
 
-            problem = null;
+            problem = TextExpanderSnippetProblem.None;
             return true;
         }
 
@@ -412,11 +440,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// True when a trigger is safe to write. Rejects the two spellings the grammar cannot
         /// express, rather than writing a line that would parse back as something else.
         /// </summary>
-        public static bool IsValidTrigger(string trigger, out string problem)
+        public static bool IsValidTrigger(string trigger, out TextExpanderSnippetProblem problem)
         {
             if (string.IsNullOrWhiteSpace(trigger))
             {
-                problem = "Enter a trigger.";
+                problem = TextExpanderSnippetProblem.EmptyTrigger;
                 return false;
             }
 
@@ -426,7 +454,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             if (trigger.Contains('\n', StringComparison.Ordinal)
                 || trigger.Contains('\r', StringComparison.Ordinal))
             {
-                problem = "A trigger cannot contain a line break.";
+                problem = TextExpanderSnippetProblem.TriggerHasLineBreak;
                 return false;
             }
 
@@ -434,7 +462,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // not the one the user entered. Usually arrives by pasting from another editor.
             if (trigger[0] == '\uFEFF')
             {
-                problem = "A trigger cannot start with a byte order mark.";
+                problem = TextExpanderSnippetProblem.TriggerStartsWithHiddenCharacter;
                 return false;
             }
 
@@ -442,30 +470,41 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 // A leading space is unreachable (the parser trims before reading the trigger) and a
                 // trailing one silently becomes part of it.
-                problem = "A trigger cannot start or end with a space.";
+                problem = TextExpanderSnippetProblem.TriggerHasOuterSpace;
                 return false;
             }
 
             if (trigger.Contains('=', StringComparison.Ordinal))
             {
-                problem = "A trigger cannot contain '='.";
+                problem = TextExpanderSnippetProblem.TriggerHasEquals;
                 return false;
             }
 
             if (trigger.EndsWith("<<<", StringComparison.Ordinal))
             {
-                problem = "A trigger cannot end with '<<<'.";
+                problem = TextExpanderSnippetProblem.TriggerEndsWithBlockStart;
                 return false;
             }
 
             if (trigger.StartsWith("//", StringComparison.Ordinal))
             {
-                problem = "A trigger cannot start with '//'.";
+                problem = TextExpanderSnippetProblem.TriggerStartsWithComment;
                 return false;
             }
 
-            problem = null;
+            problem = TextExpanderSnippetProblem.None;
             return true;
+        }
+
+        /// <summary>Appends a line or an entry, keeping the entry lists in step.</summary>
+        private void Add(object item)
+        {
+            _items.Add(item);
+            if (item is Entry entry)
+            {
+                _entries.Add(entry);
+                _byId[entry.Id] = entry;
+            }
         }
     }
 }

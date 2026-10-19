@@ -14,6 +14,7 @@
 
 #include <shlobj.h>
 #include <string>
+#include <vector>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
@@ -80,6 +81,75 @@ private:
     bool is_process_running()
     {
         return p_info.hProcess && WaitForSingleObject(p_info.hProcess, 0) == WAIT_TIMEOUT;
+    }
+
+    bool create_process_from_shell(const std::wstring& application_path, std::wstring& command_line, PROCESS_INFORMATION* process_info)
+    {
+        HWND shell_window = GetShellWindow();
+        if (!shell_window)
+        {
+            Logger::error(L"PowerToys Text Expander could not find the desktop shell to launch its medium-integrity engine");
+            return false;
+        }
+
+        DWORD shell_pid = 0;
+        GetWindowThreadProcessId(shell_window, &shell_pid);
+        HANDLE shell_process = shell_pid ? OpenProcess(PROCESS_CREATE_PROCESS, FALSE, shell_pid) : nullptr;
+        if (!shell_process)
+        {
+            Logger::error(L"PowerToys Text Expander could not open the desktop shell process");
+            return false;
+        }
+
+        SIZE_T attribute_list_size = 0;
+        InitializeProcThreadAttributeList(nullptr, 1, 0, &attribute_list_size);
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER || attribute_list_size == 0)
+        {
+            CloseHandle(shell_process);
+            Logger::error(L"PowerToys Text Expander could not size process attributes");
+            return false;
+        }
+
+        std::vector<char> attribute_buffer(attribute_list_size);
+        auto attribute_list = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(attribute_buffer.data());
+        if (!InitializeProcThreadAttributeList(attribute_list, 1, 0, &attribute_list_size))
+        {
+            CloseHandle(shell_process);
+            Logger::error(L"PowerToys Text Expander could not initialize process attributes");
+            return false;
+        }
+
+        HANDLE parent_process = shell_process;
+        bool attributes_set = UpdateProcThreadAttribute(
+            attribute_list,
+            0,
+            PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
+            &parent_process,
+            sizeof(parent_process),
+            nullptr,
+            nullptr);
+
+        STARTUPINFOEXW startup_info = {};
+        startup_info.StartupInfo.cb = sizeof(startup_info);
+        startup_info.lpAttributeList = attribute_list;
+
+        bool created = attributes_set && CreateProcessW(
+            application_path.c_str(),
+            command_line.data(),
+            nullptr,
+            nullptr,
+            FALSE,
+            EXTENDED_STARTUPINFO_PRESENT,
+            nullptr,
+            nullptr,
+            &startup_info.StartupInfo,
+            process_info);
+
+        DWORD error = created ? ERROR_SUCCESS : GetLastError();
+        DeleteProcThreadAttributeList(attribute_list);
+        CloseHandle(shell_process);
+        SetLastError(error);
+        return created;
     }
 
     // Closes both handles and clears the record. CreateProcess does not touch
@@ -156,12 +226,10 @@ private:
             settings_argument();
         Logger::trace(L"PowerToys TextExpander launching: " + full_command_path);
 
-        STARTUPINFOW info = { sizeof(info) };
-
-        if (!CreateProcessW(application_path.c_str(), full_command_path.data(), NULL, NULL, true, NULL, NULL, NULL, &info, &p_info))
+        if (!create_process_from_shell(application_path, full_command_path, &p_info))
         {
             DWORD error = GetLastError();
-            std::wstring message = L"PowerToys TextExpander failed to start with error: ";
+            std::wstring message = L"PowerToys Text Expander failed to start as the desktop user with error: ";
             message += std::to_wstring(error);
             Logger::error(message);
             p_info = {};

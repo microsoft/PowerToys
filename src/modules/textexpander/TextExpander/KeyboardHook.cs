@@ -27,22 +27,32 @@ internal sealed class KeyboardHook : IDisposable
     /// <summary>Tags our own synthetic input so we never react to it.</summary>
     public static readonly IntPtr InjectionSignature = new(0x47544558); // "GTEX"
 
-    private const int BufferCapacity = 256;
+    private const int MinimumBufferCapacity = 256;
 
     // These delegates must be kept alive for the lifetime of the hooks. If they are collected
     // the callback address becomes invalid and the process crashes.
     private readonly Native.HookProc _hookProc;
     private readonly Native.HookProc _mouseHookProc;
     private readonly Native.WinEventProc _winEventProc;
-    private readonly char[] _buffer = new char[BufferCapacity];
+    private readonly object _bufferLock = new();
     private readonly object _undoLock = new();
     private readonly SnippetStore _store;
+    private TargetAuthorization _targetAuthorization = new(IntPtr.Zero, 0, false);
+    private long _authorizationGeneration;
+
+    // The window the hook last asked to have checked, so it asks once per window rather than per key.
+    private IntPtr _requestedAuthorizationWindow;
 
     private IntPtr _hookHandle;
     private IntPtr _mouseHookHandle;
     private IntPtr _winEventHandle;
+
+    // Grows with the longest trigger (EnsureCapacity); guarded by _bufferLock.
+    private char[] _buffer = new char[MinimumBufferCapacity];
     private int _count;
+    private bool _disposed;
     private UndoEntry? _undo;
+    private long _undoGeneration;
 
     /// <summary>Gets triggers detected but not yet expanded. Drained by the expansion worker.</summary>
     public BlockingCollection<PendingExpansion> Pending { get; } = new();
@@ -51,6 +61,10 @@ internal sealed class KeyboardHook : IDisposable
     private volatile bool _suspended;
 
     private sealed record UndoEntry(string Trigger, string Replacement, IntPtr TargetWindow);
+
+    internal sealed record TargetAuthorization(IntPtr Window, uint ProcessId, bool CanDrive);
+
+    internal long UndoGeneration => Volatile.Read(ref _undoGeneration);
 
     /// <summary>
     /// Gets or sets a value indicating whether when false, keystrokes are still observed but never expanded. Turning this off is how a
@@ -98,6 +112,8 @@ internal sealed class KeyboardHook : IDisposable
 
     public bool Install()
     {
+        RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: false);
+
         IntPtr module = Native.GetModuleHandleW(null);
         _hookHandle = Native.SetWindowsHookExW(Native.WH_KEYBOARD_LL, _hookProc, module, 0);
 
@@ -107,33 +123,25 @@ internal sealed class KeyboardHook : IDisposable
 
         _winEventHandle = Native.SetWinEventHook(Native.EVENT_SYSTEM_FOREGROUND, Native.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, _winEventProc, 0, 0, Native.WINEVENT_OUTOFCONTEXT | Native.WINEVENT_SKIPOWNPROCESS);
 
+        RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: true);
         return _hookHandle != IntPtr.Zero;
     }
 
     public void ClearBuffer() => ResetBuffer();
 
-    /// <summary>
-    /// Drops the typed-character buffer <em>and overwrites the characters themselves</em>.
-    ///
-    /// <para>
-    /// Resetting the count alone leaves everything the user typed sitting in a long-lived managed
-    /// array — passwords included, since this hook sees every keystroke on the machine and cannot
-    /// tell a credential field from a text box. That memory is reachable by a crash dump, by the
-    /// page file, and by anything that can read this process. Zeroing costs a memset of at most
-    /// 512 bytes, only on reset events rather than per keystroke.
-    /// </para>
-    ///
-    /// <para>
-    /// Everything at or past <c>_count</c> is kept zero by every path that shortens the buffer, so
-    /// clearing the live prefix is enough to leave the whole array blank.
-    /// </para>
-    /// </summary>
+    /// <summary>Clears and overwrites the characters typed since the last reset.</summary>
     private void ResetBuffer()
     {
-        // Exchanged rather than assigned. Resets arrive from the message-pump thread (a tray // pause), the expansion worker (suspending for a prompt dialog) and the hook thread
-        // itself, so taking the count and zeroing it in one step is what guarantees the range
-        // being cleared is exactly the range that was live.
-        int live = Interlocked.Exchange(ref _count, 0);
+        lock (_bufferLock)
+        {
+            ClearBufferLocked();
+        }
+    }
+
+    private void ClearBufferLocked()
+    {
+        int live = _count;
+        _count = 0;
         if (live > 0)
         {
             Array.Clear(_buffer, 0, live);
@@ -215,8 +223,48 @@ internal sealed class KeyboardHook : IDisposable
     /// <summary>Returns true when the keystroke should be swallowed because it completed a trigger.</summary>
     private bool HandleKey(Native.KBDLLHOOKSTRUCT data)
     {
-        uint vk = data.VkCode;
+        lock (_bufferLock)
+        {
+            return _disposed ? false : HandleKeyLocked(data);
+        }
+    }
 
+    private bool HandleKeyLocked(Native.KBDLLHOOKSTRUCT data)
+    {
+        if (!CanCaptureForForeground())
+        {
+            ResetBuffer();
+            ClearUndo();
+            return false;
+        }
+
+        if (IsFocusedPasswordEdit())
+        {
+            ResetBuffer();
+            ClearUndo();
+            return false;
+        }
+
+        return ProcessKeyLocked(
+            data.VkCode,
+            data.ScanCode,
+            ctrl: IsDown(Native.VK_CONTROL),
+            alt: IsDown(Native.VK_MENU),
+            shift: IsDown(Native.VK_SHIFT),
+            win: IsDown(Native.VK_LWIN) || IsDown(Native.VK_RWIN));
+    }
+
+    /// <summary>Processes a key-down that passed the capture checks, so tests can drive key sequences.</summary>
+    internal bool ProcessKey(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win)
+    {
+        lock (_bufferLock)
+        {
+            return !_disposed && ProcessKeyLocked(vk, scanCode, ctrl, alt, shift, win);
+        }
+    }
+
+    private bool ProcessKeyLocked(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win)
+    {
         if (vk == Native.VK_BACK)
         {
             ClearUndo();
@@ -231,9 +279,7 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        bool ctrl = IsDown(Native.VK_CONTROL);
-        bool alt = IsDown(Native.VK_MENU);
-        if (ctrl && !alt && vk == 0x5A)
+        if (IsUndoChord(vk, ctrl, alt, shift, win))
         {
             UndoEntry? undo;
             lock (_undoLock)
@@ -251,8 +297,13 @@ internal sealed class KeyboardHook : IDisposable
         }
 
         // Undo is intentionally one-step: any input after an expansion means the document is no
-        // longer in the state where replaying the trigger would be safe.
-        ClearUndo();
+        // longer in the state where replaying the trigger would be safe. Modifiers arrive as
+        // key-downs of their own before the key they modify, so they do not count as input;
+        // otherwise the Ctrl that necessarily precedes Z would always discard the undo.
+        if (!IsModifierKey(vk))
+        {
+            ClearUndo();
+        }
 
         if (IsResetKey(vk))
         {
@@ -262,17 +313,19 @@ internal sealed class KeyboardHook : IDisposable
 
         // Ctrl+X and Alt+X are shortcuts, not text. Ctrl+Alt together is AltGr on international
         // layouts and does produce characters, so it falls through to ToUnicodeEx.
-        if ((ctrl ^ alt) || IsDown(Native.VK_LWIN) || IsDown(Native.VK_RWIN))
+        if ((ctrl ^ alt) || win)
         {
             ResetBuffer();
             return false;
         }
 
-        if (!TryDecode(vk, data.ScanCode, out char ch))
+        if (!TryDecode(vk, scanCode, out char ch))
         {
             return false;
         }
 
+        SnippetStore.Snapshot snapshot = _store.Current;
+        EnsureCapacity(snapshot.MaxTriggerLength);
         Append(ch);
 
         if (!Enabled)
@@ -280,7 +333,6 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        SnippetStore.Snapshot snapshot = _store.Current;
         if (snapshot.MaxTriggerLength == 0)
         {
             return false;
@@ -326,20 +378,36 @@ internal sealed class KeyboardHook : IDisposable
         string expandedText = wordMode && WordBoundary.KeepTerminator ? replacement + ch : replacement;
         string? typedText = wordMode ? trigger + ch : null;
 
-        Pending.Add(new PendingExpansion(trigger, typedPrefix, expandedText, Native.GetForegroundWindow(), TypedText: typedText));
+        Pending.Add(new PendingExpansion(
+            trigger,
+            typedPrefix,
+            expandedText,
+            Native.GetForegroundWindow(),
+            TypedText: typedText,
+            UndoGeneration: UndoGeneration));
         return true;
     }
 
-    public void RecordExpansion(string trigger, string replacement, IntPtr targetWindow)
+    public bool RecordExpansion(string trigger, string replacement, IntPtr targetWindow)
+        => RecordExpansion(trigger, replacement, targetWindow, UndoGeneration);
+
+    internal bool RecordExpansion(string trigger, string replacement, IntPtr targetWindow, long undoGeneration)
     {
         lock (_undoLock)
         {
+            if (undoGeneration != Volatile.Read(ref _undoGeneration))
+            {
+                return false;
+            }
+
             _undo = new UndoEntry(trigger, replacement, targetWindow);
+            return true;
         }
     }
 
     public void ClearUndo()
     {
+        Interlocked.Increment(ref _undoGeneration);
         lock (_undoLock)
         {
             _undo = null;
@@ -440,6 +508,61 @@ internal sealed class KeyboardHook : IDisposable
 
     private static bool IsDown(int vk) => (Native.GetAsyncKeyState(vk) & 0x8000) != 0;
 
+    private static unsafe bool IsFocusedPasswordEdit()
+    {
+        IntPtr foreground = Native.GetForegroundWindow();
+        if (foreground == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        uint thread = Native.GetWindowThreadProcessId(foreground, out _);
+        var guiInfo = new Native.GUITHREADINFO
+        {
+            CbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Native.GUITHREADINFO>(),
+        };
+
+        if (thread == 0 || !Native.GetGUIThreadInfo(thread, ref guiInfo) || guiInfo.HwndFocus == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        Span<char> className = stackalloc char[64];
+        int length;
+        fixed (char* classNamePointer = className)
+        {
+            length = Native.GetClassNameW(guiInfo.HwndFocus, classNamePointer, className.Length);
+        }
+
+        if (length <= 0)
+        {
+            return false;
+        }
+
+        return IsPasswordEditControl(className[..length], Native.GetWindowLongW(guiInfo.HwndFocus, Native.GWL_STYLE));
+    }
+
+    internal static bool IsPasswordEditControl(ReadOnlySpan<char> className, int style)
+        => (style & Native.ES_PASSWORD) != 0
+            && (className.Equals("Edit", StringComparison.OrdinalIgnoreCase)
+                || className.StartsWith("RichEdit", StringComparison.OrdinalIgnoreCase)
+
+                // WinForms TextBox and MaskedTextBox: "WindowsForms10.EDIT.app.0.<hash>". The class
+                // name and style are enough; the hook never sends messages to another process.
+                || className.StartsWith("WindowsForms10.EDIT.", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Ctrl+Z on its own. Ctrl+Shift+Z is redo in many apps, and Ctrl+Alt is AltGr.</summary>
+    internal static bool IsUndoChord(uint vk, bool ctrl, bool alt, bool shift, bool win)
+        => vk == Native.VK_Z && ctrl && !alt && !shift && !win;
+
+    internal static bool IsModifierKey(uint vk) => vk switch
+    {
+        Native.VK_SHIFT or Native.VK_CONTROL or Native.VK_MENU => true,
+        Native.VK_LSHIFT or Native.VK_RSHIFT or Native.VK_LCONTROL or Native.VK_RCONTROL => true,
+        Native.VK_LMENU or Native.VK_RMENU or Native.VK_LWIN or Native.VK_RWIN => true,
+        _ => false,
+    };
+
     private static bool IsResetKey(uint vk) => vk switch
     {
         Native.VK_RETURN or Native.VK_TAB or Native.VK_ESCAPE => true,
@@ -451,11 +574,35 @@ internal sealed class KeyboardHook : IDisposable
         _ => false,
     };
 
+    /// <summary>
+    /// Gets the buffer size that always holds the longest trigger. A full buffer keeps its newest
+    /// half, so that half must fit the trigger, the character in front of it (for the word-start
+    /// check) and, in word mode, the space or punctuation after it.
+    /// </summary>
+    internal static int CapacityFor(int maxTriggerLength) => Math.Max(MinimumBufferCapacity, 2 * (maxTriggerLength + 2));
+
+    /// <summary>Grows the buffer for a longer trigger, keeping what was typed. It never shrinks.</summary>
+    private void EnsureCapacity(int maxTriggerLength)
+    {
+        int needed = CapacityFor(maxTriggerLength);
+        if (_buffer.Length >= needed)
+        {
+            return;
+        }
+
+        char[] larger = new char[needed];
+        Array.Copy(_buffer, larger, _count);
+
+        // Keystrokes don't stay behind in the old array.
+        Array.Clear(_buffer);
+        _buffer = larger;
+    }
+
     private void Append(char ch)
     {
         if (_count == _buffer.Length)
         {
-            // Keep the most recent half; triggers are far shorter than the buffer.
+            // Keep the most recent half, which EnsureCapacity makes long enough for any trigger.
             int keep = _buffer.Length / 2;
             Array.Copy(_buffer, _buffer.Length - keep, _buffer, 0, keep);
             _count = keep;
@@ -473,15 +620,102 @@ internal sealed class KeyboardHook : IDisposable
     {
         ResetBuffer();
         ClearUndo();
+        _requestedAuthorizationWindow = IntPtr.Zero;
+        RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: true);
     }
+
+    private bool CanCaptureForForeground()
+    {
+        IntPtr foreground = Native.GetForegroundWindow();
+        uint foregroundProcessId = 0;
+        uint thread = foreground == IntPtr.Zero
+            ? 0
+            : Native.GetWindowThreadProcessId(foreground, out foregroundProcessId);
+        if (thread == 0 || foregroundProcessId == 0)
+        {
+            return false;
+        }
+
+        TargetAuthorization authorization = Volatile.Read(ref _targetAuthorization);
+        if (IsAuthorizedForeground(foreground, foregroundProcessId, authorization))
+        {
+            return true;
+        }
+
+        // A window activated through AttachThreadInput, as WindowFocus.Force does when a prompt
+        // hands focus back, raises the foreground event while GetForegroundWindow still reports
+        // the window it is leaving, so that event checks the wrong window. Check the one actually
+        // in front instead, off this path and once, so typing there expands again.
+        if (NeedsAuthorization(foreground, authorization, _requestedAuthorizationWindow))
+        {
+            _requestedAuthorizationWindow = foreground;
+            RefreshTargetAuthorization(foreground, asynchronous: true);
+        }
+
+        return false;
+    }
+
+    private void RefreshTargetAuthorization(IntPtr window, bool asynchronous)
+    {
+        long generation = Interlocked.Increment(ref _authorizationGeneration);
+        Volatile.Write(ref _targetAuthorization, new TargetAuthorization(IntPtr.Zero, 0, false));
+
+        if (window == IntPtr.Zero)
+        {
+            return;
+        }
+
+        uint thread = Native.GetWindowThreadProcessId(window, out uint processId);
+        if (thread == 0 || processId == 0)
+        {
+            return;
+        }
+
+        void CheckAuthorization()
+        {
+            // Off the hook's path: this runs once per foreground change, on the thread pool.
+            bool canDrive = InputTarget.CanDrive(window) && !InputTarget.IsPowerToysSettings(processId);
+            if (generation != Volatile.Read(ref _authorizationGeneration)
+                || Native.GetForegroundWindow() != window)
+            {
+                return;
+            }
+
+            uint currentThread = Native.GetWindowThreadProcessId(window, out uint currentProcessId);
+            if (currentThread != 0 && currentProcessId == processId)
+            {
+                Volatile.Write(ref _targetAuthorization, new TargetAuthorization(window, processId, canDrive));
+            }
+        }
+
+        if (asynchronous)
+        {
+            ThreadPool.QueueUserWorkItem(_ => CheckAuthorization());
+        }
+        else
+        {
+            CheckAuthorization();
+        }
+    }
+
+    internal static bool IsAuthorizedForeground(IntPtr foregroundWindow, uint foregroundProcessId, TargetAuthorization authorization)
+        => foregroundWindow != IntPtr.Zero
+            && foregroundProcessId != 0
+            && authorization.Window == foregroundWindow
+            && authorization.ProcessId == foregroundProcessId
+            && authorization.CanDrive;
+
+    /// <summary>
+    /// Gets a value indicating whether the window in front has never been checked and isn't being
+    /// checked already. A window that was checked and refused is not asked about again.
+    /// </summary>
+    internal static bool NeedsAuthorization(IntPtr foregroundWindow, TargetAuthorization authorization, IntPtr requestedWindow)
+        => foregroundWindow != IntPtr.Zero
+            && authorization.Window != foregroundWindow
+            && requestedWindow != foregroundWindow;
 
     public void Dispose()
     {
-        Pending.CompleteAdding();
-
-        // Whatever was typed last has no reason to outlive the hook that captured it.
-        ResetBuffer();
-
         if (_hookHandle != IntPtr.Zero)
         {
             Native.UnhookWindowsHookEx(_hookHandle);
@@ -498,6 +732,18 @@ internal sealed class KeyboardHook : IDisposable
         {
             Native.UnhookWinEvent(_winEventHandle);
             _winEventHandle = IntPtr.Zero;
+        }
+
+        lock (_bufferLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            Pending.CompleteAdding();
+            ClearBufferLocked();
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     /// Deliberately small. Every property here is one the engine actually honours today, so the
     /// settings page cannot offer a control that silently does nothing. Anything the engine does
     /// not yet support -- per-app exclusions, regex triggers, forms -- is left out until it does.
+    /// The one exception is <see cref="LastSyncFolder"/>, which Settings keeps for itself and
+    /// shows no control for.
     /// </summary>
     public class TextExpanderProperties
     {
@@ -19,6 +21,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("snippets_path")]
         public StringProperty SnippetsPath { get; set; }
+
+        /// <summary>
+        /// The OneDrive folder the snippets were last synced in, written the way Sync across PCs
+        /// writes <see cref="SnippetsPath"/>, such as %OneDriveCommercial%\\PowerToys\\TextExpander.
+        /// Settings records it when the snippet folder stops being in OneDrive, so turning sync
+        /// back on finds that folder again. Empty until then. The engine ignores it.
+        /// </summary>
+        [JsonPropertyName("last_sync_folder")]
+        public StringProperty LastSyncFolder { get; set; }
 
         /// <summary>
         /// How a replacement reaches the focused window: "auto", "clipboard" or "type".
@@ -70,6 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public TextExpanderProperties()
         {
             SnippetsPath = new StringProperty();
+            LastSyncFolder = new StringProperty();
             InjectionBackend = "auto";
             ClipboardThresholdChars = new IntProperty(TextExpanderSettings.DefaultClipboardThresholdChars);
             TreatRemapsAsTyping = true;

@@ -6941,6 +6941,14 @@ Text uses the current drawing color.</value>
   <data name="TextExpander.ModuleDescription" xml:space="preserve">
     <value>Expands short triggers you type into longer snippets. Type a trigger anywhere and it is replaced as you go.</value>
   </data>
+  <data name="TextExpander.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
+  <data name="Attribution_TextExpander.Text" xml:space="preserve">
+    <value>Gary Hsu's work on creating Text Expander</value>
+    <comment>Gary Hsu is a person's name and Text Expander is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
   <data name="Shell_TextExpander.Content" xml:space="preserve">
     <value>Text Expander</value>
   </data>
@@ -6950,26 +6958,347 @@ Text uses the current drawing color.</value>
   <data name="TextExpander_Snippets_GroupSettings.Header" xml:space="preserve">
     <value>Snippets</value>
   </data>
-  <data name="TextExpander_SnippetsPath.Header" xml:space="preserve">
-    <value>Snippet folder</value>
+  <data name="TextExpander_PrivacyNotice.Title" xml:space="preserve">
+    <value>Good to know</value>
   </data>
-  <data name="TextExpander_SnippetsPath.Description" xml:space="preserve">
-    <value>Leave empty to keep them with PowerToys. Point this at OneDrive or a repo to sync or version them. The file reloads automatically when you save it.</value>
+  <data name="TextExpander_PrivacyNotice_Expansion.Text" xml:space="preserve">
+    <value>Snippets don't expand in apps running as administrator or in standard Windows password boxes. They can still expand in password fields on websites and in some apps.</value>
+    <comment>First bullet of the "Good to know" note</comment>
+  </data>
+  <data name="TextExpander_PrivacyNotice_Undo.Text" xml:space="preserve">
+    <value>Right after a snippet expands, Ctrl+Z changes it back to what you typed, except for snippets that use your clipboard or ask you to type something.</value>
+    <comment>Second bullet of the "Good to know" note. Snippets that "ask you to type something" are the ones with {{prompt:…}}.</comment>
+  </data>
+  <data name="TextExpander_ElevatedEditingNotice.Title" xml:space="preserve">
+    <value>Can't edit snippets while PowerToys runs as administrator</value>
+  </data>
+  <data name="TextExpander_ElevatedEditingNotice.Message" xml:space="preserve">
+    <value>To edit snippets, restart PowerToys without administrator rights. If Always run as administrator is on in General, turn it off first.</value>
+    <comment>"Always run as administrator" is the name of a setting on the General page.</comment>
+  </data>
+  <data name="TextExpander_ElevatedSnippetAccessDenied" xml:space="preserve">
+    <value>Restart PowerToys without administrator rights to edit snippets.</value>
+  </data>
+  <data name="TextExpander_SnippetFile.Header" xml:space="preserve">
+    <value>Where your snippets are saved and synced across PCs</value>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryDefault" xml:space="preserve">
+    <value>Saved on this PC · {0} snippets</value>
+    <comment>{0} is the number of snippets, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryDefault_One" xml:space="preserve">
+    <value>Saved on this PC · {0} snippet</value>
+    <comment>{0} is the number 1.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryDefaultCountUnavailable" xml:space="preserve">
+    <value>Saved on this PC</value>
+    <comment>Shown when the snippet file can't be read, so there is no count.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryCustom" xml:space="preserve">
+    <value>Saved in a folder you chose · {0} snippets</value>
+    <comment>{0} is the number of snippets, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryCustom_One" xml:space="preserve">
+    <value>Saved in a folder you chose · {0} snippet</value>
+    <comment>{0} is the number 1.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryCustomCountUnavailable" xml:space="preserve">
+    <value>Saved in a folder you chose</value>
+    <comment>Shown when the snippet file can't be read, so there is no count.</comment>
+  </data>
+  <data name="TextExpander_SnippetFile_SummaryElevated" xml:space="preserve">
+    <value>Not available while PowerToys runs as administrator</value>
+  </data>
+  <data name="TextExpander_Sync.Header" xml:space="preserve">
+    <value>Sync across PCs</value>
+  </data>
+  <data name="TextExpander_Sync.Description" xml:space="preserve">
+    <value>Keep the same snippets on every PC with OneDrive.</value>
+  </data>
+  <data name="TextExpander_Sync_Missing.Title" xml:space="preserve">
+    <value>OneDrive isn't set up on this PC.</value>
+  </data>
+  <data name="TextExpander_Sync_Missing.Message" xml:space="preserve">
+    <value>Sign in to continue. Using another sync app? Set Folder below.</value>
+    <comment>"Folder" is the name of the setting shown just below this message.</comment>
+  </data>
+  <data name="TextExpander_Sync_OpenOneDrive.Content" xml:space="preserve">
+    <value>Open OneDrive</value>
+  </data>
+  <data name="TextExpander_Sync_OnlineOnly.Title" xml:space="preserve">
+    <value>Your snippets file is online-only.</value>
+  </data>
+  <data name="TextExpander_Sync_OnlineOnly.Message" xml:space="preserve">
+    <value>Without internet, Text Expander can't read it.</value>
+  </data>
+  <data name="TextExpander_Sync_KeepCopy.Content" xml:space="preserve">
+    <value>Keep a copy on this PC</value>
+  </data>
+  <data name="TextExpander_Sync_KeepCopyDescription.Text" xml:space="preserve">
+    <value>Same as Always keep on this device in File Explorer.</value>
+    <comment>"Always keep on this device" is the File Explorer command name for OneDrive files.</comment>
+  </data>
+  <data name="TextExpander_Sync_SetupHeading.Text" xml:space="preserve">
+    <value>Where are you setting this up?</value>
+  </data>
+  <data name="TextExpander_Sync_SetupKind.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Where are you setting this up?</value>
+  </data>
+  <data name="TextExpander_Sync_FirstPcOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>This is my first PC</value>
+  </data>
+  <data name="TextExpander_Sync_FirstPc.Text" xml:space="preserve">
+    <value>This is my first PC</value>
+  </data>
+  <data name="TextExpander_Sync_AnotherPcOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>I already set this up on another PC</value>
+  </data>
+  <data name="TextExpander_Sync_AnotherPcOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Use the snippets in OneDrive.</value>
+  </data>
+  <data name="TextExpander_Sync_AnotherPc.Text" xml:space="preserve">
+    <value>I already set this up on another PC</value>
+  </data>
+  <data name="TextExpander_Sync_AnotherPcDescription.Text" xml:space="preserve">
+    <value>Use the snippets in OneDrive.</value>
+  </data>
+  <data name="TextExpander_Sync_AccountHeading.Text" xml:space="preserve">
+    <value>OneDrive account</value>
+  </data>
+  <data name="TextExpander_Sync_Accounts.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>OneDrive account</value>
+  </data>
+  <data name="TextExpander_Sync_Conflict.Message" xml:space="preserve">
+    <value>Choose which to keep.</value>
+  </data>
+  <data name="TextExpander_Sync_ConflictChoices.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Which snippets to keep</value>
+  </data>
+  <data name="TextExpander_Sync_ConflictReplaceOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>OneDrive's copy is kept as a backup.</value>
+  </data>
+  <data name="TextExpander_Sync_ConflictReplaceDescription.Text" xml:space="preserve">
+    <value>OneDrive's copy is kept as a backup.</value>
+  </data>
+  <data name="TextExpander_Sync_ConflictKeepBothOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Keep both</value>
+  </data>
+  <data name="TextExpander_Sync_ConflictKeepBoth.Text" xml:space="preserve">
+    <value>Keep both</value>
+  </data>
+  <data name="TextExpander_Sync_UseFound.Content" xml:space="preserve">
+    <value>Use these snippets</value>
+  </data>
+  <data name="TextExpander_Sync_FoundLocation" xml:space="preserve">
+    <value>Location: {0}</value>
+    <comment>{0} is where the snippet file found in OneDrive is, down to its file name, such as "OneDrive - Contoso › PowerToys › TextExpander › snippets.txt".</comment>
+  </data>
+  <data name="TextExpander_Sync_ChooseFolder.Content" xml:space="preserve">
+    <value>Choose a different folder in OneDrive…</value>
+  </data>
+  <data name="TextExpander_Sync_FoundInOneDrive.Text" xml:space="preserve">
+    <value>Found in OneDrive</value>
+    <comment>Heading over a list of snippet files found in the user's OneDrive</comment>
+  </data>
+  <data name="TextExpander_Sync_Candidates.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Snippet files found in OneDrive</value>
+  </data>
+  <data name="TextExpander_Sync_CandidateDetails" xml:space="preserve">
+    <value>{0} snippets · {1}</value>
+    <comment>{0} is a number of snippets in a file; {1} is the date the file last changed, such as "October 18"</comment>
+  </data>
+  <data name="TextExpander_Sync_CandidateDetails_One" xml:space="preserve">
+    <value>{0} snippet · {1}</value>
+    <comment>{0} is 1; {1} is the date the file last changed, such as "October 18"</comment>
+  </data>
+  <data name="TextExpander_Sync_AnnounceSearchFound" xml:space="preserve">
+    <value>Found {0} snippet files in OneDrive.</value>
+  </data>
+  <data name="TextExpander_Sync_AnnounceSearchFound_One" xml:space="preserve">
+    <value>Found {0} snippet file in OneDrive.</value>
+  </data>
+  <data name="TextExpander_Sync_WaitingTitle.Text" xml:space="preserve">
+    <value>Looking for your snippets in OneDrive…</value>
+    <comment>Shown with a spinner while Text Expander checks the usual folder and then searches the user's OneDrive</comment>
+  </data>
+  <data name="TextExpander_Sync_NotFound.Text" xml:space="preserve">
+    <value>Couldn't find your snippets in OneDrive</value>
+  </data>
+  <data name="TextExpander_Sync_NotFoundMessage" xml:space="preserve">
+    <value>Text Expander checked the default location and searched your OneDrive. If OneDrive is still downloading them, Text Expander will start using them when they arrive.</value>
+    <comment>"them" is the user's snippets, from the heading "Couldn't find your snippets in OneDrive"</comment>
+  </data>
+  <data name="TextExpander_Sync_NotFoundChosenMessage" xml:space="preserve">
+    <value>Text Expander checked the folder you chose. If OneDrive is still downloading them, Text Expander will start using them when they arrive.</value>
+    <comment>"them" is the user's snippets, from the heading "Couldn't find your snippets in OneDrive"</comment>
+  </data>
+  <data name="TextExpander_Sync_WaitingDefaultLocation" xml:space="preserve">
+    <value>Default location: {0}</value>
+    <comment>{0} is the OneDrive folder where the snippets are normally kept, such as "OneDrive - Contoso › PowerToys › TextExpander".</comment>
+  </data>
+  <data name="TextExpander_Sync_WaitingLocation" xml:space="preserve">
+    <value>Location: {0}</value>
+    <comment>{0} is the OneDrive folder the user chose, such as "OneDrive - Contoso › Snippets".</comment>
+  </data>
+  <data name="TextExpander_Sync_ChooseFolderButton.Content" xml:space="preserve">
+    <value>Choose folder…</value>
+    <comment>Button that opens a folder picker to choose where the snippets are in OneDrive</comment>
+  </data>
+  <data name="TextExpander_Sync_FirstPcInstead.Content" xml:space="preserve">
+    <value>Set up as my first PC instead</value>
+  </data>
+  <data name="TextExpander_Sync_AnnounceNotFound" xml:space="preserve">
+    <value>Couldn't find your snippets in OneDrive.</value>
+  </data>
+  <data name="TextExpander_Sync_CancelWaiting.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextExpander_Sync_AccountPersonal" xml:space="preserve">
+    <value>OneDrive – Personal</value>
+  </data>
+  <data name="TextExpander_Sync_AccountWork" xml:space="preserve">
+    <value>OneDrive – {0} (work or school)</value>
+    <comment>{0} is the organization name from the OneDrive folder, such as Contoso.</comment>
+  </data>
+  <data name="TextExpander_Sync_AccountWorkUnnamed" xml:space="preserve">
+    <value>OneDrive – Work or school</value>
+  </data>
+  <data name="TextExpander_Sync_AccountGeneric" xml:space="preserve">
+    <value>OneDrive</value>
+  </data>
+  <data name="TextExpander_Sync_FirstPcDescription" xml:space="preserve">
+    <value>Copy my {0} snippets to OneDrive.</value>
+    <comment>{0} is the number of snippets, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_Sync_FirstPcDescription_One" xml:space="preserve">
+    <value>Copy my {0} snippet to OneDrive.</value>
+    <comment>{0} is the number 1.</comment>
+  </data>
+  <data name="TextExpander_Sync_CopyButton" xml:space="preserve">
+    <value>Copy my snippets to OneDrive</value>
+  </data>
+  <data name="TextExpander_Sync_ContinueButton" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="TextExpander_Sync_ConflictTitle" xml:space="preserve">
+    <value>OneDrive already has {0} snippets.</value>
+    <comment>{0} is the number of snippets, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_Sync_ConflictTitle_One" xml:space="preserve">
+    <value>OneDrive already has {0} snippet.</value>
+    <comment>{0} is the number 1.</comment>
+  </data>
+  <data name="TextExpander_Sync_ConflictUse" xml:space="preserve">
+    <value>Use the {0} snippets in OneDrive</value>
+    <comment>{0} is the number of snippets in OneDrive, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_Sync_ConflictUse_One" xml:space="preserve">
+    <value>Use the {0} snippet in OneDrive</value>
+    <comment>{0} is the number 1.</comment>
+  </data>
+  <data name="TextExpander_Sync_ConflictReplace" xml:space="preserve">
+    <value>Replace with this PC's {0} snippets</value>
+    <comment>{0} is the number of snippets on this PC, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_Sync_ConflictReplace_One" xml:space="preserve">
+    <value>Replace with this PC's {0} snippet</value>
+    <comment>{0} is the number 1.</comment>
+  </data>
+  <data name="TextExpander_Sync_ConflictKeepBothDescription" xml:space="preserve">
+    <value>Use OneDrive's file, and save this PC's as {0}.</value>
+    <comment>{0} is a file name such as "PowerToysTextExpanderSnippets (DESKTOP-1234).txt" or "snippets (DESKTOP-1234).txt".</comment>
+  </data>
+  <data name="TextExpander_Sync_Found" xml:space="preserve">
+    <value>Found your snippets in {0}: {1} snippets, changed {2} at {3}.</value>
+    <comment>{0} is the OneDrive account name, {1} the number of snippets, {2} the date, {3} the time.</comment>
+  </data>
+  <data name="TextExpander_Sync_Found_One" xml:space="preserve">
+    <value>Found your snippets in {0}: {1} snippet, changed {2} at {3}.</value>
+    <comment>{0} is the OneDrive account name, {1} the number 1, {2} the date, {3} the time.</comment>
+  </data>
+  <data name="TextExpander_Sync_Synced" xml:space="preserve">
+    <value>Syncing with {0} · {1} snippets</value>
+    <comment>{0} is the OneDrive account name, {1} the number of snippets.</comment>
+  </data>
+  <data name="TextExpander_Sync_Synced_One" xml:space="preserve">
+    <value>Syncing with {0} · {1} snippet</value>
+    <comment>{0} is the OneDrive account name, {1} the number 1.</comment>
+  </data>
+  <data name="TextExpander_Sync_SyncedCountUnavailable" xml:space="preserve">
+    <value>Syncing with {0}</value>
+    <comment>{0} is the OneDrive account name. Shown when the snippet file can't be read, so there is no count.</comment>
+  </data>
+  <data name="TextExpander_Sync_NoAccount" xml:space="preserve">
+    <value>Choose a OneDrive account first.</value>
+  </data>
+  <data name="TextExpander_Sync_ChooseWhichToKeep" xml:space="preserve">
+    <value>OneDrive already has snippets. Choose which to keep, then select Continue.</value>
+  </data>
+  <data name="TextExpander_Sync_FolderOutsideOneDrive" xml:space="preserve">
+    <value>That folder isn't in OneDrive. Choose a folder inside OneDrive.</value>
+  </data>
+  <data name="TextExpander_Sync_FileMissing" xml:space="preserve">
+    <value>Your snippets are no longer in that OneDrive folder.</value>
+  </data>
+  <data name="TextExpander_Sync_AnnounceCopied" xml:space="preserve">
+    <value>Your snippets are now syncing with {0}.</value>
+    <comment>{0} is the OneDrive account name.</comment>
+  </data>
+  <data name="TextExpander_Sync_AnnounceUsing" xml:space="preserve">
+    <value>Text Expander now uses the snippets in {0}.</value>
+    <comment>{0} is the OneDrive account name.</comment>
+  </data>
+  <data name="TextExpander_Sync_AnnounceArrived" xml:space="preserve">
+    <value>Found your snippets in {0}. Text Expander now uses them.</value>
+    <comment>{0} is the OneDrive account name.</comment>
+  </data>
+  <data name="TextExpander_Sync_AnnounceStopped" xml:space="preserve">
+    <value>Stopped syncing. This PC now uses its own copy of your snippets.</value>
+  </data>
+  <data name="TextExpander_Sync_StopMissingFile" xml:space="preserve">
+    <value>OneDrive's snippet file is no longer available. Text Expander is still using OneDrive.</value>
+    <comment>Shown when Stop syncing cannot copy the OneDrive snippet file back to this PC because the source file disappeared.</comment>
+  </data>
+  <data name="TextExpander_Sync_AnnounceKeepCopy" xml:space="preserve">
+    <value>A copy of your snippets will be kept on this PC.</value>
+  </data>
+  <data name="TextExpander_Sync_AnnounceWaitingCancelled" xml:space="preserve">
+    <value>Stopped looking for your snippets.</value>
+  </data>
+  <data name="TextExpander_Sync_StopDialog_Title" xml:space="preserve">
+    <value>Stop syncing with OneDrive?</value>
+  </data>
+  <data name="TextExpander_Sync_StopDialog_Content" xml:space="preserve">
+    <value>Text Expander copies the OneDrive snippets to this PC and uses that copy. The OneDrive copy isn't deleted.</value>
+  </data>
+  <data name="TextExpander_Sync_StopDialog_ContentBackup" xml:space="preserve">
+    <value>Text Expander copies the OneDrive snippets to this PC and uses that copy. This PC's previous snippets are kept beside it as {0}, and the OneDrive copy isn't deleted.</value>
+    <comment>{0} is a file name such as "PowerToysTextExpanderSnippets.backup.txt".</comment>
+  </data>
+  <data name="TextExpander_Sync_StopDialog_PrimaryButtonText" xml:space="preserve">
+    <value>Stop syncing</value>
+  </data>
+  <data name="TextExpander_Sync_StopDialog_CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextExpander_SnippetsPath.Header" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="TextExpander_SnippetsPath_Description" xml:space="preserve">
+    <value>Your snippets are saved as {0} in this folder. Leave it empty to use the PowerToys folder, or choose a folder in OneDrive or another sync app.</value>
+    <comment>{0} is the name of the snippet file in use, such as PowerToysTextExpanderSnippets.txt or snippets.txt. Don't translate it.</comment>
   </data>
   <data name="TextExpander_SnippetsPath_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
   </data>
   <data name="TextExpander_SnippetsPath_BrowseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Choose the folder that holds snippets.txt</value>
-  </data>
-  <data name="TextExpander_Injection_GroupSettings.Header" xml:space="preserve">
-    <value>How text is inserted</value>
+    <value>Choose the folder for your snippets</value>
   </data>
   <data name="TextExpander_InjectionBackend.Header" xml:space="preserve">
     <value>Insertion method</value>
   </data>
   <data name="TextExpander_InjectionBackend.Description" xml:space="preserve">
-    <value>Automatic pastes longer snippets and types short ones. Choose Always type if an app blocks pasting, or to keep snippets off your clipboard.</value>
+    <value>Automatic pastes long snippets and types short ones. Use Always type if an app blocks pasting.</value>
   </data>
   <data name="TextExpander_Backend_Auto.Content" xml:space="preserve">
     <value>Automatic</value>
@@ -6984,7 +7313,8 @@ Text uses the current drawing color.</value>
     <value>Minimum length to paste</value>
   </data>
   <data name="TextExpander_ClipboardThreshold.Description" xml:space="preserve">
-    <value>Shorter snippets are typed. Automatic only.</value>
+    <value>With Automatic, one-line snippets shorter than this are typed. Snippets with several lines are always pasted.</value>
+    <comment>"Automatic" is a choice of the Insertion method setting just above.</comment>
   </data>
   <data name="TextExpander_Advanced_GroupSettings.Header" xml:space="preserve">
     <value>Advanced</value>
@@ -7002,9 +7332,9 @@ Text uses the current drawing color.</value>
     <value>Type a short trigger and it is replaced with a longer snippet, in any app.</value>
   </data>
   <data name="Oobe_TextExpander_HowToUse.Text" xml:space="preserve">
-    <value>Put your snippets in `snippets.txt`, one per line, as `trigger=replacement`. Multi-line snippets use `trigger&lt;&lt;&lt;` and `&gt;&gt;&gt;` on their own lines.
+    <value>Add snippets in Settings, or edit PowerToysTextExpanderSnippets.txt in any text editor. Unless you sync it, the file is in %LOCALAPPDATA%\Microsoft\PowerToys\TextExpander. Write one per line, as `trigger=replacement`. Multi-line snippets use `trigger&lt;&lt;&lt;` and `&gt;&gt;&gt;` on their own lines.
 
-The file reloads whenever you save it, so there is nothing to restart. Start triggers with a character you would not normally type, such as `#`, so they cannot fire by accident.</value>
+The file reloads whenever you save it, so there is nothing to restart. Start triggers with a symbol such as `!` (for example `!mysig`) so they won't fire in the middle of a word.</value>
   </data>
   <data name="TextExpander_AddSnippet.Header" xml:space="preserve">
     <value>Add a snippet</value>
@@ -7022,7 +7352,14 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
     <value>Add one above and it starts working straight away — nothing to restart.</value>
   </data>
   <data name="TextExpander_SnippetError.Title" xml:space="preserve">
-    <value>Could not read your snippets</value>
+    <value>Can't open your snippets</value>
+  </data>
+  <data name="TextExpander_EditSnippet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="TextExpander_EditSnippet.Text" xml:space="preserve">
+    <value>Edit</value>
+    <comment>First item in a snippet's More options menu; opens the snippet in the editor</comment>
   </data>
   <data name="TextExpander_DuplicateSnippet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Duplicate</value>
@@ -7040,7 +7377,8 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
     <value>Delete snippet?</value>
   </data>
   <data name="TextExpander_DeleteSnippetDialog_Content" xml:space="preserve">
-    <value>'{0}' will stop expanding. This cannot be undone.</value>
+    <value>"{0}" will stop expanding. You can't undo this.</value>
+    <comment>{0} is the snippet's trigger, such as !mysig.</comment>
   </data>
   <data name="TextExpander_DeleteSnippetDialog_PrimaryButtonText" xml:space="preserve">
     <value>Delete</value>
@@ -7049,7 +7387,7 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
     <value>Cancel</value>
   </data>
   <data name="TextExpander_SaveSnippetsErrorDialog_Title" xml:space="preserve">
-    <value>Could not save snippets</value>
+    <value>Can't save your snippets</value>
   </data>
   <data name="TextExpander_SaveSnippetsErrorDialog_CloseButtonText" xml:space="preserve">
     <value>OK</value>
@@ -7067,19 +7405,147 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
     <value>Trigger</value>
   </data>
   <data name="TextExpander_Dialog_TriggerBox.PlaceholderText" xml:space="preserve">
-    <value>#sig</value>
+    <value>!mysig</value>
   </data>
   <data name="TextExpander_Dialog_TriggerHint.Text" xml:space="preserve">
-    <value>Start with a character you would not normally type, such as #, so it cannot fire in the middle of a word.</value>
+    <value>Start with a symbol such as ! so it won't fire in the middle of a word.</value>
   </data>
   <data name="TextExpander_Dialog_Replacement.Text" xml:space="preserve">
     <value>Replacement</value>
   </data>
   <data name="TextExpander_Dialog_ReplacementBox.PlaceholderText" xml:space="preserve">
-    <value>The text this expands into. Press Shift + Enter for a new line.</value>
+    <value>The text this expands into. Press Enter for a new line.</value>
   </data>
   <data name="TextExpander_Dialog_InsertVariable.Content" xml:space="preserve">
     <value>Insert variable</value>
+  </data>
+  <data name="TextExpander_Variable_Cursor" xml:space="preserve">
+    <value>Cursor position</value>
+    <comment>Insert variable menu: where the cursor ends up after the snippet is typed</comment>
+  </data>
+  <data name="TextExpander_Variable_Date" xml:space="preserve">
+    <value>Date</value>
+    <comment>Insert variable menu: today's date</comment>
+  </data>
+  <data name="TextExpander_Variable_Time" xml:space="preserve">
+    <value>Time</value>
+    <comment>Insert variable menu: the current time</comment>
+  </data>
+  <data name="TextExpander_Variable_DateTime" xml:space="preserve">
+    <value>Date and time</value>
+    <comment>Insert variable menu: today's date and the current time</comment>
+  </data>
+  <data name="TextExpander_Variable_IsoDate" xml:space="preserve">
+    <value>ISO date</value>
+    <comment>Insert variable menu: today's date written year first, such as 2026-06-01</comment>
+  </data>
+  <data name="TextExpander_Variable_CustomDate" xml:space="preserve">
+    <value>Custom date format</value>
+    <comment>Insert variable menu: a date in a format the user writes</comment>
+  </data>
+  <data name="TextExpander_Variable_Clipboard" xml:space="preserve">
+    <value>Clipboard contents</value>
+    <comment>Insert variable menu: the text the user copied last</comment>
+  </data>
+  <data name="TextExpander_Variable_Prompt" xml:space="preserve">
+    <value>Ask me when it runs</value>
+    <comment>Insert variable menu: asks the user to type something each time the snippet expands</comment>
+  </data>
+  <data name="TextExpander_VariableWithSample" xml:space="preserve">
+    <value>{0}  —  {1}</value>
+    <comment>An Insert variable menu item. {0} is the variable's name, such as "Date"; {1} is what it gives right now, such as "10/18/26".</comment>
+  </data>
+  <data name="TextExpander_DateFormats_Custom" xml:space="preserve">
+    <value>Custom format…</value>
+    <comment>Last item under Insert variable &gt; Custom date format. Inserts a date whose format the user writes, with a guide to the codes.</comment>
+  </data>
+  <data name="TextExpander_DatePreset_Name" xml:space="preserve">
+    <value>{0}, format {1}</value>
+    <comment>Accessible name of a ready-made date format under Insert variable &gt; Custom date format. {0} is how it comes out today, such as "Sunday, October 18"; {1} is its format code, such as "dddd, MMMM d". The codes, such as yyyy, are not translated.</comment>
+  </data>
+  <data name="TextExpander_DateGuide_Title.Text" xml:space="preserve">
+    <value>Date format codes</value>
+    <comment>Heading of the guide under the replacement box while the caret is in a {{date:…}} variable</comment>
+  </data>
+  <data name="TextExpander_DateGuide_ShowsAs" xml:space="preserve">
+    <value>Shows as: {0}</value>
+    <comment>{0} is how the date format at the caret comes out now, such as "Sunday, October 18"</comment>
+  </data>
+  <data name="TextExpander_DateGuide_Tip.Text" xml:space="preserve">
+    <value>Put words outside the braces, like Today is {{date:dddd}}.</value>
+    <comment>{{date:dddd}} is a snippet variable and is not translated</comment>
+  </data>
+  <data name="TextExpander_DateGuide_MoreCodes.Content" xml:space="preserve">
+    <value>More codes</value>
+    <comment>Link to Microsoft Learn's list of custom date and time format codes</comment>
+  </data>
+  <data name="TextExpander_DateCode_Name" xml:space="preserve">
+    <value>{0}, {1}, {2}</value>
+    <comment>Accessible name of a code in the date format guide. {0} is the code, such as yyyy; {1} says what it is, such as "year"; {2} is what it gives today, such as 2026. The codes, such as yyyy, are not translated.</comment>
+  </data>
+  <data name="TextExpander_DateCode_Year" xml:space="preserve">
+    <value>year</value>
+    <comment>What the date format code yyyy gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_YearShort" xml:space="preserve">
+    <value>year, two digits</value>
+    <comment>What the date format code yy gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_Month" xml:space="preserve">
+    <value>month</value>
+    <comment>What the date format code MMMM gives, such as October</comment>
+  </data>
+  <data name="TextExpander_DateCode_MonthShort" xml:space="preserve">
+    <value>month, short</value>
+    <comment>What the date format code MMM gives, such as Oct</comment>
+  </data>
+  <data name="TextExpander_DateCode_MonthNumberTwoDigits" xml:space="preserve">
+    <value>month number, two digits</value>
+    <comment>What the date format code MM gives, such as 03</comment>
+  </data>
+  <data name="TextExpander_DateCode_MonthNumber" xml:space="preserve">
+    <value>month number</value>
+    <comment>What the date format code M gives, such as 3</comment>
+  </data>
+  <data name="TextExpander_DateCode_Weekday" xml:space="preserve">
+    <value>weekday</value>
+    <comment>What the date format code dddd gives, such as Sunday</comment>
+  </data>
+  <data name="TextExpander_DateCode_WeekdayShort" xml:space="preserve">
+    <value>weekday, short</value>
+    <comment>What the date format code ddd gives, such as Sun</comment>
+  </data>
+  <data name="TextExpander_DateCode_DayTwoDigits" xml:space="preserve">
+    <value>day, two digits</value>
+    <comment>What the date format code dd gives, such as 08</comment>
+  </data>
+  <data name="TextExpander_DateCode_Day" xml:space="preserve">
+    <value>day</value>
+    <comment>What the date format code d gives, such as 8</comment>
+  </data>
+  <data name="TextExpander_DateCode_Hour12" xml:space="preserve">
+    <value>hour, 12-hour clock</value>
+    <comment>What the date format code h gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_Hour24" xml:space="preserve">
+    <value>hour, 24-hour clock</value>
+    <comment>What the date format code HH gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_Minutes" xml:space="preserve">
+    <value>minutes</value>
+    <comment>What the date format code mm gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_AmPm" xml:space="preserve">
+    <value>AM or PM</value>
+    <comment>What the date format code tt gives</comment>
+  </data>
+  <data name="TextExpander_DateCode_Hour12Example" xml:space="preserve">
+    <value>{0} (12-hour)</value>
+    <comment>Shown next to the code h. {0} is the hour now on a 12-hour clock, such as 4</comment>
+  </data>
+  <data name="TextExpander_DateCode_Hour24Example" xml:space="preserve">
+    <value>{0} (24-hour)</value>
+    <comment>Shown next to the code HH. {0} is the hour now on a 24-hour clock, such as 16</comment>
   </data>
   <data name="TextExpander_Dialog_Preview.Text" xml:space="preserve">
     <value>Preview</value>
@@ -7094,9 +7560,240 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
     <value>Wait for the whole word</value>
   </data>
   <data name="TextExpander_RequireWordBoundary.Description" xml:space="preserve">
-    <value>Expand after you type a space or punctuation, so a trigger does not fire inside a longer word. The space or punctuation stays in place.</value>
+    <value>Expand after you type a space or punctuation, so a trigger doesn't fire inside a longer word. The space or punctuation stays in place.</value>
   </data>
   <data name="TextExpander_SnippetsPath_TextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Snippet folder</value>
+    <value>Folder</value>
+  </data>
+  <data name="TextExpander_Search.PlaceholderText" xml:space="preserve">
+    <value>Search triggers and replacement text</value>
+  </data>
+  <data name="TextExpander_Search.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search snippets</value>
+  </data>
+  <data name="TextExpander_ClearSearch.Content" xml:space="preserve">
+    <value>Clear search</value>
+  </data>
+  <data name="TextExpander_SnippetCount" xml:space="preserve">
+    <value>Showing {0} of {1} snippets</value>
+    <comment>{0} is the filtered count; {1} is the total snippet count, two or more, or zero.</comment>
+  </data>
+  <data name="TextExpander_SnippetCount_One" xml:space="preserve">
+    <value>Showing {0} of {1} snippet</value>
+    <comment>{0} is the filtered count, 0 or 1; {1} is the total snippet count, 1.</comment>
+  </data>
+  <data name="TextExpander_NoSearchResults.Text" xml:space="preserve">
+    <value>No snippets match your search. Try different words or clear the search.</value>
+  </data>
+  <data name="TextExpander_SnippetRow.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Edit this snippet. More options contains Edit, Duplicate and Delete.</value>
+  </data>
+  <data name="TextExpander_SnippetRow.ActionIconToolTip" xml:space="preserve">
+    <value>Edit</value>
+    <comment>Tooltip on the pencil icon at the end of each snippet in the list</comment>
+  </data>
+  <data name="TextExpander_DuplicateTrigger" xml:space="preserve">
+    <value>Another snippet already uses the trigger "{0}".</value>
+    <comment>{0} is the duplicate trigger.</comment>
+  </data>
+  <data name="TextExpander_Problem_EmptyTrigger" xml:space="preserve">
+    <value>Type a trigger to save this snippet.</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerHasLineBreak" xml:space="preserve">
+    <value>A trigger can't have a line break.</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerStartsWithHiddenCharacter" xml:space="preserve">
+    <value>This trigger starts with a hidden character, usually from pasting. Type the trigger instead.</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerHasOuterSpace" xml:space="preserve">
+    <value>A trigger can't start or end with a space.</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerHasEquals" xml:space="preserve">
+    <value>A trigger can't contain "=".</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerEndsWithBlockStart" xml:space="preserve">
+    <value>A trigger can't end with "&lt;&lt;&lt;".</value>
+  </data>
+  <data name="TextExpander_Problem_TriggerStartsWithComment" xml:space="preserve">
+    <value>A trigger can't start with "//".</value>
+  </data>
+  <data name="TextExpander_Problem_ReplacementHasBlockEnd" xml:space="preserve">
+    <value>A snippet with several lines can't have a line that's only "&gt;&gt;&gt;".</value>
+  </data>
+  <data name="TextExpander_StarterHint.Text" xml:space="preserve">
+    <value>Create your first snippet, or choose an example to customize. Nothing is added until you save.</value>
+  </data>
+  <data name="TextExpander_StarterSignature.Content" xml:space="preserve">
+    <value>Email signature (!mysig)</value>
+  </data>
+  <data name="TextExpander_StarterEmail.Content" xml:space="preserve">
+    <value>Email address (!myemail)</value>
+  </data>
+  <data name="TextExpander_StarterDate.Content" xml:space="preserve">
+    <value>Today's date (!isodate)</value>
+  </data>
+  <data name="TextExpander_StarterSignature_Text" xml:space="preserve">
+    <value>Best regards,
+Your Name</value>
+  </data>
+  <data name="TextExpander_DiscardWarning.Title" xml:space="preserve">
+    <value>Discard your changes?</value>
+  </data>
+  <data name="TextExpander_KeepEditing.Content" xml:space="preserve">
+    <value>Keep editing</value>
+  </data>
+  <data name="TextExpander_DiscardChanges.Content" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="TextExpander_PreviewHint.Text" xml:space="preserve">
+    <value>Bubbles are filled in when the snippet runs.</value>
+  </data>
+  <data name="TextExpander_PreviewClipboard" xml:space="preserve">
+    <value>Clipboard</value>
+    <comment>Label of the bubble in the snippet preview that stands for whatever is on the clipboard</comment>
+  </data>
+  <data name="TextExpander_PreviewClipboard_Description" xml:space="preserve">
+    <value>Clipboard, filled in when the snippet runs</value>
+    <comment>Read by screen readers for the clipboard bubble in the snippet preview</comment>
+  </data>
+  <data name="TextExpander_PreviewPrompt_Description" xml:space="preserve">
+    <value>{0}, asked for when the snippet runs</value>
+    <comment>Read by screen readers for a question bubble in the snippet preview. {0} is the question's label, such as "First name"</comment>
+  </data>
+  <data name="TextExpander_PreviewPromptUnnamed" xml:space="preserve">
+    <value>Your answer</value>
+    <comment>Shown in the snippet preview for a question that has no label</comment>
+  </data>
+  <data name="TextExpander_PreviewValue_Description" xml:space="preserve">
+    <value>{0}, filled in when the snippet runs</value>
+    <comment>Read by screen readers for a date or time bubble in the snippet preview. {0} is today's date or the current time, such as "10/17/26"</comment>
+  </data>
+  <data name="TextExpander_PreviewCursor_Description" xml:space="preserve">
+    <value>The cursor ends up here</value>
+    <comment>Read by screen readers for the cursor marker in the snippet preview</comment>
+  </data>
+  <data name="TextExpander_Row_Link" xml:space="preserve">
+    <value>Link to {0}</value>
+    <comment>Describes a snippet in the snippet list. {0} is a website's host name, such as "contoso.com"</comment>
+  </data>
+  <data name="TextExpander_Row_LinkClipboard" xml:space="preserve">
+    <value>Link to {0} using {1}</value>
+    <comment>Describes a snippet in the snippet list. {0} is a website's host name, such as "contoso.com"; {1} is "what you copied", shown as a bubble</comment>
+  </data>
+  <data name="TextExpander_Row_LinkPrompts" xml:space="preserve">
+    <value>Link to {0}, asks for {1}</value>
+    <comment>Describes a snippet in the snippet list. {0} is a website's host name; {1} is one or more question labels, each shown as a bubble, such as "Ticket" or "Ticket and Owner"</comment>
+  </data>
+  <data name="TextExpander_Row_LinkClipboardPrompts" xml:space="preserve">
+    <value>Link to {0} using {1}, asks for {2}</value>
+    <comment>Describes a snippet in the snippet list. {0} is a website's host name; {1} is "what you copied", shown as a bubble; {2} is one or more question labels, each shown as a bubble</comment>
+  </data>
+  <data name="TextExpander_Row_Date" xml:space="preserve">
+    <value>Today's date as {0}</value>
+    <comment>Describes a snippet in the snippet list. {0} is today's date as the snippet writes it, such as "10/17/26", shown as a bubble</comment>
+  </data>
+  <data name="TextExpander_Row_Time" xml:space="preserve">
+    <value>The current time as {0}</value>
+    <comment>Describes a snippet in the snippet list. {0} is the current time as the snippet writes it, such as "02:05 PM", shown as a bubble</comment>
+  </data>
+  <data name="TextExpander_Row_Prompts" xml:space="preserve">
+    <value>Asks for {0}, then inserts the text</value>
+    <comment>Describes a snippet in the snippet list. {0} is one or more question labels, each shown as a bubble, such as "Name" or "Attendees and Topic"</comment>
+  </data>
+  <data name="TextExpander_Row_PromptsLines" xml:space="preserve">
+    <value>Asks for {0}, then inserts {1} lines</value>
+    <comment>Describes a snippet in the snippet list. {0} is one or more question labels, each shown as a bubble; {1} is a number of lines, two or more</comment>
+  </data>
+  <data name="TextExpander_Row_Clipboard" xml:space="preserve">
+    <value>Inserts {0}</value>
+    <comment>Describes a snippet in the snippet list. {0} is "what you copied", shown as a bubble</comment>
+  </data>
+  <data name="TextExpander_Row_ClipboardLines" xml:space="preserve">
+    <value>Inserts {0}, in {1} lines</value>
+    <comment>Describes a snippet in the snippet list. {0} is "what you copied", shown as a bubble; {1} is a number of lines, two or more</comment>
+  </data>
+  <data name="TextExpander_Row_JoinPair" xml:space="preserve">
+    <value>{0} and {1}</value>
+    <comment>Joins question labels in a list, such as "Attendees and Topic". {0} may already be a list joined with the separator</comment>
+  </data>
+  <data name="TextExpander_Row_JoinSeparator" xml:space="preserve">
+    <value>, </value>
+    <comment>Separates question labels in a list of three or more, before the last one is joined with "and"</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenLines" xml:space="preserve">
+    <value>{0}, {1} lines</value>
+    <comment>Read by screen readers for a snippet with several lines, since the list shows two at most. {0} is the snippet, read aloud; {1} is the number of lines, two or more</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsDuplicate" xml:space="preserve">
+    <value>Never expands: the "{0}" further down the list is used instead.</value>
+    <comment>{0} is the snippet's trigger, which appears again later in the list</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsFiresFirst" xml:space="preserve">
+    <value>Never expands: "{0}" fires first. Rename one of them.</value>
+    <comment>{0} is another snippet's trigger that is complete partway through typing this one</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsFiresFirstWordWait" xml:space="preserve">
+    <value>Never expands: "{0}" fires first. Rename one, or turn on Wait for the whole word.</value>
+    <comment>{0} is another snippet's trigger. "Wait for the whole word" is the name of a setting on this page</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsWhenYouType" xml:space="preserve">
+    <value>Never expands: "{0}" fires first when you type "{1}". Rename one of them.</value>
+    <comment>{0} is another snippet's trigger; {1} is the punctuation or symbol in this trigger that makes {0} fire</comment>
+  </data>
+  <data name="TextExpander_Row_NeverExpandsWhenYouTypeSpace" xml:space="preserve">
+    <value>Never expands: "{0}" fires first when you type a space. Rename one of them.</value>
+    <comment>{0} is another snippet's trigger</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenNewLine" xml:space="preserve">
+    <value>new line</value>
+    <comment>Read by screen readers in place of a line break in a snippet</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenTab" xml:space="preserve">
+    <value>tab</value>
+    <comment>Read by screen readers in place of a tab in a snippet</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenClipboard" xml:space="preserve">
+    <value>what you copied</value>
+    <comment>Read by screen readers in place of the clipboard in a snippet, and shown in the clipboard's bubble in a snippet's description</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenPrompt" xml:space="preserve">
+    <value>asks for {0}</value>
+    <comment>Read by screen readers in place of a question in a snippet. {0} is the question's label</comment>
+  </data>
+  <data name="TextExpander_Row_SpokenCursor" xml:space="preserve">
+    <value>cursor</value>
+    <comment>Read by screen readers in place of the cursor marker in a snippet</comment>
+  </data>
+  <data name="TextExpander_Row_AutomationName" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>Screen reader name of a snippet in the list. {0} is the trigger; {1} says what the snippet does</comment>
+  </data>
+  <data name="TextExpander_Row_AutomationNameWarning" xml:space="preserve">
+    <value>{0}: {1}. {2}</value>
+    <comment>Screen reader name of a snippet in the list. {0} is the trigger; {1} says what the snippet does; {2} explains why it never expands</comment>
+  </data>
+  <data name="TextExpander_SnippetSaved" xml:space="preserve">
+    <value>Snippet saved.</value>
+  </data>
+  <data name="TextExpander_SnippetDeleted" xml:space="preserve">
+    <value>Snippet deleted.</value>
+  </data>
+  <data name="TextExpander_EditorFileChanged" xml:space="preserve">
+    <value>Your snippet file was changed somewhere else. Copy anything you want to keep, close this window, then open the snippet again from the updated list.</value>
+  </data>
+  <data name="TextExpander_RetrySnippets.Content" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="TextExpander_SnippetCountUnavailable" xml:space="preserve">
+    <value>Snippet count unavailable</value>
+  </data>
+  <data name="TextExpander_SearchStillActive" xml:space="preserve">
+    <value>Search is still active. Clear search to see all snippets.</value>
+  </data>
+  <data name="TextExpander_FileAppeared" xml:space="preserve">
+    <value>A snippet file was just created somewhere else, so the list was updated. Check for duplicate triggers, then save again.</value>
+  </data>
+  <data name="TextExpander_FileChangedBeforeSave" xml:space="preserve">
+    <value>Your snippet file was changed somewhere else, so this change wasn't saved. The list has been updated. Try again.</value>
   </data>
 </root>

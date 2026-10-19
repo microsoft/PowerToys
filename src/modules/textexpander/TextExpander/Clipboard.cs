@@ -169,9 +169,16 @@ internal static class Clipboard
             PublishPrivacyExclusions();
 
             byte[] bytes = Encoding.Unicode.GetBytes(text + '\0');
-            return Publish(ClipboardFormats.CF_UNICODETEXT, bytes)
-                ? ClipboardWrite.Written
-                : ClipboardWrite.Failed;
+            try
+            {
+                return Publish(ClipboardFormats.CF_UNICODETEXT, bytes)
+                    ? ClipboardWrite.Written
+                    : ClipboardWrite.Failed;
+            }
+            finally
+            {
+                System.Security.Cryptography.CryptographicOperations.ZeroMemory(bytes);
+            }
         }
         finally
         {

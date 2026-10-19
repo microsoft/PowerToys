@@ -14,6 +14,39 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </summary>
 internal static class WindowFocus
 {
+    /// <summary>How long a window that has just come to the front gets to settle before it's typed into.</summary>
+    internal const int SettleMs = 25;
+
+    private const int PollMs = 5;
+
+    /// <summary>
+    /// Waits until <paramref name="hwnd"/> is the foreground window, checking every few
+    /// milliseconds for at most <paramref name="timeoutMs"/>, then lets it settle briefly. A
+    /// window that is already in front costs only the settle. Returns whether it came to the front.
+    /// </summary>
+    public static bool WaitUntilInFront(IntPtr hwnd, int timeoutMs)
+    {
+        long start = System.Diagnostics.Stopwatch.GetTimestamp();
+        return WaitUntilInFront(hwnd, timeoutMs, Native.GetForegroundWindow, Thread.Sleep, () => (long)System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds);
+    }
+
+    /// <summary>The wait behind <see cref="WaitUntilInFront(IntPtr, int)"/>, with the clock and the window check passed in for tests.</summary>
+    internal static bool WaitUntilInFront(IntPtr hwnd, int timeoutMs, Func<IntPtr> foreground, Action<int> sleep, Func<long> elapsedMs)
+    {
+        while (foreground() != hwnd)
+        {
+            if (elapsedMs() >= timeoutMs)
+            {
+                return false;
+            }
+
+            sleep(PollMs);
+        }
+
+        sleep(SettleMs);
+        return true;
+    }
+
     public static bool Force(IntPtr hwnd)
     {
         if (hwnd == IntPtr.Zero)

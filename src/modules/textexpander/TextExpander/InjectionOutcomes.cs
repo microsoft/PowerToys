@@ -50,7 +50,10 @@ internal enum PasteOutcome
     /// </summary>
     TargetLost,
 
-    /// <summary>The trigger was erased but the paste did not land. Type the text only.</summary>
+    /// <summary>
+    /// The trigger was erased but the input sequence did not complete. Stop: retrying could
+    /// compound a partial paste or a stuck key.
+    /// </summary>
     FailedAfterErase,
 
     /// <summary>
