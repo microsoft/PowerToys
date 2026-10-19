@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
@@ -32,7 +33,7 @@ namespace Microsoft.CmdPal.UI;
 /// empty-content branch. Hosted by both <see cref="ListPage"/> and
 /// <see cref="ParametersPage"/> so list rendering behavior stays in one place.
 /// </summary>
-public sealed partial class ListItemsView : UserControl
+public sealed partial class ListItemsView : UserControl, IPageInteractionTarget, IListInteractionSource
 {
     private const double ListShortcutCueHorizontalOffset = -16;
 
@@ -46,6 +47,7 @@ public sealed partial class ListItemsView : UserControl
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
+    private int _keyboardNavigationVersion;
     private bool _suppressSelectionChanged;
 
     private bool _scrollOnNextSelectionChange;
@@ -62,6 +64,9 @@ public sealed partial class ListItemsView : UserControl
     private bool _isLoaded;
     private ScrollViewer? _itemsScrollViewer;
     private ListViewBase? _itemsScrollViewerOwner;
+    private bool _viewportFillCheckQueued;
+    private int _lastViewportFillItemCount = -1;
+    private (string SearchText, string? FilterId) _viewportFillQueryContext;
     private bool _areNumberedShortcutCuesVisible;
     private bool _numberedShortcutCueUpdatePending;
     private Border[]? _numberedShortcutCues;
@@ -109,6 +114,7 @@ public sealed partial class ListItemsView : UserControl
 
         this.Loaded += OnLoaded;
         this.Unloaded += OnUnloaded;
+        this.LayoutUpdated += Items_LayoutUpdated;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -123,6 +129,7 @@ public sealed partial class ListItemsView : UserControl
         RegisterExistingRealizedItems();
         _accessKeyMode.IsActiveChanged += AccessKeyMode_IsActiveChanged;
         SetNumberedShortcutCuesVisibility(_accessKeyMode.IsActive);
+        QueueViewportFillCheck();
     }
 
     internal void DetachFromPage()
@@ -432,6 +439,8 @@ public sealed partial class ListItemsView : UserControl
         {
             _itemsScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
         }
+
+        QueueViewportFillCheck();
     }
 
     private void Items_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
@@ -551,8 +560,120 @@ public sealed partial class ListItemsView : UserControl
         }
     }
 
+    private void Items_LayoutUpdated(object? sender, object e)
+    {
+        QueueViewportFillCheck();
+    }
+
+    private void ViewportFill_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ViewModel)
+            && e.PropertyName is nameof(ListViewModel.IsInitialized) or nameof(ListViewModel.IsLoading))
+        {
+            QueueViewportFillCheck();
+        }
+    }
+
+    private void QueueViewportFillCheck()
+    {
+        if (!_isLoaded
+            || _viewportFillCheckQueued
+            || ViewModel is not { IsInitialized: true, IsLoading: false } page
+            || page.FilteredItems.Count == _lastViewportFillItemCount
+            || (page.FilteredItems.Count > 0 && CurrentScrollViewer is not { ViewportHeight: > 0, ScrollableHeight: 0 }))
+        {
+            return;
+        }
+
+        _viewportFillCheckQueued = true;
+        if (!DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, FillViewport))
+        {
+            _viewportFillCheckQueued = false;
+        }
+    }
+
+    private void FillViewport()
+    {
+        try
+        {
+            if (!_isLoaded || ViewModel is not { IsInitialized: true, IsLoading: false } page || ActualHeight <= 0 || ActualWidth <= 0)
+            {
+                return;
+            }
+
+            // Settle layout after publication before deciding whether another batch fits.
+            ItemView.UpdateLayout();
+            if (!ReferenceEquals(page, ViewModel) || !_isLoaded)
+            {
+                return;
+            }
+
+            var itemCount = page.FilteredItems.Count;
+            if (itemCount == _lastViewportFillItemCount ||
+                (itemCount > 0 && CurrentScrollViewer is not { IsLoaded: true, ViewportHeight: > 0, ScrollableHeight: 0 }))
+            {
+                return;
+            }
+
+            // Do not chain requests when the last batch left the visible count unchanged.
+            _lastViewportFillItemCount = itemCount;
+            page.LoadMoreIfNeeded();
+        }
+        finally
+        {
+            _viewportFillCheckQueued = false;
+        }
+    }
+
     // Navigation requested by the owner should count as keyboard input.
-    private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
+    private void MarkKeyboardNavigation()
+    {
+        _lastInputSource = InputSource.Keyboard;
+        _keyboardNavigationVersion++;
+    }
+
+    private async Task LoadMoreBeforeWrappingAsync(Action wrapSelection)
+    {
+        var page = ViewModel;
+        if (page is null)
+        {
+            wrapSelection();
+            return;
+        }
+
+        var view = ItemView;
+        var selectedItem = view.SelectedItem;
+        var selectedIndex = view.SelectedIndex;
+        var itemCount = view.Items.Count;
+        var itemsVersion = _itemsUpdatedVersion;
+        var navigationVersion = _keyboardNavigationVersion;
+        var queryContext = (page.SearchTextBox, page.Filters?.CurrentFilterId);
+        _scrollOnNextSelectionChange = false;
+
+        try
+        {
+            // Ignore a delayed wrap if the page, results, selection, or navigation context changed.
+            if (!await page.TryLoadMoreBeforeWrapAsync()
+                && _isLoaded
+                && ReferenceEquals(page, ViewModel)
+                && ReferenceEquals(view, ItemView)
+                && itemsVersion == _itemsUpdatedVersion
+                && navigationVersion == _keyboardNavigationVersion
+                && _lastInputSource == InputSource.Keyboard
+                && itemCount == view.Items.Count
+                && selectedIndex == view.SelectedIndex
+                && ReferenceEquals(selectedItem, view.SelectedItem)
+                && queryContext == (page.SearchTextBox, page.Filters?.CurrentFilterId))
+            {
+                _scrollOnNextSelectionChange = true;
+                wrapSelection();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to load more items before wrapping selection", ex);
+        }
+    }
 
     private void PushSelectionToVm(bool force = false)
     {
@@ -721,6 +842,11 @@ public sealed partial class ListItemsView : UserControl
         }
 
         PushSelectionToVm();
+
+        if (indexes.Value.TargetIndex == FindSelectableIndex(ItemView.Items.Count - 1, -1))
+        {
+            ViewModel?.LoadMoreIfNeeded();
+        }
     }
 
     public void NavigatePageUp()
@@ -894,6 +1020,7 @@ public sealed partial class ListItemsView : UserControl
         if (d is ListItemsView @this)
         {
             @this._lastInputSource = InputSource.None;
+            @this._lastViewportFillItemCount = -1;
             Interlocked.Increment(ref @this._itemsUpdatedVersion);
             @this.CancelPendingGridActions();
             @this.CancelPendingContextMenuOpen();
@@ -902,6 +1029,7 @@ public sealed partial class ListItemsView : UserControl
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
+                old.PropertyChanged -= @this.ViewportFill_PropertyChanged;
             }
 
             // Reset latched state — selection sticky/last-pushed only make sense
@@ -922,6 +1050,7 @@ public sealed partial class ListItemsView : UserControl
             if (e.NewValue is ListViewModel page)
             {
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
+                page.PropertyChanged += @this.ViewportFill_PropertyChanged;
 
                 // When the hosted ViewModel is swapped while we're already on
                 // screen (e.g. ParametersPage activating a list parameter), the
@@ -955,8 +1084,16 @@ public sealed partial class ListItemsView : UserControl
             return;
         }
 
+        var queryContext = (sender.SearchTextBox, sender.Filters?.CurrentFilterId);
+        if (_viewportFillQueryContext != queryContext)
+        {
+            _viewportFillQueryContext = queryContext;
+            _lastViewportFillItemCount = -1;
+        }
+
         var version = Interlocked.Increment(ref _itemsUpdatedVersion);
         ProcessItemsUpdated(sender, args, version);
+        QueueViewportFillCheck();
     }
 
     private void ProcessItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args, long version)
@@ -1564,7 +1701,7 @@ public sealed partial class ListItemsView : UserControl
         // Track keyboard as the last input source for activation logic.
         if (e.Key is VirtualKey.Enter or VirtualKey.Space)
         {
-            _lastInputSource = InputSource.Keyboard;
+            MarkKeyboardNavigation();
             return;
         }
 
@@ -1579,7 +1716,7 @@ public sealed partial class ListItemsView : UserControl
                 case VirtualKey.Down:
                 case VirtualKey.PageUp:
                 case VirtualKey.PageDown:
-                    _lastInputSource = InputSource.Keyboard;
+                    MarkKeyboardNavigation();
                     _scrollOnNextSelectionChange = true;
                     HandleGridArrowNavigation(e.Key);
                     e.Handled = true;
@@ -1655,12 +1792,23 @@ public sealed partial class ListItemsView : UserControl
 
         if (newIndex == -1)
         {
-            newIndex = FindSelectableIndex(0, 1);
+            var firstIndex = FindSelectableIndex(0, 1);
+            if (firstIndex != -1)
+            {
+                _ = LoadMoreBeforeWrappingAsync(() =>
+                {
+                    ItemView.SelectedIndex = firstIndex;
+                    PushSelectionToVm();
+                });
+            }
+
+            return;
         }
 
-        if (newIndex != -1)
+        ItemView.SelectedIndex = newIndex;
+        if (newIndex == FindSelectableIndex(ItemView.Items.Count - 1, -1))
         {
-            ItemView.SelectedIndex = newIndex;
+            ViewModel?.LoadMoreIfNeeded();
         }
     }
 

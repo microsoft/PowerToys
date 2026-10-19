@@ -110,7 +110,7 @@ public sealed class SettingsNavigationSmokeTests : UITestBase
         }
     }
 
-    public static string GetNavCaseDisplayName(MethodInfo _, object[] data)
+    public static string GetNavCaseDisplayName(MethodInfo methodInfo, object[] data)
     {
         var parent = (string)data[0];
         var item = (string)data[1];

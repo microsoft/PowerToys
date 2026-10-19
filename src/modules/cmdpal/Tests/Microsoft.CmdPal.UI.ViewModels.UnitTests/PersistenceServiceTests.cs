@@ -104,7 +104,7 @@ public partial class PersistenceServiceTests
         var model = new TestModel { Name = "NewFile", Value = 123 };
 
         // Act
-        _service.Save(model, _testFilePath, TestJsonContext.Default.TestModel);
+        Assert.IsTrue(_service.Save(model, _testFilePath, TestJsonContext.Default.TestModel));
 
         // Assert
         Assert.IsTrue(File.Exists(_testFilePath));
@@ -146,7 +146,7 @@ public partial class PersistenceServiceTests
         Trace.Listeners.Add(listener);
         try
         {
-            _service.Save(new TestModel(), _testFilePath, TestJsonContext.Default.TestModel);
+            Assert.IsFalse(_service.Save(new TestModel(), _testFilePath, TestJsonContext.Default.TestModel));
         }
         finally
         {

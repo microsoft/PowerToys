@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using FancyZonesEditorCommon.Data;
-using Microsoft.PowerToys.UITest.Next;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using FancyZonesEditorCommon.Data;
+using Microsoft.PowerToys.UITest.Next;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests.Utils;
 
