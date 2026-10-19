@@ -21,8 +21,6 @@ parameters:
 
 jobs:
 - job: "BuildSDK"
-  variables:
-    SdkDotNetVersion: '10.0.112'
   ${{ if ne(length(parameters.pool), 0) }}:
     pool: ${{ parameters.pool }}
   displayName: Build SDK
@@ -40,26 +38,6 @@ jobs:
     persistCredentials: True
     fetchTags: false
     fetchDepth: 1
-
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - template: .\steps-ensure-dotnet-version.yml
-      parameters:
-        sdk: true
-        version: '6.0' # Required by the Guardian tool used for ESRP code signing.
-
-  - template: .\steps-ensure-dotnet-version.yml
-    parameters:
-      sdk: true
-      version: '10.0'
-      exactVersion: $(SdkDotNetVersion)
-
-  - pwsh: >
-      dotnet new globaljson
-      --sdk-version "$(SdkDotNetVersion)"
-      --roll-forward disable
-      --output "$(Build.SourcesDirectory)"
-      --no-update-check
-    displayName: Select .NET SDK $(SdkDotNetVersion) for this job
 
   - template: .\steps-ensure-nuget-version.yml
 
