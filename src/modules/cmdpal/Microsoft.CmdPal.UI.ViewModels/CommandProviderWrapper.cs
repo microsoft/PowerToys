@@ -565,10 +565,19 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public void PinDockBand(string commandId, IServiceProvider serviceProvider, bool withReload, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null, string? monitorDeviceId = null)
     {
-        Logger.LogDebug($"CommandProviderWrapper.PinDockBand(commandId): provider='{ProviderId}', commandId='{commandId}', withReload={withReload}, side={side}, monitor='{monitorDeviceId ?? "<global>"}'");
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var settings = settingsService.Settings;
         var dockSettings = settings.DockSettings;
+
+        // A single monitor can still display its own customized band lists.
+        if (monitorDeviceId is null
+            && serviceProvider.GetService<IMonitorService>()?.GetMonitors() is { Count: 1 } monitors)
+        {
+            monitorDeviceId = dockSettings.MonitorConfigs.FirstOrDefault(cfg =>
+                cfg.IsCustomized && string.Equals(cfg.MonitorDeviceId, monitors[0].StableId, StringComparison.OrdinalIgnoreCase))?.MonitorDeviceId;
+        }
+
+        Logger.LogDebug($"CommandProviderWrapper.PinDockBand(commandId): provider='{ProviderId}', commandId='{commandId}', withReload={withReload}, side={side}, monitor='{monitorDeviceId ?? "<global>"}'");
 
         // Prevent duplicate pins — check the target destination's bands.
         // When pinning to a specific monitor, check that monitor's resolved bands
