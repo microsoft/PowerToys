@@ -472,6 +472,7 @@ internal sealed class SnippetStore : IDisposable
         // ── PowerToys Text Expander ─────────────────────────────
         // Built by Gary Hsu · https://github.com/howdyimgary
         // Project: https://github.com/howdyimgary/text-expander
+        // Website: https://howdyimgary.github.io/text-expander/
         //
         // Type a trigger, such as !ddate, and Text Expander replaces it with its
         // snippet. The snippets at the bottom of this file work right away.
