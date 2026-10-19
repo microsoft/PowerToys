@@ -183,6 +183,11 @@ public:
         return cursorbrake::MODULE_NAME;
     }
 
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredCursorBrakeEnabledValue();
+    }
+
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);

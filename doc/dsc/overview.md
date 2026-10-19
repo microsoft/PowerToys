@@ -108,7 +108,7 @@ PowerToys DSC provides the following resources:
 | `profile`  | Manages the Keyboard Manager remapping profile (keys, shortcuts).  |
 
 For detailed information, see the [Settings Resource Reference][03] and the
-[Keyboard Manager Profile Resource Reference][34].
+[Keyboard Manager Profile Resource Reference][35].
 
 ## Available modules
 
@@ -123,26 +123,27 @@ utilities:
 | Awake                  | Keep computer awake.                         | [Awake module][07]                    |
 | ColorPicker            | System-wide color picker utility.            | [ColorPicker module][08]              |
 | CropAndLock            | Crop and lock portions of windows.           | [CropAndLock module][09]              |
-| EnvironmentVariables   | Manage environment variables.                | [EnvironmentVariables module][10]     |
-| FancyZones             | Window layout manager.                       | [FancyZones module][11]               |
-| FileLocksmith          | Identify what's locking files.               | [FileLocksmith module][12]            |
-| FindMyMouse            | Locate your mouse cursor.                    | [FindMyMouse module][13]              |
-| Hosts                  | Quick hosts file editor.                     | [Hosts module][14]                    |
-| ImageResizer           | Resize images from context menu.             | [ImageResizer module][15]             |
-| KeyboardManager        | Remap keys and create shortcuts.             | [KeyboardManager module][16]          |
-| MeasureTool            | Measure pixels on screen.                    | [MeasureTool module][17]              |
-| MouseButtonLock        | Lock mouse buttons for hands-free dragging.  | [MouseButtonLock module][18]          |
-| MouseHighlighter       | Highlight mouse cursor.                      | [MouseHighlighter module][19]         |
-| MouseJump              | Jump across large or multiple displays.      | [MouseJump module][20]                |
-| MousePointerCrosshairs | Display crosshairs centered on mouse.        | [MousePointerCrosshairs module][21]   |
-| Peek                   | Quick file previewer.                        | [Peek module][22]                     |
-| PowerAccent            | Quick accent character selector.             | [PowerAccent module][23]              |
-| PowerOCR               | Extract text from images.                    | [PowerOCR module][24]                 |
-| PowerRename            | Bulk rename files.                           | [PowerRename module][25]              |
-| RegistryPreview        | Visualize and edit registry files.           | [RegistryPreview module][26]          |
-| ShortcutGuide          | Display keyboard shortcuts.                  | [ShortcutGuide module][27]            |
-| Workspaces             | Save and restore application sets.           | [Workspaces module][28]               |
-| ZoomIt                 | Screen zoom and annotation tool.             | [ZoomIt module][29]                   |
+| CursorBrake            | Add resistance at edges between monitors.    | [CursorBrake module][10]              |
+| EnvironmentVariables   | Manage environment variables.                | [EnvironmentVariables module][11]     |
+| FancyZones             | Window layout manager.                       | [FancyZones module][12]               |
+| FileLocksmith          | Identify what's locking files.               | [FileLocksmith module][13]            |
+| FindMyMouse            | Locate your mouse cursor.                    | [FindMyMouse module][14]              |
+| Hosts                  | Quick hosts file editor.                     | [Hosts module][15]                    |
+| ImageResizer           | Resize images from context menu.             | [ImageResizer module][16]             |
+| KeyboardManager        | Remap keys and create shortcuts.             | [KeyboardManager module][17]          |
+| MeasureTool            | Measure pixels on screen.                    | [MeasureTool module][18]              |
+| MouseButtonLock        | Lock mouse buttons for hands-free dragging.  | [MouseButtonLock module][19]          |
+| MouseHighlighter       | Highlight mouse cursor.                      | [MouseHighlighter module][20]         |
+| MouseJump              | Jump across large or multiple displays.      | [MouseJump module][21]                |
+| MousePointerCrosshairs | Display crosshairs centered on mouse.        | [MousePointerCrosshairs module][22]   |
+| Peek                   | Quick file previewer.                        | [Peek module][23]                     |
+| PowerAccent            | Quick accent character selector.             | [PowerAccent module][24]              |
+| PowerOCR               | Extract text from images.                    | [PowerOCR module][25]                 |
+| PowerRename            | Bulk rename files.                           | [PowerRename module][26]              |
+| RegistryPreview        | Visualize and edit registry files.           | [RegistryPreview module][27]          |
+| ShortcutGuide          | Display keyboard shortcuts.                  | [ShortcutGuide module][28]            |
+| Workspaces             | Save and restore application sets.           | [Workspaces module][29]               |
+| ZoomIt                 | Screen zoom and annotation tool.             | [ZoomIt module][30]                   |
 
 ## Common operations
 
@@ -201,16 +202,16 @@ PowerToys.DSC.exe manifest --resource 'settings' --outputDir $outputDir
 
 For complete examples, see:
 
-- [Settings Resource Examples][30]
-- Individual module documentation in the [modules][31] folder
+- [Settings Resource Examples][31]
+- Individual module documentation in the [modules][32] folder
 
 ## See also
 
 - [Settings Resource Reference][03]
 - [PowerToys.DSC.exe Command Reference][01]
-- [Module Documentation][31]
-- [Microsoft DSC Documentation][32]
-- [WinGet Configuration Documentation][33]
+- [Module Documentation][32]
+- [Microsoft DSC Documentation][33]
+- [WinGet Configuration Documentation][34]
 
 <!-- Link reference definitions -->
 [01]: ./modules/
@@ -221,28 +222,29 @@ For complete examples, see:
 [07]: ./modules/Awake.md
 [08]: ./modules/ColorPicker.md
 [09]: ./modules/CropAndLock.md
-[10]: ./modules/EnvironmentVariables.md
-[11]: ./modules/FancyZones.md
-[12]: ./modules/FileLocksmith.md
-[13]: ./modules/FindMyMouse.md
-[14]: ./modules/Hosts.md
-[15]: ./modules/ImageResizer.md
-[16]: ./modules/KeyboardManager.md
-[17]: ./modules/MeasureTool.md
-[18]: ./modules/MouseButtonLock.md
-[19]: ./modules/MouseHighlighter.md
-[20]: ./modules/MouseJump.md
-[21]: ./modules/MousePointerCrosshairs.md
-[22]: ./modules/Peek.md
-[23]: ./modules/PowerAccent.md
-[24]: ./modules/PowerOCR.md
-[25]: ./modules/PowerRename.md
-[26]: ./modules/RegistryPreview.md
-[27]: ./modules/ShortcutGuide.md
-[28]: ./modules/Workspaces.md
-[29]: ./modules/ZoomIt.md
-[30]: ./settings-resource.md#examples
-[31]: ./modules/
-[32]: https://learn.microsoft.com/powershell/dsc/overview
-[33]: https://learn.microsoft.com/windows/package-manager/configuration/
-[34]: ./profile-resource.md
+[10]: ./modules/CursorBrake.md
+[11]: ./modules/EnvironmentVariables.md
+[12]: ./modules/FancyZones.md
+[13]: ./modules/FileLocksmith.md
+[14]: ./modules/FindMyMouse.md
+[15]: ./modules/Hosts.md
+[16]: ./modules/ImageResizer.md
+[17]: ./modules/KeyboardManager.md
+[18]: ./modules/MeasureTool.md
+[19]: ./modules/MouseButtonLock.md
+[20]: ./modules/MouseHighlighter.md
+[21]: ./modules/MouseJump.md
+[22]: ./modules/MousePointerCrosshairs.md
+[23]: ./modules/Peek.md
+[24]: ./modules/PowerAccent.md
+[25]: ./modules/PowerOCR.md
+[26]: ./modules/PowerRename.md
+[27]: ./modules/RegistryPreview.md
+[28]: ./modules/ShortcutGuide.md
+[29]: ./modules/Workspaces.md
+[30]: ./modules/ZoomIt.md
+[31]: ./settings-resource.md#examples
+[32]: ./modules/
+[33]: https://learn.microsoft.com/powershell/dsc/overview
+[34]: https://learn.microsoft.com/windows/package-manager/configuration/
+[35]: ./profile-resource.md

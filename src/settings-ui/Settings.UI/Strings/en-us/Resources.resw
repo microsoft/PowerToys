@@ -2876,6 +2876,71 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
     <value>Wrap the mouse cursor between monitor edges</value>
   </data>
+  <data name="MouseUtils_CursorBrake.Header" xml:space="preserve">
+    <value>CursorBrake</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake.Description" xml:space="preserve">
+    <value>Stop the cursor at the edges between monitors until you push through</value>
+  </data>
+  <data name="MouseUtils_Enable_CursorBrake.Header" xml:space="preserve">
+    <value>CursorBrake</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_Options.Header" xml:space="preserve">
+    <value>Resistance and behavior</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_Options.Description" xml:space="preserve">
+    <value>Choose how strongly edges resist the cursor and when it crosses freely</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_PushDistance.Header" xml:space="preserve">
+    <value>Strength</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_PushDistance.Description" xml:space="preserve">
+    <value>How far to push past an edge before the cursor crosses, in pixels at 100% scale, with quick flicks counting for less. 0 turns the resistance off.</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_FreeReturn.Header" xml:space="preserve">
+    <value>Free return</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_FreeReturn.Description" xml:space="preserve">
+    <value>Cross straight back over an edge you just crossed, without resistance</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_EdgeFilter.Header" xml:space="preserve">
+    <value>Apply to</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_EdgeFilter.Description" xml:space="preserve">
+    <value>Choose which edges resist the cursor</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_EdgeFilter_All.Content" xml:space="preserve">
+    <value>All edges between monitors</value>
+    <comment>Every edge where two monitors meet, as opposed to only the side-by-side or only the stacked ones.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_EdgeFilter_SideBySide.Content" xml:space="preserve">
+    <value>Side-by-side only</value>
+    <comment>Only the edges between monitors placed next to each other horizontally.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_EdgeFilter_Stacked.Content" xml:space="preserve">
+    <value>Stacked only</value>
+    <comment>Only the edges between monitors placed above and below each other.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_DisableWhileDragging.Content" xml:space="preserve">
+    <value>Disable resistance while dragging</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_CrossModifier.Header" xml:space="preserve">
+    <value>Cross freely while</value>
+    <comment>Followed by the selected key, for example "Holding Ctrl".</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_CrossModifier.Description" xml:space="preserve">
+    <value>Hold this key to cross any edge without resistance</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_CrossModifier_HoldingCtrl.Content" xml:space="preserve">
+    <value>Holding Ctrl</value>
+    <comment>Ctrl is the keyboard key.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_CrossModifier_HoldingShift.Content" xml:space="preserve">
+    <value>Holding Shift</value>
+    <comment>Shift is the keyboard key.</comment>
+  </data>
   <data name="MouseUtils_MouseButtonLock.Header" xml:space="preserve">
     <value>Mouse Button Lock</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -3011,6 +3076,14 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MouseUtils_CursorWrap_Description.Text" xml:space="preserve">
     <value>Move the mouse pointer past a screen edge to wrap it around to the opposite side.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorBrake.Text" xml:space="preserve">
+    <value>CursorBrake</value>
+    <comment>Product name. Do not localize.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_CursorBrake_Description.Text" xml:space="preserve">
+    <value>Stop the cursor at the edges between monitors until you push through, so targets near an edge are easier to hit. Hold Ctrl, or the key you choose in Settings, to cross freely.</value>
+    <comment>Ctrl is the keyboard key. Ctrl is the default; Shift is the other choice.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Open PowerToys Run</value>

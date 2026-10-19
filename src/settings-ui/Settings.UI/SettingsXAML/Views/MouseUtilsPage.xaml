@@ -17,6 +17,7 @@
     <local:NavigablePage.Resources>
         <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
         <converters:MillisecondsLabelConverter x:Key="MillisecondsLabelConverter" />
+        <converters:PixelsLabelConverter x:Key="PixelsLabelConverter" />
         <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
@@ -25,6 +26,75 @@
     <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:SettingsGroup x:Uid="MouseUtils_CursorBrake" AutomationProperties.AutomationId="MouseUtils_CursorBrakeTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorBrakeEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableCursorBrake"
+                            x:Uid="MouseUtils_Enable_CursorBrake"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorBrake.png}"
+                            IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_CursorBrakeToggleId"
+                                IsOn="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsCursorBrakeSettingsExpander"
+                        x:Uid="MouseUtils_CursorBrake_Options"
+                        AutomationProperties.AutomationId="MouseUtils_CursorBrakeOptionsId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakePushDistance" x:Uid="MouseUtils_CursorBrake_PushDistance">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakePushDistanceId"
+                                    LargeChange="100"
+                                    Maximum="1000"
+                                    Minimum="0"
+                                    SmallChange="25"
+                                    SnapsTo="StepValues"
+                                    StepFrequency="25"
+                                    ThumbToolTipValueConverter="{StaticResource PixelsLabelConverter}"
+                                    Value="{x:Bind ViewModel.CursorBrakePushDistance, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakeFreeReturn" ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="MouseUtils_CursorBrake_FreeReturn"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeFreeReturnId"
+                                    IsChecked="{x:Bind ViewModel.CursorBrakeFreeReturn, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakeEdgeFilter" x:Uid="MouseUtils_CursorBrake_EdgeFilter">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeEdgeFilterId"
+                                    SelectedIndex="{x:Bind Path=ViewModel.CursorBrakeEdgeFilter, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_EdgeFilter_All" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_EdgeFilter_SideBySide" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_EdgeFilter_Stacked" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="MouseUtils_CursorBrake_DisableWhileDragging"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeDisableWhileDraggingId"
+                                    IsChecked="{x:Bind ViewModel.CursorBrakeDisableWhileDragging, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakeCrossModifier" x:Uid="MouseUtils_CursorBrake_CrossModifier">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeCrossModifierId"
+                                    SelectedIndex="{x:Bind Path=ViewModel.CursorBrakeCrossModifier, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_CrossModifier_HoldingCtrl" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_CrossModifier_HoldingShift" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="MouseUtils_AutoHideCursor" AutomationProperties.AutomationId="MouseUtils_AutoHideCursorTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsAutoHideCursorEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard

@@ -85,6 +85,7 @@ internal static class SettingsCliHelper
             "cmdnotfound" => GpoApi.GetConfiguredCmdNotFoundEnabledValue(),
             "colorpicker" => GpoApi.GetConfiguredColorPickerEnabledValue(),
             "cropandlock" => GpoApi.GetConfiguredCropAndLockEnabledValue(),
+            "cursorbrake" => GpoApi.GetConfiguredCursorBrakeEnabledValue(),
             "cursorwrap" => GpoApi.GetConfiguredCursorWrapEnabledValue(),
             "environmentvariables" => GpoApi.GetConfiguredEnvironmentVariablesEnabledValue(),
             "fancyzones" => GpoApi.GetConfiguredFancyZonesEnabledValue(),

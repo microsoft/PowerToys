@@ -35,7 +35,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private MouseButtonLockSettings MouseButtonLockSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<MouseButtonLockSettings> mouseButtonLockSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private CursorBrakeSettings CursorBrakeSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<MouseButtonLockSettings> mouseButtonLockSettingsRepository, ISettingsRepository<CursorBrakeSettings> cursorBrakeSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -164,6 +166,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mouseButtonLockHoldDurationMs = MouseButtonLockSettingsConfig.Properties.HoldDurationMs.Value;
             _mouseButtonLockMoveCancelPixels = MouseButtonLockSettingsConfig.Properties.MoveCancelPixels.Value;
 
+            ArgumentNullException.ThrowIfNull(cursorBrakeSettingsRepository);
+
+            CursorBrakeSettingsConfig = cursorBrakeSettingsRepository.SettingsConfig;
+
+            // A hand-edited settings.json can carry nulls or out-of-range values. They are repaired
+            // to the defaults and the module's ranges in the settings object itself, so the controls
+            // show exactly what the next save writes and sends to the module.
+            CursorBrakeSettingsConfig.Properties ??= new CursorBrakeProperties();
+            CursorBrakeProperties cursorBrakeProperties = CursorBrakeSettingsConfig.Properties;
+            var cursorBrakeDefaults = new CursorBrakeProperties();
+            cursorBrakeProperties.PushDistance ??= cursorBrakeDefaults.PushDistance;
+            cursorBrakeProperties.FreeReturn ??= cursorBrakeDefaults.FreeReturn;
+            cursorBrakeProperties.EdgeFilter ??= cursorBrakeDefaults.EdgeFilter;
+            cursorBrakeProperties.DisableWhileDragging ??= cursorBrakeDefaults.DisableWhileDragging;
+            cursorBrakeProperties.CrossModifier ??= cursorBrakeDefaults.CrossModifier;
+
+            cursorBrakeProperties.PushDistance.Value = Math.Clamp(cursorBrakeProperties.PushDistance.Value, CursorBrakeProperties.MinPushDistance, CursorBrakeProperties.MaxPushDistance);
+            cursorBrakeProperties.EdgeFilter.Value = RepairCursorBrakeChoice<CursorBrakeEdgeFilter>(cursorBrakeProperties.EdgeFilter.Value);
+            cursorBrakeProperties.CrossModifier.Value = RepairCursorBrakeChoice<CursorBrakeCrossModifier>(cursorBrakeProperties.CrossModifier.Value);
+
+            _cursorBrakePushDistance = cursorBrakeProperties.PushDistance.Value;
+            _cursorBrakeFreeReturn = cursorBrakeProperties.FreeReturn.Value;
+            _cursorBrakeEdgeFilter = (CursorBrakeEdgeFilter)cursorBrakeProperties.EdgeFilter.Value;
+            _cursorBrakeDisableWhileDragging = cursorBrakeProperties.DisableWhileDragging.Value;
+            _cursorBrakeCrossModifier = (CursorBrakeCrossModifier)cursorBrakeProperties.CrossModifier.Value;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -252,6 +280,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // policy-managed.
                 _mouseButtonLockEnabledStateIsGPOConfigured = false;
                 _isMouseButtonLockEnabled = GeneralSettingsConfig.Enabled.MouseButtonLock;
+            }
+
+            _cursorBrakeEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCursorBrakeEnabledValue();
+            if (_cursorBrakeEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _cursorBrakeEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _cursorBrakeEnabledStateIsGPOConfigured = true;
+                _isCursorBrakeEnabled = _cursorBrakeEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                // Clear the cached flag so a policy retracted between refreshes re-enables the toggle.
+                _cursorBrakeEnabledStateIsGPOConfigured = false;
+                _isCursorBrakeEnabled = GeneralSettingsConfig.Enabled.CursorBrake;
             }
         }
 
@@ -1574,6 +1616,129 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(MouseButtonLockSettingsConfig.ToJsonString(), MouseButtonLockSettings.ModuleName);
         }
 
+        public bool IsCursorBrakeEnabled
+        {
+            get => _isCursorBrakeEnabled;
+            set
+            {
+                if (_cursorBrakeEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (_isCursorBrakeEnabled != value)
+                {
+                    _isCursorBrakeEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.CursorBrake = value;
+                    OnPropertyChanged(nameof(IsCursorBrakeEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    NotifyCursorBrakePropertyChanged();
+                }
+            }
+        }
+
+        public bool IsCursorBrakeEnabledGpoConfigured
+        {
+            get => _cursorBrakeEnabledStateIsGPOConfigured;
+        }
+
+        public int CursorBrakePushDistance
+        {
+            get => _cursorBrakePushDistance;
+            set
+            {
+                value = Math.Clamp(value, CursorBrakeProperties.MinPushDistance, CursorBrakeProperties.MaxPushDistance);
+                if (value != _cursorBrakePushDistance)
+                {
+                    _cursorBrakePushDistance = value;
+                    CursorBrakeSettingsConfig.Properties.PushDistance.Value = value;
+                    NotifyCursorBrakePropertyChanged();
+                }
+            }
+        }
+
+        public bool CursorBrakeFreeReturn
+        {
+            get => _cursorBrakeFreeReturn;
+            set
+            {
+                if (value != _cursorBrakeFreeReturn)
+                {
+                    _cursorBrakeFreeReturn = value;
+                    CursorBrakeSettingsConfig.Properties.FreeReturn.Value = value;
+                    NotifyCursorBrakePropertyChanged();
+                }
+            }
+        }
+
+        public int CursorBrakeEdgeFilter
+        {
+            get => (int)_cursorBrakeEdgeFilter;
+            set
+            {
+                if (value != (int)_cursorBrakeEdgeFilter)
+                {
+                    _cursorBrakeEdgeFilter = (CursorBrakeEdgeFilter)value;
+                    CursorBrakeSettingsConfig.Properties.EdgeFilter.Value = value;
+                    NotifyCursorBrakePropertyChanged();
+                }
+            }
+        }
+
+        public bool CursorBrakeDisableWhileDragging
+        {
+            get => _cursorBrakeDisableWhileDragging;
+            set
+            {
+                if (value != _cursorBrakeDisableWhileDragging)
+                {
+                    _cursorBrakeDisableWhileDragging = value;
+                    CursorBrakeSettingsConfig.Properties.DisableWhileDragging.Value = value;
+                    NotifyCursorBrakePropertyChanged();
+                }
+            }
+        }
+
+        public int CursorBrakeCrossModifier
+        {
+            get => (int)_cursorBrakeCrossModifier;
+            set
+            {
+                if (value != (int)_cursorBrakeCrossModifier)
+                {
+                    _cursorBrakeCrossModifier = (CursorBrakeCrossModifier)value;
+                    CursorBrakeSettingsConfig.Properties.CrossModifier.Value = value;
+                    NotifyCursorBrakePropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the value the module accepts for a stored choice: the value itself when
+        /// <typeparamref name="TChoice"/> defines it, else the first choice, the default, as the
+        /// module keeps its value in effect for any other.
+        /// </summary>
+        internal static int RepairCursorBrakeChoice<TChoice>(int value)
+            where TChoice : struct, Enum
+        {
+            return Enum.IsDefined(typeof(TChoice), value) ? value : 0;
+        }
+
+        public void NotifyCursorBrakePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndCursorBrakeSettings outsettings = new SndCursorBrakeSettings(CursorBrakeSettingsConfig);
+            SndModuleSettings<SndCursorBrakeSettings> ipcMessage = new SndModuleSettings<SndCursorBrakeSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(CursorBrakeSettingsConfig.ToJsonString(), CursorBrakeSettings.ModuleName);
+        }
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
@@ -1586,6 +1751,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsCursorWrapEnabled));
             OnPropertyChanged(nameof(IsMouseButtonLockEnabled));
             OnPropertyChanged(nameof(IsMouseButtonLockEnabledGpoConfigured));
+            OnPropertyChanged(nameof(IsCursorBrakeEnabled));
+            OnPropertyChanged(nameof(IsCursorBrakeEnabledGpoConfigured));
         }
 
         private Func<string, int> SendConfigMSG { get; }
@@ -1664,5 +1831,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mouseButtonLockMmbEnabled;
         private int _mouseButtonLockHoldDurationMs;
         private int _mouseButtonLockMoveCancelPixels;
+
+        private GpoRuleConfigured _cursorBrakeEnabledGpoRuleConfiguration;
+        private bool _cursorBrakeEnabledStateIsGPOConfigured;
+        private bool _isCursorBrakeEnabled;
+        private int _cursorBrakePushDistance;
+        private bool _cursorBrakeFreeReturn;
+        private CursorBrakeEdgeFilter _cursorBrakeEdgeFilter;
+        private bool _cursorBrakeDisableWhileDragging;
+        private CursorBrakeCrossModifier _cursorBrakeCrossModifier;
     }
 }
