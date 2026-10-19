@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -11,7 +11,6 @@ using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
@@ -83,9 +82,9 @@ public sealed partial class SearchEngine : IDisposable
         return results;
     }
 
-    public IList<IListItem> FetchNextItems(int limit, uint queryCookie, out bool hasMore, out SearchNoticeInfo? notice, bool noIcons = false)
+    public IList<IListItem> FetchNextItems(int limit, uint queryCookie, out bool hasMore, out SearchNoticeInfo? notice)
     {
-        return FetchItems(0, limit, queryCookie, out hasMore, out notice, noIcons);
+        return FetchItems(0, limit, queryCookie, out hasMore, out notice);
     }
 
     private static SearchNoticeInfo? BuildNotice(SearchQuery searchQuery)
