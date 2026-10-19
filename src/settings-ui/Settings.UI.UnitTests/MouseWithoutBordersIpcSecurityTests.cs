@@ -28,8 +28,10 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
     [TestClass]
     public sealed class MouseWithoutBordersIpcSecurityTests
     {
-        [TestMethod]
-        public async Task RpcHelpersOwnFreshVerifiedPipesAcrossDelayedClosureAndServerRestart()
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task RpcHelpersOwnFreshVerifiedPipesAcrossDelayedClosureAndServerRestart(bool failFirstRequest)
         {
             var connect = typeof(MouseWithoutBordersViewModel).GetMethod("ConnectSettingsSyncHelperAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
             var pipeName = UniquePipeName();
@@ -41,7 +43,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 var wait = server.WaitForConnectionAsync();
                 var task = (Task)connect.Invoke(null, new object[] { pipeName, Path.GetFileName(GetCurrentExecutablePath()) })!;
                 await wait.WaitAsync(TimeSpan.FromSeconds(5));
-                using var rpc = JsonRpc.Attach(server, new PairingRpcTarget());
+                var failRequest = failFirstRequest && attempt == 0;
+                using var rpc = JsonRpc.Attach(server, new PairingRpcTarget(failRequest));
                 await task.WaitAsync(TimeSpan.FromSeconds(5));
                 using var helper = (IDisposable)task.GetType().GetProperty("Result")!.GetValue(task)!;
                 var stream = (NamedPipeClientStream)helper.GetType().GetProperty("Stream")!.GetValue(helper)!;
@@ -50,7 +53,15 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 var endpoint = helper.GetType().GetProperty("Endpoint")!.GetValue(helper)!;
                 var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic)!;
                 var keyTask = (Task<string>)contract.GetMethod("GetCurrentPairingKey")!.Invoke(endpoint, null)!;
-                Assert.AreEqual("test-pairing-key", await keyTask.WaitAsync(TimeSpan.FromSeconds(5)));
+                if (failRequest)
+                {
+                    await Assert.ThrowsExceptionAsync<RemoteInvocationException>(() => keyTask.WaitAsync(TimeSpan.FromSeconds(5)));
+                }
+                else
+                {
+                    Assert.AreEqual("test-pairing-key", await keyTask.WaitAsync(TimeSpan.FromSeconds(5)));
+                }
+
                 helper.Dispose();
                 Assert.IsTrue(handle.IsClosed);
 
@@ -62,7 +73,16 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
 
         public sealed class PairingRpcTarget
         {
-            public Task<string> GetCurrentPairingKey() => Task.FromResult("test-pairing-key");
+            private readonly bool _failRequest;
+
+            public PairingRpcTarget(bool failRequest)
+            {
+                _failRequest = failRequest;
+            }
+
+            public Task<string> GetCurrentPairingKey() => _failRequest
+                ? Task.FromException<string>(new InvalidOperationException("Synthetic pairing request failure."))
+                : Task.FromResult("test-pairing-key");
         }
 
         [TestMethod]
