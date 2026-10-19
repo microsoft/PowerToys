@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
@@ -182,18 +183,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             cursorBrakeProperties.EdgeFilter ??= cursorBrakeDefaults.EdgeFilter;
             cursorBrakeProperties.DisableWhileDragging ??= cursorBrakeDefaults.DisableWhileDragging;
             cursorBrakeProperties.CrossModifier ??= cursorBrakeDefaults.CrossModifier;
+            cursorBrakeProperties.FullscreenBehavior ??= cursorBrakeDefaults.FullscreenBehavior;
+            cursorBrakeProperties.ExcludedApps ??= cursorBrakeDefaults.ExcludedApps;
+            cursorBrakeProperties.ExcludedApps.Value ??= cursorBrakeDefaults.ExcludedApps.Value;
             cursorBrakeProperties.Edges ??= cursorBrakeDefaults.Edges;
             cursorBrakeProperties.Edges.Value ??= cursorBrakeDefaults.Edges.Value;
 
             cursorBrakeProperties.PushDistance.Value = Math.Clamp(cursorBrakeProperties.PushDistance.Value, CursorBrakeProperties.MinPushDistance, CursorBrakeProperties.MaxPushDistance);
             cursorBrakeProperties.EdgeFilter.Value = RepairCursorBrakeChoice<CursorBrakeEdgeFilter>(cursorBrakeProperties.EdgeFilter.Value);
             cursorBrakeProperties.CrossModifier.Value = RepairCursorBrakeChoice<CursorBrakeCrossModifier>(cursorBrakeProperties.CrossModifier.Value);
+            cursorBrakeProperties.FullscreenBehavior.Value = RepairCursorBrakeChoice<CursorBrakeFullscreenBehavior>(cursorBrakeProperties.FullscreenBehavior.Value);
 
             _cursorBrakePushDistance = cursorBrakeProperties.PushDistance.Value;
             _cursorBrakeFreeReturn = cursorBrakeProperties.FreeReturn.Value;
             _cursorBrakeEdgeFilter = (CursorBrakeEdgeFilter)cursorBrakeProperties.EdgeFilter.Value;
             _cursorBrakeDisableWhileDragging = cursorBrakeProperties.DisableWhileDragging.Value;
             _cursorBrakeCrossModifier = (CursorBrakeCrossModifier)cursorBrakeProperties.CrossModifier.Value;
+            _cursorBrakeFullscreenBehavior = (CursorBrakeFullscreenBehavior)cursorBrakeProperties.FullscreenBehavior.Value;
+            _cursorBrakeExcludedApps = cursorBrakeProperties.ExcludedApps.Value;
 
             int isEnabled = 0;
 
@@ -1725,6 +1732,66 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     CursorBrakeSettingsConfig.Properties.CrossModifier.Value = value;
                     CursorBrakeEdges.CrossModifier = _cursorBrakeCrossModifier;
                     NotifyCursorBrakePropertyChanged();
+                    OnPropertyChanged(nameof(CursorBrakeFullscreenWallText));
+
+                    // The closed box keeps the text of the item as it was when it was selected,
+                    // so the wall item is selected again to show the new key.
+                    if (_cursorBrakeFullscreenBehavior == Library.CursorBrakeFullscreenBehavior.Wall)
+                    {
+                        _cursorBrakeFullscreenReselect.Run(() => OnPropertyChanged(nameof(CursorBrakeFullscreenBehavior)));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets what the edges of a full-screen app's monitor do, as an index into
+        /// <see cref="Library.CursorBrakeFullscreenBehavior"/>. A negative index, which a ComboBox
+        /// writes while it changes its selection, is never a choice: it writes nothing, and the box
+        /// is told the value again so it does not stay empty.
+        /// </summary>
+        public int CursorBrakeFullscreenBehavior
+        {
+            get => _cursorBrakeFullscreenReselect.IsActive ? -1 : (int)_cursorBrakeFullscreenBehavior;
+            set
+            {
+                if (_cursorBrakeFullscreenReselect.IsActive)
+                {
+                    return;
+                }
+
+                if (value < 0)
+                {
+                    OnPropertyChanged(nameof(CursorBrakeFullscreenBehavior));
+                    return;
+                }
+
+                value = RepairCursorBrakeChoice<CursorBrakeFullscreenBehavior>(value);
+                if (value != (int)_cursorBrakeFullscreenBehavior)
+                {
+                    _cursorBrakeFullscreenBehavior = (CursorBrakeFullscreenBehavior)value;
+                    CursorBrakeSettingsConfig.Properties.FullscreenBehavior.Value = value;
+                    NotifyCursorBrakePropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>Gets the wall item's text, which names the key that crosses the wall.</summary>
+        public string CursorBrakeFullscreenWallText => string.Format(
+            CultureInfo.CurrentCulture,
+            ResourceLoaderInstance.ResourceLoader.GetString("CursorBrake_FullscreenBehavior_Wall"),
+            CursorBrakeEdges.CrossKeyName);
+
+        public string CursorBrakeExcludedApps
+        {
+            get => _cursorBrakeExcludedApps;
+            set
+            {
+                if (value != _cursorBrakeExcludedApps)
+                {
+                    _cursorBrakeExcludedApps = value;
+                    CursorBrakeSettingsConfig.Properties.ExcludedApps.Value = value;
+                    NotifyCursorBrakePropertyChanged();
                 }
             }
         }
@@ -1847,5 +1914,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private CursorBrakeEdgeFilter _cursorBrakeEdgeFilter;
         private bool _cursorBrakeDisableWhileDragging;
         private CursorBrakeCrossModifier _cursorBrakeCrossModifier;
+        private CursorBrakeFullscreenBehavior _cursorBrakeFullscreenBehavior;
+        private CursorBrakeReselect _cursorBrakeFullscreenReselect = new CursorBrakeReselect();
+        private string _cursorBrakeExcludedApps;
     }
 }

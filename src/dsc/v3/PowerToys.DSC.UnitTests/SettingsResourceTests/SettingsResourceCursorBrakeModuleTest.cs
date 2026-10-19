@@ -26,6 +26,8 @@ public sealed class SettingsResourceCursorBrakeModuleTest : SettingsResourceModu
             s.Properties.EdgeFilter.Value = 2;
             s.Properties.DisableWhileDragging.Value = !s.Properties.DisableWhileDragging.Value;
             s.Properties.CrossModifier.Value = 1;
+            s.Properties.FullscreenBehavior.Value = 1;
+            s.Properties.ExcludedApps.Value = "game.exe\r\noutlook.exe";
             s.Properties.Edges.Value.Add(new CursorBrakeEdgeSetting { Monitors = { @"\\?\DISPLAY#DELA1B2#5&1a2b3c4d&0&UID4353", @"\\?\DISPLAY#HWP3A6E#5&1a2b3c4d&0&UID4352" }, Mode = CursorBrakeEdgeMode.Custom, PushDistance = 600 });
             s.Properties.Edges.Value.Add(new CursorBrakeEdgeSetting { Monitors = { @"\\?\DISPLAY#LEN66F1#5&1a2b3c4d&0&UID4354", @"\\?\DISPLAY#DELA1B2#5&1a2b3c4d&0&UID4353" }, OneWay = true, Mode = CursorBrakeEdgeMode.Wall });
         };

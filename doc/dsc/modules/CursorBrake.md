@@ -76,6 +76,40 @@ Selects the key that crosses any edge freely while held.
 
 **Default:** `0`
 
+### fullscreen_behavior
+
+Selects what the edges of a monitor do while a full-screen app or game fills
+it. A window is full screen when it covers its whole monitor and has no title
+bar. A window that covers more than one monitor is not, nor is a tool window
+or one of PowerToys' own overlays, such as Screen Ruler and Text Extractor.
+Only moves that leave that monitor change; entering it, and moves between
+other monitors, behave as usual.
+
+**Type:** integer  
+**Allowed values:**
+
+- `0` - Same as other apps
+- `1` - Wall: the cursor leaves the monitor only while the `cross_modifier`
+  key is held, even while dragging with `disable_while_dragging` on, and
+  whatever `edges` sets for that monitor
+- `2` - No resistance: the cursor leaves the monitor without resistance,
+  walls set in `edges` included
+
+**Default:** `0`
+
+### excluded_apps
+
+Lists apps that turn CursorBrake off while they are in front, walls
+included. Put one application name per line, such as `outlook.exe`. Case
+does not matter, and lines of only `\` or `/` are ignored. A name matches
+when its last place in the app's full path reaches the first character of
+the file name or the backslash before it, so `game` matches `game2.exe`
+and `games\game` matches `C:\Games\Game.exe`. Otherwise a name matches when
+the app's window title contains it, as in Find My Mouse.
+
+**Type:** string  
+**Default:** `""`
+
 ### edges
 
 Gives single edges their own behavior. Each entry names two monitors and
@@ -210,7 +244,30 @@ resources:
         version: 1.0
 ```
 
-### Example 4 - Install and configure with WinGet
+### Example 4 - Keep the cursor in full-screen games
+
+This example walls every edge of a monitor while a full-screen app or game
+fills it, and leaves CursorBrake off while a remote desktop client is in
+front.
+
+```yaml
+# cursorbrake-full-screen.dsc.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+resources:
+  - name: Wall full-screen apps
+    type: Microsoft.PowerToys/CursorBrakeSettings
+    properties:
+      settings:
+        properties:
+          fullscreen_behavior:
+            value: 1
+          excluded_apps:
+            value: "mstsc.exe"
+        name: CursorBrake
+        version: 1.0
+```
+
+### Example 5 - Install and configure with WinGet
 
 This example installs PowerToys and configures CursorBrake to brake every
 crossing, including the way back.

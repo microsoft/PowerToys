@@ -307,6 +307,16 @@
                                     <ComboBoxItem x:Uid="MouseUtils_CursorBrake_CrossModifier_HoldingShift" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakeFullscreenBehavior" x:Uid="MouseUtils_CursorBrake_FullscreenBehavior">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeFullscreenBehaviorId"
+                                    SelectedIndex="{x:Bind Path=ViewModel.CursorBrakeFullscreenBehavior, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_FullscreenBehavior_Same" />
+                                    <ComboBoxItem AutomationProperties.Name="{x:Bind ViewModel.CursorBrakeFullscreenWallText, Mode=OneWay}" Content="{x:Bind ViewModel.CursorBrakeFullscreenWallText, Mode=OneWay}" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_FullscreenBehavior_NoResistance" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
@@ -353,6 +363,30 @@
                                     Severity="Informational" />
                             </StackPanel>
                         </tkcontrols:SettingsExpander.ItemsHeader>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsCursorBrakeExcludedApps"
+                        x:Uid="MouseUtils_CursorBrake_ExcludedApps"
+                        AutomationProperties.AutomationId="MouseUtils_CursorBrakeExcludedAppsId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="MouseUtils_CursorBrake_ExcludedApps_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeExcludedAppsTextBoxId"
+                                    IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=OneWay}"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind ViewModel.CursorBrakeExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 

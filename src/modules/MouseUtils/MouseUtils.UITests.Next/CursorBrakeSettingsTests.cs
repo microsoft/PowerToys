@@ -27,6 +27,9 @@ public class CursorBrakeSettingsTests : UITestBase
     private const string EdgeMapId = "MouseUtils_CursorBrakeEdgeMapId";
     private const string DisconnectedId = "MouseUtils_CursorBrakeDisconnectedId";
     private const string ForgetId = "MouseUtils_CursorBrakeForgetId";
+    private const string FullscreenBehaviorId = "MouseUtils_CursorBrakeFullscreenBehaviorId";
+    private const string ExcludedAppsExpanderId = "MouseUtils_CursorBrakeExcludedAppsId";
+    private const string ExcludedAppsTextBoxId = "MouseUtils_CursorBrakeExcludedAppsTextBoxId";
 
     // Two monitors that are never connected, with one entry each way: a wall from the first to the
     // second, and Off with a kept distance back. No monitor has these IDs, so Settings names them
@@ -55,6 +58,16 @@ public class CursorBrakeSettingsTests : UITestBase
     private const string EdgeFilterStacked = "Stacked only";
     private const string CrossModifierCtrl = "Holding Ctrl";
     private const string CrossModifierShift = "Holding Shift";
+    private const string FullscreenSame = "Same as other apps";
+    private const string FullscreenWallCtrl = "Wall: cross only by holding Ctrl";
+    private const string FullscreenWallShift = "Wall: cross only by holding Shift";
+    private const string FullscreenNoResistance = "No resistance";
+
+    // The excluded apps the test types, one per line.
+    private static readonly string[] ExcludedAppsLines = ["game.exe", "Outlook.exe"];
+
+    // The line the module logs when it takes a new excluded apps list.
+    private const string ExcludedAppsAppliedLogText = "CursorBrake excluded apps applied: 2 entries.";
 
     // dllmain.cpp's HookThreadMain logs a session line, then exactly one install line, each time the
     // hook thread starts. The test waits for a fresh install line, so the hook is live before the move
@@ -276,6 +289,79 @@ public class CursorBrakeSettingsTests : UITestBase
         OpenOptions();
         AssertComboText(EdgeFilterId, EdgeFilterStacked);
         AssertComboText(CrossModifierId, CrossModifierShift);
+    }
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void FullScreenChoicePersistsEachValue()
+    {
+        OpenOptions();
+
+        SelectComboItem(FullscreenBehaviorId, FullscreenWallCtrl);
+        AssertPersistedInt("fullscreen_behavior", 1);
+        SelectComboItem(FullscreenBehaviorId, FullscreenNoResistance);
+        AssertPersistedInt("fullscreen_behavior", 2);
+        SelectComboItem(FullscreenBehaviorId, FullscreenSame);
+        AssertPersistedInt("fullscreen_behavior", 0);
+        SelectComboItem(FullscreenBehaviorId, FullscreenWallCtrl);
+        AssertPersistedInt("fullscreen_behavior", 1);
+
+        // The wall item names the cross key, and the closed box follows a change of key without
+        // changing the choice.
+        SelectComboItem(CrossModifierId, CrossModifierShift);
+        AssertComboText(FullscreenBehaviorId, FullscreenWallShift);
+        AssertPersistedInt("fullscreen_behavior", 1);
+
+        RestartScope();
+        AssertPersistedInt("fullscreen_behavior", 1);
+
+        OpenOptions();
+        AssertComboText(FullscreenBehaviorId, FullscreenWallShift);
+    }
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void ExcludedAppsPersistAndReachTheModule()
+    {
+        OpenOptions();
+        var appliedBefore = CountModuleLogLines(ExcludedAppsAppliedLogText);
+
+        // A WinUI text box keeps a line break as a lone CR, which the module splits on too.
+        OpenExcludedApps().SetText("game.exe\rOutlook.exe");
+        AssertPersistedExcludedApps(ExcludedAppsLines);
+
+        var applied = WaitHelper.WaitForStable(() => CountModuleLogLines(ExcludedAppsAppliedLogText), count => count > appliedBefore, timeoutMS: HookSettleTimeoutMs, requiredConsecutiveMatches: 1, pollIntervalMS: 200);
+        Assert.IsTrue(applied.Succeeded, "The module did not log that it took the two excluded apps.");
+
+        RestartScope();
+        AssertPersistedExcludedApps(ExcludedAppsLines);
+
+        MouseUtilsTestHelper.NavigateToMouseUtilities(this);
+        MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, true);
+        CollectionAssert.AreEqual(ExcludedAppsLines, Lines(OpenExcludedApps().Value), "The text box did not show the persisted list.");
+    }
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("CursorBrake")]
+    public void FullScreenAndExcludedAppsFollowModuleToggle()
+    {
+        MouseUtilsTestHelper.NavigateToMouseUtilities(this);
+        Session.Find<Element>(By.AccessibilityId(ExcludedAppsExpanderId), 5_000).ScrollIntoView();
+
+        MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, false);
+        AssertOptionsEnabled(expected: false);
+        AssertEnabled(ExcludedAppsExpanderId, expected: false);
+
+        MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, true);
+        AssertOptionsEnabled(expected: true);
+        AssertEnabled(ExcludedAppsExpanderId, expected: true);
+
+        ExpandOptions();
+        AssertEnabled(FullscreenBehaviorId, expected: true);
+        Assert.IsTrue(OpenExcludedApps().IsEnabled, "The excluded apps text box was disabled with the module on.");
     }
 
     // The contract: a move that stays on one monitor is never held. On a single-monitor machine
@@ -768,6 +854,45 @@ public class CursorBrakeSettingsTests : UITestBase
         Assert.IsTrue(Session.Has(By.AccessibilityId(EdgeFilterId), 5_000), "Apply to combo box was not available.");
         Assert.IsTrue(Session.Has(By.AccessibilityId(DisableWhileDraggingId), 5_000), "Disable resistance while dragging checkbox was not available.");
         Assert.IsTrue(Session.Has(By.AccessibilityId(CrossModifierId), 5_000), "Cross freely while combo box was not available.");
+        Assert.IsTrue(Session.Has(By.AccessibilityId(FullscreenBehaviorId), 5_000), "Full-screen apps and games combo box was not available.");
+    }
+
+    // Opens Excluded apps on the page already shown.
+    private TextBox OpenExcludedApps()
+    {
+        MouseUtilsTestHelper.ExpandSettings(this, ExcludedAppsExpanderId);
+
+        Assert.IsTrue(Session.Has(By.AccessibilityId(ExcludedAppsTextBoxId), 5_000), "Excluded apps text box was not available.");
+        var textBox = Session.Find<TextBox>(By.AccessibilityId(ExcludedAppsTextBoxId), 5_000);
+        textBox.ScrollIntoView();
+        return textBox;
+    }
+
+    private static string[] Lines(string? text) => (text ?? string.Empty).Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private static void AssertPersistedExcludedApps(params string[] expected)
+    {
+        var result = WaitHelper.WaitForStable(
+            () => ReadPersistedString("excluded_apps"),
+            actual => Lines(actual).SequenceEqual(expected),
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200);
+        Assert.IsTrue(result.Succeeded, $"excluded_apps did not persist as {string.Join(", ", expected)}. Last observed value: '{result.LastObservation}'.");
+    }
+
+    private static string? ReadPersistedString(string propertyName)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(SettingsPath));
+            return document.RootElement.GetProperty("properties").TryGetProperty(propertyName, out var property) ? property.GetProperty("value").GetString() : null;
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or KeyNotFoundException or InvalidOperationException)
+        {
+            // Settings may be mid-write; the next poll reads the whole file.
+            return null;
+        }
     }
 
     private void AssertOptionsEnabled(bool expected)

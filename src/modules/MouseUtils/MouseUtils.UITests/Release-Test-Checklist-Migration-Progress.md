@@ -1,6 +1,6 @@
 ## Mouse Utils
 
-The migrated suite is [MouseUtils.UITests.Next](../MouseUtils.UITests.Next/) and currently contains 62 test methods. Checked items have an automated effect-based assertion. CursorBrake items that need two monitors say so; they report Inconclusive on the single-monitor Hyper-V profile and run on a guest with several virtual displays. Unchecked items require physical hardware or desktop state that neither profile can establish faithfully.
+The migrated suite is [MouseUtils.UITests.Next](../MouseUtils.UITests.Next/) and currently contains 65 test methods. Checked items have an automated effect-based assertion. CursorBrake items that need two monitors say so; they report Inconclusive on the single-monitor Hyper-V profile and run on a guest with several virtual displays. Unchecked items require physical hardware or desktop state that neither profile can establish faithfully.
 
 ### Find My Mouse
 
@@ -119,6 +119,9 @@ Automated by [MouseButtonLockSettingsTests.cs](../MouseUtils.UITests.Next/MouseB
 - [x] Forget removes a disconnected pair's entries from settings.json and its row from the editor.
 - [x] A Wall chosen for an edge survives the saves that follow a Strength change, the other edge's Default shows the new Strength, and the module applies the settings a bounded number of times rather than in a save loop. Inconclusive on one monitor.
 - [x] An edge box whose list opened reports the new "Default (N px)" text to UI Automation after Strength changes. Inconclusive on one monitor.
+- [x] Every "Full-screen apps and games" value persists, and the last one across a restart. The Wall item names the chosen cross key, before and after the restart.
+- [x] Excluded apps persist, including across a restart, and reach the module, which logs that it took them.
+- [x] Disabling the module disables "Resistance and behavior", which holds the full-screen choice, and Excluded apps; re-enabling restores both, with the full-screen choice and the excluded apps text box enabled.
 - [ ] Dragging with "Disable resistance while dragging" on crosses an inner edge without resistance; Apply to leaves the other axis's edges free; an edge's Wall, Off and one-way values hold, free and brake one direction only; and display changes rebuild the layout. Manual: requires changing displays during the run; the drag bypass, Apply to and per-edge effects have no automated case.
 
 Automated by [CursorBrakeSettingsTests.cs](../MouseUtils.UITests.Next/CursorBrakeSettingsTests.cs).

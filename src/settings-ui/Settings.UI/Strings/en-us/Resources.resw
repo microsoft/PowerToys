@@ -2941,6 +2941,32 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Holding Shift</value>
     <comment>Shift is the keyboard key.</comment>
   </data>
+  <data name="MouseUtils_CursorBrake_FullscreenBehavior.Header" xml:space="preserve">
+    <value>Full-screen apps and games</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_FullscreenBehavior.Description" xml:space="preserve">
+    <value>What a monitor's edges do while a full-screen app or game fills it. A game that keeps the cursor on its own monitor meets no resistance.</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_FullscreenBehavior_Same.Content" xml:space="preserve">
+    <value>Same as other apps</value>
+  </data>
+  <data name="CursorBrake_FullscreenBehavior_Wall" xml:space="preserve">
+    <value>Wall: cross only by holding {0}</value>
+    <comment>{0} is a key name such as Ctrl. The cursor cannot leave the full-screen app's monitor unless the key is held, not even while a mouse button is held.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_FullscreenBehavior_NoResistance.Content" xml:space="preserve">
+    <value>No resistance</value>
+    <comment>The cursor leaves the full-screen app's monitor without resistance.</comment>
+  </data>
+  <data name="MouseUtils_CursorBrake_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_ExcludedApps.Description" xml:space="preserve">
+    <value>Turn off resistance and walls while one of these apps is in front. Add one application name per line.</value>
+  </data>
+  <data name="MouseUtils_CursorBrake_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+  </data>
   <data name="MouseUtils_CursorBrake_Edges.Header" xml:space="preserve">
     <value>Edges between monitors</value>
   </data>
