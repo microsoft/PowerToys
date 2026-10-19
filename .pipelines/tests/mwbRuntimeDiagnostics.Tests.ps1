@@ -182,6 +182,23 @@ Describe 'MWB run-scoped runtime report' {
         { Get-MwbRuntimeDiagnostics $state $id } | Should Throw 'reversed'
     }
 
+    It 'preserves UTC kind and precision from the real JSON marker parser' {
+        $prepared = [DateTime]::UtcNow.AddMinutes(-5)
+        $state.PreparedUtc = $prepared.ToString('o')
+        $parsed = $state | ConvertTo-Json | ConvertFrom-Json -AsHashtable
+        ($parsed.PreparedUtc -is [DateTime]) | Should Be $true
+        $result = Get-MwbRuntimeDiagnostics $parsed $id
+        $result.QueryStatus | Should Be 'Succeeded'
+        $result.StartedUtc | Should Be $prepared.ToString('o')
+        $result.TimeWindowClamped | Should Be $false
+    }
+
+    It 'normalizes an already parsed local DateTime without losing its instant' {
+        $prepared = [DateTime]::UtcNow.AddMinutes(-5)
+        $state.PreparedUtc = $prepared.ToLocalTime()
+        (Get-MwbRuntimeDiagnostics $state $id).StartedUtc | Should Be $prepared.ToString('o')
+    }
+
     It 'records a blocked file hash as partial evidence rather than bypassing the read' {
         Mock Get-FileHash { throw [IO.IOException]::new('DO_NOT_PUBLISH antivirus block') }
         $result = Get-MwbRuntimeDiagnostics $state $id

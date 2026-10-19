@@ -107,8 +107,15 @@ function Get-MwbRuntimeDiagnostics {
     if ($product -ine $expected) { throw 'The runtime diagnostic product root is not this CI run.' }
     Assert-MwbCiPlainPath $product
     $completed = [DateTime]::UtcNow
-    $prepared = [DateTime]::Parse([string]$State.PreparedUtc, [Globalization.CultureInfo]::InvariantCulture,
-        [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+    # ConvertFrom-Json can already return a UTC DateTime. Converting it to a string
+    # first would discard its kind and reinterpret UTC as local time on the agent.
+    $prepared = if ($State.PreparedUtc -is [DateTime]) {
+        $State.PreparedUtc.ToUniversalTime()
+    }
+    else {
+        [DateTime]::Parse([string]$State.PreparedUtc, [Globalization.CultureInfo]::InvariantCulture,
+            [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+    }
     if ($prepared -gt $completed) { throw 'The runtime diagnostic time window is reversed.' }
     $started = if ($prepared -lt $completed.AddHours(-2)) { $completed.AddHours(-2) } else { $prepared }
     $report = [ordered]@{
