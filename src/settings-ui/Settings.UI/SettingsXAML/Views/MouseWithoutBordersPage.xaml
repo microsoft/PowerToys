@@ -43,9 +43,10 @@
                         Name="MouseWithoutBordersSecurityKey"
                         x:Uid="MouseWithoutBorders_SecurityKey"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D7;}"
+                        IsEnabled="{x:Bind ViewModel.CanManagePairing, Mode=OneWay}"
                         IsExpanded="{x:Bind ViewModel.ConnectFieldsVisible, Mode=TwoWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard ContentAlignment="Right">
+                            <tkcontrols:SettingsCard ContentAlignment="Right" IsEnabled="{x:Bind ViewModel.CanConnectPairing, Mode=OneWay}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBox
                                         x:Name="ConnectSecurityKeyTextBox"
@@ -63,7 +64,7 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=TwoWay}" />
+                            <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=OneWay}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
                                 Command="{x:Bind GenerateNewKeyCommand, Mode=OneTime}"
@@ -71,10 +72,29 @@
                             <Button
                                 x:Uid="MouseWithoutBorders_Connect"
                                 Command="{x:Bind ShowConnectFieldsCommand, Mode=OneTime}"
+                                IsEnabled="{x:Bind ViewModel.CanConnectPairing, Mode=OneWay}"
                                 Style="{StaticResource AccentButtonStyle}"
                                 Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}" />
                         </StackPanel>
                     </tkcontrols:SettingsExpander>
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_PairingUpdateFailed"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasPairingError, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.HasPairingError, Mode=OneWay}"
+                        Severity="Error" />
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_PairingRequiresAdministrator"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPairingRequiresAdministrator, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPairingRequiresAdministrator, Mode=OneWay}"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_PairingSetupRequired"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPairingSetupRequired, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPairingSetupRequired, Mode=OneWay}"
+                        Severity="Informational" />
 
                     <tkcontrols:SettingsCard Name="MouseWithoutBordersThisMachineNameLabel" x:Uid="MouseWithoutBorders_ThisMachineNameLabel">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -161,7 +181,10 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button HorizontalAlignment="Right" Command="{x:Bind ReconnectCommand, Mode=OneTime}">
+                            <Button
+                                HorizontalAlignment="Right"
+                                Command="{x:Bind ReconnectCommand, Mode=OneTime}"
+                                IsEnabled="{x:Bind ViewModel.CanReconnect, Mode=OneWay}">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -188,7 +211,10 @@
                             Name="MouseWithoutBordersUseService"
                             x:Uid="MouseWithoutBorders_UseService"
                             IsEnabled="{x:Bind ViewModel.UseServiceSettingIsEnabled, Mode=OneWay}">
-                            <ToggleSwitch x:Uid="MouseWithoutBorders_UseService_ToggleSwitch" IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}" />
+                            <ToggleSwitch
+                                x:Uid="MouseWithoutBorders_UseService_ToggleSwitch"
+                                IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}"
+                                Toggled="ServiceMode_Toggled" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
                                     Name="MouseWithoutBordersUninstallService"
@@ -216,6 +242,12 @@
                         Severity="Informational" />
                 </controls:SettingsGroup>
 
+                <InfoBar
+                    x:Uid="MouseWithoutBorders_ServiceModeChangeFailed"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.HasServiceModeError, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.HasServiceModeError, Mode=OneWay}"
+                    Severity="Error" />
 
                 <controls:SettingsGroup
                     x:Name="BehaviorSettingsGroup"
