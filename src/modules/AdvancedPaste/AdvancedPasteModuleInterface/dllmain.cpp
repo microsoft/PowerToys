@@ -57,6 +57,7 @@ namespace
     const wchar_t JSON_KEY_PASTE_AS_PLAIN_HOTKEY[] = L"paste-as-plain-hotkey";
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
+    const wchar_t JSON_KEY_PASTE_AS_RICH_TEXT_HOTKEY[] = L"paste-as-richtext-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
     const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
     const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
@@ -83,11 +84,12 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
+    static const constexpr int NUM_DEFAULT_HOTKEYS = 5;
 
     Hotkey m_paste_as_plain_hotkey = { .win = true, .ctrl = true, .shift = false, .alt = true, .key = 'V' };
     Hotkey m_advanced_paste_ui_hotkey = { .win = true, .ctrl = false, .shift = true, .alt = false, .key = 'V' };
     Hotkey m_paste_as_markdown_hotkey{};
+    Hotkey m_paste_as_rich_text_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
 
     template<class Id>
@@ -402,6 +404,7 @@ private:
                     { { &m_paste_as_plain_hotkey, JSON_KEY_PASTE_AS_PLAIN_HOTKEY },
                       { &m_advanced_paste_ui_hotkey, JSON_KEY_ADVANCED_PASTE_UI_HOTKEY },
                       { &m_paste_as_markdown_hotkey, JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY },
+                      { &m_paste_as_rich_text_hotkey, JSON_KEY_PASTE_AS_RICH_TEXT_HOTKEY },
                       { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY } }
                 };
 
@@ -971,6 +974,7 @@ public:
             Trace::AdvancedPaste_SettingsTelemetry(m_paste_as_plain_hotkey,
                                                    m_advanced_paste_ui_hotkey,
                                                    m_paste_as_markdown_hotkey,
+                                                   m_paste_as_rich_text_hotkey,
                                                    m_paste_as_json_hotkey,
                                                    m_is_advanced_ai_enabled,
                                                    m_preview_custom_format_output,
@@ -1097,6 +1101,13 @@ public:
                 return true;
             }
             if (hotkeyId == 3)
+            { // m_paste_as_rich_text_hotkey
+                Logger::trace(L"Starting paste as rich text directly");
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_RICH_TEXT_MESSAGE);
+                Trace::AdvancedPaste_Invoked(L"RichTextDirect");
+                return true;
+            }
+            if (hotkeyId == 4)
             { // m_paste_as_json_hotkey
                 Logger::trace(L"Starting paste as json directly");
                 m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
@@ -1141,6 +1152,7 @@ public:
             const std::array default_hotkeys = { m_paste_as_plain_hotkey,
                                                  m_advanced_paste_ui_hotkey,
                                                  m_paste_as_markdown_hotkey,
+                                                 m_paste_as_rich_text_hotkey,
                                                  m_paste_as_json_hotkey };
             std::copy(default_hotkeys.begin(), default_hotkeys.end(), hotkeys);
 

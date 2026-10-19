@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeAdvancedPaste"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,6 +18,10 @@
                 <ptcontrols:ShortcutWithTextLabelControl
                     x:Name="PasteAsMarkdownHotkeyControl"
                     x:Uid="Oobe_AdvancedPasteMarkdown_HowToUse"
+                    Visibility="Collapsed" />
+                <ptcontrols:ShortcutWithTextLabelControl
+                    x:Name="PasteAsRichTextHotkeyControl"
+                    x:Uid="Oobe_AdvancedPasteRichText_HowToUse"
                     Visibility="Collapsed" />
                 <ptcontrols:ShortcutWithTextLabelControl
                     x:Name="PasteAsJsonHotkeyControl"

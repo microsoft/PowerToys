@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -59,6 +59,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.PasteAsMarkdownShortcut,
                     value => Properties.PasteAsMarkdownShortcut = value ?? new HotkeySettings(),
                     "PasteAsMarkdown_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.PasteAsRichTextShortcut,
+                    value => Properties.PasteAsRichTextShortcut = value ?? new HotkeySettings(),
+                    "PasteAsRichText_Shortcut"),
                 new HotkeyAccessor(
                     () => Properties.PasteAsJsonShortcut,
                     value => Properties.PasteAsJsonShortcut = value ?? new HotkeySettings(),
