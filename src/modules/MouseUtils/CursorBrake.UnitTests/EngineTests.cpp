@@ -1,0 +1,2065 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+#include "pch.h"
+#include "CursorBrakeCore.h"
+
+#include <algorithm>
+#include <optional>
+#include <string>
+#include <vector>
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace cursorbrake;
+
+namespace
+{
+    constexpr unsigned int DPI_100 = 96;
+    constexpr unsigned int DPI_150 = 144;
+    constexpr unsigned int DPI_200 = 192;
+
+    Monitor Mon(long left, long top, long right, long bottom, unsigned int dpi = DPI_100)
+    {
+        return Monitor{ RectL{ left, top, right, bottom }, dpi };
+    }
+
+    // Rects are physical pixels and half-open like a Win32 RECT, so in every layout below the
+    // last column of the left monitor is x = 1919 and the first column of the right one is 1920.
+
+    // A | B, both 1920x1080 at 100%.
+    Layout SideBySide()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 0, 3840, 1080) } };
+    }
+
+    // A above B, both 1920x1080 at 100%. The shared edge is y = 1080.
+    Layout Stacked()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080), Mon(0, 1080, 1920, 2160) } };
+    }
+
+    // B sits 540 px lower than A, so the A|B edge is shared only for y in [540, 1080).
+    Layout Offset()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 540, 3840, 1620) } };
+    }
+
+    // A (100%) | B (150%) | C (200%). Edges at x = 1920 and x = 4800.
+    Layout MixedDpi()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080, DPI_100), Mon(1920, 0, 4800, 1620, DPI_150), Mon(4800, 0, 8640, 2160, DPI_200) } };
+    }
+
+    Layout Single()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080) } };
+    }
+
+    // Top-left, top-right, bottom-left, bottom-right, meeting at (1920, 1080).
+    Layout Junction()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 0, 3840, 1080), Mon(0, 1080, 1920, 2160), Mon(1920, 1080, 3840, 2160) } };
+    }
+
+    // A and B with an 80 px strip between them that belongs to no monitor.
+    Layout Gap()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080), Mon(2000, 0, 3920, 1080) } };
+    }
+
+    // A beside a taller B, top-aligned, so nothing lies below A and its bottom edge is outer.
+    Layout TallNeighbor()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 0, 4480, 1440) } };
+    }
+
+    // A tall A with B above C on its right. A's right edge borders B for y < 1080 and C below.
+    Layout TwoOnTheRight()
+    {
+        return Layout{ { Mon(0, 0, 1920, 2160), Mon(1920, 0, 3840, 1080), Mon(1920, 1080, 3840, 2160) } };
+    }
+
+    // A with a neighbor on its right, one below and one above.
+    Layout RightBelowAbove()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 0, 3840, 1080), Mon(0, 1080, 1920, 2160), Mon(0, -1080, 1920, 0) } };
+    }
+
+    // A above B on the left, a tall C on the right bordering both.
+    Layout TwoOnTheLeft()
+    {
+        return Layout{ { Mon(0, 0, 1920, 1080), Mon(0, 1080, 1920, 2160), Mon(1920, 0, 3840, 2160) } };
+    }
+
+    // A primary with a monitor above, one to the right and one to the left, in an order
+    // EnumDisplayMonitors can report: top, right, primary (the rect at 0,0), left. The right
+    // monitor's DPI varies by case.
+    Layout FourAround(unsigned int rightDpi)
+    {
+        return Layout{ { Mon(0, -1080, 1920, 0), Mon(1920, 0, 3840, 1080, rightDpi), Mon(0, 0, 1920, 1080), Mon(-1920, 0, 0, 1080) } };
+    }
+
+    // The per-move cap and the free-return window in physical pixels on a monitor at `dpi`, from
+    // the source scaling every threshold uses: 10 and 100 at 100%, 15 and 150 at 150%.
+    int CapAt(unsigned int dpi)
+    {
+        return MOVE_CAP * static_cast<int>(dpi) / static_cast<int>(DPI_100);
+    }
+
+    // The baseline most tests run under: a 25 px push, which a few 10 px moves (the cap at 100%)
+    // reach, and the free return on. The shipping defaults (Settings{}) have their own tests.
+    Settings Defaults()
+    {
+        Settings s;
+        s.pushDistance = 25;
+        s.freeReturn = true;
+        return s;
+    }
+
+    Settings WithFreeReturn(bool freeReturn)
+    {
+        Settings s = Defaults();
+        s.freeReturn = freeReturn;
+        return s;
+    }
+
+    // A 500 px push.
+    Settings SlowPushSettings()
+    {
+        Settings s = Defaults();
+        s.pushDistance = 500;
+        return s;
+    }
+
+    Settings WithDistance(int pushDistance)
+    {
+        Settings s = Defaults();
+        s.pushDistance = pushDistance;
+        return s;
+    }
+
+    Settings WithFilter(EdgeFilter filter)
+    {
+        Settings s = Defaults();
+        s.edgeFilter = filter;
+        return s;
+    }
+
+    Settings WithDragDisable()
+    {
+        Settings s = Defaults();
+        s.disableWhileDragging = true;
+        return s;
+    }
+
+    Settings WithModifier(CrossModifier modifier)
+    {
+        Settings s = Defaults();
+        s.crossModifier = modifier;
+        return s;
+    }
+
+    MoveEvent Move(PointL from, PointL to)
+    {
+        MoveEvent move;
+        move.current = from;
+        move.proposed = to;
+        return move;
+    }
+
+    MoveEvent ModifierMove(PointL from, PointL to)
+    {
+        MoveEvent move = Move(from, to);
+        move.crossModifierHeld = true;
+        return move;
+    }
+
+    MoveEvent AbsoluteMove(PointL from, PointL to)
+    {
+        MoveEvent move = Move(from, to);
+        move.input = InputKind::Absolute;
+        return move;
+    }
+
+    MoveEvent DragMove(PointL from, PointL to)
+    {
+        MoveEvent move = Move(from, to);
+        move.buttonDown = true;
+        return move;
+    }
+
+    MoveEvent ClippedMove(PointL from, PointL to, RectL clip)
+    {
+        MoveEvent move = Move(from, to);
+        move.clip = clip;
+        return move;
+    }
+
+    Decision Allow(PointL point)
+    {
+        return Decision{ DecisionKind::Allow, point };
+    }
+
+    Decision Hold(PointL point)
+    {
+        return Decision{ DecisionKind::Hold, point };
+    }
+
+    struct Step
+    {
+        MoveEvent move;
+        Decision expected;
+        // Replaces the settings or layout from this step on, the way a settings save or a display
+        // change reaches the hook between two moves.
+        std::optional<Settings> settings;
+        std::optional<Layout> layout;
+    };
+
+    Step Expect(MoveEvent move, Decision expected)
+    {
+        return Step{ move, expected, std::nullopt, std::nullopt };
+    }
+
+    Step ExpectAfter(const Settings& settings, MoveEvent move, Decision expected)
+    {
+        return Step{ move, expected, settings, std::nullopt };
+    }
+
+    Step ExpectAfter(const Layout& layout, MoveEvent move, Decision expected)
+    {
+        return Step{ move, expected, std::nullopt, layout };
+    }
+
+    // Pushes A's right edge by 10 px from the edge column at y = 500. Two of these leave a push of
+    // 20, five short of the 25 px threshold at 100%.
+    Step PushTen()
+    {
+        return Expect(Move({ 1919, 500 }, { 1929, 500 }), Hold({ 1919, 500 }));
+    }
+
+    std::vector<Step> Concat(std::vector<Step> first, const std::vector<Step>& second)
+    {
+        first.insert(first.end(), second.begin(), second.end());
+        return first;
+    }
+
+    // The same steps with every move carrying `clip`.
+    std::vector<Step> UnderClip(std::vector<Step> steps, RectL clip)
+    {
+        for (Step& step : steps)
+        {
+            step.move.clip = clip;
+        }
+        return steps;
+    }
+
+    // The smallest rect around every monitor: what GetClipCursor reports when no app confines the
+    // cursor.
+    RectL BoundingRect(const Layout& layout)
+    {
+        RectL bounds = layout.monitors.front().rect;
+        for (const Monitor& monitor : layout.monitors)
+        {
+            bounds.left = (std::min)(bounds.left, monitor.rect.left);
+            bounds.top = (std::min)(bounds.top, monitor.rect.top);
+            bounds.right = (std::max)(bounds.right, monitor.rect.right);
+            bounds.bottom = (std::max)(bounds.bottom, monitor.rect.bottom);
+        }
+        return bounds;
+    }
+
+    // Crosses from A to B under the baseline: 10 + 10 + 5 reaches 25, landing at x = 1924.
+    std::vector<Step> CrossToB()
+    {
+        return { PushTen(), PushTen(), Expect(Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })) };
+    }
+
+    // Slow pushes from `edge` (the source monitor's edge pixel) in the direction (dx, dy), with
+    // step sizes cycling through `sizes`. Each step adds its overshoot, at most `cap`
+    // (the per-move cap in physical pixels on the source), and holds at `edge` until the sum
+    // reaches `threshold`; the step that reaches it is allowed.
+    std::vector<Step> SlowPush(PointL edge, int dx, int dy, int threshold, std::vector<int> sizes, int cap = CapAt(DPI_100))
+    {
+        std::vector<Step> steps;
+        int pushed = 0;
+        for (size_t i = 0; pushed < threshold; ++i)
+        {
+            const int size = sizes[i % sizes.size()];
+            pushed += size < cap ? size : cap;
+            const PointL proposed{ edge.x + dx * size, edge.y + dy * size };
+            steps.push_back(Expect(Move(edge, proposed), pushed >= threshold ? Allow(proposed) : Hold(edge)));
+        }
+        return steps;
+    }
+
+    // `count` equal hand steps of `size` px from `edge`: every one before the last holds, and the
+    // last crosses.
+    std::vector<Step> CrossOnStep(PointL edge, int dx, int dy, int size, int count)
+    {
+        std::vector<Step> steps;
+        const PointL proposed{ edge.x + dx * size, edge.y + dy * size };
+        for (int i = 1; i <= count; ++i)
+        {
+            steps.push_back(Expect(Move(edge, proposed), i == count ? Allow(proposed) : Hold(edge)));
+        }
+        return steps;
+    }
+
+    // `count` moves off the `source` rect from `start`, cycling through `deltas`. Every move before
+    // the last holds on the source's edge with its along-edge motion kept, the next move starts
+    // there, and the last move crosses.
+    std::vector<Step> CycleFrom(const RectL& source, PointL start, const std::vector<PointL>& deltas, int count)
+    {
+        std::vector<Step> steps;
+        PointL cursor = start;
+        for (int i = 0; i < count; ++i)
+        {
+            const PointL delta = deltas[static_cast<size_t>(i) % deltas.size()];
+            const PointL proposed{ cursor.x + delta.x, cursor.y + delta.y };
+            const PointL edge{ std::clamp(proposed.x, source.left, source.right - 1), std::clamp(proposed.y, source.top, source.bottom - 1) };
+            steps.push_back(Expect(Move(cursor, proposed), i + 1 == count ? Allow(proposed) : Hold(edge)));
+            cursor = edge;
+        }
+        return steps;
+    }
+
+    // One recorded low-level hook event: the cursor before the move and the point it proposed.
+    struct TracedMove
+    {
+        PointL cursor;
+        PointL pt;
+    };
+
+    // Replays traced moves from the `source` rect. A move that stays on the source is allowed,
+    // every other move holds on the source's edge with its along-edge motion kept, and the last
+    // move crosses. The replay ends at the crossing, because the trace's later cursor positions
+    // follow holds the engine under test does not make.
+    std::vector<Step> Replay(const std::vector<TracedMove>& moves, const RectL& source)
+    {
+        std::vector<Step> steps;
+        for (size_t i = 0; i < moves.size(); ++i)
+        {
+            const PointL pt = moves[i].pt;
+            const bool onSource = pt.x >= source.left && pt.x < source.right && pt.y >= source.top && pt.y < source.bottom;
+            const PointL edge{ std::clamp(pt.x, source.left, source.right - 1), std::clamp(pt.y, source.top, source.bottom - 1) };
+            steps.push_back(Expect(Move(moves[i].cursor, pt), onSource || i + 1 == moves.size() ? Allow(pt) : Hold(edge)));
+        }
+        return steps;
+    }
+
+    struct Case
+    {
+        std::wstring name;
+        Layout layout;
+        Settings settings;
+        std::vector<Step> steps;
+    };
+
+    std::wstring Describe(const Decision& decision)
+    {
+        const wchar_t* kind = decision.kind == DecisionKind::Allow ? L"Allow" : L"Hold";
+        return std::wstring(kind) + L"(" + std::to_wstring(decision.point.x) + L", " + std::to_wstring(decision.point.y) + L")";
+    }
+
+    const wchar_t* Name(InputTreatment treatment)
+    {
+        switch (treatment)
+        {
+        case InputTreatment::Pass:
+            return L"Pass";
+        case InputTreatment::Judge:
+        default:
+            return L"Judge";
+        }
+    }
+
+    // Each case gets a fresh engine. Every step checks both the decision kind and the point, so an
+    // Allow that moves the cursor and a Hold at the wrong place both fail. A case stops at its first
+    // mismatch, since later steps assume the earlier decisions.
+    std::optional<std::wstring> Run(const Case& c)
+    {
+        Engine engine;
+        Layout layout = c.layout;
+        Settings settings = c.settings;
+        for (size_t i = 0; i < c.steps.size(); ++i)
+        {
+            const Step& step = c.steps[i];
+            if (step.settings)
+            {
+                settings = *step.settings;
+            }
+            if (step.layout)
+            {
+                layout = *step.layout;
+            }
+
+            const Decision actual = engine.OnMove(step.move, layout, settings);
+            if (!(actual == step.expected))
+            {
+                return c.name + L", step " + std::to_wstring(i + 1) + L": expected " + Describe(step.expected) + L", got " + Describe(actual);
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Runs every case before failing, so one report names every case that broke.
+    void RunAll(const std::vector<Case>& cases)
+    {
+        std::wstring failures;
+        for (const Case& c : cases)
+        {
+            if (const std::optional<std::wstring> failure = Run(c))
+            {
+                failures += (failures.empty() ? L"" : L"; ") + *failure;
+            }
+        }
+        if (!failures.empty())
+        {
+            Assert::Fail(failures.c_str());
+        }
+    }
+
+    // Runs the cases as written, with no clip known, and again with every move carrying the
+    // layout's bounding rect, the clip Windows reports when no app confines the cursor.
+    void RunAllWithAndWithoutTheBoundingRect(const std::vector<Case>& cases)
+    {
+        std::vector<Case> all = cases;
+        for (const Case& c : cases)
+        {
+            all.push_back({ c.name + L" (bounding rect)", c.layout, c.settings, UnderClip(c.steps, BoundingRect(c.layout)) });
+        }
+        RunAll(all);
+    }
+}
+
+namespace CursorBrakeEngineTests
+{
+    TEST_CLASS (SettingsDefaults)
+    {
+    public:
+        TEST_METHOD (DefaultSettingsAreTheShippingValues)
+        {
+            const Settings s;
+            Assert::AreEqual(300, s.pushDistance);
+            Assert::IsTrue(s.freeReturn);
+            Assert::IsTrue(s.edgeFilter == EdgeFilter::All);
+            Assert::IsFalse(s.disableWhileDragging);
+        }
+
+        TEST_METHOD (ConstantsAreTheShippingValues)
+        {
+            Assert::AreEqual(10, MOVE_CAP);
+            Assert::AreEqual(100, FREE_RETURN_LIMIT);
+            Assert::AreEqual(0, MIN_PUSH_DISTANCE);
+            Assert::AreEqual(1000, MAX_PUSH_DISTANCE);
+        }
+    };
+
+    TEST_CLASS (PushDistanceClamp)
+    {
+    public:
+        TEST_METHOD (SettingsValuesAreClampedToZeroThroughOneThousand)
+        {
+            struct ClampCase
+            {
+                const wchar_t* name;
+                double raw;
+                int expected;
+            };
+
+            const ClampCase cases[] = {
+                { L"default", 300, 300 },
+                { L"zero", 0, 0 },
+                { L"upper bound kept", 1000, 1000 },
+                { L"one past the upper bound", 1001, 1000 },
+                { L"just past the upper bound", 1000.5, 1000 },
+                { L"far past the upper bound", 1e12, 1000 },
+                { L"just under the upper bound truncates", 999.9, 999 },
+                { L"negative", -1, 0 },
+                { L"far negative", -1e12, 0 },
+            };
+
+            std::wstring failures;
+            for (const ClampCase& c : cases)
+            {
+                const int actual = ClampPushDistance(c.raw);
+                if (actual != c.expected)
+                {
+                    failures += (failures.empty() ? L"" : L"; ") + std::wstring(c.name) + L": expected " + std::to_wstring(c.expected) + L", got " + std::to_wstring(actual);
+                }
+            }
+            if (!failures.empty())
+            {
+                Assert::Fail(failures.c_str());
+            }
+        }
+    };
+
+    TEST_CLASS (SourceScaledThreshold)
+    {
+    public:
+        TEST_METHOD (ScaledThresholdIsTheDistanceTimesTheSourceDpi)
+        {
+            // In physical pixels times 96: distance * dpi. A negative distance counts as 0.
+            struct ThresholdCase
+            {
+                const wchar_t* name;
+                int distance;
+                unsigned int dpi;
+                uint64_t expected;
+            };
+
+            const ThresholdCase cases[] = {
+                { L"25 at 100%", 25, DPI_100, 25 * 96 },
+                { L"25 at 150%", 25, DPI_150, 25 * 144 },
+                { L"25 at 200%", 25, DPI_200, 25 * 192 },
+                { L"the cap at 150%", MOVE_CAP, DPI_150, 10 * 144 },
+                { L"the free-return window at 150%", FREE_RETURN_LIMIT, DPI_150, 100 * 144 },
+                { L"zero", 0, DPI_200, 0 },
+                { L"negative", -5, DPI_150, 0 },
+            };
+
+            std::wstring failures;
+            for (const ThresholdCase& c : cases)
+            {
+                const uint64_t actual = ScaledThreshold(c.distance, c.dpi);
+                if (actual != c.expected)
+                {
+                    failures += (failures.empty() ? L"" : L"; ") + std::wstring(c.name) + L": expected " + std::to_wstring(c.expected) + L", got " + std::to_wstring(actual);
+                }
+            }
+            if (!failures.empty())
+            {
+                Assert::Fail(failures.c_str());
+            }
+        }
+    };
+
+    TEST_CLASS (InMonitorMoves)
+    {
+    public:
+        TEST_METHOD (MovesWithinOneMonitorAreAllowedUnchanged)
+        {
+            RunAll({
+                { L"interior move", SideBySide(), Defaults(), { Expect(Move({ 100, 100 }, { 200, 150 }), Allow({ 200, 150 })) } },
+                { L"up to the edge column", SideBySide(), Defaults(), { Expect(Move({ 1900, 500 }, { 1919, 500 }), Allow({ 1919, 500 })) } },
+                { L"along the shared edge", SideBySide(), Defaults(), { Expect(Move({ 1919, 100 }, { 1919, 900 }), Allow({ 1919, 900 })) } },
+                { L"on the right monitor", SideBySide(), Defaults(), { Expect(Move({ 2000, 500 }, { 3000, 800 }), Allow({ 3000, 800 })) } },
+                { L"stacked, up to the edge row", Stacked(), Defaults(), { Expect(Move({ 500, 1000 }, { 500, 1079 }), Allow({ 500, 1079 })) } },
+            });
+        }
+    };
+
+    TEST_CLASS (Push)
+    {
+    public:
+        TEST_METHOD (PushBelowThresholdHoldsAtTheEdge)
+        {
+            RunAll({
+                { L"straight push", SideBySide(), Defaults(), { Expect(Move({ 1919, 500 }, { 1929, 500 }), Hold({ 1919, 500 })) } },
+                { L"push keeps the along-edge motion", SideBySide(), Defaults(), { Expect(Move({ 1919, 500 }, { 1929, 510 }), Hold({ 1919, 510 })) } },
+                { L"leftward push", SideBySide(), Defaults(), { Expect(Move({ 1920, 500 }, { 1910, 500 }), Hold({ 1920, 500 })) } },
+                { L"downward push", Stacked(), Defaults(), { Expect(Move({ 500, 1079 }, { 500, 1091 }), Hold({ 500, 1079 })) } },
+                { L"upward push", Stacked(), Defaults(), { Expect(Move({ 500, 1080 }, { 500, 1056 }), Hold({ 500, 1080 })) } },
+            });
+        }
+
+        TEST_METHOD (CumulativePushCrossesOnReachingTheThreshold)
+        {
+            RunAll({
+                { L"rightward, 10 + 10 + 4 + 1",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1923, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1920, 500 }), Allow({ 1920, 500 })),
+                  } },
+                { L"leftward, 10 + 10 + 5",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1920, 500 }, { 1910, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1910, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1915, 500 }), Allow({ 1915, 500 })),
+                  } },
+                { L"downward, 10 + 10 + 5",
+                  Stacked(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 500, 1079 }, { 500, 1089 }), Hold({ 500, 1079 })),
+                      Expect(Move({ 500, 1079 }, { 500, 1089 }), Hold({ 500, 1079 })),
+                      Expect(Move({ 500, 1079 }, { 500, 1084 }), Allow({ 500, 1084 })),
+                  } },
+                { L"upward, 10 + 10 + 5",
+                  Stacked(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 500, 1080 }, { 500, 1070 }), Hold({ 500, 1080 })),
+                      Expect(Move({ 500, 1080 }, { 500, 1070 }), Hold({ 500, 1080 })),
+                      Expect(Move({ 500, 1080 }, { 500, 1075 }), Allow({ 500, 1075 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (OnlyTheOvershootPastTheEdgeCounts)
+        {
+            // From x = 1900 to 1924 travels 24 px but only 5 of them lie past the edge column, so the
+            // push is 5, 15, 24 and crosses at 25. Counting the travel would cross a move earlier.
+            RunAll({
+                { L"approach from inside",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1900, 500 }, { 1924, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1929, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1928, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1920, 500 }), Allow({ 1920, 500 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (MoveAwayFromTheEdgeDrainsThePush)
+        {
+            // A move's component away from the pushed edge comes off the push, in physical
+            // pixels. Each case backs off part of a 20 px push and crosses on exactly what is left
+            // short of 25. A reset would leave the last step holding.
+            RunAll({
+                { L"one pixel back costs one pixel",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1918, 500 }), Allow({ 1918, 500 })),
+                      Expect(Move({ 1918, 500 }, { 1924, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1920, 500 }), Allow({ 1920, 500 })),
+                  } },
+                { L"three steps back cost their sum",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1916, 500 }), Allow({ 1916, 500 })),
+                      Expect(Move({ 1916, 500 }, { 1913, 500 }), Allow({ 1913, 500 })),
+                      Expect(Move({ 1913, 500 }, { 1910, 500 }), Allow({ 1910, 500 })),
+                      Expect(Move({ 1910, 500 }, { 1929, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1923, 500 }), Allow({ 1923, 500 })),
+                  } },
+                { L"diagonal with a component away",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1918, 520 }), Allow({ 1918, 520 })),
+                      Expect(Move({ 1918, 520 }, { 1924, 520 }), Hold({ 1919, 520 })),
+                      Expect(Move({ 1919, 520 }, { 1920, 520 }), Allow({ 1920, 520 })),
+                  } },
+                { L"leftward, one pixel back",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1920, 500 }, { 1910, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1910, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1921, 500 }), Allow({ 1921, 500 })),
+                      Expect(Move({ 1921, 500 }, { 1915, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1919, 500 }), Allow({ 1919, 500 })),
+                  } },
+                { L"stacked, one pixel up",
+                  Stacked(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 500, 1079 }, { 500, 1089 }), Hold({ 500, 1079 })),
+                      Expect(Move({ 500, 1079 }, { 500, 1089 }), Hold({ 500, 1079 })),
+                      Expect(Move({ 500, 1079 }, { 500, 1078 }), Allow({ 500, 1078 })),
+                      Expect(Move({ 500, 1078 }, { 500, 1084 }), Hold({ 500, 1079 })),
+                      Expect(Move({ 500, 1079 }, { 500, 1080 }), Allow({ 500, 1080 })),
+                  } },
+                // Leaving B (150%) the threshold is 37.5 px and the cap 15: 15 + 15 - 6 + 13 = 37
+                // holds and 1 more crosses. Draining 6 logical px, 9 physical, would leave 35.
+                { L"150% source drains physical pixels",
+                  MixedDpi(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1920, 500 }, { 1900, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1900, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1926, 500 }), Allow({ 1926, 500 })),
+                      Expect(Move({ 1926, 500 }, { 1907, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1919, 500 }), Allow({ 1919, 500 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (BackingOffAsFarAsThePushDrainsItToZero)
+        {
+            // The drain stops at zero, so the next push needs the full 25. A push that went
+            // negative would hold past 25, and one that wrapped around would cross at once.
+            RunAll({
+                { L"back exactly the push",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1899, 500 }), Allow({ 1899, 500 })),
+                      Expect(Move({ 1899, 500 }, { 1919, 500 }), Allow({ 1919, 500 })),
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })),
+                  } },
+                { L"back farther than the push",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1889, 500 }), Allow({ 1889, 500 })),
+                      Expect(Move({ 1889, 500 }, { 1919, 500 }), Allow({ 1919, 500 })),
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })),
+                  } },
+                { L"far back across the monitor",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 0, 500 }), Allow({ 0, 500 })),
+                      Expect(Move({ 0, 500 }, { 1919, 500 }), Allow({ 1919, 500 })),
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (MoveAlongTheEdgeKeepsThePush)
+        {
+            RunAll({
+                { L"slide along, then finish the push",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1919, 540 }), Allow({ 1919, 540 })),
+                      Expect(Move({ 1919, 540 }, { 1924, 540 }), Allow({ 1924, 540 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (TangentialMovesWhilePinnedKeepThePush)
+        {
+            // Only a component away from the pushed edge drains the push. A move straight
+            // along the edge has none, so 20 px of push survives it and 5 more cross.
+            RunAll({
+                { L"right edge, slide up",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1919, 450 }), Allow({ 1919, 450 })),
+                      Expect(Move({ 1919, 450 }, { 1924, 450 }), Allow({ 1924, 450 })),
+                  } },
+                { L"right edge, two slides",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1919, 600 }), Allow({ 1919, 600 })),
+                      Expect(Move({ 1919, 600 }, { 1919, 580 }), Allow({ 1919, 580 })),
+                      Expect(Move({ 1919, 580 }, { 1924, 580 }), Allow({ 1924, 580 })),
+                  } },
+                { L"left edge, slide down",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1920, 500 }, { 1910, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1910, 500 }), Hold({ 1920, 500 })),
+                      Expect(Move({ 1920, 500 }, { 1920, 560 }), Allow({ 1920, 560 })),
+                      Expect(Move({ 1920, 560 }, { 1915, 560 }), Allow({ 1915, 560 })),
+                  } },
+                { L"bottom edge, slide left",
+                  Stacked(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 500, 1079 }, { 500, 1089 }), Hold({ 500, 1079 })),
+                      Expect(Move({ 500, 1079 }, { 500, 1089 }), Hold({ 500, 1079 })),
+                      Expect(Move({ 500, 1079 }, { 440, 1079 }), Allow({ 440, 1079 })),
+                      Expect(Move({ 440, 1079 }, { 440, 1084 }), Allow({ 440, 1084 })),
+                  } },
+                { L"top edge, slide right",
+                  Stacked(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 500, 1080 }, { 500, 1070 }), Hold({ 500, 1080 })),
+                      Expect(Move({ 500, 1080 }, { 500, 1070 }), Hold({ 500, 1080 })),
+                      Expect(Move({ 500, 1080 }, { 560, 1080 }), Allow({ 560, 1080 })),
+                      Expect(Move({ 560, 1080 }, { 560, 1075 }), Allow({ 560, 1075 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (PushOnAnotherEdgeStartsOver)
+        {
+            // A push on a new side carries the old amount less the cursor's distance from the
+            // corner pixel joining the two sides, so far from that corner it starts over.
+            //  - 20 px against the right edge at y = 1000 is 79 px from the corner, so the bottom
+            //    push starts at 5 and crosses at 25, two moves later than a carried push would.
+            //  - 4 px from the corner, 16 of the 20 carry: the bottom push reaches 21, and 4 more
+            //    cross.
+            RunAll({
+                { L"right, then bottom, far from the corner",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1000 }, { 1929, 1000 }), Hold({ 1919, 1000 })),
+                      Expect(Move({ 1919, 1000 }, { 1929, 1000 }), Hold({ 1919, 1000 })),
+                      Expect(Move({ 1919, 1000 }, { 1919, 1084 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1919, 1089 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1919, 1089 }), Allow({ 1919, 1089 })),
+                  } },
+                { L"right, then bottom, 4 px from the corner",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1075 }, { 1929, 1075 }), Hold({ 1919, 1075 })),
+                      Expect(Move({ 1919, 1075 }, { 1929, 1075 }), Hold({ 1919, 1075 })),
+                      Expect(Move({ 1919, 1075 }, { 1919, 1084 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1919, 1083 }), Allow({ 1919, 1083 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (PushTowardAnotherNeighborOnTheSameSideKeepsThePush)
+        {
+            // The push belongs to the source monitor and the side. B and C both lie past
+            // A's right side, so a push toward one counts toward the other.
+            RunAll({
+                { L"slide from B's rows to C's",
+                  TwoOnTheRight(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(Move({ 1919, 500 }, { 1919, 1500 }), Allow({ 1919, 1500 })),
+                      Expect(Move({ 1919, 1500 }, { 1924, 1500 }), Allow({ 1924, 1500 })),
+                  } },
+                { L"alternating between B and C at their shared corner",
+                  TwoOnTheRight(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1079 }, { 1929, 1079 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1080 }), Hold({ 1919, 1080 })),
+                      Expect(Move({ 1919, 1080 }, { 1924, 1079 }), Allow({ 1924, 1079 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (MoveIntoAGapResetsThePush)
+        {
+            // The move into the gap leaves Windows to clamp the cursor at A's edge; the push toward B
+            // starts over after it.
+            RunAll({
+                { L"push, slide up, push into the gap, slide back",
+                  Offset(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 600 }, { 1929, 600 }), Hold({ 1919, 600 })),
+                      Expect(Move({ 1919, 600 }, { 1929, 600 }), Hold({ 1919, 600 })),
+                      Expect(Move({ 1919, 600 }, { 1919, 200 }), Allow({ 1919, 200 })),
+                      Expect(Move({ 1919, 200 }, { 1949, 200 }), Allow({ 1949, 200 })),
+                      Expect(Move({ 1919, 200 }, { 1919, 600 }), Allow({ 1919, 600 })),
+                      Expect(Move({ 1919, 600 }, { 1924, 600 }), Hold({ 1919, 600 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (ReachingAnotherMonitorResetsThePush)
+        {
+            // The stacked edges are filtered out, so the cursor changes monitor without a braked
+            // crossing. Both cases push the right side before and after, and the second one the same
+            // neighbor too, so only the monitor change can reset the push.
+            RunAll({
+                { L"junction, toward a different neighbor",
+                  Junction(),
+                  WithFilter(EdgeFilter::SideBySide),
+                  {
+                      Expect(Move({ 1919, 1000 }, { 1929, 1000 }), Hold({ 1919, 1000 })),
+                      Expect(Move({ 1919, 1000 }, { 1929, 1000 }), Hold({ 1919, 1000 })),
+                      Expect(Move({ 1919, 1000 }, { 1919, 1200 }), Allow({ 1919, 1200 })),
+                      Expect(Move({ 1919, 1200 }, { 1924, 1200 }), Hold({ 1919, 1200 })),
+                  } },
+                { L"toward the same neighbor",
+                  TwoOnTheLeft(),
+                  WithFilter(EdgeFilter::SideBySide),
+                  {
+                      Expect(Move({ 1919, 1000 }, { 1929, 1000 }), Hold({ 1919, 1000 })),
+                      Expect(Move({ 1919, 1000 }, { 1929, 1000 }), Hold({ 1919, 1000 })),
+                      Expect(Move({ 1919, 1000 }, { 1919, 1200 }), Allow({ 1919, 1200 })),
+                      Expect(Move({ 1919, 1200 }, { 1924, 1200 }), Hold({ 1919, 1200 })),
+                  } },
+            });
+        }
+    };
+
+    TEST_CLASS (MoveCapRule)
+    {
+    public:
+        TEST_METHOD (EachMoveAddsAtMostTheCap)
+        {
+            // Baseline push 25 with the 10 px cap at 100%: a 25 px overshoot adds 10, so the push
+            // crosses on the third move (10 + 10 + 5), not the first.
+            RunAll({
+                { L"overshoot past the cap",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1900, 500 }, { 1944, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1944, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })),
+                  } },
+                { L"overshoot equal to the cap", SideBySide(), Defaults(), SlowPush({ 1919, 500 }, 1, 0, 25, { 10 }) },
+                { L"stacked, overshoot past the cap", Stacked(), Defaults(), SlowPush({ 500, 1079 }, 0, 1, 25, { 40 }) },
+                { L"leftward, overshoot past the cap", SideBySide(), Defaults(), SlowPush({ 1920, 500 }, -1, 0, 25, { 30 }) },
+            });
+        }
+
+        TEST_METHOD (AThousandPixelFlingHoldsAtTheShippingDefaults)
+        {
+            // Settings{}: push 300, cap 10. A 1000 px move adds 10, so it holds; crossing takes 30
+            // such moves.
+            RunAll({
+                { L"from the edge pixel", SideBySide(), Settings{}, { Expect(Move({ 1919, 500 }, { 2919, 500 }), Hold({ 1919, 500 })) } },
+                { L"from 1000 px inside", SideBySide(), Settings{}, { Expect(Move({ 919, 500 }, { 2919, 500 }), Hold({ 1919, 500 })) } },
+                { L"stacked, downward", Stacked(), Settings{}, { Expect(Move({ 500, 1079 }, { 500, 2079 }), Hold({ 500, 1079 })) } },
+                { L"thirty flings to cross", SideBySide(), Settings{}, SlowPush({ 1919, 500 }, 1, 0, 300, { 1000 }) },
+            });
+        }
+
+        TEST_METHOD (SlowPushIsUnchangedByTheCap)
+        {
+            // Steps no larger than the cap add their whole overshoot, so the push crosses exactly at
+            // 300.
+            RunAll({
+                { L"1-10 px steps", SideBySide(), Settings{}, SlowPush({ 1919, 500 }, 1, 0, 300, { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }) },
+                { L"5 px steps, stacked", Stacked(), Settings{}, SlowPush({ 500, 1079 }, 0, 1, 300, { 5 }) },
+            });
+        }
+
+        TEST_METHOD (TheCapScalesLikeTheThreshold)
+        {
+            // MixedDpi, push 25. Leaving B (150%), the threshold is 37.5 px and the cap 15 px: 40 px
+            // moves add 15, 30, 45, crossing on the third. An unscaled 10 px cap would need four.
+            RunAll({
+                { L"B to C",
+                  MixedDpi(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 4799, 800 }, { 4839, 800 }), Hold({ 4799, 800 })),
+                      Expect(Move({ 4799, 800 }, { 4839, 800 }), Hold({ 4799, 800 })),
+                      Expect(Move({ 4799, 800 }, { 4839, 800 }), Allow({ 4839, 800 })),
+                  } },
+            });
+        }
+    };
+
+    TEST_CLASS (Bypass)
+    {
+    public:
+        TEST_METHOD (BypassedMovesCrossFreely)
+        {
+            RunAll({
+                { L"cross modifier held", SideBySide(), Defaults(), { Expect(ModifierMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+                { L"absolute input", SideBySide(), Defaults(), { Expect(AbsoluteMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+                { L"absolute jump across monitors", SideBySide(), Defaults(), { Expect(AbsoluteMove({ 100, 100 }, { 3000, 900 }), Allow({ 3000, 900 })) } },
+                { L"dragging with disable-while-dragging on", SideBySide(), WithDragDisable(), { Expect(DragMove({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+            });
+        }
+
+        TEST_METHOD (BypassedMovesResetThePush)
+        {
+            // After the bypassed slide along the edge, a 5 px push holds; with the push kept it
+            // would reach 25 and cross.
+            RunAll({
+                { L"cross modifier held",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(ModifierMove({ 1919, 500 }, { 1919, 501 }), Allow({ 1919, 501 })),
+                      Expect(Move({ 1919, 501 }, { 1924, 501 }), Hold({ 1919, 501 })),
+                  } },
+                { L"absolute input",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(AbsoluteMove({ 1919, 500 }, { 1919, 501 }), Allow({ 1919, 501 })),
+                      Expect(Move({ 1919, 501 }, { 1924, 501 }), Hold({ 1919, 501 })),
+                  } },
+                { L"dragging with disable-while-dragging on",
+                  SideBySide(),
+                  WithDragDisable(),
+                  {
+                      PushTen(),
+                      PushTen(),
+                      Expect(DragMove({ 1919, 500 }, { 1919, 501 }), Allow({ 1919, 501 })),
+                      Expect(Move({ 1919, 501 }, { 1924, 501 }), Hold({ 1919, 501 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (DraggingBrakesUnlessTheSettingIsOn)
+        {
+            RunAll({
+                { L"dragging with the setting off", SideBySide(), Defaults(), { Expect(DragMove({ 1919, 500 }, { 1925, 500 }), Hold({ 1919, 500 })) } },
+                { L"not dragging with the setting on", SideBySide(), WithDragDisable(), { Expect(Move({ 1919, 500 }, { 1925, 500 }), Hold({ 1919, 500 })) } },
+            });
+        }
+
+        TEST_METHOD (SingleMonitorAllowsEverything)
+        {
+            RunAll({
+                { L"past the right edge", Single(), Defaults(), { Expect(Move({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+                { L"past the corner", Single(), Defaults(), { Expect(Move({ 0, 0 }, { -5, -5 }), Allow({ -5, -5 })) } },
+                { L"interior", Single(), Defaults(), { Expect(Move({ 100, 100 }, { 50, 60 }), Allow({ 50, 60 })) } },
+            });
+        }
+    };
+
+    TEST_CLASS (EdgeFilterTests)
+    {
+    public:
+        TEST_METHOD (FilterBrakesOnlyItsOwnAxis)
+        {
+            RunAll({
+                { L"side-by-side filter, side-by-side edge", SideBySide(), WithFilter(EdgeFilter::SideBySide), { Expect(Move({ 1919, 500 }, { 1925, 500 }), Hold({ 1919, 500 })) } },
+                { L"side-by-side filter, stacked edge", Stacked(), WithFilter(EdgeFilter::SideBySide), { Expect(Move({ 500, 1079 }, { 500, 1085 }), Allow({ 500, 1085 })) } },
+                { L"stacked filter, stacked edge", Stacked(), WithFilter(EdgeFilter::Stacked), { Expect(Move({ 500, 1079 }, { 500, 1085 }), Hold({ 500, 1079 })) } },
+                { L"stacked filter, side-by-side edge", SideBySide(), WithFilter(EdgeFilter::Stacked), { Expect(Move({ 1919, 500 }, { 1925, 500 }), Allow({ 1925, 500 })) } },
+                { L"all filter, both edges",
+                  Junction(),
+                  WithFilter(EdgeFilter::All),
+                  {
+                      Expect(Move({ 1919, 500 }, { 1925, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1910, 500 }), Allow({ 1910, 500 })),
+                      Expect(Move({ 500, 1079 }, { 500, 1085 }), Hold({ 500, 1079 })),
+                  } },
+            });
+        }
+    };
+
+    TEST_CLASS (UnknownSettingValues)
+    {
+    public:
+        TEST_METHOD (UnknownFilterValueBrakesBothAxes)
+        {
+            // A hand-edited settings file can carry any number; the engine reads it as All.
+            RunAll({
+                { L"filter value 7",
+                  Junction(),
+                  WithFilter(static_cast<EdgeFilter>(7)),
+                  {
+                      Expect(Move({ 1919, 500 }, { 1925, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1910, 500 }), Allow({ 1910, 500 })),
+                      Expect(Move({ 500, 1079 }, { 500, 1085 }), Hold({ 500, 1079 })),
+                  } },
+            });
+        }
+    };
+
+    TEST_CLASS (Dpi)
+    {
+    public:
+        TEST_METHOD (ThresholdScalesWithTheSourceMonitorDpi)
+        {
+            // 25 logical px is 25 physical px at 100%, 37.5 at 150% and 50 at 200%. 5 px steps hold
+            // until their sum reaches that, and the cap (10, 15, 20 px) never limits them.
+            RunAll({
+                { L"100% source (A to B)", MixedDpi(), Defaults(), SlowPush({ 1919, 500 }, 1, 0, 25, { 5 }, CapAt(DPI_100)) },
+                { L"150% source (B to C)", MixedDpi(), Defaults(), SlowPush({ 4799, 800 }, 1, 0, 38, { 5 }, CapAt(DPI_150)) },
+                { L"150% source (B to A)", MixedDpi(), Defaults(), SlowPush({ 1920, 500 }, -1, 0, 38, { 5 }, CapAt(DPI_150)) },
+                { L"200% source (C to B)", MixedDpi(), Defaults(), SlowPush({ 4800, 800 }, -1, 0, 50, { 5 }, CapAt(DPI_200)) },
+                { L"200% source, 10 px setting (C to B)", MixedDpi(), WithDistance(10), SlowPush({ 4800, 800 }, -1, 0, 20, { 5 }, CapAt(DPI_200)) },
+            });
+        }
+
+        TEST_METHOD (HandTravelMatchesBothWaysOverEveryMixedDpiEdge)
+        {
+            // Windows moves the pointer about dpi / 96 px per mouse count, so a hand step of two
+            // counts is 2 px at 100%, 3 px at 150% and 4 px at 200%. With the threshold scaled by
+            // the source, 25 logical px takes 13 such steps from either side of every edge:
+            // 13 x 2 = 26 >= 25, 13 x 3 = 39 >= 37.5, 13 x 4 = 52 >= 50, and 12 steps fall short.
+            RunAll({
+                { L"A (100%) to B (150%)", MixedDpi(), Defaults(), CrossOnStep({ 1919, 500 }, 1, 0, 2, 13) },
+                { L"B (150%) to A (100%)", MixedDpi(), Defaults(), CrossOnStep({ 1920, 500 }, -1, 0, 3, 13) },
+                { L"B (150%) to C (200%)", MixedDpi(), Defaults(), CrossOnStep({ 4799, 800 }, 1, 0, 3, 13) },
+                { L"C (200%) to B (150%)", MixedDpi(), Defaults(), CrossOnStep({ 4800, 800 }, -1, 0, 4, 13) },
+                { L"primary (100%) to right (150%)", FourAround(DPI_150), Defaults(), CrossOnStep({ 1919, 500 }, 1, 0, 2, 13) },
+                { L"right (150%) to primary (100%)", FourAround(DPI_150), Defaults(), CrossOnStep({ 1920, 500 }, -1, 0, 3, 13) },
+            });
+        }
+    };
+
+    TEST_CLASS (OuterEdgesAndGaps)
+    {
+    public:
+        TEST_METHOD (MovesOutsideEveryMonitorAreUntouched)
+        {
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"outer right edge", SideBySide(), Defaults(), { Expect(Move({ 3839, 500 }, { 3850, 500 }), Allow({ 3850, 500 })) } },
+                { L"outer left edge", SideBySide(), Defaults(), { Expect(Move({ 0, 500 }, { -10, 500 }), Allow({ -10, 500 })) } },
+                { L"outer top edge", SideBySide(), Defaults(), { Expect(Move({ 500, 0 }, { 500, -5 }), Allow({ 500, -5 })) } },
+                { L"outer bottom edge", SideBySide(), Defaults(), { Expect(Move({ 2500, 1079 }, { 2500, 1090 }), Allow({ 2500, 1090 })) } },
+                { L"repeated pushes at an outer edge",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 3839, 500 }, { 3849, 500 }), Allow({ 3849, 500 })),
+                      Expect(Move({ 3839, 500 }, { 3849, 500 }), Allow({ 3849, 500 })),
+                      Expect(Move({ 3839, 500 }, { 3849, 500 }), Allow({ 3849, 500 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (CloneMonitorsHaveNoInnerEdge)
+        {
+            // Two identical rects, as duplicated displays report. A move off the rect lands on no
+            // monitor (an outer edge), and every point inside belongs to both, so no move crosses
+            // from one monitor onto another.
+            const Layout clone{ { Mon(0, 0, 1920, 1080), Mon(0, 0, 1920, 1080) } };
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"repeated pushes past the right edge",
+                  clone,
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })),
+                  } },
+                { L"past the left edge", clone, Defaults(), { Expect(Move({ 0, 500 }, { -10, 500 }), Allow({ -10, 500 })) } },
+                { L"past the top edge", clone, Defaults(), { Expect(Move({ 500, 0 }, { 500, -10 }), Allow({ 500, -10 })) } },
+                { L"past the bottom edge", clone, Defaults(), { Expect(Move({ 500, 1079 }, { 500, 1089 }), Allow({ 500, 1089 })) } },
+                { L"interior move", clone, Defaults(), { Expect(Move({ 100, 100 }, { 1800, 1000 }), Allow({ 1800, 1000 })) } },
+            });
+        }
+
+        TEST_METHOD (MovesLandingInAGapAreUntouched)
+        {
+            RunAllWithAndWithoutTheBoundingRect({
+                { L"beside the offset monitor", Offset(), Defaults(), { Expect(Move({ 1919, 200 }, { 1930, 200 }), Allow({ 1930, 200 })) } },
+                { L"below the upper monitor", Offset(), Defaults(), { Expect(Move({ 1925, 1500 }, { 1910, 1500 }), Allow({ 1910, 1500 })) } },
+                { L"into the strip, rightward", Gap(), Defaults(), { Expect(Move({ 1919, 500 }, { 1930, 500 }), Allow({ 1930, 500 })) } },
+                { L"into the strip, leftward", Gap(), Defaults(), { Expect(Move({ 2000, 500 }, { 1990, 500 }), Allow({ 1990, 500 })) } },
+            });
+        }
+    };
+
+    TEST_CLASS (FreeReturn)
+    {
+    public:
+        TEST_METHOD (CrossingBackRightAfterACrossingIsFree)
+        {
+            // Without the free return each step back would push 5 (or 1) and hold at B's edge.
+            RunAll({
+                { L"five pixels back", SideBySide(), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }) },
+                { L"one pixel back", SideBySide(), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1919, 500 }), Allow({ 1919, 500 })) }) },
+                { L"after a downward crossing", Stacked(), Defaults(), Concat(SlowPush({ 500, 1079 }, 0, 1, 25, { 10 }), { Expect(Move({ 500, 1089 }, { 500, 1075 }), Allow({ 500, 1075 })) }) },
+            });
+        }
+
+        TEST_METHOD (FreeReturnIsUsedOnce)
+        {
+            RunAll({
+                { L"the return does not re-arm itself",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(CrossToB(),
+                         {
+                             Expect(Move({ 1924, 500 }, { 1915, 500 }), Allow({ 1915, 500 })),
+                             Expect(Move({ 1915, 500 }, { 1925, 500 }), Hold({ 1919, 500 })),
+                         }) },
+                { L"a second return over the same edge brakes",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(CrossToB(),
+                         {
+                             Expect(Move({ 1924, 500 }, { 1915, 500 }), Allow({ 1915, 500 })),
+                             Expect(ModifierMove({ 1915, 500 }, { 1925, 500 }), Allow({ 1925, 500 })),
+                             Expect(Move({ 1925, 500 }, { 1915, 500 }), Hold({ 1920, 500 })),
+                         }) },
+            });
+        }
+
+        TEST_METHOD (FreeReturnCoversOnlyTheEdgeJustCrossed)
+        {
+            RunAll({
+                { L"crossing a different edge right after brakes",
+                  Junction(),
+                  Defaults(),
+                  Concat(SlowPush({ 1919, 1000 }, 1, 0, 25, { 10 }),
+                         {
+                             Expect(Move({ 1929, 1000 }, { 1944, 1079 }), Allow({ 1944, 1079 })),
+                             Expect(Move({ 1944, 1079 }, { 1944, 1085 }), Hold({ 1944, 1079 })),
+                         }) },
+            });
+        }
+
+        TEST_METHOD (FreeReturnExpiresByDistance)
+        {
+            // The window is FREE_RETURN_LIMIT logical px, 100 px at 100%. The allowance survives at
+            // exactly 100 px from the edge and is gone at 101, and coming back closer does not
+            // revive it. CrossToB lands at x = 1924.
+            RunAll({
+                { L"exactly at the limit", SideBySide(), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 2020, 500 }), Allow({ 2020, 500 })), Expect(Move({ 2020, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }) },
+                { L"one pixel past the limit", SideBySide(), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 2021, 500 }), Allow({ 2021, 500 })), Expect(Move({ 2021, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }) },
+                { L"out past the limit and back in",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(CrossToB(),
+                         {
+                             Expect(Move({ 1924, 500 }, { 2021, 500 }), Allow({ 2021, 500 })),
+                             Expect(Move({ 2021, 500 }, { 1930, 500 }), Allow({ 1930, 500 })),
+                             Expect(Move({ 1930, 500 }, { 1915, 500 }), Hold({ 1920, 500 })),
+                         }) },
+                { L"along the edge does not count as away", SideBySide(), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1924, 900 }), Allow({ 1924, 900 })), Expect(Move({ 1924, 900 }, { 1915, 900 }), Allow({ 1915, 900 })) }) },
+            });
+        }
+
+        TEST_METHOD (FreeReturnDistanceUsesTheDestinationDpi)
+        {
+            // B is 150%, so the 100 logical px window measured on B is 150 px.
+            RunAll({
+                { L"150 px into B keeps it", MixedDpi(), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 2070, 500 }), Allow({ 2070, 500 })), Expect(Move({ 2070, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }) },
+                { L"151 px into B expires it", MixedDpi(), Defaults(), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 2071, 500 }), Allow({ 2071, 500 })), Expect(Move({ 2071, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }) },
+            });
+        }
+
+        TEST_METHOD (FreeReturnExpiresOnAnotherCrossing)
+        {
+            // The stacked edges are filtered out, so the trip down to BR and back moves no closer or
+            // farther from the TL|TR edge; only the two crossings can end the allowance.
+            RunAll({
+                { L"down and back up over edges the filter ignores",
+                  Junction(),
+                  WithFilter(EdgeFilter::SideBySide),
+                  Concat(SlowPush({ 1919, 1000 }, 1, 0, 25, { 10 }),
+                         {
+                             Expect(Move({ 1929, 1000 }, { 1929, 1085 }), Allow({ 1929, 1085 })),
+                             Expect(Move({ 1929, 1085 }, { 1929, 1075 }), Allow({ 1929, 1075 })),
+                             Expect(Move({ 1929, 1075 }, { 1915, 1075 }), Hold({ 1920, 1075 })),
+                         }) },
+            });
+        }
+
+        TEST_METHOD (BypassedMovesClearTheFreeReturn)
+        {
+            // The bypassed trip goes far from the edge and comes back within reach, which only the
+            // clearing itself can catch.
+            RunAll({
+                { L"cross modifier held",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(CrossToB(),
+                         {
+                             Expect(ModifierMove({ 1924, 500 }, { 3800, 500 }), Allow({ 3800, 500 })),
+                             Expect(ModifierMove({ 3800, 500 }, { 1925, 500 }), Allow({ 1925, 500 })),
+                             Expect(Move({ 1925, 500 }, { 1915, 500 }), Hold({ 1920, 500 })),
+                         }) },
+                { L"absolute input",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(CrossToB(),
+                         {
+                             Expect(AbsoluteMove({ 1924, 500 }, { 3800, 500 }), Allow({ 3800, 500 })),
+                             Expect(AbsoluteMove({ 3800, 500 }, { 1925, 500 }), Allow({ 1925, 500 })),
+                             Expect(Move({ 1925, 500 }, { 1915, 500 }), Hold({ 1920, 500 })),
+                         }) },
+                { L"dragging with disable-while-dragging on",
+                  SideBySide(),
+                  WithDragDisable(),
+                  Concat(CrossToB(),
+                         {
+                             Expect(DragMove({ 1924, 500 }, { 3800, 500 }), Allow({ 3800, 500 })),
+                             Expect(DragMove({ 3800, 500 }, { 1925, 500 }), Allow({ 1925, 500 })),
+                             Expect(Move({ 1925, 500 }, { 1915, 500 }), Hold({ 1920, 500 })),
+                         }) },
+            });
+        }
+    };
+
+    TEST_CLASS (FreeReturnSetting)
+    {
+    public:
+        TEST_METHOD (OffBrakesTheReturn)
+        {
+            RunAll({
+                { L"five pixels back", SideBySide(), WithFreeReturn(false), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }) },
+                { L"one pixel back", SideBySide(), WithFreeReturn(false), Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1919, 500 }), Hold({ 1920, 500 })) }) },
+            });
+        }
+
+        TEST_METHOD (TheWindowIsFixedRegardlessOfPushDistance)
+        {
+            // With a 200 px push the window is still 100 px. The slow crossings land at x = 1929.
+            const std::vector<Step> crossWith200 = SlowPush({ 1919, 500 }, 1, 0, 200, { 10 });
+            const std::vector<Step> crossWith300 = SlowPush({ 1919, 500 }, 1, 0, 300, { 10 });
+            RunAll({
+                { L"push 200, 100 px keeps it", SideBySide(), WithDistance(200), Concat(crossWith200, { Expect(Move({ 1929, 500 }, { 2020, 500 }), Allow({ 2020, 500 })), Expect(Move({ 2020, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }) },
+                { L"push 200, 101 px expires it", SideBySide(), WithDistance(200), Concat(crossWith200, { Expect(Move({ 1929, 500 }, { 2021, 500 }), Allow({ 2021, 500 })), Expect(Move({ 2021, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }) },
+                { L"shipping defaults, 100 px keeps it", SideBySide(), Settings{}, Concat(crossWith300, { Expect(Move({ 1929, 500 }, { 2020, 500 }), Allow({ 2020, 500 })), Expect(Move({ 2020, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }) },
+                { L"shipping defaults, 101 px expires it", SideBySide(), Settings{}, Concat(crossWith300, { Expect(Move({ 1929, 500 }, { 2021, 500 }), Allow({ 2021, 500 })), Expect(Move({ 2021, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }) },
+            });
+        }
+    };
+
+    TEST_CLASS (CornerCases)
+    {
+    public:
+        TEST_METHOD (DiagonalThroughAFourMonitorJunction)
+        {
+            // From TL's corner pixel straight through the junction into BR. The move leaves through
+            // the right and bottom sides at once, so the hold sits in TL's corner.
+            RunAll({
+                { L"short diagonals hold, the push crosses at 25",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1079 }, { 1925, 1085 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1089 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1928, 1088 }), Allow({ 1928, 1088 })),
+                  } },
+                { L"side-by-side filter still brakes it", Junction(), WithFilter(EdgeFilter::SideBySide), { Expect(Move({ 1919, 1079 }, { 1925, 1085 }), Hold({ 1919, 1079 })) } },
+                { L"stacked filter still brakes it", Junction(), WithFilter(EdgeFilter::Stacked), { Expect(Move({ 1919, 1079 }, { 1925, 1085 }), Hold({ 1919, 1079 })) } },
+                { L"steep diagonal pushes on the larger overshoot",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1079 }, { 1922, 1089 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1922, 1089 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1920, 1084 }), Allow({ 1920, 1084 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (CrossedSideIsTheOneBorderingTheDestination)
+        {
+            // From (1915, 1075) to (1921, 1085) the move reaches A's bottom row first, but nothing
+            // lies below A. Only A's right side borders B, so that is the crossed edge: the push is
+            // 2, then 10 + 10 + 3 along the row crosses.
+            RunAll({
+                { L"all edges",
+                  TallNeighbor(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1915, 1075 }, { 1921, 1085 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1079 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1079 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1922, 1079 }), Allow({ 1922, 1079 })),
+                  } },
+                { L"side-by-side filter", TallNeighbor(), WithFilter(EdgeFilter::SideBySide), { Expect(Move({ 1915, 1075 }, { 1921, 1085 }), Hold({ 1919, 1079 })) } },
+                { L"stacked filter", TallNeighbor(), WithFilter(EdgeFilter::Stacked), { Expect(Move({ 1915, 1075 }, { 1921, 1085 }), Allow({ 1921, 1085 })) } },
+            });
+        }
+
+        TEST_METHOD (DiagonalLeavesThroughTheSideItReachesFirst)
+        {
+            // From (1900, 1070) to (1930, 1090) the move reaches TL's bottom row before its right
+            // column. Neither side borders BR, so the first-reached side, the stacked one, is the
+            // crossed edge.
+            RunAll({
+                { L"all edges", Junction(), Defaults(), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Hold({ 1919, 1079 })) } },
+                { L"side-by-side filter", Junction(), WithFilter(EdgeFilter::SideBySide), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Allow({ 1930, 1090 })) } },
+                { L"stacked filter", Junction(), WithFilter(EdgeFilter::Stacked), { Expect(Move({ 1900, 1070 }, { 1930, 1090 }), Hold({ 1919, 1079 })) } },
+            });
+        }
+
+        TEST_METHOD (CrossingsAtTheEndsOfAPartialOverlap)
+        {
+            RunAll({
+                { L"A to B on the first shared row", Offset(), Defaults(), { Expect(Move({ 1919, 540 }, { 1925, 540 }), Hold({ 1919, 540 })) } },
+                { L"A to B one row above the shared segment", Offset(), Defaults(), { Expect(Move({ 1919, 539 }, { 1925, 539 }), Allow({ 1925, 539 })) } },
+                { L"A to B on the last shared row", Offset(), Defaults(), { Expect(Move({ 1919, 1079 }, { 1925, 1079 }), Hold({ 1919, 1079 })) } },
+                { L"B to A on the last shared row", Offset(), Defaults(), { Expect(Move({ 1920, 1079 }, { 1915, 1079 }), Hold({ 1920, 1079 })) } },
+                { L"B to A one row below the shared segment", Offset(), Defaults(), { Expect(Move({ 1920, 1080 }, { 1915, 1080 }), Allow({ 1915, 1080 })) } },
+                { L"diagonal from above the segment into B", Offset(), Defaults(), { Expect(Move({ 1919, 530 }, { 1925, 545 }), Hold({ 1919, 545 })) } },
+                { L"diagonal from B out past the segment's end", Offset(), Defaults(), { Expect(Move({ 1920, 1075 }, { 1914, 1085 }), Allow({ 1914, 1085 })) } },
+            });
+        }
+
+        TEST_METHOD (AWobblingDiagonalAtAJunctionKeepsItsSide)
+        {
+            // Held at TL's corner pixel, a hand pushing into the junction must cross however its
+            // moves split between the axes.
+            //  - A diagonal into BR crosses both sides at once and neither borders BR, so the push
+            //    keeps the side it started on and counts only the overshoot past that side: 3 and
+            //    2 alternating reach 25 on the 10th move, where the larger overshoot would reach
+            //    27 on the 9th.
+            //  - A slow diagonal reports one axis per event, landing on TR and BL in turn. Right
+            //    after a hold, a side change carries the amount less the cursor's distance from
+            //    the corner pixel, so 6 px moves from the corner cross on the 5th and 1 px moves
+            //    on the 300th at the shipping 300.
+            //  - A wobble of w px across the other axis is charged once: as an away drain when the
+            //    move leaves the side being pushed, or as drift off the corner on the next side
+            //    change when the move only slid along the pushed side. The hand's return trip of w
+            //    px lands inside TL, which no push counts.
+            //    - (+6,-1)/(0,+6): 6, 10, 15, 20, 25, so the 5th move crosses 25; 10 per pair
+            //      reaches 300 on the 60th.
+            //    - (+6,0)/(-1,+6): 6, 11, 16, 21, 26, the 5th; 301 on the 60th.
+            //    - (+6,-4)/(0,+6): 6, 4, 6, 8, 10, then 4 per pair, so 26 on the 13th and exactly
+            //      300 on the 150th.
+            //    - (+6,0)/(-4,+6): 6, 8, 10, 12, then 4 per pair, so 26 on the 11th and exactly
+            //      300 on the 148th.
+            const RectL tl = Junction().monitors[0].rect;
+            const PointL corner{ 1919, 1079 };
+            RunAll({
+                { L"right first: 10 + 10 + 10 crosses",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1079 }, { 1931, 1089 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1091 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1931, 1089 }), Allow({ 1931, 1089 })),
+                  } },
+                { L"bottom first: 10 + 10 + 10 crosses",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1079 }, { 1929, 1091 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1931, 1089 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1091 }), Allow({ 1929, 1091 })),
+                  } },
+                { L"shipping defaults: the 30th capped move crosses", Junction(), Settings{}, CycleFrom(tl, corner, { { 12, 10 }, { 10, 12 } }, 30) },
+                { L"uncapped diagonal: only the pushed side's overshoot counts", Junction(), Defaults(), CycleFrom(tl, corner, { { 3, 2 }, { 2, 3 } }, 10) },
+                { L"one axis per event, 6 px: crosses on the 5th", Junction(), Defaults(), CycleFrom(tl, corner, { { 6, 0 }, { 0, 6 } }, 5) },
+                { L"one axis per event, 1 px at the shipping 300", Junction(), Settings{}, CycleFrom(tl, corner, { { 1, 0 }, { 0, 1 } }, 300) },
+                { L"(+6,-1)/(0,+6) at 25: crosses on the 5th", Junction(), Defaults(), CycleFrom(tl, corner, { { 6, -1 }, { 0, 6 } }, 5) },
+                { L"(+6,-1)/(0,+6) at the shipping 300: crosses on the 60th", Junction(), Settings{}, CycleFrom(tl, corner, { { 6, -1 }, { 0, 6 } }, 60) },
+                { L"(+6,0)/(-1,+6) at 25: crosses on the 5th", Junction(), Defaults(), CycleFrom(tl, corner, { { 6, 0 }, { -1, 6 } }, 5) },
+                { L"(+6,0)/(-1,+6) at the shipping 300: crosses on the 60th", Junction(), Settings{}, CycleFrom(tl, corner, { { 6, 0 }, { -1, 6 } }, 60) },
+                { L"(+6,-4)/(0,+6) at 25: crosses on the 13th", Junction(), Defaults(), CycleFrom(tl, corner, { { 6, -4 }, { 0, 6 } }, 13) },
+                { L"(+6,-4)/(0,+6) at the shipping 300: crosses on the 150th", Junction(), Settings{}, CycleFrom(tl, corner, { { 6, -4 }, { 0, 6 } }, 150) },
+                { L"(+6,0)/(-4,+6) at 25: crosses on the 11th", Junction(), Defaults(), CycleFrom(tl, corner, { { 6, 0 }, { -4, 6 } }, 11) },
+                { L"(+6,0)/(-4,+6) at the shipping 300: crosses on the 148th", Junction(), Settings{}, CycleFrom(tl, corner, { { 6, 0 }, { -4, 6 } }, 148) },
+            });
+        }
+
+        TEST_METHOD (TheCarryChargesTheFartherOfTheCursorAndTheLastHold)
+        {
+            // 20 px against TL's right side, then a push down from a cursor that is not where the
+            // last hold put it, as after another module moves the cursor. Either point 19 px from
+            // the corner leaves 1 of the 20, so the push down holds.
+            RunAll({
+                { L"held 19 px up, cursor on the corner",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1060 }, { 1929, 1060 }), Hold({ 1919, 1060 })),
+                      Expect(Move({ 1919, 1060 }, { 1929, 1060 }), Hold({ 1919, 1060 })),
+                      Expect(Move({ 1919, 1079 }, { 1919, 1084 }), Hold({ 1919, 1079 })),
+                  } },
+                { L"held on the corner, cursor 19 px up",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1079 }, { 1929, 1079 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1079 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1060 }, { 1919, 1085 }), Hold({ 1919, 1079 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (ADrainCountsOnlyTowardTheSideItWasMeasuredAgainst)
+        {
+            // Push 1000. 99 pushes build 990 against A's bottom at the bottom-right corner. A move
+            // 540 up and 5 right drains 540 against the bottom, carries 450 to the right side and
+            // adds 5. A move straight up to the top then carries to the top side from 539 px
+            // below the top-right corner. That drift was paid against the bottom, not toward the
+            // top, so all 539 count: nothing carries, the overshoot adds 1, and the push up crosses
+            // on the 100th move of 10, as from a fresh start.
+            std::vector<Step> steps;
+            for (int i = 0; i < 99; ++i)
+            {
+                steps.push_back(Expect(Move({ 1919, 1079 }, { 1919, 1089 }), Hold({ 1919, 1079 })));
+            }
+            steps.push_back(Expect(Move({ 1919, 1079 }, { 1924, 539 }), Hold({ 1919, 539 })));
+            steps.push_back(Expect(Move({ 1919, 539 }, { 1919, -1 }), Hold({ 1919, 0 })));
+            for (int i = 1; i <= 100; ++i)
+            {
+                steps.push_back(Expect(Move({ 1919, 0 }, { 1919, -10 }), i == 100 ? Allow({ 1919, -10 }) : Hold({ 1919, 0 })));
+            }
+            RunAll({ { L"bottom, then right, then top", RightBelowAbove(), WithDistance(1000), steps } });
+        }
+
+        TEST_METHOD (AFastMoveAlongTheOtherEdgeDrainsBeforeTheCarry)
+        {
+            // 20 px against TL's right side at the corner, then one fast move 500 px left and 6
+            // down. Its component away from the right side drains the push before the side change,
+            // so the push down starts over at 6 and 4 more hold at 10.
+            RunAll({
+                { L"500 px along the bottom edge",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 1079 }, { 1929, 1079 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1929, 1079 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1419, 1085 }), Hold({ 1419, 1079 })),
+                      Expect(Move({ 1419, 1079 }, { 1419, 1083 }), Hold({ 1419, 1079 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (APushSlidAlongTheEdgeDoesNotCarryAroundTheCorner)
+        {
+            // 20 px against TL's right side at y = 500, then a slide down the edge column to the
+            // corner pixel. The slide keeps the push on the right side, but the move after it was
+            // not held, so a push down the bottom side starts over: 5, 15, 25.
+            RunAll({
+                { L"slide to the corner, then push down",
+                  Junction(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1919, 500 }, { 1929, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1929, 500 }), Hold({ 1919, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1919, 1079 }), Allow({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1919, 1084 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1919, 1089 }), Hold({ 1919, 1079 })),
+                      Expect(Move({ 1919, 1079 }, { 1919, 1089 }), Allow({ 1919, 1089 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (TheBorderingSideOutranksThePushedSide)
+        {
+            // B lies below A and C to the right of both. After 20 px against A's bottom at x = 1900,
+            // a diagonal landing on C crosses A's right side, which borders C. The cursor is 19 px
+            // from the corner pixel, so 1 px of the push carries to the right side and the move
+            // makes it 7, which holds; keeping the bottom side would reach 26 and cross.
+            RunAll({
+                { L"bottom push, then a diagonal onto the right neighbor",
+                  TwoOnTheLeft(),
+                  Defaults(),
+                  {
+                      Expect(Move({ 1900, 1079 }, { 1900, 1089 }), Hold({ 1900, 1079 })),
+                      Expect(Move({ 1900, 1079 }, { 1900, 1089 }), Hold({ 1900, 1079 })),
+                      Expect(Move({ 1900, 1079 }, { 1925, 1085 }), Hold({ 1919, 1079 })),
+                  } },
+            });
+        }
+    };
+
+    TEST_CLASS (SettingsAndLayoutChanges)
+    {
+    public:
+        TEST_METHOD (SettingsChangeMidPushResetsThePush)
+        {
+            // A push of 20, then a change, then 5 more: a kept push would reach 25 and cross.
+            const Settings changes[] = {
+                WithDistance(24),
+                WithFilter(EdgeFilter::SideBySide),
+                WithModifier(CrossModifier::Shift),
+                WithDragDisable(),
+                WithFreeReturn(false),
+            };
+            const wchar_t* names[] = { L"distance 25 to 24", L"filter all to side-by-side", L"modifier Ctrl to Shift", L"disable while dragging on", L"free return off" };
+
+            std::vector<Case> cases;
+            for (size_t i = 0; i < std::size(changes); ++i)
+            {
+                cases.push_back({ names[i], SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(changes[i], Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } });
+            }
+            RunAll(cases);
+        }
+
+        TEST_METHOD (LayoutChangeMidPushResetsThePush)
+        {
+            RunAll({
+                { L"B's DPI changes", SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 0, 3840, 1080, DPI_150) } }, Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } },
+                { L"a third monitor appears", SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 0, 3840, 1080), Mon(3840, 0, 5760, 1080) } }, Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } },
+                { L"B moves down", SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 100, 3840, 1180) } }, Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) } },
+            });
+        }
+
+        TEST_METHOD (EqualSettingsAndLayoutKeepThePush)
+        {
+            // A fresh object with the same values is not a change.
+            RunAll({
+                { L"same settings", SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(Defaults(), Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })) } },
+                { L"same layout", SideBySide(), Defaults(), { PushTen(), PushTen(), ExpectAfter(SideBySide(), Move({ 1919, 500 }, { 1924, 500 }), Allow({ 1924, 500 })) } },
+            });
+        }
+
+        TEST_METHOD (ChangeClearsTheFreeReturn)
+        {
+            RunAll({
+                { L"settings change", SideBySide(), Defaults(), Concat(CrossToB(), { ExpectAfter(WithDistance(24), Move({ 1924, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }) },
+                { L"layout change", SideBySide(), Defaults(), Concat(CrossToB(), { ExpectAfter(Layout{ { Mon(0, 0, 1920, 1080), Mon(1920, 0, 3840, 1080), Mon(3840, 0, 5760, 1080) } }, Move({ 1924, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }) },
+            });
+        }
+    };
+
+    // A clip from GetClipCursor, which Windows applies after the hook. In SideBySide, A is
+    // 0..1919 and B is 1920..3839. With no game's clip, Windows reports the virtual screen's
+    // bounding rect, here 0, 0, 3840, 1080.
+    TEST_CLASS (CursorClip)
+    {
+    public:
+        TEST_METHOD (AClipOnTheSourceMonitorNeverHolds)
+        {
+            // A full-screen game confines the cursor to A. Every push toward B lands back on A, so
+            // each is a move within A, allowed at the point the hook saw.
+            const RectL a{ 0, 0, 1920, 1080 };
+            std::vector<Step> steps;
+            for (int i = 0; i < 10; ++i)
+            {
+                steps.push_back(Expect(ClippedMove({ 1919, 500 }, { 1929, 500 }, a), Allow({ 1929, 500 })));
+            }
+            RunAll({ { L"ten 10 px pushes under A's clip", SideBySide(), Defaults(), steps } });
+        }
+
+        TEST_METHOD (TheBoundingRectChangesNothingForMovesInsideIt)
+        {
+            const RectL screen = BoundingRect(SideBySide());
+            RunAll({
+                { L"cross to B", SideBySide(), Defaults(), UnderClip(CrossToB(), screen) },
+                { L"free return", SideBySide(), Defaults(), UnderClip(Concat(CrossToB(), { Expect(Move({ 1924, 500 }, { 1915, 500 }), Allow({ 1915, 500 })) }), screen) },
+            });
+        }
+
+        TEST_METHOD (ADiagonalPastAnOuterEdgeAtAnInnerCornerHolds)
+        {
+            // From A's bottom-right pixel, a move past the outer bottom edge onto B's column. The
+            // bounding rect clamps it to (1929, 1079) on B, where Windows puts the cursor, so it is
+            // a crossing and holds. With no clip known it lands on no monitor and goes through.
+            RunAll({
+                { L"bounding rect", SideBySide(), Defaults(), { Expect(ClippedMove({ 1919, 1079 }, { 1929, 1090 }, BoundingRect(SideBySide())), Hold({ 1919, 1079 })) } },
+                { L"no clip known", SideBySide(), Defaults(), { Expect(Move({ 1919, 1079 }, { 1929, 1090 }), Allow({ 1929, 1090 })) } },
+            });
+        }
+
+        TEST_METHOD (APushSurvivesAnExcursionPastAnOuterEdge)
+        {
+            // 20 banked, then a slide up past A's outer top edge. The bounding rect clamps it to
+            // (1919, 0) on A, a move along the edge, so the push stays and 5 more cross. With no
+            // clip known the slide lands on no monitor and the push starts over.
+            const std::vector<Step> slide = {
+                PushTen(),
+                PushTen(),
+                Expect(Move({ 1919, 500 }, { 1919, -8 }), Allow({ 1919, -8 })),
+            };
+            RunAll({
+                { L"bounding rect", SideBySide(), Defaults(), UnderClip(Concat(slide, { Expect(Move({ 1919, 0 }, { 1924, 0 }), Allow({ 1924, 0 })) }), BoundingRect(SideBySide())) },
+                { L"no clip known", SideBySide(), Defaults(), Concat(slide, { Expect(Move({ 1919, 0 }, { 1924, 0 }), Hold({ 1919, 0 })) }) },
+            });
+        }
+
+        TEST_METHOD (AClipAcrossTheEdgeBrakesAtTheClampedOvershoot)
+        {
+            // The clip reaches 5 px into B. Each 31 px move lands at x = 1924 and adds 5, not the
+            // 10 px cap, so the fifth move reaches 25 and crosses, allowed at the point the hook saw.
+            const RectL reach{ 0, 0, 1925, 1080 };
+            std::vector<Step> steps;
+            for (int i = 1; i <= 5; ++i)
+            {
+                steps.push_back(Expect(ClippedMove({ 1919, 500 }, { 1950, 500 }, reach), i == 5 ? Allow({ 1950, 500 }) : Hold({ 1919, 500 })));
+            }
+            RunAll({ { L"31 px moves under a clip 5 px into B", SideBySide(), Defaults(), steps } });
+        }
+
+        TEST_METHOD (AGameConfiningTheCursorMidPushResetsThePush)
+        {
+            // 20 banked under the bounding rect. A game clips the cursor to A, which closes B, then
+            // lets it go. The banked push is gone: 5 more hold, and the full 25 is needed again. A
+            // push cannot build while A's clip holds, so the reset at its start is the one that
+            // shows.
+            const RectL screen = BoundingRect(SideBySide());
+            const RectL a{ 0, 0, 1920, 1080 };
+            RunAll({
+                { L"confined, released, 5 more",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(Concat(UnderClip({ PushTen(), PushTen() }, screen), { Expect(ClippedMove({ 1919, 500 }, { 1929, 500 }, a), Allow({ 1929, 500 })) }),
+                         UnderClip({ Expect(Move({ 1919, 500 }, { 1924, 500 }), Hold({ 1919, 500 })) }, screen)) },
+                { L"confined, released, full push",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(Concat(UnderClip({ PushTen(), PushTen() }, screen), { Expect(ClippedMove({ 1919, 500 }, { 1929, 500 }, a), Allow({ 1929, 500 })) }), UnderClip(CrossToB(), screen)) },
+            });
+        }
+
+        TEST_METHOD (AClipThatKeepsTheEdgeOpenStillCrosses)
+        {
+            // The shipping 300 px push with 10 px moves crosses on move 30 with no clip. Clips that
+            // change between moves but keep B reachable must cross on the same move. The cases:
+            // two rects alternating, a failing GetClipCursor (no clip on
+            // every other move), and a clip that follows the cursor with 1 px of jitter.
+            const auto pushes = [](RectL (*clipFor)(int), bool failEveryOther) {
+                std::vector<Step> steps;
+                for (int i = 1; i <= 30; ++i)
+                {
+                    MoveEvent move = Move({ 1919, 500 }, { 1929, 500 });
+                    if (!(failEveryOther && i % 2 == 0))
+                    {
+                        move.clip = clipFor(i);
+                    }
+                    steps.push_back(Expect(move, i == 30 ? Allow({ 1929, 500 }) : Hold({ 1919, 500 })));
+                }
+                return steps;
+            };
+            RunAll({
+                { L"no clip known", SideBySide(), Settings{}, CrossOnStep({ 1919, 500 }, 1, 0, 10, 30) },
+                { L"bounding rect", SideBySide(), Settings{}, UnderClip(CrossOnStep({ 1919, 500 }, 1, 0, 10, 30), BoundingRect(SideBySide())) },
+                { L"3000 and 3001 wide in turn", SideBySide(), Settings{}, pushes([](int i) { return RectL{ 0, 0, 3000 + (i & 1), 1080 }; }, false) },
+                { L"read fails every other move", SideBySide(), Settings{}, pushes([](int) { return RectL{ 0, 0, 3840, 1080 }; }, true) },
+                { L"follows the cursor with jitter", SideBySide(), Settings{}, pushes([](int i) { return RectL{ 1819, 400 + (i & 1), 2019, 600 }; }, false) },
+            });
+        }
+
+        TEST_METHOD (AClipClosingTheWayBackClearsTheFreeReturn)
+        {
+            // Crossed to B. A game then clips the cursor to B, which closes the way back to A, and
+            // lets it go. The return straight back brakes; a kept free return would let it through.
+            const RectL screen = BoundingRect(SideBySide());
+            const RectL b{ 1920, 0, 3840, 1080 };
+            RunAll({
+                { L"confined to B, released, back to A",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(Concat(UnderClip(CrossToB(), screen), { Expect(ClippedMove({ 1924, 500 }, { 1930, 500 }, b), Allow({ 1930, 500 })) }),
+                         UnderClip({ Expect(Move({ 1930, 500 }, { 1915, 500 }), Hold({ 1920, 500 })) }, screen)) },
+            });
+        }
+
+        TEST_METHOD (AFailedReadKeepsTheLastClip)
+        {
+            // Under A's clip, a move that carries no clip is still judged inside A's clip.
+            const RectL a{ 0, 0, 1920, 1080 };
+            RunAll({
+                { L"clip to A, then no clip read",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      Expect(ClippedMove({ 1919, 500 }, { 1929, 500 }, a), Allow({ 1929, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })),
+                      Expect(Move({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (TheDrainIsMeasuredAtTheClampedPoint)
+        {
+            // The clip starts at x = 1905 and spans B, so pushes pass through it. 20 banked. A move
+            // back to 1890 lands at 1905, 14 px away rather than 29, which leaves 6. The cursor
+            // returns to the edge, which drains nothing, and two more 10 px pushes reach 26 and
+            // cross. A drain at the unclamped point would leave 0 and hold the second push at 20.
+            const RectL fromNineteenOhFive{ 1905, 0, 3840, 1080 };
+            RunAll({
+                { L"push, clamped back-off, push",
+                  SideBySide(),
+                  Defaults(),
+                  UnderClip({
+                                PushTen(),
+                                PushTen(),
+                                Expect(Move({ 1919, 500 }, { 1890, 500 }), Allow({ 1890, 500 })),
+                                Expect(Move({ 1905, 500 }, { 1919, 500 }), Allow({ 1919, 500 })),
+                                PushTen(),
+                                Expect(Move({ 1919, 500 }, { 1929, 500 }), Allow({ 1929, 500 })),
+                            },
+                            fromNineteenOhFive) },
+            });
+        }
+
+        TEST_METHOD (ACurrentPointOutsideTheClipIsJudgedInsideIt)
+        {
+            // GetCursorPos can read the cursor on A just before a clip to B takes effect. Windows
+            // puts it on B, so a 5 px move that the hook sees inside A is a move within B.
+            RunAll({
+                { L"cursor on A, clip to B", SideBySide(), Defaults(), { Expect(ClippedMove({ 1900, 500 }, { 1905, 500 }, RectL{ 1920, 0, 3840, 1080 }), Allow({ 1905, 500 })) } },
+            });
+        }
+
+        TEST_METHOD (AnEmptyOrInvertedClipIsIgnored)
+        {
+            RunAll({
+                { L"zero width", SideBySide(), Defaults(), UnderClip(CrossToB(), RectL{ 1000, 0, 1000, 1080 }) },
+                { L"zero height", SideBySide(), Defaults(), UnderClip(CrossToB(), RectL{ 0, 500, 3840, 500 }) },
+                { L"inverted", SideBySide(), Defaults(), UnderClip(CrossToB(), RectL{ 3840, 1080, 0, 0 }) },
+            });
+        }
+
+        TEST_METHOD (AnEmptyClipEndsTheLastClip)
+        {
+            // An empty clip is a read that succeeded with nothing to apply, so it ends A's clip:
+            // the next push toward B brakes.
+            RunAll({
+                { L"clip to A, then an empty clip",
+                  SideBySide(),
+                  Defaults(),
+                  {
+                      Expect(ClippedMove({ 1919, 500 }, { 1929, 500 }, RectL{ 0, 0, 1920, 1080 }), Allow({ 1929, 500 })),
+                      Expect(ClippedMove({ 1919, 500 }, { 1929, 500 }, RectL{ 1000, 0, 1000, 1080 }), Hold({ 1919, 500 })),
+                  } },
+            });
+        }
+
+        TEST_METHOD (AnEmptyClipLeavesTheEdgeOpen)
+        {
+            // An empty clip confines nothing, so B stays reachable and the push of 20 banked under
+            // the bounding rect carries on: 5 more cross.
+            RunAll({
+                { L"bounding rect, then an empty clip",
+                  SideBySide(),
+                  Defaults(),
+                  Concat(UnderClip({ PushTen(), PushTen() }, BoundingRect(SideBySide())), { Expect(ClippedMove({ 1919, 500 }, { 1924, 500 }, RectL{ 1000, 0, 1000, 1080 }), Allow({ 1924, 500 })) }) },
+            });
+        }
+
+        TEST_METHOD (BypassesUnderAClipAllowTheUnclampedPoint)
+        {
+            const RectL a{ 0, 0, 1920, 1080 };
+            MoveEvent modifier = ModifierMove({ 1919, 500 }, { 1950, 500 });
+            modifier.clip = a;
+            MoveEvent absolute = AbsoluteMove({ 1919, 500 }, { 1950, 500 });
+            absolute.clip = a;
+            RunAll({
+                { L"cross key", SideBySide(), Defaults(), { Expect(modifier, Allow({ 1950, 500 })) } },
+                { L"absolute input", SideBySide(), Defaults(), { Expect(absolute, Allow({ 1950, 500 })) } },
+            });
+        }
+    };
+
+    TEST_CLASS (InputClassification)
+    {
+    public:
+        TEST_METHOD (EachRuleDecidesWhetherTheEngineJudgesTheMove)
+        {
+            // LLMHF_LOWER_IL_INJECTED, which Windows sets alongside the injected flag.
+            constexpr uint32_t LOWER_IL_INJECTED = 0x00000002;
+            // MouseButtonLock's tag on its own injected events.
+            constexpr uint64_t MOUSE_BUTTON_LOCK_TAG = 0x57494E4D;
+
+            struct InputCase
+            {
+                const wchar_t* name;
+                uint32_t flags;
+                uint64_t extraInfo;
+                bool remoteSession;
+                InputTreatment expected;
+            };
+
+            const InputCase cases[] = {
+                // Rule 1: the pen or touch signature passes, injected or not.
+                { L"pen signature", 0, 0xFF515700, false, InputTreatment::Pass },
+                { L"touch signature (0x80 set)", 0, 0xFF515780, false, InputTreatment::Pass },
+                { L"pen signature with a low byte", 0, 0xFF515701, false, InputTreatment::Pass },
+                { L"pen signature, sign-extended to 64 bits", 0, 0xFFFFFFFFFF515700, false, InputTreatment::Pass },
+                { L"pen signature on an injected move", INJECTED_FLAG, 0xFF515700, false, InputTreatment::Pass },
+                { L"near miss: third byte off", 0, 0xFF515800, false, InputTreatment::Judge },
+                { L"near miss: top byte off", 0, 0xFE515700, false, InputTreatment::Judge },
+
+                // Rule 2: a remote session stands down for every move.
+                { L"remote session, hardware move", 0, 0, true, InputTreatment::Pass },
+                { L"remote session overrides the marker", INJECTED_FLAG, TEST_MOVE_MARKER, true, InputTreatment::Pass },
+                { L"remote session overrides a non-injected marker", 0, TEST_MOVE_MARKER, true, InputTreatment::Pass },
+
+                // Rule 3: injected moves pass unless they carry the marker without the lower
+                // integrity flag.
+                { L"injected, no extra info", INJECTED_FLAG, 0, false, InputTreatment::Pass },
+                { L"injected from a lower integrity level", INJECTED_FLAG | LOWER_IL_INJECTED, 0, false, InputTreatment::Pass },
+                { L"injected with MouseButtonLock's tag", INJECTED_FLAG, MOUSE_BUTTON_LOCK_TAG, false, InputTreatment::Pass },
+                { L"injected with the marker", INJECTED_FLAG, TEST_MOVE_MARKER, false, InputTreatment::Judge },
+                { L"lower integrity injected with the marker", INJECTED_FLAG | LOWER_IL_INJECTED, TEST_MOVE_MARKER, false, InputTreatment::Pass },
+                { L"near-miss marker: plus one", INJECTED_FLAG, TEST_MOVE_MARKER + 1, false, InputTreatment::Pass },
+                { L"near-miss marker: top bit of the low word set", INJECTED_FLAG, TEST_MOVE_MARKER | 0x80000000, false, InputTreatment::Pass },
+                { L"near-miss marker: a bit above 32", INJECTED_FLAG, TEST_MOVE_MARKER | 0x100000000, false, InputTreatment::Pass },
+
+                // Rule 4: everything else is judged like hardware.
+                { L"hardware move", 0, 0, false, InputTreatment::Judge },
+                { L"marker on a non-injected move", 0, TEST_MOVE_MARKER, false, InputTreatment::Judge },
+                { L"lower-IL bit alone, without the injected flag", LOWER_IL_INJECTED, 0, false, InputTreatment::Judge },
+                { L"lower-IL bit with the marker, without the injected flag", LOWER_IL_INJECTED, TEST_MOVE_MARKER, false, InputTreatment::Judge },
+            };
+
+            std::wstring failures;
+            for (const InputCase& c : cases)
+            {
+                const InputTreatment actual = ClassifyInput(c.flags, c.extraInfo, c.remoteSession);
+                if (actual != c.expected)
+                {
+                    failures += (failures.empty() ? L"" : L"; ") + std::wstring(c.name) + L": expected " + Name(c.expected) + L", got " + Name(actual);
+                }
+            }
+            if (!failures.empty())
+            {
+                Assert::Fail(failures.c_str());
+            }
+        }
+
+        TEST_METHOD (MarkerCannotBeMistakenForAnotherSignal)
+        {
+            Assert::IsTrue((TEST_MOVE_MARKER & PEN_OR_TOUCH_SIGNATURE_MASK) != PEN_OR_TOUCH_SIGNATURE, L"the marker matches the pen and touch signature");
+            Assert::IsTrue(TEST_MOVE_MARKER != 0x57494E4D, L"the marker equals MouseButtonLock's tag");
+            Assert::IsTrue(TEST_MOVE_MARKER != 0, L"the marker equals the default extra info");
+        }
+    };
+
+    TEST_CLASS (FourMonitorLayout)
+    {
+    public:
+        TEST_METHOD (PushesIntoThePrimaryBrake)
+        {
+            // Push 500 logical px: 500 physical px from a 100% source, 750 from the 150% one. 5 px
+            // steps never reach the cap (10 or 15 px).
+            const PointL rightEdge{ 1920, 500 };
+            const PointL leftEdge{ -1, 500 };
+            const PointL topEdge{ 500, -1 };
+            RunAll({
+                { L"150% right into primary, 5 px steps", FourAround(DPI_150), SlowPushSettings(), SlowPush(rightEdge, -1, 0, 750, { 5 }, CapAt(DPI_150)) },
+                { L"150% right into primary, 1-5 px steps", FourAround(DPI_150), SlowPushSettings(), SlowPush(rightEdge, -1, 0, 750, { 1, 2, 3, 4, 5 }, CapAt(DPI_150)) },
+                { L"100% right into primary", FourAround(DPI_100), SlowPushSettings(), SlowPush(rightEdge, -1, 0, 500, { 1, 2, 3, 4, 5 }) },
+                { L"left into primary", FourAround(DPI_150), SlowPushSettings(), SlowPush(leftEdge, 1, 0, 500, { 5 }) },
+                { L"top into primary", FourAround(DPI_150), SlowPushSettings(), SlowPush(topEdge, 0, 1, 500, { 5 }) },
+                { L"primary into 150% right", FourAround(DPI_150), SlowPushSettings(), SlowPush({ 1919, 500 }, 1, 0, 500, { 5 }) },
+            });
+        }
+
+        TEST_METHOD (PushesIntoThePrimaryBrakeAfterTheFreeReturnExpires)
+        {
+            // Out of the primary by a slow push that lands at x = 1929, then far right on the 150%
+            // monitor (1910 px from the edge, past its 150 px window), back to the edge pixel, then
+            // the slow push. The expired allowance gives no free crossing.
+            const PointL rightEdge{ 1920, 500 };
+            const std::vector<Step> outAndBack = Concat(SlowPush({ 1919, 500 }, 1, 0, 500, { 10 }),
+                                                        {
+                                                            Expect(Move({ 1929, 500 }, { 3830, 500 }), Allow({ 3830, 500 })),
+                                                            Expect(Move({ 3830, 500 }, { 1920, 500 }), Allow({ 1920, 500 })),
+                                                        });
+            RunAll({
+                { L"150% right into primary", FourAround(DPI_150), SlowPushSettings(), Concat(outAndBack, SlowPush(rightEdge, -1, 0, 750, { 5 }, CapAt(DPI_150))) },
+            });
+        }
+
+        TEST_METHOD (FreeReturnInsideTheLimitIsFreeOnTheFourMonitorLayout)
+        {
+            // Within the window: out of the primary by a slow push that lands 4 px past the
+            // edge, back to the edge pixel, and the first step into the primary is free.
+            RunAll({
+                { L"150% right",
+                  FourAround(DPI_150),
+                  SlowPushSettings(),
+                  Concat(SlowPush({ 1919, 500 }, 1, 0, 500, { 5 }),
+                         {
+                             Expect(Move({ 1924, 500 }, { 1920, 500 }), Allow({ 1920, 500 })),
+                             Expect(Move({ 1920, 500 }, { 1915, 500 }), Allow({ 1915, 500 })),
+                         }) },
+            });
+        }
+    };
+
+    // Hard pushes recorded by the hook on a four-monitor layout (all monitors at 100%) at the
+    // shipping defaults, replayed move for move.
+    TEST_CLASS (HardPushTraces)
+    {
+    public:
+        TEST_METHOD (AReboundAfterAHardStrokeCostsOnlyItsDistance)
+        {
+            // Two hard strokes from the left monitor into the primary. The first adds 7 and then
+            // the cap 17 times, 177 in all. The hand then rebounds 6 px back onto the left monitor,
+            // which leaves 171, and steps 1 px toward the edge. The second stroke adds 2 and then
+            // the cap 12 times to reach 293, and its next move crosses at 303.
+            const std::vector<TracedMove> strokes = {
+                { { -8, 205 }, { 6, 206 } },
+                { { -1, 206 }, { 27, 208 } },
+                { { -1, 208 }, { 56, 213 } },
+                { { -1, 213 }, { 99, 221 } },
+                { { -1, 221 }, { 119, 229 } },
+                { { -1, 229 }, { 142, 238 } },
+                { { -1, 238 }, { 159, 250 } },
+                { { -1, 250 }, { 173, 265 } },
+                { { -1, 265 }, { 173, 279 } },
+                { { -1, 279 }, { 174, 291 } },
+                { { -1, 291 }, { 165, 298 } },
+                { { -1, 298 }, { 158, 301 } },
+                { { -1, 301 }, { 141, 303 } },
+                { { -1, 303 }, { 126, 307 } },
+                { { -1, 307 }, { 99, 312 } },
+                { { -1, 312 }, { 76, 318 } },
+                { { -1, 318 }, { 46, 325 } },
+                { { -1, 325 }, { 18, 331 } },
+                { { -1, 331 }, { -7, 337 } },
+                { { -7, 337 }, { -6, 337 } },
+                { { -6, 337 }, { 1, 336 } },
+                { { -1, 336 }, { 23, 336 } },
+                { { -1, 336 }, { 55, 337 } },
+                { { -1, 337 }, { 91, 340 } },
+                { { -1, 340 }, { 118, 342 } },
+                { { -1, 342 }, { 140, 346 } },
+                { { -1, 346 }, { 153, 353 } },
+                { { -1, 353 }, { 163, 361 } },
+                { { -1, 361 }, { 163, 367 } },
+                { { -1, 367 }, { 160, 369 } },
+                { { -1, 369 }, { 156, 369 } },
+                { { -1, 369 }, { 150, 366 } },
+                { { -1, 366 }, { 132, 364 } },
+                { { -1, 364 }, { 111, 364 } },
+            };
+            const Layout layout = FourAround(DPI_100);
+            RunAll({ { L"left monitor into the primary", layout, Settings{}, Replay(strokes, layout.monitors[3].rect) } });
+        }
+
+        TEST_METHOD (ACornerPushKeepsItsPushAcrossBothNeighbors)
+        {
+            // A hard push up and left from the right monitor's top-left corner. The primary lies
+            // past its left side, and the top monitor touches it only at the corner, so the
+            // first-reached side is the left one for both. The moves land on the primary for 141,
+            // on the top monitor for 120 more, and back on the primary for 30: 291 against the left
+            // side. The recording ends there with the hand moving away; the last move, added
+            // here, pushes the remaining 9 px and crosses.
+            const std::vector<TracedMove> push = {
+                { { 1950, 407 }, { 1878, 400 } },
+                { { 1920, 400 }, { 1788, 386 } },
+                { { 1920, 386 }, { 1739, 366 } },
+                { { 1920, 366 }, { 1690, 338 } },
+                { { 1920, 338 }, { 1658, 303 } },
+                { { 1920, 303 }, { 1622, 268 } },
+                { { 1920, 268 }, { 1605, 234 } },
+                { { 1920, 234 }, { 1592, 200 } },
+                { { 1920, 200 }, { 1606, 163 } },
+                { { 1920, 163 }, { 1622, 120 } },
+                { { 1920, 120 }, { 1650, 79 } },
+                { { 1920, 79 }, { 1685, 45 } },
+                { { 1920, 45 }, { 1723, 19 } },
+                { { 1920, 19 }, { 1765, 0 } },
+                { { 1920, 0 }, { 1919, 0 } },
+                { { 1920, 0 }, { 1903, -2 } },
+                { { 1920, 0 }, { 1837, -11 } },
+                { { 1920, 0 }, { 1756, -18 } },
+                { { 1920, 0 }, { 1716, -19 } },
+                { { 1920, 0 }, { 1682, -25 } },
+                { { 1920, 0 }, { 1670, -30 } },
+                { { 1920, 0 }, { 1664, -32 } },
+                { { 1920, 0 }, { 1673, -29 } },
+                { { 1920, 0 }, { 1696, -23 } },
+                { { 1920, 0 }, { 1718, -18 } },
+                { { 1920, 0 }, { 1751, -15 } },
+                { { 1920, 0 }, { 1781, -7 } },
+                { { 1920, 0 }, { 1816, 0 } },
+                { { 1920, 0 }, { 1859, 10 } },
+                { { 1920, 10 }, { 1899, 28 } },
+                { { 1920, 28 }, { 1911, 28 } },
+            };
+            const Layout layout = FourAround(DPI_100);
+            RunAll({ { L"right monitor's top-left corner", layout, Settings{}, Replay(push, layout.monitors[1].rect) } });
+        }
+    };
+}
