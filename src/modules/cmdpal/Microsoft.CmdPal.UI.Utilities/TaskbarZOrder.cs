@@ -21,7 +21,7 @@ public static class TaskbarZOrder
             return false;
         }
 
-        if (!IsTaskbarAbove(window, taskbar))
+        if (IsAbove(taskbar, window) != true)
         {
             return false;
         }
@@ -43,40 +43,40 @@ public static class TaskbarZOrder
         return true;
     }
 
-    private static bool IsTaskbarAbove(HWND window, HWND taskbar)
+    internal static bool? IsAbove(HWND above, HWND below)
     {
         // EnumWindows (and GetWindow's sibling traversal) can omit windows after
         // shell-band promotion. Walk the desktop's direct children instead.
         var desktop = PInvoke.GetDesktopWindow();
         var visited = new HashSet<HWND>();
-        var taskbarSeen = false;
-        var windowSeen = false;
+        var aboveSeen = false;
+        var belowSeen = false;
         for (var hwnd = PInvoke.FindWindowEx(desktop, HWND.Null, null, null);
             !hwnd.IsNull && visited.Add(hwnd);
             hwnd = PInvoke.FindWindowEx(desktop, hwnd, null, null))
         {
-            if (hwnd == window)
+            if (hwnd == below)
             {
-                if (taskbarSeen)
+                if (aboveSeen)
                 {
                     return true;
                 }
 
-                windowSeen = true;
+                belowSeen = true;
             }
-            else if (hwnd == taskbar)
+            else if (hwnd == above)
             {
-                if (windowSeen)
+                if (belowSeen)
                 {
                     return false;
                 }
 
-                taskbarSeen = true;
+                aboveSeen = true;
             }
         }
 
         // A window disappeared, was reparented, or reordered during the walk.
         // Leave the order alone until the next update rather than raise blindly.
-        return false;
+        return null;
     }
 }

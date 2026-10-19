@@ -20,10 +20,11 @@ namespace Microsoft.CmdPal.UI.Utilities;
 /// A missed transition is left to the normal z-order fallback; cross-band parenting is not retried.
 /// The caller must poll <see cref="ShouldRestore"/> and dispose on cancellation or shutdown.
 /// The 100 ms budget is checked on the UI thread, not a guarantee if that thread stops pumping.
+/// A hidden desktop reference detects promotion through observable z-order, using only
+/// public APIs. Explorer's timing and layer inheritance remain best-effort behavior.
 /// </remarks>
 public sealed partial class TaskbarBandPromotion : IDisposable
 {
-    private const uint DesktopBand = 1;
     private const WINDOW_STYLE ParentStyles = WINDOW_STYLE.WS_CHILD | WINDOW_STYLE.WS_POPUP;
 
     private readonly HWND _window;
@@ -33,9 +34,15 @@ public sealed partial class TaskbarBandPromotion : IDisposable
     private readonly WINDOW_EX_STYLE _extendedStyle;
     private readonly RECT _bounds;
     private readonly long _started;
+    private readonly DesktopTopmostReference _reference;
     private bool _disposed;
 
     internal TaskbarBandPromotion(nint windowHandle, nint taskbarHandle)
+        : this(windowHandle, taskbarHandle, null)
+    {
+    }
+
+    private TaskbarBandPromotion(nint windowHandle, nint taskbarHandle, DesktopTopmostReference? reference)
     {
         _window = new HWND(windowHandle);
         _taskbar = new HWND(taskbarHandle);
@@ -62,6 +69,7 @@ public sealed partial class TaskbarBandPromotion : IDisposable
         _style = (WINDOW_STYLE)PInvoke.GetWindowLong(_window, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
         _extendedStyle = (WINDOW_EX_STYLE)PInvoke.GetWindowLong(_window, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
         _started = Stopwatch.GetTimestamp();
+        _reference = reference ?? new DesktopTopmostReference();
 
         try
         {
@@ -92,7 +100,7 @@ public sealed partial class TaskbarBandPromotion : IDisposable
             return _disposed ||
                 !PInvoke.IsWindowVisible(_window) ||
                 !PInvoke.IsWindowVisible(_taskbar) ||
-                ShouldRestoreForBand(ReadBand(_window), Stopwatch.GetElapsedTime(_started));
+                ShouldRestoreForLayer(_reference.IsBelowAfterRaise((nint)_taskbar) == true, Stopwatch.GetElapsedTime(_started));
         }
     }
 
@@ -106,56 +114,62 @@ public sealed partial class TaskbarBandPromotion : IDisposable
             !PInvoke.IsWindowVisible(taskbar) ||
             !PInvoke.IsWindowVisible(foreground) ||
             !PInvoke.GetParent(window).IsNull ||
-            !IsShellSurface(foreground) ||
-            ReadBand(window) != DesktopBand ||
-            ReadBand(taskbar) != DesktopBand)
+            !IsShellSurface(foreground))
         {
             return null;
         }
 
+        var reference = new DesktopTopmostReference();
+        var transferred = false;
         try
         {
-            return new TaskbarBandPromotion(windowHandle, taskbarHandle);
+            // The shell surface must outrank ordinary topmost windows, while both
+            // the taskbar and our HWND must still be reachable from that layer.
+            // This also avoids reparenting our HWND again once it has been promoted.
+            if (reference.IsBelowAfterRaise(foregroundHandle) != true ||
+                reference.IsBelowAfterRaise(windowHandle) != false ||
+                reference.IsBelowAfterRaise(taskbarHandle) != false)
+            {
+                return null;
+            }
+
+            var promotion = new TaskbarBandPromotion(windowHandle, taskbarHandle, reference);
+            transferred = true;
+            return promotion;
         }
         catch (Win32Exception ex) when (
             ex.NativeErrorCode == 87 &&
+            PInvoke.IsWindow(window) &&
             PInvoke.IsWindow(taskbar) &&
-            PInvoke.GetParent(window).IsNull &&
-            ReadBand(taskbar) != DesktopBand)
+            PInvoke.GetParent(window).IsNull)
         {
-            // Explorer won the race. Construction rolled the window back; do not
-            // retry against the already-promoted taskbar.
+            // SetParent can reject the operation if Explorer changed layers during
+            // the attempt. Construction rolled back; do not retry in this callback.
             return null;
+        }
+        finally
+        {
+            if (!transferred)
+            {
+                reference.Dispose();
+            }
         }
     }
 
-    internal static bool ShouldRestoreForBand(uint band, TimeSpan elapsed) =>
-        band != DesktopBand || elapsed >= TimeSpan.FromMilliseconds(100);
+    internal static bool ShouldRestoreForLayer(bool taskbarOutranksDesktop, TimeSpan elapsed) =>
+        taskbarOutranksDesktop || elapsed >= TimeSpan.FromMilliseconds(100);
 
-    // Notification, app-chrome and Start bands; the shell surface's band need
-    // not be the band Explorer subsequently assigns to the taskbar.
-    internal static bool IsShellSurface(ReadOnlySpan<char> className, uint band) =>
-        band is 4 or 5 or 6 &&
-        (className.SequenceEqual("Windows.UI.Core.CoreWindow") ||
-         className.SequenceEqual("XamlExplorerHostIslandWindow") ||
-         className.SequenceEqual("ControlCenterWindow"));
+    internal static bool IsShellSurface(ReadOnlySpan<char> className) =>
+        className.SequenceEqual("Windows.UI.Core.CoreWindow") ||
+        className.SequenceEqual("XamlExplorerHostIslandWindow") ||
+        className.SequenceEqual("ControlCenterWindow");
 
     private static bool IsShellSurface(HWND window)
     {
         Span<char> name = stackalloc char[128];
         var length = PInvoke.GetClassName(window, name);
         var className = name[..length];
-        return length > 0 && IsShellSurface(className, ReadBand(window));
-    }
-
-    private static uint ReadBand(HWND window)
-    {
-        if (!GetWindowBand((nint)window, out var band))
-        {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to read taskbar window band.");
-        }
-
-        return band;
+        return length > 0 && IsShellSurface(className);
     }
 
     public void Dispose()
@@ -166,21 +180,28 @@ public sealed partial class TaskbarBandPromotion : IDisposable
             return;
         }
 
-        if (PInvoke.IsWindow(_window))
+        try
         {
-            if (!PInvoke.GetParent(_window).IsNull)
+            if (PInvoke.IsWindow(_window))
             {
-                SetParent(HWND.Null);
-            }
+                if (!PInvoke.GetParent(_window).IsNull)
+                {
+                    SetParent(HWND.Null);
+                }
 
-            // Preserve visibility and any unrelated style changes made while attached.
-            var style = (WINDOW_STYLE)PInvoke.GetWindowLong(_window, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
-            SetStyle(WINDOW_LONG_PTR_INDEX.GWL_STYLE, (uint)((style & ~ParentStyles) | (_style & ParentStyles)));
-            var extendedStyle = (WINDOW_EX_STYLE)PInvoke.GetWindowLong(_window, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
-            SetStyle(
-                WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE,
-                (uint)((extendedStyle & ~WINDOW_EX_STYLE.WS_EX_NOACTIVATE) | (_extendedStyle & WINDOW_EX_STYLE.WS_EX_NOACTIVATE)));
-            Position(_bounds.left, _bounds.top);
+                // Preserve visibility and any unrelated style changes made while attached.
+                var style = (WINDOW_STYLE)PInvoke.GetWindowLong(_window, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
+                SetStyle(WINDOW_LONG_PTR_INDEX.GWL_STYLE, (uint)((style & ~ParentStyles) | (_style & ParentStyles)));
+                var extendedStyle = (WINDOW_EX_STYLE)PInvoke.GetWindowLong(_window, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
+                SetStyle(
+                    WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE,
+                    (uint)((extendedStyle & ~WINDOW_EX_STYLE.WS_EX_NOACTIVATE) | (_extendedStyle & WINDOW_EX_STYLE.WS_EX_NOACTIVATE)));
+                Position(_bounds.left, _bounds.top);
+            }
+        }
+        finally
+        {
+            _reference.Dispose();
         }
 
         _disposed = true;
@@ -230,9 +251,4 @@ public sealed partial class TaskbarBandPromotion : IDisposable
             throw new InvalidOperationException("Taskbar promotion must run on the window's owning thread.");
         }
     }
-
-    // Read-only, undocumented user32 API. No privileged SetWindowBand call is used.
-    [LibraryImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetWindowBand(nint hwnd, out uint band);
 }

@@ -45,3 +45,5 @@ AreDpiAwarenessContextsEqual
 SetLastError
 WINDOW_STYLE
 WINDOW_EX_STYLE
+CreateWindowEx
+DestroyWindow

@@ -236,10 +236,10 @@ public class TaskbarZOrderTests
     [TestMethod]
     public void PromotionBudgetExpiresAtOneHundredMilliseconds()
     {
-        Assert.IsFalse(TaskbarBandPromotion.ShouldRestoreForBand(1, TimeSpan.FromMilliseconds(99.999)));
-        Assert.IsTrue(TaskbarBandPromotion.ShouldRestoreForBand(1, TimeSpan.FromMilliseconds(100)));
-        Assert.IsTrue(TaskbarBandPromotion.ShouldRestoreForBand(1, TimeSpan.FromSeconds(1)));
-        Assert.IsTrue(TaskbarBandPromotion.ShouldRestoreForBand(6, TimeSpan.Zero));
+        Assert.IsFalse(TaskbarBandPromotion.ShouldRestoreForLayer(false, TimeSpan.FromMilliseconds(99.999)));
+        Assert.IsTrue(TaskbarBandPromotion.ShouldRestoreForLayer(false, TimeSpan.FromMilliseconds(100)));
+        Assert.IsTrue(TaskbarBandPromotion.ShouldRestoreForLayer(false, TimeSpan.FromSeconds(1)));
+        Assert.IsTrue(TaskbarBandPromotion.ShouldRestoreForLayer(true, TimeSpan.Zero));
     }
 
     [TestMethod]
@@ -297,16 +297,83 @@ public class TaskbarZOrderTests
     }
 
     [TestMethod]
-    [DataRow("Windows.UI.Core.CoreWindow", 6u, true)]
-    [DataRow("Windows.UI.Core.CoreWindow", 1u, false)]
-    [DataRow("XamlExplorerHostIslandWindow", 5u, true)]
-    [DataRow("ControlCenterWindow", 4u, true)]
-    [DataRow("ControlCenterWindow", 6u, true)]
-    [DataRow("UnrelatedWindow", 6u, false)]
-    [DataRow("", 6u, false)]
-    public void OnlyShellSurfacesInShellBandsAreEligible(string className, uint band, bool expected)
+    [DataRow("Windows.UI.Core.CoreWindow", true)]
+    [DataRow("XamlExplorerHostIslandWindow", true)]
+    [DataRow("ControlCenterWindow", true)]
+    [DataRow("UnrelatedWindow", false)]
+    [DataRow("", false)]
+    public void OnlyShellWindowClassesAreCandidates(string className, bool expected)
     {
-        Assert.AreEqual(expected, TaskbarBandPromotion.IsShellSurface(className, band));
+        Assert.AreEqual(expected, TaskbarBandPromotion.IsShellSurface(className));
+    }
+
+    [TestMethod]
+    public void ReferenceOvertakesDesktopTopmostWindowsWithoutShowingOrActivating()
+    {
+        using var target = new TestWindow();
+        using var popup = new TestWindow();
+        using var reference = new DesktopTopmostReference();
+        var foreground = NativeMethods.GetForegroundWindow();
+        Assert.IsTrue(NativeMethods.GetWindowRect(target.Handle, out var bounds));
+        Assert.AreEqual((nint)0, NativeMethods.GetParent(reference.Handle));
+        Assert.AreEqual((nint)0, NativeMethods.GetWindow(reference.Handle, 4));
+
+        for (var i = 0; i < 25; i++)
+        {
+            target.Raise();
+            popup.Raise();
+
+            Assert.AreEqual(false, reference.IsBelowAfterRaise(target.Handle));
+            Assert.AreEqual(false, reference.IsBelowAfterRaise(popup.Handle));
+            Assert.IsFalse(NativeMethods.IsWindowVisible(reference.Handle));
+            Assert.AreEqual(foreground, NativeMethods.GetForegroundWindow());
+            Assert.IsTrue(NativeMethods.GetWindowRect(target.Handle, out var after));
+            Assert.AreEqual(bounds, after);
+            Assert.IsTrue(IsAbove(popup.Handle, target.Handle));
+        }
+    }
+
+    [TestMethod]
+    public void MissingOrChildTargetDoesNotIndicatePromotion()
+    {
+        using var parent = new TestWindow();
+        using var child = new TestWindow();
+        using var promotion = new TaskbarBandPromotion(child.Handle, parent.Handle);
+        using var reference = new DesktopTopmostReference();
+
+        Assert.IsNull(reference.IsBelowAfterRaise(0));
+        Assert.IsNull(reference.IsBelowAfterRaise(child.Handle));
+        Assert.AreEqual(false, reference.IsBelowAfterRaise(parent.Handle));
+    }
+
+    [TestMethod]
+    public void ReferenceIsDestroyedAndDisposalIsIdempotent()
+    {
+        using var reference = new DesktopTopmostReference();
+        var hwnd = reference.Handle;
+        Assert.IsTrue(NativeMethods.IsWindow(hwnd));
+
+        reference.Dispose();
+        reference.Dispose();
+
+        Assert.IsFalse(NativeMethods.IsWindow(hwnd));
+        Assert.ThrowsExactly<ObjectDisposedException>(() => reference.IsBelowAfterRaise(hwnd));
+    }
+
+    [TestMethod]
+    public void ReferenceRejectsUseFromAnotherThread()
+    {
+        using var target = new TestWindow();
+        using var reference = new DesktopTopmostReference();
+
+        Task.Run(() =>
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() => reference.IsBelowAfterRaise(target.Handle));
+            Assert.ThrowsExactly<InvalidOperationException>(reference.Dispose);
+        }).GetAwaiter().GetResult();
+
+        Assert.IsTrue(NativeMethods.IsWindow(reference.Handle));
+        Assert.AreEqual(false, reference.IsBelowAfterRaise(target.Handle));
     }
 
     private static bool IsAbove(nint above, nint below)
@@ -415,6 +482,10 @@ public class TaskbarZOrderTests
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsWindowVisible(nint hwnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindow(nint hwnd);
     }
 
     [StructLayout(LayoutKind.Sequential)]
