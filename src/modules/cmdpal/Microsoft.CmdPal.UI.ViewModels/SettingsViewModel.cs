@@ -592,6 +592,12 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         foreach (var fallback in fallbacks)
         {
             var index = currentRankings.IndexOf(fallback.RankId);
+            // settings migration note: Prior to cmdpal v0.14, fallback ranks
+            // were stored per ID. After that, we also store the provider ID as
+            // the RankId.
+            //
+            // This code here handles migrating the old key if we don't find the
+            // new one. 
             if (index < 0)
             {
                 index = currentRankings.IndexOf(fallback.Id);
