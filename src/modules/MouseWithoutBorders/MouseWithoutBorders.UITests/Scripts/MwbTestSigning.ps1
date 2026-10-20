@@ -112,24 +112,7 @@ function Assert-MwbEndpointSignatures {
         'PowerToys.MouseWithoutBordersHelper.exe', 'WinUI3Apps\PowerToys.Settings.exe',
         'WinUI3Apps\PowerToys.QuickAccess.exe')) {
         $path = Join-Path $ProductRoot $relative
-        try {
-            $signature = Get-AuthenticodeSignature -LiteralPath $path -ErrorAction Stop
-        }
-        catch [Management.Automation.RuntimeException], [IO.IOException], [UnauthorizedAccessException],
-            [ComponentModel.Win32Exception], [Security.Cryptography.CryptographicException] {
-            $failure = $_
-            $exception = $failure.Exception
-            $codes = @(for ($depth = 0; $null -ne $exception -and $depth -lt 8; $depth++) {
-                '{0}=0x{1:X8}' -f $exception.GetType().FullName, ($exception.HResult -band 0xffffffffL)
-                if ($exception -is [ComponentModel.Win32Exception]) {
-                    'NativeErrorCode={0}' -f $exception.NativeErrorCode
-                }
-                $exception = $exception.InnerException
-            })
-            throw [InvalidOperationException]::new(
-                "Cannot read MWB endpoint signature for '$relative' ($($codes -join '; ')): $($failure.Exception.Message)",
-                $failure.Exception)
-        }
+        $signature = Get-AuthenticodeSignature -LiteralPath $path
         $signer = $signature.SignerCertificate
         $rawDataSha256 = if ($null -ne $signer) { Get-MwbCertificateRawDataSha256 $signer } else { $null }
         $pendingTrust = $AllowUntrustedTestCertificate -and $null -ne $TestCertificate -and

@@ -115,33 +115,6 @@ Describe 'MWB public test certificate and exact trust ownership' {
     }
 }
 
-Describe 'MWB endpoint signature-read diagnostics' {
-    It 'preserves the blocked executable and native error without retrying or accepting its signature' {
-        $script:signatureReads = 0
-        Mock Get-AuthenticodeSignature {
-            $script:signatureReads++
-            throw [ComponentModel.Win32Exception]::new(225)
-        }
-        try {
-            Assert-MwbEndpointSignatures 'C:\fixture' $null
-            throw 'Expected the blocked signature read to fail.'
-        }
-        catch {
-            $_.Exception.Message | Should Match 'PowerToys.exe'
-            $_.Exception.Message | Should Match 'System.ComponentModel.Win32Exception'
-            $_.Exception.Message | Should Match 'NativeErrorCode=225'
-            $_.Exception.InnerException.NativeErrorCode | Should Be 225
-        }
-        $script:signatureReads | Should Be 1
-    }
-
-    It 'retains the existing rejection of an invalid signature' {
-        Mock Get-AuthenticodeSignature { [pscustomobject]@{ Status = 'HashMismatch'; SignerCertificate = $null } }
-        { Assert-MwbEndpointSignatures 'C:\fixture' $null } | Should Throw 'not the expected Microsoft identity'
-        Assert-MockCalled Get-AuthenticodeSignature -Times 1 -Exactly -Scope It
-    }
-}
-
 Describe 'MWB immutable Release runtime signing lineage' {
     BeforeAll { $script:signer = New-MwbPublicCertificateFixture }
     AfterAll { $script:signer.Dispose() }

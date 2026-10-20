@@ -318,19 +318,6 @@ contain only typed flags and bounded event classifications. Native failure
 context and composed desktop images are captured before teardown without
 attaching another UIA client.
 
-Failed CI runs also publish `runtime-diagnostics.json` in the existing MWB
-prerequisite artifact, collected before recovery. It contains at most the last
-two hours since this run's protected provisioning marker: bounded Hyper-V,
-container and Defender event IDs/error codes, service status, Defender versions
-and protection flags, and hashes of the fixed endpoint file inventory when reads
-are permitted. Event limits, disabled channels, unavailable queries and blocked file reads are
-explicit; an unavailable query is not proof that no event or detection occurred.
-Raw event messages, XML, command lines and arbitrary resource paths are omitted.
-Recognized threat names and matching endpoint-relative names are retained.
-Signature-read failures identify the exact endpoint-relative executable and
-exception HRESULT chain. These diagnostics do not retry startup, alter assertions,
-change protection settings or bypass blocked reads.
-
 Recording manifests explicitly distinguish Started, Completed, Available and
 errors. Keep nonempty clips even after a finalization warning, but never treat
 missing/failing capture as a silent pass. Failures before MSTest starts have
