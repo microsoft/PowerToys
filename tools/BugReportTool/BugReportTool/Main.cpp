@@ -20,6 +20,7 @@
 #include "EventViewer.h"
 #include "InstallationFolder.h"
 #include "ReportGPOValues.h"
+#include "SettingsFolder.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -328,7 +329,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
-        copy(settingsRootPath, reportDir, copy_options::recursive);
+        BugReportTool::CopySettingsFolder(settingsRootPath, reportDir);
 
         // Remove updates folder contents
         DeleteFolder(reportDir / "Updates");
