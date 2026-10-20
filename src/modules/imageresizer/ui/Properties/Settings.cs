@@ -82,6 +82,7 @@ namespace ImageResizer.Properties
         private bool _replace;
         private bool _ignoreOrientation;
         private bool _removeMetadata;
+        private OutputFormat _outputFormat;
         private int _jpegQualityLevel;
         private PngInterlaceOption _pngInterlaceOption;
         private TiffCompressOption _tiffCompressOption;
@@ -98,6 +99,7 @@ namespace ImageResizer.Properties
             Replace = false;
             IgnoreOrientation = true;
             RemoveMetadata = false;
+            OutputFormat = Models.OutputFormat.KeepOriginal;
             JpegQualityLevel = 90;
             PngInterlaceOption = Models.PngInterlaceOption.Default;
             TiffCompressOption = Models.TiffCompressOption.Default;
@@ -494,6 +496,18 @@ namespace ImageResizer.Properties
         }
 
         [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_outputFormat")]
+        public OutputFormat OutputFormat
+        {
+            get => _outputFormat;
+            set
+            {
+                _outputFormat = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
         [JsonPropertyName("imageresizer_jpegQualityLevel")]
         public int JpegQualityLevel
         {
@@ -688,6 +702,7 @@ namespace ImageResizer.Properties
             Replace = jsonSettings.Replace;
             IgnoreOrientation = jsonSettings.IgnoreOrientation;
             RemoveMetadata = jsonSettings.RemoveMetadata;
+            OutputFormat = jsonSettings.OutputFormat;
             JpegQualityLevel = jsonSettings.JpegQualityLevel;
             PngInterlaceOption = jsonSettings.PngInterlaceOption;
             TiffCompressOption = jsonSettings.TiffCompressOption;
