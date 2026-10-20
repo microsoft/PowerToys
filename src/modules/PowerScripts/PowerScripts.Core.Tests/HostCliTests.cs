@@ -3,9 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Client;
+using PowerScripts.Core;
 
 namespace PowerScripts.Core.Tests;
 
@@ -127,6 +131,64 @@ public class HostCliTests
     }
 
     [TestMethod]
+    public void Catalogue_ProjectsResolvedIcons_ToJsonClientAndOptInShellFeed()
+    {
+        var icon = Path.Combine(_root, "script icon.ico");
+        File.WriteAllBytes(icon, Convert.FromBase64String(
+            "AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA=="));
+        WriteDescriptor("wc.ps1", "\"extensions\":[\".md\"],\"icon\":\"script icon.ico\"");
+        var json = RunHostOk("list", "--json", "--root", _root);
+        Assert.AreEqual(icon, ParseList(json)["wc"].GetProperty("iconPath").GetString());
+        Assert.AreEqual(icon, PowerScriptInfo.ParseList(json).Single(script => script.Id == "wc").IconPath);
+        Assert.IsNull(PowerScriptInfo.ParseList(json).Single(script => script.Id == "act_hello").IconPath);
+
+        var classic = RunHostOk("shell-menu", "--root", _root, "--files", "example.md").TrimEnd('\r', '\n');
+        var withIcons = RunHostOk("shell-menu", "--icons", "--root", _root, "--files", "example.md").TrimEnd('\r', '\n');
+        Assert.AreEqual("wc\twc", classic, "The existing two-column shell contract must remain unchanged.");
+        Assert.AreEqual($"wc\twc\t{icon}", withIcons);
+
+        File.Delete(icon);
+        json = RunHostOk("list", "--json", "--root", _root);
+        var missing = PowerScriptInfo.ParseList(json).Single(script => script.Id == "wc");
+        Assert.IsNull(missing.IconPath);
+        Assert.IsFalse(string.IsNullOrEmpty(missing.IconWarning));
+    }
+
+    [TestMethod]
+    public void Host_Bundles_Pinned_Mxc_Without_User_Configuration()
+    {
+        var hostDirectory = Path.GetDirectoryName(_hostPath)!;
+        var moduleDirectory = new DirectoryInfo(hostDirectory);
+        while (moduleDirectory is not null && !File.Exists(Path.Combine(moduleDirectory.FullName, "Mxc.Runtime.targets")))
+        {
+            moduleDirectory = moduleDirectory.Parent;
+        }
+
+        Assert.IsNotNull(moduleDirectory, "The Host must be built from the PowerScripts project.");
+        var metadata = XDocument.Load(Path.Combine(moduleDirectory.FullName, "Mxc.Runtime.targets"));
+        var version = metadata.Root!.Element("PropertyGroup")!.Element("MxcVersion")!.Value;
+        using var hostStream = File.OpenRead(_hostPath);
+        using var hostImage = new PEReader(hostStream);
+        var architecture = hostImage.PEHeaders.CoffHeader.Machine == Machine.Arm64 ? "arm64" : "x64";
+        var runtimeDirectory = Path.Combine(moduleDirectory.FullName, "PowerScripts.Host", "obj", "mxc", version, architecture);
+        foreach (var name in new[] { "wxc-exec.exe", "plm.exe" })
+        {
+            var deployed = Path.Combine(hostDirectory, name);
+            Assert.IsTrue(File.Exists(deployed), $"The Host is missing its automatic MXC dependency: {name}");
+            CollectionAssert.AreEqual(
+                SHA256.HashData(File.ReadAllBytes(Path.Combine(runtimeDirectory, name))),
+                SHA256.HashData(File.ReadAllBytes(deployed)),
+                $"The bundled {name} differs from the pinned runtime, possibly due to stale output timestamps.");
+            using var stream = File.OpenRead(deployed);
+            using var image = new PEReader(stream);
+            Assert.AreEqual(hostImage.PEHeaders.CoffHeader.Machine, image.PEHeaders.CoffHeader.Machine);
+        }
+
+        Assert.IsTrue(File.Exists(Path.Combine(hostDirectory, "Mxc.LICENSE.txt")));
+        Assert.IsTrue(File.Exists(Path.Combine(hostDirectory, "Mxc.spdx.json")));
+    }
+
+    [TestMethod]
     public void MxcSupport_Json_ReturnsPlatformStatus()
     {
         var (exit, stdout, _) = RunHost("mxc-support", "--json");
@@ -229,6 +291,8 @@ public class HostCliTests
         {
             psi.ArgumentList.Add(a);
         }
+
+        psi.Environment[ModuleState.IgnoreEnabledEnvironmentVariable] = "1";
 
         using var p = Process.Start(psi)!;
         var stdout = p.StandardOutput.ReadToEnd();

@@ -173,6 +173,91 @@ public class ParameterContractTests
     }
 
     [TestMethod]
+    public void WslFileParameters_TranslateOnlyDeclaredFiles_WithoutChangingOriginalValues()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Parameters =
+            [
+                new ScriptParameter { Name = "file", Type = ScriptParameter.ParameterTypeFile },
+                new ScriptParameter { Name = "other", Type = ScriptParameter.ParameterTypeFile },
+                new ScriptParameter { Name = "label", Type = ScriptParameter.ParameterTypeString },
+            ],
+        };
+        var parameters = new Dictionary<string, string>
+        {
+            ["file"] = @"C:\test folder\report.txt",
+            ["other"] = @"D:\another\file.txt",
+            ["label"] = @"C:\not-a-file-parameter",
+        };
+
+        var translated = PythonRuntime.TranslateWslFileParameters(manifest, parameters);
+
+        Assert.IsNotNull(translated);
+        Assert.AreEqual("/mnt/c/test folder/report.txt", translated["file"]);
+        Assert.AreEqual("/mnt/d/another/file.txt", translated["other"]);
+        Assert.AreEqual(parameters["label"], translated["label"]);
+        Assert.AreEqual(@"C:\test folder\report.txt", parameters["file"]);
+        Assert.AreEqual(@"D:\another\file.txt", parameters["other"]);
+    }
+
+    [TestMethod]
+    public void WslFileParameters_ResolveDefaultsAndRelativePaths_AndPreserveEmptyOptionalValues()
+    {
+        var file = Path.GetTempFileName();
+        try
+        {
+            var manifest = new PowerScriptManifest
+            {
+                Parameters =
+                [
+                    new ScriptParameter
+                    {
+                        Name = "file",
+                        Type = ScriptParameter.ParameterTypeFile,
+                        IsRequired = true,
+                        Default = Path.GetRelativePath(Environment.CurrentDirectory, file),
+                    },
+                    new ScriptParameter { Name = "optional", Type = ScriptParameter.ParameterTypeFile },
+                ],
+            };
+            Assert.IsTrue(ScriptParameterResolver.TryResolve(
+                manifest,
+                new Dictionary<string, string?> { ["optional"] = string.Empty },
+                out var resolved,
+                out _));
+
+            var translated = PythonRuntime.TranslateWslFileParameters(
+                manifest,
+                resolved.ToDictionary(pair => pair.Key, pair => pair.Value!));
+
+            Assert.IsNotNull(translated);
+            Assert.AreEqual(PythonRuntime.ToWslPath(file), translated["file"]);
+            Assert.AreEqual(string.Empty, translated["optional"]);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [TestMethod]
+    public void WslFileParameters_RejectUncPathsExplicitly()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Parameters = [new ScriptParameter { Name = "file", Type = ScriptParameter.ParameterTypeFile }],
+        };
+
+        var error = Assert.ThrowsException<NotSupportedException>(() =>
+            PythonRuntime.TranslateWslFileParameters(
+                manifest,
+                new Dictionary<string, string> { ["file"] = @"\\server\share\input.txt" }));
+
+        StringAssert.Contains(error.Message, "UNC and device paths");
+    }
+
+    [TestMethod]
     public void Descriptor_MapsJsonSchemaRequiredArray()
     {
         var root = Path.Combine(Path.GetTempPath(), "powerscripts-params-" + Guid.NewGuid().ToString("N"));

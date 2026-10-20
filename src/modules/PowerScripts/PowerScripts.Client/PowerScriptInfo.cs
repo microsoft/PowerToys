@@ -53,6 +53,12 @@ public sealed class PowerScriptInfo
     /// <summary>Optional provenance (e.g. where the script was adopted from).</summary>
     public string? Source { get; init; }
 
+    /// <summary>Validated package-local .ico path, or null. Consumers may display it with a default-icon fallback.</summary>
+    public string? IconPath { get; init; }
+
+    /// <summary>Optional diagnostic when an author-provided icon could not be used.</summary>
+    public string? IconWarning { get; init; }
+
     /// <summary>The data shape this script consumes. Filter on it to discover usable scripts (e.g. <see cref="PowerScriptIO.Text"/>).</summary>
     public PowerScriptIO Input { get; init; } = PowerScriptIO.None;
 
@@ -125,6 +131,8 @@ public sealed class PowerScriptInfo
                 Publisher = GetNullableString(element, "publisher"),
                 Version = GetNullableString(element, "version"),
                 Source = GetNullableString(element, "source"),
+                IconPath = GetNullableString(element, "iconPath"),
+                IconWarning = GetNullableString(element, "iconWarning"),
                 Input = GetIO(element, "input"),
                 Output = GetIO(element, "output"),
                 Capabilities = GetStringArray(element, "capabilities"),

@@ -42,6 +42,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ReloadScripts();
         }
 
+        public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+        public static Visibility InvertBoolToVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+
+        private void ScriptIcon_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { DataContext: PowerScriptListItem script })
+            {
+                Logger.LogWarning($"Unable to display PowerScript icon '{script.IconPath}': {e.ErrorMessage}");
+                script.MarkIconUnavailable();
+            }
+        }
+
         private async void PowerScriptsPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= PowerScriptsPage_Loaded;
@@ -113,28 +126,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (!string.IsNullOrWhiteSpace(file))
             {
                 ViewModel.SetPythonInterpreterPath(file);
-            }
-        }
-
-        private async void BrowseMxcExecutorButton_Click(object sender, RoutedEventArgs e)
-        {
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var file = PickFileDialog(
-                "MXC Executor\0wxc-exec.exe\0All Executables\0*.exe\0",
-                resourceLoader.GetString("PowerScripts_MxcExecutorPickerTitle"));
-            if (!string.IsNullOrWhiteSpace(file))
-            {
-                ViewModel.SetMxcExecutorPath(file);
-                await ViewModel.RefreshMxcPlatformSupportAsync();
-            }
-        }
-
-        private async void MxcExecutorPathTextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox textBox)
-            {
-                ViewModel.MxcExecutorPath = textBox.Text;
-                await ViewModel.RefreshMxcPlatformSupportAsync();
             }
         }
 

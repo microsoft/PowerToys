@@ -1,0 +1,11 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="PowerScriptsInstallFolder" Name="PowerScripts" />
+    </DirectoryRef>
+    <ComponentGroup Id="PowerScriptsComponentGroup" Directory="PowerScriptsInstallFolder">
+      <Files Include="$(var.BinDir)PowerScripts\**" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>

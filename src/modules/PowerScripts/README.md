@@ -96,7 +96,8 @@ Write-Host 'script body starts here'
 | `outputextension` | File scripts: the produced extension. |
 | `capability` | Declared capability (consent string + agent permission). Repeatable. |
 | `param` | A typed parameter (see Parameters). Repeatable. |
-| `publisher` (`author`), `version`, `icon`, `source` | Informational metadata. |
+| `icon` | Optional package-relative `.ico` path, e.g. `assets\script.ico`. The Host publishes a validated `iconPath` for Settings and consumer modules; missing/invalid icons use a default, with an `iconWarning`. Maximum 1 MiB; external paths, URLs, and links are not supported. |
+| `publisher` (`author`), `version`, `source` | Informational metadata. |
 
 The header ends at the first non-blank, non-comment line; non-directive comments (e.g. a license
 header) are ignored, and a file with **no** `@powerscript.*` directives is skipped — so a plain helper
@@ -238,8 +239,8 @@ works as an alternative). They cover every path:
 When no explicit preference has been saved, PowerScripts enables MXC only when the host is Windows
 11 24H2 (build 26100) or newer and `wxc-exec.exe --probe` reports an available containment tier.
 Unsupported hosts default MXC off and show the reason in Settings. Supported hosts run every
-PowerShell, descriptor, native Python, and WSL Python launch through the native MXC executor using
-stable schema `0.8.0-alpha` and Windows `processcontainer`. The enabled default applies all four
+PowerShell, descriptor, and native Python launch through the native MXC executor using
+schema `0.8.0-alpha` and Windows `processcontainer` (see the WSL exception below). The enabled default applies all four
 PowerScripts policies:
 
 - `filesystem`: the scripts root/package, runtime/helper paths, and selected inputs are read-only;
@@ -259,7 +260,6 @@ The module `config.json` contains an optional typed `mxc` object:
 {
   "mxc": {
     "enabled": true,
-    "executorPath": "",
     "disabledPolicies": [],
     "riskAccepted": false,
     "scripts": {
@@ -286,10 +286,18 @@ MXC applies, the scripts root and active package remain readable but cannot be m
 deleted from, or renamed by the script. Disabling the optional `filesystem` restriction grants broad
 read-write access to available host volumes, subject to the user's normal permissions, but never
 reopens the installed script package. If MXC itself is disabled with accepted risk, this baseline no
-longer applies. MXC is an early preview and is not shipped by this
-prototype: for end-to-end execution, install a compatible native `wxc-exec.exe` and either configure
-`executorPath`, set `POWERSCRIPTS_MXC_EXECUTOR`, place it beside `PowerScripts.Host.exe`, or put it
-on `PATH`. Run `PowerScripts.Host.exe mxc-support --json` to inspect the effective platform probe.
+longer applies. MXC remains an early preview; its profiles must not be treated as a security boundary.
+PowerScripts now bundles an architecture-matched, private MXC runtime beside `PowerScripts.Host.exe`;
+users do not install MXC separately or fill in an executor path. Builds restore the pinned official
+release declared in `Mxc.Runtime.targets`, verify its SHA-256, and copy the executor, diagnostic
+sidecar, license, and upstream SPDX manifest into build/publish output. The PowerToys installer
+includes that self-contained Host payload under `PowerScripts`. The compatibility pin is v0.8.0:
+later releases do not support this prototype's least-privilege BaseContainer policy on existing hosts.
+Updating the pin requires real execution checks, not just a successful platform probe.
+No elevated host-preparation utility or host-DACL mutation is enabled. Missing or incompatible
+runtime files require repair/reinstall, not a silent reduction in restrictions. Legacy `executorPath`
+and `POWERSCRIPTS_MXC_EXECUTOR` overrides remain supported for development, but are not required.
+Run `PowerScripts.Host.exe mxc-support --json` to inspect the effective platform probe.
 An explicit request to enable MXC still fails closed if MXC later becomes unavailable; only the
 machine-derived unsupported default runs directly without requiring a risk-acceptance preference.
 

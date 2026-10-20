@@ -370,6 +370,7 @@ public class MxcTests
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         Assert.AreEqual("0.8.0-alpha", root.GetProperty("version").GetString());
+        Assert.IsFalse(root.GetProperty("fallback").GetProperty("allowDaclMutation").GetBoolean());
         Assert.AreEqual("processcontainer", root.GetProperty("containment").GetString());
         Assert.AreEqual(1234, root.GetProperty("process").GetProperty("timeout").GetInt32());
 

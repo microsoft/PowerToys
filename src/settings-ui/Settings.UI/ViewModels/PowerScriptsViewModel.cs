@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,6 +30,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static readonly JsonSerializerOptions WriteJsonOptions = new() { WriteIndented = true };
 
+        private static readonly string[] CatalogueInputTokens = { string.Empty, "none", "files", "text", "html", "image", "audio", "video" };
+
         private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
         private readonly Func<string, int> _sendConfigMsg;
         private readonly Dictionary<string, MxcScriptOverrideSnapshot> _mxcScriptOverrides = new(StringComparer.OrdinalIgnoreCase);
@@ -42,11 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isMxcSupported;
         private bool _mxcUsesPlatformDefault = true;
         private string _mxcSupportMessage = GetResourceString("PowerScripts_MxcSupportChecking");
-        private string _mxcExecutorPath = string.Empty;
         private List<string> _mxcDisabledPolicies = new();
         private bool _mxcRiskAccepted;
         private bool _hasRejectedGlobalMxcWeakening;
         private int _mxcProbeGeneration;
+        private int _scriptSortIndex;
+        private int _scriptInputFilterIndex;
 
         public PowerScriptsViewModel(ISettingsRepository<GeneralSettings> generalSettingsRepository, Func<string, int> sendConfigMsg)
         {
@@ -70,6 +74,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public ObservableCollection<PowerScriptListItem> Scripts { get; }
+
+        public ObservableCollection<PowerScriptListItem> VisibleScripts { get; } = new();
+
+        public int ScriptSortIndex
+        {
+            get => _scriptSortIndex;
+            set
+            {
+                if (_scriptSortIndex != value)
+                {
+                    _scriptSortIndex = value;
+                    RefreshCatalogue();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int ScriptInputFilterIndex
+        {
+            get => _scriptInputFilterIndex;
+            set
+            {
+                if (_scriptInputFilterIndex != value)
+                {
+                    _scriptInputFilterIndex = value;
+                    RefreshCatalogue();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool HasNoMatchingScripts => HasScripts && VisibleScripts.Count == 0;
+
+        public string CatalogueCount => GetResourceString("PowerScripts_CatalogueCount")
+            .Replace("{0}", VisibleScripts.Count.ToString(CultureInfo.CurrentCulture), StringComparison.Ordinal)
+            .Replace("{1}", Scripts.Count.ToString(CultureInfo.CurrentCulture), StringComparison.Ordinal);
 
         /// <summary>The WSL distributions detected via <c>wsl.exe -l -q</c>, offered when Python runs in WSL mode.</summary>
         public ObservableCollection<string> WslDistributions { get; }
@@ -168,37 +208,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string MxcSupportMessage => _mxcSupportMessage;
 
-        public string MxcExecutorPath
-        {
-            get => _mxcExecutorPath;
-            set
-            {
-                var normalized = value ?? string.Empty;
-                if (_mxcExecutorPath != normalized)
-                {
-                    _mxcExecutorPath = normalized;
-                    SaveGlobalMxcSettings();
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(MxcExecutorStatus));
-                }
-            }
-        }
-
-        public string MxcExecutorStatus
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(_mxcExecutorPath))
-                {
-                    return GetResourceString("PowerScripts_MxcExecutorAutomatic");
-                }
-
-                return File.Exists(_mxcExecutorPath)
-                    ? GetResourceString("PowerScripts_MxcExecutorFound")
-                    : GetResourceString("PowerScripts_MxcExecutorMissing");
-            }
-        }
-
         public bool IsMxcFilesystemRestrictionEnabled => IsGlobalMxcPolicyEnabled(PowerScriptListItem.FilesystemPolicy);
 
         public bool IsMxcNetworkRestrictionEnabled => IsGlobalMxcPolicyEnabled(PowerScriptListItem.NetworkPolicy);
@@ -256,14 +265,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (!string.IsNullOrWhiteSpace(path))
             {
                 PythonInterpreterPath = path.Trim();
-            }
-        }
-
-        public void SetMxcExecutorPath(string path)
-        {
-            if (!string.IsNullOrWhiteSpace(path))
-            {
-                MxcExecutorPath = path.Trim();
             }
         }
 
@@ -436,6 +437,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(HasScripts));
+            RefreshCatalogue();
+        }
+
+        public static IReadOnlyList<PowerScriptListItem> FilterAndSortScripts(
+            IEnumerable<PowerScriptListItem> scripts,
+            int sortIndex,
+            int inputFilterIndex)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(inputFilterIndex);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(inputFilterIndex, CatalogueInputTokens.Length);
+            var filtered = scripts.Where(script =>
+                inputFilterIndex == 0 ||
+                string.Equals(script.Io?.Input ?? "none", CatalogueInputTokens[inputFilterIndex], StringComparison.OrdinalIgnoreCase));
+            var names = StringComparer.CurrentCultureIgnoreCase;
+            var ordered = sortIndex switch
+            {
+                0 => filtered.OrderBy(script => script.Name, names),
+                1 => filtered.OrderByDescending(script => script.Name, names),
+                2 => filtered.OrderBy(script => script.Io?.Input, StringComparer.OrdinalIgnoreCase).ThenBy(script => script.Name, names),
+                3 => filtered.OrderBy(script => script.Io?.Output, StringComparer.OrdinalIgnoreCase).ThenBy(script => script.Name, names),
+                4 => filtered.OrderBy(script => script.Runtime, StringComparer.OrdinalIgnoreCase).ThenBy(script => script.Name, names),
+                _ => throw new ArgumentOutOfRangeException(nameof(sortIndex)),
+            };
+            return ordered.ThenBy(script => script.Id, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        private void RefreshCatalogue()
+        {
+            var visible = FilterAndSortScripts(Scripts, ScriptSortIndex, ScriptInputFilterIndex);
+            VisibleScripts.Clear();
+            foreach (var script in visible)
+            {
+                VisibleScripts.Add(script);
+            }
+
+            OnPropertyChanged(nameof(CatalogueCount));
+            OnPropertyChanged(nameof(HasNoMatchingScripts));
         }
 
         /// <summary>Persists a user-chosen scripts folder and refreshes every surface that reads it.</summary>
@@ -554,7 +592,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _isMxcSupported = false;
             _isMxcEnabled = true;
             _mxcUsesPlatformDefault = true;
-            _mxcExecutorPath = string.Empty;
             _mxcDisabledPolicies = new List<string>();
             _mxcRiskAccepted = false;
             _hasRejectedGlobalMxcWeakening = false;
@@ -574,7 +611,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                _mxcExecutorPath = settings.ExecutorPath ?? string.Empty;
                 bool? explicitEnabled = null;
                 if (mxc["enabled"] is JsonValue enabledValue &&
                     enabledValue.TryGetValue<bool>(out var enabled))
@@ -647,7 +683,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // An invalid preference falls back to the machine-derived default.
                 _isMxcEnabled = _isMxcSupported;
                 _mxcUsesPlatformDefault = true;
-                _mxcExecutorPath = string.Empty;
                 _mxcDisabledPolicies = new List<string>();
                 _mxcRiskAccepted = false;
                 _hasRejectedGlobalMxcWeakening = false;
@@ -668,7 +703,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 mxc["enabled"] = _isMxcEnabled;
             }
 
-            mxc["executorPath"] = _mxcExecutorPath ?? string.Empty;
             mxc["disabledPolicies"] = CreateJsonArray(_mxcDisabledPolicies);
             mxc["riskAccepted"] = _mxcRiskAccepted;
             mxc["scripts"] = CreateScriptOverridesJson();
@@ -983,6 +1017,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Path.Combine(AppContext.BaseDirectory, HostExeName),
                 Path.Combine(AppContext.BaseDirectory, "PowerScripts", HostExeName),
+                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "PowerScripts", HostExeName)),
                 Path.Combine(ModuleDirectory, HostExeName),
             };
 

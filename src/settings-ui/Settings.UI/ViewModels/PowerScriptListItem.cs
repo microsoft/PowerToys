@@ -35,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isUiRestrictionEffective = true;
         private bool _isLeastPrivilegeRestrictionEffective = true;
         private string _mxcEffectiveDisplay = GetResourceString("PowerScripts_MxcEffectiveAll");
+        private bool _iconLoadFailed;
 
         public string Id { get; set; } = string.Empty;
 
@@ -43,6 +44,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Description { get; set; } = string.Empty;
 
         public string Runtime { get; set; } = string.Empty;
+
+        public string IconPath { get; set; }
+
+        public string IconWarning { get; set; }
+
+        public bool HasIcon => !_iconLoadFailed && !string.IsNullOrEmpty(IconPath);
+
+        public bool HasIconWarning => !string.IsNullOrEmpty(IconWarning);
+
+        public string IconSourcePath => HasIcon ? new Uri(IconPath).AbsoluteUri : null;
 
         public PowerScriptIo Io { get; set; } = new();
 
@@ -77,14 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>True when the script declares at least one parameter.</summary>
         public bool HasParameters => Parameters is { Count: > 0 };
 
-        public string KindGlyph => IsFileScript
-            ? "\uE8A5" // file action
-            : "\uE756"; // system action
-
-        /// <summary>True for file scripts, which can be triggered from the Explorer right-click menu.</summary>
-        public bool IsFileScript => string.Equals(Io?.Input, "files", StringComparison.OrdinalIgnoreCase);
-
-        public string KindDisplay => IsFileScript ? "File" : "System";
+        public bool HasFileInput => string.Equals(Io?.Input, "files", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>Comma-separated trigger extensions declared in the manifest (file scripts only).</summary>
         public string ExtensionsDisplay => Input?.Extensions is { Count: > 0 } exts
@@ -94,6 +98,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>Resolved input/output contract used by consumers to discover compatible scripts.</summary>
         public string IoDisplay => $"{DisplayIoValue(Io?.Input)} \u2192 {DisplayIoValue(Io?.Output)}";
 
+        public string CatalogueSummary => $"{IoDisplay} \u00b7 {RuntimeDisplay}";
+
+        public string CardAutomationId => $"PowerScripts_{Id}_Card";
+
         /// <summary>Comma-separated list of the capabilities the script declares.</summary>
         public string CapabilitiesDisplay => Capabilities is { Count: > 0 }
             ? string.Join(", ", Capabilities)
@@ -102,8 +110,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>Friendly runtime label (e.g. "PowerShell").</summary>
         public string RuntimeDisplay => string.IsNullOrEmpty(Runtime) ? "—" : Runtime;
 
-        private static string DisplayIoValue(string value) =>
-            string.IsNullOrWhiteSpace(value) ? "none" : value;
+        private static string DisplayIoValue(string value) => value?.ToLowerInvariant() switch
+        {
+            null or "" or "none" => GetResourceString("PowerScripts_IoNone"),
+            "files" => GetResourceString("PowerScripts_IoFiles"),
+            "text" => GetResourceString("PowerScripts_IoText"),
+            "html" => GetResourceString("PowerScripts_IoHtml"),
+            "image" => GetResourceString("PowerScripts_IoImage"),
+            "audio" => GetResourceString("PowerScripts_IoAudio"),
+            "video" => GetResourceString("PowerScripts_IoVideo"),
+            _ => value,
+        };
+
+        public void MarkIconUnavailable()
+        {
+            _iconLoadFailed = true;
+            IconWarning = GetResourceString("PowerScripts_IconLoadFailed");
+            OnPropertyChanged(nameof(HasIcon));
+            OnPropertyChanged(nameof(IconSourcePath));
+            OnPropertyChanged(nameof(IconWarning));
+            OnPropertyChanged(nameof(HasIconWarning));
+        }
 
         /// <summary>Human-readable trust state shown in the Settings list.</summary>
         public string TrustDisplay => Trusted

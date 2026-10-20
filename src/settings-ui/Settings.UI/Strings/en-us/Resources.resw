@@ -229,12 +229,6 @@
   <data name="PowerScripts_MxcEnabledToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Use MXC</value>
   </data>
-  <data name="PowerScripts_MxcExecutor.Header" xml:space="preserve">
-    <value>MXC executor path</value>
-  </data>
-  <data name="PowerScripts_MxcExecutorBrowse.Content" xml:space="preserve">
-    <value>Browse...</value>
-  </data>
   <data name="PowerScripts_MxcUnavailable.Title" xml:space="preserve">
     <value>MXC is unavailable; PowerScripts run without MXC by default.</value>
   </data>
@@ -352,15 +346,6 @@
   <data name="PowerScripts_MxcSupportChecking" xml:space="preserve">
     <value>Checking MXC support...</value>
   </data>
-  <data name="PowerScripts_MxcExecutorAutomatic" xml:space="preserve">
-    <value>No explicit path is configured. PowerScripts will look beside the Host, in POWERSCRIPTS_MXC_EXECUTOR, and on PATH.</value>
-  </data>
-  <data name="PowerScripts_MxcExecutorFound" xml:space="preserve">
-    <value>The configured wxc-exec.exe was found.</value>
-  </data>
-  <data name="PowerScripts_MxcExecutorMissing" xml:space="preserve">
-    <value>The configured wxc-exec.exe could not be found.</value>
-  </data>
   <data name="PowerScripts_MxcSupportHostMissing" xml:space="preserve">
     <value>PowerScripts.Host.exe was not found, so MXC support could not be verified.</value>
   </data>
@@ -375,9 +360,6 @@
   </data>
   <data name="PowerScripts_MxcSupportUnknown" xml:space="preserve">
     <value>MXC support could not be verified on this machine.</value>
-  </data>
-  <data name="PowerScripts_MxcExecutorPickerTitle" xml:space="preserve">
-    <value>Select MXC executor</value>
   </data>
   <data name="PowerScripts_MxcDisableWarning" xml:space="preserve">
     <value>Turning off MXC allows all PowerScripts to run without execution isolation.</value>
@@ -5582,7 +5564,7 @@ The break timer font matches the text font.</value>
     <value>Run PowerScripts when the theme changes</value>
   </data>
   <data name="LightSwitch_ApplyPowerScriptsExpander.Description" xml:space="preserve">
-    <value>Choose no-input system scripts and configure their values once for automatic use</value>
+    <value>Choose scripts with no primary input and configure their values once for automatic use</value>
   </data>
   <data name="LightSwitch_DarkModePowerScriptCheckbox.Content" xml:space="preserve">
     <value>When switching to dark mode</value>
@@ -6511,5 +6493,83 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
+  </data>
+  <data name="PowerScripts_CatalogueInputFilter.Header" xml:space="preserve">
+    <value>Input type</value>
+  </data>
+  <data name="PowerScripts_CatalogueSort.Header" xml:space="preserve">
+    <value>Sort by</value>
+  </data>
+  <data name="PowerScripts_FilterAll.Content" xml:space="preserve">
+    <value>All input types</value>
+  </data>
+  <data name="PowerScripts_FilterNone.Content" xml:space="preserve">
+    <value>None (no primary input)</value>
+  </data>
+  <data name="PowerScripts_FilterFiles.Content" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="PowerScripts_FilterText.Content" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="PowerScripts_FilterHtml.Content" xml:space="preserve">
+    <value>HTML</value>
+  </data>
+  <data name="PowerScripts_FilterImage.Content" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="PowerScripts_FilterAudio.Content" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="PowerScripts_FilterVideo.Content" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="PowerScripts_SortNameAscending.Content" xml:space="preserve">
+    <value>Name (A–Z)</value>
+  </data>
+  <data name="PowerScripts_SortNameDescending.Content" xml:space="preserve">
+    <value>Name (Z–A)</value>
+  </data>
+  <data name="PowerScripts_SortInput.Content" xml:space="preserve">
+    <value>Input type</value>
+  </data>
+  <data name="PowerScripts_SortOutput.Content" xml:space="preserve">
+    <value>Output type</value>
+  </data>
+  <data name="PowerScripts_SortRuntime.Content" xml:space="preserve">
+    <value>Runtime</value>
+  </data>
+  <data name="PowerScripts_CatalogueCount" xml:space="preserve">
+    <value>{0} of {1} scripts</value>
+  </data>
+  <data name="PowerScripts_CatalogueNoMatches.Message" xml:space="preserve">
+    <value>No scripts match this input type. Choose another filter to see more scripts.</value>
+  </data>
+  <data name="PowerScripts_IconWarning.Header" xml:space="preserve">
+    <value>Script icon unavailable</value>
+  </data>
+  <data name="PowerScripts_IconLoadFailed" xml:space="preserve">
+    <value>The script icon could not be decoded. A default icon is shown instead.</value>
+  </data>
+  <data name="PowerScripts_IoNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="PowerScripts_IoFiles" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="PowerScripts_IoText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="PowerScripts_IoHtml" xml:space="preserve">
+    <value>HTML</value>
+  </data>
+  <data name="PowerScripts_IoImage" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="PowerScripts_IoAudio" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="PowerScripts_IoVideo" xml:space="preserve">
+    <value>Video</value>
   </data>
 </root>

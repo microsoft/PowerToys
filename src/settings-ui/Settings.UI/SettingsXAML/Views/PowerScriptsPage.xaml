@@ -9,6 +9,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     d:DataContext="{d:DesignInstance Type=viewModels:PowerScriptsViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
@@ -65,27 +66,6 @@
                             IsEnabled="{x:Bind ViewModel.CanChangeMxcEnabled, Mode=OneWay}"
                             IsOn="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}"
                             Toggled="MxcEnabledToggle_Toggled" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerScripts_MxcExecutor"
-                        Description="{x:Bind ViewModel.MxcExecutorStatus, Mode=OneWay}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBox
-                                MinWidth="300"
-                                HorizontalAlignment="Stretch"
-                                AutomationProperties.AutomationId="PowerScriptsMxcExecutorPathTextBox"
-                                LostFocus="MxcExecutorPathTextBox_LostFocus"
-                                PlaceholderText="wxc-exec.exe"
-                                Text="{x:Bind ViewModel.MxcExecutorPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-                            <Button
-                                x:Name="BrowseMxcExecutorButton"
-                                x:Uid="PowerScripts_MxcExecutorBrowse"
-                                VerticalAlignment="Center"
-                                AutomationProperties.AutomationId="PowerScriptsBrowseMxcExecutorButton"
-                                Click="BrowseMxcExecutorButton_Click" />
-                        </StackPanel>
                     </tkcontrols:SettingsCard>
 
                     <InfoBar
@@ -196,32 +176,101 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox
+                            x:Uid="PowerScripts_CatalogueInputFilter"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="PowerScriptsInputFilterComboBox"
+                            SelectedIndex="{x:Bind ViewModel.ScriptInputFilterIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="PowerScripts_FilterAll" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterNone" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterFiles" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterText" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterHtml" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterImage" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterAudio" />
+                            <ComboBoxItem x:Uid="PowerScripts_FilterVideo" />
+                        </ComboBox>
+                        <ComboBox
+                            x:Uid="PowerScripts_CatalogueSort"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="PowerScriptsSortComboBox"
+                            SelectedIndex="{x:Bind ViewModel.ScriptSortIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="PowerScripts_SortNameAscending" />
+                            <ComboBoxItem x:Uid="PowerScripts_SortNameDescending" />
+                            <ComboBoxItem x:Uid="PowerScripts_SortInput" />
+                            <ComboBoxItem x:Uid="PowerScripts_SortOutput" />
+                            <ComboBoxItem x:Uid="PowerScripts_SortRuntime" />
+                        </ComboBox>
+                    </Grid>
+                    <TextBlock
+                        AutomationProperties.AutomationId="PowerScriptsCatalogueCount"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.CatalogueCount, Mode=OneWay}" />
                     <InfoBar
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.HasScripts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                         Message="No PowerScripts found. Pick a scripts folder above (or use the default) containing header-authored scripts or scripts with .tool.json sidecars."
                         Severity="Informational" />
+                    <InfoBar
+                        x:Uid="PowerScripts_CatalogueNoMatches"
+                        AutomationProperties.AutomationId="PowerScriptsCatalogueNoMatches"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasNoMatchingScripts, Mode=OneWay}"
+                        Severity="Informational" />
 
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.Scripts, Mode=OneWay}">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleScripts, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:PowerScriptListItem">
                                 <tkcontrols:SettingsExpander
-                                    Margin="0,2,0,2"
+                                    Margin="0,0,0,8"
+                                    AutomationProperties.AutomationId="{x:Bind CardAutomationId}"
+                                    AutomationProperties.Name="{x:Bind Name}"
                                     Description="{x:Bind Description}"
-                                    Header="{x:Bind Name}"
                                     IsExpanded="False">
-                                    <tkcontrols:SettingsExpander.HeaderIcon>
-                                        <FontIcon Glyph="{x:Bind KindGlyph}" />
-                                    </tkcontrols:SettingsExpander.HeaderIcon>
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind KindDisplay}" />
+                                    <tkcontrols:SettingsExpander.Header>
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid Width="32" Height="32">
+                                                <FontIcon
+                                                    Glyph="&#xE756;"
+                                                    Visibility="{x:Bind views:PowerScriptsPage.InvertBoolToVisibility(HasIcon), Mode=OneWay}" />
+                                                <Image
+                                                    DataContext="{x:Bind}"
+                                                    ImageFailed="ScriptIcon_ImageFailed"
+                                                    Source="{x:Bind IconSourcePath, Mode=OneWay}"
+                                                    Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(HasIcon), Mode=OneWay}" />
+                                            </Grid>
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <TextBlock
+                                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                    Text="{x:Bind Name}"
+                                                    TextWrapping="Wrap" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind CatalogueSummary}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </tkcontrols:SettingsExpander.Header>
                                     <tkcontrols:SettingsExpander.Items>
+                                        <tkcontrols:SettingsCard
+                                            x:Uid="PowerScripts_IconWarning"
+                                            Description="{x:Bind IconWarning, Mode=OneWay}"
+                                            Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(HasIconWarning), Mode=OneWay}" />
                                         <tkcontrols:SettingsCard
                                             ContentAlignment="Right"
                                             Header="Trigger on file types"
-                                            Visibility="{x:Bind IsFileScript, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            Visibility="{x:Bind HasFileInput, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <TextBlock
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"

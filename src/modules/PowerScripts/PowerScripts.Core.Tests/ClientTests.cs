@@ -18,6 +18,7 @@ public class ClientTests
         "description": "Prints the public IP.",
         "runtime": "PowerShell",
         "publisher": "PowerToys samples",
+        "iconPath": "C:\\scripts\\ip\\icon.ico",
         "io": { "input": "none", "output": "text" },
         "capabilities": ["network"],
         "trusted": true,
@@ -73,6 +74,9 @@ public class ClientTests
         Assert.AreEqual("What's My IP", ip.Name);
         Assert.AreEqual("PowerShell", ip.Runtime);
         Assert.AreEqual("PowerToys samples", ip.Publisher);
+        Assert.AreEqual(@"C:\scripts\ip\icon.ico", ip.IconPath);
+        Assert.IsNull(ip.IconWarning);
+        Assert.IsNull(scripts[1].IconPath, "Older Hosts and scripts without icons must remain compatible.");
         Assert.IsTrue(ip.Trusted);
         CollectionAssert.AreEquivalent(new[] { "network" }, ip.Capabilities.ToArray());
         Assert.AreEqual(1, ip.Parameters.Count);

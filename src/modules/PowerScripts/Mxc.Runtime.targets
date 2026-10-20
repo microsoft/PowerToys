@@ -1,0 +1,33 @@
+<Project>
+  <PropertyGroup>
+    <!-- Later releases remove the legacy BaseContainer API required by leastPrivilege on existing hosts. -->
+    <MxcVersion>0.8.0</MxcVersion>
+    <MxcArchiveUrl>https://github.com/microsoft/mxc/releases/download/v0.8.0/mxc-release-binaries.zip</MxcArchiveUrl>
+    <MxcArchiveSha256>5c3a27073ba18eddf97efb4caad0f8b201c40a18d17b70f3a1e3847fb6232e3c</MxcArchiveSha256>
+    <MxcArchitecture Condition="'$(RuntimeIdentifier)' == 'win-arm64' or ('$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64')">arm64</MxcArchitecture>
+    <MxcArchitecture Condition="'$(MxcArchitecture)' == ''">x64</MxcArchitecture>
+    <MxcCacheDirectory>$(MSBuildProjectDirectory)\obj\mxc</MxcCacheDirectory>
+    <MxcRuntimeDirectory>$(MxcCacheDirectory)\$(MxcVersion)\$(MxcArchitecture)</MxcRuntimeDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="$(MxcRuntimeDirectory)\wxc-exec.exe;$(MxcRuntimeDirectory)\plm.exe;$(MxcRuntimeDirectory)\Mxc.spdx.json">
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Mxc.LICENSE.txt">
+      <Link>Mxc.LICENSE.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  <Target Name="RestorePowerScriptsMxc" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(RuntimeIdentifier)' != '' and '$(RuntimeIdentifier)' != 'win-x64' and '$(RuntimeIdentifier)' != 'win-arm64'"
+           Text="PowerScripts MXC supports only win-x64 and win-arm64." />
+    <Error Condition="'$(Platform)' != 'AnyCPU' and '$(Platform)' != 'Any CPU' and '$(Platform)' != 'x64' and '$(Platform)' != 'ARM64'"
+           Text="PowerScripts MXC supports only x64 and ARM64 platforms." />
+    <Error Condition="('$(Platform)' == 'ARM64' and '$(RuntimeIdentifier)' == 'win-x64') or ('$(Platform)' == 'x64' and '$(RuntimeIdentifier)' == 'win-arm64')"
+           Text="The PowerScripts platform and runtime identifier must use the same architecture." />
+    <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)Restore-Mxc.ps1&quot; -Architecture &quot;$(MxcArchitecture)&quot; -CacheDirectory &quot;$(MxcCacheDirectory)&quot;" />
+  </Target>
+</Project>

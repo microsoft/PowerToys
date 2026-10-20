@@ -508,7 +508,7 @@
     <value>Select a PowerScript</value>
   </data>
   <data name="PowerScriptEmptyHint.Text" xml:space="preserve">
-    <value>No PowerScripts found. Enable the PowerScripts module and add a system script.</value>
+    <value>No PowerScripts found. Enable PowerScripts and add a script with no primary input.</value>
   </data>
   <data name="PowerScriptRequiredParameter_Title" xml:space="preserve">
     <value>Required parameter</value>

@@ -55,7 +55,7 @@ public static class MxcProcessRunner
                 UnavailableExitCode,
                 string.Empty,
                 "PowerScripts refused to run this script: MXC is enabled, but wxc-exec.exe is unavailable. " +
-                "Configure mxc.executorPath, set POWERSCRIPTS_MXC_EXECUTOR, place it beside PowerScripts.Host.exe, or add it to PATH.");
+                "The bundled MXC runtime is missing. Repair or reinstall PowerToys, or rebuild PowerScripts.Host.");
         }
 
         launcher ??= ProcessRunner.SecureLauncher;
@@ -166,6 +166,7 @@ public static class MxcProcessRunner
             ["version"] = SchemaVersion,
             ["containerId"] = "powerscripts-" + Guid.NewGuid().ToString("N"),
             ["containment"] = "processcontainer",
+            ["fallback"] = new Dictionary<string, object?> { ["allowDaclMutation"] = false },
             ["process"] = process,
             ["lifecycle"] = new Dictionary<string, object?>
             {

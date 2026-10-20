@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,6 +15,48 @@ namespace ViewModelTests
     {
         private static readonly string[] DisabledNetworkPolicy = { PowerScriptListItem.NetworkPolicy };
         private static readonly string[] UnknownPolicy = { "futurePolicy" };
+
+        [TestMethod]
+        public void CatalogueFiltersByPrimaryInputWithoutChangingScriptInstances()
+        {
+            var scripts = CreateCatalogue();
+            scripts[0].Parameters.Add(new PowerScriptParameterItem { Name = "source", Type = "file", IsRequired = true });
+            var noInput = PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 1);
+            Assert.AreEqual(1, noInput.Count);
+            Assert.AreSame(scripts[0], noInput[0], "Filtering must preserve each script's policy state.");
+            Assert.AreEqual("action", noInput[0].Id);
+            Assert.AreEqual(3, scripts.Length);
+
+            var files = PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 2);
+            Assert.AreEqual("files", files.Single().Id);
+        }
+
+        [DataTestMethod]
+        [DataRow(0, "action", "text", "files")]
+        [DataRow(1, "files", "text", "action")]
+        [DataRow(2, "files", "action", "text")]
+        [DataRow(3, "text", "files", "action")]
+        [DataRow(4, "action", "text", "files")]
+        public void CatalogueSortsBySelectedMetadata(int sortIndex, string first, string second, string third)
+        {
+            var sorted = PowerScriptsViewModel.FilterAndSortScripts(CreateCatalogue(), sortIndex, 0);
+            CollectionAssert.AreEqual(new[] { first, second, third }, sorted.Select(script => script.Id).ToArray());
+        }
+
+        [TestMethod]
+        public void CatalogueCanRecoverFromAnEmptyFilter()
+        {
+            var scripts = CreateCatalogue();
+            Assert.AreEqual(0, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 7).Count);
+            Assert.AreEqual(3, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 0).Count);
+        }
+
+        private static PowerScriptListItem[] CreateCatalogue() => new[]
+        {
+            new PowerScriptListItem { Id = "action", Name = "alpha", Runtime = "PowerShell", Io = new PowerScriptIo { Input = "none", Output = "text" } },
+            new PowerScriptListItem { Id = "files", Name = "Zebra", Runtime = "Python", Io = new PowerScriptIo { Input = "files", Output = "none" } },
+            new PowerScriptListItem { Id = "text", Name = "Bravo", Runtime = "PowerShell", Io = new PowerScriptIo { Input = "text", Output = "html" } },
+        };
 
         [TestMethod]
         public void MxcSafeSettingsDoNotRequireRiskAcceptance()

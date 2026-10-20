@@ -180,9 +180,10 @@ namespace
     {
         std::wstring Id;
         std::wstring Name;
+        std::wstring IconPath;
     };
 
-    // Parses "id\tname" lines into entries.
+    // Accepts legacy "id\tname" and extended "id\tname\ticonPath" rows.
     std::vector<ScriptEntry> ParseMenu(const std::wstring& text)
     {
         std::vector<ScriptEntry> entries;
@@ -210,7 +211,12 @@ namespace
 
             ScriptEntry entry;
             entry.Id = line.substr(0, tab);
-            entry.Name = line.substr(tab + 1);
+            const size_t iconTab = line.find(L'\t', tab + 1);
+            entry.Name = line.substr(tab + 1, iconTab == std::wstring::npos ? std::wstring::npos : iconTab - tab - 1);
+            if (iconTab != std::wstring::npos)
+            {
+                entry.IconPath = line.substr(iconTab + 1);
+            }
             if (!entry.Id.empty())
             {
                 entries.push_back(std::move(entry));
@@ -224,13 +230,17 @@ namespace
 class PowerScriptSubCommand : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IExplorerCommand>
 {
 public:
-    PowerScriptSubCommand(std::wstring id, std::wstring name, std::vector<std::wstring> files) :
-        m_id(std::move(id)), m_name(std::move(name)), m_files(std::move(files))
+    PowerScriptSubCommand(std::wstring id, std::wstring name, std::wstring iconPath, std::vector<std::wstring> files) :
+        m_id(std::move(id)), m_name(std::move(name)), m_iconPath(std::move(iconPath)), m_files(std::move(files))
     {
     }
 
     IFACEMETHODIMP GetTitle(IShellItemArray*, PWSTR* name) override { return SHStrDupW(m_name.c_str(), name); }
-    IFACEMETHODIMP GetIcon(IShellItemArray*, PWSTR* icon) override { *icon = nullptr; return E_NOTIMPL; }
+    IFACEMETHODIMP GetIcon(IShellItemArray*, PWSTR* icon) override
+    {
+        *icon = nullptr;
+        return m_iconPath.empty() ? E_NOTIMPL : SHStrDupW(m_iconPath.c_str(), icon);
+    }
     IFACEMETHODIMP GetToolTip(IShellItemArray*, PWSTR* tip) override { *tip = nullptr; return E_NOTIMPL; }
     IFACEMETHODIMP GetCanonicalName(GUID* guid) override { *guid = GUID_NULL; return S_OK; }
     IFACEMETHODIMP GetState(IShellItemArray*, BOOL, EXPCMDSTATE* state) override { *state = ECS_ENABLED; return S_OK; }
@@ -252,6 +262,7 @@ public:
 private:
     std::wstring m_id;
     std::wstring m_name;
+    std::wstring m_iconPath;
     std::vector<std::wstring> m_files;
 };
 
@@ -320,7 +331,7 @@ public:
 
         if (!m_files.empty())
         {
-            const std::wstring output = RunHostCapture(L"shell-menu --files" + BuildFilesArguments(m_files));
+            const std::wstring output = RunHostCapture(L"shell-menu --icons --files" + BuildFilesArguments(m_files));
             m_entries = ParseMenu(output);
         }
 
@@ -337,7 +348,7 @@ public:
         std::vector<ComPtr<IExplorerCommand>> commands;
         for (const auto& entry : m_entries)
         {
-            commands.push_back(Make<PowerScriptSubCommand>(entry.Id, entry.Name, m_files));
+            commands.push_back(Make<PowerScriptSubCommand>(entry.Id, entry.Name, entry.IconPath, m_files));
         }
 
         auto enumObject = Make<PowerScriptEnum>(std::move(commands));
