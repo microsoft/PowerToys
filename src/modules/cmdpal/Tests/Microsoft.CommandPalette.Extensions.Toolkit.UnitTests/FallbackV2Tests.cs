@@ -34,7 +34,7 @@ public class FallbackV2Tests
     {
         var fallback = new PassiveFallbackCommandItem("Search", "sample.search")
         {
-            Title = "Search",
+            Name = "Search",
             TitleTemplate = "Search for {query}",
         };
 
@@ -42,8 +42,65 @@ public class FallbackV2Tests
 
         Assert.AreEqual(FallbackCommandMode.Passive, fallback.Mode);
         Assert.AreEqual("Search", fallback.Title);
+        Assert.AreEqual("Search", fallback.Name);
         Assert.AreEqual("Search", fallback.Command?.Name);
         Assert.IsNull(fallback.QueryHandler);
+    }
+
+    [TestMethod]
+    public void FallbackCommandItem_DefaultsToActiveV2Fallback()
+    {
+        var command = new NoOpCommand { Name = "Run" };
+        var fallback = new FallbackCommandItem(command, "Runner", "sample.run");
+
+        Assert.IsInstanceOfType<IFallbackCommandItem3>(fallback);
+        Assert.AreEqual(FallbackCommandMode.Active, fallback.Mode);
+        Assert.AreEqual("Run", fallback.Name);
+        Assert.AreSame(command, fallback.CreateCommand(new FallbackCommandInvocationArgs("query", "query-id")));
+
+        var v3 = (IFallbackCommandItem3)fallback;
+        Assert.IsFalse(v3.SuggestedQueryDelayMilliseconds.HasValue);
+        Assert.IsFalse(v3.SuggestedMinQueryLength.HasValue);
+        Assert.IsNull(v3.QueryHandler);
+    }
+
+    [TestMethod]
+    public void FallbackCommandItem_NameFollowsCurrentCommand()
+    {
+        var command = new NoOpCommand { Name = "Run" };
+        var fallback = new FallbackCommandItem(command, "Runner", "sample.run");
+        var nameChanges = 0;
+        fallback.PropChanged += (sender, args) =>
+        {
+            if (args.PropertyName == nameof(FallbackCommandItem.Name))
+            {
+                nameChanges++;
+            }
+        };
+
+        command.Name = string.Empty;
+        Assert.AreEqual(string.Empty, fallback.Name);
+
+        var replacement = new NoOpCommand { Name = "Open" };
+        fallback.Command = replacement;
+        Assert.AreEqual("Open", fallback.Name);
+        Assert.AreSame(replacement, fallback.CreateCommand(new FallbackCommandInvocationArgs("query", "query-id")));
+        Assert.AreEqual(2, nameChanges);
+    }
+
+    [TestMethod]
+    public void FallbackCommandItem_ExplicitNameIsKept()
+    {
+        var command = new NoOpCommand { Name = "Run" };
+        var fallback = new FallbackCommandItem(command, "Runner", "sample.run")
+        {
+            Name = "Run it",
+        };
+
+        Assert.AreEqual("Run it", command.Name);
+
+        fallback.Command = new NoOpCommand { Name = "Open" };
+        Assert.AreEqual("Run it", fallback.Name);
     }
 
     [TestMethod]

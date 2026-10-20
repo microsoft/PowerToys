@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-internal sealed partial class SampleActiveFallback : FallbackCommandItem3
+internal sealed partial class SampleActiveFallback : FallbackCommandItem
 {
     private string _query = string.Empty;
 
