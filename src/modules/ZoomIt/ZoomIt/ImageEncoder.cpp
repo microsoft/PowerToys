@@ -21,7 +21,7 @@
 // Looks up the GDI+ encoder CLSID for the given MIME type.
 //
 //----------------------------------------------------------------------------
-static int GetEncoderClsid( const WCHAR* format, CLSID* pClsid )
+int GetEncoderClsid( const WCHAR* format, CLSID* pClsid )
 {
     using namespace Gdiplus;
 

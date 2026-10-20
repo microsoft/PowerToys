@@ -49,6 +49,11 @@ namespace ColorPicker.ViewModels
                 }
 
                 ColorsHistory.Insert(0, (Color)newColor);
+                while (ColorsHistory.Count > _userSettings.ColorHistoryLimit.Value)
+                {
+                    ColorsHistory.RemoveAt(ColorsHistory.Count - 1);
+                }
+
                 SelectedColorIndex = 0;
             });
             ColorsHistory.CollectionChanged += ColorsHistory_CollectionChanged;

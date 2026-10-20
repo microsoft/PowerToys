@@ -261,7 +261,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             return;
         }
 
-        // UpdateSettings always writes the file, so skip it when every fallback is already known.
+        // Skip the update when every fallback and the provider connection are already known.
         var current = settingsService.Settings;
         if (ReferenceEquals(current.GetProviderSettings(this).Model, current))
         {
@@ -485,6 +485,18 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
 
         return null;
+    }
+
+    public ICommandItem? ResolveCommandItem(string commandId)
+    {
+        if (!IsActive)
+        {
+            return null;
+        }
+
+        // Top-level commands also support host-generated IDs, without ICommandProvider4.
+        return LookupTopLevelCommand(commandId)?.ItemViewModel.Model.Unsafe
+            ?? (_commandProvider.Unsafe as ICommandProvider4)?.GetCommandItem(commandId);
     }
 
     private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, SettingsModel settings)

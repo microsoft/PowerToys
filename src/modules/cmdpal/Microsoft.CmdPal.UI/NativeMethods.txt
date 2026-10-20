@@ -51,6 +51,7 @@ SetBrushOrgEx
 GetDIBits
 
 Shell_NotifyIcon
+Shell_NotifyIconGetRect
 LoadIcon
 WM_USER
 WM_WINDOWPOSCHANGING
@@ -81,6 +82,11 @@ SetWindowsHookEx
 UnhookWindowsHookEx
 CallNextHookEx
 GetModuleHandle
+GetAsyncKeyState
+KBDLLHOOKSTRUCT
+SendInput
+WM_KEYDOWN
+WM_SYSKEYDOWN
 
 GetWindowLong
 SetWindowLong

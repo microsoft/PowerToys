@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
@@ -73,9 +73,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
-    private readonly KeyboardListener _keyboardListener;
-    private readonly Microsoft.UI.Dispatching.DispatcherQueueController _keyboardDispatcher;
-    private readonly Task _keyboardStartTask;
+    private readonly GlobalKeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly CopilotKeyRegistration? _copilotKeyRegistration;
@@ -190,20 +188,10 @@ public sealed partial class MainWindow : WindowEx,
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
-        _keyboardListener = new KeyboardListener();
-        var uiDispatcher = DispatcherQueue;
-        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(commandId =>
-        {
-            uiDispatcher.TryEnqueue(() =>
-            {
-                if (!_keyboardStopped)
-                {
-                    HandleSummon(commandId);
-                }
-            });
-        }));
-        _keyboardDispatcher = Microsoft.UI.Dispatching.DispatcherQueueController.CreateOnDedicatedThread();
-        _keyboardStartTask = StartKeyboardListenerAsync();
+        _keyboardListener = new GlobalKeyboardListener(
+            HandleSummon,
+            static error => Logger.LogError("Failed when invoking global keyboard hook", error));
+        StartKeyboardListener();
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
         var shellIconAssociationsChangedMessage = PInvoke.RegisterWindowMessage(
@@ -1298,6 +1286,7 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        _keyboardListener.Dispose();
         _copilotKeyRegistration?.Dispose();
         SaveWindowPosition();
 
@@ -1317,7 +1306,6 @@ public sealed partial class MainWindow : WindowEx,
         (RootElement.MainContent as ShellPage)?.Dispose();
         DisposeAcrylic();
 
-        _keyboardListener.Stop();
         Environment.Exit(0);
     }
 
@@ -1354,7 +1342,7 @@ public sealed partial class MainWindow : WindowEx,
             _isRestarting = false;
 
             // A successful restart terminates this process. Restore services if it returns or throws.
-            await StartKeyboardListenerAsync();
+            StartKeyboardListener();
             trayIcon.SetupTrayIcon();
             WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>();
         }
@@ -1745,6 +1733,19 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
             _hotkeys.RemoveAt(_hotkeys.Count - 1);
         }
+    }
+
+    private void StartKeyboardListener()
+    {
+        if (_keyboardListener.Start(out var error))
+        {
+            return;
+        }
+
+        Logger.LogError("Failed to register global keyboard hook", error);
+        var errorCode = error is Win32Exception nativeError ? nativeError.NativeErrorCode : error.HResult;
+        var message = FormattableString.Invariant($"SetWindowsHookEx: {error.Message} ({errorCode})");
+        _ = PInvoke.MessageBox(HWND.Null, message, RS_.GetString("AppName"), MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
     }
 
     private void SetupHotkey(SettingsModel settings)
@@ -2152,6 +2153,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _keyboardListener.Dispose();
         _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
         ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
         _accessKeyMode.Dispose();

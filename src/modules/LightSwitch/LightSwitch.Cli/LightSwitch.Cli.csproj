@@ -16,6 +16,8 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishAot>true</PublishAot>
+    <!-- NativeAOT disables EventSource by default. -->
+    <EventSourceSupport>true</EventSourceSupport>
     <PublishSingleFile>false</PublishSingleFile>
     <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
     <InvariantGlobalization>false</InvariantGlobalization>
@@ -27,5 +29,6 @@
     <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
     <PackageReference Include="System.CommandLine" />
     <ProjectReference Include="$(RepoRoot)src\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>
 </Project>
