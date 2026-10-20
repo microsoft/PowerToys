@@ -10,4 +10,5 @@
   <ItemGroup>
     <ProjectReference Include="..\PowerScripts.Core\PowerScripts.Core.csproj" />
   </ItemGroup>
+  <Import Project="..\Mxc.Runtime.targets" />
 </Project>

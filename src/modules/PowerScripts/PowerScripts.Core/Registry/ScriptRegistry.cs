@@ -90,6 +90,16 @@ public sealed class ScriptRegistry
                 return;
             }
 
+            try
+            {
+                manifest.IconPath = ResolveIcon(manifest);
+            }
+            catch (Exception ex) when (ex is ArgumentException or IOException or InvalidDataException or UnauthorizedAccessException or NotSupportedException)
+            {
+                manifest.IconWarning = $"Script icon unavailable: {ex.Message}";
+                _errors.Add(new ScriptLoadError(context, manifest.IconWarning));
+            }
+
             _scripts.Add(manifest);
         }
 
@@ -155,6 +165,66 @@ public sealed class ScriptRegistry
 
     public PowerScriptManifest? Get(string id) =>
         _scripts.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+
+    private static string? ResolveIcon(PowerScriptManifest manifest)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.Icon))
+        {
+            return null;
+        }
+
+        if (Path.IsPathRooted(manifest.Icon) ||
+            !string.Equals(Path.GetExtension(manifest.Icon), ".ico", StringComparison.OrdinalIgnoreCase) ||
+            manifest.Icon.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(part => part.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0))
+        {
+            throw new InvalidDataException("Use a package-relative .ico file, not an absolute path or URL.");
+        }
+
+        var folder = Path.GetFullPath(manifest.FolderPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var path = Path.GetFullPath(Path.Combine(folder, manifest.Icon));
+        if (!path.StartsWith(folder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("The icon must remain inside the script package.");
+        }
+
+        FileSystemInfo current = new FileInfo(path);
+        while (true)
+        {
+            if (!current.Exists)
+            {
+                throw new FileNotFoundException("The icon or its parent directory is missing or inaccessible.", current.FullName);
+            }
+
+            if ((current.Attributes & FileAttributes.ReparsePoint) != 0)
+            {
+                throw new InvalidDataException("Script icons cannot use symbolic links or junctions.");
+            }
+
+            if (string.Equals(current.FullName, folder, StringComparison.OrdinalIgnoreCase))
+            {
+                break;
+            }
+
+            current = new DirectoryInfo(Path.GetDirectoryName(current.FullName)!);
+        }
+
+        using var stream = File.OpenRead(path);
+        if (stream.Length > 1024 * 1024)
+        {
+            throw new InvalidDataException("Script icons must not exceed 1 MiB.");
+        }
+
+        Span<byte> header = stackalloc byte[6];
+        stream.ReadExactly(header);
+        if (header[0] != 0 || header[1] != 0 || header[2] != 1 || header[3] != 0 ||
+            (header[4] == 0 && header[5] == 0))
+        {
+            throw new InvalidDataException("The file does not contain an ICO header.");
+        }
+
+        return path;
+    }
 
     /// <summary>Scripts with no file input (resolved input shape is not Files) — candidates for Keyboard Manager / Command Palette.</summary>
     public IEnumerable<PowerScriptManifest> SystemScripts =>

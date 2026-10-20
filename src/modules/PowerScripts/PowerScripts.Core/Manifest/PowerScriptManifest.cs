@@ -149,8 +149,15 @@ public sealed class PowerScriptManifest
 
     public string Description { get; set; } = string.Empty;
 
-    /// <summary>Optional icon file name, relative to the script folder.</summary>
+    /// <summary>Optional .ico path relative to the script folder.</summary>
     public string? Icon { get; set; }
+
+    /// <summary>Validated package-local icon path for consumers; null when absent or invalid.</summary>
+    [JsonIgnore]
+    public string? IconPath { get; internal set; }
+
+    [JsonIgnore]
+    public string? IconWarning { get; internal set; }
 
     /// <summary>Optional author/publisher, shown in the trust prompt (e.g. "contoso" or a GitHub user).</summary>
     public string? Publisher { get; set; }

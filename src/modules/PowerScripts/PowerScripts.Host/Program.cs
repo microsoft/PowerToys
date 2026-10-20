@@ -123,6 +123,8 @@ internal static class Program
                     s.Publisher,
                     s.Version,
                     s.Source,
+                    s.IconPath,
+                    s.IconWarning,
                     io = new
                     {
                         input = ScriptIo.ToToken(ioInput),
@@ -551,7 +553,8 @@ internal static class Program
 
     /// <summary>
     /// Emits the file scripts that match a right-clicked selection as tab-separated
-    /// <c>&lt;id&gt;\t&lt;name&gt;</c> lines (one per script). This is the machine-readable feed the
+    /// <c>&lt;id&gt;\t&lt;name&gt;</c> lines (one per script), with an optional icon-path column when
+    /// <c>--icons</c> is supplied. This is the machine-readable feed the
     /// Windows 11 modern context-menu handler (IExplorerCommand) consumes to build its submenu; a
     /// line-based format keeps the native handler free of a JSON parser.
     /// </summary>
@@ -571,7 +574,9 @@ internal static class Program
 
         foreach (var script in registry.FileScriptsForSelection(files))
         {
-            Console.WriteLine($"{script.Id}\t{script.Name}");
+            var name = script.Name.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+            var row = $"{script.Id}\t{name}";
+            Console.WriteLine(options.ContainsKey("icons") ? $"{row}\t{script.IconPath}" : row);
         }
 
         return 0;
@@ -667,7 +672,7 @@ internal static class Program
         Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
-        Console.WriteLine("  shell-menu --files <f1> <f2> ...    (tab-separated id/name of matching file scripts)");
+        Console.WriteLine("  shell-menu [--icons] --files <f1> <f2> ... (tab-separated id/name, optional icon path)");
         Console.WriteLine("  shell-install [--root <dir>]        (register the Explorer right-click submenu)");
         Console.WriteLine("  shell-uninstall [--root <dir>]      (remove the Explorer right-click submenu)");
         return 0;

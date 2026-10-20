@@ -59,6 +59,71 @@ public class ScriptRegistryTests
     }
 
     [TestMethod]
+    public void Load_ResolvesPackageRelativeIcon()
+    {
+        Directory.CreateDirectory(Path.Combine(_root, "assets"));
+        File.WriteAllBytes(Path.Combine(_root, "assets", "script icon.ico"), Convert.FromBase64String(
+            "AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA=="));
+        WriteScript("icon", """
+            # @powerscript.id icon
+            # @powerscript.name With icon
+            # @powerscript.icon assets\script icon.ico
+            """);
+
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+        Assert.AreEqual(Path.Combine(_root, "assets", "script icon.ico"), registry.Get("icon")!.IconPath);
+        Assert.AreEqual(0, registry.Errors.Count);
+    }
+
+    [DataTestMethod]
+    [DataRow(1048576, true)]
+    [DataRow(1048577, false)]
+    public void Load_EnforcesIconSizeLimitWithoutDroppingTheScript(int size, bool accepted)
+    {
+        var bytes = new byte[size];
+        Convert.FromBase64String(
+            "AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA==")
+            .CopyTo(bytes, 0);
+        File.WriteAllBytes(Path.Combine(_root, "script.ico"), bytes);
+        WriteScript("icon", """
+            # @powerscript.id icon
+            # @powerscript.name With icon
+            # @powerscript.icon script.ico
+            """);
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+        Assert.AreEqual(1, registry.Scripts.Count);
+        Assert.AreEqual(accepted, registry.Get("icon")!.IconPath is not null);
+        Assert.AreEqual(accepted ? 0 : 1, registry.Errors.Count);
+    }
+
+    [DataTestMethod]
+    [DataRow(@"..\outside.ico")]
+    [DataRow(@"C:\outside.ico")]
+    [DataRow(@"\\server\share\icon.ico")]
+    [DataRow("https://example.com/icon.ico")]
+    [DataRow("missing.ico")]
+    [DataRow("script.png")]
+    [DataRow("invalid.ico")]
+    public void Load_InvalidOptionalIconKeepsScriptAndSurfacesWarning(string icon)
+    {
+        File.WriteAllText(Path.Combine(_root, "invalid.ico"), "not an icon");
+        WriteScript("icon", $"""
+            # @powerscript.id icon
+            # @powerscript.name With invalid icon
+            # @powerscript.icon {icon}
+            """);
+
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+        Assert.AreEqual(1, registry.Scripts.Count);
+        Assert.IsNull(registry.Get("icon")!.IconPath);
+        Assert.IsFalse(string.IsNullOrEmpty(registry.Get("icon")!.IconWarning));
+        Assert.AreEqual(1, registry.Errors.Count);
+    }
+
+    [TestMethod]
     public void Load_Allows_IdDecoupledFromFileName()
     {
         // The file name differs from the id; the script is still loaded and keyed by its id.

@@ -38,6 +38,14 @@ shapes and are not aliases for `.jpg`, `.mp3`, or `.mp4` file extensions.
 
 ## Prefer the C# client
 
+The PowerToys installer deploys the shared, self-contained Host and its private, pinned MXC runtime
+under the installation's `PowerScripts` directory. Consumers must not download MXC, expose an
+executor-path setting, or perform privileged host preparation. Local Host builds restore the same
+architecture-matched dependency automatically; keep the complete build/publish output together
+(including `wxc-exec.exe`, `plm.exe`, the license, and SPDX manifest). A missing dependency is an
+installation/build failure, not permission to bypass isolation. MXC is preview software, not a
+security boundary; see the README for platform limits and the compatibility pin.
+
 .NET consumers should reference `PowerScripts.Client` and use `PowerScriptsClient`. The client
 encapsulates Host discovery, safe argument construction, process invocation, JSON parsing, and
 timeouts while keeping the consumer decoupled from `PowerScripts.Core`.
@@ -72,6 +80,24 @@ PowerScripts.Host.exe transform <id>
 Use structured process argument APIs where available. Do not concatenate untrusted IDs, paths, or
 parameter values into a command line.
 
+## Script presentation and icons
+
+Present scripts by name and resolved input/output contract, not a separate "System" or "File"
+category. For example, show `None → Text` or `Files → None`; `none` refers to primary input and
+does not imply that there are no named parameters to configure.
+
+Authors may set `@powerscript.icon assets\script.ico` or
+`"x-powerscript": { "icon": "assets\\script.ico" }`. The optional icon is a package-relative ICO,
+limited to 1 MiB. Absolute paths, URLs, paths escaping the package, and symbolic links/junctions
+are rejected. A missing or invalid optional icon does not remove the script: the Host reports
+`iconPath: null` and an `iconWarning`.
+
+`list --json` and `PowerScriptInfo.IconPath` expose the validated absolute path. Display it when
+appropriate, use a default script icon when absent or undecodable, and do not execute or fetch icon
+metadata. Consumers must tolerate missing icon fields from older Hosts. Explorer requests
+`shell-menu --icons --files ...`, which adds a third tab-separated icon-path column; without
+`--icons`, the existing two-column id/name protocol is unchanged.
+
 ## Parameters
 
 The catalogue exposes `string`, `int`, `bool`, `choice`, and `file` parameters, including required
@@ -90,6 +116,12 @@ transport: Base64-encode UTF-8 `name + NUL + value` and pass one encoded argumen
 
 A scalar `file` parameter is consumer-selected auxiliary input. It does not make the script a
 primary `files` script and does not make it eligible for Explorer discovery.
+
+Consumers always supply Windows paths for file-picker parameters, even when Python uses WSL.
+After validation, the WSL runtime translates declared `file` parameters into `/mnt/<drive>/...`
+paths in a separate payload; ordinary strings and the original Windows security context are
+unchanged. This uses standard WSL drive mounts. UNC/device paths are explicitly unsupported for
+scalar file parameters in WSL.
 
 ## Trust and automatic invocation
 

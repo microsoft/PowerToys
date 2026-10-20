@@ -200,6 +200,16 @@ public sealed class PythonRuntime
         string scriptPath,
         PythonTransformInput input)
     {
+        Dictionary<string, string>? wslParameters;
+        try
+        {
+            wslParameters = TranslateWslFileParameters(manifest, input.Params);
+        }
+        catch (NotSupportedException ex)
+        {
+            return new PythonTransformResult { ExitCode = 2, StdErr = ex.Message };
+        }
+
         // Translate the runner + script + any input paths to /mnt/... so the Linux Python can read them.
         var wslInput = new PythonTransformInput
         {
@@ -209,7 +219,7 @@ public sealed class PythonRuntime
             AudioPath = ToWslPath(input.AudioPath),
             VideoPath = ToWslPath(input.VideoPath),
             FilePaths = input.FilePaths?.Select(p => ToWslPath(p)!).ToList(),
-            Params = input.Params,
+            Params = wslParameters,
             Entry = input.Entry,
             InputFormat = input.InputFormat,
         };
@@ -378,6 +388,38 @@ public sealed class PythonRuntime
         }
 
         return false;
+    }
+
+    internal static Dictionary<string, string>? TranslateWslFileParameters(
+        PowerScriptManifest manifest,
+        IReadOnlyDictionary<string, string>? parameters)
+    {
+        if (parameters is null)
+        {
+            return null;
+        }
+
+        var translated = new Dictionary<string, string>(parameters, StringComparer.OrdinalIgnoreCase);
+        foreach (var parameter in manifest.Parameters)
+        {
+            if (!string.Equals(parameter.Type, ScriptParameter.ParameterTypeFile, StringComparison.OrdinalIgnoreCase) ||
+                !translated.TryGetValue(parameter.Name, out var value) ||
+                string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            var fullPath = Path.GetFullPath(value);
+            if (fullPath.Length < 3 || !char.IsAsciiLetter(fullPath[0]) || fullPath[1] != ':')
+            {
+                throw new NotSupportedException(
+                    $"WSL file parameter '{parameter.Name}' requires a local drive path; UNC and device paths are not supported.");
+            }
+
+            translated[parameter.Name] = ToWslPath(fullPath)!;
+        }
+
+        return translated;
     }
 
     /// <summary>Converts a Windows path (e.g. <c>C:\a\b</c>) to a WSL path (<c>/mnt/c/a/b</c>).</summary>

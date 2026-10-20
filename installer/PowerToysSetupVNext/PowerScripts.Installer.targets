@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <PowerScriptsRuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</PowerScriptsRuntimeIdentifier>
+    <PowerScriptsRuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</PowerScriptsRuntimeIdentifier>
+    <PowerScriptsPublishDirectory>$(MSBuildThisFileDirectory)..\..\$(Platform)\$(Configuration)\PowerScripts\</PowerScriptsPublishDirectory>
+  </PropertyGroup>
+  <Target Name="PublishPowerScriptsForInstaller" BeforeTargets="CoreCompile">
+    <Error Condition="'$(PowerScriptsRuntimeIdentifier)' == ''" Text="PowerScripts packaging requires x64 or ARM64." />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\..\src\modules\PowerScripts\PowerScripts.Host\PowerScripts.Host.csproj"
+             Targets="Restore;Publish"
+             Properties="Platform=$(Platform);PlatformTarget=AnyCPU;Configuration=$(Configuration);RuntimeIdentifier=$(PowerScriptsRuntimeIdentifier);SelfContained=true;MSBuildProjectExtensionsPath=obj\installer\$(Platform)\;IntermediateOutputPath=obj\installer\$(Platform)\$(Configuration)\;OutputPath=bin\installer\$(Platform)\$(Configuration)\;PublishDir=$(PowerScriptsPublishDirectory)" />
+    <Error Condition="!Exists('$(PowerScriptsPublishDirectory)wxc-exec.exe') or !Exists('$(PowerScriptsPublishDirectory)plm.exe')"
+           Text="The PowerScripts installer payload is missing the bundled MXC runtime." />
+  </Target>
+</Project>

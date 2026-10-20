@@ -125,6 +125,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Peek.wxs" />
     <Compile Include="PowerRename.wxs" />
     <Compile Include="PowerDisplay.wxs" />
+    <Compile Include="PowerScripts.wxs" />
     <Compile Include="DscResources.wxs" />
     <Compile Include="RegistryPreview.wxs" />
     <Compile Include="Run.wxs" />
@@ -168,6 +169,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
   </Target>
+  <Import Project="PowerScripts.Installer.targets" />
   <!-- Prevents NU1503 -->
   <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
     <ItemGroup>

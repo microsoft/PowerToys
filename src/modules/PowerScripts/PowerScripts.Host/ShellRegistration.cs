@@ -87,6 +87,11 @@ internal static class ShellRegistration
             {
                 using var item = subShell.CreateSubKey(script.Id)!;
                 item.SetValue("MUIVerb", script.Name);
+                if (script.IconPath is not null)
+                {
+                    item.SetValue("Icon", $"\"{script.IconPath}\",0");
+                }
+
                 using var command = item.CreateSubKey("command")!;
                 command.SetValue(null, $"\"{hostExePath}\" run {script.Id} --files \"%1\"");
             }
