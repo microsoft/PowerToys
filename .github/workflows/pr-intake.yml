@@ -8,12 +8,12 @@
 #
 # This workflow does not run any code from the pull request head. The Node
 # script reads all pull request data through the GitHub API, so the trusted
-# default branch is checked out only to run the script itself. 3rd-party
+# base commit is checked out only to run the script itself. 3rd-party
 # actions are pinned to a commit hash per Microsoft's security guidelines.
 name: PR intake
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - edited
@@ -34,11 +34,13 @@ concurrency:
 jobs:
   pr-intake:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout trusted workflow source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
       - name: Set up Node.js

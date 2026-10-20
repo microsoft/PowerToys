@@ -3,7 +3,7 @@
 name: Telemetry PR Check
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
     inputs:
@@ -17,19 +17,23 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: telemetry-pr-check-${{ github.event.pull_request.number }}
+  group: telemetry-pr-check-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: true
 
 jobs:
   detect-telemetry-events:
-    if: ${{ github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
+          persist-credentials: false
 
-      - name: Detect telemetry event changes and comment PR
+      - name: Analyze telemetry changes and report guidance
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: node .github/scripts/telemetry-pr-check.js

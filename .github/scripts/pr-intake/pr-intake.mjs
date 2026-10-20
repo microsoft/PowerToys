@@ -832,6 +832,32 @@ export async function runPullRequestIntake({ api, event }) {
     api,
     pullNumber,
   );
+  const repository = event.repository.full_name;
+  if (pullRequest.base?.repo?.full_name !== repository) {
+    throw new Error('Pull request base repository does not match the workflow repository');
+  }
+  const matchesIdentity = (current) =>
+    current.head?.sha === pullRequest.head?.sha
+    && current.base?.sha === pullRequest.base?.sha
+    && current.head?.repo?.full_name === pullRequest.head?.repo?.full_name
+    && current.base?.repo?.full_name === repository
+    && current.draft === pullRequest.draft
+    && current.state !== 'closed';
+  if (!pullRequest.head?.sha || !pullRequest.base?.sha
+    || pullRequest.state === 'closed'
+    || (event.pull_request?.head?.sha
+      && event.pull_request.head.sha !== pullRequest.head.sha)
+    || (event.pull_request?.base?.sha
+      && event.pull_request.base.sha !== pullRequest.base.sha)) {
+    throw new Error('Pull request head/base or readiness changed; rerun intake');
+  }
+  const canWrite = pullRequest.head?.repo?.full_name === repository;
+  // Recheck immediately before writes, never probe fork permissions by writing.
+  const guardWrites = async () => {
+    if (!canWrite || !matchesIdentity(await api.getPullRequest(pullNumber))) {
+      throw new Error('Pull request identity changed; refusing mutations');
+    }
+  };
   const issueNumber = pullNumber;
 
   const issue = await api.getIssue(issueNumber);
@@ -849,11 +875,12 @@ export async function runPullRequestIntake({ api, event }) {
         LEGACY_READY_FOR_REVIEW_LABEL,
       ],
     );
-    await syncLabelChanges(api, issueNumber, labelPlan);
-    const deletedCanonicalCommentIds = await deleteCanonicalComments({
-      api,
-      issueNumber,
-    });
+    let deletedCanonicalCommentIds = [];
+    if (canWrite) {
+      await guardWrites();
+      await syncLabelChanges(api, issueNumber, labelPlan);
+      deletedCanonicalCommentIds = await deleteCanonicalComments({ api, issueNumber });
+    }
     return {
       issueNumber,
       skippedDraft: true,
@@ -861,6 +888,10 @@ export async function runPullRequestIntake({ api, event }) {
       pathProductLabels,
       labelPlan,
       deletedCanonicalCommentIds,
+      canWrite,
+      failed: false,
+      requiredActions: [],
+      recommendations: ['Draft PR: readiness checks skipped.'],
     };
   }
 
@@ -905,7 +936,31 @@ export async function runPullRequestIntake({ api, event }) {
     ],
   );
 
-  await syncLabelChanges(api, issueNumber, labelPlan);
+  if (!matchesIdentity(await api.getPullRequest(pullNumber))) {
+    throw new Error('Pull request changed during analysis; rerun intake');
+  }
+  // Product labels are additive suggestions, not new mandatory policy.
+  // Missing automation-owned labels are guidance, not new fork prerequisites.
+  const requiredActions = [...report.authorActions];
+  if (!mergeabilityKnown) {
+    requiredActions.push('Mergeability is not available yet; rerun intake once GitHub has computed it.');
+  }
+  const recommendations = [...report.recommendations];
+  if (!canWrite) {
+    for (const label of labelPlan.add) {
+      recommendations.push(`Maintainer action: add the suggested intake label "${label}" if appropriate.`);
+    }
+    for (const label of labelPlan.remove) {
+      const action = `Maintainer action: remove the stale intake lifecycle label "${label}".`;
+      // The existing resource-management policy closes PRs carrying this label
+      // after seven inactive days, even if the underlying findings are resolved.
+      if (label === NEEDS_AUTHOR_FEEDBACK_LABEL) requiredActions.push(action);
+      else recommendations.push(action);
+    }
+  } else {
+    await guardWrites();
+    await syncLabelChanges(api, issueNumber, labelPlan);
+  }
 
   // Only surface a comment when there is something for the author to act on or
   // consider. When a previously flagged PR becomes clean we replace the stale
@@ -918,14 +973,16 @@ export async function runPullRequestIntake({ api, event }) {
     comment: null,
     deletedExtraComments: [],
   };
-  if (hasRemarks) {
+  if (canWrite && hasRemarks) {
+    await guardWrites();
     commentResult = await upsertCanonicalComment({
       api,
       issueNumber,
       body: renderIntakeComment(report, feedbackSince),
       comments,
     });
-  } else if (canonical) {
+  } else if (canWrite && canonical) {
+    await guardWrites();
     commentResult = await upsertCanonicalComment({
       api,
       issueNumber,
@@ -954,7 +1011,25 @@ export async function runPullRequestIntake({ api, event }) {
     needsAuthorFeedback: report.needsAuthorFeedback,
     feedbackSince,
     readyForReview: report.readyForReview,
+    canWrite,
+    failed: requiredActions.length > 0,
+    requiredActions,
+    recommendations,
   };
+}
+
+export function renderIntakeSummary(result) {
+  return [
+    '## PR intake',
+    `Mode: ${result.canWrite ? 'same-repository' : 'read-only; no mutations attempted'}.`,
+    result.skippedDraft ? 'Draft PR: readiness checks skipped.' : `Result: ${result.failed ? 'FAIL — required action remains' : 'PASS'}.`,
+    '### Required actions',
+    ...(result.requiredActions.length ? result.requiredActions.map((action) => `- ${action}`) : ['- None.']),
+    '### Information',
+    ...result.recommendations.map((action) => `- ${action}`),
+    `Product label suggestions: ${result.pathProductLabels.join(', ') || 'none'} (not blocking).`,
+    '',
+  ].join('\n');
 }
 
 export class GitHubApi {
@@ -983,6 +1058,7 @@ export class GitHubApi {
       `${this.apiBaseUrl}/repos/${this.owner}/${this.repo}${route}`,
       {
         method,
+        signal: AbortSignal.timeout(30_000),
         headers: {
           Accept: 'application/vnd.github+json',
           Authorization: `Bearer ${this.token}`,
@@ -1062,6 +1138,9 @@ async function main() {
     event?.repository?.full_name ?? process.env.GITHUB_REPOSITORY,
     200,
   );
+  if (process.env.GITHUB_REPOSITORY && process.env.GITHUB_REPOSITORY !== repository) {
+    throw new Error('Event repository does not match GITHUB_REPOSITORY');
+  }
   const [owner, repo] = repository.split('/');
   if (!owner || !repo) {
     throw new Error('Unable to determine the repository owner and name');
@@ -1075,12 +1154,22 @@ async function main() {
 
   const result = await runPullRequestIntake({ api, event });
   console.log(JSON.stringify(result, null, 2));
+  const summary = renderIntakeSummary(result);
+  console.log(summary);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+  }
+  if (result.failed) process.exitCode = 1;
 }
 
 const ENTRYPOINT = fileURLToPath(import.meta.url);
 if (process.argv[1] && path.resolve(process.argv[1]) === ENTRYPOINT) {
-  main().catch((error) => {
+  main().catch(async (error) => {
     console.error(error instanceof Error ? error.stack : String(error));
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      await fs.appendFile(process.env.GITHUB_STEP_SUMMARY,
+        '## PR intake\nFAIL: Intake could not complete. See the supporting logs and rerun after resolving the error.\n');
+    }
     process.exitCode = 1;
   });
 }
