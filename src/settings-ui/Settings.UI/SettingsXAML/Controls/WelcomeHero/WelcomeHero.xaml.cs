@@ -246,6 +246,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             foreach (var target in RevealTargets)
             {
+                // Static playback or an early unload may skip RevealContent, which normally enables Translation.
+                ElementCompositionPreview.SetIsTranslationEnabled(target, true);
                 var visual = ElementCompositionPreview.GetElementVisual(target);
                 visual.StopAnimation("Opacity");
                 visual.StopAnimation("Translation");
