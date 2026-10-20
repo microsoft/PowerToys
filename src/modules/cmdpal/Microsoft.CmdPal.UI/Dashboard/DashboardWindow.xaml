@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="Microsoft.CmdPal.UI.Dashboard.DashboardWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="Root"
+        Opacity="0"
+        RequestedTheme="Dark">
+        <Grid.Resources>
+            <Storyboard x:Name="FadeInStoryboard">
+                <DoubleAnimation
+                    Storyboard.TargetName="Root"
+                    Storyboard.TargetProperty="Opacity"
+                    To="1"
+                    Duration="0:0:0.15">
+                    <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseOut" />
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+            <Storyboard x:Name="FadeOutStoryboard">
+                <DoubleAnimation
+                    Storyboard.TargetName="Root"
+                    Storyboard.TargetProperty="Opacity"
+                    To="0"
+                    Duration="0:0:0.1">
+                    <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseIn" />
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Clicking the empty background dismisses the dashboard  -->
+        <Border
+            x:Name="Scrim"
+            Grid.RowSpan="2"
+            Background="Black"
+            Tapped="Scrim_Tapped" />
+
+        <!--  Toolbar  -->
+        <Grid
+            x:Name="Toolbar"
+            Grid.Row="0"
+            Padding="24,16,24,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                Orientation="Horizontal"
+                Spacing="12">
+                <FontIcon FontSize="20" Glyph="&#xF246;" />
+                <TextBlock
+                    x:Uid="Dashboard_Title"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock
+                    x:Name="EditHint"
+                    x:Uid="Dashboard_EditHint"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Visibility="Collapsed" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Spacing="8">
+                <ToggleButton
+                    x:Name="EditButton"
+                    AutomationProperties.AutomationId="CmdPal_Dashboard_Edit"
+                    Checked="EditButton_Checked"
+                    Unchecked="EditButton_Unchecked">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE70F;" />
+                        <TextBlock x:Name="EditButtonText" x:Uid="Dashboard_EditButton" />
+                    </StackPanel>
+                </ToggleButton>
+                <Button
+                    x:Name="ResetLayoutButton"
+                    AutomationProperties.AutomationId="CmdPal_Dashboard_ResetLayout"
+                    Click="ResetLayoutButton_Click"
+                    Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE72C;" />
+                        <TextBlock x:Uid="Dashboard_ResetLayoutButton" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    x:Name="SettingsButton"
+                    x:Uid="Dashboard_SettingsButton"
+                    AutomationProperties.AutomationId="CmdPal_Dashboard_Settings"
+                    Click="SettingsButton_Click">
+                    <FontIcon FontSize="14" Glyph="&#xE713;" />
+                </Button>
+                <Button
+                    x:Name="CloseButton"
+                    x:Uid="Dashboard_CloseButton"
+                    AutomationProperties.AutomationId="CmdPal_Dashboard_Close"
+                    Click="CloseButton_Click">
+                    <FontIcon FontSize="14" Glyph="&#xE711;" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!--  Tiles  -->
+        <ScrollViewer
+            x:Name="TileScroller"
+            Grid.Row="1"
+            HorizontalScrollBarVisibility="Disabled"
+            HorizontalScrollMode="Disabled"
+            SizeChanged="TileScroller_SizeChanged"
+            VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <!--  Fills the viewport so taps between tiles still reach the scrim behavior  -->
+                <Border
+                    x:Name="TileBackground"
+                    Background="Transparent"
+                    Tapped="Scrim_Tapped" />
+                <Canvas
+                    x:Name="TileCanvas"
+                    Margin="24,8,24,24"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+                    <!--  Where a tile will land while it's being moved or resized  -->
+                    <Border
+                        x:Name="DropPreview"
+                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                        BorderThickness="2"
+                        CornerRadius="8"
+                        IsHitTestVisible="False"
+                        Opacity="0.3"
+                        Visibility="Collapsed" />
+                </Canvas>
+            </Grid>
+        </ScrollViewer>
+
+        <!--  Empty state  -->
+        <StackPanel
+            x:Name="EmptyState"
+            Grid.Row="1"
+            MaxWidth="420"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="12"
+            Visibility="Collapsed">
+            <FontIcon
+                FontSize="48"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Glyph="&#xE718;" />
+            <TextBlock
+                x:Uid="Dashboard_EmptyTitle"
+                HorizontalAlignment="Center"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                TextAlignment="Center" />
+            <TextBlock
+                x:Uid="Dashboard_EmptyDescription"
+                HorizontalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</winuiex:WindowEx>

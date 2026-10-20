@@ -142,6 +142,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
                 TryAddPinToTaskbarCommand(itemId, providerId, moreCommands, commandItem);
                 AddPinToTrayCommand(itemId, providerId, moreCommands, commandItem);
+                TryAddPinToDashboardCommand(itemId, providerId, moreCommands, commandItem);
             }
         }
 
@@ -209,6 +210,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
             TryAddPinToTaskbarCommand(itemId, providerId, moreCommands, commandItem);
             AddPinToTrayCommand(itemId, providerId, moreCommands, commandItem);
+            TryAddPinToDashboardCommand(itemId, providerId, moreCommands, commandItem);
         }
 
         if (moreCommands.Count > 0)
@@ -376,6 +378,31 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         moreCommands.Add(new PinToContextItem(command, commandItem));
     }
 
+    private void TryAddPinToDashboardCommand(
+        string itemId,
+        string providerId,
+        List<IContextItem> moreCommands,
+        CommandItemViewModel commandItem)
+    {
+        // Dashboard tiles host pages, so only pages can be pinned there.
+        if (!_settingsService.Settings.EnableDashboard || !commandItem.Command.IsPage)
+        {
+            return;
+        }
+
+        var alreadyPinned = _settingsService.Settings.DashboardSettings.IsPinned(providerId, itemId);
+        var pinToDashboardCommand = new PinToCommand(
+            commandId: itemId,
+            providerId: providerId,
+            pin: !alreadyPinned,
+            PinLocation.Dashboard,
+            _settingsService,
+            _topLevelCommandManager,
+            commandItemViewModel: commandItem);
+
+        moreCommands.Add(new PinToContextItem(pinToDashboardCommand, commandItem));
+    }
+
     internal static bool MatchesBand(DockBandSettings bandSettings, string commandId, string providerId)
     {
         return bandSettings.CommandId == commandId &&
@@ -419,6 +446,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         Dock,
         Taskbar,
         Tray,
+        Dashboard,
     }
 
     private sealed partial class PinToContextItem : CommandContextItem
@@ -523,6 +551,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 PinLocation.Dock => "PinTo_Dock",
                 PinLocation.Tray => "PinTo_Tray",
                 PinLocation.Taskbar => "taskbar_pin_command_name",
+                PinLocation.Dashboard => "dashboard_pin_command_name",
                 _ => "PinTo_Home",
             })
             : RS_.GetString(_pinLocation switch
@@ -530,6 +559,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 PinLocation.Dock => "dock_unpin_command_name",
                 PinLocation.Tray => "TrayPalette_Unpin",
                 PinLocation.Taskbar => "taskbar_unpin_command_name",
+                PinLocation.Dashboard => "dashboard_unpin_command_name",
                 _ => "top_level_unpin_command_name",
             });
 
@@ -576,6 +606,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                     case PinLocation.Tray:
                         _settingsService.UpdateSettings(s => s with { TrayPalette = s.TrayPalette.Pin(new(_providerId, _commandId)) });
                         break;
+
+                    case PinLocation.Dashboard:
+                        _settingsService.UpdateSettings(s => s with { DashboardSettings = s.DashboardSettings.WithTilePinned(_providerId, _commandId) });
+                        break;
                 }
             }
             else
@@ -599,6 +633,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
                     case PinLocation.Tray:
                         _settingsService.UpdateSettings(s => s with { TrayPalette = s.TrayPalette.Unpin(new(_providerId, _commandId)) });
+                        break;
+
+                    case PinLocation.Dashboard:
+                        _settingsService.UpdateSettings(s => s with { DashboardSettings = s.DashboardSettings.WithTileUnpinned(_providerId, _commandId) });
                         break;
                 }
             }

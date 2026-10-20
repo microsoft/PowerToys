@@ -69,6 +69,15 @@ public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entr
         [SettingsLinkIds.Dock.AlwaysOnTop] = ("DockBehavior_AlwaysOnTop_SettingsCard.Header", "DockBehavior_AlwaysOnTop_SettingsCard.Description", Glyphs.AlwaysOnTop, "AlwaysOnTop", SettingsLinkIds.Dock.BehaviorSection),
         [SettingsLinkIds.Dock.AutoHide] = ("DockBehavior_AutoHide_SettingsCard.Header", "DockBehavior_AutoHide_SettingsCard.Description", Glyphs.AutoHide, "AutoHide", SettingsLinkIds.Dock.BehaviorSection),
         [SettingsLinkIds.Dock.Monitors] = ("DockMonitors_Header.Text", null, Glyphs.Monitors, "Monitors", null),
+        [SettingsLinkIds.Dashboard.Page] = ("Settings_PageTitles_DashboardPage", null, Glyphs.Dashboard, "Dashboard", null),
+        [SettingsLinkIds.Dashboard.Enabled] = ("Settings_DashboardPage_Enable_SettingsCard.Header", "Settings_DashboardPage_Enable_SettingsCard.Description", Glyphs.Dashboard, "Dashboard", null),
+        [SettingsLinkIds.Dashboard.Shortcut] = ("Settings_DashboardPage_Shortcut_SettingsCard.Header", "Settings_DashboardPage_Shortcut_SettingsCard.Description", Glyphs.KeyboardShortcut, "Shortcuts", null),
+        [SettingsLinkIds.Dashboard.IgnoreInFullscreen] = ("Settings_DashboardPage_IgnoreInFullscreen_SettingsCard.Header", "Settings_DashboardPage_IgnoreInFullscreen_SettingsCard.Description", Glyphs.Game, "Fullscreen", null),
+        [SettingsLinkIds.Dashboard.DismissOnFocusLost] = ("Settings_DashboardPage_DismissOnFocusLost_SettingsCard.Header", "Settings_DashboardPage_DismissOnFocusLost_SettingsCard.Description", Glyphs.Focus, null, null),
+        [SettingsLinkIds.Dashboard.AppearanceSection] = ("Settings_DashboardPage_AppearanceHeader.Text", null, Glyphs.Personalization, "Appearance", null),
+        [SettingsLinkIds.Dashboard.Backdrop] = ("Settings_DashboardPage_Backdrop_SettingsCard.Header", "Settings_DashboardPage_Backdrop_SettingsCard.Description", Glyphs.Backdrop, "Backdrop", SettingsLinkIds.Dashboard.AppearanceSection),
+        [SettingsLinkIds.Dashboard.BackgroundOpacity] = ("Settings_DashboardPage_BackgroundOpacity_SettingsCard.Header", "Settings_DashboardPage_BackgroundOpacity_SettingsCard.Description", Glyphs.Personalization, "Background", SettingsLinkIds.Dashboard.AppearanceSection),
+        [SettingsLinkIds.Dashboard.TilesSection] = ("Settings_DashboardPage_TilesHeader.Text", null, Glyphs.Pin, "Pinned", null),
     };
 
     public static SettingsSearchResult[] CreateEntries(Func<string, string> getString)
@@ -304,6 +313,7 @@ public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entr
         public const string Back = "\uE750";
         public const string Backdrop = "\uF5EF";
         public const string CompactMode = "\uE73F";
+        public const string Dashboard = "\uF246";
         public const string Delete = "\uE74D";
         public const string Dock = "\uF596";
         public const string DockBottom = "\uE90E";
@@ -312,6 +322,7 @@ public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entr
         public const string Feedback = "\uE939";
         public const string Focus = "\uE765";
         public const string Gallery = "\uE719";
+        public const string Game = "\uE7FC";
         public const string Highlight = "\uE933";
         public const string History = "\uE81C";
         public const string Home = "\uE80F";
@@ -324,6 +335,7 @@ public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entr
         public const string Monitors = "\uE7F4";
         public const string Notifications = "\uE75A";
         public const string Personalization = "\uE790";
+        public const string Pin = "\uE718";
         public const string Position = "\uE78B";
         public const string Power = "\uE7E8";
         public const string Reorder = "\uE8CB";

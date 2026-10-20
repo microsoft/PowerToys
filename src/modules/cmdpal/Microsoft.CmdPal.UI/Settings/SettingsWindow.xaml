@@ -201,6 +201,15 @@
                         <InfoBadge Style="{StaticResource NewInfoBadge}" />
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
+                <NavigationViewItem
+                    x:Name="DashboardSettingsPageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Dashboard"
+                    Icon="{ui:FontIcon Glyph=&#xF246;}"
+                    Tag="Dashboard">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
+                </NavigationViewItem>
                 <NavigationViewItemHeader x:Uid="Settings_GeneralPage_NavigationViewItemHeader_Extensions" />
                 <NavigationViewItem
                     x:Name="ExtensionPageNavItem"

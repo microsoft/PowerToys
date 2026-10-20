@@ -2232,4 +2232,151 @@ Home: highest position. End: lowest position.</value>
   <data name="TrayPalette_OpenPalette.Content" xml:space="preserve">
     <value>Open command palette</value>
   </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Dashboard.Content" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Settings_PageTitles_DashboardPage" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Settings_DashboardPage_Intro.Text" xml:space="preserve">
+    <value>The dashboard is a full-screen overlay that shows the pages you pin to it. Press its shortcut to bring it up over your desktop, and press it again (or Esc) to dismiss it. Pin a page from its context menu in Command Palette.</value>
+  </data>
+  <data name="Settings_DashboardPage_Enable_SettingsCard.Header" xml:space="preserve">
+    <value>Enable dashboard</value>
+  </data>
+  <data name="Settings_DashboardPage_Enable_SettingsCard.Description" xml:space="preserve">
+    <value>Show your pinned pages in a full-screen overlay on the primary display</value>
+  </data>
+  <data name="Settings_DashboardPage_Shortcut_SettingsCard.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="Settings_DashboardPage_Shortcut_SettingsCard.Description" xml:space="preserve">
+    <value>Show or hide the dashboard</value>
+  </data>
+  <data name="Settings_DashboardPage_IgnoreInFullscreen_SettingsCard.Header" xml:space="preserve">
+    <value>Ignore shortcut in fullscreen mode</value>
+  </data>
+  <data name="Settings_DashboardPage_IgnoreInFullscreen_SettingsCard.Description" xml:space="preserve">
+    <value>Don&apos;t open the dashboard while a game or other app is running in fullscreen</value>
+  </data>
+  <data name="Settings_DashboardPage_DismissOnFocusLost_SettingsCard.Header" xml:space="preserve">
+    <value>Dismiss when focus is lost</value>
+  </data>
+  <data name="Settings_DashboardPage_DismissOnFocusLost_SettingsCard.Description" xml:space="preserve">
+    <value>Hide the dashboard when you switch to another window</value>
+  </data>
+  <data name="Settings_DashboardPage_AppearanceHeader.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_DashboardPage_Backdrop_SettingsCard.Header" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="Settings_DashboardPage_Backdrop_SettingsCard.Description" xml:space="preserve">
+    <value>How the desktop looks behind the dashboard</value>
+  </data>
+  <data name="Settings_DashboardPage_Backdrop_Dim.Content" xml:space="preserve">
+    <value>Dim</value>
+  </data>
+  <data name="Settings_DashboardPage_Backdrop_Acrylic.Content" xml:space="preserve">
+    <value>Blur (acrylic)</value>
+  </data>
+  <data name="Settings_DashboardPage_BackgroundOpacity_SettingsCard.Header" xml:space="preserve">
+    <value>Background opacity</value>
+  </data>
+  <data name="Settings_DashboardPage_BackgroundOpacity_SettingsCard.Description" xml:space="preserve">
+    <value>How much the background darkens the desktop</value>
+  </data>
+  <data name="Settings_DashboardPage_BackgroundOpacity_Slider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Background opacity</value>
+  </data>
+  <data name="Settings_DashboardPage_TilesHeader.Text" xml:space="preserve">
+    <value>Pinned pages</value>
+  </data>
+  <data name="Settings_DashboardPage_Tiles_SettingsCard.Header" xml:space="preserve">
+    <value>Layout</value>
+  </data>
+  <data name="Settings_DashboardPage_Tiles_SettingsCard.Description" xml:space="preserve">
+    <value>Move and resize tiles by selecting Edit on the dashboard</value>
+  </data>
+  <data name="Settings_DashboardPage_ResetLayout_Button.Content" xml:space="preserve">
+    <value>Reset layout</value>
+  </data>
+  <data name="Settings_DashboardPage_Show_Button.Content" xml:space="preserve">
+    <value>Open dashboard</value>
+  </data>
+  <data name="Settings_DashboardPage_Unpin_Button.Content" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="Settings_DashboardPage_NoTiles.Text" xml:space="preserve">
+    <value>No pages are pinned yet. In Command Palette, open the context menu on a page and select &quot;Pin to dashboard&quot;.</value>
+  </data>
+  <data name="SettingsSearch_Keywords_Dashboard" xml:space="preserve">
+    <value>dashboard;overlay;widgets;tiles;full screen;board</value>
+  </data>
+  <data name="SettingsSearch_Keywords_Fullscreen" xml:space="preserve">
+    <value>fullscreen;full screen;game;gaming;presentation</value>
+  </data>
+  <data name="SettingsSearch_Keywords_Pinned" xml:space="preserve">
+    <value>pinned;pin;tiles;pages;layout</value>
+  </data>
+  <data name="Dashboard_WindowTitle" xml:space="preserve">
+    <value>Command Palette dashboard</value>
+  </data>
+  <data name="Dashboard_Title.Text" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Dashboard_EditHint.Text" xml:space="preserve">
+    <value>Drag tiles to move them, or drag a corner to resize</value>
+  </data>
+  <data name="Dashboard_EditButton.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Dashboard_EditButtonText" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Dashboard_DoneButtonText" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Dashboard_ResetLayoutButton.Text" xml:space="preserve">
+    <value>Reset layout</value>
+  </data>
+  <data name="Dashboard_SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dashboard settings</value>
+  </data>
+  <data name="Dashboard_SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Dashboard settings</value>
+  </data>
+  <data name="Dashboard_CloseButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Close dashboard</value>
+  </data>
+  <data name="Dashboard_CloseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Close (Esc)</value>
+  </data>
+  <data name="Dashboard_EmptyTitle.Text" xml:space="preserve">
+    <value>Nothing pinned yet</value>
+  </data>
+  <data name="Dashboard_EmptyDescription.Text" xml:space="preserve">
+    <value>In Command Palette, open the context menu on a page and select &quot;Pin to dashboard&quot;.</value>
+  </data>
+  <data name="Dashboard_Tile_UnpinButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Unpin from dashboard</value>
+  </data>
+  <data name="Dashboard_Tile_UnpinButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Unpin from dashboard</value>
+  </data>
+  <data name="Dashboard_Tile_ResizeGrip.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Resize</value>
+  </data>
+  <data name="Dashboard_Tile_Unavailable" xml:space="preserve">
+    <value>This page is unavailable. Its extension may be disabled or still loading.</value>
+  </data>
+  <data name="Dashboard_Tile_NotAPage" xml:space="preserve">
+    <value>This command isn&apos;t a page, so it can&apos;t be shown on the dashboard.</value>
+  </data>
+  <data name="dashboard_pin_command_name" xml:space="preserve">
+    <value>Pin to dashboard</value>
+  </data>
+  <data name="dashboard_unpin_command_name" xml:space="preserve">
+    <value>Unpin from dashboard</value>
+  </data>
 </root>

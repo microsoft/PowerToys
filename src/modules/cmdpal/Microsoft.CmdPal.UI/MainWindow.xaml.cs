@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
@@ -19,6 +18,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dashboard;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -86,8 +86,6 @@ public sealed partial class MainWindow : WindowEx,
     private readonly ShellViewModel _shellViewModel;
     private ShellIconCacheInvalidator? _shellIconCacheInvalidator;
 
-    private Task? _keyboardStopTask;
-    private bool _keyboardStopped;
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _ignoreHotKeyWhenBusy;
     private bool _allowBreakthroughShortcut;
@@ -265,33 +263,6 @@ public sealed partial class MainWindow : WindowEx,
         catch (Exception ex)
         {
             Logger.LogError("Failed to register Copilot key fast-path activation", ex);
-        }
-    }
-
-    private async Task StartKeyboardListenerAsync()
-    {
-        try
-        {
-            await _keyboardDispatcher.DispatcherQueue.EnqueueAsync(_keyboardListener.Start);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to start the global keyboard listener.", ex);
-        }
-    }
-
-    private async Task StopKeyboardListenerAsync()
-    {
-        _keyboardStopped = true;
-        try
-        {
-            await _keyboardStartTask;
-            await _keyboardDispatcher.DispatcherQueue.EnqueueAsync(_keyboardListener.Stop);
-            await _keyboardDispatcher.ShutdownQueueAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to stop the global keyboard listener.", ex);
         }
     }
 
@@ -667,6 +638,8 @@ public sealed partial class MainWindow : WindowEx,
                 && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
                 && x.DockFocusHotkey == y.DockFocusHotkey
                 && x.EnableDock == y.EnableDock
+                && x.EnableDashboard == y.EnableDashboard
+                && x.DashboardHotkey == y.DashboardHotkey
                 && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
         }
 
@@ -709,6 +682,8 @@ public sealed partial class MainWindow : WindowEx,
             hash.Add(obj.Hotkey);
             hash.Add(obj.DockFocusHotkey);
             hash.Add(obj.EnableDock);
+            hash.Add(obj.EnableDashboard);
+            hash.Add(obj.DashboardHotkey);
             hash.Add(obj.CommandHotkeys.Count);
             return hash.ToHashCode();
         }
@@ -1333,8 +1308,7 @@ public sealed partial class MainWindow : WindowEx,
             }
 
             trayIcon.Destroy();
-            await _keyboardStartTask;
-            await _keyboardDispatcher.DispatcherQueue.EnqueueAsync(_keyboardListener.Stop);
+            _keyboardListener.Stop();
             return AppInstance.Restart("--settings");
         }
         finally
@@ -1762,6 +1736,11 @@ public sealed partial class MainWindow : WindowEx,
             RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
         }
 
+        if (settings.EnableDashboard)
+        {
+            RegisterHotkey(settings, settings.DashboardHotkey, DashboardHotkeyIds.Toggle);
+        }
+
         foreach (var commandHotkey in settings.CommandHotkeys)
         {
             RegisterHotkey(settings, commandHotkey.Hotkey, commandHotkey.CommandId);
@@ -1804,6 +1783,13 @@ public sealed partial class MainWindow : WindowEx,
         if (DockHotkeyIds.IsDockHotkey(commandId))
         {
             WeakReferenceMessenger.Default.Send<FocusDockMessage>(new());
+            return;
+        }
+
+        // The dashboard applies its own full-screen policy, so don't run the palette's here.
+        if (DashboardHotkeyIds.IsDashboardHotkey(commandId))
+        {
+            WeakReferenceMessenger.Default.Send(new ToggleDashboardMessage(FromHotkey: true));
             return;
         }
 
@@ -2166,7 +2152,6 @@ public sealed partial class MainWindow : WindowEx,
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
-        _keyboardStopTask ??= StopKeyboardListenerAsync();
     }
 
     void IRecipient<ShowPaletteAtMessage>.Receive(ShowPaletteAtMessage message) => Receive(message);

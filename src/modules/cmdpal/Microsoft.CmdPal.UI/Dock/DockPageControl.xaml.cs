@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Dock;
@@ -58,6 +59,40 @@ public sealed partial class DockPageControl : UserControl, IDisposable, ISearchB
     }
 
     internal bool HasOpenTransientUi => PageCommandBar.HasOpenTransientUi;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the control focuses its page each time the
+    /// page changes. Turn this off when several of these controls share a window, so they
+    /// don't steal focus from each other as their pages load. Focus still moves to a new
+    /// page when the user navigated from inside this control.
+    /// </summary>
+    internal bool FocusOnPageChange { get; set; } = true;
+
+    /// <summary>
+    /// Lets the control grow to fill its container instead of sizing itself like a flyout.
+    /// </summary>
+    internal void FillContainer()
+    {
+        RootGrid.MaxHeight = double.PositiveInfinity;
+    }
+
+    internal bool ContainsFocus()
+    {
+        if (XamlRoot is null || FocusManager.GetFocusedElement(XamlRoot) is not DependencyObject focused)
+        {
+            return false;
+        }
+
+        for (var current = focused; current is not null; current = VisualTreeHelper.GetParent(current))
+        {
+            if (ReferenceEquals(current, this))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     bool ISearchBarHost.CanFocusSearchBar => !_isDisposed && IsLoaded && XamlRoot is not null;
 
@@ -109,6 +144,7 @@ public sealed partial class DockPageControl : UserControl, IDisposable, ISearchB
             return;
         }
 
+        var hadFocus = ContainsFocus();
         DetachCurrentContent();
         _subscribedPage = CurrentPage;
         _pageInteractions.AttachPage(_subscribedPage);
@@ -144,7 +180,11 @@ public sealed partial class DockPageControl : UserControl, IDisposable, ISearchB
                     return;
                 }
 
-                FocusSearch();
+                if (FocusOnPageChange || hadFocus || ContainsFocus())
+                {
+                    FocusSearch();
+                }
+
                 AnnounceCurrentPage();
             });
     }

@@ -418,6 +418,24 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _batteryPage?.Dispose();
     }
 
+    /// <summary>
+    /// Finds the list item for one of this page's widget pages (e.g. the CPU page) by
+    /// the widget page's command ID, so pinned widget pages can be found again.
+    /// </summary>
+    internal ICommandItem? FindWidgetItem(string commandId)
+    {
+        ListItem?[] items = [_cpuItem, _memoryItem, _networkItem, _diskItem, _gpuItem, _batteryItem];
+        foreach (var item in items)
+        {
+            if (item?.Command is { } command && string.Equals(command.Id, commandId, StringComparison.Ordinal))
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
     internal static string GetBandId(PerformanceMetricKind? metric)
     {
         return metric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(metric.Value)}";

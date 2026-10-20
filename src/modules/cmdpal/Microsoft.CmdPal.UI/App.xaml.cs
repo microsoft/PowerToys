@@ -131,6 +131,10 @@ public partial class App : Application, IDisposable
         {
             WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(true));
         }
+
+        // The dashboard window is created on first use, but its manager has to be listening
+        // for the hotkey from the start.
+        _ = Services.GetRequiredService<Dashboard.DashboardManager>();
     }
 
     /// <summary>
@@ -330,6 +334,11 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IMonitorService, MonitorService>();
         services.AddSingleton<Dock.DockWindowManager>(sp =>
             new Dock.DockWindowManager(
+                sp.GetRequiredService<IMonitorService>(),
+                sp.GetRequiredService<ISettingsService>(),
+                Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()));
+        services.AddSingleton<Dashboard.DashboardManager>(sp =>
+            new Dashboard.DashboardManager(
                 sp.GetRequiredService<IMonitorService>(),
                 sp.GetRequiredService<ISettingsService>(),
                 Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()));

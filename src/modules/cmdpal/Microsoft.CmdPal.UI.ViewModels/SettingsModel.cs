@@ -35,6 +35,12 @@ public record SettingsModel
     /// </summary>
     public static HotkeySettings DefaultDockFocusShortcut { get; } = new HotkeySettings(true, false, true, false, 0x4A); // win+alt+J
 
+    /// <summary>
+    /// Gets the default shortcut that shows the dashboard: win+alt+O ("overview"), again
+    /// sharing the activation shortcut's modifiers.
+    /// </summary>
+    public static HotkeySettings DefaultDashboardShortcut { get; } = new HotkeySettings(true, false, true, false, 0x4F); // win+alt+O
+
     public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
 
     private readonly HotkeySettings? _dockFocusHotkey = DefaultDockFocusShortcut;
@@ -196,6 +202,32 @@ public record SettingsModel
     {
         get => _dockSettings ?? new();
         init => _dockSettings = value;
+    }
+
+    public bool EnableDashboard { get; init; }
+
+    private readonly HotkeySettings? _dashboardHotkey = DefaultDashboardShortcut;
+
+    /// <summary>
+    /// Gets the shortcut that shows and hides the dashboard. Lives here rather than in
+    /// <see cref="Settings.DashboardSettings"/> so that rebinding it doesn't rebuild the
+    /// dashboard's tiles.
+    /// </summary>
+    /// <remarks>
+    /// Falls back to the default for the same reason as <see cref="DockFocusHotkey"/>.
+    /// </remarks>
+    public HotkeySettings? DashboardHotkey
+    {
+        get => _dashboardHotkey;
+        init => _dashboardHotkey = value ?? DefaultDashboardShortcut;
+    }
+
+    private DashboardSettings? _dashboardSettings = new();
+
+    public DashboardSettings DashboardSettings
+    {
+        get => _dashboardSettings ?? new();
+        init => _dashboardSettings = value;
     }
 
     // Theme settings
@@ -574,6 +606,9 @@ public record SettingsModel
 [JsonSerializable(typeof(ImmutableList<PinnedCommandSettings>), TypeInfoPropertyName = "ImmutablePinnedCommandSettingsList")]
 [JsonSerializable(typeof(ImmutableList<DockBandSettings>), TypeInfoPropertyName = "ImmutableDockBandSettingsList")]
 [JsonSerializable(typeof(DockMonitorConfig))]
+[JsonSerializable(typeof(DashboardSettings))]
+[JsonSerializable(typeof(DashboardTileSettings))]
+[JsonSerializable(typeof(ImmutableList<DashboardTileSettings>), TypeInfoPropertyName = "ImmutableDashboardTileSettingsList")]
 [JsonSerializable(typeof(ImmutableList<DockMonitorConfig>), TypeInfoPropertyName = "ImmutableDockMonitorConfigList")]
 [JsonSerializable(typeof(ImmutableDictionary<string, ProviderSettings>), TypeInfoPropertyName = "ImmutableProviderSettingsDictionary")]
 [JsonSerializable(typeof(ImmutableDictionary<string, CommandAlias>), TypeInfoPropertyName = "ImmutableAliasDictionary")]
