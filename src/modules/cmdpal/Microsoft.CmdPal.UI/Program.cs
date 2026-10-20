@@ -38,6 +38,12 @@ internal sealed class Program
             return 0;
         }
 
+        // CmdPal is not single-file, so it doesn't need its runtime directory variable after startup.
+        // Clear it so launched apps don't inherit it: https://github.com/microsoft/PowerToys/issues/51225
+        // Keep this after upgrading WinAppSDK. The 2.4 fix (https://github.com/microsoft/WindowsAppSDK/issues/5987)
+        // only protects apps built on WinAppSDK 2.4+ or 1.8.11+; apps on older runtimes still use the inherited value.
+        Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
+
         try
         {
             Logger.InitializeLogger("\\CmdPal\\Logs\\");

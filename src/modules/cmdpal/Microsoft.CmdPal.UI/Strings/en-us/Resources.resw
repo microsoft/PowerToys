@@ -406,14 +406,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Select search text when opened</value>
   </data>
-  <data name="Settings_GeneralPage_CompactMode_SettingsCard.Header" xml:space="preserve">
-    <value>Open with a compact search box</value>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_SettingsCard.Header" xml:space="preserve">
+    <value>How Command Palette opens</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_FullPalette.Text" xml:space="preserve">
+    <value>Full palette</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox.Text" xml:space="preserve">
+    <value>Compact search box</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_FullPalette_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Full palette</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Compact search box</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Header" xml:space="preserve">
     <value>Quick access shelf</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
-    <value>Show pinned and recent items below the search box while compact mode is collapsed.</value>
+    <value>Show pinned and recent items below the compact search box</value>
   </data>
   <data name="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard.Header" xml:space="preserve">
     <value>Alt+number shortcuts in lists</value>
@@ -517,7 +529,57 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Vertical search box position</value>
   </data>
   <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Description" xml:space="preserve">
-    <value>Move left to place it lower on the screen, or right to place it higher</value>
+    <value>Choose where the compact search box appears on the screen</value>
+  </data>
+  <data name="Settings_GeneralPage_CompactCenterHeight_Button.Content" xml:space="preserve">
+    <value>Choose position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Title" xml:space="preserve">
+    <value>Compact search box position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Heading.Text" xml:space="preserve">
+    <value>Move the compact search box</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Instruction.Text" xml:space="preserve">
+    <value>Drag the preview or scroll to move.</value>
+  </data>
+  <data name="CompactPositionPickerWindow_KeyboardInstruction.Text" xml:space="preserve">
+    <value>Up/Down: move in small steps.
+Page Up/Down: move in larger steps.
+Home: highest position. End: lowest position.</value>
+  </data>
+  <data name="CompactPositionPickerWindow_PositionFormat" xml:space="preserve">
+    <value>Position: {0:0}% from bottom</value>
+    <comment>Screen reader position feedback. {0} is the vertical position as a percentage from the bottom of the work area.</comment>
+  </data>
+  <data name="CompactPositionPickerWindow_Preview.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search box position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_ExpandedPreviewHint.Text" xml:space="preserve">
+    <value>Space for search results</value>
+  </data>
+  <data name="CompactPositionPickerWindow_ReservedAreaHint.Text" xml:space="preserve">
+    <value>Hatched areas are reserved for the taskbar and toolbars.</value>
+    <comment>Explains the diagonal shading outside the usable work area in the position picker.</comment>
+  </data>
+  <data name="CompactPositionPickerWindow_Root.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Compact search box position picker</value>
+  </data>
+  <data name="CompactPositionPickerWindow_DefaultButton.Content" xml:space="preserve">
+    <value>Default</value>
+    <comment>Restores the default vertical position of the compact search box.</comment>
+  </data>
+  <data name="CompactPositionPickerWindow_CancelButton.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CompactPositionPickerWindow_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="CompactPositionPickerWindow_CloseButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Close position picker</value>
+  </data>
+  <data name="CompactPositionPickerWindow_CloseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Header" xml:space="preserve">
     <value>Keep search text when reopened</value>
@@ -1393,6 +1455,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Pin to Dock</value>
     <comment>Drag-over caption shown when dragging a file or shortcut onto the dock to bookmark and pin it</comment>
   </data>
+  <data name="Dock_Drop_TimedOut" xml:space="preserve">
+    <value>Pinning to the dock took too long. Please try again.</value>
+    <comment>Toast shown when resolving dropped items times out before any bookmarks are pinned.</comment>
+  </data>
   <data name="Dock_AddBand_NoCommandsAvailable.Text" xml:space="preserve">
     <value>All available bands are already pinned.</value>
   </data>
@@ -1980,9 +2046,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>motion movement transitions effects reduce</value>
     <comment>Search aliases for disabling animations.</comment>
   </data>
-  <data name="SettingsSearch_Keywords_CompactMode" xml:space="preserve">
-    <value>small mini minimal collapsed shelf quick access pinned</value>
-    <comment>Search aliases for compact mode and its quick access shelf.</comment>
+  <data name="SettingsSearch_Keywords_OpeningMode" xml:space="preserve">
+    <value>compact full mode expanded search box small mini minimal collapsed</value>
+    <comment>Search aliases for how Command Palette opens, including compact mode.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_QuickAccessShelf" xml:space="preserve">
+    <value>shelf quick access pinned</value>
+    <comment>Search aliases for the quick access shelf.</comment>
   </data>
   <data name="SettingsSearch_Keywords_History" xml:space="preserve">
     <value>history recently used recent commands</value>
@@ -1995,6 +2065,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="SettingsSearch_Keywords_LaunchPosition" xml:space="preserve">
     <value>window location screen monitor display cursor mouse center centre remember position</value>
     <comment>Search aliases for where the Command Palette window opens.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_CompactPosition" xml:space="preserve">
+    <value>compact height offset top bottom center centre placement</value>
+    <comment>Search aliases for the vertical position of the compact search box.</comment>
   </data>
   <data name="SettingsSearch_Keywords_Toast" xml:space="preserve">
     <value>notification popup pop-up toast message indicator</value>

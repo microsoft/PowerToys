@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -72,7 +72,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
-    private readonly KeyboardListener _keyboardListener;
+    private readonly GlobalKeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly CopilotKeyRegistration? _copilotKeyRegistration;
@@ -144,6 +144,11 @@ public sealed partial class MainWindow : WindowEx,
 
     public MainWindow()
     {
+        if (!ShellIconCacheInvalidator.InitializeShellIconCache())
+        {
+            Logger.LogWarning("Failed to initialize the Shell image lists");
+        }
+
         _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
         _monitorService = App.Current.Services.GetRequiredService<ViewModels.Models.IMonitorService>();
         _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
@@ -180,10 +185,10 @@ public sealed partial class MainWindow : WindowEx,
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
-        _keyboardListener = new KeyboardListener();
-        _keyboardListener.Start();
-
-        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
+        _keyboardListener = new GlobalKeyboardListener(
+            HandleSummon,
+            static error => Logger.LogError("Failed when invoking global keyboard hook", error));
+        StartKeyboardListener();
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
         var shellIconAssociationsChangedMessage = PInvoke.RegisterWindowMessage(
@@ -400,10 +405,12 @@ public sealed partial class MainWindow : WindowEx,
             {
                 var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                 var workArea = displayArea.WorkArea;
+                var targetDpi = WindowPositionHelper.GetDpiForDisplay(displayArea);
+                var workAreaHeightDip = workArea.Height * 96.0 / targetDpi;
 
                 // The setting is the relative height measured from the *bottom* of the screen,
                 // so a larger percentage places the search box higher up the display.
-                var fractionFromTop = GetCompactCenterFractionFromTop(settings);
+                var fractionFromTop = GetCompactCenterFractionFromTop(settings, workAreaHeightDip);
                 var desiredCardCenterY = workArea.Y + (int)Math.Round(workArea.Height * fractionFromTop);
                 finalRect.Y = desiredCardCenterY - searchRowCenterFromHwndTop;
 
@@ -465,9 +472,11 @@ public sealed partial class MainWindow : WindowEx,
     // Converts the "center height" setting (a percentage measured up from the bottom of the
     // screen) into the fraction of the work area, measured from the top, at which the
     // collapsed search box should be centered.
-    private static double GetCompactCenterFractionFromTop(SettingsModel settings)
+    private static double GetCompactCenterFractionFromTop(SettingsModel settings, double workAreaHeightDip)
     {
-        var pct = Math.Clamp(settings.CompactCenterHeightPercentage, 0, 100);
+        var pct = CompactPositionConstraints.ClampPercentageFromBottom(
+            settings.CompactCenterHeightPercentage,
+            workAreaHeightDip);
         return 1.0 - (pct / 100.0);
     }
 
@@ -1235,6 +1244,7 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        _keyboardListener.Dispose();
         _copilotKeyRegistration?.Dispose();
         SaveWindowPosition();
 
@@ -1254,7 +1264,6 @@ public sealed partial class MainWindow : WindowEx,
         (RootElement.MainContent as ShellPage)?.Dispose();
         DisposeAcrylic();
 
-        _keyboardListener.Stop();
         Environment.Exit(0);
     }
 
@@ -1290,7 +1299,7 @@ public sealed partial class MainWindow : WindowEx,
             _isRestarting = false;
 
             // A successful restart terminates this process. Restore services if it returns or throws.
-            _keyboardListener.Start();
+            StartKeyboardListener();
             trayIcon.SetupTrayIcon();
             WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>();
         }
@@ -1683,6 +1692,19 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
+    private void StartKeyboardListener()
+    {
+        if (_keyboardListener.Start(out var error))
+        {
+            return;
+        }
+
+        Logger.LogError("Failed to register global keyboard hook", error);
+        var errorCode = error is Win32Exception nativeError ? nativeError.NativeErrorCode : error.HResult;
+        var message = FormattableString.Invariant($"SetWindowsHookEx: {error.Message} ({errorCode})");
+        _ = PInvoke.MessageBox(HWND.Null, message, RS_.GetString("AppName"), MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
+    }
+
     private void SetupHotkey(SettingsModel settings)
     {
         UnregisterHotkeys();
@@ -1963,6 +1985,10 @@ public sealed partial class MainWindow : WindowEx,
                 _monitorService.NotifyMonitorsChanged();
                 break;
 
+            case PInvoke.WM_SETTINGCHANGE when wParam == (uint)SYSTEM_PARAMETERS_INFO_ACTION.SPI_SETNONCLIENTMETRICS:
+                _shellIconCacheInvalidator?.OnNonClientMetricsChanged();
+                break;
+
             default:
                 if (_shellIconCacheInvalidator?.TryHandleMessage(
                         uMsg,
@@ -2096,6 +2122,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _keyboardListener.Dispose();
         _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
         ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
         _accessKeyMode.Dispose();

@@ -219,9 +219,12 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
                 break;
             case nameof(Details):
+                var existingReference = Details;
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
+                Details?.InitializeProperties();
                 UpdateDetails();
+                existingReference?.SafeCleanup();
                 break;
         }
 
@@ -397,7 +400,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         base.ResumeAfterNavigation();
         UpdateDetails();
-        DoOnActivePage(() => WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(this)));
+        DoOnActivePage(() => SetCommandBarContext(this));
         return Task.CompletedTask;
     }
 

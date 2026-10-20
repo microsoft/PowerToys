@@ -142,6 +142,7 @@ public sealed class MainListPageCacheTests
             providerContext.ContinueRead();
             first.Cleanup();
             second.Cleanup();
+            GC.KeepAlive(pageContext);
         }
     }
 
@@ -211,6 +212,7 @@ public sealed class MainListPageCacheTests
         finally
         {
             command.Cleanup();
+            GC.KeepAlive(pageContext);
         }
     }
 
@@ -222,7 +224,7 @@ public sealed class MainListPageCacheTests
         ICommandProviderContext providerContext)
     {
         var model = new CommandItem(new NoOpCommand { Id = id, Name = title }) { Title = title };
-        var item = new CommandItemViewModel(new(model), new(pageContext), DefaultContextMenuFactory.Instance);
+        var item = new CommandItemViewModel(new(model), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
 
         // Only initialize identity and title; full initialization queues provider reads that race the cache tests.
         item.FastInitializeProperties();

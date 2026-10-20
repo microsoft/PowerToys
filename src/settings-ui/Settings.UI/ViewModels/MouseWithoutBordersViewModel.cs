@@ -27,6 +27,7 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
+using MouseWithoutBorders.Class;
 using StreamJsonRpc;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -48,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _disposed;
 
-        private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
+        private static readonly Lazy<Dictionary<SocketStatus, Brush>> StatusColors = new(() => new Dictionary<SocketStatus, Brush>()
         {
             { SocketStatus.NA, new SolidColorBrush(ColorHelper.FromArgb(0, 0x71, 0x71, 0x71)) },
             { SocketStatus.Resolving, new SolidColorBrush(Colors.Yellow) },
@@ -60,11 +61,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             { SocketStatus.Timeout, new SolidColorBrush(Colors.Pink) },
             { SocketStatus.SendError, new SolidColorBrush(Colors.Maroon) },
             { SocketStatus.Connected, new SolidColorBrush(Colors.Green) },
-        };
+        });
 
+        private string _servicePairingKey;
         private bool _connectFieldsVisible;
+        private bool _isPairingPending;
+        private bool _hasPairingError;
+        private bool _isPairingKeyLoading;
+        private bool _pairingKeyRefreshRequested;
+        private int _pairingUiVersion;
+        private bool _isServiceModeChanging;
+        private bool _hasServiceModeError;
 
         public bool IsElevated { get => GeneralSettingsConfig.IsElevated; }
+
+        public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);
+
+        public bool PairingSetupRequired => UseService
+            ? !PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value)
+            : string.IsNullOrWhiteSpace(Settings.Properties.SecurityKey.Value) ||
+                PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ||
+                Settings.Properties.SecurityKey.Value == MouseWithoutBordersIpc.PairingConfiguredIndicator;
+
+        public bool ShowPairingSetupRequired => PairingSetupRequired;
+
+        public bool CanConnectPairing => CanManagePairing;
 
         public bool CanUninstallService { get => GeneralSettingsConfig.IsElevated && !UseService; }
 
@@ -112,37 +133,78 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                if (_allowServiceModeIsGPOConfigured)
+                if (_allowServiceModeIsGPOConfigured || _isServiceModeChanging)
                 {
                     return;
                 }
 
-                var valueChanged = Settings.Properties.UseService != value;
-
-                // Set the UI property itself instantly
-                if (valueChanged)
+                if (Settings.Properties.UseService != value)
                 {
-                    Settings.Properties.UseService = value;
-                    OnPropertyChanged(nameof(UseService));
-                    OnPropertyChanged(nameof(CanUninstallService));
-                    OnPropertyChanged(nameof(ShowInfobarRunAsAdminText));
-
-                    // Must block here until the process exits
-                    Task.Run(async () =>
-                    {
-                        await SubmitShutdownRequestAsync();
-
-                        _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-                        {
-                            Settings.Properties.UseService = value;
-                            NotifyPropertyChanged(nameof(UseService));
-                        });
-                    });
+                    _ = ChangeServiceModeAsync(value, SubmitShutdownRequestAsync, () => WaitForRestartAsync(value));
                 }
             }
         }
 
-        public bool UseServiceSettingIsEnabled => _allowServiceModeIsGPOConfigured == false;
+        public bool UseServiceSettingIsEnabled => !_isServiceModeChanging && !_allowServiceModeIsGPOConfigured;
+
+        public bool HasServiceModeError => _hasServiceModeError;
+
+        public bool CanReconnect => IsEnabled && !_isServiceModeChanging && !_hasServiceModeError;
+
+        private async Task ChangeServiceModeAsync(bool useService, Func<Task> shutdown, Func<Task> waitForRestart)
+        {
+            _isServiceModeChanging = true;
+            _hasServiceModeError = false;
+            ResetPairingUiState();
+            NotifyUpdatedSettings();
+            try
+            {
+                await shutdown();
+                Settings.Properties.UseService = useService;
+                NotifyPropertyChanged(nameof(UseService));
+                await waitForRestart();
+            }
+            catch (Exception ex)
+            {
+                _hasServiceModeError = true;
+                Logger.LogError($"Couldn't change Mouse Without Borders service mode: {ex}");
+            }
+            finally
+            {
+                _isServiceModeChanging = false;
+                NotifyUpdatedSettings();
+            }
+
+            if (!_hasServiceModeError)
+            {
+                await LoadPairingKeyAsync();
+            }
+        }
+
+        private async Task WaitForRestartAsync(bool useService)
+        {
+            using (await _ipcSemaphore.EnterAsync())
+            using (var syncHelper = await GetSettingsSyncHelperAsync())
+            {
+                var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Restarted Mouse Without Borders is unavailable.");
+                using var identity = WindowsIdentity.GetCurrent();
+                var expectedSid = useService
+                    ? new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null)
+                    : identity.User ?? throw new InvalidOperationException("Settings process has no user SID.");
+                if (!NamedPipePeerVerification.TryVerifyServer(
+                        syncHelper.Stream,
+                        MouseWithoutBordersIpc.MouseWithoutBordersExecutableFileName,
+                        expectedSid.Value,
+                        Process.GetCurrentProcess().SessionId,
+                        allowLocalSystem: false,
+                        out var rejectionReason))
+                {
+                    throw new InvalidOperationException($"Restarted Mouse Without Borders has an unexpected identity: {rejectionReason}");
+                }
+
+                await endpoint.RequestMachineSocketStateAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            }
+        }
 
         public bool ConnectFieldsVisible
         {
@@ -154,38 +216,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _connectFieldsVisible = value;
                     OnPropertyChanged(nameof(ConnectFieldsVisible));
-                }
-            }
-        }
-
-        private string _connectSecurityKey;
-
-        public string ConnectSecurityKey
-        {
-            get => _connectSecurityKey;
-
-            set
-            {
-                if (_connectSecurityKey != value)
-                {
-                    _connectSecurityKey = value;
-                    OnPropertyChanged(nameof(ConnectSecurityKey));
-                }
-            }
-        }
-
-        private string _connectPCName;
-
-        public string ConnectPCName
-        {
-            get => _connectPCName;
-
-            set
-            {
-                if (_connectPCName != value)
-                {
-                    _connectPCName = value;
-                    OnPropertyChanged(nameof(ConnectPCName));
                 }
             }
         }
@@ -271,9 +301,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             void Reconnect();
 
-            void GenerateNewKey();
+            Task<string> GenerateNewKey();
 
-            void ConnectToMachine(string machineName, string securityKey);
+            Task<string> GetCurrentPairingKey();
+
+            Task ConnectToMachine(string machineName, string securityKey);
 
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
@@ -298,68 +330,53 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             public void Dispose()
             {
-                ((IDisposable)Endpoint).Dispose();
+                try
+                {
+                    ((IDisposable)Endpoint).Dispose();
+                }
+                finally
+                {
+                    Stream.Dispose();
+                }
             }
         }
 
-        private static NamedPipeClientStream syncHelperStream;
+        private static async Task<SyncHelper> ConnectSettingsSyncHelperAsync(string pipeName, string executableName)
+        {
+            var sessionId = Process.GetCurrentProcess().SessionId;
+            using var currentIdentity = WindowsIdentity.GetCurrent();
+            var currentUserSid = currentIdentity.User?.Value ?? throw new InvalidOperationException("Settings process has no user SID.");
+            var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            try
+            {
+                await stream.ConnectAsync(10000);
+                if (!NamedPipePeerVerification.TryVerifyServer(
+                        stream,
+                        executableName,
+                        currentUserSid,
+                        sessionId,
+                        allowLocalSystem: true,
+                        out var rejectionReason))
+                {
+                    throw new UnauthorizedAccessException($"Rejected SettingsSync server: {rejectionReason}");
+                }
+
+                return new SyncHelper(stream);
+            }
+            catch
+            {
+                await stream.DisposeAsync();
+                throw;
+            }
+        }
 
         private async Task<SyncHelper> GetSettingsSyncHelperAsync()
         {
             try
             {
-                var recreateStream = false;
-                if (syncHelperStream == null)
-                {
-                    recreateStream = true;
-                }
-                else
-                {
-                    if (!syncHelperStream.IsConnected || !syncHelperStream.CanWrite)
-                    {
-                        await syncHelperStream.DisposeAsync();
-                        recreateStream = true;
-                    }
-                }
-
-                if (recreateStream)
-                {
-                    var sessionId = Process.GetCurrentProcess().SessionId;
-                    using var currentIdentity = WindowsIdentity.GetCurrent();
-                    var currentUserSid = currentIdentity.User?.Value ?? throw new InvalidOperationException("Settings process has no user SID.");
-                    var candidateStream = new NamedPipeClientStream(
-                        ".",
-                        MouseWithoutBordersIpc.GetSettingsSyncPipeName(sessionId),
-                        PipeDirection.InOut,
-                        PipeOptions.Asynchronous);
-
-                    try
-                    {
-                        await candidateStream.ConnectAsync(10000);
-                        if (!NamedPipePeerVerification.TryVerifyServer(
-                                candidateStream,
-                                MouseWithoutBordersIpc.MouseWithoutBordersExecutableFileName,
-                                currentUserSid,
-                                sessionId,
-                                allowLocalSystem: true,
-                                out var rejectionReason))
-                        {
-                            throw new UnauthorizedAccessException($"Rejected SettingsSync server: {rejectionReason}");
-                        }
-
-                        syncHelperStream = candidateStream;
-                        candidateStream = null;
-                    }
-                    finally
-                    {
-                        if (candidateStream != null)
-                        {
-                            await candidateStream.DisposeAsync();
-                        }
-                    }
-                }
-
-                return new SyncHelper(syncHelperStream);
+                return await ConnectSettingsSyncHelperAsync(
+                    MouseWithoutBordersIpc.GetSettingsSyncPipeName(Process.GetCurrentProcess().SessionId),
+                    MouseWithoutBordersIpc.MouseWithoutBordersExecutableFileName);
             }
             catch (Exception ex)
             {
@@ -378,12 +395,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.Shutdown();
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
-                    {
-                        await task;
-                    }
+                    var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Mouse Without Borders shutdown endpoint is unavailable.");
+                    await MouseWithoutBordersIpc.ShutdownAndWaitForServerExitAsync(
+                        syncHelper.Stream,
+                        endpoint.Shutdown,
+                        TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -392,6 +408,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             using (await _ipcSemaphore.EnterAsync())
             {
+                if (_isServiceModeChanging)
+                {
+                    return;
+                }
+
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
                     syncHelper?.Endpoint?.Reconnect();
@@ -406,33 +427,226 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task SubmitNewKeyRequestAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            if (!CanManagePairing)
             {
+                return;
+            }
+
+            var useService = UseService;
+            var pairingUiVersion = _pairingUiVersion;
+            _isPairingPending = true;
+            _hasPairingError = false;
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(CanConnectPairing));
+            OnPropertyChanged(nameof(HasPairingError));
+            try
+            {
+                using (await _ipcSemaphore.EnterAsync())
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.GenerateNewKey();
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
+                    var generatedKey = await endpoint.GenerateNewKey().WaitAsync(TimeSpan.FromSeconds(10));
+                    if (string.IsNullOrWhiteSpace(generatedKey) || PairingKeyCodec.IsEncryptedValue(generatedKey))
                     {
-                        await task;
+                        throw new InvalidOperationException("Pairing key was not returned.");
                     }
+
+                    if (_disposed || pairingUiVersion != _pairingUiVersion || UseService != useService || (useService && !IsElevated))
+                    {
+                        return;
+                    }
+
+                    _servicePairingKey = useService ? generatedKey : null;
+                    OnPropertyChanged(nameof(SecurityKey));
                 }
+            }
+            catch (Exception ex)
+            {
+                if (pairingUiVersion == _pairingUiVersion)
+                {
+                    _hasPairingError = true;
+                }
+
+                Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name}).");
+            }
+            finally
+            {
+                _isPairingPending = false;
+                OnPropertyChanged(nameof(CanManagePairing));
+                OnPropertyChanged(nameof(CanConnectPairing));
+                OnPropertyChanged(nameof(HasPairingError));
             }
         }
 
-        public async Task SubmitConnectionRequestAsync(string pcName, string securityKey)
+        public bool HasPairingError => _hasPairingError;
+
+        public async Task LoadPairingKeyAsync()
         {
-            using (await _ipcSemaphore.EnterAsync())
+            await LoadPairingKeyAsync(ReadCurrentPairingKeyAsync);
+        }
+
+        private async Task LoadPairingKeyAsync(Func<Task<string>> readPairingKey)
+        {
+            if (_isPairingKeyLoading)
             {
+                _pairingKeyRefreshRequested = true;
+                return;
+            }
+
+            _isPairingKeyLoading = true;
+            try
+            {
+                do
+                {
+                    _pairingKeyRefreshRequested = false;
+                    await LoadPairingKeyCoreAsync(readPairingKey);
+                }
+                while (_pairingKeyRefreshRequested);
+            }
+            finally
+            {
+                _isPairingKeyLoading = false;
+            }
+        }
+
+        private async Task<string> ReadCurrentPairingKeyAsync()
+        {
+            using var syncHelper = await GetSettingsSyncHelperAsync();
+            var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
+            return await endpoint.GetCurrentPairingKey().WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        private async Task LoadPairingKeyCoreAsync(Func<Task<string>> readPairingKey)
+        {
+            if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)
+            {
+                return;
+            }
+
+            var useService = UseService;
+            var pairingUiVersion = _pairingUiVersion;
+            try
+            {
+                using (await _ipcSemaphore.EnterAsync())
+                {
+                    if (pairingUiVersion != _pairingUiVersion)
+                    {
+                        return;
+                    }
+
+                    if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)
+                    {
+                        return;
+                    }
+
+                    var key = await readPairingKey();
+                    if (pairingUiVersion != _pairingUiVersion)
+                    {
+                        return;
+                    }
+
+                    if (_disposed || !IsEnabled || UseService != useService || !IsElevated)
+                    {
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(key) || PairingKeyCodec.IsEncryptedValue(key))
+                    {
+                        throw new InvalidOperationException("Pairing key was not returned.");
+                    }
+
+                    if (_servicePairingKey != key)
+                    {
+                        _servicePairingKey = key;
+                        OnPropertyChanged(nameof(SecurityKey));
+                    }
+
+                    _hasPairingError = false;
+                    OnPropertyChanged(nameof(HasPairingError));
+                }
+            }
+            catch (Exception ex)
+            {
+                if (pairingUiVersion != _pairingUiVersion)
+                {
+                    return;
+                }
+
+                if (!_disposed && IsEnabled && UseService == useService && IsElevated)
+                {
+                    if (_servicePairingKey != null)
+                    {
+                        _servicePairingKey = null;
+                        OnPropertyChanged(nameof(SecurityKey));
+                    }
+
+                    _hasPairingError = true;
+                    OnPropertyChanged(nameof(HasPairingError));
+                }
+
+                Logger.LogError($"Couldn't load Mouse Without Borders pairing ({ex.GetType().Name}).");
+            }
+        }
+
+        public async Task<bool> SubmitConnectionRequestAsync(string pcName, string securityKey)
+        {
+            if (!CanConnectPairing)
+            {
+                return false;
+            }
+
+            pcName = pcName?.Trim();
+            securityKey = securityKey?.Trim();
+            if (string.IsNullOrWhiteSpace(pcName) || string.IsNullOrWhiteSpace(securityKey) ||
+                PairingKeyCodec.IsEncryptedValue(securityKey) ||
+                securityKey == MouseWithoutBordersIpc.PairingConfiguredIndicator)
+            {
+                _hasPairingError = true;
+                OnPropertyChanged(nameof(HasPairingError));
+                return false;
+            }
+
+            var useService = UseService;
+            var pairingUiVersion = _pairingUiVersion;
+            _isPairingPending = true;
+            _hasPairingError = false;
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(CanConnectPairing));
+            OnPropertyChanged(nameof(HasPairingError));
+            try
+            {
+                using (await _ipcSemaphore.EnterAsync())
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
+                    await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(TimeSpan.FromSeconds(10));
+                    if (_disposed || pairingUiVersion != _pairingUiVersion || UseService != useService || (useService && !IsElevated))
                     {
-                        await task;
+                        return false;
                     }
+
+                    _servicePairingKey = useService ? securityKey : null;
+                    OnPropertyChanged(nameof(SecurityKey));
                 }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (pairingUiVersion == _pairingUiVersion)
+                {
+                    _hasPairingError = true;
+                }
+
+                Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name}).");
+                return false;
+            }
+            finally
+            {
+                _isPairingPending = false;
+                OnPropertyChanged(nameof(CanManagePairing));
+                OnPropertyChanged(nameof(CanConnectPairing));
+                OnPropertyChanged(nameof(HasPairingError));
             }
         }
 
@@ -440,12 +654,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             using (await _ipcSemaphore.EnterAsync())
             {
+                if (_isServiceModeChanging)
+                {
+                    return null;
+                }
+
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
                     var task = syncHelper?.Endpoint?.RequestMachineSocketStateAsync();
                     if (task != null)
                     {
-                        return await task;
+                        return await task.WaitAsync(TimeSpan.FromSeconds(10));
                     }
                     else
                     {
@@ -494,7 +713,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return Task.Run(
                 async () =>
                 {
-                    previousThreadTask?.Wait();
+                    if (previousThreadTask != null)
+                    {
+                        try
+                        {
+                            await previousThreadTask;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                        }
+                    }
 
                     while (!token.IsCancellationRequested)
                     {
@@ -506,7 +734,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         catch (Exception ex)
                         {
                             Logger.LogInfo($"Poll ISettingsSyncHelper.MachineSocketState error: {ex}");
-                            continue;
                         }
 
                         if (states != null)
@@ -521,7 +748,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                         {
                                             try
                                             {
-                                                machine.Item.StatusBrush = StatusColors[state.Status];
+                                                machine.Item.StatusBrush = StatusColors.Value[state.Status];
                                             }
                                             catch (Exception)
                                             {
@@ -532,10 +759,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             }
                         }
 
-                        Thread.Sleep(500);
+                        try
+                        {
+                            await Task.Delay(500, token);
+                        }
+                        catch (OperationCanceledException) when (token.IsCancellationRequested)
+                        {
+                            break;
+                        }
                     }
                 },
-                _cancellationTokenSource.Token);
+                token);
         }
 
         private void InitializeEnabledValue()
@@ -670,14 +904,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool CanBeEnabled
         {
-            get => !_enabledStateIsGPOConfigured;
+            get => !_isServiceModeChanging && !_enabledStateIsGPOConfigured;
         }
 
         public bool CanToggleUseService
         {
             get
             {
-                return IsEnabled && !(!IsElevated && !UseService);
+                return !_isServiceModeChanging && IsEnabled && !(!IsElevated && !UseService);
             }
         }
 
@@ -736,19 +970,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string SecurityKey
-        {
-            get => Settings.Properties.SecurityKey.Value;
-
-            set
-            {
-                if (value != Settings.Properties.SecurityKey.Value)
-                {
-                    Settings.Properties.SecurityKey.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
+        public string SecurityKey => UseService
+            ? IsElevated
+                ? _servicePairingKey ?? string.Empty
+                : PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value) ? MouseWithoutBordersIpc.PairingConfiguredIndicator : string.Empty
+            : PairingSetupRequired ? string.Empty : Settings.Properties.SecurityKey.Value;
 
         public bool WrapMouse
         {
@@ -1225,7 +1451,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             public bool CanDragDrop { get; set; }
 
-            private Brush _statusBrush = StatusColors[SocketStatus.NA];
+            private Brush _statusBrush = StatusColors.Value[SocketStatus.NA];
 
             public Brush StatusBrush
             {
@@ -1262,7 +1488,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     machineMatrixString = value;
                 }
 
-                Settings.Properties.MachineMatrixString = new List<string>(value.ToEnumerable().Select(d => d.Name));
+                Settings.Properties.ReplaceMachineMatrixString(value.ToEnumerable().Select(d => d.Name));
                 NotifyPropertyChanged();
             }
         }
@@ -1288,7 +1514,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
+                var useService = UseService;
+                var displayedKey = SecurityKey;
                 LoadViewModelFromSettings(SettingsUtils.GetSettings<MouseWithoutBordersSettings>("MouseWithoutBorders"));
+                if (UseService != useService || PairingSetupRequired || !IsEnabled)
+                {
+                    _servicePairingKey = null;
+                }
+
+                if (SecurityKey != displayedKey)
+                {
+                    OnPropertyChanged(nameof(SecurityKey));
+                }
+
                 return true;
             }
             catch (System.Exception ex)
@@ -1327,6 +1565,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void NotifyUpdatedSettings()
         {
             OnPropertyChanged(null); // Notify all properties might have changed.
+        }
+
+        public override void OnPageLoaded()
+        {
+            ResetPairingUiState();
+            base.OnPageLoaded();
+        }
+
+        public void ResetPairingUiState()
+        {
+            _pairingUiVersion++;
+            _servicePairingKey = null;
+            _hasPairingError = false;
+            ConnectFieldsVisible = false;
+            OnPropertyChanged(nameof(CanManagePairing));
+            OnPropertyChanged(nameof(HasPairingError));
+            OnPropertyChanged(nameof(ConnectFieldsVisible));
+            OnPropertyChanged(nameof(SecurityKey));
+            OnPropertyChanged(nameof(PairingSetupRequired));
+            OnPropertyChanged(nameof(ShowPairingSetupRequired));
+            OnPropertyChanged(nameof(CanConnectPairing));
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
@@ -1376,23 +1635,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         // Task was cancelled, which is expected
                     }
-
-                    // Dispose the named pipe stream
-                    try
-                    {
-                        syncHelperStream?.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Error disposing sync helper stream: {ex}");
-                    }
-                    finally
-                    {
-                        syncHelperStream = null;
-                    }
-
-                    // Dispose the semaphore
-                    _ipcSemaphore?.Dispose();
                 }
 
                 _disposed = true;
@@ -1431,7 +1673,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowInfobarRunAsAdminText
         {
-            get { return !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
+            get { return !_isServiceModeChanging && !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
         }
+
+        public bool ShowPairingRequiresAdministrator => IsEnabled && UseService && !IsElevated;
     }
 }

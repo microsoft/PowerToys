@@ -5,15 +5,19 @@
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Windows.Storage.Pickers;
+using Windows.Graphics.Imaging;
 using Windows.Win32.Foundation;
 
 namespace Microsoft.CmdPal.UI.Settings;
@@ -24,6 +28,9 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class AppearancePage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
+    private CompactPositionPickerWindow? _compactPositionPickerWindow;
+    private bool _isOpeningCompactPositionPicker;
 
     internal SettingsViewModel ViewModel { get; }
 
@@ -36,14 +43,115 @@ public sealed partial class AppearancePage : Page, IDisposable
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
         ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, languageService);
+        Unloaded += AppearancePage_Unloaded;
     }
 
     public void Dispose() => ViewModel.Dispose();
+
+    private void AppearancePage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        _compactPositionPickerWindow?.Close();
+        _compactPositionPickerWindow = null;
+    }
 
     private void OpenRecentItemsSettings_Click(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(
             SettingsLinkId: SettingsLinkIds.Appearance.HomeRecentCommands));
+    }
+
+    private async void OpenCompactPositionPicker_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_compactPositionPickerWindow is not null)
+            {
+                _compactPositionPickerWindow.Activate();
+                return;
+            }
+
+            if (_isOpeningCompactPositionPicker || XamlRoot?.ContentIslandEnvironment is null)
+            {
+                return;
+            }
+
+            SoftwareBitmapSource? screenshotSource = null;
+            try
+            {
+                _isOpeningCompactPositionPicker = true;
+                OpenCompactPositionPickerButton.IsEnabled = false;
+
+                var windowId = XamlRoot.ContentIslandEnvironment.AppWindowId;
+                var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest) ?? DisplayArea.Primary;
+                screenshotSource = await CreateScreenshotSourceAsync(DesktopScreenshotHelper.CaptureAsync(displayArea.OuterBounds));
+
+                if (!IsLoaded)
+                {
+                    return;
+                }
+
+                var picker = new CompactPositionPickerWindow(
+                    displayArea,
+                    screenshotSource,
+                    ViewModel.CompactCenterHeightPercentage);
+                screenshotSource = null; // The picker now owns the screenshot.
+                picker.PositionSaved += percentage => ViewModel.CompactCenterHeightPercentage = percentage;
+                picker.Closed += PickerClosedHandler;
+
+                _compactPositionPickerWindow = picker;
+                picker.Activate();
+
+                void PickerClosedHandler(object sender, WindowEventArgs args)
+                {
+                    picker.Closed -= PickerClosedHandler;
+                    if (ReferenceEquals(_compactPositionPickerWindow, picker))
+                    {
+                        _compactPositionPickerWindow = null;
+                    }
+
+                    if (IsLoaded)
+                    {
+                        _ = OpenCompactPositionPickerButton.Focus(FocusState.Programmatic);
+                    }
+                }
+            }
+            finally
+            {
+                screenshotSource?.Dispose();
+                _isOpeningCompactPositionPicker = false;
+                if (IsLoaded)
+                {
+                    OpenCompactPositionPickerButton.IsEnabled = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to open the compact position picker", ex);
+        }
+    }
+
+    private static async Task<SoftwareBitmapSource?> CreateScreenshotSourceAsync(Task<SoftwareBitmap?> captureTask)
+    {
+        SoftwareBitmapSource? source = null;
+        try
+        {
+            using var bitmap = await captureTask;
+            if (bitmap is null)
+            {
+                return null;
+            }
+
+            source = new SoftwareBitmapSource();
+            await source.SetBitmapAsync(bitmap);
+            return source;
+        }
+        catch (Exception ex)
+        {
+            source?.Dispose();
+            Logger.LogError("Failed to capture the desktop for the compact position picker", ex);
+            return null;
+        }
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)

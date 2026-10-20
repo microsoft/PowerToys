@@ -58,8 +58,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<FocusDockMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
-    IRecipient<ClosePaletteContextMenuMessage>,
+    IContextMenuOwner,
     INotifyPropertyChanged,
+    ISearchBarHost,
     IDisposable
 {
     private const double QuickAccessShelfButtonWidth = 40;
@@ -143,6 +144,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public ShellViewModel ViewModel { get; private set; }
 
     public QuickAccessShelfViewModel QuickAccessShelf { get; }
+
+    bool ISearchBarHost.CanFocusSearchBar => HostWindow?.IsVisibleToUser == true;
 
     public IHostWindow? HostWindow
     {
@@ -250,10 +253,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _dialogHost = new ShellContentDialogHost(this, SetContentDialogMode);
         _externalCommandLinks = externalCommandLinkCoordinatorFactory.Create(_dialogHost, DispatcherQueue);
         _itemActions = new ItemActionController(
-            () => ViewModel.CurrentCommandContext,
+            () => _pageInteractions.CurrentCommandContext,
             () => IsLoaded && ItemActionsAllowed && !IsContentDialogActive,
             new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout),
             WeakReferenceMessenger.Default);
+        MainCommandBar.ContextMenuOwner = this;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
@@ -272,7 +276,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
-        WeakReferenceMessenger.Default.Register<ClosePaletteContextMenuMessage>(this);
 
         // The compact-mode setting can be toggled while the palette is open. React to the
         // hot-reload so the expanded/collapsed layout updates immediately instead of waiting
@@ -631,7 +634,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 DetailsContent.ChangeView(null, 0, null, true);
                 ViewModel.Details = details;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                 ViewModel.IsDetailsVisible = true;
             }
             catch (Exception ex)
@@ -1201,29 +1203,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         UIHelper.AnnounceActionForAccessibility(RootFrame, announcement, "CommandPalettePageNavigatedTo");
     }
 
-    /// <summary>
-    /// Gets a value indicating whether determines if the current Details have a HeroImage, given the theme
-    /// we're currently in. This needs to be evaluated in the view, because the
-    /// viewModel doesn't actually know what the current theme is.
-    /// </summary>
-    public bool HasHeroImage
-    {
-        get
-        {
-            var requestedTheme = ActualTheme;
-            var iconInfoVM = ViewModel.Details?.HeroImage;
-            return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
-        }
-    }
-
-    private void Command_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
-        }
-    }
-
     private void ShellPage_LosingFocus(UIElement sender, LosingFocusEventArgs args)
     {
         if (HostWindow?.IsVisibleToUser != true || args.NewFocusedElement is null)
@@ -1697,7 +1676,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
-    public void Receive(ClosePaletteContextMenuMessage message) => ReleaseQuickAccessShelfContext();
+    void IContextMenuOwner.ShowContextMenu(ContextMenuRequest request) => _itemActions.ShowContextMenu(request);
+
+    void IContextMenuOwner.ShowContextMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu) =>
+        _itemActions.ShowContextMenuAfterKeyEvent(context, initialSubmenu);
+
+    void IContextMenuOwner.CloseContextMenu()
+    {
+        _itemActions.CloseContextMenu();
+        ReleaseQuickAccessShelfContext();
+    }
 
     private Task<ListItemViewModel?> EnsureQuickAccessShelfContextAsync(Button anchor, QuickAccessShelfItem item)
     {
@@ -2100,6 +2088,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     }
 
                     if (shellPage.TryHandleQuickAccessShelfItemKeyDown(e, modifiers))
+                    {
+                        break;
+                    }
+
+                    if (!shellPage.ItemActionsAllowed)
                     {
                         break;
                     }

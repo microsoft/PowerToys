@@ -49,6 +49,9 @@
     <Compile Include="..\Class\IClipboardHelper.cs">
       <Link>IClipboardHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Class\IpcChannel.cs">
+      <Link>IpcChannel.cs</Link>
+    </Compile>
     <Compile Include="..\Core\IpcChannelHelper.cs">
       <Link>IpcChannelHelper.cs</Link>
     </Compile>
@@ -64,7 +67,6 @@
     <PackageReference Include="MessagePack" />
     <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with Advanced Paste version (from the Semantic Kernel dependency). -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="StreamJsonRpc" />
   </ItemGroup>
   <ItemGroup>

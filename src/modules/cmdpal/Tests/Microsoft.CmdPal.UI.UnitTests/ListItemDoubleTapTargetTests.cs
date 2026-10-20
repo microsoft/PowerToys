@@ -15,6 +15,7 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public class ListItemDoubleTapTargetTests
 {
     private readonly List<ListItemViewModel> _items = [];
+    private readonly TestPageContext _pageContext = new();
 
     [TestCleanup]
     public void Cleanup()
@@ -23,6 +24,8 @@ public class ListItemDoubleTapTargetTests
         {
             item.SafeCleanup();
         }
+
+        GC.KeepAlive(_pageContext);
     }
 
     [TestMethod]
@@ -146,7 +149,7 @@ public class ListItemDoubleTapTargetTests
 
     private ListItemViewModel CreateItem(IListItem model)
     {
-        var item = new ListItemViewModel(model, new(new TestPageContext()), DefaultContextMenuFactory.Instance);
+        var item = new ListItemViewModel(model, new WeakReference<IPageContext>(_pageContext), DefaultContextMenuFactory.Instance);
         _items.Add(item);
         item.SlowInitializeProperties();
         return item;

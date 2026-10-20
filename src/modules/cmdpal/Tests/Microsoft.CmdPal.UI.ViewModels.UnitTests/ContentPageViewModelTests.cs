@@ -44,6 +44,78 @@ public partial class ContentPageViewModelTests
         new(page, new ImmediateTaskScheduler(), new TestAppExtensionHost(), CommandProviderContext.Empty);
 
     [TestMethod]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    public void DetailsUpdate_InitializesReplacementAndCleansUpPreviousDetails(bool hasInitialDetails, bool hasUpdatedDetails)
+    {
+        var initialDetails = new Details { Title = "Initial title", Body = "Initial body" };
+        var page = new TestContentPage { Details = hasInitialDetails ? initialDetails : null };
+        var viewModel = CreateViewModel(page);
+
+        try
+        {
+            viewModel.InitializeProperties();
+            viewModel.ApplyPendingUpdates();
+            var previousDetails = viewModel.Details;
+            List<string?> notifications = [];
+            viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+            DetailsViewModel? publishedDetails = null;
+            var detailsUpdates = 0;
+            viewModel.DetailsChanged += (_, args) =>
+            {
+                publishedDetails = args.Details;
+                detailsUpdates++;
+            };
+
+            var updatedDetails = new Details
+            {
+                Title = "Updated title",
+                Body = "Updated body",
+                Metadata = [new DetailsElement { Key = "Link", Data = new DetailsLink("https://example.com", "Example") }],
+            };
+
+            page.Details = hasUpdatedDetails ? updatedDetails : null;
+            viewModel.ApplyPendingUpdates();
+
+            Assert.AreEqual(hasUpdatedDetails, viewModel.HasDetails);
+            CollectionAssert.Contains(notifications, nameof(viewModel.Details));
+            CollectionAssert.Contains(notifications, nameof(viewModel.HasDetails));
+            Assert.AreEqual(1, detailsUpdates);
+            if (hasUpdatedDetails)
+            {
+                var replacement = viewModel.Details;
+                Assert.IsNotNull(replacement);
+                Assert.AreNotSame(previousDetails, replacement);
+                Assert.AreEqual("Updated title", replacement.Title);
+                Assert.AreEqual("Updated body", replacement.Body);
+                Assert.AreEqual(1, replacement.Metadata.Count);
+                Assert.AreSame(replacement, publishedDetails);
+
+                updatedDetails.Body = "Live update";
+                Assert.AreEqual("Live update", replacement.Body);
+            }
+            else
+            {
+                Assert.IsNull(viewModel.Details);
+                Assert.IsNull(publishedDetails);
+            }
+
+            if (previousDetails is not null)
+            {
+                initialDetails.Title = "Detached title";
+                initialDetails.Body = "Detached body";
+                Assert.AreEqual("Initial title", previousDetails.Title);
+                Assert.AreEqual("Initial body", previousDetails.Body);
+            }
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
     public void AllCommands_ReturnCachedSnapshot()
     {
         // Content pages should expose stable snapshots, not the live Commands

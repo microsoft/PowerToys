@@ -113,6 +113,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal">
@@ -185,6 +186,15 @@
                         </TransitionCollection>
                     </Grid.Transitions>
                 </Grid>
+                <Grid
+                    Grid.Column="2"
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right">
+                    <controls:FiltersDropDown
+                        x:Name="FiltersDropDown"
+                        HorizontalAlignment="Right"
+                        CurrentPageViewModel="{x:Bind Navigation.CurrentPage, Mode=OneWay}" />
+                </Grid>
 
             </Grid>
 
@@ -199,6 +209,14 @@
             Grid.Row="1"
             BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,1">
+            <Grid.ColumnDefinitions>
+                <!--
+                    The page keeps the flyout's default content width (the 500px presenter
+                    minus its border). Details widen the flyout instead of squeezing the page.
+                -->
+                <ColumnDefinition Width="498" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <ContentControl
                 x:Name="PageContent"
                 HorizontalContentAlignment="Stretch"
@@ -211,6 +229,24 @@
                 Text="{x:Bind Navigation.CurrentPage.ErrorMessage, Mode=OneWay}"
                 TextWrapping="Wrap"
                 Visibility="{x:Bind Navigation.CurrentPage.ErrorMessage, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+            <ScrollViewer
+                x:Name="DetailsContent"
+                Grid.Column="1"
+                Margin="4"
+                AutomationProperties.AccessibilityView="Content"
+                AutomationProperties.HelpText="{x:Bind DetailsView.Details.Body, Mode=OneWay}"
+                AutomationProperties.LandmarkType="Custom"
+                AutomationProperties.LocalizedLandmarkType="Details"
+                AutomationProperties.Name="{x:Bind DetailsView.Details.Title, Mode=OneWay}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                IsTabStop="True"
+                UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
+                Visibility="Collapsed">
+                <controls:DetailsPane x:Name="DetailsView" Margin="16" />
+            </ScrollViewer>
         </Grid>
 
         <local:DockPageCommandBar

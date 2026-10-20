@@ -4,6 +4,7 @@
 
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseWithoutBorders.Core;
@@ -24,6 +25,22 @@ public sealed class EncryptionTests
     {
         Encryption.InitEncryption();
         Encryption.MyKey = TestKey;
+    }
+
+    [DataTestMethod]
+    [DataRow("mwb-dpapi:v1:AQID", false)]
+    [DataRow(" MWB-DPAPI:v2:AQID ", false)]
+    [DataRow("mwb- dpapi:v1:AQID", false)]
+    [DataRow("                ", false)]
+    [DataRow("123456789012345", false)]
+    [DataRow("1234 5678\t9012\r\n3456", true)]
+    [DataRow("MwbEncryptionTestKey1234", true)]
+    public void LegacyKeyValidationRejectsUnusableNormalizedInput(string input, bool expected)
+    {
+        var key = Regex.Replace(input, @"\s+", string.Empty);
+
+        Assert.AreEqual(expected, Encryption.IsKeyValid(key, out var error));
+        Assert.AreEqual(expected, error == null);
     }
 
     [TestMethod]

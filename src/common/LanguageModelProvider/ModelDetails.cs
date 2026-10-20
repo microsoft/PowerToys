@@ -22,7 +22,7 @@ public class ModelDetails
 
     public string Icon { get; set; } = string.Empty;
 
-    public List<HardwareAccelerator> HardwareAccelerators { get; set; } = [];
+    public List<HardwareAccelerator> HardwareAccelerators { get; init; } = [];
 
     public string License { get; set; } = string.Empty;
 

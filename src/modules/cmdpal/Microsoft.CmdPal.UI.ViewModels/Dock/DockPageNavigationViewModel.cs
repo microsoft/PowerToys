@@ -309,6 +309,11 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
             _scheduler);
     }
 
+    /// <summary>
+    /// Discards <paramref name="page"/>. <see cref="PageViewModel.CleanupAsync"/> stops local
+    /// work at once, then releases extension objects on a worker after the page's active
+    /// operations finish, so a slow extension can't block the UI thread.
+    /// </summary>
     private static void CleanupPage(PageViewModel? page)
     {
         if (page is null)
@@ -318,11 +323,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
 
         try
         {
-            page.SafeCleanup();
-            if (page is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            _ = page.CleanupAsync();
         }
         catch (Exception ex)
         {

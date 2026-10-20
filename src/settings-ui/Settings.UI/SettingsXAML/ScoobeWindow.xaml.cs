@@ -15,6 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
@@ -45,6 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             this.InitializeComponent();
 
+            WindowHelper.SetTheme(this, App.ThemeService.Theme);
             SetTitleBar();
 
             SetOpenMainWindowCallback((Type type) =>
@@ -58,9 +60,20 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
-            TitleBarHelper.SetPreferredTheme(this);
+            if (Content is FrameworkElement rootElement)
+            {
+                rootElement.ActualThemeChanged += OnActualThemeChanged;
+                OnActualThemeChanged(rootElement, null);
+            }
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("ScoobeWindow_Title");
+        }
+
+        private void OnActualThemeChanged(FrameworkElement sender, object args)
+        {
+            TitleBarHelper.SetPreferredTheme(
+                this,
+                sender.ActualTheme == ElementTheme.Dark ? TitleBarTheme.Dark : TitleBarTheme.Light);
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -77,6 +90,10 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             App.ThemeService.ThemeChanged -= OnThemeChanged;
+            if (Content is FrameworkElement rootElement)
+            {
+                rootElement.ActualThemeChanged -= OnActualThemeChanged;
+            }
         }
 
         private void OnThemeChanged(object sender, ElementTheme theme)
