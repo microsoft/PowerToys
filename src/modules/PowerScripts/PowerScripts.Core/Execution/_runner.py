@@ -20,7 +20,10 @@ Keeping this protocol identical for Windows and WSL means the user script never 
 how it runs.
 
 Input JSON fields (all optional): text, html, image_path, file_paths (list), audio_path, video_path,
-params (object of name->string).
+params (object of name->string). Two control fields decouple the entry point from the naming
+convention: ``entry`` (explicit function name to call) and ``input_format`` (the shape used to build
+its argument). When ``entry`` is absent the runner discovers the single
+``powerscript_from_<input>_to_<output>`` function instead.
 
 Output JSON fields (any subset): text, html, image_path, file_paths (list), audio_path, video_path.
 A script may also just return a plain string (treated as text) or a path-like value.
@@ -110,8 +113,19 @@ def main():
         return
 
     try:
-        function_name, input_format = _find_signature(script_path)
         module = _load_module(script_path)
+
+        # An explicit entry function (declared in the .tool.json descriptor / header) decouples the
+        # function name from the powerscript_from_*_to_* convention: the host passes the function name
+        # and the input shape, so the author can name the function anything. When absent we fall back
+        # to discovering the single convention-named function, so zero-config scripts are unchanged.
+        entry = payload.get("entry")
+        if entry:
+            function_name = entry
+            input_format = payload.get("input_format") or "none"
+        else:
+            function_name, input_format = _find_signature(script_path)
+
         function = getattr(module, function_name, None)
         if function is None or not callable(function):
             _fail(f"Script does not define callable '{function_name}'.")

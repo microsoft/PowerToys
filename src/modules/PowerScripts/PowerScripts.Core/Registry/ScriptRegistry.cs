@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Registry;
@@ -40,8 +41,9 @@ public sealed class ScriptRegistry
     /// single self-contained file carrying its metadata in a leading <c>@powerscript.*</c> comment
     /// header (see <see cref="ScriptHeaderParser"/>). Scripts are discovered either as a loose file
     /// directly under the root (e.g. <c>whats-my-ip.ps1</c>) or as the one header script inside a
-    /// sub-folder (which lets a script keep companion assets). Surfaces are inferred from the script
-    /// kind when none are declared. Bad scripts are recorded in <see cref="Errors"/> and skipped.
+    /// sub-folder (which lets a script keep companion assets). A script declares only its own input/
+    /// output shapes (never which modules host it); consumers discover it by that I/O. Bad scripts are
+    /// recorded in <see cref="Errors"/> and skipped.
     /// </summary>
     public void Load()
     {
@@ -58,9 +60,19 @@ public sealed class ScriptRegistry
         void TryAdd(PowerScriptManifest manifest, string folder, string context)
         {
             manifest.FolderPath = folder;
+            manifest.ScriptsRoot = Root;
 
-            // Authors don't hand-list surfaces; the ingestion side infers them from the kind.
-            SurfaceInference.ApplyDefaults(manifest);
+            // Bake the resolved input/output shapes onto the manifest once, at load. Python transforms
+            // read their shapes from the powerscript_from_*_to_* function name (a filesystem read), so
+            // resolving here means every downstream consumer — the registry filters below, the host's
+            // list projection, the trust hash — works from the same shapes without re-reading the file
+            // or reasoning about a separate "kind". File-driven simply means InputFormat == Files.
+            var signature = manifest.Runtime == ScriptRuntime.Python
+                ? PowerScriptPythonConvention.ParseFile(manifest.EntryFullPath)
+                : null;
+            var (resolvedInput, resolvedOutput) = ScriptIo.Resolve(manifest, signature);
+            manifest.InputFormat = resolvedInput;
+            manifest.OutputFormat = resolvedOutput;
 
             var validationErrors = ManifestValidator.Validate(manifest, new DirectoryInfo(folder).Name);
             if (validationErrors.Count > 0)
@@ -81,49 +93,60 @@ public sealed class ScriptRegistry
             _scripts.Add(manifest);
         }
 
-        // Loose header script files placed directly under the root (single-file scripts).
-        foreach (var file in EnumerateHeaderCandidates(Root))
-        {
-            var manifest = ScriptHeaderParser.TryParseFile(file);
-            if (manifest is not null)
-            {
-                TryAdd(manifest, Root, file);
-            }
-        }
-
-        // A header script inside a sub-folder (keeps companion assets next to the script).
+        // Loose scripts placed directly under the root, plus one sub-folder per script (which lets a
+        // script keep companion assets next to it). Each directory may contribute header-authored
+        // scripts and/or explicit ".tool.json" descriptor scripts.
+        LoadFromDirectory(Root, TryAdd);
         foreach (var folder in Directory.EnumerateDirectories(Root))
         {
-            var file = FindHeaderScript(folder);
-            if (file is not null)
-            {
-                var manifest = ScriptHeaderParser.TryParseFile(file);
-                if (manifest is not null)
-                {
-                    TryAdd(manifest, folder, file);
-                }
-            }
+            LoadFromDirectory(folder, TryAdd);
         }
 
         _scripts.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
-    /// Returns the path of the first script file inside <paramref name="folder"/> that carries embedded
-    /// <c>@powerscript.*</c> metadata, or null when none qualifies.
+    /// Discovers every PowerScript in a single directory. Explicit <c>*.tool.json</c> descriptors are
+    /// read first; then <c>@powerscript.*</c> header scripts, skipping any script file that already has
+    /// a sibling descriptor so the same script is never registered twice.
     /// </summary>
-    private static string? FindHeaderScript(string folder)
+    private void LoadFromDirectory(string directory, Action<PowerScriptManifest, string, string> tryAdd)
     {
-        foreach (var file in EnumerateHeaderCandidates(folder))
+        var describedEntries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var descriptor in EnumerateDescriptorCandidates(directory))
         {
-            if (ScriptHeaderParser.TryParseFile(file) is not null)
+            var manifest = ToolDescriptorParser.TryParseFile(descriptor);
+            if (manifest is null)
             {
-                return file;
+                _errors.Add(new ScriptLoadError(descriptor, "invalid or unreadable .tool.json descriptor; skipped."));
+                continue;
             }
+
+            describedEntries.Add(Path.Combine(directory, manifest.Entry));
+            tryAdd(manifest, directory, descriptor);
         }
 
-        return null;
+        foreach (var file in EnumerateHeaderCandidates(directory))
+        {
+            // A script authored via a descriptor is already registered; don't also treat its body as a
+            // header script (it usually has no @powerscript.* directives anyway).
+            if (describedEntries.Contains(file))
+            {
+                continue;
+            }
+
+            var manifest = ScriptHeaderParser.TryParseFile(file);
+            if (manifest is not null)
+            {
+                tryAdd(manifest, directory, file);
+            }
+        }
     }
+
+    private static IEnumerable<string> EnumerateDescriptorCandidates(string directory) =>
+        Directory.EnumerateFiles(directory, "*" + ToolDescriptorParser.DescriptorSuffix)
+            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
 
     private static IEnumerable<string> EnumerateHeaderCandidates(string directory) =>
         Directory.EnumerateFiles(directory)
@@ -133,9 +156,9 @@ public sealed class ScriptRegistry
     public PowerScriptManifest? Get(string id) =>
         _scripts.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>System scripts (no file input) — candidates for Keyboard Manager / Command Palette.</summary>
+    /// <summary>Scripts with no file input (resolved input shape is not Files) — candidates for Keyboard Manager / Command Palette.</summary>
     public IEnumerable<PowerScriptManifest> SystemScripts =>
-        _scripts.Where(s => s.Kind == ScriptKind.System);
+        _scripts.Where(s => s.InputFormat != PowerScriptDataFormat.Files);
 
     /// <summary>
     /// File scripts whose declared input extensions match the given file extension (e.g. ".png").
@@ -145,7 +168,7 @@ public sealed class ScriptRegistry
     {
         var ext = NormalizeExtension(extension);
         return _scripts.Where(s =>
-            s.Kind == ScriptKind.File &&
+            s.InputFormat == PowerScriptDataFormat.Files &&
             s.Input is not null &&
             s.Input.Extensions.Any(e => MatchesExtension(e, ext)));
     }
@@ -158,7 +181,7 @@ public sealed class ScriptRegistry
     {
         var extensions = files.Select(f => NormalizeExtension(Path.GetExtension(f))).Distinct().ToList();
         return _scripts.Where(s =>
-            s.Kind == ScriptKind.File &&
+            s.InputFormat == PowerScriptDataFormat.Files &&
             s.Input is not null &&
             extensions.All(ext => s.Input.Extensions.Any(e => MatchesExtension(e, ext))) &&
             files.Count >= s.Input.MinFiles &&

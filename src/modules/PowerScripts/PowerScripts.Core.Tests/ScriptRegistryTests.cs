@@ -43,13 +43,11 @@ public class ScriptRegistryTests
         WriteScript("good", """
             # @powerscript.id good
             # @powerscript.name Good
-            # @powerscript.kind system
             """);
 
         // Missing 'id' -> should be rejected.
         WriteScript("bad", """
             # @powerscript.name Bad
-            # @powerscript.kind system
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -67,7 +65,6 @@ public class ScriptRegistryTests
         WriteScript("some-file", """
             # @powerscript.id portable.id
             # @powerscript.name Portable
-            # @powerscript.kind system
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -85,12 +82,10 @@ public class ScriptRegistryTests
         WriteScript("file-a", """
             # @powerscript.id dup
             # @powerscript.name First
-            # @powerscript.kind system
             """);
         WriteScript("file-b", """
             # @powerscript.id dup
             # @powerscript.name Second
-            # @powerscript.kind system
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -108,14 +103,12 @@ public class ScriptRegistryTests
         WriteScript("png-only", """
             # @powerscript.id png-only
             # @powerscript.name PNG
-            # @powerscript.kind file
             # @powerscript.extensions .png
             """);
 
         WriteScript("any-file", """
             # @powerscript.id any-file
             # @powerscript.name Any
-            # @powerscript.kind file
             # @powerscript.extensions *
             """);
 
@@ -135,7 +128,6 @@ public class ScriptRegistryTests
         WriteScript("single-png", """
             # @powerscript.id single-png
             # @powerscript.name Single PNG
-            # @powerscript.kind file
             # @powerscript.extensions .png
             # @powerscript.minfiles 1
             # @powerscript.maxfiles 1
@@ -155,23 +147,22 @@ public class ScriptRegistryTests
     }
 
     [TestMethod]
-    public void SystemScripts_Filters_ByKind()
+    public void SystemScripts_ExcludesFileScripts()
     {
         WriteScript("sys", """
             # @powerscript.id sys
             # @powerscript.name Sys
-            # @powerscript.kind system
             """);
         WriteScript("file", """
             # @powerscript.id file
             # @powerscript.name File
-            # @powerscript.kind file
             # @powerscript.extensions *
             """);
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
 
+        // "System" is now derived: any script whose resolved input shape is not files.
         var system = registry.SystemScripts.Select(s => s.Id).ToList();
         CollectionAssert.AreEqual(new[] { "sys" }, system);
     }

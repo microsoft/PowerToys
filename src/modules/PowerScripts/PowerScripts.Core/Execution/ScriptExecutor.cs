@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using PowerScripts.Core.Manifest;
+using PowerScripts.Core.Security;
 
 namespace PowerScripts.Core.Execution;
 
@@ -25,20 +26,34 @@ public sealed class ScriptExecutionResult
 /// Runs a PowerScript. This is the single execution path shared by every surface (context menu,
 /// Keyboard Manager, Command Palette, agents) so behavior and security posture stay consistent.
 ///
-/// Prototype security posture: always runs non-elevated under the invoking user's token, with the
-/// PowerShell profile disabled and a per-run execution policy of Bypass scoped to the launched
-/// process only. Signing / capability enforcement is intentionally out of scope for the prototype.
+/// Security posture: all launches flow through the centrally resolved MXC policy and always run
+/// non-elevated under the invoking user's token. PowerShell additionally disables profiles and uses
+/// a per-process execution policy of Bypass.
 /// </summary>
 public sealed class ScriptExecutor
 {
     /// <summary>Environment variable the script can read to get the newline-separated input files.</summary>
     public const string FilesEnvironmentVariable = "POWERSCRIPTS_FILES";
 
+    private readonly MxcSettings? _mxcSettings;
+
+    public ScriptExecutor(MxcSettings? mxcSettings = null)
+    {
+        _mxcSettings = mxcSettings;
+    }
+
     public ScriptExecutionResult Execute(
         PowerScriptManifest manifest,
         IReadOnlyList<string>? files = null,
         IReadOnlyDictionary<string, string?>? parameters = null)
     {
+        // A descriptor-authored script (explicit .tool.json) carries its own launch recipe and is run
+        // through the language-agnostic descriptor executor, regardless of runtime.
+        if (manifest.Execute is not null)
+        {
+            return DescriptorExecutor.Run(manifest, files, parameters, mxcSettings: _mxcSettings);
+        }
+
         if (manifest.Runtime == ScriptRuntime.Python)
         {
             return ExecutePython(manifest, files, parameters);
@@ -95,19 +110,14 @@ public sealed class ScriptExecutor
             }
         }
 
-        using var process = new Process { StartInfo = psi };
-        process.Start();
-
-        // Read both streams concurrently to avoid pipe deadlock on large output.
-        var stdOutTask = process.StandardOutput.ReadToEndAsync();
-        var stdErrTask = process.StandardError.ReadToEndAsync();
-        process.WaitForExit();
+        var context = Security.ProcessExecutionContext.FromManifest(manifest, files, parameters);
+        var result = Security.ProcessRunner.Run(psi, context, mxcSettings: _mxcSettings);
 
         return new ScriptExecutionResult
         {
-            ExitCode = process.ExitCode,
-            StdOut = stdOutTask.GetAwaiter().GetResult(),
-            StdErr = stdErrTask.GetAwaiter().GetResult(),
+            ExitCode = result.ExitCode,
+            StdOut = result.StdOut,
+            StdErr = result.StdErr,
         };
     }
 
@@ -117,7 +127,7 @@ public sealed class ScriptExecutor
     /// as stdout; produced file/image paths are returned newline-separated so the CLI surfaces can
     /// report them.
     /// </summary>
-    private static ScriptExecutionResult ExecutePython(
+    private ScriptExecutionResult ExecutePython(
         PowerScriptManifest manifest,
         IReadOnlyList<string>? files,
         IReadOnlyDictionary<string, string?>? parameters)
@@ -130,7 +140,7 @@ public sealed class ScriptExecutor
                 .ToDictionary(kv => kv.Key, kv => kv.Value!),
         };
 
-        var result = new PythonRuntime().Run(manifest, input);
+        var result = new PythonRuntime(mxcSettings: _mxcSettings).Run(manifest, input);
 
         var stdoutParts = new List<string>();
         if (!string.IsNullOrEmpty(result.Text))

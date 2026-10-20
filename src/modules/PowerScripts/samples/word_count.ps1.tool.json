@@ -1,0 +1,25 @@
+{
+  "name": "word-count",
+  "title": "Count words",
+  "description": "Count the words in one or more text files. Authored via an explicit .tool.json descriptor (MCP Tool shape) rather than a comment header.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "file": {
+        "type": "string",
+        "contentMediaType": "text/plain",
+        "description": "The text file to count words in."
+      }
+    },
+    "required": ["file"]
+  },
+  "x-execute": {
+    "command": ["powershell", "word_count.ps1"]
+  },
+  "x-powerscript": {
+    "extensions": [".txt", ".md"],
+    "capabilities": ["fileRead"],
+    "publisher": "PowerToys samples",
+    "version": "1.0.0"
+  }
+}

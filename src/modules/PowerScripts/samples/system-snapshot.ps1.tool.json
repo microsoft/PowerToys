@@ -1,0 +1,9 @@
+{
+  "name": "system-snapshot",
+  "title": "System Snapshot",
+  "description": "Show computer name, OS and uptime.",
+  "inputSchema": { "type": "object", "properties": {} },
+  "x-powerscript": {
+    "capabilities": ["systemInfo"]
+  }
+}

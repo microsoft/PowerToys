@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Win32;
+using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
 
@@ -36,7 +37,7 @@ internal static class ShellRegistration
     {
         // Group file scripts by each declared extension (skip the "*" wildcard for the static menu).
         var byExtension = new Dictionary<string, List<PowerScriptManifest>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var script in registry.Scripts.Where(s => s.Kind == ScriptKind.File && s.Input is not null))
+        foreach (var script in registry.Scripts.Where(s => s.InputFormat == PowerScriptDataFormat.Files && s.Input is not null))
         {
             foreach (var rawExt in script.Input!.Extensions)
             {
@@ -102,7 +103,7 @@ internal static class ShellRegistration
         // Remove for every extension currently declared, plus best-effort sweep is unnecessary since
         // we only ever create owned keys.
         var extensions = registry.Scripts
-            .Where(s => s.Kind == ScriptKind.File && s.Input is not null)
+            .Where(s => s.InputFormat == PowerScriptDataFormat.Files && s.Input is not null)
             .SelectMany(s => s.Input!.Extensions)
             .Where(e => e != "*")
             .Select(e => e.StartsWith('.') ? e : "." + e)

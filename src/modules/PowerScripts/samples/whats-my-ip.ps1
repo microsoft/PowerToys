@@ -1,13 +1,7 @@
-# @powerscript.id          whats-my-ip
-# @powerscript.name        What's my IP
-# @powerscript.description  Look up this PC's public IP address and show it in a message box.
-# @powerscript.kind        system
-# @powerscript.capability  network
-# @powerscript.icon        \uE774
-#
-# A self-contained, single-file PowerScript: all of its metadata lives in the @powerscript.*
-# header comment above, so there is no separate manifest.json. Because no surfaces are declared,
-# PowerScripts infers them from the "action" kind (Keyboard Manager + Command Palette).
+# What's my IP — look up this PC's public IP. Metadata lives in the sibling
+# whats-my-ip.ps1.tool.json descriptor (an MCP Tool), so there is no separate manifest and no
+# @powerscript header. Its no-input contract makes it available to action consumers such as
+# Keyboard Manager, LightSwitch, and Command Palette.
 
 $ErrorActionPreference = 'Stop'
 

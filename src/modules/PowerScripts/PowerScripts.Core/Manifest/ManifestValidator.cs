@@ -45,9 +45,9 @@ public static class ManifestValidator
             errors.Add($"entry script not found: '{manifest.Entry}'.");
         }
 
-        if (manifest.Kind == ScriptKind.File)
+        if (manifest.Input is not null)
         {
-            if (manifest.Input is null || manifest.Input.Extensions.Count == 0)
+            if (manifest.Input.Extensions.Count == 0)
             {
                 errors.Add("file scripts must declare 'input.extensions'.");
             }
@@ -105,10 +105,11 @@ public static class ManifestValidator
             var known = type.Equals(ScriptParameter.ParameterTypeString, StringComparison.OrdinalIgnoreCase)
                 || type.Equals(ScriptParameter.ParameterTypeInt, StringComparison.OrdinalIgnoreCase)
                 || type.Equals(ScriptParameter.ParameterTypeBool, StringComparison.OrdinalIgnoreCase)
-                || type.Equals(ScriptParameter.ParameterTypeChoice, StringComparison.OrdinalIgnoreCase);
+                || type.Equals(ScriptParameter.ParameterTypeChoice, StringComparison.OrdinalIgnoreCase)
+                || type.Equals(ScriptParameter.ParameterTypeFile, StringComparison.OrdinalIgnoreCase);
             if (!known)
             {
-                errors.Add($"parameter '{p.Name}' has unknown type '{p.Type}' (expected string, int, bool or choice).");
+                errors.Add($"parameter '{p.Name}' has unknown type '{p.Type}' (expected string, int, bool, choice or file).");
                 continue;
             }
 

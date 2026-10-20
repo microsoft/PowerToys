@@ -1,0 +1,20 @@
+{
+  "name": "sha256-checksum",
+  "title": "Compute SHA-256",
+  "description": "Compute the SHA-256 checksum of the selected file(s).",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "file": {
+        "type": "string",
+        "contentMediaType": "application/octet-stream",
+        "description": "The file to hash."
+      }
+    },
+    "required": ["file"]
+  },
+  "x-powerscript": {
+    "extensions": ["*"],
+    "capabilities": ["fileRead"]
+  }
+}

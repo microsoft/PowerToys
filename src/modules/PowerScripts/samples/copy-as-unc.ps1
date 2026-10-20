@@ -1,12 +1,5 @@
-# @powerscript.id           copy-as-unc
-# @powerscript.name         Copy as UNC path
-# @powerscript.description   Resolve the selected item's mapped network drive to its UNC path (\\server\share\...) and copy it to the clipboard.
-# @powerscript.kind         file
-# @powerscript.extensions   *
-# @powerscript.output       sideEffect
-# @powerscript.capability   clipboard
-#
-# A "file" PowerScript surfaced on the Explorer right-click menu (contextMenu is inferred).
+# Copy as UNC path. Metadata lives in the sibling copy-as-unc.ps1.tool.json descriptor (an MCP
+# Tool). A "file" PowerScript surfaced on the Explorer right-click menu (contextMenu inferred).
 #
 # Mirrors the native "Copy as UNC" PowerToy (PR #46056): for each selected item that lives on a
 # mapped network drive (e.g. Z:\team\report.docx), it resolves the drive letter to the underlying

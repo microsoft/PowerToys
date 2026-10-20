@@ -45,14 +45,14 @@ public class ManifestTests
     }
 
     [TestMethod]
-    public void Validator_Flags_FileKind_WithoutExtensions()
+    public void Validator_Flags_FileInput_WithoutExtensions()
     {
         var manifest = new PowerScriptManifest
         {
             Id = "abc",
             Name = "x",
             Entry = "run.ps1",
-            Kind = ScriptKind.File,
+            Input = new ScriptInput(),
         };
 
         var errors = ManifestValidator.Validate(manifest, "abc");
@@ -67,7 +67,6 @@ public class ManifestTests
             Id = "abc",
             Name = "x",
             Entry = "run.ps1",
-            Kind = ScriptKind.File,
             Input = new ScriptInput { Extensions = { ".png" }, MinFiles = 3, MaxFiles = 2 },
         };
 
@@ -83,7 +82,6 @@ public class ManifestTests
             Id = "demo",
             Name = "Demo",
             Entry = "run.ps1",
-            PromptForParameters = true,
             Parameters =
             {
                 new ScriptParameter
@@ -97,7 +95,6 @@ public class ManifestTests
             },
         };
 
-        Assert.IsTrue(manifest.PromptForParameters);
         var p = manifest.Parameters.Single();
         Assert.IsTrue(p.IsChoice);
         CollectionAssert.AreEqual(new[] { "Hello", "Hi" }, p.Options);
@@ -166,7 +163,6 @@ public class ManifestTests
             Id = "abc",
             Name = "x",
             Entry = "run.ps1",
-            PromptForParameters = true,
             Parameters =
             {
                 new ScriptParameter { Name = "greeting", Type = ScriptParameter.ParameterTypeChoice, Options = { "Hi" }, Default = "Hi" },

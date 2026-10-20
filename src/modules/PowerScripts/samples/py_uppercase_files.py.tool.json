@@ -1,0 +1,22 @@
+{
+  "name": "py_uppercase_files",
+  "title": "Uppercase File (Python)",
+  "description": "Write an UPPERCASED copy of the selected text file(s) next to the original. A Python file PowerScript for the Explorer right-click menu.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "file": {
+        "type": "string",
+        "contentMediaType": "text/plain",
+        "description": "The text file to uppercase."
+      }
+    },
+    "required": ["file"]
+  },
+  "x-powerscript": {
+    "extensions": [".txt", ".md"],
+    "capabilities": ["fileRead", "fileWrite"],
+    "publisher": "PowerToys samples",
+    "version": "1.0.0"
+  }
+}

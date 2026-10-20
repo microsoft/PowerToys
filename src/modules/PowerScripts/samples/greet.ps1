@@ -2,21 +2,10 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-# @powerscript.id           greet
-# @powerscript.name         Greet (PowerShell)
-# @powerscript.description   Show a greeting. Demonstrates prompted parameters: a choice, a text box and a checkbox.
-# @powerscript.kind         system
-# @powerscript.publisher    PowerToys samples
-# @powerscript.version      1.0.0
-# @powerscript.capability   ui
-# @powerscript.prompt       true
-# @powerscript.param        name=greeting type=choice label="Greeting" description="Pick how to say hello." options=Hello,Hi,Hey,Howdy default=Hello
-# @powerscript.param        name=name type=string label="Name" description="Who to greet." default=World
-# @powerscript.param        name=shout type=bool label="Shout (UPPERCASE)" default=false
-#
-# Greet (PowerShell) — demonstrates prompted PowerScript parameters.
-# PowerScripts passes each chosen value as a -Name argument. Values arrive as strings, so the
-# boolean parameter is compared against the literal 'true'.
+# Greet (PowerShell) — demonstrates consumer-rendered PowerScript parameters. Metadata (including the
+# parameters) lives in the sibling greet.ps1.tool.json descriptor (an MCP Tool). PowerScripts passes
+# each chosen value as a -Name argument. Values arrive as strings, so the boolean parameter is
+# compared against the literal 'true'.
 
 param(
     [string]$greeting = "Hello",

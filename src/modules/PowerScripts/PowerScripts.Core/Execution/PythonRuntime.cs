@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using PowerScripts.Core.Manifest;
+using PowerScripts.Core.Security;
 
 namespace PowerScripts.Core.Execution;
 
@@ -33,6 +34,20 @@ public sealed class PythonTransformInput
 
     [JsonPropertyName("params")]
     public Dictionary<string, string>? Params { get; set; }
+
+    /// <summary>
+    /// Optional explicit entry-function name. When present the runner calls this function instead of
+    /// discovering it by the <c>powerscript_from_*_to_*</c> naming convention.
+    /// </summary>
+    [JsonPropertyName("entry")]
+    public string? Entry { get; set; }
+
+    /// <summary>
+    /// The input data shape (<c>none</c>/<c>text</c>/<c>files</c>/…) used to build the argument passed
+    /// to an explicit <see cref="Entry"/> function (the convention path derives this from the name).
+    /// </summary>
+    [JsonPropertyName("input_format")]
+    public string? InputFormat { get; set; }
 }
 
 /// <summary>The typed result produced by a Python PowerScript transform.</summary>
@@ -82,10 +97,12 @@ public sealed class PythonRuntime
     private static readonly Encoding Utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
     private readonly PythonSettings _settings;
+    private readonly MxcSettings? _mxcSettings;
 
-    public PythonRuntime(PythonSettings? settings = null)
+    public PythonRuntime(PythonSettings? settings = null, MxcSettings? mxcSettings = null)
     {
         _settings = settings ?? PythonSettings.Load();
+        _mxcSettings = mxcSettings;
     }
 
     /// <summary>Whether Python PowerScripts are enabled at all (mode is not Disabled).</summary>
@@ -119,12 +136,26 @@ public sealed class PythonRuntime
             return new PythonTransformResult { ExitCode = 2, StdErr = $"Script entry file not found: {scriptPath}" };
         }
 
+        // Decouple the entry-function name from the naming convention: when the descriptor/header
+        // declares an explicit function, tell the runner to call it (and pass the declared input shape
+        // so it can build the argument). Absent that, the runner falls back to the powerscript_from_*
+        // convention, so existing zero-config scripts are unaffected.
+        if (!string.IsNullOrWhiteSpace(manifest.EntryFunction))
+        {
+            input.Entry = manifest.EntryFunction;
+            input.InputFormat = ScriptIo.ToToken((manifest.InputFormat ?? PowerScriptDataFormat.None));
+        }
+
         return _settings.Mode == PythonRuntimeMode.Wsl
-            ? RunViaWsl(runnerPath, scriptPath, input)
-            : RunOnWindows(runnerPath, scriptPath, input);
+            ? RunViaWsl(manifest, runnerPath, scriptPath, input)
+            : RunOnWindows(manifest, runnerPath, scriptPath, input);
     }
 
-    private PythonTransformResult RunOnWindows(string runnerPath, string scriptPath, PythonTransformInput input)
+    private PythonTransformResult RunOnWindows(
+        PowerScriptManifest manifest,
+        string runnerPath,
+        string scriptPath,
+        PythonTransformInput input)
     {
         var interpreter = ResolveWindowsInterpreter();
         if (interpreter is null)
@@ -155,10 +186,19 @@ public sealed class PythonRuntime
         psi.ArgumentList.Add(runnerPath);
         psi.ArgumentList.Add(scriptPath);
 
-        return RunProcess(psi, JsonSerializer.Serialize(input, JsonOptions), translateResultPaths: false);
+        return RunProcess(
+            psi,
+            manifest,
+            input,
+            JsonSerializer.Serialize(input, JsonOptions),
+            translateResultPaths: false);
     }
 
-    private PythonTransformResult RunViaWsl(string runnerPath, string scriptPath, PythonTransformInput input)
+    private PythonTransformResult RunViaWsl(
+        PowerScriptManifest manifest,
+        string runnerPath,
+        string scriptPath,
+        PythonTransformInput input)
     {
         // Translate the runner + script + any input paths to /mnt/... so the Linux Python can read them.
         var wslInput = new PythonTransformInput
@@ -170,6 +210,8 @@ public sealed class PythonRuntime
             VideoPath = ToWslPath(input.VideoPath),
             FilePaths = input.FilePaths?.Select(p => ToWslPath(p)!).ToList(),
             Params = input.Params,
+            Entry = input.Entry,
+            InputFormat = input.InputFormat,
         };
 
         var psi = new ProcessStartInfo
@@ -197,44 +239,49 @@ public sealed class PythonRuntime
         psi.ArgumentList.Add("-c");
         psi.ArgumentList.Add($"python3 -X utf8 {ShellQuote(ToWslPath(runnerPath)!)} {ShellQuote(ToWslPath(scriptPath)!)}");
 
-        var result = RunProcess(psi, JsonSerializer.Serialize(wslInput, JsonOptions), translateResultPaths: true);
+        var result = RunProcess(
+            psi,
+            manifest,
+            input,
+            JsonSerializer.Serialize(wslInput, JsonOptions),
+            translateResultPaths: true);
         return result;
     }
 
-    private PythonTransformResult RunProcess(ProcessStartInfo psi, string payload, bool translateResultPaths)
+    private PythonTransformResult RunProcess(
+        ProcessStartInfo psi,
+        PowerScriptManifest manifest,
+        PythonTransformInput input,
+        string payload,
+        bool translateResultPaths)
     {
         try
         {
-            using var process = new Process { StartInfo = psi };
-            process.Start();
-
-            var stdOutTask = process.StandardOutput.ReadToEndAsync();
-            var stdErrTask = process.StandardError.ReadToEndAsync();
-
-            process.StandardInput.Write(payload);
-            process.StandardInput.Close();
-
             var timeoutMs = Math.Max(1, _settings.TimeoutSeconds) * 1000;
-            if (!process.WaitForExit(timeoutMs))
+            var inputPaths = new[]
             {
-                try
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-                catch (Exception)
-                {
-                    // Best effort.
-                }
+                input.ImagePath,
+                input.AudioPath,
+                input.VideoPath,
+            }.Concat(input.FilePaths ?? Enumerable.Empty<string>());
+            var parameterValues = input.Params?.ToDictionary(
+                parameter => parameter.Key,
+                parameter => (string?)parameter.Value,
+                StringComparer.OrdinalIgnoreCase);
+            var context = Security.ProcessExecutionContext.FromManifest(manifest, inputPaths, parameterValues);
+            var run = Security.ProcessRunner.Run(psi, context, payload, timeoutMs, _mxcSettings);
 
+            if (run.ExitCode == 124)
+            {
                 return new PythonTransformResult { ExitCode = 124, StdErr = $"Python script timed out after {_settings.TimeoutSeconds}s." };
             }
 
-            var stdout = stdOutTask.GetAwaiter().GetResult();
-            var stderr = stdErrTask.GetAwaiter().GetResult();
+            var stdout = run.StdOut;
+            var stderr = run.StdErr;
 
-            if (process.ExitCode != 0)
+            if (run.ExitCode != 0)
             {
-                return new PythonTransformResult { ExitCode = process.ExitCode, StdErr = string.IsNullOrEmpty(stderr) ? "Python script failed." : stderr };
+                return new PythonTransformResult { ExitCode = run.ExitCode, StdErr = string.IsNullOrEmpty(stderr) ? "Python script failed." : stderr };
             }
 
             PythonTransformResult result;
@@ -282,8 +329,9 @@ public sealed class PythonRuntime
     }
 
     /// <summary>
-    /// Resolves the Windows Python interpreter: an explicit configured path, then the <c>py</c>
-    /// launcher (which itself honors PEP&#160;514 registered interpreters), then <c>python.exe</c>.
+    /// Resolves the Windows Python interpreter: an explicit configured path, then a concrete
+    /// <c>python.exe</c>/<c>python3.exe</c> on PATH, then the <c>py</c> launcher. Preferring the
+    /// concrete interpreter lets MXC grant its runtime directory read-only.
     /// </summary>
     private (string FileName, string[] LeadingArgs)? ResolveWindowsInterpreter()
     {
@@ -291,11 +339,6 @@ public sealed class PythonRuntime
         if (!string.IsNullOrWhiteSpace(configured) && File.Exists(configured))
         {
             return (configured, Array.Empty<string>());
-        }
-
-        if (ExistsOnPath("py.exe"))
-        {
-            return ("py.exe", new[] { "-3" });
         }
 
         if (ExistsOnPath("python.exe"))
@@ -306,6 +349,11 @@ public sealed class PythonRuntime
         if (ExistsOnPath("python3.exe"))
         {
             return ("python3.exe", Array.Empty<string>());
+        }
+
+        if (ExistsOnPath("py.exe"))
+        {
+            return ("py.exe", new[] { "-3" });
         }
 
         return null;

@@ -13,5 +13,17 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <!--
+      Match the PowerToys solution platforms so these projects can be referenced from PowerToys.slnx.
+      The repo-root Directory.Build.props (which normally supplies this) is intentionally not imported
+      by the prototype, so the platforms are declared explicitly here instead.
+    -->
+    <Platforms>x64;ARM64</Platforms>
+    <!--
+      Keep the output at bin\$(Configuration)\... (no platform segment) so the path stays stable
+      across AnyCPU/x64/ARM64 builds. The Settings dev-fallback that locates PowerScripts.Host.exe
+      probes bin\Debug and bin\Release, and the prototype is built one platform at a time locally.
+    -->
+    <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
   </PropertyGroup>
 </Project>

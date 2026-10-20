@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core;
 
@@ -23,7 +24,7 @@ public enum PythonRuntimeMode
 /// <summary>Windows-mode Python settings.</summary>
 public sealed class PythonWindowsSettings
 {
-    /// <summary>Optional explicit interpreter path; empty means auto-detect (py.exe / python.exe / PEP&#160;514 registry).</summary>
+    /// <summary>Optional explicit interpreter path; empty means auto-detect (python.exe / python3.exe / py.exe).</summary>
     [JsonPropertyName("interpreterPath")]
     public string InterpreterPath { get; set; } = string.Empty;
 }
@@ -71,14 +72,13 @@ public sealed class PythonSettings
     {
         try
         {
-            var path = PowerScriptsPaths.ConfigFilePath;
-            if (!File.Exists(path))
+            var text = SettingsStore.Current.ReadBlob(PowerScriptsPaths.ConfigFileName);
+            if (string.IsNullOrEmpty(text))
             {
                 return new PythonSettings();
             }
 
-            using var stream = File.OpenRead(path);
-            using var document = JsonDocument.Parse(stream);
+            using var document = JsonDocument.Parse(text);
             if (document.RootElement.TryGetProperty("python", out var python) &&
                 python.ValueKind == JsonValueKind.Object)
             {
@@ -94,21 +94,18 @@ public sealed class PythonSettings
     }
 
     /// <summary>
-    /// Persists these settings into the module <c>config.json</c>'s <c>python</c> section, preserving
-    /// any other keys (e.g. <c>scriptsRoot</c>).
+    /// Persists these settings into the module config's <c>python</c> section, preserving any other
+    /// keys (e.g. <c>scriptsRoot</c>).
     /// </summary>
     public void Save()
     {
-        Directory.CreateDirectory(PowerScriptsPaths.ModuleDirectory);
-        var path = PowerScriptsPaths.ConfigFilePath;
-
         var root = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         try
         {
-            if (File.Exists(path))
+            var text = SettingsStore.Current.ReadBlob(PowerScriptsPaths.ConfigFileName);
+            if (!string.IsNullOrEmpty(text))
             {
-                using var stream = File.OpenRead(path);
-                using var existing = JsonDocument.Parse(stream);
+                using var existing = JsonDocument.Parse(text);
                 foreach (var property in existing.RootElement.EnumerateObject())
                 {
                     root[property.Name] = property.Value.Clone();
@@ -121,6 +118,6 @@ public sealed class PythonSettings
         }
 
         root["python"] = JsonSerializer.SerializeToElement(this, SerializerOptions);
-        File.WriteAllText(path, JsonSerializer.Serialize(root, SerializerOptions));
+        SettingsStore.Current.WriteBlob(PowerScriptsPaths.ConfigFileName, JsonSerializer.Serialize(root, SerializerOptions));
     }
 }

@@ -3,20 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using PowerScripts.Core.Execution;
+using PowerScripts.Core.Security;
 
 namespace PowerScripts.Core.Manifest;
-
-/// <summary>
-/// What a PowerScript operates on.
-/// </summary>
-public enum ScriptKind
-{
-    /// <summary>Acts on the PC; no file input. Surfaced via hotkey / Command Palette.</summary>
-    System,
-
-    /// <summary>Acts on one or more input files of a declared type. Surfaced in the right-click menu.</summary>
-    File,
-}
 
 /// <summary>
 /// The runtime used to execute a PowerScript. PowerShell and Python are supported; the enum exists
@@ -49,7 +39,8 @@ public enum ScriptOutputType
 }
 
 /// <summary>
-/// Declares the file input contract for a <see cref="ScriptKind.File"/> script.
+/// Declares the file input contract for a file-driven script (one whose input shape is
+/// <see cref="PowerScriptDataFormat.Files"/>).
 /// </summary>
 public sealed class ScriptInput
 {
@@ -64,7 +55,7 @@ public sealed class ScriptInput
 }
 
 /// <summary>
-/// Declares the output contract for a <see cref="ScriptKind.File"/> script.
+/// Declares the output contract for a file-driven script.
 /// </summary>
 public sealed class ScriptOutput
 {
@@ -75,11 +66,17 @@ public sealed class ScriptOutput
 }
 
 /// <summary>
-/// A typed, user-editable parameter passed to the script. When the owning manifest sets
-/// <see cref="PowerScriptManifest.PromptForParameters"/>, PowerScripts shows a small dialog before
-/// running so the user can pick/enter values; the chosen values are passed to the script (PowerShell
-/// as <c>-Name value</c>, Python as keyword arguments). Values reach the script as strings, so a
-/// <see cref="ParameterTypeBool"/> parameter arrives as the literal "true" or "false".
+/// Display-only MXC guidance supplied by a script author. Recommendations never weaken the
+/// user/system policy selected by <see cref="MxcPolicyResolver"/>.
+/// </summary>
+public sealed class PowerScriptMxcMetadata
+{
+    public List<string> RecommendedPolicies { get; set; } = MxcPolicies.All.ToList();
+}
+
+/// <summary>
+/// A typed parameter contract exposed to consumer modules. Each consumer owns its parameter UI and
+/// passes chosen values to the Host. Values reach scripts as strings.
 /// </summary>
 public sealed class ScriptParameter
 {
@@ -87,21 +84,24 @@ public sealed class ScriptParameter
     public const string ParameterTypeInt = "int";
     public const string ParameterTypeBool = "bool";
     public const string ParameterTypeChoice = "choice";
+    public const string ParameterTypeFile = "file";
 
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>One of: "string", "int", "bool", "choice".</summary>
+    /// <summary>One of: "string", "int", "bool", "choice", "file".</summary>
     public string Type { get; set; } = ParameterTypeString;
 
-    /// <summary>Optional display label shown in the prompt dialog; falls back to <see cref="Name"/>.</summary>
+    /// <summary>Optional consumer-facing display label; falls back to <see cref="Name"/>.</summary>
     public string? Label { get; set; }
 
-    /// <summary>Optional help text shown under the control in the prompt dialog.</summary>
+    /// <summary>Optional consumer-facing help text.</summary>
     public string? Description { get; set; }
 
     public string? Default { get; set; }
 
-    /// <summary>Allowed values for a <see cref="ParameterTypeChoice"/> parameter (rendered as a dropdown).</summary>
+    public bool IsRequired { get; set; }
+
+    /// <summary>Allowed values for a <see cref="ParameterTypeChoice"/> parameter.</summary>
     public List<string> Options { get; set; } = new();
 
     public int? Min { get; set; }
@@ -123,6 +123,10 @@ public sealed class ScriptParameter
     /// <summary>True when <see cref="Type"/> is the int type (case-insensitive).</summary>
     [JsonIgnore]
     public bool IsInt => string.Equals(Type, ParameterTypeInt, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>True when <see cref="Type"/> is the file type (case-insensitive).</summary>
+    [JsonIgnore]
+    public bool IsFile => string.Equals(Type, ParameterTypeFile, StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>
@@ -157,14 +161,23 @@ public sealed class PowerScriptManifest
     /// <summary>Optional provenance, e.g. the catalogue URL the script was adopted from.</summary>
     public string? Source { get; set; }
 
-    public ScriptKind Kind { get; set; }
-
     public ScriptRuntime Runtime { get; set; } = ScriptRuntime.PowerShell;
 
     /// <summary>Script body file name, relative to the script folder (e.g. "run.ps1").</summary>
     public string Entry { get; set; } = string.Empty;
 
-    /// <summary>File input contract; required for <see cref="ScriptKind.File"/>.</summary>
+    /// <summary>
+    /// Optional explicit entry-function name for a Python script. When set, the Python runner calls
+    /// this function instead of discovering it by the <c>powerscript_from_*_to_*</c> naming convention,
+    /// so authors can name the function anything and declare its I/O in the descriptor instead. Null
+    /// keeps the zero-config convention (the function name carries the I/O contract).
+    /// </summary>
+    public string? EntryFunction { get; set; }
+
+    /// <summary>
+    /// File input contract; present when the script is file-driven (its input shape is
+    /// <see cref="PowerScriptDataFormat.Files"/>). Carries the accepted extensions and file-count bounds.
+    /// </summary>
     public ScriptInput? Input { get; set; }
 
     public ScriptOutput? Output { get; set; }
@@ -172,14 +185,17 @@ public sealed class PowerScriptManifest
     public List<ScriptParameter> Parameters { get; set; } = new();
 
     /// <summary>
-    /// When true and <see cref="Parameters"/> is non-empty, PowerScripts shows a prompt dialog before
-    /// running so the user can pick/enter parameter values. When false (the default) no UI is shown and
-    /// behavior is unchanged: parameters only come from an explicit <c>--set name=value</c>.
+    /// The data shape this script consumes, when the author declares it explicitly (e.g. a PowerShell
+    /// script that reads text and writes html). Null means "infer": from the Python
+    /// <c>powerscript_from_*_to_*</c> function, or from a declared file <see cref="Input"/> (files),
+    /// otherwise none. Populated (baked) by the registry once resolved so every consumer reads the same
+    /// shape. A script declares only its own I/O — never which modules consume it — so adding a new
+    /// consuming module never requires touching any script.
     /// </summary>
-    public bool PromptForParameters { get; set; }
+    public PowerScriptDataFormat? InputFormat { get; set; }
 
-    /// <summary>Where the script appears, e.g. "contextMenu", "keyboardManager", "commandPalette".</summary>
-    public List<string> Surfaces { get; set; } = new();
+    /// <summary>The data shape this script produces, when declared explicitly; null means infer.</summary>
+    public PowerScriptDataFormat? OutputFormat { get; set; }
 
     /// <summary>
     /// Declared capabilities (e.g. "fileRead", "fileWrite", "process"). Doubles as the user-consent
@@ -187,18 +203,30 @@ public sealed class PowerScriptManifest
     /// </summary>
     public List<string> Capabilities { get; set; } = new();
 
+    /// <summary>Display-only MXC recommendations; enforcement remains centrally resolved.</summary>
+    public PowerScriptMxcMetadata Mxc { get; set; } = new();
+
     /// <summary>Prototype always runs "asInvoker" (non-elevated).</summary>
     public string Elevation { get; set; } = "asInvoker";
+
+    /// <summary>
+    /// The launch recipe for a script authored via an explicit <c>.tool.json</c> descriptor (see
+    /// <see cref="ScriptExecute"/>). When set, the executor runs the script through this recipe
+    /// (interpreter + argv / stdin) instead of the built-in PowerShell / Python convention path.
+    /// Null for header-authored scripts, which keep the legacy execution behavior unchanged.
+    /// </summary>
+    [JsonIgnore]
+    public ScriptExecute? Execute { get; set; }
 
     /// <summary>Absolute path to the folder that contains this manifest. Populated by the registry.</summary>
     [JsonIgnore]
     public string FolderPath { get; set; } = string.Empty;
 
+    /// <summary>The configured catalogue root containing this package. Populated by the registry.</summary>
+    [JsonIgnore]
+    public string ScriptsRoot { get; set; } = string.Empty;
+
     /// <summary>Absolute path to the script body file.</summary>
     [JsonIgnore]
     public string EntryFullPath => string.IsNullOrEmpty(FolderPath) ? Entry : Path.Combine(FolderPath, Entry);
-
-    /// <summary>True if this script declares the given surface (case-insensitive).</summary>
-    public bool HasSurface(string surface) =>
-        Surfaces.Any(s => string.Equals(s, surface, StringComparison.OrdinalIgnoreCase));
 }
