@@ -80,11 +80,16 @@ fixture cleanup subsequently terminates that process.
 - Genuine OS shutdown/logoff is not equivalent to posting Restart Manager close
   messages. Use a disposable environment for the former and label the latter as
   protocol coverage.
+- Runner startup can recreate the current user's `\PowerToys\` autorun task with
+  the test executable path even when the startup preference was already enabled.
+  Snapshot the task definition/security before testing and restore the installed
+  executable action afterward. Restoring `settings.json` alone does not restore it.
 
 ## Fixtures
 
 - Separate baseline and fixed payload directories, with executable/PDB hashes.
 - Private configuration snapshots; do not upload user settings or raw backups.
+- Current-user autorun task definition, principal and security descriptor.
 - PID-scoped cleanup records, including any pre-existing exited remnants.
 - Restore only the input state a test changed; do not attempt to alter a locked
   desktop after an accessibility-only test that did not move the pointer.
@@ -93,6 +98,7 @@ fixture cleanup subsequently terminates that process.
 
 - `src\runner\tray_icon.cpp`: `handle_tray_command`, `tray_icon_window_proc`, `start_tray_icon`.
 - `src\runner\main.cpp`: `WinMain` module shutdown guard and lifetime locks.
+- `src\runner\general_settings.cpp`: `apply_general_settings`; `auto_start_helper.cpp`: `create_auto_start_task_for_this_user`.
 - `src\runner\powertoy_module.cpp`: `modules`.
 - `src\settings-ui\Settings.UI\SettingsXAML\Views\GeneralPage.xaml.cs`: `Click_LanguageRestart`.
 - `src\modules\ZoomIt\ZoomIt\Zoomit.cpp`: `OpenPowerToysSettingsApp` and hotkey-conflict handling.

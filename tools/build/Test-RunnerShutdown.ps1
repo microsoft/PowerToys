@@ -11,9 +11,10 @@ Checks that a locally built Runner exits naturally after a graceful close.
 .DESCRIPTION
 Use a complete development layout in an interactive test session, with no other
 Runner in that session. The current PowerToys profile is used; snapshot/restore it
-or use a disposable test account. No installation files or settings are edited by
-this script. WM_CLOSE follows the tray Quit shutdown path, but does not replace a
-separate UI check of the tray menu.
+and the user's PowerToys autorun task, or use a disposable test account. Runner
+startup can update that task to the test executable path. No installation files
+or settings are directly edited by this script. WM_CLOSE follows the tray Quit
+shutdown path, but does not replace a separate UI check of the tray menu.
 
 A timeout is a failure, never a pass. Only the process started by the current
 iteration is force-stopped on failure, and that cleanup is recorded in results.json.

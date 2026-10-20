@@ -54,6 +54,10 @@ disposable or snapshotted profile, with no other Runner in the session:
 .\tools\build\Test-RunnerShutdown.ps1 -RunnerPath D:\test-payload\PowerToys.exe -Iterations 5
 ```
 
+Snapshot the current user's PowerToys autorun task as well as configuration files.
+Startup may recreate that task with the test executable path even if the startup
+preference is unchanged; restore its installed executable action after testing.
+
 The check sends `WM_CLOSE` through the existing tray window procedure and requires
 the exact launched PID to exit naturally. A timeout or crash fails the check;
 forced cleanup of a failed test process is never counted as a pass. Also verify
