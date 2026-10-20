@@ -72,6 +72,13 @@ public partial class ShellViewModelTests
         return appHostService;
     }
 
+    private static CommandViewModel CreateCommandViewModel(ICommand command, IPageContext pageContext)
+    {
+        var viewModel = new CommandViewModel(command, new(pageContext));
+        viewModel.FastInitializeProperties();
+        return viewModel;
+    }
+
     [TestInitialize]
     public void TestInitialize()
     {
@@ -106,7 +113,7 @@ public partial class ShellViewModelTests
             appHostService.Object);
         var item = new ListItem(page);
         var message = new PerformCommandMessage(
-            new ExtensionObject<ICommand>(page),
+            CreateCommandViewModel(page, shell.CurrentPage),
             new ExtensionObject<IListItem>(item),
             withSourcePage ? sourcePage : null);
         var expectedHost = withSourcePage ? sourceHost : shell.CurrentPage.ExtensionHost;
@@ -140,7 +147,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(page)));
+            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(page, shell.CurrentPage)));
 
             Assert.AreSame(scheduler, await activated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
             Assert.AreSame(viewModel, shell.CurrentPage);
@@ -177,7 +184,7 @@ public partial class ShellViewModelTests
             factory.Invocations.Clear();
             appHostService.Invocations.Clear();
 
-            shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(rootPage), nestedPage));
+            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(rootPage, nestedPage), nestedPage));
 
             Assert.AreSame(rootViewModel, shell.CurrentPage);
             Assert.IsTrue(rootViewModel.IsRootPage);
@@ -222,7 +229,7 @@ public partial class ShellViewModelTests
                 Id = "content-page",
                 Name = "Content page",
             };
-            var message = new PerformCommandMessage(new ExtensionObject<ICommand>(contentPage))
+            var message = new PerformCommandMessage(CreateCommandViewModel(contentPage, shell.CurrentPage))
             {
                 ListPageOptions = new(Query: "ssh"),
                 ShowWindowIfPage = true,
@@ -284,7 +291,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            var message = new PerformCommandMessage(new ExtensionObject<ICommand>(page))
+            var message = new PerformCommandMessage(CreateCommandViewModel(page, shell.CurrentPage))
             {
                 TransientPage = true,
             };
@@ -321,7 +328,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(command.Object)));
+            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(command.Object, shell.CurrentPage)));
 
             rootPageService.Verify(
                 service => service.OnPerformCommand(null, true, host),
@@ -393,7 +400,7 @@ public partial class ShellViewModelTests
             {
                 Id = "test.command",
             };
-            viewModel.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(command)));
+            viewModel.Receive(new PerformCommandMessage(CreateCommandViewModel(command, viewModel.CurrentPage)));
 
             await finished.Task.WaitAsync(TimeSpan.FromSeconds(10));
             var expected = new List<string> { "started" };
@@ -439,9 +446,12 @@ public partial class ShellViewModelTests
         command.Setup(model => model.Invoke(It.IsAny<object?>())).Returns(() => disconnected && failingMember == "Invoke"
             ? throw exception
             : CommandResult.KeepOpen());
+        var cachedCommand = CreateCommandViewModel(command.Object, shell.CurrentPage);
+        TelemetryExtensionInvokedMessage? telemetry = null;
+        WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(shell, (_, result) => telemetry = result);
 
         // Primary dock clicks reuse the cached command without a sender or source page.
-        var message = new PerformCommandMessage(new ExtensionObject<ICommand>(command.Object))
+        var message = new PerformCommandMessage(cachedCommand)
         {
             WithAnimation = false,
             TransientPage = true,
@@ -452,13 +462,20 @@ public partial class ShellViewModelTests
         shell.Receive(message);
         await WaitForInvocationAsync();
 
+        Assert.IsNotNull(telemetry);
+        Assert.AreEqual("desktop.switch", telemetry.CommandId);
+        Assert.AreEqual("Switch desktop", telemetry.CommandName);
+        Assert.AreEqual(failingMember != "Invoke", telemetry.Success);
+        command.VerifyGet(model => model.Id, Times.Once);
+        command.VerifyGet(model => model.Name, Times.Once);
+
         var invoked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var healthy = new TestCommand(CommandResult.KeepOpen(), () => invoked.TrySetResult());
-        shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(healthy)));
+        shell.Receive(new PerformCommandMessage(CreateCommandViewModel(healthy, shell.CurrentPage)));
 
         await invoked.Task.WaitAsync(TimeSpan.FromSeconds(5));
         await WaitForInvocationAsync();
-        command.Verify(model => model.Invoke(It.IsAny<object?>()), Times.Exactly(failingMember == "Invoke" ? 2 : 1));
+        command.Verify(model => model.Invoke(It.IsAny<object?>()), Times.Exactly(2));
 
         async Task WaitForInvocationAsync()
         {
@@ -494,7 +511,7 @@ public partial class ShellViewModelTests
                     throw new TimeoutException("Test did not release the invocation");
                 }
             });
-            var message = new PerformCommandMessage(new ExtensionObject<ICommand>(command));
+            var message = new PerformCommandMessage(CreateCommandViewModel(command, viewModel.CurrentPage));
             viewModel.Receive(message);
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
@@ -518,6 +535,32 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    public void PerformCommand_PageNavigationUsesCachedMetadata()
+    {
+        using var shell = CreateViewModel();
+        var page = new Mock<IPage>();
+        page.SetupGet(model => model.Id).Returns("cached.page");
+        page.SetupGet(model => model.Name).Returns("Cached page");
+        var cachedCommand = CreateCommandViewModel(page.Object, shell.CurrentPage);
+        var exception = Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!;
+        page.SetupGet(model => model.Id).Throws(exception);
+        page.SetupGet(model => model.Name).Throws(exception);
+        TelemetryExtensionInvokedMessage? telemetry = null;
+        WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(shell, (_, result) => telemetry = result);
+        var navigated = false;
+        shell.PageNavigationRequested += (_, _) => navigated = true;
+
+        shell.Receive(new PerformCommandMessage(cachedCommand));
+
+        Assert.IsTrue(navigated);
+        Assert.IsNotNull(telemetry);
+        Assert.AreEqual("cached.page", telemetry.CommandId);
+        Assert.AreEqual("Cached page", telemetry.CommandName);
+        page.VerifyGet(model => model.Id, Times.Once);
+        page.VerifyGet(model => model.Name, Times.Once);
+    }
+
+    [TestMethod]
     public void PerformCommand_CountsPageNavigationOnceAfterShowingWindow()
     {
         var viewModel = CreateViewModel();
@@ -530,7 +573,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            viewModel.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(new TestPage())) { ShowWindowIfPage = true });
+            viewModel.Receive(new PerformCommandMessage(CreateCommandViewModel(new TestPage(), viewModel.CurrentPage)) { ShowWindowIfPage = true });
 
             string[] expected = ["show", "started", "completed", "navigate"];
             CollectionAssert.AreEqual(expected, events);

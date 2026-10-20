@@ -380,7 +380,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (PrimaryCommand is not null)
         {
-            var message = new PerformCommandMessage(PrimaryCommand.Command.Model, PrimaryCommand.Model, this);
+            var message = new PerformCommandMessage(PrimaryCommand.Command, PrimaryCommand.Model, this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }
@@ -391,7 +391,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (SecondaryCommand is not null)
         {
-            var message = new PerformCommandMessage(SecondaryCommand.Command.Model, SecondaryCommand.Model, this);
+            var message = new PerformCommandMessage(SecondaryCommand.Command, SecondaryCommand.Model, this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }
