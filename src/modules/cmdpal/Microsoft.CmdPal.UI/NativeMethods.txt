@@ -183,6 +183,8 @@ CreateRectRgn
 SetWindowRgn
 IsWindowVisible
 WM_DESTROY
+WM_CLOSE
+PostMessage
 QUERY_USER_NOTIFICATION_STATE
 EnumWindows
 EnumDisplayMonitors
