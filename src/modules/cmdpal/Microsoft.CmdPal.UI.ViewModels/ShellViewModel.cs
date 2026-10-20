@@ -355,10 +355,9 @@ public partial class ShellViewModel : ObservableObject,
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var command = message.Command.Unsafe;
-        var extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-        var commandId = command?.Id ?? "unknown";
-        var commandName = command?.Name ?? "unknown";
+        var extensionId = "builtin";
+        var commandId = "unknown";
+        var commandName = "unknown";
         var success = false;
 
         try
@@ -366,6 +365,12 @@ public partial class ShellViewModel : ObservableObject,
             ICommandResult? result;
             try
             {
+                // Command metadata can also cross the process boundary and throw.
+                var command = message.Command.Unsafe;
+                extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+                commandId = command?.Id ?? "unknown";
+                commandName = command?.Name ?? "unknown";
+
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
@@ -386,19 +391,22 @@ public partial class ShellViewModel : ObservableObject,
                 message.OnBeforeShowConfirmation,
                 message.ResultHandler,
                 message.Context?.Page);
-
-            _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
-            _handleInvokeTask = null;
-
             // Telemetry: Track errors for session metrics
             WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
 
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
+        }
+        finally
+        {
+            lock (_invokeLock)
+            {
+                _handleInvokeTask = null;
+            }
         }
     }
 
