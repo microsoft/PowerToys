@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
@@ -19,6 +22,185 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public partial class TopLevelCommandManagerTests
 {
+    [TestMethod]
+    public async Task LoadProviders_DropsFailedProviderWithoutDisablingIt()
+    {
+        using var services = CreateServices();
+        var broken = new TestCommandProvider("broken")
+        {
+            OnLoad = () => throw new InvalidOperationException("Provider failed to load"),
+        };
+        var healthy = new TestCommandProvider("healthy", providerId: "healthy-provider") { IncludeTopLevelCommand = true };
+        var brokenWrapper = new CommandProviderWrapper(broken, TaskScheduler.Default);
+        var healthyWrapper = new CommandProviderWrapper(healthy, TaskScheduler.Default);
+        var extensionService = CreateExtensionService(brokenWrapper);
+        extensionService.Setup(service => service.LoadProvidersAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([brokenWrapper, healthyWrapper]);
+        using var manager = new TopLevelCommandManager(services, [extensionService.Object]);
+
+        await manager.LoadExternalProvidersAsync();
+
+        Assert.IsTrue(brokenWrapper.IsFailed);
+        Assert.IsNull(manager.LookupProvider(broken.Id));
+        Assert.IsTrue(manager.IsProviderEnabled(broken.Id));
+        Assert.AreSame(healthyWrapper, manager.LookupProvider(healthy.Id));
+        Assert.AreEqual(1, manager.TopLevelCommands.Count);
+        Assert.AreEqual(healthy.Id, manager.TopLevelCommands[0].CommandProviderId);
+    }
+
+    [TestMethod]
+    public async Task FailedFallback_RemovesProviderCommandsAndBandsAndStopsQuerying()
+    {
+        using var services = CreateServices();
+        var fallbackHandler = new Mock<IFallbackHandler>();
+        fallbackHandler.Setup(handler => handler.UpdateQuery(It.IsAny<string>()))
+            .Throws(Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!);
+        var provider = new TestCommandProvider("broken-command")
+        {
+            IncludeTopLevelCommand = true,
+            IncludeDockBand = true,
+            Fallback = new FallbackCommandItem(new NoOpCommand(), "Fallback", "fallback")
+            {
+                FallbackHandler = fallbackHandler.Object,
+            },
+        };
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        var healthy = new CommandProviderWrapper(
+            new TestCommandProvider("healthy-command", providerId: "healthy-provider") { IncludeTopLevelCommand = true },
+            TaskScheduler.Default);
+        var extensionService = CreateExtensionService(wrapper);
+        extensionService.Setup(service => service.LoadProvidersAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([healthy, wrapper]);
+        using var manager = new TopLevelCommandManager(services, [extensionService.Object]);
+        await manager.LoadExternalProvidersAsync();
+        var fallback = wrapper.FallbackItems.Single();
+        var removed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        manager.DockBands.CollectionChanged += (_, _) =>
+        {
+            if (manager.DockBands.Count == 0)
+            {
+                removed.TrySetResult();
+            }
+        };
+
+        Assert.IsFalse(fallback.SafeUpdateFallbackTextSynchronous("first"));
+        await removed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.IsFalse(fallback.SafeUpdateFallbackTextSynchronous("second"));
+
+        Assert.IsTrue(wrapper.IsFailed);
+        Assert.IsNull(manager.LookupProvider(provider.Id));
+        Assert.AreEqual(1, manager.TopLevelCommands.Count);
+        Assert.AreSame(healthy, manager.TopLevelCommands[0].ProviderContext);
+        Assert.AreSame(healthy, manager.LookupProvider(healthy.ProviderId));
+        Assert.AreEqual(0, manager.DockBands.Count);
+        Assert.IsTrue(manager.IsProviderEnabled(provider.Id));
+        fallbackHandler.Verify(handler => handler.UpdateQuery(It.IsAny<string>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task FailedPinnedCommand_QuarantinesProviderWithoutRemovingSavedPin()
+    {
+        using var services = CreateServices();
+        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId)
+        {
+            OnLookup = () => throw new InvalidOperationException("Pinned command failed to load"),
+        };
+        var settingsService = services.GetRequiredService<ISettingsService>();
+        settingsService.UpdateSettings(settings => settings.TryPinCommand(provider.Id, TestCommandProvider.NestedCommandId));
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+
+        await wrapper.LoadTopLevelCommands(services);
+
+        Assert.IsTrue(wrapper.IsFailed);
+        Assert.IsTrue(settingsService.Settings.IsCommandPinned(provider.Id, TestCommandProvider.NestedCommandId));
+    }
+
+    [TestMethod]
+    public void ReportDisconnectedProvider_IgnoresOrdinaryCommandErrorsAndReportsDisconnectionOnce()
+    {
+        var wrapper = new CommandProviderWrapper(new TestCommandProvider("command"), TaskScheduler.Default);
+        var failures = 0;
+        wrapper.Failed += (_, _) => failures++;
+
+        wrapper.ReportDisconnectedProvider(new InvalidOperationException("Command failed"));
+        Assert.IsFalse(wrapper.IsFailed);
+        Assert.AreEqual(0, failures);
+
+        wrapper.ReportDisconnectedProvider(Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!);
+        wrapper.ReportDisconnectedProvider(Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!);
+        Assert.IsTrue(wrapper.IsFailed);
+        Assert.AreEqual(1, failures);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task FailedTopLevelItem_QuarantinesProviderWhenSafeInitializationSwallowsError(bool usesTopLevelContext)
+    {
+        using var services = CreateServices();
+        var disconnected = false;
+        var command = new Mock<ICommand>();
+        command.SetupGet(item => item.Id).Returns(() => disconnected
+            ? throw Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!
+            : "command");
+        var provider = new TestCommandProvider("command", new CommandItem(command.Object)) { IncludeTopLevelCommand = true };
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        await wrapper.LoadTopLevelCommands(services);
+        var topLevel = wrapper.TopLevelItems.Single();
+        disconnected = true;
+        var pageContext = new Mock<IPageContext>();
+        pageContext.SetupGet(context => context.Scheduler).Returns(TaskScheduler.Default);
+        var item = new CommandItemViewModel(new(topLevel), new(usesTopLevelContext ? wrapper.TopLevelPageContext : pageContext.Object), null);
+
+        Assert.IsFalse(item.SafeFastInit());
+        Assert.IsTrue(wrapper.IsFailed);
+        item.SafeCleanup();
+        topLevel.Cleanup();
+    }
+
+    [TestMethod]
+    public async Task FailedProvider_CannotPublishInFlightUpdateOrRemoveReplacement()
+    {
+        using var services = CreateServices();
+        var provider = new TestCommandProvider("command") { IncludeTopLevelCommand = true };
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        var replacement = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        var extensionService = CreateExtensionService(wrapper);
+        extensionService.SetupSequence(service => service.LoadProvidersAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([wrapper])
+            .ReturnsAsync([replacement]);
+        using var manager = new TopLevelCommandManager(services, [extensionService.Object]);
+        await manager.LoadExternalProvidersAsync();
+        using var release = new ManualResetEventSlim();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        provider.OnLoad = () =>
+        {
+            entered.TrySetResult();
+            Assert.IsTrue(release.Wait(TimeSpan.FromSeconds(10)));
+        };
+        var update = (Task)typeof(TopLevelCommandManager)
+            .GetMethod("UpdateCommandsForProvider", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(manager, [wrapper, new ItemsChangedEventArgs()])!;
+
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            wrapper.ReportFailure(new InvalidOperationException("Provider failed during update"));
+            provider.OnLoad = null;
+            await manager.ReloadAllCommandsAsync();
+        }
+        finally
+        {
+            release.Set();
+        }
+
+        await update.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.IsTrue(manager.TopLevelCommands.All(command => ReferenceEquals(command.ProviderContext, replacement)));
+        Assert.AreEqual(1, manager.TopLevelCommands.Count);
+        Assert.AreSame(replacement, manager.LookupProvider(provider.Id));
+        Assert.IsFalse(replacement.IsFailed);
+    }
+
     [TestMethod]
     public async Task WaitForCurrentLoadAsync_CompletesWhenCurrentLoadingPhaseFinishes()
     {
@@ -317,9 +499,15 @@ public partial class TopLevelCommandManagerTests
 
         public Action? OnLookup { get; set; }
 
-        public TestCommandProvider(string resolvedCommandId, ICommandItem? resolvedItem = null)
+        public Action? OnLoad { get; set; }
+
+        public FallbackCommandItem? Fallback { get; init; }
+
+        public bool IncludeDockBand { get; init; }
+
+        public TestCommandProvider(string resolvedCommandId, ICommandItem? resolvedItem = null, string providerId = "test-provider")
         {
-            Id = "test-provider";
+            Id = providerId;
             DisplayName = "Test provider";
             _resolvedItem = resolvedItem ?? new CommandItem(new NoOpCommand
             {
@@ -328,7 +516,15 @@ public partial class TopLevelCommandManagerTests
             });
         }
 
-        public override ICommandItem[] TopLevelCommands() => IncludeTopLevelCommand ? [_resolvedItem] : [];
+        public override ICommandItem[] TopLevelCommands()
+        {
+            OnLoad?.Invoke();
+            return IncludeTopLevelCommand ? [_resolvedItem] : [];
+        }
+
+        public override IFallbackCommandItem[] FallbackCommands() => Fallback is null ? [] : [Fallback];
+
+        public override ICommandItem[] GetDockBands() => IncludeDockBand ? [_resolvedItem] : [];
 
         public override ICommandItem? GetCommandItem(string id)
         {

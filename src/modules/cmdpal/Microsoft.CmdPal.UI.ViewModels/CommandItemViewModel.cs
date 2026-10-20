@@ -274,6 +274,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
         catch (Exception ex)
         {
+            ReportTopLevelFailure(ex);
             CoreLogger.LogError("error fast initializing CommandItemViewModel", ex);
             ReplaceCommand(null);
             _itemTitle = "Error";
@@ -297,6 +298,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
         catch (Exception ex)
         {
+            ReportTopLevelFailure(ex);
             Initialized |= InitializedState.Error;
             CoreLogger.LogError("error slow initializing CommandItemViewModel", ex);
         }
@@ -313,6 +315,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
         catch (Exception ex)
         {
+            ReportTopLevelFailure(ex);
             CoreLogger.LogError("error initializing CommandItemViewModel", ex);
             ReplaceCommand(null);
             _itemTitle = "Error";
@@ -325,6 +328,18 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         return false;
+    }
+
+    private void ReportTopLevelFailure(Exception exception)
+    {
+        if (_commandItemModel.Unsafe is TopLevelViewModel { ProviderContext: CommandProviderWrapper provider })
+        {
+            provider.ReportFailure(exception);
+        }
+        else if (PageContext.TryGetTarget(out var context) && context is TopLevelItemPageContext)
+        {
+            context.ShowException(exception);
+        }
     }
 
     private void SubscribeToChanges(ICommandItem model)
@@ -362,7 +377,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
         catch (Exception ex)
         {
-            ShowException(ex, _commandItemModel?.Unsafe?.Title);
+            ReportTopLevelFailure(ex);
+            ShowException(ex, Title);
         }
     }
 
@@ -720,7 +736,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         {
             // Handle any exceptions that might occur during the refresh process
             CoreLogger.LogError("Error refreshing context menu in CommandItemViewModel", ex);
-            ShowException(ex, _commandItemModel?.Unsafe?.Title);
+            ReportTopLevelFailure(ex);
+            ShowException(ex, Title);
         }
     }
 

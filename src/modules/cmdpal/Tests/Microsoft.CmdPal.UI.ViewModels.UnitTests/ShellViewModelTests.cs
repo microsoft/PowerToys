@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
@@ -457,6 +459,106 @@ public partial class ShellViewModelTests
         {
             WeakReferenceMessenger.Default.UnregisterAll(recipient);
             WeakReferenceMessenger.Default.UnregisterAll(viewModel);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("Id")]
+    [DataRow("Name")]
+    [DataRow("Invoke")]
+    public async Task PerformCommand_DisconnectedCommandDoesNotBlockNextInvocation(string failure)
+    {
+        using var shell = CreateViewModel();
+        var command = new Mock<IInvokableCommand>();
+        var exception = Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!;
+        if (failure == "Id")
+        {
+            command.SetupGet(model => model.Id).Throws(exception);
+        }
+        else if (failure == "Name")
+        {
+            command.SetupGet(model => model.Name).Throws(exception);
+        }
+        else
+        {
+            command.Setup(model => model.Invoke(It.IsAny<object?>())).Throws(exception);
+        }
+
+        shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(command.Object)));
+        var invocation = (Task?)typeof(ShellViewModel)
+            .GetField("_handleInvokeTask", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(shell);
+        if (invocation is not null)
+        {
+            await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        var invoked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var healthy = new TestCommand(CommandResult.KeepOpen(), () => invoked.TrySetResult());
+        shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(healthy)));
+
+        await invoked.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var healthyInvocation = (Task?)typeof(ShellViewModel)
+            .GetField("_handleInvokeTask", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(shell);
+        if (healthyInvocation is not null)
+        {
+            await healthyInvocation.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+    }
+
+    [TestMethod]
+    [DataRow("Id")]
+    [DataRow("Name")]
+    public async Task PerformCommand_DeadCachedDockCommandDoesNotBlockReload(string failingProperty)
+    {
+        using var shell = CreateViewModel();
+        var disconnected = false;
+        var command = new Mock<IInvokableCommand>();
+        command.SetupGet(model => model.Id).Returns(() => disconnected && failingProperty == "Id"
+            ? throw Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!
+            : "desktop.switch");
+        command.SetupGet(model => model.Name).Returns(() => disconnected && failingProperty == "Name"
+            ? throw Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!
+            : "Switch desktop");
+        command.Setup(model => model.Invoke(It.IsAny<object?>())).Returns(CommandResult.KeepOpen());
+
+        // Primary dock clicks reuse the cached command without a sender or source page.
+        var message = new PerformCommandMessage(new ExtensionObject<ICommand>(command.Object))
+        {
+            WithAnimation = false,
+            TransientPage = true,
+        };
+        shell.Receive(message);
+        await WaitForInvocationAsync();
+        disconnected = true;
+        shell.Receive(message);
+        try
+        {
+            await WaitForInvocationAsync();
+        }
+        catch (COMException)
+        {
+            // Continue the repro on old code: the faulted task still occupies the gate.
+        }
+
+        var reloaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reload = new TestCommand(CommandResult.KeepOpen(), () => reloaded.TrySetResult());
+        shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(reload)));
+
+        await reloaded.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await WaitForInvocationAsync();
+        command.Verify(model => model.Invoke(It.IsAny<object?>()), Times.Once);
+
+        async Task WaitForInvocationAsync()
+        {
+            var invocation = (Task?)typeof(ShellViewModel)
+                .GetField("_handleInvokeTask", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(shell);
+            if (invocation is not null)
+            {
+                await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+            }
         }
     }
 
