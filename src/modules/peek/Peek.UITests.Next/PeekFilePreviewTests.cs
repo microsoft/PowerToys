@@ -195,11 +195,7 @@ public class PeekFilePreviewTests : UITestBase
     [TestCategory("Preview files")]
     public void PeekPNGImagePreview()
     {
-        // ARM64's existing baseline title is "8.png"; the current Shell display name is "8".
-        // The rendered body is pixel-identical, but that filename change shifts the 64-bit
-        // average hash to 93.75%. Keep the baseline and limit the 93% tolerance to this case.
-        int? similarityThreshold = string.Equals(EnvironmentConfig.Platform, "arm64", StringComparison.OrdinalIgnoreCase) ? 93 : null;
-        TestSingleFilePreview(Path.GetFullPath(@".\TestAssets\8.png"), "8", similarityThreshold);
+        TestSingleFilePreview(Path.GetFullPath(@".\TestAssets\8.png"), "8");
     }
 
     [TestMethod("Peek.WindowPinning.PinAndSwitchImages")]
@@ -879,7 +875,7 @@ public class PeekFilePreviewTests : UITestBase
         return false;
     }
 
-    private void TestSingleFilePreview(string filePath, string expectedFileName, int? similarityThreshold = null)
+    private void TestSingleFilePreview(string filePath, string expectedFileName)
     {
         // A single Explorer selection can still include neighboring files in Peek's title counter.
         singleFilePreviewDirectory = Path.Combine(Path.GetTempPath(), "PowerToys.Peek.UITests", Guid.NewGuid().ToString("N"));
@@ -888,14 +884,7 @@ public class PeekFilePreviewTests : UITestBase
         File.Copy(filePath, isolatedFilePath);
 
         var previewWindow = OpenPeekWindow(isolatedFilePath);
-        if (similarityThreshold.HasValue)
-        {
-            VisualAssert.AreEqual(TestContext, previewWindow, expectedFileName, similarityThreshold.Value);
-        }
-        else
-        {
-            VisualAssert.AreEqual(TestContext, previewWindow, expectedFileName);
-        }
+        VisualAssert.AreEqual(TestContext, previewWindow, expectedFileName);
     }
 
     private static WindowBounds MoveWindowBy(Session window, int offsetX, int offsetY)

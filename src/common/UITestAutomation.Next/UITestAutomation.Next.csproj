@@ -23,8 +23,6 @@
       JSON output. There is no managed dependency on the engine.
     -->
     <PackageReference Include="MSTest.TestFramework" />
-    <!-- Keep visual baseline comparison byte-for-byte compatible with the legacy UI-test harness. -->
-    <PackageReference Include="CoenM.ImageSharp.ImageHash" />
     <!--
       ScreenRecorderLib encodes the optional pipeline screen recording (ScreenRecording.cs)
       in realtime via native Media Foundation. Pipeline-only diagnostic; no PATH/FFmpeg setup.

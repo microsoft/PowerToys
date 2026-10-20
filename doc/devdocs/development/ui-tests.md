@@ -285,6 +285,31 @@ public void TestEmptyView()
 }
 ```
 
+### Visual assertions in UITestAutomation.Next
+
+The `.Next` harness compares complete, equal-sized window captures using local
+structural similarity (SSIM), with a default threshold of **95%**. It does not
+resize images, crop their frames, or mask pixels. The existing embedded baseline
+images are used unchanged, and capture retries remain bounded to 15 seconds.
+The legacy harness shown above retains its original comparison behavior.
+
+The score is the pixel-weighted mean of non-overlapping 8-by-8 blocks, including
+partial blocks at the image edges. Each RGB channel uses local mean, variance
+and covariance with the standard 8-bit SSIM stabilizers `(0.01 * 255)^2` and
+`(0.03 * 255)^2`. Alpha is compared independently; the lower of the RGB and alpha
+scores is used, so an opaque capture cannot pass by becoming transparent.
+Dimension mismatches are retried during settling and reported explicitly if they
+persist.
+
+This replaces the `.Next` harness's former 64-bit average hash. That hash's
+1.5625-percentage-point steps were not percentages of matching pixels: a small
+frame-color change could alter the global average and flip unrelated hash bits,
+while uniform black and white images could have identical hashes. Local SSIM
+keeps changes local and detects missing preview structure. Regression tests cover
+blank images, removed content, inverted structure, color and alpha changes,
+dimension mismatches, and partial edge blocks. Peek PNG uses the same 95%
+threshold as the other previews; there is no architecture-specific exception.
+
 ## Extra tools and information
 
  **Accessibility Tools**:
