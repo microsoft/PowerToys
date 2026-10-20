@@ -314,6 +314,12 @@
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
     <value>To set up, generate the key on one machine, and enter it manually on other machines</value>
   </data>
+  <data name="MouseWithoutBorders_PairingRequiresAdministrator.Title" xml:space="preserve">
+    <value>Run PowerToys as administrator to view or change the pairing key.</value>
+  </data>
+  <data name="MouseWithoutBorders_PairingSetupRequired.Title" xml:space="preserve">
+    <value>The saved pairing key cannot be used in the current mode. Generate a new key or connect using a key from another computer.</value>
+  </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
   </data>
@@ -359,6 +365,10 @@
   </data>
   <data name="MouseWithoutBorders_ServiceSettings.Header" xml:space="preserve">
     <value>Service</value>
+  </data>
+  <data name="MouseWithoutBorders_ServiceModeChangeFailed.Message" xml:space="preserve">
+    <value>Mouse Without Borders could not switch service mode. Restart PowerToys and try again.</value>
+    <comment>"Mouse Without Borders" and "PowerToys" are product names.</comment>
   </data>
   <data name="MouseWithoutBorders_Toggle_Enable.Header" xml:space="preserve">
     <value>Mouse Without Borders</value>
@@ -6921,5 +6931,8 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeAppsForModifier_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: game.exe</value>
     <comment>{Locked="game.exe"}</comment>
+  </data>
+  <data name="MouseWithoutBorders_PairingUpdateFailed.Message" xml:space="preserve">
+    <value>Pairing could not be loaded or updated. Try again.</value>
   </data>
 </root>
