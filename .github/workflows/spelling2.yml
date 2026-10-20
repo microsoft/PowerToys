@@ -108,8 +108,7 @@ jobs:
           warnings: bad-regex,binary-file,deprecated-feature,ignored-expect-variant,large-file,limited-references,no-newline-at-eof,noisy-file,non-alpha-in-dictionary,token-is-substring,unexpected-line-ending,whitespace-in-dictionary,minified-file,unsupported-configuration,no-files-to-check,unclosed-block-ignore-begin,unclosed-block-ignore-end
           experimental_apply_changes_via_bot: 1
           # The action probes SARIF access with a tag ref, which fork PR tokens cannot write.
-          # Fork contributors get spelling failures, locations, and fixes in logs and the job summary.
-          use_sarif: ${{ (!github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository) && 1 || 0 }}
+          use_sarif: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
           check_extra_dictionaries: ""
           dictionary_source_prefixes: >
             {
