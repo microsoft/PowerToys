@@ -60,6 +60,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ExpandCompactModeMessage>,
     IContextMenuOwner,
     INotifyPropertyChanged,
+    ISearchBarHost,
     IDisposable
 {
     private const double QuickAccessShelfButtonWidth = 40;
@@ -143,6 +144,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public ShellViewModel ViewModel { get; private set; }
 
     public QuickAccessShelfViewModel QuickAccessShelf { get; }
+
+    bool ISearchBarHost.CanFocusSearchBar => HostWindow?.IsVisibleToUser == true;
 
     public IHostWindow? HostWindow
     {
@@ -631,7 +634,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 DetailsContent.ChangeView(null, 0, null, true);
                 ViewModel.Details = details;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                 ViewModel.IsDetailsVisible = true;
             }
             catch (Exception ex)
@@ -1199,29 +1201,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var announcement = string.Format(CultureInfo.CurrentCulture, _pageNavigatedAnnouncement.Format, pageTitle);
 
         UIHelper.AnnounceActionForAccessibility(RootFrame, announcement, "CommandPalettePageNavigatedTo");
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether determines if the current Details have a HeroImage, given the theme
-    /// we're currently in. This needs to be evaluated in the view, because the
-    /// viewModel doesn't actually know what the current theme is.
-    /// </summary>
-    public bool HasHeroImage
-    {
-        get
-        {
-            var requestedTheme = ActualTheme;
-            var iconInfoVM = ViewModel.Details?.HeroImage;
-            return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
-        }
-    }
-
-    private void Command_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
-        }
     }
 
     private void ShellPage_LosingFocus(UIElement sender, LosingFocusEventArgs args)

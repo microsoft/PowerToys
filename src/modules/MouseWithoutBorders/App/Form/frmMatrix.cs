@@ -135,7 +135,7 @@ namespace MouseWithoutBorders
         internal void UpdateKeyTextBox()
         {
             _ = Helper.GetUserName();
-            textBoxEnc.Text = Encryption.MyKey;
+            textBoxEnc.Text = Setting.Values.PairingKeyDisplayText;
         }
 
         private void InitAll()
@@ -513,6 +513,7 @@ namespace MouseWithoutBorders
 
             if (!newKey.Equals(Encryption.MyKey, StringComparison.OrdinalIgnoreCase))
             {
+                Setting.Values.MyKey = newKey;
                 Encryption.MyKey = newKey;
                 Encryption.GeneratedKey = false;
             }
@@ -1116,7 +1117,9 @@ namespace MouseWithoutBorders
 
             if (MessageBox.Show(message, Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
-                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+                var key = Encryption.CreateRandomKey();
+                Setting.Values.MyKey = key;
+                Encryption.MyKey = key;
                 textBoxEnc.Text = Encryption.MyKey;
                 checkBoxShowKey.Checked = true;
                 Encryption.GeneratedKey = true;

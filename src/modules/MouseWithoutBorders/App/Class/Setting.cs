@@ -48,13 +48,24 @@ namespace MouseWithoutBorders.Class
 
         private readonly SettingsUtils _settingsUtils;
         private readonly Lock _loadingSettingsLock = new Lock();
+        private readonly Lock _pairingKeyLock = new Lock();
         private readonly IFileSystemWatcher _watcher;
         private readonly TaskScheduler _saveScheduler = TaskScheduler.Default;
+        private readonly IPairingKeyCodec _pairingKeyCodec;
         private long _saveSequence;
         private long _lastWrittenSequence;
 
         private MouseWithoutBordersProperties _properties;
         private MouseWithoutBordersSettings _settings;
+
+        internal static bool IsProtectedMode
+        {
+            get
+            {
+                using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+                return identity.IsSystem;
+            }
+        }
 
         // Avoid instantly saving every change to the file when updating properties.
         public bool PauseInstantSaving { get; set; }
@@ -136,13 +147,7 @@ namespace MouseWithoutBorders.Class
                     shouldSendMachineMatrix = true;
                 }
 
-                var shouldReopenSockets = false;
-
-                if (Encryption.MyKey != _properties.SecurityKey.Value)
-                {
-                    Encryption.MyKey = _properties.SecurityKey.Value;
-                    shouldReopenSockets = true;
-                }
+                var shouldReopenSockets = UpdateRuntimeKey();
 
                 if (shouldReopenSockets)
                 {
@@ -234,8 +239,10 @@ namespace MouseWithoutBorders.Class
                 _saveScheduler);
         }
 
-        internal Settings()
+        internal Settings(IPairingKeyCodec pairingKeyCodec)
         {
+            ArgumentNullException.ThrowIfNull(pairingKeyCodec);
+            _pairingKeyCodec = pairingKeyCodec;
             _settingsUtils = SettingsUtils.Default;
 
             _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
@@ -254,8 +261,10 @@ namespace MouseWithoutBorders.Class
         }
 
         // Initialize the same settings state without starting a file watcher or network work.
-        internal Settings(SettingsUtils settingsUtils, MouseWithoutBordersSettings settings, TaskScheduler saveScheduler = null)
+        internal Settings(SettingsUtils settingsUtils, MouseWithoutBordersSettings settings, IPairingKeyCodec pairingKeyCodec, TaskScheduler saveScheduler = null)
         {
+            ArgumentNullException.ThrowIfNull(pairingKeyCodec);
+            _pairingKeyCodec = pairingKeyCodec;
             _settingsUtils = settingsUtils;
             _settings = settings;
             _properties = settings.Properties;
@@ -534,38 +543,122 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        internal string PairingKeyDisplayText
+        {
+            get
+            {
+                if (IsProtectedMode)
+                {
+                    return Encryption.MyKey ?? string.Empty;
+                }
+
+                lock (_loadingSettingsLock)
+                {
+                    if (_pairingKeyCodec.IsEncrypted(_properties.SecurityKey.Value))
+                    {
+                        return PairingKeyCodec.IsEncryptedValue(_properties.SecurityKey.Value)
+                            ? MouseWithoutBordersIpc.PairingConfiguredIndicator
+                            : string.Empty;
+                    }
+
+                    return _properties.SecurityKey.Value;
+                }
+            }
+        }
+
+        internal bool IsPairingKeyModeMismatch
+        {
+            get
+            {
+                lock (_pairingKeyLock)
+                {
+                    var storedKey = _properties.SecurityKey.Value;
+                    return !string.IsNullOrEmpty(storedKey) &&
+                        (_pairingKeyCodec is DpapiPairingKeyCodec) != PairingKeyCodec.IsEncryptedValue(storedKey);
+                }
+            }
+        }
+
         internal string MyKey
         {
             get
             {
-                lock (_loadingSettingsLock)
+                lock (_pairingKeyLock)
                 {
-                    if (_properties.SecurityKey.Value.Length != 0)
-                    {
-                        Logger.LogDebug("GETSECKEY: Key was already loaded/set: " + _properties.SecurityKey.Value);
-                        return _properties.SecurityKey.Value;
-                    }
-                    else
+                    if (!IsProtectedMode && string.IsNullOrEmpty(_properties.SecurityKey.Value))
                     {
                         string randomKey = Encryption.CreateDefaultKey();
-                        _properties.SecurityKey.Value = randomKey;
-
-                        return randomKey;
+                        _properties.SecurityKey.Value = _pairingKeyCodec.Encrypt(randomKey);
                     }
+
+                    // Only the settings JSON carries the encoded value; callers always receive plaintext.
+                    var key = _pairingKeyCodec.Decrypt(_properties.SecurityKey.Value);
+                    if (PairingKeyCodec.IsEncryptedValue(key))
+                    {
+                        throw new CryptographicException("The saved pairing key cannot be used in the current mode.");
+                    }
+
+                    return key;
                 }
             }
 
             set
             {
-                lock (_loadingSettingsLock)
+                lock (_pairingKeyLock)
                 {
-                    _properties.SecurityKey.Value = value;
+                    bool reuseStoredKey = false;
+                    var storedKey = _properties.SecurityKey.Value;
+                    if (!string.IsNullOrEmpty(storedKey))
+                    {
+                        try
+                        {
+                            reuseStoredKey = string.Equals(_pairingKeyCodec.Decrypt(storedKey), value, StringComparison.Ordinal);
+                        }
+                        catch (Exception ex) when (ex is CryptographicException or ArgumentException or FormatException)
+                        {
+                            EventLogger.LogEvent($"Failed to compare stored pairing key: {ex.GetType().Name}", System.Diagnostics.EventLogEntryType.Warning);
+                        }
+                    }
+
+                    if (!reuseStoredKey)
+                    {
+                        storedKey = _pairingKeyCodec.Encrypt(value);
+                    }
+
+                    // Reload adoption can replace the properties during either codec call.
+                    _properties.SecurityKey.Value = storedKey;
+
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();
                     }
                 }
             }
+        }
+
+        internal bool UpdateRuntimeKey()
+        {
+            string key;
+            bool keyCorrupted = false;
+            try
+            {
+                key = MyKey;
+            }
+            catch (Exception ex) when (ex is CryptographicException or ArgumentException or FormatException)
+            {
+                key = string.Empty;
+                keyCorrupted = !IsPairingKeyModeMismatch;
+            }
+
+            Encryption.KeyCorrupted = keyCorrupted;
+            if (Encryption.MyKey == key)
+            {
+                return false;
+            }
+
+            Encryption.MyKey = key;
+            Encryption.MagicNumber = string.IsNullOrEmpty(key) ? 0 : Encryption.Get24BitHash(key);
+            return true;
         }
 
         internal int MyKeyDaysToExpire
@@ -1253,6 +1346,16 @@ namespace MouseWithoutBorders.Class
 
     public static class Setting
     {
-        internal static Settings Values = new Settings();
+        internal static Settings Values = new Settings(CreatePairingKeyCodec());
+
+        private static IPairingKeyCodec CreatePairingKeyCodec()
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var ownerSid = Program.ResolveSettingsIpcUserSid(
+                identity.User,
+                System.Diagnostics.Process.GetCurrentProcess().SessionId,
+                Program.GetInteractiveSessionUserSid);
+            return DpapiPairingKeyCodec.CreateForCurrentIdentity(ownerSid);
+        }
     }
 }

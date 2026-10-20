@@ -120,9 +120,11 @@ same unfiltered suite:
 
 Initial startup requires two stable samples of the initialized Settings window
 and both native MWB listeners (15100/15101) on the same exact owned MWB PID.
-SettingsSync is published before the main form/sockets finish initializing;
-a PID or early pipe is not module readiness. `mwb-readiness.json` records this
-boundary without UIA or secret data.
+SettingsSync is published after pairing-key initialization, but the pipe alone
+does not prove the main form or native listeners are ready. `mwb-readiness.json`
+records this boundary without UIA or secret data. The pilot keeps service mode
+off; it does not sign off encrypted service-mode pairing or administrator-only
+key disclosure.
 
 Settings starts through Runner's supported `--open-settings=MouseWithoutBorders`
 deep link. Native maximized geometry is checked before targeted UIA waits for

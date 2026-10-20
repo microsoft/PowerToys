@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
@@ -16,7 +17,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -29,6 +32,115 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
     [TestClass]
     public sealed class MouseWithoutBordersIpcSecurityTests
     {
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task RpcHelpersOwnFreshVerifiedPipesAcrossDelayedClosureAndServerRestart(bool failFirstRequest)
+        {
+            var connect = typeof(MouseWithoutBordersViewModel).GetMethod("ConnectSettingsSyncHelperAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var pipeName = UniquePipeName();
+            NamedPipeClientStream previousStream = null;
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                using var identity = WindowsIdentity.GetCurrent();
+                await using var server = RestrictedNamedPipeServer.Create(pipeName, identity.User!);
+                var wait = server.WaitForConnectionAsync();
+                var task = (Task)connect.Invoke(null, new object[] { pipeName, Path.GetFileName(GetCurrentExecutablePath()) })!;
+                await wait.WaitAsync(TimeSpan.FromSeconds(5));
+                var failRequest = failFirstRequest && attempt == 0;
+                using var rpc = JsonRpc.Attach(server, new PairingRpcTarget(failRequest));
+                await task.WaitAsync(TimeSpan.FromSeconds(5));
+                using var helper = (IDisposable)task.GetType().GetProperty("Result")!.GetValue(task)!;
+                var stream = (NamedPipeClientStream)helper.GetType().GetProperty("Stream")!.GetValue(helper)!;
+                var handle = stream.SafePipeHandle;
+                Assert.AreNotSame(previousStream, stream);
+                var endpoint = helper.GetType().GetProperty("Endpoint")!.GetValue(helper)!;
+                var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic)!;
+                var keyTask = (Task<string>)contract.GetMethod("GetCurrentPairingKey")!.Invoke(endpoint, null)!;
+                if (failRequest)
+                {
+                    await Assert.ThrowsExceptionAsync<RemoteInvocationException>(() => keyTask.WaitAsync(TimeSpan.FromSeconds(5)));
+                }
+                else
+                {
+                    Assert.AreEqual("test-pairing-key", await keyTask.WaitAsync(TimeSpan.FromSeconds(5)));
+                }
+
+                helper.Dispose();
+                Assert.IsTrue(handle.IsClosed);
+
+                // Leave the server alive after client disposal, as RPC read-loop cleanup can finish later.
+                await Task.Delay(50);
+                previousStream = stream;
+            }
+        }
+
+        public sealed class PairingRpcTarget
+        {
+            private readonly bool _failRequest;
+
+            public PairingRpcTarget(bool failRequest)
+            {
+                _failRequest = failRequest;
+            }
+
+            public Task<string> GetCurrentPairingKey() => _failRequest
+                ? Task.FromException<string>(new InvalidOperationException("Synthetic pairing request failure."))
+                : Task.FromResult("test-pairing-key");
+        }
+
+        [TestMethod]
+        public async Task ShutdownWaitObservesThePipeServerProcessExit()
+        {
+            var pipeName = UniquePipeName();
+            var start = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe"))
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            start.ArgumentList.Add("-NoProfile");
+            start.ArgumentList.Add("-NonInteractive");
+            start.ArgumentList.Add("-Command");
+            start.ArgumentList.Add($"$pipe = [System.IO.Pipes.NamedPipeServerStream]::new('{pipeName}'); try {{ $pipe.WaitForConnection(); [void]$pipe.ReadByte(); Start-Sleep -Milliseconds 200 }} finally {{ $pipe.Dispose() }}");
+            using var server = Process.Start(start)!;
+            using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            try
+            {
+                await client.ConnectAsync(5000);
+                await MouseWithoutBordersIpc.ShutdownAndWaitForServerExitAsync(
+                    client,
+                    () => client.WriteByte(1),
+                    TimeSpan.FromSeconds(5));
+                Assert.IsTrue(server.HasExited, "The shutdown wait must not complete before the server exits.");
+            }
+            finally
+            {
+                client.Dispose();
+                if (!server.WaitForExit(3000))
+                {
+                    server.Kill(entireProcessTree: true);
+                    Assert.Fail("The isolated pipe server did not exit within its cleanup timeout.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task ShutdownWaitReportsTimeoutWhenTheServerRemainsAlive()
+        {
+            var pair = await CreateConnectedPairAsync();
+            await using var server = pair.Server;
+            await using var client = pair.Client;
+            var shutdownRequested = false;
+
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() =>
+                MouseWithoutBordersIpc.ShutdownAndWaitForServerExitAsync(
+                    client,
+                    () => shutdownRequested = true,
+                    TimeSpan.FromMilliseconds(100)));
+
+            Assert.IsTrue(shutdownRequested);
+        }
+
         [TestMethod]
         public void PipeNameIsStableAndSessionQualified()
         {
@@ -434,6 +546,10 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 Assert.IsFalse(operation.IsCompleted, "Sending the request is not completion of the remote operation.");
                 target.Release.SetResult();
                 await operation.WaitAsync(TimeSpan.FromSeconds(5));
+                if (methodName == "GenerateNewKey")
+                {
+                    Assert.AreEqual("fixture-generated-key", await (Task<string>)operation);
+                }
             }
             finally
             {
@@ -685,6 +801,94 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             return (Task)contract!.GetMethod(methodName)!.Invoke(endpoint, arguments)!;
         }
 
+        [TestMethod]
+        public void PairingRpcContractMatchesApplicationContract()
+        {
+            var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic);
+            var generate = contract!.GetMethod("GenerateNewKey")!;
+            var connect = contract.GetMethod("ConnectToMachine")!;
+
+            Assert.AreEqual(typeof(Task<string>), generate.ReturnType);
+            Assert.AreEqual(0, generate.GetParameters().Length);
+            Assert.AreEqual(typeof(Task), connect.ReturnType);
+            CollectionAssert.AreEqual(
+                new[] { typeof(string), typeof(string) },
+                connect.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
+        }
+
+        [TestMethod]
+        public void ConnectTextFieldsRemainOwnedByPageWithoutBindings()
+        {
+            var document = XDocument.Load(FindRepositoryFile(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml"));
+            XNamespace xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
+            foreach (var property in new[] { "ConnectSecurityKey", "ConnectPCName" })
+            {
+                var textBox = document.Descendants().Single(element => (string)element.Attribute(xaml + "Name") == property + "TextBox");
+                Assert.IsNull(textBox.Attribute("Text"));
+                Assert.AreEqual(
+                    "{x:Bind ViewModel.CanConnectPairing, Mode=OneWay}",
+                    (string)textBox.Ancestors().Single(element => element.Name.LocalName == "SettingsCard").Attribute("IsEnabled"));
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow("MouseWithoutBorders_SettingsSyncErrorInfoBar")]
+        [DataRow("MouseWithoutBorders_PairingUpdateFailed")]
+        public void SettingsCommandAndPairingFailuresAreAnnounced(string resourceId)
+        {
+            var document = XDocument.Load(FindRepositoryFile(@"src\settings-ui\Settings.UI\SettingsXAML\Views\MouseWithoutBordersPage.xaml"));
+            XNamespace xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
+            var infoBar = document.Descendants().Single(element => (string)element.Attribute(xaml + "Uid") == resourceId);
+            Assert.AreEqual("Assertive", (string)infoBar.Attribute("AutomationProperties.LiveSetting"));
+        }
+
+        [TestMethod]
+        public void PairingSetupResourceExplainsExplicitRepairInEitherMode()
+        {
+            var resourcePath = FindRepositoryFile(@"src\settings-ui\Settings.UI\Strings\en-us\Resources.resw");
+            var document = XDocument.Load(resourcePath);
+            var value = document
+                .Descendants("data")
+                .Single(element => (string)element.Attribute("name") == "MouseWithoutBorders_PairingSetupRequired.Title")
+                .Element("value")!
+                .Value;
+
+            Assert.AreEqual(
+                "The saved pairing key cannot be used in the current mode. Generate a new key or connect using a key from another computer.",
+                value);
+        }
+
+        [TestMethod]
+        public void PairingSetupWarningAndConnectSourceWiringDoesNotRequireAnExistingKey()
+        {
+            var viewModel = File.ReadAllText(FindRepositoryFile(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs"));
+            StringAssert.Contains(viewModel, "public bool ShowPairingSetupRequired => PairingSetupRequired;");
+            StringAssert.Contains(viewModel, "public bool CanConnectPairing => CanManagePairing;");
+            StringAssert.Contains(viewModel, "public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);");
+
+            var program = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Class\Program.cs"));
+            var start = program.IndexOf("public Task ConnectToMachine(", StringComparison.Ordinal);
+            var end = program.IndexOf("public async Task<string> GenerateNewKey(", start, StringComparison.Ordinal);
+            var connect = program.Substring(start, end - start);
+            StringAssert.Contains(connect, "EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);");
+            StringAssert.Contains(connect, "Setting.Values.MyKey = securityKey;");
+            Assert.IsFalse(connect.Contains("_settings.HasPairingKey", StringComparison.Ordinal));
+            Assert.IsFalse(program.Contains("EnsureConnectOperationAvailable", StringComparison.Ordinal));
+        }
+
+        [TestMethod]
+        public void StartupDoesNotReplaceUnavailableSavedPairingKey()
+        {
+            var source = File.ReadAllText(FindRepositoryFile(@"src\modules\MouseWithoutBorders\App\Core\InitAndCleanup.cs"));
+            var start = source.IndexOf("catch (Exception e) when (e is FormatException or CryptographicException or ArgumentException)", StringComparison.Ordinal);
+            var end = source.IndexOf("Logger.Log(e.Message);", start, StringComparison.Ordinal);
+            var failure = source.Substring(start, end - start);
+            StringAssert.Contains(failure, "Encryption.MyKey = string.Empty;");
+            StringAssert.Contains(failure, "Encryption.GeneratedKey = false;");
+            Assert.IsFalse(failure.Contains("Setting.Values.MyKey =", StringComparison.Ordinal));
+            Assert.IsFalse(failure.Contains("CreateRandomKey", StringComparison.Ordinal));
+        }
+
         private static async Task<(NamedPipeServerStream Server, NamedPipeClientStream Client)> CreateConnectedPairAsync(string pipeName = null)
         {
             pipeName ??= UniquePipeName();
@@ -713,6 +917,24 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         private static string UniquePipeName()
         {
             return $"PowerToys.MWB.v2.UnitTest.{Environment.ProcessId}.{Guid.NewGuid():N}";
+        }
+
+        private static string FindRepositoryFile(string relativePath)
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory != null)
+            {
+                var candidate = Path.Combine(directory.FullName, relativePath);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+
+                directory = directory.Parent;
+            }
+
+            Assert.Fail($"Could not locate {relativePath}.");
+            return string.Empty;
         }
 
         private static string GetKnownEmbeddedMicrosoftSignedDependencyPath()
@@ -861,7 +1083,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
 
             public int InvocationCount => _invocationCount;
 
-            public Task GenerateNewKey() => WaitForRelease();
+            public async Task<string> GenerateNewKey()
+            {
+                await WaitForRelease();
+                return "fixture-generated-key";
+            }
 
             public Task ConnectToMachine(string machineName, string securityKey) => WaitForRelease();
 
@@ -899,10 +1125,10 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 return Task.CompletedTask;
             }
 
-            public Task GenerateNewKey()
+            public Task<string> GenerateNewKey()
             {
                 Calls.Enqueue(nameof(GenerateNewKey));
-                return Task.CompletedTask;
+                return Task.FromResult("fixture-generated-key");
             }
 
             public Task Reconnect()

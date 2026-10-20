@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO.Abstractions;
+using System.Security.Principal;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MwbSettings = MouseWithoutBorders.Class.Settings;
 
@@ -25,7 +27,7 @@ public sealed class SettingsPersistenceTests
         var scheduler = new QueuedSaveScheduler();
         var original = CreateSettings(Encryption.MyKey);
         original.Version = "2.0";
-        var settings = new MwbSettings(writer, original, scheduler);
+        var settings = new MwbSettings(writer, original, new PassthroughPairingKeyCodec(), scheduler);
 
         settings.SaveSettings();
         settings.ApplyLoadedSettings(CreateSettings(Encryption.MyKey), () => { }, () => { }, () => { }, () => { });
@@ -45,7 +47,7 @@ public sealed class SettingsPersistenceTests
         var writer = new RecordingSettingsUtils();
         var scheduler = new QueuedSaveScheduler();
         var original = CreateSettings(PreviousKey);
-        var settings = new MwbSettings(writer, original, scheduler);
+        var settings = new MwbSettings(writer, original, new PassthroughPairingKeyCodec(), scheduler);
 
         settings.SaveSettings();
         original.Properties.SecurityKey.Value = RequestedKey;
@@ -60,12 +62,41 @@ public sealed class SettingsPersistenceTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void NewestEncryptedPairingKeyWinsWithoutPersistingPlaintext(bool olderRunsLast)
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        var codec = new DpapiPairingKeyCodec(identity.User!);
+        var writer = new RecordingSettingsUtils();
+        var scheduler = new QueuedSaveScheduler();
+        var settings = new MwbSettings(writer, CreateSettings(string.Empty), codec, scheduler);
+
+        settings.MyKey = PreviousKey;
+        settings.MyKey = RequestedKey;
+        scheduler.RunNext(newest: olderRunsLast);
+        scheduler.RunNext();
+
+        Assert.AreEqual(olderRunsLast ? 1 : 2, writer.Writes.Count);
+        foreach (var json in writer.Writes)
+        {
+            Assert.IsFalse(json.Contains(PreviousKey, StringComparison.Ordinal));
+            Assert.IsFalse(json.Contains(RequestedKey, StringComparison.Ordinal));
+        }
+
+        using var saved = JsonDocument.Parse(writer.Writes.Last());
+        var storedKey = GetKey(saved)!;
+        Assert.IsTrue(codec.IsEncrypted(storedKey));
+        Assert.AreEqual(RequestedKey, codec.Decrypt(storedKey));
+    }
+
+    [TestMethod]
     public void OlderIoRetryCannotOverwriteNewerSuccessfulSave()
     {
         var writer = new RecordingSettingsUtils();
         var scheduler = new QueuedSaveScheduler();
         var original = CreateSettings(PreviousKey);
-        var settings = new MwbSettings(writer, original, scheduler);
+        var settings = new MwbSettings(writer, original, new PassthroughPairingKeyCodec(), scheduler);
         settings.SaveSettings();
         original.Properties.SecurityKey.Value = RequestedKey;
         settings.SaveSettings();
@@ -90,7 +121,7 @@ public sealed class SettingsPersistenceTests
         var original = CreateSettings(RequestedKey);
         original.Properties.MachineMatrixString.Add("OriginalPeer");
         original.Properties.AllowNonConsoleSessions.Value = true;
-        var settings = new MwbSettings(writer, original, scheduler);
+        var settings = new MwbSettings(writer, original, new PassthroughPairingKeyCodec(), scheduler);
 
         settings.SaveSettings();
         original.Properties.SecurityKey.Value = PreviousKey;

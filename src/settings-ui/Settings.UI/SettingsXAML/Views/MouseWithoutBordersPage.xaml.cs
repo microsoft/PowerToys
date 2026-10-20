@@ -4,6 +4,7 @@
 
 using System;
 using System.IO.Abstractions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagedCommon;
@@ -31,6 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private MouseWithoutBordersViewModel ViewModel { get; set; }
 
         private readonly IFileSystemWatcher watcher;
+        private int _configRefreshPending;
+        private int _configRefreshRequested;
 
         public MouseWithoutBordersPage()
         {
@@ -49,20 +52,53 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
 
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
-        }
-
-        private void OnConfigFileUpdate()
-        {
-            // Note: FileSystemWatcher raise notification multiple times for single update operation.
-            // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration every time since we will be updating the UI only if something is changed.
-            this.DispatcherQueue.TryEnqueue(() =>
+            Loaded += async (s, e) =>
             {
+                ClearPairingUI();
+                ViewModel.OnPageLoaded();
                 if (ViewModel.LoadUpdatedSettings())
                 {
                     ViewModel.NotifyUpdatedSettings();
                 }
-            });
+
+                await ViewModel.LoadPairingKeyAsync();
+            };
+            Unloaded += (s, e) => ClearPairingUI();
+        }
+
+        private void OnConfigFileUpdate()
+        {
+            Interlocked.Exchange(ref _configRefreshRequested, 1);
+            if (Interlocked.Exchange(ref _configRefreshPending, 1) != 0)
+            {
+                return;
+            }
+
+            if (!this.DispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    while (Interlocked.Exchange(ref _configRefreshRequested, 0) != 0 && IsLoaded)
+                    {
+                        if (ViewModel.LoadUpdatedSettings())
+                        {
+                            ViewModel.NotifyUpdatedSettings();
+                            await ViewModel.LoadPairingKeyAsync();
+                        }
+                    }
+                }
+                finally
+                {
+                    Interlocked.Exchange(ref _configRefreshPending, 0);
+                    if (Volatile.Read(ref _configRefreshRequested) != 0 && IsLoaded)
+                    {
+                        OnConfigFileUpdate();
+                    }
+                }
+            }))
+            {
+                Interlocked.Exchange(ref _configRefreshPending, 0);
+            }
         }
 
         private static T GetChildOfType<T>(DependencyObject depObj, string tag)
@@ -151,7 +187,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ShowConnectFields()
         {
-            ViewModel.ConnectFieldsVisible = true;
+            if (ViewModel.CanConnectPairing)
+            {
+                ViewModel.ConnectFieldsVisible = true;
+            }
         }
 
         internal static async Task<bool> TryExecuteSettingsCommandAsync(Func<Task> command, Action<bool> setErrorVisible, Action onSuccess = null)
@@ -180,19 +219,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async Task Connect()
         {
-            if (ConnectPCNameTextBox.Text.Length != 0 && ConnectSecurityKeyTextBox.Text.Length != 0)
+            var pcName = ConnectPCNameTextBox.Text;
+            var securityKey = ConnectSecurityKeyTextBox.Text.Trim();
+            if (await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey))
             {
-                string pcName = ConnectPCNameTextBox.Text;
-                string securityKey = ConnectSecurityKeyTextBox.Text.Trim();
+                ConnectPCNameTextBox.Text = string.Empty;
+                ConnectSecurityKeyTextBox.Text = string.Empty;
+                ViewModel.ConnectFieldsVisible = false;
+            }
+        }
 
-                await TryExecuteSettingsCommandAsync(
-                    () => ViewModel.SubmitConnectionRequestAsync(pcName, securityKey),
-                    SetSettingsSyncErrorVisibility,
-                    () =>
-                    {
-                        ConnectPCNameTextBox.Text = string.Empty;
-                        ConnectSecurityKeyTextBox.Text = string.Empty;
-                    });
+        private async void ServiceMode_Toggled(object sender, RoutedEventArgs e)
+        {
+            ClearPairingUI();
+            await ViewModel.LoadPairingKeyAsync();
+        }
+
+        private void ClearPairingUI()
+        {
+            ViewModel.ResetPairingUiState();
+            if (ConnectPCNameTextBox != null)
+            {
+                ConnectPCNameTextBox.Text = string.Empty;
+            }
+
+            if (ConnectSecurityKeyTextBox != null)
+            {
+                ConnectSecurityKeyTextBox.Text = string.Empty;
             }
         }
 
