@@ -51,7 +51,7 @@ public sealed partial class DetailsPane : UserControl
     {
         if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model, SourcePage));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel, SourcePage));
         }
     }
 }
