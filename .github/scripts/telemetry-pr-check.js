@@ -20,12 +20,12 @@ Thank you for contributing to PowerToys. We've detected that this PR might inclu
 - [ ] Reach out to Jessica (${REVIEWER_MENTION}) to follow up on the next steps: https://aka.ms/pt-telemetry-process
 `;
 
-const COMMENT_BODY_INFORMATIONAL = `${COMMENT_MARKER}
-This PR contains possible telemetry changes. This is best-effort guidance, not a failing check.
+const COMMENT_BODY_WITHOUT_PRIVACY_UPDATE = `${COMMENT_MARKER}
+Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event. Please ensure the following before merging:
 
-If you are adding or modifying telemetry events, check whether [DATA_AND_PRIVACY.md](https://github.com/microsoft/PowerToys/blob/main/DATA_AND_PRIVACY.md) needs updating. Path and text matches can include comments or examples and need human review.
+- [ ] Add your telemetry events to [DATA_AND_PRIVACY](https://github.com/microsoft/PowerToys/blob/main/DATA_AND_PRIVACY.md).md within this PR.
 
-For telemetry process follow-up, contact Jessica (${REVIEWER_MENTION}): https://aka.ms/pt-telemetry-process`;
+- [ ] Reach out to Jessica (${REVIEWER_MENTION}) to follow up on the next steps: https://aka.ms/pt-telemetry-process`;
 
 const TELEMETRY_PATH_PATTERNS = [
   /(^|\/)trace\.(h|hpp|cpp|cs)$/i,
@@ -381,15 +381,17 @@ async function main(event = readEventPayload(requireEnv('GITHUB_EVENT_PATH'))) {
   console.log(`DATA_AND_PRIVACY.md changed: ${dataAndPrivacyChanged}.`);
 
   const canWrite = sameRepository(current, repository, event);
+  const commentBody = matches.length
+    ? (dataAndPrivacyChanged ? COMMENT_BODY_WITH_PRIVACY_UPDATE : COMMENT_BODY_WITHOUT_PRIVACY_UPDATE)
+    : `${COMMENT_MARKER}\nTelemetry signals from the earlier run are no longer present. No telemetry action required.`;
   report([
     `Mode: ${canWrite ? 'same-repository guidance' : 'read-only; no mutations attempted'}.`,
     `Head: ${current.head.sha}; base: ${current.base.sha}.`,
     `Scanned ${files.length} files; telemetry signals: ${matches.length}.`,
-    'INFO: Telemetry findings are advisory; no documentation requirement is automatically enforced.',
-    matches.length
-      ? 'INFO: Possible telemetry changes (including possible comments/examples): check whether DATA_AND_PRIVACY.md needs updating; contact @chatasweetie for follow-up. These findings do not fail this check.'
-      : 'INFO: No telemetry signals remain.',
-    ...matches.map((match) => `INFO: ${JSON.stringify(match.filename)}`),
+    'Result: PASS — telemetry guidance is advisory.',
+    ...matches.map((match) => `File: ${JSON.stringify(match.filename)}`),
+    '',
+    commentBody,
   ]);
 
   const write = async (url, method, body) => {
@@ -406,9 +408,6 @@ async function main(event = readEventPayload(requireEnv('GITHUB_EVENT_PATH'))) {
       if (matches.length) {
         await ensureReviewerRequested(apiBaseUrl, repository, pullNumber, current, write);
       }
-      const commentBody = matches.length
-        ? (dataAndPrivacyChanged ? COMMENT_BODY_WITH_PRIVACY_UPDATE : COMMENT_BODY_INFORMATIONAL)
-        : `${COMMENT_MARKER}\nTelemetry signals from the earlier run are no longer present. No telemetry action required.`;
       await upsertPrComment(apiBaseUrl, repository, pullNumber, commentBody, write, matches.length > 0);
     } catch (error) {
       report([`INFO: Guidance could not be updated: ${error.message}`]);

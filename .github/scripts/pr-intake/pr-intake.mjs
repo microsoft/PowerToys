@@ -976,6 +976,9 @@ export async function runPullRequestIntake({ api, event }) {
   // silent to avoid noise on already-healthy PRs.
   const hasRemarks = report.authorActions.length > 0
     || report.recommendations.length > 0;
+  const message = hasRemarks || !canonical
+    ? renderIntakeComment(report, feedbackSince)
+    : renderAllClearComment();
   let commentResult = {
     operation: 'skipped',
     comment: null,
@@ -986,7 +989,7 @@ export async function runPullRequestIntake({ api, event }) {
     commentResult = await upsertCanonicalComment({
       api,
       issueNumber,
-      body: renderIntakeComment(report, feedbackSince),
+      body: message,
       comments,
     });
   } else if (canWrite && canonical) {
@@ -994,7 +997,7 @@ export async function runPullRequestIntake({ api, event }) {
     commentResult = await upsertCanonicalComment({
       api,
       issueNumber,
-      body: renderAllClearComment(),
+      body: message,
       comments,
     });
   }
@@ -1023,6 +1026,9 @@ export async function runPullRequestIntake({ api, event }) {
     failed: requiredActions.length > 0,
     requiredActions,
     recommendations,
+    message,
+    summaryRequiredActions: requiredActions.filter((action) => !report.authorActions.includes(action)),
+    summaryRecommendations: recommendations.filter((action) => !report.recommendations.includes(action)),
   };
 }
 
@@ -1031,11 +1037,14 @@ export function renderIntakeSummary(result) {
     '## PR intake',
     `Mode: ${result.canWrite ? 'same-repository' : 'read-only; no mutations attempted'}.`,
     result.skippedDraft ? 'Draft PR: readiness checks skipped.' : `Result: ${result.failed ? 'FAIL — required action remains' : 'PASS'}.`,
-    '### Required actions',
-    ...(result.requiredActions.length ? result.requiredActions.map((action) => `- ${action}`) : ['- None.']),
-    '### Information',
-    ...result.recommendations.map((action) => `- ${action}`),
-    `Product label suggestions: ${result.pathProductLabels.join(', ') || 'none'} (not blocking).`,
+    '',
+    result.message ?? '',
+    ...(result.summaryRequiredActions?.length
+      ? ['### Required actions', ...result.summaryRequiredActions.map((action) => `- ${action}`)] : []),
+    ...(result.summaryRecommendations?.length
+      ? ['### Maintainer actions', ...result.summaryRecommendations.map((action) => `- ${action}`)] : []),
+    ...(result.skippedDraft
+      ? [`Product label suggestions: ${result.pathProductLabels.join(', ') || 'none'} (not blocking).`] : []),
     '',
   ].join('\n');
 }
@@ -1161,7 +1170,7 @@ async function main() {
   });
 
   const result = await runPullRequestIntake({ api, event });
-  console.log(JSON.stringify(result, null, 2));
+  console.log(JSON.stringify({ ...result, message: undefined }, null, 2));
   const summary = renderIntakeSummary(result);
   console.log(summary);
   if (process.env.GITHUB_STEP_SUMMARY) {
