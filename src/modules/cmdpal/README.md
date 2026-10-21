@@ -19,18 +19,6 @@ We've also got samples, so that you can see how the APIs in-action.
 > [!info]
 > The Command Palette is currently in preview. Many features of the API are not yet fully implemented. We may introduce breaking API changes before CmdPal itself is v1.0.0
 
-## Dock materials
-
-The Dock has its own material setting, separate from the Command Palette window.
-Right-click the Dock, select **Settings**, and use **Appearance > Material** to choose
-**Transparent**, **Acrylic** (the default), **Mica**, or **Mica Alt**. Changes apply
-immediately and the selected material is restored on the next launch.
-
-Mica and Mica Alt use the Windows desktop wallpaper and follow the Dock's theme
-setting. Background colorization and images are unavailable while either Mica
-material is selected. Existing background settings are retained and become
-available again when switching to Acrylic or Transparent.
-
 ## Building CmdPal
 
 ### Install prerequisites
