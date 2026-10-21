@@ -72,7 +72,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
     /// <returns>True when the page was pushed and initialized.</returns>
     public async Task<bool> NavigateAsync(PerformCommandMessage message, CancellationToken cancellationToken = default)
     {
-        if (_isDisposed || message.DockRoute != Route || message.Command.Unsafe is not IPage page)
+        if (_isDisposed || message.DockRoute != Route || message.Command.Model.Unsafe is not IPage page)
         {
             return false;
         }

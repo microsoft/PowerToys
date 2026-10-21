@@ -118,7 +118,7 @@ internal sealed partial class DockPageFlyoutController :
         {
             if (_openRequest is { } open &&
                 ReferenceEquals(anchor, open.Anchor) &&
-                ReferenceEquals(message.Command.Unsafe, open.Message.Command.Unsafe))
+                ReferenceEquals(message.Command.Model.Unsafe, open.Message.Command.Model.Unsafe))
             {
                 Close();
                 return;
@@ -145,7 +145,7 @@ internal sealed partial class DockPageFlyoutController :
         _dispatcherQueue.TryEnqueue(() =>
         {
             var navigation = _navigation;
-            if (message.Command.Unsafe is IPage)
+            if (message.Command.Model.Unsafe is IPage)
             {
                 if (navigation is not null && message.DockRoute == navigation.Route)
                 {
