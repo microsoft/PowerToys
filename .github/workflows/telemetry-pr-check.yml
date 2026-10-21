@@ -17,12 +17,12 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: telemetry-pr-check-${{ github.event.pull_request.number || inputs.pr_number }}
+  group: telemetry-pr-check-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   detect-telemetry-events:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
+    if: ${{ github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
 
     steps:
