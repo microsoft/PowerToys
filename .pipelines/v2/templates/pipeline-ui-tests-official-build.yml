@@ -13,9 +13,6 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
-  - name: mwbSandboxExperiment
-    type: boolean
-    default: true
 
 stages:
   # Stage 1: Build UI Tests Only
@@ -49,7 +46,6 @@ stages:
             buildSource: ${{ parameters.buildSource }}
             specificBuildId: ${{ parameters.specificBuildId }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
 
         # Additional per-user installation test
         - template: job-test-project.yml
@@ -60,7 +56,6 @@ stages:
             buildSource: ${{ parameters.buildSource }}
             specificBuildId: ${{ parameters.specificBuildId }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
             installMode: 'peruser'
             jobSuffix: '_PerUser'
 
@@ -76,7 +71,6 @@ stages:
             buildSource: ${{ parameters.buildSource }}
             specificBuildId: ${{ parameters.specificBuildId }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
 
         # Additional per-user installation test
         - template: job-test-project.yml
@@ -87,7 +81,6 @@ stages:
             buildSource: ${{ parameters.buildSource }}
             specificBuildId: ${{ parameters.specificBuildId }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
             installMode: 'peruser'
             jobSuffix: '_PerUser'
 
@@ -104,7 +97,6 @@ stages:
             buildSource: ${{ parameters.buildSource }}
             specificBuildId: ${{ parameters.specificBuildId }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
 
         # Additional per-user installation test
         - template: job-test-project.yml
@@ -117,4 +109,3 @@ stages:
             uiTestModules: ${{ parameters.uiTestModules }}
             installMode: 'peruser'
             jobSuffix: '_PerUser'
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}

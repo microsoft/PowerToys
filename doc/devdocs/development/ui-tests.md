@@ -149,12 +149,12 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 ### Pipeline Options
 
 - **buildSource**: Select the build type for testing:
-  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
+  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch; does not support Mouse Without Borders Sandbox tests
   - `buildNow`: Builds PowerToys from current source code and uses it for testing
   - `buildNowSlim`: Builds the same current-source product, but downloads and installs its installer rather than the whole artifact
-  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter
+  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter; does not support Mouse Without Borders Sandbox tests
 
-  **Default value**: `latestMainOfficialBuild`
+  **Default value**: `buildNow`
 
 - **specificBuildId**: When `buildSource` is set to `specificBuildId`, specify the exact PowerToys build ID to download and test against.
 
@@ -175,13 +175,15 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 
   **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
 
-- **mwbSandboxExperiment** (default `true`): Enables the dedicated x64 Mouse Without
-  Borders Sandbox suite when selected. It requires `buildNow` or `buildNowSlim` and
-  a current-source test runtime bundle. An explicit `MouseWithoutBorders.UITests`
-  selection with an official build is blocked; an empty all-modules selection
-  skips MWB with a warning and still runs the other suites. ARM64 Sandbox
-  execution is skipped independently of the other ARM64 suites. PR builds prepare
-  the bundle only when the affected-project resolver selects MWB.
+  **Mouse Without Borders**: Selecting `MouseWithoutBorders.UITests` automatically
+  prepares its current-source x64 Release runtime bundle and runs the dedicated
+  Sandbox suite; there is no separate enable/disable switch. Empty all-modules
+  selections include it on `buildNow` and `buildNowSlim`. An explicit MWB selection
+  with an official build is blocked; an empty all-modules official selection skips
+  MWB with a warning and still runs the other suites. ARM64 Sandbox execution is
+  skipped independently of the other ARM64 suites. PR builds prepare the bundle
+  only when the affected-project resolver selects MWB. To omit MWB, select the
+  other desired modules explicitly.
 
 ### Build Modes
 

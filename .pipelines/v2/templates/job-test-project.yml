@@ -13,7 +13,7 @@ parameters:
     default: false
   - name: buildSource
     type: string
-    default: "latestMainOfficialBuild"
+    default: "buildNow"
     displayName: "Build Source"
   - name: specificBuildId
     type: string
@@ -22,9 +22,6 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
-  - name: mwbSandboxExperiment
-    type: boolean
-    default: true
   - name: autoSelectUiTests
     type: boolean
     default: false
@@ -50,8 +47,7 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
   timeoutInMinutes: 300
-  ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
-    cancelTimeoutInMinutes: 15
+  cancelTimeoutInMinutes: 15
   variables:
     ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
       BuildPlatform: x64
@@ -93,7 +89,6 @@ jobs:
       }
       $selection = Get-MwbUiTestSelection -Modules $modules `
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
-        -Enabled ('${{ parameters.mwbSandboxExperiment }}' -eq 'True') `
         -Platform '$(TestPlatform)' -Configuration '$(BuildConfiguration)' `
         -BuildSource '${{ parameters.buildSource }}'
       $selectionRoot = "$(Common.TestResultsDirectory)\mwb-selection-$(System.JobId)"
@@ -522,8 +517,7 @@ jobs:
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
-  - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
-    - template: steps-mwb-sandbox-experiment.yml
+  - template: steps-mwb-sandbox-experiment.yml
 
   - pwsh: |
       throw 'BLOCKED_INFRASTRUCTURE: MWB requires the selected revision''s shared Release runtime bundle (buildNow or buildNowSlim). Older official/installed builds are not substituted; the other selected suites have run independently.'
@@ -544,9 +538,8 @@ jobs:
       testResultsFormat: VSTest
       testResultsFiles: '$(Common.TestResultsDirectory)/**/*.trx'
       mergeTestResults: true
-      failTaskOnFailedTests: ${{ or(parameters.autoSelectUiTests, parameters.mwbSandboxExperiment) }}
-      ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
-        failTaskOnMissingResultsFile: $(RunMwbSandbox)
+      failTaskOnFailedTests: true
+      failTaskOnMissingResultsFile: $(RunMwbSandbox)
 
   - pwsh: |
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"

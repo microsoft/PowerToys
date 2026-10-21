@@ -82,7 +82,7 @@ stages:
             msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
             buildTests: true
-            mwbSandboxExperiment: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
+            prepareMwbRuntime: ${{ and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}
             ${{ if and(parameters.runAffectedUiTests, eq(platform, 'x64')) }}:
               dependsOn:
                 - Resolve
@@ -90,7 +90,7 @@ stages:
               condition: and(not(failed()), not(canceled()))
               variables:
                 MwbSandboxSelected: $[ dependencies.Resolve.outputs['resolve.hasMwbUiTests'] ]
-              mwbSandboxCondition: and(succeeded(), eq(variables['MwbSandboxSelected'], 'true'))
+              mwbRuntimeCondition: and(succeeded(), eq(variables['MwbSandboxSelected'], 'true'))
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:

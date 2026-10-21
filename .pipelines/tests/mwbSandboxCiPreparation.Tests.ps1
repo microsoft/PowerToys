@@ -800,8 +800,8 @@ Describe 'MWB gated preparation source contracts' {
     }
 
     It 'defaults to no preparation for existing build callers' {
-        $job | Should Match 'name: mwbSandboxExperiment\r?\n    type: boolean\r?\n    default: false'
-        $job | Should Match '\$\{\{ if eq\(parameters.mwbSandboxExperiment, true\) \}\}:\r?\n    - pwsh:'
+        $job | Should Match 'name: prepareMwbRuntime\r?\n    type: boolean\r?\n    default: false'
+        $job | Should Match '\$\{\{ if eq\(parameters.prepareMwbRuntime, true\) \}\}:\r?\n    - pwsh:'
         $job | Should Match '-SourceRevision "\$\(Build.SourceVersion\)" -ReadyToRun'
         $job | Should Not Match '10\.0\.401|mwb-ci-tools|UseDotNet@2'
         $job | Should Match '-DotNetPath "\$\(DOTNET_ROOT\)\\dotnet.exe"'

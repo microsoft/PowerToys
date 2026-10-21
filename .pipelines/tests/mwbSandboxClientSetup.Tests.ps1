@@ -1001,7 +1001,7 @@ Describe 'Effective pipeline setup boundaries' {
         $text | Should Match "(?s)Collect allowlisted MWB prerequisite diagnostics.*?condition: and\(always\(\), eq\(variables\['RunMwbSandbox'\], 'true'\)\)"
         $text | Should Match "(?s)Publish MWB Sandbox prerequisite report.*?condition: and\(always\(\), eq\(variables\['RunMwbSandbox'\], 'true'\)\)"
         $job = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $job | Should Match '(?s)if eq\(parameters.mwbSandboxExperiment, true\).*?steps-mwb-sandbox-experiment.yml'
+        $job | Should Match '(?m)^  - template: steps-mwb-sandbox-experiment.yml'
     }
 
     It 'dispatches the exact desktop user with interactive Limited priority four and bounded scheduler lifetime' {

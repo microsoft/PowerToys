@@ -5,10 +5,33 @@
 . "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
 
 Describe 'Shared Release MWB UI-test selection' {
-    It 'preserves the official-build default and makes current-source MWB runs explicit' {
+    It 'defaults to the current full build and describes unsupported official sources in the UI' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-automation.yml') -Raw
-        $source | Should Match '(?m)^  - name: buildSource\r?\n    type: string\r?\n    default: "latestMainOfficialBuild"'
-        $source | Should Match 'name: mwbSandboxExperiment\r?\n    type: boolean\r?\n    default: true'
+        $source | Should Match '(?m)^  - name: buildSource\r?\n    type: string\r?\n    default: "buildNow"'
+        $source | Should Match 'displayName: "Build Source \(latestMainOfficialBuild and specificBuildId do not support MWB\)"'
+    }
+
+    It 'has no independent MWB enable switch in the selection API or pipeline templates' {
+        (Get-Command Get-MwbUiTestSelection).Parameters.ContainsKey('Enabled') | Should Be $false
+        foreach ($name in @('pipeline-ui-tests-automation.yml', 'pipeline-ui-tests-full-build.yml',
+            'pipeline-ui-tests-official-build.yml', 'pipeline-ci-build.yml', 'job-build-project.yml', 'job-test-project.yml')) {
+            $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot "..\v2\templates\$name") -Raw
+            $source | Should Not Match 'mwbSandboxExperiment'
+        }
+    }
+
+    It 'derives manual x64 runtime preparation directly from the selected modules' {
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-full-build.yml') -Raw
+        $source | Should Match "prepareMwbRuntime:.*and\(eq\(parameters.platform, 'x64'\), or\(eq\(length\(parameters.uiTestModules\), 0\), containsValue\(parameters.uiTestModules, 'MouseWithoutBorders.UITests'\)\)\)"
+    }
+
+    It 'always wires the runtime-gated MWB steps and requires selected-suite results' {
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
+        $source | Should Match '(?m)^  - template: steps-mwb-sandbox-experiment.yml'
+        $source | Should Match 'failTaskOnFailedTests: true'
+        $source | Should Match 'failTaskOnMissingResultsFile: \$\(RunMwbSandbox\)'
+        $source | Should Match 'cancelTimeoutInMinutes: 15'
+        $source | Should Not Match '-Enabled'
     }
 
     It 'runs MWB without dropping all, mixed or affected suites on <Platform> from <BuildSource>' -TestCases @(
@@ -85,9 +108,10 @@ Describe 'Shared Release MWB UI-test selection' {
         $pipeline | Should Match 'dependsOn:\s+- Resolve'
         $pipeline | Should Match 'condition: and\(not\(failed\(\)\), not\(canceled\(\)\)\)'
         $pipeline | Should Match 'MwbSandboxSelected: \$\[ dependencies.Resolve.outputs\[''resolve.hasMwbUiTests''\] \]'
-        $pipeline | Should Match 'mwbSandboxCondition: and\(succeeded\(\), eq\(variables\[''MwbSandboxSelected''\], ''true''\)\)'
+        $pipeline | Should Match 'prepareMwbRuntime: \$\{\{ and\(parameters.runAffectedUiTests, eq\(platform, ''x64''\)\) \}\}'
+        $pipeline | Should Match 'mwbRuntimeCondition: and\(succeeded\(\), eq\(variables\[''MwbSandboxSelected''\], ''true''\)\)'
         $job = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\job-build-project.yml') -Raw
-        ([regex]::Matches($job, 'condition: \$\{\{ parameters.mwbSandboxCondition \}\}')).Count | Should Be 3
+        ([regex]::Matches($job, 'condition: \$\{\{ parameters.mwbRuntimeCondition \}\}')).Count | Should Be 3
     }
 
     It 'does not select MWB for unrelated or similarly named modules' -TestCases @(
@@ -106,16 +130,6 @@ Describe 'Shared Release MWB UI-test selection' {
         $result = Get-MwbUiTestSelection -Modules 'mousewithoutborders.uitests' -Platform x64Win10 -BuildSource buildNow
         $result.Run | Should Be $true
         $result.RunGeneric | Should Be $false
-    }
-
-    It 'preserves other suites when explicitly disabling MWB' {
-        $result = Get-MwbUiTestSelection -Modules @('MouseWithoutBorders.UITests', 'ColorPicker.UITests') `
-            -Enabled $false -Platform x64Win10 -BuildSource buildNow
-        $result.Selected | Should Be $true
-        $result.Run | Should Be $false
-        $result.RunGeneric | Should Be $true
-        $result.Blocked | Should Be $false
-        $result.Reason | Should Be 'ExplicitlyDisabled'
     }
 
     It 'blocks unsupported provenance without silently dropping other selected suites' -TestCases @(

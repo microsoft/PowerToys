@@ -30,7 +30,6 @@ function Get-MwbUiTestSelection {
     param(
         [string[]] $Modules = @(),
         [bool] $AutoSelect = $false,
-        [bool] $Enabled = $true,
         [string] $Platform,
         [string] $BuildSource,
         [string] $Configuration = 'Release'
@@ -41,7 +40,6 @@ function Get-MwbUiTestSelection {
     $mwb = $all -or $selected -contains 'MouseWithoutBorders.UITests'
     $generic = $all -or @($selected | Where-Object { $_ -ne 'MouseWithoutBorders.UITests' }).Count -gt 0
     $reason = if (-not $mwb) { 'NotSelected' }
-        elseif (-not $Enabled) { 'ExplicitlyDisabled' }
         elseif ($Platform -ieq 'arm64') { 'Arm64SandboxImageUnavailable' }
         elseif ($Platform -cnotin @('x64Win10', 'x64Win11')) { 'UnsupportedPlatform' }
         elseif ($Configuration -cne 'Release') { 'RequiresReleaseArtifact' }

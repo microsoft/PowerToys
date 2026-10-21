@@ -19,9 +19,6 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
-  - name: mwbSandboxExperiment
-    type: boolean
-    default: true
 
 stages:
   # Stage 1: build the product and UI tests from the same source revision.
@@ -47,7 +44,7 @@ stages:
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: false
           buildTests: true
-          mwbSandboxExperiment: ${{ and(parameters.mwbSandboxExperiment, eq(parameters.platform, 'x64'), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'))) }}
+          prepareMwbRuntime: ${{ and(eq(parameters.platform, 'x64'), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'))) }}
           useVSPreview: ${{ parameters.useVSPreview }}
           timeoutInMinutes: 90
 
@@ -64,7 +61,6 @@ stages:
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
 
     - stage: Test_x64Win11_FullBuild
       displayName: Test x64Win11 (Full Build)
@@ -77,7 +73,6 @@ stages:
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
 
   - ${{ if ne(parameters.platform, 'x64') }}:
     - stage: Test_${{ parameters.platform }}_FullBuild
@@ -91,4 +86,3 @@ stages:
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}

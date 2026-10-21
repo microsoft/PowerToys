@@ -85,10 +85,10 @@ Describe 'MWB full-suite results gate' {
         ($source.IndexOf('$testExitCode = $LASTEXITCODE') -lt $source.IndexOf('$counts = Assert-MwbPilotTestResults')) | Should Be $true
     }
 
-    It 'enables MWB by default without restricting callers to an explicit standalone suite' {
+    It 'defaults to a compatible build without restricting MWB to an explicit standalone suite' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-automation.yml') -Raw
-        $source | Should Match 'name: mwbSandboxExperiment\r?\n    type: boolean\r?\n    default: true'
-        $source | Should Match 'mwbSandboxExperiment: \$\{\{ parameters.mwbSandboxExperiment \}\}'
+        $source | Should Match 'name: buildSource\r?\n    type: string\r?\n    default: "buildNow"'
+        $source | Should Not Match 'mwbSandboxExperiment'
         $source | Should Match "eq\(parameters.buildSource, 'buildNow'\)"
         $source | Should Not Match 'Debug|exactly uiTestModules|InvalidMwbSandboxSelection'
     }
@@ -105,13 +105,14 @@ Describe 'MWB full-suite results gate' {
         $source | Should Not Match 'SkipMwbSandbox_arm64'
     }
 
-    It 'keeps an explicit pilot opt-out skipped instead of failing selection' {
-        $selection = Get-MwbUiTestSelection -Enabled $false -Platform x64Win11 -BuildSource buildNow `
-            -Modules @('MouseWithoutBorders.UITests', 'ColorPicker.UITests')
+    It 'omits MWB only when the selected modules do not include it' {
+        $selection = Get-MwbUiTestSelection -Platform x64Win11 -BuildSource buildNow `
+            -Modules @('ColorPicker.UITests')
+        $selection.Selected | Should Be $false
         $selection.Run | Should Be $false
         $selection.RunGeneric | Should Be $true
         $selection.Blocked | Should Be $false
-        $selection.Reason | Should Be 'ExplicitlyDisabled'
+        $selection.Reason | Should Be 'NotSelected'
     }
 
     It 'uses one Release artifact for mixed-platform and mixed-module selections' {

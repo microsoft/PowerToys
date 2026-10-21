@@ -267,16 +267,20 @@ Never use a focused filter as full-suite evidence.
 
 ## CI wiring
 
-`mwbSandboxExperiment` defaults to true. Current-source `buildNow`/`buildNowSlim`
-supports all, explicit, mixed and affected module selections: ordinary suites
-retain their dispatcher/installer path, MWB runs once through its two-endpoint
-flow. There is one shared Release build, not a second Debug configuration.
+MWB preparation and execution are derived from the selected modules, without a
+separate enable/disable switch. Current-source `buildNow`/`buildNowSlim` supports
+all, explicit, mixed and affected module selections: ordinary suites retain their
+dispatcher/installer path, MWB runs once through its two-endpoint flow. There is
+one shared Release build, not a second Debug configuration.
 Only MWB is skipped on ARM64 with `Arm64SandboxImageUnavailable`; other selected
-suites remain normal. Setting the experiment flag false disables only MWB.
-Explicit MWB requests against older official/installed sources are provenance
-blockers. Implicit all-modules official runs skip MWB with a warning without
-blocking the other suites. The automation pipeline defaults to the latest
-official build; MWB validation selects a current-source path explicitly.
+suites remain normal. To omit MWB, select the other desired modules explicitly.
+Explicit MWB requests against official/installed sources are provenance blockers.
+Implicit all-modules official runs skip MWB with a warning without blocking the
+other suites. The automation pipeline defaults to `buildNow`; its build-source
+label identifies `latestMainOfficialBuild` and `specificBuildId` as unsupported
+for MWB.
+Remove the former `mwbSandboxExperiment` parameter from saved queue/REST requests;
+the selected modules now determine whether MWB runs.
 
 `.pipelines\New-MwbSandboxCiArtifact.ps1` produces the verified runtime/tool
 bundle with the isolated MWB UI-test variant, outside shipping outputs. Affected-PR
