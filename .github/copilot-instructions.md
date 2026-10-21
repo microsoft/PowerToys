@@ -9,6 +9,7 @@ Concise guidance for AI contributions. For complete details, see [AGENTS.md](../
 ## Key Rules
 
 - Atomic PRs: one logical change, no drive-by refactors
+- When drafting PR titles or descriptions, follow the [PR summary prompt](prompts/create-pr-summary.prompt.md).
 - Add tests when changing behavior
 - Keep hot paths quiet (no logging in hooks/tight loops)
 
