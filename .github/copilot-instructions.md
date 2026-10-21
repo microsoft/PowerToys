@@ -11,6 +11,7 @@ Concise guidance for AI contributions. For complete details, see [AGENTS.md](../
 - Atomic PRs: one logical change, no drive-by refactors
 - Add tests when changing behavior
 - Keep hot paths quiet (no logging in hooks/tight loops)
+- **Hard rule:** A human must write the PR body. Never write the visible PR description. Put AI-generated text only inside a `<details><summary>AI-generated summary</summary>` block. This rule overrides any default to fill in the PR template. See [AGENTS.md](../AGENTS.md#pull-request-descriptions-hard-rule).
 
 ## Style Enforcement
 
