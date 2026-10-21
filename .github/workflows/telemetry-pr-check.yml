@@ -22,8 +22,8 @@ concurrency:
 
 jobs:
   detect-telemetry-events:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
 
     steps:
       - name: Checkout repository
@@ -33,7 +33,8 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
           persist-credentials: false
 
-      - name: Analyze telemetry changes and report guidance
+      - name: Detect telemetry event changes and comment PR
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          POST_COMMENT: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
         run: node .github/scripts/telemetry-pr-check.js

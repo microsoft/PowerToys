@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Analyzes PR diff data without executing PR code. Forks receive read-only
- * findings; same-repository PRs also receive guidance and reviewer routing.
- * Telemetry detection is best-effort guidance, never a documentation gate.
+ * Detects telemetry-event additions/modifications in a pull request and
+ * posts (or updates) a PR comment when telemetry-related changes are found.
  *
  * This script is executed by .github/workflows/telemetry-pr-check.yml.
  * Keep both files aligned when changing trigger behavior, env usage, or messaging.
@@ -96,7 +95,7 @@ function resolvePullNumber(event) {
     );
   }
 
-  const pullNumber = /^\d+$/.test(String(rawPullNumber)) ? Number(rawPullNumber) : NaN;
+  const pullNumber = Number.parseInt(String(rawPullNumber), 10);
   if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
     throw new Error(`Invalid pull request number: ${JSON.stringify(rawPullNumber)}`);
   }
@@ -140,7 +139,6 @@ async function apiRequest(url, method = 'GET', body) {
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(30000),
     });
   } catch (error) {
     throw new Error(`Network error during ${method} ${url}: ${error.message}`);
@@ -153,9 +151,7 @@ async function apiRequest(url, method = 'GET', body) {
       response.status === 403 && rateLimitReset
         ? ` (rate limit reset at epoch ${rateLimitReset})`
         : '';
-    const error = new Error(`${method} ${url} failed (${response.status})${rateLimitHint}: ${text}`);
-    error.status = response.status;
-    throw error;
+    throw new Error(`${method} ${url} failed (${response.status})${rateLimitHint}: ${text}`);
   }
 
   if (response.status === 204) {
@@ -173,7 +169,7 @@ async function getAllPullFiles(apiBaseUrl, repository, pullNumber) {
   const files = [];
   let page = 1;
 
-  while (page <= 30) {
+  while (true) {
     const url = `${apiBaseUrl}/repos/${repository}/pulls/${pullNumber}/files?per_page=100&page=${page}`;
     const batch = await apiRequest(url);
     if (!Array.isArray(batch)) {
@@ -193,9 +189,6 @@ async function getAllPullFiles(apiBaseUrl, repository, pullNumber) {
     page += 1;
   }
 
-  if (page > 30) {
-    throw new Error('PR files exceeded the 3000-file analysis limit.');
-  }
   return files;
 }
 
@@ -208,7 +201,7 @@ async function getPullRequest(apiBaseUrl, repository, pullNumber) {
   return pullRequest;
 }
 
-async function ensureReviewerRequested(apiBaseUrl, repository, pullNumber, pullRequest, write) {
+async function ensureReviewerRequested(apiBaseUrl, repository, pullNumber, pullRequest) {
   const authorLogin = String(pullRequest?.user?.login || '').toLowerCase();
   const targetReviewer = REVIEWER_LOGIN.toLowerCase();
 
@@ -231,7 +224,7 @@ async function ensureReviewerRequested(apiBaseUrl, repository, pullNumber, pullR
 
   const url = `${apiBaseUrl}/repos/${repository}/pulls/${pullNumber}/requested_reviewers`;
   try {
-    await write(url, 'POST', { reviewers: [REVIEWER_LOGIN] });
+    await apiRequest(url, 'POST', { reviewers: [REVIEWER_LOGIN] });
     console.log(`Requested reviewer ${REVIEWER_LOGIN}.`);
   } catch (error) {
     // Reviewer request should not fail the telemetry guidance workflow.
@@ -244,7 +237,7 @@ async function ensureReviewerRequested(apiBaseUrl, repository, pullNumber, pullR
 async function findExistingTelemetryComment(apiBaseUrl, repository, pullNumber) {
   let page = 1;
 
-  while (page <= 20) {
+  while (true) {
     const commentsUrl = `${apiBaseUrl}/repos/${repository}/issues/${pullNumber}/comments?per_page=100&page=${page}`;
     const comments = await apiRequest(commentsUrl);
 
@@ -253,9 +246,7 @@ async function findExistingTelemetryComment(apiBaseUrl, repository, pullNumber) 
     }
 
     const existing = comments.find(
-      (comment) => comment.user?.login === 'github-actions[bot]' &&
-        comment.user?.type === 'Bot' &&
-        typeof comment.body === 'string' && comment.body.includes(COMMENT_MARKER)
+      (comment) => typeof comment.body === 'string' && comment.body.includes(COMMENT_MARKER)
     );
     if (existing) {
       return existing;
@@ -267,7 +258,6 @@ async function findExistingTelemetryComment(apiBaseUrl, repository, pullNumber) 
 
     page += 1;
   }
-  throw new Error('PR comments exceeded the 2000-comment analysis limit.');
 }
 
 function detectTelemetryChanges(files) {
@@ -298,80 +288,67 @@ function detectTelemetryChanges(files) {
 
 function hasDataAndPrivacyChange(files) {
   return files.some((file) => {
-    return file.filename === 'DATA_AND_PRIVACY.md' && file.status !== 'removed';
+    const filename = (file.filename || '').toLowerCase();
+    return filename === 'data_and_privacy.md';
   });
 }
 
-async function upsertPrComment(apiBaseUrl, repository, pullNumber, body, write, create = true) {
+async function upsertPrComment(apiBaseUrl, repository, pullNumber, body, postComment, create = true) {
+  console.log(body);
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${body}\n`);
+  if (!postComment) return;
   const existing = await findExistingTelemetryComment(apiBaseUrl, repository, pullNumber);
 
   if (existing) {
-    if (existing.body === body) {
-      return;
-    }
     const updateUrl = `${apiBaseUrl}/repos/${repository}/issues/comments/${existing.id}`;
-    await write(updateUrl, 'PATCH', { body });
+    await apiRequest(updateUrl, 'PATCH', { body });
     console.log(`Updated existing telemetry comment (id: ${existing.id}).`);
     return;
   }
 
-  if (!create) {
-    return;
-  }
+  if (!create) return;
   const createUrl = `${apiBaseUrl}/repos/${repository}/issues/${pullNumber}/comments`;
-  await write(createUrl, 'POST', { body });
+  await apiRequest(createUrl, 'POST', { body });
   console.log('Created telemetry comment on PR.');
 }
 
-function report(lines) {
-  const text = ['## Telemetry PR check', ...lines, ''].join('\n');
-  console.log(text);
-  if (process.env.GITHUB_STEP_SUMMARY) {
-    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${text}\n`);
-  }
-}
-
-function sameRepository(pullRequest, repository, event) {
-  return pullRequest.head?.repo?.full_name === repository &&
-    pullRequest.base?.repo?.full_name === repository &&
-    event.repository?.full_name === repository;
-}
-
-function sameRevision(left, right) {
-  return Boolean(left.head?.sha && left.base?.sha) &&
-    left.head.sha === right.head?.sha && left.base.sha === right.base?.sha;
-}
-
-async function main(event = readEventPayload(requireEnv('GITHUB_EVENT_PATH'))) {
+async function main() {
+  const eventPath = requireEnv('GITHUB_EVENT_PATH');
   const repository = requireEnv('GITHUB_REPOSITORY');
   const apiBaseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
   validateRepository(repository);
 
+  let parsedApiBaseUrl;
   try {
-    new URL(apiBaseUrl);
+    parsedApiBaseUrl = new URL(apiBaseUrl);
   } catch {
     throw new Error(`Invalid GITHUB_API_URL: ${JSON.stringify(apiBaseUrl)}`);
   }
 
+  const event = readEventPayload(eventPath);
   const pullNumber = resolvePullNumber(event);
 
   console.log(`Event name: ${process.env.GITHUB_EVENT_NAME || 'unknown'}`);
   console.log(`Repository: ${repository}`);
   console.log(`PR number: ${pullNumber}`);
 
-  const initial = await getPullRequest(apiBaseUrl, repository, pullNumber);
-  if (initial.draft || initial.state !== 'open') {
-    report(['INFO: PR is draft or closed; no action required.']);
-    return;
+  const initial = await getPullRequest(parsedApiBaseUrl.origin, repository, pullNumber);
+  if (initial.draft || initial.state !== 'open') return;
+  if ((event.pull_request?.head?.sha && event.pull_request.head.sha !== initial.head?.sha)
+    || (event.pull_request?.base?.sha && event.pull_request.base.sha !== initial.base?.sha)) {
+    throw new Error('PR revision changed; rerun telemetry analysis.');
   }
-  if (event.pull_request && !sameRevision(initial, event.pull_request)) {
-    throw new Error('Event head/base is stale; rerun required. No mutations performed.');
+  const files = await getAllPullFiles(parsedApiBaseUrl.origin, repository, pullNumber);
+  const current = await getPullRequest(parsedApiBaseUrl.origin, repository, pullNumber);
+  if (current.head?.sha !== initial.head?.sha || current.base?.sha !== initial.base?.sha
+    || current.head?.repo?.full_name !== initial.head?.repo?.full_name
+    || current.base?.repo?.full_name !== initial.base?.repo?.full_name
+    || current.draft || current.state !== 'open') {
+    throw new Error('PR changed during telemetry analysis; rerun before posting.');
   }
-  const files = await getAllPullFiles(apiBaseUrl, repository, pullNumber);
-  const current = await getPullRequest(apiBaseUrl, repository, pullNumber);
-  if (!sameRevision(initial, current) || current.draft || current.state !== 'open') {
-    throw new Error('PR head/base or readiness changed during analysis; rerun required.');
-  }
+  const postComment = process.env.POST_COMMENT !== 'false'
+    && current.head?.repo?.full_name === repository && current.base?.repo?.full_name === repository
+    && event.repository?.full_name === repository;
 
   const matches = detectTelemetryChanges(files);
   const dataAndPrivacyChanged = hasDataAndPrivacyChange(files);
@@ -380,47 +357,37 @@ async function main(event = readEventPayload(requireEnv('GITHUB_EVENT_PATH'))) {
   console.log(`Telemetry matches found: ${matches.length}.`);
   console.log(`DATA_AND_PRIVACY.md changed: ${dataAndPrivacyChanged}.`);
 
-  const canWrite = sameRepository(current, repository, event);
-  const commentBody = matches.length
-    ? (dataAndPrivacyChanged ? COMMENT_BODY_WITH_PRIVACY_UPDATE : COMMENT_BODY_WITHOUT_PRIVACY_UPDATE)
-    : `${COMMENT_MARKER}\nTelemetry signals from the earlier run are no longer present. No telemetry action required.`;
-  report([
-    `Mode: ${canWrite ? 'same-repository guidance' : 'read-only; no mutations attempted'}.`,
-    `Head: ${current.head.sha}; base: ${current.base.sha}.`,
-    `Scanned ${files.length} files; telemetry signals: ${matches.length}.`,
-    'Result: PASS — telemetry guidance is advisory.',
-    ...matches.map((match) => `File: ${JSON.stringify(match.filename)}`),
-    '',
-    commentBody,
-  ]);
-
-  const write = async (url, method, body) => {
-    const fresh = await getPullRequest(apiBaseUrl, repository, pullNumber);
-    if (!sameRepository(fresh, repository, event) || !sameRevision(current, fresh) ||
-        fresh.draft || fresh.state !== 'open') {
-      throw new Error('PR identity, head/base or readiness changed; refusing mutation.');
-    }
-    return apiRequest(url, method, body);
-  };
-
-  if (canWrite) {
-    try {
-      if (matches.length) {
-        await ensureReviewerRequested(apiBaseUrl, repository, pullNumber, current, write);
-      }
-      await upsertPrComment(apiBaseUrl, repository, pullNumber, commentBody, write, matches.length > 0);
-    } catch (error) {
-      report([`INFO: Guidance could not be updated: ${error.message}`]);
-    }
+  if (matches.length === 0) {
+    console.log('No telemetry-related additions/modifications detected.');
+    await upsertPrComment(parsedApiBaseUrl.origin, repository, pullNumber,
+      `${COMMENT_MARKER}\nNo telemetry-related additions/modifications detected.`, postComment, false);
+    return;
   }
-  return { required: false };
+
+  for (const match of matches) {
+    console.log(
+      `- ${match.filename} (telemetryPath=${match.telemetryPath}, telemetryLineSignal=${match.telemetryLineSignal}, patchUnavailable=${match.patchUnavailable})`
+    );
+  }
+
+  if (postComment) try {
+    await ensureReviewerRequested(parsedApiBaseUrl.origin, repository, pullNumber, current);
+  } catch (error) {
+    console.warn(
+      'Failed to fetch PR details or request reviewer; continuing to post telemetry guidance comment.'
+    );
+    console.warn(error instanceof Error ? error.stack || error.message : error);
+  }
+
+  const commentBody = dataAndPrivacyChanged
+    ? COMMENT_BODY_WITH_PRIVACY_UPDATE
+    : COMMENT_BODY_WITHOUT_PRIVACY_UPDATE;
+
+  await upsertPrComment(parsedApiBaseUrl.origin, repository, pullNumber, commentBody, postComment);
 }
 
-if (require.main === module) {
-  main().catch((error) => {
-    report([`ERROR: Analysis incomplete: ${error.message}`]);
-    process.exitCode = 1;
-  });
-}
-
-module.exports = { main };
+main().catch((error) => {
+  console.error('Telemetry PR check failed.');
+  console.error(error instanceof Error ? error.stack || error.message : error);
+  process.exit(1);
+});

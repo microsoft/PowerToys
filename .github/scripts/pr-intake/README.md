@@ -1,16 +1,15 @@
 # Pull request intake
 
 The workflow in `.github/workflows/pr-intake.yml` applies deterministic product
-labels to same-repository pull requests and runs the same intake analysis on
-fork and same-repository non-draft pull requests.
+labels to same-repository pull requests and runs the same intake checks on forks.
 It does not call any AI model and does not execute any code from the pull
 request head; the Node script reads all pull request data through the GitHub
 API.
-The workflow runs on `pull_request` and checks out the target repository's base
-commit, never the PR head. Fork runs do not attempt comments or label changes.
-Every completed analysis is written to the Actions job summary and logs; required
-actions fail the check, while recommendations alone pass. A failed check is not
-necessarily merge-blocking; repository branch rules are unchanged.
+`POST_COMMENT` selects PR feedback or the Actions job summary. Forks never
+attempt comments, labels or reviewer requests. The summary reuses the existing
+comment text; required intake findings fail summary-only runs. Same-repository
+branches retain automation, except the previously requested screenshot-reminder
+bypass. No telemetry documentation gate is introduced.
 
 ## Flow
 
@@ -22,10 +21,9 @@ necessarily merge-blocking; repository branch rules are unchanged.
 3. Re-fetch mergeability a few
    times when GitHub still reports it as unknown so a conflicting PR is never
    treated as ready by default.
-4. Deterministically validate closing issue references and merge conflicts.
-5. Recommend visual evidence when a fork changes product UI files. This is
-   advisory and never fails intake or adds `Needs-Author-Feedback`. Skip visual
-   reminders for same-repository branches.
+4. Deterministically validate closing issue references, merge conflicts, and
+   whether visual evidence is present.
+5. Require visual evidence only when the changed paths touch product UI files.
 6. Keep a single canonical comment in sync and manage the `Ready for review`
    and `Needs-Author-Feedback` lifecycle labels.
 
@@ -42,17 +40,10 @@ label. Draft pull requests receive product labels but skip readiness checks.
 - If the PR is clean and no intake comment exists, nothing is posted.
 
 Missing issue references are advisory. Explicitly invalid references, merge
-conflicts and unknown mergeability block readiness. Missing screenshots do not.
-Draft PR events run deterministic path labeling, remove intake
+conflicts, unknown mergeability, and missing required visual evidence block
+readiness. Draft PR events run deterministic path labeling, remove intake
 lifecycle labels, delete trusted canonical intake comments, and then stop.
 Marking a draft ready triggers full intake.
-
-On forks, suggested label additions do not fail the check. A stale
-`Needs-Author-Feedback` label still requires maintainer removal because the
-existing resource-management policy can close the PR after seven inactive days.
-Each rerun reads the current PR, labels, files and closing references;
-unchanged unresolved requirements still fail, and satisfied requirements pass.
-Fork draft runs skip readiness and do not clean up labels or comments.
 
 The existing resource-management policy closes PRs that retain
 `Needs-Author-Feedback` for seven inactive days. PR synchronization is handled

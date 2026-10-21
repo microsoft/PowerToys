@@ -122,16 +122,10 @@ function formatInlineCode(value) {
   return `\`${boundedString(String(value).replaceAll('`', '').replace(/\r?\n+/g, ' '), 500)}\``;
 }
 
-export function deriveVisualAssessment(hasVisualChanges, sameRepository = false) {
-  if (sameRepository) {
-    return {
-      visualEvidenceRequirement: 'NOT_NEEDED',
-      visualEvidenceReason: 'Visual reminders are skipped for same-repository branches.',
-    };
-  }
-  return hasVisualChanges
+export function deriveVisualAssessment(requiresVisualEvidence) {
+  return requiresVisualEvidence
     ? {
-      visualEvidenceRequirement: 'RECOMMENDED',
+      visualEvidenceRequirement: 'REQUIRED',
       visualEvidenceReason:
         'The pull request changes product UI files, so reviewers need to see the visible result.',
     }
@@ -272,7 +266,7 @@ export function classifyChangedPaths(paths) {
     normalizedPaths,
     categories,
     visualCandidatePaths,
-    hasVisualChanges: visualCandidatePaths.length > 0,
+    requiresVisualEvidence: visualCandidatePaths.length > 0,
   };
 }
 
@@ -503,12 +497,12 @@ export function buildIntakeReport({
   isDraft = false,
   mergeConflict = false,
   mergeabilityKnown = true,
-  sameRepository = false,
+  skipVisualReminder = false,
   verifiedClosingIssues,
   invalidClosingIssues,
 }) {
   const ownership = classifyChangedPaths(changedPaths);
-  const visualAssessment = deriveVisualAssessment(ownership.hasVisualChanges, sameRepository);
+  const visualAssessment = deriveVisualAssessment(ownership.requiresVisualEvidence && !skipVisualReminder);
   const closingIssues = Array.isArray(verifiedClosingIssues)
     ? verifiedClosingIssues
     : findClosingIssueReferences(body);
@@ -537,10 +531,10 @@ export function buildIntakeReport({
     );
   }
   if (
-    visualAssessment.visualEvidenceRequirement === 'RECOMMENDED'
+    visualAssessment.visualEvidenceRequirement === 'REQUIRED'
     && !visualEvidence.found
   ) {
-    recommendations.push(
+    authorActions.push(
       'Add a screenshot, GIF, or video to the PR description so reviewers can validate the visible change.',
     );
   }
@@ -616,7 +610,7 @@ export function renderIntakeComment(report, feedbackSince = null) {
   const requirement = report.visualAssessment.visualEvidenceRequirement;
   const visualEvidenceState = report.visualEvidence.found
     ? 'Visual evidence was detected in the PR description.'
-    : requirement === 'RECOMMENDED'
+    : requirement === 'REQUIRED'
       ? 'Visual evidence is currently missing.'
       : 'No visual evidence is expected.';
   const visualReason = markdownPlainText(
@@ -624,7 +618,7 @@ export function renderIntakeComment(report, feedbackSince = null) {
     500,
     'No explanation was provided.',
   );
-  const requirementLabel = requirement === 'RECOMMENDED' ? 'Recommended' : 'Not needed';
+  const requirementLabel = requirement === 'REQUIRED' ? 'Required' : 'Not needed';
   const statusSection = report.readyForReview
     ? `## ✅ Ready for review
 
@@ -823,7 +817,7 @@ function parseIssueLabels(issue) {
     : [];
 }
 
-export async function runPullRequestIntake({ api, event }) {
+export async function runPullRequestIntake({ api, event, postComment = true }) {
   if (!event?.repository) {
     throw new Error('The GitHub event payload must contain repository data');
   }
@@ -840,29 +834,20 @@ export async function runPullRequestIntake({ api, event }) {
     pullNumber,
   );
   const repository = event.repository.full_name;
-  if (pullRequest.base?.repo?.full_name !== repository) {
-    throw new Error('Pull request base repository does not match the workflow repository');
+  const sameRepository = pullRequest.head?.repo?.full_name === repository
+    && pullRequest.base?.repo?.full_name === repository;
+  postComment = postComment && sameRepository;
+  if ((event.pull_request?.head?.sha && event.pull_request.head.sha !== pullRequest.head?.sha)
+    || (event.pull_request?.base?.sha && event.pull_request.base.sha !== pullRequest.base?.sha)) {
+    throw new Error('PR revision changed; rerun intake.');
   }
-  const matchesIdentity = (current) =>
-    current.head?.sha === pullRequest.head?.sha
-    && current.base?.sha === pullRequest.base?.sha
-    && current.head?.repo?.full_name === pullRequest.head?.repo?.full_name
-    && current.base?.repo?.full_name === repository
-    && current.draft === pullRequest.draft
-    && current.state !== 'closed';
-  if (!pullRequest.head?.sha || !pullRequest.base?.sha
-    || pullRequest.state === 'closed'
-    || (event.pull_request?.head?.sha
-      && event.pull_request.head.sha !== pullRequest.head.sha)
-    || (event.pull_request?.base?.sha
-      && event.pull_request.base.sha !== pullRequest.base.sha)) {
-    throw new Error('Pull request head/base or readiness changed; rerun intake');
-  }
-  const canWrite = pullRequest.head?.repo?.full_name === repository;
-  // Recheck immediately before writes, never probe fork permissions by writing.
-  const guardWrites = async () => {
-    if (!canWrite || !matchesIdentity(await api.getPullRequest(pullNumber))) {
-      throw new Error('Pull request identity changed; refusing mutations');
+  const checkRevision = async () => {
+    const current = await api.getPullRequest(pullNumber);
+    if (current.head?.sha !== pullRequest.head?.sha || current.base?.sha !== pullRequest.base?.sha
+      || current.head?.repo?.full_name !== pullRequest.head?.repo?.full_name
+      || current.base?.repo?.full_name !== pullRequest.base?.repo?.full_name
+      || current.draft !== pullRequest.draft || current.state === 'closed') {
+      throw new Error('PR changed during intake; rerun before applying feedback.');
     }
   };
   const issueNumber = pullNumber;
@@ -882,12 +867,15 @@ export async function runPullRequestIntake({ api, event }) {
         LEGACY_READY_FOR_REVIEW_LABEL,
       ],
     );
-    let deletedCanonicalCommentIds = [];
-    if (canWrite) {
-      await guardWrites();
+    await checkRevision();
+    const deletedCanonicalCommentIds = [];
+    if (postComment) {
       await syncLabelChanges(api, issueNumber, labelPlan);
-      deletedCanonicalCommentIds = await deleteCanonicalComments({ api, issueNumber });
+      deletedCanonicalCommentIds.push(...await deleteCanonicalComments({ api, issueNumber }));
     }
+    const summary = 'Draft PR: readiness checks skipped.';
+    console.log(summary);
+    if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
     return {
       issueNumber,
       skippedDraft: true,
@@ -895,10 +883,6 @@ export async function runPullRequestIntake({ api, event }) {
       pathProductLabels,
       labelPlan,
       deletedCanonicalCommentIds,
-      canWrite,
-      failed: false,
-      requiredActions: [],
-      recommendations: ['Draft PR: readiness checks skipped.'],
     };
   }
 
@@ -916,7 +900,7 @@ export async function runPullRequestIntake({ api, event }) {
     isDraft: pullRequest.draft === true,
     mergeConflict: hasMergeConflict(pullRequest),
     mergeabilityKnown,
-    sameRepository: canWrite,
+    skipVisualReminder: sameRepository,
     verifiedClosingIssues: closingReferenceVerification.validReferences,
     invalidClosingIssues: closingReferenceVerification.invalidReferences,
   });
@@ -944,31 +928,8 @@ export async function runPullRequestIntake({ api, event }) {
     ],
   );
 
-  if (!matchesIdentity(await api.getPullRequest(pullNumber))) {
-    throw new Error('Pull request changed during analysis; rerun intake');
-  }
-  // Product labels are additive suggestions, not new mandatory policy.
-  // Missing automation-owned labels are guidance, not new fork prerequisites.
-  const requiredActions = [...report.authorActions];
-  if (!mergeabilityKnown) {
-    requiredActions.push('Mergeability is not available yet; rerun intake once GitHub has computed it.');
-  }
-  const recommendations = [...report.recommendations];
-  if (!canWrite) {
-    for (const label of labelPlan.add) {
-      recommendations.push(`Maintainer action: add the suggested intake label "${label}" if appropriate.`);
-    }
-    for (const label of labelPlan.remove) {
-      const action = `Maintainer action: remove the stale intake lifecycle label "${label}".`;
-      // The existing resource-management policy closes PRs carrying this label
-      // after seven inactive days, even if the underlying findings are resolved.
-      if (label === NEEDS_AUTHOR_FEEDBACK_LABEL) requiredActions.push(action);
-      else recommendations.push(action);
-    }
-  } else {
-    await guardWrites();
-    await syncLabelChanges(api, issueNumber, labelPlan);
-  }
+  await checkRevision();
+  if (postComment) await syncLabelChanges(api, issueNumber, labelPlan);
 
   // Only surface a comment when there is something for the author to act on or
   // consider. When a previously flagged PR becomes clean we replace the stale
@@ -976,28 +937,35 @@ export async function runPullRequestIntake({ api, event }) {
   // silent to avoid noise on already-healthy PRs.
   const hasRemarks = report.authorActions.length > 0
     || report.recommendations.length > 0;
-  const message = hasRemarks || !canonical
+  const body = hasRemarks || !canonical
     ? renderIntakeComment(report, feedbackSince)
     : renderAllClearComment();
+  const summary = [
+    body,
+    ...(!postComment ? [
+      ...labelPlan.add.map((label) => `Suggested maintainer label: ${label}.`),
+      ...labelPlan.remove.map((label) => `Maintainer action: remove stale label ${label}.`),
+    ] : []),
+  ].join('\n');
+  console.log(summary);
+  if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   let commentResult = {
     operation: 'skipped',
     comment: null,
     deletedExtraComments: [],
   };
-  if (canWrite && hasRemarks) {
-    await guardWrites();
+  if (postComment && hasRemarks) {
     commentResult = await upsertCanonicalComment({
       api,
       issueNumber,
-      body: message,
+      body,
       comments,
     });
-  } else if (canWrite && canonical) {
-    await guardWrites();
+  } else if (postComment && canonical) {
     commentResult = await upsertCanonicalComment({
       api,
       issueNumber,
-      body: message,
+      body,
       comments,
     });
   }
@@ -1012,7 +980,7 @@ export async function runPullRequestIntake({ api, event }) {
       commentId: commentResult.comment?.id ?? null,
       deletedExtraComments: commentResult.deletedExtraComments,
     },
-    hasVisualChanges: report.hasVisualChanges,
+    requiresVisualEvidence: report.requiresVisualEvidence,
     visualEvidenceRequirement: report.visualAssessment.visualEvidenceRequirement,
     visualEvidenceFound: report.visualEvidence.found,
     mergeConflict: report.mergeConflict,
@@ -1022,31 +990,8 @@ export async function runPullRequestIntake({ api, event }) {
     needsAuthorFeedback: report.needsAuthorFeedback,
     feedbackSince,
     readyForReview: report.readyForReview,
-    canWrite,
-    failed: requiredActions.length > 0,
-    requiredActions,
-    recommendations,
-    message,
-    summaryRequiredActions: requiredActions.filter((action) => !report.authorActions.includes(action)),
-    summaryRecommendations: recommendations.filter((action) => !report.recommendations.includes(action)),
+    postComment,
   };
-}
-
-export function renderIntakeSummary(result) {
-  return [
-    '## PR intake',
-    `Mode: ${result.canWrite ? 'same-repository' : 'read-only; no mutations attempted'}.`,
-    result.skippedDraft ? 'Draft PR: readiness checks skipped.' : `Result: ${result.failed ? 'FAIL — required action remains' : 'PASS'}.`,
-    '',
-    result.message ?? '',
-    ...(result.summaryRequiredActions?.length
-      ? ['### Required actions', ...result.summaryRequiredActions.map((action) => `- ${action}`)] : []),
-    ...(result.summaryRecommendations?.length
-      ? ['### Maintainer actions', ...result.summaryRecommendations.map((action) => `- ${action}`)] : []),
-    ...(result.skippedDraft
-      ? [`Product label suggestions: ${result.pathProductLabels.join(', ') || 'none'} (not blocking).`] : []),
-    '',
-  ].join('\n');
 }
 
 export class GitHubApi {
@@ -1075,7 +1020,6 @@ export class GitHubApi {
       `${this.apiBaseUrl}/repos/${this.owner}/${this.repo}${route}`,
       {
         method,
-        signal: AbortSignal.timeout(30_000),
         headers: {
           Accept: 'application/vnd.github+json',
           Authorization: `Bearer ${this.token}`,
@@ -1155,9 +1099,6 @@ async function main() {
     event?.repository?.full_name ?? process.env.GITHUB_REPOSITORY,
     200,
   );
-  if (process.env.GITHUB_REPOSITORY && process.env.GITHUB_REPOSITORY !== repository) {
-    throw new Error('Event repository does not match GITHUB_REPOSITORY');
-  }
   const [owner, repo] = repository.split('/');
   if (!owner || !repo) {
     throw new Error('Unable to determine the repository owner and name');
@@ -1169,24 +1110,20 @@ async function main() {
     repo,
   });
 
-  const result = await runPullRequestIntake({ api, event });
-  console.log(JSON.stringify({ ...result, message: undefined }, null, 2));
-  const summary = renderIntakeSummary(result);
-  console.log(summary);
-  if (process.env.GITHUB_STEP_SUMMARY) {
-    await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+  if (process.env.GITHUB_REPOSITORY && process.env.GITHUB_REPOSITORY !== repository) {
+    throw new Error('Event repository does not match the workflow repository.');
   }
-  if (result.failed) process.exitCode = 1;
+  const result = await runPullRequestIntake({
+    api, event, postComment: process.env.POST_COMMENT !== 'false',
+  });
+  console.log(JSON.stringify(result, null, 2));
+  if (!result.postComment && result.readyForReview === false) process.exitCode = 1;
 }
 
 const ENTRYPOINT = fileURLToPath(import.meta.url);
 if (process.argv[1] && path.resolve(process.argv[1]) === ENTRYPOINT) {
-  main().catch(async (error) => {
+  main().catch((error) => {
     console.error(error instanceof Error ? error.stack : String(error));
-    if (process.env.GITHUB_STEP_SUMMARY) {
-      await fs.appendFile(process.env.GITHUB_STEP_SUMMARY,
-        '## PR intake\nFAIL: Intake could not complete. See the supporting logs and rerun after resolving the error.\n');
-    }
     process.exitCode = 1;
   });
 }
