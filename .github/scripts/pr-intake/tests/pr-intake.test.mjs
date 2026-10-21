@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import {
@@ -26,7 +24,6 @@ import {
   planManagedLabelChanges,
   renderAllClearComment,
   renderIntakeComment,
-  renderIntakeSummary,
   runPullRequestIntake,
   selectCanonicalComment,
   upsertCanonicalComment,
@@ -56,9 +53,7 @@ test('workflow runs product labeling for drafts and handles draft transitions', 
   assert.match(workflow, /- opened/);
   assert.match(workflow, /- edited/);
   assert.match(workflow, /- synchronize/);
-  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
-  assert.match(workflow, /  pull_request:/);
-  assert.doesNotMatch(workflow, /pull_request_target/);
+  assert.match(workflow, /ref: \$\{\{ github\.event\.repository\.default_branch \}\}/);
   assert.match(workflow, /- ready_for_review/);
   assert.match(workflow, /- converted_to_draft/);
 });
@@ -126,13 +121,8 @@ class MockApi {
     if (Array.isArray(this.pullRequestQueue) && this.pullRequestQueue.length) {
       return this.pullRequestQueue.shift();
     }
-    const pull = this.pullRequests.find((entry) => entry.number === issueNumber)
+    return this.pullRequests.find((entry) => entry.number === issueNumber)
       ?? { number: issueNumber, draft: false };
-    return {
-      ...pull,
-      head: pull.head ?? { sha: 'head', repo: { full_name: 'microsoft/PowerToys' } },
-      base: { sha: 'base', repo: { full_name: 'microsoft/PowerToys' }, ...pull.base },
-    };
   }
 
   async listPullRequestFiles(_pullNumber, page) {
@@ -157,7 +147,7 @@ test('changed paths provide a visual hint for product UI files', () => {
     'doc/devdocs/core/architecture.md',
   ]);
 
-  assert.equal(report.hasVisualChanges, true);
+  assert.equal(report.requiresVisualEvidence, true);
   assert.deepEqual(report.visualCandidatePaths, [
     'src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml',
   ]);
@@ -169,7 +159,7 @@ test('docs-only changes do not require visual evidence', () => {
     'doc/devdocs/core/architecture.md',
   ]);
 
-  assert.equal(report.hasVisualChanges, false);
+  assert.equal(report.requiresVisualEvidence, false);
   assert.deepEqual(report.categories, ['docs']);
 });
 
@@ -247,10 +237,9 @@ test('every current module root has a deterministic product mapping', () => {
   assert.deepEqual(unmappedRoots, []);
 });
 
-test('deriveVisualAssessment recommends fork evidence and skips same-repository reminders', () => {
-  assert.deepEqual(deriveVisualAssessment(true).visualEvidenceRequirement, 'RECOMMENDED');
+test('deriveVisualAssessment maps the path hint to a requirement', () => {
+  assert.deepEqual(deriveVisualAssessment(true).visualEvidenceRequirement, 'REQUIRED');
   assert.deepEqual(deriveVisualAssessment(false).visualEvidenceRequirement, 'NOT_NEEDED');
-  assert.deepEqual(deriveVisualAssessment(true, true).visualEvidenceRequirement, 'NOT_NEEDED');
   assert.match(deriveVisualAssessment(true).visualEvidenceReason, /product UI/);
 });
 
@@ -441,7 +430,7 @@ test('incomplete comment mentions the author and shows only actionable bullets',
   const body = renderIntakeComment(report, '2026-08-05T10:00:00.000Z');
   assert.match(body, /^<!-- powertoys-pr-intake:canonical:v1 -->/);
   assert.match(body, /## 🧭 PR intake/);
-  assert.match(body, /Visual evidence:\*\* Recommended/);
+  assert.match(body, /Visual evidence:\*\* Required/);
   assert.match(body, /@alice, please update/);
   assert.match(body, /invalid closing reference `#999` \(not found\)/);
   assert.match(body, /Closes #123/);
@@ -528,7 +517,7 @@ test('unknown mergeability holds readiness even when nothing else is flagged', (
   assert.deepEqual(report.authorActions, []);
 });
 
-test('fork UI evidence is recommended without failing or starting the stale-feedback clock', () => {
+test('product UI paths require visual evidence when none is present', () => {
   const report = buildIntakeReport({
     changedPaths: ['src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml'],
     body: 'Closes #12',
@@ -539,13 +528,10 @@ test('fork UI evidence is recommended without failing or starting the stale-feed
     invalidClosingIssues: [],
   });
 
-  assert.equal(report.hasVisualChanges, true);
-  assert.equal(report.visualAssessment.visualEvidenceRequirement, 'RECOMMENDED');
-  assert.equal(report.readyForReview, true);
-  assert.equal(report.needsAuthorFeedback, false);
-  assert.deepEqual(report.authorActions, []);
-  assert.match(report.recommendations.join(' '), /screenshot, GIF, or video/);
-  assert.doesNotMatch(renderIntakeComment(report), /automatically closed|feedback-since/);
+  assert.equal(report.requiresVisualEvidence, true);
+  assert.equal(report.visualAssessment.visualEvidenceRequirement, 'REQUIRED');
+  assert.equal(report.readyForReview, false);
+  assert.match(report.authorActions.join(' '), /screenshot, GIF, or video/);
 });
 
 test('product UI paths are satisfied when visual evidence is present', () => {
@@ -559,10 +545,9 @@ test('product UI paths are satisfied when visual evidence is present', () => {
     invalidClosingIssues: [],
   });
 
-  assert.equal(report.hasVisualChanges, true);
+  assert.equal(report.requiresVisualEvidence, true);
   assert.equal(report.readyForReview, true);
   assert.doesNotMatch(report.authorActions.join(' '), /screenshot/i);
-  assert.doesNotMatch(report.recommendations.join(' '), /screenshot/i);
 });
 
 test('draft PR remains incomplete until marked ready', () => {
@@ -873,7 +858,7 @@ test('runPullRequestIntake replaces a stale comment with an all-clear note when 
   assert.deepEqual(result.labelPlan.remove, [NEEDS_AUTHOR_FEEDBACK_LABEL]);
 });
 
-test('same-repository intake retains issue guidance without a screenshot reminder', async () => {
+test('runPullRequestIntake posts a feedback comment when there are remarks', async () => {
   const api = new MockApi({
     issues: [{ number: 100, labels: [], title: 'PR' }],
     pullRequests: [{
@@ -894,167 +879,6 @@ test('same-repository intake retains issue guidance without a screenshot reminde
   const result = await runPullRequestIntake({ api, event: intakeEvent() });
   assert.equal(result.commentResult.operation, 'created');
   assert.equal(api.created, 1);
-  assert.equal(result.readyForReview, true);
-  assert.equal(result.failed, false);
-  assert.equal(result.needsAuthorFeedback, false);
-  assert.match(api.comments[0].body, /Link the issue/);
-  assert.doesNotMatch(api.comments[0].body, /screenshot, GIF, or video|automatically closed/);
-});
-
-function forkApi(overrides = {}) {
-  return new MockApi({
-    issues: [{ number: 100, labels: [] }],
-    pullRequests: [{
-      number: 100, draft: false, mergeable: true, body: '',
-      head: { sha: 'head', repo: { full_name: 'contributor/PowerToys' } },
-      base: { ref: 'main' }, user: { login: 'alice' },
-    }],
-    files: [{ filename: 'src/modules/awake/main.cpp' }],
-    ...overrides,
-  });
-}
-
-function assertReadOnly(api) {
-  assert.equal(api.created, 0);
-  assert.equal(api.updated, 0);
-  assert.deepEqual(api.deleted, []);
-  assert.deepEqual(api.addedLabels, []);
-  assert.deepEqual(api.removedLabels, []);
-}
-
-test('fork analysis passes informational suggestions without attempting writes', async () => {
-  const api = forkApi();
-  const result = await runPullRequestIntake({ api, event: intakeEvent() });
-  assertReadOnly(api);
-  assert.equal(result.failed, false);
-  assert.ok(result.recommendations.length);
-  assert.match(renderIntakeSummary(result), /read-only; no mutations attempted/);
-  assert.match(renderIntakeSummary(result), /Product-Awake.*not blocking/);
-});
-
-test('unresolved fork reruns fail until fresh lifecycle labels satisfy the existing state', async () => {
-  const api = forkApi({ issues: [{ number: 100, labels: [NEEDS_AUTHOR_FEEDBACK_LABEL] }] });
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    const result = await runPullRequestIntake({ api, event: intakeEvent() });
-    assert.equal(result.failed, true);
-    assert.match(renderIntakeSummary(result), /Maintainer action: remove.*Needs-Author-Feedback/);
-  }
-  api.issues[0].labels = [READY_FOR_REVIEW_LABEL];
-  const resolved = await runPullRequestIntake({ api, event: intakeEvent() });
-  assert.equal(resolved.failed, false);
-  assert.equal(api.getIssueCalls, 3);
-  assertReadOnly(api);
-});
-
-test('fork visual reminder stays advisory on reruns and clears after fresh body evidence', async () => {
-  const api = forkApi({ files: [{ filename: 'src/settings-ui/Page.xaml' }] });
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    const result = await runPullRequestIntake({ api, event: intakeEvent() });
-    assert.equal(result.failed, false);
-    assert.equal(result.needsAuthorFeedback, false);
-    assert.match(renderIntakeSummary(result), /screenshot, GIF, or video/);
-  }
-  api.pullRequests[0].body = '![screenshot](https://example.com/screenshot.png)';
-  const resolved = await runPullRequestIntake({ api, event: intakeEvent() });
-  assert.equal(resolved.failed, false);
-  assert.doesNotMatch(renderIntakeSummary(resolved), /screenshot, GIF, or video/);
-  assertReadOnly(api);
-});
-
-test('same-repository UI PR clears a stale screenshot-only comment and feedback label', async () => {
-  const api = forkApi({
-    files: [{ filename: 'src/settings-ui/Page.xaml' }],
-    issues: [{ number: 100, labels: [NEEDS_AUTHOR_FEEDBACK_LABEL] }, { number: 12 }],
-    comments: [botComment(50, `${CANONICAL_MARKER}\nPlease attach a screenshot.`)],
-  });
-  api.pullRequests[0].head.repo.full_name = 'microsoft/PowerToys';
-  api.pullRequests[0].body = 'Closes #12';
-  const result = await runPullRequestIntake({ api, event: intakeEvent() });
-  assert.equal(result.failed, false);
-  assert.equal(result.readyForReview, true);
-  assert.equal(result.needsAuthorFeedback, false);
-  assert.equal(result.visualEvidenceRequirement, 'NOT_NEEDED');
-  assert.deepEqual(api.removedLabels, [{ issueNumber: 100, label: NEEDS_AUTHOR_FEEDBACK_LABEL }]);
-  assert.match(api.comments[0].body, /All automated intake checks now pass/);
-  assert.doesNotMatch(api.comments[0].body, /screenshot|automatically closed/);
-});
-
-test('same-repository objective failure keeps feedback mutations and resolved rerun clears it', async () => {
-  const api = forkApi();
-  api.pullRequests[0].head.repo.full_name = 'microsoft/PowerToys';
-  api.pullRequests[0].mergeable = false;
-  const failed = await runPullRequestIntake({ api, event: intakeEvent() });
-  assert.equal(failed.failed, true);
-  assert.equal(api.created, 1);
-  assert.ok(api.addedLabels[0].labels.includes(NEEDS_AUTHOR_FEEDBACK_LABEL));
-  api.pullRequests[0].mergeable = true;
-  api.pullRequests[0].body = 'Closes #12';
-  api.issues.push({ number: 12 });
-  assert.equal((await runPullRequestIntake({ api, event: intakeEvent() })).failed, false);
-  assert.match(api.comments[0].body, /All automated intake checks now pass/);
-});
-
-test('draft forks report skipped readiness without any cleanup mutations', async () => {
-  const api = forkApi({ comments: [botComment(50, CANONICAL_MARKER)] });
-  api.pullRequests[0].draft = true;
-  const result = await runPullRequestIntake({ api, event: intakeEvent() });
-  assert.equal(result.skippedDraft, true);
-  assert.equal(result.failed, false);
-  assertReadOnly(api);
-});
-
-test('stale head and mismatched base identity refuse all mutations', async () => {
-  const api = forkApi();
-  await assert.rejects(runPullRequestIntake({
-    api, event: intakeEvent({ pull_request: { number: 100, head: { sha: 'old' } } }),
-  }), /head\/base/);
-  api.pullRequests[0].base.repo = { full_name: 'other/repo' };
-  await assert.rejects(runPullRequestIntake({ api, event: intakeEvent() }), /base repository/);
-  assertReadOnly(api);
-});
-
-test('CLI publishes fork summary and logs with objective fail, unresolved rerun, resolved and informational exits', () => {
-  for (const [conflict, labels, expectedExit] of [
-    [true, [], 1], [true, [], 1],
-    [false, [NEEDS_AUTHOR_FEEDBACK_LABEL], 1],
-    [false, [], 0],
-  ]) {
-    const pull = {
-      number: 100, state: 'open', draft: false, mergeable: !conflict, body: '',
-      head: { sha: 'head', repo: { full_name: 'fork/PowerToys' } },
-      base: { sha: 'base', ref: 'main', repo: { full_name: 'microsoft/PowerToys' } },
-    };
-    const event = intakeEvent({ pull_request: pull });
-    const preload = `
-      import fs from 'node:fs/promises';
-      fs.readFile = async () => ${JSON.stringify(JSON.stringify(event))};
-      fs.appendFile = async (_file, text) => console.log('JOB_SUMMARY:' + text);
-      globalThis.fetch = async (url, options) => {
-        if (options.method !== 'GET') throw new Error('Fork attempted mutation');
-        let result;
-        if (url.endsWith('/pulls/100')) result = ${JSON.stringify(pull)};
-        else if (url.includes('/files?')) result = [{filename:'README.md'}];
-        else if (url.includes('/comments?')) result = [];
-        else if (url.endsWith('/issues/100')) result = {labels:${JSON.stringify(labels)}};
-        else throw new Error('Unexpected request: ' + url);
-        return new Response(JSON.stringify(result), {status:200});
-      };
-    `;
-    const result = spawnSync(process.execPath, [
-      '--import', `data:text/javascript,${encodeURIComponent(preload)}`,
-      fileURLToPath(new URL('../pr-intake.mjs', import.meta.url)), 'event-fixture',
-    ], {
-      env: {
-        ...process.env, GITHUB_TOKEN: 'test-token', GITHUB_REPOSITORY: 'microsoft/PowerToys',
-        GITHUB_API_URL: 'https://api.github.com', GITHUB_STEP_SUMMARY: 'summary-fixture',
-      },
-      encoding: 'utf8', timeout: 30000,
-    });
-    assert.equal(result.error, undefined);
-    assert.equal(result.status, expectedExit, result.stdout + result.stderr);
-    assert.match(result.stdout, /JOB_SUMMARY:## PR intake/);
-    assert.match(result.stdout, /read-only; no mutations attempted/);
-    assert.match(result.stdout, /### Required actions/);
-    assert.match(result.stdout, /### Information/);
-  }
+  assert.equal(result.readyForReview, false);
+  assert.match(api.comments[0].body, /screenshot, GIF, or video/);
 });
