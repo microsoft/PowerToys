@@ -110,10 +110,11 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <!-- Hybrid CRT: the VC++ runtime and STL stay static (/MT); the UCRT comes from the in-box ucrtbase.dll.
-       Every module shares that UCRT, so don't change process-wide CRT state (doc/devdocs/development/guidelines.md). -->
+  <!-- Keep the UCRT private by default: Runner module teardown can deadlock on a shared CRT exit lock.
+       Explicit Hybrid CRT opt-ins keep the VC++ runtime and STL static (/MT) but share the in-box ucrtbase.dll
+       (doc/devdocs/development/guidelines.md). -->
   <PropertyGroup>
-    <EnableHybridCRT Condition="'$(EnableHybridCRT)' == ''">true</EnableHybridCRT>
+    <EnableHybridCRT Condition="'$(EnableHybridCRT)' == ''">false</EnableHybridCRT>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(EnableHybridCRT)' == 'true' and '$(Configuration)' == 'Debug'">
     <Link>
