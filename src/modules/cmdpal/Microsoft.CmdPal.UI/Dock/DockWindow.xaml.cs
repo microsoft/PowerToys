@@ -453,18 +453,19 @@ public sealed partial class DockWindow : WindowEx,
 
     private void SetupMica(MicaKind kind)
     {
+        if (_configurationSource is null || !MicaController.IsSupported())
+        {
+            // Try Acrylic before the transparent fallback on systems without Mica support.
+            SetupDesktopAcrylic(_themeService.CurrentDockTheme.BackdropParameters);
+            return;
+        }
+
         if (_micaController is not null && _lastAppliedMicaKind == kind)
         {
             return;
         }
 
         CleanupBackdropControllers();
-        if (_configurationSource is null || !MicaController.IsSupported())
-        {
-            SetupTransparentBackdrop();
-            return;
-        }
-
         SystemBackdrop = null;
         _micaController = new MicaController { Kind = kind };
         _micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());

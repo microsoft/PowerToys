@@ -174,7 +174,7 @@
                     </controls:SettingsCard>
 
                     <!--  Backdrop Style  -->
-                    <controls:SettingsCard
+                    <controls:SettingsExpander
                         x:Uid="DockAppearance_Backdrop_SettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}"
                         local:SettingsPageTarget.Id="backdrop">
@@ -187,12 +187,23 @@
                             <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Mica" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_MicaAlt" />
                         </ComboBox>
-                    </controls:SettingsCard>
-
-                    <TextBlock
-                        x:Uid="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock"
-                        TextWrapping="Wrap"
-                        Visibility="{x:Bind ViewModel.DockAppearance.IsMicaBackdrop, Mode=OneWay}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_MicaBackdrop_SettingsCard"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.DockAppearance.IsMicaBackdrop, Mode=OneWay}">
+                                <TextBlock
+                                    x:Uid="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock"
+                                    Margin="24"
+                                    HorizontalAlignment="Stretch"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    HorizontalTextAlignment="Center"
+                                    TextAlignment="Center"
+                                    TextWrapping="WrapWholeWords" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <!--  Background / Colorization Section  -->
                     <controls:SettingsExpander

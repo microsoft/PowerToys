@@ -177,12 +177,8 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
         var dockContext = new ThemeContext
         {
-            BackdropStyle = dockSettings.Backdrop switch
-            {
-                DockBackdrop.Mica => BackdropStyle.Mica,
-                DockBackdrop.MicaAlt => BackdropStyle.MicaAlt,
-                _ => BackdropStyle.Acrylic,
-            },
+            // Mica uses system defaults; keep Acrylic parameters ready for its fallback.
+            BackdropStyle = BackdropStyle.Acrylic,
             Tint = dockTint,
             ColorIntensity = dockIntensity,
             Theme = dockEffectiveTheme,
