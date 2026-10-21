@@ -833,10 +833,6 @@ export async function runPullRequestIntake({ api, event, postComment = true }) {
     api,
     pullNumber,
   );
-  const repository = event.repository.full_name;
-  const sameRepository = pullRequest.head?.repo?.full_name === repository
-    && pullRequest.base?.repo?.full_name === repository;
-  postComment = postComment && sameRepository;
   if ((event.pull_request?.head?.sha && event.pull_request.head.sha !== pullRequest.head?.sha)
     || (event.pull_request?.base?.sha && event.pull_request.base.sha !== pullRequest.base?.sha)) {
     throw new Error('PR revision changed; rerun intake.');
@@ -900,7 +896,7 @@ export async function runPullRequestIntake({ api, event, postComment = true }) {
     isDraft: pullRequest.draft === true,
     mergeConflict: hasMergeConflict(pullRequest),
     mergeabilityKnown,
-    skipVisualReminder: sameRepository,
+    skipVisualReminder: postComment,
     verifiedClosingIssues: closingReferenceVerification.validReferences,
     invalidClosingIssues: closingReferenceVerification.invalidReferences,
   });
@@ -1114,7 +1110,7 @@ async function main() {
     throw new Error('Event repository does not match the workflow repository.');
   }
   const result = await runPullRequestIntake({
-    api, event, postComment: process.env.POST_COMMENT !== 'false',
+    api, event, postComment: process.env.POST_COMMENT === 'true',
   });
   console.log(JSON.stringify(result, null, 2));
   if (!result.postComment && result.readyForReview === false) process.exitCode = 1;

@@ -33,8 +33,18 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
           persist-credentials: false
 
+      - name: Choose feedback destination
+        id: feedback
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+        run: |
+          post_comment=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+            --jq ".head.repo.full_name == \"$GITHUB_REPOSITORY\" and .base.repo.full_name == \"$GITHUB_REPOSITORY\"")
+          echo "post_comment=$post_comment" >> "$GITHUB_OUTPUT"
+
       - name: Detect telemetry event changes and comment PR
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          POST_COMMENT: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
+          POST_COMMENT: ${{ steps.feedback.outputs.post_comment }}
         run: node .github/scripts/telemetry-pr-check.js

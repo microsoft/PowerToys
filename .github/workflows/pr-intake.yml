@@ -50,5 +50,5 @@ jobs:
       - name: Run PR intake
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          POST_COMMENT: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          POST_COMMENT: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.base.repo.full_name == github.repository }}
         run: node .github/scripts/pr-intake/pr-intake.mjs "$GITHUB_EVENT_PATH"

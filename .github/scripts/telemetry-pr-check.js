@@ -326,6 +326,9 @@ async function main() {
   }
 
   const event = readEventPayload(eventPath);
+  if (event.repository?.full_name !== repository) {
+    throw new Error('Event repository does not match the workflow repository.');
+  }
   const pullNumber = resolvePullNumber(event);
 
   console.log(`Event name: ${process.env.GITHUB_EVENT_NAME || 'unknown'}`);
@@ -346,9 +349,7 @@ async function main() {
     || current.draft || current.state !== 'open') {
     throw new Error('PR changed during telemetry analysis; rerun before posting.');
   }
-  const postComment = process.env.POST_COMMENT !== 'false'
-    && current.head?.repo?.full_name === repository && current.base?.repo?.full_name === repository
-    && event.repository?.full_name === repository;
+  const postComment = process.env.POST_COMMENT === 'true';
 
   const matches = detectTelemetryChanges(files);
   const dataAndPrivacyChanged = hasDataAndPrivacyChange(files);
