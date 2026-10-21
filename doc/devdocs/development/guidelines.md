@@ -72,15 +72,17 @@
   - Sanity check that all modules still work
   - Open PR with changes
 
-### C/C++ Runtime (Hybrid CRT)
-- `Cpp.Build.props` links the VC++ runtime and STL statically (`/MT`) and the Universal CRT from the in-box `ucrtbase.dll`, so no VC++ redistributable is needed.
-- Every module in a process shares that UCRT, including WinUI 3 and .NET. Don't change process-wide CRT state:
+### C/C++ Runtime
+- `Cpp.Build.props` defaults `EnableHybridCRT` to `false`, linking the VC++ runtime, STL and Universal CRT statically (`/MT`, or `/MTd` in Debug), so no VC++ redistributable is needed.
+- Keep the UCRT private by default while Runner destroys modules during CRT static destruction: cleanup can wait for worker threads or DLL unloading that need the same shared CRT exit lock.
+- Existing project-specific Hybrid CRT configurations remain unchanged. Before opting a project in with `<EnableHybridCRT>true</EnableHybridCRT>`, validate its thread and DLL shutdown lifetimes. Hybrid CRT keeps the VC++ runtime and STL static but uses the in-box `ucrtbase.dll`.
+- Binaries using Hybrid CRT share UCRT state with other users of that runtime in the process, including WinUI 3 and .NET. Don't change process-wide CRT state:
   - No `setlocale`, `std::locale::global` or named `std::locale` objects; MSVC's STL calls `setlocale` while building them. Use `_wcreate_locale` with the `_l` functions, or NLS APIs such as `LCMapStringEx`.
   - No `signal` or `_set_invalid_parameter_handler` from a DLL.
   - Read environment variables with `GetEnvironmentVariableW`; the CRT's copy is a snapshot.
 - If a project sets Link `IgnoreSpecificDefaultLibraries` or `AdditionalOptions`, keep the inherited `%(...)` value.
 - A project that can't follow these rules sets `<EnableHybridCRT>false</EnableHybridCRT>` with a comment that says why. Today: PowerRename.exe and its tests (PowerRenameLib calls `std::locale::global`) and MeasureToolCore (installs a `SIGABRT` handler).
-- Debug builds need `ucrtbased.dll`, which the Windows SDK installs. Use a Release build on machines without the SDK.
+- Debug builds using Hybrid CRT need `ucrtbased.dll`, which the Windows SDK installs. Use a Release build on machines without the SDK.
 
 ## Testing Requirements
 
