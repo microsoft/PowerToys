@@ -233,7 +233,7 @@ public sealed class SnippetStoreTests
 
         // The header documents every variable and the cursor marker.
         string text = File.ReadAllText(path);
-        foreach (string token in new[] { "{{date}}", "{{time}}", "{{datetime}}", "{{isodate}}", "{{date:FORMAT}}", "{{date:dddd, MMMM d}}", "{{clipboard}}", "{{prompt:Label}}", "$|$", "\\n", "\\t", "<<<", ">>>" })
+        foreach (string token in new[] { "{{date}}", "{{time}}", "{{datetime}}", "{{isodate}}", "{{date:FORMAT}}", "{{date:dddd, MMMM d}}", "{{clipboard}}", "{{prompt:Question}}", "{{prompt?:Question}}", "$|$", "\\n", "\\t", "<<<", ">>>" })
         {
             StringAssert.Contains(text, token);
         }

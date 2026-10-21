@@ -22,6 +22,27 @@ public sealed class MatchingAndBoundaryTests
     }
 
     [TestMethod]
+    public void CaseInsensitiveIndexMatchesAnyCapitalizationAndKeepsLongestMatch()
+    {
+        TriggerIndex index = TriggerIndex.Build(["!Hi", "!HiThere"], caseSensitive: false);
+
+        Assert.AreEqual("!Hi", index.MatchLongestSuffix("typed !hI"));
+        Assert.AreEqual("!HiThere", index.MatchLongestSuffix("typed !HITHERE"));
+        Assert.IsNull(index.MatchLongestSuffix("typed !hello"));
+    }
+
+    [TestMethod]
+    public void CaseInsensitiveFileTreatsCaseOnlyDuplicatesAsLastRowWins()
+    {
+        Dictionary<string, string> store = SnippetStore.Parse(["!Hi=first", "!HI=second"], caseSensitive: false);
+        TriggerIndex index = TriggerIndex.Build(store.Keys, caseSensitive: false);
+
+        Assert.AreEqual(1, store.Count);
+        Assert.AreEqual("!HI", index.MatchLongestSuffix("typed !hi"));
+        Assert.AreEqual("second", store["!hI"]);
+    }
+
+    [TestMethod]
     public void WordBoundaryClassifiesTerminatorsAndStartPositions()
     {
         Assert.IsTrue(WordBoundary.IsWordCharacter('a'));

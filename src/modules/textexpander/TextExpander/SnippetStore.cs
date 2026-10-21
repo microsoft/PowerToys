@@ -16,8 +16,8 @@ internal sealed class SnippetStore : IDisposable
     internal const string FileName = "PowerToysTextExpanderSnippets.txt";
 
     /// <summary>
-    /// The name earlier versions used. It is still read, and never renamed: OneDrive would sync
-    /// the rename to other PCs, and one still running an earlier version would lose its file.
+    /// The name earlier versions used. It is still read, and never renamed: a folder sync service
+    /// could propagate the rename while another PC still runs an earlier version.
     /// </summary>
     internal const string LegacyFileName = "snippets.txt";
 
@@ -48,6 +48,7 @@ internal sealed class SnippetStore : IDisposable
     private FileSystemWatcher? _watcher;
     private Timer? _debounce;
     private bool _resolveFolderNames;
+    private bool _caseSensitive;
 
     public string FilePath { get; private set; }
 
@@ -58,10 +59,11 @@ internal sealed class SnippetStore : IDisposable
     /// <summary>Raised after a successful reload. Fires on a thread pool thread.</summary>
     public event Action<int>? Reloaded;
 
-    public SnippetStore(string filePath, bool resolveFolderNames = false)
+    public SnippetStore(string filePath, bool resolveFolderNames = false, bool caseSensitive = true)
     {
         FilePath = filePath;
         _resolveFolderNames = resolveFolderNames;
+        _caseSensitive = caseSensitive;
     }
 
     // ── Path resolution ──────────────────────────────────────
@@ -195,9 +197,9 @@ internal sealed class SnippetStore : IDisposable
             }
 
             string[] lines = ReadAllLinesShared(FilePath);
-            Dictionary<string, string> map = Parse(lines);
+            Dictionary<string, string> map = Parse(lines, _caseSensitive);
 
-            var index = TriggerIndex.Build(map.Keys);
+            var index = TriggerIndex.Build(map.Keys, _caseSensitive);
 
             _current = new Snapshot
             {
@@ -239,9 +241,9 @@ internal sealed class SnippetStore : IDisposable
     /// "trigger&lt;&lt;&lt; ... &gt;&gt;&gt;" multi-line blocks. Replacement text is taken from the
     /// raw line so trailing spaces survive.
     /// </summary>
-    internal static Dictionary<string, string> Parse(string[] lines)
+    internal static Dictionary<string, string> Parse(string[] lines, bool caseSensitive = true)
     {
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        var result = new Dictionary<string, string>(caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
         int i = 0;
 
         while (i < lines.Length)
@@ -273,6 +275,7 @@ internal sealed class SnippetStore : IDisposable
 
                 if (trigger.Length > 0)
                 {
+                    result.Remove(trigger);
                     result[trigger] = string.Join("\n", body);
                 }
             }
@@ -282,7 +285,9 @@ internal sealed class SnippetStore : IDisposable
                 if (eq > 0)
                 {
                     int rawEq = line.IndexOf('=');
-                    result[stripped[..eq]] = line[(rawEq + 1)..];
+                    string trigger = stripped[..eq];
+                    result.Remove(trigger);
+                    result[trigger] = line[(rawEq + 1)..];
                 }
             }
         }
@@ -303,6 +308,21 @@ internal sealed class SnippetStore : IDisposable
 
     public bool TryGetReplacement(string trigger, out string replacement)
         => _current.Map.TryGetValue(trigger, out replacement!);
+
+    /// <summary>
+    /// Changes whether trigger matching distinguishes capitalization, then rebuilds the immutable
+    /// lookup from the active file. Returns the snippet count, or -1 when nothing changed.
+    /// </summary>
+    public int SetCaseSensitive(bool caseSensitive)
+    {
+        if (_caseSensitive == caseSensitive)
+        {
+            return -1;
+        }
+
+        _caseSensitive = caseSensitive;
+        return Load();
+    }
 
     // ── Watching ─────────────────────────────────────────────
     public void StartWatching()
@@ -487,26 +507,27 @@ internal sealed class SnippetStore : IDisposable
         // Changes work as soon as you save this file.
         //
         // ── Variables, filled in each time a snippet expands ────
-        // {{date}}           today's date, like 06/01/26
-        // {{time}}           the time, like 02:30 PM
-        // {{datetime}}       both, like 06/01/26 02:30 PM
-        // {{isodate}}        the date year first, like 2026-06-01
-        // {{date:FORMAT}}    a date your way: {{date:dddd, MMMM d}} gives Monday, June 1
-        //                    (dddd weekday, MMMM month, d day, yyyy year, HH:mm 24-hour time)
-        //                    Put words in single quotes, or they're read as codes:
-        //                    {{date:'Today is' dddd}} gives Today is Monday
-        // {{clipboard}}      the text you copied last, such as a link
-        // {{prompt:Label}}   asks you to type something, with Label as the question,
-        //                    like {{prompt:First name}}, and types what you enter
-        // $|$                where the cursor ends up: Dear $|$, leaves it after "Dear "
-        // \n and \t          a new line and a tab
+        // {{date}}             today's date, like 06/01/26
+        // {{time}}             the time, like 02:30 PM
+        // {{datetime}}         both, like 06/01/26 02:30 PM
+        // {{isodate}}          the date year first, like 2026-06-01
+        // {{date:FORMAT}}      a date your way: {{date:dddd, MMMM d}} gives Monday, June 1
+        //                      (dddd weekday, MMMM month, d day, yyyy year, HH:mm 24-hour time)
+        //                      Put words in single quotes, or they're read as codes:
+        //                      {{date:'Today is' dddd}} gives Today is Monday
+        // {{clipboard}}        the text you copied last, such as a link
+        // {{prompt:Question}}  asks you a question and requires an answer,
+        //                      like {{prompt:First name}}, then types what you enter
+        // {{prompt?:Question}} asks the same way but lets you continue with no answer
+        // $|$                  where the cursor ends up: Dear $|$, leaves it after "Dear "
+        // \n and \t            a new line and a tab
         //
         // ── Tips ────────────────────────────────────────────────
         // - Start triggers with ! so they don't fire in the middle of a word.
         // - A trigger fires as soon as you type it, so one trigger can't be the start
         //   of another: !sig would fire before you could finish typing !signature.
-        // - Same snippets on every PC: in PowerToys Settings > Text Expander, turn on
-        //   Sync across PCs.
+        // - To sync snippets across devices, choose a folder managed by OneDrive or
+        //   another sync service in PowerToys Settings > Text Expander.
         //
         // ── Examples: remove the // and the space after it to use one ──
         // !hello=Hi {{prompt:First name}}, thanks for reaching out!

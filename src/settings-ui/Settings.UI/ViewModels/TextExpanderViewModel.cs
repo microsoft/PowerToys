@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -16,7 +16,6 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -33,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly bool _isElevated;
         private readonly Func<string, Task<string>> _pickSingleFolderDialog;
         private readonly Func<string, string> _getResourceString;
-        private readonly ITextExpanderSyncEnvironment _syncEnvironment;
+        private readonly ITextExpanderStorageEnvironment _storageEnvironment;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -51,20 +50,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private IDisposable _snippetFileWatch;
         private string _snippetFileWatchFolder;
 
-        /// <summary>
-        /// Opens a folder browser for the snippet folder.
-        ///
-        /// <para>
-        /// A picker rather than an upload: the setting points the engine at a folder it keeps
-        /// watching, so the file has to stay where it is. Copying it in would sever it from
-        /// whatever is syncing it — a OneDrive folder being the obvious case — and leave the
-        /// user editing a copy while expecting the original.
-        /// </para>
-        /// </summary>
-        public ButtonClickCommand BrowseForSnippetsFolderCommand { get; private set; }
-
         /// <param name="pickSingleFolderDialog">Shows a folder picker, opening at the folder it's given when that exists, and returns the folder picked, or null if cancelled.</param>
-        public TextExpanderViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, Task<string>> pickSingleFolderDialog, bool isElevated, Func<string, string> getResourceString = null, ITextExpanderSyncEnvironment syncEnvironment = null)
+        public TextExpanderViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, Task<string>> pickSingleFolderDialog, bool isElevated, Func<string, string> getResourceString = null, ITextExpanderStorageEnvironment storageEnvironment = null)
         {
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
@@ -75,8 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
             _pickSingleFolderDialog = pickSingleFolderDialog;
             _getResourceString = getResourceString ?? (key => ResourceLoaderInstance.ResourceLoader.GetString(key));
-            _syncEnvironment = syncEnvironment ?? new TextExpanderSyncEnvironment();
-            BrowseForSnippetsFolderCommand = new ButtonClickCommand(BrowseForSnippetsFolder);
+            _storageEnvironment = storageEnvironment ?? new TextExpanderStorageEnvironment();
 
             // Group policy wins over anything the user picks here, so read it before the
             // user-facing state and let it clamp the toggle.
@@ -109,42 +95,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             LoadSnippets();
-
-            // Created last and does nothing until the page asks it to, so constructing the view
-            // model never probes OneDrive.
-            Sync = new TextExpanderSyncViewModel(this, _syncEnvironment, _getResourceString, _pickSingleFolderDialog);
-            Sync.PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName is nameof(TextExpanderSyncViewModel.IsSynced) or nameof(TextExpanderSyncViewModel.SyncedStatusText))
-                {
-                    OnPropertyChanged(nameof(SnippetFileSummary));
-                }
-
-                if (e.PropertyName is nameof(TextExpanderSyncViewModel.IsSynced) or nameof(TextExpanderSyncViewModel.IsSetupVisible) or nameof(TextExpanderSyncViewModel.IsOneDriveMissing))
-                {
-                    RaiseFolderRowChanged();
-                }
-            };
         }
-
-        /// <summary>Gets the guided OneDrive setup ("Sync snippets across PCs").</summary>
-        public TextExpanderSyncViewModel Sync { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the box where snippets are saved and synced shows its Folder row:
-        /// while syncing; whenever a folder is set, so one outside OneDrive can be seen and cleared,
-        /// as can a typo; and when OneDrive isn't set up, so another sync app's folder can be set.
-        /// Never during the sync setup, whose own folder picker is the only one there, and never
-        /// while elevated, when the box can't be opened. With sync off and the PowerToys folder in
-        /// use, the box shows only the toggle.
-        /// </summary>
-        public bool IsFolderRowVisible => CanEditSnippets
-            && Sync?.IsSetupVisible != true
-            && (Sync?.IsSynced == true || !string.IsNullOrWhiteSpace(SnippetsPath) || Sync?.IsOneDriveMissing == true);
 
         /// <summary>
         /// Gets a one-line description of where the snippet file is kept and how many snippets it
-        /// has, shown on the collapsed "Where your snippets are saved and synced across PCs" setting.
+        /// has, shown on the collapsed "Save snippets to a folder" setting.
         /// </summary>
         public string SnippetFileSummary
         {
@@ -153,11 +108,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (!CanEditSnippets)
                 {
                     return _getResourceString("TextExpander_SnippetFile_SummaryElevated");
-                }
-
-                if (Sync?.IsSynced == true)
-                {
-                    return Sync.SyncedStatusText;
                 }
 
                 string key = IsDefaultSnippetsFile() ? "TextExpander_SnippetFile_SummaryDefault" : "TextExpander_SnippetFile_SummaryCustom";
@@ -282,6 +232,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        /// <summary>Gets or sets whether uppercase and lowercase trigger letters are distinct.</summary>
+        public bool CaseSensitive
+        {
+            get => _settings.Properties.CaseSensitive;
+            set
+            {
+                if (_settings.Properties.CaseSensitive != value)
+                {
+                    _settings.Properties.CaseSensitive = value;
+                    OnPropertyChanged(nameof(CaseSensitive));
+                    ApplyCaseSensitivityToRows();
+                    DescribeSnippets();
+                    Save();
+                }
+            }
+        }
+
         /// <summary>
         /// Gets or sets whether a trigger waits for a word terminator before firing.
         ///
@@ -340,7 +307,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _settings.Properties.SnippetsPath.Value = path;
                     OnPropertyChanged(nameof(SnippetsPath));
-                    RaiseFolderRowChanged();
+                    OnPropertyChanged(nameof(SnippetsFolderPath));
                     Save();
 
                     // The folder moved, so the list on screen is now showing the wrong file.
@@ -349,52 +316,131 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// Gets the OneDrive folder the snippets were last synced in (<c>last_sync_folder</c>), so
-        /// turning Sync across PCs back on finds them there. Kept by <see cref="Sync"/>; nothing on
-        /// the page shows it, and the engine ignores it.
-        /// </summary>
-        public string LastSyncFolder
-        {
-            get => _settings.Properties.LastSyncFolder?.Value ?? string.Empty;
-            internal set
-            {
-                string folder = value ?? string.Empty;
-                if (CanEditSnippets && LastSyncFolder != folder)
-                {
-                    _settings.Properties.LastSyncFolder = new StringProperty(folder);
-                    Save();
-                }
-            }
-        }
+        public string SnippetsFolderPath => CanEditSnippets ? Path.GetDirectoryName(ResolveSnippetsFile()) ?? string.Empty : string.Empty;
 
-        /// <summary>
-        /// Sets <see cref="SnippetsPath"/> from a folder the user picks, starting in the folder in use.
-        ///
-        /// <para>
-        /// Silently does nothing when no picker was supplied or the dialog is cancelled, so the
-        /// existing path survives a dismissed dialog rather than being blanked.
-        /// </para>
-        /// </summary>
-        private async void BrowseForSnippetsFolder()
+        public bool CanClearSnippets => CanEditSnippets && !HasSnippetError && Snippets.Count > 0;
+
+        /// <summary>Lets the user pick a folder, then inspects it without changing the active library.</summary>
+        public async Task<TextExpanderFolderChange> PickSnippetsFolderAsync()
         {
             if (!CanEditSnippets || _pickSingleFolderDialog is null)
             {
-                return;
+                return null;
             }
 
             try
             {
-                string current = SnippetsFilePath;
-                string picked = await _pickSingleFolderDialog(string.IsNullOrEmpty(current) ? null : Path.GetDirectoryName(current));
-                if (!string.IsNullOrEmpty(picked))
-                {
-                    SnippetsPath = picked;
-                }
+                string picked = await _pickSingleFolderDialog(SnippetsFolderPath);
+                return string.IsNullOrWhiteSpace(picked) ? null : PrepareFolderChange(picked);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (IsFileError(ex))
             {
                 Logger.LogError("Error picking the Text Expander snippet folder.", ex);
+                _snippetError = ex.Message;
+                RaiseSnippetListChanged();
+                return null;
+            }
+        }
+
+        internal TextExpanderFolderChange PrepareFolderChange(string folder)
+        {
+            string full = Path.GetFullPath(_storageEnvironment.ExpandEnvironmentVariables(folder.Trim().Trim('"')));
+            string file = TextExpanderSnippetFileNames.ResolveInFolder(full, _storageEnvironment.FileExists);
+            return string.Equals(file, ResolveSnippetsFile(), StringComparison.OrdinalIgnoreCase)
+                ? null
+                : new TextExpanderFolderChange(full, file, _storageEnvironment.FileExists(file));
+        }
+
+        /// <summary>
+        /// Switches the active folder. An existing destination is never overwritten without a
+        /// backup; choosing its file also backs up the file this PC was using before the switch.
+        /// </summary>
+        public string ApplyFolderChange(TextExpanderFolderChange change, TextExpanderFolderConflictChoice choice, out string backupPath)
+        {
+            backupPath = string.Empty;
+            if (!CanEditSnippets || change is null)
+            {
+                return null;
+            }
+
+            try
+            {
+                _storageEnvironment.CreateDirectory(change.FolderPath);
+                string current = ResolveSnippetsFile();
+                string target = TextExpanderSnippetFileNames.ResolveInFolder(change.FolderPath, _storageEnvironment.FileExists);
+                bool targetExists = _storageEnvironment.FileExists(target);
+                if (targetExists && !change.HasExistingFile)
+                {
+                    return _getResourceString("TextExpander_SnippetFolder_FileAppeared");
+                }
+
+                if (targetExists && choice == TextExpanderFolderConflictChoice.UseFolder)
+                {
+                    if (_storageEnvironment.FileExists(current))
+                    {
+                        backupPath = BackupCopy(current);
+                    }
+                }
+                else
+                {
+                    byte[] bytes = _storageEnvironment.FileExists(current) ? _storageEnvironment.ReadAllBytes(current) : Array.Empty<byte>();
+                    if (targetExists)
+                    {
+                        backupPath = BackupPath(target);
+                        WriteAtomically(target, bytes, backupPath, replace: true);
+                    }
+                    else
+                    {
+                        target = Path.Combine(change.FolderPath, TextExpanderSnippetFileNames.Current);
+                        WriteAtomically(target, bytes, backup: null, replace: false);
+                    }
+                }
+
+                SnippetsPath = string.Equals(
+                    Path.TrimEndingDirectorySeparator(change.FolderPath),
+                    Path.TrimEndingDirectorySeparator(_storageEnvironment.DefaultSnippetsFolder),
+                    StringComparison.OrdinalIgnoreCase)
+                    ? string.Empty
+                    : change.FolderPath;
+                return null;
+            }
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                Logger.LogError("Error changing the Text Expander snippet folder.", ex);
+                return ex.Message;
+            }
+        }
+
+        /// <summary>Backs up the active file, replaces it with an empty library, and reloads it.</summary>
+        public string ClearSnippets(out string backupPath)
+        {
+            backupPath = string.Empty;
+            if (!CanEditSnippets)
+            {
+                return ElevatedSnippetAccessDeniedMessage();
+            }
+
+            try
+            {
+                string file = ResolveSnippetsFile();
+                _storageEnvironment.CreateDirectory(Path.GetDirectoryName(file));
+                if (_storageEnvironment.FileExists(file))
+                {
+                    backupPath = BackupPath(file);
+                    WriteAtomically(file, Array.Empty<byte>(), backupPath, replace: true);
+                }
+                else
+                {
+                    WriteAtomically(file, Array.Empty<byte>(), backup: null, replace: false);
+                }
+
+                LoadSnippets();
+                return null;
+            }
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                Logger.LogError("Error clearing the Text Expander snippet file.", ex);
+                return ex.Message;
             }
         }
 
@@ -485,25 +531,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>Gets the resolved snippet file, shown so the user can find it outside the app.</summary>
         public string SnippetsFilePath => ResolveSnippetsFile();
 
-        /// <summary>
-        /// Gets the Folder row's description. It names the file in use, because a folder can hold
-        /// a file an earlier version created under the old name.
-        /// </summary>
-        public string SnippetsFolderDescription
-        {
-            get
-            {
-                string file = ResolveSnippetsFile();
-                string name = string.IsNullOrEmpty(file) ? TextExpanderSnippetFileNames.Current : Path.GetFileName(file);
-                return string.Format(CultureInfo.CurrentCulture, _getResourceString("TextExpander_SnippetsPath_Description"), name);
-            }
-        }
-
-        /// <summary>
-        /// Gets the folder used while <see cref="SnippetsPath"/> is empty, shown as the folder box's
-        /// placeholder. Empty while elevated, like every other path on the page.
-        /// </summary>
-        public string DefaultSnippetsFolder => CanEditSnippets ? _syncEnvironment.DefaultSnippetsFolder : string.Empty;
+        /// <summary>Gets the folder used while <see cref="SnippetsPath"/> is empty.</summary>
+        public string DefaultSnippetsFolder => CanEditSnippets ? _storageEnvironment.DefaultSnippetsFolder : string.Empty;
 
         /// <summary>
         /// Gets the variables the engine can expand, for the Insert variable menu.
@@ -561,7 +590,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 try
                 {
-                    string expanded = _syncEnvironment.ExpandEnvironmentVariables(configured.Trim().Trim('"'));
+                    string expanded = _storageEnvironment.ExpandEnvironmentVariables(configured.Trim().Trim('"'));
 
                     // Must match the engine's rule exactly. A relative path is resolved against
                     // the *process* working directory, and the engine runs in a different process
@@ -573,7 +602,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         string full = Path.GetFullPath(expanded);
 
                         // Accept a file too: someone will paste the path of the snippet file itself.
-                        return File.Exists(full) ? full : TextExpanderSnippetFileNames.ResolveInFolder(full, _syncEnvironment.FileExists);
+                        return File.Exists(full) ? full : TextExpanderSnippetFileNames.ResolveInFolder(full, _storageEnvironment.FileExists);
                     }
                 }
                 catch (Exception ex) when (ex is ArgumentException or NotSupportedException
@@ -587,7 +616,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // The same folder the engine derives from the settings path the shim passes it, so
             // both sides land on one file without a second setting to disagree about. Within a
             // folder, both pick the file the same way (TextExpanderSnippetFileNames.ResolveInFolder).
-            return TextExpanderSnippetFileNames.ResolveInFolder(_syncEnvironment.DefaultSnippetsFolder, _syncEnvironment.FileExists);
+            return TextExpanderSnippetFileNames.ResolveInFolder(_storageEnvironment.DefaultSnippetsFolder, _storageEnvironment.FileExists);
         }
 
         /// <summary>Reads the snippet file into <see cref="Snippets"/>.</summary>
@@ -722,7 +751,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _snippetFileWatchFolder = folder;
             if (!string.IsNullOrEmpty(folder))
             {
-                _snippetFileWatch = _syncEnvironment.WatchForFiles(folder, SnippetFileNames, () => _dispatch?.Invoke(SnippetFileMayHaveAppeared));
+                _snippetFileWatch = _storageEnvironment.WatchForFiles(folder, SnippetFileNames, () => _dispatch?.Invoke(SnippetFileMayHaveAppeared));
             }
         }
 
@@ -759,7 +788,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _file = previousFile.Clone();
             try
             {
-                _file.Upsert(id, trigger, replacement);
+                _file.Upsert(id, trigger, replacement, CaseSensitive);
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
             {
@@ -795,13 +824,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return SnippetError;
             }
 
-            TextExpanderSnippetFile.Entry clash = _file.FindDuplicate(trigger, ignoringId: id);
+            TextExpanderSnippetFile.Entry clash = _file.FindDuplicate(trigger, ignoringId: id, CaseSensitive);
             if (clash != null)
             {
                 return string.Format(
                     CultureInfo.CurrentCulture,
                     _getResourceString("TextExpander_DuplicateTrigger"),
-                    trigger);
+                    clash.Trigger);
             }
 
             return null;
@@ -880,7 +909,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             TextExpanderSnippetFile.Entry source = _file.Snippets.FirstOrDefault(s => s.Id == id);
-            return source == null ? null : SuggestCopyTrigger(source.Trigger, _file.Snippets.Select(s => s.Trigger), RequireWordBoundary);
+            return source == null ? null : SuggestCopyTrigger(source.Trigger, _file.Snippets.Select(s => s.Trigger), RequireWordBoundary, CaseSensitive);
         }
 
         /// <summary>
@@ -891,9 +920,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// Empty when no number up to 999 works, such as when another trigger fires inside the part
         /// every copy shares.
         /// </summary>
-        internal static string SuggestCopyTrigger(string trigger, IEnumerable<string> triggers, bool wordMode)
+        internal static string SuggestCopyTrigger(string trigger, IEnumerable<string> triggers, bool wordMode, bool caseSensitive = true)
         {
-            var taken = new TextExpanderTriggerSet(triggers);
+            var taken = new TextExpanderTriggerSet(triggers, caseSensitive);
+            StringComparison comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
             int insertAt = 0;
             while (insertAt < trigger.Length && !char.IsLetterOrDigit(trigger[insertAt]))
@@ -928,7 +958,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string rest = trigger[(insertAt + digits)..];
 
             // Every copy contains the part after the number, so only these can contain a copy.
-            List<string> containingRest = taken.Triggers.Where(other => other.Contains(rest, StringComparison.Ordinal)).ToList();
+            List<string> containingRest = taken.Triggers.Where(other => other.Contains(rest, comparison)).ToList();
 
             // From the next number to 999, then from 2.
             for (int i = 0; i < 998; i++)
@@ -951,7 +981,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     continue;
                 }
 
-                if (!BlocksAnother(candidate, containingRest, taken, wordMode))
+                if (!BlocksAnother(candidate, containingRest, taken, wordMode, comparison))
                 {
                     return candidate;
                 }
@@ -965,12 +995,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// it isn't taken and, by the engine's rules in the given mode, it can fire and doesn't keep
         /// another trigger from firing.
         /// </summary>
-        internal static bool CanFireAlongside(string candidate, IEnumerable<string> triggers, bool wordMode)
+        internal static bool CanFireAlongside(string candidate, IEnumerable<string> triggers, bool wordMode, bool caseSensitive = true)
         {
-            var taken = new TextExpanderTriggerSet(triggers);
+            var taken = new TextExpanderTriggerSet(triggers, caseSensitive);
+            StringComparison comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
             return !taken.Contains(candidate)
                 && TextExpanderTriggerReach.FindBlocker(candidate, taken, wordMode) is null
-                && !BlocksAnother(candidate, taken.Triggers.Where(other => other.Contains(candidate, StringComparison.Ordinal)).ToList(), taken, wordMode);
+                && !BlocksAnother(candidate, taken.Triggers.Where(other => other.Contains(candidate, comparison)).ToList(), taken, wordMode, comparison);
         }
 
         /// <summary>
@@ -978,7 +1009,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// while one of <paramref name="longer"/> is being typed. <paramref name="taken"/> is
         /// changed only while this runs.
         /// </summary>
-        private static bool BlocksAnother(string candidate, List<string> longer, TextExpanderTriggerSet taken, bool wordMode)
+        private static bool BlocksAnother(string candidate, List<string> longer, TextExpanderTriggerSet taken, bool wordMode, StringComparison comparison)
         {
             taken.Add(candidate);
             try
@@ -986,9 +1017,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 foreach (string other in longer)
                 {
                     if (other.Length > candidate.Length
-                        && other.Contains(candidate, StringComparison.Ordinal)
+                        && other.Contains(candidate, comparison)
                         && TextExpanderTriggerReach.FindBlocker(other, taken, wordMode) is { } blocker
-                        && blocker.Trigger == candidate)
+                        && string.Equals(blocker.Trigger, candidate, comparison))
                     {
                         return true;
                     }
@@ -1141,10 +1172,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string ElevatedSnippetAccessDeniedMessage() => _getResourceString("TextExpander_ElevatedSnippetAccessDenied");
 
-        private void RaiseFolderRowChanged()
+        private string BackupCopy(string path)
         {
-            OnPropertyChanged(nameof(IsFolderRowVisible));
+            string backup = BackupPath(path);
+            _storageEnvironment.WriteNewFile(backup, _storageEnvironment.ReadAllBytes(path));
+            return backup;
         }
+
+        private string BackupPath(string path)
+        {
+            string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
+            string candidate = $"{path}.backup-{stamp}";
+            for (int suffix = 2; _storageEnvironment.FileExists(candidate); suffix++)
+            {
+                candidate = $"{path}.backup-{stamp}-{suffix}";
+            }
+
+            return candidate;
+        }
+
+        private void WriteAtomically(string path, byte[] bytes, string backup, bool replace)
+        {
+            string folder = Path.GetDirectoryName(path);
+            _storageEnvironment.CreateDirectory(folder);
+
+            string temp = Path.Combine(folder, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+            try
+            {
+                _storageEnvironment.WriteNewFile(temp, bytes);
+                if (replace)
+                {
+                    _storageEnvironment.ReplaceFile(temp, path, backup);
+                }
+                else
+                {
+                    _storageEnvironment.MoveFile(temp, path);
+                }
+            }
+            finally
+            {
+                try
+                {
+                    if (_storageEnvironment.FileExists(temp))
+                    {
+                        _storageEnvironment.DeleteFile(temp);
+                    }
+                }
+                catch (Exception ex) when (IsFileError(ex))
+                {
+                    Logger.LogWarning($"Could not delete temporary Text Expander file '{temp}': {ex.Message}");
+                }
+            }
+        }
+
+        private static bool IsFileError(Exception ex)
+            => ex is IOException or UnauthorizedAccessException or System.Security.SecurityException
+                or ArgumentException or NotSupportedException or PathTooLongException;
 
         /// <summary>Gets a value indicating whether the engine's own folder holds the snippet file in use.</summary>
         private bool IsDefaultSnippetsFile()
@@ -1152,7 +1235,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string folder = Path.GetDirectoryName(ResolveSnippetsFile()) ?? string.Empty;
             return string.Equals(
                 Path.TrimEndingDirectorySeparator(folder),
-                Path.TrimEndingDirectorySeparator(_syncEnvironment.DefaultSnippetsFolder),
+                Path.TrimEndingDirectorySeparator(_storageEnvironment.DefaultSnippetsFolder),
                 StringComparison.OrdinalIgnoreCase);
         }
 
@@ -1162,8 +1245,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void DescribeSnippets()
         {
-            var triggers = new TextExpanderTriggerSet();
-            var lastRow = new Dictionary<string, int>(StringComparer.Ordinal);
+            var triggers = new TextExpanderTriggerSet(caseSensitive: CaseSensitive);
+            var lastRow = new Dictionary<string, int>(CaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
             for (int row = 0; row < Snippets.Count; row++)
             {
                 triggers.Add(Snippets[row].Trigger);
@@ -1182,17 +1265,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private void ApplyCaseSensitivityToRows()
+        {
+            foreach (TextExpanderSnippetViewModel snippet in Snippets)
+            {
+                snippet.CaseSensitive = CaseSensitive;
+                snippet.CaseVariantAutomationName = snippet.ShowsCaseVariants
+                    ? string.Format(
+                        CultureInfo.CurrentCulture,
+                        _getResourceString("TextExpander_Row_CaseInsensitiveAutomation"),
+                        snippet.Trigger.ToLowerInvariant(),
+                        snippet.Trigger.ToUpperInvariant())
+                    : string.Empty;
+            }
+        }
+
         private void RaiseSnippetListChanged()
         {
+            ApplyCaseSensitivityToRows();
             DescribeSnippets();
             RefreshSnippetFilter();
             OnPropertyChanged(nameof(HasNoSnippets));
             OnPropertyChanged(nameof(HasSnippetError));
             OnPropertyChanged(nameof(SnippetError));
             OnPropertyChanged(nameof(SnippetsFilePath));
-            OnPropertyChanged(nameof(SnippetsFolderDescription));
+            OnPropertyChanged(nameof(SnippetsFolderPath));
+            OnPropertyChanged(nameof(CanClearSnippets));
 
-            // After SnippetsFilePath, so the OneDrive status has caught up with the new file.
             OnPropertyChanged(nameof(SnippetFileSummary));
         }
 

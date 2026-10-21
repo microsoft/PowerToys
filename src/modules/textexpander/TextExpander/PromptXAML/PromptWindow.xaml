@@ -43,11 +43,22 @@
         </Grid>
 
         <!--  The snippet's question, as the box's header.  -->
-        <TextBox
-            x:Name="Answer"
+        <StackPanel
             Grid.Row="1"
             Margin="24,12,24,24"
-            IsSpellCheckEnabled="False" />
+            Spacing="6">
+            <TextBox
+                x:Name="Answer"
+                IsSpellCheckEnabled="False"
+                TextChanged="Answer_TextChanged" />
+            <TextBlock
+                x:Name="AnswerError"
+                AutomationProperties.LiveSetting="Assertive"
+                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                Style="{ThemeResource CaptionTextBlockStyle}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+        </StackPanel>
 
         <!--  The buttons on Mica, below a line. OK is the default.  -->
         <Grid

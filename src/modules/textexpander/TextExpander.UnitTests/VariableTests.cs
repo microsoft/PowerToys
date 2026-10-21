@@ -65,6 +65,24 @@ public sealed class VariableTests
     }
 
     [TestMethod]
+    public void PromptVariablesPreserveWhetherAnAnswerIsRequired()
+    {
+        var requests = new List<PromptRequest>();
+        (string text, _) = Variables.ExpandWithPromptRequests(
+            "{{prompt:Name}}/{{prompt?:Note}}",
+            request =>
+            {
+                requests.Add(request);
+                return request.Label;
+            });
+
+        Assert.AreEqual("Name/Note", text);
+        Assert.AreEqual(new PromptRequest("Name", Required: true), requests[0]);
+        Assert.AreEqual(new PromptRequest("Note", Required: false), requests[1]);
+        Assert.IsTrue(Variables.NeedsPrompt("{{prompt?:Optional}}"));
+    }
+
+    [TestMethod]
     public void PromptAnswersAreInsertedExactlyAsTyped()
     {
         // Answers are not read for codes: no tab from "\temp", no paste from a typed

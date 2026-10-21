@@ -82,6 +82,32 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void SettingsDefaultToCaseSensitiveMatching()
+        {
+            var settings = new TextExpanderSettings();
+
+            Assert.IsTrue(settings.Properties.CaseSensitive);
+            StringAssert.Contains(settings.ToJsonString(), "\"case_sensitive\":true");
+        }
+
+        [TestMethod]
+        public void CaseSensitivityDefaultsOnAndShowsBothFormsWhenTurnedOff()
+        {
+            File.WriteAllText(_path, "!Hello=Hello");
+            TextExpanderViewModel model = CreateViewModel();
+
+            Assert.IsTrue(model.CaseSensitive);
+            Assert.AreEqual("!Hello", model.Snippets.Single().TriggerDisplay);
+            Assert.IsNull(model.ValidateSnippet(null, "!HELLO", "Another"), "Different capitalization is distinct by default.");
+
+            model.CaseSensitive = false;
+
+            Assert.AreEqual("!hello / !HELLO", model.Snippets.Single().TriggerDisplay);
+            Assert.AreEqual("Duplicate: !Hello", model.ValidateSnippet(null, "!HELLO", "Another"));
+            StringAssert.Contains(model.Snippets.Single().AutomationName, "TextExpander_Row_CaseInsensitiveAutomation");
+        }
+
+        [TestMethod]
         public void ReloadAndSaveRetainCurrentSearchAndRefreshResults()
         {
             File.WriteAllText(_path, "#sig=Your name");
@@ -466,7 +492,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void ElevatedSettingsDoNotResolveReadOrWriteSnippetFiles()
+        public async Task ElevatedSettingsDoNotResolveReadOrWriteSnippetFiles()
         {
             const string expectedContents = "private=snippet";
             File.WriteAllText(_path, expectedContents);
@@ -504,7 +530,7 @@ namespace ViewModelTests
             Assert.IsNull(model.SuggestDuplicateTrigger(0));
 
             model.SnippetsPath = otherFolder;
-            model.BrowseForSnippetsFolderCommand.Execute(null);
+            Assert.IsNull(await model.PickSnippetsFolderAsync());
             Assert.AreEqual(_directory, model.SnippetsPath);
             Assert.AreEqual(0, browseCalls);
             Assert.IsFalse(Directory.Exists(otherFolder));
@@ -524,7 +550,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void BrowseStartsInTheFolderInUseAndCancelKeepsIt()
+        public async Task ChooseFolderStartsInTheFolderInUseAndCancelKeepsIt()
         {
             File.WriteAllText(_path, "hello=world");
             string picked = null;
@@ -535,12 +561,14 @@ namespace ViewModelTests
                 return Task.FromResult(picked);
             });
 
-            model.BrowseForSnippetsFolderCommand.Execute(null);
+            Assert.IsNull(await model.PickSnippetsFolderAsync());
             Assert.AreEqual(_directory, model.SnippetsPath, "Cancel keeps the folder.");
 
             string other = Path.Combine(_directory, "other");
             picked = other;
-            model.BrowseForSnippetsFolderCommand.Execute(null);
+            TextExpanderFolderChange change = await model.PickSnippetsFolderAsync();
+            Assert.IsNotNull(change);
+            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.ReplaceFolder, out _));
             Assert.AreEqual(other, model.SnippetsPath);
 
             CollectionAssert.AreEqual(new[] { _directory, _directory }, starts, "The picker opens at the folder of the snippet file in use.");

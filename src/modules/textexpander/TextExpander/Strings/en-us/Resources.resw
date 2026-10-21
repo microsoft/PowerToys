@@ -74,6 +74,10 @@
     <value>Cancel</value>
     <comment>Button that leaves the answer blank and goes on</comment>
   </data>
+  <data name="Prompt_RequiredError" xml:space="preserve">
+    <value>Enter an answer to continue.</value>
+    <comment>Inline validation shown when a snippet prompt requires an answer and the answer box is empty</comment>
+  </data>
   <data name="Message_Title" xml:space="preserve">
     <value>Text Expander</value>
     <comment>Title of Text Expander's message boxes</comment>

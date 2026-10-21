@@ -15,13 +15,14 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     /// </summary>
     internal sealed class TextExpanderTriggerSet
     {
-        private readonly HashSet<string> _triggers = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _triggers;
         private readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _lookup;
         private readonly Dictionary<int, int> _countByLength = new();
         private int[] _lengths;
 
-        public TextExpanderTriggerSet(IEnumerable<string> triggers = null)
+        public TextExpanderTriggerSet(IEnumerable<string> triggers = null, bool caseSensitive = true)
         {
+            _triggers = new HashSet<string>(caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
             _lookup = _triggers.GetAlternateLookup<ReadOnlySpan<char>>();
             foreach (string trigger in triggers ?? Enumerable.Empty<string>())
             {

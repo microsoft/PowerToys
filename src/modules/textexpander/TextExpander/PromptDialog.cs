@@ -13,6 +13,6 @@ internal static class PromptDialog
     /// <summary>Returns the answer, or null when cancelled, which leaves that spot blank.</summary>
     /// <param name="label">The snippet's question.</param>
     /// <param name="target">The window being typed into; the prompt opens on its screen.</param>
-    public static string? Show(string label, IntPtr target)
-        => PromptHost.TryAsk(label, target, out string? answer) ? answer : ClassicPromptDialog.Show(label);
+    public static string? Show(PromptRequest request, IntPtr target)
+        => PromptHost.TryAsk(request, target, out string? answer) ? answer : ClassicPromptDialog.Show(request);
 }

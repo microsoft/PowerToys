@@ -181,6 +181,15 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             OnContentChanged();
             (int selectionStart, int selectionEnd) = GetSelection();
+            InsertVariableAt(variable, selectionStart, selectionEnd, selectEditablePart);
+        }
+
+        /// <summary>
+        /// Inserts a variable at a selection captured before another control took focus.
+        /// </summary>
+        public void InsertVariableAt(string variable, int selectionStart, int selectionEnd, bool selectEditablePart = true)
+        {
+            OnContentChanged();
             (int start, int end, int selectStart, int selectEnd) = TextExpanderTokenText.PlanInsert(_text, selectionStart, selectionEnd, variable, selectEditablePart);
             Replace(start, end, variable, selectStart, selectEnd);
         }

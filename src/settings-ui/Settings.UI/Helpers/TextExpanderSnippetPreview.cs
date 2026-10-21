@@ -253,7 +253,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         }
 
         /// <summary>The engine's <c>Variables.ValuePattern</c>: every value a snippet can hold, read in one pass from the left.</summary>
-        [GeneratedRegex(@"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt:(?<label>[^}]*))\}\}")]
+        [GeneratedRegex(@"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt\??:(?<label>[^}]*))\}\}")]
         private static partial Regex ValuePattern();
 
         /// <summary>The bubble one match of <see cref="ValuePattern"/> stands for.</summary>

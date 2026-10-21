@@ -13,7 +13,7 @@ public sealed class HostSettingsTests
     public void SettingsShapeParsesWrappedBareAndMalformedValues()
     {
         const string json = """
-            {"properties":{"snippets_path":{"value":"C:\\snips"},"injection_backend":{"value":"type"},"clipboard_threshold_chars":{"value":42},"treat_remaps_as_typing":false,"require_word_boundary":{"value":true},"word_boundary_keeps_space":false}}
+            {"properties":{"snippets_path":{"value":"C:\\snips"},"injection_backend":{"value":"type"},"clipboard_threshold_chars":{"value":42},"treat_remaps_as_typing":false,"require_word_boundary":{"value":true},"word_boundary_keeps_space":false,"case_sensitive":{"value":false}}}
             """;
         HostSettings.Values values = HostSettings.Parse(json);
         Assert.AreEqual("type", values.InjectionBackend);
@@ -21,6 +21,7 @@ public sealed class HostSettingsTests
         Assert.AreEqual(false, values.TreatRemapsAsTyping);
         Assert.AreEqual(true, values.RequireWordBoundary);
         Assert.AreEqual(false, values.WordBoundaryKeepsSpace);
+        Assert.AreEqual(false, values.CaseSensitive);
         Assert.AreEqual(@"C:\snips", values.SnippetsPath);
 
         Assert.AreEqual(9, HostSettings.Parse("{\"properties\":{\"clipboard_threshold_chars\":\"9\"}}").ClipboardThresholdChars);
@@ -56,6 +57,7 @@ public sealed class HostSettingsTests
             Assert.IsNull(parsed.InjectionBackend);
             Assert.IsNull(parsed.ClipboardThresholdChars);
             Assert.IsNull(parsed.TreatRemapsAsTyping);
+            Assert.IsNull(parsed.CaseSensitive);
         }
     }
 
@@ -107,5 +109,13 @@ public sealed class HostSettingsTests
         HostSettings.Values required = HostSettings.Parse("{\"properties\":{\"require_word_boundary\":{\"value\":true}}}");
         Assert.AreEqual(true, required.RequireWordBoundary);
         Assert.IsNull(HostSettings.Parse("{\"properties\":{}}").RequireWordBoundary);
+    }
+
+    [TestMethod]
+    public void CaseSensitivityParsesWrappedAndBareValues()
+    {
+        Assert.AreEqual(false, HostSettings.Parse("{\"properties\":{\"case_sensitive\":{\"value\":false}}}").CaseSensitive);
+        Assert.AreEqual(true, HostSettings.Parse("{\"properties\":{\"case_sensitive\":true}}").CaseSensitive);
+        Assert.IsNull(HostSettings.Parse("{\"properties\":{}}").CaseSensitive);
     }
 }

@@ -218,7 +218,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// editing the one the user is looking at.
         /// </para>
         /// </summary>
-        public Entry Upsert(int? id, string trigger, string replacement)
+        public Entry Upsert(int? id, string trigger, string replacement, bool caseSensitive = true)
         {
             ArgumentException.ThrowIfNullOrEmpty(trigger);
             ArgumentNullException.ThrowIfNull(replacement);
@@ -238,7 +238,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             if (id is null)
             {
-                if (FindDuplicate(trigger, ignoringId: null) is not null)
+                if (FindDuplicate(trigger, ignoringId: null, caseSensitive) is not null)
                 {
                         throw new InvalidOperationException($"Another snippet already uses '{trigger}'.");
                 }
@@ -253,7 +253,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 throw new InvalidOperationException($"Snippet {id.Value} is no longer in this file.");
             }
 
-            if (FindDuplicate(trigger, ignoringId: id.Value) is not null)
+            if (FindDuplicate(trigger, ignoringId: id.Value, caseSensitive) is not null)
             {
                     throw new InvalidOperationException($"Another snippet already uses '{trigger}'.");
             }
@@ -298,8 +298,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// case this check exists for.
         /// </para>
         /// </summary>
-        public Entry FindDuplicate(string trigger, int? ignoringId = null)
+        public Entry FindDuplicate(string trigger, int? ignoringId = null, bool caseSensitive = true)
         {
+            StringComparison comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
             foreach (Entry entry in _entries)
             {
                 if (ignoringId is not null && entry.Id == ignoringId.Value)
@@ -307,7 +308,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         continue;
                 }
 
-                if (string.Equals(entry.Trigger, trigger, StringComparison.Ordinal))
+                if (string.Equals(entry.Trigger, trigger, comparison))
                 {
                         return entry;
                 }

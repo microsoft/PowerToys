@@ -47,6 +47,19 @@ public sealed class PromptTests
     }
 
     [TestMethod]
+    public void RequiredPromptsRejectBlankAnswersAndOptionalPromptsAllowThem()
+    {
+        var required = new PromptRequest("Name", Required: true);
+        var optional = new PromptRequest("Note", Required: false);
+
+        Assert.IsFalse(PromptText.HasRequiredAnswer(required, string.Empty));
+        Assert.IsFalse(PromptText.HasRequiredAnswer(required, "   "));
+        Assert.IsTrue(PromptText.HasRequiredAnswer(required, "Ada"));
+        Assert.IsTrue(PromptText.HasRequiredAnswer(optional, string.Empty));
+        Assert.AreEqual("Enter an answer to continue.", PromptText.RequiredError);
+    }
+
+    [TestMethod]
     public void PromptsAreAskedOneAtATimeInOrderAndACancelBlanksOnlyItsSpot()
     {
         var asked = new List<string>();

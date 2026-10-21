@@ -18,6 +18,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _summary;
         private TextExpanderRowDescription _description;
         private double _keycapColumnWidth = TextExpanderKeycapLayout.MinWidth;
+        private bool _caseSensitive = true;
+        private string _caseVariantAutomationName = string.Empty;
 
         public TextExpanderSnippetViewModel(int id, string trigger, string replacement)
         {
@@ -90,7 +92,46 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool HasWarning => _description?.Warning != null;
 
         /// <summary>Gets what a screen reader says for the row: the trigger, what it does, and any warning.</summary>
-        public string AutomationName => _description?.AutomationName ?? _trigger;
+        public string AutomationName => string.IsNullOrEmpty(_caseVariantAutomationName)
+            ? _description?.AutomationName ?? _trigger
+            : string.Concat(_description?.AutomationName ?? _trigger, ". ", _caseVariantAutomationName);
+
+        public bool CaseSensitive
+        {
+            get => _caseSensitive;
+            set
+            {
+                if (_caseSensitive != value)
+                {
+                    _caseSensitive = value;
+                    OnPropertyChanged(nameof(CaseSensitive));
+                    OnPropertyChanged(nameof(TriggerDisplay));
+                    OnPropertyChanged(nameof(ShowsCaseVariants));
+                }
+            }
+        }
+
+        public string CaseVariantAutomationName
+        {
+            get => _caseVariantAutomationName;
+            set
+            {
+                value ??= string.Empty;
+                if (_caseVariantAutomationName != value)
+                {
+                    _caseVariantAutomationName = value;
+                    OnPropertyChanged(nameof(CaseVariantAutomationName));
+                    OnPropertyChanged(nameof(AutomationName));
+                }
+            }
+        }
+
+        public bool ShowsCaseVariants => !CaseSensitive
+            && !string.Equals(_trigger.ToLowerInvariant(), _trigger.ToUpperInvariant(), StringComparison.Ordinal);
+
+        public string TriggerDisplay => ShowsCaseVariants
+            ? string.Concat(_trigger.ToLowerInvariant(), " / ", _trigger.ToUpperInvariant())
+            : _trigger;
 
         /// <summary>
         /// Gets the stable handle for the underlying entry.
@@ -112,6 +153,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _trigger = value;
                     OnPropertyChanged(nameof(Trigger));
+                    OnPropertyChanged(nameof(TriggerDisplay));
+                    OnPropertyChanged(nameof(ShowsCaseVariants));
                 }
             }
         }

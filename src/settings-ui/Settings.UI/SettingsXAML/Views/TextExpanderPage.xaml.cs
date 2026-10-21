@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private int _editingRevision;
         private bool _keycapColumnUpdateQueued;
         private TextBlock _triggerMeasure;
+        private (int Start, int End) _promptInsertionSelection;
 
         public TextExpanderPage()
         {
@@ -61,14 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _replacementEditor.TextChanged += (_, _) => UpdateDateFormatGuide();
             _replacementEditor.SelectionChanged += (_, _) => UpdateDateFormatGuide();
 
-            // The OneDrive folder watcher reports on a worker thread.
             var dispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-            ViewModel.Sync.Dispatch = action => dispatcher.TryEnqueue(() => action());
-            ViewModel.Sync.Announcement += Sync_Announcement;
-            ViewModel.Sync.PropertyChanged += Sync_PropertyChanged;
-
-            // Leaving the page ends an unfinished setup, so the toggle shows Off next time.
-            Unloaded += (_, _) => ViewModel.Sync.LeaveSetup(pageClosing: true);
 
             // While shown, the list picks up the starter snippets the engine writes when it first starts.
             Loaded += (_, _) => ViewModel.Dispatch = action => dispatcher.TryEnqueue(() => action());
@@ -79,12 +73,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Unloaded += (_, _) => _uiSettings.ColorValuesChanged -= UISettings_ColorValuesChanged;
             SnippetDialog.Opened += (_, _) => _replacementEditor.Recolor();
 
-            // Lets the collapsed summary of where snippets are saved say whether it syncs with
-            // OneDrive. Reads no OneDrive file content and does nothing while elevated.
-            ViewModel.Sync.RefreshStatus();
-
             // The keycap column fits the triggers on show, so it follows the list and the search.
             ViewModel.FilteredSnippets.CollectionChanged += (_, _) => QueueKeycapColumnUpdate();
+            ViewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(TextExpanderViewModel.CaseSensitive))
+                {
+                    QueueKeycapColumnUpdate();
+                }
+            };
             QueueKeycapColumnUpdate();
 
             // The editor's discard prompt gets the same inset as Good to know.
@@ -181,7 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
 
                 var item = new MenuFlyoutItem { Tag = variable.Token };
-                item.Click += InsertVariable_Click;
+                item.Click += variable.IsPrompt ? ConfigurePromptVariable_Click : InsertVariable_Click;
                 VariableFlyout.Items.Add(item);
                 _variableItems.Add((item, variable));
             }
@@ -321,6 +318,69 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             FocusAfterLayout(ReplacementBox);
         }
 
+        private void ConfigurePromptVariable_Click(object sender, RoutedEventArgs e)
+        {
+            _promptInsertionSelection = _replacementEditor.Selection;
+            PromptQuestionBox.Text = string.Empty;
+            PromptRequireAnswer.IsChecked = true;
+            PromptQuestionError.Visibility = Visibility.Collapsed;
+            PromptVariableBuilder.Visibility = Visibility.Visible;
+            FocusAfterLayout(PromptQuestionBox);
+        }
+
+        private void PromptQuestionBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string question = PromptQuestionBox.Text?.Trim() ?? string.Empty;
+            bool hasClosingBrace = question.Contains('}');
+            InsertPromptVariableButton.IsEnabled = question.Length > 0 && !hasClosingBrace;
+
+            if (hasClosingBrace)
+            {
+                PromptQuestionError.Text = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_PromptBuilder_InvalidQuestion");
+                PromptQuestionError.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PromptQuestionError.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void PromptQuestionBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == global::Windows.System.VirtualKey.Enter)
+            {
+                e.Handled = true;
+                InsertPromptVariable_Click(sender, e);
+            }
+        }
+
+        private void InsertPromptVariable_Click(object sender, RoutedEventArgs e)
+        {
+            string question = PromptQuestionBox.Text?.Trim() ?? string.Empty;
+            if (question.Length == 0 || question.Contains('}'))
+            {
+                PromptQuestionError.Text = ResourceLoaderInstance.ResourceLoader.GetString(
+                    question.Length == 0 ? "TextExpander_PromptBuilder_QuestionRequired" : "TextExpander_PromptBuilder_InvalidQuestion");
+                PromptQuestionError.Visibility = Visibility.Visible;
+                FocusAfterLayout(PromptQuestionBox);
+                return;
+            }
+
+            string token = string.Format(
+                CultureInfo.InvariantCulture,
+                PromptRequireAnswer.IsChecked == false ? "{{{{prompt?:{0}}}}}" : "{{{{prompt:{0}}}}}",
+                question);
+            _replacementEditor.InsertVariableAt(token, _promptInsertionSelection.Start, _promptInsertionSelection.End, selectEditablePart: false);
+            PromptVariableBuilder.Visibility = Visibility.Collapsed;
+            FocusAfterLayout(ReplacementBox);
+        }
+
+        private void CancelPromptVariable_Click(object sender, RoutedEventArgs e)
+        {
+            PromptVariableBuilder.Visibility = Visibility.Collapsed;
+            FocusAfterLayout(ReplacementBox);
+        }
+
         private async void AddSnippet_Click(object sender, RoutedEventArgs e)
         {
             if (!ViewModel.CanEditSnippets)
@@ -364,6 +424,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void ReloadSnippets_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.LoadSnippets();
+            if (!ViewModel.HasSnippetError)
+            {
+                SnippetStatus.Text = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_Reloaded");
+                Announce(SnippetStatus, "textExpanderSnippetFileReloaded");
+            }
         }
 
         private async void EditSnippet_Click(object sender, RoutedEventArgs e)
@@ -466,6 +531,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _allowDialogClose = false;
             ShowDiscardWarning = false;
             _lastEditedField = TriggerBox;
+            PromptVariableBuilder.Visibility = Visibility.Collapsed;
             SnippetStatus.Text = string.Empty;
             TriggerBox.Text = trigger ?? string.Empty;
             _replacementEditor.SetText(replacement ?? string.Empty);
@@ -554,30 +620,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 activityId);
         }
 
-        private void Sync_Announcement(object sender, string message)
-        {
-            // From the expander, which is there whether it's open or not and whatever shows under the
-            // toggle: turning sync off leaves no message on screen, and a wait can end while it's closed.
-            Announce(SnippetFileExpander, message, "textExpanderSyncChanged");
-        }
-
-        private void Sync_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName != nameof(TextExpanderSyncViewModel.IsSynced) || XamlRoot == null)
-            {
-                return;
-            }
-
-            // The step the user was on has just been collapsed, for example when OneDrive delivered
-            // the file while they waited. Keep keyboard focus in the box, on the toggle.
-            object focused = FocusManager.GetFocusedElement(XamlRoot);
-            if (ReferenceEquals(focused, SyncCancelButton) || ReferenceEquals(focused, SyncNotFoundChooseButton) || ReferenceEquals(focused, SyncFirstPcInsteadButton)
-                || ReferenceEquals(focused, SyncUseFoundButton) || ReferenceEquals(focused, SyncUseCandidateButton) || ReferenceEquals(focused, SyncCopyButton))
-            {
-                FocusAfterLayout(SyncToggle);
-            }
-        }
-
         private void FocusAfterLayout(Control control)
         {
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => control.Focus(FocusState.Programmatic));
@@ -598,7 +640,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 // Only the triggers that can be widest are measured, not every row.
                 ViewModel.KeycapColumnWidth = TextExpanderKeycapLayout.ColumnWidth(
-                    TextExpanderKeycapLayout.WidestTriggers(ViewModel.FilteredSnippets.Select(snippet => snippet.Trigger)).Select(MeasureTrigger));
+                    TextExpanderKeycapLayout.WidestTriggers(ViewModel.FilteredSnippets.Select(snippet => snippet.TriggerDisplay)).Select(MeasureTrigger));
             });
         }
 
@@ -644,129 +686,136 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             control.Loaded += OnLoaded;
         }
 
-        private void SnippetFileExpander_Expanded(object sender, EventArgs e)
+        private async void ChooseSnippetsFolder_Click(object sender, RoutedEventArgs e)
         {
-            if (!ViewModel.CanEditSnippets)
+            TextExpanderFolderChange change = await ViewModel.PickSnippetsFolderAsync();
+            if (change != null)
             {
-                SnippetFileExpander.IsExpanded = false;
+                await ApplyFolderChangeAsync(change);
+            }
+        }
+
+        private async Task ApplyFolderChangeAsync(TextExpanderFolderChange change)
+        {
+            TextExpanderFolderConflictChoice choice = TextExpanderFolderConflictChoice.ReplaceFolder;
+            if (change.HasExistingFile)
+            {
+                TextExpanderFolderConflictChoice? selected = await ConfirmFolderConflictAsync(change);
+                if (!selected.HasValue)
+                {
+                    return;
+                }
+
+                choice = selected.Value;
+            }
+
+            string error = ViewModel.ApplyFolderChange(change, choice, out string backup);
+            if (error != null)
+            {
+                await ShowStorageErrorAsync(error);
                 return;
             }
 
-            // Status only. OneDrive files are read once the user turns Sync across PCs on.
-            ViewModel.Sync.RefreshStatus();
+            ReportStorageChange(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_Changed"),
+                    ViewModel.SnippetsFilePath),
+                backup);
         }
 
-        private void SnippetFileExpander_Collapsed(object sender, EventArgs e)
+        private async Task<TextExpanderFolderConflictChoice?> ConfirmFolderConflictAsync(TextExpanderFolderChange change)
         {
-            ViewModel.Sync.LeaveSetup(pageClosing: false);
-        }
-
-        /// <summary>
-        /// Runs what the user's flip of Sync across PCs asks for, then shows the real state: Off
-        /// after a cancelled or failed start, On after a cancelled stop. The toggle is bound one
-        /// way, and the view model ignores flips that only mirror its state, so showing the state
-        /// never starts a flow again.
-        /// </summary>
-        private async void SyncToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            switch (ViewModel.Sync.UserToggled(SyncToggle.IsOn))
-            {
-                case TextExpanderSyncToggleAction.ShowSetup:
-                    FocusAfterLayout(SyncSetupKind);
-                    break;
-
-                case TextExpanderSyncToggleAction.ConfirmStop:
-                    if (await ConfirmStopSyncingAsync())
-                    {
-                        ViewModel.Sync.StopSyncing();
-                    }
-
-                    break;
-            }
-
-            if (SyncToggle.IsOn != ViewModel.Sync.IsSyncOn)
-            {
-                SyncToggle.IsOn = ViewModel.Sync.IsSyncOn;
-            }
-        }
-
-        private async Task<bool> ConfirmStopSyncingAsync()
-        {
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            var resources = ResourceLoaderInstance.ResourceLoader;
             var confirm = new ContentDialog
             {
                 XamlRoot = XamlRoot,
-                Title = resourceLoader.GetString("TextExpander_Sync_StopDialog_Title"),
-                Content = ViewModel.Sync.DescribeStopSyncing(),
-                PrimaryButtonText = resourceLoader.GetString("TextExpander_Sync_StopDialog_PrimaryButtonText"),
-                CloseButtonText = resourceLoader.GetString("TextExpander_Sync_StopDialog_CloseButtonText"),
+                Title = resources.GetString("TextExpander_SnippetFolder_Conflict_Title"),
+                Content = new TextBlock
+                {
+                    Text = string.Format(
+                        CultureInfo.CurrentCulture,
+                        resources.GetString("TextExpander_SnippetFolder_Conflict_Message"),
+                        change.FilePath),
+                    TextWrapping = TextWrapping.Wrap,
+                    IsTextSelectionEnabled = true,
+                },
+                PrimaryButtonText = resources.GetString("TextExpander_SnippetFolder_Conflict_Use"),
+                SecondaryButtonText = resources.GetString("TextExpander_SnippetFolder_Conflict_Replace"),
+                CloseButtonText = resources.GetString("TextExpander_Dialog_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
             };
 
-            return await confirm.ShowAsync() == ContentDialogResult.Primary;
-        }
-
-        private void SyncCopy_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel.CanEditSnippets && ViewModel.Sync.CopyToOneDrive() == null)
+            return await confirm.ShowAsync() switch
             {
-                FocusAfterLayout(SyncToggle);
-            }
+                ContentDialogResult.Primary => TextExpanderFolderConflictChoice.UseFolder,
+                ContentDialogResult.Secondary => TextExpanderFolderConflictChoice.ReplaceFolder,
+                _ => null,
+            };
         }
 
-        private void SyncUseFound_Click(object sender, RoutedEventArgs e)
+        private async void ClearSnippets_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.CanEditSnippets && ViewModel.Sync.UseFoundSnippets() == null)
-            {
-                FocusAfterLayout(SyncToggle);
-            }
-        }
-
-        private void SyncUseCandidate_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel.CanEditSnippets && ViewModel.Sync.UseSelectedCandidate() == null)
-            {
-                FocusAfterLayout(SyncToggle);
-            }
-        }
-
-        private void SyncCancel_Click(object sender, RoutedEventArgs e)
-        {
-            if (!ViewModel.CanEditSnippets)
+            if (!ViewModel.CanClearSnippets)
             {
                 return;
             }
 
-            ViewModel.Sync.CancelWaiting();
-            FocusAfterLayout(SyncToggle);
-        }
-
-        private async void SyncChooseFolder_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel.CanEditSnippets)
+            var resources = ResourceLoaderInstance.ResourceLoader;
+            var confirm = new ContentDialog
             {
-                await ViewModel.Sync.ChooseDifferentFolderAsync();
-            }
-        }
+                XamlRoot = XamlRoot,
+                Title = resources.GetString("TextExpander_SnippetFolder_ClearDialog_Title"),
+                Content = string.Format(
+                    CultureInfo.CurrentCulture,
+                    resources.GetString("TextExpander_SnippetFolder_ClearDialog_Message"),
+                    ViewModel.SnippetsFilePath),
+                PrimaryButtonText = resources.GetString("TextExpander_SnippetFolder_ClearDialog_PrimaryButtonText"),
+                CloseButtonText = resources.GetString("TextExpander_Dialog_Cancel"),
+                DefaultButton = ContentDialogButton.Close,
+            };
 
-        private void SyncFirstPcInstead_Click(object sender, RoutedEventArgs e)
-        {
-            if (!ViewModel.CanEditSnippets)
+            if (await confirm.ShowAsync() != ContentDialogResult.Primary)
             {
                 return;
             }
 
-            // The link goes away with the state it belongs to; the choice it made has focus next.
-            ViewModel.Sync.SetUpAsFirstPc();
-            FocusAfterLayout(SyncSetupKind);
+            string error = ViewModel.ClearSnippets(out string backup);
+            if (error != null)
+            {
+                await ShowStorageErrorAsync(error);
+                return;
+            }
+
+            ReportStorageChange(resources.GetString("TextExpander_SnippetFolder_Cleared"), backup);
         }
 
-        private void SyncOpenOneDrive_Click(object sender, RoutedEventArgs e)
+        private void ReportStorageChange(string message, string backup)
         {
-            if (ViewModel.CanEditSnippets)
+            if (!string.IsNullOrEmpty(backup))
             {
-                ViewModel.Sync.OpenOneDrive();
+                message += " " + string.Format(
+                    CultureInfo.CurrentCulture,
+                    ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_BackupCreated"),
+                    backup);
             }
+
+            SnippetStatus.Text = message;
+            Announce(SnippetStatus, "textExpanderSnippetStorageChanged");
+        }
+
+        private async Task ShowStorageErrorAsync(string error)
+        {
+            var resources = ResourceLoaderInstance.ResourceLoader;
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = resources.GetString("TextExpander_SnippetFolder_Error_Title"),
+                Content = error,
+                CloseButtonText = resources.GetString("TextExpander_Dialog_Close"),
+                DefaultButton = ContentDialogButton.Close,
+            };
+            await dialog.ShowAsync();
         }
 
         private void SnippetField_Changed(object sender, TextChangedEventArgs e) => Validate();

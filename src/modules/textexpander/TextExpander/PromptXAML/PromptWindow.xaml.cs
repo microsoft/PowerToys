@@ -5,6 +5,7 @@
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics;
@@ -28,14 +29,16 @@ public sealed partial class PromptWindow : Window
     private readonly IntPtr _target;
     private readonly IntPtr _hwnd;
     private readonly Action<string?> _done;
+    private readonly PromptRequest _request;
     private RectInt32 _workArea;
     private bool _finished;
 
     /// <param name="label">The snippet's question.</param>
     /// <param name="target">The window being typed into. The prompt opens on its screen.</param>
     /// <param name="done">Called once, on this thread, with the answer, or with null when cancelled.</param>
-    internal PromptWindow(string label, IntPtr target, Action<string?> done)
+    internal PromptWindow(PromptRequest request, IntPtr target, Action<string?> done)
     {
+        _request = request;
         _target = target;
         _done = done;
         InitializeComponent();
@@ -43,9 +46,11 @@ public sealed partial class PromptWindow : Window
 
         Title = PromptText.Title;
         TitleText.Text = PromptText.Title;
-        Answer.Header = PromptText.Label(label);
+        Answer.Header = PromptText.Label(request.Label);
+        AnswerError.Text = PromptText.RequiredError;
         OkButton.Content = PromptText.OkText;
         CancelButton.Content = PromptText.CancelText;
+        OkButton.IsEnabled = !request.Required;
 
         string icon = Path.Combine(AppContext.BaseDirectory, "app.ico");
         if (File.Exists(icon))
@@ -120,7 +125,7 @@ public sealed partial class PromptWindow : Window
             // OK is the default. A focused button handles Enter itself, so this is everywhere else.
             case VirtualKey.Enter:
                 e.Handled = true;
-                Finish(accepted: true, close: true);
+                TryFinish();
                 break;
 
             case VirtualKey.Escape:
@@ -130,9 +135,31 @@ public sealed partial class PromptWindow : Window
         }
     }
 
-    private void Ok_Click(object sender, RoutedEventArgs e) => Finish(accepted: true, close: true);
+    private void Ok_Click(object sender, RoutedEventArgs e) => TryFinish();
 
     private void Cancel_Click(object sender, RoutedEventArgs e) => Finish(accepted: false, close: true);
+
+    private void Answer_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        bool valid = PromptText.HasRequiredAnswer(_request, Answer.Text);
+        OkButton.IsEnabled = valid;
+        if (valid)
+        {
+            AnswerError.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void TryFinish()
+    {
+        if (!PromptText.HasRequiredAnswer(_request, Answer.Text))
+        {
+            AnswerError.Visibility = Visibility.Visible;
+            Answer.Focus(FocusState.Programmatic);
+            return;
+        }
+
+        Finish(accepted: true, close: true);
+    }
 
     private void Finish(bool accepted, bool close)
     {

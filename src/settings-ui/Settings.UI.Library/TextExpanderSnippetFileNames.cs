@@ -24,8 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string Current = "PowerToysTextExpanderSnippets.txt";
 
         /// <summary>
-        /// The name earlier versions used. It is still read, and never renamed: OneDrive would sync
-        /// the rename to other PCs, and one still running an earlier version would lose its file.
+        /// The name earlier versions used. It is still read, and never renamed: a folder sync
+        /// service could propagate the rename while another PC still runs an earlier version.
         /// </summary>
         public const string Legacy = "snippets.txt";
 

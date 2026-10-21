@@ -22,11 +22,11 @@ internal static class PromptHost
     private static bool _unavailable;
 
     /// <summary>
-    /// Asks <paramref name="label"/> in the prompt window. Returns false when the window can't be
+    /// Asks <paramref name="request"/> in the prompt window. Returns false when the window can't be
     /// shown, so the caller can fall back to the classic box. Otherwise <paramref name="answer"/> is
     /// the answer, or null when the user cancelled.
     /// </summary>
-    public static bool TryAsk(string label, IntPtr target, out string? answer)
+    public static bool TryAsk(PromptRequest request, IntPtr target, out string? answer)
     {
         answer = null;
         DispatcherQueue? dispatcher = EnsureStarted();
@@ -42,7 +42,7 @@ internal static class PromptHost
         {
             try
             {
-                var window = new PromptWindow(label, target, typed =>
+                var window = new PromptWindow(request, target, typed =>
                 {
                     result = typed;
                     done.Set();

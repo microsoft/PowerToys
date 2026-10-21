@@ -171,6 +171,11 @@ internal static class Program
         {
             WordBoundary.KeepTerminator = keepsSpace;
         }
+
+        if (values.CaseSensitive is bool caseSensitive)
+        {
+            _store?.SetCaseSensitive(caseSensitive);
+        }
     }
 
     private static void OnHostSettingsChanged()
@@ -328,7 +333,7 @@ internal static class Program
 
         (string text, int cursor) = Variables.NeedsPrompt(work.Replacement)
             ? ExpandWithPrompts(work.Replacement, work.TargetWindow)
-            : Variables.ExpandWithCursor(work.Replacement, static _ => string.Empty, Clipboard.GetText);
+            : Variables.ExpandWithPromptRequests(work.Replacement, static _ => string.Empty, Clipboard.GetText);
 
         if (work.TargetWindow != IntPtr.Zero && Native.GetForegroundWindow() != work.TargetWindow)
         {
@@ -355,7 +360,7 @@ internal static class Program
         (string Text, int Cursor) expanded;
         try
         {
-            expanded = Variables.ExpandWithCursor(replacement, label => PromptDialog.Show(label, target), Clipboard.GetText);
+            expanded = Variables.ExpandWithPromptRequests(replacement, request => PromptDialog.Show(request, target), Clipboard.GetText);
         }
         finally
         {

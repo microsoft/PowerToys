@@ -19,18 +19,21 @@ internal static class ClassicPromptDialog
     private static Native.WndProc? _wndProcDelegate; // must outlive the class registration
 
     private static IntPtr _editHandle;
+    private static IntPtr _okHandle;
+    private static IntPtr _errorHandle;
     private static string? _result;
     private static bool _closed;
+    private static PromptRequest _request;
 
     /// <summary>Shows the dialog modally. Returns null when cancelled.</summary>
-    public static string? Show(string label)
+    public static string? Show(PromptRequest request)
     {
         // It is laid out in fixed pixels, so let Windows scale it, as it did before the engine
         // became DPI aware for the prompt window.
         IntPtr previous = Native.SetThreadDpiAwarenessContext(Native.DPI_AWARENESS_CONTEXT_UNAWARE);
         try
         {
-            return ShowUnscaled(label);
+            return ShowUnscaled(request);
         }
         finally
         {
@@ -41,18 +44,21 @@ internal static class ClassicPromptDialog
         }
     }
 
-    private static string? ShowUnscaled(string label)
+    private static string? ShowUnscaled(PromptRequest request)
     {
         EnsureClassRegistered();
 
+        _request = request;
         _editHandle = IntPtr.Zero;
+        _okHandle = IntPtr.Zero;
+        _errorHandle = IntPtr.Zero;
         _result = null;
         _closed = false;
 
         IntPtr instance = Native.GetModuleHandleW(null);
 
         const int clientWidth = 400;
-        const int clientHeight = 132;
+        const int clientHeight = 158;
         const int style = Native.WS_OVERLAPPED | Native.WS_CAPTION | Native.WS_SYSMENU;
         const int exStyle = Native.WS_EX_TOPMOST | Native.WS_EX_DLGMODALFRAME
                           | Native.WS_EX_CONTROLPARENT | Native.WS_EX_TOOLWINDOW;
@@ -74,19 +80,22 @@ internal static class ClassicPromptDialog
 
         IntPtr font = Native.GetStockObject(Native.DEFAULT_GUI_FONT);
 
-        IntPtr labelHandle = Native.CreateWindowExW(0, "STATIC", label, Native.WS_CHILD | Native.WS_VISIBLE | Native.SS_LEFT, 14, 14, clientWidth - 28, 20, hwnd, IntPtr.Zero, instance, IntPtr.Zero);
+        IntPtr labelHandle = Native.CreateWindowExW(0, "STATIC", PromptText.Label(request.Label), Native.WS_CHILD | Native.WS_VISIBLE | Native.SS_LEFT, 14, 14, clientWidth - 28, 20, hwnd, IntPtr.Zero, instance, IntPtr.Zero);
 
         _editHandle = Native.CreateWindowExW(Native.WS_EX_CLIENTEDGE, "EDIT", string.Empty, Native.WS_CHILD | Native.WS_VISIBLE | Native.WS_TABSTOP | Native.ES_AUTOHSCROLL, 14, 40, clientWidth - 28, 26, hwnd, new IntPtr(IdEdit), instance, IntPtr.Zero);
 
-        IntPtr okHandle = Native.CreateWindowExW(0, "BUTTON", PromptText.OkText, Native.WS_CHILD | Native.WS_VISIBLE | Native.WS_TABSTOP | Native.BS_DEFPUSHBUTTON, clientWidth - 202, 84, 90, 30, hwnd, new IntPtr(Native.IDOK), instance, IntPtr.Zero);
+        _errorHandle = Native.CreateWindowExW(0, "STATIC", PromptText.RequiredError, Native.WS_CHILD | Native.SS_LEFT, 14, 72, clientWidth - 28, 20, hwnd, IntPtr.Zero, instance, IntPtr.Zero);
 
-        IntPtr cancelHandle = Native.CreateWindowExW(0, "BUTTON", PromptText.CancelText, Native.WS_CHILD | Native.WS_VISIBLE | Native.WS_TABSTOP, clientWidth - 104, 84, 90, 30, hwnd, new IntPtr(Native.IDCANCEL), instance, IntPtr.Zero);
+        _okHandle = Native.CreateWindowExW(0, "BUTTON", PromptText.OkText, Native.WS_CHILD | Native.WS_VISIBLE | Native.WS_TABSTOP | Native.BS_DEFPUSHBUTTON, clientWidth - 202, 110, 90, 30, hwnd, new IntPtr(Native.IDOK), instance, IntPtr.Zero);
 
-        foreach (IntPtr control in new[] { labelHandle, _editHandle, okHandle, cancelHandle })
+        IntPtr cancelHandle = Native.CreateWindowExW(0, "BUTTON", PromptText.CancelText, Native.WS_CHILD | Native.WS_VISIBLE | Native.WS_TABSTOP, clientWidth - 104, 110, 90, 30, hwnd, new IntPtr(Native.IDCANCEL), instance, IntPtr.Zero);
+
+        foreach (IntPtr control in new[] { labelHandle, _editHandle, _errorHandle, _okHandle, cancelHandle })
         {
             Native.SendMessageW(control, Native.WM_SETFONT, font, new IntPtr(1));
         }
 
+        Native.EnableWindow(_okHandle, !request.Required);
         Native.ShowWindow(hwnd, Native.SW_SHOW);
         WindowFocus.Force(hwnd);
         Native.SetFocus(_editHandle);
@@ -96,6 +105,8 @@ internal static class ClassicPromptDialog
         string? result = _result;
         _result = null;
         _editHandle = IntPtr.Zero;
+        _okHandle = IntPtr.Zero;
+        _errorHandle = IntPtr.Zero;
         return result;
     }
 
@@ -120,6 +131,15 @@ internal static class ClassicPromptDialog
             if (result < 0)
             {
                 break;
+            }
+
+            if (msg.Message == Native.WM_KEYDOWN
+                && msg.WParam.ToInt32() == Native.VK_RETURN
+                && !PromptText.HasRequiredAnswer(_request, ReadEditText()))
+            {
+                Native.ShowWindow(_errorHandle, Native.SW_SHOW);
+                Native.SetFocus(_editHandle);
+                continue;
             }
 
             if (Native.IsDialogMessageW(hwnd, ref msg))
@@ -176,9 +196,30 @@ internal static class ClassicPromptDialog
         {
             case Native.WM_COMMAND:
                 int id = (int)(wParam.ToInt64() & 0xFFFF);
+                int notification = (int)((wParam.ToInt64() >> 16) & 0xFFFF);
+                if (id == IdEdit && notification == Native.EN_CHANGE)
+                {
+                    bool valid = PromptText.HasRequiredAnswer(_request, ReadEditText());
+                    Native.EnableWindow(_okHandle, valid);
+                    if (valid)
+                    {
+                        Native.ShowWindow(_errorHandle, Native.SW_HIDE);
+                    }
+
+                    return IntPtr.Zero;
+                }
+
                 if (id == Native.IDOK)
                 {
-                    _result = ReadEditText();
+                    string typed = ReadEditText();
+                    if (!PromptText.HasRequiredAnswer(_request, typed))
+                    {
+                        Native.ShowWindow(_errorHandle, Native.SW_SHOW);
+                        Native.SetFocus(_editHandle);
+                        return IntPtr.Zero;
+                    }
+
+                    _result = typed;
                     Close(hwnd);
                     return IntPtr.Zero;
                 }

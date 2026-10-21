@@ -208,6 +208,7 @@ internal static class Native
     public const int WM_APP = 0x8000;
     public const int WM_USER = 0x0400;
     public const int WM_SETFONT = 0x0030;
+    public const int EN_CHANGE = 0x0300;
     public const int WM_GETTEXT = 0x000D;
     public const int WM_GETTEXTLENGTH = 0x000E;
     public const int WM_SETTEXT = 0x000C;

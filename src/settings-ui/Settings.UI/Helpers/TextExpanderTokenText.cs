@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         private const string Closing = "}}";
 
         /// <summary>Variables whose middle part Insert variable selects, ready to type over.</summary>
-        private static readonly string[] EditablePrefixes = { "{{prompt:", "{{date:" };
+        private static readonly string[] EditablePrefixes = { "{{prompt:", "{{prompt?:", "{{date:" };
 
         /// <summary>Gets the variables in <paramref name="text"/>, in order, as start and end positions.</summary>
         public static IReadOnlyList<(int Start, int End)> FindVariables(string text)
@@ -182,7 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         /// The variables the engine expands, and the cursor marker. Anything else in braces is typed
         /// as it is, so it is left looking like the rest of the text.
         /// </summary>
-        [GeneratedRegex(@"\$\|\$|\{\{(?:date|time|datetime|isodate|clipboard)\}\}|\{\{(?:date|prompt):[^}]*\}\}")]
+        [GeneratedRegex(@"\$\|\$|\{\{(?:date|time|datetime|isodate|clipboard)\}\}|\{\{date:[^}]*\}\}|\{\{prompt\??:[^}]*\}\}")]
         private static partial Regex VariablePattern();
     }
 }

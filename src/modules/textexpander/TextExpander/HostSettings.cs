@@ -51,7 +51,7 @@ internal sealed class HostSettings : IDisposable
     /// The values a host can set. Null means "not specified", so an absent key leaves whatever
     /// the engine already had rather than resetting it to a default the user never chose.
     /// </summary>
-    internal readonly record struct Values(string? SnippetsPath, string? InjectionBackend, int? ClipboardThresholdChars, bool? TreatRemapsAsTyping, bool? RequireWordBoundary, bool? WordBoundaryKeepsSpace);
+    internal readonly record struct Values(string? SnippetsPath, string? InjectionBackend, int? ClipboardThresholdChars, bool? TreatRemapsAsTyping, bool? RequireWordBoundary, bool? WordBoundaryKeepsSpace, bool? CaseSensitive);
 
     public static HostSettings? Create(string[] args)
     {
@@ -136,7 +136,7 @@ internal sealed class HostSettings : IDisposable
                 return default;
             }
 
-            return new Values(ReadString(props, "snippets_path"), ReadString(props, "injection_backend"), ReadInt(props, "clipboard_threshold_chars"), ReadBool(props, "treat_remaps_as_typing"), ReadBool(props, "require_word_boundary"), ReadBool(props, "word_boundary_keeps_space"));
+            return new Values(ReadString(props, "snippets_path"), ReadString(props, "injection_backend"), ReadInt(props, "clipboard_threshold_chars"), ReadBool(props, "treat_remaps_as_typing"), ReadBool(props, "require_word_boundary"), ReadBool(props, "word_boundary_keeps_space"), ReadBool(props, "case_sensitive"));
         }
         catch (JsonException)
         {

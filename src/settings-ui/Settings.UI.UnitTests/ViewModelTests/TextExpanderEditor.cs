@@ -124,11 +124,12 @@ namespace ViewModelTests
         [TestMethod]
         public void VariablesAreTheEngineVariablesAndOnlyTheFirstCursorMarker()
         {
-            const string text = "a {{date}} {{dat}} {{prompt:Name}} $|$ {{clipboard}} $|$ {{date:dd}}";
+            const string text = "a {{date}} {{dat}} {{prompt:Name}} {{prompt?:Note}} $|$ {{clipboard}} $|$ {{date:dd}}";
             (int Start, int End)[] expected =
             {
                 Range(text, "{{date}}"),
                 Range(text, "{{prompt:Name}}"),
+                Range(text, "{{prompt?:Note}}"),
                 Range(text, "$|$"),
                 Range(text, "{{clipboard}}"),
                 Range(text, "{{date:dd}}"),
@@ -168,6 +169,7 @@ namespace ViewModelTests
         public void InsertedQuestionSelectsItsLabelAndCustomDateSelectsItsFormat()
         {
             Assert.AreEqual((14, 5), TextExpanderTokenText.SelectionAfterInsert("{{prompt:Label}}", 5));
+            Assert.AreEqual((15, 5), TextExpanderTokenText.SelectionAfterInsert("{{prompt?:Label}}", 5));
             Assert.AreEqual((7, 4), TextExpanderTokenText.SelectionAfterInsert("{{date:dddd}}", 0));
             Assert.AreEqual((16, 0), TextExpanderTokenText.SelectionAfterInsert("{{clipboard}}", 3));
             Assert.AreEqual((3, 0), TextExpanderTokenText.SelectionAfterInsert("$|$", 0));

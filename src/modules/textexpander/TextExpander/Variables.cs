@@ -20,10 +20,10 @@ internal static partial class Variables
 
     /// <summary>
     /// Every value a snippet can hold, read in one pass from the left: {{date}}, {{time}},
-    /// {{datetime}}, {{isodate}}, {{date:FORMAT}} and {{prompt:Label}}. The Settings preview
+    /// {{datetime}}, {{isodate}}, {{date:FORMAT}}, {{prompt:Label}} and {{prompt?:Label}}. The Settings preview
     /// (<c>TextExpanderSnippetPreview</c>) reads snippets with the same pattern.
     /// </summary>
-    [GeneratedRegex(@"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt:(?<label>[^}]*))\}\}")]
+    [GeneratedRegex(@"\{\{(?:(?<fixed>date|time|datetime|isodate)|date:(?<format>[^}]*)|prompt(?<optional>\?)?:(?<label>[^}]*))\}\}")]
     private static partial Regex ValuePattern();
 
     /// <summary>
@@ -32,7 +32,8 @@ internal static partial class Variables
     /// </summary>
     public static string Expand(string text, Func<string, string?> prompt, Func<string?>? clipboard = null)
     {
-        (string expanded, int cursor) = ExpandWithCursor(text, prompt, clipboard);
+        ArgumentNullException.ThrowIfNull(prompt);
+        (string expanded, int cursor) = ExpandWithPromptRequests(text, request => prompt(request.Label), clipboard);
         return cursor < 0 ? expanded : expanded.Insert(cursor, CursorMarker);
     }
 
@@ -50,6 +51,18 @@ internal static partial class Variables
     /// </returns>
     public static (string Text, int Cursor) ExpandWithCursor(string text, Func<string, string?> prompt, Func<string?>? clipboard = null)
     {
+        ArgumentNullException.ThrowIfNull(prompt);
+        return ExpandWithPromptRequests(text, request => prompt(request.Label), clipboard);
+    }
+
+    /// <summary>
+    /// Expands a snippet while preserving whether each prompt requires a non-empty answer.
+    /// {{prompt:Label}} is required; {{prompt?:Label}} is optional.
+    /// </summary>
+    public static (string Text, int Cursor) ExpandWithPromptRequests(string text, Func<PromptRequest, string?> prompt, Func<string?>? clipboard = null)
+    {
+        ArgumentNullException.ThrowIfNull(prompt);
+
         // The snippet's own text, with each value kept apart from it: dates and answers here, the
         // clipboard below. Only the snippet's text is read for codes: an answer such as "C:\temp"
         // must not gain a tab, a date format that prints "\n" must keep it, and a typed
@@ -125,11 +138,11 @@ internal static partial class Variables
     }
 
     /// <summary>The value one match of <see cref="ValuePattern"/> stands for.</summary>
-    private static string ValueOf(Match match, DateTime now, Func<string, string?> prompt)
+    private static string ValueOf(Match match, DateTime now, Func<PromptRequest, string?> prompt)
     {
         if (match.Groups["label"].Success)
         {
-            return prompt(match.Groups["label"].Value) ?? string.Empty;
+            return prompt(new PromptRequest(match.Groups["label"].Value, Required: !match.Groups["optional"].Success)) ?? string.Empty;
         }
 
         if (match.Groups["format"].Success)
@@ -254,7 +267,7 @@ internal static partial class Variables
 
     /// <summary>True when expanding this snippet requires showing UI.</summary>
     public static bool NeedsPrompt(string text)
-        => text.Contains("{{prompt:", StringComparison.Ordinal);
+        => text.Contains("{{prompt", StringComparison.Ordinal);
 
     /// <summary>True when expansion would incorporate user-supplied prompt or clipboard content.</summary>
     public static bool UsesSensitiveRuntimeInput(string text)

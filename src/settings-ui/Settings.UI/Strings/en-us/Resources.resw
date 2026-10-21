@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -6980,7 +6980,10 @@ Text uses the current drawing color.</value>
     <value>Restart PowerToys without administrator rights to edit snippets.</value>
   </data>
   <data name="TextExpander_SnippetFile.Header" xml:space="preserve">
-    <value>Where your snippets are saved and synced across PCs</value>
+    <value>Save snippets to a folder</value>
+  </data>
+  <data name="TextExpander_SnippetFile.Description" xml:space="preserve">
+    <value>Choose where Text Expander keeps its snippet file. To sync it across devices, choose a folder managed by OneDrive or another sync service.</value>
   </data>
   <data name="TextExpander_SnippetFile_SummaryDefault" xml:space="preserve">
     <value>Saved on this PC · {0} snippets</value>
@@ -7009,290 +7012,78 @@ Text uses the current drawing color.</value>
   <data name="TextExpander_SnippetFile_SummaryElevated" xml:space="preserve">
     <value>Not available while PowerToys runs as administrator</value>
   </data>
-  <data name="TextExpander_Sync.Header" xml:space="preserve">
-    <value>Sync across PCs</value>
+  <data name="TextExpander_SnippetFolder_Current.Header" xml:space="preserve">
+    <value>Current folder</value>
   </data>
-  <data name="TextExpander_Sync.Description" xml:space="preserve">
-    <value>Keep the same snippets on every PC with OneDrive.</value>
-  </data>
-  <data name="TextExpander_Sync_Missing.Title" xml:space="preserve">
-    <value>OneDrive isn't set up on this PC.</value>
-  </data>
-  <data name="TextExpander_Sync_Missing.Message" xml:space="preserve">
-    <value>Sign in to continue. Using another sync app? Set Folder below.</value>
-    <comment>"Folder" is the name of the setting shown just below this message.</comment>
-  </data>
-  <data name="TextExpander_Sync_OpenOneDrive.Content" xml:space="preserve">
-    <value>Open OneDrive</value>
-  </data>
-  <data name="TextExpander_Sync_OnlineOnly.Title" xml:space="preserve">
-    <value>Your snippets file is online-only.</value>
-  </data>
-  <data name="TextExpander_Sync_OnlineOnly.Message" xml:space="preserve">
-    <value>Without internet, Text Expander can't read it.</value>
-  </data>
-  <data name="TextExpander_Sync_KeepCopy.Content" xml:space="preserve">
-    <value>Keep a copy on this PC</value>
-  </data>
-  <data name="TextExpander_Sync_KeepCopyDescription.Text" xml:space="preserve">
-    <value>Same as Always keep on this device in File Explorer.</value>
-    <comment>"Always keep on this device" is the File Explorer command name for OneDrive files.</comment>
-  </data>
-  <data name="TextExpander_Sync_SetupHeading.Text" xml:space="preserve">
-    <value>Where are you setting this up?</value>
-  </data>
-  <data name="TextExpander_Sync_SetupKind.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Where are you setting this up?</value>
-  </data>
-  <data name="TextExpander_Sync_FirstPcOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>This is my first PC</value>
-  </data>
-  <data name="TextExpander_Sync_FirstPc.Text" xml:space="preserve">
-    <value>This is my first PC</value>
-  </data>
-  <data name="TextExpander_Sync_AnotherPcOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>I already set this up on another PC</value>
-  </data>
-  <data name="TextExpander_Sync_AnotherPcOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
-    <value>Use the snippets in OneDrive.</value>
-  </data>
-  <data name="TextExpander_Sync_AnotherPc.Text" xml:space="preserve">
-    <value>I already set this up on another PC</value>
-  </data>
-  <data name="TextExpander_Sync_AnotherPcDescription.Text" xml:space="preserve">
-    <value>Use the snippets in OneDrive.</value>
-  </data>
-  <data name="TextExpander_Sync_AccountHeading.Text" xml:space="preserve">
-    <value>OneDrive account</value>
-  </data>
-  <data name="TextExpander_Sync_Accounts.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>OneDrive account</value>
-  </data>
-  <data name="TextExpander_Sync_Conflict.Message" xml:space="preserve">
-    <value>Choose which to keep.</value>
-  </data>
-  <data name="TextExpander_Sync_ConflictChoices.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Which snippets to keep</value>
-  </data>
-  <data name="TextExpander_Sync_ConflictReplaceOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
-    <value>OneDrive's copy is kept as a backup.</value>
-  </data>
-  <data name="TextExpander_Sync_ConflictReplaceDescription.Text" xml:space="preserve">
-    <value>OneDrive's copy is kept as a backup.</value>
-  </data>
-  <data name="TextExpander_Sync_ConflictKeepBothOption.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Keep both</value>
-  </data>
-  <data name="TextExpander_Sync_ConflictKeepBoth.Text" xml:space="preserve">
-    <value>Keep both</value>
-  </data>
-  <data name="TextExpander_Sync_UseFound.Content" xml:space="preserve">
-    <value>Use these snippets</value>
-  </data>
-  <data name="TextExpander_Sync_FoundLocation" xml:space="preserve">
-    <value>Location: {0}</value>
-    <comment>{0} is where the snippet file found in OneDrive is, down to its file name, such as "OneDrive - Contoso › PowerToys › TextExpander › snippets.txt".</comment>
-  </data>
-  <data name="TextExpander_Sync_ChooseFolder.Content" xml:space="preserve">
-    <value>Choose a different folder in OneDrive…</value>
-  </data>
-  <data name="TextExpander_Sync_FoundInOneDrive.Text" xml:space="preserve">
-    <value>Found in OneDrive</value>
-    <comment>Heading over a list of snippet files found in the user's OneDrive</comment>
-  </data>
-  <data name="TextExpander_Sync_Candidates.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Snippet files found in OneDrive</value>
-  </data>
-  <data name="TextExpander_Sync_CandidateDetails" xml:space="preserve">
-    <value>{0} snippets · {1}</value>
-    <comment>{0} is a number of snippets in a file; {1} is the date the file last changed, such as "October 18"</comment>
-  </data>
-  <data name="TextExpander_Sync_CandidateDetails_One" xml:space="preserve">
-    <value>{0} snippet · {1}</value>
-    <comment>{0} is 1; {1} is the date the file last changed, such as "October 18"</comment>
-  </data>
-  <data name="TextExpander_Sync_AnnounceSearchFound" xml:space="preserve">
-    <value>Found {0} snippet files in OneDrive.</value>
-  </data>
-  <data name="TextExpander_Sync_AnnounceSearchFound_One" xml:space="preserve">
-    <value>Found {0} snippet file in OneDrive.</value>
-  </data>
-  <data name="TextExpander_Sync_WaitingTitle.Text" xml:space="preserve">
-    <value>Looking for your snippets in OneDrive…</value>
-    <comment>Shown with a spinner while Text Expander checks the usual folder and then searches the user's OneDrive</comment>
-  </data>
-  <data name="TextExpander_Sync_NotFound.Text" xml:space="preserve">
-    <value>Couldn't find your snippets in OneDrive</value>
-  </data>
-  <data name="TextExpander_Sync_NotFoundMessage" xml:space="preserve">
-    <value>Text Expander checked the default location and searched your OneDrive. If OneDrive is still downloading them, Text Expander will start using them when they arrive.</value>
-    <comment>"them" is the user's snippets, from the heading "Couldn't find your snippets in OneDrive"</comment>
-  </data>
-  <data name="TextExpander_Sync_NotFoundChosenMessage" xml:space="preserve">
-    <value>Text Expander checked the folder you chose. If OneDrive is still downloading them, Text Expander will start using them when they arrive.</value>
-    <comment>"them" is the user's snippets, from the heading "Couldn't find your snippets in OneDrive"</comment>
-  </data>
-  <data name="TextExpander_Sync_WaitingDefaultLocation" xml:space="preserve">
-    <value>Default location: {0}</value>
-    <comment>{0} is the OneDrive folder where the snippets are normally kept, such as "OneDrive - Contoso › PowerToys › TextExpander".</comment>
-  </data>
-  <data name="TextExpander_Sync_WaitingLocation" xml:space="preserve">
-    <value>Location: {0}</value>
-    <comment>{0} is the OneDrive folder the user chose, such as "OneDrive - Contoso › Snippets".</comment>
-  </data>
-  <data name="TextExpander_Sync_ChooseFolderButton.Content" xml:space="preserve">
+  <data name="TextExpander_SnippetFolder_Choose.Content" xml:space="preserve">
     <value>Choose folder…</value>
-    <comment>Button that opens a folder picker to choose where the snippets are in OneDrive</comment>
   </data>
-  <data name="TextExpander_Sync_FirstPcInstead.Content" xml:space="preserve">
-    <value>Set up as my first PC instead</value>
+  <data name="TextExpander_SnippetFolder_Reload.Header" xml:space="preserve">
+    <value>Reload file</value>
   </data>
-  <data name="TextExpander_Sync_AnnounceNotFound" xml:space="preserve">
-    <value>Couldn't find your snippets in OneDrive.</value>
+  <data name="TextExpander_SnippetFolder_Reload.Description" xml:space="preserve">
+    <value>Read the active file again after another device, app, or text editor changes it.</value>
   </data>
-  <data name="TextExpander_Sync_CancelWaiting.Content" xml:space="preserve">
+  <data name="TextExpander_SnippetFolder_ReloadButton.Content" xml:space="preserve">
+    <value>Reload</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_Clear.Header" xml:space="preserve">
+    <value>Clear all snippets</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_Clear.Description" xml:space="preserve">
+    <value>Back up the active file, then remove every snippet from it.</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_ClearButton.Content" xml:space="preserve">
+    <value>Clear snippets</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_Conflict_Title" xml:space="preserve">
+    <value>This folder already has a snippet file</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_Conflict_Message" xml:space="preserve">
+    <value>{0} already exists. Use that file, or replace it with the snippets currently open on this PC. Text Expander creates a backup before either existing file is replaced or left behind.</value>
+    <comment>{0} is the full path to the snippet file in the selected folder.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_Conflict_Use" xml:space="preserve">
+    <value>Use folder file</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_Conflict_Replace" xml:space="preserve">
+    <value>Replace folder file</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_ClearDialog_Title" xml:space="preserve">
+    <value>Are you sure you want to clear all snippets?</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_ClearDialog_Message" xml:space="preserve">
+    <value>Text Expander will back up {0}, then clear the active file. You can restore the backup manually if needed.</value>
+    <comment>{0} is the full path to the active snippet file.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_ClearDialog_PrimaryButtonText" xml:space="preserve">
+    <value>Clear snippets</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_Changed" xml:space="preserve">
+    <value>Snippet folder changed. The active file is {0}.</value>
+    <comment>{0} is the full path to the active snippet file.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_Cleared" xml:space="preserve">
+    <value>All snippets were cleared.</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_Reloaded" xml:space="preserve">
+    <value>Reloaded the active snippet file.</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_BackupCreated" xml:space="preserve">
+    <value>Backup created at {0}.</value>
+    <comment>{0} is the full path to the backup file.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_Error_Title" xml:space="preserve">
+    <value>Couldn't update the snippet file</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_FileAppeared" xml:space="preserve">
+    <value>A snippet file appeared in that folder after you chose it. Choose the folder again so you can decide which file to keep.</value>
+  </data>
+  <data name="TextExpander_Dialog_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="TextExpander_Sync_AccountPersonal" xml:space="preserve">
-    <value>OneDrive – Personal</value>
-  </data>
-  <data name="TextExpander_Sync_AccountWork" xml:space="preserve">
-    <value>OneDrive – {0} (work or school)</value>
-    <comment>{0} is the organization name from the OneDrive folder, such as Contoso.</comment>
-  </data>
-  <data name="TextExpander_Sync_AccountWorkUnnamed" xml:space="preserve">
-    <value>OneDrive – Work or school</value>
-  </data>
-  <data name="TextExpander_Sync_AccountGeneric" xml:space="preserve">
-    <value>OneDrive</value>
-  </data>
-  <data name="TextExpander_Sync_FirstPcDescription" xml:space="preserve">
-    <value>Copy my {0} snippets to OneDrive.</value>
-    <comment>{0} is the number of snippets, two or more, or zero.</comment>
-  </data>
-  <data name="TextExpander_Sync_FirstPcDescription_One" xml:space="preserve">
-    <value>Copy my {0} snippet to OneDrive.</value>
-    <comment>{0} is the number 1.</comment>
-  </data>
-  <data name="TextExpander_Sync_CopyButton" xml:space="preserve">
-    <value>Copy my snippets to OneDrive</value>
-  </data>
-  <data name="TextExpander_Sync_ContinueButton" xml:space="preserve">
-    <value>Continue</value>
-  </data>
-  <data name="TextExpander_Sync_ConflictTitle" xml:space="preserve">
-    <value>OneDrive already has {0} snippets.</value>
-    <comment>{0} is the number of snippets, two or more, or zero.</comment>
-  </data>
-  <data name="TextExpander_Sync_ConflictTitle_One" xml:space="preserve">
-    <value>OneDrive already has {0} snippet.</value>
-    <comment>{0} is the number 1.</comment>
-  </data>
-  <data name="TextExpander_Sync_ConflictUse" xml:space="preserve">
-    <value>Use the {0} snippets in OneDrive</value>
-    <comment>{0} is the number of snippets in OneDrive, two or more, or zero.</comment>
-  </data>
-  <data name="TextExpander_Sync_ConflictUse_One" xml:space="preserve">
-    <value>Use the {0} snippet in OneDrive</value>
-    <comment>{0} is the number 1.</comment>
-  </data>
-  <data name="TextExpander_Sync_ConflictReplace" xml:space="preserve">
-    <value>Replace with this PC's {0} snippets</value>
-    <comment>{0} is the number of snippets on this PC, two or more, or zero.</comment>
-  </data>
-  <data name="TextExpander_Sync_ConflictReplace_One" xml:space="preserve">
-    <value>Replace with this PC's {0} snippet</value>
-    <comment>{0} is the number 1.</comment>
-  </data>
-  <data name="TextExpander_Sync_ConflictKeepBothDescription" xml:space="preserve">
-    <value>Use OneDrive's file, and save this PC's as {0}.</value>
-    <comment>{0} is a file name such as "PowerToysTextExpanderSnippets (DESKTOP-1234).txt" or "snippets (DESKTOP-1234).txt".</comment>
-  </data>
-  <data name="TextExpander_Sync_Found" xml:space="preserve">
-    <value>Found your snippets in {0}: {1} snippets, changed {2} at {3}.</value>
-    <comment>{0} is the OneDrive account name, {1} the number of snippets, {2} the date, {3} the time.</comment>
-  </data>
-  <data name="TextExpander_Sync_Found_One" xml:space="preserve">
-    <value>Found your snippets in {0}: {1} snippet, changed {2} at {3}.</value>
-    <comment>{0} is the OneDrive account name, {1} the number 1, {2} the date, {3} the time.</comment>
-  </data>
-  <data name="TextExpander_Sync_Synced" xml:space="preserve">
-    <value>Syncing with {0} · {1} snippets</value>
-    <comment>{0} is the OneDrive account name, {1} the number of snippets.</comment>
-  </data>
-  <data name="TextExpander_Sync_Synced_One" xml:space="preserve">
-    <value>Syncing with {0} · {1} snippet</value>
-    <comment>{0} is the OneDrive account name, {1} the number 1.</comment>
-  </data>
-  <data name="TextExpander_Sync_SyncedCountUnavailable" xml:space="preserve">
-    <value>Syncing with {0}</value>
-    <comment>{0} is the OneDrive account name. Shown when the snippet file can't be read, so there is no count.</comment>
-  </data>
-  <data name="TextExpander_Sync_NoAccount" xml:space="preserve">
-    <value>Choose a OneDrive account first.</value>
-  </data>
-  <data name="TextExpander_Sync_ChooseWhichToKeep" xml:space="preserve">
-    <value>OneDrive already has snippets. Choose which to keep, then select Continue.</value>
-  </data>
-  <data name="TextExpander_Sync_FolderOutsideOneDrive" xml:space="preserve">
-    <value>That folder isn't in OneDrive. Choose a folder inside OneDrive.</value>
-  </data>
-  <data name="TextExpander_Sync_FileMissing" xml:space="preserve">
-    <value>Your snippets are no longer in that OneDrive folder.</value>
-  </data>
-  <data name="TextExpander_Sync_AnnounceCopied" xml:space="preserve">
-    <value>Your snippets are now syncing with {0}.</value>
-    <comment>{0} is the OneDrive account name.</comment>
-  </data>
-  <data name="TextExpander_Sync_AnnounceUsing" xml:space="preserve">
-    <value>Text Expander now uses the snippets in {0}.</value>
-    <comment>{0} is the OneDrive account name.</comment>
-  </data>
-  <data name="TextExpander_Sync_AnnounceArrived" xml:space="preserve">
-    <value>Found your snippets in {0}. Text Expander now uses them.</value>
-    <comment>{0} is the OneDrive account name.</comment>
-  </data>
-  <data name="TextExpander_Sync_AnnounceStopped" xml:space="preserve">
-    <value>Stopped syncing. This PC now uses its own copy of your snippets.</value>
-  </data>
-  <data name="TextExpander_Sync_StopMissingFile" xml:space="preserve">
-    <value>OneDrive's snippet file is no longer available. Text Expander is still using OneDrive.</value>
-    <comment>Shown when Stop syncing cannot copy the OneDrive snippet file back to this PC because the source file disappeared.</comment>
-  </data>
-  <data name="TextExpander_Sync_AnnounceKeepCopy" xml:space="preserve">
-    <value>A copy of your snippets will be kept on this PC.</value>
-  </data>
-  <data name="TextExpander_Sync_AnnounceWaitingCancelled" xml:space="preserve">
-    <value>Stopped looking for your snippets.</value>
-  </data>
-  <data name="TextExpander_Sync_StopDialog_Title" xml:space="preserve">
-    <value>Stop syncing with OneDrive?</value>
-  </data>
-  <data name="TextExpander_Sync_StopDialog_Content" xml:space="preserve">
-    <value>Text Expander copies the OneDrive snippets to this PC and uses that copy. The OneDrive copy isn't deleted.</value>
-  </data>
-  <data name="TextExpander_Sync_StopDialog_ContentBackup" xml:space="preserve">
-    <value>Text Expander copies the OneDrive snippets to this PC and uses that copy. This PC's previous snippets are kept beside it as {0}, and the OneDrive copy isn't deleted.</value>
-    <comment>{0} is a file name such as "PowerToysTextExpanderSnippets.backup.txt".</comment>
-  </data>
-  <data name="TextExpander_Sync_StopDialog_PrimaryButtonText" xml:space="preserve">
-    <value>Stop syncing</value>
-  </data>
-  <data name="TextExpander_Sync_StopDialog_CloseButtonText" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-  <data name="TextExpander_SnippetsPath.Header" xml:space="preserve">
-    <value>Folder</value>
-  </data>
-  <data name="TextExpander_SnippetsPath_Description" xml:space="preserve">
-    <value>Your snippets are saved as {0} in this folder. Leave it empty to use the PowerToys folder, or choose a folder in OneDrive or another sync app.</value>
-    <comment>{0} is the name of the snippet file in use, such as PowerToysTextExpanderSnippets.txt or snippets.txt. Don't translate it.</comment>
-  </data>
-  <data name="TextExpander_SnippetsPath_BrowseButton.Content" xml:space="preserve">
-    <value>Browse</value>
-  </data>
-  <data name="TextExpander_SnippetsPath_BrowseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Choose the folder for your snippets</value>
+  <data name="TextExpander_Dialog_Close" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="TextExpander_InjectionBackend.Header" xml:space="preserve">
     <value>Insertion method</value>
@@ -7319,11 +7110,21 @@ Text uses the current drawing color.</value>
   <data name="TextExpander_Advanced_GroupSettings.Header" xml:space="preserve">
     <value>Advanced</value>
   </data>
+  <data name="TextExpander_CaseSensitive.Header" xml:space="preserve">
+    <value>Match trigger capitalization</value>
+  </data>
+  <data name="TextExpander_CaseSensitive.Description" xml:space="preserve">
+    <value>When on, triggers match only the capitalization you saved. When off, uppercase and lowercase versions both work.</value>
+  </data>
+  <data name="TextExpander_Row_CaseInsensitiveAutomation" xml:space="preserve">
+    <value>Case-insensitive trigger: {0} or {1}</value>
+    <comment>{0} is the lowercase trigger and {1} is the uppercase trigger.</comment>
+  </data>
   <data name="TextExpander_TreatRemapsAsTyping.Header" xml:space="preserve">
-    <value>Include keys changed by Keyboard Manager</value>
+    <value>Use PowerToys Keyboard Manager remaps when matching triggers</value>
   </data>
   <data name="TextExpander_TreatRemapsAsTyping.Description" xml:space="preserve">
-    <value>Let keys you remapped in Keyboard Manager type triggers. Turn off to match only the physical keys you press.</value>
+    <value>For example, if PowerToys Keyboard Manager remaps A to B, pressing A can match a trigger that contains B. Turn this off to use only the physical keys you press.</value>
   </data>
   <data name="Oobe_TextExpander.Title" xml:space="preserve">
     <value>Text Expander</value>
@@ -7332,7 +7133,7 @@ Text uses the current drawing color.</value>
     <value>Type a short trigger and it is replaced with a longer snippet, in any app.</value>
   </data>
   <data name="Oobe_TextExpander_HowToUse.Text" xml:space="preserve">
-    <value>Add snippets in Settings, or edit PowerToysTextExpanderSnippets.txt in any text editor. Unless you sync it, the file is in %LOCALAPPDATA%\Microsoft\PowerToys\TextExpander. Write one per line, as `trigger=replacement`. Multi-line snippets use `trigger&lt;&lt;&lt;` and `&gt;&gt;&gt;` on their own lines.
+    <value>Add snippets in Settings, or edit PowerToysTextExpanderSnippets.txt in any text editor. By default, the file is in %LOCALAPPDATA%\Microsoft\PowerToys\TextExpander; you can choose another folder in Settings. Write one per line, as `trigger=replacement`. Multi-line snippets use `trigger&lt;&lt;&lt;` and `&gt;&gt;&gt;` on their own lines.
 
 The file reloads whenever you save it, so there is nothing to restart. Start triggers with a symbol such as `!` (for example `!mysig`) so they won't fire in the middle of a word.</value>
   </data>
@@ -7450,6 +7251,30 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
   <data name="TextExpander_Variable_Prompt" xml:space="preserve">
     <value>Ask me when it runs</value>
     <comment>Insert variable menu: asks the user to type something each time the snippet expands</comment>
+  </data>
+  <data name="TextExpander_PromptBuilder_Heading.Text" xml:space="preserve">
+    <value>Ask for information when this snippet runs</value>
+  </data>
+  <data name="TextExpander_PromptBuilder_Question.Header" xml:space="preserve">
+    <value>What should Text Expander ask?</value>
+  </data>
+  <data name="TextExpander_PromptBuilder_Question.PlaceholderText" xml:space="preserve">
+    <value>For example, What is the ticket number?</value>
+  </data>
+  <data name="TextExpander_PromptBuilder_Require.Content" xml:space="preserve">
+    <value>Require an answer</value>
+  </data>
+  <data name="TextExpander_PromptBuilder_Insert.Content" xml:space="preserve">
+    <value>Insert prompt</value>
+  </data>
+  <data name="TextExpander_PromptBuilder_Cancel.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextExpander_PromptBuilder_QuestionRequired" xml:space="preserve">
+    <value>Enter the question Text Expander should ask.</value>
+  </data>
+  <data name="TextExpander_PromptBuilder_InvalidQuestion" xml:space="preserve">
+    <value>The question can't contain a closing brace (}).</value>
   </data>
   <data name="TextExpander_VariableWithSample" xml:space="preserve">
     <value>{0}  —  {1}</value>

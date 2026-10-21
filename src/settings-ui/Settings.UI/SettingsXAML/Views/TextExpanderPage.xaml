@@ -156,13 +156,16 @@
                                                 </Grid.ColumnDefinitions>
                                                 <!--  As wide as the widest keycap in the list, so the descriptions line up.  -->
                                                 <Grid Width="{x:Bind KeycapColumnWidth, Mode=OneWay}">
-                                                    <Border Style="{StaticResource SnippetTriggerKeycapStyle}" ToolTipService.ToolTip="{x:Bind Trigger, Mode=OneWay}">
+                                                    <Border
+                                                        AutomationProperties.Name="{x:Bind CaseVariantAutomationName, Mode=OneWay}"
+                                                        Style="{StaticResource SnippetTriggerKeycapStyle}"
+                                                        ToolTipService.ToolTip="{x:Bind TriggerDisplay, Mode=OneWay}">
                                                         <TextBlock
                                                             VerticalAlignment="Center"
                                                             FontFamily="Consolas"
                                                             FontSize="14"
                                                             FontWeight="SemiBold"
-                                                            Text="{x:Bind Trigger, Mode=OneWay}"
+                                                            Text="{x:Bind TriggerDisplay, Mode=OneWay}"
                                                             TextTrimming="CharacterEllipsis" />
                                                     </Border>
                                                 </Grid>
@@ -327,358 +330,30 @@
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
-                        <!--  Where the snippet file is saved: the folder (any sync app) and guided OneDrive sync.  -->
+                        <tkcontrols:SettingsCard x:Uid="TextExpander_CaseSensitive" HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="Toggle_TextExpander_CaseSensitive"
+                                IsOn="{x:Bind ViewModel.CaseSensitive, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <!--  The active file is the source of truth. A sync service may sync its folder independently.  -->
                         <tkcontrols:SettingsExpander
-                            x:Name="SnippetFileExpander"
                             x:Uid="TextExpander_SnippetFile"
-                            Collapsed="SnippetFileExpander_Collapsed"
                             Description="{x:Bind ViewModel.SnippetFileSummary, Mode=OneWay}"
-                            Expanded="SnippetFileExpander_Expanded"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
                             IsEnabled="{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}">
                             <tkcontrols:SettingsExpander.Items>
-                                <!--  First, whether the snippets sync. The Folder row below covers other sync apps.  -->
-                                <tkcontrols:SettingsCard x:Uid="TextExpander_Sync" IsEnabled="{x:Bind ViewModel.Sync.CanToggle, Mode=OneWay}">
-                                    <!--  One way: the page decides what each flip does, so reverting it never restarts a flow.  -->
-                                    <ToggleSwitch
-                                        x:Name="SyncToggle"
-                                        x:Uid="ToggleSwitch"
-                                        AutomationProperties.AutomationId="Toggle_TextExpander_Sync"
-                                        IsOn="{x:Bind ViewModel.Sync.IsSyncOn, Mode=OneWay}"
-                                        Toggled="SyncToggle_Toggled" />
+                                <tkcontrols:SettingsCard x:Uid="TextExpander_SnippetFolder_Current" Description="{x:Bind ViewModel.SnippetsFolderPath, Mode=OneWay}">
+                                    <Button x:Uid="TextExpander_SnippetFolder_Choose" Click="ChooseSnippetsFolder_Click" />
                                 </tkcontrols:SettingsCard>
-                                <!--  What goes with the toggle: the setup once it's turned on, and anything that needs attention. Changes are announced, not shown.  -->
-                                <tkcontrols:SettingsCard
-                                    HorizontalContentAlignment="Stretch"
-                                    ContentAlignment="Vertical"
-                                    Visibility="{x:Bind ViewModel.Sync.ShowDetails, Mode=OneWay}">
-                                    <StackPanel Spacing="12">
-
-                                        <!--  Closed InfoBars are collapsed too, so the panel's spacing doesn't count them.  -->
-                                        <InfoBar
-                                            x:Uid="TextExpander_Sync_Missing"
-                                            IsClosable="False"
-                                            IsOpen="{x:Bind ViewModel.Sync.IsOneDriveMissing, Mode=OneWay}"
-                                            Severity="Informational"
-                                            Visibility="{x:Bind ViewModel.Sync.IsOneDriveMissing, Mode=OneWay}">
-                                            <InfoBar.ActionButton>
-                                                <Button
-                                                    x:Uid="TextExpander_Sync_OpenOneDrive"
-                                                    Click="SyncOpenOneDrive_Click"
-                                                    Visibility="{x:Bind ViewModel.Sync.CanOpenOneDrive, Mode=OneWay}" />
-                                            </InfoBar.ActionButton>
-                                        </InfoBar>
-
-                                        <InfoBar
-                                            IsClosable="False"
-                                            IsOpen="{x:Bind ViewModel.Sync.HasSyncError, Mode=OneWay}"
-                                            Message="{x:Bind ViewModel.Sync.SyncError, Mode=OneWay}"
-                                            Severity="Error"
-                                            Visibility="{x:Bind ViewModel.Sync.HasSyncError, Mode=OneWay}" />
-
-                                        <!--  Syncing: only what needs attention. The toggle and the summary say the rest.  -->
-                                        <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsSynced, Mode=OneWay}">
-                                            <InfoBar
-                                                x:Uid="TextExpander_Sync_OnlineOnly"
-                                                IsClosable="False"
-                                                IsOpen="{x:Bind ViewModel.Sync.IsOnlineOnly, Mode=OneWay}"
-                                                Severity="Warning"
-                                                Visibility="{x:Bind ViewModel.Sync.IsOnlineOnly, Mode=OneWay}" />
-                                            <StackPanel Visibility="{x:Bind ViewModel.Sync.ShowKeepCopyOption, Mode=OneWay}">
-                                                <CheckBox x:Uid="TextExpander_Sync_KeepCopy" IsChecked="{x:Bind ViewModel.Sync.KeepCopyOnThisPc, Mode=TwoWay}" />
-                                                <TextBlock
-                                                    x:Uid="TextExpander_Sync_KeepCopyDescription"
-                                                    Margin="28,0,0,0"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                                    TextWrapping="Wrap" />
-                                            </StackPanel>
-                                        </StackPanel>
-
-                                        <!--  Setup: two questions, then the action for the answer.  -->
-                                        <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.Sync.IsSetupVisible, Mode=OneWay}">
-                                            <TextBlock
-                                                x:Uid="TextExpander_Sync_SetupHeading"
-                                                AutomationProperties.HeadingLevel="Level3"
-                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                            <RadioButtons
-                                                x:Name="SyncSetupKind"
-                                                x:Uid="TextExpander_Sync_SetupKind"
-                                                IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}"
-                                                SelectedIndex="{x:Bind ViewModel.Sync.SetupKindIndex, Mode=TwoWay}">
-                                                <RadioButton x:Uid="TextExpander_Sync_FirstPcOption" AutomationProperties.HelpText="{x:Bind ViewModel.Sync.FirstPcDescription, Mode=OneWay}">
-                                                    <StackPanel>
-                                                        <TextBlock x:Uid="TextExpander_Sync_FirstPc" />
-                                                        <TextBlock
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                                            Text="{x:Bind ViewModel.Sync.FirstPcDescription, Mode=OneWay}" />
-                                                    </StackPanel>
-                                                </RadioButton>
-                                                <RadioButton x:Uid="TextExpander_Sync_AnotherPcOption">
-                                                    <StackPanel>
-                                                        <TextBlock x:Uid="TextExpander_Sync_AnotherPc" />
-                                                        <TextBlock
-                                                            x:Uid="TextExpander_Sync_AnotherPcDescription"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Style="{ThemeResource CaptionTextBlockStyle}" />
-                                                    </StackPanel>
-                                                </RadioButton>
-                                            </RadioButtons>
-
-                                            <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.HasMultipleAccounts, Mode=OneWay}">
-                                                <TextBlock
-                                                    x:Uid="TextExpander_Sync_AccountHeading"
-                                                    AutomationProperties.HeadingLevel="Level3"
-                                                    Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                                <RadioButtons
-                                                    x:Uid="TextExpander_Sync_Accounts"
-                                                    IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}"
-                                                    ItemsSource="{x:Bind ViewModel.Sync.Accounts, Mode=OneWay}"
-                                                    SelectedIndex="{x:Bind ViewModel.Sync.SelectedAccountIndex, Mode=TwoWay}">
-                                                    <RadioButtons.ItemTemplate>
-                                                        <DataTemplate x:DataType="vm:TextExpanderSyncAccount">
-                                                            <StackPanel>
-                                                                <TextBlock Text="{x:Bind DisplayName}" />
-                                                                <TextBlock
-                                                                    FontFamily="Consolas"
-                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                    Text="{x:Bind VariablePath}" />
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </RadioButtons.ItemTemplate>
-                                                </RadioButtons>
-                                            </StackPanel>
-
-                                            <!--  First PC  -->
-                                            <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsFirstPcSelected, Mode=OneWay}">
-                                                <InfoBar
-                                                    x:Uid="TextExpander_Sync_Conflict"
-                                                    Title="{x:Bind ViewModel.Sync.ConflictTitle, Mode=OneWay}"
-                                                    IsClosable="False"
-                                                    IsOpen="{x:Bind ViewModel.Sync.HasConflict, Mode=OneWay}"
-                                                    Severity="Warning"
-                                                    Visibility="{x:Bind ViewModel.Sync.HasConflict, Mode=OneWay}" />
-                                                <RadioButtons
-                                                    x:Uid="TextExpander_Sync_ConflictChoices"
-                                                    SelectedIndex="{x:Bind ViewModel.Sync.ConflictChoiceIndex, Mode=TwoWay}"
-                                                    Visibility="{x:Bind ViewModel.Sync.HasConflict, Mode=OneWay}">
-                                                    <RadioButton AutomationProperties.Name="{x:Bind ViewModel.Sync.UseOneDriveChoiceText, Mode=OneWay}">
-                                                        <TextBlock Text="{x:Bind ViewModel.Sync.UseOneDriveChoiceText, Mode=OneWay}" />
-                                                    </RadioButton>
-                                                    <RadioButton x:Uid="TextExpander_Sync_ConflictReplaceOption" AutomationProperties.Name="{x:Bind ViewModel.Sync.ReplaceChoiceText, Mode=OneWay}">
-                                                        <StackPanel>
-                                                            <TextBlock Text="{x:Bind ViewModel.Sync.ReplaceChoiceText, Mode=OneWay}" />
-                                                            <TextBlock
-                                                                x:Uid="TextExpander_Sync_ConflictReplaceDescription"
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                Style="{ThemeResource CaptionTextBlockStyle}" />
-                                                        </StackPanel>
-                                                    </RadioButton>
-                                                    <RadioButton x:Uid="TextExpander_Sync_ConflictKeepBothOption" AutomationProperties.HelpText="{x:Bind ViewModel.Sync.KeepBothDescription, Mode=OneWay}">
-                                                        <StackPanel>
-                                                            <TextBlock x:Uid="TextExpander_Sync_ConflictKeepBoth" />
-                                                            <TextBlock
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                Text="{x:Bind ViewModel.Sync.KeepBothDescription, Mode=OneWay}" />
-                                                        </StackPanel>
-                                                    </RadioButton>
-                                                </RadioButtons>
-                                                <Button
-                                                    x:Name="SyncCopyButton"
-                                                    Click="SyncCopy_Click"
-                                                    Content="{x:Bind ViewModel.Sync.FirstPcActionText, Mode=OneWay}"
-                                                    IsEnabled="{x:Bind ViewModel.Sync.CanCopy, Mode=OneWay}"
-                                                    Style="{StaticResource AccentButtonStyle}" />
-                                            </StackPanel>
-
-                                            <!--
-                                                Another PC: the folder the snippets were last synced in, then the standard one. If neither has them,
-                                                a search of OneDrive, then what it found: one file, several to choose from, or none.
-                                            -->
-                                            <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsAnotherPcSelected, Mode=OneWay}">
-                                                <!--  The only spinner: while looking. Finding nothing ends it.  -->
-                                                <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.Sync.IsSearching, Mode=OneWay}">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <ProgressRing
-                                                        Width="16"
-                                                        Height="16"
-                                                        Margin="0,2,0,0"
-                                                        VerticalAlignment="Top"
-                                                        IsActive="{x:Bind ViewModel.Sync.IsSearching, Mode=OneWay}" />
-                                                    <TextBlock
-                                                        x:Uid="TextExpander_Sync_WaitingTitle"
-                                                        Grid.Column="1"
-                                                        TextWrapping="Wrap" />
-                                                </Grid>
-
-                                                <!--  One file: what it is and, down to its name, where it is, so a wrong folder shows.  -->
-                                                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsFound, Mode=OneWay}">
-                                                    <!--  A grid, not a horizontal panel, so the text wraps beside the icon.  -->
-                                                    <Grid ColumnSpacing="8">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto" />
-                                                            <ColumnDefinition Width="*" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <FontIcon
-                                                            Margin="0,2,0,0"
-                                                            VerticalAlignment="Top"
-                                                            FontSize="16"
-                                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                                            Glyph="&#xE930;" />
-                                                        <StackPanel Grid.Column="1" Spacing="2">
-                                                            <TextBlock Text="{x:Bind ViewModel.Sync.FoundText, Mode=OneWay}" TextWrapping="Wrap" />
-                                                            <TextBlock
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                IsTextSelectionEnabled="True"
-                                                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                Text="{x:Bind ViewModel.Sync.FoundLocationText, Mode=OneWay}"
-                                                                TextWrapping="Wrap"
-                                                                ToolTipService.ToolTip="{x:Bind ViewModel.Sync.FoundFilePath, Mode=OneWay}" />
-                                                        </StackPanel>
-                                                    </Grid>
-                                                    <Button
-                                                        x:Name="SyncUseFoundButton"
-                                                        x:Uid="TextExpander_Sync_UseFound"
-                                                        Click="SyncUseFound_Click"
-                                                        Style="{StaticResource AccentButtonStyle}" />
-                                                    <HyperlinkButton
-                                                        x:Uid="TextExpander_Sync_ChooseFolder"
-                                                        Click="SyncChooseFolder_Click"
-                                                        IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}" />
-                                                </StackPanel>
-
-                                                <!--  Several files: newest first and selected. Only that one was read, so only it has a count.  -->
-                                                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.HasCandidates, Mode=OneWay}">
-                                                    <TextBlock
-                                                        x:Uid="TextExpander_Sync_FoundInOneDrive"
-                                                        AutomationProperties.HeadingLevel="Level3"
-                                                        Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                                    <RadioButtons
-                                                        x:Uid="TextExpander_Sync_Candidates"
-                                                        IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}"
-                                                        ItemsSource="{x:Bind ViewModel.Sync.Candidates, Mode=OneWay}"
-                                                        SelectedIndex="{x:Bind ViewModel.Sync.SelectedCandidateIndex, Mode=TwoWay}">
-                                                        <RadioButtons.ItemTemplate>
-                                                            <DataTemplate x:DataType="vm:TextExpanderSyncCandidate">
-                                                                <Grid ColumnSpacing="12" ToolTipService.ToolTip="{x:Bind FilePath}">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <StackPanel>
-                                                                        <TextBlock Text="{x:Bind FolderName}" TextWrapping="Wrap" />
-                                                                        <TextBlock
-                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                            Text="{x:Bind Location}"
-                                                                            TextWrapping="Wrap" />
-                                                                    </StackPanel>
-                                                                    <TextBlock
-                                                                        Grid.Column="1"
-                                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                        Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                        Text="{x:Bind Details}" />
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </RadioButtons.ItemTemplate>
-                                                    </RadioButtons>
-                                                    <Button
-                                                        x:Name="SyncUseCandidateButton"
-                                                        x:Uid="TextExpander_Sync_UseFound"
-                                                        Click="SyncUseCandidate_Click"
-                                                        IsEnabled="{x:Bind ViewModel.Sync.CanUseCandidate, Mode=OneWay}"
-                                                        Style="{StaticResource AccentButtonStyle}" />
-                                                    <HyperlinkButton
-                                                        x:Uid="TextExpander_Sync_ChooseFolder"
-                                                        Click="SyncChooseFolder_Click"
-                                                        IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}" />
-                                                </StackPanel>
-
-                                                <!--  None: no spinner. It still watches where the snippets belong while the page is open.  -->
-                                                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Sync.IsWaiting, Mode=OneWay}">
-                                                    <Grid ColumnSpacing="8">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto" />
-                                                            <ColumnDefinition Width="*" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <FontIcon
-                                                            Margin="0,2,0,0"
-                                                            VerticalAlignment="Top"
-                                                            FontSize="16"
-                                                            Foreground="{ThemeResource SystemFillColorAttentionBrush}"
-                                                            Glyph="&#xE946;" />
-                                                        <StackPanel Grid.Column="1" Spacing="2">
-                                                            <TextBlock
-                                                                x:Uid="TextExpander_Sync_NotFound"
-                                                                AutomationProperties.HeadingLevel="Level3"
-                                                                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                                                TextWrapping="Wrap" />
-                                                            <TextBlock Text="{x:Bind ViewModel.Sync.NotFoundMessage, Mode=OneWay}" TextWrapping="Wrap" />
-                                                            <TextBlock
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                IsTextSelectionEnabled="True"
-                                                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                Text="{x:Bind ViewModel.Sync.WaitingLocationText, Mode=OneWay}"
-                                                                TextWrapping="Wrap"
-                                                                ToolTipService.ToolTip="{x:Bind ViewModel.Sync.WaitingFilePath, Mode=OneWay}" />
-                                                        </StackPanel>
-                                                    </Grid>
-                                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                                        <Button
-                                                            x:Name="SyncNotFoundChooseButton"
-                                                            x:Uid="TextExpander_Sync_ChooseFolderButton"
-                                                            Click="SyncChooseFolder_Click"
-                                                            IsEnabled="{x:Bind ViewModel.Sync.AreStepsEnabled, Mode=OneWay}"
-                                                            Style="{StaticResource AccentButtonStyle}" />
-                                                        <Button
-                                                            x:Name="SyncCancelButton"
-                                                            x:Uid="TextExpander_Sync_CancelWaiting"
-                                                            Click="SyncCancel_Click" />
-                                                    </StackPanel>
-                                                    <HyperlinkButton
-                                                        x:Name="SyncFirstPcInsteadButton"
-                                                        x:Uid="TextExpander_Sync_FirstPcInstead"
-                                                        Click="SyncFirstPcInstead_Click" />
-                                                </StackPanel>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </StackPanel>
+                                <tkcontrols:SettingsCard x:Uid="TextExpander_SnippetFolder_Reload">
+                                    <Button x:Uid="TextExpander_SnippetFolder_ReloadButton" Click="ReloadSnippets_Click" />
                                 </tkcontrols:SettingsCard>
-                                <!--
-                                    The folder setting, with Browse. Shown while syncing, when a folder is set (so one outside
-                                    OneDrive can be seen and cleared), or when OneDrive isn't set up (for another sync app).
-                                    Never during the sync setup, which has its own folder picker. Empty means the PowerToys folder.
-                                -->
-                                <tkcontrols:SettingsCard
-                                    x:Uid="TextExpander_SnippetsPath"
-                                    HorizontalContentAlignment="Stretch"
-                                    ContentAlignment="Vertical"
-                                    Description="{x:Bind ViewModel.SnippetsFolderDescription, Mode=OneWay}"
-                                    Visibility="{x:Bind ViewModel.IsFolderRowVisible, Mode=OneWay}">
-                                    <Grid ColumnSpacing="8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBox
-                                            x:Uid="TextExpander_SnippetsPath_TextBox"
-                                            MinWidth="160"
-                                            IsEnabled="{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}"
-                                            PlaceholderText="{x:Bind ViewModel.DefaultSnippetsFolder, Mode=OneWay}"
-                                            Text="{x:Bind ViewModel.SnippetsPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            ToolTipService.ToolTip="{x:Bind ViewModel.SnippetsFilePath, Mode=OneWay}" />
-                                        <Button
-                                            x:Uid="TextExpander_SnippetsPath_BrowseButton"
-                                            Grid.Column="1"
-                                            Command="{x:Bind ViewModel.BrowseForSnippetsFolderCommand, Mode=OneWay}"
-                                            IsEnabled="{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}" />
-                                    </Grid>
+                                <tkcontrols:SettingsCard x:Uid="TextExpander_SnippetFolder_Clear">
+                                    <Button
+                                        x:Uid="TextExpander_SnippetFolder_ClearButton"
+                                        Click="ClearSnippets_Click"
+                                        IsEnabled="{x:Bind ViewModel.CanClearSnippets, Mode=OneWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
@@ -793,6 +468,49 @@
                             IsSpellCheckEnabled="False"
                             IsTextPredictionEnabled="False"
                             TextWrapping="Wrap" />
+
+                        <!--  Prompt variables need a real question and an explicit answer policy, not an editable placeholder named "Label".  -->
+                        <Border
+                            x:Name="PromptVariableBuilder"
+                            Margin="0,4,0,0"
+                            Padding="12"
+                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Visibility="Collapsed">
+                            <StackPanel Spacing="8">
+                                <TextBlock x:Uid="TextExpander_PromptBuilder_Heading" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                <TextBox
+                                    x:Name="PromptQuestionBox"
+                                    x:Uid="TextExpander_PromptBuilder_Question"
+                                    KeyDown="PromptQuestionBox_KeyDown"
+                                    TextChanged="PromptQuestionBox_TextChanged" />
+                                <CheckBox
+                                    x:Name="PromptRequireAnswer"
+                                    x:Uid="TextExpander_PromptBuilder_Require"
+                                    IsChecked="True" />
+                                <TextBlock
+                                    x:Name="PromptQuestionError"
+                                    AutomationProperties.LiveSetting="Assertive"
+                                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    TextWrapping="Wrap"
+                                    Visibility="Collapsed" />
+                                <StackPanel
+                                    HorizontalAlignment="Right"
+                                    Orientation="Horizontal"
+                                    Spacing="8">
+                                    <Button
+                                        x:Name="InsertPromptVariableButton"
+                                        x:Uid="TextExpander_PromptBuilder_Insert"
+                                        Click="InsertPromptVariable_Click"
+                                        IsEnabled="False"
+                                        Style="{StaticResource AccentButtonStyle}" />
+                                    <Button x:Uid="TextExpander_PromptBuilder_Cancel" Click="CancelPromptVariable_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
 
                         <!--
                             The date format guide: shown while the caret is in a {{date:…}} variable, such as right after

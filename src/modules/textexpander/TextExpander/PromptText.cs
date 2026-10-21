@@ -20,6 +20,8 @@ internal static class PromptText
 
     public static string CancelText => EngineText.Get("Prompt_Cancel", "Cancel");
 
+    public static string RequiredError => EngineText.Get("Prompt_RequiredError", "Enter an answer to continue.");
+
     /// <summary>Gets the label shown above the box: the snippet's own words, or <see cref="UnnamedLabel"/>.</summary>
     public static string Label(string? label) => string.IsNullOrWhiteSpace(label) ? UnnamedLabel : label.Trim();
 
@@ -28,6 +30,9 @@ internal static class PromptText
     /// Cancel, Esc or the close button, null, which leaves that spot blank and goes on to the next.
     /// </summary>
     public static string? Result(bool accepted, string? typed) => accepted ? typed ?? string.Empty : null;
+
+    public static bool HasRequiredAnswer(PromptRequest request, string? typed)
+        => !request.Required || !string.IsNullOrWhiteSpace(typed);
 
     /// <summary>
     /// Reads the answer out of the box, then empties the box, even if reading fails, so the answer

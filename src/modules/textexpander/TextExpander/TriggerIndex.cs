@@ -91,6 +91,7 @@ internal sealed class TriggerIndex
     }
 
     private readonly Node _root;
+    private readonly bool _caseSensitive;
 
     /// <summary>Gets length of the longest indexed trigger. Zero when the index is empty, which lets
     /// the caller skip the lookup entirely.</summary>
@@ -99,16 +100,17 @@ internal sealed class TriggerIndex
     /// <summary>Gets how many triggers are indexed.</summary>
     public int Count { get; }
 
-    public static readonly TriggerIndex Empty = new(new Node(), 0, 0);
+    public static readonly TriggerIndex Empty = new(new Node(), 0, 0, caseSensitive: true);
 
-    private TriggerIndex(Node root, int maxTriggerLength, int count)
+    private TriggerIndex(Node root, int maxTriggerLength, int count, bool caseSensitive)
     {
         _root = root;
         MaxTriggerLength = maxTriggerLength;
         Count = count;
+        _caseSensitive = caseSensitive;
     }
 
-    public static TriggerIndex Build(IEnumerable<string> triggers)
+    public static TriggerIndex Build(IEnumerable<string> triggers, bool caseSensitive = true)
     {
         ArgumentNullException.ThrowIfNull(triggers);
 
@@ -126,7 +128,7 @@ internal sealed class TriggerIndex
             Node node = root;
             for (int i = trigger.Length - 1; i >= 0; i--)
             {
-                node = node.GetOrAddChild(trigger[i]);
+                node = node.GetOrAddChild(Normalize(trigger[i], caseSensitive));
             }
 
             // Two spellings of the same trigger cannot occur — the source is a dictionary keyed by
@@ -144,7 +146,7 @@ internal sealed class TriggerIndex
             }
         }
 
-        return count == 0 ? Empty : new TriggerIndex(root, max, count);
+        return count == 0 && caseSensitive ? Empty : new TriggerIndex(root, max, count, caseSensitive);
     }
 
     /// <summary>
@@ -164,7 +166,7 @@ internal sealed class TriggerIndex
         int limit = Math.Min(tail.Length, MaxTriggerLength);
         for (int i = 0; i < limit; i++)
         {
-            if (!node.TryGetChild(tail[tail.Length - 1 - i], out Node? next))
+            if (!node.TryGetChild(Normalize(tail[tail.Length - 1 - i], _caseSensitive), out Node? next))
             {
                 break;
             }
@@ -182,4 +184,7 @@ internal sealed class TriggerIndex
 
         return best;
     }
+
+    private static char Normalize(char value, bool caseSensitive)
+        => caseSensitive ? value : char.ToUpperInvariant(value);
 }
