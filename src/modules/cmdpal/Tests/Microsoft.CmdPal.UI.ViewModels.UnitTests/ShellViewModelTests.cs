@@ -154,7 +154,7 @@ public partial class ShellViewModelTests
 
             // A plain command is neither a page nor invokable, so the shell only reports it.
             shell.Receive(new PerformCommandMessage(
-                new ExtensionObject<ICommand>(Mock.Of<ICommand>()),
+                CreateCommandViewModel(Mock.Of<ICommand>(), fromOtherPage ? otherPage : rootPage),
                 new ExtensionObject<IListItem>(item),
                 fromOtherPage ? otherPage : rootPage));
 
