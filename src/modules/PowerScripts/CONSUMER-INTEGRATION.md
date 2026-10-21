@@ -217,6 +217,9 @@ image. Extension matching is not content validation: scripts must handle invalid
 Keep consumer-created temporary files available until execution completes and clean up only those
 temporary files, not user-owned clipboard files.
 
+Transform input JSON uses UTF-8, independently of the Windows console code page. Unicode text and
+file paths can be sent literally or as JSON Unicode escapes.
+
 Output JSON is `{}` for `none`, `{"text":"..."}` for `text`, or `{"file_paths":["..."]}` for `files`.
 Built-in Python functions may return `None`, a string, or a list/tuple of paths respectively;
 explicit dictionaries use the same JSON fields. File paths should be absolute and accessible to

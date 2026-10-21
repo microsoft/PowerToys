@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -394,6 +396,70 @@ public class HostCliTests
         }
     }
 
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Transform_Utf8TextPreservesUnicode(bool escapeUnicode)
+    {
+        Write("unicode-text.ps1", """
+            param([string]$Text)
+            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+            Write-Output $Text
+            """);
+        WriteDescriptor("unicode-text.ps1", "\"input\":\"text\",\"output\":\"text\"");
+        const string text = "\u6D4B\u8BD5 caf\u00E9 \U0001F600";
+        var payload = JsonSerializer.Serialize(new { text }, new JsonSerializerOptions
+        {
+            Encoder = escapeUnicode ? JavaScriptEncoder.Default : JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        });
+        var client = new PowerScriptsClient(_hostPath, _root);
+        try
+        {
+            Assert.IsTrue(client.TrustApprove("unicode-text"));
+            var (exit, stdout, stderr) = RunHostWithInput(payload, "transform", "unicode-text", "--no-consent", "--root", _root);
+            Assert.AreEqual(0, exit, stderr);
+            using var result = JsonDocument.Parse(stdout);
+            Assert.AreEqual(text, result.RootElement.GetProperty("text").GetString()!.TrimEnd('\r', '\n'));
+        }
+        finally
+        {
+            client.TrustRevoke("unicode-text");
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Transform_Utf8FilePathsRemainReadable(bool escapeUnicode)
+    {
+        Write("unicode-files.ps1", """
+            param([string[]]$Files)
+            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+            [IO.File]::ReadAllText($Files[0])
+            """);
+        WriteDescriptor("unicode-files.ps1", "\"input\":\"files\",\"output\":\"text\",\"extensions\":[\".txt\"]");
+        var path = Path.Combine(_root, "input \u6D4B\u8BD5 \U0001F600.txt");
+        const string content = "selected Unicode file";
+        File.WriteAllText(path, content);
+        var payload = JsonSerializer.Serialize(new { file_paths = new[] { path } }, new JsonSerializerOptions
+        {
+            Encoder = escapeUnicode ? JavaScriptEncoder.Default : JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        });
+        var client = new PowerScriptsClient(_hostPath, _root);
+        try
+        {
+            Assert.IsTrue(client.TrustApprove("unicode-files"));
+            var (exit, stdout, stderr) = RunHostWithInput(payload, "transform", "unicode-files", "--no-consent", "--root", _root);
+            Assert.AreEqual(0, exit, stderr);
+            using var result = JsonDocument.Parse(stdout);
+            Assert.AreEqual(content, result.RootElement.GetProperty("text").GetString()!.TrimEnd('\r', '\n'));
+        }
+        finally
+        {
+            client.TrustRevoke("unicode-files");
+        }
+    }
+
     [TestMethod]
     public void List_Text_ShowsIoColumn()
     {
@@ -417,10 +483,14 @@ public class HostCliTests
         File.WriteAllText(Path.Combine(_root, scriptFile + ".tool.json"), json);
     }
 
-    private (int Exit, string StdOut, string StdErr) RunHost(params string[] args)
+    private (int Exit, string StdOut, string StdErr) RunHost(params string[] args) => RunHostWithInput(null, args);
+
+    private (int Exit, string StdOut, string StdErr) RunHostWithInput(string? stdin, params string[] args)
     {
         var psi = new ProcessStartInfo(_hostPath)
         {
+            RedirectStandardInput = stdin is not null,
+            StandardInputEncoding = stdin is null ? null : new UTF8Encoding(false),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -434,6 +504,12 @@ public class HostCliTests
         psi.Environment[ModuleState.IgnoreEnabledEnvironmentVariable] = "1";
 
         using var p = Process.Start(psi)!;
+        if (stdin is not null)
+        {
+            p.StandardInput.Write(stdin);
+            p.StandardInput.Close();
+        }
+
         var stdout = p.StandardOutput.ReadToEnd();
         var stderr = p.StandardError.ReadToEnd();
         p.WaitForExit(15000);

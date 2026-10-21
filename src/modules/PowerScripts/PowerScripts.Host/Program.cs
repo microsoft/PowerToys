@@ -395,7 +395,8 @@ internal static class Program
             return gate;
         }
 
-        var stdin = Console.In.ReadToEnd();
+        using var stdinReader = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8);
+        var stdin = stdinReader.ReadToEnd();
         PythonTransformInput input;
         try
         {
