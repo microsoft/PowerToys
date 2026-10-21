@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "commands": [
+    {
+      "id": "powerscripts.inspect-arguments",
+      "title": "Inspect command arguments",
+      "group": "PowerScripts Demo",
+      "description": "Run the native argument inspector and return the selected values as JSON. This command does not change files or settings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "string",
+            "title": "Target",
+            "description": "A label returned unchanged by the inspector.",
+            "default": "demo"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "enum": ["fast", "full"],
+            "default": "fast"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 1
+          },
+          "verbose": {
+            "type": "boolean",
+            "title": "Verbose",
+            "default": false
+          }
+        },
+        "required": ["target"]
+      },
+      "x-execute": {
+        "command": ["PowerScripts/PowerScripts.Host.exe", "demo", "echo"],
+        "arguments": [
+          { "parameter": "target", "kind": "option", "flag": "--target" },
+          { "parameter": "mode", "kind": "option", "flag": "--mode" },
+          { "parameter": "count", "kind": "option", "flag": "--count" },
+          { "parameter": "verbose", "kind": "switch", "flag": "--verbose" }
+        ]
+      }
+    },
+    {
+      "id": "filelocksmith.query",
+      "title": "Find processes using a file",
+      "group": "File Locksmith",
+      "description": "Query processes using the selected file. This command does not terminate processes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "format": "file-path",
+            "title": "File",
+            "description": "An existing file to inspect."
+          },
+          "json": {
+            "type": "boolean",
+            "title": "Return JSON",
+            "description": "Return structured process information instead of text.",
+            "default": true
+          }
+        },
+        "required": ["path"]
+      },
+      "x-execute": {
+        "command": ["FileLocksmithCLI.exe"],
+        "arguments": [
+          { "parameter": "json", "kind": "switch", "flag": "--json" },
+          { "parameter": "path", "kind": "positional" }
+        ]
+      }
+    },
+    {
+      "id": "fancyzones.get-layouts",
+      "title": "List window layouts",
+      "group": "FancyZones",
+      "description": "List saved template and custom layouts. FancyZones must be running.",
+      "inputSchema": { "type": "object", "properties": {} },
+      "x-execute": {
+        "command": ["FancyZonesCLI.exe", "get-layouts"],
+        "arguments": []
+      }
+    },
+    {
+      "id": "fancyzones.get-monitors",
+      "title": "List displays",
+      "group": "FancyZones",
+      "description": "List displays known to FancyZones. FancyZones must be running.",
+      "inputSchema": { "type": "object", "properties": {} },
+      "x-execute": {
+        "command": ["FancyZonesCLI.exe", "get-monitors"],
+        "arguments": []
+      }
+    },
+    {
+      "id": "image-resizer.resize",
+      "title": "Resize an image",
+      "group": "Image Resizer",
+      "description": "Resize an image using the selected dimensions. Other behavior, including output location and replacement, follows the current Image Resizer settings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "file-path",
+            "title": "Image",
+            "description": "An existing image file."
+          },
+          "width": {
+            "type": "integer",
+            "title": "Width",
+            "default": 800,
+            "minimum": 1
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height",
+            "default": 600,
+            "minimum": 1
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "enum": ["Pixel", "Percent", "Inch", "Centimeter"],
+            "default": "Pixel"
+          },
+          "fit": {
+            "type": "string",
+            "title": "Fit mode",
+            "enum": ["Fill", "Fit", "Stretch"],
+            "default": "Fit"
+          },
+          "quality": {
+            "type": "integer",
+            "title": "JPEG quality",
+            "default": 90,
+            "minimum": 1,
+            "maximum": 100
+          },
+          "filename": {
+            "type": "string",
+            "title": "File name pattern",
+            "description": "Optional output file name pattern using the Image Resizer placeholders."
+          }
+        },
+        "required": ["file", "width", "height", "unit", "fit", "quality"]
+      },
+      "x-execute": {
+        "command": ["WinUI3Apps/PowerToys.ImageResizerCLI.exe"],
+        "arguments": [
+          { "parameter": "width", "kind": "option", "flag": "--width" },
+          { "parameter": "height", "kind": "option", "flag": "--height" },
+          { "parameter": "unit", "kind": "option", "flag": "--unit" },
+          { "parameter": "fit", "kind": "option", "flag": "--fit" },
+          { "parameter": "quality", "kind": "option", "flag": "--quality" },
+          { "parameter": "filename", "kind": "option", "flag": "--filename" },
+          { "parameter": "file", "kind": "positional" }
+        ]
+      }
+    }
+  ]
+}

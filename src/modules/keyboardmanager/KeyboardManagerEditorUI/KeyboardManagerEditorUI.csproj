@@ -66,6 +66,7 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
+    <ProjectReference Include="..\..\PowerScripts\PowerScripts.Client\PowerScripts.Client.csproj" />
 	<ProjectReference Include="..\KeyboardManagerEditorLibraryWrapper\KeyboardManagerEditorLibraryWrapper.vcxproj" />
   </ItemGroup>
   <ItemGroup>

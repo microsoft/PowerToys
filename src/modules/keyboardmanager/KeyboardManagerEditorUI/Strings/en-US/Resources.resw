@@ -501,4 +501,145 @@
   <data name="CheckServiceBtn.Content" xml:space="preserve">
     <value>Check service status</value>
   </data>
+  <data name="ActionType_PowerToysCli.AutomationProperties.Name" xml:space="preserve">
+    <value>PowerToys CLI</value>
+  </data>
+  <data name="ActionType_PowerToysCli_Text.Text" xml:space="preserve">
+    <value>PowerToys CLI</value>
+  </data>
+  <data name="CliCommandsHeader.Text" xml:space="preserve">
+    <value>CLI commands</value>
+  </data>
+  <data name="CliRunsText.Text" xml:space="preserve">
+    <value>runs CLI</value>
+  </data>
+  <data name="CliActionDescription.Text" xml:space="preserve">
+    <value>Run a built-in PowerToys command when this shortcut is pressed.</value>
+  </data>
+  <data name="CliActionTypeLocked_Message" xml:space="preserve">
+    <value>To use a different action type, add a new remapping.</value>
+  </data>
+  <data name="CliCatalogRetryButton.Content" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="CliCommandComboBox.Header" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="CliCommandComboBox.PlaceholderText" xml:space="preserve">
+    <value>Select a PowerToys command</value>
+  </data>
+  <data name="CliNoParametersText.Text" xml:space="preserve">
+    <value>This command has no parameters.</value>
+  </data>
+  <data name="CliResetParametersButton.Content" xml:space="preserve">
+    <value>Reset parameters</value>
+  </data>
+  <data name="CliTestCommandButton.Content" xml:space="preserve">
+    <value>Test command</value>
+  </data>
+  <data name="CliTestCommandDescription.Text" xml:space="preserve">
+    <value>Testing runs the command once without saving this remapping.</value>
+  </data>
+  <data name="CliCancelTestButton.Content" xml:space="preserve">
+    <value>Cancel test</value>
+  </data>
+  <data name="CliTestOutputExpander.Header" xml:space="preserve">
+    <value>Test details</value>
+  </data>
+  <data name="CliCatalogLoading" xml:space="preserve">
+    <value>Loading PowerToys commands…</value>
+  </data>
+  <data name="CliCatalogUnavailable" xml:space="preserve">
+    <value>PowerToys commands could not be loaded. Check that PowerToys is available and try again.</value>
+  </data>
+  <data name="CliCatalogLoadFailed" xml:space="preserve">
+    <value>Could not load commands</value>
+  </data>
+  <data name="CliSelectCommand" xml:space="preserve">
+    <value>Select a PowerToys command.</value>
+  </data>
+  <data name="CliSavedCommandMissing" xml:space="preserve">
+    <value>The saved command is no longer available. Your parameter values have been kept. Select another command to update this remapping.</value>
+  </data>
+  <data name="CliCommandUnavailable" xml:space="preserve">
+    <value>This command is currently unavailable.</value>
+  </data>
+  <data name="CliCommandNeedsAttention" xml:space="preserve">
+    <value>Check this command</value>
+  </data>
+  <data name="CliRequiredParameterLabel" xml:space="preserve">
+    <value>{0} (required)</value>
+  </data>
+  <data name="CliParameterMinimum" xml:space="preserve">
+    <value>Minimum: {0}</value>
+  </data>
+  <data name="CliParameterMaximum" xml:space="preserve">
+    <value>Maximum: {0}</value>
+  </data>
+  <data name="CliParameterRequired" xml:space="preserve">
+    <value>{0} is required.</value>
+  </data>
+  <data name="CliParameterInvalidValue" xml:space="preserve">
+    <value>{0} contains a character that cannot be passed to a command.</value>
+  </data>
+  <data name="CliParameterInvalidFile" xml:space="preserve">
+    <value>Enter a valid file path for {0}.</value>
+  </data>
+  <data name="CliParameterInvalidInteger" xml:space="preserve">
+    <value>Enter a whole number for {0}.</value>
+  </data>
+  <data name="CliParameterOutOfRange" xml:space="preserve">
+    <value>{0} must be within the allowed range.</value>
+  </data>
+  <data name="CliParameterInvalidChoice" xml:space="preserve">
+    <value>Select a valid value for {0}.</value>
+  </data>
+  <data name="CliParameterInvalidBoolean" xml:space="preserve">
+    <value>Choose on or off for {0}.</value>
+  </data>
+  <data name="CliParameterUnsupportedType" xml:space="preserve">
+    <value>{0} uses a parameter type this version cannot display.</value>
+  </data>
+  <data name="CliParameterUnknown" xml:space="preserve">
+    <value>The saved values do not match the current command. Reset the parameters to use the current definition.</value>
+  </data>
+  <data name="CliBrowseFile" xml:space="preserve">
+    <value>Browse…</value>
+  </data>
+  <data name="CliBrowseParameterFile" xml:space="preserve">
+    <value>Select a file for {0}</value>
+  </data>
+  <data name="CliFilePickerFailed" xml:space="preserve">
+    <value>The file picker could not be opened. You can enter the file path instead.</value>
+  </data>
+  <data name="CliTestCannotRun" xml:space="preserve">
+    <value>Check the command before testing</value>
+  </data>
+  <data name="CliTestRunning" xml:space="preserve">
+    <value>Wait for the test to finish, or cancel it before saving.</value>
+  </data>
+  <data name="CliTestSucceeded" xml:space="preserve">
+    <value>Command completed</value>
+  </data>
+  <data name="CliTestCompleted" xml:space="preserve">
+    <value>The command ran once. This remapping has not been saved or enabled.</value>
+  </data>
+  <data name="CliTestFailed" xml:space="preserve">
+    <value>Command failed</value>
+  </data>
+  <data name="CliTestFailedStatus" xml:space="preserve">
+    <value>Status: {0}. Exit code: {1}.</value>
+  </data>
+  <data name="CliTestUnexpectedError" xml:space="preserve">
+    <value>The command could not be tested. Try again.</value>
+  </data>
+  <data name="CliTestCancelled" xml:space="preserve">
+    <value>Test cancelled</value>
+  </data>
+  <data name="CliTestOutputFormat" xml:space="preserve">
+    <value>Exit code: {0}&#xA;&#xA;Output:&#xA;{1}&#xA;&#xA;Errors:&#xA;{2}</value>
+  </data>
+  <data name="CliTestOutputTruncated" xml:space="preserve">
+    <value>Additional output is not displayed.</value>
+  </data>
 </root>

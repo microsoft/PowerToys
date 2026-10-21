@@ -2,14 +2,16 @@
 
 > **Status: prototype.** Write a small script once and use it across compatible PowerToys modules.
 > This folder contains the **working core** (script header format, registry, shared executor
-> `PowerScripts.Host.exe`), the Explorer context-menu handler, and sample scripts. Integrations with
-> other PowerToys modules are developed in separate branches.
+> `PowerScripts.Host.exe`), the Explorer context-menu handler, sample scripts, and the built-in CLI
+> catalogue used by the Keyboard Manager CLI demo. Other script-consumer integrations remain separate
+> prototype work.
 
 ## Included integration (prototype)
 
 | Integration | What it does | How |
 | --- | --- | --- |
 | **Explorer right-click** | Supports file scripts (`input: files`) whose declared extensions and file-count limits match the complete selection. Selected files are supplied automatically; the menu does not collect additional scalar parameters. | The Windows 11 `IExplorerCommand` handler asks `Host.exe shell-menu --files <paths>` for matching scripts and invokes `Host.exe run <id> --files <paths>`. |
+| **Keyboard Manager CLI demo** | Renders a parameter form from the embedded native CLI catalogue and saves independent hotkey bindings without creating scripts. | `PowerScripts.Client` discovers `Host.exe cli list --json`; existing RunProgram mappings invoke `Host.exe cli run <commandId>`. See [CLI integration](CLI-INTEGRATION.md). |
 
 ### End-to-end demo
 
@@ -53,6 +55,8 @@ compatible scripts from the resolved I/O contract rather than author-declared in
   the KBM editor picker and future agents/MCP consume; `run <id>` executes.
 - **`CONSUMER-INTEGRATION.md`** — conventions and validation checklist for adding another PowerToys
   consumer without bypassing the shared Host, trust, or security model.
+- **`CLI-INTEGRATION.md`** — the built-in native CLI catalogue and Keyboard Manager parameter-form
+  demo. Hotkeys save command IDs and values, without creating script files.
 - **`samples/`** — a dozen descriptor-authored (`.tool.json`) scripts spanning PowerShell/Python,
   actions/file scripts/transforms, typed parameters, WSL-capable Python, and an explicit `x-execute`
   recipe (see the Sample gallery below).

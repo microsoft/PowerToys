@@ -140,7 +140,7 @@ public sealed class PowerScriptInfo
                 FolderPath = GetNullableString(element, "folderPath"),
                 EntryFullPath = GetNullableString(element, "entryFullPath"),
                 Trusted = GetBool(element, "trusted"),
-                Parameters = GetParameters(element),
+                Parameters = ParseParameters(element),
                 Transform = GetTransform(element),
             });
         }
@@ -222,7 +222,7 @@ public sealed class PowerScriptInfo
             GetString(transform, "outputFormat"));
     }
 
-    private static IReadOnlyList<PowerScriptParameter> GetParameters(JsonElement element)
+    internal static IReadOnlyList<PowerScriptParameter> ParseParameters(JsonElement element)
     {
         if (!element.TryGetProperty("parameters", out var parameters) ||
             parameters.ValueKind != JsonValueKind.Array)

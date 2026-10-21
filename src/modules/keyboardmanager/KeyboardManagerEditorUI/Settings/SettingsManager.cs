@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,7 +12,7 @@ using KeyboardManagerEditorUI.Interop;
 
 namespace KeyboardManagerEditorUI.Settings
 {
-    internal static class SettingsManager
+    internal static partial class SettingsManager
     {
         private static readonly string _settingsDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -76,16 +76,35 @@ namespace KeyboardManagerEditorUI.Settings
 
         public static bool WriteSettings(EditorSettings editorSettings)
         {
+            string? temporaryPath = null;
             try
             {
                 Directory.CreateDirectory(_settingsDirectory);
                 string json = JsonSerializer.Serialize(editorSettings, _jsonOptions);
-                File.WriteAllText(_settingsFilePath, json);
+
+                // Replace the file only after the complete document has been written in the same directory.
+                temporaryPath = Path.Combine(_settingsDirectory, $"editorSettings.{Guid.NewGuid():N}.tmp");
+                File.WriteAllText(temporaryPath, json);
+                File.Move(temporaryPath, _settingsFilePath, overwrite: true);
                 return true;
             }
             catch (Exception)
             {
                 return false;
+            }
+            finally
+            {
+                try
+                {
+                    if (temporaryPath is not null && File.Exists(temporaryPath))
+                    {
+                        File.Delete(temporaryPath);
+                    }
+                }
+                catch (Exception)
+                {
+                    // A leftover temporary file must not change the result of saving settings.
+                }
             }
         }
 
@@ -141,7 +160,10 @@ namespace KeyboardManagerEditorUI.Settings
             // Process all shortcut mappings
             foreach (ShortcutKeyMapping mapping in service.GetShortcutMappings())
             {
-                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.OriginalKeys == mapping.OriginalKeys))
+                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s =>
+                    s.CliBinding is not null
+                        ? ObservedShortcutMatches(s.Shortcut, mapping)
+                        : s.Shortcut.OriginalKeys == mapping.OriginalKeys))
                 {
                     AddShortcutMapping(EditorSettings, mapping);
                     shortcutSettingsChanged = true;
@@ -196,7 +218,7 @@ namespace KeyboardManagerEditorUI.Settings
                     singleKeyMappings,
                     shortcutKeyMappings);
 
-                if (!foundInService)
+                if (!foundInService && shortcutSettings.IsActive)
                 {
                     shortcutSettingsChanged = true;
                     shortcutSettings.IsActive = false;
@@ -275,6 +297,13 @@ namespace KeyboardManagerEditorUI.Settings
             if (string.IsNullOrEmpty(shortcutSettings.Shortcut.OriginalKeys))
             {
                 return false;
+            }
+
+            if (shortcutSettings.CliBinding is not null)
+            {
+                // Retain a disabled CLI binding's parameter values, but never attach its metadata to
+                // a different command that was written externally for the same trigger.
+                return shortcutKeyMappings.Any(m => ObservedShortcutMatches(shortcutSettings.Shortcut, m));
             }
 
             bool isSingleKey = shortcutSettings.Shortcut.OriginalKeys.Split(';').Length == 1;

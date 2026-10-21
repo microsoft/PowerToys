@@ -218,6 +218,12 @@
                         <TextBlock Text="PowerScript" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem x:Uid="ActionType_PowerToysCli" Tag="PowerToysCli">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE756;" />
+                        <TextBlock x:Uid="ActionType_PowerToysCli_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <!--
                 <ComboBoxItem x:Uid="ActionType_MouseClick" Tag="MouseClick">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -424,6 +430,13 @@
                             TextWrapping="Wrap"
                             Visibility="Collapsed" />
                     </StackPanel>
+                </tkcontrols:Case>
+                <tkcontrols:Case Value="PowerToysCli">
+                    <local:CliCommandControl
+                        x:Name="PowerToysCliControl"
+                        InputFocusRequested="PowerToysCliControl_InputFocusRequested"
+                        Loaded="PowerToysCliControl_Loaded"
+                        ValidationStateChanged="PowerToysCliControl_ValidationStateChanged" />
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
         </StackPanel>

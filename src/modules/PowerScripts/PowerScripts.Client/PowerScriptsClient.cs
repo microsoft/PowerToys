@@ -30,7 +30,7 @@ namespace PowerScripts.Client;
 /// goes through the host's single, never-elevated, trust-gated execution path.
 /// </para>
 /// </summary>
-public sealed class PowerScriptsClient
+public sealed partial class PowerScriptsClient
 {
     private readonly string? _hostPath;
     private readonly string? _scriptsRoot;
@@ -485,6 +485,12 @@ public sealed class PowerScriptsClient
             Path.Combine(AppContext.BaseDirectory, "PowerScripts", PowerScriptsProtocol.HostExeName),
             Path.Combine(moduleDir, PowerScriptsProtocol.HostExeName),
         };
+
+        // WinUI consumers are deployed one directory below the PowerToys installation root.
+        if (string.Equals(new DirectoryInfo(AppContext.BaseDirectory).Name, "WinUI3Apps", StringComparison.OrdinalIgnoreCase))
+        {
+            candidates.Insert(2, Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "PowerScripts", PowerScriptsProtocol.HostExeName)));
+        }
 
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)

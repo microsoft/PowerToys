@@ -10,6 +10,8 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Controls;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
@@ -18,6 +20,7 @@ using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerScripts.Client;
 using static KeyboardManagerEditorUI.Interop.ShortcutKeyMapping;
 
 namespace KeyboardManagerEditorUI.Pages
@@ -34,6 +37,10 @@ namespace KeyboardManagerEditorUI.Pages
         /// <summary>String form of <see cref="VkDisabled"/> used in shortcut key mapping serialization.</summary>
         private const string VkDisabledString = "256";
 
+        private readonly PowerScriptsClient _cliClient = new();
+        private readonly CancellationTokenSource _cliLifetime = new();
+        private readonly Dictionary<string, CliCommandInfo> _cliCommands = new(StringComparer.Ordinal);
+
         private DispatcherTimer? _serviceCheckTimer;
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
@@ -41,6 +48,8 @@ namespace KeyboardManagerEditorUI.Pages
         private EditingItem? _editingItem;
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
+        private bool _loadingCliNames;
+        private bool _updatingCliToggle;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -81,6 +90,8 @@ namespace KeyboardManagerEditorUI.Pages
 
         public ObservableCollection<PowerScriptShortcut> PowerScriptShortcuts { get; } = new();
 
+        public ObservableCollection<CliShortcut> CliShortcuts { get; } = new();
+
         public ObservableCollection<URLShortcut> UrlShortcuts { get; } = new();
 
         [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
@@ -95,6 +106,7 @@ namespace KeyboardManagerEditorUI.Pages
                 ProgramShortcut,
                 UrlShortcut,
                 PowerScriptShortcut,
+                CliShortcut,
             }
 
             public ItemType Type { get; set; }
@@ -333,19 +345,51 @@ namespace KeyboardManagerEditorUI.Pages
             await ShowRemappingDialog();
         }
 
+        private async void CliShortcutsList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is not CliShortcut shortcut)
+            {
+                return;
+            }
+
+            _isEditMode = true;
+            _editingItem = new EditingItem
+            {
+                Type = EditingItem.ItemType.CliShortcut,
+                Item = shortcut,
+                OriginalTriggerKeys = shortcut.Shortcut.ToList(),
+                AppName = shortcut.AppName,
+                IsAllApps = string.IsNullOrEmpty(shortcut.AppName),
+            };
+
+            UnifiedMappingControl.Reset();
+            UnifiedMappingControl.SetTriggerKeys(shortcut.Shortcut.ToList());
+            UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.PowerToysCli);
+            UnifiedMappingControl.SetCliBinding(shortcut.CommandId, shortcut.Parameters);
+            UnifiedMappingControl.SetAppSpecific(!string.IsNullOrEmpty(shortcut.AppName), shortcut.AppName);
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
+            await ShowRemappingDialog();
+        }
+
         private async System.Threading.Tasks.Task ShowRemappingDialog()
         {
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
             RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
 
-            await RemappingDialog.ShowAsync();
-
-            RemappingDialog.PrimaryButtonClick -= RemappingDialog_PrimaryButtonClick;
-            UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
-            _isEditMode = false;
-            _editingItem = null;
-            KeyboardHookHelper.Instance.CleanupHook();
+            try
+            {
+                await RemappingDialog.ShowAsync();
+            }
+            finally
+            {
+                RemappingDialog.PrimaryButtonClick -= RemappingDialog_PrimaryButtonClick;
+                UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
+                _isEditMode = false;
+                _editingItem = null;
+                UnifiedMappingControl.Reset();
+                KeyboardHookHelper.Instance.CleanupHook();
+            }
         }
 
         private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
@@ -402,6 +446,14 @@ namespace KeyboardManagerEditorUI.Pages
                     return;
                 }
 
+                string? actionError = UnifiedMappingControl.GetCurrentActionValidationError();
+                if (!string.IsNullOrEmpty(actionError))
+                {
+                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), actionError);
+                    args.Cancel = true;
+                    return;
+                }
+
                 ValidationErrorType validationError = ValidateMapping(UnifiedMappingControl.CurrentActionType, triggerKeys);
                 if (validationError != ValidationErrorType.NoError)
                 {
@@ -410,12 +462,21 @@ namespace KeyboardManagerEditorUI.Pages
                     return;
                 }
 
-                if (_isEditMode && _editingItem != null)
+                bool isCliAction = UnifiedMappingControl.CurrentActionType == UnifiedMappingControl.ActionType.PowerToysCli;
+                if (_editingItem?.Item is CliShortcut && !isCliAction)
+                {
+                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("CliActionTypeLocked_Message"));
+                    args.Cancel = true;
+                    return;
+                }
+
+                if (_isEditMode && _editingItem != null && !isCliAction)
                 {
                     DeleteExistingMapping();
                 }
 
-                bool saved = UnifiedMappingControl.CurrentActionType switch
+                string? cliSaveError = null;
+                bool saved = isCliAction ? SaveCliMapping(triggerKeys, out cliSaveError) : UnifiedMappingControl.CurrentActionType switch
                 {
                     UnifiedMappingControl.ActionType.KeyOrShortcut => SaveKeyOrShortcutMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.Text => SaveTextMapping(triggerKeys),
@@ -433,7 +494,7 @@ namespace KeyboardManagerEditorUI.Pages
                 }
                 else
                 {
-                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
+                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), cliSaveError ?? ResourceHelper.GetString("Error_SaveFailed_Message"));
                     args.Cancel = true;
                 }
             }
@@ -472,8 +533,32 @@ namespace KeyboardManagerEditorUI.Pages
                     ? ValidationErrorType.EmptyProgramPath
                     : ValidationHelper.ValidateAppMapping(
                         triggerKeys, PowerScriptsCatalog.ResolveHostPath() ?? string.Empty, isAppSpecific, appName, _mappingService!, _isEditMode),
+                UnifiedMappingControl.ActionType.PowerToysCli => ValidateCliMapping(triggerKeys, isAppSpecific, appName),
                 _ => ValidationErrorType.NoError,
             };
+        }
+
+        private ValidationErrorType ValidateCliMapping(List<string> triggerKeys, bool isAppSpecific, string appName)
+        {
+            if (UnifiedMappingControl.GetSelectedCliCommand() is null)
+            {
+                return ValidationErrorType.EmptyProgramPath;
+            }
+
+            string originalKeys = string.Join(";", triggerKeys.Select(key => _mappingService!.GetKeyCodeFromName(key).ToString(CultureInfo.InvariantCulture)));
+            string? editingId = (_editingItem?.Item as IToggleableShortcut)?.Id;
+            string targetApp = isAppSpecific ? appName : string.Empty;
+            bool duplicate = SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values.Any(settings =>
+                settings.Id != editingId &&
+                KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, originalKeys) &&
+                (string.IsNullOrEmpty(settings.Shortcut.TargetApp) || string.IsNullOrEmpty(targetApp) ||
+                 string.Equals(settings.Shortcut.TargetApp, targetApp, StringComparison.OrdinalIgnoreCase)));
+            if (duplicate)
+            {
+                return ValidationErrorType.DuplicateMapping;
+            }
+
+            return ValidationHelper.ValidateAppMapping(triggerKeys, _cliClient.HostPath ?? string.Empty, isAppSpecific, appName, _mappingService!, _isEditMode);
         }
 
         private void DeleteExistingMapping()
@@ -762,6 +847,48 @@ namespace KeyboardManagerEditorUI.Pages
             return saved;
         }
 
+        private bool SaveCliMapping(List<string> triggerKeys, out string? error)
+        {
+            error = null;
+            var command = UnifiedMappingControl.GetSelectedCliCommand();
+            if (command is null || !command.IsAvailable || string.IsNullOrEmpty(_cliClient.HostPath))
+            {
+                error = command?.UnavailableReason ?? ResourceHelper.GetString("Error_SaveFailed_Message");
+                return false;
+            }
+
+            var parameters = new Dictionary<string, string?>(UnifiedMappingControl.GetCliParameters(), StringComparer.Ordinal);
+            string originalKeys = string.Join(";", triggerKeys.Select(key => _mappingService!.GetKeyCodeFromName(key).ToString(CultureInfo.InvariantCulture)));
+            var mapping = new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.RunProgram,
+                OriginalKeys = originalKeys,
+                TargetKeys = originalKeys,
+                ProgramPath = _cliClient.HostPath,
+                ProgramArgs = PowerScriptsClient.BuildCliRunArguments(command.Id, parameters),
+                IfRunningAction = ProgramAlreadyRunningAction.StartAnother,
+                Visibility = StartWindowType.Hidden,
+                Elevation = ElevationLevel.NonElevated,
+                TargetApp = UnifiedMappingControl.GetIsAppSpecific() ? UnifiedMappingControl.GetAppName() : string.Empty,
+            };
+            var binding = new CliBindingSettings
+            {
+                CommandId = command.Id,
+                Parameters = parameters,
+            };
+
+            // The native engine keeps its existing RunProgram primitive. Only this binding's
+            // values are persisted; the shared CLI definition remains in the Host resource.
+            string? existingId = _isEditMode ? (_editingItem?.Item as IToggleableShortcut)?.Id : null;
+            bool saved = SettingsManager.TrySaveCliBinding(_mappingService!, existingId, mapping, binding, out string saveError);
+            if (!saved)
+            {
+                error = saveError;
+            }
+
+            return saved;
+        }
+
         #endregion
 
         #region Delete Handlers
@@ -818,6 +945,16 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void HandleShortcutDelete(IToggleableShortcut shortcut)
         {
+            if (shortcut is CliShortcut)
+            {
+                if (!SettingsManager.TryDeleteCliBinding(_mappingService!, shortcut.Id, out string error))
+                {
+                    Logger.LogWarning("Failed to delete CLI binding: " + error);
+                }
+
+                return;
+            }
+
             bool deleted = shortcut.Shortcut.Count == 1
                 ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0]) // Remapping has its own handler, single key will always be text mapping
                 : DeleteMultiKeyShortcut(shortcut);
@@ -844,6 +981,28 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (sender is not ToggleSwitch toggleSwitch || toggleSwitch.DataContext is not IToggleableShortcut shortcut || _mappingService == null)
             {
+                return;
+            }
+
+            if (shortcut is CliShortcut cliShortcut)
+            {
+                if (_updatingCliToggle || toggleSwitch.IsOn == cliShortcut.IsActive)
+                {
+                    return;
+                }
+
+                if (SettingsManager.TrySetCliBindingActive(_mappingService, shortcut.Id, toggleSwitch.IsOn, out string error))
+                {
+                    cliShortcut.IsActive = toggleSwitch.IsOn;
+                }
+                else
+                {
+                    Logger.LogWarning("Failed to change CLI binding state: " + error);
+                    _updatingCliToggle = true;
+                    toggleSwitch.IsOn = cliShortcut.IsActive;
+                    _updatingCliToggle = false;
+                }
+
                 return;
             }
 
@@ -960,14 +1119,16 @@ namespace KeyboardManagerEditorUI.Pages
             LoadRemappings();
             LoadTextMappings();
             LoadProgramShortcuts();
+            LoadCliShortcuts();
             LoadPowerScriptShortcuts();
             LoadUrlShortcuts();
             UpdateHasAnyMappings();
+            _ = RefreshCliCommandNamesAsync();
         }
 
         private void UpdateHasAnyMappings()
         {
-            bool hasAny = RemappingList.Count > 0 || DisabledList.Count > 0 || TextMappings.Count > 0 || ProgramShortcuts.Count > 0 || PowerScriptShortcuts.Count > 0 || UrlShortcuts.Count > 0;
+            bool hasAny = RemappingList.Count > 0 || DisabledList.Count > 0 || TextMappings.Count > 0 || ProgramShortcuts.Count > 0 || CliShortcuts.Count > 0 || PowerScriptShortcuts.Count > 0 || UrlShortcuts.Count > 0;
             MappingState = hasAny ? "HasMappings" : "Empty";
         }
 
@@ -1059,7 +1220,9 @@ namespace KeyboardManagerEditorUI.Pages
 
                 // PowerScript hotkeys are stored as Run-Program mappings but shown in their own
                 // dedicated section, so skip them here.
-                if (PowerScriptsCatalog.IsPowerScriptProgramPath(mapping.ProgramPath))
+                if (IsCliBinding(shortcutSettings) ||
+                    (PowerScriptsCatalog.IsPowerScriptProgramPath(mapping.ProgramPath) &&
+                     !string.IsNullOrEmpty(PowerScriptsCatalog.ParseScriptId(mapping.ProgramArgs))))
                 {
                     continue;
                 }
@@ -1099,7 +1262,7 @@ namespace KeyboardManagerEditorUI.Pages
                 ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
 
-                if (!PowerScriptsCatalog.IsPowerScriptProgramPath(mapping.ProgramPath))
+                if (IsCliBinding(shortcutSettings) || !PowerScriptsCatalog.IsPowerScriptProgramPath(mapping.ProgramPath))
                 {
                     continue;
                 }
@@ -1121,6 +1284,93 @@ namespace KeyboardManagerEditorUI.Pages
                     Id = shortcutSettings.Id,
                     AppName = mapping.TargetApp ?? string.Empty,
                 });
+            }
+        }
+
+        private static bool IsCliBinding(ShortcutSettings settings)
+        {
+            if (settings.CliBinding is not { } binding || settings.Shortcut.OperationType != ShortcutOperationType.RunProgram ||
+                !PowerScriptsCatalog.IsPowerScriptProgramPath(settings.Shortcut.ProgramPath))
+            {
+                return false;
+            }
+
+            try
+            {
+                return string.Equals(settings.Shortcut.ProgramArgs, PowerScriptsClient.BuildCliRunArguments(binding.CommandId, binding.Parameters), StringComparison.Ordinal);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+        }
+
+        private void LoadCliShortcuts()
+        {
+            CliShortcuts.Clear();
+            foreach (var settings in SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values)
+            {
+                if (!IsCliBinding(settings))
+                {
+                    continue;
+                }
+
+                var binding = settings.CliBinding!;
+                CliShortcuts.Add(new CliShortcut
+                {
+                    Id = settings.Id,
+                    Shortcut = ParseKeyCodes(settings.Shortcut.OriginalKeys),
+                    CommandId = binding.CommandId,
+                    CommandName = GetCliCommandName(binding.CommandId),
+                    Parameters = new Dictionary<string, string?>(binding.Parameters, StringComparer.Ordinal),
+                    IsActive = settings.IsActive,
+                    AppName = settings.Shortcut.TargetApp ?? string.Empty,
+                });
+            }
+        }
+
+        private string GetCliCommandName(string id) => _cliCommands.TryGetValue(id, out var command)
+            ? string.IsNullOrEmpty(command.Group) ? command.Name : command.Group + " · " + command.Name
+            : id;
+
+        private async Task RefreshCliCommandNamesAsync()
+        {
+            if (_loadingCliNames || _disposed || CliShortcuts.Count == 0)
+            {
+                return;
+            }
+
+            _loadingCliNames = true;
+            try
+            {
+                var result = await _cliClient.GetCliCommandsAsync(_cliLifetime.Token);
+                if (_disposed || !result.Succeeded)
+                {
+                    return;
+                }
+
+                _cliCommands.Clear();
+                foreach (var command in result.Commands)
+                {
+                    _cliCommands[command.Id] = command;
+                }
+
+                foreach (var shortcut in CliShortcuts)
+                {
+                    shortcut.CommandName = GetCliCommandName(shortcut.CommandId);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // The page was closed while the catalogue was loading.
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("Unable to refresh CLI names: " + ex.Message);
+            }
+            finally
+            {
+                _loadingCliNames = false;
             }
         }
 
@@ -1184,6 +1434,8 @@ namespace KeyboardManagerEditorUI.Pages
 
             if (disposing)
             {
+                _cliLifetime.Cancel();
+                _cliLifetime.Dispose();
                 _serviceCheckTimer?.Stop();
                 _serviceCheckTimer = null;
                 _mappingService?.Dispose();

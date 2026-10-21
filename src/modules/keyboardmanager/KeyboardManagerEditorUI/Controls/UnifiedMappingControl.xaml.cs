@@ -10,6 +10,7 @@ using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerScripts.Client;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -82,6 +83,7 @@ namespace KeyboardManagerEditorUI.Controls
             MouseClick,
             Disable,
             PowerScript,
+            PowerToysCli,
         }
 
         /// <summary>
@@ -136,6 +138,7 @@ namespace KeyboardManagerEditorUI.Controls
                         "MouseClick" => ActionType.MouseClick,
                         "Disable" => ActionType.Disable,
                         "PowerScript" => ActionType.PowerScript,
+                        "PowerToysCli" => ActionType.PowerToysCli,
                         _ => ActionType.KeyOrShortcut,
                     };
                 }
@@ -184,6 +187,11 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (CurrentActionType == ActionType.PowerToysCli)
+            {
+                PowerToysCliControl?.Activate();
+            }
+
             // Set up event handlers for app-specific checkbox
             AppSpecificCheckBox.Checked += AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Unchecked += AppSpecificCheckBox_Changed;
@@ -275,6 +283,15 @@ namespace KeyboardManagerEditorUI.Controls
                 }
             }
 
+            if (CurrentActionType == ActionType.PowerToysCli)
+            {
+                PowerToysCliControl?.Activate();
+            }
+            else
+            {
+                PowerToysCliControl?.Deactivate();
+            }
+
             HideValidationMessage();
             RaiseValidationStateChanged();
         }
@@ -289,6 +306,25 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             RaiseValidationStateChanged();
+        }
+
+        private void PowerToysCliControl_ValidationStateChanged(object? sender, EventArgs e)
+        {
+            RaiseValidationStateChanged();
+        }
+
+        private void PowerToysCliControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (CurrentActionType == ActionType.PowerToysCli)
+            {
+                PowerToysCliControl.Activate();
+            }
+        }
+
+        private void PowerToysCliControl_InputFocusRequested(object? sender, EventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
         }
 
         private void ActionKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -781,6 +817,25 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public Helpers.PowerScriptInfo? GetSelectedPowerScript() => PowerScriptComboBox?.SelectedItem as Helpers.PowerScriptInfo;
 
+        /// <summary>Gets the CLI definition selected in this dialog, when it is present in the Host catalogue.</summary>
+        public CliCommandInfo? GetSelectedCliCommand() => PowerToysCliControl?.GetSelectedCommand();
+
+        /// <summary>Returns an independent parameter snapshot, including the displayed defaults.</summary>
+        public IReadOnlyDictionary<string, string?> GetCliParameters() =>
+            PowerToysCliControl?.GetParameters() ?? new Dictionary<string, string?>();
+
+        /// <summary>Restores a CLI binding without sharing its mutable draft with another dialog.</summary>
+        public void SetCliBinding(string commandId, IReadOnlyDictionary<string, string?> parameters)
+        {
+            PowerToysCliControl.SetBinding(commandId, parameters);
+            ActionTypeComboBox.IsEnabled = false;
+        }
+
+        /// <summary>Returns an actionable error for the current CLI draft, or null when it can be saved.</summary>
+        public string? GetCurrentActionValidationError() => CurrentActionType == ActionType.PowerToysCli
+            ? PowerToysCliControl?.GetValidationError()
+            : null;
+
         /// <summary>
         /// Selects the PowerScript with the given id in the picker, if present.
         /// </summary>
@@ -864,6 +919,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
                 ActionType.PowerScript => GetSelectedPowerScript() != null,
+                ActionType.PowerToysCli => PowerToysCliControl?.GetValidationError() is null && GetSelectedCliCommand() is not null,
                 ActionType.Disable => true,
                 _ => false,
             };
@@ -923,6 +979,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Disable => "Disable",
                 ActionType.MouseClick => "MouseClick",
                 ActionType.PowerScript => "PowerScript",
+                ActionType.PowerToysCli => "PowerToysCli",
                 _ => "KeyOrShortcut",
             };
 
@@ -1146,6 +1203,8 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void Reset()
         {
+            PowerToysCliControl?.Reset();
+
             _triggerKeys.Clear();
             _actionKeys.Clear();
 
@@ -1169,6 +1228,7 @@ namespace KeyboardManagerEditorUI.Controls
 
             if (ActionTypeComboBox != null)
             {
+                ActionTypeComboBox.IsEnabled = true;
                 ActionTypeComboBox.SelectedIndex = 0;
             }
 
@@ -1319,6 +1379,7 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 if (disposing)
                 {
+                    PowerToysCliControl?.Dispose();
                     CleanupKeyboardHook();
                     HideValidationMessage();
                 }

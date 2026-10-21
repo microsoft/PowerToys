@@ -39,6 +39,20 @@ internal static class Program
                 return 1;
             }
 
+            // Built-in CLI commands are embedded in the Host. Do not scan the user's scripts root
+            // or route native commands through the script trust/entry-file authoring contract.
+            if (string.Equals(args[0], "cli", StringComparison.OrdinalIgnoreCase))
+            {
+                return CliCommands.Run(args.Skip(1).ToArray());
+            }
+
+            // This fixed diagnostic CLI only echoes its declared parameters. It must stay ahead of
+            // script discovery so the embedded demo has no dependency on user configuration.
+            if (string.Equals(args[0], "demo", StringComparison.OrdinalIgnoreCase))
+            {
+                return DemoCommands.Run(args.Skip(1).ToArray());
+            }
+
             var (positional, options) = ParseArgs(args.Skip(1).ToArray());
             var root = options.TryGetValue("root", out var r) ? r.FirstOrDefault() : null;
 
@@ -670,6 +684,9 @@ internal static class Program
         Console.WriteLine("       <shape>: none | text | html | image | audio | video | files   (filter by declared I/O)");
         Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
         Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
+        Console.WriteLine("  cli list [--json]                  (list embedded PowerToys CLI commands)");
+        Console.WriteLine("  cli run <id> [--set name=value ...] [--set-base64 value ...] [--timeout-ms 60000] [--no-consent] [--json]");
+        Console.WriteLine("  demo echo --target <text> [--mode fast|full] [--count 1..100] [--verbose] (print diagnostic argv only)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  shell-menu [--icons] --files <f1> <f2> ... (tab-separated id/name, optional icon path)");

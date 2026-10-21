@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="KeyboardManagerEditorUI.Controls.CliCommandControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    GotFocus="CliInput_GotFocus"
+    Loaded="CliCommandControl_Loaded"
+    Unloaded="CliCommandControl_Unloaded">
+    <ScrollViewer
+        MaxHeight="440"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="8">
+            <TextBlock
+                x:Uid="CliActionDescription"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
+            <ProgressRing
+                x:Name="CatalogProgressRing"
+                Width="20"
+                Height="20"
+                HorizontalAlignment="Left"
+                IsActive="False"
+                Visibility="Collapsed" />
+            <InfoBar
+                x:Name="CatalogInfoBar"
+                IsClosable="False"
+                IsOpen="False"
+                Severity="Error" />
+            <Button
+                x:Name="CatalogRetryButton"
+                x:Uid="CliCatalogRetryButton"
+                Click="CatalogRetryButton_Click"
+                Visibility="Collapsed" />
+            <ComboBox
+                x:Name="CommandComboBox"
+                x:Uid="CliCommandComboBox"
+                HorizontalAlignment="Stretch"
+                SelectionChanged="CommandComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{Binding Group}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock
+                x:Name="CommandDescriptionText"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+            <InfoBar
+                x:Name="CommandInfoBar"
+                IsClosable="False"
+                IsOpen="False"
+                Severity="Warning" />
+            <ContentControl x:Name="ParametersContainer" HorizontalContentAlignment="Stretch">
+                <StackPanel x:Name="ParametersPanel" Spacing="12" />
+            </ContentControl>
+            <TextBlock
+                x:Name="NoParametersText"
+                x:Uid="CliNoParametersText"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+            <Button
+                x:Name="ResetParametersButton"
+                x:Uid="CliResetParametersButton"
+                Click="ResetParametersButton_Click"
+                Visibility="Collapsed" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button
+                    x:Name="TestCommandButton"
+                    x:Uid="CliTestCommandButton"
+                    Click="TestCommandButton_Click"
+                    IsEnabled="False" />
+                <ProgressRing
+                    x:Name="TestProgressRing"
+                    Width="20"
+                    Height="20"
+                    IsActive="False"
+                    Visibility="Collapsed" />
+                <Button
+                    x:Name="CancelTestButton"
+                    x:Uid="CliCancelTestButton"
+                    Click="CancelTestButton_Click"
+                    Visibility="Collapsed" />
+            </StackPanel>
+            <TextBlock
+                x:Uid="CliTestCommandDescription"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                TextWrapping="Wrap" />
+            <InfoBar
+                x:Name="TestResultInfoBar"
+                IsClosable="True"
+                IsOpen="False" />
+            <Expander
+                x:Name="TestOutputExpander"
+                x:Uid="CliTestOutputExpander"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Visibility="Collapsed">
+                <TextBox
+                    x:Name="TestOutputTextBox"
+                    MaxHeight="160"
+                    AcceptsReturn="True"
+                    IsReadOnly="True"
+                    TextWrapping="Wrap" />
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
