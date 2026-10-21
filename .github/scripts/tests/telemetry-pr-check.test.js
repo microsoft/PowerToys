@@ -13,7 +13,7 @@ const telemetryFile = {
   patch: '@@ -1 +1 @@\n+TraceLoggingWrite(provider, "NewEvent");',
 };
 
-function harness(t, { fork = false, files = [], comments = [], fresh, documentation = '', documentationError = false } = {}) {
+function harness(t, { fork = false, files = [], comments = [], fresh } = {}) {
   const pull = {
     number: 42,
     state: 'open',
@@ -45,11 +45,6 @@ function harness(t, { fork = false, files = [], comments = [], fresh, documentat
       result = files;
     } else if (url.includes('/comments?')) {
       result = comments;
-    } else if (url.includes('/contents/DATA_AND_PRIVACY.md?ref=head-sha')) {
-      if (documentationError) return new Response('Unavailable', {
-        status: typeof documentationError === 'number' ? documentationError : 503,
-      });
-      result = { encoding: 'base64', content: Buffer.from(documentation).toString('base64') };
     } else {
       throw new Error(`Unexpected request: ${url}`);
     }
@@ -67,23 +62,40 @@ function harness(t, { fork = false, files = [], comments = [], fresh, documentat
     event,
     calls,
     logs,
-    setDocumentation: (value) => { documentation = value; },
     writes: () => calls.filter((call) => call.method !== 'GET'),
   };
 }
 
+test('review regression: a block-comment event example is advisory, not a documentation failure', async (t) => {
+  const h = harness(t, { fork: true, files: [{
+    filename: 'src/example.cpp',
+    patch: '@@ -0,0 +1,3 @@\n+/*\n+TraceLoggingWrite(provider, "ExampleEvent");\n+*/',
+  }] });
+  assert.equal((await main(h.event)).required, false);
+  assert.deepEqual(h.writes(), []);
+});
+
+test('review regression: inserting a comment beside an unchanged event never fails documentation', async (t) => {
+  const h = harness(t, { fork: true, files: [{
+    filename: 'src/example.cpp',
+    patch: '@@ -1,2 +1,3 @@\n+// Explain the existing code.\n TraceLoggingWrite(provider, "ExistingEvent");\n return;',
+  }] });
+  assert.equal((await main(h.event)).required, false);
+  assert.deepEqual(h.writes(), []);
+});
+
 test('fork telemetry is fully analyzed with guidance but no attempted mutation', async (t) => {
   const h = harness(t, { fork: true, files: [telemetryFile] });
   const result = await main(h.event);
-  assert.equal(result.required, true);
+  assert.equal(result.required, false);
   assert.deepEqual(h.writes(), []);
-  assert.ok(h.logs.some((line) => line.includes('REQUIRED: Added literal')));
-  assert.ok(h.logs.some((line) => line.includes('INFO: Telemetry signals')));
+  assert.ok(h.logs.some((line) => line.includes('findings are advisory')));
+  assert.ok(h.logs.some((line) => line.includes('INFO: Possible telemetry changes')));
   assert.ok(h.calls.some((call) => call.url.includes('/files?')));
 });
 
 test('same-repository PR retains guidance comments and reviewer routing', async (t) => {
-  const h = harness(t, { documentation: 'NewEvent', files: [
+  const h = harness(t, { files: [
     telemetryFile,
     { filename: 'DATA_AND_PRIVACY.md', status: 'modified', patch: '+NewEvent' },
   ] });
@@ -98,13 +110,15 @@ test('no-action succeeds without creating a new comment', async (t) => {
   const h = harness(t, { files: [{ filename: 'README.md', patch: '+Docs' }] });
   assert.equal((await main(h.event)).required, false);
   assert.deepEqual(h.writes(), []);
-  assert.ok(h.logs.some((line) => line.includes('REQUIRED: None')));
+  assert.ok(h.logs.some((line) => line.includes('findings are advisory')));
 });
 
-test('concrete event addition without documentation is a required failure', async (t) => {
+test('event addition without documentation is advisory and preserves reviewer routing', async (t) => {
   const h = harness(t, { files: [telemetryFile] });
-  assert.equal((await main(h.event)).required, true);
+  assert.equal((await main(h.event)).required, false);
   assert.equal(h.writes().length, 2);
+  assert.equal(h.calls.some((call) => call.url.includes('/contents/')), false);
+  assert.match(h.writes().find((call) => call.body.body).body.body, /best-effort guidance/);
 });
 
 test('path-only and unverifiable follow-up findings remain informational', async (t) => {
@@ -131,7 +145,7 @@ test('manual dispatch also refuses fork mutations', async (t) => {
   const h = harness(t, { fork: true, files: [telemetryFile] });
   h.event.inputs = { pr_number: '42' };
   delete h.event.pull_request;
-  assert.equal((await main(h.event)).required, true);
+  assert.equal((await main(h.event)).required, false);
   assert.deepEqual(h.writes(), []);
 });
 
@@ -162,7 +176,7 @@ test('head changes while files are fetched discard stale analysis', async (t) =>
 
 test('repository identity is rechecked immediately before each write', async (t) => {
   const h = harness(t, { files: [telemetryFile], fresh: (reads, pull) => {
-    if (reads > 3) pull.head.repo.full_name = 'fork/PowerToys';
+    if (reads > 2) pull.head.repo.full_name = 'fork/PowerToys';
     return pull;
   } });
   await main(h.event);
@@ -187,7 +201,7 @@ test('a contributor cannot spoof the canonical bot comment', async (t) => {
   assert.ok(!h.writes().some((call) => call.method === 'PATCH'));
 });
 
-test('moved event calls, source comments and documentation examples are not concrete failures', async (t) => {
+test('moved event calls, source comments and documentation examples are advisory', async (t) => {
   const h = harness(t, { fork: true, files: [
     { filename: 'src/old.cpp', patch: '-TraceLoggingWrite(provider, "MovedEvent");' },
     { filename: 'src/new.cpp', patch: '+TraceLoggingWrite(provider, "MovedEvent");' },
@@ -198,16 +212,16 @@ test('moved event calls, source comments and documentation examples are not conc
   assert.deepEqual(h.writes(), []);
 });
 
-test('removing the privacy document does not satisfy the existing documentation requirement', async (t) => {
+test('removing the privacy document does not turn telemetry guidance into a gate', async (t) => {
   const h = harness(t, { fork: true, files: [
     telemetryFile,
     { filename: 'DATA_AND_PRIVACY.md', status: 'removed', patch: '-Old docs' },
   ] });
-  assert.equal((await main(h.event)).required, true);
+  assert.equal((await main(h.event)).required, false);
 });
 
 test('resolved documentation rerun updates guidance and succeeds', async (t) => {
-  const h = harness(t, { documentation: 'NewEvent', files: [
+  const h = harness(t, { files: [
     telemetryFile,
     { filename: 'DATA_AND_PRIVACY.md', status: 'modified', patch: '+New event' },
   ], comments: [
@@ -220,29 +234,7 @@ test('resolved documentation rerun updates guidance and succeeds', async (t) => 
   assert.doesNotMatch(commentWrite.body.body, /Add your telemetry events/);
 });
 
-test('an already documented event call is informational, not a policy failure', async (t) => {
-  const h = harness(t, {
-    fork: true, files: [telemetryFile],
-    documentation: '| Microsoft.PowerToys.NewEvent | Existing event description |',
-  });
-  assert.equal((await main(h.event)).required, false);
-  assert.deepEqual(h.writes(), []);
-});
-
-test('unverifiable documentation is informational rather than an invented policy failure', async (t) => {
-  const h = harness(t, { fork: true, files: [telemetryFile], documentationError: true });
-  assert.equal((await main(h.event)).required, false);
-  assert.ok(h.logs.some((line) => line.includes('Documentation could not be verified')));
-  assert.deepEqual(h.writes(), []);
-});
-
-test('missing head documentation cannot clear a concrete required omission', async (t) => {
-  const h = harness(t, { fork: true, files: [telemetryFile], documentationError: 404 });
-  assert.equal((await main(h.event)).required, true);
-  assert.deepEqual(h.writes(), []);
-});
-
-test('summary includes required versus informational findings even on no-action', async (t) => {
+test('summary explicitly describes advisory behavior even on no-action', async (t) => {
   const h = harness(t);
   const summaries = [];
   process.env.GITHUB_STEP_SUMMARY = 'summary-fixture.md';
@@ -252,7 +244,7 @@ test('summary includes required versus informational findings even on no-action'
   });
   await main(h.event);
   assert.equal(summaries.length, 1);
-  assert.match(summaries[0], /REQUIRED: None automatically verified/);
+  assert.match(summaries[0], /findings are advisory/);
   assert.match(summaries[0], /INFO: No telemetry signals remain/);
   assert.deepEqual(h.writes(), []);
 });
@@ -263,7 +255,7 @@ test('same-repository heuristic signals never post a falsely mandatory documenta
   });
   assert.equal((await main(h.event)).required, false);
   const comment = h.writes().find((call) => call.body.body);
-  assert.match(comment.body.body, /signals alone do not establish an unmet requirement/);
+  assert.match(comment.body.body, /best-effort guidance, not a failing check/);
   assert.doesNotMatch(comment.body.body, /Add your telemetry events/);
 });
 
@@ -271,7 +263,7 @@ test('manual same-repository dispatch preserves useful writes', async (t) => {
   const h = harness(t, { files: [telemetryFile] });
   delete h.event.pull_request;
   h.event.inputs = { pr_number: '42' };
-  assert.equal((await main(h.event)).required, true);
+  assert.equal((await main(h.event)).required, false);
   assert.equal(h.writes().length, 2);
 });
 
@@ -284,26 +276,16 @@ test('a fetched foreign base repository is read-only even with a same-repository
   assert.deepEqual(h.writes(), []);
 });
 
-test('changes during documentation verification cannot produce stale required failures', async (t) => {
-  const h = harness(t, { files: [telemetryFile], fresh: (reads, pull) => {
-    if (reads > 2) pull.head.sha = 'updated-after-document-read';
-    return pull;
-  } });
-  await assert.rejects(main(h.event), /rerun required/);
-  assert.deepEqual(h.writes(), []);
-});
-
-test('CLI returns failure only for verified missing documentation, and clears on a resolved rerun', () => {
+test('CLI succeeds for telemetry findings and fails for stale analysis only', () => {
   const pull = {
     number: 42, state: 'open', draft: false,
     head: { sha: 'head-sha', repo: { full_name: 'fork/PowerToys' } },
     base: { sha: 'base-sha', repo: { full_name: repository } },
   };
-  for (const [files, documentation, expectedExit, stale = false] of [
-    [[telemetryFile], '', 1],
-    [[telemetryFile], 'Microsoft.PowerToys.NewEvent', 0],
-    [[], '', 0],
-    [[telemetryFile], '', 1, true],
+  for (const [files, expectedExit, stale = false] of [
+    [[telemetryFile], 0],
+    [[], 0],
+    [[telemetryFile], 1, true],
   ]) {
     const event = { repository: { full_name: repository }, pull_request: structuredClone(pull) };
     if (stale) event.pull_request.head.sha = 'stale';
@@ -317,9 +299,6 @@ test('CLI returns failure only for verified missing documentation, and clears on
         let value;
         if (url.endsWith('/pulls/42')) value = ${JSON.stringify(pull)};
         else if (url.includes('/files?')) value = ${JSON.stringify(files)};
-        else if (url.includes('/contents/')) value = {
-          encoding: 'base64', content: ${JSON.stringify(Buffer.from(documentation).toString('base64'))}
-        };
         else throw new Error('Unexpected request: ' + url);
         return new Response(JSON.stringify(value), { status: 200 });
       };
@@ -338,8 +317,7 @@ test('CLI returns failure only for verified missing documentation, and clears on
     ], { env, encoding: 'utf8', timeout: 30000 });
     assert.equal(result.error, undefined);
     assert.equal(result.status, expectedExit, result.stdout + result.stderr);
-    assert.match(result.stdout, /REQUIRED:/);
-    assert.match(result.stdout, stale ? /ERROR: Analysis incomplete/ : /INFO:/);
+    assert.match(result.stdout, stale ? /ERROR: Analysis incomplete/ : /findings are advisory/);
   }
 });
 
@@ -351,38 +329,31 @@ test('literal event examples in test code are informational rather than a produc
   assert.deepEqual(h.writes(), []);
 });
 
-test('case-variant lookalike privacy filenames cannot satisfy the existing documentation requirement', async (t) => {
+test('case-variant privacy filenames do not imply the real document changed', async (t) => {
   const h = harness(t, { fork: true, files: [
     telemetryFile,
     { filename: 'data_and_privacy.md', status: 'added', patch: '+NewEvent' },
   ] });
-  assert.equal((await main(h.event)).required, true);
+  assert.equal((await main(h.event)).required, false);
+  assert.ok(h.logs.some((line) => line.includes('DATA_AND_PRIVACY.md changed: false')));
 });
 
-test('normal multiline literal event calls remain required until documented', async (t) => {
+test('normal multiline literal event calls remain advisory', async (t) => {
   const h = harness(t, { fork: true, files: [{
     ...telemetryFile,
     patch: '@@ -1 +1,4 @@\n+TraceLoggingWrite(\n+    provider,\n+    "NewEvent",\n+    TraceLoggingInt32(value, "Value"));',
   }] });
-  assert.equal((await main(h.event)).required, true);
+  assert.equal((await main(h.event)).required, false);
   assert.deepEqual(h.writes(), []);
 });
 
-test('an unrelated privacy edit and substring occurrence do not resolve an omission', async (t) => {
-  const h = harness(t, { fork: true, documentation: 'OtherNewEventSuffix',
-    files: [telemetryFile, { filename: 'DATA_AND_PRIVACY.md', status: 'modified', patch: '+Typo fix' }],
-  });
-  assert.equal((await main(h.event)).required, true);
-  assert.deepEqual(h.writes(), []);
-});
-
-test('unchanged unresolved telemetry reruns keep failing, then fresh head documentation resolves', async (t) => {
+test('repeated telemetry findings stay advisory and every rerun reads fresh files', async (t) => {
   const h = harness(t, { fork: true, files: [telemetryFile] });
-  assert.equal((await main(h.event)).required, true);
-  assert.equal((await main(h.event)).required, true);
+  assert.equal((await main(h.event)).required, false);
+  assert.equal((await main(h.event)).required, false);
   assert.deepEqual(h.writes(), []);
-  assert.equal(h.calls.filter((call) => call.url.includes('/contents/')).length, 2);
-  h.setDocumentation('| Microsoft.PowerToys.NewEvent | Event description |');
+  assert.equal(h.calls.filter((call) => call.url.includes('/files?')).length, 2);
+  assert.equal(h.calls.some((call) => call.url.includes('/contents/')), false);
   assert.equal((await main(h.event)).required, false);
   assert.deepEqual(h.writes(), []);
 });

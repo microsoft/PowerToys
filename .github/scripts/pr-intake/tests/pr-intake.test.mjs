@@ -157,7 +157,7 @@ test('changed paths provide a visual hint for product UI files', () => {
     'doc/devdocs/core/architecture.md',
   ]);
 
-  assert.equal(report.requiresVisualEvidence, true);
+  assert.equal(report.hasVisualChanges, true);
   assert.deepEqual(report.visualCandidatePaths, [
     'src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml',
   ]);
@@ -169,7 +169,7 @@ test('docs-only changes do not require visual evidence', () => {
     'doc/devdocs/core/architecture.md',
   ]);
 
-  assert.equal(report.requiresVisualEvidence, false);
+  assert.equal(report.hasVisualChanges, false);
   assert.deepEqual(report.categories, ['docs']);
 });
 
@@ -247,9 +247,10 @@ test('every current module root has a deterministic product mapping', () => {
   assert.deepEqual(unmappedRoots, []);
 });
 
-test('deriveVisualAssessment maps the path hint to a requirement', () => {
-  assert.deepEqual(deriveVisualAssessment(true).visualEvidenceRequirement, 'REQUIRED');
+test('deriveVisualAssessment recommends fork evidence and skips same-repository reminders', () => {
+  assert.deepEqual(deriveVisualAssessment(true).visualEvidenceRequirement, 'RECOMMENDED');
   assert.deepEqual(deriveVisualAssessment(false).visualEvidenceRequirement, 'NOT_NEEDED');
+  assert.deepEqual(deriveVisualAssessment(true, true).visualEvidenceRequirement, 'NOT_NEEDED');
   assert.match(deriveVisualAssessment(true).visualEvidenceReason, /product UI/);
 });
 
@@ -440,7 +441,7 @@ test('incomplete comment mentions the author and shows only actionable bullets',
   const body = renderIntakeComment(report, '2026-08-05T10:00:00.000Z');
   assert.match(body, /^<!-- powertoys-pr-intake:canonical:v1 -->/);
   assert.match(body, /## 🧭 PR intake/);
-  assert.match(body, /Visual evidence:\*\* Required/);
+  assert.match(body, /Visual evidence:\*\* Recommended/);
   assert.match(body, /@alice, please update/);
   assert.match(body, /invalid closing reference `#999` \(not found\)/);
   assert.match(body, /Closes #123/);
@@ -527,7 +528,7 @@ test('unknown mergeability holds readiness even when nothing else is flagged', (
   assert.deepEqual(report.authorActions, []);
 });
 
-test('product UI paths require visual evidence when none is present', () => {
+test('fork UI evidence is recommended without failing or starting the stale-feedback clock', () => {
   const report = buildIntakeReport({
     changedPaths: ['src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml'],
     body: 'Closes #12',
@@ -538,10 +539,13 @@ test('product UI paths require visual evidence when none is present', () => {
     invalidClosingIssues: [],
   });
 
-  assert.equal(report.requiresVisualEvidence, true);
-  assert.equal(report.visualAssessment.visualEvidenceRequirement, 'REQUIRED');
-  assert.equal(report.readyForReview, false);
-  assert.match(report.authorActions.join(' '), /screenshot, GIF, or video/);
+  assert.equal(report.hasVisualChanges, true);
+  assert.equal(report.visualAssessment.visualEvidenceRequirement, 'RECOMMENDED');
+  assert.equal(report.readyForReview, true);
+  assert.equal(report.needsAuthorFeedback, false);
+  assert.deepEqual(report.authorActions, []);
+  assert.match(report.recommendations.join(' '), /screenshot, GIF, or video/);
+  assert.doesNotMatch(renderIntakeComment(report), /automatically closed|feedback-since/);
 });
 
 test('product UI paths are satisfied when visual evidence is present', () => {
@@ -555,9 +559,10 @@ test('product UI paths are satisfied when visual evidence is present', () => {
     invalidClosingIssues: [],
   });
 
-  assert.equal(report.requiresVisualEvidence, true);
+  assert.equal(report.hasVisualChanges, true);
   assert.equal(report.readyForReview, true);
   assert.doesNotMatch(report.authorActions.join(' '), /screenshot/i);
+  assert.doesNotMatch(report.recommendations.join(' '), /screenshot/i);
 });
 
 test('draft PR remains incomplete until marked ready', () => {
@@ -868,7 +873,7 @@ test('runPullRequestIntake replaces a stale comment with an all-clear note when 
   assert.deepEqual(result.labelPlan.remove, [NEEDS_AUTHOR_FEEDBACK_LABEL]);
 });
 
-test('runPullRequestIntake posts a feedback comment when there are remarks', async () => {
+test('same-repository intake retains issue guidance without a screenshot reminder', async () => {
   const api = new MockApi({
     issues: [{ number: 100, labels: [], title: 'PR' }],
     pullRequests: [{
@@ -889,8 +894,11 @@ test('runPullRequestIntake posts a feedback comment when there are remarks', asy
   const result = await runPullRequestIntake({ api, event: intakeEvent() });
   assert.equal(result.commentResult.operation, 'created');
   assert.equal(api.created, 1);
-  assert.equal(result.readyForReview, false);
-  assert.match(api.comments[0].body, /screenshot, GIF, or video/);
+  assert.equal(result.readyForReview, true);
+  assert.equal(result.failed, false);
+  assert.equal(result.needsAuthorFeedback, false);
+  assert.match(api.comments[0].body, /Link the issue/);
+  assert.doesNotMatch(api.comments[0].body, /screenshot, GIF, or video|automatically closed/);
 });
 
 function forkApi(overrides = {}) {
@@ -938,12 +946,37 @@ test('unresolved fork reruns fail until fresh lifecycle labels satisfy the exist
   assertReadOnly(api);
 });
 
-test('fork objective visual requirement fails and passes after fresh body evidence', async () => {
+test('fork visual reminder stays advisory on reruns and clears after fresh body evidence', async () => {
   const api = forkApi({ files: [{ filename: 'src/settings-ui/Page.xaml' }] });
-  assert.equal((await runPullRequestIntake({ api, event: intakeEvent() })).failed, true);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const result = await runPullRequestIntake({ api, event: intakeEvent() });
+    assert.equal(result.failed, false);
+    assert.equal(result.needsAuthorFeedback, false);
+    assert.match(renderIntakeSummary(result), /screenshot, GIF, or video/);
+  }
   api.pullRequests[0].body = '![screenshot](https://example.com/screenshot.png)';
-  assert.equal((await runPullRequestIntake({ api, event: intakeEvent() })).failed, false);
+  const resolved = await runPullRequestIntake({ api, event: intakeEvent() });
+  assert.equal(resolved.failed, false);
+  assert.doesNotMatch(renderIntakeSummary(resolved), /screenshot, GIF, or video/);
   assertReadOnly(api);
+});
+
+test('same-repository UI PR clears a stale screenshot-only comment and feedback label', async () => {
+  const api = forkApi({
+    files: [{ filename: 'src/settings-ui/Page.xaml' }],
+    issues: [{ number: 100, labels: [NEEDS_AUTHOR_FEEDBACK_LABEL] }, { number: 12 }],
+    comments: [botComment(50, `${CANONICAL_MARKER}\nPlease attach a screenshot.`)],
+  });
+  api.pullRequests[0].head.repo.full_name = 'microsoft/PowerToys';
+  api.pullRequests[0].body = 'Closes #12';
+  const result = await runPullRequestIntake({ api, event: intakeEvent() });
+  assert.equal(result.failed, false);
+  assert.equal(result.readyForReview, true);
+  assert.equal(result.needsAuthorFeedback, false);
+  assert.equal(result.visualEvidenceRequirement, 'NOT_NEEDED');
+  assert.deepEqual(api.removedLabels, [{ issueNumber: 100, label: NEEDS_AUTHOR_FEEDBACK_LABEL }]);
+  assert.match(api.comments[0].body, /All automated intake checks now pass/);
+  assert.doesNotMatch(api.comments[0].body, /screenshot|automatically closed/);
 });
 
 test('same-repository objective failure keeps feedback mutations and resolved rerun clears it', async () => {

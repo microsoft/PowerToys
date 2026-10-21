@@ -122,10 +122,16 @@ function formatInlineCode(value) {
   return `\`${boundedString(String(value).replaceAll('`', '').replace(/\r?\n+/g, ' '), 500)}\``;
 }
 
-export function deriveVisualAssessment(requiresVisualEvidence) {
-  return requiresVisualEvidence
+export function deriveVisualAssessment(hasVisualChanges, sameRepository = false) {
+  if (sameRepository) {
+    return {
+      visualEvidenceRequirement: 'NOT_NEEDED',
+      visualEvidenceReason: 'Visual reminders are skipped for same-repository branches.',
+    };
+  }
+  return hasVisualChanges
     ? {
-      visualEvidenceRequirement: 'REQUIRED',
+      visualEvidenceRequirement: 'RECOMMENDED',
       visualEvidenceReason:
         'The pull request changes product UI files, so reviewers need to see the visible result.',
     }
@@ -266,7 +272,7 @@ export function classifyChangedPaths(paths) {
     normalizedPaths,
     categories,
     visualCandidatePaths,
-    requiresVisualEvidence: visualCandidatePaths.length > 0,
+    hasVisualChanges: visualCandidatePaths.length > 0,
   };
 }
 
@@ -497,11 +503,12 @@ export function buildIntakeReport({
   isDraft = false,
   mergeConflict = false,
   mergeabilityKnown = true,
+  sameRepository = false,
   verifiedClosingIssues,
   invalidClosingIssues,
 }) {
   const ownership = classifyChangedPaths(changedPaths);
-  const visualAssessment = deriveVisualAssessment(ownership.requiresVisualEvidence);
+  const visualAssessment = deriveVisualAssessment(ownership.hasVisualChanges, sameRepository);
   const closingIssues = Array.isArray(verifiedClosingIssues)
     ? verifiedClosingIssues
     : findClosingIssueReferences(body);
@@ -530,10 +537,10 @@ export function buildIntakeReport({
     );
   }
   if (
-    visualAssessment.visualEvidenceRequirement === 'REQUIRED'
+    visualAssessment.visualEvidenceRequirement === 'RECOMMENDED'
     && !visualEvidence.found
   ) {
-    authorActions.push(
+    recommendations.push(
       'Add a screenshot, GIF, or video to the PR description so reviewers can validate the visible change.',
     );
   }
@@ -609,7 +616,7 @@ export function renderIntakeComment(report, feedbackSince = null) {
   const requirement = report.visualAssessment.visualEvidenceRequirement;
   const visualEvidenceState = report.visualEvidence.found
     ? 'Visual evidence was detected in the PR description.'
-    : requirement === 'REQUIRED'
+    : requirement === 'RECOMMENDED'
       ? 'Visual evidence is currently missing.'
       : 'No visual evidence is expected.';
   const visualReason = markdownPlainText(
@@ -617,7 +624,7 @@ export function renderIntakeComment(report, feedbackSince = null) {
     500,
     'No explanation was provided.',
   );
-  const requirementLabel = requirement === 'REQUIRED' ? 'Required' : 'Not needed';
+  const requirementLabel = requirement === 'RECOMMENDED' ? 'Recommended' : 'Not needed';
   const statusSection = report.readyForReview
     ? `## ✅ Ready for review
 
@@ -909,6 +916,7 @@ export async function runPullRequestIntake({ api, event }) {
     isDraft: pullRequest.draft === true,
     mergeConflict: hasMergeConflict(pullRequest),
     mergeabilityKnown,
+    sameRepository: canWrite,
     verifiedClosingIssues: closingReferenceVerification.validReferences,
     invalidClosingIssues: closingReferenceVerification.invalidReferences,
   });
@@ -1001,7 +1009,7 @@ export async function runPullRequestIntake({ api, event }) {
       commentId: commentResult.comment?.id ?? null,
       deletedExtraComments: commentResult.deletedExtraComments,
     },
-    requiresVisualEvidence: report.requiresVisualEvidence,
+    hasVisualChanges: report.hasVisualChanges,
     visualEvidenceRequirement: report.visualAssessment.visualEvidenceRequirement,
     visualEvidenceFound: report.visualEvidence.found,
     mergeConflict: report.mergeConflict,

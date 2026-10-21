@@ -3,7 +3,7 @@
 /**
  * Analyzes PR diff data without executing PR code. Forks receive read-only
  * findings; same-repository PRs also receive guidance and reviewer routing.
- * Only concrete documentation omissions fail the check, not telemetry signals.
+ * Telemetry detection is best-effort guidance, never a documentation gate.
  *
  * This script is executed by .github/workflows/telemetry-pr-check.yml.
  * Keep both files aligned when changing trigger behavior, env usage, or messaging.
@@ -20,17 +20,10 @@ Thank you for contributing to PowerToys. We've detected that this PR might inclu
 - [ ] Reach out to Jessica (${REVIEWER_MENTION}) to follow up on the next steps: https://aka.ms/pt-telemetry-process
 `;
 
-const COMMENT_BODY_WITHOUT_PRIVACY_UPDATE = `${COMMENT_MARKER}
-Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event. Please ensure the following before merging:
-
-- [ ] Add your telemetry events to [DATA_AND_PRIVACY.md](https://github.com/microsoft/PowerToys/blob/main/DATA_AND_PRIVACY.md) within this PR.
-
-- [ ] Reach out to Jessica (${REVIEWER_MENTION}) to follow up on the next steps: https://aka.ms/pt-telemetry-process`;
-
 const COMMENT_BODY_INFORMATIONAL = `${COMMENT_MARKER}
-This PR contains possible telemetry changes. These signals alone do not establish an unmet requirement.
+This PR contains possible telemetry changes. This is best-effort guidance, not a failing check.
 
-If you are adding or modifying telemetry events, check whether [DATA_AND_PRIVACY.md](https://github.com/microsoft/PowerToys/blob/main/DATA_AND_PRIVACY.md) needs updating. Existing documentation could already cover these events; path-only matches and unavailable patches need human review.
+If you are adding or modifying telemetry events, check whether [DATA_AND_PRIVACY.md](https://github.com/microsoft/PowerToys/blob/main/DATA_AND_PRIVACY.md) needs updating. Path and text matches can include comments or examples and need human review.
 
 For telemetry process follow-up, contact Jessica (${REVIEWER_MENTION}): https://aka.ms/pt-telemetry-process`;
 
@@ -331,9 +324,6 @@ async function upsertPrComment(apiBaseUrl, repository, pullNumber, body, write, 
 }
 
 function report(lines) {
-  if (!lines.some((line) => line.startsWith('REQUIRED:'))) {
-    lines.push('REQUIRED: None evaluated; analysis skipped or incomplete.');
-  }
   const text = ['## Telemetry PR check', ...lines, ''].join('\n');
   console.log(text);
   if (process.env.GITHUB_STEP_SUMMARY) {
@@ -350,54 +340,6 @@ function sameRepository(pullRequest, repository, event) {
 function sameRevision(left, right) {
   return Boolean(left.head?.sha && left.base?.sha) &&
     left.head.sha === right.head?.sha && left.base.sha === right.base?.sha;
-}
-
-// Only added literal event calls are concrete evidence. Path matches and other
-// telemetry signals alone cannot prove that the documentation policy applies.
-function concreteAddedEventNames(files) {
-  const eventCall = /(?:^|\n)\s*TraceLoggingWrite(?:Wrapper)?\s*\(\s*(?:\w+\s*,\s*)?"([^"]+)"/g;
-  const added = new Set();
-  const removed = new Set();
-  for (const file of files) {
-    if (!String(file.filename || '').startsWith('src/') ||
-        /(?:^|\/)[^/]*(?:test|mock)[^/]*(?:\/|$)/i.test(file.filename)) continue;
-    if (!/\.(?:c|cpp|cxx|h|hpp|cs)$/i.test(file.filename || '')) continue;
-    for (const [prefix, names] of [['+', added], ['-', removed]]) {
-      // Context lines allow normally formatted multiline calls, while excluding
-      // opposite-side lines keeps the before/after versions separate.
-      let changed = false;
-      const source = (file.patch || '').split('\n').map((line) => {
-        if (line.startsWith('@@')) return '\n';
-        if (line.startsWith(prefix)) { changed = true; return line.slice(1); }
-        return line.startsWith(' ') ? line.slice(1) : '';
-      }).join('\n');
-      if (changed) {
-        for (const match of source.matchAll(eventCall)) names.add(match[1]);
-      }
-    }
-  }
-  return [...added].filter((name) => !removed.has(name));
-}
-
-async function undocumentedAddedEvents(apiBaseUrl, repository, headSha, files) {
-  const names = concreteAddedEventNames(files);
-  if (!names.length) return [];
-  const url = `${apiBaseUrl}/repos/${repository}/contents/DATA_AND_PRIVACY.md?ref=${encodeURIComponent(headSha)}`;
-  let document;
-  try {
-    document = await apiRequest(url);
-  } catch (error) {
-    if (error.status === 404) return names;
-    throw error;
-  }
-  if (document?.encoding !== 'base64' || typeof document.content !== 'string' ||
-      document.content.length > 2000000) {
-    throw new Error('The existing privacy document could not be verified.');
-  }
-  const text = Buffer.from(document.content, 'base64').toString('utf8');
-  const documented = new Set(text.match(/[A-Za-z_][A-Za-z0-9_.-]*/g) || []);
-  return names.filter((name) => ![...documented].some((entry) =>
-    entry === name || entry.endsWith(`.${name}`)));
 }
 
 async function main(event = readEventPayload(requireEnv('GITHUB_EVENT_PATH'))) {
@@ -438,34 +380,16 @@ async function main(event = readEventPayload(requireEnv('GITHUB_EVENT_PATH'))) {
   console.log(`Telemetry matches found: ${matches.length}.`);
   console.log(`DATA_AND_PRIVACY.md changed: ${dataAndPrivacyChanged}.`);
 
-  let missingEvents = [];
-  let documentationInfo = '';
-  try {
-    missingEvents = await undocumentedAddedEvents(apiBaseUrl,
-      current.head.repo.full_name, current.head.sha, files);
-  } catch (error) {
-    documentationInfo = `INFO: Documentation could not be verified; review manually: ${error.message}`;
-  }
-  const verified = await getPullRequest(apiBaseUrl, repository, pullNumber);
-  if (!sameRevision(current, verified) || verified.draft || verified.state !== 'open' ||
-      current.head.repo?.full_name !== verified.head.repo?.full_name ||
-      current.base.repo?.full_name !== verified.base.repo?.full_name) {
-    throw new Error('PR changed during documentation verification; rerun required.');
-  }
-  const required = missingEvents.length > 0;
   const canWrite = sameRepository(current, repository, event);
   report([
     `Mode: ${canWrite ? 'same-repository guidance' : 'read-only; no mutations attempted'}.`,
     `Head: ${current.head.sha}; base: ${current.base.sha}.`,
     `Scanned ${files.length} files; telemetry signals: ${matches.length}.`,
-    required
-      ? `REQUIRED: Added literal telemetry event ${missingEvents.join(', ')} is absent from DATA_AND_PRIVACY.md at the PR head. Add the event documentation within this PR.`
-      : 'REQUIRED: None automatically verified.',
+    'INFO: Telemetry findings are advisory; no documentation requirement is automatically enforced.',
     matches.length
-      ? 'INFO: Telemetry signals need review; contact @chatasweetie for follow-up. Signals and follow-up alone do not fail this check.'
+      ? 'INFO: Possible telemetry changes (including possible comments/examples): check whether DATA_AND_PRIVACY.md needs updating; contact @chatasweetie for follow-up. These findings do not fail this check.'
       : 'INFO: No telemetry signals remain.',
     ...matches.map((match) => `INFO: ${JSON.stringify(match.filename)}`),
-    ...(documentationInfo ? [documentationInfo] : []),
   ]);
 
   const write = async (url, method, body) => {
@@ -483,23 +407,18 @@ async function main(event = readEventPayload(requireEnv('GITHUB_EVENT_PATH'))) {
         await ensureReviewerRequested(apiBaseUrl, repository, pullNumber, current, write);
       }
       const commentBody = matches.length
-        ? (required ? COMMENT_BODY_WITHOUT_PRIVACY_UPDATE :
-          (dataAndPrivacyChanged ? COMMENT_BODY_WITH_PRIVACY_UPDATE : COMMENT_BODY_INFORMATIONAL))
+        ? (dataAndPrivacyChanged ? COMMENT_BODY_WITH_PRIVACY_UPDATE : COMMENT_BODY_INFORMATIONAL)
         : `${COMMENT_MARKER}\nTelemetry signals from the earlier run are no longer present. No telemetry action required.`;
       await upsertPrComment(apiBaseUrl, repository, pullNumber, commentBody, write, matches.length > 0);
     } catch (error) {
       report([`INFO: Guidance could not be updated: ${error.message}`]);
     }
   }
-  return { required };
+  return { required: false };
 }
 
 if (require.main === module) {
-  main().then((result) => {
-    if (result?.required) {
-      process.exitCode = 1;
-    }
-  }).catch((error) => {
+  main().catch((error) => {
     report([`ERROR: Analysis incomplete: ${error.message}`]);
     process.exitCode = 1;
   });

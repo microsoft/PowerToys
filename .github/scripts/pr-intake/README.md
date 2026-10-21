@@ -22,9 +22,10 @@ necessarily merge-blocking; repository branch rules are unchanged.
 3. Re-fetch mergeability a few
    times when GitHub still reports it as unknown so a conflicting PR is never
    treated as ready by default.
-4. Deterministically validate closing issue references, merge conflicts, and
-   whether visual evidence is present.
-5. Require visual evidence only when the changed paths touch product UI files.
+4. Deterministically validate closing issue references and merge conflicts.
+5. Recommend visual evidence when a fork changes product UI files. This is
+   advisory and never fails intake or adds `Needs-Author-Feedback`. Skip visual
+   reminders for same-repository branches.
 6. Keep a single canonical comment in sync and manage the `Ready for review`
    and `Needs-Author-Feedback` lifecycle labels.
 
@@ -41,8 +42,8 @@ label. Draft pull requests receive product labels but skip readiness checks.
 - If the PR is clean and no intake comment exists, nothing is posted.
 
 Missing issue references are advisory. Explicitly invalid references, merge
-conflicts, unknown mergeability, and missing required visual evidence block
-readiness. Draft PR events run deterministic path labeling, remove intake
+conflicts and unknown mergeability block readiness. Missing screenshots do not.
+Draft PR events run deterministic path labeling, remove intake
 lifecycle labels, delete trusted canonical intake comments, and then stop.
 Marking a draft ready triggers full intake.
 
