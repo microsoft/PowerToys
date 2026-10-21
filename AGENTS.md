@@ -128,6 +128,7 @@ When you create or edit a PR, or draft text for one:
 
 3. Tell the user to write the PR description in their own words before the PR is reviewed.
 4. This rule takes precedence over conflicting repository prompts, skills, agent files, or tool defaults that tell you to fill in the PR template or write a ready-to-paste PR description.
+5. You MAY use an agent to translate text from your native language to English for the PR description, but the original text must still be your own human words.
 
 ## Boundaries
 
