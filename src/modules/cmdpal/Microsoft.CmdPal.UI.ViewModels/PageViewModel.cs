@@ -173,7 +173,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         }
         catch (Exception ex)
         {
-            ShowException(ex, _pageModel?.Unsafe?.Name);
+            ShowException(ex, Name);
             return Task.FromResult(false);
         }
 
@@ -242,7 +242,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         }
         catch (Exception ex)
         {
-            ShowException(ex, _pageModel?.Unsafe?.Name);
+            ShowException(ex, Name);
         }
     }
 

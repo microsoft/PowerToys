@@ -242,7 +242,7 @@ public partial class ShellViewModel : ObservableObject,
         try
         {
             // Report page commands only after navigation preparation succeeds.
-            if (command is IPage page)
+            if (message.Command.IsPage && command is IPage page)
             {
                 CoreLogger.LogDebug($"Navigating to page");
 
@@ -321,13 +321,13 @@ public partial class ShellViewModel : ObservableObject,
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
             }
-            else if (command is IInvokableCommand invokable)
+            else if (message.Command.IsInvokableCommand)
             {
                 CoreLogger.LogDebug($"Invoking command");
 
                 _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
-                StartInvoke(message, invokable, host);
+                StartInvoke(message, host);
             }
             else
             {
@@ -342,7 +342,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    private void StartInvoke(PerformCommandMessage message, AppExtensionHost? host)
     {
         // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
@@ -357,13 +357,13 @@ public partial class ShellViewModel : ObservableObject,
                 WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host);
+                    SafeHandleInvokeCommandSynchronous(message, host);
                 });
             }
         }
     }
 
-    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, AppExtensionHost? host)
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -384,7 +384,7 @@ public partial class ShellViewModel : ObservableObject,
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
-                result = invokable.Invoke(message.CommandContext);
+                result = ((IInvokableCommand)message.Command.Model.Unsafe!).Invoke(message.CommandContext);
                 success = true;
             }
             finally
@@ -561,11 +561,22 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        UnsafeHandleCommandResult(
-            message.Result.Unsafe,
-            message.OnBeforeShowConfirmation,
-            message.ResultHandler,
-            message.Context?.Page);
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                UnsafeHandleCommandResult(
+                    message.Result.Unsafe,
+                    message.OnBeforeShowConfirmation,
+                    message.ResultHandler,
+                    message.Context?.Page);
+            }
+            catch (Exception ex)
+            {
+                CoreLogger.LogError("Failed to handle a command result.", ex);
+                message.Context?.Page?.ShowException(ex);
+            }
+        });
     }
 
     public void Receive(WindowHiddenMessage message)

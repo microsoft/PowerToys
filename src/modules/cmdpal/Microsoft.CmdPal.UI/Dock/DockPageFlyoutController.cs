@@ -145,7 +145,7 @@ internal sealed partial class DockPageFlyoutController :
         _dispatcherQueue.TryEnqueue(() =>
         {
             var navigation = _navigation;
-            if (message.Command.Model.Unsafe is IPage)
+            if (message.Command.IsPage)
             {
                 if (navigation is not null && message.DockRoute == navigation.Route)
                 {
@@ -220,7 +220,7 @@ internal sealed partial class DockPageFlyoutController :
             navigation.OwnsSourcePage(sourcePage))
         {
             return result => existingHandler?.Invoke(result) == true ||
-                navigation.HandleCommandResult(sourcePage, result);
+                navigation.HandleCommandResult(sourcePage, result.Kind);
         }
 
         return result => existingHandler?.Invoke(result) == true ||

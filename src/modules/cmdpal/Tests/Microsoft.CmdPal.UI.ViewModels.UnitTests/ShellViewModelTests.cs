@@ -79,6 +79,54 @@ public partial class ShellViewModelTests
         return viewModel;
     }
 
+    [TestMethod]
+    [DataRow("Kind")]
+    [DataRow("Args")]
+    [DataRow("Handler")]
+    public async Task HandleCommandResult_RpcFailureIsHandledOffTheUiThread(string failingMember)
+    {
+        using var shell = CreateViewModel();
+        var uiContext = SynchronizationContext.Current;
+        var source = shell.CurrentPage;
+        var errorShown = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var accessedOnUiThread = false;
+        var result = new Mock<ICommandResult>();
+        var exception = Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!;
+        result.SetupGet(model => model.Kind).Returns(() =>
+        {
+            accessedOnUiThread |= ReferenceEquals(uiContext, SynchronizationContext.Current);
+            return failingMember == "Kind" ? throw exception : CommandResultKind.ShowToast;
+        });
+        result.SetupGet(model => model.Args).Throws(exception);
+        source.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(PageViewModel.ErrorMessage))
+            {
+                errorShown.TrySetResult();
+            }
+        };
+
+        shell.Receive(new HandleCommandResultMessage(new(result.Object), source)
+        {
+            ResultHandler = failingMember == "Handler" ? _ => throw exception : null,
+        });
+        await errorShown.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.IsFalse(accessedOnUiThread);
+        Assert.IsFalse(string.IsNullOrEmpty(source.ErrorMessage));
+
+        var handled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        shell.Receive(new HandleCommandResultMessage(new(CommandResult.KeepOpen()), source)
+        {
+            ResultHandler = _ =>
+            {
+                handled.TrySetResult();
+                return true;
+            },
+        });
+        await handled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
     [TestInitialize]
     public void TestInitialize()
     {
