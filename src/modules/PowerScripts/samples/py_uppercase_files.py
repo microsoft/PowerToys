@@ -2,21 +2,13 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-# Metadata lives in the sibling py_uppercase_files.py.tool.json descriptor (an MCP Tool). This script
-# keeps the Python function convention (files -> files), so it runs through the Python runtime with
-# full WSL / path-translation support.
+# Entry function and I/O are declared in py_uppercase_files.py.tool.json.
 
 import os
 
 
-def powerscript_from_files_to_files(file_paths):
-    """Write an uppercased copy of each selected file next to the original.
-
-    The function name follows the PowerScripts convention
-    ``powerscript_from_<input>_to_<output>``. Because it consumes files and
-    produces files, the Explorer right-click menu passes the selected paths in
-    and PowerScripts reports the produced paths back.
-    """
+def uppercase_files(file_paths):
+    """Write an uppercased copy of each selected file next to the original."""
     outputs = []
     for path in file_paths:
         root, _ext = os.path.splitext(path)

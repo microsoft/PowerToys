@@ -2,16 +2,9 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-# Metadata lives in the sibling uppercase.py.tool.json descriptor (an MCP Tool). This script keeps
-# the Python function convention (text -> text), so it runs through the Python runtime and is offered
-# by Advanced Paste whenever the clipboard has text.
+# Entry function and I/O are declared in uppercase.py.tool.json.
 
 
-def powerscript_from_text_to_text(text: str) -> str:
-    """Return the input text converted to uppercase.
-
-    The function name follows the PowerScripts convention
-    ``powerscript_from_<input>_to_<output>``: it consumes clipboard text and
-    produces text, so Advanced Paste offers it whenever the clipboard has text.
-    """
+def uppercase(text: str) -> str:
+    """Return the input text converted to uppercase."""
     return text.upper()

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Text;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Security;
 
@@ -77,6 +78,8 @@ public sealed class ScriptExecutor
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             CreateNoWindow = true,
             WorkingDirectory = manifest.FolderPath,
         };
@@ -123,8 +126,8 @@ public sealed class ScriptExecutor
 
     /// <summary>
     /// Runs a Python PowerScript for the file/hotkey surfaces by adapting the file list + parameters
-    /// onto the shared <see cref="PythonRuntime"/> transform contract. Text/HTML outputs are returned
-    /// as stdout; produced file/image paths are returned newline-separated so the CLI surfaces can
+    /// onto the shared <see cref="PythonRuntime"/> transform contract. Text outputs are returned
+    /// as stdout; produced file paths are returned newline-separated so the CLI surfaces can
     /// report them.
     /// </summary>
     private ScriptExecutionResult ExecutePython(
@@ -146,16 +149,6 @@ public sealed class ScriptExecutor
         if (!string.IsNullOrEmpty(result.Text))
         {
             stdoutParts.Add(result.Text);
-        }
-
-        if (!string.IsNullOrEmpty(result.Html))
-        {
-            stdoutParts.Add(result.Html);
-        }
-
-        if (!string.IsNullOrEmpty(result.ImagePath))
-        {
-            stdoutParts.Add(result.ImagePath);
         }
 
         if (result.FilePaths is { Count: > 0 })

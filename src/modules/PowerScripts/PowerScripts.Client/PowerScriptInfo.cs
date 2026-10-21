@@ -7,8 +7,7 @@ using System.Text.Json;
 namespace PowerScripts.Client;
 
 /// <summary>
-/// The transform contract a Python script exposes (derived from its
-/// <c>powerscript_from_&lt;input&gt;_to_&lt;output&gt;</c> function). Non-null only for scripts that can be
+/// The transform contract a Python script declares in its descriptor. Non-null only for scripts that can be
 /// used as data transforms (e.g. Advanced Paste).
 /// </summary>
 public sealed record PowerScriptTransformContract(string Function, string InputFormat, string OutputFormat);
@@ -71,6 +70,12 @@ public sealed class PowerScriptInfo
     /// <summary>For <c>file</c> scripts, the file extensions it accepts (e.g. <c>.md</c>); empty otherwise.</summary>
     public IReadOnlyList<string> InputExtensions { get; init; } = [];
 
+    /// <summary>Minimum selected-file count; older Hosts default to one.</summary>
+    public int InputMinFiles { get; init; } = 1;
+
+    /// <summary>Maximum selected-file count; zero means unbounded.</summary>
+    public int InputMaxFiles { get; init; }
+
     /// <summary>Absolute path to the script's folder (diagnostics only; do not execute directly).</summary>
     public string? FolderPath { get; init; }
 
@@ -94,6 +99,26 @@ public sealed class PowerScriptInfo
 
     /// <summary>True when this script produces <paramref name="output"/>.</summary>
     public bool Produces(PowerScriptIO output) => Output == output;
+
+    /// <summary>Whether the file contract accepts an extension; this does not check selection count.</summary>
+    public bool AcceptsFileExtension(string extension) =>
+        Input == PowerScriptIO.Files &&
+        (InputExtensions.Count == 0 ||
+            InputExtensions.Any(declared => declared == "*" ||
+                string.Equals(NormalizeExtension(declared), NormalizeExtension(extension), StringComparison.OrdinalIgnoreCase)));
+
+    /// <summary>Whether every file and the selection count match, regardless of the consumer.</summary>
+    public bool AcceptsFiles(IReadOnlyCollection<string> paths) =>
+        paths.Count > 0 &&
+        paths.Count >= InputMinFiles &&
+        (InputMaxFiles == 0 || paths.Count <= InputMaxFiles) &&
+        paths.All(path => AcceptsFileExtension(Path.GetExtension(path)));
+
+    private static string NormalizeExtension(string extension)
+    {
+        var normalized = extension.Trim();
+        return normalized.Length == 0 || normalized == "*" || normalized.StartsWith('.') ? normalized : "." + normalized;
+    }
 
     /// <summary>
     /// Parses the JSON array emitted by <c>list --json</c> into typed records. Uses
@@ -137,6 +162,8 @@ public sealed class PowerScriptInfo
                 Output = GetIO(element, "output"),
                 Capabilities = GetStringArray(element, "capabilities"),
                 InputExtensions = GetInputExtensions(element),
+                InputMinFiles = GetInputBound(element, "minFiles", 1),
+                InputMaxFiles = GetInputBound(element, "maxFiles", 0),
                 FolderPath = GetNullableString(element, "folderPath"),
                 EntryFullPath = GetNullableString(element, "entryFullPath"),
                 Trusted = GetBool(element, "trusted"),
@@ -207,6 +234,15 @@ public sealed class PowerScriptInfo
 
         return [];
     }
+
+    private static int GetInputBound(JsonElement element, string name, int fallback) =>
+        element.TryGetProperty("input", out var input) &&
+        input.ValueKind == JsonValueKind.Object &&
+        input.TryGetProperty(name, out var value) &&
+        value.ValueKind == JsonValueKind.Number &&
+        value.TryGetInt32(out var limit)
+            ? limit
+            : fallback;
 
     private static PowerScriptTransformContract? GetTransform(JsonElement element)
     {

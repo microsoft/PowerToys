@@ -34,16 +34,10 @@ public sealed class ScriptRegistry
 
     public IReadOnlyList<ScriptLoadError> Errors => _errors;
 
-    private static readonly string[] HeaderScriptExtensions = { ".ps1", ".py" };
-
     /// <summary>
-    /// Rebuilds the in-memory catalogue by scanning <see cref="Root"/> for scripts, each of which is a
-    /// single self-contained file carrying its metadata in a leading <c>@powerscript.*</c> comment
-    /// header (see <see cref="ScriptHeaderParser"/>). Scripts are discovered either as a loose file
-    /// directly under the root (e.g. <c>whats-my-ip.ps1</c>) or as the one header script inside a
-    /// sub-folder (which lets a script keep companion assets). A script declares only its own input/
-    /// output shapes (never which modules host it); consumers discover it by that I/O. Bad scripts are
-    /// recorded in <see cref="Errors"/> and skipped.
+    /// Rebuilds the catalogue from <c>*.tool.json</c> descriptors directly under <see cref="Root"/>
+    /// or one sub-folder below it. A descriptor identifies its sibling script and declares its I/O.
+    /// Invalid scripts are recorded in <see cref="Errors"/> and skipped.
     /// </summary>
     public void Load()
     {
@@ -62,15 +56,7 @@ public sealed class ScriptRegistry
             manifest.FolderPath = folder;
             manifest.ScriptsRoot = Root;
 
-            // Bake the resolved input/output shapes onto the manifest once, at load. Python transforms
-            // read their shapes from the powerscript_from_*_to_* function name (a filesystem read), so
-            // resolving here means every downstream consumer — the registry filters below, the host's
-            // list projection, the trust hash — works from the same shapes without re-reading the file
-            // or reasoning about a separate "kind". File-driven simply means InputFormat == Files.
-            var signature = manifest.Runtime == ScriptRuntime.Python
-                ? PowerScriptPythonConvention.ParseFile(manifest.EntryFullPath)
-                : null;
-            var (resolvedInput, resolvedOutput) = ScriptIo.Resolve(manifest, signature);
+            var (resolvedInput, resolvedOutput) = ScriptIo.Resolve(manifest);
             manifest.InputFormat = resolvedInput;
             manifest.OutputFormat = resolvedOutput;
 
@@ -103,9 +89,6 @@ public sealed class ScriptRegistry
             _scripts.Add(manifest);
         }
 
-        // Loose scripts placed directly under the root, plus one sub-folder per script (which lets a
-        // script keep companion assets next to it). Each directory may contribute header-authored
-        // scripts and/or explicit ".tool.json" descriptor scripts.
         LoadFromDirectory(Root, TryAdd);
         foreach (var folder in Directory.EnumerateDirectories(Root))
         {
@@ -116,14 +99,10 @@ public sealed class ScriptRegistry
     }
 
     /// <summary>
-    /// Discovers every PowerScript in a single directory. Explicit <c>*.tool.json</c> descriptors are
-    /// read first; then <c>@powerscript.*</c> header scripts, skipping any script file that already has
-    /// a sibling descriptor so the same script is never registered twice.
+    /// Discovers PowerScripts exclusively through their <c>*.tool.json</c> descriptors.
     /// </summary>
     private void LoadFromDirectory(string directory, Action<PowerScriptManifest, string, string> tryAdd)
     {
-        var describedEntries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
         foreach (var descriptor in EnumerateDescriptorCandidates(directory))
         {
             var manifest = ToolDescriptorParser.TryParseFile(descriptor);
@@ -133,34 +112,12 @@ public sealed class ScriptRegistry
                 continue;
             }
 
-            describedEntries.Add(Path.Combine(directory, manifest.Entry));
             tryAdd(manifest, directory, descriptor);
-        }
-
-        foreach (var file in EnumerateHeaderCandidates(directory))
-        {
-            // A script authored via a descriptor is already registered; don't also treat its body as a
-            // header script (it usually has no @powerscript.* directives anyway).
-            if (describedEntries.Contains(file))
-            {
-                continue;
-            }
-
-            var manifest = ScriptHeaderParser.TryParseFile(file);
-            if (manifest is not null)
-            {
-                tryAdd(manifest, directory, file);
-            }
         }
     }
 
     private static IEnumerable<string> EnumerateDescriptorCandidates(string directory) =>
         Directory.EnumerateFiles(directory, "*" + ToolDescriptorParser.DescriptorSuffix)
-            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
-
-    private static IEnumerable<string> EnumerateHeaderCandidates(string directory) =>
-        Directory.EnumerateFiles(directory)
-            .Where(f => HeaderScriptExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
             .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
 
     public PowerScriptManifest? Get(string id) =>

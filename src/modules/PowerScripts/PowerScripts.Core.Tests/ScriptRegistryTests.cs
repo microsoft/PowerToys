@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
@@ -29,26 +30,26 @@ public class ScriptRegistryTests
         }
     }
 
-    private void WriteScript(string id, string header, string entryFile = "run.ps1")
+    private void WriteScript(string fileName, object? metadata = null, string? id = null, string? title = null)
     {
-        // Scripts are single self-contained files with a @powerscript.* comment header. Write each
-        // one as a loose file under the root, using the id as the file name so ids stay unique.
-        var ext = Path.GetExtension(entryFile);
-        File.WriteAllText(Path.Combine(_root, id + ext), header + "\n# noop\n");
+        var entry = Path.Combine(_root, fileName + ".ps1");
+        File.WriteAllText(entry, "# noop\n");
+        File.WriteAllText(entry + ".tool.json", JsonSerializer.Serialize(new Dictionary<string, object?>
+        {
+            ["name"] = id ?? fileName,
+            ["title"] = title ?? fileName,
+            ["inputSchema"] = new { type = "object", properties = new { } },
+            ["x-powerscript"] = metadata ?? new { },
+        }));
     }
 
     [TestMethod]
     public void Load_Skips_Invalid_And_Records_Error()
     {
-        WriteScript("good", """
-            # @powerscript.id good
-            # @powerscript.name Good
-            """);
+        WriteScript("good");
 
-        // Missing 'id' -> should be rejected.
-        WriteScript("bad", """
-            # @powerscript.name Bad
-            """);
+        WriteScript("bad");
+        File.WriteAllText(Path.Combine(_root, "bad.ps1.tool.json"), """{ "title": "Bad" }""");
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -64,11 +65,7 @@ public class ScriptRegistryTests
         Directory.CreateDirectory(Path.Combine(_root, "assets"));
         File.WriteAllBytes(Path.Combine(_root, "assets", "script icon.ico"), Convert.FromBase64String(
             "AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA=="));
-        WriteScript("icon", """
-            # @powerscript.id icon
-            # @powerscript.name With icon
-            # @powerscript.icon assets\script icon.ico
-            """);
+        WriteScript("icon", new { icon = @"assets\script icon.ico" });
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -86,11 +83,7 @@ public class ScriptRegistryTests
             "AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA==")
             .CopyTo(bytes, 0);
         File.WriteAllBytes(Path.Combine(_root, "script.ico"), bytes);
-        WriteScript("icon", """
-            # @powerscript.id icon
-            # @powerscript.name With icon
-            # @powerscript.icon script.ico
-            """);
+        WriteScript("icon", new { icon = "script.ico" });
         var registry = new ScriptRegistry(_root);
         registry.Load();
         Assert.AreEqual(1, registry.Scripts.Count);
@@ -109,11 +102,7 @@ public class ScriptRegistryTests
     public void Load_InvalidOptionalIconKeepsScriptAndSurfacesWarning(string icon)
     {
         File.WriteAllText(Path.Combine(_root, "invalid.ico"), "not an icon");
-        WriteScript("icon", $"""
-            # @powerscript.id icon
-            # @powerscript.name With invalid icon
-            # @powerscript.icon {icon}
-            """);
+        WriteScript("icon", new { icon });
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -127,10 +116,7 @@ public class ScriptRegistryTests
     public void Load_Allows_IdDecoupledFromFileName()
     {
         // The file name differs from the id; the script is still loaded and keyed by its id.
-        WriteScript("some-file", """
-            # @powerscript.id portable.id
-            # @powerscript.name Portable
-            """);
+        WriteScript("some-file", id: "portable.id", title: "Portable");
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -144,14 +130,8 @@ public class ScriptRegistryTests
     [TestMethod]
     public void Load_Rejects_DuplicateIds()
     {
-        WriteScript("file-a", """
-            # @powerscript.id dup
-            # @powerscript.name First
-            """);
-        WriteScript("file-b", """
-            # @powerscript.id dup
-            # @powerscript.name Second
-            """);
+        WriteScript("file-a", id: "dup", title: "First");
+        WriteScript("file-b", id: "dup", title: "Second");
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -165,17 +145,8 @@ public class ScriptRegistryTests
     [TestMethod]
     public void FileScriptsFor_Matches_Extension_And_Wildcard()
     {
-        WriteScript("png-only", """
-            # @powerscript.id png-only
-            # @powerscript.name PNG
-            # @powerscript.extensions .png
-            """);
-
-        WriteScript("any-file", """
-            # @powerscript.id any-file
-            # @powerscript.name Any
-            # @powerscript.extensions *
-            """);
+        WriteScript("png-only", new { extensions = new[] { ".png" } });
+        WriteScript("any-file", new { extensions = new[] { "*" } });
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -190,13 +161,7 @@ public class ScriptRegistryTests
     [TestMethod]
     public void FileScriptsForSelection_Respects_MinMax_And_MixedExtensions()
     {
-        WriteScript("single-png", """
-            # @powerscript.id single-png
-            # @powerscript.name Single PNG
-            # @powerscript.extensions .png
-            # @powerscript.minfiles 1
-            # @powerscript.maxfiles 1
-            """);
+        WriteScript("single-png", new { extensions = new[] { ".png" }, minFiles = 1, maxFiles = 1 });
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -214,15 +179,8 @@ public class ScriptRegistryTests
     [TestMethod]
     public void SystemScripts_ExcludesFileScripts()
     {
-        WriteScript("sys", """
-            # @powerscript.id sys
-            # @powerscript.name Sys
-            """);
-        WriteScript("file", """
-            # @powerscript.id file
-            # @powerscript.name File
-            # @powerscript.extensions *
-            """);
+        WriteScript("sys");
+        WriteScript("file", new { extensions = new[] { "*" } });
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -230,6 +188,20 @@ public class ScriptRegistryTests
         // "System" is now derived: any script whose resolved input shape is not files.
         var system = registry.SystemScripts.Select(s => s.Id).ToList();
         CollectionAssert.AreEqual(new[] { "sys" }, system);
+    }
+
+    [TestMethod]
+    public void Load_IgnoresInlineMetadataWithoutADescriptor()
+    {
+        File.WriteAllText(Path.Combine(_root, "legacy.ps1"), """
+            # @powerscript.id legacy
+            # @powerscript.name Legacy
+            Write-Output 'not registered'
+            """);
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+        Assert.AreEqual(0, registry.Scripts.Count);
+        Assert.AreEqual(0, registry.Errors.Count);
     }
 
     [TestMethod]

@@ -54,7 +54,7 @@ public sealed class PowerScriptsClient
     public bool IsAvailable => !string.IsNullOrEmpty(_hostPath) && File.Exists(_hostPath);
 
     /// <summary>
-    /// Enumerates every installed script (<c>list --json</c>). Returns an empty list when the host is
+    /// Enumerates installed scripts whose runtimes are enabled (<c>list --json</c>). Returns an empty list when the host is
     /// unavailable or fails, so a missing/disabled module simply surfaces no scripts.
     /// </summary>
     public IReadOnlyList<PowerScriptInfo> List()
@@ -107,37 +107,18 @@ public sealed class PowerScriptsClient
     /// <summary>Enumerates the file scripts that accept <paramref name="extension"/> (e.g. <c>.md</c>). A <c>*</c> filter matches any extension.</summary>
     public IReadOnlyList<PowerScriptInfo> ListForFileExtension(string extension)
     {
-        var ext = NormalizeExtension(extension);
-        return List()
-            .Where(s => s.Input == PowerScriptIO.Files && MatchesExtension(s, ext))
-            .ToList();
+        return List().Where(s => s.AcceptsFileExtension(extension)).ToList();
     }
 
-    /// <summary>Enumerates the file scripts that accept every one of the given <paramref name="paths"/> (by extension).</summary>
+    /// <summary>
+    /// Enumerates scripts accepting the entire selection by extensions and count. Clipboard
+    /// temporary files and Explorer selections use the same contract.
+    /// </summary>
     public IReadOnlyList<PowerScriptInfo> ListForFiles(IEnumerable<string> paths)
     {
-        var exts = paths.Select(p => NormalizeExtension(Path.GetExtension(p))).Distinct().ToList();
-        return List()
-            .Where(s => s.Input == PowerScriptIO.Files && exts.All(e => MatchesExtension(s, e)))
-            .ToList();
+        var selection = paths.ToArray();
+        return List().Where(s => s.AcceptsFiles(selection)).ToList();
     }
-
-    private static string NormalizeExtension(string extension)
-    {
-        var ext = extension.Trim().ToLowerInvariant();
-        if (ext.Length > 0 && ext != "*" && !ext.StartsWith('.'))
-        {
-            ext = "." + ext;
-        }
-
-        return ext;
-    }
-
-    private static bool MatchesExtension(PowerScriptInfo script, string ext) =>
-        script.InputExtensions.Count == 0 ||
-        script.InputExtensions.Any(e =>
-            e == "*" ||
-            string.Equals(e, ext, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Runs a script by id (<c>run &lt;id&gt;</c>) and waits for it to finish. Supply
@@ -356,10 +337,6 @@ public sealed class PowerScriptsClient
         {
             writer.WriteStartObject();
             WriteString(writer, "text", input.Text);
-            WriteString(writer, "html", input.Html);
-            WriteString(writer, "image_path", input.ImagePath);
-            WriteString(writer, "audio_path", input.AudioPath);
-            WriteString(writer, "video_path", input.VideoPath);
 
             if (input.FilePaths is { Count: > 0 })
             {
@@ -399,7 +376,7 @@ public sealed class PowerScriptsClient
 
     private static PowerScriptTransformResult ParseTransformResult(string stdOut, string stdErr, int exitCode)
     {
-        if (string.IsNullOrWhiteSpace(stdOut))
+        if (string.IsNullOrWhiteSpace(stdOut) && exitCode != PowerScriptsProtocol.ExitCode.Ok)
         {
             return new PowerScriptTransformResult { ExitCode = exitCode, StdErr = stdErr };
         }
@@ -410,50 +387,74 @@ public sealed class PowerScriptsClient
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object)
             {
-                return new PowerScriptTransformResult { ExitCode = exitCode, StdErr = stdErr };
+                throw new JsonException("Expected an output object.");
+            }
+
+            foreach (var property in root.EnumerateObject())
+            {
+                if (property.Name is not ("text" or "file_paths"))
+                {
+                    throw new JsonException($"Unsupported output field '{property.Name}'. Use text or file_paths.");
+                }
+            }
+
+            var text = ReadString(root, "text");
+            var files = ReadStringArray(root, "file_paths");
+            if (text is not null && files is not null)
+            {
+                throw new JsonException("An output must contain text or file_paths, not both.");
             }
 
             return new PowerScriptTransformResult
             {
-                Text = ReadString(root, "text"),
-                Html = ReadString(root, "html"),
-                ImagePath = ReadString(root, "image_path"),
-                AudioPath = ReadString(root, "audio_path"),
-                VideoPath = ReadString(root, "video_path"),
-                FilePaths = ReadStringArray(root, "file_paths"),
+                Text = text,
+                FilePaths = files,
                 ExitCode = exitCode,
                 StdErr = stdErr,
             };
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            return new PowerScriptTransformResult { ExitCode = exitCode, StdErr = stdErr };
+            var error = $"Invalid PowerScripts output: {ex.Message}";
+            return new PowerScriptTransformResult
+            {
+                ExitCode = exitCode == PowerScriptsProtocol.ExitCode.Ok ? PowerScriptsProtocol.ExitCode.Error : exitCode,
+                StdErr = string.IsNullOrEmpty(stdErr) ? error : $"{stdErr}{Environment.NewLine}{error}",
+            };
         }
     }
 
-    private static string? ReadString(JsonElement element, string name) =>
-        element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
-            ? value.GetString()
-            : null;
+    private static string? ReadString(JsonElement element, string name)
+    {
+        if (!element.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        return value.ValueKind == JsonValueKind.String ? value.GetString() : throw new JsonException($"'{name}' must be a string.");
+    }
 
     private static IReadOnlyList<string>? ReadStringArray(JsonElement element, string name)
     {
-        if (!element.TryGetProperty(name, out var array) || array.ValueKind != JsonValueKind.Array)
+        if (!element.TryGetProperty(name, out var array) || array.ValueKind == JsonValueKind.Null)
         {
             return null;
+        }
+
+        if (array.ValueKind != JsonValueKind.Array)
+        {
+            throw new JsonException($"'{name}' must be a file-path list.");
         }
 
         var items = new List<string>();
         foreach (var item in array.EnumerateArray())
         {
-            if (item.ValueKind == JsonValueKind.String)
+            if (item.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(item.GetString()))
             {
-                var text = item.GetString();
-                if (text is not null)
-                {
-                    items.Add(text);
-                }
+                throw new JsonException($"'{name}' must contain nonempty file-path strings.");
             }
+
+            items.Add(item.GetString()!);
         }
 
         return items;

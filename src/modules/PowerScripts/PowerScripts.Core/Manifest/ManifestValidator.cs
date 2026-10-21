@@ -45,6 +45,16 @@ public static class ManifestValidator
             errors.Add($"entry script not found: '{manifest.Entry}'.");
         }
 
+        if (manifest.InputFormat is { } inputFormat && !ScriptIo.IsSupported(inputFormat))
+        {
+            errors.Add("'x-powerscript.input' must be none, text, or files. Pass inline HTML as text and media or HTML documents as files with declared extensions.");
+        }
+
+        if (manifest.OutputFormat is { } outputFormat && !ScriptIo.IsSupported(outputFormat))
+        {
+            errors.Add("'x-powerscript.output' must be none, text, or files. Return literal markup as text and rich HTML or media as files.");
+        }
+
         if (manifest.Input is not null)
         {
             if (manifest.Input.Extensions.Count == 0)
@@ -61,6 +71,13 @@ public static class ManifestValidator
             {
                 errors.Add("'input.maxFiles' must be 0 (unbounded) or >= minFiles.");
             }
+        }
+
+        if (manifest.Runtime == ScriptRuntime.Python &&
+            manifest.Execute is null &&
+            string.IsNullOrWhiteSpace(manifest.EntryFunction))
+        {
+            errors.Add("'x-powerscript.function' is required for Python scripts without 'x-execute'.");
         }
 
         ValidateParameters(manifest, errors);

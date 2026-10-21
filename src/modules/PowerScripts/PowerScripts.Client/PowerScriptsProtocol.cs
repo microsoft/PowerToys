@@ -8,29 +8,19 @@ namespace PowerScripts.Client;
 /// The data shapes a PowerScript can consume or produce. A script declares only its own I/O; a
 /// consuming module discovers the scripts it can use by filtering on these (see the filter methods on
 /// <see cref="PowerScriptsClient"/>). These names match the host's <c>io</c> block exactly.
+/// Both inputs and outputs use None, Text, or Files. Media and HTML documents are files.
 /// </summary>
 public enum PowerScriptIO
 {
     /// <summary>No data in/out (a system action with no input, or a side-effect with no output).</summary>
     None,
 
-    /// <summary>Plain text.</summary>
+    /// <summary>String input (including inline HTML), or plain-text output.</summary>
     Text,
 
-    /// <summary>HTML fragment.</summary>
-    Html,
-
-    /// <summary>An image.</summary>
-    Image,
-
-    /// <summary>Audio.</summary>
-    Audio,
-
-    /// <summary>Video.</summary>
-    Video,
-
     /// <summary>One or more files (for a <c>file</c> script, see <see cref="PowerScriptInfo.InputExtensions"/>).</summary>
-    Files,
+    // Preserve the value used by previously compiled consumers.
+    Files = 6,
 }
 
 /// <summary>
@@ -52,12 +42,9 @@ public static class PowerScriptsProtocol
     public static PowerScriptIO ParseIO(string? token) => token?.Trim().ToLowerInvariant() switch
     {
         "text" => PowerScriptIO.Text,
-        "html" => PowerScriptIO.Html,
-        "image" => PowerScriptIO.Image,
-        "audio" => PowerScriptIO.Audio,
-        "video" => PowerScriptIO.Video,
         "file" or "files" => PowerScriptIO.Files,
-        _ => PowerScriptIO.None,
+        null or "" or "none" => PowerScriptIO.None,
+        _ => throw new System.Text.Json.JsonException($"Unsupported PowerScripts I/O type '{token}'. Use none, text, or files."),
     };
 
     /// <summary>The exit codes the host returns. Consumers should branch on these rather than guessing.</summary>

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -10,6 +11,7 @@ using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Client;
 using PowerScripts.Core;
+using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core.Tests;
 
@@ -65,19 +67,22 @@ public class HostCliTests
             }
             """);
 
-        // A Python data transform: I/O read from the powerscript_from_* function name.  io = text -> text
-        Write("py_upper.py", "def powerscript_from_text_to_text(text):\n    return text.upper()\n");
-        WriteDescriptor("py_upper.py", string.Empty);
+        Write("py_upper.py", "def uppercase(text):\n    return text.upper()\n");
+        WriteDescriptor("py_upper.py", "\"function\":\"uppercase\",\"input\":\"text\",\"output\":\"text\"");
 
-        // A Python transform with an explicitly-named entry function (not the naming convention): its
-        // I/O comes from the descriptor's declared input/output, proving the "kind"/name is not needed
-        // to type a script.  io = html -> text
-        Write("py_named.py", "def shout(value):\n    return value.upper()\n");
-        WriteDescriptor("py_named.py", "\"function\":\"shout\",\"input\":\"html\",\"output\":\"text\"");
+        // The same PNG file contract applies to clipboard temporary files and Explorer selections.
+        Write("py_named.py", "def inspect_files(paths):\n    return '\\n'.join(paths)\n");
+        WriteDescriptor("py_named.py", "\"function\":\"inspect_files\",\"input\":\"files\",\"output\":\"text\",\"extensions\":[\".png\"],\"maxFiles\":1");
 
-        // A PowerShell data transform: no naming convention, so I/O is declared.  io = text -> html
-        Write("md2html.ps1", "param([string]$Markdown)\nWrite-Output \"<p>$Markdown</p>\"");
-        WriteDescriptor("md2html.ps1", "\"input\":\"text\",\"output\":\"html\"");
+        // Rich HTML is a file output; literal markup would be a text output.
+        Write("md2html.ps1", """
+            param([string]$Text)
+            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+            $output = Join-Path $env:POWERSCRIPTS_MXC_WORKSPACE 'result.html'
+            Set-Content -LiteralPath $output -Value "<p>$Text</p>" -Encoding UTF8
+            @{ file_paths = @($output) } | ConvertTo-Json -Compress
+            """);
+        WriteDescriptor("md2html.ps1", "\"input\":\"text\",\"output\":\"files\"");
 
         // A file script: acts on selected files (file-driven because it declares extensions).  io = files -> none
         Write("wc.ps1", "param([string]$file)\n(Get-Content $file).Length");
@@ -96,7 +101,7 @@ public class HostCliTests
     [TestMethod]
     public void List_Json_ReturnsScripts_WithResolvedIo()
     {
-        var (exit, stdout, _) = RunHost("list", "--json", "--root", _root);
+        var (exit, stdout, _) = RunHost("list", "--json", "--include-disabled", "--root", _root);
         Assert.AreEqual(0, exit);
 
         var byId = ParseList(stdout);
@@ -104,8 +109,8 @@ public class HostCliTests
 
         AssertIo(byId, "act_hello", "none", "text");
         AssertIo(byId, "py_upper", "text", "text");
-        AssertIo(byId, "py_named", "html", "text");
-        AssertIo(byId, "md2html", "text", "html");
+        AssertIo(byId, "py_named", "files", "text");
+        AssertIo(byId, "md2html", "text", "files");
         AssertIo(byId, "wc", "files", "none");
 
         // The system/file "kind" is gone from the contract; consumers derive it from io.input.
@@ -122,12 +127,79 @@ public class HostCliTests
             new[] { "short", "long" },
             parameter.GetProperty("options").EnumerateArray().Select(value => value.GetString()!).ToArray());
         Assert.AreEqual("Python", byId["py_upper"].GetProperty("runtime").GetString());
+        Assert.AreEqual("uppercase", byId["py_upper"].GetProperty("transform").GetProperty("function").GetString());
+        Assert.AreEqual("Text", byId["py_upper"].GetProperty("transform").GetProperty("inputFormat").GetString());
+        Assert.AreEqual("inspect_files", byId["py_named"].GetProperty("transform").GetProperty("function").GetString());
+        Assert.AreEqual("Files", byId["py_named"].GetProperty("transform").GetProperty("inputFormat").GetString());
         CollectionAssert.AreEquivalent(
             new[] { "filesystem", "network", "ui", "leastPrivilege" },
             byId["act_hello"].GetProperty("mxc").GetProperty("recommendedPolicies")
                 .EnumerateArray()
                 .Select(value => value.GetString()!)
                 .ToArray());
+    }
+
+    [DataTestMethod]
+    [DataRow(null, false)]
+    [DataRow("Disabled", false)]
+    [DataRow("Windows", true)]
+    [DataRow("Wsl", true)]
+    [DoNotParallelize]
+    public void Discovery_RespectsPythonMode_WhileConfigurationCanListAll(string? mode, bool pythonEnabled)
+    {
+        Write("py_files.py", "def inspect_files(files):\n    pass\n");
+        WriteDescriptor("py_files.py", "\"function\":\"inspect_files\",\"input\":\"files\",\"output\":\"none\",\"extensions\":[\".md\"]");
+        var previousStore = SettingsStore.Current;
+        try
+        {
+            SettingsStore.Current = new FileSettingsStore(Path.Combine(_root, "settings"));
+            PowerScriptsPaths.SaveEnabled(true);
+            if (mode is not null)
+            {
+                new PythonSettings { Mode = Enum.Parse<PythonRuntimeMode>(mode) }.Save();
+            }
+
+            var expected = pythonEnabled
+                ? new[] { "act_hello", "md2html", "wc", "py_upper", "py_named", "py_files" }
+                : new[] { "act_hello", "md2html", "wc" };
+            var (exit, json) = RunHostInProcess("list", "--json", "--root", _root);
+            Assert.AreEqual(0, exit);
+            CollectionAssert.AreEquivalent(expected, Ids(json));
+
+            (exit, json) = RunHostInProcess("list", "--json", "--input", "text", "--root", _root);
+            Assert.AreEqual(0, exit);
+            CollectionAssert.AreEquivalent(
+                pythonEnabled ? new[] { "md2html", "py_upper" } : new[] { "md2html" },
+                Ids(json));
+
+            var (textExit, text) = RunHostInProcess("list", "--root", _root);
+            Assert.AreEqual(0, textExit);
+            StringAssert.Contains(text, "act_hello");
+            if (pythonEnabled)
+            {
+                StringAssert.Contains(text, "py_upper");
+            }
+            else
+            {
+                Assert.IsFalse(text.Contains("py_", StringComparison.Ordinal));
+            }
+
+            (exit, json) = RunHostInProcess("list", "--json", "--include-disabled", "--root", _root);
+            Assert.AreEqual(0, exit);
+            CollectionAssert.AreEquivalent(
+                new[] { "act_hello", "md2html", "wc", "py_upper", "py_named", "py_files" },
+                Ids(json));
+
+            var (menuExit, menu) = RunHostInProcess("shell-menu", "--icons", "--root", _root, "--files", "example.md");
+            Assert.AreEqual(0, menuExit);
+            var menuIds = menu.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Split('\t')[0]).ToArray();
+            CollectionAssert.AreEquivalent(pythonEnabled ? new[] { "wc", "py_files" } : new[] { "wc" }, menuIds);
+        }
+        finally
+        {
+            SettingsStore.Current = previousStore;
+        }
     }
 
     [TestMethod]
@@ -212,47 +284,114 @@ public class HostCliTests
     [TestMethod]
     public void List_InputText_FiltersToTextConsumers()
     {
-        var ids = Ids(RunHostOk("list", "--json", "--input", "text", "--root", _root));
+        var ids = Ids(RunHostOk("list", "--json", "--include-disabled", "--input", "text", "--root", _root));
         CollectionAssert.AreEquivalent(new[] { "py_upper", "md2html" }, ids);
     }
 
     [TestMethod]
-    public void List_OutputHtml_FiltersToHtmlProducers()
+    public void List_OutputFiles_FiltersToFileProducers()
     {
-        var ids = Ids(RunHostOk("list", "--json", "--output", "html", "--root", _root));
+        var ids = Ids(RunHostOk("list", "--json", "--output", "files", "--root", _root));
         CollectionAssert.AreEquivalent(new[] { "md2html" }, ids);
     }
 
     [TestMethod]
     public void List_InputFiles_FiltersToFileScripts()
     {
-        var ids = Ids(RunHostOk("list", "--json", "--input", "files", "--root", _root));
-        CollectionAssert.AreEquivalent(new[] { "wc" }, ids);
+        var ids = Ids(RunHostOk("list", "--json", "--include-disabled", "--input", "files", "--root", _root));
+        CollectionAssert.AreEquivalent(new[] { "wc", "py_named" }, ids);
     }
 
     [TestMethod]
     public void List_ExplicitEntryFunction_TypesFromDescriptor()
     {
-        // py_named's function is 'shout' (not the powerscript_from_* convention); its I/O must come
-        // from the descriptor, not the name.  This is the "declare function + I/O in the descriptor" path.
-        var byId = ParseList(RunHostOk("list", "--json", "--root", _root));
-        AssertIo(byId, "py_named", "html", "text");
+        var byId = ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root));
+        AssertIo(byId, "py_named", "files", "text");
     }
 
     [TestMethod]
     public void List_ComposedFilters_Intersect()
     {
-        // input text AND output text -> only the python transform, not the text->html one.
-        var ids = Ids(RunHostOk("list", "--json", "--input", "text", "--output", "text", "--root", _root));
+        // input text AND output text -> only the python transform, not the file producer.
+        var ids = Ids(RunHostOk("list", "--json", "--include-disabled", "--input", "text", "--output", "text", "--root", _root));
         CollectionAssert.AreEquivalent(new[] { "py_upper" }, ids);
     }
 
-    [TestMethod]
-    public void List_UnknownFilterToken_FailsWithUsageError()
+    [DataTestMethod]
+    [DataRow("bogus")]
+    [DataRow("html")]
+    [DataRow("image")]
+    [DataRow("audio")]
+    [DataRow("video")]
+    public void List_UnsupportedInputFilter_FailsWithUsageError(string input)
     {
-        var (exit, _, stderr) = RunHost("list", "--json", "--input", "bogus", "--root", _root);
+        var (exit, _, stderr) = RunHost("list", "--json", "--input", input, "--root", _root);
         Assert.AreEqual(1, exit, "an unknown --input token must be a usage failure");
         StringAssert.Contains(stderr, "unknown --input");
+        StringAssert.Contains(stderr, "none, text, files");
+    }
+
+    [DataTestMethod]
+    [DataRow("bogus")]
+    [DataRow("html")]
+    [DataRow("image")]
+    [DataRow("audio")]
+    [DataRow("video")]
+    public void List_UnsupportedOutputFilter_FailsWithUsageError(string output)
+    {
+        var (exit, _, stderr) = RunHost("list", "--json", "--output", output, "--root", _root);
+        Assert.AreEqual(1, exit);
+        StringAssert.Contains(stderr, "unknown --output");
+        StringAssert.Contains(stderr, "none, text, files");
+    }
+
+    [DataTestMethod]
+    [DataRow("a-path.png")]
+    [DataRow("{\"image_path\":\"a-path.png\"}")]
+    [DataRow("{\"text\":\"a-path.png\"}")]
+    [DataRow("{\"text\":\"mixed\",\"file_paths\":[]}")]
+    [DataRow("{\"file_paths\":[null]}")]
+    public void Transform_FileOutputRejectsLegacyAndMismatchedPayloads(string payload)
+    {
+        Write("bad-output.ps1", "Write-Output '" + payload + "'");
+        WriteDescriptor("bad-output.ps1", "\"input\":\"none\",\"output\":\"files\"");
+        var client = new PowerScriptsClient(_hostPath, _root);
+        try
+        {
+            Assert.IsTrue(client.TrustApprove("bad-output"));
+            var result = client.TransformAsync("bad-output", new PowerScriptTransformInput(), noConsent: true)
+                .GetAwaiter().GetResult();
+            Assert.AreEqual(PowerScriptsProtocol.ExitCode.Error, result.ExitCode);
+            StringAssert.Contains(result.StdErr, "invalid output");
+            Assert.IsNull(result.Text);
+            Assert.IsNull(result.FilePaths);
+        }
+        finally
+        {
+            client.TrustRevoke("bad-output");
+        }
+    }
+
+    [TestMethod]
+    public void Transform_NoneReturnsNoDataAndPreservesActionDiagnostics()
+    {
+        Write("no-output.ps1", "Write-Output 'action completed'");
+        WriteDescriptor("no-output.ps1", "\"input\":\"none\",\"output\":\"none\"");
+        var client = new PowerScriptsClient(_hostPath, _root);
+        try
+        {
+            Assert.IsTrue(client.TrustApprove("no-output"));
+            var result = client.TransformAsync("no-output", new PowerScriptTransformInput(), noConsent: true)
+                .GetAwaiter().GetResult();
+            Assert.IsTrue(result.Succeeded, result.StdErr);
+            Assert.IsNull(result.Text);
+            Assert.IsNull(result.FilePaths);
+            StringAssert.Contains(result.StdErr, "action completed");
+        }
+        finally
+        {
+            client.TrustRevoke("no-output");
+        }
     }
 
     [TestMethod]
@@ -306,6 +445,25 @@ public class HostCliTests
         var (exit, stdout, stderr) = RunHost(args);
         Assert.AreEqual(0, exit, $"host exited {exit}: {stderr}");
         return stdout;
+    }
+
+    private static (int Exit, string StdOut) RunHostInProcess(params string[] args)
+    {
+        // Keep runtime-policy tests hermetic without adding a production override for security settings.
+        var entryPoint = Assembly.LoadFrom(Path.ChangeExtension(_hostPath, ".dll")).EntryPoint;
+        Assert.IsNotNull(entryPoint);
+        var previousOutput = Console.Out;
+        using var output = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+        try
+        {
+            Console.SetOut(output);
+            var exit = (int)entryPoint.Invoke(null, new object[] { args })!;
+            return (exit, output.ToString());
+        }
+        finally
+        {
+            Console.SetOut(previousOutput);
+        }
     }
 
     private static Dictionary<string, JsonElement> ParseList(string json)

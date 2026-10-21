@@ -18,7 +18,6 @@ namespace PowerScripts.Core.Manifest;
 /// <see cref="PowerScriptManifest.OutputFormat"/>), and otherwise inferred:
 /// </para>
 /// <list type="bullet">
-///   <item><description>A Python <c>powerscript_from_&lt;in&gt;_to_&lt;out&gt;</c> function gives both shapes directly.</description></item>
 ///   <item><description>A script with a declared file <see cref="PowerScriptManifest.Input"/> consumes <c>Files</c>; it produces <c>Files</c> when it converts, else nothing.</description></item>
 ///   <item><description>Otherwise the script consumes nothing and produces text (its stdout).</description></item>
 /// </list>
@@ -31,20 +30,17 @@ namespace PowerScripts.Core.Manifest;
 /// </summary>
 public static class ScriptIo
 {
+    /// <summary>Inputs and outputs use no data, a string, or a file list.</summary>
+    public static bool IsSupported(PowerScriptDataFormat format) =>
+        format is PowerScriptDataFormat.None or PowerScriptDataFormat.Text or PowerScriptDataFormat.Files;
+
     /// <summary>The resolved (input, output) data shapes for a script.</summary>
-    public static (PowerScriptDataFormat Input, PowerScriptDataFormat Output) Resolve(
-        PowerScriptManifest manifest,
-        PowerScriptPythonConvention.TransformSignature? signature)
+    public static (PowerScriptDataFormat Input, PowerScriptDataFormat Output) Resolve(PowerScriptManifest manifest)
     {
         PowerScriptDataFormat inferredInput;
         PowerScriptDataFormat inferredOutput;
 
-        if (signature is not null)
-        {
-            inferredInput = signature.Input;
-            inferredOutput = signature.Output;
-        }
-        else if (manifest.Input is not null)
+        if (manifest.Input is not null)
         {
             inferredInput = PowerScriptDataFormat.Files;
             inferredOutput = manifest.Output?.Type == ScriptOutputType.ConvertedFile
@@ -69,12 +65,7 @@ public static class ScriptIo
         null or "" => null,
         "none" => PowerScriptDataFormat.None,
         "text" => PowerScriptDataFormat.Text,
-        "html" => PowerScriptDataFormat.Html,
-        "image" => PowerScriptDataFormat.Image,
-        "audio" => PowerScriptDataFormat.Audio,
-        "video" => PowerScriptDataFormat.Video,
         "file" or "files" => PowerScriptDataFormat.Files,
         _ => null,
     };
-
 }

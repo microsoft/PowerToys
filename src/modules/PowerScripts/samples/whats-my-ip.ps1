@@ -1,6 +1,5 @@
 # What's my IP — look up this PC's public IP. Metadata lives in the sibling
-# whats-my-ip.ps1.tool.json descriptor (an MCP Tool), so there is no separate manifest and no
-# @powerscript header. Its no-input contract makes it available to action consumers such as
+# whats-my-ip.ps1.tool.json descriptor (an MCP Tool). Its no-input contract makes it available to action consumers such as
 # Keyboard Manager, LightSwitch, and Command Palette.
 
 $ErrorActionPreference = 'Stop'

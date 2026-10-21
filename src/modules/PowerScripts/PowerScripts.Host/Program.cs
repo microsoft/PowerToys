@@ -23,7 +23,7 @@ namespace PowerScripts.Host;
 ///   - The KBM editor / agents enumerate via:     PowerScripts.Host.exe list --json
 ///
 /// Usage:
-///   PowerScripts.Host list [--json] [--root &lt;dir&gt;]
+///   PowerScripts.Host list [--json] [--include-disabled] [--root &lt;dir&gt;]
 ///   PowerScripts.Host run &lt;id&gt; [--files &lt;f1&gt; &lt;f2&gt; ...] [--set name=value ...] [--root &lt;dir&gt;]
 /// </summary>
 internal static class Program
@@ -80,16 +80,14 @@ internal static class Program
             return 1;
         }
 
-        // Resolve each script's I/O once (Python transforms read it from their function name) so the
-        // JSON and text renderers — and the filters above — all work from the same shapes.
-        var rows = registry.Scripts
+        var scripts = options.ContainsKey("include-disabled")
+            ? registry.Scripts
+            : FilterEnabledRuntimes(registry.Scripts);
+        var rows = scripts
             .Select(s =>
             {
-                var signature = s.Runtime == ScriptRuntime.Python
-                    ? PowerScriptPythonConvention.ParseFile(s.EntryFullPath)
-                    : null;
-                var (input, output) = ScriptIo.Resolve(s, signature);
-                return (Script: s, Signature: signature, Input: input, Output: output);
+                var (input, output) = ScriptIo.Resolve(s);
+                return (Script: s, Input: input, Output: output);
             })
             .Where(r => wantInput is null || r.Input == wantInput)
             .Where(r => wantOutput is null || r.Output == wantOutput)
@@ -103,11 +101,6 @@ internal static class Program
             var projection = rows.Select(r =>
             {
                 var s = r.Script;
-
-                // For Python scripts the transform contract comes from the single
-                // powerscript_from_<input>_to_<output> function so consumers know which data shapes the
-                // script consumes/produces without running it.
-                var signature = r.Signature;
 
                 // Scripts declare only their I/O; each consuming module discovers the scripts it can
                 // use by filtering on this shape (e.g. Advanced Paste wants scripts accepting Text).
@@ -152,11 +145,11 @@ internal static class Program
                         parameter.Min,
                         parameter.Max,
                     }),
-                    transform = signature is null ? null : new
+                    transform = s.Runtime != ScriptRuntime.Python || s.Execute is not null ? null : new
                     {
-                        function = signature.FunctionName,
-                        inputFormat = signature.Input.ToString(),
-                        outputFormat = signature.Output.ToString(),
+                        function = s.EntryFunction,
+                        inputFormat = ioInput.ToString(),
+                        outputFormat = ioOutput.ToString(),
                     },
                 };
             });
@@ -372,9 +365,9 @@ internal static class Program
 
     /// <summary>
     /// Runs a script as a typed data transform for surfaces like Advanced Paste. Reads a single JSON
-    /// payload from stdin (<c>text</c>, <c>html</c>, <c>image_path</c>, <c>file_paths</c>,
+    /// payload from stdin (<c>text</c>, <c>file_paths</c>,
     /// <c>params</c>), runs the script through the shared runtime, and writes a single JSON result
-    /// object (<c>text</c>, <c>html</c>, <c>image_path</c>, <c>file_paths</c>, ...) to stdout. This
+    /// object (<c>text</c> or <c>file_paths</c>, or empty for no output) to stdout. This
     /// is the same execution + trust path as <c>run</c>, so a script behaves identically whether it
     /// is triggered by a hotkey, the context menu, or a paste.
     /// </summary>
@@ -452,11 +445,13 @@ internal static class Program
             return result.ExitCode;
         }
 
-        // PowerShell transform and descriptor-authored scripts: hand text/html in as parameters plus
-        // any files, and return the script's stdout as the transformed text.
+        // PowerShell transform and descriptor-authored scripts: hand text in as a parameter plus
+        // any files. File outputs use the same explicit JSON object as Python; text stays literal.
         var parameters = new Dictionary<string, string?>(resolvedParameters, StringComparer.OrdinalIgnoreCase);
-        parameters.TryAdd("Text", input.Text ?? string.Empty);
-        parameters.TryAdd("Html", input.Html ?? string.Empty);
+        if (manifest.InputFormat == PowerScriptDataFormat.Text)
+        {
+            parameters.TryAdd("Text", input.Text ?? string.Empty);
+        }
 
         var psResult = new ScriptExecutor().Execute(manifest, input.FilePaths, parameters);
         if (!string.IsNullOrEmpty(psResult.StdErr))
@@ -464,8 +459,35 @@ internal static class Program
             Console.Error.Write(psResult.StdErr);
         }
 
-        Console.Out.Write(JsonSerializer.Serialize(new PythonTransformResult { Text = psResult.StdOut }, TransformJsonOptions));
-        return psResult.ExitCode;
+        if (psResult.ExitCode != 0)
+        {
+            Console.Error.Write(psResult.StdOut);
+            return psResult.ExitCode;
+        }
+
+        PythonTransformResult output;
+        try
+        {
+            output = ScriptIo.Resolve(manifest).Output switch
+            {
+                PowerScriptDataFormat.None => new PythonTransformResult(),
+                PowerScriptDataFormat.Text => new PythonTransformResult { Text = psResult.StdOut },
+                _ => PythonTransformResult.Parse(psResult.StdOut, ScriptIo.Resolve(manifest).Output),
+            };
+        }
+        catch (JsonException ex)
+        {
+            Console.Error.WriteLine($"transform: invalid output: {ex.Message}");
+            return 2;
+        }
+
+        if (ScriptIo.Resolve(manifest).Output == PowerScriptDataFormat.None)
+        {
+            Console.Error.Write(psResult.StdOut);
+        }
+
+        Console.Out.Write(JsonSerializer.Serialize(output, TransformJsonOptions));
+        return 0;
     }
 
     private static readonly JsonSerializerOptions TransformJsonOptions = new()
@@ -572,7 +594,7 @@ internal static class Program
             return 0;
         }
 
-        foreach (var script in registry.FileScriptsForSelection(files))
+        foreach (var script in FilterEnabledRuntimes(registry.FileScriptsForSelection(files)))
         {
             var name = script.Name.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
             var row = $"{script.Id}\t{name}";
@@ -580,6 +602,12 @@ internal static class Program
         }
 
         return 0;
+    }
+
+    private static IEnumerable<PowerScriptManifest> FilterEnabledRuntimes(IEnumerable<PowerScriptManifest> scripts)
+    {
+        var pythonEnabled = PythonSettings.Load().Mode != PythonRuntimeMode.Disabled;
+        return scripts.Where(script => script.Runtime != ScriptRuntime.Python || pythonEnabled);
     }
 
     /// <summary>
@@ -614,7 +642,7 @@ internal static class Program
         var parsed = ScriptIo.TryParse(token);
         if (parsed is null)
         {
-            Console.Error.WriteLine($"list: unknown {flag} '{token}'. Use one of: none, text, html, image, audio, video, files.");
+            Console.Error.WriteLine($"list: unknown {flag} '{token}'. Use one of: none, text, files.");
             return false;
         }
 
@@ -666,8 +694,9 @@ internal static class Program
     {
         Console.WriteLine("PowerScripts.Host — run and enumerate PowerScripts.");
         Console.WriteLine();
-        Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--no-input] [--root <dir>]");
-        Console.WriteLine("       <shape>: none | text | html | image | audio | video | files   (filter by declared I/O)");
+        Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--no-input] [--include-disabled] [--root <dir>]");
+        Console.WriteLine("       Input and output: none | text | files.");
+        Console.WriteLine("       Disabled runtimes are omitted; --include-disabled lists all installed scripts for configuration.");
         Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
         Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");

@@ -14,6 +14,9 @@
     "required": ["file"]
   },
   "x-powerscript": {
+    "function": "uppercase_files",
+    "input": "files",
+    "output": "files",
     "extensions": [".txt", ".md"],
     "capabilities": ["fileRead", "fileWrite"],
     "publisher": "PowerToys samples",

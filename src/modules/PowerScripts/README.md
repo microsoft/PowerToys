@@ -1,7 +1,7 @@
 # PowerScripts (prototype)
 
 > **Status: prototype.** Write a small script once and use it across compatible PowerToys modules.
-> This folder contains the **working core** (script header format, registry, shared executor
+> This folder contains the **working core** (MCP-style descriptors, registry, shared executor
 > `PowerScripts.Host.exe`), the Explorer context-menu handler, and sample scripts. Integrations with
 > other PowerToys modules are developed in separate branches.
 
@@ -21,14 +21,14 @@
 
 ## The idea
 
-A **PowerScript** is a single script file with its metadata in a header comment. A script declares
+A **PowerScript** is a script file paired with a sibling `.tool.json` descriptor. A script declares
 only what it **consumes** and **produces** (its input → output); there is no separate "kind":
 
 - An **action** — input `none`, output `text` (its stdout). "Do something on my PC." Triggered by a
   Keyboard Manager hotkey or Command Palette command.
 - A **file script** — input `files`. "Do something with these files", of declared types. Surfaced in
   the Explorer right-click menu. (A script is "file-driven" precisely when its resolved input is `files`.)
-- A **data transform** — e.g. input `text` → output `html`. Consumed by Advanced Paste.
+- A **data transform** — e.g. input `text` → output `files` containing an HTML document. Consumed by Advanced Paste.
 
 Every module is a thin consumer of one **registry** and invokes one **executor**. Modules discover
 compatible scripts from the resolved I/O contract rather than author-declared integration names.
@@ -37,8 +37,8 @@ compatible scripts from the resolved I/O contract rather than author-declared in
 
 ```
  Registry (PowerScripts.Core)  ──read──►  consumers:
-   scans <root> for @powerscript.*          • Explorer context menu  (file actions)
-   header scripts                           • Keyboard Manager editor (system actions)
+   scans <root> for *.tool.json             • Explorer context menu  (file actions)
+   descriptors                              • Keyboard Manager editor (system actions)
                                             • LightSwitch / Command Palette / Advanced Paste
         ▲                                          │ invoke
         └──────────── all consumers ───────────────┘
@@ -47,7 +47,7 @@ compatible scripts from the resolved I/O contract rather than author-declared in
               list [--json] | run <id> [--files ...] [--set k=v ...]
 ```
 
-- **`PowerScripts.Core`** — manifest model + header parser (`Manifest/`), validation, registry (`Registry/`),
+- **`PowerScripts.Core`** — manifest model + descriptor parser (`Manifest/`), validation, registry (`Registry/`),
   executor (`Execution/`).
 - **`PowerScripts.Host`** — the CLI every surface points at. `list --json` is the structured catalogue
   the KBM editor picker and future agents/MCP consume; `run <id>` executes.
@@ -62,52 +62,89 @@ compatible scripts from the resolved I/O contract rather than author-declared in
 `%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts\<id>.ps1` (or `.py`)
 (override with the `POWERSCRIPTS_ROOT` env var or `--root`).
 
-## Script format (header metadata)
+## Script packages
 
-A PowerScript is a **single self-contained file**. Its metadata lives in the file's **leading comment
-block** as `@powerscript.*` directives (the Raycast-style model), so one file is the whole thing and is
-trivial to share — there is no separate `manifest.json`. Directives are `#`-comment lines of the form
-`# @powerscript.<key> <value>`:
+Each script must have a sibling descriptor: `example.py` plus `example.py.tool.json`, or
+`example.ps1` plus `example.ps1.tool.json`. Descriptors are discovered directly under the scripts
+root and one sub-folder below it, so a package can keep companion assets beside its script.
+Script bodies are not scanned for metadata or special function names.
 
-```powershell
-# @powerscript.id           whats-my-ip
-# @powerscript.name         What's my IP
-# @powerscript.description   Look up this PC's public IP address and show it.
-# @powerscript.capability   network
-# @powerscript.param        name=greeting type=string label="Greeting" default=Hello
-
-Write-Host 'script body starts here'
-```
-
-**Field reference** (all optional unless noted):
-
-| Directive | Meaning |
-| --- | --- |
-| `id` **(required)** | Portable identity; unique across the catalogue. Letters/digits/`. _ -` only. |
-| `name` **(required)** | Display name. |
-| `description` (`desc`) | One-line description. |
-| `input` / `output` | Explicit I/O shapes (`none`/`text`/`html`/`image`/`audio`/`video`/`files`). Otherwise inferred (Python fn name, declared `extensions`, else `none`→`text`). |
-| `runtime` | `powershell` or `python`. Inferred from the extension (`.py`→Python, else PowerShell) if omitted. |
-| `function` (`entryfunction`) | Python only: the entry function to call. Omit to use the `powerscript_from_<in>_to_<out>` naming convention. |
-| `extensions` | File scripts: accepted extensions (`.md .txt` or `*`). A declared `extensions` list makes input resolve to `files`. Repeatable / comma- or space-separated. |
-| `minfiles` / `maxfiles` | File scripts: selection bounds (`maxfiles` 0 = unbounded). |
-| `outputextension` | File scripts: the produced extension. |
-| `capability` | Declared capability (consent string + agent permission). Repeatable. |
-| `param` | A typed parameter (see Parameters). Repeatable. |
-| `icon` | Optional package-relative `.ico` path, e.g. `assets\script.ico`. The Host publishes a validated `iconPath` for Settings and consumer modules; missing/invalid icons use a default, with an `iconWarning`. Maximum 1 MiB; external paths, URLs, and links are not supported. |
-| `publisher` (`author`), `version`, `source` | Informational metadata. |
-
-The header ends at the first non-blank, non-comment line; non-directive comments (e.g. a license
-header) are ignored, and a file with **no** `@powerscript.*` directives is skipped — so a plain helper
-script is never mistaken for a PowerScript. Scripts are discovered as a **loose file directly under the
-scripts root** (e.g. `scripts\whats-my-ip.ps1`) or as the one header script inside a sub-folder (which
-lets a script keep companion assets next to it).
+**Migration:** inline metadata is no longer supported. Move identity, parameters, file filters,
+icons, and capabilities into `.tool.json`. Built-in Python scripts must declare
+`x-powerscript.function` and should explicitly declare `input` and `output`; omitting the function
+is a validation error, not a request to infer it from Python source. Script or descriptor edits
+invalidate existing content-hash trust and require approval again.
 
 ### Consumer discovery
 
 Authors don't hand-list which PowerToys modules expose a script. Each consumer filters the resolved
 **input → output** contract it supports: Explorer selects file inputs, action consumers select
 `input: none`, and Advanced Paste selects compatible transform contracts.
+
+Inputs and outputs are only `none`, `text`, and `files`. Inline HTML is a string (`text`); images,
+audio, video, and HTML documents use `files` with extension and selection-count filters. A PNG
+materialized from the clipboard and a PNG selected in Explorer match the same scripts. For example:
+
+```json
+{
+  "name": "inspect-images",
+  "x-powerscript": {
+    "function": "inspect_images",
+    "input": "files",
+    "output": "text",
+    "extensions": [".png", ".jpg"],
+    "minFiles": 1,
+    "maxFiles": 0
+  }
+}
+```
+
+`inspect_images(paths)` receives the complete file-path list once. `maxFiles: 0` is unbounded;
+set it to `1` for single-file scripts. Consumers use `ListForFiles` to check both extensions and
+count, irrespective of where those files originated.
+
+Old `input` or `output` declarations of `html/image/audio/video` are rejected. Use `text` for literal
+markup and `files` for rich HTML documents or media, and update the payloads accordingly.
+
+### Transform results
+
+The descriptor's `output` must match the returned result:
+
+| Output | Transform JSON | Built-in Python return |
+| --- | --- | --- |
+| `none` | `{}` | `None` |
+| `text` | `{"text":"literal content"}` | A string, or the explicit JSON-shaped dictionary |
+| `files` | `{"file_paths":["C:\\output\\result.png"]}` | A path list/tuple, or the explicit dictionary |
+
+A single file is still a list. A string containing a path is text, not an inferred file result.
+Unknown fields (including old `html`, `image_path`, `audio_path`, and `video_path` fields), malformed
+JSON, and results that do not match the descriptor are errors rather than successful empty output.
+Python functions must return their result; diagnostics belong on stderr, not stdout.
+
+PowerShell and explicit launch recipes use stdout as literal content for `output: text`.
+For `output: files`, emit the explicit JSON object, for example:
+
+```powershell
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+@{ file_paths = @($producedPaths) } | ConvertTo-Json -Compress
+```
+
+The output protocol uses UTF-8. Set the encoding explicitly in PowerShell scripts, especially
+Windows PowerShell 5.1, to preserve Unicode filenames rather than replacing characters with `?`.
+
+For `output: none`, transform stdout is diagnostics and the Host emits `{}`.
+The `run` verb retains its human-readable stdout behavior.
+
+Consumers decide whether to paste a returned PNG as an image or a file, and whether to read an
+HTML file as rich content. The core does not inspect extensions to guess presentation intent.
+Keep produced files available until the consumer has finished reading them; clipboard file
+references may need a lifetime longer than the script invocation.
+
+Consumer `list` discovery omits Python scripts while Python execution is disabled in Settings.
+Windows and WSL modes both enable discovery. The Settings catalogue uses
+`list --json --include-disabled` to keep all installed scripts visible for configuration; this flag
+does not enable Python or bypass execution checks. The modern Explorer menu also omits disabled
+Python scripts.
 
 ### Parameters (optional)
 
@@ -116,10 +153,7 @@ labels, descriptions, defaults, choices, and numeric bounds; each consuming modu
 present that contract. For example, Keyboard Manager renders controls while configuring a hotkey
 and persists the selected values. The Host itself never opens a parameter dialog.
 
-Header-authored parameters use quote-aware `key=value` tokens (`name=`, `type=`, `required=`,
-`label=`, `description=`, `default=`, `options=`, `min=`, `max=`), with the first two bare tokens
-treated as name and type. Descriptor-authored parameters use JSON Schema properties and its
-`required` array. Supported types:
+Parameters use JSON Schema properties and its `required` array in the descriptor. Supported types:
 
 - `choice` — one value from a fixed `options` list.
 - `bool` — `true` or `false`.
@@ -136,13 +170,13 @@ declared defaults, and rejects missing required values. Values arrive at scripts
 
 ## Script format — explicit `.tool.json` descriptor (MCP Tool shape)
 
-Besides the header comment, a script can be described by an explicit **sidecar descriptor** named
+Every script is described by a **sidecar descriptor** named
 `<script>.tool.json` next to it (e.g. `narrate_image.py.tool.json` beside `narrate_image.py`). This
 is the "write the contract by hand" path, and it is deliberately **not a new protocol**: the
 descriptor is a standard **MCP `Tool`** object — the same `name` + `description` + `inputSchema`
 shape an AI agent already understands — so one artifact doubles as the authoring format and the
 agent/MCP contract, with no server to run. It is also **language-agnostic**: it works for `.py`,
-`.ps1`, `.cmd`, `.sh` — even scripts that can't carry a comment header.
+`.ps1`, `.cmd`, and `.sh`.
 
 ```jsonc
 {
@@ -169,6 +203,7 @@ agent/MCP contract, with no server to run. It is also **language-agnostic**: it 
   // Optional PowerToys-specific residue with no language-native home.
   "x-powerscript": {
     "extensions": [".png", ".jpg"],
+    "output": "text",
     "capabilities": ["fileRead", "network"],
     "mxc": {
       "recommendedPolicies": ["filesystem", "network", "ui", "leastPrivilege"]
@@ -191,11 +226,10 @@ How the descriptor maps onto the manifest the rest of PowerScripts already uses:
 | `x-powerscript.mxc.recommendedPolicies` | Display-only author recommendation using `filesystem`, `network`, `ui`, and `leastPrivilege`; it never weakens the user's effective policy. Defaults to all four. |
 
 **`x-execute` is optional — it is the escape hatch, not the default.** Omit it and PowerScripts
-launches the script with the **built-in runtime** for its language, exactly as a header-authored
-script would:
+launches the script with the **built-in runtime** for its language:
 
 - a `.ps1` runs through Windows PowerShell / `pwsh` (`-NoProfile -NonInteractive -ExecutionPolicy Bypass`);
-- a `.py` runs through the **Python function-convention runtime** (`powerscript_from_<in>_to_<out>`),
+- a `.py` runs through the **Python runtime**, calling the descriptor's `x-powerscript.function`,
   which keeps **WSL** execution, the interpreter-path setting, and Windows↔`/mnt/…` path translation.
 
 Add `x-execute` only when you need a launch the built-in runtimes don't give you — a different
@@ -205,27 +239,48 @@ token that names the entry script is resolved to its full path); scalar inputs g
 `argMap` flag, else `--name`); selected files are passed positionally and via `POWERSCRIPTS_FILES`;
 and `"stdin": "json"` instead writes the whole input object to the process' stdin as one JSON
 document — the channel for large / structured input. `exitCodes` gives non-zero codes a human
-meaning surfaced in errors. Note `x-execute` bypasses the Python function-convention runtime, so
+meaning surfaced in errors. Note `x-execute` bypasses the built-in Python runtime, so
 **Python scripts that need WSL should omit it**.
 
-A script with a sibling descriptor is registered from the descriptor only; its body is **not** also
-parsed as a header script, so the two authoring paths never collide. Introspection (deriving the
-descriptor from a script's native signature) is a planned follow-up; today the descriptor is written
-explicitly.
+For built-in Python execution, the function name is arbitrary and its I/O is declared in metadata:
+
+```json
+{
+  "name": "list-files",
+  "description": "Return selected file paths as text.",
+  "inputSchema": { "type": "object", "properties": {} },
+  "x-powerscript": {
+    "function": "process_files",
+    "input": "files",
+    "output": "text",
+    "extensions": [".txt", ".md"]
+  }
+}
+```
+
+The sibling `list-files.py` needs only normal Python code:
+
+```python
+def process_files(paths):
+    return "\n".join(paths)
+```
+
+Metadata is never inferred from that function's name. The Host passes the full path list once;
+the function decides how to process the batch. Windows and WSL share this same entry contract.
 
 ### Sample gallery
 
-All scripts under `samples/` are authored with `.tool.json` descriptors (the header format still
-works as an alternative). They cover every path:
+All scripts under `samples/` are authored with `.tool.json` descriptors. They cover every path:
 
 | Sample | Language | Input → Output | Launch |
 | --- | --- | --- | --- |
 | `system-snapshot`, `volume_up`, `whats-my-ip` | PowerShell | none → text | built-in PS runtime |
 | `greet` | PowerShell | none → text + **typed parameters** | built-in PS runtime |
 | `sha256-checksum`, `convert_md_to_txt`, `copy-as-unc` | PowerShell | files → files/none | built-in PS runtime |
-| `py_beep`, `py_greet` | Python | none → text | function-convention runtime (**WSL-capable**) |
-| `uppercase` | Python | text → text transform | function-convention runtime (**WSL-capable**) |
-| `py_uppercase_files` | Python | files → files | function-convention runtime (**WSL-capable**) |
+| `py_beep` | Python | none → none | descriptor-selected function (**WSL-capable**) |
+| `py_greet` | Python | none → text | descriptor-selected function (**WSL-capable**) |
+| `uppercase` | Python | text → text transform | descriptor-selected function (**WSL-capable**) |
+| `py_uppercase_files` | Python | files → files | descriptor-selected function (**WSL-capable**) |
 | `word-count` | PowerShell | files → none | **explicit `x-execute`** recipe |
 
 > There is no separate `system`/`file` "kind": a script is *file-driven* precisely when its resolved

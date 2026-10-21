@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
@@ -74,7 +75,7 @@ public class DescriptorTests
 
         // No file input => a "system" (no-input) script; there is no separate kind to assert.
         Assert.IsNull(manifest.Input);
-        Assert.AreEqual(PowerScriptDataFormat.None, ScriptIo.Resolve(manifest, null).Input);
+        Assert.AreEqual(PowerScriptDataFormat.None, ScriptIo.Resolve(manifest).Input);
         Assert.AreEqual(ScriptRuntime.PowerShell, manifest.Runtime);
         Assert.AreEqual(3, manifest.Parameters.Count);
 
@@ -116,7 +117,7 @@ public class DescriptorTests
         Assert.IsNotNull(manifest);
 
         // A file-typed input property makes it file-driven (input shape = files); no "kind" needed.
-        Assert.AreEqual(PowerScriptDataFormat.Files, ScriptIo.Resolve(manifest!, null).Input);
+        Assert.AreEqual(PowerScriptDataFormat.Files, ScriptIo.Resolve(manifest!).Input);
         Assert.AreEqual(ScriptRuntime.Python, manifest!.Runtime);
         Assert.IsNotNull(manifest.Input);
         CollectionAssert.AreEqual(new[] { ".png", ".jpg" }, manifest.Input!.Extensions);
@@ -151,7 +152,7 @@ public class DescriptorTests
         var manifest = ToolDescriptorParser.TryParseFile(descriptor);
 
         Assert.IsNotNull(manifest);
-        Assert.AreEqual(PowerScriptDataFormat.None, ScriptIo.Resolve(manifest!, null).Input);
+        Assert.AreEqual(PowerScriptDataFormat.None, ScriptIo.Resolve(manifest!).Input);
         Assert.IsNull(manifest!.Input);
         var parameter = manifest.Parameters.Single();
         Assert.AreEqual("file", parameter.Name);
@@ -160,9 +161,9 @@ public class DescriptorTests
     }
 
     [TestMethod]
-    public void Registry_Discovers_Descriptor_And_Skips_Its_Sibling_As_Header()
+    public void Registry_DiscoversDescriptorOnceAndIgnoresScriptComments()
     {
-        Write("act.ps1", "param($who)\nWrite-Output $who\n");
+        Write("act.ps1", "# @powerscript.id ignored\n# @powerscript.name Ignored\nparam($who)\nWrite-Output $who\n");
         Write("act.ps1.tool.json", """
             { "name": "act", "description": "d",
               "inputSchema": { "type": "object", "properties": { "who": { "type": "string" } } },
@@ -172,12 +173,180 @@ public class DescriptorTests
         var registry = new ScriptRegistry(_root);
         registry.Load();
 
-        // Exactly one script: the descriptor. The sibling .ps1 (no @powerscript.* header) is not
-        // registered a second time, so there is no duplicate-id error.
         Assert.AreEqual(1, registry.Scripts.Count);
         Assert.AreEqual("act", registry.Scripts[0].Id);
         Assert.AreEqual(0, registry.Errors.Count);
         Assert.IsNotNull(registry.Scripts[0].Execute);
+    }
+
+    [TestMethod]
+    public void Registry_RejectsPythonWithoutAnExplicitEntryFunction()
+    {
+        Write("legacy.py", "def powerscript_from_text_to_text(text):\n    return text\n");
+        Write("legacy.py.tool.json", """
+            {
+              "name": "legacy",
+              "inputSchema": { "type": "object", "properties": {} },
+              "x-powerscript": { "input": "text", "output": "text" }
+            }
+            """);
+
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+
+        Assert.AreEqual(0, registry.Scripts.Count);
+        Assert.AreEqual(1, registry.Errors.Count);
+        StringAssert.Contains(registry.Errors[0].Message, "x-powerscript.function");
+    }
+
+    [TestMethod]
+    public void Registry_UsesDescriptorIoWithoutInterpretingPythonFunctionNames()
+    {
+        Write("named.py", "def powerscript_from_text_to_text():\n    return '<p>hello</p>'\n");
+        Write("named.py.tool.json", """
+            {
+              "name": "named",
+              "inputSchema": { "type": "object", "properties": {} },
+              "x-powerscript": {
+                "function": "powerscript_from_text_to_text",
+                "input": "none",
+                "output": "files"
+              }
+            }
+            """);
+
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+
+        Assert.AreEqual(0, registry.Errors.Count);
+        var script = registry.Get("named");
+        Assert.IsNotNull(script);
+        Assert.AreEqual(PowerScriptDataFormat.None, script.InputFormat);
+        Assert.AreEqual(PowerScriptDataFormat.Files, script.OutputFormat);
+    }
+
+    [TestMethod]
+    public void PythonRuntime_RejectsMissingDescriptorEntryBeforeLaunching()
+    {
+        var manifest = new PowerScriptManifest { Runtime = ScriptRuntime.Python };
+        var result = new PythonRuntime(new PythonSettings { Mode = PythonRuntimeMode.Windows })
+            .Run(manifest, new PythonTransformInput());
+
+        Assert.AreEqual(2, result.ExitCode);
+        StringAssert.Contains(result.StdErr, "x-powerscript.function");
+    }
+
+    [DataTestMethod]
+    [DataRow("html")]
+    [DataRow("image")]
+    [DataRow("audio")]
+    [DataRow("video")]
+    public void Registry_RejectsRemovedInputAndOutputTypes(string format)
+    {
+        Write("invalid.ps1", "Write-Output 'unused'");
+        Write("invalid.ps1.tool.json", $$"""
+            {
+              "name": "invalid",
+              "x-powerscript": { "input": "{{format}}", "output": "text" }
+            }
+            """);
+        Write("invalid-output.ps1", "param([string]$Text)\nWrite-Output $Text");
+        Write("invalid-output.ps1.tool.json", $$"""
+            {
+              "name": "invalid-output",
+              "x-powerscript": { "input": "text", "output": "{{format}}" }
+            }
+            """);
+
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+
+        Assert.AreEqual(0, registry.Scripts.Count);
+        Assert.AreEqual(2, registry.Errors.Count);
+    }
+
+    [DataTestMethod]
+    [DataRow("input")]
+    [DataRow("output")]
+    public void Parser_RejectsUnknownIoInsteadOfDefaulting(string field)
+    {
+        var descriptor = Write("invalid.ps1.tool.json", $$"""
+            { "name": "invalid", "x-powerscript": { "{{field}}": "unknown" } }
+            """);
+
+        Assert.IsNull(ToolDescriptorParser.TryParseFile(descriptor));
+    }
+
+    [DataTestMethod]
+    [DataRow("html")]
+    [DataRow("image_path")]
+    [DataRow("audio_path")]
+    [DataRow("video_path")]
+    public void Transforms_RejectRemovedInputAndOutputFields(string field)
+    {
+        Assert.ThrowsException<JsonException>(() =>
+            JsonSerializer.Deserialize<PythonTransformInput>($"{{\"{field}\":\"value\"}}"));
+        Assert.ThrowsException<JsonException>(() =>
+            PythonTransformResult.Parse($"{{\"{field}\":\"value\"}}", PowerScriptDataFormat.Files));
+    }
+
+    [DataTestMethod]
+    [DataRow("none", "{}", true)]
+    [DataRow("text", "{\"text\":\"<p>literal markup</p>\"}", true)]
+    [DataRow("files", "{\"file_paths\":[\"C:\\\\output\\\\image.png\"]}", true)]
+    [DataRow("files", "{\"file_paths\":[]}", true)]
+    [DataRow("files", "{\"text\":\"C:\\\\output\\\\image.png\"}", false)]
+    [DataRow("text", "{\"file_paths\":[\"file.txt\"]}", false)]
+    [DataRow("none", "{\"text\":\"unexpected\"}", false)]
+    [DataRow("files", "{\"file_paths\":[null]}", false)]
+    [DataRow("files", "{\"file_paths\":[\"\"]}", false)]
+    [DataRow("text", "{\"text\":\"hello\",\"file_paths\":[]}", false)]
+    [DataRow("text", "not JSON", false)]
+    [DataRow("text", "null", false)]
+    public void TransformOutput_ValidatesDeclaredShapeWithoutInferringPaths(string format, string json, bool valid)
+    {
+        if (valid)
+        {
+            PythonTransformResult.Parse(json, ScriptIo.TryParse(format)!.Value);
+        }
+        else
+        {
+            Assert.ThrowsException<JsonException>(() => PythonTransformResult.Parse(json, ScriptIo.TryParse(format)!.Value));
+        }
+    }
+
+    [TestMethod]
+    public void Registry_AllowsPythonLaunchRecipesWithoutAnEntryFunction()
+    {
+        Write("command.py", "print('hello')\n");
+        Write("command.py.tool.json", """
+            {
+              "name": "command",
+              "inputSchema": { "type": "object", "properties": {} },
+              "x-execute": { "command": ["python", "command.py"] }
+            }
+            """);
+
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+
+        Assert.AreEqual(0, registry.Errors.Count);
+        Assert.IsNotNull(registry.Get("command"));
+    }
+
+    [TestMethod]
+    public void ScriptIo_PreservesDescriptorDefaultsAndFileConversion()
+    {
+        Assert.AreEqual(
+            (PowerScriptDataFormat.None, PowerScriptDataFormat.Text),
+            ScriptIo.Resolve(new PowerScriptManifest()));
+        Assert.AreEqual(
+            (PowerScriptDataFormat.Files, PowerScriptDataFormat.Files),
+            ScriptIo.Resolve(new PowerScriptManifest
+            {
+                Input = new ScriptInput { Extensions = { ".md" } },
+                Output = new ScriptOutput { Type = ScriptOutputType.ConvertedFile },
+            }));
     }
 
     [TestMethod]

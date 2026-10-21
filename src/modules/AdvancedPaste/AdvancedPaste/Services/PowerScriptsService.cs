@@ -20,7 +20,7 @@ namespace AdvancedPaste.Services;
 /// <summary>
 /// Bridges Advanced Paste to PowerScripts. PowerScripts are user-authored scripts (PowerShell or
 /// Python) that declare an <c>advancedPaste</c> surface and a transform contract
-/// (<c>powerscript_from_&lt;input&gt;_to_&lt;output&gt;</c>). This service enumerates those scripts and runs
+/// from their descriptors. This service enumerates those scripts and runs
 /// one as a clipboard transform by shelling the shared <c>PowerScripts.Host.exe</c>, so every surface
 /// (a hotkey, the Explorer context menu, Advanced Paste) executes them through the same gated host.
 /// </summary>

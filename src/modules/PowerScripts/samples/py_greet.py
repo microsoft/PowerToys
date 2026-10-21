@@ -3,13 +3,12 @@
 # See the LICENSE file in the project root for more information.
 
 # Greet (Python) — demonstrates consumer-rendered PowerScript parameters. Metadata (including the parameters)
-# lives in the sibling py_greet.py.tool.json descriptor (an MCP Tool). This script keeps the Python
-# function convention, so it runs through the Python runtime (WSL-capable). PowerScripts passes each
+# lives in the sibling py_greet.py.tool.json descriptor (an MCP Tool). PowerScripts passes each
 # chosen value as a keyword argument. Values arrive as strings, so the boolean parameter is compared
 # against the literal "true".
 
 
-def powerscript_from_none_to_text(greeting="Hello", name="World", shout="false"):
+def greet(greeting="Hello", name="World", shout="false"):
     message = f"{greeting}, {name}!"
     if str(shout).lower() == "true":
         message = message.upper()

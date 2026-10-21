@@ -25,16 +25,23 @@ Host owns script loading, validation, trust, parameter validation, security poli
 | Trigger an action with no primary input | `input: none` | `run <id>` |
 | Operate on selected filesystem items | `input: files`, then validate extensions and count | `run <id> --files <paths>` |
 | Transform structured content | Compatible input and output shapes | `transform <id>` with JSON on stdin |
-| Browse or configure scripts without executing | Any supported I/O | `list --json` |
+| Browse scripts available to run | Any supported I/O | `list --json` |
+| Configure all installed scripts, including disabled runtimes | Any supported I/O | `list --json --include-disabled` |
 
-The currently recognized I/O tokens are:
+Input and output tokens are:
 
 ```text
-none, text, html, image, audio, video, files
+none, text, files
 ```
 
-`files` means one or more filesystem paths. `image`, `audio`, and `video` are semantic transform
-shapes and are not aliases for `.jpg`, `.mp3`, or `.mp4` file extensions.
+`text` carries strings, including inline HTML. `files` carries one or more paths, including images,
+audio, video, and HTML documents. File eligibility is determined by extensions and selection count,
+not whether the file came from Explorer, a file picker, or the clipboard.
+
+`text` output is always literal content, including literal HTML markup. Rich HTML and media outputs
+are `files`; a single file still uses a path list. Consumers decide whether to paste file contents
+(for example, a PNG bitmap or rich HTML document) or a file selection. Do not guess HTML from a
+string's contents or treat a filename-looking string as a returned file.
 
 ## Prefer the C# client
 
@@ -62,12 +69,13 @@ var scripts = client.ListActions();
 
 Useful discovery methods:
 
-- `List()` — all scripts.
+- `List()` — installed scripts whose runtimes are enabled.
 - `ListActions()` — scripts with `input: none`.
 - `ListAccepting(input)` — scripts accepting one I/O shape.
 - `ListProducing(output)` — scripts producing one I/O shape.
 - `ListForFileExtension(extension)` — file scripts matching one extension.
-- `ListForFiles(paths)` — file scripts whose extension contract accepts the selection.
+- `ListForFiles(paths)` — file scripts accepting every selected extension and the selection count.
+- `script.AcceptsFiles(paths)` — the same check against an already-enumerated script.
 
 Native consumers may invoke the Host contract directly:
 
@@ -80,20 +88,36 @@ PowerScripts.Host.exe transform <id>
 Use structured process argument APIs where available. Do not concatenate untrusted IDs, paths, or
 parameter values into a command line.
 
+Default `list` discovery (JSON or text, with or without I/O filters) omits Python scripts when
+Settings has Python execution disabled. Windows and WSL modes both enable Python discovery. The
+modern Explorer `shell-menu` feed applies the same runtime filter. Consumers should re-enumerate
+when presenting available scripts rather than caching runtime availability indefinitely.
+
+Only configuration/catalogue UIs should opt into `--include-disabled`, so users can still inspect
+installed Python scripts before enabling Python. This option changes discovery only; it does not
+enable a runtime or bypass execution checks.
+
 ## Script presentation and icons
 
+Scripts are registered only from sibling `<script>.tool.json` descriptors. Inline metadata and
+Python function-name inference are not supported. Built-in Python execution requires
+`x-powerscript.function`; its input/output contract comes from descriptor metadata, not the function
+name. An explicit `x-execute` recipe uses its declared command instead of the Python function runner.
+
 Present scripts by name and resolved input/output contract, not a separate "System" or "File"
-category. For example, show `None → Text` or `Files → None`; `none` refers to primary input and
+category. Put the runtime first, for example `PowerShell · None → Text` or
+`Python · .mp3, .wav → Text`. For `files` input, use accepted extensions where specified and
+`All files` for `*`; keep the API's `io.input` value as `files`. `none` refers to primary input and
 does not imply that there are no named parameters to configure.
 
-Authors may set `@powerscript.icon assets\script.ico` or
-`"x-powerscript": { "icon": "assets\\script.ico" }`. The optional icon is a package-relative ICO,
+Authors may set `"x-powerscript": { "icon": "assets\\script.ico" }` in the descriptor.
+The optional icon is a package-relative ICO,
 limited to 1 MiB. Absolute paths, URLs, paths escaping the package, and symbolic links/junctions
 are rejected. A missing or invalid optional icon does not remove the script: the Host reports
 `iconPath: null` and an `iconWarning`.
 
 `list --json` and `PowerScriptInfo.IconPath` expose the validated absolute path. Display it when
-appropriate, use a default script icon when absent or undecodable, and do not execute or fetch icon
+appropriate, use a runtime-specific default script icon when absent or undecodable, and do not execute or fetch icon
 metadata. Consumers must tolerate missing icon fields from older Hosts. Explorer requests
 `shell-menu --icons --files ...`, which adds a third tab-separated icon-path column; without
 `--icons`, the existing two-column id/name protocol is unchanged.
@@ -168,9 +192,60 @@ if (result.Succeeded)
 }
 ```
 
-The transfer model supports text, HTML, image/audio/video paths, file paths, and extra parameters.
-A module must verify that its required shape is wired end to end before advertising that shape;
-declaring compatibility in discovery alone is not sufficient.
+The input transfer model contains `text`, `file_paths`, and `params`. Inline HTML goes in `Text`,
+not a separate `Html` field. PowerShell text transforms receive `-Text`; Python text transforms
+receive the string as their first positional argument. File transforms receive `-Files` and
+`POWERSCRIPTS_FILES` in PowerShell, or one positional path list in Python.
+
+For a clipboard bitmap, first encode it as an actual PNG temporary file, then use exactly the same
+file discovery and execution contract as Explorer:
+
+```csharp
+var files = new[] { clipboardPngPath };
+var compatibleScripts = client.ListForFiles(files);
+
+// After the user selects a compatible script:
+var result = await client.TransformAsync(
+    selectedScript.Id,
+    new PowerScriptTransformInput { FilePaths = files },
+    cancellationToken: cancellationToken);
+```
+
+A script declaring `input: files`, `extensions: [".png"]`, and a count range including one is
+eligible regardless of the PNG's source. Batch-only scripts are not offered for a single clipboard
+image. Extension matching is not content validation: scripts must handle invalid file contents.
+Keep consumer-created temporary files available until execution completes and clean up only those
+temporary files, not user-owned clipboard files.
+
+Output JSON is `{}` for `none`, `{"text":"..."}` for `text`, or `{"file_paths":["..."]}` for `files`.
+Built-in Python functions may return `None`, a string, or a list/tuple of paths respectively;
+explicit dictionaries use the same JSON fields. File paths should be absolute and accessible to
+the Windows consumer; WSL scripts should produce files on shared mounted drives so returned
+`/mnt/<drive>/...` paths can be translated back to Windows.
+
+PowerShell and explicit launch recipes emit literal stdout for text output, or the explicit JSON
+object for file output. For example, `@{ file_paths = @($producedPaths) } | ConvertTo-Json -Compress`.
+Stdout uses UTF-8. PowerShell authors should set
+`[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)` before producing output, particularly
+on Windows PowerShell 5.1, so Unicode paths survive the pipe.
+For no output, transform stdout is forwarded as diagnostics and the JSON result is `{}`.
+Python stdout must contain only the runner's result; use stderr for diagnostics.
+Malformed JSON, removed fields, and output shapes inconsistent with the descriptor fail explicitly.
+
+The `files` output shape alone does not predict which extensions a script will produce. Inspect
+actual results before decoding or publishing them, and do not offer a restricted consumer workflow
+based solely on that shape. Retain returned files for as long as the consumer needs them, including
+deferred clipboard reads. If a returned path reuses a temporary input, transfer its lifetime before
+input cleanup. Delete only consumer-owned files, never arbitrary returned user files.
+This is the core integration contract, not an automatic change to a consumer's clipboard UI.
+
+**Migration:** change old `input: image/audio/video` declarations to `input: files` with the
+appropriate extensions and count bounds. Change inline `input: html` to `input: text`, or use files
+with `.html`/`.htm` for HTML documents. Consumers must replace `html`, `image_path`, `audio_path`,
+and `video_path` input payload fields with `text` or `file_paths`. Likewise, change old HTML/media
+outputs to `text` for literal markup or `files` for HTML/media documents, and replace the old output
+fields with an explicit file-path list. Removed fields fail validation rather than silently
+delivering empty data. Descriptor changes require renewed trust.
 
 ## Consumer responsibilities
 

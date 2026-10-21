@@ -11,37 +11,29 @@ invokes this as:
     python -X utf8 _runner.py <script.py>
 
 and writes a single JSON object to stdin describing the input. This runner:
-  1. loads the user script module from <script.py>,
-  2. finds its single ``powerscript_from_<input>_to_<output>`` function,
+  1. validates the descriptor-declared entry and input format,
+  2. loads the user script module from <script.py> and resolves that function,
   3. calls it with arguments derived from the input JSON, and
   4. writes a single JSON result object to stdout.
 
 Keeping this protocol identical for Windows and WSL means the user script never has to care where or
 how it runs.
 
-Input JSON fields (all optional): text, html, image_path, file_paths (list), audio_path, video_path,
-params (object of name->string). Two control fields decouple the entry point from the naming
-convention: ``entry`` (explicit function name to call) and ``input_format`` (the shape used to build
-its argument). When ``entry`` is absent the runner discovers the single
-``powerscript_from_<input>_to_<output>`` function instead.
+Input JSON fields (all optional): text, file_paths (list), params (object of name->string).
+Inline HTML uses text; images, audio, video, and HTML documents use file_paths.
+The host supplies ``entry`` (the descriptor's function name)
+and ``input_format`` (the resolved input shape).
 
-Output JSON fields (any subset): text, html, image_path, file_paths (list), audio_path, video_path.
-A script may also just return a plain string (treated as text) or a path-like value.
+Output JSON is {}, {"text": "..."}, or {"file_paths": ["..."]}, matching the descriptor.
+A plain string is text, never an inferred path. Return a list for files, even one HTML/media file.
 """
 
 import importlib.util
 import inspect
 import json
-import re
+import os
 import sys
 import traceback
-
-FUNCTION_RE = re.compile(
-    r"^\s*def\s+(powerscript_from_(text|html|image|audio|video|files|none)"
-    r"_to_(text|html|image|audio|video|file|files|none))\s*\(",
-    re.MULTILINE,
-)
-
 
 def _fail(message):
     sys.stderr.write(message)
@@ -57,34 +49,15 @@ def _load_module(script_path):
     return module
 
 
-def _find_signature(script_path):
-    with open(script_path, "r", encoding="utf-8") as handle:
-        source = handle.read()
-    matches = FUNCTION_RE.findall(source)
-    if len(matches) != 1:
-        _fail(
-            "Expected exactly one 'powerscript_from_<input>_to_<output>' function in the script, "
-            f"found {len(matches)}."
-        )
-    name, input_format, _output_format = matches[0]
-    return name, input_format
-
-
 def _build_args(input_format, payload):
     """Maps the declared input format onto the argument passed to the user function."""
     if input_format == "text":
         return [payload.get("text", "") or ""]
-    if input_format == "html":
-        return [payload.get("html", "") or ""]
-    if input_format == "image":
-        return [payload.get("image_path", "") or ""]
-    if input_format == "audio":
-        return [payload.get("audio_path", "") or ""]
-    if input_format == "video":
-        return [payload.get("video_path", "") or ""]
     if input_format == "files":
         return [payload.get("file_paths", []) or []]
-    return []  # none
+    if input_format == "none":
+        return []
+    _fail(f"Unsupported input format '{input_format}'.")
 
 
 def _normalize_result(result):
@@ -94,9 +67,7 @@ def _normalize_result(result):
     if isinstance(result, dict):
         return result
     if isinstance(result, (list, tuple)):
-        return {"file_paths": [str(item) for item in result]}
-    # A bare string / path-like scalar is returned as text; callers that expect a file/image path
-    # read the same "text" field and interpret it per the function's declared output format.
+        return {"file_paths": [os.fspath(item) for item in result]}
     return {"text": str(result)}
 
 
@@ -113,26 +84,19 @@ def main():
         return
 
     try:
+        entry = payload.get("entry")
+        if not isinstance(entry, str) or not entry.strip():
+            _fail("Missing descriptor entry function ('x-powerscript.function').")
+
+        args = _build_args(payload.get("input_format"), payload)
         module = _load_module(script_path)
 
-        # An explicit entry function (declared in the .tool.json descriptor / header) decouples the
-        # function name from the powerscript_from_*_to_* convention: the host passes the function name
-        # and the input shape, so the author can name the function anything. When absent we fall back
-        # to discovering the single convention-named function, so zero-config scripts are unchanged.
-        entry = payload.get("entry")
-        if entry:
-            function_name = entry
-            input_format = payload.get("input_format") or "none"
-        else:
-            function_name, input_format = _find_signature(script_path)
-
-        function = getattr(module, function_name, None)
+        function = getattr(module, entry, None)
         if function is None or not callable(function):
-            _fail(f"Script does not define callable '{function_name}'.")
+            _fail(f"Script does not define callable '{entry}'.")
             return
 
         params = payload.get("params") or {}
-        args = _build_args(input_format, payload)
 
         # Decide up front whether the function accepts the keyword params, rather than catching a
         # TypeError from the call itself: a TypeError raised *inside* the function body (after it has

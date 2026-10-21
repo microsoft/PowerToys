@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Client;
 
@@ -45,7 +47,7 @@ public class ClientTests
         "io": { "input": "files", "output": "files" },
         "capabilities": ["fileRead", "fileWrite"],
         "trusted": false,
-        "input": { "extensions": [".md"] }
+        "input": { "extensions": [".md"], "minFiles": 2, "maxFiles": 3 }
       },
       {
         "id": "py_upper",
@@ -55,7 +57,7 @@ public class ClientTests
         "io": { "input": "text", "output": "text" },
         "capabilities": [],
         "trusted": false,
-        "transform": { "function": "powerscript_from_text_to_text", "inputFormat": "Text", "outputFormat": "Text" }
+        "transform": { "function": "uppercase", "inputFormat": "Text", "outputFormat": "Text" }
       },
       { "name": "no-id-skipped" }
     ]
@@ -116,10 +118,12 @@ public class ClientTests
 
         var file = scripts.Single(s => s.Id == "convert_md_to_txt");
         CollectionAssert.AreEquivalent(new[] { ".md" }, file.InputExtensions.ToArray());
+        Assert.AreEqual(2, file.InputMinFiles);
+        Assert.AreEqual(3, file.InputMaxFiles);
 
         var transform = scripts.Single(s => s.Id == "py_upper");
         Assert.IsNotNull(transform.Transform);
-        Assert.AreEqual("powerscript_from_text_to_text", transform.Transform!.Function);
+        Assert.AreEqual("uppercase", transform.Transform!.Function);
         Assert.AreEqual("Text", transform.Transform.InputFormat);
     }
 
@@ -129,6 +133,134 @@ public class ClientTests
         Assert.AreEqual(0, PowerScriptInfo.ParseList(string.Empty).Count);
         Assert.AreEqual(0, PowerScriptInfo.ParseList("   ").Count);
         Assert.AreEqual(0, PowerScriptInfo.ParseList("{}").Count);
+    }
+
+    [DataTestMethod]
+    [DataRow("html")]
+    [DataRow("image")]
+    [DataRow("audio")]
+    [DataRow("video")]
+    public void ParseList_RejectsRemovedOutputTypesInsteadOfTreatingThemAsNone(string format)
+    {
+        Assert.ThrowsException<JsonException>(() => PowerScriptInfo.ParseList(
+            $$$"""[{"id":"legacy","io":{"input":"none","output":"{{{format}}}"}}]"""));
+    }
+
+    [TestMethod]
+    public void FileDiscovery_IsOriginIndependentAndRespectsExtensionsAndCount()
+    {
+        var script = new PowerScriptInfo
+        {
+            Input = PowerScriptIO.Files,
+            InputExtensions = new[] { "PNG", ".jpg" },
+            InputMinFiles = 1,
+            InputMaxFiles = 1,
+        };
+
+        Assert.IsTrue(script.AcceptsFiles(new[] { @"C:\Clipboard\capture.png" }));
+        Assert.IsTrue(script.AcceptsFiles(new[] { @"C:\Pictures\photo.PNG" }));
+        Assert.IsTrue(script.AcceptsFiles(new[] { @"C:\Pictures\photo.jpg" }));
+        Assert.IsTrue(script.AcceptsFileExtension(" PNG "));
+        Assert.IsFalse(script.AcceptsFiles(new[] { @"C:\Pictures\photo.gif" }));
+        Assert.IsFalse(script.AcceptsFiles(new[] { "one.png", "two.png" }));
+        Assert.IsFalse(script.AcceptsFiles(Array.Empty<string>()));
+
+        var batch = PowerScriptInfo.ParseList(SampleJson).Single(s => s.Id == "convert_md_to_txt");
+        Assert.IsFalse(batch.AcceptsFiles(new[] { "one.md" }));
+        Assert.IsTrue(batch.AcceptsFiles(new[] { "one.md", "two.md" }));
+        Assert.IsFalse(batch.AcceptsFiles(new[] { "one.md", "two.png" }));
+        Assert.IsFalse(batch.AcceptsFiles(new[] { "one.md", "two.md", "three.md", "four.md" }));
+    }
+
+    [TestMethod]
+    public void Client_FileDiscoveryAndTransform_UseTheSamePngContractAsExplorer()
+    {
+        var hostPath = PowerScriptsClient.ResolveHostPath();
+        Assert.IsFalse(string.IsNullOrEmpty(hostPath), "The referenced Host project must be built.");
+        var root = Path.Combine(Path.GetTempPath(), "ps-png-client-" + Guid.NewGuid().ToString("N"));
+        var id = "png-" + Guid.NewGuid().ToString("N");
+        Directory.CreateDirectory(root);
+        var client = new PowerScriptsClient(hostPath, scriptsRoot: root);
+        string? produced = null;
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "inspect.ps1"), """
+                param([string[]]$Files)
+                [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+                if ($env:POWERSCRIPTS_FILES) { $Files = $env:POWERSCRIPTS_FILES -split "`n" }
+                $output = Join-Path $env:POWERSCRIPTS_MXC_WORKSPACE ('result ' + [char]0x6D4B + [char]0x8BD5 + '.png')
+                [IO.File]::WriteAllBytes($output, [IO.File]::ReadAllBytes($Files[0]))
+                @{ file_paths = @($output) } | ConvertTo-Json -Compress
+                """);
+            File.WriteAllText(Path.Combine(root, "inspect.ps1.tool.json"), $$"""
+                {
+                  "name": "{{id}}",
+                  "x-powerscript": {
+                    "input": "files", "output": "files", "extensions": [".png"],
+                    "minFiles": 1, "maxFiles": 1
+                  }
+                }
+                """);
+            var png = Path.Combine(root, "clipboard.png");
+            File.WriteAllBytes(png, Convert.FromBase64String(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="));
+
+            Assert.AreEqual(id, client.ListForFiles(new[] { png }).Single().Id);
+            Assert.AreEqual(0, client.ListForFiles(new[] { png, png }).Count);
+            Assert.AreEqual(0, client.ListForFiles(new[] { Path.ChangeExtension(png, ".jpg") }).Count);
+            Assert.AreEqual(0, client.ListForFiles(Array.Empty<string>()).Count);
+
+            foreach (var selection in new[] { new[] { png }, new[] { png, png }, new[] { Path.ChangeExtension(png, ".jpg") }, Array.Empty<string>() })
+            {
+                var startInfo = new ProcessStartInfo(hostPath!)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+                foreach (var argument in new[] { "shell-menu", "--root", root, "--files" }.Concat(selection))
+                {
+                    startInfo.ArgumentList.Add(argument);
+                }
+
+                using var process = Process.Start(startInfo)!;
+                var output = process.StandardOutput.ReadToEndAsync();
+                var error = process.StandardError.ReadToEndAsync();
+                if (!process.WaitForExit(15000))
+                {
+                    process.Kill(entireProcessTree: true);
+                    Assert.Fail("Explorer discovery timed out.");
+                }
+                Assert.AreEqual(0, process.ExitCode, error.GetAwaiter().GetResult());
+                var shellIds = output.GetAwaiter().GetResult()
+                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line => line.Split('\t')[0]).ToArray();
+                CollectionAssert.AreEquivalent(client.ListForFiles(selection).Select(script => script.Id).ToArray(), shellIds);
+            }
+
+            Assert.IsTrue(client.TrustApprove(id));
+            var result = client.TransformAsync(
+                id,
+                new PowerScriptTransformInput { FilePaths = new[] { png } },
+                noConsent: true).GetAwaiter().GetResult();
+            Assert.IsTrue(result.Succeeded, result.StdErr);
+            Assert.IsNull(result.Text);
+            var outputPath = result.FilePaths!.Single();
+            produced = Path.Combine(Path.GetDirectoryName(outputPath)!, "result \u6D4B\u8BD5.png");
+            Assert.AreEqual("result \u6D4B\u8BD5.png", Path.GetFileName(outputPath));
+            CollectionAssert.AreEqual(File.ReadAllBytes(png), File.ReadAllBytes(outputPath));
+        }
+        finally
+        {
+            client.TrustRevoke(id);
+            if (produced is not null)
+            {
+                File.Delete(produced);
+            }
+
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     [TestMethod]

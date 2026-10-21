@@ -24,6 +24,9 @@
     }
   },
   "x-powerscript": {
+    "function": "greet",
+    "input": "none",
+    "output": "text",
     "capabilities": ["ui"],
     "publisher": "PowerToys samples",
     "version": "1.0.0"

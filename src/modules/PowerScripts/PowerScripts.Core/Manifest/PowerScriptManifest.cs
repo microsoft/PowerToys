@@ -17,8 +17,7 @@ public enum ScriptRuntime
     PowerShell,
 
     /// <summary>
-    /// A Python script whose entry file exposes a single
-    /// <c>powerscript_from_&lt;input&gt;_to_&lt;output&gt;</c> function. Runs on native Windows Python or
+    /// A Python script whose descriptor selects its entry function. Runs on native Windows Python or
     /// inside WSL depending on the user's PowerScripts Python settings.
     /// </summary>
     Python,
@@ -130,9 +129,8 @@ public sealed class ScriptParameter
 }
 
 /// <summary>
-/// The parsed description of a single PowerScript. It is built from the script file's leading
-/// <c>@powerscript.*</c> comment header (see <see cref="ScriptHeaderParser"/>); <see cref="Entry"/>
-/// names the script body file itself.
+/// The parsed description of a PowerScript, built from its sibling <c>.tool.json</c> descriptor.
+/// <see cref="Entry"/> names the script body file itself.
 /// </summary>
 public sealed class PowerScriptManifest
 {
@@ -174,10 +172,7 @@ public sealed class PowerScriptManifest
     public string Entry { get; set; } = string.Empty;
 
     /// <summary>
-    /// Optional explicit entry-function name for a Python script. When set, the Python runner calls
-    /// this function instead of discovering it by the <c>powerscript_from_*_to_*</c> naming convention,
-    /// so authors can name the function anything and declare its I/O in the descriptor instead. Null
-    /// keeps the zero-config convention (the function name carries the I/O contract).
+    /// Descriptor-declared Python entry function. Required when using the built-in Python runtime.
     /// </summary>
     public string? EntryFunction { get; set; }
 
@@ -193,15 +188,15 @@ public sealed class PowerScriptManifest
 
     /// <summary>
     /// The data shape this script consumes, when the author declares it explicitly (e.g. a PowerShell
-    /// script that reads text and writes html). Null means "infer": from the Python
-    /// <c>powerscript_from_*_to_*</c> function, or from a declared file <see cref="Input"/> (files),
+    /// script that reads text and writes a file). Null means infer from a declared file <see cref="Input"/> (files),
     /// otherwise none. Populated (baked) by the registry once resolved so every consumer reads the same
-    /// shape. A script declares only its own I/O — never which modules consume it — so adding a new
+    /// shape. Valid inputs are None, Text, and Files; inline HTML is Text, while media/documents are Files.
+    /// A script declares only its own I/O — never which modules consume it — so adding a new
     /// consuming module never requires touching any script.
     /// </summary>
     public PowerScriptDataFormat? InputFormat { get; set; }
 
-    /// <summary>The data shape this script produces, when declared explicitly; null means infer.</summary>
+    /// <summary>The output shape (None, Text, or Files), when declared explicitly; null means infer.</summary>
     public PowerScriptDataFormat? OutputFormat { get; set; }
 
     /// <summary>
@@ -219,8 +214,7 @@ public sealed class PowerScriptManifest
     /// <summary>
     /// The launch recipe for a script authored via an explicit <c>.tool.json</c> descriptor (see
     /// <see cref="ScriptExecute"/>). When set, the executor runs the script through this recipe
-    /// (interpreter + argv / stdin) instead of the built-in PowerShell / Python convention path.
-    /// Null for header-authored scripts, which keep the legacy execution behavior unchanged.
+    /// (interpreter + argv / stdin) instead of the built-in PowerShell or Python runtime.
     /// </summary>
     [JsonIgnore]
     public ScriptExecute? Execute { get; set; }

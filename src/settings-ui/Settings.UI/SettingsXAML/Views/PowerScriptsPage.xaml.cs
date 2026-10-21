@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -33,11 +34,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             InitializeComponent();
+            Loaded += PowerScriptsPage_Loaded;
         }
 
         public void RefreshEnabledState()
         {
             ViewModel.ReloadScripts();
+        }
+
+        public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+        public static Visibility InvertBoolToVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+
+        private void ScriptIcon_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { DataContext: PowerScriptListItem script })
+            {
+                Logger.LogWarning($"Unable to display PowerScript icon '{script.IconPath}': {e.ErrorMessage}");
+                script.MarkIconUnavailable();
+            }
+        }
+
+        private async void PowerScriptsPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= PowerScriptsPage_Loaded;
+            await ViewModel.RefreshMxcPlatformSupportAsync();
         }
 
         private async void BrowseScriptsFolderButton_Click(object sender, RoutedEventArgs e)
@@ -106,6 +127,85 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 ViewModel.SetPythonInterpreterPath(file);
             }
+        }
+
+        private async void MxcEnabledToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ToggleSwitch toggle || toggle.IsOn == ViewModel.IsMxcEnabled)
+            {
+                return;
+            }
+
+            var isConfirmed = toggle.IsOn ||
+                              await ShowMxcWeakeningWarningAsync(
+                                  ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_MxcDisableWarning"));
+            if (!ViewModel.TrySetMxcEnabled(toggle.IsOn, isConfirmed))
+            {
+                toggle.IsOn = ViewModel.IsMxcEnabled;
+            }
+        }
+
+        private async void GlobalMxcPolicyToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ToggleSwitch { Tag: string policy } toggle ||
+                toggle.IsOn == ViewModel.IsGlobalMxcPolicyEnabled(policy))
+            {
+                return;
+            }
+
+            var isConfirmed = toggle.IsOn ||
+                              await ShowMxcWeakeningWarningAsync(
+                                  ResourceLoaderInstance.ResourceLoader
+                                      .GetString("PowerScripts_MxcDisablePolicyWarning")
+                                      .Replace(
+                                          "{0}",
+                                          PowerScriptListItem.GetMxcPolicyDisplayName(policy),
+                                          StringComparison.Ordinal));
+            if (!ViewModel.TrySetGlobalMxcPolicy(policy, toggle.IsOn, isConfirmed))
+            {
+                toggle.IsOn = ViewModel.IsGlobalMxcPolicyEnabled(policy);
+            }
+        }
+
+        private async void ConfigureScriptMxcPolicyButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: PowerScriptListItem script })
+            {
+                return;
+            }
+
+            var dialog = new PowerScriptMxcPolicyDialog(script)
+            {
+                XamlRoot = XamlRoot,
+            };
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            ViewModel.TrySetScriptMxcConfiguration(
+                script,
+                dialog.MxcModeIndex,
+                dialog.EnabledPolicies,
+                dialog.UsesGlobalPolicy,
+                dialog.RiskAccepted);
+        }
+
+        private async Task<bool> ShowMxcWeakeningWarningAsync(string changeDescription)
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = resourceLoader.GetString("PowerScripts_MxcRiskDialogTitle"),
+                Content = resourceLoader.GetString("PowerScripts_MxcRiskDialogContent")
+                    .Replace("{0}", changeDescription, StringComparison.Ordinal),
+                PrimaryButtonText = resourceLoader.GetString("PowerScripts_MxcRiskDialogAccept"),
+                CloseButtonText = resourceLoader.GetString("PowerScripts_MxcPolicyDialog_Cancel"),
+                DefaultButton = ContentDialogButton.Close,
+            };
+
+            return await dialog.ShowAsync() == ContentDialogResult.Primary;
         }
 
         // Uses the Win32 OpenFileName dialog as FileOpenPicker doesn't work when Settings runs elevated.

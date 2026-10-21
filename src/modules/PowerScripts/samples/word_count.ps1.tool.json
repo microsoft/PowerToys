@@ -1,7 +1,7 @@
 {
   "name": "word-count",
   "title": "Count words",
-  "description": "Count the words in one or more text files. Authored via an explicit .tool.json descriptor (MCP Tool shape) rather than a comment header.",
+  "description": "Count the words in one or more text files. Metadata lives in the sibling .tool.json descriptor.",
   "inputSchema": {
     "type": "object",
     "properties": {

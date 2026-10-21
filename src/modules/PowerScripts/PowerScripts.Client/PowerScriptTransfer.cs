@@ -7,28 +7,16 @@ namespace PowerScripts.Client;
 /// <summary>
 /// The data-plane input for <c>transform &lt;id&gt;</c>: written as JSON to the host's stdin. Every field
 /// is optional — set only the ones your script consumes. Field names map to the host's snake_case
-/// JSON (<c>text</c>, <c>html</c>, <c>image_path</c>, <c>file_paths</c>, <c>audio_path</c>,
-/// <c>video_path</c>, <c>params</c>).
+/// JSON (<c>text</c>, <c>file_paths</c>, <c>params</c>). Inline HTML uses text; media and HTML
+/// documents use file paths, matched by extension and selection count regardless of their source.
 /// </summary>
 public sealed class PowerScriptTransformInput
 {
-    /// <summary>Plain-text input (e.g. clipboard text).</summary>
+    /// <summary>String input, including plain text or inline HTML.</summary>
     public string? Text { get; set; }
-
-    /// <summary>HTML input.</summary>
-    public string? Html { get; set; }
-
-    /// <summary>Path to an input image.</summary>
-    public string? ImagePath { get; set; }
 
     /// <summary>Paths to input files.</summary>
     public IReadOnlyList<string>? FilePaths { get; set; }
-
-    /// <summary>Path to an input audio file.</summary>
-    public string? AudioPath { get; set; }
-
-    /// <summary>Path to an input video file.</summary>
-    public string? VideoPath { get; set; }
 
     /// <summary>Extra named parameters passed to the script.</summary>
     public IReadOnlyDictionary<string, string>? Params { get; set; }
@@ -43,20 +31,8 @@ public sealed class PowerScriptTransformResult
     /// <summary>Plain-text output.</summary>
     public string? Text { get; init; }
 
-    /// <summary>HTML output.</summary>
-    public string? Html { get; init; }
-
-    /// <summary>Path to a produced image.</summary>
-    public string? ImagePath { get; init; }
-
-    /// <summary>Paths to produced files.</summary>
+    /// <summary>Paths to produced files, including HTML documents and media. A single file is still a list.</summary>
     public IReadOnlyList<string>? FilePaths { get; init; }
-
-    /// <summary>Path to a produced audio file.</summary>
-    public string? AudioPath { get; init; }
-
-    /// <summary>Path to a produced video file.</summary>
-    public string? VideoPath { get; init; }
 
     /// <summary>The host process exit code (see <see cref="PowerScriptsProtocol.ExitCode"/>).</summary>
     public int ExitCode { get; init; }

@@ -193,10 +193,8 @@ public sealed class PowerScriptExtension
     public string? Runtime { get; set; }
 
     /// <summary>
-    /// Optional explicit Python entry-function name. When set, the runner calls this function instead
-    /// of discovering it by the <c>powerscript_from_&lt;in&gt;_to_&lt;out&gt;</c> naming convention, so the
-    /// author can name the function anything and declare its <see cref="Input"/>/<see cref="Output"/>
-    /// here. Ignored for non-Python runtimes. Omitted keeps the zero-config convention.
+    /// Python entry-function name. Required for the built-in Python runtime; ignored by explicit
+    /// launch recipes and non-Python runtimes.
     /// </summary>
     [JsonPropertyName("function")]
     public string? Function { get; set; }
@@ -216,16 +214,16 @@ public sealed class PowerScriptExtension
     public List<string>? Capabilities { get; set; }
 
     /// <summary>
-    /// Optional explicit input data shape (<c>none</c>/<c>text</c>/<c>html</c>/<c>image</c>/<c>audio</c>/
-    /// <c>video</c>/<c>files</c>). When omitted it is inferred: from a Python
-    /// <c>powerscript_from_*_to_*</c> function, or from a declared file input, otherwise none. Authors
+    /// Optional explicit input data shape (<c>none</c>/<c>text</c>/<c>files</c>). Inline HTML is text;
+    /// media and HTML documents use files with extension filters, regardless of their source.
+    /// When omitted it is inferred from a declared file input, otherwise none. Authors
     /// declare only I/O — never consuming modules. A resolved input of <c>files</c> is what makes a
     /// script file-driven (surfaced in the Explorer right-click menu); there is no separate "kind".
     /// </summary>
     [JsonPropertyName("input")]
     public string? Input { get; set; }
 
-    /// <summary>Optional explicit output data shape; inferred when omitted (see <see cref="Input"/>).</summary>
+    /// <summary>Optional output shape (<c>none</c>/<c>text</c>/<c>files</c>); inferred when omitted. Rich HTML and media are files.</summary>
     [JsonPropertyName("output")]
     public string? Output { get; set; }
 

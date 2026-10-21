@@ -2,14 +2,12 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-# Metadata lives in the sibling py_beep.py.tool.json descriptor (an MCP Tool). This script keeps the
-# Python function convention (powerscript_from_<input>_to_<output>), so it runs through the Python
-# runtime with full WSL / interpreter-settings support.
+# Entry function and I/O are declared in py_beep.py.tool.json.
 
 import sys
 
 
-def powerscript_from_none_to_none():
+def beep():
     """Play a short beep.
 
     This is a Python *system* PowerScript: it takes no clipboard/file input and

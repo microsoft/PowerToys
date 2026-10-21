@@ -12,7 +12,7 @@ namespace PowerScripts.Core.Manifest;
 /// Builds a <see cref="PowerScriptManifest"/> from an explicit <c>&lt;script&gt;.tool.json</c>
 /// descriptor (see <see cref="ToolDescriptor"/>). This is the "write the MCP Tool shape by hand"
 /// authoring path: language-agnostic (works for <c>.py</c>, <c>.ps1</c>, <c>.cmd</c>, <c>.sh</c>,
-/// even ones that can't carry a header) and the single artifact an author publishes.
+/// with metadata kept separate from the script body).
 ///
 /// The descriptor's standard MCP fields map onto the manifest the rest of PowerScripts already
 /// understands: <c>name</c> -&gt; id, <c>description</c> -&gt; description, and each scalar
@@ -94,13 +94,23 @@ public static class ToolDescriptorParser
             manifest.Mxc.RecommendedPolicies = MxcPolicies.Normalize(recommendedPolicies);
         }
 
-        if (ScriptIo.TryParse(extension?.Input) is { } inputFormat)
+        if (!string.IsNullOrWhiteSpace(extension?.Input))
         {
+            if (ScriptIo.TryParse(extension.Input) is not { } inputFormat)
+            {
+                return null;
+            }
+
             manifest.InputFormat = inputFormat;
         }
 
-        if (ScriptIo.TryParse(extension?.Output) is { } outputFormat)
+        if (!string.IsNullOrWhiteSpace(extension?.Output))
         {
+            if (ScriptIo.TryParse(extension.Output) is not { } outputFormat)
+            {
+                return null;
+            }
+
             manifest.OutputFormat = outputFormat;
         }
 
@@ -215,9 +225,9 @@ public static class ToolDescriptorParser
             }
         }
 
-        // Infer from the entry's extension (.py => Python, else PowerShell) using the same rule as the
-        // header path, keying off the sibling script name rather than the ".json" descriptor.
-        return ScriptHeaderParser.InferRuntime(entry);
+        return string.Equals(Path.GetExtension(entry), ".py", StringComparison.OrdinalIgnoreCase)
+            ? ScriptRuntime.Python
+            : ScriptRuntime.PowerShell;
     }
 
     private static string? FirstNonEmpty(params string?[] values) =>

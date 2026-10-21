@@ -1,5 +1,4 @@
-# A descriptor-authored PowerScript: this file carries NO @powerscript.* header. Its entire contract
-# lives in the sibling word_count.ps1.tool.json (an MCP Tool). PowerScripts passes the selected files
+# Its contract lives in the sibling word_count.ps1.tool.json (an MCP Tool). PowerScripts passes the selected files
 # as trailing positional arguments (see x-execute), and also in $env:POWERSCRIPTS_FILES.
 
 param(

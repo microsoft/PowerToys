@@ -11,65 +11,42 @@ using PowerScripts.Core.Security;
 
 namespace PowerScripts.Core.Execution;
 
-/// <summary>The typed input handed to a Python PowerScript transform.</summary>
+/// <summary>The typed input handed to a Python PowerScript transform: text, file paths, and parameters.</summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class PythonTransformInput
 {
     [JsonPropertyName("text")]
     public string? Text { get; set; }
 
-    [JsonPropertyName("html")]
-    public string? Html { get; set; }
-
-    [JsonPropertyName("image_path")]
-    public string? ImagePath { get; set; }
-
     [JsonPropertyName("file_paths")]
     public List<string>? FilePaths { get; set; }
-
-    [JsonPropertyName("audio_path")]
-    public string? AudioPath { get; set; }
-
-    [JsonPropertyName("video_path")]
-    public string? VideoPath { get; set; }
 
     [JsonPropertyName("params")]
     public Dictionary<string, string>? Params { get; set; }
 
     /// <summary>
-    /// Optional explicit entry-function name. When present the runner calls this function instead of
-    /// discovering it by the <c>powerscript_from_*_to_*</c> naming convention.
+    /// Entry-function name declared by the descriptor.
     /// </summary>
     [JsonPropertyName("entry")]
     public string? Entry { get; set; }
 
     /// <summary>
-    /// The input data shape (<c>none</c>/<c>text</c>/<c>files</c>/…) used to build the argument passed
-    /// to an explicit <see cref="Entry"/> function (the convention path derives this from the name).
+    /// The input data shape (<c>none</c>/<c>text</c>/<c>files</c>) used to build the argument passed
+    /// to the declared <see cref="Entry"/> function.
     /// </summary>
     [JsonPropertyName("input_format")]
     public string? InputFormat { get; set; }
 }
 
 /// <summary>The typed result produced by a Python PowerScript transform.</summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class PythonTransformResult
 {
     [JsonPropertyName("text")]
     public string? Text { get; set; }
 
-    [JsonPropertyName("html")]
-    public string? Html { get; set; }
-
-    [JsonPropertyName("image_path")]
-    public string? ImagePath { get; set; }
-
     [JsonPropertyName("file_paths")]
     public List<string>? FilePaths { get; set; }
-
-    [JsonPropertyName("audio_path")]
-    public string? AudioPath { get; set; }
-
-    [JsonPropertyName("video_path")]
-    public string? VideoPath { get; set; }
 
     [JsonIgnore]
     public int ExitCode { get; set; }
@@ -79,6 +56,27 @@ public sealed class PythonTransformResult
 
     [JsonIgnore]
     public bool Succeeded => ExitCode == 0;
+
+    /// <summary>Reads an output object and checks that it matches the descriptor, without guessing paths from text.</summary>
+    public static PythonTransformResult Parse(string json, PowerScriptDataFormat format)
+    {
+        var result = JsonSerializer.Deserialize<PythonTransformResult>(json)
+            ?? throw new JsonException("Expected an output object.");
+        var valid = format switch
+        {
+            PowerScriptDataFormat.None => result.Text is null && result.FilePaths is null,
+            PowerScriptDataFormat.Text => result.Text is not null && result.FilePaths is null,
+            PowerScriptDataFormat.Files => result.Text is null && result.FilePaths is not null &&
+                result.FilePaths.All(path => !string.IsNullOrWhiteSpace(path)),
+            _ => false,
+        };
+        if (!valid)
+        {
+            throw new JsonException($"Output does not match '{ScriptIo.ToToken(format)}'. Return {{}} for none, {{\"text\":\"...\"}} for text, or {{\"file_paths\":[\"...\"]}} for files.");
+        }
+
+        return result;
+    }
 }
 
 /// <summary>
@@ -124,6 +122,22 @@ public sealed class PythonRuntime
             return new PythonTransformResult { ExitCode = 2, StdErr = "Python PowerScripts are disabled. Enable them in PowerScripts settings (Windows or WSL)." };
         }
 
+        if (string.IsNullOrWhiteSpace(manifest.EntryFunction))
+        {
+            return new PythonTransformResult { ExitCode = 2, StdErr = "'x-powerscript.function' is required for Python execution." };
+        }
+
+        var inputFormat = ScriptIo.Resolve(manifest).Input;
+        if (!ScriptIo.IsSupported(inputFormat))
+        {
+            return new PythonTransformResult { ExitCode = 2, StdErr = "Unsupported primary input. Use none, text, or files." };
+        }
+
+        if (!ScriptIo.IsSupported(ScriptIo.Resolve(manifest).Output))
+        {
+            return new PythonTransformResult { ExitCode = 2, StdErr = "Unsupported output. Use none, text, or files." };
+        }
+
         var runnerPath = ResolveRunnerPath();
         if (runnerPath is null)
         {
@@ -136,15 +150,8 @@ public sealed class PythonRuntime
             return new PythonTransformResult { ExitCode = 2, StdErr = $"Script entry file not found: {scriptPath}" };
         }
 
-        // Decouple the entry-function name from the naming convention: when the descriptor/header
-        // declares an explicit function, tell the runner to call it (and pass the declared input shape
-        // so it can build the argument). Absent that, the runner falls back to the powerscript_from_*
-        // convention, so existing zero-config scripts are unaffected.
-        if (!string.IsNullOrWhiteSpace(manifest.EntryFunction))
-        {
-            input.Entry = manifest.EntryFunction;
-            input.InputFormat = ScriptIo.ToToken((manifest.InputFormat ?? PowerScriptDataFormat.None));
-        }
+        input.Entry = manifest.EntryFunction;
+        input.InputFormat = ScriptIo.ToToken(inputFormat);
 
         return _settings.Mode == PythonRuntimeMode.Wsl
             ? RunViaWsl(manifest, runnerPath, scriptPath, input)
@@ -214,10 +221,6 @@ public sealed class PythonRuntime
         var wslInput = new PythonTransformInput
         {
             Text = input.Text,
-            Html = input.Html,
-            ImagePath = ToWslPath(input.ImagePath),
-            AudioPath = ToWslPath(input.AudioPath),
-            VideoPath = ToWslPath(input.VideoPath),
             FilePaths = input.FilePaths?.Select(p => ToWslPath(p)!).ToList(),
             Params = wslParameters,
             Entry = input.Entry,
@@ -268,12 +271,7 @@ public sealed class PythonRuntime
         try
         {
             var timeoutMs = Math.Max(1, _settings.TimeoutSeconds) * 1000;
-            var inputPaths = new[]
-            {
-                input.ImagePath,
-                input.AudioPath,
-                input.VideoPath,
-            }.Concat(input.FilePaths ?? Enumerable.Empty<string>());
+            var inputPaths = input.FilePaths ?? Enumerable.Empty<string>();
             var parameterValues = input.Params?.ToDictionary(
                 parameter => parameter.Key,
                 parameter => (string?)parameter.Value,
@@ -297,14 +295,16 @@ public sealed class PythonRuntime
             PythonTransformResult result;
             try
             {
-                result = string.IsNullOrWhiteSpace(stdout)
-                    ? new PythonTransformResult()
-                    : JsonSerializer.Deserialize<PythonTransformResult>(stdout, JsonOptions) ?? new PythonTransformResult();
+                result = PythonTransformResult.Parse(stdout, ScriptIo.Resolve(manifest).Output);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                // A script that just printed text (didn't return via the protocol) still yields output.
-                result = new PythonTransformResult { Text = stdout };
+                var error = $"Invalid Python output: {ex.Message}";
+                return new PythonTransformResult
+                {
+                    ExitCode = 2,
+                    StdErr = string.IsNullOrEmpty(stderr) ? error : $"{stderr}{Environment.NewLine}{error}",
+                };
             }
 
             result.ExitCode = 0;
@@ -312,9 +312,6 @@ public sealed class PythonRuntime
 
             if (translateResultPaths)
             {
-                result.ImagePath = FromWslPath(result.ImagePath);
-                result.AudioPath = FromWslPath(result.AudioPath);
-                result.VideoPath = FromWslPath(result.VideoPath);
                 result.FilePaths = result.FilePaths?.Select(p => FromWslPath(p)!).ToList();
             }
 

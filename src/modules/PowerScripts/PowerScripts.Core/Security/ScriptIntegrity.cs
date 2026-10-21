@@ -4,7 +4,6 @@
 
 using System.Security.Cryptography;
 using System.Text;
-using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Security;
@@ -43,10 +42,7 @@ public static class ScriptIntegrity
 
         // The I/O contract (not a separate "kind") is what defines where a script can be used, so it
         // is part of the fingerprint: changing what a script consumes/produces re-prompts for consent.
-        var signature = manifest.Runtime == ScriptRuntime.Python
-            ? PowerScriptPythonConvention.ParseFile(entryPath)
-            : null;
-        var (input, output) = ScriptIo.Resolve(manifest, signature);
+        var (input, output) = ScriptIo.Resolve(manifest);
 
         var declaration = $"\nio={ScriptIo.ToToken(input)}->{ScriptIo.ToToken(output)}\ncapabilities={string.Join(',', capabilities)}\n";
 

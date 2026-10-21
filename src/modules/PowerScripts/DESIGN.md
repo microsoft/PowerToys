@@ -79,19 +79,26 @@ descriptor or starts a particular runtime.
 ### 3.1 I/O contract
 
 ```text
-PowerScriptDataFormat =
-    none | text | html | image | audio | video | files
+Input = none | text | files
+Output = none | text | files
 ```
 
 `ScriptIo.Resolve()` uses this precedence:
 
-1. `inputSchema` and `outputSchema` from the MCP-style descriptor.
-2. File details such as `contentMediaType` and `extensions` refine the schema-derived file contract.
-3. If a schema is omitted, the Host uses the descriptor's execution defaults.
+1. Explicit `x-powerscript.input` and `x-powerscript.output` from the descriptor.
+2. Otherwise, primary file inputs (`contentMediaType` or `extensions`) imply `files` input.
+3. Other scripts default to `none` input and text output; file scripts default to no output,
+   or `files` output when they declare a converted-file result.
 
-The schemas are the canonical contract. PowerScripts may derive a coarse compatibility category
-(`none`, `text`, `html`, `image`, `audio`, `video`, or `files`) from those schemas for discovery
-filters. There is no `system`/`file` kind.
+JSON Schema describes parameters and file inputs. Primary strings (including inline HTML) use
+`text`; images, audio, video, and HTML documents use `files`. Extensions and selection count decide
+file compatibility, not the source module: clipboard PNGs and Explorer PNGs match the same scripts.
+Outputs use the same three shapes. `text` is literal, including markup; rich HTML and media outputs
+are files. Consumers decide content-versus-file presentation and own the required lifetime.
+Legacy HTML/media input and output categories are rejected rather than silently defaulted.
+Transform results must match the declared output: `{}`, `{"text":"..."}`, or
+`{"file_paths":["..."]}`. A path-looking string is never inferred as a file output.
+Neither inline comments nor Python function names supply metadata. There is no `system`/`file` kind.
 
 ```mermaid
 flowchart LR
@@ -124,7 +131,7 @@ under `x-powerscript`; launch details can use `x-execute`.
   "outputSchema": {                     // JSON Schema for the result
     "type": "object",
     "properties": {
-      "html": { "type": "string", "contentMediaType": "text/html" }
+      "file_paths": { "type": "array", "items": { "type": "string", "contentMediaType": "text/html" } }
     }
   },
   "x-execute": {
@@ -134,6 +141,7 @@ under `x-powerscript`; launch details can use `x-execute`.
   },
   "x-powerscript": {
     "function": "convert",
+    "output": "files",
     "extensions": [".md"]
   }
 }
@@ -160,7 +168,8 @@ flowchart TB
 ```
 
 - A Python script is paired with an MCP-style `.tool.json` descriptor.
-- The descriptor declares `x-powerscript.function` plus the MCP `inputSchema` and `outputSchema`.
+- Built-in Python execution requires `x-powerscript.function`; `x-powerscript.input` and `output`
+  declare the primary data shapes, while JSON Schema declares parameters and file inputs.
 - The entry function may use any valid Python name; no naming convention is required.
 - Python dependencies can be packaged with the script when a self-contained distribution is needed.
 
@@ -185,7 +194,7 @@ Host.exe transform <id> [--root <dir>]       # JSON stdin → JSON stdout
     "id": "md2html",
     "name": "Markdown → HTML",
     "runtime": "PowerShell",
-    "io": { "input": "files", "output": "html" },
+    "io": { "input": "files", "output": "files" },
     "input": { "extensions": [".md"] },
     "parameters": []
   }
