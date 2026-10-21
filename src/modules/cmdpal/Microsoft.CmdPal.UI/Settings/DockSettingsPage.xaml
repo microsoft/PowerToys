@@ -184,13 +184,21 @@
                             SelectedIndex="{x:Bind ViewModel.DockAppearance.BackdropIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="DockAppearance_Backdrop_Transparent" />
                             <ComboBoxItem x:Uid="DockAppearance_Backdrop_Acrylic" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Mica" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_MicaAlt" />
                         </ComboBox>
                     </controls:SettingsCard>
+
+                    <TextBlock
+                        x:Uid="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock"
+                        TextWrapping="Wrap"
+                        Visibility="{x:Bind ViewModel.DockAppearance.IsMicaBackdrop, Mode=OneWay}" />
 
                     <!--  Background / Colorization Section  -->
                     <controls:SettingsExpander
                         x:Uid="DockAppearance_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                        IsEnabled="{x:Bind ViewModel.DockAppearance.SupportsColorization, Mode=OneWay}"
                         IsExpanded="{x:Bind ViewModel.DockAppearance.IsColorizationDetailsExpanded, Mode=TwoWay}"
                         local:SettingsPageTarget.Id="background">
                         <ComboBox
