@@ -346,9 +346,23 @@
                             Description="{x:Bind ViewModel.SnippetFileSummary, Mode=OneWay}"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
                             IsEnabled="{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.ItemsHeader>
+                                <TextBlock
+                                    x:Uid="TextExpander_SnippetFile_SyncGuidance"
+                                    Margin="16,12,16,8"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsExpander.ItemsHeader>
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard x:Uid="TextExpander_SnippetFolder_Current" Description="{x:Bind ViewModel.SnippetsFolderPath, Mode=OneWay}">
                                     <Button x:Uid="TextExpander_SnippetFolder_Choose" Click="ChooseSnippetsFolder_Click" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard x:Uid="TextExpander_SnippetFile_Open">
+                                    <Button
+                                        x:Uid="TextExpander_SnippetFile_OpenButton"
+                                        AutomationProperties.AutomationId="Button_TextExpander_OpenSnippetFile"
+                                        Click="OpenSnippetsFile_Click" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard x:Uid="TextExpander_SnippetFolder_Reload">
                                     <Button x:Uid="TextExpander_SnippetFolder_ReloadButton" Click="ReloadSnippets_Click" />

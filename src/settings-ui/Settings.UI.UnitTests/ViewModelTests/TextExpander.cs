@@ -610,6 +610,7 @@ namespace ViewModelTests
             Assert.AreEqual(blockedMessage, model.ValidateSnippet(null, "!new", "replacement"));
             Assert.AreEqual(blockedMessage, model.SaveSnippet(null, "!new", "replacement"));
             Assert.AreEqual(blockedMessage, model.DeleteSnippet(0));
+            Assert.AreEqual(blockedMessage, model.OpenSnippetsFile());
             Assert.IsNull(model.SuggestDuplicateTrigger(0));
 
             model.SnippetsPath = otherFolder;

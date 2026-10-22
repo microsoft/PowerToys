@@ -60,6 +60,64 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void OpenSnippetsFileUsesResolvedCurrentName()
+        {
+            string current = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
+            string opened = null;
+            TextExpanderViewModel model = CreateViewModel(openFile: path =>
+            {
+                opened = path;
+            });
+
+            Assert.IsNull(model.OpenSnippetsFile());
+            Assert.AreEqual(current, opened);
+        }
+
+        [TestMethod]
+        public void OpenSnippetsFileUsesResolvedLegacyName()
+        {
+            string legacy = Write(_local, TextExpanderSnippetFileNames.Legacy, "!local=Local");
+            string opened = null;
+            TextExpanderViewModel model = CreateViewModel(openFile: path =>
+            {
+                opened = path;
+            });
+
+            Assert.IsNull(model.OpenSnippetsFile());
+            Assert.AreEqual(legacy, opened);
+        }
+
+        [TestMethod]
+        public void OpenSnippetsFileFollowsAnAppliedFolderChange()
+        {
+            Write(_local, TextExpanderSnippetFileNames.Legacy, "!local=Local");
+            string targetFolder = Path.Combine(_root, "shared");
+            string target = Write(targetFolder, TextExpanderSnippetFileNames.Current, "!shared=Shared");
+            string opened = null;
+            TextExpanderViewModel model = CreateViewModel(openFile: path =>
+            {
+                opened = path;
+            });
+
+            TextExpanderFolderChange change = model.PrepareFolderChange(targetFolder);
+            Assert.IsNull(model.ApplyFolderChange(change, TextExpanderFolderConflictChoice.UseFolder, out _));
+            Assert.IsNull(model.OpenSnippetsFile());
+            Assert.AreEqual(target, opened);
+        }
+
+        [TestMethod]
+        public void OpenSnippetsFileReportsLaunchAndMissingFileFailures()
+        {
+            string current = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
+            TextExpanderViewModel model = CreateViewModel(openFile: _ => throw new InvalidOperationException("Injected launch failure."));
+
+            Assert.AreEqual("TextExpander_SnippetFile_OpenFailed", model.OpenSnippetsFile());
+
+            File.Delete(current);
+            Assert.AreEqual("TextExpander_SnippetFile_OpenMissing", model.OpenSnippetsFile());
+        }
+
+        [TestMethod]
         public void UsingFolderFileBacksUpThePreviousActiveFile()
         {
             string source = Write(_local, TextExpanderSnippetFileNames.Current, "!local=Local");
@@ -949,7 +1007,9 @@ namespace ViewModelTests
             Assert.AreEqual("!local", model.Snippets.Single().Trigger);
         }
 
-        private TextExpanderViewModel CreateViewModel(Action<Mock<SettingsUtils>> configureSettings = null)
+        private TextExpanderViewModel CreateViewModel(
+            Action<Mock<SettingsUtils>> configureSettings = null,
+            Action<string> openFile = null)
         {
             var settings = new TextExpanderSettings();
             settings.Properties.SnippetsPath.Value = _local;
@@ -957,12 +1017,13 @@ namespace ViewModelTests
             utils.Setup(u => u.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
             utils.Setup(u => u.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
             configureSettings?.Invoke(utils);
-            return CreateViewModel(utils.Object);
+            return CreateViewModel(utils.Object, openFile: openFile);
         }
 
         private TextExpanderViewModel CreateViewModel(
             SettingsUtils settingsUtils,
-            Func<string, string> getResourceString = null)
+            Func<string, string> getResourceString = null,
+            Action<string> openFile = null)
         {
             var repository = new Mock<ISettingsRepository<GeneralSettings>>();
             repository.SetupGet(r => r.SettingsConfig).Returns(new GeneralSettings());
@@ -973,7 +1034,8 @@ namespace ViewModelTests
                 null,
                 isElevated: false,
                 getResourceString: getResourceString ?? (key => key),
-                storageEnvironment: _environment);
+                storageEnvironment: _environment,
+                openFile: openFile);
         }
 
         private static string Write(string folder, string name, string content)

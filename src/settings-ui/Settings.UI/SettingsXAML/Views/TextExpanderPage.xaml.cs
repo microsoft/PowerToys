@@ -629,6 +629,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private async void OpenSnippetsFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ViewModel.CanEditSnippets)
+            {
+                return;
+            }
+
+            string error = ViewModel.OpenSnippetsFile();
+            if (error != null)
+            {
+                await ShowErrorAsync(error, "TextExpander_OpenSnippetsErrorDialog_Title");
+            }
+        }
+
         private async void EditSnippet_Click(object sender, RoutedEventArgs e)
         {
             if (!ViewModel.CanEditSnippets)
@@ -1080,14 +1094,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void UISettings_ColorValuesChanged(UISettings sender, object args)
             => DispatcherQueue.TryEnqueue(() => _replacementEditor.Recolor());
 
-        private async System.Threading.Tasks.Task ShowErrorAsync(string message)
+        private async System.Threading.Tasks.Task ShowErrorAsync(
+            string message,
+            string titleResourceKey = "TextExpander_SaveSnippetsErrorDialog_Title")
         {
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
             var dialog = new ContentDialog
             {
                 XamlRoot = XamlRoot,
-                Title = resourceLoader.GetString("TextExpander_SaveSnippetsErrorDialog_Title"),
+                Title = resourceLoader.GetString(titleResourceKey),
                 Content = message,
                 CloseButtonText = resourceLoader.GetString("TextExpander_SaveSnippetsErrorDialog_CloseButtonText"),
             };

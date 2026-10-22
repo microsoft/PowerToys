@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -35,6 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly Func<string, Task<string>> _pickSingleFolderDialog;
         private readonly Func<string, string> _getResourceString;
         private readonly ITextExpanderStorageEnvironment _storageEnvironment;
+        private readonly Action<string> _openFile;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -134,7 +136,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Exception Error);
 
         /// <param name="pickSingleFolderDialog">Shows a folder picker, opening at the folder it's given when that exists, and returns the folder picked, or null if cancelled.</param>
-        public TextExpanderViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, Task<string>> pickSingleFolderDialog, bool isElevated, Func<string, string> getResourceString = null, ITextExpanderStorageEnvironment storageEnvironment = null)
+        public TextExpanderViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, Task<string>> pickSingleFolderDialog, bool isElevated, Func<string, string> getResourceString = null, ITextExpanderStorageEnvironment storageEnvironment = null, Action<string> openFile = null)
         {
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
@@ -146,6 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _pickSingleFolderDialog = pickSingleFolderDialog;
             _getResourceString = getResourceString ?? (key => ResourceLoaderInstance.ResourceLoader.GetString(key));
             _storageEnvironment = storageEnvironment ?? new TextExpanderStorageEnvironment();
+            _openFile = openFile ?? OpenFileWithDefaultApplication;
 
             // Group policy wins over anything the user picks here, so read it before the
             // user-facing state and let it clamp the toggle.
@@ -758,6 +761,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         /// <summary>Gets the resolved snippet file, shown so the user can find it outside the app.</summary>
         public string SnippetsFilePath => _loadedPath ?? ResolveSnippetsFile();
+
+        /// <summary>Opens the resolved active snippet file in the app associated with text files.</summary>
+        /// <returns>A localized error message, or null when the file was opened.</returns>
+        public string OpenSnippetsFile()
+        {
+            if (!CanEditSnippets)
+            {
+                return ElevatedSnippetAccessDeniedMessage();
+            }
+
+            string path = SnippetsFilePath;
+            try
+            {
+                if (!_storageEnvironment.FileExists(path))
+                {
+                    return _getResourceString("TextExpander_SnippetFile_OpenMissing");
+                }
+
+                _openFile(path);
+                return null;
+            }
+            catch (Exception ex) when (IsFileError(ex) || ex is InvalidOperationException)
+            {
+                Logger.LogError($"Could not open the Text Expander snippet file '{path}'.", ex);
+            }
+
+            return _getResourceString("TextExpander_SnippetFile_OpenFailed");
+        }
 
         /// <summary>Gets the folder used while <see cref="SnippetsPath"/> is empty.</summary>
         public string DefaultSnippetsFolder => CanEditSnippets ? _storageEnvironment.DefaultSnippetsFolder : string.Empty;
@@ -2128,6 +2159,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             => ex is IOException or UnauthorizedAccessException or System.Security.SecurityException
                 or ArgumentException or NotSupportedException or PathTooLongException
                 or System.ComponentModel.Win32Exception;
+
+        private static void OpenFileWithDefaultApplication(string path)
+        {
+            Process process = Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            process?.Dispose();
+        }
 
         /// <summary>Gets a value indicating whether the engine's own folder holds the snippet file in use.</summary>
         private bool IsDefaultSnippetsFile()

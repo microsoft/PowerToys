@@ -21,6 +21,7 @@ namespace ViewModelTests
 
         private static readonly string[] RowHandlers = { "EditSnippet_Click", "EditSnippet_Click", "DuplicateSnippet_Click", "DeleteSnippet_Click" };
         private static readonly string[] MenuOrder = { "TextExpander_EditSnippet", "TextExpander_DuplicateSnippet", "TextExpander_DeleteSnippet" };
+        private static readonly string[] SnippetFolderItemOrder = { "TextExpander_SnippetFolder_Current", "TextExpander_SnippetFile_Open", "TextExpander_SnippetFolder_Reload" };
 
         [TestMethod]
         public void EverythingClickableInARowCarriesItsSnippetInItsTag()
@@ -152,6 +153,71 @@ namespace ViewModelTests
             Assert.AreEqual(
                 "Toggle_TextExpander_RequireWordBoundary",
                 (string)toggle.Attribute("AutomationProperties.AutomationId"));
+        }
+
+        [TestMethod]
+        public void SnippetFolderExpanderShowsSyncGuidanceAndOpenFileRow()
+        {
+            XDocument page = LoadPage();
+            XElement expander = page.Descendants()
+                .Single(element => (string)element.Attribute(XName.Get("Uid", Xaml)) == "TextExpander_SnippetFile");
+            Assert.AreEqual(
+                "{x:Bind ViewModel.SnippetFileSummary, Mode=OneWay}",
+                (string)expander.Attribute("Description"),
+                "The collapsed expander keeps its dynamic local/custom-folder summary.");
+
+            XElement itemsHeader = expander.Elements()
+                .Single(element => element.Name.LocalName == "SettingsExpander.ItemsHeader");
+            XElement guidance = itemsHeader.Elements().Single(element => element.Name.LocalName == "TextBlock");
+            Assert.AreEqual(
+                "TextExpander_SnippetFile_SyncGuidance",
+                (string)guidance.Attribute(XName.Get("Uid", Xaml)));
+            Assert.AreEqual("Wrap", (string)guidance.Attribute("TextWrapping"));
+            Assert.AreEqual("{ThemeResource CaptionTextBlockStyle}", (string)guidance.Attribute("Style"));
+            Assert.AreEqual("{ThemeResource TextFillColorSecondaryBrush}", (string)guidance.Attribute("Foreground"));
+            Assert.AreEqual("16,12,16,8", (string)guidance.Attribute("Margin"));
+
+            XElement items = expander.Elements()
+                .Single(element => element.Name.LocalName == "SettingsExpander.Items");
+            CollectionAssert.AreEqual(
+                SnippetFolderItemOrder,
+                items.Elements().Select(element => (string)element.Attribute(XName.Get("Uid", Xaml))).ToArray());
+
+            XElement openCard = items.Elements().ElementAt(1);
+            XElement openButton = openCard.Descendants().Single(element => element.Name.LocalName == "Button");
+            Assert.AreEqual("TextExpander_SnippetFile_OpenButton", (string)openButton.Attribute(XName.Get("Uid", Xaml)));
+            Assert.AreEqual("OpenSnippetsFile_Click", (string)openButton.Attribute("Click"));
+            Assert.AreEqual("Button_TextExpander_OpenSnippetFile", (string)openButton.Attribute("AutomationProperties.AutomationId"));
+            Assert.AreEqual(
+                "{x:Bind ViewModel.CanEditSnippets, Mode=OneWay}",
+                (string)expander.Attribute("IsEnabled"));
+
+            XDocument resources = LoadResources();
+            Assert.AreEqual(
+                "To use the same snippets across devices, choose a folder synced by OneDrive or another service.",
+                ResourceValue(resources, "TextExpander_SnippetFile_SyncGuidance.Text"));
+            Assert.AreEqual("Open snippets file", ResourceValue(resources, "TextExpander_SnippetFile_Open.Header"));
+            Assert.AreEqual(
+                "Open the active snippet file in your default text editor.",
+                ResourceValue(resources, "TextExpander_SnippetFile_Open.Description"));
+            Assert.AreEqual("Open file", ResourceValue(resources, "TextExpander_SnippetFile_OpenButton.Content"));
+            Assert.AreEqual(
+                "Can't open the snippets file",
+                ResourceValue(resources, "TextExpander_OpenSnippetsErrorDialog_Title"));
+            StringAssert.Contains(
+                ResourceValue(resources, "TextExpander_SnippetFile_OpenMissing"),
+                "can't be found or accessed");
+            StringAssert.Contains(
+                ResourceValue(resources, "TextExpander_SnippetFile_OpenFailed"),
+                "default app");
+            Assert.IsFalse(
+                resources.Descendants("data")
+                    .Any(element => (string)element.Attribute("name") == "TextExpander_SnippetFile.Description"),
+                "Do not leave the old static description dead behind the dynamic summary binding.");
+
+            string code = LoadPageCode();
+            StringAssert.Contains(code, "ViewModel.OpenSnippetsFile()");
+            StringAssert.Contains(code, "TextExpander_OpenSnippetsErrorDialog_Title");
         }
 
         [TestMethod]

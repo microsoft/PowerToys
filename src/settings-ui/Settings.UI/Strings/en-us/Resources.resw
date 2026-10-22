@@ -6982,8 +6982,9 @@ Text uses the current drawing color.</value>
   <data name="TextExpander_SnippetFile.Header" xml:space="preserve">
     <value>Save snippets to a folder</value>
   </data>
-  <data name="TextExpander_SnippetFile.Description" xml:space="preserve">
-    <value>Choose where Text Expander keeps its snippet file. To sync it across devices, choose a folder managed by OneDrive or another sync service.</value>
+  <data name="TextExpander_SnippetFile_SyncGuidance.Text" xml:space="preserve">
+    <value>To use the same snippets across devices, choose a folder synced by OneDrive or another service.</value>
+    <comment>OneDrive or another service synchronizes the chosen folder. Text Expander only reads and writes the snippet file stored there.</comment>
   </data>
   <data name="TextExpander_SnippetFile_SummaryDefault" xml:space="preserve">
     <value>Saved on this PC · {0} snippets</value>
@@ -7017,6 +7018,24 @@ Text uses the current drawing color.</value>
   </data>
   <data name="TextExpander_SnippetFolder_Choose.Content" xml:space="preserve">
     <value>Choose folder…</value>
+  </data>
+  <data name="TextExpander_SnippetFile_Open.Header" xml:space="preserve">
+    <value>Open snippets file</value>
+  </data>
+  <data name="TextExpander_SnippetFile_Open.Description" xml:space="preserve">
+    <value>Open the active snippet file in your default text editor.</value>
+  </data>
+  <data name="TextExpander_SnippetFile_OpenButton.Content" xml:space="preserve">
+    <value>Open file</value>
+  </data>
+  <data name="TextExpander_SnippetFile_OpenMissing" xml:space="preserve">
+    <value>The active snippet file can't be found or accessed. Reload the file or choose the folder again.</value>
+  </data>
+  <data name="TextExpander_SnippetFile_OpenFailed" xml:space="preserve">
+    <value>Windows couldn't open the active snippet file. Check that a default app is available for text files, then try again.</value>
+  </data>
+  <data name="TextExpander_OpenSnippetsErrorDialog_Title" xml:space="preserve">
+    <value>Can't open the snippets file</value>
   </data>
   <data name="TextExpander_SnippetFolder_Reload.Header" xml:space="preserve">
     <value>Reload file</value>

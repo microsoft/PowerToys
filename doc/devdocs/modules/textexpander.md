@@ -297,9 +297,10 @@ notices an edit made elsewhere in the meantime.
 The **Save snippets to a folder** expander in **Advanced** manages the one active
 snippet file. Its collapsed description says whether the default local folder or a
 folder chosen by the user is active and includes the snippet count when available.
-Text Expander itself does not synchronize files or inspect cloud accounts. A user
-who wants synchronization chooses a folder managed by OneDrive or another service;
-that service remains responsible for transferring the file.
+When expanded, it shows "To use the same snippets across devices, choose a folder
+synced by OneDrive or another service." directly above **Current folder**. Text
+Expander itself does not synchronize files or inspect cloud accounts; that service
+remains responsible for transferring the file.
 
 The expander provides folder selection, conflict handling, and manual reload:
 
@@ -308,6 +309,10 @@ The expander provides folder selection, conflict handling, and manual reload:
   If the active source disappeared and the destination is also empty, Settings
   publishes the authoritative starter instead of creating a zero-byte placeholder.
   A genuine existing zero-byte source is copied unchanged.
+- **Open snippets file** launches the resolved active file itself with the user's
+  default app for text files. It follows current and legacy file names and folder
+  changes because it uses the same loaded path as the editor. Missing, inaccessible,
+  or failed launches show an error instead of reporting success.
 - If the selected folder already contains `PowerToysTextExpanderSnippets.txt` or
   the legacy `snippets.txt`, Settings asks whether to **Use folder file** or
   **Replace folder file**. Using the folder file first backs up the file this PC was
