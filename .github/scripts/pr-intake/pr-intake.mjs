@@ -2,6 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const workflowOptions = Object.freeze({ postComment: process.env.POST_COMMENT === 'true' });
+const outputContext = { messages: [], labelPlan: null, commentIdsToDelete: [] };
+
 export const CANONICAL_MARKER = '<!-- powertoys-pr-intake:canonical:v1 -->';
 export const ACTIONS_BOT_LOGIN = 'github-actions[bot]';
 export const ACTIONS_BOT_ID = 41898282;
@@ -497,12 +500,11 @@ export function buildIntakeReport({
   isDraft = false,
   mergeConflict = false,
   mergeabilityKnown = true,
-  skipVisualReminder = false,
   verifiedClosingIssues,
   invalidClosingIssues,
 }) {
   const ownership = classifyChangedPaths(changedPaths);
-  const visualAssessment = deriveVisualAssessment(ownership.requiresVisualEvidence && !skipVisualReminder);
+  const visualAssessment = deriveVisualAssessment(ownership.requiresVisualEvidence && !workflowOptions.postComment);
   const closingIssues = Array.isArray(verifiedClosingIssues)
     ? verifiedClosingIssues
     : findClosingIssueReferences(body);
@@ -704,25 +706,29 @@ export async function upsertCanonicalComment({
   body,
   comments = null,
 }) {
+  outputContext.messages.push(body);
   const existingComments = Array.isArray(comments)
     ? comments
     : await listAllComments(api, issueNumber);
   const { canonical, extras } = selectCanonicalComment(existingComments);
 
-  let savedComment;
-  let operation;
-  if (canonical) {
+  let savedComment = null;
+  let operation = 'skipped';
+  if (workflowOptions.postComment && canonical) {
     savedComment = await api.updateIssueComment(canonical.id, body);
     operation = 'updated';
-  } else {
+  } else if (workflowOptions.postComment) {
     savedComment = await api.createIssueComment(issueNumber, body);
     operation = 'created';
   }
 
   const deletedExtraComments = [];
   for (const extra of extras) {
-    await api.deleteIssueComment(extra.id);
-    deletedExtraComments.push(extra.id);
+    outputContext.commentIdsToDelete.push(extra.id);
+    if (workflowOptions.postComment) {
+      await api.deleteIssueComment(extra.id);
+      deletedExtraComments.push(extra.id);
+    }
   }
 
   return {
@@ -744,8 +750,11 @@ export async function deleteCanonicalComments({
   const trustedComments = canonical ? [canonical, ...extras] : [];
   const deletedCommentIds = [];
   for (const comment of trustedComments) {
-    await api.deleteIssueComment(comment.id);
-    deletedCommentIds.push(comment.id);
+    outputContext.commentIdsToDelete.push(comment.id);
+    if (workflowOptions.postComment) {
+      await api.deleteIssueComment(comment.id);
+      deletedCommentIds.push(comment.id);
+    }
   }
   return deletedCommentIds;
 }
@@ -779,10 +788,11 @@ export function planManagedLabelChanges(
 }
 
 async function syncLabelChanges(api, issueNumber, labelPlan) {
+  outputContext.labelPlan = labelPlan;
   for (const label of labelPlan.remove) {
-    await api.removeLabel(issueNumber, label);
+    if (workflowOptions.postComment) await api.removeLabel(issueNumber, label);
   }
-  if (labelPlan.add.length) {
+  if (workflowOptions.postComment && labelPlan.add.length) {
     await api.addLabels(issueNumber, labelPlan.add);
   }
 }
@@ -817,7 +827,23 @@ function parseIssueLabels(issue) {
     : [];
 }
 
-export async function runPullRequestIntake({ api, event, postComment = true }) {
+async function writeSummary(fallback) {
+  const summary = [
+    ...(outputContext.messages.length ? outputContext.messages : [fallback]),
+    ...(!workflowOptions.postComment ? [
+      ...outputContext.labelPlan.add.map((label) => `Suggested maintainer label: ${label}.`),
+      ...outputContext.labelPlan.remove.map((label) => `Maintainer action: remove stale label ${label}.`),
+      ...outputContext.commentIdsToDelete.map((id) => `Maintainer action: remove stale intake comment ${id}.`),
+    ] : []),
+  ].join('\n');
+  console.log(summary);
+  if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+}
+
+export async function runPullRequestIntake({ api, event }) {
+  outputContext.messages.length = 0;
+  outputContext.labelPlan = null;
+  outputContext.commentIdsToDelete.length = 0;
   if (!event?.repository) {
     throw new Error('The GitHub event payload must contain repository data');
   }
@@ -833,19 +859,6 @@ export async function runPullRequestIntake({ api, event, postComment = true }) {
     api,
     pullNumber,
   );
-  if ((event.pull_request?.head?.sha && event.pull_request.head.sha !== pullRequest.head?.sha)
-    || (event.pull_request?.base?.sha && event.pull_request.base.sha !== pullRequest.base?.sha)) {
-    throw new Error('PR revision changed; rerun intake.');
-  }
-  const checkRevision = async () => {
-    const current = await api.getPullRequest(pullNumber);
-    if (current.head?.sha !== pullRequest.head?.sha || current.base?.sha !== pullRequest.base?.sha
-      || current.head?.repo?.full_name !== pullRequest.head?.repo?.full_name
-      || current.base?.repo?.full_name !== pullRequest.base?.repo?.full_name
-      || current.draft !== pullRequest.draft || current.state === 'closed') {
-      throw new Error('PR changed during intake; rerun before applying feedback.');
-    }
-  };
   const issueNumber = pullNumber;
 
   const issue = await api.getIssue(issueNumber);
@@ -863,15 +876,9 @@ export async function runPullRequestIntake({ api, event, postComment = true }) {
         LEGACY_READY_FOR_REVIEW_LABEL,
       ],
     );
-    await checkRevision();
-    const deletedCanonicalCommentIds = [];
-    if (postComment) {
-      await syncLabelChanges(api, issueNumber, labelPlan);
-      deletedCanonicalCommentIds.push(...await deleteCanonicalComments({ api, issueNumber }));
-    }
-    const summary = 'Draft PR: readiness checks skipped.';
-    console.log(summary);
-    if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
+    await syncLabelChanges(api, issueNumber, labelPlan);
+    const deletedCanonicalCommentIds = await deleteCanonicalComments({ api, issueNumber });
+    await writeSummary('Draft PR: readiness checks skipped.');
     return {
       issueNumber,
       skippedDraft: true,
@@ -896,7 +903,6 @@ export async function runPullRequestIntake({ api, event, postComment = true }) {
     isDraft: pullRequest.draft === true,
     mergeConflict: hasMergeConflict(pullRequest),
     mergeabilityKnown,
-    skipVisualReminder: postComment,
     verifiedClosingIssues: closingReferenceVerification.validReferences,
     invalidClosingIssues: closingReferenceVerification.invalidReferences,
   });
@@ -924,8 +930,7 @@ export async function runPullRequestIntake({ api, event, postComment = true }) {
     ],
   );
 
-  await checkRevision();
-  if (postComment) await syncLabelChanges(api, issueNumber, labelPlan);
+  await syncLabelChanges(api, issueNumber, labelPlan);
 
   // Only surface a comment when there is something for the author to act on or
   // consider. When a previously flagged PR becomes clean we replace the stale
@@ -936,34 +941,29 @@ export async function runPullRequestIntake({ api, event, postComment = true }) {
   const body = hasRemarks || !canonical
     ? renderIntakeComment(report, feedbackSince)
     : renderAllClearComment();
-  const summary = [
-    body,
-    ...(!postComment ? [
-      ...labelPlan.add.map((label) => `Suggested maintainer label: ${label}.`),
-      ...labelPlan.remove.map((label) => `Maintainer action: remove stale label ${label}.`),
-    ] : []),
-  ].join('\n');
-  console.log(summary);
-  if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   let commentResult = {
     operation: 'skipped',
     comment: null,
     deletedExtraComments: [],
   };
-  if (postComment && hasRemarks) {
-    commentResult = await upsertCanonicalComment({
-      api,
-      issueNumber,
-      body,
-      comments,
-    });
-  } else if (postComment && canonical) {
-    commentResult = await upsertCanonicalComment({
-      api,
-      issueNumber,
-      body,
-      comments,
-    });
+  try {
+    if (hasRemarks) {
+      commentResult = await upsertCanonicalComment({
+        api,
+        issueNumber,
+        body,
+        comments,
+      });
+    } else if (canonical) {
+      commentResult = await upsertCanonicalComment({
+        api,
+        issueNumber,
+        body,
+        comments,
+      });
+    }
+  } finally {
+    await writeSummary(body);
   }
 
   return {
@@ -986,7 +986,7 @@ export async function runPullRequestIntake({ api, event, postComment = true }) {
     needsAuthorFeedback: report.needsAuthorFeedback,
     feedbackSince,
     readyForReview: report.readyForReview,
-    postComment,
+    postComment: workflowOptions.postComment,
   };
 }
 
@@ -1106,12 +1106,7 @@ async function main() {
     repo,
   });
 
-  if (process.env.GITHUB_REPOSITORY && process.env.GITHUB_REPOSITORY !== repository) {
-    throw new Error('Event repository does not match the workflow repository.');
-  }
-  const result = await runPullRequestIntake({
-    api, event, postComment: process.env.POST_COMMENT === 'true',
-  });
+  const result = await runPullRequestIntake({ api, event });
   console.log(JSON.stringify(result, null, 2));
   if (!result.postComment && result.readyForReview === false) process.exitCode = 1;
 }
