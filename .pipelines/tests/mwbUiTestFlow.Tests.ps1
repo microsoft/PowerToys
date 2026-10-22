@@ -17,6 +17,20 @@ function Get-UiTestFlowStep {
 }
 
 Describe 'Bounded isolated MWB pipeline phases' {
+    It 'forwards both streams without deadlocking on large unterminated output' {
+        $path = Join-Path $TestDrive 'output.ps1'
+        @'
+[Console]::Out.Write('o' * 1MB)
+[Console]::Error.Write('e' * 1MB)
+[Console]::Out.WriteLine('stdout-tail')
+[Console]::Error.WriteLine('stderr-tail')
+'@ | Set-Content $path
+        $output = @(Invoke-MwbCiPhase $path @() 20 6>&1)
+        $output.Count | Should Be 2
+        @($output | Where-Object { $_.ToString().Length -gt 1MB -and $_.ToString().EndsWith('stdout-tail') }).Count | Should Be 1
+        @($output | Where-Object { $_.ToString().Length -gt 1MB -and $_.ToString().EndsWith('stderr-tail') }).Count | Should Be 1
+    }
+
     It 'isolates environment changes and propagates nonzero exit codes' {
         $path = Join-Path $TestDrive 'phase.ps1'
         @'
@@ -101,6 +115,8 @@ if ($env:POWERTOYS_INSTALL_DIR -cne 'original-product' -or $env:useInstallerForT
     throw 'Another phase leaked its environment.'
 }
 $Mode | Add-Content $env:MWB_FLOW_LOG
+Write-Host "MWB phase stdout: $Mode"
+[Console]::Error.WriteLine("MWB phase stderr: $Mode")
 if ($env:MWB_FLOW_FAILURE -eq $Mode) { exit 23 }
 $env:POWERTOYS_INSTALL_DIR = 'private-mwb-product'
 $env:useInstallerForTest = 'false'
@@ -167,6 +183,7 @@ function Restore-LightSwitchLocation {
             Replace('$(Build.SourceVersion)', 'revision').Replace('$(BuildConfiguration)', 'Release').
             Replace('${{ join('';'', parameters.uiTestModules) }}', 'ColorPicker.UITests;MouseWithoutBorders.UITests')
         $prefix = @'
+$PSStyle.OutputRendering = 'PlainText'
 function dotnet {
     'Generic' | Add-Content $env:MWB_FLOW_LOG
     $global:LASTEXITCODE = if ($env:MWB_FLOW_FAILURE -eq 'Generic') { 23 } else { 0 }
@@ -179,6 +196,10 @@ function dotnet {
         $result.ExitCode | Should Be $ExitCode
         $actual = if (Test-Path $env:MWB_FLOW_LOG) { (Get-Content $env:MWB_FLOW_LOG) -join ',' } else { '' }
         $actual | Should Be $Expected
+        foreach ($phase in @($Expected -split ',' | Where-Object { $_ -and $_ -ne 'Generic' })) {
+            $result.Output | Should Match ([regex]::Escape("MWB phase stdout: $phase"))
+            $result.Output | Should Match ([regex]::Escape("MWB phase stderr: $phase"))
+        }
         if ($Mwb -and $Failure -notin @('Install', 'Prepare', 'Run')) {
             $result.Output | Should Match 'variable=MwbUiTestsPassed\]true'
         } else {

@@ -66,17 +66,48 @@ function Invoke-MwbCiPhase {
     if (-not (Test-Path -LiteralPath $ScriptPath -PathType Leaf)) {
         throw "Missing UI-test phase script: $ScriptPath"
     }
-    # Keep the existing phase deadlines and stream output without sharing environment
-    # mutations or exit statements with the other suites in the common dispatcher.
+    # Azure's PowerShell host does not reliably forward inherited child console handles.
+    # Drain both redirected streams concurrently on this runspace, within the phase deadline.
     $start = [Diagnostics.ProcessStartInfo]::new((Get-Process -Id $PID).Path)
     $start.UseShellExecute = $false
     $start.CreateNoWindow = $true
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
     foreach ($argument in @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $ScriptPath) + $Arguments) {
         $start.ArgumentList.Add($argument)
     }
     $process = [Diagnostics.Process]::Start($start)
     try {
-        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        $timer = [Diagnostics.Stopwatch]::StartNew()
+        $readers = @($process.StandardOutput, $process.StandardError)
+        $pending = @($readers[0].ReadLineAsync(), $readers[1].ReadLineAsync())
+        $drainTimer = $null
+        while (@($pending | Where-Object { $null -ne $_ }).Count) {
+            for ($index = 0; $index -lt $pending.Count; $index++) {
+                if ($null -ne $pending[$index] -and $pending[$index].IsCompleted) {
+                    $line = $pending[$index].GetAwaiter().GetResult()
+                    if ($null -eq $line) {
+                        $pending[$index] = $null
+                    } else {
+                        Write-Host $line
+                        $pending[$index] = $readers[$index].ReadLineAsync()
+                    }
+                }
+            }
+            if ($timer.Elapsed.TotalSeconds -ge $TimeoutSeconds) {
+                throw [TimeoutException]::new("UI-test phase $(Split-Path $ScriptPath -Leaf) exceeded $TimeoutSeconds seconds.")
+            }
+            if ($process.HasExited) {
+                if ($null -eq $drainTimer) { $drainTimer = [Diagnostics.Stopwatch]::StartNew() }
+                if ($drainTimer.Elapsed.TotalSeconds -ge 10) {
+                    throw 'UI-test phase output did not close after process exit.'
+                }
+            }
+            $active = @($pending | Where-Object { $null -ne $_ })
+            if ($active.Count) { $null = [Threading.Tasks.Task]::WaitAny([Threading.Tasks.Task[]]$active, 250) }
+        }
+        $remaining = [Math]::Max(0, $TimeoutSeconds * 1000 - [int]$timer.Elapsed.TotalMilliseconds)
+        if (-not $process.WaitForExit($remaining)) {
             throw [TimeoutException]::new("UI-test phase $(Split-Path $ScriptPath -Leaf) exceeded $TimeoutSeconds seconds.")
         }
         if ($process.ExitCode -ne 0) {
@@ -92,7 +123,11 @@ function Invoke-MwbCiPhase {
                 }
             }
         }
-        finally { $process.Dispose() }
+        finally {
+            $process.StandardOutput.BaseStream.Dispose()
+            $process.StandardError.BaseStream.Dispose()
+            $process.Dispose()
+        }
     }
 }
 
