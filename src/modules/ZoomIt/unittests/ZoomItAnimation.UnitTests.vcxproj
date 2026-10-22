@@ -32,6 +32,8 @@
     <ClCompile Include="..\ZoomIt\ZoomAnimation.cpp" />
     <ClCompile Include="ZoomAnimationTests.cpp" />
     <ClCompile Include="AudioSamplePacerTests.cpp" />
+    <ClCompile Include="..\ZoomIt\CaptureFrameWait.cpp" />
+    <ClCompile Include="CaptureFrameWaitTests.cpp" />
     <ClCompile Include="..\ZoomIt\DictationBadge.cpp" />
     <ClCompile Include="DictationBadgeTests.cpp" />
     <ClCompile Include="DictationFinalizationTests.cpp" />
