@@ -474,6 +474,59 @@ Describe 'MWB Sandbox ARM64 artifact discovery' {
 }
 
 Describe 'MWB public recovery path' {
+    It 'resolves and invokes the shared dispatcher for <Mode> from the grouped directory' -TestCases @(
+        @{ Mode = 'Run'; Timeout = 70 }
+        @{ Mode = 'Recover'; Timeout = 4 }
+    ) {
+        param($Mode, $Timeout)
+        $assignment = $ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.AssignmentStatementAst] -and
+                $node.Left.Extent.Text -ceq '$launcherPath'
+        }, $true)
+        $resolveLauncher = [scriptblock]::Create('param($PSScriptRoot)' + [Environment]::NewLine + $assignment.Right.Extent.Text)
+        $productionPath = & $resolveLauncher (Get-Item -LiteralPath $scriptPath).DirectoryName
+        $command = Get-Command -Name $productionPath -CommandType ExternalScript -ErrorAction Stop
+        $productionPath | Should Be $command.Path
+        $command.Parameters.ContainsKey('TestExecutable') | Should Be $true
+        $command.Parameters.ContainsKey('MwbRecoveryJournal') | Should Be $true
+
+        $repository = Join-Path $TestDrive "dispatcher-$Mode"
+        $group = (New-Item -ItemType Directory -Path (Join-Path $repository 'mwb') -Force).FullName
+        Set-Content -LiteralPath (Join-Path $repository 'runUiTestAsUser.ps1') -Value @'
+param([string]$TestExecutable, [string]$ResultsDirectory, [string]$InteractiveUser,
+    [int]$TimeoutMinutes, [guid]$TaskRunId, [string]$MwbRecoveryJournal)
+$PSBoundParameters | ConvertTo-Json -Compress
+'@
+        $launcherPath = & $resolveLauncher $group
+        $payload = [pscustomobject]@{ TestExecutable = 'fixture.exe' }
+        $manifest = [pscustomobject]@{ TestExecutable = 'fixture.exe'; InteractiveUser = 'CI\fixture' }
+        $ResultsDirectory = Join-Path $TestDrive 'results'
+        $RunId = [guid]::NewGuid()
+        $suiteTimeoutMinutes = 70
+        $journalPath = Join-Path $TestDrive 'cleanup-journal.json'
+        $modeBlock = $ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.IfStatementAst] -and
+                $node.Clauses[0].Item1.Extent.Text -ceq "`$Mode -eq '$Mode'"
+        }, $true)
+        $dispatch = @($modeBlock.Clauses[0].Item2.FindAll({
+            param($node)
+            $node -is [Management.Automation.Language.CommandAst] -and
+                $node.Extent.Text.Contains('-TestExecutable')
+        }, $true))
+        $dispatch.Count | Should Be 1
+        $received = (& ([scriptblock]::Create($dispatch[0].Extent.Text))) | ConvertFrom-Json
+        $received.TestExecutable | Should Be 'fixture.exe'
+        $received.InteractiveUser | Should Be 'CI\fixture'
+        $received.TimeoutMinutes | Should Be $Timeout
+        if ($Mode -eq 'Run') {
+            $received.TaskRunId | Should Be $RunId.ToString()
+        } else {
+            $received.MwbRecoveryJournal | Should Be $journalPath
+        }
+    }
+
     It 'uses the correlated launcher directory without reading a test journal' {
         $id = [guid]'01234567-89ab-cdef-0123-456789abcdef'
         $root = Get-MwbPublicRunRoot -ResultsRoot $TestDrive -Id $id

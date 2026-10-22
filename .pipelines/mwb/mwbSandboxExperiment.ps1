@@ -199,6 +199,7 @@ $taskName = "PowerToys-MwbSandbox-Provision-$($RunId.ToString('N'))"
 $setupPath = Join-Path $runRoot 'Invoke-MwbProvisioning.ps1'
 $cleanupPath = Join-Path $runRoot 'Remove-AutonomousHost.ps1'
 $powerShell = (Get-Process -Id $PID).Path
+$launcherPath = Join-Path (Split-Path $PSScriptRoot -Parent) 'runUiTestAsUser.ps1'
 
 if ($Mode -eq 'Prepare') {
     # Written first, before any prerequisite can throw and before the protected run root
@@ -422,7 +423,7 @@ if ($Mode -eq 'Run') {
     $env:POWERTOYS_MWB_RUN_ROOT = Get-MwbPublicRunRoot $ResultsDirectory $RunId
     $env:useInstallerForTest = 'false'
     $suiteTimeoutMinutes = if ($manifest.SandboxBackend -eq 'WinApp') { 100 } else { 70 }
-    & "$PSScriptRoot\runUiTestAsUser.ps1" -TestExecutable $payload.TestExecutable `
+    & $launcherPath -TestExecutable $payload.TestExecutable `
         -ResultsDirectory $ResultsDirectory -InteractiveUser $manifest.InteractiveUser -TimeoutMinutes $suiteTimeoutMinutes `
         -TaskRunId $RunId
     $testExitCode = $LASTEXITCODE
@@ -435,7 +436,6 @@ if ($Mode -eq 'Run') {
 if ($Mode -eq 'Recover') {
     $publicRunRoot = Get-MwbPublicRunRoot $ResultsDirectory $RunId
     $journalPath = Join-Path $publicRunRoot 'cleanup-journal.json'
-    $launcherPath = Join-Path $PSScriptRoot 'runUiTestAsUser.ps1'
     $testTaskName = "PowerToys-InteractiveUiTest-$($RunId.ToString('N'))"
     $requestPath = Join-Path (Split-Path $publicRunRoot -Parent) 'request.json'
     $expectedArguments = '-ExecutionPolicy Bypass -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -File "{0}" -RequestPath "{1}"' -f
