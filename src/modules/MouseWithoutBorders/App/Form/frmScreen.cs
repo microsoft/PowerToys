@@ -370,7 +370,7 @@ namespace MouseWithoutBorders
                             if (myDesktopNotActive)
                             {
                                 myDesktopNotActive = false;
-                                Encryption.MyKey = Setting.Values.MyKey;
+                                Setting.Values.UpdateRuntimeKey();
                             }
 
                             MachineStuff.UpdateMachinePoolStringSetting();
@@ -493,7 +493,7 @@ namespace MouseWithoutBorders
                     {
                         if (!Encryption.GeneratedKey)
                         {
-                            Encryption.MyKey = Setting.Values.MyKey;
+                            Setting.Values.UpdateRuntimeKey();
 
                             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                             {
