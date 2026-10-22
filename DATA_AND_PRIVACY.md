@@ -456,6 +456,12 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.ShortcutGuide_GuideSession | Logs a Shortcut Guide session including duration and how it was closed. |
 | Microsoft.PowerToys.ShortcutGuide_Settings | Indicates a change in the settings related to the Shortcut Guide. |
 
+### Text Expander
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.TextExpander_EnableTextExpander | Triggered when Text Expander is enabled or disabled. |
+
 ### Text Extractor
 
 | Event Name | Description |
