@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.DetailsPane"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extViews="using:Microsoft.CmdPal.UI.ExtViews.Controls"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:StringVisibilityConverter
+                x:Key="DetailsStringNotEmptyToVisibilityConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
+
+            <cmdpalUI:DetailsDataTemplateSelector
+                x:Key="DetailsDataTemplateSelector"
+                CommandTemplate="{StaticResource DetailsCommandsTemplate}"
+                LinkTemplate="{StaticResource DetailsLinkTemplate}"
+                SeparatorTemplate="{StaticResource DetailsSeparatorTemplate}"
+                TagTemplate="{StaticResource DetailsTagsTemplate}" />
+
+            <Style
+                x:Key="DetailKeyTextBlockStyle"
+                BasedOn="{StaticResource CaptionTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
+            <Style
+                x:Key="SeparatorKeyTextBlockStyle"
+                BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+            </Style>
+
+            <Style
+                x:Key="DetailValueTextBlockStyle"
+                BasedOn="{StaticResource BodyTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+            </Style>
+
+            <DataTemplate x:Key="TagTemplate" x:DataType="viewModels:TagViewModel">
+                <cpcontrols:Tag
+                    HorizontalAlignment="Left"
+                    AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
+                    BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                    FontSize="12"
+                    ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
+                    Icon="{x:Bind Icon, Mode=OneWay}"
+                    Text="{x:Bind Text, Mode=OneWay}"
+                    ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="CommandTemplate" x:DataType="viewModels:CommandViewModel">
+                <StackPanel Orientation="Vertical">
+                    <Button
+                        Name="Command"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
+                        Click="Command_Click"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <cpcontrols:IconBox
+                                Width="16"
+                                Height="16"
+                                Margin="0,3,8,0"
+                                DiagnosticScope="DetailsCommand"
+                                RequestSite="Details"
+                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+                            <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
+                    <TextBlock
+                        Style="{StaticResource DetailValueTextBlockStyle}"
+                        Text="{x:Bind Text, Mode=OneWay}"
+                        Visibility="{x:Bind IsText, Mode=OneWay}" />
+                    <HyperlinkButton
+                        Padding="0"
+                        Command="{x:Bind NavigateCommand, Mode=OneWay}"
+                        NavigateUri="{x:Bind Link, Mode=OneWay}"
+                        UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
+                        Visibility="{x:Bind IsLink, Mode=OneWay}">
+                        <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
+                    </HyperlinkButton>
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
+                    <ItemsControl
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource CommandTemplate}"
+                        ItemsSource="{x:Bind Commands, Mode=OneWay}"
+                        Visibility="{x:Bind HasCommands, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
+                <StackPanel Margin="0,8,8,0" Orientation="Vertical">
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Style="{StaticResource SeparatorKeyTextBlockStyle}"
+                        Text="{x:Bind Key, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), Mode=OneWay, FallbackValue=Collapsed}" />
+                    <Border
+                        Margin="0,0,0,0"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToVisible(Key), Mode=OneWay, FallbackValue=Collapsed}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="viewModels:DetailsTagsViewModel">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
+                    <ItemsControl
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource TagTemplate}"
+                        ItemsSource="{x:Bind Tags, Mode=OneWay}"
+                        Visibility="{x:Bind HasTags, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <tkcontrols:WrapPanel
+                                    x:Name="TagsWrapPanel"
+                                    MinWidth="0"
+                                    Padding="0"
+                                    HorizontalSpacing="4"
+                                    Orientation="Horizontal"
+                                    VerticalSpacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </DataTemplate>
+            <tkcontrols:MarkdownThemes
+                x:Key="DefaultMarkdownThemeConfig"
+                H3FontSize="12"
+                H3FontWeight="Normal"
+                InlineCodeBackground="{StaticResource ControlFillColorDefaultBrush}"
+                InlineCodeBorderBrush="{StaticResource ControlElevationBorderBrush}"
+                InlineCodeCornerRadius="2"
+                InlineCodeForeground="{StaticResource TextFillColorSecondaryBrush}"
+                InlineCodePadding="2,0,2,1" />
+            <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
+            <tkcontrols:MarkdownConfig
+                x:Key="DefaultMarkdownConfig"
+                ImageProvider="{StaticResource ImageProvider}"
+                Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+
+            <StackLayout
+                x:Key="DetailsContentLayout"
+                Orientation="Vertical"
+                Spacing="8" />
+
+            <cmdpalUI:ContentTemplateSelector
+                x:Key="DetailsContentTemplateSelector"
+                FormTemplate="{StaticResource DetailsFormContentTemplate}"
+                ImageTemplate="{StaticResource DetailsImageContentTemplate}"
+                MarkdownTemplate="{StaticResource DetailsMarkdownContentTemplate}"
+                PlainTextTemplate="{StaticResource DetailsPlainTextContentTemplate}" />
+
+            <DataTemplate x:Key="DetailsFormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
+                <cpcontrols:ContentFormControl ViewModel="{x:Bind}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsMarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
+                <tkcontrols:MarkdownTextBlock
+                    Config="{StaticResource DefaultMarkdownConfig}"
+                    Text="{x:Bind Body, Mode=OneWay}"
+                    UseEmphasisExtras="True"
+                    UsePipeTables="True" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsPlainTextContentTemplate" x:DataType="viewModels:ContentPlainTextViewModel">
+                <extViews:PlainTextContentViewer
+                    Text="{x:Bind Text, Mode=OneWay}"
+                    UseMonospace="{x:Bind UseMonospace, Mode=OneWay}"
+                    WordWrapEnabled="{x:Bind WordWrapEnabled, Mode=OneWay}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsImageContentTemplate" x:DataType="viewModels:ContentImageViewModel">
+                <extViews:ImageContentViewer DataContext="{x:Bind}" />
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <cpcontrols:IconBox
+            x:Name="HeroImageBorder"
+            Width="64"
+            Margin="0,0,16,16"
+            HorizontalAlignment="Left"
+            AutomationProperties.AccessibilityView="Raw"
+            DiagnosticScope="HeroImage"
+            PreferFallbackSourceForFontIcons="True"
+            RequestSite="Details"
+            SourceKey="{x:Bind Details.HeroImage, Mode=OneWay}"
+            SourceRequested="{x:Bind help:IconProvider.SourceRequested64}"
+            Visibility="Collapsed">
+            <cpcontrols:IconBox.FallbackSource>
+                <BitmapIconSource ShowAsMonochrome="False" UriSource="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
+            </cpcontrols:IconBox.FallbackSource>
+        </cpcontrols:IconBox>
+
+        <TextBlock
+            Grid.Row="1"
+            FontSize="18"
+            FontWeight="SemiBold"
+            Text="{x:Bind Details.Title, Mode=OneWay}"
+            TextWrapping="WrapWholeWords"
+            Visibility="{x:Bind Details.Title, Converter={StaticResource DetailsStringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+
+        <tkcontrols:MarkdownTextBlock
+            Grid.Row="2"
+            Margin="0,4,0,24"
+            Background="Transparent"
+            Config="{StaticResource DefaultMarkdownConfig}"
+            IsTabStop="False"
+            Text="{x:Bind Details.Body, Mode=OneWay}"
+            UseEmphasisExtras="True"
+            UsePipeTables="True" />
+
+        <ItemsRepeater
+            Grid.Row="3"
+            Margin="0,4,0,16"
+            IsTabStop="False"
+            ItemTemplate="{StaticResource DetailsContentTemplateSelector}"
+            ItemsSource="{x:Bind Details.Content, Mode=OneWay}"
+            Layout="{StaticResource DetailsContentLayout}" />
+
+        <ItemsRepeater
+            Grid.Row="4"
+            IsTabStop="False"
+            ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
+            ItemsSource="{x:Bind Details.Metadata, Mode=OneWay}">
+            <ItemsRepeater.Layout>
+                <StackLayout Spacing="12" />
+            </ItemsRepeater.Layout>
+        </ItemsRepeater>
+    </Grid>
+</UserControl>

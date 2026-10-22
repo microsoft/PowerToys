@@ -21,7 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         Color Starlight,
         float GlowAlpha,
         float AuroraRestOpacity,
-        Color[] Highlight,
+        Color HighlightFill,
+        Color HighlightStroke,
+        float HighlightStrokeThickness,
         bool ShowEffects)
     {
         // Colors sampled from the PowerToys logo, left to right.
@@ -44,7 +46,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             Starlight: Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF),
             GlowAlpha: 0.55f,
             AuroraRestOpacity: 0.4f,
-            Highlight: BrandColors,
+            HighlightFill: Color.FromArgb(0x10, 0xFF, 0xFF, 0xFF),
+            HighlightStroke: Color.FromArgb(0x3D, 0xFF, 0xFF, 0xFF),
+            HighlightStrokeThickness: 1f,
             ShowEffects: true);
 
         public static WelcomeHeroPalette Light { get; } = new(
@@ -59,7 +63,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             Starlight: Color.FromArgb(0xFF, 0x74, 0x83, 0x9A),
             GlowAlpha: 0.45f,
             AuroraRestOpacity: 0.14f,
-            Highlight: BrandColors,
+            HighlightFill: Color.FromArgb(0x4D, 0xFF, 0xFF, 0xFF),
+            HighlightStroke: Color.FromArgb(0x24, 0x00, 0x00, 0x00),
+            HighlightStrokeThickness: 1f,
             ShowEffects: true);
 
         public static WelcomeHeroPalette HighContrast(Color text, Color highlight) => new(
@@ -74,7 +80,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             Starlight: Color.FromArgb(0, 0, 0, 0),
             GlowAlpha: 0f,
             AuroraRestOpacity: 0f,
-            Highlight: [highlight, highlight, highlight, highlight],
+            HighlightFill: Color.FromArgb(0, 0, 0, 0),
+            HighlightStroke: highlight,
+            HighlightStrokeThickness: 2f,
             ShowEffects: false);
     }
 }

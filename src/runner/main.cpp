@@ -597,6 +597,22 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         // then modules to guarantee the reverse destruction order.
         modules();
 
+        // Join module workers before CRT exit holds the shared UCRT exit lock.
+        // This guard runs before the settings CLI lock and instance mutex are released.
+        auto shutdown_modules = wil::scope_exit([] {
+            cancel_settings_window_startup();
+            CentralizedKeyboardHook::Stop();
+            for (const auto& module : modules())
+            {
+                CentralizedKeyboardHook::ClearModuleHotkeys(module.first);
+                CentralizedHotkeys::UnregisterHotkeysForModule(module.first);
+            }
+
+            Logger::info("Unloading {} modules before CRT exit", modules().size());
+            modules().clear();
+            Logger::info("Runner module shutdown completed");
+        });
+
         std::thread{ [] {
             auto state = UpdateState::read();
             if (state.state == UpdateState::upToDate)
@@ -672,7 +688,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     if (is_restart_scheduled())
     {
-        modules().clear();
         if (!restart_if_scheduled())
         {
             // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.
