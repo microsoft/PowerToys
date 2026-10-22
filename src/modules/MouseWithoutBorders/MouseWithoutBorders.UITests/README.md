@@ -330,7 +330,9 @@ Immutable committed leases are published by two parent-bound, identity-recorded
 processes. Workers consume the latest generation, never replay old snapshots or
 re-date a lease. A stale observation gets one newest-generation read before
 enforcing the unchanged 45-second threshold. Publishers cannot outlive the
-test process or hard run deadline. Recovery validates PID, parent, session,
+test process or hard run deadline. Publisher status in the controller-local results
+directory is atomically replaced, so concurrent readiness readers cannot observe
+a truncated update; mapped lease generations remain immutable. Recovery validates PID, parent, session,
 image and exact start time before stopping anything; never kill by name or
 stop shared virtualization services or idle modern brokers.
 

@@ -20,6 +20,26 @@ $state = [ordered]@{
     WriteMilliseconds = 0; LastPublishedUtc = $null; Stalls = @()
 }
 
+function Write-PublisherState {
+    param([string]$Path, $Value)
+
+    # Status is controller-local; mapped lease generations still use Write-RunJson.
+    $temporary = "$Path.$PID.tmp"
+    try {
+        $bytes = [Text.UTF8Encoding]::new($false).GetBytes(($Value | ConvertTo-Json -Depth 30))
+        [IO.File]::WriteAllBytes($temporary, $bytes)
+        if ([IO.File]::Exists($Path)) {
+            [IO.File]::Replace($temporary, $Path, [NullString]::Value)
+        } else {
+            [IO.File]::Move($temporary, $Path)
+        }
+        $published = [IO.File]::Open("$Path.ready", 'OpenOrCreate', 'Write',
+            ([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
+        $published.Dispose()
+    }
+    finally { [IO.File]::Delete($temporary) }
+}
+
 try {
     $parent = [Diagnostics.Process]::GetProcessById([int]$config.ParentId)
     # Keep a handle to the original process so PID reuse cannot extend this lease.
@@ -54,7 +74,7 @@ try {
         $state.Stalls = $stalls
         $state.Stage = 'Publishing'
         $state.TimestampUtc = [DateTime]::UtcNow.ToString('o')
-        Write-RunJson $config.OutputPath $state
+        Write-PublisherState $config.OutputPath $state
         $started = $watch.ElapsedMilliseconds
         Write-RunJson (Join-Path "$($config.InputRoot)\leases" ('{0:D8}.json' -f $sequence)) @{
             RunId = $config.RunId; Sequence = $sequence; TimestampUtc = [DateTime]::UtcNow.ToString('o')
@@ -63,18 +83,18 @@ try {
         $state.Stage = 'Published'
         $state.TimestampUtc = [DateTime]::UtcNow.ToString('o')
         $state.LastPublishedUtc = $state.TimestampUtc
-        Write-RunJson $config.OutputPath $state
+        Write-PublisherState $config.OutputPath $state
         if ($parent.WaitForExit(2000)) { break }
     }
     if ($state.Stage -ne 'Stopped') { $state.Stage = 'ParentExited' }
     $state.TimestampUtc = [DateTime]::UtcNow.ToString('o')
-    Write-RunJson $config.OutputPath $state
+    Write-PublisherState $config.OutputPath $state
 }
 catch {
     $state.Stage = 'Failed'
     $state.TimestampUtc = [DateTime]::UtcNow.ToString('o')
     $state.Error = $_.Exception.Message
-    Write-RunJson $config.OutputPath $state
+    Write-PublisherState $config.OutputPath $state
     throw
 }
 finally {

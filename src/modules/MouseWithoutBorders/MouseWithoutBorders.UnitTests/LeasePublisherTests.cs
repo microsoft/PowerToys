@@ -76,6 +76,29 @@ public sealed class LeasePublisherTests
     }
 
     [TestMethod]
+    public void PublisherStatusUpdatesPreserveOpenSnapshots()
+    {
+        using var owner = Process.GetCurrentProcess();
+        using var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(2));
+        publisher.WaitForReady();
+        var path = Path.Combine(root, "Host-lease-publisher.json");
+        using var snapshot = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var before = new MemoryStream();
+        snapshot.CopyTo(before);
+        var next = RunFiles.Read(path)["Sequence"]!.GetValue<int>() + 2;
+        RunFiles.Wait(
+            () => File.Exists(Path.Combine(host.InputRoot, "leases", $"{next:D8}.json.ready")),
+            TimeSpan.FromSeconds(30),
+            "Publisher did not advance while the previous status snapshot was open.",
+            publisher.ThrowIfFailed);
+
+        snapshot.Position = 0;
+        using var after = new MemoryStream();
+        snapshot.CopyTo(after);
+        CollectionAssert.AreEqual(before.ToArray(), after.ToArray(), "Status publication must not truncate an already-open reader's snapshot.");
+    }
+
+    [TestMethod]
     public void FailingGuestPublicationDoesNotStarveHostLeases()
     {
         using var owner = Process.GetCurrentProcess();
