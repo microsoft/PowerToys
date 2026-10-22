@@ -87,61 +87,21 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         PageViewModel? preparedPage = null;
         try
         {
-            Task<PageViewModel?>? preparationTask = null;
-            await RunOnUiThreadAsync(
-                () =>
-                {
-                    if (!CanPushPage(message))
-                    {
-                        return;
-                    }
-
-                    var currentPage = CurrentPage;
-                    var nested = _pages.Count > 0;
-
-                    // Interface queries on extension proxies can make RPC calls too.
-                    preparationTask = Task.Run(
-                        () =>
-                        {
-                            var host = _pageNavigation.ResolveHost(message, currentPage);
-                            var providerContext = _pageNavigation.ResolveProviderContext(message, currentPage);
-                            return message.Command.Model.Unsafe is IPage page
-                                ? _pageNavigation.TryPreparePage(page, nested, host, providerContext, message.ListPageOptions)
-                                : null;
-                        },
-                        token);
-                },
-                token);
-
-            if (preparationTask is null)
+            var (canPush, currentPage) = await RunOnUiThreadAsync(
+                () => (CanPushPage(message), CurrentPage), token);
+            if (!canPush)
             {
                 return false;
             }
 
-            preparedPage = await preparationTask;
+            preparedPage = await _pageNavigation.PreparePageAsync(message, currentPage, currentPage is not null, token);
             if (preparedPage is null)
             {
                 return false;
             }
 
-            await RunOnUiThreadAsync(
-                () =>
-                {
-                    if (CanPushPage(message))
-                    {
-                        initializationTask = PushPage(preparedPage, token);
-                    }
-                },
-                token);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            CoreLogger.LogError("Failed to prepare a dock page.", ex);
-            throw;
+            initializationTask = await RunOnUiThreadAsync(
+                () => CanPushPage(message) ? PushPage(preparedPage, token) : null, token);
         }
         finally
         {
@@ -357,6 +317,9 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
             TaskCreationOptions.None,
             _scheduler);
     }
+
+    private Task<T> RunOnUiThreadAsync<T>(Func<T> action, CancellationToken cancellationToken) =>
+        Task.Factory.StartNew(action, cancellationToken, TaskCreationOptions.None, _scheduler);
 
     /// <summary>
     /// Discards <paramref name="page"/>. <see cref="PageViewModel.CleanupAsync"/> stops local

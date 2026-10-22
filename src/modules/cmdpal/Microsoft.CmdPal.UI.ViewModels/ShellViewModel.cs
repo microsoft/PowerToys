@@ -158,20 +158,12 @@ public partial class ShellViewModel : ObservableObject,
 
     private async Task LoadPageViewModelAsync(PageViewModel viewModel, CancellationToken cancellationToken = default)
     {
-        if (!viewModel.IsInitialized
-            && viewModel.InitializeCommand is not null)
-        {
-            await PageNavigationService.InitializePageAsync(viewModel, cancellationToken).ConfigureAwait(false);
-            await Task.Factory.StartNew(
-                () => SetCurrentPageAfterLoad(viewModel, cancellationToken),
-                cancellationToken,
-                TaskCreationOptions.None,
-                _scheduler);
-        }
-        else
-        {
-            SetCurrentPageAfterLoad(viewModel, cancellationToken);
-        }
+        await PageNavigationService.InitializePageAsync(viewModel, cancellationToken).ConfigureAwait(false);
+        await Task.Factory.StartNew(
+            () => SetCurrentPageAfterLoad(viewModel, cancellationToken),
+            cancellationToken,
+            TaskCreationOptions.None,
+            _scheduler);
     }
 
     private void SetCurrentPageAfterLoad(PageViewModel viewModel, CancellationToken cancellationToken)
@@ -208,15 +200,15 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        PerformCommand(message);
+        _ = PerformCommandAsync(message);
     }
 
-    private void PerformCommand(PerformCommandMessage message)
+    internal Task PerformCommandAsync(PerformCommandMessage message)
     {
         var command = message.Command.Model.Unsafe;
         if (command is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         // Determine whether this is the root/home page navigation BEFORE
@@ -224,9 +216,7 @@ public partial class ShellViewModel : ObservableObject,
         // must use an empty provider context so that home-page list items don't
         // inherit a pinning-capable context left over from the previous sub-page
         // (which can happen e.g. when the window is hidden while on a sub-page).
-        // isMainPage must be evaluated here; if it were moved inside the
-        // "if (command is IPage)" block below, it would be too late to affect
-        // the providerContext that is passed to the new page view-model.
+        // The shared preparation service uses an empty provider context for this page.
         var isMainPage = command == _rootCommand.Model.Unsafe;
 
         // Only commands sent from the palette's own root page are top-level. Commands from
@@ -234,94 +224,15 @@ public partial class ShellViewModel : ObservableObject,
         var sourcePage = message.Context?.Page;
         var isTopLevel = CurrentPage.IsRootPage && (sourcePage is null || ReferenceEquals(sourcePage, CurrentPage));
 
-        var host = _pageNavigation.ResolveHost(message, CurrentPage);
-        var providerContext = isMainPage
-            ? CommandProviderContext.Empty
-            : _pageNavigation.ResolveProviderContext(message, CurrentPage);
+        if (message.Command.IsPage)
+        {
+            return NavigateToPageAsync(message, isMainPage, isTopLevel);
+        }
 
+        var host = _pageNavigation.ResolveHost(message, CurrentPage);
         try
         {
-            // Report page commands only after navigation preparation succeeds.
-            if (message.Command.IsPage && command is IPage page)
-            {
-                CoreLogger.LogDebug($"Navigating to page");
-
-                var isNested = !isMainPage;
-                var pageViewModel = _pageNavigation.TryPreparePage(page, isNested, host, providerContext, message.ListPageOptions);
-                if (pageViewModel is null)
-                {
-                    CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
-                    throw new NotSupportedException();
-                }
-
-                pageViewModel.HasBackButton = isNested && !message.TransientPage;
-
-                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
-
-                // Create/replace the navigation cancellation token.
-                // If one already exists, cancel and dispose it first.
-                var newCts = new CancellationTokenSource();
-                var oldCts = Interlocked.Exchange(ref _navigationCts, newCts);
-                if (oldCts is not null)
-                {
-                    try
-                    {
-                        oldCts.Cancel();
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreLogger.LogError(ex.ToString());
-                    }
-                    finally
-                    {
-                        oldCts.Dispose();
-                    }
-                }
-
-                var navigationToken = newCts.Token;
-                _isNested = isNested;
-                _currentlyTransient = message.TransientPage;
-
-                if (message.ShowWindowIfPage)
-                {
-                    WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(IntPtr.Zero));
-                }
-
-                // Telemetry: Track extension page navigation for session metrics
-                if (host is not null)
-                {
-                    var extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    var commandId = message.Command.Id;
-                    var commandName = message.Command.Name;
-                    WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
-                    WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
-                        new(extensionId, commandId, commandName, true, 0));
-                }
-
-                // Kick off async loading of our ViewModel
-                LoadPageViewModelAsync(pageViewModel, navigationToken)
-                    .ContinueWith(
-                        (Task t) =>
-                        {
-                            // clean up the navigation token if it's still ours
-                            if (Interlocked.CompareExchange(ref _navigationCts, null, newCts) == newCts)
-                            {
-                                newCts.Dispose();
-                            }
-                        },
-                        navigationToken,
-                        TaskContinuationOptions.None,
-                        _scheduler);
-
-                // While we're loading in the background, immediately move to the next page.
-                PageNavigationRequested?.Invoke(
-                    this,
-                    new(pageViewModel, message.WithAnimation, message.TransientPage, navigationToken));
-
-                // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
-                // See RootFrame_Navigated event handler.
-            }
-            else if (message.Command.IsInvokableCommand)
+            if (message.Command.IsInvokableCommand)
             {
                 CoreLogger.LogDebug($"Invoking command");
 
@@ -340,6 +251,111 @@ public partial class ShellViewModel : ObservableObject,
             // than a silent log message.
             host?.Log(ex.Message);
         }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task NavigateToPageAsync(PerformCommandMessage message, bool isMainPage, bool isTopLevel)
+    {
+        var cancellation = BeginNavigation();
+        var token = cancellation.Token;
+        PageViewModel? page = null;
+        var published = false;
+        try
+        {
+            page = await _pageNavigation.PreparePageAsync(
+                message,
+                CurrentPage,
+                !isMainPage,
+                token,
+                isMainPage ? CommandProviderContext.Empty : null);
+            if (page is null)
+            {
+                throw new NotSupportedException("Failed to create a page view model.");
+            }
+
+            await Task.Factory.StartNew(
+                () =>
+                {
+                    ShowPage(message, page, !isMainPage, isTopLevel, token);
+                    published = true;
+                },
+                token,
+                TaskCreationOptions.None,
+                _scheduler);
+            await LoadPageViewModelAsync(page, token);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to navigate to a page.", ex);
+        }
+        finally
+        {
+            if (!published && page is not null)
+            {
+                _ = page.CleanupAsync();
+            }
+
+            if (Interlocked.CompareExchange(ref _navigationCts, null, cancellation) == cancellation)
+            {
+                cancellation.Dispose();
+            }
+        }
+    }
+
+    private CancellationTokenSource BeginNavigation()
+    {
+        var cancellation = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref _navigationCts, cancellation);
+        if (previous is not null)
+        {
+            try
+            {
+                previous.Cancel();
+            }
+            catch (Exception ex)
+            {
+                CoreLogger.LogError(ex.ToString());
+            }
+            finally
+            {
+                previous.Dispose();
+            }
+        }
+
+        return cancellation;
+    }
+
+    private void ShowPage(
+        PerformCommandMessage message,
+        PageViewModel page,
+        bool nested,
+        bool isTopLevel,
+        CancellationToken cancellationToken)
+    {
+        page.HasBackButton = nested && !message.TransientPage;
+        var host = page.ExtensionHost;
+        _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
+        _isNested = nested;
+        _currentlyTransient = message.TransientPage;
+
+        if (message.ShowWindowIfPage)
+        {
+            WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(IntPtr.Zero));
+        }
+
+        var extensionId = host.GetExtensionDisplayName() ?? "builtin";
+        WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
+        WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
+            new(extensionId, message.Command.Id, message.Command.Name, true, 0));
+
+        // Frame navigation owns activation; initialization continues on a worker.
+        PageNavigationRequested?.Invoke(
+            this,
+            new(page, message.WithAnimation, message.TransientPage, cancellationToken));
     }
 
     private void StartInvoke(PerformCommandMessage message, AppExtensionHost? host)
@@ -599,6 +615,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Dispose()
     {
+        CancelNavigation();
         _handleInvokeTask?.Dispose();
         _navigationCts?.Dispose();
 
