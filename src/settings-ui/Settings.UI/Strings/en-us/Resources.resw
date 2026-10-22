@@ -7111,10 +7111,10 @@ Text uses the current drawing color.</value>
     <value>Advanced</value>
   </data>
   <data name="TextExpander_CaseSensitive.Header" xml:space="preserve">
-    <value>Match trigger capitalization</value>
+    <value>Case-sensitive snippets</value>
   </data>
   <data name="TextExpander_CaseSensitive.Description" xml:space="preserve">
-    <value>When on, triggers match only the capitalization you saved. When off, uppercase and lowercase versions both work.</value>
+    <value>When on, snippet triggers must match the capitalization you saved. When off, capitalization is ignored.</value>
   </data>
   <data name="TextExpander_Row_CaseInsensitiveAutomation" xml:space="preserve">
     <value>Case-insensitive trigger: {0} or {1}</value>
