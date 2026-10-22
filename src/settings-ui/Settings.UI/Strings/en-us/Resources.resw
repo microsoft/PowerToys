@@ -6946,8 +6946,8 @@ Text uses the current drawing color.</value>
     <comment>giving credit to the projects this utility was based on</comment>
   </data>
   <data name="Attribution_TextExpander.Text" xml:space="preserve">
-    <value>Gary Hsu's work on creating Text Expander</value>
-    <comment>Gary Hsu is a person's name and Text Expander is a product name. Do not localize either name; localize the attribution wording.</comment>
+    <value>Created by Gary Hsu</value>
+    <comment>Gary Hsu is a person's name. Do not localize the name; localize the attribution wording.</comment>
   </data>
   <data name="Shell_TextExpander.Content" xml:space="preserve">
     <value>Text Expander</value>

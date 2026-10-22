@@ -54,13 +54,18 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AttributionUsesTheCurrentPublicWebsite()
+        public void AttributionUsesExactCopyAndTheCurrentPublicWebsite()
         {
-            XElement link = LoadPage().Descendants()
+            XDocument page = LoadPage();
+            XElement link = page.Descendants()
                 .Single(element => element.Name.LocalName == "PageLink"
                     && (string)element.Attribute(XName.Get("Uid", Xaml)) == "Attribution_TextExpander");
 
             Assert.AreEqual("https://howdygary.github.io/text-expander/", (string)link.Attribute("Link"));
+
+            XDocument resources = LoadResources();
+            Assert.AreEqual("Attribution", ResourceValue(resources, "TextExpander.SecondaryLinksHeader"));
+            Assert.AreEqual("Created by Gary Hsu", ResourceValue(resources, "Attribution_TextExpander.Text"));
         }
 
         [TestMethod]
