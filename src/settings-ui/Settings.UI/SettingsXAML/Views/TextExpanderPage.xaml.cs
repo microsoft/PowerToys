@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using Microsoft.PowerToys.Settings.UI.Controls;
@@ -19,8 +20,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
@@ -42,9 +45,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private bool _allowDialogClose;
         private bool _showDiscardWarning;
         private int _editingRevision;
+        private bool _isSnippetDialogOpen;
         private bool _keycapColumnUpdateQueued;
         private TextBlock _triggerMeasure;
-        private (int Start, int End) _promptInsertionSelection;
+        private TextExpanderPromptEditSession _promptEditSession;
+        private PromptFlyoutCloseIntent _promptFlyoutCloseIntent;
+
+        private enum PromptFlyoutCloseIntent
+        {
+            None,
+            Commit,
+            Cancel,
+        }
 
         public TextExpanderPage()
         {
@@ -57,6 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             BuildDateFormatGuide();
             _replacementEditor = new TextExpanderReplacementEditor(ReplacementBox, GetVariableColors);
             _replacementEditor.TextChanged += (_, _) => Validate();
+            _replacementEditor.PromptEditRequested += ReplacementEditor_PromptEditRequested;
 
             // The guide follows the caret into and out of {{date:…}} variables, and what it shows follows the typing.
             _replacementEditor.TextChanged += (_, _) => UpdateDateFormatGuide();
@@ -70,7 +83,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Only while the page is shown, so Windows doesn't keep a closed page alive.
             Loaded += (_, _) => _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
-            Unloaded += (_, _) => _uiSettings.ColorValuesChanged -= UISettings_ColorValuesChanged;
+            Unloaded += (_, _) =>
+            {
+                _uiSettings.ColorValuesChanged -= UISettings_ColorValuesChanged;
+                CancelPromptEdit();
+            };
             SnippetDialog.Opened += (_, _) => _replacementEditor.Recolor();
 
             // The keycap column fits the triggers on show, so it follows the list and the search.
@@ -80,6 +97,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 if (e.PropertyName == nameof(TextExpanderViewModel.CaseSensitive))
                 {
                     QueueKeycapColumnUpdate();
+                }
+                else if (e.PropertyName == nameof(TextExpanderViewModel.SnippetRevision)
+                         && _isSnippetDialogOpen
+                         && _editingRevision != ViewModel.SnippetRevision)
+                {
+                    CancelPromptEdit();
+                    Validate();
                 }
             };
             QueueKeycapColumnUpdate();
@@ -178,7 +202,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
 
                 var item = new MenuFlyoutItem { Tag = variable.Token };
-                item.Click += variable.IsPrompt ? ConfigurePromptVariable_Click : InsertVariable_Click;
+                if (variable.IsPrompt)
+                {
+                    item.Click += ConfigurePromptVariable_Click;
+                    string help = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_Variable_Prompt_Help");
+                    AutomationProperties.SetName(item, variable.Name);
+                    AutomationProperties.SetHelpText(item, help);
+                    ToolTipService.SetToolTip(item, help);
+                }
+                else
+                {
+                    item.Click += InsertVariable_Click;
+                }
+
                 VariableFlyout.Items.Add(item);
                 _variableItems.Add((item, variable));
             }
@@ -320,65 +356,226 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ConfigurePromptVariable_Click(object sender, RoutedEventArgs e)
         {
-            _promptInsertionSelection = _replacementEditor.Selection;
-            PromptQuestionBox.Text = string.Empty;
-            PromptRequireAnswer.IsChecked = true;
-            PromptQuestionError.Visibility = Visibility.Collapsed;
-            PromptVariableBuilder.Visibility = Visibility.Visible;
-            FocusAfterLayout(PromptQuestionBox);
-        }
-
-        private void PromptQuestionBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            string question = PromptQuestionBox.Text?.Trim() ?? string.Empty;
-            bool hasClosingBrace = question.Contains('}');
-            InsertPromptVariableButton.IsEnabled = question.Length > 0 && !hasClosingBrace;
-
-            if (hasClosingBrace)
+            if (_promptEditSession != null)
             {
-                PromptQuestionError.Text = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_PromptBuilder_InvalidQuestion");
-                PromptQuestionError.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                PromptQuestionError.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void PromptQuestionBox_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == global::Windows.System.VirtualKey.Enter)
-            {
-                e.Handled = true;
-                InsertPromptVariable_Click(sender, e);
-            }
-        }
-
-        private void InsertPromptVariable_Click(object sender, RoutedEventArgs e)
-        {
-            string question = PromptQuestionBox.Text?.Trim() ?? string.Empty;
-            if (question.Length == 0 || question.Contains('}'))
-            {
-                PromptQuestionError.Text = ResourceLoaderInstance.ResourceLoader.GetString(
-                    question.Length == 0 ? "TextExpander_PromptBuilder_QuestionRequired" : "TextExpander_PromptBuilder_InvalidQuestion");
-                PromptQuestionError.Visibility = Visibility.Visible;
-                FocusAfterLayout(PromptQuestionBox);
                 return;
             }
 
-            string token = string.Format(
-                CultureInfo.InvariantCulture,
-                PromptRequireAnswer.IsChecked == false ? "{{{{prompt?:{0}}}}}" : "{{{{prompt:{0}}}}}",
-                question);
-            _replacementEditor.InsertVariableAt(token, _promptInsertionSelection.Start, _promptInsertionSelection.End, selectEditablePart: false);
-            PromptVariableBuilder.Visibility = Visibility.Collapsed;
+            (int start, int end) = _replacementEditor.Selection;
+            BeginPromptEdit(TextExpanderPromptEditSession.BeginNew(_replacementEditor.Text, start, end));
+        }
+
+        private void ReplacementEditor_PromptEditRequested(object sender, TextExpanderPromptEditRequestedEventArgs e)
+        {
+            if (_promptEditSession == null
+                && TextExpanderPromptEditSession.TryBeginExisting(_replacementEditor.Text, e.Start, e.End, out TextExpanderPromptEditSession session))
+            {
+                BeginPromptEdit(session);
+            }
+        }
+
+        private void BeginPromptEdit(TextExpanderPromptEditSession session)
+        {
+            _promptEditSession = session;
+            _promptFlyoutCloseIntent = PromptFlyoutCloseIntent.None;
+            PromptQuestionBox.Text = session.Question;
+            PromptRequireAnswer.IsChecked = session.RequireAnswer;
+            PromptQuestionError.Text = string.Empty;
+            PromptQuestionError.Visibility = Visibility.Collapsed;
+            _replacementEditor.BeginTransientEdit(session.InitialText, session.TokenStart, session.TokenEnd);
+
+            PromptFlyout.XamlRoot = XamlRoot;
+            bool queued = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                if (!ReferenceEquals(_promptEditSession, session))
+                {
+                    return;
+                }
+
+                try
+                {
+                    var options = new FlyoutShowOptions
+                    {
+                        Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        ShowMode = FlyoutShowMode.Standard,
+                    };
+
+                    if (_replacementEditor.PositionForRange(session.TokenStart, session.TokenEnd) is Point position)
+                    {
+                        options.Position = position;
+                        PromptFlyout.ShowAt(ReplacementBox, options);
+                    }
+                    else
+                    {
+                        PromptFlyout.ShowAt(ReplacementBox);
+                    }
+                }
+                catch (Exception ex) when (ex is ArgumentException or COMException or InvalidOperationException)
+                {
+                    CancelPromptEdit();
+                }
+            });
+            if (!queued)
+            {
+                CancelPromptEdit();
+            }
+        }
+
+        private void PromptFlyout_Opened(object sender, object e) => FocusPromptQuestion(selectAll: true);
+
+        private void PromptQuestionBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_promptEditSession == null)
+            {
+                return;
+            }
+
+            TextExpanderPromptValidationError error = TextExpanderPromptToken.Validate(PromptQuestionBox.Text);
+            if (error == TextExpanderPromptValidationError.InvalidQuestion)
+            {
+                ShowPromptValidation(error, refocus: false);
+            }
+            else if (error == TextExpanderPromptValidationError.None)
+            {
+                ClearPromptValidation();
+            }
+            else if (PromptQuestionError.Visibility == Visibility.Visible)
+            {
+                ShowPromptValidation(error, refocus: false);
+            }
+        }
+
+        private void PromptFlyoutContent_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == global::Windows.System.VirtualKey.Escape)
+            {
+                e.Handled = true;
+                CancelPromptEdit();
+            }
+            else if (e.Key == global::Windows.System.VirtualKey.Enter)
+            {
+                e.Handled = true;
+                TryCommitPromptEdit(TextExpanderPromptEditCloseReason.Enter, hideFlyout: true);
+            }
+        }
+
+        private void PromptFlyoutClose_Click(object sender, RoutedEventArgs e) => CancelPromptEdit();
+
+        private void PromptFlyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+        {
+            if (_promptFlyoutCloseIntent != PromptFlyoutCloseIntent.None || _promptEditSession == null)
+            {
+                return;
+            }
+
+            if (!TryCommitPromptEdit(TextExpanderPromptEditCloseReason.LightDismiss, hideFlyout: false))
+            {
+                args.Cancel = true;
+            }
+        }
+
+        private void PromptFlyout_Closed(object sender, object e)
+        {
+            if (_promptEditSession != null)
+            {
+                CancelPromptEdit(hideFlyout: false);
+            }
+
+            _promptFlyoutCloseIntent = PromptFlyoutCloseIntent.None;
             FocusAfterLayout(ReplacementBox);
         }
 
-        private void CancelPromptVariable_Click(object sender, RoutedEventArgs e)
+        private bool TryCommitPromptEdit(TextExpanderPromptEditCloseReason reason, bool hideFlyout)
         {
-            PromptVariableBuilder.Visibility = Visibility.Collapsed;
-            FocusAfterLayout(ReplacementBox);
+            if (_promptEditSession == null)
+            {
+                return true;
+            }
+
+            TextExpanderPromptEditDecision decision = _promptEditSession.Resolve(
+                reason,
+                PromptQuestionBox.Text,
+                PromptRequireAnswer.IsChecked != false);
+            if (decision.Kind == TextExpanderPromptEditDecisionKind.KeepOpen)
+            {
+                ShowPromptValidation(decision.Error, refocus: true);
+                return false;
+            }
+
+            _replacementEditor.CompleteTransientEdit(decision.Text, decision.SelectionStart, decision.SelectionEnd);
+            _promptEditSession = null;
+            _promptFlyoutCloseIntent = PromptFlyoutCloseIntent.Commit;
+            ClearPromptValidation();
+            if (hideFlyout && PromptFlyout.IsOpen)
+            {
+                PromptFlyout.Hide();
+            }
+
+            return true;
+        }
+
+        private void CancelPromptEdit(bool hideFlyout = true)
+        {
+            if (_promptEditSession == null)
+            {
+                return;
+            }
+
+            TextExpanderPromptEditDecision decision = _promptEditSession.Resolve(
+                TextExpanderPromptEditCloseReason.Cancel,
+                PromptQuestionBox.Text,
+                PromptRequireAnswer.IsChecked != false);
+            _replacementEditor.CancelTransientEdit(decision.Text, decision.SelectionStart, decision.SelectionEnd);
+            _promptEditSession = null;
+            _promptFlyoutCloseIntent = PromptFlyoutCloseIntent.Cancel;
+            ClearPromptValidation();
+            if (hideFlyout && PromptFlyout.IsOpen)
+            {
+                PromptFlyout.Hide();
+            }
+            else if (!PromptFlyout.IsOpen)
+            {
+                _promptFlyoutCloseIntent = PromptFlyoutCloseIntent.None;
+            }
+        }
+
+        private void ShowPromptValidation(TextExpanderPromptValidationError error, bool refocus)
+        {
+            string key = error == TextExpanderPromptValidationError.InvalidQuestion
+                ? "TextExpander_PromptFlyout_InvalidQuestion"
+                : "TextExpander_PromptFlyout_QuestionRequired";
+            string message = ResourceLoaderInstance.ResourceLoader.GetString(key);
+            bool changed = PromptQuestionError.Visibility != Visibility.Visible
+                || !string.Equals(PromptQuestionError.Text, message, StringComparison.Ordinal);
+            PromptQuestionError.Text = message;
+            PromptQuestionError.Visibility = Visibility.Visible;
+            if (changed)
+            {
+                Announce(PromptQuestionError, "textExpanderPromptQuestionError");
+            }
+
+            if (refocus)
+            {
+                FocusPromptQuestion(selectAll: false);
+            }
+        }
+
+        private void ClearPromptValidation()
+        {
+            PromptQuestionError.Text = string.Empty;
+            PromptQuestionError.Visibility = Visibility.Collapsed;
+        }
+
+        private void FocusPromptQuestion(bool selectAll)
+        {
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                PromptQuestionBox.Focus(FocusState.Programmatic);
+                if (selectAll)
+                {
+                    PromptQuestionBox.SelectAll();
+                }
+            });
         }
 
         private async void AddSnippet_Click(object sender, RoutedEventArgs e)
@@ -426,8 +623,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.LoadSnippets();
             if (!ViewModel.HasSnippetError)
             {
-                SnippetStatus.Text = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_Reloaded");
-                Announce(SnippetStatus, "textExpanderSnippetFileReloaded");
+                SetSnippetStatus(
+                    ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_Reloaded"),
+                    "textExpanderSnippetFileReloaded");
             }
         }
 
@@ -527,19 +725,32 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             _editingId = id;
             _editingRevision = ViewModel.SnippetRevision;
+            _isSnippetDialogOpen = true;
             _originalSnippet = new TextExpanderSnippetViewModel(id ?? -1, trigger ?? string.Empty, replacement ?? string.Empty);
             _allowDialogClose = false;
             ShowDiscardWarning = false;
             _lastEditedField = TriggerBox;
-            PromptVariableBuilder.Visibility = Visibility.Collapsed;
-            SnippetStatus.Text = string.Empty;
+            CancelPromptEdit();
+            SetSnippetStatus(string.Empty);
             TriggerBox.Text = trigger ?? string.Empty;
             _replacementEditor.SetText(replacement ?? string.Empty);
 
             SnippetDialog.XamlRoot = XamlRoot;
             Validate();
 
-            if (await SnippetDialog.ShowAsync() == ContentDialogResult.Primary)
+            ContentDialogResult result;
+            try
+            {
+                result = await SnippetDialog.ShowAsync();
+            }
+            finally
+            {
+                _isSnippetDialogOpen = false;
+                _editingId = null;
+                CancelPromptEdit();
+            }
+
+            if (result == ContentDialogResult.Primary)
             {
                 AnnounceSnippetChange("TextExpander_SnippetSaved");
             }
@@ -547,6 +758,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SnippetDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            if (!TryCommitPromptEdit(TextExpanderPromptEditCloseReason.Enter, hideFlyout: true))
+            {
+                args.Cancel = true;
+                return;
+            }
+
             Validate();
             if (!IsSnippetValid)
             {
@@ -572,6 +789,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SnippetDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
         {
+            // A dialog close means discard the pending flyout edit, not light-dismiss-commit it.
+            CancelPromptEdit();
             if (!_allowDialogClose && _originalSnippet.HasChanges(TriggerBox.Text, _replacementEditor.Text))
             {
                 args.Cancel = true;
@@ -598,13 +817,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void AnnounceSnippetChange(string resourceKey)
         {
-            SnippetStatus.Text = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
+            string message = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
             if (ViewModel.HasSearchText)
             {
-                SnippetStatus.Text += " " + ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SearchStillActive");
+                message += " " + ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SearchStillActive");
             }
 
-            Announce(SnippetStatus, "textExpanderSnippetChanged");
+            SetSnippetStatus(message, "textExpanderSnippetChanged");
+        }
+
+        private void SetSnippetStatus(string text, string activityId = null)
+        {
+            SnippetStatus.Text = text ?? string.Empty;
+            SnippetStatus.Visibility = string.IsNullOrEmpty(SnippetStatus.Text) ? Visibility.Collapsed : Visibility.Visible;
+            if (!string.IsNullOrEmpty(activityId))
+            {
+                Announce(SnippetStatus, activityId);
+            }
         }
 
         private static void Announce(TextBlock status, string activityId) => Announce(status, status.Text, activityId);
@@ -712,6 +941,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             string error = ViewModel.ApplyFolderChange(change, choice, out string backup);
             if (error != null)
             {
+                if (!string.IsNullOrEmpty(backup))
+                {
+                    error += " " + string.Format(
+                        CultureInfo.CurrentCulture,
+                        ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SnippetFolder_RecoveryAvailable"),
+                        backup);
+                }
+
                 await ShowStorageErrorAsync(error);
                 return;
             }
@@ -764,8 +1001,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     backup);
             }
 
-            SnippetStatus.Text = message;
-            Announce(SnippetStatus, "textExpanderSnippetStorageChanged");
+            SetSnippetStatus(message, "textExpanderSnippetStorageChanged");
         }
 
         private async Task ShowStorageErrorAsync(string error)
@@ -791,7 +1027,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             ShowPreview(replacement);
 
-            if (_editingId.HasValue && _editingRevision != ViewModel.SnippetRevision)
+            if (_isSnippetDialogOpen && _editingRevision != ViewModel.SnippetRevision)
             {
                 SnippetProblem = ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_EditorFileChanged");
                 IsSnippetValid = false;

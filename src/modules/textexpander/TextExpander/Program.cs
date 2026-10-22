@@ -72,7 +72,17 @@ internal static class Program
             _hostSettings?.Read().SnippetsPath,
             HostSettings.DataFolder(_hostSettings?.FilePath));
         _store = new SnippetStore(resolution.FilePath, resolution.ResolveFolderNames);
-        _store.Load();
+        SnippetStore.TransitionResult initialLoad = _store.Load();
+        if (!initialLoad.Succeeded)
+        {
+            ReportSnippetTransitionFailure("load the initial snippet library", initialLoad);
+            Error(EngineText.Get(
+                "Error_SnippetFile",
+                "Text Expander couldn't load your snippets from:\n\n{0}\n\nCheck that the file is available, then restart PowerToys.")
+                .Replace("{0}", initialLoad.AttemptedPath, StringComparison.Ordinal));
+            _store.Dispose();
+            return 1;
+        }
 
         IntPtr hwnd = CreateMessageWindow();
         if (hwnd == IntPtr.Zero)
@@ -103,7 +113,12 @@ internal static class Program
         };
         _worker.Start();
 
-        _store.StartWatching();
+        SnippetStore.TransitionResult watchResult = _store.StartWatching();
+        if (!watchResult.Succeeded)
+        {
+            ReportSnippetTransitionFailure("close the initial snippet watcher handoff", watchResult);
+        }
+
         RunMessageLoop();
 
         _hook.Dispose();
@@ -174,7 +189,11 @@ internal static class Program
 
         if (values.CaseSensitive is bool caseSensitive)
         {
-            _store?.SetCaseSensitive(caseSensitive);
+            SnippetStore.TransitionResult? result = _store?.SetCaseSensitive(caseSensitive);
+            if (result.HasValue && !result.Value.Succeeded)
+            {
+                ReportSnippetTransitionFailure("apply the case-sensitive setting", result.Value);
+            }
         }
     }
 
@@ -207,12 +226,21 @@ internal static class Program
             SnippetPathResolution resolution = SnippetStore.ResolveConfiguredPathInfo(
                 _hostSettings.Read().SnippetsPath,
                 HostSettings.DataFolder(_hostSettings.FilePath));
-            int count = _store.Repoint(resolution.FilePath, resolution.ResolveFolderNames);
+            SnippetStore.TransitionResult result = _store.Repoint(resolution.FilePath, resolution.ResolveFolderNames);
+            if (!result.Succeeded)
+            {
+                ReportSnippetTransitionFailure("switch the snippet library", result);
+            }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
+            Trace.TraceWarning($"Text Expander could not resolve the requested snippet library: {ex.Message}");
         }
     }
+
+    private static void ReportSnippetTransitionFailure(string action, SnippetStore.TransitionResult result)
+        => Trace.TraceWarning(
+            $"Text Expander could not {action}. Status: {result.Status}; path: '{result.AttemptedPath}'; error: {result.Error?.Message}");
 
     private static IntPtr CreateMessageWindow()
     {

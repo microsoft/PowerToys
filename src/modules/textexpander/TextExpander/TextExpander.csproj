@@ -42,6 +42,11 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\..\settings-ui\Settings.UI.Library\HandleBoundFileDeletion.cs" Link="Shared\HandleBoundFileDeletion.cs" />
+    <Compile Include="..\..\..\settings-ui\Settings.UI.Library\TextExpanderStarter.cs" Link="Shared\TextExpanderStarter.cs" />
+  </ItemGroup>
+
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
     <ItemGroup>
       <PRIFile Include="$(OutDir)**\PowerToys.TextExpander.pri" />

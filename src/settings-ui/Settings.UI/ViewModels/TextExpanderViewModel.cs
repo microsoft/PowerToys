@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
@@ -16,6 +17,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.TextExpander.Storage;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -39,6 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private TextExpanderVariable[] _variables;
         private TextExpanderSnippetFile _file;
         private string _snippetError;
+        private string _loadedPath;
         private byte[] _loadedBytes;
         private string _newline = Environment.NewLine;
         private System.Text.Encoding _encoding = new System.Text.UTF8Encoding(false, false);
@@ -49,6 +52,86 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Action<Action> _dispatch;
         private IDisposable _snippetFileWatch;
         private string _snippetFileWatchFolder;
+        private long _snippetFileWatchGeneration;
+
+        private readonly record struct SnippetFileResolution(string FilePath, bool ResolveFolderNames);
+
+        private sealed class FolderPublication
+        {
+            public FolderPublication(
+                string targetPath,
+                TextExpanderFileIdentity publishedIdentity,
+                TextExpanderFileIdentity originalTargetIdentity,
+                bool replaced,
+                string backupPath)
+            {
+                TargetPath = targetPath;
+                PublishedIdentity = publishedIdentity;
+                OriginalTargetIdentity = originalTargetIdentity;
+                Replaced = replaced;
+                BackupPath = backupPath;
+            }
+
+            public string TargetPath { get; }
+
+            public TextExpanderFileIdentity PublishedIdentity { get; }
+
+            public TextExpanderFileIdentity OriginalTargetIdentity { get; }
+
+            public bool Replaced { get; }
+
+            public string BackupPath { get; }
+
+            public bool PublicationAttempted { get; set; }
+
+            public bool Committed { get; set; }
+
+            public bool RequiresCompensation => PublicationAttempted || Committed;
+        }
+
+        private readonly record struct FolderRollbackResult(
+            bool Succeeded,
+            IReadOnlyList<string> RecoveryPaths,
+            Exception Error)
+        {
+            public string RecoveryPath => string.Join("; ", RecoveryPaths);
+        }
+
+        private sealed class OwnedFileCleanupException : IOException
+        {
+            public OwnedFileCleanupException(
+                string artifactKind,
+                HandleBoundFileDeletionResult result,
+                Exception precedingError = null)
+                : base(
+                    $"The owned Text Expander {artifactKind} '{result.Path}' could not be cleaned safely; the path was preserved for recovery.",
+                    CreateInnerException(result, precedingError))
+            {
+                RecoveryPath = result.Path;
+            }
+
+            public string RecoveryPath { get; }
+
+            private static Exception CreateInnerException(
+                HandleBoundFileDeletionResult result,
+                Exception precedingError)
+                => precedingError is null
+                    ? result.Error
+                    : new AggregateException(precedingError, result.Error ?? new IOException("Handle-bound cleanup failed."));
+        }
+
+        private enum PersistedFolderSettingStatus
+        {
+            Previous,
+            New,
+            Other,
+            Unreadable,
+        }
+
+        private readonly record struct PersistedFolderSetting(
+            PersistedFolderSettingStatus Status,
+            string SnippetsPath,
+            Exception Error);
 
         /// <param name="pickSingleFolderDialog">Shows a folder picker, opening at the folder it's given when that exists, and returns the folder picked, or null if cancelled.</param>
         public TextExpanderViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, Task<string>> pickSingleFolderDialog, bool isElevated, Func<string, string> getResourceString = null, ITextExpanderStorageEnvironment storageEnvironment = null)
@@ -316,7 +399,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string SnippetsFolderPath => CanEditSnippets ? Path.GetDirectoryName(ResolveSnippetsFile()) ?? string.Empty : string.Empty;
+        public string SnippetsFolderPath => CanEditSnippets ? Path.GetDirectoryName(SnippetsFilePath) ?? string.Empty : string.Empty;
 
         /// <summary>Lets the user pick a folder, then inspects it without changing the active library.</summary>
         public async Task<TextExpanderFolderChange> PickSnippetsFolderAsync()
@@ -343,15 +426,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         internal TextExpanderFolderChange PrepareFolderChange(string folder)
         {
             string full = Path.GetFullPath(_storageEnvironment.ExpandEnvironmentVariables(folder.Trim().Trim('"')));
-            string file = TextExpanderSnippetFileNames.ResolveInFolder(full, _storageEnvironment.FileExists);
-            return string.Equals(file, ResolveSnippetsFile(), StringComparison.OrdinalIgnoreCase)
+            string source = SnippetsFilePath;
+            TextExpanderFolderIdentity folderIdentity = CaptureFolderIdentity(full);
+            string file = folderIdentity.ResolveFilePath();
+            return string.Equals(file, source, StringComparison.OrdinalIgnoreCase)
                 ? null
-                : new TextExpanderFolderChange(full, file, _storageEnvironment.FileExists(file));
+                : new TextExpanderFolderChange(
+                    full,
+                    source,
+                    CaptureFileIdentity(source),
+                    folderIdentity);
         }
 
         /// <summary>
-        /// Switches the active folder. An existing destination is never overwritten without a
-        /// backup; choosing its file also backs up the file this PC was using before the switch.
+        /// Switches the active folder as one compensating transaction. The destination and
+        /// throwing settings persistence must both commit before the ViewModel changes libraries.
         /// </summary>
         public string ApplyFolderChange(TextExpanderFolderChange change, TextExpanderFolderConflictChoice choice, out string backupPath)
         {
@@ -361,50 +450,225 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return null;
             }
 
+            FolderPublication publication = null;
+            string sourceBackupPath = string.Empty;
             try
             {
                 _storageEnvironment.CreateDirectory(change.FolderPath);
-                string current = ResolveSnippetsFile();
-                string target = TextExpanderSnippetFileNames.ResolveInFolder(change.FolderPath, _storageEnvironment.FileExists);
-                bool targetExists = _storageEnvironment.FileExists(target);
-                if (targetExists && !change.HasExistingFile)
+                using IDisposable folderClaim = TextExpanderStarter.AcquireFolderClaim(change.FolderPath);
+
+                string current = SnippetsFilePath;
+                TextExpanderFileIdentity sourceIdentity = CaptureFileIdentity(current);
+                TextExpanderFolderIdentity folderIdentity = CaptureFolderIdentity(change.FolderPath);
+                string target = folderIdentity.ResolveFilePath();
+                bool targetExists = folderIdentity.IdentityFor(target).Exists;
+                if (!PreparedFolderChangeStillMatches(change, current, sourceIdentity, folderIdentity))
                 {
-                    return _getResourceString("TextExpander_SnippetFolder_FileAppeared");
+                    return _getResourceString("TextExpander_SnippetFolder_ChangeStale");
                 }
 
                 if (targetExists && choice == TextExpanderFolderConflictChoice.UseFolder)
                 {
-                    if (_storageEnvironment.FileExists(current))
+                    if (sourceIdentity.Exists)
                     {
-                        backupPath = BackupCopy(current);
+                        sourceBackupPath = BackupPath(current);
+                        _storageEnvironment.WriteNewFile(sourceBackupPath, sourceIdentity.Bytes);
+                        backupPath = sourceBackupPath;
+                    }
+
+                    if (!PreparedFolderChangeStillMatches(
+                            change,
+                            SnippetsFilePath,
+                            CaptureFileIdentity(current),
+                            CaptureFolderIdentity(change.FolderPath)))
+                    {
+                        HandleBoundFileDeletionResult cleanup = TryDeleteOwnedFile(sourceBackupPath, sourceIdentity);
+                        if (cleanup.Succeeded)
+                        {
+                            backupPath = string.Empty;
+                        }
+                        else
+                        {
+                            return new OwnedFileCleanupException("backup", cleanup).Message;
+                        }
+
+                        return _getResourceString("TextExpander_SnippetFolder_ChangeStale");
                     }
                 }
                 else
                 {
-                    byte[] bytes = _storageEnvironment.FileExists(current) ? _storageEnvironment.ReadAllBytes(current) : Array.Empty<byte>();
-                    if (targetExists)
+                    if (!sourceIdentity.Exists)
                     {
-                        backupPath = BackupPath(target);
-                        WriteAtomically(target, bytes, backupPath, replace: true);
+                        if (targetExists || change.SourceFileExisted || change.HasExistingFile)
+                        {
+                            return _getResourceString("TextExpander_SnippetFolder_ChangeStale");
+                        }
+
+                        TextExpanderStarter.FileResult starter = TextExpanderStarter.ResolveOrCreateFileInFolder(
+                            change.FolderPath,
+                            TextExpanderSnippetFileNames.Current,
+                            TextExpanderSnippetFileNames.Legacy);
+                        if (!starter.Created)
+                        {
+                            return _getResourceString("TextExpander_SnippetFolder_ChangeStale");
+                        }
+
+                        target = starter.FilePath;
+                        TextExpanderFolderIdentity afterStarter = CaptureFolderIdentity(change.FolderPath);
+                        TextExpanderFileIdentity starterIdentity = afterStarter.IdentityFor(target);
+                        publication = new FolderPublication(
+                            target,
+                            starterIdentity,
+                            TextExpanderFileIdentity.Missing,
+                            replaced: false,
+                            backupPath: string.Empty)
+                        {
+                            PublicationAttempted = true,
+                            Committed = true,
+                        };
+
+                        bool starterStillOwned = starterIdentity.Exists
+                            && TextExpanderStarter.IsUntouchedStarterBytes(starterIdentity.Bytes);
+                        if (!starterStillOwned
+                            || !FolderPublicationIsCurrent(
+                                change,
+                                current,
+                                sourceIdentity,
+                                folderIdentity,
+                                publication))
+                        {
+                            return FailFolderChangeAfterPublication(
+                                publication,
+                                _getResourceString("TextExpander_SnippetFolder_ChangeStale"),
+                                out backupPath);
+                        }
                     }
                     else
                     {
-                        target = Path.Combine(change.FolderPath, TextExpanderSnippetFileNames.Current);
-                        WriteAtomically(target, bytes, backup: null, replace: false);
+                        if (!PublishFolderChange(
+                                change,
+                                current,
+                                sourceIdentity,
+                                folderIdentity,
+                                targetExists,
+                                ref target,
+                                ref publication))
+                        {
+                            return _getResourceString("TextExpander_SnippetFolder_ChangeStale");
+                        }
+
+                        backupPath = publication.BackupPath;
+                        if (!FolderPublicationIsCurrent(
+                                change,
+                                current,
+                                sourceIdentity,
+                                folderIdentity,
+                                publication))
+                        {
+                            return FailFolderChangeAfterPublication(
+                                publication,
+                                _getResourceString("TextExpander_SnippetFolder_ChangeStale"),
+                                out backupPath);
+                        }
                     }
                 }
 
-                SnippetsPath = string.Equals(
+                string newSnippetsPath = string.Equals(
                     Path.TrimEndingDirectorySeparator(change.FolderPath),
                     Path.TrimEndingDirectorySeparator(_storageEnvironment.DefaultSnippetsFolder),
                     StringComparison.OrdinalIgnoreCase)
                     ? string.Empty
                     : change.FolderPath;
+                string oldSnippetsPath = _settings.Properties.SnippetsPath.Value;
+                string settingsJson;
+                _settings.Properties.SnippetsPath.Value = newSnippetsPath;
+                try
+                {
+                    settingsJson = _settings.ToJsonString();
+                }
+                finally
+                {
+                    _settings.Properties.SnippetsPath.Value = oldSnippetsPath;
+                }
+
+                try
+                {
+                    _settingsUtils.SaveSettingsOrThrow(settingsJson, TextExpanderSettings.ModuleName);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error persisting the Text Expander snippet folder.", ex);
+                    AtomicSettingsPublicationException atomicError = ex as AtomicSettingsPublicationException;
+                    PersistedFolderSetting persisted = InspectPersistedFolderSetting(
+                        oldSnippetsPath,
+                        newSnippetsPath);
+
+                    bool newSettingsVerified = persisted.Status == PersistedFolderSettingStatus.New
+                        || (persisted.Status == PersistedFolderSettingStatus.Unreadable
+                            && atomicError?.Outcome == AtomicSettingsPublicationOutcome.NewSettingsVerified);
+                    if (newSettingsVerified)
+                    {
+                        if (string.IsNullOrEmpty(backupPath))
+                        {
+                            backupPath = sourceBackupPath;
+                        }
+
+                        publication = null;
+                        AdoptPersistedFolderSetting(newSnippetsPath);
+                        return FormatSettingsPublicationRecovery(
+                            "TextExpander_SnippetFolder_SettingsCommittedAfterError",
+                            atomicError);
+                    }
+
+                    bool previousSettingsVerified = persisted.Status == PersistedFolderSettingStatus.Previous
+                        || (persisted.Status == PersistedFolderSettingStatus.Unreadable
+                            && atomicError?.Outcome == AtomicSettingsPublicationOutcome.PreviousSettingsVerified);
+                    if (previousSettingsVerified)
+                    {
+                        return RollBackFolderAfterSettingsFailure(
+                            publication,
+                            sourceBackupPath,
+                            atomicError,
+                            out backupPath);
+                    }
+
+                    backupPath = FolderRecoveryPath(publication, sourceBackupPath);
+                    publication = null;
+                    if (persisted.Status == PersistedFolderSettingStatus.Other)
+                    {
+                        AdoptPersistedFolderSetting(persisted.SnippetsPath);
+                    }
+
+                    return FormatSettingsPublicationRecovery(
+                        "TextExpander_SnippetFolder_SettingsStateUncertain",
+                        atomicError);
+                }
+
+                publication = null;
+                AdoptPersistedFolderSetting(newSnippetsPath);
                 return null;
             }
-            catch (Exception ex) when (IsFileError(ex))
+            catch (Exception ex) when ((publication is not null && publication.RequiresCompensation) || IsFileError(ex))
             {
                 Logger.LogError("Error changing the Text Expander snippet folder.", ex);
+                string cleanupRecoveryPath = (ex as OwnedFileCleanupException)?.RecoveryPath ?? string.Empty;
+                if (publication is not null && publication.RequiresCompensation)
+                {
+                    FolderRollbackResult rollback = RollbackFolderPublication(publication);
+                    if (!rollback.Succeeded)
+                    {
+                        backupPath = CombineRecoveryPaths(rollback.RecoveryPath, cleanupRecoveryPath);
+                        Logger.LogError("Could not safely roll back the Text Expander snippet folder.", rollback.Error);
+                        return _getResourceString("TextExpander_SnippetFolder_RollbackFailed");
+                    }
+
+                    backupPath = cleanupRecoveryPath;
+                }
+                else if (!string.IsNullOrEmpty(cleanupRecoveryPath))
+                {
+                    backupPath = cleanupRecoveryPath;
+                }
+
                 return ex.Message;
             }
         }
@@ -443,9 +707,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         /// <summary>
         /// Gets or sets how a file watcher's callback reaches the UI thread. The page sets it while
-        /// it's shown, and clears it when it closes. While it's set and there is no snippet file
-        /// yet, the page watches for one, because the engine writes the starter snippets when it
-        /// starts, so they show without opening the page again.
+        /// it's shown, and clears it when it closes. Folder/default configurations keep watching
+        /// both supported file names so Settings follows the same winner as the engine.
         /// </summary>
         public Action<Action> Dispatch
         {
@@ -453,7 +716,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set
             {
                 _dispatch = value;
-                WatchWhileMissing();
+                WatchSnippetFolder();
             }
         }
 
@@ -494,7 +757,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool HasNoSnippets => CanEditSnippets && Snippets.Count == 0 && !HasSnippetError;
 
         /// <summary>Gets the resolved snippet file, shown so the user can find it outside the app.</summary>
-        public string SnippetsFilePath => ResolveSnippetsFile();
+        public string SnippetsFilePath => _loadedPath ?? ResolveSnippetsFile();
 
         /// <summary>Gets the folder used while <see cref="SnippetsPath"/> is empty.</summary>
         public string DefaultSnippetsFolder => CanEditSnippets ? _storageEnvironment.DefaultSnippetsFolder : string.Empty;
@@ -543,10 +806,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </para>
         /// </summary>
         private string ResolveSnippetsFile()
+            => ResolveSnippetsFileInfo().FilePath;
+
+        private SnippetFileResolution ResolveSnippetsFileInfo()
         {
             if (!CanEditSnippets)
             {
-                return string.Empty;
+                return new SnippetFileResolution(string.Empty, ResolveFolderNames: false);
             }
 
             string configured = _settings.Properties.SnippetsPath.Value;
@@ -567,7 +833,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         string full = Path.GetFullPath(expanded);
 
                         // Accept a file too: someone will paste the path of the snippet file itself.
-                        return File.Exists(full) ? full : TextExpanderSnippetFileNames.ResolveInFolder(full, _storageEnvironment.FileExists);
+                        return _storageEnvironment.FileExists(full)
+                            ? new SnippetFileResolution(full, ResolveFolderNames: false)
+                            : new SnippetFileResolution(TextExpanderSnippetFileNames.ResolveInFolder(full, _storageEnvironment.FileExists), ResolveFolderNames: true);
                     }
                 }
                 catch (Exception ex) when (ex is ArgumentException or NotSupportedException
@@ -581,22 +849,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // The same folder the engine derives from the settings path the shim passes it, so
             // both sides land on one file without a second setting to disagree about. Within a
             // folder, both pick the file the same way (TextExpanderSnippetFileNames.ResolveInFolder).
-            return TextExpanderSnippetFileNames.ResolveInFolder(_storageEnvironment.DefaultSnippetsFolder, _storageEnvironment.FileExists);
+            return new SnippetFileResolution(
+                TextExpanderSnippetFileNames.ResolveInFolder(_storageEnvironment.DefaultSnippetsFolder, _storageEnvironment.FileExists),
+                ResolveFolderNames: true);
         }
 
         /// <summary>Reads the snippet file into <see cref="Snippets"/>.</summary>
         public void LoadSnippets()
         {
-            SnippetRevision++;
+            AdvanceSnippetRevision(notifyEditor: true);
 
             if (!CanEditSnippets)
             {
                 _file = null;
+                _loadedPath = null;
                 _loadedBytes = null;
                 Snippets.ReplaceAll(Array.Empty<TextExpanderSnippetViewModel>());
                 _snippetError = null;
                 RaiseSnippetListChanged();
-                WatchWhileMissing();
+                WatchSnippetFolder();
                 return;
             }
 
@@ -605,36 +876,41 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             try
             {
-                string path = ResolveSnippetsFile();
-
-                if (!File.Exists(path))
+                SnippetFileResolution resolution = ResolveSnippetsFileInfo();
+                string path = resolution.FilePath;
+                if (resolution.ResolveFolderNames)
                 {
-                    // Not an error: nothing has been written yet. The engine writes the starter
-                    // snippets when it starts and finds no file (see WatchWhileMissing); a save
-                    // here first writes just the snippets saved.
-                    _file = TextExpanderSnippetFile.Parse(Array.Empty<string>());
-                    _loadedBytes = null;
-                    _encoding = new System.Text.UTF8Encoding(false, false);
-                    _newline = Environment.NewLine;
-                    _hadFinalNewline = true;
+                    string folder = Path.GetDirectoryName(path);
+                    if (string.IsNullOrEmpty(folder))
+                    {
+                        throw new IOException("The Text Expander snippet folder could not be resolved.");
+                    }
+
+                    path = TextExpanderStarter.ResolveOrCreateFileInFolder(
+                        folder,
+                        TextExpanderSnippetFileNames.Current,
+                        TextExpanderSnippetFileNames.Legacy).FilePath;
                 }
                 else
                 {
-                    // Read the raw bytes so the file's own conventions survive a save. Reading
-                    // only decoded lines would silently re-encode it: an existing BOM would be
-                    // dropped and LF endings rewritten to CRLF, which is whole-file churn for
-                    // anyone keeping their snippets in git. The encoding is the one the engine
-                    // reads it with, so a UTF-16 file is shown, and saved, as UTF-16.
-                    _loadedBytes = ReadAllBytesShared(path);
-                    string text = TextExpanderSnippetEncoding.Decode(_loadedBytes, out _encoding);
-
-                    _newline = text.Contains("\r\n", StringComparison.Ordinal) ? "\r\n"
-                        : text.Contains('\n', StringComparison.Ordinal) ? "\n"
-                        : Environment.NewLine;
-                    _hadFinalNewline = text.Length == 0 || text.EndsWith('\n') || text.EndsWith('\r');
-
-                    _file = TextExpanderSnippetFile.Parse(SplitLines(text));
+                    TextExpanderStarter.TryCreateFile(path);
                 }
+
+                // Read the raw bytes so the file's own conventions survive a save. Reading only
+                // decoded lines would silently re-encode it: an existing BOM would be dropped and
+                // LF endings rewritten to CRLF, which is whole-file churn for anyone keeping their
+                // snippets in git. The encoding is the one the engine reads it with, so a UTF-16
+                // file is shown, and saved, as UTF-16.
+                _loadedPath = path;
+                _loadedBytes = ReadAllBytesShared(path);
+                string text = TextExpanderSnippetEncoding.Decode(_loadedBytes, out _encoding);
+
+                _newline = text.Contains("\r\n", StringComparison.Ordinal) ? "\r\n"
+                    : text.Contains('\n', StringComparison.Ordinal) ? "\n"
+                    : Environment.NewLine;
+                _hadFinalNewline = text.Length == 0 || text.EndsWith('\n') || text.EndsWith('\r');
+
+                _file = TextExpanderSnippetFile.Parse(SplitLines(text));
 
                 foreach (TextExpanderSnippetFile.Entry entry in _file.Snippets)
                 {
@@ -648,13 +924,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Say why rather than showing an empty list, which would read as "no snippets"
                 // and invite the user to recreate everything on top of a file that still exists.
                 _file = null;
+                _loadedBytes = null;
                 _snippetError = ex.Message;
                 rows.Clear();
             }
 
             Snippets.ReplaceAll(rows);
             RaiseSnippetListChanged();
-            WatchWhileMissing();
+            WatchSnippetFolder();
         }
 
         /// <summary>
@@ -664,7 +941,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SyncRows()
         {
-            SnippetRevision++;
+            AdvanceSnippetRevision(notifyEditor: false);
             var current = new Dictionary<int, TextExpanderSnippetViewModel>(Snippets.Count);
             foreach (TextExpanderSnippetViewModel row in Snippets)
             {
@@ -683,24 +960,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Snippets.SyncTo(rows);
             RaiseSnippetListChanged();
-            WatchWhileMissing();
+            WatchSnippetFolder();
         }
 
         /// <summary>
-        /// Watches the snippet folder while the page is shown and there is no snippet file yet,
-        /// and stops once there is one, or the page closes or can't edit snippets.
+        /// Watches both supported names for a folder/default configuration while the page is shown.
+        /// A direct file configuration is intentionally pinned to that exact file.
         /// </summary>
-        private void WatchWhileMissing()
+        private void WatchSnippetFolder()
         {
             string folder = null;
-            if (_dispatch != null && CanEditSnippets && _file != null)
+            if (_dispatch != null && CanEditSnippets)
             {
                 try
                 {
-                    string path = ResolveSnippetsFile();
-                    folder = File.Exists(path) ? null : Path.GetDirectoryName(path);
+                    SnippetFileResolution resolution = ResolveSnippetsFileInfo();
+                    folder = resolution.ResolveFolderNames ? Path.GetDirectoryName(resolution.FilePath) : null;
                 }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+                catch (Exception ex) when (IsFileError(ex))
                 {
                     folder = null;
                 }
@@ -714,18 +991,69 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _snippetFileWatch?.Dispose();
             _snippetFileWatch = null;
             _snippetFileWatchFolder = folder;
+            long generation = ++_snippetFileWatchGeneration;
             if (!string.IsNullOrEmpty(folder))
             {
-                _snippetFileWatch = _storageEnvironment.WatchForFiles(folder, SnippetFileNames, () => _dispatch?.Invoke(SnippetFileMayHaveAppeared));
+                IDisposable watch = _storageEnvironment.WatchForFiles(
+                    folder,
+                    SnippetFileNames,
+                    () => _dispatch?.Invoke(() => SnippetFilesMayHaveChanged(generation)));
+                _snippetFileWatch = watch;
+
+                // A supported file can arrive after LoadSnippets resolves the starter but before
+                // the watcher becomes active. Re-resolve once after registration so that handoff
+                // cannot hide a legacy winner beside an untouched starter.
+                SnippetFilesMayHaveChanged(generation);
             }
         }
 
-        private void SnippetFileMayHaveAppeared()
+        internal void SnippetFilesMayHaveChanged()
+            => SnippetFilesMayHaveChanged(_snippetFileWatchGeneration);
+
+        private void SnippetFilesMayHaveChanged(long generation)
         {
-            // The watcher also polls, so most calls find nothing new.
-            if (_snippetFileWatch != null && _file != null && _file.Snippets.Count == 0 && File.Exists(ResolveSnippetsFile()))
+            if (_snippetFileWatch == null || generation != _snippetFileWatchGeneration)
             {
-                LoadSnippets();
+                return;
+            }
+
+            try
+            {
+                SnippetFileResolution resolution = ResolveSnippetsFileInfo();
+                if (!resolution.ResolveFolderNames)
+                {
+                    WatchSnippetFolder();
+                    return;
+                }
+
+                string preferred = resolution.FilePath;
+                if (!_storageEnvironment.FileExists(preferred)
+                    || !string.Equals(preferred, _loadedPath, StringComparison.OrdinalIgnoreCase)
+                    || _loadedBytes == null)
+                {
+                    LoadSnippets();
+                    return;
+                }
+
+                byte[] current = ReadAllBytesShared(preferred);
+                if (!current.AsSpan().SequenceEqual(_loadedBytes))
+                {
+                    LoadSnippets();
+                }
+            }
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                // An editor may still hold the file during a non-atomic save. The watch also
+                // polls, so retry after the writer releases it rather than showing a false error.
+            }
+        }
+
+        private void AdvanceSnippetRevision(bool notifyEditor)
+        {
+            SnippetRevision++;
+            if (notifyEditor)
+            {
+                OnPropertyChanged(nameof(SnippetRevision));
             }
         }
 
@@ -1021,16 +1349,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             try
             {
-                string path = ResolveSnippetsFile();
+                SnippetFileResolution resolution = ResolveSnippetsFileInfo();
+                string path = _loadedPath ?? resolution.FilePath;
+                if (resolution.ResolveFolderNames
+                    && !string.Equals(resolution.FilePath, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    LoadSnippets();
+                    return _getResourceString("TextExpander_FileChangedBeforeSave");
+                }
+
                 string directory = Path.GetDirectoryName(path);
                 if (!string.IsNullOrEmpty(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
-                // Refuse to clobber a file we did not load as snippets. ResolveSnippetsFile
-                // accepts a path to an existing file by design, so a stray snippets_path can aim
-                // the editor at something else entirely and the next save would overwrite it.
+                // Refuse to clobber a file we did not load as snippets. A configured path can aim
+                // the editor at an existing arbitrary file, so the next save must not overwrite it.
                 if (_loadedBytes == null && File.Exists(path) && new FileInfo(path).Length > 0)
                 {
                     LoadSnippets();
@@ -1076,6 +1411,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 // The file now holds exactly what was written, so there is nothing to read back.
+                _loadedPath = path;
                 _loadedBytes = payload;
                 _snippetError = null;
                 SyncRows();
@@ -1137,11 +1473,258 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string ElevatedSnippetAccessDeniedMessage() => _getResourceString("TextExpander_ElevatedSnippetAccessDenied");
 
-        private string BackupCopy(string path)
+        private TextExpanderFileIdentity CaptureFileIdentity(string path)
         {
-            string backup = BackupPath(path);
-            _storageEnvironment.WriteNewFile(backup, _storageEnvironment.ReadAllBytes(path));
-            return backup;
+            if (string.IsNullOrEmpty(path) || !_storageEnvironment.FileExists(path))
+            {
+                return TextExpanderFileIdentity.Missing;
+            }
+
+            return new TextExpanderFileIdentity(exists: true, _storageEnvironment.ReadAllBytes(path));
+        }
+
+        private TextExpanderFolderIdentity CaptureFolderIdentity(string folder)
+            => new TextExpanderFolderIdentity(
+                folder,
+                CaptureFileIdentity(Path.Combine(folder, TextExpanderSnippetFileNames.Current)),
+                CaptureFileIdentity(Path.Combine(folder, TextExpanderSnippetFileNames.Legacy)));
+
+        private static bool PreparedFolderChangeStillMatches(
+            TextExpanderFolderChange change,
+            string sourcePath,
+            TextExpanderFileIdentity sourceIdentity,
+            TextExpanderFolderIdentity folderIdentity)
+            => string.Equals(sourcePath, change.SourceFilePath, StringComparison.OrdinalIgnoreCase)
+                && change.SourceIdentity.SameAs(sourceIdentity)
+                && change.FolderIdentity.SameAs(folderIdentity)
+                && string.Equals(change.FilePath, folderIdentity.ResolveFilePath(), StringComparison.OrdinalIgnoreCase);
+
+        private bool PublishFolderChange(
+            TextExpanderFolderChange change,
+            string sourcePath,
+            TextExpanderFileIdentity sourceIdentity,
+            TextExpanderFolderIdentity folderIdentity,
+            bool replace,
+            ref string target,
+            ref FolderPublication publication)
+        {
+            if (!replace)
+            {
+                target = folderIdentity.CurrentPath;
+            }
+
+            TextExpanderFileIdentity previousTarget = folderIdentity.IdentityFor(target);
+            var ownedIdentity = new TextExpanderFileIdentity(exists: true, sourceIdentity.Bytes);
+            string backupPath = replace ? BackupPath(target) : string.Empty;
+            publication = new FolderPublication(target, ownedIdentity, previousTarget, replace, backupPath);
+            string folder = Path.GetDirectoryName(target);
+            string temp = Path.Combine(folder, $".{Path.GetFileName(target)}.{Guid.NewGuid():N}.tmp");
+            _storageEnvironment.WriteNewFile(temp, sourceIdentity.Bytes);
+            bool published = false;
+            Exception publicationError = null;
+            try
+            {
+                if (!PreparedFolderChangeStillMatches(
+                        change,
+                        SnippetsFilePath,
+                        CaptureFileIdentity(sourcePath),
+                        CaptureFolderIdentity(change.FolderPath)))
+                {
+                    published = false;
+                }
+                else
+                {
+                    publication.PublicationAttempted = true;
+                    if (replace)
+                    {
+                        _storageEnvironment.ReplaceFile(temp, target, backupPath);
+                    }
+                    else
+                    {
+                        _storageEnvironment.MoveFile(temp, target);
+                    }
+
+                    publication.Committed = true;
+                    published = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                publicationError = ex;
+            }
+
+            HandleBoundFileDeletionResult cleanup = TryDeleteOwnedFile(temp, ownedIdentity);
+            if (!cleanup.Succeeded)
+            {
+                throw new OwnedFileCleanupException("staging file", cleanup, publicationError);
+            }
+
+            if (publicationError is not null)
+            {
+                ExceptionDispatchInfo.Capture(publicationError).Throw();
+            }
+
+            return published;
+        }
+
+        private bool FolderPublicationIsCurrent(
+            TextExpanderFolderChange change,
+            string sourcePath,
+            TextExpanderFileIdentity sourceIdentity,
+            TextExpanderFolderIdentity folderIdentity,
+            FolderPublication publication)
+        {
+            TextExpanderFolderIdentity expectedFolder = folderIdentity.WithFile(
+                publication.TargetPath,
+                publication.PublishedIdentity);
+            TextExpanderFolderIdentity actualFolder = CaptureFolderIdentity(change.FolderPath);
+            TextExpanderFileIdentity backupIdentity = publication.Replaced
+                ? CaptureFileIdentity(publication.BackupPath)
+                : TextExpanderFileIdentity.Missing;
+            return sourceIdentity.SameAs(CaptureFileIdentity(sourcePath))
+                && expectedFolder.SameAs(actualFolder)
+                && string.Equals(
+                    actualFolder.ResolveFilePath(),
+                    publication.TargetPath,
+                    StringComparison.OrdinalIgnoreCase)
+                && (!publication.Replaced || publication.OriginalTargetIdentity.SameAs(backupIdentity));
+        }
+
+        private PersistedFolderSetting InspectPersistedFolderSetting(
+            string previousSnippetsPath,
+            string newSnippetsPath)
+        {
+            try
+            {
+                TextExpanderSettings persisted = _settingsUtils.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(
+                    TextExpanderSettings.ModuleName);
+                string persistedPath = persisted?.Properties?.SnippetsPath?.Value ?? string.Empty;
+                if (string.Equals(persistedPath, newSnippetsPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new PersistedFolderSetting(
+                        PersistedFolderSettingStatus.New,
+                        persistedPath,
+                        Error: null);
+                }
+
+                if (string.Equals(persistedPath, previousSnippetsPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new PersistedFolderSetting(
+                        PersistedFolderSettingStatus.Previous,
+                        persistedPath,
+                        Error: null);
+                }
+
+                return new PersistedFolderSetting(
+                    PersistedFolderSettingStatus.Other,
+                    persistedPath,
+                    Error: null);
+            }
+            catch (Exception ex) when (IsFileError(ex) || ex is InvalidOperationException or System.Text.Json.JsonException)
+            {
+                Logger.LogWarning($"Could not verify the persisted Text Expander snippet folder after a settings save failure: {ex.Message}");
+                return new PersistedFolderSetting(
+                    PersistedFolderSettingStatus.Unreadable,
+                    SnippetsPath: string.Empty,
+                    Error: ex);
+            }
+        }
+
+        private string RollBackFolderAfterSettingsFailure(
+            FolderPublication publication,
+            string sourceBackupPath,
+            AtomicSettingsPublicationException settingsError,
+            out string backupPath)
+        {
+            if (publication is not null && publication.RequiresCompensation)
+            {
+                FolderRollbackResult rollback = RollbackFolderPublication(publication);
+                if (!rollback.Succeeded)
+                {
+                    backupPath = rollback.RecoveryPath;
+                    Logger.LogError("Could not safely roll back the Text Expander snippet folder after settings persistence failed.", rollback.Error);
+                    return settingsError?.Outcome == AtomicSettingsPublicationOutcome.PreviousSettingsVerified
+                        ? _getResourceString("TextExpander_SnippetFolder_RollbackFailed")
+                        : FormatSettingsPublicationRecovery(
+                            "TextExpander_SnippetFolder_SettingsStateUncertain",
+                            settingsError);
+                }
+
+                backupPath = string.Empty;
+            }
+            else
+            {
+                backupPath = sourceBackupPath;
+            }
+
+            if (settingsError?.Outcome != AtomicSettingsPublicationOutcome.PreviousSettingsVerified)
+            {
+                if (string.IsNullOrEmpty(backupPath) && settingsError?.RecoveryPaths.Count > 0)
+                {
+                    backupPath = settingsError.RecoveryPaths[0];
+                }
+
+                return FormatSettingsPublicationRecovery(
+                    "TextExpander_SnippetFolder_SettingsStateUncertain",
+                    settingsError);
+            }
+
+            return _getResourceString("TextExpander_SnippetFolder_SettingsSaveFailed");
+        }
+
+        private static string FolderRecoveryPath(
+            FolderPublication publication,
+            string sourceBackupPath)
+        {
+            if (publication is null)
+            {
+                return sourceBackupPath;
+            }
+
+            return string.IsNullOrEmpty(publication.BackupPath)
+                ? publication.TargetPath
+                : publication.BackupPath;
+        }
+
+        private string FormatSettingsPublicationRecovery(
+            string resourceKey,
+            AtomicSettingsPublicationException error)
+        {
+            string settingsPath = error?.SettingsPath
+                ?? _settingsUtils.GetSettingsFilePath(TextExpanderSettings.ModuleName);
+            string recoveryPaths = error is not null && error.RecoveryPaths.Count > 0
+                ? string.Join("; ", error.RecoveryPaths)
+                : settingsPath;
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                _getResourceString(resourceKey),
+                settingsPath,
+                recoveryPaths);
+        }
+
+        private void AdoptPersistedFolderSetting(string snippetsPath)
+        {
+            _settings.Properties.SnippetsPath.Value = snippetsPath ?? string.Empty;
+            OnPropertyChanged(nameof(SnippetsPath));
+            OnPropertyChanged(nameof(SnippetsFolderPath));
+            LoadSnippets();
+        }
+
+        private string FailFolderChangeAfterPublication(
+            FolderPublication publication,
+            string error,
+            out string backupPath)
+        {
+            FolderRollbackResult rollback = RollbackFolderPublication(publication);
+            if (rollback.Succeeded)
+            {
+                backupPath = string.Empty;
+                return error;
+            }
+
+            backupPath = rollback.RecoveryPath;
+            Logger.LogError("Could not safely roll back the Text Expander snippet folder.", rollback.Error);
+            return _getResourceString("TextExpander_SnippetFolder_RollbackFailed");
         }
 
         private string BackupPath(string path)
@@ -1156,48 +1739,400 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return candidate;
         }
 
-        private void WriteAtomically(string path, byte[] bytes, string backup, bool replace)
+        private FolderRollbackResult RollbackFolderPublication(FolderPublication publication)
         {
-            string folder = Path.GetDirectoryName(path);
-            _storageEnvironment.CreateDirectory(folder);
-
-            string temp = Path.Combine(folder, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+            string quarantinePath = string.Empty;
             try
             {
-                _storageEnvironment.WriteNewFile(temp, bytes);
-                if (replace)
+                TextExpanderFileIdentity targetIdentity = CaptureFileIdentity(publication.TargetPath);
+                if (!targetIdentity.Exists)
                 {
-                    _storageEnvironment.ReplaceFile(temp, path, backup);
+                    return RestoreMissingFolderDestination(publication);
                 }
-                else
+
+                if (publication.OriginalTargetIdentity.Exists
+                    && targetIdentity.SameAs(publication.OriginalTargetIdentity))
                 {
-                    _storageEnvironment.MoveFile(temp, path);
+                    HandleBoundFileDeletionResult backupCleanup = TryDeleteOwnedFile(
+                        publication.BackupPath,
+                        publication.OriginalTargetIdentity);
+                    if (!backupCleanup.Succeeded)
+                    {
+                        return RollbackFailure(
+                            publication,
+                            new OwnedFileCleanupException("replacement backup", backupCleanup),
+                            publication.BackupPath,
+                            publication.TargetPath);
+                    }
+
+                    if (!CaptureFileIdentity(publication.TargetPath).SameAs(publication.OriginalTargetIdentity))
+                    {
+                        return RollbackFailure(
+                            publication,
+                            new IOException($"The original destination '{publication.TargetPath}' changed while rollback cleanup was in progress."),
+                            publication.TargetPath);
+                    }
+
+                    return FolderRollbackSucceeded();
                 }
+
+                quarantinePath = FolderRollbackQuarantinePath(publication.TargetPath);
+                _storageEnvironment.MoveFile(publication.TargetPath, quarantinePath);
+                TextExpanderFileIdentity quarantinedIdentity = CaptureFileIdentity(quarantinePath);
+                if (!quarantinedIdentity.Exists)
+                {
+                    return RollbackFailure(
+                        publication,
+                        new IOException($"The quarantined destination '{quarantinePath}' could not be verified."),
+                        quarantinePath);
+                }
+
+                if (!quarantinedIdentity.SameAs(publication.PublishedIdentity))
+                {
+                    return RestoreUnexpectedFolderDestination(
+                        publication,
+                        quarantinePath,
+                        quarantinedIdentity);
+                }
+
+                if (!publication.OriginalTargetIdentity.Exists)
+                {
+                    if (CaptureFileIdentity(publication.TargetPath).Exists)
+                    {
+                        return RollbackFailure(
+                            publication,
+                            new IOException($"A different destination appeared at '{publication.TargetPath}' while rollback was in progress."),
+                            quarantinePath,
+                            publication.TargetPath);
+                    }
+
+                    HandleBoundFileDeletionResult quarantineCleanup = TryDeleteOwnedFile(
+                        quarantinePath,
+                        publication.PublishedIdentity);
+                    if (!quarantineCleanup.Succeeded)
+                    {
+                        return RollbackFailure(
+                            publication,
+                            new OwnedFileCleanupException("rollback quarantine", quarantineCleanup),
+                            quarantinePath);
+                    }
+
+                    if (CaptureFileIdentity(publication.TargetPath).Exists)
+                    {
+                        return RollbackFailure(
+                            publication,
+                            new IOException($"A different destination appeared at '{publication.TargetPath}' while rollback cleanup was in progress."),
+                            publication.TargetPath);
+                    }
+
+                    return FolderRollbackSucceeded();
+                }
+
+                TextExpanderFileIdentity backupIdentity = CaptureFileIdentity(publication.BackupPath);
+                if (!backupIdentity.SameAs(publication.OriginalTargetIdentity))
+                {
+                    return RollbackFailure(
+                        publication,
+                        new IOException($"The replacement backup '{publication.BackupPath}' is not the original destination."),
+                        quarantinePath,
+                        publication.BackupPath);
+                }
+
+                _storageEnvironment.MoveFile(publication.BackupPath, publication.TargetPath);
+                if (!CaptureFileIdentity(publication.TargetPath).SameAs(publication.OriginalTargetIdentity))
+                {
+                    return RollbackFailure(
+                        publication,
+                        new IOException($"The original destination '{publication.TargetPath}' could not be verified after rollback."),
+                        quarantinePath,
+                        publication.BackupPath,
+                        publication.TargetPath);
+                }
+
+                HandleBoundFileDeletionResult restoredQuarantineCleanup = TryDeleteOwnedFile(
+                    quarantinePath,
+                    publication.PublishedIdentity);
+                if (!restoredQuarantineCleanup.Succeeded)
+                {
+                    return RollbackFailure(
+                        publication,
+                        new OwnedFileCleanupException("rollback quarantine", restoredQuarantineCleanup),
+                        quarantinePath,
+                        publication.TargetPath);
+                }
+
+                if (!CaptureFileIdentity(publication.TargetPath).SameAs(publication.OriginalTargetIdentity))
+                {
+                    return RollbackFailure(
+                        publication,
+                        new IOException($"The original destination '{publication.TargetPath}' changed while rollback cleanup was in progress."),
+                        publication.TargetPath);
+                }
+
+                return FolderRollbackSucceeded();
             }
-            finally
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                Exception rollbackError = ex;
+                try
+                {
+                    if (publication.OriginalTargetIdentity.SameAs(CaptureFileIdentity(publication.TargetPath)))
+                    {
+                        HandleBoundFileDeletionResult quarantineCleanup = TryDeleteOwnedFile(
+                            quarantinePath,
+                            publication.PublishedIdentity);
+                        HandleBoundFileDeletionResult backupCleanup = TryDeleteOwnedFile(
+                            publication.BackupPath,
+                            publication.OriginalTargetIdentity);
+                        if (quarantineCleanup.Succeeded && backupCleanup.Succeeded)
+                        {
+                            return FolderRollbackSucceeded();
+                        }
+
+                        var cleanupErrors = new List<Exception> { ex };
+                        if (!quarantineCleanup.Succeeded)
+                        {
+                            cleanupErrors.Add(new OwnedFileCleanupException("rollback quarantine", quarantineCleanup));
+                        }
+
+                        if (!backupCleanup.Succeeded)
+                        {
+                            cleanupErrors.Add(new OwnedFileCleanupException("replacement backup", backupCleanup));
+                        }
+
+                        rollbackError = new AggregateException(cleanupErrors);
+                    }
+                }
+                catch (Exception verificationError) when (IsFileError(verificationError))
+                {
+                    Logger.LogWarning($"Could not verify Text Expander rollback for '{publication.TargetPath}': {verificationError.Message}");
+                    rollbackError = new AggregateException(rollbackError, verificationError);
+                }
+
+                return RollbackFailure(
+                    publication,
+                    rollbackError,
+                    quarantinePath,
+                    publication.BackupPath);
+            }
+        }
+
+        private FolderRollbackResult RestoreMissingFolderDestination(FolderPublication publication)
+        {
+            if (!publication.OriginalTargetIdentity.Exists)
+            {
+                return FolderRollbackSucceeded();
+            }
+
+            TextExpanderFileIdentity backupIdentity = CaptureFileIdentity(publication.BackupPath);
+            if (!backupIdentity.SameAs(publication.OriginalTargetIdentity))
+            {
+                return RollbackFailure(
+                    publication,
+                    new IOException($"The replacement backup '{publication.BackupPath}' is not the original destination."),
+                    publication.BackupPath);
+            }
+
+            _storageEnvironment.MoveFile(publication.BackupPath, publication.TargetPath);
+            if (!CaptureFileIdentity(publication.TargetPath).SameAs(publication.OriginalTargetIdentity))
+            {
+                return RollbackFailure(
+                    publication,
+                    new IOException($"The original destination '{publication.TargetPath}' could not be verified after rollback."),
+                    publication.BackupPath,
+                    publication.TargetPath);
+            }
+
+            return FolderRollbackSucceeded();
+        }
+
+        private FolderRollbackResult RestoreUnexpectedFolderDestination(
+            FolderPublication publication,
+            string quarantinePath,
+            TextExpanderFileIdentity unexpectedIdentity)
+        {
+            var unexpectedError = new IOException(
+                $"The destination '{publication.TargetPath}' changed before rollback and was moved to '{quarantinePath}'.");
+            try
+            {
+                _storageEnvironment.MoveFile(quarantinePath, publication.TargetPath);
+                if (!CaptureFileIdentity(publication.TargetPath).SameAs(unexpectedIdentity))
+                {
+                    throw new IOException($"The unexpected destination '{publication.TargetPath}' could not be verified after restoration.");
+                }
+
+                return RollbackFailure(
+                    publication,
+                    unexpectedError,
+                    publication.BackupPath,
+                    publication.TargetPath);
+            }
+            catch (Exception restoreError) when (IsFileError(restoreError))
+            {
+                return RollbackFailure(
+                    publication,
+                    new AggregateException(unexpectedError, restoreError),
+                    publication.BackupPath,
+                    quarantinePath,
+                    publication.TargetPath);
+            }
+        }
+
+        private static FolderRollbackResult FolderRollbackSucceeded()
+            => new(
+                Succeeded: true,
+                RecoveryPaths: Array.Empty<string>(),
+                Error: null);
+
+        private string FolderRollbackQuarantinePath(string path)
+        {
+            string folder = Path.GetDirectoryName(path) ?? string.Empty;
+            return Path.Combine(
+                folder,
+                $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.rollback-quarantine");
+        }
+
+        private FolderRollbackResult RollbackFailure(
+            FolderPublication publication,
+            Exception error,
+            params string[] candidateRecoveryPaths)
+        {
+            var recoveryPaths = new List<string>();
+            if (publication.OriginalTargetIdentity.Exists)
             {
                 try
                 {
-                    if (_storageEnvironment.FileExists(temp))
+                    TextExpanderFileIdentity backupIdentity = CaptureFileIdentity(publication.BackupPath);
+                    if (backupIdentity.SameAs(publication.OriginalTargetIdentity))
                     {
-                        _storageEnvironment.DeleteFile(temp);
+                        AddRecoveryPath(recoveryPaths, publication.BackupPath);
+                    }
+                    else
+                    {
+                        TextExpanderFileIdentity targetIdentity = CaptureFileIdentity(publication.TargetPath);
+                        if (targetIdentity.SameAs(publication.OriginalTargetIdentity))
+                        {
+                            AddRecoveryPath(recoveryPaths, publication.TargetPath);
+                        }
+                        else
+                        {
+                            string preserved = BackupPath(publication.TargetPath);
+                            _storageEnvironment.WriteNewFile(preserved, publication.OriginalTargetIdentity.Bytes);
+                            if (CaptureFileIdentity(preserved).SameAs(publication.OriginalTargetIdentity))
+                            {
+                                AddRecoveryPath(recoveryPaths, preserved);
+                            }
+                        }
                     }
                 }
-                catch (Exception ex) when (IsFileError(ex))
+                catch (Exception preservationError) when (IsFileError(preservationError))
                 {
-                    Logger.LogWarning($"Could not delete temporary Text Expander file '{temp}': {ex.Message}");
+                    Logger.LogWarning($"Could not preserve a new Text Expander recovery copy for '{publication.TargetPath}': {preservationError.Message}");
                 }
+            }
+
+            foreach (string candidate in candidateRecoveryPaths)
+            {
+                AddExistingRecoveryPath(recoveryPaths, candidate);
+            }
+
+            if (recoveryPaths.Count == 0)
+            {
+                string fallbackPath = string.IsNullOrEmpty(publication.BackupPath)
+                    ? publication.TargetPath
+                    : publication.BackupPath;
+                AddRecoveryPath(recoveryPaths, fallbackPath);
+            }
+
+            return new FolderRollbackResult(
+                Succeeded: false,
+                RecoveryPaths: recoveryPaths,
+                Error: error);
+        }
+
+        private void AddExistingRecoveryPath(List<string> recoveryPaths, string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            try
+            {
+                if (CaptureFileIdentity(path).Exists)
+                {
+                    AddRecoveryPath(recoveryPaths, path);
+                }
+            }
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                Logger.LogWarning($"Could not inspect Text Expander recovery path '{path}': {ex.Message}");
+                AddRecoveryPath(recoveryPaths, path);
+            }
+        }
+
+        private static void AddRecoveryPath(List<string> recoveryPaths, string path)
+        {
+            if (!string.IsNullOrEmpty(path)
+                && !recoveryPaths.Contains(path, StringComparer.OrdinalIgnoreCase))
+            {
+                recoveryPaths.Add(path);
+            }
+        }
+
+        private static string CombineRecoveryPaths(string first, string second)
+        {
+            var paths = new List<string>();
+            foreach (string combined in new[] { first, second })
+            {
+                foreach (string path in (combined ?? string.Empty).Split("; ", StringSplitOptions.RemoveEmptyEntries))
+                {
+                    AddRecoveryPath(paths, path);
+                }
+            }
+
+            return string.Join("; ", paths);
+        }
+
+        private HandleBoundFileDeletionResult TryDeleteOwnedFile(string path, TextExpanderFileIdentity ownedIdentity)
+        {
+            if (string.IsNullOrEmpty(path) || !ownedIdentity.Exists)
+            {
+                return new HandleBoundFileDeletionResult(
+                    HandleBoundFileDeletionStatus.NotFound,
+                    path ?? string.Empty,
+                    Error: null);
+            }
+
+            try
+            {
+                HandleBoundFileDeletionResult result = _storageEnvironment.DeleteOwnedFile(path, ownedIdentity.Bytes);
+                if (!result.Succeeded)
+                {
+                    Logger.LogWarning($"Could not delete owned Text Expander file '{path}': {result.Error?.Message}");
+                }
+
+                return result;
+            }
+            catch (Exception ex) when (IsFileError(ex))
+            {
+                Logger.LogWarning($"Could not delete owned Text Expander file '{path}': {ex.Message}");
+                return new HandleBoundFileDeletionResult(
+                    HandleBoundFileDeletionStatus.VerificationFailed,
+                    path,
+                    ex);
             }
         }
 
         private static bool IsFileError(Exception ex)
             => ex is IOException or UnauthorizedAccessException or System.Security.SecurityException
-                or ArgumentException or NotSupportedException or PathTooLongException;
+                or ArgumentException or NotSupportedException or PathTooLongException
+                or System.ComponentModel.Win32Exception;
 
         /// <summary>Gets a value indicating whether the engine's own folder holds the snippet file in use.</summary>
         private bool IsDefaultSnippetsFile()
         {
-            string folder = Path.GetDirectoryName(ResolveSnippetsFile()) ?? string.Empty;
+            string folder = Path.GetDirectoryName(SnippetsFilePath) ?? string.Empty;
             return string.Equals(
                 Path.TrimEndingDirectorySeparator(folder),
                 Path.TrimEndingDirectorySeparator(_storageEnvironment.DefaultSnippetsFolder),

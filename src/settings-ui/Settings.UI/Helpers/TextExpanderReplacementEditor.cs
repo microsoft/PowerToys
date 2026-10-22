@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
@@ -39,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         private bool _updating;
         private bool _composing;
         private bool _recolorQueued;
+        private bool _hasTransientEdit;
         private (int Start, int End)? _variableSelectedByClick;
 
         /// <summary>
@@ -90,6 +92,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         /// <summary>Raised when the caret or selection moves, including when the editor moves it.</summary>
         public event EventHandler SelectionChanged;
+
+        /// <summary>Raised when a prompt token is clicked or invoked with F2.</summary>
+        public event EventHandler<TextExpanderPromptEditRequestedEventArgs> PromptEditRequested;
 
         /// <summary>Gets the replacement as typed, with \n line breaks.</summary>
         public string Text => ReadText();
@@ -164,6 +169,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         public void SetText(string text)
         {
             _composing = false;
+            _hasTransientEdit = false;
             _variableSelectedByClick = null;
             Update(() => _box.Document.SetText(TextSetOptions.None, TextExpanderTokenText.ToEditor(text)));
             _text = ReadText();
@@ -192,6 +198,82 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             OnContentChanged();
             (int start, int end, int selectStart, int selectEnd) = TextExpanderTokenText.PlanInsert(_text, selectionStart, selectionEnd, variable, selectEditablePart);
             Replace(start, end, variable, selectStart, selectEnd);
+        }
+
+        /// <summary>
+        /// Shows a provisional edit without adding it to undo history. Complete or cancel it before
+        /// allowing ordinary editor input again.
+        /// </summary>
+        public void BeginTransientEdit(string text, int selectionStart, int selectionEnd)
+        {
+            OnContentChanged();
+            if (_hasTransientEdit)
+            {
+                throw new InvalidOperationException("A transient replacement edit is already active.");
+            }
+
+            _history.EndRun();
+            _hasTransientEdit = true;
+            ApplyWithoutHistory(text, selectionStart, selectionEnd);
+        }
+
+        /// <summary>Commits a provisional edit as one undo step.</summary>
+        public void CompleteTransientEdit(string text, int selectionStart, int selectionEnd)
+        {
+            if (!_hasTransientEdit)
+            {
+                throw new InvalidOperationException("No transient replacement edit is active.");
+            }
+
+            ApplyWithoutHistory(text, selectionStart, selectionEnd);
+            _history.Record(_text);
+            _history.EndRun();
+            _hasTransientEdit = false;
+        }
+
+        /// <summary>Restores the text and selection from before a provisional edit without an undo step.</summary>
+        public void CancelTransientEdit(string text, int selectionStart, int selectionEnd)
+        {
+            if (!_hasTransientEdit)
+            {
+                return;
+            }
+
+            ApplyWithoutHistory(text, selectionStart, selectionEnd);
+            _history.EndRun();
+            _hasTransientEdit = false;
+        }
+
+        /// <summary>
+        /// Gets a point in the box beside a token. RichEdit reports client coordinates, which are
+        /// also the coordinates FlyoutShowOptions expects when the box is the placement target.
+        /// </summary>
+        public Point? PositionForRange(int start, int end)
+        {
+            try
+            {
+                int length = _text.Length;
+                ITextRange range = _box.Document.GetRange(Math.Clamp(start, 0, length), Math.Clamp(end, 0, length));
+                range.ScrollIntoView(PointOptions.Start);
+                Rect rect = default;
+                int hit = 0;
+                range.GetRect(PointOptions.ClientCoordinates | PointOptions.Start, out rect, out hit);
+                if (double.IsNaN(rect.X)
+                    || double.IsNaN(rect.Y)
+                    || double.IsInfinity(rect.X)
+                    || double.IsInfinity(rect.Y))
+                {
+                    return null;
+                }
+
+                return new Point(
+                    Math.Clamp(rect.X, 0, Math.Max(0, _box.ActualWidth)),
+                    Math.Clamp(rect.Y + Math.Max(1, rect.Height), 0, Math.Max(0, _box.ActualHeight)));
+            }
+            catch (Exception ex) when (ex is ArgumentException or COMException or InvalidOperationException)
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -337,7 +419,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         private void OnContentChanged()
         {
-            if (!_updating && !_composing)
+            if (!_updating && !_composing && !_hasTransientEdit)
             {
                 Commit();
             }
@@ -418,6 +500,27 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             TextChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        private void ApplyWithoutHistory(string text, int selectionStart, int selectionEnd)
+        {
+            text ??= string.Empty;
+            string before = _text;
+            (int start, int removed, string inserted) = TextExpanderTokenText.Diff(_text, text);
+            Update(() => _box.Document.GetRange(start, start + removed).SetText(TextSetOptions.None, TextExpanderTokenText.ToEditor(inserted)));
+            _text = ReadText();
+            if (!string.Equals(_text, text, StringComparison.Ordinal))
+            {
+                Update(() => _box.Document.SetText(TextSetOptions.None, TextExpanderTokenText.ToEditor(text)));
+                _text = ReadText();
+            }
+
+            Recolor();
+            Select(selectionStart, selectionEnd);
+            if (!string.Equals(before, _text, StringComparison.Ordinal))
+            {
+                TextChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         private (int Start, int End) GetSelection()
         {
             ITextSelection selection = _box.Document.Selection;
@@ -495,6 +598,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                     // RichEdit would insert a tab; the plain text box moved focus, which keyboard
                     // users need to reach Save. A tab can still be written as \t.
                     e.Handled = MoveFocus(backward: shift);
+                    return;
+
+                case VirtualKey.F2 when !control && !alt && !shift:
+                    e.Handled = RequestPromptEdit();
                     return;
             }
 
@@ -575,17 +682,46 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
             OnContentChanged();
             (int start, int end) = GetSelection();
+            if (TextExpanderPromptToken.TryFindAtSelection(_text, start, end, out int promptStart, out int promptEnd))
+            {
+                _variableSelectedByClick = null;
+                Select(promptStart, promptEnd);
+                PromptEditRequested?.Invoke(this, new TextExpanderPromptEditRequestedEventArgs(promptStart, promptEnd));
+                return;
+            }
+
             (int Start, int End)? variable = start == end ? TextExpanderTokenText.VariableAround(_text, start) : null;
-            if (variable == null || variable == _variableSelectedByClick)
+            if (variable == null)
+            {
+                _variableSelectedByClick = null;
+                return;
+            }
+
+            if (variable == _variableSelectedByClick)
             {
                 // A second click in a variable the first click selected leaves the caret there,
-                // so a question's label or a date's format can still be edited.
+                // so a date's format can still be edited.
                 _variableSelectedByClick = null;
                 return;
             }
 
             _variableSelectedByClick = variable;
             Select(variable.Value.Start, variable.Value.End);
+        }
+
+        private bool RequestPromptEdit()
+        {
+            OnContentChanged();
+            (int start, int end) = GetSelection();
+            if (!TextExpanderPromptToken.TryFindAtSelection(_text, start, end, out int tokenStart, out int tokenEnd))
+            {
+                return false;
+            }
+
+            _variableSelectedByClick = null;
+            Select(tokenStart, tokenEnd);
+            PromptEditRequested?.Invoke(this, new TextExpanderPromptEditRequestedEventArgs(tokenStart, tokenEnd));
+            return true;
         }
 
         private async void Box_Paste(object sender, TextControlPasteEventArgs e)

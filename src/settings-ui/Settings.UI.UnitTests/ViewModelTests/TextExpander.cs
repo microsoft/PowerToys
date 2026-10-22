@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.TextExpander.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -125,22 +126,77 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void MissingLibraryIsEmptyButReadFailureIsNotAnEmptyState()
+        public void MissingLibraryCreatesAndLoadsTheAuthoritativeStarter()
         {
             TextExpanderViewModel model = CreateViewModel();
-            Assert.IsTrue(model.HasNoSnippets);
-            Assert.AreEqual("0 of 0", model.SnippetCountText);
+            string current = Path.Combine(_directory, TextExpanderSnippetFileNames.Current);
+
+            Assert.AreEqual(current, model.SnippetsFilePath);
+            Assert.AreEqual(TextExpanderStarter.Content, File.ReadAllText(current));
+            Assert.AreEqual(6, model.Snippets.Count);
+            Assert.IsFalse(model.HasNoSnippets);
             Assert.IsFalse(model.HasSnippetError);
             Assert.IsFalse(model.HasNoMatchingSnippets);
-            Assert.IsFalse(File.Exists(_path), "Loading or offering starters must not create snippets.");
+            Assert.IsFalse(File.Exists(_path), "A new current-name file must not create a legacy sibling.");
+        }
 
+        [TestMethod]
+        public void ReadFailureIsNotAnEmptyState()
+        {
             File.WriteAllText(_path, "#sig=Example");
+            TextExpanderViewModel model = CreateViewModel();
             using var lockedFile = new FileStream(_path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             model.LoadSnippets();
+
             Assert.IsTrue(model.HasSnippetError);
             Assert.AreEqual("TextExpander_SnippetCountUnavailable", model.SnippetCountText);
             Assert.IsFalse(model.HasNoSnippets);
             Assert.IsFalse(model.HasNoMatchingSnippets);
+        }
+
+        [TestMethod]
+        public void ExistingCurrentAndLegacyFilesAreBytePreserved()
+        {
+            var utf8Bom = new System.Text.UTF8Encoding(true);
+            byte[] legacyBytes = utf8Bom.GetPreamble().Concat(utf8Bom.GetBytes("// keep legacy\n!legacy=value")).ToArray();
+            File.WriteAllBytes(_path, legacyBytes);
+
+            TextExpanderViewModel legacyModel = CreateViewModel();
+
+            Assert.AreEqual(_path, legacyModel.SnippetsFilePath);
+            CollectionAssert.AreEqual(legacyBytes, File.ReadAllBytes(_path));
+            Assert.IsFalse(File.Exists(Path.Combine(_directory, TextExpanderSnippetFileNames.Current)), "No current file beside a legacy library.");
+
+            File.Delete(_path);
+            string current = Path.Combine(_directory, TextExpanderSnippetFileNames.Current);
+            var utf16 = new System.Text.UnicodeEncoding(false, true);
+            byte[] currentBytes = utf16.GetPreamble().Concat(utf16.GetBytes("// keep current\r\n!current=value\r\n")).ToArray();
+            File.WriteAllBytes(current, currentBytes);
+
+            TextExpanderViewModel currentModel = CreateViewModel();
+
+            Assert.AreEqual(current, currentModel.SnippetsFilePath);
+            CollectionAssert.AreEqual(currentBytes, File.ReadAllBytes(current));
+            Assert.IsFalse(File.Exists(_path));
+        }
+
+        [TestMethod]
+        public void DeletingTheLastSnippetLeavesTheExistingFileEmptyOnReload()
+        {
+            string current = Path.Combine(_directory, TextExpanderSnippetFileNames.Current);
+            File.WriteAllText(current, "!only=value");
+            TextExpanderViewModel model = CreateViewModel();
+
+            Assert.IsNull(model.DeleteSnippet(model.Snippets.Single().Id));
+            Assert.AreEqual(0, model.Snippets.Count);
+            Assert.IsTrue(model.HasNoSnippets);
+            Assert.AreEqual(0, new FileInfo(current).Length);
+
+            model.LoadSnippets();
+
+            Assert.AreEqual(0, model.Snippets.Count);
+            Assert.IsTrue(model.HasNoSnippets);
+            Assert.AreEqual(0, new FileInfo(current).Length);
         }
 
         [TestMethod]
@@ -166,8 +222,11 @@ namespace ViewModelTests
         public void ValidationRejectsInvalidInputWithoutWriting(string trigger, string replacement)
         {
             TextExpanderViewModel model = CreateViewModel();
+            string path = model.SnippetsFilePath;
+            byte[] before = File.ReadAllBytes(path);
+
             Assert.IsNotNull(model.ValidateSnippet(null, trigger, replacement));
-            Assert.IsFalse(File.Exists(_path));
+            CollectionAssert.AreEqual(before, File.ReadAllBytes(path));
         }
 
         [TestMethod]
@@ -186,17 +245,18 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void EngineCreatingSeedsWhileEditorIsOpenRefreshesWithoutOverwriting()
+        public void FirstSettingsSaveKeepsTheStarterHeaderAndSnippets()
         {
             TextExpanderViewModel model = CreateViewModel();
-            File.WriteAllText(_path, "#sig=Engine seed");
+            string path = model.SnippetsFilePath;
 
-            Assert.IsNotNull(model.SaveSnippet(null, "#new", "New snippet"));
-            Assert.AreEqual("#sig", model.Snippets.Single().Trigger);
-            Assert.IsNotNull(model.ValidateSnippet(null, "#sig", "Conflicting starter"));
             Assert.IsNull(model.SaveSnippet(null, "#new", "New snippet"));
-            Assert.AreEqual(2, model.Snippets.Count);
-            Assert.AreEqual("Engine seed", model.Snippets[0].Replacement);
+
+            string saved = File.ReadAllText(path);
+            StringAssert.StartsWith(saved, TextExpanderStarter.Content);
+            StringAssert.Contains(saved, "#new=New snippet");
+            Assert.AreEqual(7, model.Snippets.Count);
+            Assert.AreEqual("#new", model.Snippets.Last().Trigger);
         }
 
         [TestMethod]

@@ -7,11 +7,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     /// <summary>A folder selected for the snippet library, inspected before any file is changed.</summary>
     public sealed class TextExpanderFolderChange
     {
-        internal TextExpanderFolderChange(string folderPath, string filePath, bool hasExistingFile)
+        internal TextExpanderFolderChange(
+            string folderPath,
+            string sourceFilePath,
+            TextExpanderFileIdentity sourceIdentity,
+            TextExpanderFolderIdentity folderIdentity)
         {
             FolderPath = folderPath;
-            FilePath = filePath;
-            HasExistingFile = hasExistingFile;
+            SourceFilePath = sourceFilePath;
+            SourceIdentity = sourceIdentity;
+            FolderIdentity = folderIdentity;
+            FilePath = folderIdentity.ResolveFilePath();
+            HasExistingFile = folderIdentity.IdentityFor(FilePath).Exists;
         }
 
         public string FolderPath { get; }
@@ -19,5 +26,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string FilePath { get; }
 
         public bool HasExistingFile { get; }
+
+        internal string SourceFilePath { get; }
+
+        internal bool SourceFileExisted => SourceIdentity.Exists;
+
+        internal TextExpanderFileIdentity SourceIdentity { get; }
+
+        internal TextExpanderFolderIdentity FolderIdentity { get; }
     }
 }

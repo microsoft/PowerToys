@@ -192,6 +192,144 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void PromptTokensBuildAndParseExactly()
+        {
+            Assert.AreEqual("{{prompt:Question}}", TextExpanderPromptToken.Build(" Question ", requireAnswer: true));
+            Assert.AreEqual("{{prompt?:Question}}", TextExpanderPromptToken.Build("Question", requireAnswer: false));
+
+            Assert.IsTrue(TextExpanderPromptToken.TryParse("{{prompt:Question}}", out string requiredQuestion, out bool required));
+            Assert.AreEqual("Question", requiredQuestion);
+            Assert.IsTrue(required);
+
+            Assert.IsTrue(TextExpanderPromptToken.TryParse("{{prompt?:Anything?}}", out string optionalQuestion, out bool optionalRequired));
+            Assert.AreEqual("Anything?", optionalQuestion);
+            Assert.IsFalse(optionalRequired);
+
+            Assert.IsFalse(TextExpanderPromptToken.TryParse("before {{prompt:Question}}", out _, out _));
+            Assert.IsFalse(TextExpanderPromptToken.TryParse("{{prompt:Question}more}}", out _, out _));
+            Assert.AreEqual(TextExpanderPromptValidationError.QuestionRequired, TextExpanderPromptToken.Validate(" "));
+            Assert.AreEqual(TextExpanderPromptValidationError.InvalidQuestion, TextExpanderPromptToken.Validate("Bad } question"));
+
+            const string text = "Before {{prompt:Question}} after";
+            (int Start, int End) range = Range(text, "{{prompt:Question}}");
+            Assert.IsTrue(TextExpanderPromptToken.TryFindAtSelection(text, range.Start, range.End, out int selectedStart, out int selectedEnd));
+            Assert.AreEqual(range, (selectedStart, selectedEnd));
+            Assert.IsTrue(TextExpanderPromptToken.TryFindAtSelection(text, range.Start + 2, range.Start + 2, out _, out _));
+            Assert.IsFalse(TextExpanderPromptToken.TryFindAtSelection(text, range.End, range.End, out _, out _));
+        }
+
+        [TestMethod]
+        public void NewPromptStartsAtTheCaretOrReplacesTheSelection()
+        {
+            TextExpanderPromptEditSession atCaret = TextExpanderPromptEditSession.BeginNew("Hello ", 6, 6);
+            Assert.AreEqual("Hello {{prompt:Question}}", atCaret.InitialText);
+            Assert.AreEqual((6, 25), (atCaret.TokenStart, atCaret.TokenEnd));
+            Assert.AreEqual(string.Empty, atCaret.Question);
+            Assert.IsTrue(atCaret.RequireAnswer);
+
+            TextExpanderPromptEditSession overSelection = TextExpanderPromptEditSession.BeginNew("Hello name!", 6, 10);
+            Assert.AreEqual("Hello {{prompt:Question}}!", overSelection.InitialText);
+
+            // A selection inside another variable is preserved and the provisional prompt goes after it.
+            const string existing = "Hi {{clipboard}} there";
+            (int Start, int End) clipboard = Range(existing, "{{clipboard}}");
+            TextExpanderPromptEditSession afterVariable = TextExpanderPromptEditSession.BeginNew(existing, clipboard.Start + 2, clipboard.End - 2);
+            Assert.AreEqual("Hi {{clipboard}}{{prompt:Question}} there", afterVariable.InitialText);
+        }
+
+        [TestMethod]
+        public void EnterAndValidLightDismissCommitWithoutASecondAction()
+        {
+            TextExpanderPromptEditSession enter = TextExpanderPromptEditSession.BeginNew("Hi !", 3, 3);
+            TextExpanderPromptEditDecision enterDecision = enter.Resolve(TextExpanderPromptEditCloseReason.Enter, "Name", requireAnswer: true);
+            Assert.AreEqual(TextExpanderPromptEditDecisionKind.Commit, enterDecision.Kind);
+            Assert.AreEqual("Hi {{prompt:Name}}!", enterDecision.Text);
+            Assert.AreEqual((18, 18), (enterDecision.SelectionStart, enterDecision.SelectionEnd));
+
+            TextExpanderPromptEditSession outside = TextExpanderPromptEditSession.BeginNew("Note: ", 6, 6);
+            TextExpanderPromptEditDecision outsideDecision = outside.Resolve(TextExpanderPromptEditCloseReason.LightDismiss, "Details", requireAnswer: false);
+            Assert.AreEqual(TextExpanderPromptEditDecisionKind.Commit, outsideDecision.Kind);
+            Assert.AreEqual("Note: {{prompt?:Details}}", outsideDecision.Text);
+        }
+
+        [TestMethod]
+        public void InvalidLightDismissKeepsThePromptOpen()
+        {
+            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew("Hi ", 3, 3);
+
+            TextExpanderPromptEditDecision empty = session.Resolve(TextExpanderPromptEditCloseReason.LightDismiss, string.Empty, requireAnswer: true);
+            Assert.AreEqual(TextExpanderPromptEditDecisionKind.KeepOpen, empty.Kind);
+            Assert.AreEqual(TextExpanderPromptValidationError.QuestionRequired, empty.Error);
+            Assert.AreEqual(session.InitialText, empty.Text);
+
+            TextExpanderPromptEditDecision malformed = session.Resolve(TextExpanderPromptEditCloseReason.LightDismiss, "Bad } question", requireAnswer: true);
+            Assert.AreEqual(TextExpanderPromptEditDecisionKind.KeepOpen, malformed.Kind);
+            Assert.AreEqual(TextExpanderPromptValidationError.InvalidQuestion, malformed.Error);
+        }
+
+        [TestMethod]
+        public void EscapeRemovesANewPromptAndRestoresTheOriginalSelection()
+        {
+            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew("Replace this text", 8, 12);
+            TextExpanderPromptEditDecision decision = session.Resolve(TextExpanderPromptEditCloseReason.Cancel, "Ignored", requireAnswer: true);
+
+            Assert.AreEqual(TextExpanderPromptEditDecisionKind.Cancel, decision.Kind);
+            Assert.AreEqual("Replace this text", decision.Text);
+            Assert.AreEqual((8, 12), (decision.SelectionStart, decision.SelectionEnd));
+        }
+
+        [TestMethod]
+        public void ExistingPromptReopensAndEscapeReselectsTheUnchangedToken()
+        {
+            const string text = "Hi {{prompt?:First name}}!";
+            (int Start, int End) prompt = Range(text, "{{prompt?:First name}}");
+
+            Assert.IsTrue(TextExpanderPromptEditSession.TryBeginExisting(text, prompt.Start + 4, prompt.Start + 4, out TextExpanderPromptEditSession fromCaret));
+            Assert.AreEqual("First name", fromCaret.Question);
+            Assert.IsFalse(fromCaret.RequireAnswer);
+
+            Assert.IsTrue(TextExpanderPromptEditSession.TryBeginExisting(text, prompt.Start, prompt.End, out TextExpanderPromptEditSession fromSelection));
+            TextExpanderPromptEditDecision decision = fromSelection.Resolve(TextExpanderPromptEditCloseReason.Cancel, "Changed", requireAnswer: true);
+            Assert.AreEqual(text, decision.Text);
+            Assert.AreEqual(prompt, (decision.SelectionStart, decision.SelectionEnd));
+
+            Assert.IsFalse(TextExpanderPromptEditSession.TryBeginExisting("{{date}}", 2, 2, out _));
+        }
+
+        [TestMethod]
+        public void ExistingPromptPreservesAndCanChangeItsAnswerRequirement()
+        {
+            const string optionalText = "{{prompt?:Details}}";
+            Assert.IsTrue(TextExpanderPromptEditSession.TryBeginExisting(optionalText, 2, 2, out TextExpanderPromptEditSession optional));
+            Assert.IsFalse(optional.RequireAnswer);
+            Assert.AreEqual(
+                "{{prompt?:Updated}}",
+                optional.Resolve(TextExpanderPromptEditCloseReason.Enter, "Updated", optional.RequireAnswer).Text);
+
+            TextExpanderPromptEditDecision madeRequired = optional.Resolve(TextExpanderPromptEditCloseReason.Enter, "Updated", requireAnswer: true);
+            Assert.AreEqual("{{prompt:Updated}}", madeRequired.Text);
+
+            const string spaced = "{{prompt:  Keep these spaces  }}";
+            Assert.IsTrue(TextExpanderPromptEditSession.TryBeginExisting(spaced, 2, 2, out TextExpanderPromptEditSession unchanged));
+            Assert.AreEqual(spaced, unchanged.Resolve(TextExpanderPromptEditCloseReason.LightDismiss, unchanged.Question, unchanged.RequireAnswer).Text);
+        }
+
+        [TestMethod]
+        public void CompletedNewPromptIsOneUndoStep()
+        {
+            const string original = "Hi ";
+            TextExpanderPromptEditSession session = TextExpanderPromptEditSession.BeginNew(original, original.Length, original.Length);
+            TextExpanderPromptEditDecision decision = session.Resolve(TextExpanderPromptEditCloseReason.Enter, "Name", requireAnswer: true);
+            var history = new TextExpanderEditHistory(original);
+
+            history.Record(decision.Text);
+
+            Assert.IsTrue(history.TryUndo(out string undone, out _, out _));
+            Assert.AreEqual(original, undone);
+            Assert.IsFalse(history.CanUndo);
+        }
+
+        [TestMethod]
         public void EditorLineBreaksBecomeTheNewlinesSnippetsUse()
         {
             // RichEdit ends each paragraph with \r, and the story with one more nobody typed.

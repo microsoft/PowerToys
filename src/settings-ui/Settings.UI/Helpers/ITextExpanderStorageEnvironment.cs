@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 
+using Microsoft.PowerToys.Settings.UI.Library;
+
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     /// <summary>File-system operations used to manage the active Text Expander snippet file.</summary>
@@ -26,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         void ReplaceFile(string source, string destination, string backup);
 
-        void DeleteFile(string path);
+        HandleBoundFileDeletionResult DeleteOwnedFile(string path, byte[] expectedBytes);
 
         IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed);
     }

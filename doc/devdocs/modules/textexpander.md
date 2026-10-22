@@ -55,28 +55,49 @@ A self-contained .NET process. Its keyboard hook, matching and injection use no 
 
 The snippet folder can be changed in non-elevated Settings under **Save snippets to a folder**. Text Expander does not implement a synchronization service: choosing a OneDrive or other provider-managed folder lets that provider synchronize the active file. The Settings page and engine resolve the snippet file with the same rules, so both read the same source-of-truth file. While Settings is elevated, snippet-file resolving, reading, and editing are disabled; elevation is checked from the Settings process token as well as the runner's launch state. The runner launches Settings with its own elevation, so this applies whenever PowerToys runs as administrator; the page tells the user to restart PowerToys without administrator rights to manage snippets. The engine runs with the desktop user's token even when the runner is elevated; a configured path that the desktop user cannot read will therefore fail to load rather than being read with elevated access. If PowerToys is elevated with a different administrator account, the engine runs as the signed-in desktop user and may be unable to read that account's settings and snippets.
 
+Changing the folder publishes the destination file and `settings.json` as one
+compensating transaction. Settings-file replacement and compensation hold a
+path-derived cross-process claim, and compensation proceeds only while the
+destination still has the exact bytes this save published. A later participating
+save therefore waits, while a sync client or older build that changes the file is
+never overwritten or deleted by compensation. The save reports whether the previous
+settings were verified, the new settings were verified, or the state is uncertain.
+Settings rolls the folder publication back only for the verified-previous case,
+keeps it for a verified-new commit, and re-reads `settings.json` before deciding an
+uncertain case. If the file is still unreadable or conflicted, no snippet files are
+removed; the error names the settings and recovery files to keep until the active
+folder has been verified.
+
 **File name.** In a folder, the engine (`SnippetStore.ResolveInFolder`) and Settings
 (`TextExpanderSnippetFileNames.ResolveInFolder`) pick the same file:
 `PowerToysTextExpanderSnippets.txt` if it exists, otherwise `snippets.txt` if that
 exists (the name earlier versions used), otherwise `PowerToysTextExpanderSnippets.txt`,
-which the engine then creates. A file path in the setting is used as it is. Existing
-files are never renamed: a folder sync service could propagate the rename while a
-PC still running an earlier version would then lose its file. Each side keeps the two names in
-one place (`SnippetStore.FileName` and `LegacyFileName`, and
-`TextExpanderSnippetFileNames.Current` and `Legacy`), and an engine test compiles the
-Settings file to check that they match. Bug reports leave out both names in the
-PowerToys folder and in the configured folder, plus a configured file whatever its
-name (`TextExpanderPrivacy.h`); both paths are masked in the report's copy of
-`settings.json`.
+which either Settings or the engine can create. If both names exist and the current
+file is byte-for-byte the untouched starter, the legacy file wins; this recovers a
+sync client arriving during starter publication without ever ignoring a modified
+current file. A file path in the setting is used as it is. Existing files are never
+renamed: a folder sync service could propagate the rename while a PC still running an
+earlier version would then lose its file. Each side keeps the two names in one place
+(`SnippetStore.FileName` and `LegacyFileName`, and
+`TextExpanderSnippetFileNames.Current` and `Legacy`). Starter publication uses one
+shared folder operation: a per-folder cross-process claim serializes engine and
+Settings creators, both names are resolved again while it is held and after the
+atomic move, and the current name is published only when neither exists. An engine
+test compiles the Settings file to check that the names match. Bug reports leave out
+both names in the PowerToys folder and in the configured folder, plus a configured
+file whatever its name (`TextExpanderPrivacy.h`); both paths are masked in the
+report's copy of `settings.json`.
 
-**Starter file.** When the snippet file is missing, the engine writes one: a short
-guide (how to write a snippet, each variable with an example of what it gives, and
-tips), examples that are commented out until the user removes the `//`, and six
+**Starter file.** When the resolved snippet file is missing, whichever process reaches
+it first publishes the same shared starter text with a create-if-absent atomic move.
+The other process loads the file that won instead of overwriting it. The starter is a
+short guide (how to write a snippet, each variable with an example of what it gives,
+and tips), examples that are commented out until the user removes the `//`, and six
 working snippets, `!ddate`, `!ttime`, `!ddt`, `!isodate`, `!mysig` and `!myemail`,
-none of which reads the clipboard or asks for input. An existing file is never
-replaced. When the user chooses an empty folder, Settings copies the current active file there
-before switching, so selecting a new location never silently replaces the library
-with starter snippets.
+none of which reads the clipboard or asks for input. Existing files, including empty
+files, are never replaced. When the user chooses an empty folder, Settings copies the
+current active file there before switching, so selecting a new location never silently
+replaces the library with starter snippets.
 
 Snippet file format:
 
@@ -225,14 +246,36 @@ Use **Retry** to reload after a file-access error. Saving while a search is acti
 keeps the filter and includes a reminder in the status message.
 
 Failed writes do not reserve triggers or apply deletions in memory. If an
-external edit refreshes the library while an existing snippet is open, the editor
-keeps your draft but requires reopening the snippet before saving, so an old row
-handle cannot overwrite a different entry. A file created by the engine during
-first-run setup is reloaded rather than overwritten. While the page is shown and
-there is no snippet file yet, it watches the folder (under either name), so the
-starter snippets the engine writes when it starts appear without reopening the
-page. Saves preserve comments, the file's encoding (UTF-8 with or without a BOM,
-UTF-16 or UTF-32), line-ending style, and final-newline presence.
+external edit refreshes the library while an existing snippet is open, the editor keeps your draft but requires reopening the
+snippet before saving, so an old row handle cannot overwrite a different entry. For
+folder/default configurations, Settings keeps watching both supported names. A
+preferred current-name file appearing replaces a loaded legacy file; deleting it
+falls back to legacy when present. The engine commits a newly resolved path and its
+parsed snippets as one generation-tagged state. Initial loads, folder repoints, and
+case-sensitivity changes return explicit transition results; a failed initial load is
+reported and stops startup, while a failed live transition keeps the previous path,
+metadata, snapshot, and watcher paired, retains the requested target, and retries a
+bounded number of times. A live transition stages its parsed state and a candidate
+watcher without publishing either. It activates that watcher and re-resolves the file
+once more under the same generation, then atomically publishes the complete pair; a
+failed watcher registration or handoff read disposes only the candidate. A watcher
+`Error` retains the last state and starts the same generation-gated, bounded
+re-registration and reload path. Failed attempts never raise the successful
+`Reloaded` notification. Watchers have a publication identity separate from desired
+transition generations. Each event or retry gets a monotonic request sequence; bursts
+coalesce to the newest request, and an older in-flight read cannot clear a newer one.
+The watcher paired with a fallback state remains valid while a newer desired transition
+is pending or has exhausted its retries: its events refresh the fallback snapshot and
+restart attempts toward the desired target. Once a newer transition commits, events
+from the disposed watcher are ignored. This handoff prevents a legacy file arriving
+beside an untouched starter from being hidden. Either identity change advances the
+snippet revision, invalidates an open editor, and closes its Prompt window. Watch
+events whose bytes equal Settings' own atomic save are ignored. During first-run
+setup, Settings creates or observes the shared starter before constructing its
+editable model, so the first save cannot produce a headerless file. A file that wins a
+concurrent creation race is loaded rather than overwritten. Saves preserve comments,
+the file's encoding (UTF-8 with or without a BOM, UTF-16 or UTF-32), line-ending style,
+and final-newline presence.
 
 The list is virtualized (an `ItemsRepeater`), so only the rows in view are built,
 however long the library. An `ItemsRepeater` sets no `DataContext` on rows whose
@@ -257,6 +300,9 @@ The expander provides folder selection, conflict handling, and manual reload:
 
 - **Current folder** shows the resolved folder and opens the Windows folder picker.
   Selecting an empty folder copies the current active file there before switching.
+  If the active source disappeared and the destination is also empty, Settings
+  publishes the authoritative starter instead of creating a zero-byte placeholder.
+  A genuine existing zero-byte source is copied unchanged.
 - If the selected folder already contains `PowerToysTextExpanderSnippets.txt` or
   the legacy `snippets.txt`, Settings asks whether to **Use folder file** or
   **Replace folder file**. Using the folder file first backs up the file this PC was
@@ -267,9 +313,26 @@ The expander provides folder selection, conflict handling, and manual reload:
   The active-folder file remains the source of truth.
 All replacements use a temporary file in the destination directory and then an
 atomic move or `File.Replace`. Backup names are unique (`.backup-<timestamp>`, with
-a numeric suffix when necessary). If a destination file appears after the picker
-inspected an empty folder, the operation stops and asks the user to choose again
-rather than replacing the new file without confirmation.
+a numeric suffix when necessary). Settings holds the shared per-folder claim through
+the final re-resolution, decision verification, and publication. It compares the
+exact prepared bytes and existence of the active source and both supported
+destination names, checks them again immediately before the atomic operation, and
+checks ownership after publication. Destination publication and throwing persistence
+of `SnippetsPath` form one compensating transaction; Settings does not switch its
+loaded library until both succeed. A changed, arrived, or disappeared file, a
+post-publication identity-read failure, or a settings-write failure stops the
+operation; a vanished source is never replaced with synthesized empty bytes.
+Throwing settings persistence writes and flushes a unique staging file beside
+`settings.json`, then uses an atomic replace or create-only move. If publication
+reports failure after completing, compensation atomically moves the live destination
+to a unique same-directory quarantine path before checking its bytes. Only the
+transaction's exact published payload is removed or replaced with the verified
+previous file. Folder rollback uses the same quarantine-and-verify rule. An unexpected
+newer file is moved back only into a provably vacant destination; otherwise its
+quarantine is preserved without overwrite. Any remaining quarantine, replacement
+backup, or generated recovery copy is reported (as a semicolon-separated path list
+when necessary), and the operation returns an explicit uncertain or rollback-failed
+result instead of hiding a partial publication.
 
 While Settings is elevated, these actions and all other snippet editing remain
 unavailable; no snippet path is resolved or displayed. See *Settings and snippet
@@ -291,13 +354,24 @@ states that either form matches.
 
 ### Prompt authoring and validation
 
-Selecting **Ask me when it runs** from **Insert variable** opens an inline builder
-inside the existing snippet dialog. **What should Text Expander ask?** captures the
-runtime question, and **Require an answer** is selected by default. The builder
-inserts `{{prompt:<question>}}` when required or `{{prompt?:<question>}}` when
-optional. It restores the replacement selection captured before the question field
-took focus, so the variable goes where the user intended. Questions cannot contain
-`}`, which would end the variable early.
+**Prompt window** in **Insert variable** means “Ask for text when the snippet runs.”
+Selecting it immediately puts a safe provisional prompt token at the replacement
+caret or selection and opens a compact flyout beside that token. The question field
+is focused and selected, and **Require an answer** is on by default. Enter, clicking
+back in the replacement, or another light-dismiss commits a valid question without
+a second Insert or Apply action. An empty question or one containing `}` keeps the
+flyout open with an assertive inline error.
+
+Click an existing prompt token, or put the caret in one and press F2, to reopen the
+same flyout. It restores whether that prompt requires an answer. Escape or the
+flyout's close button removes a new provisional token and restores the original
+replacement selection; for an existing token it discards the draft and reselects the
+unchanged token. Closing the parent snippet dialog also discards a pending prompt
+draft. A completed new prompt is one editor undo step.
+
+The flyout writes `{{prompt:<question>}}` when required or
+`{{prompt?:<question>}}` when optional. The runtime grammar and snippet schema are
+unchanged.
 
 At runtime, required prompts keep OK disabled while the answer is blank. Pressing
 Enter in that state shows the inline `Enter an answer to continue.` error and keeps

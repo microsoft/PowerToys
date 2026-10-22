@@ -123,7 +123,8 @@
                             x:Name="SnippetStatus"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{ThemeResource CaptionTextBlockStyle}"
-                            TextWrapping="Wrap" />
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
 
                         <!--  Virtualized, so only the rows in view are built however long the list is. Same rows and spacing as before.  -->
                         <ItemsRepeater Margin="0,2,0,0" ItemsSource="{x:Bind ViewModel.FilteredSnippets, Mode=OneWay}">
@@ -272,7 +273,10 @@
                             TextWrapping="Wrap"
                             Visibility="{x:Bind ViewModel.HasNoMatchingSnippets, Mode=OneWay}" />
 
-                        <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.HasNoSnippets, Mode=OneWay}">
+                        <StackPanel
+                            Margin="0,12,0,0"
+                            Spacing="8"
+                            Visibility="{x:Bind ViewModel.HasNoSnippets, Mode=OneWay}">
                             <tkcontrols:SettingsCard
                                 x:Uid="TextExpander_NoSnippets"
                                 Margin="0,2,0,0"
@@ -461,50 +465,71 @@
                             GotFocus="SnippetField_GotFocus"
                             IsSpellCheckEnabled="False"
                             IsTextPredictionEnabled="False"
-                            TextWrapping="Wrap" />
-
-                        <!--  Prompt variables need a real question and an explicit answer policy, not an editable placeholder named "Label".  -->
-                        <Border
-                            x:Name="PromptVariableBuilder"
-                            Margin="0,4,0,0"
-                            Padding="12"
-                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="{StaticResource ControlCornerRadius}"
-                            Visibility="Collapsed">
-                            <StackPanel Spacing="8">
-                                <TextBlock x:Uid="TextExpander_PromptBuilder_Heading" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-                                <TextBox
-                                    x:Name="PromptQuestionBox"
-                                    x:Uid="TextExpander_PromptBuilder_Question"
-                                    KeyDown="PromptQuestionBox_KeyDown"
-                                    TextChanged="PromptQuestionBox_TextChanged" />
-                                <CheckBox
-                                    x:Name="PromptRequireAnswer"
-                                    x:Uid="TextExpander_PromptBuilder_Require"
-                                    IsChecked="True" />
-                                <TextBlock
-                                    x:Name="PromptQuestionError"
-                                    AutomationProperties.LiveSetting="Assertive"
-                                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                    TextWrapping="Wrap"
-                                    Visibility="Collapsed" />
-                                <StackPanel
-                                    HorizontalAlignment="Right"
-                                    Orientation="Horizontal"
-                                    Spacing="8">
-                                    <Button
-                                        x:Name="InsertPromptVariableButton"
-                                        x:Uid="TextExpander_PromptBuilder_Insert"
-                                        Click="InsertPromptVariable_Click"
-                                        IsEnabled="False"
-                                        Style="{StaticResource AccentButtonStyle}" />
-                                    <Button x:Uid="TextExpander_PromptBuilder_Cancel" Click="CancelPromptVariable_Click" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
+                            TextWrapping="Wrap">
+                            <FlyoutBase.AttachedFlyout>
+                                <Flyout
+                                    x:Name="PromptFlyout"
+                                    Closed="PromptFlyout_Closed"
+                                    Closing="PromptFlyout_Closing"
+                                    Opened="PromptFlyout_Opened"
+                                    Placement="BottomEdgeAlignedLeft"
+                                    ShouldConstrainToRootBounds="True">
+                                    <Flyout.FlyoutPresenterStyle>
+                                        <Style TargetType="FlyoutPresenter">
+                                            <Setter Property="MaxWidth" Value="360" />
+                                            <Setter Property="Padding" Value="16" />
+                                        </Style>
+                                    </Flyout.FlyoutPresenterStyle>
+                                    <StackPanel
+                                        x:Name="PromptFlyoutContent"
+                                        x:Uid="TextExpander_PromptFlyout"
+                                        MinWidth="240"
+                                        MaxWidth="320"
+                                        PreviewKeyDown="PromptFlyoutContent_PreviewKeyDown"
+                                        Spacing="8">
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                x:Uid="TextExpander_PromptFlyout_Title"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.HeadingLevel="Level2"
+                                                Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                                            <Button
+                                                x:Uid="TextExpander_PromptFlyout_Close"
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Click="PromptFlyoutClose_Click"
+                                                Content="&#xE711;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SubtleButtonStyle}" />
+                                        </Grid>
+                                        <TextBlock
+                                            x:Uid="TextExpander_PromptFlyout_Help"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                            TextWrapping="Wrap" />
+                                        <TextBox
+                                            x:Name="PromptQuestionBox"
+                                            x:Uid="TextExpander_PromptFlyout_Question"
+                                            TextChanged="PromptQuestionBox_TextChanged" />
+                                        <CheckBox
+                                            x:Name="PromptRequireAnswer"
+                                            x:Uid="TextExpander_PromptFlyout_Require"
+                                            IsChecked="True" />
+                                        <TextBlock
+                                            x:Name="PromptQuestionError"
+                                            AutomationProperties.LiveSetting="Assertive"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                            TextWrapping="Wrap"
+                                            Visibility="Collapsed" />
+                                    </StackPanel>
+                                </Flyout>
+                            </FlyoutBase.AttachedFlyout>
+                        </RichEditBox>
 
                         <!--
                             The date format guide: shown while the caret is in a {{date:…}} variable, such as right after

@@ -42,7 +42,8 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         public void ReplaceFile(string source, string destination, string backup)
             => File.Replace(source, destination, backup, ignoreMetadataErrors: true);
 
-        public void DeleteFile(string path) => File.Delete(path);
+        public HandleBoundFileDeletionResult DeleteOwnedFile(string path, byte[] expectedBytes)
+            => HandleBoundFileDeletion.TryDelete(path, expectedBytes);
 
         public IDisposable WatchForFiles(string folder, IReadOnlyList<string> fileNames, Action changed)
             => new FileArrivalWatcher(folder, fileNames, changed);
@@ -60,22 +61,39 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 {
                     if (Directory.Exists(folder))
                     {
+                        var watchedNames = new HashSet<string>(fileNames, StringComparer.OrdinalIgnoreCase);
                         _watcher = new FileSystemWatcher(folder)
                         {
                             NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size,
+                            Filter = "*",
                         };
-                        foreach (string fileName in fileNames)
+
+                        void OnFileEvent(object sender, FileSystemEventArgs e)
                         {
-                            _watcher.Filters.Add(fileName);
+                            if (watchedNames.Contains(e.Name))
+                            {
+                                changed();
+                            }
                         }
 
-                        _watcher.Created += (_, _) => changed();
-                        _watcher.Renamed += (_, _) => changed();
-                        _watcher.Changed += (_, _) => changed();
+                        void OnRenamed(object sender, RenamedEventArgs e)
+                        {
+                            if (watchedNames.Contains(e.Name) || watchedNames.Contains(e.OldName))
+                            {
+                                changed();
+                            }
+                        }
+
+                        _watcher.Created += OnFileEvent;
+                        _watcher.Deleted += OnFileEvent;
+                        _watcher.Changed += OnFileEvent;
+                        _watcher.Renamed += OnRenamed;
                         _watcher.EnableRaisingEvents = true;
                     }
                 }
-                catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+                catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException
+                                              or PlatformNotSupportedException or System.ComponentModel.Win32Exception
+                                              or System.Security.SecurityException)
                 {
                     _watcher?.Dispose();
                     _watcher = null;

@@ -5,6 +5,8 @@
 using System;
 using System.IO;
 
+using Microsoft.PowerToys.TextExpander.Storage;
+
 #nullable enable
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -32,18 +34,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Returns the snippet file in <paramref name="folder"/>: the current name if it exists,
         /// otherwise the legacy name if that exists, otherwise the current name, which is then
-        /// created with the starter snippets.
+        /// created with the starter snippets. The legacy file wins when both exist only if the
+        /// current file is byte-for-byte the untouched starter.
         /// </summary>
         public static string ResolveInFolder(string folder, Func<string, bool> fileExists)
         {
             string current = Path.Combine(folder, Current);
-            if (fileExists(current))
+            bool currentExists = fileExists(current);
+            string legacy = Path.Combine(folder, Legacy);
+            bool legacyExists = fileExists(legacy);
+            if (currentExists)
             {
+                if (legacyExists && TextExpanderStarter.IsUntouchedStarterFile(current))
+                {
+                    return legacy;
+                }
+
                 return current;
             }
 
-            string legacy = Path.Combine(folder, Legacy);
-            return fileExists(legacy) ? legacy : current;
+            return legacyExists ? legacy : current;
         }
 
         /// <summary>Returns the snippet file in <paramref name="folder"/> under either name, or null if there is none.</summary>

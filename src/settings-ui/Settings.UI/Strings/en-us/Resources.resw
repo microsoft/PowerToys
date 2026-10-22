@@ -7054,8 +7054,29 @@ Text uses the current drawing color.</value>
   <data name="TextExpander_SnippetFolder_Error_Title" xml:space="preserve">
     <value>Couldn't update the snippet file</value>
   </data>
+  <data name="TextExpander_SnippetFolder_SettingsSaveFailed" xml:space="preserve">
+    <value>PowerToys couldn't save the new snippet folder setting, so the folder change was undone.</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_SettingsCommittedAfterError" xml:space="preserve">
+    <value>PowerToys saved the new snippet folder setting, but couldn't finish the settings update cleanly. The new folder remains active. Check the settings file at {0}, and keep these recovery files until you have verified the folder: {1}.</value>
+    <comment>{0} is the full path to settings.json. {1} is a semicolon-separated list of settings recovery files, or the settings path when no separate recovery file exists.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_SettingsStateUncertain" xml:space="preserve">
+    <value>PowerToys couldn't verify which snippet folder setting is stored. No snippet files were removed. Restart PowerToys, check the settings file at {0}, and keep these recovery files until the active folder is confirmed: {1}.</value>
+    <comment>{0} is the full path to settings.json. {1} is a semicolon-separated list of settings recovery files.</comment>
+  </data>
+  <data name="TextExpander_SnippetFolder_RollbackFailed" xml:space="preserve">
+    <value>PowerToys couldn't safely undo the snippet folder change. The active folder setting was not changed.</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_RecoveryAvailable" xml:space="preserve">
+    <value>Recovery file paths are available at {0}.</value>
+    <comment>{0} is one path or a semicolon-separated list of preserved snippet recovery files.</comment>
+  </data>
   <data name="TextExpander_SnippetFolder_FileAppeared" xml:space="preserve">
     <value>A snippet file appeared in that folder after you chose it. Choose the folder again so you can decide which file to keep.</value>
+  </data>
+  <data name="TextExpander_SnippetFolder_ChangeStale" xml:space="preserve">
+    <value>The active snippet file or selected folder changed, disappeared, or is no longer available. Choose the folder again before moving your snippets.</value>
   </data>
   <data name="TextExpander_Dialog_Cancel" xml:space="preserve">
     <value>Cancel</value>
@@ -7128,7 +7149,7 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
     <value>No snippets yet</value>
   </data>
   <data name="TextExpander_NoSnippets.Description" xml:space="preserve">
-    <value>Add one above and it starts working straight away — nothing to restart.</value>
+    <value>Create a snippet to get started.</value>
   </data>
   <data name="TextExpander_SnippetError.Title" xml:space="preserve">
     <value>Can't open your snippets</value>
@@ -7227,31 +7248,38 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
     <comment>Insert variable menu: the text the user copied last</comment>
   </data>
   <data name="TextExpander_Variable_Prompt" xml:space="preserve">
-    <value>Ask me when it runs</value>
+    <value>Prompt window</value>
     <comment>Insert variable menu: asks the user to type something each time the snippet expands</comment>
   </data>
-  <data name="TextExpander_PromptBuilder_Heading.Text" xml:space="preserve">
-    <value>Ask for information when this snippet runs</value>
+  <data name="TextExpander_Variable_Prompt_Help" xml:space="preserve">
+    <value>Ask for text when the snippet runs.</value>
+    <comment>Help text for Prompt window in the Insert variable menu</comment>
   </data>
-  <data name="TextExpander_PromptBuilder_Question.Header" xml:space="preserve">
+  <data name="TextExpander_PromptFlyout.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Prompt window</value>
+  </data>
+  <data name="TextExpander_PromptFlyout_Title.Text" xml:space="preserve">
+    <value>Prompt window</value>
+  </data>
+  <data name="TextExpander_PromptFlyout_Help.Text" xml:space="preserve">
+    <value>Ask for text when the snippet runs.</value>
+  </data>
+  <data name="TextExpander_PromptFlyout_Close.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Close Prompt window without saving changes</value>
+  </data>
+  <data name="TextExpander_PromptFlyout_Question.Header" xml:space="preserve">
     <value>What should Text Expander ask?</value>
   </data>
-  <data name="TextExpander_PromptBuilder_Question.PlaceholderText" xml:space="preserve">
+  <data name="TextExpander_PromptFlyout_Question.PlaceholderText" xml:space="preserve">
     <value>For example, What is the ticket number?</value>
   </data>
-  <data name="TextExpander_PromptBuilder_Require.Content" xml:space="preserve">
+  <data name="TextExpander_PromptFlyout_Require.Content" xml:space="preserve">
     <value>Require an answer</value>
   </data>
-  <data name="TextExpander_PromptBuilder_Insert.Content" xml:space="preserve">
-    <value>Insert prompt</value>
-  </data>
-  <data name="TextExpander_PromptBuilder_Cancel.Content" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-  <data name="TextExpander_PromptBuilder_QuestionRequired" xml:space="preserve">
+  <data name="TextExpander_PromptFlyout_QuestionRequired" xml:space="preserve">
     <value>Enter the question Text Expander should ask.</value>
   </data>
-  <data name="TextExpander_PromptBuilder_InvalidQuestion" xml:space="preserve">
+  <data name="TextExpander_PromptFlyout_InvalidQuestion" xml:space="preserve">
     <value>The question can't contain a closing brace (}).</value>
   </data>
   <data name="TextExpander_VariableWithSample" xml:space="preserve">
@@ -7358,6 +7386,9 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
   </data>
   <data name="TextExpander_Dialog_ReplacementBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Replacement</value>
+  </data>
+  <data name="TextExpander_Dialog_ReplacementBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Click a Prompt window token, or place the caret in it and press F2, to edit it.</value>
   </data>
   <data name="TextExpander_RequireWordBoundary.Header" xml:space="preserve">
     <value>Wait for the whole word</value>

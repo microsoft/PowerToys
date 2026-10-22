@@ -137,7 +137,7 @@ public sealed class InputAndUndoPolicyTests
         string trigger = new('a', length);
         File.WriteAllText(path, trigger + "=long\n");
         using var store = new SnippetStore(path);
-        Assert.AreEqual(1, store.Load());
+        Assert.AreEqual(1, store.Load().Count);
         using var hook = new KeyboardHook(store);
 
         bool original = WordBoundary.Required;
