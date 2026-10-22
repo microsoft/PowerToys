@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 
@@ -283,7 +282,16 @@ public partial class ShellViewModel : ObservableObject,
                 token,
                 TaskCreationOptions.None,
                 _scheduler);
-            await LoadPageViewModelAsync(page, token);
+
+            // Start loading in the background...
+            var loadingTask = LoadPageViewModelAsync(page, token);
+
+            // then start navigating the UI
+            PageNavigationRequested?.Invoke(
+                this,
+                new(page, message.WithAnimation, message.TransientPage, token));
+
+            await loadingTask;
         }
         catch (OperationCanceledException)
         {
@@ -351,11 +359,6 @@ public partial class ShellViewModel : ObservableObject,
         WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
         WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
             new(extensionId, message.Command.Id, message.Command.Name, true, 0));
-
-        // Frame navigation owns activation; initialization continues on a worker.
-        PageNavigationRequested?.Invoke(
-            this,
-            new(page, message.WithAnimation, message.TransientPage, cancellationToken));
     }
 
     private void StartInvoke(PerformCommandMessage message, AppExtensionHost? host)
