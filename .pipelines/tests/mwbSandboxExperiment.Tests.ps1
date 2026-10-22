@@ -162,15 +162,28 @@ exit $ExitCode
     It 'drains both streams concurrently even with huge output and oversized lines' {
         Set-Content -LiteralPath $initializer -Value ($parameters + @'
 
-$line = 'x' * 4096
-[Console]::Out.Write('a' * 1048576)
-[Console]::Error.Write('b' * 1048576)
-for ($index = 0; $index -lt 1024; $index++) {
-    [Console]::Out.WriteLine($line)
-    [Console]::Error.WriteLine($line)
+$stdout = [Console]::OpenStandardOutput()
+$stderr = [Console]::OpenStandardError()
+try {
+    # Stress redirected pipe draining, not console-host text rendering.
+    $line = [Text.Encoding]::ASCII.GetBytes(('x' * 4096) + [Environment]::NewLine)
+    $prefix = [Text.Encoding]::ASCII.GetBytes('a' * 1048576)
+    $stdout.Write($prefix, 0, $prefix.Length)
+    $prefix = [Text.Encoding]::ASCII.GetBytes('b' * 1048576)
+    $stderr.Write($prefix, 0, $prefix.Length)
+    for ($index = 0; $index -lt 1024; $index++) {
+        $stdout.Write($line, 0, $line.Length)
+        $stderr.Write($line, 0, $line.Length)
+    }
+    $tail = [Text.Encoding]::ASCII.GetBytes('stdout complete' + [Environment]::NewLine)
+    $stdout.Write($tail, 0, $tail.Length)
+    $tail = [Text.Encoding]::ASCII.GetBytes('stderr complete' + [Environment]::NewLine)
+    $stderr.Write($tail, 0, $tail.Length)
 }
-[Console]::Out.WriteLine('stdout complete')
-[Console]::Error.WriteLine('stderr complete')
+finally {
+    $stdout.Dispose()
+    $stderr.Dispose()
+}
 exit 23
 '@)
         $result = Invoke-MwbTestProvisioner $directory
