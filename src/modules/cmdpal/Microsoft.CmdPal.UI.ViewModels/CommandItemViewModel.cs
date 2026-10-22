@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -479,7 +480,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 if (_defaultCommandContextItemViewModel is not null)
                 {
-                    _defaultCommandContextItemViewModel.UpdateTitle(model.Command.Name);
+                    _defaultCommandContextItemViewModel.UpdateTitle(Command.Name);
                 }
                 else
                 {
@@ -514,12 +515,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // usable; a null/empty primary must still fall back to late
         // menu opening through child actions.
         var command = Command;
-        if (string.IsNullOrEmpty(command.Name) || commandModel is null)
+        if (string.IsNullOrEmpty(command.Name) || !command.IsSet)
         {
             return;
         }
 
-        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
+        var contextItem = commandModel is null ? new CommandContextItem(Name) : new CommandContextItem(commandModel);
+        var defaultContextItem = new CommandContextItemViewModel(contextItem, PageContext)
         {
             _itemTitle = Name,
             Subtitle = Subtitle,
@@ -608,6 +610,18 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         if (IsCleanedUp)
         {
             return false;
+        }
+
+        var source = _commandItemModel.Unsafe;
+        while (source is RecentCommandListItem recent)
+        {
+            source = recent.Source;
+        }
+
+        if (source is TopLevelViewModel topLevel)
+        {
+            BorrowCommand(topLevel.CommandViewModel);
+            return !IsCleanedUp;
         }
 
         var command = new CommandViewModel(model, PageContext);

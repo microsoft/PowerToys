@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -56,15 +57,15 @@ public sealed partial class FallbackCommandHostTests
         PrepareQuery(source, mode, CancellationToken.None);
         var message = source.GetPerformCommandMessage();
         Assert.AreEqual(0, fallback.CreateCount);
-        var requested = message.Command.Unsafe!;
-        var resolver = requested as IFallbackInvocationContext;
-        Assert.IsNotNull(resolver);
+        var requested = message.Command;
+        var invocation = requested as FallbackInvocationViewModel;
+        Assert.IsNotNull(invocation);
 
-        Assert.AreSame(fallback.Command, ShellViewModel.ResolveRequestedCommand(requested, resolver));
+        Assert.AreSame(fallback.Command, ShellViewModel.ResolveRequestedCommand(requested)?.Model.Unsafe);
         Assert.AreEqual(1, fallback.CreateCount);
         Assert.AreEqual("query", fallback.LastArgs?.Query);
         Assert.AreEqual("query-id", fallback.LastArgs?.QueryId);
-        Assert.AreSame(source, resolver.InvocationContext);
+        Assert.AreSame(source, invocation.QueryContext.InvocationContext);
         var navigation = new PageNavigationService(
             Mock.Of<IPageViewModelFactoryService>(),
             Mock.Of<IAppHostService>(MockBehavior.Strict));
@@ -82,10 +83,126 @@ public sealed partial class FallbackCommandHostTests
         var source = await LoadFallbackAsync(fallback, services);
         using var cancellation = new CancellationTokenSource();
         PrepareQuery(source, mode, cancellation.Token);
-        var requested = source.GetPerformCommandMessage().Command.Unsafe!;
+        var requested = source.GetPerformCommandMessage().Command;
         cancellation.Cancel();
 
-        Assert.IsNull(ShellViewModel.ResolveRequestedCommand(requested, requested as IFallbackInvocationContext));
+        Assert.IsNull(ShellViewModel.ResolveRequestedCommand(requested));
+        Assert.AreEqual(0, fallback.CreateCount);
+    }
+
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(2)]
+    public async Task RenderedFallback_BorrowsInvocationAndTracksQueryChanges(int wrapperCount)
+    {
+        var fallback = new RecordingFallback(FallbackCommandMode.Passive);
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        IListItem item = source;
+        for (var i = 0; i < wrapperCount; i++)
+        {
+            item = new RecentCommandListItem(item, source.Id);
+        }
+
+        var rendered = new ListItemViewModel(item, source.ItemViewModel.PageContext, DefaultContextMenuFactory.Instance);
+        try
+        {
+            rendered.SlowInitializeProperties();
+            Assert.AreSame(source.CommandViewModel, rendered.Command);
+            Assert.IsNull(ShellViewModel.ResolveRequestedCommand(rendered.Command));
+            Assert.AreEqual(0, fallback.CreateCount);
+
+            using var cancellation = new CancellationTokenSource();
+            PrepareQuery(source, FallbackCommandMode.Passive, cancellation.Token);
+            var firstMessage = new Messages.PerformCommandMessage(rendered);
+            Assert.AreSame(source.CommandViewModel, firstMessage.Command);
+            cancellation.Cancel();
+
+            Assert.IsTrue(source.PreparePassiveFallback("next", "next-id", CancellationToken.None));
+            var nextMessage = new Messages.PerformCommandMessage(rendered);
+            Assert.AreNotSame(firstMessage.Command, nextMessage.Command);
+            Assert.IsNull(ShellViewModel.ResolveRequestedCommand(firstMessage.Command));
+            Assert.AreSame(fallback.Command, ShellViewModel.ResolveRequestedCommand(nextMessage.Command)?.Model.Unsafe);
+            Assert.AreEqual(1, fallback.CreateCount);
+            Assert.AreEqual("next", fallback.LastArgs?.Query);
+            Assert.AreEqual("next-id", fallback.LastArgs?.QueryId);
+
+            rendered.SafeCleanup();
+            Assert.AreSame(fallback.Command, ShellViewModel.ResolveRequestedCommand(source.CommandViewModel)?.Model.Unsafe);
+        }
+        finally
+        {
+            rendered.SafeCleanup();
+            source.Cleanup();
+        }
+    }
+
+    [TestMethod]
+    public async Task FallbackInvocation_RejectsQueryCanceledDuringCreation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var fallback = new RecordingFallback(FallbackCommandMode.Passive) { OnCreate = cancellation.Cancel };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        PrepareQuery(source, FallbackCommandMode.Passive, cancellation.Token);
+
+        Assert.IsNull(ShellViewModel.ResolveRequestedCommand(source.CommandViewModel));
+        Assert.AreEqual(1, fallback.CreateCount);
+    }
+
+    [TestMethod]
+    public async Task FallbackWithoutCommand_ExposesLazyPrimaryAction()
+    {
+        var command = new NoOpCommand { Id = "created.command" };
+        var fallback = new RecordingFallback(FallbackCommandMode.Passive)
+        {
+            Command = null,
+            Name = "Run",
+            TitleTemplate = "Run {query}",
+            CommandToCreate = command,
+        };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        var rendered = new ListItemViewModel(source, source.ItemViewModel.PageContext, DefaultContextMenuFactory.Instance);
+        try
+        {
+            rendered.SlowInitializeProperties();
+            Assert.IsTrue(rendered.Command.IsSet);
+            Assert.AreEqual("Run", rendered.Name);
+            Assert.IsNotNull(rendered.PrimaryMenuItem);
+            Assert.AreSame(source.CommandViewModel, rendered.PrimaryMenuItem.Command);
+            Assert.AreEqual(0, fallback.CreateCount);
+
+            PrepareQuery(source, FallbackCommandMode.Passive, CancellationToken.None);
+
+            Assert.AreSame(source.CommandViewModel, rendered.PrimaryMenuItem.Command);
+            Assert.AreSame(command, ShellViewModel.ResolveRequestedCommand(rendered.PrimaryMenuItem.Command)?.Model.Unsafe);
+            Assert.AreEqual(1, fallback.CreateCount);
+        }
+        finally
+        {
+            rendered.SafeCleanup();
+            source.Cleanup();
+        }
+    }
+
+    [TestMethod]
+    public async Task FallbackInvocation_TracksNameChangesAndRejectsCleanedUpSource()
+    {
+        var fallback = new RecordingFallback(FallbackCommandMode.Passive) { Name = "Run" };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        PrepareQuery(source, FallbackCommandMode.Passive, CancellationToken.None);
+        var message = source.GetPerformCommandMessage();
+
+        fallback.Name = "Updated action";
+        source.ItemViewModel.ApplyPendingUpdates();
+        Assert.AreEqual("Updated action", message.Command.Name);
+
+        source.Cleanup();
+
+        Assert.IsNull(ShellViewModel.ResolveRequestedCommand(message.Command));
         Assert.AreEqual(0, fallback.CreateCount);
     }
 
@@ -184,7 +301,7 @@ public sealed partial class FallbackCommandHostTests
     }
 
     private sealed partial class RecordingFallback(FallbackCommandMode mode)
-        : FallbackCommandItem3(new NoOpCommand { Id = "command" }, "Test fallback", "fallback")
+        : FallbackCommandItem(new NoOpCommand { Id = "command" }, "Test fallback", "fallback")
     {
         public override FallbackCommandMode Mode => mode;
 
@@ -194,13 +311,18 @@ public sealed partial class FallbackCommandHostTests
 
         public IFallbackCommandInvocationArgs? LastArgs { get; private set; }
 
+        public Action? OnCreate { get; init; }
+
+        public ICommand? CommandToCreate { get; init; }
+
         public override void UpdateQuery(string query) => UpdateCount++;
 
         public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
         {
             CreateCount++;
             LastArgs = args;
-            return Command!;
+            OnCreate?.Invoke();
+            return CommandToCreate ?? Command!;
         }
     }
 }

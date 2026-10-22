@@ -104,7 +104,7 @@ public partial class ShellViewModelTests
             appHostService.Object);
         var item = new ListItem(page);
         var message = new PerformCommandMessage(
-            new ExtensionObject<ICommand>(page),
+            CreateCommandViewModel(page, shell.CurrentPage),
             new ExtensionObject<IListItem>(item),
             withSourcePage ? sourcePage : null);
         var expectedHost = withSourcePage ? sourceHost : shell.CurrentPage.ExtensionHost;
@@ -138,7 +138,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(page)));
+            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(page, shell.CurrentPage)));
 
             Assert.AreSame(scheduler, await activated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
             Assert.AreSame(viewModel, shell.CurrentPage);
@@ -175,7 +175,7 @@ public partial class ShellViewModelTests
             factory.Invocations.Clear();
             appHostService.Invocations.Clear();
 
-            shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(rootPage), nestedPage));
+            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(rootPage, nestedPage), nestedPage));
 
             Assert.AreSame(rootViewModel, shell.CurrentPage);
             Assert.IsTrue(rootViewModel.IsRootPage);
@@ -220,7 +220,7 @@ public partial class ShellViewModelTests
                 Id = "content-page",
                 Name = "Content page",
             };
-            var message = new PerformCommandMessage(new ExtensionObject<ICommand>(contentPage))
+            var message = new PerformCommandMessage(CreateCommandViewModel(contentPage, shell.CurrentPage))
             {
                 ListPageOptions = new(Query: "ssh"),
                 ShowWindowIfPage = true,
@@ -282,7 +282,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            var message = new PerformCommandMessage(new ExtensionObject<ICommand>(page))
+            var message = new PerformCommandMessage(CreateCommandViewModel(page, shell.CurrentPage))
             {
                 TransientPage = true,
             };
@@ -319,7 +319,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(command.Object)));
+            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(command.Object, shell.CurrentPage)));
 
             rootPageService.Verify(
                 service => service.OnPerformCommand(null, true, host),
@@ -391,7 +391,7 @@ public partial class ShellViewModelTests
             {
                 Id = "test.command",
             };
-            viewModel.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(command)));
+            viewModel.Receive(new PerformCommandMessage(CreateCommandViewModel(command, viewModel.CurrentPage)));
 
             await finished.Task.WaitAsync(TimeSpan.FromSeconds(10));
             var expected = new List<string> { "started" };
@@ -440,7 +440,7 @@ public partial class ShellViewModelTests
                     throw new TimeoutException("Test did not release the invocation");
                 }
             });
-            var message = new PerformCommandMessage(new ExtensionObject<ICommand>(command));
+            var message = new PerformCommandMessage(CreateCommandViewModel(command, viewModel.CurrentPage));
             viewModel.Receive(message);
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
@@ -464,6 +464,36 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    public async Task PerformCommand_UsesCachedMetadata()
+    {
+        using var shell = CreateViewModel();
+        var command = new Mock<IInvokableCommand>();
+        command.SetupGet(value => value.Id).Returns("cached.id");
+        command.SetupGet(value => value.Name).Returns("Cached name");
+        command.Setup(value => value.Invoke(It.IsAny<object?>())).Returns(CommandResult.KeepOpen());
+        var viewModel = CreateCommandViewModel(command.Object, shell.CurrentPage);
+        command.SetupGet(value => value.Id).Throws(new InvalidOperationException("Unexpected ID RPC"));
+        command.SetupGet(value => value.Name).Throws(new InvalidOperationException("Unexpected name RPC"));
+        var recipient = new object();
+        var completed = new TaskCompletionSource<TelemetryExtensionInvokedMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(recipient, (_, message) => completed.TrySetResult(message));
+        try
+        {
+            shell.Receive(new PerformCommandMessage(viewModel));
+            var invocation = await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(invocation.Success);
+            Assert.AreEqual("cached.id", invocation.CommandId);
+            Assert.AreEqual("Cached name", invocation.CommandName);
+            command.VerifyGet(value => value.Id, Times.Once);
+            command.VerifyGet(value => value.Name, Times.Once);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+        }
+    }
+
+    [TestMethod]
     public void PerformCommand_CountsPageNavigationOnceAfterShowingWindow()
     {
         var viewModel = CreateViewModel();
@@ -476,7 +506,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            viewModel.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(new TestPage())) { ShowWindowIfPage = true });
+            viewModel.Receive(new PerformCommandMessage(CreateCommandViewModel(new TestPage(), viewModel.CurrentPage)) { ShowWindowIfPage = true });
 
             string[] expected = ["show", "started", "completed", "navigate"];
             CollectionAssert.AreEqual(expected, events);
@@ -489,6 +519,13 @@ public partial class ShellViewModelTests
         }
 
         void OnPageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e) => events.Add("navigate");
+    }
+
+    private static CommandViewModel CreateCommandViewModel(ICommand command, IPageContext context)
+    {
+        var viewModel = new CommandViewModel(command, new(context));
+        viewModel.FastInitializeProperties();
+        return viewModel;
     }
 
     private static ShellViewModel CreateViewModel()
