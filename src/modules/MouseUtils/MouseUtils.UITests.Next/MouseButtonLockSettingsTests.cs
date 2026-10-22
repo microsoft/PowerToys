@@ -130,7 +130,7 @@ public class MouseButtonLockSettingsTests : UITestBase
     {
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
 
-        var group = Session.Find<Element>(By.AccessibilityId(GroupId), 10_000);
+        var group = FindVisibleElement(GroupId);
         Assert.IsTrue(group.Displayed, "Mouse Button Lock settings group was not visible.");
 
         MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, false);
@@ -212,9 +212,14 @@ public class MouseButtonLockSettingsTests : UITestBase
         AssertPersistedInt("move_cancel_pixels", 100);
 
         OpenOptions();
-        Assert.IsTrue(
-            Session.Has(By.Name("2200 ms"), 10_000),
-            "Hold duration label did not reflect its persisted maximum value after restart.");
+        Session.EnsureForeground();
+        FindVisibleElement(HoldDurationId).Focus();
+
+        // Stepping the restored slider verifies its UI value without relying on the removed label.
+        KeyboardHelper.SendKeys(Key.Left);
+        AssertPersistedInt("hold_duration_ms", 2100);
+        KeyboardHelper.SendKeys(Key.Right);
+        AssertPersistedInt("hold_duration_ms", 2200);
     }
 
     [TestMethod]
@@ -246,11 +251,8 @@ public class MouseButtonLockSettingsTests : UITestBase
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
         MouseUtilsTestHelper.SetModuleEnabled(this, ModuleToggleId, true);
 
-        if (!Session.Has(By.AccessibilityId(LmbLockId), 500))
-        {
-            Session.EnsureForeground();
-            Session.Find<Element>(By.AccessibilityId(OptionsExpanderId), 5_000).MouseClick(msPostAction: 500);
-        }
+        FindVisibleElement(OptionsExpanderId);
+        MouseUtilsTestHelper.ExpandSettings(this, OptionsExpanderId);
 
         Assert.IsTrue(Session.Has(By.AccessibilityId(LmbLockId), 5_000), "LMB lock checkbox was not available.");
         Assert.IsTrue(Session.Has(By.AccessibilityId(RmbLockId), 5_000), "RMB lock checkbox was not available.");
@@ -259,11 +261,32 @@ public class MouseButtonLockSettingsTests : UITestBase
         Assert.IsTrue(Session.Has(By.AccessibilityId(MoveCancelPixelsId), 5_000), "Move-cancel pixels control was not available.");
     }
 
+    private Element FindVisibleElement(string accessibilityId)
+    {
+        var element = Session.Find<Element>(By.AccessibilityId(accessibilityId), 5_000);
+        var scrollViewer = Session.Find<Element>(By.AccessibilityId("PageScrollViewer"), 5_000);
+        scrollViewer.ScrollToEdge(toBottom: false);
+        var result = WaitHelper.WaitForStable(
+            () => element.Displayed,
+            displayed => displayed,
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            recover: _ => scrollViewer.Scroll(ScrollDirection.Down));
+        Assert.IsTrue(result.Succeeded, $"{accessibilityId} did not become visible while scrolling.");
+        return Session.Find<Element>(By.AccessibilityId(accessibilityId), 5_000);
+    }
+
     private void SetCheckBox(string accessibilityId, bool check)
     {
         var checkBox = Session.Find<CheckBox>(By.AccessibilityId(accessibilityId), 5_000);
-        checkBox.SetCheck(check);
-        Assert.AreEqual(check, checkBox.IsChecked, $"{accessibilityId} did not reach the expected checked state.");
+        if (checkBox.IsChecked != check)
+        {
+            checkBox.Invoke(msPostAction: 0);
+        }
+
+        Assert.IsTrue(
+            checkBox.WaitForProperty("ToggleState", check ? "On" : "Off", 10_000),
+            $"{accessibilityId} did not reach the expected checked state.");
     }
 
     private void AssertCheckBoxState(string accessibilityId, bool expectedChecked)

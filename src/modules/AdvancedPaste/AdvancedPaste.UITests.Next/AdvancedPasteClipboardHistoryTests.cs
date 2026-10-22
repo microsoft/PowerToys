@@ -376,7 +376,7 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         {
             var ready = WaitHelper.WaitForStable(
                 ReadWindowsHistorySurface,
-                surface => surface.Tree is not null && surface.State != "Unknown",
+                surface => surface is { Tree: not null } && surface.State != "Unknown",
                 timeoutMS: 20_000,
                 requiredConsecutiveMatches: 2,
                 shouldRetryException: AdvancedPasteUi.IsStaleElement);
@@ -446,8 +446,14 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         // UWP's composed popup lives under an ApplicationFrameWindow in the desktop UIA tree.
         // Inspecting TextInputHost's CoreWindow directly can return only an empty, cloaked host.
         var tree = WinappCli.InvokeJson(
-            "ui", "inspect", "-w", GetDesktopWindow().ToInt64().ToString(CultureInfo.InvariantCulture),
-            "--json", "-d", "20", "--hide-offscreen");
+            "ui",
+            "inspect",
+            "-w",
+            GetDesktopWindow().ToInt64().ToString(CultureInfo.InvariantCulture),
+            "--json",
+            "-d",
+            "20",
+            "--hide-offscreen");
         var windows = AdvancedPasteUi.Nodes(tree).Where(node =>
             AdvancedPasteUi.Property(node, "type") == "Window" &&
             AdvancedPasteUi.Property(node, "className") == "Windows.UI.Core.CoreWindow");

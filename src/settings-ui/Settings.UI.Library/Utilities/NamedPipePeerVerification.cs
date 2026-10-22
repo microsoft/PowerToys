@@ -49,6 +49,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                 out rejectionReason);
         }
 
+        public static bool TryGetClientProcessId(NamedPipeServerStream stream, out uint processId)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
+            processId = 0;
+            return stream.IsConnected &&
+                NativeMethods.GetNamedPipeClientProcessId(stream.SafePipeHandle, out processId);
+        }
+
         public static bool TryVerifyServer(
             NamedPipeClientStream stream,
             string expectedExeName,

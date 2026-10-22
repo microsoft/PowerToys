@@ -468,7 +468,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
-        return new PerformCommandMessage(this.CommandViewModel.Model, new Models.ExtensionObject<IListItem>(this));
+        return new PerformCommandMessage(this.CommandViewModel, new Models.ExtensionObject<IListItem>(this));
     }
 
     public override string ToString()

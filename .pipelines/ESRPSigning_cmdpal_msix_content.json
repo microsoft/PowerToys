@@ -7,7 +7,6 @@
                 "*.dll",
                 "*.exe",
                 "CalculatorEngineCommon.winmd",
-                "CmdPalKeyboardService.winmd",
                 "Microsoft.CommandPalette.Extensions.winmd",
                 "PowerToys.Interop.winmd"
             ],

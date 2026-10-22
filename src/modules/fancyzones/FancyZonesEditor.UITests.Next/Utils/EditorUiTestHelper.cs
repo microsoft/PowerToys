@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using FancyZonesEditorCommon.Data;
-using Microsoft.PowerToys.UITest.Next;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using FancyZonesEditorCommon.Data;
+using Microsoft.PowerToys.UITest.Next;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests.Utils;
 
@@ -319,12 +319,14 @@ public static class EditorUiTestHelper
 
         Step(testBase, $"Waiting for context menu item '{menuItem}'");
         Element? foundItem = null;
-        var itemAppeared = session.WaitFor(() =>
-        {
-            var candidates = session.FindAll<Element>(By.Name(menuItem), 500);
-            foundItem = candidates.FirstOrDefault(IsMenuItem);
-            return foundItem is not null;
-        }, 10_000);
+        var itemAppeared = session.WaitFor(
+            () =>
+            {
+                var candidates = session.FindAll<Element>(By.Name(menuItem), 500);
+                foundItem = candidates.FirstOrDefault(IsMenuItem);
+                return foundItem is not null;
+            },
+            10_000);
 
         Assert.IsTrue(itemAppeared && foundItem is not null, $"Context menu item '{menuItem}' was not found after right-clicking '{layoutName}'.");
         return foundItem!;

@@ -32,7 +32,6 @@ Describe 'WinMD release signing policy' {
         foreach ($payloadPath in @(
             'BackgroundActivator.winmd',
             'CalculatorEngineCommon.winmd',
-            'CmdPalKeyboardService.winmd',
             'Microsoft.CommandPalette.Extensions.winmd',
             'PowerToys.GPOWrapper.winmd',
             'PowerToys.Interop.winmd',
@@ -48,7 +47,6 @@ Describe 'WinMD release signing policy' {
         }
         foreach ($payloadPath in @(
             'CalculatorEngineCommon.winmd',
-            'CmdPalKeyboardService.winmd',
             'Microsoft.CommandPalette.Extensions.winmd',
             'PowerToys.Interop.winmd'
         )) {
