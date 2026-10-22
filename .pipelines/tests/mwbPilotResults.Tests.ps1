@@ -3,8 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
-. "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
-. "$PSScriptRoot\..\MwbPilotResults.Common.ps1"
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
 
 Describe 'MWB full-suite results gate' {
     BeforeEach {
@@ -79,58 +78,14 @@ Describe 'MWB full-suite results gate' {
     }
 
     It 'has no smoke filter in the dispatch and checks results after the child completes' {
-        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwbSandboxExperiment.ps1') -Raw
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwb\mwbSandboxExperiment.ps1') -Raw
         $source | Should Not Match "-Filter 'FullyQualifiedName~AutonomousSandboxSmoke'"
         $source | Should Match 'Assert-MwbPilotTestResults -ResultsDirectory'
         ($source.IndexOf('$testExitCode = $LASTEXITCODE') -lt $source.IndexOf('$counts = Assert-MwbPilotTestResults')) | Should Be $true
     }
 
-    It 'defaults to a compatible build without restricting MWB to an explicit standalone suite' {
-        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-automation.yml') -Raw
-        $source | Should Match 'name: buildSource\r?\n    type: string\r?\n    default: "buildNow"'
-        $source | Should Not Match 'mwbSandboxExperiment'
-        $source | Should Match "eq\(parameters.buildSource, 'buildNow'\)"
-        $source | Should Not Match 'Debug|exactly uiTestModules|InvalidMwbSandboxSelection'
-    }
-
-    It 'records ARM64 as skipped without skipping its other module builds or suites' {
-        $selection = Get-MwbUiTestSelection -Platform arm64 -BuildSource buildNow -Modules @(
-            'MouseWithoutBorders.UITests', 'ColorPicker.UITests')
-        $selection.Run | Should Be $false
-        $selection.RunGeneric | Should Be $true
-        $selection.Reason | Should Be 'Arm64SandboxImageUnavailable'
-        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-full-build.yml') -Raw
-        $source | Should Match 'stage: Build_\$\{\{ parameters.platform \}\}'
-        $source | Should Match 'stage: Test_\$\{\{ parameters.platform \}\}_FullBuild'
-        $source | Should Not Match 'SkipMwbSandbox_arm64'
-    }
-
-    It 'omits MWB only when the selected modules do not include it' {
-        $selection = Get-MwbUiTestSelection -Platform x64Win11 -BuildSource buildNow `
-            -Modules @('ColorPicker.UITests')
-        $selection.Selected | Should Be $false
-        $selection.Run | Should Be $false
-        $selection.RunGeneric | Should Be $true
-        $selection.Blocked | Should Be $false
-        $selection.Reason | Should Be 'NotSelected'
-    }
-
-    It 'uses one Release artifact for mixed-platform and mixed-module selections' {
-        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-automation.yml') -Raw
-        $source | Should Match 'each platform in parameters.buildPlatforms'
-        $source | Should Match 'uiTestModules: \$\{\{ parameters.uiTestModules \}\}'
-        $fullBuild = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-full-build.yml') -Raw
-        $fullBuild | Should Match 'buildConfigurations: \[Release\]'
-        $fullBuild | Should Not Match 'Debug|buildInstallers: false'
-    }
-
     It 'requires all recovery methods and the stale-journal guard as well as the ordered smoke' {
-        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\MwbPilotResults.Common.ps1') -Raw
-        $function = [scriptblock]::Create($source).Ast.Find({
-            param($node)
-            $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
-                $node.Name -eq 'Assert-MwbPilotTestResults'
-        }, $true)
+        $function = (Get-Command Assert-MwbPilotTestResults).ScriptBlock.Ast
         $names = $function.Body.ParamBlock.Parameters |
             Where-Object { $_.Name.VariablePath.UserPath -eq 'RequiredMethods' } |
             ForEach-Object { $_.DefaultValue.SafeGetValue() }

@@ -2,13 +2,43 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-. "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
 
 Describe 'Shared Release MWB UI-test selection' {
     It 'defaults to the current full build and describes unsupported official sources in the UI' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\pipeline-ui-tests-automation.yml') -Raw
         $source | Should Match '(?m)^  - name: buildSource\r?\n    type: string\r?\n    default: "buildNow"'
         $source | Should Match 'displayName: "Build Source \(latestMainOfficialBuild and specificBuildId do not support MWB\)"'
+    }
+
+    Context 'Pipeline infrastructure result gate' {
+        BeforeAll {
+            $template = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\steps-test-mwb-infrastructure.yml') -Raw
+            $script = [regex]::Match($template, '(?ms)^  - pwsh: \|\r?\n(?<script>.*?)(?=^    displayName:)').Groups['script'].Value
+            $script = [regex]::Replace($script, '(?m)^      ', '')
+            $guard = [scriptblock]::Create($script).Ast.Find({
+                param($node)
+                $node -is [Management.Automation.Language.IfStatementAst] -and
+                    $node.Extent.Text -like '*$result.PassedCount -ne $result.TotalCount*'
+            }, $true)
+            if ($null -eq $guard) { throw 'The pipeline infrastructure result gate was not found.' }
+            $check = [scriptblock]::Create('param($result)' + [Environment]::NewLine + $guard.Extent.Text)
+        }
+
+        It 'rejects <Outcome> reports' -TestCases @(
+            @{ Outcome = 'empty'; Total = 0; Passed = 0 }
+            @{ Outcome = 'failed'; Total = 2; Passed = 1 }
+            @{ Outcome = 'skipped'; Total = 2; Passed = 0 }
+            @{ Outcome = 'inconsistent'; Total = 1; Passed = 2 }
+        ) {
+            param($Outcome, $Total, $Passed)
+            { & $check ([pscustomobject]@{ TotalCount = $Total; PassedCount = $Passed }) } |
+                Should Throw 'must execute and pass'
+        }
+
+        It 'accepts only nonempty completely passing reports' {
+            { & $check ([pscustomobject]@{ TotalCount = 2; PassedCount = 2 }) } | Should Not Throw
+        }
     }
 
     It 'has no independent MWB enable switch in the selection API or pipeline templates' {

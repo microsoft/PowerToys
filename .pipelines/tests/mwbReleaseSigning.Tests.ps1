@@ -3,7 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
-. "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
 . "$PSScriptRoot\..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\MwbTestSigning.ps1"
 
 function New-MwbPublicCertificateFixture {

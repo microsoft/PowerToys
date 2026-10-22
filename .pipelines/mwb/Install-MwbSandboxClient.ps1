@@ -179,7 +179,7 @@ try {
     $created = $true
     New-MwbClientProtectedDirectory $output -WriteSid $userSid
     foreach ($name in @('Install-MwbSandboxClient.ps1', 'MwbSandboxClientSetup.Common.ps1',
-        'MwbSandboxCi.Common.ps1', 'WinAppCli.Common.ps1')) {
+        'MwbSandboxCi.Common.ps1')) {
         $source = Join-Path $PSScriptRoot $name
         $destination = Join-Path $runRoot $name
         $hash = (Get-FileHash -LiteralPath $source).Hash

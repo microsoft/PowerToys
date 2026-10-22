@@ -82,7 +82,7 @@ jobs:
     fetchTags: false
 
   - pwsh: |
-      . "$(Build.SourcesDirectory)\.pipelines\MwbSandboxCi.Common.ps1"
+      . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
       $modules = @($env:SELECTED_UI_TEST_MODULES -split ';' | Where-Object { $_ })
       if ('${{ parameters.autoSelectUiTests }}' -eq 'True') {
         $modules = @($env:AUTO_UI_TEST_MODULES -split ';' | Where-Object { $_ })

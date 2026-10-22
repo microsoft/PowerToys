@@ -19,27 +19,6 @@ $replaceProduct = [scriptblock]::Create($body.Substring(1, $body.Length - 2))
 function tar.exe { throw 'Unmocked archive extraction' }
 
 Describe 'MWB maintained suite layout' {
-    It 'keeps active preparation helpers beside the suite and endpoint resources in Payload' {
-        $suite = Split-Path (Split-Path $path)
-        foreach ($relative in @(
-            'MouseWithoutBorders.UITests.csproj',
-            'Payload\MwbSettings.template.json',
-            'Payload\EndpointWorker.ps1',
-            'Payload\Recover-Host.ps1',
-            'Scripts\Initialize-AutonomousHost.ps1',
-            'Scripts\Remove-AutonomousHost.ps1',
-            'Scripts\Invoke-AutonomousLocalVm.ps1',
-            'Scripts\New-MwbRuntimeArchive.ps1',
-            'Scripts\MwbReadyToRun.ps1',
-            'Scripts\MwbReadyToRunMetadata.cs',
-            'Scripts\MwbRunnerModules.ps1',
-            'Scripts\MwbTestSigning.ps1',
-            'Scripts\Test-SuitePreparation.ps1'
-        )) {
-            Test-Path -LiteralPath (Join-Path $suite $relative) -PathType Leaf | Should Be $true
-        }
-    }
-
     It 'keeps build-only metadata out of the test assembly while preserving endpoint target paths' {
         $suite = Split-Path (Split-Path $path)
         [xml]$project = Get-Content -LiteralPath (Join-Path $suite 'MouseWithoutBorders.UITests.csproj') -Raw

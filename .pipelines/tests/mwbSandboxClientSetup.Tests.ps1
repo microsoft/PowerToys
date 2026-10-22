@@ -3,12 +3,12 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
-. "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
-. "$PSScriptRoot\..\MwbSandboxClientSetup.Common.ps1"
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
+. "$PSScriptRoot\..\mwb\MwbSandboxClientSetup.Common.ps1"
 $tokens = $null
 $parseErrors = $null
 $setupAst = [Management.Automation.Language.Parser]::ParseFile(
-    (Join-Path $PSScriptRoot '..\Install-MwbSandboxClient.ps1'), [ref]$tokens, [ref]$parseErrors)
+    (Join-Path $PSScriptRoot '..\mwb\Install-MwbSandboxClient.ps1'), [ref]$tokens, [ref]$parseErrors)
 if ($parseErrors) { throw 'Client setup contains parse errors.' }
 foreach ($name in @('Test-MwbClientTaskCompletion', 'New-MwbClientProtectedDirectory',
     'Assert-MwbClientProtectedDirectory')) {
@@ -980,11 +980,22 @@ Describe 'Corroborated task completion and public diagnostic boundaries' {
 }
 
 Describe 'Effective pipeline setup boundaries' {
-    It 'skips Legacy without dispatch or operating system package changes' {
+    It 'loads the <Layout> client setup without dispatch or operating system package changes on Legacy' -TestCases @(
+        @{ Layout = 'repository' }
+        @{ Layout = 'staged' }
+    ) {
+        param($Layout)
         $directory = Join-Path $TestDrive 'legacy-results'
         $id = [guid]::NewGuid()
+        $payload = Join-Path $PSScriptRoot '..\mwb'
+        if ($Layout -eq 'staged') {
+            $payload = (New-Item -ItemType Directory -Path (Join-Path $TestDrive 'isolated-worker')).FullName
+            foreach ($name in @('Install-MwbSandboxClient.ps1', 'MwbSandboxCi.Common.ps1', 'MwbSandboxClientSetup.Common.ps1')) {
+                Copy-Item -LiteralPath (Join-Path $PSScriptRoot "..\mwb\$name") -Destination $payload
+            }
+        }
         $result = Invoke-MwbClientCommand (Get-Process -Id $PID).Path @(
-            '-NoProfile', '-File', (Join-Path $PSScriptRoot '..\Install-MwbSandboxClient.ps1'),
+            '-NoProfile', '-File', (Join-Path $payload 'Install-MwbSandboxClient.ps1'),
             '-Platform', 'x64Win10', '-RunId', $id.ToString(), '-ResultsDirectory', $directory) 10
         $result.ExitCode | Should Be 0
         $evidence = Get-Content (Join-Path $directory "mwb-prerequisites-$id\client-setup.json") -Raw | ConvertFrom-Json
@@ -1014,7 +1025,7 @@ Describe 'Effective pipeline setup boundaries' {
     }
 
     It 'never enables features, reboots, changes policy or kills by process name' {
-        $common = Get-Content (Join-Path $PSScriptRoot '..\MwbSandboxClientSetup.Common.ps1') -Raw
+        $common = Get-Content (Join-Path $PSScriptRoot '..\mwb\MwbSandboxClientSetup.Common.ps1') -Raw
         ($common + $setupAst.Extent.Text) | Should Not Match 'Enable-WindowsOptionalFeature|Restart-Computer|Set-ExecutionPolicy|Stop-Process -Name|taskkill|AllowUnsigned|ForceApplicationShutdown'
         (Get-Command Start-MwbClientFirstLaunch).Definition | Should Match 'shutdown.exe /s /f /t 0'
         (Get-Command Start-MwbClientFirstLaunch).Definition | Should Match 'Get-MwbClientInboxLauncher'

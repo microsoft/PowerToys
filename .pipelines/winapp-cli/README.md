@@ -186,7 +186,7 @@ On a disposable CI-equivalent **VM**, after ensuring there is no user Sandbox an
 logging in the standard test account, run from the elevated agent identity:
 
 ```powershell
-& .\.pipelines\Install-MwbSandboxClient.ps1 -Platform x64Win11 `
+& .\.pipelines\mwb\Install-MwbSandboxClient.ps1 -Platform x64Win11 `
   -RunId ([guid]::NewGuid()) -ResultsDirectory C:\MwbSetupValidation
 ```
 

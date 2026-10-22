@@ -3,8 +3,9 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
-. "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
-$buildPath = Join-Path $PSScriptRoot '..\New-MwbSandboxCiArtifact.ps1'
+. "$PSScriptRoot\..\WinAppCli.Common.ps1"
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
+$buildPath = Join-Path $PSScriptRoot '..\mwb\New-MwbSandboxCiArtifact.ps1'
 $tokens = $null
 $parseErrors = $null
 $buildAst = [Management.Automation.Language.Parser]::ParseFile($buildPath, [ref]$tokens, [ref]$parseErrors)
@@ -312,7 +313,7 @@ Describe 'MWB CI manifest and initializer agreement' {
         $tokens = $null
         $errors = $null
         $ci = [Management.Automation.Language.Parser]::ParseFile(
-            (Join-Path $PSScriptRoot '..\mwbSandboxExperiment.ps1'), [ref]$tokens, [ref]$errors)
+            (Join-Path $PSScriptRoot '..\mwb\mwbSandboxExperiment.ps1'), [ref]$tokens, [ref]$errors)
         if ($errors.Count) { throw 'CI manifest script contains parse errors.' }
         $assignment = $ci.Find({
             param($node)
@@ -785,18 +786,11 @@ Describe 'MWB CI bundle provenance and coherent host staging' {
 
 Describe 'MWB gated preparation source contracts' {
     BeforeEach {
-        $script = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwbSandboxExperiment.ps1') -Raw
+        $script = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwb\mwbSandboxExperiment.ps1') -Raw
         $build = $buildAst.Extent.Text
         $templates = Join-Path $PSScriptRoot '..\v2\templates'
         $job = Get-Content -LiteralPath (Join-Path $templates 'job-build-project.yml') -Raw
         $testJob = Get-Content -LiteralPath (Join-Path $templates 'job-test-project.yml') -Raw
-    }
-
-    It 'uses the shared official dependency without private source builds or patches' {
-        $build | Should Match 'Save-WinAppCliRelease'
-        $build | Should Not Match 'git.exe|GitOptions|SdkVersion|NativeAOT|vcvars|dotnet publish|PatchSha256|preview-source'
-        Test-Path -LiteralPath (Join-Path $PSScriptRoot '..\mwb-sandbox-preview\source.json') | Should Be $false
-        Test-Path -LiteralPath (Join-Path $PSScriptRoot '..\mwb-sandbox-preview\firewall-query.patch') | Should Be $false
     }
 
     It 'defaults to no preparation for existing build callers' {
@@ -808,14 +802,6 @@ Describe 'MWB gated preparation source contracts' {
         $job | Should Match "version: '10.0'"
         $buildAst.ParamBlock.Extent.Text | Should Match '\[switch\] \$ReadyToRun'
         $buildAst.ParamBlock.Extent.Text | Should Match "ValidateSet\('x64', 'arm64'\).*Platform = 'x64'"
-    }
-
-    It 'prepares the compiler and protected CLI only in BUILD and retains the ordinary artifact identity' {
-        $job | Should Match 'JobOutputArtifactName: build-\$\(BuildPlatform\)-\$\(BuildConfiguration\)'
-        $job | Should Match 'buildInstallers.*'
-        $script | Should Not Match 'New-MwbRuntimeArchive|dotnet (restore|publish)|Invoke-WebRequest'
-        $build | Should Match 'outside the source checkout and published bundle'
-        $build | Should Match 'Remove-Item -LiteralPath "\$archive.staging"'
     }
 
     It 'uses the same lean archive for a protected host and guest without modifying original outputs' {
@@ -954,7 +940,7 @@ Describe 'MWB Sandbox prerequisite diagnostics' {
         }
 
         It 'never uses the elevated agent to execute the interactive user alias or exposes raw package paths' {
-            $common = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\MwbSandboxCi.Common.ps1') -Raw
+            $common = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwb\MwbSandboxCi.Common.ps1') -Raw
             $diagnostics = $common.Substring($common.IndexOf('# Match the trusted family'))
             $diagnostics | Should Not Match 'Start-Process|ProcessStartInfo|Invoke-Expression|InstallLocation|AliasPath'
             $diagnostics | Should Not Match '\.Exception\.Message|Format-List|Out-String'

@@ -3,11 +3,11 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
-. "$PSScriptRoot\..\MwbSandboxCi.Common.ps1"
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
 $tokens = $null
 $parseErrors = $null
 $exportAst = [Management.Automation.Language.Parser]::ParseFile(
-    (Join-Path $PSScriptRoot '..\Export-MwbSandboxPrerequisites.ps1'), [ref]$tokens, [ref]$parseErrors)
+    (Join-Path $PSScriptRoot '..\mwb\Export-MwbSandboxPrerequisites.ps1'), [ref]$tokens, [ref]$parseErrors)
 if ($parseErrors) { throw 'Prerequisite exporter contains parse errors.' }
 foreach ($name in @('Copy-MwbDiagnosticFields', 'ConvertTo-MwbPublicUserPrerequisites',
     'Get-MwbUserPrerequisiteFiles', 'Export-MwbSandboxPrerequisites')) {

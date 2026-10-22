@@ -531,7 +531,7 @@ Describe 'MWB optional archive publication and failure cleanup' {
     }
 }
 
-Describe 'MWB explicit native SDK compiler integration' {
+Describe 'MWB explicit native SDK compiler integration' -Tag 'NativeCompiler' {
     It 'preserves tiny-fixture <Configuration> IL and identical copies with <PathKind> staging' -TestCases @(
         @{ PathKind = 'native'; Configuration = 'Debug' }
         @{ PathKind = 'PSDrive'; Configuration = 'Debug' }

@@ -236,6 +236,9 @@ jobs:
       # SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
       exactVersion: '10.0.303'
 
+  - ${{ if eq(parameters.buildTests, true) }}:
+    - template: steps-test-mwb-infrastructure.yml
+
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
       displayName: Ensure VSTest Platform
@@ -738,7 +741,7 @@ jobs:
     - pwsh: |
         $work = "$(Pipeline.Workspace)\mwb-ci-build-$(System.JobId)"
         try {
-          & "$(Build.SourcesDirectory)\.pipelines\New-MwbSandboxCiArtifact.ps1" `
+          & "$(Build.SourcesDirectory)\.pipelines\mwb\New-MwbSandboxCiArtifact.ps1" `
             -ProductRoot "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)\$(BuildConfiguration)" `
             -OutputRoot "$(JobOutputDirectory)\mwb-sandbox-ci" `
             -WorkRoot $work `

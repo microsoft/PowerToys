@@ -149,7 +149,7 @@ Describe 'UI test signing selection' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\signSparsePackages.ps1') -Raw
         $source | Should Match "\[string\]\`$CertificateFriendlyName = 'PowerToys UI Test Signing'"
         $source | Should Match '\$testCertificateFriendlyName = \$CertificateFriendlyName'
-        $mwb = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\MwbSandboxCi.Common.ps1') -Raw
+        $mwb = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwb\MwbSandboxCi.Common.ps1') -Raw
         $mwb | Should Match '-CertificateFriendlyName "PowerToys MWB UI Test \$RunId"'
         $mwb | Should Match "'PowerToys.MouseWithoutBorders.exe'"
         $mwb | Should Match "'PowerToys.Settings.exe'"

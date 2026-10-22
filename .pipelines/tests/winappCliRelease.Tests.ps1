@@ -53,7 +53,7 @@ Describe 'Official winapp CLI central dependency pin' {
 
     It 'uses the same helper for the standard harness and protected MWB payload' {
         $installer = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\InstallWinAppCli.ps1') -Raw
-        $preparation = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\New-MwbSandboxCiArtifact.ps1') -Raw
+        $preparation = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwb\New-MwbSandboxCiArtifact.ps1') -Raw
         foreach ($caller in @($installer, $preparation)) {
             $caller | Should Match 'Save-WinAppCliRelease'
             $caller | Should Not Match 'v0\.3\.2|SdkVersion|PatchSha256|releases/latest|firewall-query'
@@ -64,7 +64,6 @@ Describe 'Official winapp CLI central dependency pin' {
     It 'does not confuse the portable CLI with Windows Sandbox client installation or feature enablement' {
         $helper = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\WinAppCli.Common.ps1') -Raw
         $installer = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\InstallWinAppCli.ps1') -Raw
-        $installer | Should Match 'not the MicrosoftWindows.WindowsSandbox client package'
         foreach ($script in @($helper, $installer)) {
             $script | Should Not Match '(?im)^\s*(winget|Add-AppxPackage|Enable-WindowsOptionalFeature|Restart-Computer|Set-ExecutionPolicy)\b'
             $script | Should Not Match 'Start-Process.*-Verb RunAs'

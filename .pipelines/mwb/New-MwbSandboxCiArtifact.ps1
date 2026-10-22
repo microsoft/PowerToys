@@ -19,6 +19,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. "$PSScriptRoot\..\WinAppCli.Common.ps1"
 . "$PSScriptRoot\MwbSandboxCi.Common.ps1"
 
 if ($Configuration -ceq 'Release' -and [string]::IsNullOrWhiteSpace($MwbUiTestBinaryPath)) {
@@ -197,7 +198,7 @@ function Get-MwbCiWindowsTargetVersion {
     $versions[0]
 }
 
-$paths = Get-MwbCiPreparationPaths $ProductRoot $OutputRoot $WorkRoot (Join-Path $PSScriptRoot '..') `
+$paths = Get-MwbCiPreparationPaths $ProductRoot $OutputRoot $WorkRoot (Join-Path $PSScriptRoot '..\..') `
     -Platform $Platform -Configuration $Configuration
 $product = $paths.ProductRoot
 $sourceRoot = $paths.SourceRoot

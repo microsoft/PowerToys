@@ -3,7 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 #Requires -Version 7.0
-$scriptPath = Join-Path $PSScriptRoot '..\mwbSandboxExperiment.ps1'
+$scriptPath = Join-Path $PSScriptRoot '..\mwb\mwbSandboxExperiment.ps1'
 $tokens = $null
 $parseErrors = $null
 $ast = [Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -98,7 +98,7 @@ Describe 'MWB protected provisioning launcher' {
         $directory = Join-Path $TestDrive "logging fixture $([guid]::NewGuid().ToString('N'))"
         $logRoot = Join-Path $directory 'provisioning-logs'
         New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
-        Copy-Item -LiteralPath (Join-Path $PSScriptRoot '..\Invoke-MwbProvisioning.ps1') -Destination $directory
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot '..\mwb\Invoke-MwbProvisioning.ps1') -Destination $directory
         $initializer = Join-Path $directory 'Initialize-AutonomousHost.ps1'
         $parameters = @'
 param([string] $ProductRoot, [string] $TestUser, [guid] $RunId,

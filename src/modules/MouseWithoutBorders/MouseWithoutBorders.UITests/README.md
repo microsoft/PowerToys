@@ -282,14 +282,33 @@ for MWB.
 Remove the former `mwbSandboxExperiment` parameter from saved queue/REST requests;
 the selected modules now determine whether MWB runs.
 
-`.pipelines\New-MwbSandboxCiArtifact.ps1` produces the verified runtime/tool
+`.pipelines\mwb\New-MwbSandboxCiArtifact.ps1` produces the verified runtime/tool
 bundle with the isolated MWB UI-test variant, outside shipping outputs. Affected-PR
 builds prepare it only when the resolver selects MWB.
-`.pipelines\mwbSandboxExperiment.ps1` dispatches protected preparation,
+`.pipelines\mwb\mwbSandboxExperiment.ps1` dispatches protected preparation,
 the complete suite, recovery and cleanup using this project's `Scripts` and
 `Payload`. The build artifact and installer are not modified by test signing.
 Use the `ui-tests-pipeline-ci` skill for exact pushed-source validation;
 monitor long CI runs at 1800-second intervals.
+
+### PowerShell infrastructure checks
+
+MWB pipeline helpers live under `.pipelines\mwb`; the shared winapp CLI release
+helper remains at `.pipelines\WinAppCli.Common.ps1`. Full builds with test
+compilation enabled and UI-tests-only builds run the MWB and shared CLI Pester
+suites before compilation, publish NUnit results, and fail on empty, failed or
+skipped selected tests. The gate uses the existing Pester 3.4.0 framework under
+PowerShell 7 and reports a missing module as a prerequisite failure.
+
+The fast gate excludes the `NativeCompiler` integration group, which requires
+explicit Crossgen2 and runtime-reference paths. Those tests remain available for
+opt-in compiler validation; they are not counted as passing gate tests.
+
+```powershell
+$tests = @(Get-ChildItem .pipelines\tests\mwb*.Tests.ps1) +
+    (Get-Item .pipelines\tests\winappCliRelease.Tests.ps1)
+Invoke-Pester -Script $tests.FullName -ExcludeTag NativeCompiler -PassThru -Quiet
+```
 
 ## Ownership, evidence and recovery
 

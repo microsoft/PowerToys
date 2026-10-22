@@ -146,6 +146,12 @@ desktop, PowerShell Direct, payload, shell-extension signing, and evidence failu
 
 The PowerToys UI test pipeline provides flexible options for building and testing:
 
+Full builds with test compilation enabled and UI-tests-only builds first run the
+MWB/shared winapp CLI PowerShell infrastructure tests using Pester 3.4.0 under
+PowerShell 7. The build publishes NUnit results and fails if any selected test is
+missing, skipped or failed. Optional `NativeCompiler` integration tests require
+explicit tool/runtime paths and are excluded from this fast gate.
+
 ### Pipeline Options
 
 - **buildSource**: Select the build type for testing:

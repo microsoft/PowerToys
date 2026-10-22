@@ -259,7 +259,7 @@ try {
     }
     Copy-Item -LiteralPath (Join-Path $repoRoot '.pipelines\runUiTestAsUser.ps1') `
         -ToSession $session -Destination $guestTools
-    Copy-Item -LiteralPath (Join-Path $repoRoot '.pipelines\Invoke-MwbProvisioning.ps1') `
+    Copy-Item -LiteralPath (Join-Path $repoRoot '.pipelines\mwb\Invoke-MwbProvisioning.ps1') `
         -ToSession $session -Destination $guestTools
     Invoke-Command -Session $session -ScriptBlock {
         param($Tools, $TaskName, $User, $RunId, $Archive, $Backend, $SandboxWinApp, $Configuration, $CertificateHash)
