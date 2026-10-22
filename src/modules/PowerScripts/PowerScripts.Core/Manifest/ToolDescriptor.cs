@@ -87,6 +87,9 @@ public sealed class JsonSchemaProperty
 {
     public const string FilePathFormat = "file-path";
 
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
+
     [JsonPropertyName("type")]
     public string? Type { get; set; }
 
@@ -217,7 +220,7 @@ public sealed class PowerScriptExtension
     /// Optional explicit input data shape (<c>none</c>/<c>text</c>/<c>files</c>). Inline HTML is text;
     /// media and HTML documents use files with extension filters, regardless of their source.
     /// When omitted it is inferred from a declared file input, otherwise none. Authors
-    /// declare only I/O — never consuming modules. A resolved input of <c>files</c> is what makes a
+    /// normally declare only I/O. A resolved input of <c>files</c> is what makes a
     /// script file-driven (surfaced in the Explorer right-click menu); there is no separate "kind".
     /// </summary>
     [JsonPropertyName("input")]
@@ -226,6 +229,10 @@ public sealed class PowerScriptExtension
     /// <summary>Optional output shape (<c>none</c>/<c>text</c>/<c>files</c>); inferred when omitted. Rich HTML and media are files.</summary>
     [JsonPropertyName("output")]
     public string? Output { get; set; }
+
+    /// <summary>Optional discovery audience. Omitted means every compatible consumer; not execution authorization.</summary>
+    [JsonPropertyName("consumers")]
+    public List<string>? Consumers { get; set; }
 
     [JsonPropertyName("publisher")]
     public string? Publisher { get; set; }

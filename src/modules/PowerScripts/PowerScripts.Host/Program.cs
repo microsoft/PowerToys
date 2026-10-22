@@ -42,6 +42,11 @@ internal static class Program
             var (positional, options) = ParseArgs(args.Skip(1).ToArray());
             var root = options.TryGetValue("root", out var r) ? r.FirstOrDefault() : null;
 
+            if (args[0].Equals("script-settings", StringComparison.OrdinalIgnoreCase))
+            {
+                return ScriptSettingsCommands.Run(PowerScriptsPaths.ResolveScriptsRoot(root), positional, options);
+            }
+
             var registry = new ScriptRegistry(root);
             registry.Load();
 
@@ -80,9 +85,19 @@ internal static class Program
             return 1;
         }
 
+        var consumer = options.TryGetValue("consumer", out var consumers) ? consumers.FirstOrDefault() : null;
+        if (consumers is not null && (consumers.Count != 1 || !ManifestValidator.IsValidConsumerId(consumer)))
+        {
+            Console.Error.WriteLine("list: --consumer requires a module id using letters, digits, '.', '_' or '-'.");
+            return 1;
+        }
+
+        var catalogue = options.ContainsKey("include-unconfigured")
+            ? registry.Scripts.Concat(registry.UnconfiguredScripts)
+            : registry.Scripts;
         var scripts = options.ContainsKey("include-disabled")
-            ? registry.Scripts
-            : FilterEnabledRuntimes(registry.Scripts);
+            ? catalogue
+            : FilterEnabledRuntimes(catalogue);
         var rows = scripts
             .Select(s =>
             {
@@ -91,10 +106,16 @@ internal static class Program
             })
             .Where(r => wantInput is null || r.Input == wantInput)
             .Where(r => wantOutput is null || r.Output == wantOutput)
+            .Where(r => r.Script.IsDiscoverableBy(consumer))
             .ToList();
 
         if (asJson)
         {
+            foreach (var error in registry.Errors)
+            {
+                Console.Error.WriteLine($"  ! {error.FolderPath}: {error.Message}");
+            }
+
             // Structured, permissioned capability list — also the shape the KBM editor picker and
             // future agents/MCP servers consume.
             var trustStore = new TrustStore(SettingsStore.Current);
@@ -118,6 +139,12 @@ internal static class Program
                     s.Source,
                     s.IconPath,
                     s.IconWarning,
+                    consumers = s.Consumers ?? new List<string>(),
+                    s.HasDescriptor,
+                    s.HasLocalSettings,
+                    s.HasLocalMxcSettings,
+                    s.LocalMxc,
+                    s.ConfigurationErrors,
                     io = new
                     {
                         input = ScriptIo.ToToken(ioInput),
@@ -131,7 +158,7 @@ internal static class Program
                     },
                     folderPath = s.FolderPath,
                     entryFullPath = s.EntryFullPath,
-                    trusted = trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
+                    trusted = s.ConfigurationErrors.Count == 0 && trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
                     input = s.Input,
                     parameters = s.Parameters.Select(parameter => new
                     {
@@ -595,7 +622,7 @@ internal static class Program
             return 0;
         }
 
-        foreach (var script in FilterEnabledRuntimes(registry.FileScriptsForSelection(files)))
+        foreach (var script in FilterEnabledRuntimes(registry.FileScriptsForSelection(files)).Where(script => script.IsDiscoverableBy("explorer")))
         {
             var name = script.Name.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
             var row = $"{script.Id}\t{name}";
@@ -695,13 +722,15 @@ internal static class Program
     {
         Console.WriteLine("PowerScripts.Host — run and enumerate PowerScripts.");
         Console.WriteLine();
-        Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--no-input] [--include-disabled] [--root <dir>]");
+        Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--consumer <module-id>] [--no-input] [--include-disabled] [--include-unconfigured] [--root <dir>]");
         Console.WriteLine("       Input and output: none | text | files.");
         Console.WriteLine("       Disabled runtimes are omitted; --include-disabled lists all installed scripts for configuration.");
         Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
         Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
+        Console.WriteLine("  script-settings get|save|reset|forget --entry <script-path> [--root <dir>]");
+        Console.WriteLine("       Author defaults and local overrides; save reads a JSON object from stdin. Discovery never registers helper files.");
         Console.WriteLine("  shell-menu [--icons] --files <f1> <f2> ... (tab-separated id/name, optional icon path)");
         Console.WriteLine("  shell-install [--root <dir>]        (register the Explorer right-click submenu)");
         Console.WriteLine("  shell-uninstall [--root <dir>]      (remove the Explorer right-click submenu)");

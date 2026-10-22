@@ -70,7 +70,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             LoadMxcSettings();
             LoadPythonSettings();
             LoadWslDistributions();
-            ReloadScripts();
         }
 
         public ObservableCollection<PowerScriptListItem> Scripts { get; }
@@ -320,7 +319,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return true;
         }
 
-        public bool TrySetScriptMxcMode(PowerScriptListItem script, int modeIndex, bool isRiskAccepted)
+        public async Task<bool> TrySetScriptMxcModeAsync(PowerScriptListItem script, int modeIndex, bool isRiskAccepted)
         {
             if (script is null || string.IsNullOrWhiteSpace(script.Id) || modeIndex < 0 || modeIndex > 2)
             {
@@ -341,11 +340,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             var enabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(script.MxcEnabledPolicies);
             var disabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(script.MxcDisabledPolicies);
-            SaveScriptMxcSettings(script, enabledOverride, enabledPolicies, disabledPolicies);
+            await SaveScriptMxcSettingsAsync(script, enabledOverride, enabledPolicies, disabledPolicies);
             return true;
         }
 
-        public bool TrySetScriptMxcPolicy(PowerScriptListItem script, string policy, bool isEnabled, bool isRiskAccepted)
+        public async Task<bool> TrySetScriptMxcPolicyAsync(PowerScriptListItem script, string policy, bool isEnabled, bool isRiskAccepted)
         {
             if (script is null || string.IsNullOrWhiteSpace(script.Id) || !IsKnownMxcPolicy(policy))
             {
@@ -373,11 +372,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 disabledPolicies.Add(CanonicalizeMxcPolicy(policy));
             }
 
-            SaveScriptMxcSettings(script, script.MxcEnabledOverride, enabledPolicies, disabledPolicies);
+            await SaveScriptMxcSettingsAsync(script, script.MxcEnabledOverride, enabledPolicies, disabledPolicies);
             return true;
         }
 
-        public bool TrySetScriptMxcConfiguration(
+        public async Task<bool> TrySetScriptMxcConfigurationAsync(
             PowerScriptListItem script,
             int modeIndex,
             IEnumerable<string> enabledPolicies,
@@ -416,7 +415,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return false;
             }
 
-            SaveScriptMxcSettings(script, enabledOverride, normalizedEnabled, disabledPolicies);
+            await SaveScriptMxcSettingsAsync(script, enabledOverride, normalizedEnabled, disabledPolicies, usesGlobalPolicy);
             return true;
         }
 
@@ -425,19 +424,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public static bool ResolveMxcEnabled(bool? explicitPreference, bool isPlatformSupported) =>
             explicitPreference ?? isPlatformSupported;
-
-        public void ReloadScripts()
-        {
-            Scripts.Clear();
-            foreach (var script in LoadScriptsFromHost())
-            {
-                ApplyMxcSettingsToScript(script);
-                Scripts.Add(script);
-            }
-
-            OnPropertyChanged(nameof(HasScripts));
-            RefreshCatalogue();
-        }
 
         public static IReadOnlyList<PowerScriptListItem> FilterAndSortScripts(
             IEnumerable<PowerScriptListItem> scripts,
@@ -462,13 +448,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return ordered.ThenBy(script => script.Id, StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        private void RefreshCatalogue()
+        private void RefreshCatalogue(bool preserveEditorOrder = false)
         {
             var visible = FilterAndSortScripts(Scripts, ScriptSortIndex, ScriptInputFilterIndex);
-            VisibleScripts.Clear();
-            foreach (var script in visible)
+            if (preserveEditorOrder)
             {
-                VisibleScripts.Add(script);
+                // Saving must not move focused editors or recycle another script's draft.
+                var matching = visible.ToHashSet();
+                var existing = VisibleScripts.ToHashSet();
+                visible = VisibleScripts.Where(matching.Contains)
+                    .Concat(visible.Where(script => !existing.Contains(script))).ToList();
+            }
+
+            var retained = visible.ToHashSet();
+            for (var index = VisibleScripts.Count - 1; index >= 0; index--)
+            {
+                if (!retained.Contains(VisibleScripts[index]))
+                {
+                    VisibleScripts.RemoveAt(index);
+                }
+            }
+
+            for (var index = 0; index < visible.Count; index++)
+            {
+                var script = visible[index];
+                if (index < VisibleScripts.Count && ReferenceEquals(VisibleScripts[index], script))
+                {
+                    continue;
+                }
+
+                var previousIndex = VisibleScripts.IndexOf(script);
+                if (previousIndex >= 0)
+                {
+                    VisibleScripts.Move(previousIndex, index);
+                }
+                else
+                {
+                    VisibleScripts.Insert(index, script);
+                }
             }
 
             OnPropertyChanged(nameof(CatalogueCount));
@@ -485,7 +502,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             SaveConfiguredScriptsRoot(folder.Trim());
             ScriptsFolder = ResolveScriptsFolder();
-            ReloadScripts();
 
             // Re-register the Explorer submenu so right-click entries reflect the new folder's scripts.
             if (_isEnabled)
@@ -499,7 +515,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             SaveConfiguredScriptsRoot(null);
             ScriptsFolder = ResolveScriptsFolder();
-            ReloadScripts();
 
             if (_isEnabled)
             {
@@ -731,42 +746,37 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return scripts;
         }
 
-        private void SaveScriptMxcSettings(
+        private async Task SaveScriptMxcSettingsAsync(
             PowerScriptListItem script,
             bool? enabledOverride,
             List<string> enabledPolicies,
-            List<string> disabledPolicies)
+            List<string> disabledPolicies,
+            bool usesGlobalPolicy = false)
         {
             enabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(enabledPolicies);
             disabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(disabledPolicies);
             disabledPolicies.RemoveAll(policy => enabledPolicies.Contains(policy, StringComparer.Ordinal));
             var riskAccepted = RequiresMxcRiskAcceptance(enabledOverride, disabledPolicies);
-            var scriptOverride = new MxcScriptOverrideSnapshot
-            {
-                Enabled = enabledOverride,
-                EnabledPolicies = enabledPolicies,
-                DisabledPolicies = disabledPolicies,
-                RiskAccepted = riskAccepted,
-            };
-            _mxcScriptOverrides[script.Id] = scriptOverride;
-
-            var config = LoadConfigNode();
-            var mxc = GetOrCreateObject(config, "mxc");
-            var scripts = GetOrCreateObject(mxc, "scripts");
-            var storedId = scripts.Select(item => item.Key)
-                .FirstOrDefault(id => string.Equals(id, script.Id, StringComparison.OrdinalIgnoreCase)) ?? script.Id;
-            var storedOverride = GetOrCreateObject(scripts, storedId);
+            var storedOverride = new JsonObject();
             storedOverride["enabled"] = enabledOverride.HasValue ? JsonValue.Create(enabledOverride.Value) : null;
             storedOverride["enabledPolicies"] = CreateJsonArray(enabledPolicies);
             storedOverride["disabledPolicies"] = CreateJsonArray(disabledPolicies);
             storedOverride["riskAccepted"] = riskAccepted;
-            WriteConfigNode(config);
-
-            ApplyMxcSettingsToScript(script);
+            DeserializeSnapshot(await InvokeScriptSettingsHostAsync(
+                "save",
+                script.EntryFullPath,
+                new JsonObject { ["mxc"] = usesGlobalPolicy ? null : storedOverride }));
+            await ReloadScriptsAsync(preserveEditorOrder: true);
         }
 
         private void ApplyMxcSettingsToScript(PowerScriptListItem script)
         {
+            if (script.HasLocalMxcSettings)
+            {
+                script.ApplyLocalMxcSettings(_isMxcEnabled, _mxcDisabledPolicies);
+                return;
+            }
+
             if (!_hasRejectedGlobalMxcWeakening &&
                 _mxcScriptOverrides.TryGetValue(script.Id, out var scriptOverride))
             {

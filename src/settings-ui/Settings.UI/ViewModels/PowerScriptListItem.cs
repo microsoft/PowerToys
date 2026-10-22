@@ -5,6 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json.Serialization;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -12,10 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     /// <summary>
-    /// A single PowerScript shown in the Settings list. This is a read-only projection of the
-    /// script's descriptor metadata (the source of truth), as emitted by
-    /// <c>PowerScripts.Host.exe list --json</c>. The Settings page only displays this information;
-    /// authors change it by editing the script's sibling <c>.tool.json</c> descriptor.
+    /// A single PowerScript shown in Settings, projected from effective Host metadata.
     /// </summary>
     public sealed class PowerScriptListItem : Observable
     {
@@ -23,6 +23,59 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public const string NetworkPolicy = "network";
         public const string UiPolicy = "ui";
         public const string LeastPrivilegePolicy = "leastPrivilege";
+
+        private static readonly string[] AllMxcPolicies = { FilesystemPolicy, NetworkPolicy, UiPolicy, LeastPrivilegePolicy };
+
+        private static readonly string[] MetadataProperties =
+        {
+            nameof(Id),
+            nameof(Name),
+            nameof(Description),
+            nameof(Consumers),
+            nameof(HasDescriptor),
+            nameof(HasLocalSettings),
+            nameof(HasLocalMxcSettings),
+            nameof(LocalMxc),
+            nameof(IsMxcReviewRequired),
+            nameof(ConfigurationErrors),
+            nameof(HasConfigurationErrors),
+            nameof(ConfigurationErrorDisplay),
+            nameof(ConsumersDisplay),
+            nameof(ConfigureAutomationId),
+            nameof(ResetAutomationId),
+            nameof(ForgetAutomationId),
+            nameof(InlineSettingsAutomationId),
+            nameof(Runtime),
+            nameof(DefaultIconGlyph),
+            nameof(IconPath),
+            nameof(IconWarning),
+            nameof(HasIcon),
+            nameof(HasIconWarning),
+            nameof(IconSourcePath),
+            nameof(Io),
+            nameof(Input),
+            nameof(Capabilities),
+            nameof(Mxc),
+            nameof(Trusted),
+            nameof(FolderPath),
+            nameof(EntryFullPath),
+            nameof(Parameters),
+            nameof(HasParameters),
+            nameof(HasFileInput),
+            nameof(ExtensionsDisplay),
+            nameof(IoDisplay),
+            nameof(InputDisplay),
+            nameof(CatalogueSummary),
+            nameof(CardAutomationId),
+            nameof(CapabilitiesDisplay),
+            nameof(RuntimeDisplay),
+            nameof(TrustDisplay),
+            nameof(HasFolderPath),
+            nameof(RecommendedPoliciesDisplay),
+            nameof(RecommendationSummary),
+            nameof(MxcPolicyEditorAutomationId),
+            nameof(OpenFolderAutomationId),
+        };
 
         private bool? _mxcEnabledOverride;
         private List<string> _mxcEnabledPolicies = new();
@@ -36,12 +89,92 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isLeastPrivilegeRestrictionEffective = true;
         private string _mxcEffectiveDisplay = GetResourceString("PowerScripts_MxcEffectiveAll");
         private bool _iconLoadFailed;
+        private int _settingsRevision;
+
+        [JsonIgnore]
+        public int SettingsRevision => _settingsRevision;
+
+        public void InvalidateSettings()
+        {
+            _settingsRevision++;
+            OnPropertyChanged(nameof(SettingsRevision));
+        }
+
+        public void UpdateMetadata(PowerScriptListItem script)
+        {
+            ArgumentNullException.ThrowIfNull(script);
+            if (!string.Equals(IconPath, script.IconPath, StringComparison.OrdinalIgnoreCase))
+            {
+                _iconLoadFailed = false;
+            }
+
+            Id = script.Id;
+            Name = script.Name;
+            Description = script.Description;
+            Consumers = script.Consumers;
+            HasDescriptor = script.HasDescriptor;
+            HasLocalSettings = script.HasLocalSettings;
+            HasLocalMxcSettings = script.HasLocalMxcSettings;
+            LocalMxc = script.LocalMxc;
+            ConfigurationErrors = script.ConfigurationErrors;
+            Runtime = script.Runtime;
+            IconPath = script.IconPath;
+            IconWarning = script.IconWarning;
+            Io = script.Io;
+            Input = script.Input;
+            Capabilities = script.Capabilities;
+            Mxc = script.Mxc;
+            Trusted = script.Trusted;
+            FolderPath = script.FolderPath;
+            EntryFullPath = script.EntryFullPath;
+            Parameters = script.Parameters;
+
+            // An all-properties notification also rebinds whole-item DataContexts in the
+            // repeater, recreating expanded controls and discarding their visual state.
+            foreach (var property in MetadataProperties)
+            {
+                OnPropertyChanged(property);
+            }
+        }
 
         public string Id { get; set; } = string.Empty;
 
         public string Name { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
+
+        public List<string> Consumers { get; set; } = new();
+
+        public bool HasDescriptor { get; set; }
+
+        public bool HasLocalSettings { get; set; }
+
+        public bool HasLocalMxcSettings { get; set; }
+
+        public PowerScriptLocalMxcSettings LocalMxc { get; set; }
+
+        public bool IsMxcReviewRequired => HasLocalMxcSettings && LocalMxc is not null &&
+            !LocalMxc.RiskAccepted && (LocalMxc.Enabled == false || NormalizeMxcPolicies(LocalMxc.DisabledPolicies).Count > 0);
+
+        public List<string> ConfigurationErrors { get; set; } = new();
+
+        public bool HasConfigurationErrors => ConfigurationErrors is { Count: > 0 };
+
+        public string ConfigurationErrorDisplay => string.Join(Environment.NewLine, ConfigurationErrors ?? new());
+
+        public string ConsumersDisplay => Consumers is { Count: > 0 }
+            ? string.Join(", ", Consumers)
+            : GetResourceString("PowerScripts_SettingsAllConsumers");
+
+        private string SettingsAutomationKey => $"PowerScripts_{Id}_{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(EntryFullPath.ToUpperInvariant())))[..12]}";
+
+        public string ConfigureAutomationId => $"{SettingsAutomationKey}_Configure";
+
+        public string ResetAutomationId => $"{SettingsAutomationKey}_Reset";
+
+        public string ForgetAutomationId => $"{SettingsAutomationKey}_Forget";
+
+        public string InlineSettingsAutomationId => $"{SettingsAutomationKey}_Inline";
 
         public string Runtime { get; set; } = string.Empty;
 
@@ -233,6 +366,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsGlobalMxcPolicyEnabled(string policy) =>
             !_globalMxcDisabledPolicies.Contains(policy, StringComparer.Ordinal);
+
+        public void ApplyLocalMxcSettings(bool globalEnabled, IEnumerable<string> globalDisabledPolicies)
+        {
+            if (IsMxcReviewRequired)
+            {
+                // Stale/unaccepted local weakening fails closed, even when global MXC is off.
+                ApplyMxcSettings(true, AllMxcPolicies, Array.Empty<string>(), true, Array.Empty<string>());
+            }
+            else
+            {
+                ApplyMxcSettings(
+                    LocalMxc?.Enabled,
+                    LocalMxc?.EnabledPolicies,
+                    LocalMxc?.DisabledPolicies,
+                    globalEnabled,
+                    globalDisabledPolicies);
+            }
+        }
 
         internal void ApplyMxcSettings(
             bool? enabledOverride,

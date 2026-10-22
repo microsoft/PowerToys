@@ -6500,4 +6500,280 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_IoText" xml:space="preserve">
     <value>Text</value>
   </data>
+  <data name="PowerScripts_SettingsTitle" xml:space="preserve">
+    <value>Configure script</value>
+  </data>
+  <data name="PowerScripts_SettingsSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PowerScripts_SettingsCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerScripts_SettingsDiscard" xml:space="preserve">
+    <value>Discard changes</value>
+  </data>
+  <data name="PowerScripts_SettingsRetry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="PowerScripts_SettingsInlineHelp" xml:space="preserve">
+    <value>Use the pencil to edit a value, or reset to its recommendation. Save applies local changes without approving execution.</value>
+  </data>
+  <data name="PowerScripts_SettingsEdit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PowerScripts_SettingsNotSet" xml:space="preserve">
+    <value>Not set</value>
+  </data>
+  <data name="PowerScripts_SettingsRequirement" xml:space="preserve">
+    <value>Requirement</value>
+  </data>
+  <data name="PowerScripts_SettingsDetails.Header" xml:space="preserve">
+    <value>Security and script details</value>
+  </data>
+  <data name="PowerScripts_SettingsShortName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="PowerScripts_SettingsShortConsumers" xml:space="preserve">
+    <value>Module discovery</value>
+  </data>
+  <data name="PowerScripts_SettingsShortExtensions" xml:space="preserve">
+    <value>File types</value>
+  </data>
+  <data name="PowerScripts_SettingsShortCapabilities" xml:space="preserve">
+    <value>Capabilities</value>
+  </data>
+  <data name="PowerScripts_SettingsShortIcon" xml:space="preserve">
+    <value>Icon</value>
+  </data>
+  <data name="PowerScripts_SettingsShortFunction" xml:space="preserve">
+    <value>Entry function</value>
+  </data>
+  <data name="PowerScripts_SettingsShortMinFiles" xml:space="preserve">
+    <value>Minimum files</value>
+  </data>
+  <data name="PowerScripts_SettingsShortMaxFiles" xml:space="preserve">
+    <value>Maximum files</value>
+  </data>
+  <data name="PowerScripts_SettingsShortDefault" xml:space="preserve">
+    <value>Default value</value>
+  </data>
+  <data name="PowerScripts_SettingsOptional" xml:space="preserve">
+    <value>Optional</value>
+  </data>
+  <data name="PowerScripts_SettingsDefaultSummary" xml:space="preserve">
+    <value>Default: {0}</value>
+  </data>
+  <data name="PowerScripts_SettingsParameterOptions" xml:space="preserve">
+    <value>Constraints and file input</value>
+  </data>
+  <data name="PowerScripts_SettingsChooseParameterType" xml:space="preserve">
+    <value>Choose a parameter type.</value>
+  </data>
+  <data name="PowerScripts_SettingsNotice" xml:space="preserve">
+    <value>Changes are saved locally, separately from the script's recommended defaults. Saving does not approve execution or grant permissions. Changes may require you to trust the script again before running it.</value>
+  </data>
+  <data name="PowerScripts_SettingsDisplayName" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="PowerScripts_SettingsDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="PowerScripts_SettingsRuntime" xml:space="preserve">
+    <value>Runtime</value>
+  </data>
+  <data name="PowerScripts_SettingsFunction" xml:space="preserve">
+    <value>Entry function (optional with a custom execution command)</value>
+  </data>
+  <data name="PowerScripts_SettingsInput" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="PowerScripts_SettingsOutput" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="PowerScripts_SettingsExtensions" xml:space="preserve">
+    <value>File extensions (comma-separated; * for all files)</value>
+  </data>
+  <data name="PowerScripts_SettingsMinFiles" xml:space="preserve">
+    <value>Minimum files</value>
+  </data>
+  <data name="PowerScripts_SettingsMaxFiles" xml:space="preserve">
+    <value>Maximum files (leave empty for no limit)</value>
+  </data>
+  <data name="PowerScripts_SettingsIcon" xml:space="preserve">
+    <value>Icon path (relative to the script, or absolute)</value>
+  </data>
+  <data name="PowerScripts_SettingsCapabilities" xml:space="preserve">
+    <value>Declared capabilities (comma-separated; not permission grants)</value>
+  </data>
+  <data name="PowerScripts_SettingsConsumers" xml:space="preserve">
+    <value>Discoverable by these modules (comma-separated; empty for all)</value>
+  </data>
+  <data name="PowerScripts_SettingsConsumersHelp" xml:space="preserve">
+    <value>Optional discovery targeting only, not authorization. Common IDs: advanced-paste, command-palette, keyboard-manager, color-picker, explorer, light-switch. Other module IDs are allowed.</value>
+  </data>
+  <data name="PowerScripts_SettingsAllConsumers" xml:space="preserve">
+    <value>All compatible modules</value>
+  </data>
+  <data name="PowerScripts_SettingsParameters" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="PowerScripts_SettingsAdvanced" xml:space="preserve">
+    <value>Advanced settings</value>
+  </data>
+  <data name="PowerScripts_SettingsExecutionHelp" xml:space="preserve">
+    <value>These settings change how the script is launched. Use one command argument per line, without shell quoting. Maps use one name=value pair per line. Leave standard input empty for command-line parameters, or select json to send structured input through standard input. To remove the entire custom execution recipe, choose Use built-in runtime; clearing only the command is not sufficient. The built-in Python runtime requires an entry function.</value>
+  </data>
+  <data name="PowerScripts_SettingsCommand" xml:space="preserve">
+    <value>Command and fixed arguments (one token per line)</value>
+  </data>
+  <data name="PowerScripts_SettingsStdin" xml:space="preserve">
+    <value>Standard input mode</value>
+  </data>
+  <data name="PowerScripts_SettingsArgMap" xml:space="preserve">
+    <value>Parameter to argument mapping (name=flag)</value>
+  </data>
+  <data name="PowerScripts_SettingsExitCodes" xml:space="preserve">
+    <value>Exit code meanings (code=description)</value>
+  </data>
+  <data name="PowerScripts_SettingsResetRecommended" xml:space="preserve">
+    <value>Reset to recommended</value>
+  </data>
+  <data name="PowerScripts_SettingsParameterType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="PowerScripts_SettingsFormat" xml:space="preserve">
+    <value>Format (file-path enables a file picker)</value>
+  </data>
+  <data name="PowerScripts_SettingsDefault" xml:space="preserve">
+    <value>Default value (empty clears the default)</value>
+  </data>
+  <data name="PowerScripts_SettingsChoices" xml:space="preserve">
+    <value>Choices (one per line)</value>
+  </data>
+  <data name="PowerScripts_SettingsMinimum" xml:space="preserve">
+    <value>Minimum value</value>
+  </data>
+  <data name="PowerScripts_SettingsMaximum" xml:space="preserve">
+    <value>Maximum value</value>
+  </data>
+  <data name="PowerScripts_SettingsRequired" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="PowerScripts_SettingsRemoveParameter" xml:space="preserve">
+    <value>Remove parameter</value>
+  </data>
+  <data name="PowerScripts_SettingsParameterName" xml:space="preserve">
+    <value>New parameter name</value>
+  </data>
+  <data name="PowerScripts_SettingsAddParameter" xml:space="preserve">
+    <value>Add parameter</value>
+  </data>
+  <data name="PowerScripts_SettingsParameterNameError" xml:space="preserve">
+    <value>Enter a unique, nonempty parameter name.</value>
+  </data>
+  <data name="PowerScripts_SettingsStructuredDefaultHelp" xml:space="preserve">
+    <value>Structured defaults are preserved unless changed. This form supports string, number, integer, and boolean defaults. Clear the value to remove a structured default, or reset to recommended.</value>
+  </data>
+  <data name="PowerScripts_SettingsIntegerError" xml:space="preserve">
+    <value>Enter a whole number within the supported integer range.</value>
+  </data>
+  <data name="PowerScripts_SettingsMapError" xml:space="preserve">
+    <value>Enter one name=value pair per line, with a nonempty name.</value>
+  </data>
+  <data name="PowerScripts_SettingsInvalidResponse" xml:space="preserve">
+    <value>PowerScripts Host returned an invalid settings response.</value>
+  </data>
+  <data name="PowerScripts_SettingsHostFailed" xml:space="preserve">
+    <value>PowerScripts could not save the settings. Your edits have been kept. Check that the script and its settings are accessible, then try again.</value>
+  </data>
+  <data name="PowerScripts_SettingsTimeout" xml:space="preserve">
+    <value>PowerScripts Host did not respond in time. Your edits have been kept. Refresh to check whether the operation completed before trying again.</value>
+  </data>
+  <data name="PowerScripts_SettingsAdd" xml:space="preserve">
+    <value>Add script…</value>
+  </data>
+  <data name="PowerScripts_SettingsFileFilter" xml:space="preserve">
+    <value>PowerShell and Python scripts</value>
+  </data>
+  <data name="PowerScripts_SettingsAddButton.Content" xml:space="preserve">
+    <value>Add script…</value>
+  </data>
+  <data name="PowerScripts_SettingsEmptyCatalogue.Message" xml:space="preserve">
+    <value>No PowerScripts found. Choose a folder containing scripts with sibling .tool.json descriptors, or explicitly add a .ps1 or .py script. Other helper files are not automatically added as actions.</value>
+  </data>
+  <data name="PowerScripts_SettingsConfigurationErrors.Header" xml:space="preserve">
+    <value>Configuration needs attention — this script cannot run</value>
+  </data>
+  <data name="PowerScripts_SettingsConfiguration.Header" xml:space="preserve">
+    <value>Local settings</value>
+  </data>
+  <data name="PowerScripts_SettingsConfiguration.Description" xml:space="preserve">
+    <value>Override recommended defaults without editing the distributed script descriptor.</value>
+  </data>
+  <data name="PowerScripts_SettingsConfigureButton.Content" xml:space="preserve">
+    <value>Configure</value>
+  </data>
+  <data name="PowerScripts_SettingsConsumersCard.Header" xml:space="preserve">
+    <value>Module discovery</value>
+  </data>
+  <data name="PowerScripts_SettingsResetAll" xml:space="preserve">
+    <value>Reset local settings</value>
+  </data>
+  <data name="PowerScripts_SettingsResetAllButton.Content" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="PowerScripts_SettingsResetAllHelp" xml:space="preserve">
+    <value>Remove all local metadata overrides and restore global execution isolation settings? The script stays registered. Recommended defaults may change when the script author updates the descriptor. This does not approve execution.</value>
+  </data>
+  <data name="PowerScripts_SettingsForget" xml:space="preserve">
+    <value>Forget local settings</value>
+  </data>
+  <data name="PowerScripts_SettingsForgetButton.Content" xml:space="preserve">
+    <value>Forget</value>
+  </data>
+  <data name="PowerScripts_SettingsForgetHelp" xml:space="preserve">
+    <value>Remove this script's local registration and settings? No script or descriptor files are deleted. A script with a descriptor can still be discovered in your scripts folder; an explicitly added bare script will disappear from this list.</value>
+  </data>
+  <data name="PowerScripts_SettingsActionId" xml:space="preserve">
+    <value>Action ID (advanced; must be unique)</value>
+  </data>
+  <data name="PowerScripts_SettingsChoiceUnspecified" xml:space="preserve">
+    <value>Not specified</value>
+  </data>
+  <data name="PowerScripts_SettingsChoiceString" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="PowerScripts_SettingsChoiceInteger" xml:space="preserve">
+    <value>Whole number</value>
+  </data>
+  <data name="PowerScripts_SettingsChoiceNumber" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="PowerScripts_SettingsChoiceBoolean" xml:space="preserve">
+    <value>True or false</value>
+  </data>
+  <data name="PowerScripts_SettingsChoiceArray" xml:space="preserve">
+    <value>List (advanced)</value>
+  </data>
+  <data name="PowerScripts_SettingsChoiceObject" xml:space="preserve">
+    <value>Object (advanced)</value>
+  </data>
+  <data name="PowerScripts_SettingsChoiceFilePath" xml:space="preserve">
+    <value>File path</value>
+  </data>
+  <data name="PowerScripts_SettingsChooseExistingScript" xml:space="preserve">
+    <value>Choose an existing .ps1 or .py script file.</value>
+  </data>
+  <data name="PowerScripts_SettingsUseBuiltInRuntime" xml:space="preserve">
+    <value>Use built-in runtime</value>
+  </data>
+  <data name="PowerScripts_SettingsCommandRequired" xml:space="preserve">
+    <value>A custom execution recipe needs a command. Enter a command, reset it to recommended, or choose Use built-in runtime to remove the entire custom recipe.</value>
+  </data>
+  <data name="PowerScripts_SettingsReviewIsolation.Header" xml:space="preserve">
+    <value>Review isolation settings after script changes</value>
+  </data>
+  <data name="PowerScripts_SettingsReviewIsolation.Description" xml:space="preserve">
+    <value>Previous approval to relax isolation no longer applies. All isolation restrictions are enforced until you explicitly review and confirm this script's isolation settings, even if global isolation is off or relaxed.</value>
+  </data>
 </root>

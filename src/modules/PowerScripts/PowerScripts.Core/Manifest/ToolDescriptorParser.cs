@@ -61,13 +61,20 @@ public static class ToolDescriptorParser
             return null;
         }
 
-        if (descriptor is null || string.IsNullOrWhiteSpace(descriptor.Name))
+        // The script sits next to the descriptor and shares its stem: foo.py.tool.json -> foo.py.
+        var entry = Path.GetFileName(descriptorPath[..^DescriptorSuffix.Length]);
+        return Parse(descriptor, entry);
+    }
+
+    /// <summary>Parses the effective descriptor after local settings have been overlaid.</summary>
+    public static PowerScriptManifest? Parse(ToolDescriptor? descriptor, string entry)
+    {
+        if (descriptor is null || string.IsNullOrWhiteSpace(descriptor.Name) ||
+            descriptor.InputSchema?.Properties?.Values.Any(property => property is null) == true ||
+            descriptor.PowerScript?.Capabilities?.Any(capability => capability is null) == true)
         {
             return null;
         }
-
-        // The script sits next to the descriptor and shares its stem: foo.py.tool.json -> foo.py.
-        var entry = Path.GetFileName(descriptorPath[..^DescriptorSuffix.Length]);
 
         var extension = descriptor.PowerScript;
         var manifest = new PowerScriptManifest
@@ -76,12 +83,13 @@ public static class ToolDescriptorParser
             Name = FirstNonEmpty(descriptor.Title, descriptor.Annotations?.Title, descriptor.Name)!.Trim(),
             Description = descriptor.Description?.Trim() ?? string.Empty,
             Entry = entry,
-            Runtime = ResolveRuntime(extension?.Runtime, descriptorPath, entry),
+            Runtime = ResolveRuntime(extension?.Runtime, entry),
             Execute = descriptor.Execute,
             Publisher = extension?.Publisher,
             Version = extension?.Version,
             Source = extension?.Source,
             Icon = extension?.Icon,
+            Consumers = extension?.Consumers is { } consumers ? new List<string>(consumers) : null,
         };
 
         if (extension?.Capabilities is { Count: > 0 } capabilities)
@@ -147,6 +155,7 @@ public static class ToolDescriptorParser
             manifest.Parameters.Add(new ScriptParameter
             {
                 Name = name,
+                Label = schema.Title,
                 Type = MapType(schema),
                 Description = schema.Description,
                 Default = schema.DefaultAsString(),
@@ -209,7 +218,7 @@ public static class ToolDescriptorParser
         };
     }
 
-    private static ScriptRuntime ResolveRuntime(string? declared, string descriptorPath, string entry)
+    private static ScriptRuntime ResolveRuntime(string? declared, string entry)
     {
         if (!string.IsNullOrWhiteSpace(declared))
         {

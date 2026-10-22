@@ -64,6 +64,23 @@ public class ClientTests
     """;
 
     [TestMethod]
+    public void ConsumerTargetingIsOptionalCaseInsensitiveAndIndependentOfIo()
+    {
+        var scripts = PowerScriptInfo.ParseList("""
+            [
+              {"id":"all","io":{"input":"text","output":"text"}},
+              {"id":"color","io":{"input":"text","output":"text"},"consumers":["color-picker"]}
+            ]
+            """);
+        Assert.IsTrue(scripts[0].IsDiscoverableBy("keyboard-manager"));
+        Assert.IsTrue(scripts[1].IsDiscoverableBy("COLOR-PICKER"));
+        Assert.IsFalse(scripts[1].IsDiscoverableBy("advanced-paste"));
+        Assert.IsTrue(scripts[1].Accepts(PowerScriptIO.Text));
+        var client = new PowerScriptsClient(hostPath: @"C:\does-not-exist\host.exe");
+        Assert.ThrowsException<ArgumentException>(() => client.List("bad module"));
+    }
+
+    [TestMethod]
     public void ParseList_MapsFields_AndSkipsInvalid()
     {
         var scripts = PowerScriptInfo.ParseList(SampleJson);

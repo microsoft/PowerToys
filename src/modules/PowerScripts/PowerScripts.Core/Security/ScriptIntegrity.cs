@@ -51,6 +51,11 @@ public static class ScriptIntegrity
         AppendField(sha, body);
         AppendField(sha, descriptor);
         AppendField(sha, declarationBytes);
+        if (!string.IsNullOrEmpty(manifest.LocalSettingsFingerprint))
+        {
+            AppendField(sha, Encoding.UTF8.GetBytes(manifest.LocalSettingsFingerprint));
+        }
+
         return Convert.ToHexString(sha.GetHashAndReset()).ToLowerInvariant();
     }
 

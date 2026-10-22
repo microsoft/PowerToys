@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -16,6 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     public sealed partial class PowerScriptMxcPolicyDialog : ContentDialog
     {
         private bool _usesGlobalPolicy;
+        private bool _isSaving;
 
         public PowerScriptMxcPolicyDialog(PowerScriptListItem script)
         {
@@ -58,7 +60,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                                 script.MxcEnabledPolicies.Count == 0 &&
                                 script.MxcDisabledPolicies.Count == 0;
             UpdateRiskState(resetAcceptance: false);
+            Closing += (_, args) => args.Cancel = _isSaving;
         }
+
+        public Func<Task> SaveAsync { get; set; }
 
         public PowerScriptListItem Script { get; }
 
@@ -134,11 +139,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void RiskAcceptanceChanged(object sender, RoutedEventArgs e) => UpdateRiskState(resetAcceptance: false);
 
-        private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private async void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             if (RequiresRiskAcceptance() && !RiskAccepted)
             {
                 args.Cancel = true;
+                return;
+            }
+
+            if (SaveAsync is null)
+            {
+                return;
+            }
+
+            var deferral = args.GetDeferral();
+            try
+            {
+                _isSaving = true;
+                IsPrimaryButtonEnabled = false;
+                ((Control)Content).IsEnabled = false;
+                SaveError.IsOpen = false;
+                await SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                args.Cancel = true;
+                SaveError.Message = ex.Message;
+                SaveError.IsOpen = true;
+            }
+            finally
+            {
+                _isSaving = false;
+                ((Control)Content).IsEnabled = true;
+                UpdateRiskState(resetAcceptance: false);
+                deferral.Complete();
             }
         }
 

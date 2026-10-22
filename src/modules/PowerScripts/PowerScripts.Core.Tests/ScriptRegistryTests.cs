@@ -136,9 +136,10 @@ public class ScriptRegistryTests
         var registry = new ScriptRegistry(_root);
         registry.Load();
 
-        // Only the first wins; the collision is reported.
-        Assert.AreEqual(1, registry.Scripts.Count);
-        Assert.AreEqual(1, registry.Errors.Count);
+        // Neither source may inherit the other's bindings or approvals through scan order.
+        Assert.AreEqual(0, registry.Scripts.Count);
+        Assert.AreEqual(2, registry.UnconfiguredScripts.Count);
+        Assert.AreEqual(2, registry.Errors.Count);
         Assert.IsTrue(registry.Errors[0].Message.Contains("duplicate id"));
     }
 

@@ -191,8 +191,7 @@ public sealed class PowerScriptManifest
     /// script that reads text and writes a file). Null means infer from a declared file <see cref="Input"/> (files),
     /// otherwise none. Populated (baked) by the registry once resolved so every consumer reads the same
     /// shape. Valid inputs are None, Text, and Files; inline HTML is Text, while media/documents are Files.
-    /// A script declares only its own I/O — never which modules consume it — so adding a new
-    /// consuming module never requires touching any script.
+    /// Optional discovery targeting is independent of this compatibility contract.
     /// </summary>
     public PowerScriptDataFormat? InputFormat { get; set; }
 
@@ -204,6 +203,30 @@ public sealed class PowerScriptManifest
     /// string and the permission contract an agent / MCP server must respect.
     /// </summary>
     public List<string> Capabilities { get; set; } = new();
+
+    /// <summary>Optional discovery audience; null allows every compatible consumer.</summary>
+    public List<string>? Consumers { get; set; }
+
+    public bool IsDiscoverableBy(string? consumer) =>
+        consumer is null || Consumers is null || Consumers.Contains(consumer, StringComparer.OrdinalIgnoreCase);
+
+    [JsonIgnore]
+    public bool HasDescriptor { get; internal set; }
+
+    [JsonIgnore]
+    public bool HasLocalSettings { get; internal set; }
+
+    [JsonIgnore]
+    public bool HasLocalMxcSettings { get; internal set; }
+
+    [JsonIgnore]
+    public MxcScriptOverride? LocalMxc { get; internal set; }
+
+    [JsonIgnore]
+    public IReadOnlyList<string> ConfigurationErrors { get; internal set; } = Array.Empty<string>();
+
+    [JsonIgnore]
+    internal string LocalSettingsFingerprint { get; set; } = string.Empty;
 
     /// <summary>Display-only MXC recommendations; enforcement remains centrally resolved.</summary>
     public PowerScriptMxcMetadata Mxc { get; set; } = new();

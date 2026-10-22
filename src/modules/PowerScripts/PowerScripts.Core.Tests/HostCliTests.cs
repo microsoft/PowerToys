@@ -101,6 +101,88 @@ public class HostCliTests
     }
 
     [TestMethod]
+    public void ConsumerDiscoveryFiltersAudienceAndIoWhileManagementSeesAll()
+    {
+        WriteDescriptor("py_upper.py", "\"function\":\"uppercase\",\"input\":\"text\",\"output\":\"text\",\"consumers\":[\"color-picker\"]");
+        var all = RunHostOk("list", "--json", "--include-disabled", "--root", _root);
+        Assert.AreEqual(5, ParseList(all).Count);
+        var targeted = RunHostOk("list", "--json", "--include-disabled", "--consumer", "COLOR-PICKER", "--input", "text", "--output", "text", "--root", _root);
+        CollectionAssert.AreEqual(new[] { "py_upper" }, Ids(targeted));
+        targeted = RunHostOk("list", "--json", "--include-disabled", "--consumer", "advanced-paste", "--input", "text", "--root", _root);
+        CollectionAssert.AreEqual(new[] { "md2html" }, Ids(targeted));
+        var (exit, _, error) = RunHost("list", "--json", "--consumer", "not a module", "--root", _root);
+        Assert.AreEqual(1, exit);
+        StringAssert.Contains(error, "--consumer");
+        WriteDescriptor("wc.ps1", "\"input\":\"files\",\"extensions\":[\".md\"],\"consumers\":[\"color-picker\"]");
+        Assert.AreEqual(string.Empty, RunHostOk("shell-menu", "--root", _root, "--files", "test.md").Trim());
+    }
+
+    [TestMethod]
+    public void ScriptSettingsCliRegistersOnlyChosenFileAndKeepsDescriptorsUntouched()
+    {
+        var entry = Path.Combine(_root, "chosen.ps1");
+        Write("chosen.ps1", "Write-Output 'chosen'");
+        Write("helper.ps1", "Write-Output 'not an action'");
+        var store = new ScriptSettingsStore();
+        var settingsPath = store.GetSettingsPath(_root, entry);
+        try
+        {
+            var preview = RunHostOk("script-settings", "get", "--entry", entry, "--root", _root);
+            using (var document = JsonDocument.Parse(preview))
+            {
+                Assert.IsFalse(document.RootElement.GetProperty("hasLocalSettings").GetBoolean());
+            }
+
+            Assert.AreEqual(5, ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root)).Count);
+            var (exit, output, error) = RunHostWithInput(
+                """{"overrides":{"title":"Personal action","x-powerscript":{"consumers":["keyboard-manager"]}}}""",
+                "script-settings", "save", "--entry", entry, "--root", _root);
+            Assert.AreEqual(0, exit, error);
+            using var saved = JsonDocument.Parse(output);
+            var id = saved.RootElement.GetProperty("effective").GetProperty("name").GetString()!;
+            var listed = ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root));
+            Assert.AreEqual(6, listed.Count);
+            Assert.AreEqual("Personal action", listed[id].GetProperty("name").GetString());
+            Assert.IsFalse(listed[id].GetProperty("trusted").GetBoolean());
+            Assert.IsFalse(File.Exists(entry + ".tool.json"));
+            Assert.AreEqual(5, ParseList(RunHostOk("list", "--json", "--include-disabled", "--consumer", "color-picker", "--root", _root)).Count);
+
+            var authorEntry = Path.Combine(_root, "act_hello.ps1");
+            var descriptor = File.ReadAllBytes(authorEntry + ".tool.json");
+            try
+            {
+                (exit, _, error) = RunHostWithInput("""{"overrides":{"title":"Personal title"}}""",
+                    "script-settings", "save", "--entry", authorEntry, "--root", _root);
+                Assert.AreEqual(0, exit, error);
+                CollectionAssert.AreEqual(descriptor, File.ReadAllBytes(authorEntry + ".tool.json"));
+                var reset = RunHostOk("script-settings", "reset", "--entry", authorEntry, "--root", _root);
+                using var resetDocument = JsonDocument.Parse(reset);
+                Assert.AreEqual(0, resetDocument.RootElement.GetProperty("overrides").EnumerateObject().Count());
+            }
+            finally
+            {
+                File.Delete(store.GetSettingsPath(_root, authorEntry));
+            }
+
+            File.Delete(entry);
+            Assert.AreEqual(5, ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root)).Count);
+            var includingUnconfigured = ParseList(RunHostOk("list", "--json", "--include-disabled", "--include-unconfigured", "--root", _root));
+            Assert.IsTrue(includingUnconfigured[id].GetProperty("configurationErrors").GetArrayLength() > 0);
+            Assert.AreEqual(0, RunHost("script-settings", "forget", "--entry", entry, "--root", _root).Exit);
+            Assert.IsFalse(File.Exists(settingsPath));
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+            var directory = Path.GetDirectoryName(settingsPath)!;
+            if (Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any())
+            {
+                Directory.Delete(directory);
+            }
+        }
+    }
+
+    [TestMethod]
     public void List_Json_ReturnsScripts_WithResolvedIo()
     {
         var (exit, stdout, _) = RunHost("list", "--json", "--include-disabled", "--root", _root);

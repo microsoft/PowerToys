@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+
 namespace PowerScripts.Core.Manifest;
 
 /// <summary>
@@ -67,9 +69,31 @@ public static class ManifestValidator
                 errors.Add("'input.minFiles' must be at least 1.");
             }
 
-            if (manifest.Input is { MaxFiles: > 0 } input && input.MaxFiles < input.MinFiles)
+            if (manifest.Input.MaxFiles < 0 ||
+                (manifest.Input is { MaxFiles: > 0 } input && input.MaxFiles < input.MinFiles))
             {
                 errors.Add("'input.maxFiles' must be 0 (unbounded) or >= minFiles.");
+            }
+        }
+
+        if (manifest.Consumers is { } consumers &&
+            (consumers.Count == 0 || consumers.Any(c => !IsValidConsumerId(c))))
+        {
+            errors.Add("'x-powerscript.consumers' must be omitted or contain non-empty module ids using letters, digits, '.', '_' or '-'.");
+        }
+
+        if (manifest.Execute is { } execute)
+        {
+            if (execute.Command is not { Count: > 0 } command ||
+                command.Any(token => token is null || token.Contains('\0')) ||
+                string.IsNullOrWhiteSpace(command[0]))
+            {
+                errors.Add("'x-execute.command' must contain an executable and valid argument tokens.");
+            }
+
+            if (execute.Stdin is not null && !execute.UsesJsonStdin)
+            {
+                errors.Add("'x-execute.stdin' must be 'json' or omitted.");
             }
         }
 
@@ -84,6 +108,8 @@ public static class ManifestValidator
 
         return errors;
     }
+
+    public static bool IsValidConsumerId(string? id) => !string.IsNullOrWhiteSpace(id) && IsValidId(id);
 
     private static bool IsValidId(string id)
     {
@@ -150,10 +176,22 @@ public static class ManifestValidator
                     errors.Add($"int parameter '{p.Name}' has max < min.");
                 }
 
-                if (!string.IsNullOrEmpty(p.Default) && !int.TryParse(p.Default, out _))
+                if (!string.IsNullOrEmpty(p.Default))
                 {
-                    errors.Add($"int parameter '{p.Name}' has a non-integer default '{p.Default}'.");
+                    if (!int.TryParse(p.Default, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
+                    {
+                        errors.Add($"int parameter '{p.Name}' has a non-integer default '{p.Default}'.");
+                    }
+                    else if ((p.Min is { } minimum && number < minimum) || (p.Max is { } maximum && number > maximum))
+                    {
+                        errors.Add($"int parameter '{p.Name}' has a default outside its declared bounds.");
+                    }
                 }
+            }
+
+            if (p.IsBool && !string.IsNullOrEmpty(p.Default) && !bool.TryParse(p.Default, out _))
+            {
+                errors.Add($"bool parameter '{p.Name}' must have a true or false default.");
             }
         }
     }

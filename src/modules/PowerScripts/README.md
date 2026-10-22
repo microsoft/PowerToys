@@ -21,8 +21,8 @@
 
 ## The idea
 
-A **PowerScript** is a script file paired with a sibling `.tool.json` descriptor. A script declares
-only what it **consumes** and **produces** (its input → output); there is no separate "kind":
+A **PowerScript** is a registered script file, normally paired with a sibling `.tool.json` descriptor.
+A script declares what it **consumes** and **produces** (its input → output); there is no separate "kind":
 
 - An **action** — input `none`, output `text` (its stdout). "Do something on my PC." Triggered by a
   Keyboard Manager hotkey or Command Palette command.
@@ -31,7 +31,7 @@ only what it **consumes** and **produces** (its input → output); there is no s
 - A **data transform** — e.g. input `text` → output `files` containing an HTML document. Consumed by Advanced Paste.
 
 Every module is a thin consumer of one **registry** and invokes one **executor**. Modules discover
-compatible scripts from the resolved I/O contract rather than author-declared integration names.
+compatible scripts from the resolved I/O contract, optionally narrowed by discovery audience.
 
 ## Architecture
 
@@ -64,10 +64,54 @@ compatible scripts from the resolved I/O contract rather than author-declared in
 
 ## Script packages
 
-Each script must have a sibling descriptor: `example.py` plus `example.py.tool.json`, or
+For distribution, use a sibling descriptor: `example.py` plus `example.py.tool.json`, or
 `example.ps1` plus `example.ps1.tool.json`. Descriptors are discovered directly under the scripts
 root and one sub-folder below it, so a package can keep companion assets beside its script.
 Script bodies are not scanned for metadata or special function names.
+
+### Personal settings and explicit registration
+
+The descriptor supplies recommendations, not immutable settings. In PowerToys Settings, expand a
+script to view local metadata and optional consumer visibility. Values are read-only until their
+pencil button is selected, with a reset button beside each field. Nested **Parameters** and
+**Advanced settings** sections expose parameter contracts/defaults and launch settings. Parameter
+headers show their types, required state and defaults (including **Not set**); new parameters explicitly select their type. Choose
+**Save** to apply edits, or **Discard changes** to reload the last saved settings.
+Each field/group can be reset to its current recommendation, then saved. Reset removes its override rather than
+copying today's default, so future author updates remain effective. Neither saving nor resetting
+rewrites the script or its `.tool.json`.
+
+**Add script** explicitly registers a chosen `.ps1` or `.py` without creating a descriptor. Merely
+placing a bare file in the scripts folder does **not** register it; helper files stay helpers.
+Plain Python registrations default to a Windows Python launch recipe. Choose the built-in function
+runner explicitly when function-based transforms or the configured WSL Python runtime are needed.
+Scripts still require trust approval and an enabled runtime before execution.
+
+Local records live below
+`%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\script-settings\<catalogue-path-hash>\<source-path-hash>.json`.
+Each versioned record holds sparse nested descriptor overrides and optional per-script MXC settings.
+Identity is associated with the normalized catalogue/source paths, not only the action ID. There is
+no growing metadata dictionary in `config.json`; unchanged descriptor-backed scripts need no record.
+Records are limited to 256 KiB, written using a cross-process lock and atomic replacement, and
+unknown record fields are preserved. Duplicate action IDs quarantine **all** colliding sources.
+
+Removed registered files remain visible as unavailable, cannot execute, and can be forgotten without
+deleting the script or descriptor. Records are not silently expired: **Forget local settings**
+removes a registration/preferences, while a remaining descriptor still supplies an action.
+Changing paths creates a distinct local identity rather than inheriting another source's overrides.
+
+Effective local metadata participates in content-hash trust. New per-script MXC relaxations are
+bound to that content hash too; changing script, descriptor, or effective settings invalidates their
+risk acceptance. Legacy `config.json` `mxc.scripts` entries remain compatible until edited/reset.
+Editing metadata moves that script to a local policy record and requires renewed acceptance for
+any legacy weakening. Reset inherits global policy and never revives a legacy per-ID relaxation.
+These ordinary same-user JSON files are **not** a tamper-resistant security boundary.
+
+Configuration tools use `script-settings get|save|reset|forget --entry <path> [--root <dir>]`.
+`get` returns recommended/effective descriptors, sparse overrides, and validation errors without
+registering anything. `save` reads `{"overrides":{...},"mxc":{...}}` from UTF-8 stdin; omitted sections
+are preserved. Within overrides, null clears an author property, and omitting an override restores
+the recommendation. Explicit `"mxc":null` resets the per-script policy to global defaults.
 
 **Migration:** inline metadata is no longer supported. Move identity, parameters, file filters,
 icons, and capabilities into `.tool.json`. Built-in Python scripts must declare
@@ -77,9 +121,16 @@ invalidate existing content-hash trust and require approval again.
 
 ### Consumer discovery
 
-Authors don't hand-list which PowerToys modules expose a script. Each consumer filters the resolved
+Each consumer filters the resolved
 **input → output** contract it supports: Explorer selects file inputs, action consumers select
 `input: none`, and Advanced Paste selects compatible transform contracts.
+
+Optional `"x-powerscript": { "consumers": ["color-picker"] }` narrows normal discovery for
+`list --consumer color-picker`. Omitted/null means every compatible consumer; a nonempty list
+targets stable, nonlocalized module IDs, matched case-insensitively. An explicit empty list is
+invalid. Omit `--consumer` for a complete management catalogue. This is a discovery preference,
+**not** execution authorization: direct invocation still uses the normal trust/MXC gate.
+The Explorer menu supplies `explorer`; other consumers supply their own ID.
 
 Inputs and outputs are only `none`, `text`, and `files`. Inline HTML is a string (`text`); images,
 audio, video, and HTML documents use `files` with extension and selection-count filters. A PNG
@@ -142,7 +193,8 @@ references may need a lifetime longer than the script invocation.
 
 Consumer `list` discovery omits Python scripts while Python execution is disabled in Settings.
 Windows and WSL modes both enable discovery. The Settings catalogue uses
-`list --json --include-disabled` to keep all installed scripts visible for configuration; this flag
+`list --json --include-disabled --include-unconfigured` to keep all installed and unavailable
+registered scripts visible for configuration; these flags
 does not enable Python or bypass execution checks. The modern Explorer menu also omits disabled
 Python scripts.
 

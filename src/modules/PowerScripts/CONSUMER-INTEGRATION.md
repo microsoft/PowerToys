@@ -8,9 +8,9 @@ Host owns script loading, validation, trust, parameter validation, security poli
 
 1. **Always execute through `PowerScripts.Host.exe`.** Do not launch a script, interpreter, or
    descriptor command directly from the consumer.
-2. **Discover by resolved I/O, not module names.** Scripts do not declare `surface`, `kind`, or a
-   list of PowerToys modules. A consumer selects scripts whose `io.input` and `io.output` it can
-   supply and handle.
+2. **Discover by resolved I/O and optional audience.** A consumer selects scripts whose `io.input`
+   and `io.output` it can supply and handle, passing its stable consumer ID to honor optional
+   targeting. Scripts do not declare the removed `surface` or `kind` fields.
 3. **Treat script IDs as opaque.** Display `name` and `description`; persist and invoke `id`.
 4. **Keep parameter UX in the consumer.** The Host never opens a generic parameter prompt.
 5. **Do not bypass trust or MXC.** Both interactive and automatic invocations use the Host so they
@@ -26,7 +26,7 @@ Host owns script loading, validation, trust, parameter validation, security poli
 | Operate on selected filesystem items | `input: files`, then validate extensions and count | `run <id> --files <paths>` |
 | Transform structured content | Compatible input and output shapes | `transform <id>` with JSON on stdin |
 | Browse scripts available to run | Any supported I/O | `list --json` |
-| Configure all installed scripts, including disabled runtimes | Any supported I/O | `list --json --include-disabled` |
+| Configure installed/unavailable scripts, including disabled runtimes | No consumer filter | `list --json --include-disabled --include-unconfigured` |
 
 Input and output tokens are:
 
@@ -64,7 +64,7 @@ if (!client.IsAvailable)
     return;
 }
 
-var scripts = client.ListActions();
+var scripts = client.ListActions(consumer: "keyboard-manager");
 ```
 
 Useful discovery methods:
@@ -77,10 +77,17 @@ Useful discovery methods:
 - `ListForFiles(paths)` — file scripts accepting every selected extension and the selection count.
 - `script.AcceptsFiles(paths)` — the same check against an already-enumerated script.
 
+Each `List*` method accepts an optional `consumer` argument, combined with normal I/O/file matching.
+Use stable IDs such as `keyboard-manager`, `command-palette`, `advanced-paste`, `color-picker`,
+`light-switch`, and `explorer`. A script's optional `consumers` list narrows discovery only: absent
+means all compatible modules. Omit the argument only for management/full-catalogue discovery.
+Consumer IDs are not authenticated identities or permission boundaries, and targeting does not
+prevent direct `run`/`transform` with normal trust/MXC enforcement.
+
 Native consumers may invoke the Host contract directly:
 
 ```text
-PowerScripts.Host.exe list --json [--input <shape>] [--output <shape>] [--no-input]
+PowerScripts.Host.exe list --json [--consumer <module-id>] [--input <shape>] [--output <shape>] [--no-input]
 PowerScripts.Host.exe run <id> [--files <paths...>] [--set name=value...]
 PowerScripts.Host.exe transform <id>
 ```
@@ -99,7 +106,10 @@ enable a runtime or bypass execution checks.
 
 ## Script presentation and icons
 
-Scripts are registered only from sibling `<script>.tool.json` descriptors. Inline metadata and
+Scripts are registered from sibling `<script>.tool.json` descriptors or explicit **Add script**
+configuration in Settings. Bare helper files are never auto-discovered. Local per-source settings
+override author recommendations centrally, so every consumer sees the same effective contract.
+Inline metadata and
 Python function-name inference are not supported. Built-in Python execution requires
 `x-powerscript.function`; its input/output contract comes from descriptor metadata, not the function
 name. An explicit `x-execute` recipe uses its declared command instead of the Python function runner.

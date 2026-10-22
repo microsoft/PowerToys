@@ -67,6 +67,13 @@ public sealed class PowerScriptInfo
     /// <summary>The capabilities the script declares (e.g. <c>fileRead</c>, <c>network</c>).</summary>
     public IReadOnlyList<string> Capabilities { get; init; } = [];
 
+    /// <summary>Optional discovery audience; empty means no targeting. This is not execution authorization.</summary>
+    public IReadOnlyList<string> Consumers { get; init; } = [];
+
+    /// <summary>Whether this script's optional audience includes the specified consumer.</summary>
+    public bool IsDiscoverableBy(string? consumer) =>
+        consumer is null || Consumers.Count == 0 || Consumers.Contains(consumer, StringComparer.OrdinalIgnoreCase);
+
     /// <summary>For <c>file</c> scripts, the file extensions it accepts (e.g. <c>.md</c>); empty otherwise.</summary>
     public IReadOnlyList<string> InputExtensions { get; init; } = [];
 
@@ -161,6 +168,7 @@ public sealed class PowerScriptInfo
                 Input = GetIO(element, "input"),
                 Output = GetIO(element, "output"),
                 Capabilities = GetStringArray(element, "capabilities"),
+                Consumers = GetStringArray(element, "consumers"),
                 InputExtensions = GetInputExtensions(element),
                 InputMinFiles = GetInputBound(element, "minFiles", 1),
                 InputMaxFiles = GetInputBound(element, "maxFiles", 0),

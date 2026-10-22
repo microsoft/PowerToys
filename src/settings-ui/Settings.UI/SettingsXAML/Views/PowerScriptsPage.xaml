@@ -176,6 +176,15 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <Button
+                        x:Uid="PowerScripts_SettingsAddButton"
+                        AutomationProperties.AutomationId="PowerScriptsAddScript"
+                        Click="AddScriptButton_Click" />
+                    <InfoBar
+                        x:Name="ScriptSettingsError"
+                        AutomationProperties.AutomationId="PowerScriptsSettingsError"
+                        IsClosable="False"
+                        Severity="Error" />
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -209,9 +218,9 @@
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.CatalogueCount, Mode=OneWay}" />
                     <InfoBar
+                        x:Uid="PowerScripts_SettingsEmptyCatalogue"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.HasScripts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                        Message="No PowerScripts found. Pick a scripts folder above (or use the default) containing scripts with sibling .tool.json descriptors."
                         Severity="Informational" />
                     <InfoBar
                         x:Uid="PowerScripts_CatalogueNoMatches"
@@ -225,10 +234,9 @@
                             <DataTemplate x:DataType="viewModels:PowerScriptListItem">
                                 <tkcontrols:SettingsExpander
                                     Margin="0,0,0,8"
-                                    AutomationProperties.AutomationId="{x:Bind CardAutomationId}"
-                                    AutomationProperties.Name="{x:Bind Name}"
-                                    Description="{x:Bind Description}"
-                                    IsExpanded="False">
+                                    AutomationProperties.AutomationId="{x:Bind CardAutomationId, Mode=OneWay}"
+                                    AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                                    Description="{x:Bind Description, Mode=OneWay}">
                                     <tkcontrols:SettingsExpander.Header>
                                         <Grid ColumnSpacing="12">
                                             <Grid.ColumnDefinitions>
@@ -236,140 +244,146 @@
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <Grid Width="32" Height="32">
-                                                <FontIcon
-                                                    Glyph="{x:Bind DefaultIconGlyph}"
-                                                    Visibility="{x:Bind views:PowerScriptsPage.InvertBoolToVisibility(HasIcon), Mode=OneWay}" />
+                                                <FontIcon Glyph="{x:Bind DefaultIconGlyph, Mode=OneWay}" Visibility="{x:Bind views:PowerScriptsPage.InvertBoolToVisibility(HasIcon), Mode=OneWay}" />
                                                 <Image
                                                     DataContext="{x:Bind}"
                                                     ImageFailed="ScriptIcon_ImageFailed"
-                                                    Source="{x:Bind IconSourcePath, Mode=OneWay}"
+                                                    Source="{Binding IconSourcePath, Mode=OneWay}"
                                                     Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(HasIcon), Mode=OneWay}" />
                                             </Grid>
                                             <StackPanel Grid.Column="1" Spacing="4">
                                                 <TextBlock
                                                     Style="{StaticResource BodyStrongTextBlockStyle}"
-                                                    Text="{x:Bind Name}"
+                                                    Text="{x:Bind Name, Mode=OneWay}"
                                                     TextWrapping="Wrap" />
                                                 <TextBlock
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                     Style="{StaticResource CaptionTextBlockStyle}"
-                                                    Text="{x:Bind CatalogueSummary}"
+                                                    Text="{x:Bind CatalogueSummary, Mode=OneWay}"
                                                     TextWrapping="Wrap" />
                                             </StackPanel>
                                         </Grid>
                                     </tkcontrols:SettingsExpander.Header>
                                     <tkcontrols:SettingsExpander.Items>
                                         <tkcontrols:SettingsCard
-                                            x:Uid="PowerScripts_IconWarning"
-                                            Description="{x:Bind IconWarning, Mode=OneWay}"
-                                            Visibility="{x:Bind views:PowerScriptsPage.BoolToVisibility(HasIconWarning), Mode=OneWay}" />
+                                            x:Uid="PowerScripts_SettingsReviewIsolation"
+                                            DataContext="{x:Bind Mode=OneWay}"
+                                            Visibility="{Binding IsMxcReviewRequired, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         <tkcontrols:SettingsCard
-                                            ContentAlignment="Right"
-                                            Header="Trigger on file types"
-                                            Visibility="{x:Bind HasFileInput, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind ExtensionsDisplay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Runtime">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind RuntimeDisplay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Input / output">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind IoDisplay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Capabilities">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind CapabilitiesDisplay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEffective" ContentAlignment="Right">
-                                            <TextBlock
-                                                MaxWidth="360"
-                                                VerticalAlignment="Center"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind MxcEffectiveDisplay, Mode=OneWay}"
-                                                TextWrapping="Wrap" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcRecommendation" ContentAlignment="Right">
-                                            <StackPanel MaxWidth="360" Spacing="4">
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Text="{x:Bind RecommendedPoliciesDisplay}" />
-                                                <TextBlock
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                                    Text="{x:Bind RecommendationSummary}"
-                                                    TextWrapping="Wrap" />
-                                            </StackPanel>
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPerScript">
-                                            <Button
-                                                x:Uid="PowerScripts_MxcConfigure"
-                                                AutomationProperties.AutomationId="{x:Bind MxcPolicyEditorAutomationId}"
-                                                Click="ConfigureScriptMxcPolicyButton_Click"
-                                                DataContext="{x:Bind}" />
-                                        </tkcontrols:SettingsCard>
+                                            x:Uid="PowerScripts_SettingsConfigurationErrors"
+                                            DataContext="{x:Bind Mode=OneWay}"
+                                            Description="{Binding ConfigurationErrorDisplay, Mode=OneWay}"
+                                            Visibility="{Binding HasConfigurationErrors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         <tkcontrols:SettingsCard
+                                            Padding="0"
+                                            Background="{x:Null}"
+                                            BorderThickness="0"
                                             ContentAlignment="Vertical"
-                                            Description="Consumer modules choose how to collect and supply these values."
-                                            Header="Parameters"
-                                            Visibility="{x:Bind HasParameters, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <ItemsControl ItemsSource="{x:Bind Parameters}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="viewModels:PowerScriptParameterItem">
-                                                        <StackPanel Margin="0,4,0,4" Spacing="1">
-                                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind DisplayLabel}" />
-                                                            <TextBlock
-                                                                FontSize="12"
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                Text="{x:Bind TypeDetailDisplay}" />
-                                                            <TextBlock
-                                                                FontSize="12"
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                Text="{x:Bind Description}"
-                                                                TextWrapping="Wrap"
-                                                                Visibility="{x:Bind HasDescription, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            DataContext="{x:Bind Mode=OneWay}">
+                                            <ContentControl
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                AutomationProperties.AutomationId="{x:Bind InlineSettingsAutomationId, Mode=OneWay}"
+                                                DataContext="{x:Bind Mode=OneWay}"
+                                                Loaded="InlineScriptSettings_Loaded" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard
+                                            Padding="0"
+                                            Background="{x:Null}"
+                                            BorderThickness="0"
+                                            ContentAlignment="Vertical"
+                                            DataContext="{x:Bind Mode=OneWay}">
+                                            <Expander
+                                                x:Uid="PowerScripts_SettingsDetails"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                AutomationProperties.AutomationId="PowerScriptsSecurityDetails">
+                                                <StackPanel Spacing="8">
+                                                    <tkcontrols:SettingsCard x:Uid="PowerScripts_SettingsConfiguration" DataContext="{x:Bind Mode=OneWay}">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <Button
+                                                                x:Uid="PowerScripts_SettingsResetAllButton"
+                                                                AutomationProperties.AutomationId="{Binding ResetAutomationId, Mode=OneWay}"
+                                                                Click="ResetScriptButton_Click" />
+                                                            <Button
+                                                                x:Uid="PowerScripts_SettingsForgetButton"
+                                                                AutomationProperties.AutomationId="{Binding ForgetAutomationId, Mode=OneWay}"
+                                                                Click="ForgetScriptButton_Click" />
                                                         </StackPanel>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Trust">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind TrustDisplay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard Header="Location" Visibility="{x:Bind HasFolderPath, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <StackPanel
-                                                HorizontalAlignment="Right"
-                                                Orientation="Horizontal"
-                                                Spacing="8">
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    IsTextSelectionEnabled="True"
-                                                    Text="{x:Bind FolderPath}"
-                                                    TextTrimming="CharacterEllipsis"
-                                                    ToolTipService.ToolTip="{x:Bind FolderPath}" />
-                                                <Button
-                                                    AutomationProperties.AutomationId="{x:Bind OpenFolderAutomationId}"
-                                                    AutomationProperties.Name="Open script folder"
-                                                    Click="OpenScriptFolderButton_Click"
-                                                    DataContext="{x:Bind}"
-                                                    ToolTipService.ToolTip="Open script folder">
-                                                    <FontIcon FontSize="16" Glyph="&#xE838;" />
-                                                </Button>
-                                            </StackPanel>
+                                                    </tkcontrols:SettingsCard>
+                                                    <tkcontrols:SettingsCard
+                                                        x:Uid="PowerScripts_IconWarning"
+                                                        DataContext="{x:Bind Mode=OneWay}"
+                                                        Description="{Binding IconWarning, Mode=OneWay}"
+                                                        Visibility="{Binding HasIconWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                    <tkcontrols:SettingsCard
+                                                        x:Uid="PowerScripts_MxcEffective"
+                                                        ContentAlignment="Right"
+                                                        DataContext="{x:Bind Mode=OneWay}">
+                                                        <TextBlock
+                                                            MaxWidth="360"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Text="{Binding MxcEffectiveDisplay, Mode=OneWay}"
+                                                            TextWrapping="Wrap" />
+                                                    </tkcontrols:SettingsCard>
+                                                    <tkcontrols:SettingsCard
+                                                        x:Uid="PowerScripts_MxcRecommendation"
+                                                        ContentAlignment="Right"
+                                                        DataContext="{x:Bind Mode=OneWay}">
+                                                        <StackPanel MaxWidth="360" Spacing="4">
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Text="{Binding RecommendedPoliciesDisplay, Mode=OneWay}" />
+                                                            <TextBlock
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                                Text="{Binding RecommendationSummary, Mode=OneWay}"
+                                                                TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </tkcontrols:SettingsCard>
+                                                    <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPerScript" DataContext="{x:Bind Mode=OneWay}">
+                                                        <Button
+                                                            x:Uid="PowerScripts_MxcConfigure"
+                                                            AutomationProperties.AutomationId="{Binding MxcPolicyEditorAutomationId, Mode=OneWay}"
+                                                            Click="ConfigureScriptMxcPolicyButton_Click" />
+                                                    </tkcontrols:SettingsCard>
+                                                    <tkcontrols:SettingsCard
+                                                        ContentAlignment="Right"
+                                                        DataContext="{x:Bind Mode=OneWay}"
+                                                        Header="Trust">
+                                                        <TextBlock
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Text="{Binding TrustDisplay, Mode=OneWay}" />
+                                                    </tkcontrols:SettingsCard>
+                                                    <tkcontrols:SettingsCard
+                                                        DataContext="{x:Bind Mode=OneWay}"
+                                                        Header="Location"
+                                                        Visibility="{Binding HasFolderPath, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <StackPanel
+                                                            HorizontalAlignment="Right"
+                                                            Orientation="Horizontal"
+                                                            Spacing="8">
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                IsTextSelectionEnabled="True"
+                                                                Text="{Binding FolderPath, Mode=OneWay}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                ToolTipService.ToolTip="{Binding FolderPath, Mode=OneWay}" />
+                                                            <Button
+                                                                AutomationProperties.AutomationId="{Binding OpenFolderAutomationId, Mode=OneWay}"
+                                                                AutomationProperties.Name="Open script folder"
+                                                                Click="OpenScriptFolderButton_Click"
+                                                                ToolTipService.ToolTip="Open script folder">
+                                                                <FontIcon FontSize="16" Glyph="&#xE838;" />
+                                                            </Button>
+                                                        </StackPanel>
+                                                    </tkcontrols:SettingsCard>
+                                                </StackPanel>
+                                            </Expander>
                                         </tkcontrols:SettingsCard>
                                     </tkcontrols:SettingsExpander.Items>
                                 </tkcontrols:SettingsExpander>

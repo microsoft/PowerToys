@@ -49,7 +49,8 @@ public static class ProcessRunner
         MxcSettings? mxcSettings = null)
     {
         var settings = mxcSettings ?? MxcSettings.Load();
-        var policy = MxcPolicyResolver.Resolve(settings, context.ScriptId, context.RecommendedPolicies);
+        var policy = MxcPolicyResolver.Resolve(
+            settings, context.ScriptId, context.RecommendedPolicies, context.HasLocalMxcSettings, context.LocalMxc);
 
         if (policy.Enabled && IsWslTarget(startInfo))
         {

@@ -34,7 +34,9 @@ public static class MxcPolicyResolver
     public static MxcEffectivePolicy Resolve(
         MxcSettings? settings,
         string scriptId,
-        IEnumerable<string>? recommendedPolicies = null)
+        IEnumerable<string>? recommendedPolicies = null,
+        bool hasLocalOverride = false,
+        MxcScriptOverride? localOverride = null)
     {
         settings ??= new MxcSettings();
         var recommendations = MxcPolicies.Normalize(recommendedPolicies);
@@ -59,7 +61,10 @@ public static class MxcPolicyResolver
             ? MxcPolicies.Normalize(settings.DisabledPolicies)
             : new List<string>();
 
-        if (settings.Scripts is not null && settings.Scripts.TryGetValue(scriptId, out var scriptOverride))
+        var scriptOverride = hasLocalOverride
+            ? localOverride
+            : settings.Scripts?.GetValueOrDefault(scriptId);
+        if (scriptOverride is not null)
         {
             if (scriptOverride.Enabled.HasValue)
             {

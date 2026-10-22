@@ -4,6 +4,7 @@
 
 using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
+using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core.Registry;
 
@@ -21,10 +22,13 @@ public sealed class ScriptRegistry
 {
     private readonly List<PowerScriptManifest> _scripts = new();
     private readonly List<ScriptLoadError> _errors = new();
+    private readonly List<PowerScriptManifest> _unconfiguredScripts = new();
+    private readonly ScriptSettingsStore _settings;
 
-    public ScriptRegistry(string? root = null)
+    public ScriptRegistry(string? root = null, ScriptSettingsStore? settings = null)
     {
-        Root = PowerScriptsPaths.ResolveScriptsRoot(root);
+        Root = Path.GetFullPath(PowerScriptsPaths.ResolveScriptsRoot(root));
+        _settings = settings ?? new ScriptSettingsStore();
     }
 
     /// <summary>Absolute path to the scanned scripts root.</summary>
@@ -33,6 +37,8 @@ public sealed class ScriptRegistry
     public IReadOnlyList<PowerScriptManifest> Scripts => _scripts;
 
     public IReadOnlyList<ScriptLoadError> Errors => _errors;
+
+    public IReadOnlyList<PowerScriptManifest> UnconfiguredScripts => _unconfiguredScripts;
 
     /// <summary>
     /// Rebuilds the catalogue from <c>*.tool.json</c> descriptors directly under <see cref="Root"/>
@@ -43,37 +49,53 @@ public sealed class ScriptRegistry
     {
         _scripts.Clear();
         _errors.Clear();
+        _unconfiguredScripts.Clear();
 
-        if (!Directory.Exists(Root))
+        var entries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (Directory.Exists(Root))
         {
-            return;
+            AddDescriptorEntries(Root, entries);
+            foreach (var folder in Directory.EnumerateDirectories(Root))
+            {
+                AddDescriptorEntries(folder, entries);
+            }
         }
 
-        var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        void TryAdd(PowerScriptManifest manifest, string folder, string context)
+        foreach (var entry in _settings.GetRegisteredEntries(Root, (path, error) => _errors.Add(new ScriptLoadError(path, error))))
         {
-            manifest.FolderPath = folder;
-            manifest.ScriptsRoot = Root;
+            entries.Add(entry);
+        }
 
-            var (resolvedInput, resolvedOutput) = ScriptIo.Resolve(manifest);
-            manifest.InputFormat = resolvedInput;
-            manifest.OutputFormat = resolvedOutput;
-
-            var validationErrors = ManifestValidator.Validate(manifest, new DirectoryInfo(folder).Name);
-            if (validationErrors.Count > 0)
+        foreach (var entry in entries.OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
+        {
+            PowerScriptManifest manifest;
+            try
             {
-                _errors.Add(new ScriptLoadError(context, string.Join(" ", validationErrors)));
-                return;
+                manifest = _settings.Get(Root, entry).Manifest;
+            }
+            catch (Exception ex) when (ScriptSettingsStore.IsSettingsError(ex))
+            {
+                _errors.Add(new ScriptLoadError(entry, ex.Message));
+                _unconfiguredScripts.Add(new PowerScriptManifest
+                {
+                    Id = "unconfigured-" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                        System.Text.Encoding.UTF8.GetBytes(entry.ToUpperInvariant())))[..24].ToLowerInvariant(),
+                    Name = Path.GetFileName(entry),
+                    Entry = Path.GetFileName(entry),
+                    FolderPath = Path.GetDirectoryName(entry)!,
+                    ScriptsRoot = Root,
+                    HasDescriptor = File.Exists(entry + ToolDescriptorParser.DescriptorSuffix),
+                    HasLocalSettings = File.Exists(_settings.GetSettingsPath(Root, entry)),
+                    ConfigurationErrors = new[] { ex.Message },
+                });
+                continue;
             }
 
-            // Ids are the portable identity and must be unique across the catalogue, since every
-            // surface resolves a script by id. A collision (e.g. two adopted scripts sharing an id)
-            // is reported and the duplicate skipped rather than silently shadowed.
-            if (!seenIds.Add(manifest.Id))
+            if (manifest.ConfigurationErrors.Count > 0)
             {
-                _errors.Add(new ScriptLoadError(context, $"duplicate id '{manifest.Id}' - already defined by another script; skipped."));
-                return;
+                _errors.Add(new ScriptLoadError(entry, string.Join(" ", manifest.ConfigurationErrors)));
+                _unconfiguredScripts.Add(manifest);
+                continue;
             }
 
             try
@@ -83,16 +105,30 @@ public sealed class ScriptRegistry
             catch (Exception ex) when (ex is ArgumentException or IOException or InvalidDataException or UnauthorizedAccessException or NotSupportedException)
             {
                 manifest.IconWarning = $"Script icon unavailable: {ex.Message}";
-                _errors.Add(new ScriptLoadError(context, manifest.IconWarning));
+                _errors.Add(new ScriptLoadError(entry, manifest.IconWarning));
             }
 
             _scripts.Add(manifest);
         }
 
-        LoadFromDirectory(Root, TryAdd);
-        foreach (var folder in Directory.EnumerateDirectories(Root))
+        // Never let a new installation inherit another source's identity/bindings by winning scan
+        // order. All members of a collision remain visible to Settings, but none can execute.
+        var duplicates = _scripts.Concat(_unconfiguredScripts)
+            .GroupBy(script => script.Id, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1).ToList();
+        foreach (var duplicate in duplicates)
         {
-            LoadFromDirectory(folder, TryAdd);
+            foreach (var script in duplicate)
+            {
+                var error = $"duplicate id '{script.Id}' - choose a unique action id in script settings.";
+                script.ConfigurationErrors = script.ConfigurationErrors.Append(error).ToList();
+                _errors.Add(new ScriptLoadError(script.EntryFullPath, error));
+                _scripts.Remove(script);
+                if (!_unconfiguredScripts.Contains(script))
+                {
+                    _unconfiguredScripts.Add(script);
+                }
+            }
         }
 
         _scripts.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
@@ -101,18 +137,11 @@ public sealed class ScriptRegistry
     /// <summary>
     /// Discovers PowerScripts exclusively through their <c>*.tool.json</c> descriptors.
     /// </summary>
-    private void LoadFromDirectory(string directory, Action<PowerScriptManifest, string, string> tryAdd)
+    private static void AddDescriptorEntries(string directory, HashSet<string> entries)
     {
         foreach (var descriptor in EnumerateDescriptorCandidates(directory))
         {
-            var manifest = ToolDescriptorParser.TryParseFile(descriptor);
-            if (manifest is null)
-            {
-                _errors.Add(new ScriptLoadError(descriptor, "invalid or unreadable .tool.json descriptor; skipped."));
-                continue;
-            }
-
-            tryAdd(manifest, directory, descriptor);
+            entries.Add(descriptor[..^ToolDescriptorParser.DescriptorSuffix.Length]);
         }
     }
 

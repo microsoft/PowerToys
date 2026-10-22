@@ -5,16 +5,18 @@
 namespace PowerScripts.Core.Storage;
 
 /// <summary>
-/// The single place the module resolves its <see cref="ISettingsStore"/>. Every consumer of the
-/// security-bearing settings (the trust store and <c>config.json</c>) goes through
+/// The single place the module resolves its <see cref="ISettingsStore"/>. Consumers of the
+/// trust store and <c>config.json</c> go through
 /// <see cref="Current"/>, which makes this the one hook point for switching to the protected,
 /// tamper-resistant per-user settings store when the local settings service lands.
 ///
 /// Today <see cref="Current"/> is always the file-backed store rooted at the module data directory,
 /// so all current functionality — including pointing PowerScripts at a folder of your choosing —
 /// behaves exactly as before. To move the trust store and config into the protected store later, this
-/// is the only code that changes: return a broker-backed <see cref="ISettingsStore"/> (bound to the
-/// <see cref="Namespace"/>) here, guarded by a capability/flag check. Callers stay untouched.
+/// return a broker-backed <see cref="ISettingsStore"/> (bound to the
+/// <see cref="Namespace"/>) here, guarded by a capability/flag check. The separate, file-backed
+/// <see cref="ScriptSettingsStore"/> also needs a broker-backed implementation before local
+/// per-script configuration can be considered protected.
 /// </summary>
 public static class SettingsStore
 {
