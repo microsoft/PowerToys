@@ -43,6 +43,18 @@ class WorkflowContractTests(unittest.TestCase):
         ):
             self.assertIn(f"--deny-tool '\\''shell({command})'\\''", generated)
 
+    def test_team_actors_and_metadata_edits_are_gated_before_activation(self):
+        generated = WORKFLOW_LOCK.read_text(encoding="utf-8")
+
+        self.assertIn('GH_AW_SKIP_ROLES: "admin,maintain,write,triage"', generated)
+        self.assertIn("steps.check_skip_roles.outputs.skip_roles_ok == 'true'", generated)
+        self.assertIn(
+            "if: github.event.action != 'edited' || "
+            "github.event.changes.title != null || "
+            "github.event.changes.body != null",
+            generated,
+        )
+
     def test_workflow_never_manages_version_labels(self):
         source = WORKFLOW_SOURCE.read_text(encoding="utf-8")
         generated = WORKFLOW_LOCK.read_text(encoding="utf-8")

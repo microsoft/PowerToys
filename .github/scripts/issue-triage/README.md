@@ -65,6 +65,16 @@ that retain `Needs-Author-Feedback` for seven days without activity.
   issue; comments and reopen events do not trigger it.
 - Per-user rate limits, daily AI-credit limits, and per-issue concurrency bound
   repeated issue creation or edits.
+- Edits that change neither the title nor the body (for example label,
+  milestone, or assignee updates) are filtered before any job starts.
+- Events sent by users with the `admin`, `maintain`, `write`, or `triage`
+  repository role (core team, extended team, and code owners) are skipped in
+  pre-activation. Issues authored by users with those roles are also skipped in
+  deterministic preprocessing, so community edits to team-authored issues are
+  not triaged either. A failed permission lookup still triages the issue.
+- Edits only refresh issues that already have a canonical triage summary.
+  Issues created before the workflow existed, or never triaged, are not
+  triaged on their first edit.
 - The agent has no general shell or GitHub API tools. Its only shell command is
   the structured safe-output CLI proxy, and Copilot's file-write tool is
   explicitly denied to work around gh-aw v0.86.2 treating `edit: false` as

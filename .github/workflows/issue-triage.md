@@ -6,6 +6,14 @@ on:
   issues:
     types: [opened, edited]
   roles: all
+  # Issues opened or edited by core team, extended team, or code owners never
+  # start the agent. issue-context.py separately skips team-authored issues.
+  skip-roles: [admin, maintain, write, triage]
+# Only title or body edits can change triage input.
+if: >-
+  github.event.action != 'edited' ||
+  github.event.changes.title != null ||
+  github.event.changes.body != null
 user-rate-limit:
   max-runs-per-window: 5
   window: 60
