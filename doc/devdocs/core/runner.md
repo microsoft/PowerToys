@@ -34,40 +34,6 @@ The Runner is responsible for:
 9. Enter Windows message loop
 10. On exit, stop modules and clean up resources
 
-### Shutdown lifetime
-
-Destroy the module map explicitly before returning to the CRT, including ordinary
-Quit and startup-failure paths. With Hybrid CRT, Runner and native DLLs share UCRT
-exit locks: a static map destructor can hold an exit lock while joining a module
-thread that needs that same lock for `atexit` registration or DLL teardown.
-
-Stop the centralized keyboard hook and revoke module callbacks before unloading
-the modules. Keep the Runner lifetime/settings-CLI guard and single-instance mutex
-until module cleanup finishes. Scheduled restart happens only after those guards
-are released. The Windows session-ending fast paths for Settings and Quick Access
-remain separate from user Quit and Restart Manager close requests.
-
-For a process-level regression check, use a complete local test payload and a
-disposable or snapshotted profile, with no other Runner in the session:
-
-```powershell
-.\tools\build\Test-RunnerShutdown.ps1 -RunnerPath D:\test-payload\PowerToys.exe -Iterations 5
-```
-
-Snapshot the current user's PowerToys autorun task as well as configuration files.
-Startup may recreate that task with the test executable path even if the startup
-preference is unchanged; restore its installed executable action after testing.
-
-The check sends `WM_CLOSE` through the existing tray window procedure and requires
-the exact launched PID to exit naturally. A timeout or crash fails the check;
-forced cleanup of a failed test process is never counted as a pass. Also verify
-the real tray Quit menu, cold-start Quit, Settings-triggered restart, and the
-session-ending paths in an appropriate interactive test environment.
-
-An executor owned by a module must finish before the members accessed by its work
-are destroyed. Advanced Paste and PowerDisplay therefore declare their executor
-last, so its destructor joins the worker before the pipe and other state disappear.
-
 ## System Tray Icon Implementation
 
 The system tray icon is one of the first components that starts when calling the `render_main` function:
