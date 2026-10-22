@@ -53,14 +53,13 @@ public sealed class CommandContextSourceTests
                 item = new RecentCommandListItem(item, "recorded-history-id");
             }
 
-            var command = new CommandViewModel(item.Command, new(pageContext));
-            command.FastInitializeProperties();
-            var message = new PerformCommandMessage(command, new ExtensionObject<IListItem>(item));
+            var message = new PerformCommandMessage(itemViewModel.Command, new ExtensionObject<IListItem>(item));
             var contextSource = message.CommandContext as ICommandContextSource;
 
             Assert.IsNotNull(contextSource);
             Assert.AreSame(host, contextSource.ExtensionHost);
             Assert.AreSame(provider, contextSource.ProviderContext);
+            Assert.AreSame(itemViewModel.Command, message.Command);
             Assert.AreSame(page, message.Command.Model.Unsafe);
             Assert.AreSame(item, message.CommandContext);
         }

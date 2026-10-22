@@ -203,6 +203,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(PerformCommandMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         PerformCommand(message);
     }
 
@@ -218,6 +223,11 @@ public partial class ShellViewModel : ObservableObject,
         // isMainPage must be evaluated here; if it were moved inside the
         // "if (command is IPage)" block below, it would be too late to affect
         // the providerContext that is passed to the new page view-model.
+        // Only commands sent from the palette's own root page are top-level. Commands from
+        // other surfaces (for example, a dock flyout page) must not update home-page history.
+        var sourcePage = message.Context?.Page;
+        var isTopLevel = CurrentPage.IsRootPage && (sourcePage is null || ReferenceEquals(sourcePage, CurrentPage));
+
         var host = _pageNavigation.ResolveHost(message, CurrentPage);
 
         try
@@ -254,7 +264,7 @@ public partial class ShellViewModel : ObservableObject,
 
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
-                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
 
                 // Create/replace the navigation cancellation token.
                 // If one already exists, cancel and dispose it first.
@@ -323,13 +333,13 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host, invocationContext, commandViewModel);
             }
             else
             {
-                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
             }
         }
         catch (Exception ex)
@@ -400,19 +410,22 @@ public partial class ShellViewModel : ObservableObject,
                 message.OnBeforeShowConfirmation,
                 message.ResultHandler,
                 message.Context?.Page);
-
-            _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
-            _handleInvokeTask = null;
-
             // Telemetry: Track errors for session metrics
             WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
 
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
+        }
+        finally
+        {
+            lock (_invokeLock)
+            {
+                _handleInvokeTask = null;
+            }
         }
     }
 
@@ -552,6 +565,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(HandleCommandResultMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         UnsafeHandleCommandResult(
             message.Result.Unsafe,
             message.OnBeforeShowConfirmation,

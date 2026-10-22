@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
@@ -70,6 +72,13 @@ public partial class ShellViewModelTests
         return appHostService;
     }
 
+    private static CommandViewModel CreateCommandViewModel(ICommand command, IPageContext pageContext)
+    {
+        var viewModel = new CommandViewModel(command, new(pageContext));
+        viewModel.FastInitializeProperties();
+        return viewModel;
+    }
+
     [TestInitialize]
     public void TestInitialize()
     {
@@ -84,9 +93,10 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void PerformCommand_ResolvesHostAndProviderFromSourceContext(bool withSourcePage)
+    [DataRow("none")]
+    [DataRow("page")]
+    [DataRow("owner")]
+    public void PerformCommand_ResolvesHostAndProviderFromSourceContext(string source)
     {
         var currentHost = new TestAppExtensionHost();
         var sourceHost = new TestAppExtensionHost();
@@ -106,15 +116,56 @@ public partial class ShellViewModelTests
         var message = new PerformCommandMessage(
             CreateCommandViewModel(page, shell.CurrentPage),
             new ExtensionObject<IListItem>(item),
-            withSourcePage ? sourcePage : null);
-        var expectedHost = withSourcePage ? sourceHost : shell.CurrentPage.ExtensionHost;
-        var expectedProvider = withSourcePage ? sourceProvider : shell.CurrentPage.ProviderContext;
+            source == "page" ? sourcePage : null);
+        if (source == "owner")
+        {
+            message = message with { Context = new SourceContext(sourceHost, sourceProvider) };
+        }
+
+        var expectedHost = source == "none" ? shell.CurrentPage.ExtensionHost : sourceHost;
+        var expectedProvider = source == "none" ? shell.CurrentPage.ProviderContext : sourceProvider;
 
         shell.Receive(message);
 
         appHostService.Verify(service => service.GetHostForCommand(item, expectedHost), Times.Once);
         appHostService.Verify(service => service.GetProviderContextForCommand(item, expectedProvider), Times.Once);
         pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty), Times.Once);
+    }
+
+    [TestMethod]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public void PerformCommand_OnlyCommandsFromThePaletteRootAreTopLevel(bool fromOtherPage, bool expectedTopLevel)
+    {
+        var host = new TestAppExtensionHost();
+        var rootPageService = new Mock<IRootPageService>();
+        using var shell = new ShellViewModel(
+            TaskScheduler.Default,
+            rootPageService.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            CreateAppHostService(host).Object);
+        var rootPage = new TestPageViewModel(new TestPage(), host) { IsRootPage = true };
+        var otherPage = new TestPageViewModel(new TestPage(), host) { IsRootPage = true };
+        var item = new ListItem(new NoOpCommand());
+
+        try
+        {
+            shell.CurrentPage = rootPage;
+
+            // A plain command is neither a page nor invokable, so the shell only reports it.
+            shell.Receive(new PerformCommandMessage(
+                CreateCommandViewModel(Mock.Of<ICommand>(), fromOtherPage ? otherPage : rootPage),
+                new ExtensionObject<IListItem>(item),
+                fromOtherPage ? otherPage : rootPage));
+
+            rootPageService.Verify(service => service.OnPerformCommand(item, expectedTopLevel, host), Times.Once);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(shell);
+            rootPage.SafeCleanup();
+            otherPage.SafeCleanup();
+        }
     }
 
     [TestMethod]
@@ -419,6 +470,68 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    [DataRow("Id")]
+    [DataRow("Name")]
+    [DataRow("Invoke")]
+    public async Task PerformCommand_DeadCachedDockCommandDoesNotBlockNextInvocation(string failingMember)
+    {
+        using var shell = CreateViewModel();
+        var disconnected = false;
+        var exception = Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!;
+        var command = new Mock<IInvokableCommand>();
+        command.SetupGet(model => model.Id).Returns(() => disconnected && failingMember == "Id"
+            ? throw exception
+            : "desktop.switch");
+        command.SetupGet(model => model.Name).Returns(() => disconnected && failingMember == "Name"
+            ? throw exception
+            : "Switch desktop");
+        command.Setup(model => model.Invoke(It.IsAny<object?>())).Returns(() => disconnected && failingMember == "Invoke"
+            ? throw exception
+            : CommandResult.KeepOpen());
+        var cachedCommand = CreateCommandViewModel(command.Object, shell.CurrentPage);
+        TelemetryExtensionInvokedMessage? telemetry = null;
+        WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(shell, (_, result) => telemetry = result);
+
+        // Primary dock clicks reuse the cached command without a sender or source page.
+        var message = new PerformCommandMessage(cachedCommand)
+        {
+            WithAnimation = false,
+            TransientPage = true,
+        };
+        shell.Receive(message);
+        await WaitForInvocationAsync();
+        disconnected = true;
+        shell.Receive(message);
+        await WaitForInvocationAsync();
+
+        Assert.IsNotNull(telemetry);
+        Assert.AreEqual("desktop.switch", telemetry.CommandId);
+        Assert.AreEqual("Switch desktop", telemetry.CommandName);
+        Assert.AreEqual(failingMember != "Invoke", telemetry.Success);
+        command.VerifyGet(model => model.Id, Times.Once);
+        command.VerifyGet(model => model.Name, Times.Once);
+
+        var invoked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var healthy = new TestCommand(CommandResult.KeepOpen(), () => invoked.TrySetResult());
+        shell.Receive(new PerformCommandMessage(CreateCommandViewModel(healthy, shell.CurrentPage)));
+
+        await invoked.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await WaitForInvocationAsync();
+        command.Verify(model => model.Invoke(It.IsAny<object?>()), Times.Exactly(2));
+
+        async Task WaitForInvocationAsync()
+        {
+            var invocation = (Task?)typeof(ShellViewModel)
+                .GetField("_handleInvokeTask", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(shell);
+            if (invocation is not null)
+            {
+                await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task PerformCommand_DoesNotCountAnInvocationRejectedWhileBusy()
     {
         var viewModel = CreateViewModel();
@@ -494,6 +607,32 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    public void PerformCommand_PageNavigationUsesCachedMetadata()
+    {
+        using var shell = CreateViewModel();
+        var page = new Mock<IPage>();
+        page.SetupGet(model => model.Id).Returns("cached.page");
+        page.SetupGet(model => model.Name).Returns("Cached page");
+        var cachedCommand = CreateCommandViewModel(page.Object, shell.CurrentPage);
+        var exception = Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!;
+        page.SetupGet(model => model.Id).Throws(exception);
+        page.SetupGet(model => model.Name).Throws(exception);
+        TelemetryExtensionInvokedMessage? telemetry = null;
+        WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(shell, (_, result) => telemetry = result);
+        var navigated = false;
+        shell.PageNavigationRequested += (_, _) => navigated = true;
+
+        shell.Receive(new PerformCommandMessage(cachedCommand));
+
+        Assert.IsTrue(navigated);
+        Assert.IsNotNull(telemetry);
+        Assert.AreEqual("cached.page", telemetry.CommandId);
+        Assert.AreEqual("Cached page", telemetry.CommandName);
+        page.VerifyGet(model => model.Id, Times.Once);
+        page.VerifyGet(model => model.Name, Times.Once);
+    }
+
+    [TestMethod]
     public void PerformCommand_CountsPageNavigationOnceAfterShowingWindow()
     {
         var viewModel = CreateViewModel();
@@ -519,13 +658,6 @@ public partial class ShellViewModelTests
         }
 
         void OnPageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e) => events.Add("navigate");
-    }
-
-    private static CommandViewModel CreateCommandViewModel(ICommand command, IPageContext context)
-    {
-        var viewModel = new CommandViewModel(command, new(context));
-        viewModel.FastInitializeProperties();
-        return viewModel;
     }
 
     private static ShellViewModel CreateViewModel()
