@@ -56,6 +56,101 @@ function Get-MwbUiTestSelection {
     }
 }
 
+function Invoke-MwbCiPhase {
+    param(
+        [Parameter(Mandatory)][string] $ScriptPath,
+        [string[]] $Arguments = @(),
+        [Parameter(Mandatory)][ValidateRange(1, 86400)][int] $TimeoutSeconds
+    )
+
+    if (-not (Test-Path -LiteralPath $ScriptPath -PathType Leaf)) {
+        throw "Missing UI-test phase script: $ScriptPath"
+    }
+    # Keep the existing phase deadlines and stream output without sharing environment
+    # mutations or exit statements with the other suites in the common dispatcher.
+    $start = [Diagnostics.ProcessStartInfo]::new((Get-Process -Id $PID).Path)
+    $start.UseShellExecute = $false
+    $start.CreateNoWindow = $true
+    foreach ($argument in @('-NoLogo', '-NoProfile', '-NonInteractive', '-File', $ScriptPath) + $Arguments) {
+        $start.ArgumentList.Add($argument)
+    }
+    $process = [Diagnostics.Process]::Start($start)
+    try {
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            throw [TimeoutException]::new("UI-test phase $(Split-Path $ScriptPath -Leaf) exceeded $TimeoutSeconds seconds.")
+        }
+        if ($process.ExitCode -ne 0) {
+            throw "UI-test phase $(Split-Path $ScriptPath -Leaf) failed (exit $($process.ExitCode))."
+        }
+    }
+    finally {
+        try {
+            if (-not $process.HasExited) {
+                $process.Kill($true)
+                if (-not $process.WaitForExit(10000)) {
+                    throw 'The owned UI-test phase process did not terminate.'
+                }
+            }
+        }
+        finally { $process.Dispose() }
+    }
+}
+
+function Invoke-MwbUiTestSuite {
+    param(
+        [Parameter(Mandatory)][guid] $RunId,
+        [Parameter(Mandatory)][string] $ArtifactRoot,
+        [Parameter(Mandatory)][string] $ResultsDirectory,
+        [Parameter(Mandatory)][ValidateSet('x64Win10', 'x64Win11')][string] $Platform,
+        [Parameter(Mandatory)][string] $SourceRevision,
+        [Parameter(Mandatory)][string] $CertificateMarkerPath,
+        [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release'
+    )
+
+    if ($Platform -ne 'x64Win10') {
+        Invoke-MwbCiPhase -ScriptPath "$PSScriptRoot\Install-MwbSandboxClient.ps1" -TimeoutSeconds 720 -Arguments @(
+            '-RunId', $RunId.ToString(), '-Platform', $Platform, '-ResultsDirectory', $ResultsDirectory)
+    }
+    $arguments = @(
+        '-RunId', $RunId.ToString(), '-ArtifactRoot', $ArtifactRoot,
+        '-ResultsDirectory', $ResultsDirectory, '-Platform', $Platform,
+        '-SourceRevision', $SourceRevision, '-Configuration', $Configuration)
+    Invoke-MwbCiPhase -ScriptPath "$PSScriptRoot\mwbSandboxExperiment.ps1" -TimeoutSeconds 900 `
+        -Arguments (@('-Mode', 'Prepare') + $arguments + @('-CertificateMarkerPath', $CertificateMarkerPath))
+    Invoke-MwbCiPhase -ScriptPath "$PSScriptRoot\mwbSandboxExperiment.ps1" -TimeoutSeconds 6180 `
+        -Arguments (@('-Mode', 'Run') + $arguments)
+}
+
+function Restore-MwbUiTestPrerequisites {
+    param(
+        [Parameter(Mandatory)][guid] $RunId,
+        [Parameter(Mandatory)][string] $ResultsDirectory
+    )
+
+    $failures = [Collections.Generic.List[string]]::new()
+    foreach ($phase in @(
+        @{ Name = 'Recover'; Timeout = 360 }
+        @{ Name = 'Cleanup'; Timeout = 300 }
+        @{ Name = 'Diagnostics'; Timeout = 120 }
+    )) {
+        try {
+            $scriptPath = "$PSScriptRoot\mwbSandboxExperiment.ps1"
+            $arguments = @('-Mode', $phase.Name, '-RunId', $RunId.ToString(), '-ResultsDirectory', $ResultsDirectory)
+            if ($phase.Name -eq 'Diagnostics') {
+                $scriptPath = "$PSScriptRoot\Export-MwbSandboxPrerequisites.ps1"
+                $arguments = @('-RunId', $RunId.ToString(), '-ResultsDirectory', $ResultsDirectory)
+            }
+            Invoke-MwbCiPhase -ScriptPath $scriptPath -Arguments $arguments -TimeoutSeconds $phase.Timeout
+        }
+        catch {
+            $message = "MWB $($phase.Name) failed: $($_.Exception.Message)"
+            Write-Host "##vso[task.logissue type=error]$message"
+            $failures.Add($message)
+        }
+    }
+    if ($failures.Count) { throw ($failures -join [Environment]::NewLine) }
+}
+
 function Assert-MwbPilotTestResults {
     param(
         [Parameter(Mandatory)][string] $ResultsDirectory,

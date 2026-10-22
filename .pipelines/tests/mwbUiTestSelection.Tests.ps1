@@ -55,9 +55,11 @@ Describe 'Shared Release MWB UI-test selection' {
         $source | Should Match "prepareMwbRuntime:.*and\(eq\(parameters.platform, 'x64'\), or\(eq\(length\(parameters.uiTestModules\), 0\), containsValue\(parameters.uiTestModules, 'MouseWithoutBorders.UITests'\)\)\)"
     }
 
-    It 'always wires the runtime-gated MWB steps and requires selected-suite results' {
+    It 'uses the shared execution and result steps for selected MWB suites' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $source | Should Match '(?m)^  - template: steps-mwb-sandbox-experiment.yml'
+        $source | Should Match 'Invoke-MwbUiTestSuite -RunId'
+        $source | Should Not Match 'steps-mwb-sandbox-experiment|mwb-selection-'
+        $source | Should Match "(?s)displayName: `"Run UI Tests`"\r?\n\s*condition: and\(succeeded\(\), or\(eq\(variables\['RunGenericUiTests'\], 'true'\), eq\(variables\['RunMwbSandbox'\], 'true'\), eq\(variables\['MwbSelectionBlocked'\], 'true'\)\)\)"
         $source | Should Match 'failTaskOnFailedTests: true'
         $source | Should Match 'failTaskOnMissingResultsFile: \$\(RunMwbSandbox\)'
         $source | Should Match 'cancelTimeoutInMinutes: 15'

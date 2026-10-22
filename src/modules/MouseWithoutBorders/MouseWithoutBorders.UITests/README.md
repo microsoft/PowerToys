@@ -288,6 +288,21 @@ builds prepare it only when the resolver selects MWB.
 `.pipelines\mwb\mwbSandboxExperiment.ps1` dispatches protected preparation,
 the complete suite, recovery and cleanup using this project's `Scripts` and
 `Payload`. The build artifact and installer are not modified by test signing.
+The shared **Run UI Tests** step executes MWB once, after the other selected
+suites, in its own log group. Setup and execution use isolated child processes
+with the original phase deadlines, preserving the ordinary suites' environment
+and the Limited-user desktop boundary. A failed suite does not suppress MWB.
+The always-running **Restore UI-test prerequisites** step independently attempts
+MWB recovery, privileged cleanup, allowlisted diagnostic collection and Light
+Switch restoration, including after cancellation. Cleanup failures remain failures.
+
+MWB TRX and test attachments use the existing **Publish UI Test Results** step.
+Selection and ARM64 skip reasons remain in the job log, not separate artifacts.
+Successful jobs do not upload prerequisite artifacts. **Publish UI-test
+diagnostics** uploads the allowlisted prerequisite report only when selected MWB
+execution or cleanup is incomplete, or the job fails or is canceled, including
+setup failures before TRX exists. Raw protected logs and authentication state
+remain excluded.
 Use the `ui-tests-pipeline-ci` skill for exact pushed-source validation;
 monitor long CI runs at 1800-second intervals.
 

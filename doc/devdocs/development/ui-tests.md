@@ -191,6 +191,16 @@ explicit tool/runtime paths and are excluded from this fast gate.
   only when the affected-project resolver selects MWB. To omit MWB, select the
   other desired modules explicitly.
 
+  MWB executes inside **Run UI Tests** and shares **Publish UI Test Results** with
+  the other suites. Its isolated setup/standard-user execution preserves the
+  existing timeouts and privilege boundaries. **Restore UI-test prerequisites**
+  always attempts recovery and cleanup, even after failure or cancellation.
+  Selection/skip reasons are logged; no separate selection artifact is uploaded.
+  Allowlisted prerequisite reports are published as **UI-test diagnostics** only
+  for failed, canceled or incomplete runs, including setup failures without TRX.
+  Successful runs retain their normal test-result attachments without an extra
+  prerequisite artifact.
+
 ### Build Modes
 
 1. **Official Build Testing** (`buildSource = latestMainOfficialBuild` or `specificBuildId`)

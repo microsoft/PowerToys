@@ -840,8 +840,6 @@ Describe 'MWB gated preparation source contracts' {
 
     It 'retains the existing bounded Limited desktop dispatch and recovery' {
         $script | Should Match "\`$suiteTimeoutMinutes = if \(\`$manifest.SandboxBackend -eq 'WinApp'\) \{ 100 \} else \{ 70 \}"
-        $steps = Get-Content -LiteralPath (Join-Path $templates 'steps-mwb-sandbox-experiment.yml') -Raw
-        $steps | Should Match 'timeoutInMinutes: 103'
         $script | Should Match '-TimeoutMinutes \$suiteTimeoutMinutes'
         $script | Should Match "\`$task.Principal.RunLevel -ne 'Limited'"
         $script | Should Match "\`$task.Principal.LogonType -ne 'Interactive'"
@@ -862,12 +860,10 @@ Describe 'MWB gated preparation source contracts' {
         $script | Should Match 'Write-MwbSandboxPrerequisiteReport -ResultsDirectory \$ResultsDirectory -RunId \$RunId'
     }
 
-    It 'always publishes the prerequisite report artifact even when Prepare never runs' {
-        $steps = Get-Content -LiteralPath (Join-Path $templates 'steps-mwb-sandbox-experiment.yml') -Raw
-        $steps | Should Match "displayName: Collect allowlisted MWB prerequisite diagnostics even without TRX\r?\n\s*condition: and\(always\(\), eq\(variables\['RunMwbSandbox'\], 'true'\)\)"
-        $steps | Should Match 'Export-MwbSandboxPrerequisites.ps1'
-        $steps | Should Match "task: PublishPipelineArtifact@1\r?\n\s*displayName: Publish MWB Sandbox prerequisite report\r?\n\s*condition: and\(always\(\), eq\(variables\['RunMwbSandbox'\], 'true'\)\)"
-        $steps | Should Match 'targetPath: ''\$\(Common.TestResultsDirectory\)\\mwb-prerequisites-\$\(System.JobId\)'''
+    It 'always attempts prerequisite recovery and preserves allowlisted evidence without TRX' {
+        $testJob | Should Match 'Restore-MwbUiTestPrerequisites -RunId'
+        $testJob | Should Match 'displayName: Restore UI-test prerequisites\r?\n\s*condition: always\(\)'
+        $testJob | Should Match 'targetPath: ''\$\(Common.TestResultsDirectory\)\\mwb-prerequisites-\$\(System.JobId\)'''
     }
 }
 
