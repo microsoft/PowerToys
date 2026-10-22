@@ -20,10 +20,15 @@ public partial class ShellViewModel : ObservableObject,
     IRecipient<HandleCommandResultMessage>,
     IRecipient<WindowHiddenMessage>
 {
+    public event EventHandler<PageNavigationRequestedEventArgs>? PageNavigationRequested;
+
+    public event EventHandler<ShellNavigationRequestedEventArgs>? GoHomeRequested;
+
+    public event EventHandler<ShellNavigationRequestedEventArgs>? GoBackRequested;
+
     private readonly IRootPageService _rootPageService;
-    private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
-    private readonly IPageViewModelFactoryService _pageViewModelFactory;
+    private readonly PageNavigationService _pageNavigation;
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
 
@@ -69,26 +74,15 @@ public partial class ShellViewModel : ObservableObject,
 
                 try
                 {
-                    if (oldValue is ListViewModel previousList)
-                    {
-                        // Frame keeps the VM in its navigation parameter for Back.
-                        // Cancel this visit's work without permanently disposing it.
-                        previousList.SuspendForNavigation();
-                    }
-                    else if (oldValue is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
+                    // Frame retains the page for Back until its history entry is discarded.
+                    oldValue.SuspendForNavigation();
                 }
                 catch (Exception ex)
                 {
                     CoreLogger.LogError(ex.ToString());
                 }
 
-                if (value is ListViewModel currentList)
-                {
-                    _ = currentList.ResumeAfterNavigation();
-                }
+                _ = value.ResumeAfterNavigation();
             }
         }
     }
@@ -101,7 +95,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private IPage? _rootPage;
+    private CommandViewModel _rootCommand;
 
     private bool _isNested;
     private bool _currentlyTransient;
@@ -118,13 +112,13 @@ public partial class ShellViewModel : ObservableObject,
         IPageViewModelFactoryService pageViewModelFactory,
         IAppHostService appHostService)
     {
-        _pageViewModelFactory = pageViewModelFactory;
+        _pageNavigation = new(pageViewModelFactory, appHostService);
         _scheduler = scheduler;
         _rootPageService = rootPageService;
-        _appHostService = appHostService;
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
+        _rootCommand = new(null, new(_currentPage));
 
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
@@ -143,10 +137,11 @@ public partial class ShellViewModel : ObservableObject,
         IsLoaded = true;
 
         // Now that the basics are set up, we can load the root page.
-        _rootPage = _rootPageService.GetRootPage();
+        _rootCommand = new(_rootPageService.GetRootPage(), new(CurrentPage));
+        _rootCommand.FastInitializeProperties();
 
         // This sends a message to us to load the root page view model.
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
 
         // Now that the root page is loaded, do any post-load work that the root page service needs to do.
         // This runs asynchronously, on a background thread.
@@ -163,102 +158,62 @@ public partial class ShellViewModel : ObservableObject,
 
     private async Task LoadPageViewModelAsync(PageViewModel viewModel, CancellationToken cancellationToken = default)
     {
-        // Note: We removed the general loading state, extensions sometimes use their `IsLoading`, but it's inconsistently implemented it seems.
-        // IsInitialized is our main indicator of the general overall state of loading props/items from a page we use for the progress bar
-        // This triggers that load generally with the InitializeCommand asynchronously when we navigate to a page.
-        // We could re-track the page loading status, if we need it more granularly below again, but between the initialized and error message, we can infer some status.
-        // We could also maybe move this thread offloading we do for loading into PageViewModel and better communicate between the two... a few different options.
-
-        ////LoadedState = ViewModelLoadedState.Loading;
         if (!viewModel.IsInitialized
             && viewModel.InitializeCommand is not null)
         {
-            var outer = Task.Run(
-                async () =>
-                {
-                    // You know, this creates the situation where we wait for
-                    // both loading page properties, AND the items, before we
-                    // display anything.
-                    //
-                    // We almost need to do an async await on initialize, then
-                    // just a fire-and-forget on FetchItems.
-                    // RE: We do set the CurrentPage in ShellPage.xaml.cs as well, so, we kind of are doing two different things here.
-                    // Definitely some more clean-up to do, but at least its centralized to one spot now.
-                    viewModel.InitializeCommand.Execute(null);
-
-                    await viewModel.InitializeCommand.ExecutionTask!;
-
-                    if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
-                    {
-                        if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
-                        {
-                            CoreLogger.LogError(ex.ToString());
-                        }
-                    }
-                    else
-                    {
-                        var t = Task.Factory.StartNew(
-                            () =>
-                            {
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    if (viewModel is IDisposable disposable)
-                                    {
-                                        try
-                                        {
-                                            disposable.Dispose();
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            CoreLogger.LogError(ex.ToString());
-                                        }
-                                    }
-
-                                    return;
-                                }
-
-                                CurrentPage = viewModel;
-                            },
-                            cancellationToken,
-                            TaskCreationOptions.None,
-                            _scheduler);
-                        await t;
-                    }
-                },
-                cancellationToken);
-            await outer;
+            await PageNavigationService.InitializePageAsync(viewModel, cancellationToken).ConfigureAwait(false);
+            await Task.Factory.StartNew(
+                () => SetCurrentPageAfterLoad(viewModel, cancellationToken),
+                cancellationToken,
+                TaskCreationOptions.None,
+                _scheduler);
         }
         else
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                if (viewModel is IDisposable disposable)
-                {
-                    try
-                    {
-                        disposable.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreLogger.LogError(ex.ToString());
-                    }
-                }
+            SetCurrentPageAfterLoad(viewModel, cancellationToken);
+        }
+    }
 
-                return;
+    private void SetCurrentPageAfterLoad(PageViewModel viewModel, CancellationToken cancellationToken)
+    {
+        if (viewModel.IsDiscarded)
+        {
+            return;
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            if (viewModel is IDisposable disposable)
+            {
+                try
+                {
+                    disposable.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError(ex.ToString());
+                }
             }
 
-            CurrentPage = viewModel;
+            return;
         }
+
+        CurrentPage = viewModel;
     }
 
     public void Receive(PerformCommandMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         PerformCommand(message);
     }
 
     private void PerformCommand(PerformCommandMessage message)
     {
-        var command = message.Command.Unsafe;
+        var command = message.Command.Model.Unsafe;
         if (command is null)
         {
             return;
@@ -272,12 +227,17 @@ public partial class ShellViewModel : ObservableObject,
         // isMainPage must be evaluated here; if it were moved inside the
         // "if (command is IPage)" block below, it would be too late to affect
         // the providerContext that is passed to the new page view-model.
-        var isMainPage = command == _rootPage;
+        var isMainPage = command == _rootCommand.Model.Unsafe;
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        // Only commands sent from the palette's own root page are top-level. Commands from
+        // other surfaces (for example, a dock flyout page) must not update home-page history.
+        var sourcePage = message.Context?.Page;
+        var isTopLevel = CurrentPage.IsRootPage && (sourcePage is null || ReferenceEquals(sourcePage, CurrentPage));
+
+        var host = _pageNavigation.ResolveHost(message, CurrentPage);
         var providerContext = isMainPage
             ? CommandProviderContext.Empty
-            : _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
+            : _pageNavigation.ResolveProviderContext(message, CurrentPage);
 
         try
         {
@@ -287,34 +247,16 @@ public partial class ShellViewModel : ObservableObject,
                 CoreLogger.LogDebug($"Navigating to page");
 
                 var isNested = !isMainPage;
-                if (message.ListPageOptions is { } options &&
-                    (options.IsEmpty || page is not IListPage))
-                {
-                    throw new NotSupportedException("List page launch options can only be applied to list pages and must contain a query or filter.");
-                }
-
-                // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, isNested, host!, providerContext);
+                var pageViewModel = _pageNavigation.TryPreparePage(page, isNested, host, providerContext, message.ListPageOptions);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
                 }
 
-                if (message.ListPageOptions is not null)
-                {
-                    if (pageViewModel is not ListViewModel listPageViewModel)
-                    {
-                        throw new NotSupportedException("List page launch options can only be applied to list pages.");
-                    }
-
-                    listPageViewModel.SetLaunchOptions(message.ListPageOptions);
-                }
-
-                pageViewModel.IsRootPage = isMainPage;
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
 
                 // Create/replace the navigation cancellation token.
                 // If one already exists, cancel and dispose it first.
@@ -349,15 +291,12 @@ public partial class ShellViewModel : ObservableObject,
                 if (host is not null)
                 {
                     var extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    var commandId = command.Id ?? "unknown";
-                    var commandName = command.Name ?? "unknown";
+                    var commandId = message.Command.Id;
+                    var commandName = message.Command.Name;
                     WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
                 }
-
-                // Clear command bar, ViewModel initialization can already set new commands if it wants to
-                OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
 
                 // Kick off async loading of our ViewModel
                 LoadPageViewModelAsync(pageViewModel, navigationToken)
@@ -375,8 +314,9 @@ public partial class ShellViewModel : ObservableObject,
                         _scheduler);
 
                 // While we're loading in the background, immediately move to the next page.
-                NavigateToPageMessage msg = new(pageViewModel, message.WithAnimation, navigationToken, message.TransientPage);
-                WeakReferenceMessenger.Default.Send(msg);
+                PageNavigationRequested?.Invoke(
+                    this,
+                    new(pageViewModel, message.WithAnimation, message.TransientPage, navigationToken));
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
@@ -385,13 +325,13 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
             }
             else
             {
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
             }
         }
         catch (Exception ex)
@@ -427,10 +367,9 @@ public partial class ShellViewModel : ObservableObject,
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var command = message.Command.Unsafe;
-        var extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-        var commandId = command?.Id ?? "unknown";
-        var commandName = command?.Name ?? "unknown";
+        var extensionId = "builtin";
+        var commandId = "unknown";
+        var commandName = "unknown";
         var success = false;
 
         try
@@ -438,10 +377,14 @@ public partial class ShellViewModel : ObservableObject,
             ICommandResult? result;
             try
             {
+                extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+                commandId = message.Command.Id;
+                commandName = message.Command.Name;
+
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
-                result = invokable.Invoke(message.Context);
+                result = invokable.Invoke(message.CommandContext);
                 success = true;
             }
             finally
@@ -453,14 +396,14 @@ public partial class ShellViewModel : ObservableObject,
             }
 
             // But if it did succeed, we need to handle the result.
-            UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
-
-            _handleInvokeTask = null;
+            UnsafeHandleCommandResult(
+                result,
+                message.OnBeforeShowConfirmation,
+                message.ResultHandler,
+                message.Context?.Page);
         }
         catch (Exception ex)
         {
-            _handleInvokeTask = null;
-
             // Telemetry: Track errors for session metrics
             WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
 
@@ -468,9 +411,20 @@ public partial class ShellViewModel : ObservableObject,
             // than a silent log message.
             host?.Log(ex.Message);
         }
+        finally
+        {
+            lock (_invokeLock)
+            {
+                _handleInvokeTask = null;
+            }
+        }
     }
 
-    private void UnsafeHandleCommandResult(ICommandResult? result, Action? onBeforeShowConfirmation = null)
+    private void UnsafeHandleCommandResult(
+        ICommandResult? result,
+        Action? onBeforeShowConfirmation = null,
+        Func<ICommandResult, bool>? resultHandler = null,
+        PageViewModel? sourcePage = null)
     {
         if (result is null)
         {
@@ -482,6 +436,11 @@ public partial class ShellViewModel : ObservableObject,
         CoreLogger.LogDebug($"handling {kind.ToString()}");
 
         WeakReferenceMessenger.Default.Send<TelemetryInvokeResultMessage>(new(kind));
+        if (resultHandler?.Invoke(result) == true)
+        {
+            return;
+        }
+
         switch (kind)
         {
             case CommandResultKind.Dismiss:
@@ -558,13 +517,13 @@ public partial class ShellViewModel : ObservableObject,
                             var toastCommand = a2.Command;
                             if (toastCommand is not null)
                             {
-                                command = new CommandViewModel(toastCommand, new(CurrentPage));
+                                command = new CommandViewModel(toastCommand, new(sourcePage ?? CurrentPage));
                                 command.InitializeProperties();
                             }
                         }
 
                         WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message, icon, command));
-                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation);
+                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation, resultHandler, sourcePage);
                     }
 
                     break;
@@ -575,7 +534,7 @@ public partial class ShellViewModel : ObservableObject,
     public void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
         _rootPageService.GoHome();
-        WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
+        GoHomeRequested?.Invoke(this, new(withAnimation, focusSearch));
     }
 
     /// <summary>
@@ -587,17 +546,26 @@ public partial class ShellViewModel : ObservableObject,
     {
         _currentlyTransient = false;
         _rootPageService.GoHome();
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
     }
 
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
-        WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));
+        GoBackRequested?.Invoke(this, new(withAnimation, focusSearch));
     }
 
     public void Receive(HandleCommandResultMessage message)
     {
-        UnsafeHandleCommandResult(message.Result.Unsafe);
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
+        UnsafeHandleCommandResult(
+            message.Result.Unsafe,
+            message.OnBeforeShowConfirmation,
+            message.ResultHandler,
+            message.Context?.Page);
     }
 
     public void Receive(WindowHiddenMessage message)
@@ -609,17 +577,8 @@ public partial class ShellViewModel : ObservableObject,
 
             // navigate back to the main page without animation
             GoHome(withAnimation: false, focusSearch: false);
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
         }
-    }
-
-    private void OnUIThread(Action action)
-    {
-        _ = Task.Factory.StartNew(
-            action,
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _scheduler);
     }
 
     public void CancelNavigation()

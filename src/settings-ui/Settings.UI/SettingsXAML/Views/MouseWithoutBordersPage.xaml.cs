@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -36,6 +37,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private MouseWithoutBordersViewModel ViewModel { get; set; }
 
         private readonly IFileSystemWatcher watcher;
+        private int _configRefreshPending;
+        private int _configRefreshRequested;
 
         public MouseWithoutBordersPage()
         {
@@ -54,7 +57,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
 
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Loaded += async (s, e) =>
+            {
+                ClearPairingUI();
+                ViewModel.OnPageLoaded();
+                if (ViewModel.LoadUpdatedSettings())
+                {
+                    ViewModel.NotifyUpdatedSettings();
+                }
+
+                await ViewModel.LoadPairingKeyAsync();
+            };
+            Unloaded += (s, e) => ClearPairingUI();
 
             ViewModel.ConnectionSucceeded += (s, e) =>
             {
@@ -96,15 +110,37 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void OnConfigFileUpdate()
         {
-            // Note: FileSystemWatcher raise notification multiple times for single update operation.
-            // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration every time since we will be updating the UI only if something is changed.
-            this.DispatcherQueue.TryEnqueue(() =>
+            Interlocked.Exchange(ref _configRefreshRequested, 1);
+            if (Interlocked.Exchange(ref _configRefreshPending, 1) != 0)
             {
-                if (ViewModel.LoadUpdatedSettings())
+                return;
+            }
+
+            if (!this.DispatcherQueue.TryEnqueue(async () =>
+            {
+                try
                 {
-                    ViewModel.NotifyUpdatedSettings();
+                    while (Interlocked.Exchange(ref _configRefreshRequested, 0) != 0 && IsLoaded)
+                    {
+                        if (ViewModel.LoadUpdatedSettings())
+                        {
+                            ViewModel.NotifyUpdatedSettings();
+                            await ViewModel.LoadPairingKeyAsync();
+                        }
+                    }
                 }
-            });
+                finally
+                {
+                    Interlocked.Exchange(ref _configRefreshPending, 0);
+                    if (Volatile.Read(ref _configRefreshRequested) != 0 && IsLoaded)
+                    {
+                        OnConfigFileUpdate();
+                    }
+                }
+            }))
+            {
+                Interlocked.Exchange(ref _configRefreshPending, 0);
+            }
         }
 
         private static T GetChildOfType<T>(DependencyObject depObj, string tag)
@@ -250,7 +286,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Fields are cleared only once ViewModel confirms the connection succeeded
             // (ConnectionSucceeded event), so a failed attempt keeps the values and
             // surfaces an error instead of silently wiping what the user typed.
-            await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
+            _ = await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
         }
 
         private static async Task FlashRequiredFieldsAsync(List<TextBox> textBoxes)
@@ -282,6 +318,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
 
                 await Task.Delay(150);
+            }
+        }
+
+        private async void ServiceMode_Toggled(object sender, RoutedEventArgs e)
+        {
+            ClearPairingUI();
+            await ViewModel.LoadPairingKeyAsync();
+        }
+
+        private void ClearPairingUI()
+        {
+            ViewModel.ResetPairingUiState();
+            if (ConnectPCNameTextBox != null)
+            {
+                ConnectPCNameTextBox.Text = string.Empty;
+                ClearFieldError(ConnectPCNameTextBox);
+            }
+
+            if (ConnectSecurityKeyTextBox != null)
+            {
+                ConnectSecurityKeyTextBox.Text = string.Empty;
+                ClearFieldError(ConnectSecurityKeyTextBox);
             }
         }
 

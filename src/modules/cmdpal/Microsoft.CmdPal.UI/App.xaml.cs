@@ -31,9 +31,11 @@ using Microsoft.CmdPal.Ext.WinGet;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
+using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -123,6 +125,12 @@ public partial class App : Application, IDisposable
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
+
+        // Initialize the palette window before creating dock windows.
+        if (Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
+        {
+            WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(true));
+        }
     }
 
     /// <summary>
@@ -193,6 +201,11 @@ public partial class App : Application, IDisposable
             try
             {
                 var winget = new WinGetExtensionCommandsProvider(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler);
+                winget.NotificationRequested += static (_, message) =>
+                    WeakReferenceMessenger.Default.Send(new ShowToastMessage(message)
+                    {
+                        Duration = TimeSpan.FromSeconds(4),
+                    });
                 winget.SetAllLookup(
                     query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
                     query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
@@ -260,7 +273,9 @@ public partial class App : Application, IDisposable
         services.AddSingleton(persistenceService);
         services.AddSingleton(settingsService);
         services.AddSingleton<IAppStateService, AppStateService>();
+        services.AddSingleton<ISettingsLinkResolver, SettingsLinkResolver>();
         services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
+        services.AddTransient<SettingsLinkContextMenuService>();
         services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();
         services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 
@@ -271,6 +286,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
+        services.AddSingleton<AccessKeyModeController>();
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();

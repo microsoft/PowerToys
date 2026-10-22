@@ -127,7 +127,9 @@ internal sealed partial class LanguageService : ILanguageService
         var effectiveTag = string.IsNullOrEmpty(languageTag) ? SystemLanguageTag : languageTag;
         try
         {
-            var mappedTag = Language.GetMuiCompatibleLanguageListFromLanguageTags([effectiveTag]).FirstOrDefault() ?? effectiveTag;
+            // Explicit array typing avoids a compiler-generated collection that WinRT cannot marshal with AOT.
+            string[] languageTags = [effectiveTag];
+            var mappedTag = Language.GetMuiCompatibleLanguageListFromLanguageTags(languageTags).FirstOrDefault() ?? effectiveTag;
             return CultureInfo.GetCultureInfo(mappedTag).Name;
         }
         catch (Exception ex)

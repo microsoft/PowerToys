@@ -37,8 +37,10 @@ Describe 'UI test signing selection' {
         'AdvancedPaste.UITests.Next',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
+        'FileLocksmith.UITests',
         'HostsEditor.UITests',
         'Hosts.UITests.Next',
+        'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
@@ -48,6 +50,7 @@ Describe 'UI test signing selection' {
         'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
+        'ScreenRuler.UITests.Next',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
     )
@@ -70,10 +73,12 @@ Describe 'UI test signing selection' {
         'PowerRename.FuzzingTest',
         'AdvancedPaste.UITests.Next.Extra',
         'FancyZones.UITests.Next',
+        'FileLocksmith.UITests.Extra',
+        'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
+        'ScreenRuler.UITests.Next.Extra',
         'Workspaces.Editor.UITests',
-        'ZoomIt.UITests.Extra',
-        'FileLocksmith.UITests' | ForEach-Object { @{ Module = $_ } }
+        'ZoomIt.UITests.Extra' | ForEach-Object { @{ Module = $_ } }
     ) {
         param($Module)
         $result = Get-UITestSigningSelection -Modules $Module
@@ -81,6 +86,21 @@ Describe 'UI test signing selection' {
         $result.RequiresAuthenticatedSettingsIpc | Should Be $false
         ($result.Files -contains 'PowerToys.exe') | Should Be $false
         ($result.Files -contains 'PowerToys.Settings.exe') | Should Be $false
+    }
+
+    # Regression: an ImageResizer-only PR selection must not rely on another suite to sign the
+    # Runner/Settings companions, or the Release Runner rejects Settings as not-microsoft-signed.
+    It 'signs IPC companions for an ImageResizer-only selection on <Platform>' -TestCases @(
+        'x64Win10', 'x64Win11', 'ARM64' | ForEach-Object { @{ Platform = $_ } }
+    ) {
+        param($Platform)
+        $result = Get-UITestSigningSelection -Modules 'ImageResizer.UITests' -Platform $Platform
+
+        $result.RequiresNewPlus | Should Be $false
+        $result.RequiresAuthenticatedSettingsIpc | Should Be $true
+        ($result.Files -contains 'PowerToys.exe') | Should Be $true
+        ($result.Files -contains 'PowerToys.Settings.exe') | Should Be $true
+        ($result.Packages -contains 'ImageResizerContextMenuPackage.msix') | Should Be ($Platform -ne 'x64Win10')
     }
 
     It 'uses consistent New+ requirements for <Module> on <Platform>' -TestCases @(

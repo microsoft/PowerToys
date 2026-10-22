@@ -14,6 +14,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <LangVersion>preview</LangVersion>
 
@@ -63,12 +64,6 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-    <!-- This lets us actually reference types from Microsoft.Terminal.UI and CmdPalKeyboardService -->
-    <CsWinRTIncludes>Microsoft.Terminal.UI;CmdPalKeyboardService</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <!-- This disables the auto-generated main, so we can be single-instanced -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
@@ -103,6 +98,7 @@
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
     <None Remove="Settings\AppearancePage.xaml" />
+    <None Remove="Settings\CompactPositionPickerWindow.xaml" />
     <None Remove="Settings\InternalPage.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Settings.xaml" />
@@ -127,6 +123,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+    <PackageReference Include="System.Drawing.Common" />
     <PackageReference Include="WinUIEx" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
@@ -134,6 +131,11 @@
     </PackageReference>
 
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Compile the internal error-mode scope into the host as well as the Toolkit assembly. -->
+    <Compile Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ShellThreadErrorModeScope.cs" Link="Helpers\Icons\ShellThreadErrorModeScope.cs" />
   </ItemGroup>
 
   <!--
@@ -154,6 +156,7 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
+    <ProjectReference Include="..\Microsoft.CmdPal.AdaptiveCards.IncrementalRendering\Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
 
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
@@ -170,22 +173,6 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsTerminal\Microsoft.CmdPal.Ext.WindowsTerminal.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WinGet\Microsoft.CmdPal.Ext.WinGet.csproj" />
-
-    <ProjectReference Include="$(ProjectDir)\..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-      <BuildProject>True</BuildProject>
-    </ProjectReference>
-    <!-- WinRT metadata reference -->
-    <CsWinRTInputs Include="$(OutputPath)\Microsoft.Terminal.UI.winmd" />
-    <!-- Native implementation DLL -->
-    <None Include="$(OutputPath)\Microsoft.Terminal.UI.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj">
-      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
-      <Private>True</Private>
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -227,6 +214,14 @@
   <ItemGroup>
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Icons\AppIconFallback.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DeploymentContent>true</DeploymentContent>
+    </Content>
+    <Content Update="Assets\Icons\ShellItemIconFallback.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DeploymentContent>true</DeploymentContent>
     </Content>
     <Content Update="Assets\StoreLogo.dark.svg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -292,6 +287,9 @@
 
   <ItemGroup>
     <Page Update="Settings\AppearancePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Settings\CompactPositionPickerWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

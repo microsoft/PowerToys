@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -18,8 +18,10 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -27,6 +29,7 @@ using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
@@ -49,13 +52,10 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
-    IRecipient<NavigateToPageMessage>,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
     IRecipient<ErrorOccurredMessage>,
     IRecipient<TelemetryCommandStartedMessage>,
-    IRecipient<DragStartedMessage>,
-    IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
     IRecipient<ExpandCompactModeMessage>,
@@ -71,14 +71,18 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
-    private readonly KeyboardListener _keyboardListener;
-    private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly GlobalKeyboardListener _keyboardListener;
+    private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
+    private readonly CopilotKeyRegistration? _copilotKeyRegistration;
     private readonly ICmdPalProtocolActivation _protocolActivation;
     private readonly ViewModels.Models.IMonitorService _monitorService;
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
+    private readonly AccessKeyModeController _accessKeyMode;
     private readonly List<long> _breakthroughTimestamps = [];
+    private readonly ShellViewModel _shellViewModel;
+    private ShellIconCacheInvalidator? _shellIconCacheInvalidator;
 
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _ignoreHotKeyWhenBusy;
@@ -118,6 +122,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
+    private bool _isShowing;
 
     // While a modal dialog (e.g. a confirmation) is showing, the card is forced to fill the
     // whole window so the dialog — which renders in the window's popup layer and is clipped to
@@ -138,12 +143,21 @@ public sealed partial class MainWindow : WindowEx,
 
     public MainWindow()
     {
+        if (!ShellIconCacheInvalidator.InitializeShellIconCache())
+        {
+            Logger.LogWarning("Failed to initialize the Shell image lists");
+        }
+
         _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
         _monitorService = App.Current.Services.GetRequiredService<ViewModels.Models.IMonitorService>();
+        _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
 
         InitializeComponent();
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
+        _shellViewModel = App.Current.Services.GetRequiredService<ShellViewModel>();
+        _shellViewModel.PageNavigationRequested += ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged += ShellContent_DragStateChanged;
 
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
@@ -152,7 +166,8 @@ public sealed partial class MainWindow : WindowEx,
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
         _windowThemeSynchronizer = new WindowThemeSynchronizer(_themeService, this);
 
-        _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
+        var nativeWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        _hwnd = new HWND(nativeWindowHandle.ToInt32());
 
         unsafe
         {
@@ -169,12 +184,18 @@ public sealed partial class MainWindow : WindowEx,
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
-        _keyboardListener = new KeyboardListener();
-        _keyboardListener.Start();
-
-        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
+        _keyboardListener = new GlobalKeyboardListener(
+            HandleSummon,
+            static error => Logger.LogError("Failed when invoking global keyboard hook", error));
+        StartKeyboardListener();
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
+        var shellIconAssociationsChangedMessage = PInvoke.RegisterWindowMessage(
+            "PowerToys.CommandPalette.ShellIconAssociationsChanged");
+        _shellIconCacheInvalidator = new ShellIconCacheInvalidator(
+            nativeWindowHandle,
+            shellIconAssociationsChangedMessage,
+            App.Current.Services.GetRequiredService<IIconLoaderService>().ShellIconLocations);
 
         // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
         // member (and instead like, use a local), then the pointer we marshal
@@ -194,13 +215,10 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
         WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
         WeakReferenceMessenger.Default.Register<TelemetryCommandStartedMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
-        WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
@@ -214,6 +232,7 @@ public sealed partial class MainWindow : WindowEx,
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
         RootElement.Loaded += RootElementLoaded;
+        RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_PointerPressed), true);
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
@@ -228,12 +247,21 @@ public sealed partial class MainWindow : WindowEx,
             Summon(string.Empty);
         });
 
-        _localKeyboardListener = new LocalKeyboardListener();
+        _accessKeyMode.AttachInput(controller => new AccessKeyInputHandler(this, controller));
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
+
+        try
+        {
+            _copilotKeyRegistration = new CopilotKeyRegistration((nint)_hwnd);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to register Copilot key fast-path activation", ex);
+        }
     }
 
     private void OnAutoGoHomeTimerOnTick(object? s, object e)
@@ -242,7 +270,7 @@ public sealed partial class MainWindow : WindowEx,
 
         // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
         // and prevent the user from opening its context menu.
-        WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
+        _shellViewModel.GoHome(withAnimation: false, focusSearch: false);
     }
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -282,13 +310,15 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    private void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
         if (e.Key == VirtualKey.GoBack)
         {
-            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+            _shellViewModel.GoBack();
         }
     }
+
+    private void RootElement_PointerPressed(object sender, PointerRoutedEventArgs e) => _accessKeyMode.Exit();
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
@@ -366,20 +396,22 @@ public sealed partial class MainWindow : WindowEx,
         {
             var finalRect = rect.Value;
 
-            // In compact mode, center the *visible collapsed card* (the search box) on the
-            // display, not the much larger transparent HWND. The card is anchored to the top
-            // of the HWND, so we offset the HWND upward by the card's center so that growing
-            // the card downward (when results appear) keeps the search box where it was.
-            if (TryGetCompactCardCenterOffsetPhysical(windowDpi, out var cardCenterFromHwndTop))
+            // In compact mode, center the visible collapsed search row on the display, not
+            // the much larger transparent HWND. The card is anchored to the top of the HWND,
+            // so we offset the HWND upward by the search row's center. Growing the card
+            // downward (from the shelf or expanded results) keeps the search box in place.
+            if (TryGetCompactSearchRowCenterOffsetPhysical(windowDpi, out var searchRowCenterFromHwndTop))
             {
                 var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                 var workArea = displayArea.WorkArea;
+                var targetDpi = WindowPositionHelper.GetDpiForDisplay(displayArea);
+                var workAreaHeightDip = workArea.Height * 96.0 / targetDpi;
 
                 // The setting is the relative height measured from the *bottom* of the screen,
                 // so a larger percentage places the search box higher up the display.
-                var fractionFromTop = GetCompactCenterFractionFromTop(settings);
+                var fractionFromTop = GetCompactCenterFractionFromTop(settings, workAreaHeightDip);
                 var desiredCardCenterY = workArea.Y + (int)Math.Round(workArea.Height * fractionFromTop);
-                finalRect.Y = desiredCardCenterY - cardCenterFromHwndTop;
+                finalRect.Y = desiredCardCenterY - searchRowCenterFromHwndTop;
 
                 if (finalRect.Y < workArea.Y)
                 {
@@ -394,13 +426,14 @@ public sealed partial class MainWindow : WindowEx,
     /// <summary>
     /// When the palette is in compact mode and is being centered on launch, computes the
     /// distance (in physical pixels) from the top of the HWND to the vertical center of the
-    /// collapsed card, so the caller can position the HWND such that the card is centered.
+    /// collapsed search row, so the caller can position the HWND such that the search box is
+    /// centered at the configured height.
     /// Returns false when the card should not be re-centered (compact mode off, or a summon
     /// behavior that restores the last position).
     /// </summary>
-    private bool TryGetCompactCardCenterOffsetPhysical(int windowDpi, out int cardCenterFromHwndTop)
+    private bool TryGetCompactSearchRowCenterOffsetPhysical(int windowDpi, out int searchRowCenterFromHwndTop)
     {
-        cardCenterFromHwndTop = 0;
+        searchRowCenterFromHwndTop = 0;
 
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         if (!settings.CompactMode || !IsCenteringSummon(settings))
@@ -408,18 +441,27 @@ public sealed partial class MainWindow : WindowEx,
             return false;
         }
 
-        // Make sure the card is actually collapsed before we measure it.
-        (RootElement.MainContent as ShellPage)?.EnsureCompactLayout();
+        // Make sure the card is actually collapsed before we measure it. Anchor positioning
+        // to the search row, not the entire card: the optional quick-access shelf makes the
+        // collapsed card taller but should not move the search box on screen.
+        var shellPage = RootElement.MainContent as ShellPage;
+        shellPage?.EnsureCompactLayout();
 
-        var cardHeightDip = RootElement.GetCardHeight();
-        if (cardHeightDip <= 0)
+        var searchRowCenterDip = shellPage?.GetCompactSearchRowCenterY() ?? 0;
+        if (searchRowCenterDip <= 0)
         {
-            return false;
+            var cardHeightDip = RootElement.GetCardHeight();
+            if (cardHeightDip <= 0)
+            {
+                return false;
+            }
+
+            searchRowCenterDip = cardHeightDip / 2.0;
         }
 
         var scale = windowDpi / 96.0;
         var cardTopDip = RootElement.ShadowPadding.Top;
-        cardCenterFromHwndTop = (int)Math.Round((cardTopDip + (cardHeightDip / 2.0)) * scale);
+        searchRowCenterFromHwndTop = (int)Math.Round((cardTopDip + searchRowCenterDip) * scale);
         return true;
     }
 
@@ -429,9 +471,11 @@ public sealed partial class MainWindow : WindowEx,
     // Converts the "center height" setting (a percentage measured up from the bottom of the
     // screen) into the fraction of the work area, measured from the top, at which the
     // collapsed search box should be centered.
-    private static double GetCompactCenterFractionFromTop(SettingsModel settings)
+    private static double GetCompactCenterFractionFromTop(SettingsModel settings, double workAreaHeightDip)
     {
-        var pct = Math.Clamp(settings.CompactCenterHeightPercentage, 0, 100);
+        var pct = CompactPositionConstraints.ClampPercentageFromBottom(
+            settings.CompactCenterHeightPercentage,
+            workAreaHeightDip);
         return 1.0 - (pct / 100.0);
     }
 
@@ -590,6 +634,8 @@ public sealed partial class MainWindow : WindowEx,
                 && x.ShowHwndFrame == y.ShowHwndFrame
                 && x.CompactMode == y.CompactMode
                 && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
+                && x.DockFocusHotkey == y.DockFocusHotkey
+                && x.EnableDock == y.EnableDock
                 && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
         }
 
@@ -630,6 +676,8 @@ public sealed partial class MainWindow : WindowEx,
             hash.Add(obj.ShowHwndFrame);
             hash.Add(obj.CompactMode);
             hash.Add(obj.Hotkey);
+            hash.Add(obj.DockFocusHotkey);
+            hash.Add(obj.EnableDock);
             hash.Add(obj.CommandHotkeys.Count);
             return hash.ToHashCode();
         }
@@ -826,6 +874,21 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, Action<HWND>? positionWindow)
     {
+        // Showing can activate the window before visibility is committed.
+        var wasShowing = _isShowing;
+        _isShowing = true;
+        try
+        {
+            ShowHwndCore(hwndValue, positionWindow);
+        }
+        finally
+        {
+            _isShowing = wasShowing;
+        }
+    }
+
+    private void ShowHwndCore(IntPtr hwndValue, Action<HWND>? positionWindow)
+    {
         StopAutoGoHome();
 
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
@@ -1015,7 +1078,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (message.ForceGoHome)
         {
-            RunOnUiThread(() => WeakReferenceMessenger.Default.Send(new GoHomeMessage(false, false)));
+            RunOnUiThread(() => _shellViewModel.GoHome(withAnimation: false, focusSearch: false));
         }
 
         // This might come in off the UI thread. Make sure to hop back.
@@ -1028,7 +1091,7 @@ public sealed partial class MainWindow : WindowEx,
 
     // Session telemetry: Track metrics during the Command Palette session
     // These receivers increment counters that are sent when EndSession is called
-    public void Receive(NavigateToPageMessage message)
+    private void ShellViewModel_PageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e)
     {
         RunOnUiThread(() => _sessionPagesVisited++);
     }
@@ -1160,6 +1223,11 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SetIsVisibleToUser(bool isVisibleToUser)
     {
+        if (!isVisibleToUser)
+        {
+            _accessKeyMode.Exit();
+        }
+
         if (IsVisibleToUser == isVisibleToUser)
         {
             return;
@@ -1171,6 +1239,8 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        _keyboardListener.Dispose();
+        _copilotKeyRegistration?.Dispose();
         SaveWindowPosition();
 
         var extensionServices = App.Current.Services.GetServices<IExtensionService>();
@@ -1184,10 +1254,11 @@ public sealed partial class MainWindow : WindowEx,
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
+        _accessKeyMode.Dispose();
         _localKeyboardListener.Dispose();
+        (RootElement.MainContent as ShellPage)?.Dispose();
         DisposeAcrylic();
 
-        _keyboardListener.Stop();
         Environment.Exit(0);
     }
 
@@ -1223,7 +1294,7 @@ public sealed partial class MainWindow : WindowEx,
             _isRestarting = false;
 
             // A successful restart terminates this process. Restore services if it returns or throws.
-            _keyboardListener.Start();
+            StartKeyboardListener();
             trayIcon.SetupTrayIcon();
             WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>();
         }
@@ -1437,6 +1508,8 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        _localKeyboardListener.EnableRaisingEvents = args.WindowActivationState != WindowActivationState.Deactivated;
+
         if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
         {
             try
@@ -1452,6 +1525,8 @@ public sealed partial class MainWindow : WindowEx,
 
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            _accessKeyMode.Exit();
+
             // Save the current window position before hiding the window
             // but not when opened from dock — preserve the pre-dock size.
             if (!_isLoadedFromDock)
@@ -1485,6 +1560,13 @@ public sealed partial class MainWindow : WindowEx,
             HideWindow();
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
+        }
+        else if (_copilotKeyRegistration is null && !IsVisibleToUser && !_isShowing)
+        {
+            // LOAD BEARING
+            // This fallback is a footgun I'd rather remove entirely, but it must remain when Copilot fast path registration fails.
+            // If Copilot key fast-path is not registered, external activation (e.g. the Copilot key) must restore search selection and focus.
+            Summon(string.Empty);
         }
 
         if (RootElement is not null)
@@ -1605,71 +1687,78 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
+    private void StartKeyboardListener()
+    {
+        if (_keyboardListener.Start(out var error))
+        {
+            return;
+        }
+
+        Logger.LogError("Failed to register global keyboard hook", error);
+        var errorCode = error is Win32Exception nativeError ? nativeError.NativeErrorCode : error.HResult;
+        var message = FormattableString.Invariant($"SetWindowsHookEx: {error.Message} ({errorCode})");
+        _ = PInvoke.MessageBox(HWND.Null, message, RS_.GetString("AppName"), MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
+    }
+
     private void SetupHotkey(SettingsModel settings)
     {
         UnregisterHotkeys();
 
-        var globalHotkey = settings.Hotkey;
-        if (globalHotkey is not null)
+        RegisterHotkey(settings, settings.Hotkey, string.Empty);
+
+        // The dock shortcut rides the same registration path as command hotkeys. HandleSummon
+        // peels it back off so nothing tries to summon a command with a dock ID. Skip it when
+        // the dock is off so we don't hold a global shortcut that does nothing.
+        if (settings.EnableDock)
         {
-            if (settings.UseLowLevelGlobalHotkey)
-            {
-                _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
-
-                _hotkeys.Add(new(globalHotkey, string.Empty));
-            }
-            else
-            {
-                var vk = globalHotkey.Code;
-                var modifiers =
-                                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                                ;
-
-                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                if (success)
-                {
-                    _hotkeys.Add(new(globalHotkey, string.Empty));
-                }
-            }
+            RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
         }
 
         foreach (var commandHotkey in settings.CommandHotkeys)
         {
-            var key = commandHotkey.Hotkey;
+            RegisterHotkey(settings, commandHotkey.Hotkey, commandHotkey.CommandId);
+        }
+    }
 
-            if (key is not null)
-            {
-                if (settings.UseLowLevelGlobalHotkey)
-                {
-                    _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
+    private void RegisterHotkey(SettingsModel settings, HotkeySettings? key, string commandId)
+    {
+        if (key is null)
+        {
+            return;
+        }
 
-                    _hotkeys.Add(new(globalHotkey, string.Empty));
-                }
-                else
-                {
-                    var vk = key.Code;
-                    var modifiers =
-                        (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                        (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                        (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                        (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                        ;
+        if (settings.UseLowLevelGlobalHotkey)
+        {
+            _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandId);
+            _hotkeys.Add(new(key, commandId));
+            return;
+        }
 
-                    var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                    if (success)
-                    {
-                        _hotkeys.Add(commandHotkey);
-                    }
-                }
-            }
+        var modifiers =
+            (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+            (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+            (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+            (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0);
+
+        if (PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)key.Code))
+        {
+            _hotkeys.Add(new(key, commandId));
+        }
+        else
+        {
+            // Usually means another app (or Windows itself) already owns this combo.
+            Logger.LogWarning($"Failed to register hotkey {key} for '{commandId}'. Error: {Marshal.GetLastWin32Error()}.");
         }
     }
 
     private void HandleSummon(string commandId)
     {
+        if (DockHotkeyIds.IsDockHotkey(commandId))
+        {
+            WeakReferenceMessenger.Default.Send<FocusDockMessage>(new());
+            return;
+        }
+
         var isRootHotkey = string.IsNullOrEmpty(commandId);
         if (isRootHotkey && IsPaletteVisibleToUser())
         {
@@ -1778,9 +1867,29 @@ public sealed partial class MainWindow : WindowEx,
     {
         switch (uMsg)
         {
+            case PInvoke.WM_ACTIVATEAPP when wParam.Value == 0:
+                _accessKeyMode.Exit();
+                break;
+
+            case CopilotKeyRegistration.MessageId:
+                if (wParam.Value == CopilotKeyRegistration.SingleTap)
+                {
+                    HandleSummon(string.Empty);
+                }
+
+                return (LRESULT)0;
+
             // Prevent the window from maximizing when double-clicking the title bar area
             case PInvoke.WM_NCLBUTTONDBLCLK:
                 return (LRESULT)IntPtr.Zero;
+
+            // LOAD BEARING:
+            // This is necessary to prevent rapid deceleration of the machine running CmdPal.
+            // Handle unmatched menu characters here instead of letting DefWindowProc ignore
+            // them and play the system chime. Repeated chimes may otherwise cause the machine
+            // to experience sudden contact with the floor and subsequent rapid disassembly.
+            case PInvoke.WM_MENUCHAR:
+                return (LRESULT)(1 << 16); // MAKELRESULT(0, MNC_CLOSE)
 
             // When restoring a saved position across monitors with different DPIs,
             // MoveAndResize already sets the correctly-scaled size. Suppress the
@@ -1859,9 +1968,22 @@ public sealed partial class MainWindow : WindowEx,
                 _monitorService.NotifyMonitorsChanged();
                 break;
 
+            case PInvoke.WM_SETTINGCHANGE when wParam == (uint)SYSTEM_PARAMETERS_INFO_ACTION.SPI_SETNONCLIENTMETRICS:
+                _shellIconCacheInvalidator?.OnNonClientMetricsChanged();
+                break;
+
             default:
+                if (_shellIconCacheInvalidator?.TryHandleMessage(
+                        uMsg,
+                        unchecked((nint)wParam.Value),
+                        lParam.Value) == true)
+                {
+                    return (LRESULT)0;
+                }
+
                 if (uMsg == WM_TASKBAR_RESTART)
                 {
+                    _shellIconCacheInvalidator?.OnShellRestarted();
                     HotReloadSettings();
                 }
 
@@ -1983,9 +2105,16 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _keyboardListener.Dispose();
+        _shellViewModel.PageNavigationRequested -= ShellViewModel_PageNavigationRequested;
+        ShellContent.DragStateChanged -= ShellContent_DragStateChanged;
+        _accessKeyMode.Dispose();
+        _copilotKeyRegistration?.Dispose();
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
 
+        _shellIconCacheInvalidator?.Dispose();
+        _shellIconCacheInvalidator = null;
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
@@ -2001,18 +2130,15 @@ public sealed partial class MainWindow : WindowEx,
         });
     }
 
-    public void Receive(DragStartedMessage message)
+    private void ShellContent_DragStateChanged(object? sender, PageDragStateChangedEventArgs e)
     {
-        RunOnUiThread(() => _preventHideWhenDeactivated = true);
-    }
-
-    public void Receive(DragCompletedMessage message)
-    {
-        RunOnUiThread(() =>
+        _preventHideWhenDeactivated = e.IsDragging;
+        if (e.IsDragging)
         {
-            _preventHideWhenDeactivated = false;
-            Task.Delay(200).ContinueWith(_ => RunOnUiThread(StealForeground));
-        });
+            return;
+        }
+
+        Task.Delay(200).ContinueWith(_ => RunOnUiThread(StealForeground));
     }
 
     private unsafe void StealForeground()

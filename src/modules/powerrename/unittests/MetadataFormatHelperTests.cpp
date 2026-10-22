@@ -265,6 +265,120 @@ namespace MetadataFormatHelperTests
         }
     };
 
+    TEST_CLASS(ParseGPSCoordinatesTests)
+    {
+        static constexpr ULARGE_INTEGER Rational(DWORD numerator, DWORD denominator) noexcept
+        {
+            ULARGE_INTEGER value{};
+            value.LowPart = numerator;
+            value.HighPart = denominator;
+            return value;
+        }
+
+        static constexpr PROPVARIANT RationalVector(ULARGE_INTEGER* values, ULONG count) noexcept
+        {
+            PROPVARIANT value{};
+            value.vt = VT_VECTOR | VT_UI8;
+            value.cauh.cElems = count;
+            value.cauh.pElems = values;
+            return value;
+        }
+
+    public:
+        TEST_METHOD(ParseGPSCoordinates_WicRationalVectors)
+        {
+            ULARGE_INTEGER latitudeValues[] = { Rational(26, 1), Rational(349510, 10000), Rational(0, 1) };
+            ULARGE_INTEGER longitudeValues[] = { Rational(80, 1), Rational(120140, 10000), Rational(0, 1) };
+            auto latitude = RationalVector(latitudeValues, ARRAYSIZE(latitudeValues));
+            auto longitude = RationalVector(longitudeValues, ARRAYSIZE(longitudeValues));
+            char north[] = "N";
+            char west[] = "W";
+            PROPVARIANT latRef{};
+            latRef.vt = VT_LPSTR;
+            latRef.pszVal = north;
+            PROPVARIANT lonRef{};
+            lonRef.vt = VT_LPSTR;
+            lonRef.pszVal = west;
+
+            const auto [lat, lon] = MetadataFormatHelper::ParseGPSCoordinates(latitude, longitude, latRef, lonRef);
+
+            Assert::AreEqual(26.5825166667, lat, 0.0000001);
+            Assert::AreEqual(-80.2002333333, lon, 0.0000001);
+            Assert::AreEqual(L"26°34.95'N", MetadataFormatHelper::FormatCoordinate(lat, true).c_str());
+            Assert::AreEqual(L"80°12.01'W", MetadataFormatHelper::FormatCoordinate(lon, false).c_str());
+        }
+
+        TEST_METHOD(ParseGPSCoordinates_ByteVectorsAndWideReferences)
+        {
+            BYTE bytes[] = {
+                26, 0, 0, 0, 1, 0, 0, 0,
+                30, 0, 0, 0, 1, 0, 0, 0,
+                0, 0, 0, 0, 1, 0, 0, 0,
+            };
+            PROPVARIANT coordinate{};
+            coordinate.vt = VT_VECTOR | VT_UI1;
+            coordinate.caub.cElems = ARRAYSIZE(bytes);
+            coordinate.caub.pElems = bytes;
+            wchar_t south[] = L"S";
+            wchar_t west[] = L"W";
+            PROPVARIANT latRef{};
+            latRef.vt = VT_LPWSTR;
+            latRef.pwszVal = south;
+            PROPVARIANT lonRef{};
+            lonRef.vt = VT_BSTR;
+            lonRef.bstrVal = SysAllocString(west);
+            Assert::IsNotNull(lonRef.bstrVal);
+
+            const auto [lat, lon] = MetadataFormatHelper::ParseGPSCoordinates(coordinate, coordinate, latRef, lonRef);
+            PropVariantClear(&lonRef);
+
+            Assert::AreEqual(-26.5, lat, 0.0000001);
+            Assert::AreEqual(-26.5, lon, 0.0000001);
+        }
+
+        TEST_METHOD(ParseGPSCoordinates_InvalidVectorsReturnZero)
+        {
+            ULARGE_INTEGER values[] = { Rational(26, 1), Rational(30, 1) };
+            auto shortVector = RationalVector(values, ARRAYSIZE(values));
+            auto nullVector = RationalVector(nullptr, 3);
+            PROPVARIANT emptyRef{};
+
+            auto coordinates = MetadataFormatHelper::ParseGPSCoordinates(shortVector, nullVector, emptyRef, emptyRef);
+
+            Assert::AreEqual(0.0, coordinates.first);
+            Assert::AreEqual(0.0, coordinates.second);
+
+            ULONG wrongTypeValues[24] = { 26, 1, 30, 1, 0, 1 };
+            PROPVARIANT wrongType{};
+            wrongType.vt = VT_VECTOR | VT_UI4;
+            wrongType.caul.cElems = ARRAYSIZE(wrongTypeValues);
+            wrongType.caul.pElems = wrongTypeValues;
+
+            coordinates = MetadataFormatHelper::ParseGPSCoordinates(wrongType, wrongType, emptyRef, emptyRef);
+
+            Assert::AreEqual(0.0, coordinates.first);
+            Assert::AreEqual(0.0, coordinates.second);
+        }
+
+        TEST_METHOD(ParseGPSRational_WicScalarAndByteVector)
+        {
+            PROPVARIANT scalar{};
+            scalar.vt = VT_UI8;
+            scalar.uhVal = Rational(12345, 100);
+            Assert::AreEqual(123.45, MetadataFormatHelper::ParseGPSRational(scalar), 0.0000001);
+
+            BYTE bytes[] = { 5, 0, 0, 0, 2, 0, 0, 0 };
+            PROPVARIANT vector{};
+            vector.vt = VT_VECTOR | VT_UI1;
+            vector.caub.cElems = ARRAYSIZE(bytes);
+            vector.caub.pElems = bytes;
+            Assert::AreEqual(2.5, MetadataFormatHelper::ParseGPSRational(vector), 0.0000001);
+
+            scalar.uhVal = Rational(1, 0);
+            Assert::AreEqual(0.0, MetadataFormatHelper::ParseGPSRational(scalar));
+        }
+    };
+
     TEST_CLASS(ParseSingleRationalTests)
     {
     public:
