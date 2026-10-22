@@ -92,6 +92,29 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void NewSnippetCreationUsesBoundaryWaitingByDefault()
+        {
+            var settings = new TextExpanderSettings();
+            TextExpanderViewModel model = CreateViewModel(settings: settings);
+
+            Assert.IsTrue(model.RequireWordBoundary);
+            Assert.IsNull(model.SaveSnippet(null, "#new", "New snippet"));
+            Assert.IsTrue(model.RequireWordBoundary);
+        }
+
+        [TestMethod]
+        public void NewSnippetCreationPreservesDisabledBoundaryWaiting()
+        {
+            var settings = new TextExpanderSettings();
+            settings.Properties.RequireWordBoundary = false;
+            TextExpanderViewModel model = CreateViewModel(settings: settings);
+
+            Assert.IsFalse(model.RequireWordBoundary);
+            Assert.IsNull(model.SaveSnippet(null, "#new", "New snippet"));
+            Assert.IsFalse(model.RequireWordBoundary);
+        }
+
+        [TestMethod]
         public void CaseSensitivityDefaultsOnAndShowsBothFormsWhenTurnedOff()
         {
             File.WriteAllText(_path, "!Hello=Hello");
@@ -723,9 +746,9 @@ namespace ViewModelTests
             CollectionAssert.AreEqual(VariableTokens, model.Variables.Select(variable => variable.Token).ToArray());
         }
 
-        private TextExpanderViewModel CreateViewModel(bool isElevated = false, Func<string, Task<string>> pickSingleFolderDialog = null)
+        private TextExpanderViewModel CreateViewModel(bool isElevated = false, Func<string, Task<string>> pickSingleFolderDialog = null, TextExpanderSettings settings = null)
         {
-            var settings = new TextExpanderSettings();
+            settings ??= new TextExpanderSettings();
             settings.Properties.SnippetsPath.Value = _directory;
             var utils = new Mock<SettingsUtils>(new FileSystem(), null);
             utils.Setup(u => u.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);

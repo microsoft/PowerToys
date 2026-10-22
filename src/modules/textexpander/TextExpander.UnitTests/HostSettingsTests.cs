@@ -106,8 +106,12 @@ public sealed class HostSettingsTests
         Assert.AreEqual(false, keep.WordBoundaryKeepsSpace);
         Assert.IsNull(HostSettings.Parse("{\"properties\":{}}").WordBoundaryKeepsSpace);
 
-        HostSettings.Values required = HostSettings.Parse("{\"properties\":{\"require_word_boundary\":{\"value\":true}}}");
-        Assert.AreEqual(true, required.RequireWordBoundary);
+        Assert.AreEqual(
+            false,
+            HostSettings.Parse("{\"properties\":{\"require_word_boundary\":false}}").RequireWordBoundary);
+        Assert.AreEqual(
+            true,
+            HostSettings.Parse("{\"properties\":{\"require_word_boundary\":{\"value\":true}}}").RequireWordBoundary);
         Assert.IsNull(HostSettings.Parse("{\"properties\":{}}").RequireWordBoundary);
     }
 

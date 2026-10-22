@@ -5,20 +5,18 @@
 namespace Microsoft.PowerToys.TextExpander;
 
 /// <summary>
-/// The "wait for the whole word" matching rule.
+/// The "wait for space or punctuation" matching rule.
 ///
 /// <para>
-/// By default a trigger fires the instant its last character is typed. That is the right default
-/// — it is what makes expansion feel immediate — but it means a trigger can fire in the middle of
-/// a longer word. A trigger of <c>btw</c> goes off while typing <i>a<b>btw</b>ard</i>, and the
-/// user's word is destroyed by something they did not ask for.
+/// By default a trigger waits until a space or punctuation confirms that the user has finished
+/// typing it. This prevents a trigger such as <c>btw</c> from firing in the middle of a longer
+/// word such as <i>a<b>btw</b>ard</i>.
 /// </para>
 ///
 /// <para>
-/// With this on, a trigger only fires once it is followed by something that ends a word — a
-/// space, or punctuation. The terminator the user typed is not thrown away: it is appended to the
-/// replacement, so typing <c>#sig </c> leaves the signature followed by the space, exactly as if
-/// the expansion had never happened.
+/// The terminator the user typed is not thrown away: it is appended to the replacement, so typing
+/// <c>#sig </c> leaves the signature followed by the space, exactly as if the expansion had never
+/// happened. An explicitly saved false setting still enables immediate expansion.
 /// </para>
 ///
 /// <para>
@@ -31,7 +29,7 @@ internal static class WordBoundary
 {
     // Volatile because the settings watcher thread flips these while the hook thread reads them
     // on every keystroke.
-    private static volatile bool _required;
+    private static volatile bool _required = true;
     private static volatile bool _keepTerminator = true;
 
     /// <summary>Gets or sets a value indicating whether whether a trigger must be followed by a word terminator before it fires.</summary>

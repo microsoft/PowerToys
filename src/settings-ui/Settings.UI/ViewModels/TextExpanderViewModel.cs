@@ -335,8 +335,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>
         /// Gets or sets whether a trigger waits for a word terminator before firing.
         ///
-        /// Off by default: immediate expansion is the point of the tool. On, it stops a trigger
-        /// going off inside a longer word — "btw" no longer fires while typing "abtward".
+        /// On by default: it stops a trigger going off inside a longer word — "btw" no longer
+        /// fires while typing "abtward". An explicitly saved false value remains false.
         /// </summary>
         public bool RequireWordBoundary
         {
@@ -2141,7 +2141,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         /// <summary>
         /// Describes every row: what it does, and whether it can ever expand. That depends on the
-        /// other triggers and on Wait for the whole word, so it is worked out for the whole list.
+        /// other triggers and on Wait for space or punctuation, so it is worked out for the
+        /// whole list.
         /// </summary>
         private void DescribeSnippets()
         {

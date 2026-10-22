@@ -133,6 +133,28 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void BoundarySettingUsesExactNameHelpAndGlobalBinding()
+        {
+            XDocument resources = LoadResources();
+            Assert.AreEqual(
+                "Wait for space or punctuation",
+                ResourceValue(resources, "TextExpander_RequireWordBoundary.Header"));
+            Assert.AreEqual(
+                "Prevents expansion while you’re still typing a longer trigger.",
+                ResourceValue(resources, "TextExpander_RequireWordBoundary.Description"));
+
+            XElement card = LoadPage().Descendants()
+                .Single(element => (string)element.Attribute(XName.Get("Uid", Xaml)) == "TextExpander_RequireWordBoundary");
+            XElement toggle = card.Descendants().Single(element => element.Name.LocalName == "ToggleSwitch");
+            Assert.AreEqual(
+                "{x:Bind ViewModel.RequireWordBoundary, Mode=TwoWay}",
+                (string)toggle.Attribute("IsOn"));
+            Assert.AreEqual(
+                "Toggle_TextExpander_RequireWordBoundary",
+                (string)toggle.Attribute("AutomationProperties.AutomationId"));
+        }
+
+        [TestMethod]
         public void StaleFolderChangeMessageRequiresTheFolderToBeChosenAgain()
         {
             XDocument resources = LoadResources();

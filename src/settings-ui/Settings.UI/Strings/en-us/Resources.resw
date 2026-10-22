@@ -7391,10 +7391,10 @@ The file reloads whenever you save it, so there is nothing to restart. Start tri
     <value>Click a Prompt window token, or place the caret in it and press F2, to edit it.</value>
   </data>
   <data name="TextExpander_RequireWordBoundary.Header" xml:space="preserve">
-    <value>Wait for the whole word</value>
+    <value>Wait for space or punctuation</value>
   </data>
   <data name="TextExpander_RequireWordBoundary.Description" xml:space="preserve">
-    <value>Expand after you type a space or punctuation, so a trigger doesn't fire inside a longer word. The space or punctuation stays in place.</value>
+    <value>Prevents expansion while you’re still typing a longer trigger.</value>
   </data>
   <data name="TextExpander_SnippetsPath_TextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Folder</value>
@@ -7567,8 +7567,8 @@ Your Name</value>
     <comment>{0} is another snippet's trigger that is complete partway through typing this one</comment>
   </data>
   <data name="TextExpander_Row_NeverExpandsFiresFirstWordWait" xml:space="preserve">
-    <value>Never expands: "{0}" fires first. Rename one, or turn on Wait for the whole word.</value>
-    <comment>{0} is another snippet's trigger. "Wait for the whole word" is the name of a setting on this page</comment>
+    <value>Never expands: "{0}" fires first. Rename one, or turn on Wait for space or punctuation.</value>
+    <comment>{0} is another snippet's trigger. "Wait for space or punctuation" is the name of a setting on this page</comment>
   </data>
   <data name="TextExpander_Row_NeverExpandsWhenYouType" xml:space="preserve">
     <value>Never expands: "{0}" fires first when you type "{1}". Rename one of them.</value>

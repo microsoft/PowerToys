@@ -337,7 +337,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                     : Format(resource("TextExpander_Row_NeverExpandsWhenYouType"), blocker.Trigger, blocker.Next);
             }
 
-            // Say whether waiting for the whole word would let it through.
+            // Say whether waiting for space or punctuation would let it through.
             return TextExpanderTriggerReach.FindBlocker(trigger, triggers, wordMode: true) == null
                 ? Format(resource("TextExpander_Row_NeverExpandsFiresFirstWordWait"), blocker.Trigger)
                 : Format(resource("TextExpander_Row_NeverExpandsFiresFirst"), blocker.Trigger);

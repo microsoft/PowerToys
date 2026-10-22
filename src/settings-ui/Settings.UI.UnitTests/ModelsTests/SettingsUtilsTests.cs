@@ -109,6 +109,33 @@ namespace CommonLibTest
         }
 
         [TestMethod]
+        public void MissingTextExpanderSettingsEnableBoundaryWaiting()
+        {
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
+
+            TextExpanderSettings settings = settingsUtils.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+
+            Assert.IsTrue(settings.Properties.RequireWordBoundary);
+            string saved = mockFileSystem.File.ReadAllText(settingsUtils.GetSettingsFilePath(TextExpanderSettings.ModuleName));
+            StringAssert.Contains(saved, "\"require_word_boundary\":true");
+        }
+
+        [TestMethod]
+        public void PersistedDisabledBoundaryWaitingRemainsDisabled()
+        {
+            var mockFileSystem = new MockFileSystem();
+            var settingsUtils = new SettingsUtils(mockFileSystem);
+            var settings = new TextExpanderSettings();
+            settings.Properties.RequireWordBoundary = false;
+            settingsUtils.SaveSettings(settings.ToJsonString(), TextExpanderSettings.ModuleName);
+
+            TextExpanderSettings reloaded = settingsUtils.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+
+            Assert.IsFalse(reloaded.Properties.RequireWordBoundary);
+        }
+
+        [TestMethod]
         public void SaveSettingsOrThrowRestoresExistingFileWhenPublicationThrowsAfterCommit()
         {
             var mockFileSystem = new MockFileSystem();

@@ -58,6 +58,13 @@ public sealed class MatchingAndBoundaryTests
     }
 
     [TestMethod]
+    public void WordBoundaryDefaultsToWaitingForSpaceOrPunctuation()
+    {
+        Assert.IsTrue(WordBoundary.Required);
+        Assert.IsTrue(WordBoundary.KeepTerminator);
+    }
+
+    [TestMethod]
     public void TriggerIndexAgreesWithBruteForceForManySharedPrefixes()
     {
         const int count = 1000;

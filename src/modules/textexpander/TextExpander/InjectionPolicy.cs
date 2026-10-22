@@ -49,9 +49,8 @@ internal static class InjectionPolicy
     public const string IgnoreRemappedVariable = "POWERTOYS_TEXT_EXPANDER_IGNORE_REMAPPED_INPUT";
 
     /// <summary>
-    /// Makes a trigger wait for a word terminator before firing. Off by default: immediate
-    /// expansion is what the tool is for, and this trades that feel for protection against a
-    /// trigger going off inside a longer word.
+    /// Makes a trigger wait for a word terminator before firing. On by default to prevent a
+    /// trigger from going off while the user is still typing a longer word.
     /// </summary>
     public const string RequireWordBoundaryVariable = "POWERTOYS_TEXT_EXPANDER_REQUIRE_WORD_BOUNDARY";
 

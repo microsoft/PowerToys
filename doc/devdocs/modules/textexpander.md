@@ -33,7 +33,7 @@ The Settings page lives in `src/settings-ui` (`TextExpanderPage.xaml`, `TextExpa
 A self-contained .NET process. Its keyboard hook, matching and injection use no UI framework; WinUI 3 is loaded only for the `{{prompt}}` window. It:
 - Installs a low-level keyboard hook and tracks the characters typed into the focused app. Keys are captured only for the foreground window once it has been checked (integrity level, not PowerToys Settings), off the hook's path, after each foreground change. Activation through `AttachThreadInput`, which is how focus goes back to the app after a prompt, raises the foreground event before `GetForegroundWindow` reports the new window, so the hook also asks, once, for a check of a window in front that was never checked (`KeyboardHook.NeedsAuthorization`).
 - Asks for `{{prompt:<question>}}` answers in a small WinUI 3 window (`PromptWindow`): Mica, the Text Expander icon and name in a custom title bar, the question above a box, then **OK** (default) and **Cancel**. Prompts are required by default: OK stays disabled while the answer is blank, and Enter shows "Enter an answer to continue." without closing the window. `{{prompt?:<question>}}` is the explicit optional form and still accepts an empty answer. The window follows Windows' theme, including high contrast, is per-monitor DPI aware, stays on top, and opens a little above the middle of the target window's screen (or the pointer's, if that window has gone). It is exactly as tall as its content, title bar row included, with ContentDialog's footer: 24-pixel padding around 32-pixel buttons. Because the content extends into the title bar, the client area includes it, so the window is sized from its measured frame (`PromptWindowSize`) rather than with `AppWindow.ResizeClient`, which leaves room for a system caption that isn't drawn. Esc, Cancel and the close button leave that spot blank and go on to the next question. The keyboard hook is suspended while it is open, so nothing typed in it expands, and focus goes back to the target window afterwards. The box is emptied as soon as the answer is read, and answers are never logged. XAML runs on its own thread (`PromptHost`), started the first time a snippet asks for something, never on the hook's thread; the expansion worker waits there for each answer, so questions are asked one at a time. Measured on an ARM64 Debug build: the first prompt is in front after about 0.3 s and later ones after about 0.12 s; loading XAML adds about 45 MB of private memory to the engine from the first prompt on. If the Windows App SDK can't start, the Win32 fallback (`ClassicPromptDialog`) enforces the same required-answer behavior.
-- Matches triggers against the snippet file (`PowerToysTextExpanderSnippets.txt`, or `snippets.txt` from earlier versions), optionally ignoring capitalization and optionally waiting for a word boundary (space or punctuation) before expanding.
+- Matches triggers against the snippet file (`PowerToysTextExpanderSnippets.txt`, or `snippets.txt` from earlier versions), optionally ignoring capitalization and, by default, waiting for a space or punctuation before expanding. An explicitly saved disabled value keeps immediate expansion.
 - Replaces the trigger by pasting (the user's clipboard is saved and restored) or by typing with `SendInput`, depending on the Insertion method setting and snippet length.
 - Expands variables (`{{date}}`, `{{time}}`, `{{datetime}}`, `{{isodate}}`, `{{date:<format>}}`, `{{clipboard}}`, `{{prompt:<question>}}`, `{{prompt?:<question>}}`) and places the cursor at `$|$`. Only the snippet's own text is read for `\n`, `\t`, `{{clipboard}}` and `$|$`: a prompt answer, the clipboard and a formatted date are inserted exactly as they are, so a `$|$` or `\n` in them stays literal.
 - Supports undo: pressing Ctrl+Z immediately after an expansion restores the typed trigger. Modifier key-downs on the way to Ctrl+Z do not cancel the pending undo, but any other key does; Ctrl+Shift+Z is left to the app as redo. The undo waits up to one second for modifiers to be released, and is abandoned otherwise, so its Backspaces are never sent as Ctrl+Backspace.
@@ -113,7 +113,7 @@ Redmond, WA 98052
 ### Settings page layout
 
 The page leads with the snippets: **Add a snippet**, search, and the list.
-**Advanced** then holds Wait for the whole word; **Insertion method** (Automatic,
+**Advanced** then holds **Wait for space or punctuation**; **Insertion method** (Automatic,
 Always paste, or Always type), whose **Minimum length to paste** is available only
 with Automatic, the one method that chooses by length; **Match trigger
 capitalization**; **Save snippets to a folder**; and **Use PowerToys Keyboard
@@ -123,6 +123,12 @@ while PowerToys runs as administrator stays at the top, because it explains why 
 snippet controls are off.
 
 ### Managing snippets in Settings
+
+**Wait for space or punctuation** is a module-wide setting rather than a field in
+each snippet row. A clean settings file defaults it on, and adding a snippet uses
+that active value. Loading an existing settings file preserves an explicitly saved
+`false` value. The snippet text format, including the shared starter file, stores
+only triggers and replacements, so no starter or existing snippet is rewritten.
 
 Search matches triggers and replacement text without changing file order. The
 count shows matching and total snippets ("Showing 1 of 1 snippet" for a library of
@@ -138,9 +144,8 @@ The keycap column is as wide as the widest keycap the list is showing, up to
 140 px (`TextExpanderKeycapLayout`); the page measures the triggers and updates it
 when the list or the search changes, so descriptions line up 16 px after it.
 Longer triggers are trimmed, with the whole trigger in a tooltip.
-`TextExpanderRowDescriber` works out the
-rest, and the view model refreshes it whenever the list or **Wait for the whole
-word** changes:
+`TextExpanderRowDescriber` works out the rest, and the view model refreshes it
+whenever the list or **Wait for space or punctuation** setting changes:
 
 - **A plain sentence for dynamic snippets only**, from whole localized templates:
   "Link to *host*" (plus "using what you copied" or "asks for *labels*"), "Today's
@@ -170,10 +175,10 @@ word** changes:
   when the line is cut off. Rows have no chips.
 - **Never expands**, with the reason, by the engine's own rules for the current
   mode (`TextExpanderTriggerReach`): another trigger completes partway through
-  typing this one; with Wait for the whole word, only when a space, punctuation or
-  symbol in this trigger releases it at a word start; or a later row has the same
-  trigger, since the last one wins. It is one line with a caution icon and the
-  reason spelled out, so color is never the only cue.
+  typing this one; with **Wait for space or punctuation**, only when a space,
+  punctuation or symbol in this trigger releases it at a word start; or a later
+  row has the same trigger, since the last one wins. It is one line with a caution
+  icon and the reason spelled out, so color is never the only cue.
 
 A row's screen reader name is "*trigger*: *sentence or spoken text*", in plain
 words, then the number of lines when there are several and the sentence doesn't

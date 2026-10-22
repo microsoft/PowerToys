@@ -41,7 +41,7 @@ namespace ViewModelTests
             ["TextExpander_Row_JoinSeparator"] = ", ",
             ["TextExpander_Row_NeverExpandsDuplicate"] = "Never expands: the \"{0}\" further down the list is used instead.",
             ["TextExpander_Row_NeverExpandsFiresFirst"] = "Never expands: \"{0}\" fires first. Rename one of them.",
-            ["TextExpander_Row_NeverExpandsFiresFirstWordWait"] = "Never expands: \"{0}\" fires first. Rename one, or turn on Wait for the whole word.",
+            ["TextExpander_Row_NeverExpandsFiresFirstWordWait"] = "Never expands: \"{0}\" fires first. Rename one, or turn on Wait for space or punctuation.",
             ["TextExpander_Row_NeverExpandsWhenYouType"] = "Never expands: \"{0}\" fires first when you type \"{1}\". Rename one of them.",
             ["TextExpander_Row_NeverExpandsWhenYouTypeSpace"] = "Never expands: \"{0}\" fires first when you type a space. Rename one of them.",
             ["TextExpander_Row_SpokenNewLine"] = "new line",
@@ -166,7 +166,7 @@ namespace ViewModelTests
 
             // !dateiso: blocked by !date only without the word wait, and the warning says so.
             Assert.AreEqual(
-                "Never expands: \"!date\" fires first. Rename one, or turn on Wait for the whole word.",
+                "Never expands: \"!date\" fires first. Rename one, or turn on Wait for space or punctuation.",
                 Describe("!dateiso", "ABC-123", SampleTriggers, wordMode: false).Warning);
             Assert.IsNull(Describe("!dateiso", "ABC-123", SampleTriggers, wordMode: true).Warning);
 
@@ -216,7 +216,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void RowsAreDescribedWhenLoadedAndWhenTheWordWaitChanges()
+        public void RowsUseTheBoundaryDefaultAndRefreshWhenItChanges()
         {
             string directory = Path.Combine(Path.GetTempPath(), "PowerToys-TextExpanderRows-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(directory);
@@ -226,13 +226,17 @@ namespace ViewModelTests
                 TextExpanderViewModel model = CreateViewModel(directory);
 
                 TextExpanderSnippetViewModel dateIso = model.Snippets.Single(s => s.Trigger == "!dateiso");
-                Assert.IsTrue(dateIso.HasWarning);
+                Assert.IsTrue(model.RequireWordBoundary);
+                Assert.IsFalse(dateIso.HasWarning, "The default wait lets !dateiso be reached.");
                 Assert.IsTrue(model.Snippets.First(s => s.Trigger == "!link").HasWarning, "The first !link is never used.");
                 Assert.IsFalse(model.Snippets.Last(s => s.Trigger == "!link").HasWarning);
                 Assert.IsTrue(model.Snippets.Single(s => s.Trigger == "!date").HasSentence);
 
+                model.RequireWordBoundary = false;
+                Assert.IsTrue(dateIso.HasWarning, "Without the wait, !date fires before !dateiso is complete.");
+
                 model.RequireWordBoundary = true;
-                Assert.IsFalse(dateIso.HasWarning, "With the word wait, !dateiso can be reached.");
+                Assert.IsFalse(dateIso.HasWarning, "Restoring the wait lets !dateiso be reached again.");
                 Assert.AreEqual("!dateiso", dateIso.Trigger);
             }
             finally

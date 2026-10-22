@@ -55,10 +55,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Gets or sets whether a trigger waits for a word terminator before firing.
         ///
-        /// Off by default. Firing the instant a trigger completes is what makes expansion feel
-        /// immediate, and that is the point of the tool. On, a trigger only fires once followed
-        /// by a space or punctuation, which stops it going off inside a longer word at the cost
-        /// of that immediacy.
+        /// On by default so a trigger does not fire while the user is still typing a longer word.
+        /// A saved false value remains false, preserving the behavior users explicitly chose.
         /// </summary>
         [JsonPropertyName("require_word_boundary")]
         public bool RequireWordBoundary { get; set; }
@@ -81,7 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ClipboardThresholdChars = new IntProperty(TextExpanderSettings.DefaultClipboardThresholdChars);
             TreatRemapsAsTyping = true;
             CaseSensitive = true;
-            RequireWordBoundary = false;
+            RequireWordBoundary = true;
             WordBoundaryKeepsSpace = true;
         }
     }

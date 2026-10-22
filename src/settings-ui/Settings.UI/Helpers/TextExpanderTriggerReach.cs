@@ -11,10 +11,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     ///
     /// <para>
     /// The engine fires the longest trigger that ends at the caret. Normally that happens as soon
-    /// as its last character is typed. With Wait for the whole word, it happens when a space,
-    /// punctuation or symbol follows, and a trigger that starts with a letter or digit must also
-    /// start a word. So another trigger that is complete partway through typing this one fires
-    /// first, and this one never expands. The Settings project cannot reference the engine, so
+    /// as its last character is typed. With Wait for space or punctuation, it happens when a
+    /// space, punctuation or symbol follows, and a trigger that starts with a letter or digit
+    /// must also start a word. So another trigger that is complete partway through typing this
+    /// one fires first, and this one never expands. The Settings project cannot reference the engine, so
     /// these rules are transcribed from <c>KeyboardHook</c> and <c>WordBoundary</c>; a change to
     /// one has to be made to the other.
     /// </para>
