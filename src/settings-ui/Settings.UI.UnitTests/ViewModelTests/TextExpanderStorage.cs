@@ -108,19 +108,6 @@ namespace ViewModelTests
             Assert.AreEqual(_local, model.SnippetsPath);
         }
 
-        public void ClearingBacksUpThenEmptiesTheActiveFile()
-        {
-            string active = Write(_local, TextExpanderSnippetFileNames.Current, "!one=One\n!two=Two");
-            TextExpanderViewModel model = CreateViewModel();
-
-            Assert.IsNull(model.ClearSnippets(out string backup));
-
-            Assert.AreEqual("!one=One\n!two=Two", File.ReadAllText(backup));
-            Assert.AreEqual(0, new FileInfo(active).Length);
-            Assert.AreEqual(0, model.Snippets.Count);
-            Assert.IsFalse(model.CanClearSnippets);
-        }
-
         private TextExpanderViewModel CreateViewModel()
         {
             var settings = new TextExpanderSettings();

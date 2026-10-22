@@ -30,9 +30,9 @@ namespace ViewModelTests
         private static readonly string[] AAndAb = { "a", "ab" };
         private static readonly string[] SigAndLongerCopy = { "!sig", "!2sigs" };
         private static readonly string[] SigAndHyphenatedCopy = { "!sig", "!2sig-long" };
-        private static readonly string[] TestAndCopy = { "!test", "!2test" };
-        private static readonly string[] TestAndTwoCopies = { "!test", "!2test", "!3test" };
-        private static readonly string[] LastCopy = { "!999test" };
+        private static readonly string[] SampleAndCopy = { "!sample", "!2sample" };
+        private static readonly string[] SampleAndTwoCopies = { "!sample", "!2sample", "!3sample" };
+        private static readonly string[] LastCopy = { "!999sample" };
         private static readonly string[] Bond = { "!007bond" };
         private static readonly string[] VariableTokens = { "$|$", "{{date}}", "{{time}}", "{{datetime}}", "{{isodate}}", "{{date:dddd}}", "{{clipboard}}", "{{prompt:Label}}" };
         private string _directory;
@@ -454,9 +454,9 @@ namespace ViewModelTests
             Assert.IsFalse(TextExpanderViewModel.CanFireAlongside("!2sig", SigAndHyphenatedCopy, wordMode: true), "A hyphen ends a word, so !2sig fires there.");
 
             // Counting on from a copy number, past numbers that are taken.
-            Assert.AreEqual("!3test", TextExpanderViewModel.SuggestCopyTrigger("!2test", TestAndCopy, wordMode: false));
-            Assert.AreEqual("!4test", TextExpanderViewModel.SuggestCopyTrigger("!2test", TestAndTwoCopies, wordMode: false));
-            Assert.AreEqual("!2test", TextExpanderViewModel.SuggestCopyTrigger("!999test", LastCopy, wordMode: false), "After 999 it starts again from 2.");
+            Assert.AreEqual("!3sample", TextExpanderViewModel.SuggestCopyTrigger("!2sample", SampleAndCopy, wordMode: false));
+            Assert.AreEqual("!4sample", TextExpanderViewModel.SuggestCopyTrigger("!2sample", SampleAndTwoCopies, wordMode: false));
+            Assert.AreEqual("!2sample", TextExpanderViewModel.SuggestCopyTrigger("!999sample", LastCopy, wordMode: false), "After 999 it starts again from 2.");
             Assert.AreEqual("!2007bond", TextExpanderViewModel.SuggestCopyTrigger("!007bond", Bond, wordMode: false), "A leading zero isn't a copy number.");
         }
 

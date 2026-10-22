@@ -754,42 +754,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             };
         }
 
-        private async void ClearSnippets_Click(object sender, RoutedEventArgs e)
-        {
-            if (!ViewModel.CanClearSnippets)
-            {
-                return;
-            }
-
-            var resources = ResourceLoaderInstance.ResourceLoader;
-            var confirm = new ContentDialog
-            {
-                XamlRoot = XamlRoot,
-                Title = resources.GetString("TextExpander_SnippetFolder_ClearDialog_Title"),
-                Content = string.Format(
-                    CultureInfo.CurrentCulture,
-                    resources.GetString("TextExpander_SnippetFolder_ClearDialog_Message"),
-                    ViewModel.SnippetsFilePath),
-                PrimaryButtonText = resources.GetString("TextExpander_SnippetFolder_ClearDialog_PrimaryButtonText"),
-                CloseButtonText = resources.GetString("TextExpander_Dialog_Cancel"),
-                DefaultButton = ContentDialogButton.Close,
-            };
-
-            if (await confirm.ShowAsync() != ContentDialogResult.Primary)
-            {
-                return;
-            }
-
-            string error = ViewModel.ClearSnippets(out string backup);
-            if (error != null)
-            {
-                await ShowStorageErrorAsync(error);
-                return;
-            }
-
-            ReportStorageChange(resources.GetString("TextExpander_SnippetFolder_Cleared"), backup);
-        }
-
         private void ReportStorageChange(string message, string backup)
         {
             if (!string.IsNullOrEmpty(backup))

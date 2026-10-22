@@ -253,7 +253,7 @@ Text Expander itself does not synchronize files or inspect cloud accounts. A use
 who wants synchronization chooses a folder managed by OneDrive or another service;
 that service remains responsible for transferring the file.
 
-The expander shows four actions:
+The expander provides folder selection, conflict handling, and manual reload:
 
 - **Current folder** shows the resolved folder and opens the Windows folder picker.
   Selecting an empty folder copies the current active file there before switching.
@@ -265,10 +265,6 @@ The expander shows four actions:
 - **Reload file** rereads the active file from disk. This is the explicit recovery
   action when another device, sync service, app, or text editor updated the file.
   The active-folder file remains the source of truth.
-- **Clear all snippets** requires confirmation, creates a timestamped backup beside
-  the active file, atomically replaces it with an empty file, and reloads the list.
-  The confirmation defaults to Cancel.
-
 All replacements use a temporary file in the destination directory and then an
 atomic move or `File.Replace`. Backup names are unique (`.backup-<timestamp>`, with
 a numeric suffix when necessary). If a destination file appears after the picker

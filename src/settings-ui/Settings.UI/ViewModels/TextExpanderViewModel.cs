@@ -318,8 +318,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string SnippetsFolderPath => CanEditSnippets ? Path.GetDirectoryName(ResolveSnippetsFile()) ?? string.Empty : string.Empty;
 
-        public bool CanClearSnippets => CanEditSnippets && !HasSnippetError && Snippets.Count > 0;
-
         /// <summary>Lets the user pick a folder, then inspects it without changing the active library.</summary>
         public async Task<TextExpanderFolderChange> PickSnippetsFolderAsync()
         {
@@ -407,39 +405,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex) when (IsFileError(ex))
             {
                 Logger.LogError("Error changing the Text Expander snippet folder.", ex);
-                return ex.Message;
-            }
-        }
-
-        /// <summary>Backs up the active file, replaces it with an empty library, and reloads it.</summary>
-        public string ClearSnippets(out string backupPath)
-        {
-            backupPath = string.Empty;
-            if (!CanEditSnippets)
-            {
-                return ElevatedSnippetAccessDeniedMessage();
-            }
-
-            try
-            {
-                string file = ResolveSnippetsFile();
-                _storageEnvironment.CreateDirectory(Path.GetDirectoryName(file));
-                if (_storageEnvironment.FileExists(file))
-                {
-                    backupPath = BackupPath(file);
-                    WriteAtomically(file, Array.Empty<byte>(), backupPath, replace: true);
-                }
-                else
-                {
-                    WriteAtomically(file, Array.Empty<byte>(), backup: null, replace: false);
-                }
-
-                LoadSnippets();
-                return null;
-            }
-            catch (Exception ex) when (IsFileError(ex))
-            {
-                Logger.LogError("Error clearing the Text Expander snippet file.", ex);
                 return ex.Message;
             }
         }
@@ -1290,7 +1255,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(SnippetError));
             OnPropertyChanged(nameof(SnippetsFilePath));
             OnPropertyChanged(nameof(SnippetsFolderPath));
-            OnPropertyChanged(nameof(CanClearSnippets));
 
             OnPropertyChanged(nameof(SnippetFileSummary));
         }

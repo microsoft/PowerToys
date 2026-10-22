@@ -349,12 +349,6 @@
                                 <tkcontrols:SettingsCard x:Uid="TextExpander_SnippetFolder_Reload">
                                     <Button x:Uid="TextExpander_SnippetFolder_ReloadButton" Click="ReloadSnippets_Click" />
                                 </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard x:Uid="TextExpander_SnippetFolder_Clear">
-                                    <Button
-                                        x:Uid="TextExpander_SnippetFolder_ClearButton"
-                                        Click="ClearSnippets_Click"
-                                        IsEnabled="{x:Bind ViewModel.CanClearSnippets, Mode=OneWay}" />
-                                </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
                         <tkcontrols:SettingsCard x:Uid="TextExpander_TreatRemapsAsTyping" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">

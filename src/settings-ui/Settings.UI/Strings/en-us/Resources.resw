@@ -7027,15 +7027,6 @@ Text uses the current drawing color.</value>
   <data name="TextExpander_SnippetFolder_ReloadButton.Content" xml:space="preserve">
     <value>Reload</value>
   </data>
-  <data name="TextExpander_SnippetFolder_Clear.Header" xml:space="preserve">
-    <value>Clear all snippets</value>
-  </data>
-  <data name="TextExpander_SnippetFolder_Clear.Description" xml:space="preserve">
-    <value>Back up the active file, then remove every snippet from it.</value>
-  </data>
-  <data name="TextExpander_SnippetFolder_ClearButton.Content" xml:space="preserve">
-    <value>Clear snippets</value>
-  </data>
   <data name="TextExpander_SnippetFolder_Conflict_Title" xml:space="preserve">
     <value>This folder already has a snippet file</value>
   </data>
@@ -7049,22 +7040,9 @@ Text uses the current drawing color.</value>
   <data name="TextExpander_SnippetFolder_Conflict_Replace" xml:space="preserve">
     <value>Replace folder file</value>
   </data>
-  <data name="TextExpander_SnippetFolder_ClearDialog_Title" xml:space="preserve">
-    <value>Are you sure you want to clear all snippets?</value>
-  </data>
-  <data name="TextExpander_SnippetFolder_ClearDialog_Message" xml:space="preserve">
-    <value>Text Expander will back up {0}, then clear the active file. You can restore the backup manually if needed.</value>
-    <comment>{0} is the full path to the active snippet file.</comment>
-  </data>
-  <data name="TextExpander_SnippetFolder_ClearDialog_PrimaryButtonText" xml:space="preserve">
-    <value>Clear snippets</value>
-  </data>
   <data name="TextExpander_SnippetFolder_Changed" xml:space="preserve">
     <value>Snippet folder changed. The active file is {0}.</value>
     <comment>{0} is the full path to the active snippet file.</comment>
-  </data>
-  <data name="TextExpander_SnippetFolder_Cleared" xml:space="preserve">
-    <value>All snippets were cleared.</value>
   </data>
   <data name="TextExpander_SnippetFolder_Reloaded" xml:space="preserve">
     <value>Reloaded the active snippet file.</value>

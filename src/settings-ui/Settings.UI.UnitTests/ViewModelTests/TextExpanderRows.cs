@@ -55,7 +55,7 @@ namespace ViewModelTests
             ["TextExpander_PreviewPromptUnnamed"] = "Your answer",
         };
 
-        private static readonly string[] UserTriggers = { "#A", "#DIO", "#P", "#P$", "#D", "#Hi" };
+        private static readonly string[] SampleTriggers = { "!link", "!dateiso", "!reply", "!reply+", "!date", "!hello" };
         private static readonly string[] SpaceTriggers = { "my", "my sig" };
         private static readonly double[] TinyWidths = { 4.0 };
         private static readonly double[] MixedWidths = { 18.0, 40.2, 31.0 };
@@ -65,13 +65,13 @@ namespace ViewModelTests
         [TestMethod]
         public void DynamicLinksSaySiteAndWhatTheyUse()
         {
-            TextExpanderRowDescription row = Describe("#A", "https://contoso.visualstudio.com/OS/_workitems/edit/{{clipboard}}");
-            Assert.AreEqual("Link to contoso.visualstudio.com using what you copied", row.Sentence);
-            Assert.AreEqual("contoso.visualstudio.com/OS/_workitems/edit/", row.Segments[0].Value, "The second line drops https://.");
+            TextExpanderRowDescription row = Describe("!link", "https://tracker.example.com/items/{{clipboard}}");
+            Assert.AreEqual("Link to tracker.example.com using what you copied", row.Sentence);
+            Assert.AreEqual("tracker.example.com/items/", row.Segments[0].Value, "The second line drops https://.");
             Assert.IsTrue(row.ShowsSegmentsBelow, "The path has words of its own.");
-            Assert.AreEqual("#A: Link to contoso.visualstudio.com using what you copied", row.AutomationName, "Spoken as plain words.");
+            Assert.AreEqual("!link: Link to tracker.example.com using what you copied", row.AutomationName, "Spoken as plain words.");
             CollectionAssert.AreEqual(
-                new[] { Text("Link to contoso.visualstudio.com using "), Bubble(Kind.Clipboard, "what you copied") },
+                new[] { Text("Link to tracker.example.com using "), Bubble(Kind.Clipboard, "what you copied") },
                 row.SentenceParts.ToArray(),
                 "The clipboard is a bubble in the sentence.");
 
@@ -85,9 +85,9 @@ namespace ViewModelTests
         [TestMethod]
         public void DateTimeQuestionAndClipboardSnippetsGetTheirSentences()
         {
-            TextExpanderRowDescription date = Describe("#D", "[{{date:MM/dd/yyyy}}]");
-            Assert.AreEqual("Today's date as 10/17/2026", date.Sentence);
-            CollectionAssert.AreEqual(new[] { Text("Today's date as "), Bubble(Kind.Date, "10/17/2026") }, date.SentenceParts.ToArray(), "One bubble, without the brackets.");
+            TextExpanderRowDescription date = Describe("!date", "[{{date:yyyy-MM-dd}}]");
+            Assert.AreEqual("Today's date as 2026-10-17", date.Sentence);
+            CollectionAssert.AreEqual(new[] { Text("Today's date as "), Bubble(Kind.Date, "2026-10-17") }, date.SentenceParts.ToArray(), "One bubble, without the brackets.");
             Assert.IsFalse(date.ShowsSegmentsBelow, "Brackets aren't words, so the sentence says it all.");
             Assert.IsFalse(Describe("!t", "{{time}}").ShowsSegmentsBelow);
 
@@ -115,7 +115,7 @@ namespace ViewModelTests
         [TestMethod]
         public void PlainOrUnclearSnippetsShowTheirSavedTextInstead()
         {
-            Assert.IsNull(Describe("#P", "Would you please let me know your thoughts!").Sentence);
+            Assert.IsNull(Describe("!reply", "Thanks for your message!").Sentence);
             Assert.IsNull(Describe("!url", "https://contoso.com/a").Sentence, "A fixed link is plain text.");
 
             TextExpanderRowDescription mixed = Describe("!u", "Updated {{date}}");
@@ -123,9 +123,9 @@ namespace ViewModelTests
             Assert.IsFalse(mixed.ShowsSegmentsBelow, "Without a sentence, the saved text is the title.");
             Assert.AreEqual(0, mixed.SentenceParts.Count);
 
-            TextExpanderRowDescription hi = Describe("#Hi", "Hello $|$, How are you doing?");
+            TextExpanderRowDescription hi = Describe("!hello", "Hello $|$, welcome to the team!");
             Assert.IsNull(hi.Sentence);
-            Assert.AreEqual("#Hi: Hello (cursor) , How are you doing?", hi.AutomationName, "Screen readers still hear the variables.");
+            Assert.AreEqual("!hello: Hello (cursor) , welcome to the team!", hi.AutomationName, "Screen readers still hear the variables.");
 
             TextExpanderRowDescription unnamed = Describe("!n", "Note: {{prompt:}}");
             Assert.IsNull(unnamed.Sentence, "A question without a label can't be named, so no sentence.");
@@ -133,9 +133,9 @@ namespace ViewModelTests
 
             Assert.AreEqual("Inserts what you copied", Describe("!c", "https://{{clipboard}}").Sentence, "No host, so not a link.");
 
-            TextExpanderRowDescription thanks = Describe("#THX", "Thanks in advance,\nYour Name");
+            TextExpanderRowDescription thanks = Describe("!thanks", "Sincerely,\nYour Name");
             Assert.IsNull(thanks.Sentence);
-            Assert.AreEqual("#THX: Thanks in advance, (new line) Your Name, 2 lines", thanks.AutomationName, "Screen readers hear how many lines there are.");
+            Assert.AreEqual("!thanks: Sincerely, (new line) Your Name, 2 lines", thanks.AutomationName, "Screen readers hear how many lines there are.");
         }
 
         [TestMethod]
@@ -156,19 +156,19 @@ namespace ViewModelTests
         [TestMethod]
         public void NeverExpandsFollowsTheEngineInEachMode()
         {
-            // #P$: $ is a symbol, so #P fires first in both modes.
-            TextExpanderRowDescription instant = Describe("#P$", "R. Ortiz / M. Chen / [$|$]", UserTriggers, wordMode: false);
-            Assert.AreEqual("Never expands: \"#P\" fires first. Rename one of them.", instant.Warning);
-            Assert.IsTrue(instant.AutomationName.EndsWith(". Never expands: \"#P\" fires first. Rename one of them.", StringComparison.Ordinal));
+            // !reply+: + is a symbol, so !reply fires first in both modes.
+            TextExpanderRowDescription instant = Describe("!reply+", "R. Ortiz / M. Chen / [$|$]", SampleTriggers, wordMode: false);
+            Assert.AreEqual("Never expands: \"!reply\" fires first. Rename one of them.", instant.Warning);
+            Assert.IsTrue(instant.AutomationName.EndsWith(". Never expands: \"!reply\" fires first. Rename one of them.", StringComparison.Ordinal));
 
-            TextExpanderRowDescription word = Describe("#P$", "R. Ortiz / M. Chen / [$|$]", UserTriggers, wordMode: true);
-            Assert.AreEqual("Never expands: \"#P\" fires first when you type \"$\". Rename one of them.", word.Warning);
+            TextExpanderRowDescription word = Describe("!reply+", "R. Ortiz / M. Chen / [$|$]", SampleTriggers, wordMode: true);
+            Assert.AreEqual("Never expands: \"!reply\" fires first when you type \"+\". Rename one of them.", word.Warning);
 
-            // #DIO: blocked by #D only without the word wait, and the warning says so.
+            // !dateiso: blocked by !date only without the word wait, and the warning says so.
             Assert.AreEqual(
-                "Never expands: \"#D\" fires first. Rename one, or turn on Wait for the whole word.",
-                Describe("#DIO", "12345678", UserTriggers, wordMode: false).Warning);
-            Assert.IsNull(Describe("#DIO", "12345678", UserTriggers, wordMode: true).Warning);
+                "Never expands: \"!date\" fires first. Rename one, or turn on Wait for the whole word.",
+                Describe("!dateiso", "ABC-123", SampleTriggers, wordMode: false).Warning);
+            Assert.IsNull(Describe("!dateiso", "ABC-123", SampleTriggers, wordMode: true).Warning);
 
             // A trigger inside a word doesn't fire with the word wait, as in the engine.
             string[] btw = { "btw", "abtw!" };
@@ -178,15 +178,15 @@ namespace ViewModelTests
                 "Never expands: \"my\" fires first when you type a space. Rename one of them.",
                 Describe("my sig", "x", SpaceTriggers, wordMode: true).Warning);
 
-            Assert.IsNull(Describe("#P", "Would you please let me know your thoughts!", UserTriggers, wordMode: false).Warning);
+            Assert.IsNull(Describe("!reply", "Thanks for your message!", SampleTriggers, wordMode: false).Warning);
         }
 
         [TestMethod]
         public void OnlyTheLastOfTwoIdenticalTriggersExpands()
         {
-            TextExpanderRowDescription first = TextExpanderRowDescriber.Describe("#A", "one", hasLaterDuplicate: true, Set("#A"), false, Now, Resource);
-            Assert.AreEqual("Never expands: the \"#A\" further down the list is used instead.", first.Warning);
-            Assert.IsNull(TextExpanderRowDescriber.Describe("#A", "two", hasLaterDuplicate: false, Set("#A"), false, Now, Resource).Warning);
+            TextExpanderRowDescription first = TextExpanderRowDescriber.Describe("!duplicate", "one", hasLaterDuplicate: true, Set("!duplicate"), false, Now, Resource);
+            Assert.AreEqual("Never expands: the \"!duplicate\" further down the list is used instead.", first.Warning);
+            Assert.IsNull(TextExpanderRowDescriber.Describe("!duplicate", "two", hasLaterDuplicate: false, Set("!duplicate"), false, Now, Resource).Warning);
         }
 
         [TestMethod]
@@ -222,18 +222,18 @@ namespace ViewModelTests
             Directory.CreateDirectory(directory);
             try
             {
-                File.WriteAllText(Path.Combine(directory, "snippets.txt"), "#D=[{{date:MM/dd/yyyy}}]\n#DIO=12345678\n#A=one\n#A=two\n");
+                File.WriteAllText(Path.Combine(directory, "snippets.txt"), "!date=[{{date:yyyy-MM-dd}}]\n!dateiso=ABC-123\n!link=one\n!link=two\n");
                 TextExpanderViewModel model = CreateViewModel(directory);
 
-                TextExpanderSnippetViewModel dio = model.Snippets.Single(s => s.Trigger == "#DIO");
-                Assert.IsTrue(dio.HasWarning);
-                Assert.IsTrue(model.Snippets.First(s => s.Trigger == "#A").HasWarning, "The first #A is never used.");
-                Assert.IsFalse(model.Snippets.Last(s => s.Trigger == "#A").HasWarning);
-                Assert.IsTrue(model.Snippets.Single(s => s.Trigger == "#D").HasSentence);
+                TextExpanderSnippetViewModel dateIso = model.Snippets.Single(s => s.Trigger == "!dateiso");
+                Assert.IsTrue(dateIso.HasWarning);
+                Assert.IsTrue(model.Snippets.First(s => s.Trigger == "!link").HasWarning, "The first !link is never used.");
+                Assert.IsFalse(model.Snippets.Last(s => s.Trigger == "!link").HasWarning);
+                Assert.IsTrue(model.Snippets.Single(s => s.Trigger == "!date").HasSentence);
 
                 model.RequireWordBoundary = true;
-                Assert.IsFalse(dio.HasWarning, "With the word wait, #DIO can be reached.");
-                Assert.AreEqual("#DIO", dio.Trigger);
+                Assert.IsFalse(dateIso.HasWarning, "With the word wait, !dateiso can be reached.");
+                Assert.AreEqual("!dateiso", dateIso.Trigger);
             }
             finally
             {
@@ -260,13 +260,13 @@ namespace ViewModelTests
             try
             {
                 string file = Path.Combine(directory, "snippets.txt");
-                File.WriteAllText(file, "#A=one\n#DIO=two\n");
+                File.WriteAllText(file, "!short=one\n!longer=two\n");
                 TextExpanderViewModel model = CreateViewModel(directory);
 
                 model.KeycapColumnWidth = 57;
                 Assert.IsTrue(model.Snippets.All(s => s.KeycapColumnWidth == 57));
 
-                File.WriteAllText(file, "#A=one\n#DIO=two\n#P$=three\n");
+                File.WriteAllText(file, "!short=one\n!longer=two\n!third=three\n");
                 model.LoadSnippets();
                 Assert.AreEqual(3, model.Snippets.Count);
                 Assert.IsTrue(model.Snippets.All(s => s.KeycapColumnWidth == 57), "New rows start at the current width.");
@@ -280,10 +280,10 @@ namespace ViewModelTests
         [TestMethod]
         public void SentencesShowEachVariableAsABubbleInTheTemplatesSlots()
         {
-            TextExpanderRowDescription one = Describe("!test", "{{prompt:what type}}");
-            Assert.AreEqual("Asks for what type, then inserts the text", one.Sentence);
+            TextExpanderRowDescription one = Describe("!prompt", "{{prompt:Topic}}");
+            Assert.AreEqual("Asks for Topic, then inserts the text", one.Sentence);
             CollectionAssert.AreEqual(
-                new[] { Text("Asks for "), Bubble(Kind.Prompt, "what type"), Text(", then inserts the text") },
+                new[] { Text("Asks for "), Bubble(Kind.Prompt, "Topic"), Text(", then inserts the text") },
                 one.SentenceParts.ToArray());
 
             // Several questions keep the localized joining words between their bubbles.
@@ -318,33 +318,33 @@ namespace ViewModelTests
         [TestMethod]
         public void TheSavedTextGoesUnderTheSentenceOnlyWhenItHasWordsOfItsOwn()
         {
-            Assert.IsFalse(Describe("!test", "{{prompt:what type}}").ShowsSegmentsBelow, "Only a question.");
+            Assert.IsFalse(Describe("!prompt", "{{prompt:Topic}}").ShowsSegmentsBelow, "Only a question.");
             Assert.IsFalse(Describe("!c", "{{clipboard}}").ShowsSegmentsBelow, "Only the clipboard.");
-            Assert.IsFalse(Describe("#D", "[{{date:MM/dd/yyyy}}]").ShowsSegmentsBelow, "Only a date in brackets.");
+            Assert.IsFalse(Describe("!date", "[{{date:yyyy-MM-dd}}]").ShowsSegmentsBelow, "Only a date in brackets.");
             Assert.IsFalse(Describe("!dt", "{{date}} - {{time}}").ShowsSegmentsBelow, "Dates and punctuation.");
             Assert.IsTrue(Describe("!hi", "Hi {{prompt:Name}}, thanks for reaching out!").ShowsSegmentsBelow, "Words around a question.");
-            Assert.IsTrue(Describe("#A", "https://contoso.visualstudio.com/OS/_workitems/edit/{{clipboard}}").ShowsSegmentsBelow, "The link's path.");
+            Assert.IsTrue(Describe("!link", "https://tracker.example.com/items/{{clipboard}}").ShowsSegmentsBelow, "The link's path.");
             Assert.IsTrue(Describe("!no", "Ticket {{prompt:Number}}: 42").ShowsSegmentsBelow, "Digits count as words.");
         }
 
         [TestMethod]
         public void PlainSnippetsShowUpToTwoRealLinesWithoutChips()
         {
-            // #P: a message, a blank line, then the sign-off. The blank line is skipped, and the
+            // !reply: a message, a blank line, then the sign-off. The blank line is skipped, and the
             // rest is cut after two lines with an ellipsis.
-            TextExpanderRowDescription p = Describe("#P", "Would you please let me know your thoughts!\\n\\nHave a good one,\\nYour Name");
+            TextExpanderRowDescription p = Describe("!reply", "Thanks for your message!\\n\\nBest regards,\\nYour Name");
             CollectionAssert.AreEqual(
-                new[] { Text("Would you please let me know your thoughts!"), Break(), Text("Have a good one,"), Text("\u2026") },
+                new[] { Text("Thanks for your message!"), Break(), Text("Best regards,"), Text("\u2026") },
                 p.TitleSegments.ToArray());
-            Assert.AreEqual("#P: Would you please let me know your thoughts! (new line) (new line) Have a good one, (new line) Your Name, 4 lines", p.AutomationName);
+            Assert.AreEqual("!reply: Thanks for your message! (new line) (new line) Best regards, (new line) Your Name, 4 lines", p.AutomationName);
 
             // Exactly two lines: both, with no ellipsis.
             CollectionAssert.AreEqual(
-                new[] { Text("Thanks in advance,"), Break(), Text("Your Name") },
-                Describe("#THX", "Thanks in advance,\nYour Name").TitleSegments.ToArray());
+                new[] { Text("Sincerely,"), Break(), Text("Your Name") },
+                Describe("!thanks", "Sincerely,\nYour Name").TitleSegments.ToArray());
 
             // One line stays one line; tabs stay tabs, which show as spacing.
-            CollectionAssert.AreEqual(new[] { Text("12345678") }, Describe("#DIO", "12345678").TitleSegments.ToArray());
+            CollectionAssert.AreEqual(new[] { Text("ABC-123") }, Describe("!dateiso", "ABC-123").TitleSegments.ToArray());
             CollectionAssert.AreEqual(
                 new[] { Text("Name"), Tab(), Text("Email") },
                 Describe("!tab", "Name\\tEmail").TitleSegments.ToArray());
