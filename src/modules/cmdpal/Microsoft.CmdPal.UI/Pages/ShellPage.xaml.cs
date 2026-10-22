@@ -255,8 +255,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _itemActions = new ItemActionController(
             () => _pageInteractions.CurrentCommandContext,
             () => IsLoaded && ItemActionsAllowed && !IsContentDialogActive,
-            new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout),
-            WeakReferenceMessenger.Default);
+            new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout));
         MainCommandBar.ContextMenuOwner = this;
 
         // how we are doing navigation around
@@ -1678,8 +1677,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     void IContextMenuOwner.ShowContextMenu(ContextMenuRequest request) => _itemActions.ShowContextMenu(request);
 
-    void IContextMenuOwner.ShowContextMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu) =>
-        _itemActions.ShowContextMenuAfterKeyEvent(context, initialSubmenu);
+    void IContextMenuOwner.ShowContextMenuAfterKeyEvent(
+        IContextMenuContext context,
+        CommandContextItemViewModel? initialSubmenu,
+        ContextMenuAnchor? anchor,
+        Func<bool>? isContextCurrent) =>
+        _itemActions.ShowContextMenuAfterKeyEvent(context, initialSubmenu, anchor, isContextCurrent);
 
     void IContextMenuOwner.CloseContextMenu()
     {
@@ -2032,7 +2035,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 ((ShellPage)sender).ViewModel.GoHome(withAnimation: false);
                 e.Handled = true;
                 break;
-            case (VirtualKey)188 when modifiers.OnlyCtrl: // Ctrl+,
+            case VirtualKeyExtensions.OemCommaKey when modifiers.OnlyCtrl: // Ctrl+,
                 WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
                 e.Handled = true;
                 break;
@@ -2097,13 +2100,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         break;
                     }
 
-                    e.Handled = shellPage._pageInteractions.TryCommandKeybinding(
-                        modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
-                    if (!e.Handled)
-                    {
-                        e.Handled = shellPage._itemActions.TryHandleShortcut(chord);
-                    }
-
+                    e.Handled = shellPage._pageInteractions.TryCommandKeybinding(chord);
                     break;
                 }
         }

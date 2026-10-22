@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Services;
@@ -22,11 +21,11 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 [TestClass]
 public class ItemActionControllerTests
 {
-    private readonly WeakReferenceMessenger _messenger = new();
     private readonly Queue<Action> _callbacks = new();
     private readonly List<ContextMenuRequest> _opened = [];
     private readonly TestPageContext _pageContext = new();
     private ICommandBarContext? _context = Mock.Of<ICommandBarContext>();
+    private IContextMenuContext? _pageMenu;
     private bool _canAct = true;
     private bool _canEnqueue = true;
     private int _closeCount;
@@ -39,7 +38,6 @@ public class ItemActionControllerTests
     public void Activation_IsLeftToThePageInteractionTarget(VirtualKeyModifiers modifiers, bool hasContext)
     {
         _context = hasContext ? Mock.Of<ICommandBarContext>() : null;
-        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("The page interaction target owns activation."));
         using var controller = CreateController();
 
         Assert.IsFalse(controller.TryHandleKey(new KeyChord(modifiers, (int)VirtualKey.Enter, 0)));
@@ -67,7 +65,6 @@ public class ItemActionControllerTests
         _canAct = false;
         using var controller = CreateController();
 
-        Assert.IsFalse(controller.TryHandleShortcut(new KeyChord(0, (int)VirtualKey.F6, 0)));
         Assert.IsFalse(controller.TryHandleKey(new KeyChord(0, (int)VirtualKey.Enter, 0)));
         Assert.IsFalse(controller.TryHandleKey(CtrlK));
         controller.ShowContextMenu(new ContextMenuRequest(_context!));
@@ -198,32 +195,40 @@ public class ItemActionControllerTests
     {
         using var controller = CreateController();
         var submenuContext = _context!;
-        var submenu = new CommandContextItemViewModel(new CommandContextItem(new NoOpCommand()), new(_pageContext));
-        controller.ShowContextMenuAfterKeyEvent(submenuContext, submenu);
-        var newer = new ContextMenuRequest(Mock.Of<IContextMenuContext>());
-        switch (change)
+        var submenu = CreateSubmenu();
+        Mock.Get(submenuContext).SetupGet(value => value.AllCommands).Returns([submenu]);
+        try
         {
-            case "close":
-                controller.CloseContextMenu();
-                break;
-            case "newer":
-                controller.ShowContextMenu(newer);
-                break;
-            case "selection":
-                _context = Mock.Of<ICommandBarContext>();
-                break;
-        }
+            controller.ShowContextMenuAfterKeyEvent(submenuContext, submenu);
+            var newer = new ContextMenuRequest(Mock.Of<IContextMenuContext>());
+            switch (change)
+            {
+                case "close":
+                    controller.CloseContextMenu();
+                    break;
+                case "newer":
+                    controller.ShowContextMenu(newer);
+                    break;
+                case "selection":
+                    _context = Mock.Of<ICommandBarContext>();
+                    break;
+            }
 
-        DrainCallbacks();
+            DrainCallbacks();
 
-        if (change == "newer")
-        {
-            Assert.HasCount(1, _opened);
-            Assert.AreSame(newer, _opened[0]);
+            if (change == "newer")
+            {
+                Assert.HasCount(1, _opened);
+                Assert.AreSame(newer, _opened[0]);
+            }
+            else
+            {
+                Assert.IsEmpty(_opened);
+            }
         }
-        else
+        finally
         {
-            Assert.IsEmpty(_opened);
+            submenu.SafeCleanup();
         }
     }
 
@@ -241,48 +246,105 @@ public class ItemActionControllerTests
         Assert.HasCount(1, _opened);
     }
 
+    private static KeyChord CtrlK => new(VirtualKeyModifiers.Control, (int)VirtualKey.K, 0);
+
     [TestMethod]
-    [DataRow(VirtualKey.F6, VirtualKeyModifiers.None, false)]
-    [DataRow(VirtualKey.F6, VirtualKeyModifiers.None, true)]
-    [DataRow(VirtualKey.K, VirtualKeyModifiers.Control, false)]
-    [DataRow(VirtualKey.K, VirtualKeyModifiers.Control, true)]
-    [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, false)]
-    [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, true)]
-    public void RequestedShortcut_InvokesOrDefersItsSubmenu(VirtualKey key, VirtualKeyModifiers modifiers, bool hasSubmenu)
+    public void PageSubmenuOpen_PreservesAnchorAndLaterSelectedItemMenu()
     {
-        var chord = new KeyChord(modifiers, (int)key, 0);
-        var model = new CommandContextItem(new NoOpCommand { Name = "Requested action" })
-        {
-            RequestedShortcut = chord,
-            MoreCommands = hasSubmenu ? [new CommandContextItem(new NoOpCommand { Name = "Child" })] : [],
-        };
-        var command = new CommandContextItemViewModel(model, new(_pageContext));
+        var selectedItem = _context;
+        var command = CreateSubmenu();
+        var menu = new Mock<IContextMenuContext>();
+        menu.SetupGet(value => value.AllCommands).Returns([command]);
+        _pageMenu = menu.Object;
+        var anchor = new ContextMenuAnchor(null!, null, FlyoutPlacementMode.TopEdgeAlignedLeft, ContextMenuFilterLocation.Bottom);
+        using var controller = CreateController();
         try
         {
-            command.SlowInitializeProperties();
-            var context = new Mock<ICommandBarContext>();
-            context.Setup(value => value.FindKeybinding(chord)).Returns(command);
-            _context = context.Object;
-            List<PerformCommandMessage> invocations = [];
-            _messenger.Register<PerformCommandMessage>(this, (_, message) => invocations.Add(message));
-            using var controller = CreateController();
-
-            Assert.IsTrue(controller.TryHandleShortcut(chord));
+            CommandBarViewModel.InvokeContextCommand(command, submenu =>
+                controller.ShowContextMenuAfterKeyEvent(_pageMenu, submenu, anchor, () => ReferenceEquals(menu.Object, _pageMenu)));
             Assert.IsEmpty(_opened);
+            Assert.HasCount(1, _callbacks);
             DrainCallbacks();
 
-            if (hasSubmenu)
+            Assert.HasCount(1, _opened);
+            Assert.AreSame(_pageMenu, _opened[0].Context);
+            Assert.AreSame(command, _opened[0].InitialSubmenu);
+            Assert.AreEqual(anchor, _opened[0].Anchor);
+
+            Assert.IsTrue(controller.TryHandleKey(CtrlK));
+            DrainCallbacks();
+
+            Assert.HasCount(2, _opened);
+            Assert.AreSame(selectedItem, _opened[1].Context);
+            Assert.IsNull(_opened[1].InitialSubmenu);
+            Assert.IsNull(_opened[1].Anchor);
+        }
+        finally
+        {
+            command.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    [DataRow("page")]
+    [DataRow("commands")]
+    public void PageSubmenuOpen_IsCancelledWhenThePageOrCommandChanges(string change)
+    {
+        var command = CreateSubmenu();
+        IContextItemViewModel[] commands = [command];
+        var menu = new Mock<IContextMenuContext>();
+        menu.SetupGet(value => value.AllCommands).Returns(() => commands);
+        _pageMenu = menu.Object;
+        using var controller = CreateController();
+        try
+        {
+            CommandBarViewModel.InvokeContextCommand(command, submenu =>
+                controller.ShowContextMenuAfterKeyEvent(_pageMenu, submenu, isContextCurrent: () => ReferenceEquals(menu.Object, _pageMenu)));
+            if (change == "page")
             {
-                Assert.IsEmpty(invocations);
-                Assert.HasCount(1, _opened);
-                Assert.AreSame(command, _opened[0].InitialSubmenu);
-                Assert.AreSame(_context, _opened[0].Context);
+                _pageMenu = Mock.Of<IContextMenuContext>();
             }
             else
             {
-                Assert.IsEmpty(_opened);
-                Assert.HasCount(1, invocations);
-                Assert.AreSame(model, invocations[0].CommandContext);
+                commands = [];
+            }
+
+            DrainCallbacks();
+            Assert.IsEmpty(_opened);
+        }
+        finally
+        {
+            command.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void SubmenuOpen_RevalidatesLiveContextIndependentlyOfDisplayedContext(bool changeLiveContext)
+    {
+        var command = CreateSubmenu();
+        var menu = new Mock<IContextMenuContext>();
+        menu.SetupGet(value => value.AllCommands).Returns([command]);
+        var requestContext = menu.Object;
+        IContextMenuContext liveContext = requestContext;
+        using var controller = CreateController();
+        try
+        {
+            CommandBarViewModel.InvokeContextCommand(command, submenu =>
+                controller.ShowContextMenuAfterKeyEvent(requestContext, submenu, isContextCurrent: () => ReferenceEquals(requestContext, liveContext)));
+            if (changeLiveContext)
+            {
+                liveContext = Mock.Of<IContextMenuContext>();
+            }
+
+            DrainCallbacks();
+
+            Assert.HasCount(changeLiveContext ? 0 : 1, _opened);
+            if (!changeLiveContext)
+            {
+                Assert.AreSame(requestContext, _opened[0].Context);
+                Assert.AreSame(command, _opened[0].InitialSubmenu);
             }
         }
         finally
@@ -291,7 +353,16 @@ public class ItemActionControllerTests
         }
     }
 
-    private static KeyChord CtrlK => new(VirtualKeyModifiers.Control, (int)VirtualKey.K, 0);
+    private CommandContextItemViewModel CreateSubmenu()
+    {
+        var model = new CommandContextItem(new NoOpCommand { Name = "Tools" })
+        {
+            MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Child" })],
+        };
+        var command = new CommandContextItemViewModel(model, new(_pageContext));
+        command.SlowInitializeProperties();
+        return command;
+    }
 
     private ItemActionController CreateController() => new(
         () => _context,
@@ -308,8 +379,7 @@ public class ItemActionControllerTests
                 return true;
             },
             _opened.Add,
-            () => _closeCount++),
-        _messenger);
+            () => _closeCount++));
 
     private void DrainCallbacks()
     {
