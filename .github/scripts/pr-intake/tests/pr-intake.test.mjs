@@ -20,6 +20,7 @@ import {
   getPullRequestWithMergeability,
   hasMergeConflict,
   isMergeabilityKnown,
+  isTeamMember,
   parseFeedbackSince,
   planManagedLabelChanges,
   renderAllClearComment,
@@ -65,12 +66,15 @@ class MockApi {
     pullRequests = [],
     files = [],
     pullRequestQueue = null,
+    permissions = {},
   } = {}) {
     this.comments = comments;
     this.issues = issues;
     this.pullRequests = pullRequests;
     this.files = files;
     this.pullRequestQueue = pullRequestQueue;
+    this.permissions = permissions;
+    this.permissionLookups = [];
     this.created = 0;
     this.updated = 0;
     this.deleted = [];
@@ -105,6 +109,16 @@ class MockApi {
     this.deleted.push(commentId);
     this.comments = this.comments.filter((entry) => entry.id !== commentId);
     return null;
+  }
+
+  async getCollaboratorPermission(login) {
+    this.permissionLookups.push(login);
+    const permission = this.permissions[login]
+      ?? { role_name: 'read', permission: 'read' };
+    if (permission instanceof Error) {
+      throw permission;
+    }
+    return permission;
   }
 
   async getIssue(issueNumber) {
@@ -881,4 +895,86 @@ test('runPullRequestIntake posts a feedback comment when there are remarks', asy
   assert.equal(api.created, 1);
   assert.equal(result.readyForReview, false);
   assert.match(api.comments[0].body, /screenshot, GIF, or video/);
+});
+
+test('team members are recognized by repository role and bots are not looked up', async () => {
+  const api = new MockApi({
+    permissions: {
+      admin: { role_name: 'admin', permission: 'admin' },
+      maintainer: { role_name: 'maintain', permission: 'write' },
+      writer: { role_name: 'write', permission: 'write' },
+      triager: { role_name: 'triage', permission: 'read' },
+      custom: { role_name: 'custom-team-role', permission: 'write' },
+      broken: new ApiError('Forbidden', 403),
+    },
+  });
+  for (const login of ['admin', 'maintainer', 'writer', 'triager', 'custom']) {
+    assert.equal(await isTeamMember(api, login), true, login);
+  }
+  assert.equal(await isTeamMember(api, 'alice'), false);
+  assert.equal(await isTeamMember(api, 'broken'), false);
+  const lookups = api.permissionLookups.length;
+  assert.equal(await isTeamMember(api, 'dependabot[bot]'), false);
+  assert.equal(await isTeamMember(api, ''), false);
+  assert.equal(api.permissionLookups.length, lookups);
+});
+
+test('team-authored PRs get labels but no intake reply or author-feedback label', async () => {
+  const stale = botComment(50, `${CANONICAL_MARKER}\n## 🧭 PR intake\nplease update`);
+  const api = new MockApi({
+    comments: [stale],
+    issues: [{ number: 100, labels: [NEEDS_AUTHOR_FEEDBACK_LABEL], title: 'PR' }],
+    pullRequests: [{
+      number: 100,
+      draft: false,
+      mergeable: true,
+      mergeable_state: 'clean',
+      body: 'No linked issue here.',
+      base: { ref: 'main' },
+      user: { login: 'teammate' },
+    }],
+    files: [{
+      filename: 'src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml',
+      status: 'modified',
+    }],
+    permissions: { teammate: { role_name: 'write', permission: 'write' } },
+  });
+
+  const result = await runPullRequestIntake({ api, event: intakeEvent() });
+
+  assert.equal(result.teamAuthored, true);
+  assert.equal(result.needsAuthorFeedback, false);
+  assert.equal(result.commentResult.operation, 'deleted');
+  assert.equal(api.created, 0);
+  assert.equal(api.updated, 0);
+  assert.deepEqual(api.deleted, [50]);
+  assert.deepEqual(result.labelPlan.remove, [NEEDS_AUTHOR_FEEDBACK_LABEL]);
+  assert.ok(!result.labelPlan.add.includes(NEEDS_AUTHOR_FEEDBACK_LABEL));
+  assert.ok(result.labelPlan.add.some((label) => label.startsWith('Product-')));
+});
+
+test('community PRs still get a reply when the permission lookup fails', async () => {
+  const api = new MockApi({
+    issues: [{ number: 100, labels: [], title: 'PR' }],
+    pullRequests: [{
+      number: 100,
+      draft: false,
+      mergeable: true,
+      mergeable_state: 'clean',
+      body: 'No linked issue here.',
+      base: { ref: 'main' },
+      user: { login: 'alice' },
+    }],
+    files: [{
+      filename: 'src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml',
+      status: 'modified',
+    }],
+    permissions: { alice: new ApiError('Server error', 500) },
+  });
+
+  const result = await runPullRequestIntake({ api, event: intakeEvent() });
+
+  assert.equal(result.teamAuthored, false);
+  assert.equal(result.commentResult.operation, 'created');
+  assert.ok(result.labelPlan.add.includes(NEEDS_AUTHOR_FEEDBACK_LABEL));
 });

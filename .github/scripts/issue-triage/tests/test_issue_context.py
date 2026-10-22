@@ -639,7 +639,7 @@ class IssueContextTests(unittest.TestCase):
         )
         self.assertFalse(should_process)
 
-    def test_team_authored_issue_is_skipped(self):
+    def test_team_authored_issue_is_triaged_silently(self):
         for permission in (
             {"role_name": "admin", "permission": "admin"},
             {"role_name": "maintain", "permission": "write"},
@@ -649,32 +649,31 @@ class IssueContextTests(unittest.TestCase):
         ):
             with self.subTest(permission=permission):
                 api = FakeApi(permissions={"teammate": permission})
-                with mock.patch.object(CONTEXT, "write_noop") as noop:
-                    _, _, should_process = CONTEXT.prepare(
-                        {"action": "opened", "issue": self.open_issue("teammate")},
-                        api,
-                    )
-                noop.assert_called_once_with(
-                    "Issues authored by PowerToys team members are not triaged"
+                _, _, should_process, evidence = CONTEXT.prepare_with_evidence(
+                    {"action": "opened", "issue": self.open_issue("teammate")},
+                    api,
                 )
-                self.assertFalse(should_process)
+                self.assertTrue(should_process)
+                self.assertTrue(evidence["team_authored"])
 
     def test_community_authored_issue_is_triaged(self):
         api = FakeApi()
-        _, _, should_process = CONTEXT.prepare(
+        _, _, should_process, evidence = CONTEXT.prepare_with_evidence(
             {"action": "opened", "issue": self.open_issue()},
             api,
         )
         self.assertTrue(should_process)
+        self.assertFalse(evidence["team_authored"])
         self.assertEqual(api.permission_lookups, ["alice"])
 
-    def test_permission_lookup_failure_still_triages(self):
+    def test_permission_lookup_failure_responds_normally(self):
         api = FakeApi(permissions={"alice": RuntimeError("GitHub API failed")})
-        _, _, should_process = CONTEXT.prepare(
+        _, _, should_process, evidence = CONTEXT.prepare_with_evidence(
             {"action": "opened", "issue": self.open_issue()},
             api,
         )
         self.assertTrue(should_process)
+        self.assertFalse(evidence["team_authored"])
 
     def test_bot_author_does_not_query_permissions(self):
         api = FakeApi()
@@ -682,7 +681,7 @@ class IssueContextTests(unittest.TestCase):
         self.assertFalse(CONTEXT.is_team_member(api, None))
         self.assertEqual(api.permission_lookups, [])
 
-    def test_force_evidence_ignores_new_skip_gates(self):
+    def test_force_evidence_reports_team_authorship(self):
         issue = self.open_issue("teammate")
         api = FakeApi(
             current_issue=issue,
@@ -694,8 +693,7 @@ class IssueContextTests(unittest.TestCase):
             force_evidence=True,
         )
         self.assertTrue(should_process)
-        self.assertIsNotNone(evidence)
-        self.assertEqual(api.permission_lookups, [])
+        self.assertTrue(evidence["team_authored"])
 
     def test_prepare_emits_bounded_ranked_candidates(self):
         issue = {
@@ -843,7 +841,7 @@ class IssueContextTests(unittest.TestCase):
             self.assertFalse(evidence_path.exists())
             self.assertEqual(
                 output_path.read_text(encoding="utf-8"),
-                "should_process=false\n",
+                "should_process=false\nteam_authored=false\n",
             )
 
     def test_candidate_retrieval_only_returns_older_issues(self):

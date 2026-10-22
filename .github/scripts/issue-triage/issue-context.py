@@ -828,8 +828,6 @@ def prepare_with_evidence(event, api, force_evidence=False):
             skip_reason = "Edits only refresh issues that already have a triage summary"
         elif existing_hash == digest:
             skip_reason = "The triage-relevant issue content has not changed"
-        elif is_team_member(api, author):
-            skip_reason = "Issues authored by PowerToys team members are not triaged"
     if skip_reason:
         write_noop(skip_reason)
         return (
@@ -844,6 +842,8 @@ def prepare_with_evidence(event, api, force_evidence=False):
         report_comment,
         api,
     )
+    # Team-authored issues are still labeled, but the publisher stays silent.
+    evidence["team_authored"] = is_team_member(api, author)
     normalized_event = dict(event)
     if report_comment:
         normalized_event["comment"] = report_comment
@@ -901,6 +901,8 @@ def main():
             json.dump(evidence, output_file, ensure_ascii=True, sort_keys=True)
             output_file.write("\n")
     write_step_output("should_process", "true" if should_process_event else "false")
+    team_authored = bool(evidence and evidence.get("team_authored"))
+    write_step_output("team_authored", "true" if team_authored else "false")
     print("Prepared deterministic issue evidence and duplicate candidates")
     return 0
 

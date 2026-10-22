@@ -67,11 +67,11 @@ that retain `Needs-Author-Feedback` for seven days without activity.
   repeated issue creation or edits.
 - Edits that change neither the title nor the body (for example label,
   milestone, or assignee updates) are filtered before any job starts.
-- Events sent by users with the `admin`, `maintain`, `write`, or `triage`
-  repository role (core team, extended team, and code owners) are skipped in
-  pre-activation. Issues authored by users with those roles are also skipped in
-  deterministic preprocessing, so community edits to team-authored issues are
-  not triaged either. A failed permission lookup still triages the issue.
+- Issues authored by users with the `admin`, `maintain`, `write`, or `triage`
+  repository role (core team, extended team, and code owners) are still triaged
+  and receive the product label, but the workflow does not reply: no triage
+  comment, no `Needs-Author-Feedback` label, and no duplicate close suggestion.
+  If the permission lookup fails, the issue is handled like a community issue.
 - Edits only refresh issues that already have a canonical triage summary.
   Issues created before the workflow existed, or never triaged, are not
   triaged on their first edit.
