@@ -357,6 +357,9 @@ namespace Microsoft.MouseWithoutBorders.UITests
         [DllImport("user32.dll")]
         private static extern bool IsWindowVisible(IntPtr window);
 
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmGetWindowAttribute(IntPtr window, int attribute, out int value, int size);
+
         [DllImport("user32.dll")]
         private static extern IntPtr GetWindow(IntPtr window, uint command);
 
@@ -448,6 +451,21 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
             var className = new StringBuilder(256);
             if (GetClassName(window, className, className.Capacity) == 0 || className.ToString() != "Windows.UI.Core.CoreWindow")
+            {
+                return null;
+            }
+
+            // A closed shell window can retain WS_VISIBLE and regain foreground when the
+            // receiver closes. DWM cloaking, not WS_VISIBLE alone, tells us it is hidden.
+            int cloaked;
+            int hresult = DwmGetWindowAttribute(window, 14 /* DWMWA_CLOAKED */, out cloaked, sizeof(int));
+            if (hresult < 0)
+            {
+                throw new InvalidOperationException("Could not query Start-menu cloaking (HRESULT 0x" + hresult.ToString("X8") + ").",
+                    Marshal.GetExceptionForHR(hresult));
+            }
+
+            if (cloaked != 0)
             {
                 return null;
             }

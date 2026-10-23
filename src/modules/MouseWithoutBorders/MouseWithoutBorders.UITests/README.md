@@ -137,6 +137,11 @@ This tests pairing, not Home-to-module navigation or startup performance.
 Both owned MWB PIDs must have actual Established peer connections and the
 expected F1-F4 routing slots. A verified settings mapping alone is not transport
 proof. Input targets only the owned receiver, never the Sandbox viewer.
+Start-menu recovery requires a visible, DWM-uncloaked window with the verified
+same-session OS launcher identity. A closed shell window can retain Win32
+visibility and regain foreground after a receiver closes; a cloaked window is
+not sent Escape. The single-Escape rule and three-second dismissal deadline
+remain unchanged.
 The mouse probe requires two unobstructed native hits, correct foreground/no
 capture, one checked physical click and exact guest-only effects. If a cursor
 overlay obstructs a hit, the real mouse moves within safe receiver positions.

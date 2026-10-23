@@ -47,6 +47,10 @@ public sealed class ReceiverFocusTests
                 pollIntervalMS: 100,
                 recover: _ => receiver.FocusInput());
             Assert.IsTrue(focus.Succeeded, "An open Start menu prevented stable owned receiver foreground/input focus.");
+            RunFiles.Wait(
+                () => !NativeSupport.IsStartMenuWindow(foreground.Hwnd),
+                TimeSpan.FromSeconds(3),
+                "The closed Start menu is still classified as actionable while hidden by the compositor.");
             KeyboardHelper.SendChord(Key.A);
             RunFiles.Wait(() => receiver.ReceivedText == "a", TimeSpan.FromSeconds(5), "Physical keyboard input did not reach the receiver after Start closed.");
             Assert.AreEqual(0, receiver.Clicks, "Focus recovery must not inject a mouse click.");
