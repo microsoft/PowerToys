@@ -284,6 +284,8 @@ namespace MouseWithoutBorders.Class
 
             Task ConnectToMachine(string machineName, string securityKey);
 
+            void RestoreSecurityKey(string previousSecurityKey);
+
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
 
@@ -334,10 +336,40 @@ namespace MouseWithoutBorders.Class
                 return Task.FromResult(key);
             }
 
+            public void RestoreSecurityKey(string previousSecurityKey)
+            {
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
+                if (string.IsNullOrEmpty(previousSecurityKey) || Setting.Values.MyKey == previousSecurityKey)
+                {
+                    return;
+                }
+
+                Setting.Values.PauseInstantSaving = true;
+                try
+                {
+                    Setting.Values.MyKey = previousSecurityKey;
+                    Encryption.MyKey = previousSecurityKey;
+                    Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
+                }
+                finally
+                {
+                    Setting.Values.PauseInstantSaving = false;
+                }
+
+                Setting.Values.SaveSettings();
+            }
+
             public Task ConnectToMachine(string pcName, string securityKey)
             {
                 EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
                 ArgumentException.ThrowIfNullOrWhiteSpace(pcName);
+                if (!Encryption.IsKeyValid(securityKey, out string error))
+                {
+                    // Never persist an invalid key: it would replace the working local key.
+                    Logger.Log($"{nameof(ConnectToMachine)}: {error}");
+                    return Task.CompletedTask;
+                }
+
                 Setting.Values.PauseInstantSaving = true;
                 try
                 {

@@ -34,6 +34,12 @@
                                 IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_LegacyAppConflict"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowLegacyAppConflictWarning, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowLegacyAppConflictWarning, Mode=OneWay}"
+                        Severity="Warning" />
                 </controls:SettingsGroup>
                 <controls:SettingsGroup
                     x:Name="KeySettingsGroup"
@@ -47,34 +53,69 @@
                         IsExpanded="{x:Bind ViewModel.ConnectFieldsVisible, Mode=TwoWay}">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Right" IsEnabled="{x:Bind ViewModel.CanConnectPairing, Mode=OneWay}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBox
-                                        x:Name="ConnectSecurityKeyTextBox"
-                                        x:Uid="MWB_SecurityKeyLabel"
-                                        Width="248" />
-                                    <TextBox
-                                        x:Name="ConnectPCNameTextBox"
-                                        x:Uid="MWB_PCNameLabel"
-                                        Width="248" />
-                                    <Button
-                                        x:Uid="MouseWithoutBorders_Connect"
-                                        Command="{x:Bind ConnectCommand, Mode=OneTime}"
-                                        Style="{StaticResource AccentButtonStyle}" />
+                                <StackPanel Orientation="Vertical" Spacing="8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBox
+                                            x:Name="ConnectSecurityKeyTextBox"
+                                            x:Uid="MWB_SecurityKeyLabel"
+                                            IsEnabled="{x:Bind ViewModel.IsConnecting, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                            Width="248" />
+                                        <TextBox
+                                            x:Name="ConnectPCNameTextBox"
+                                            x:Uid="MWB_PCNameLabel"
+                                            IsEnabled="{x:Bind ViewModel.IsConnecting, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                            Width="248" />
+                                        <Button
+                                            x:Uid="MouseWithoutBorders_Connect"
+                                            Command="{x:Bind ConnectCommand, Mode=OneTime}"
+                                            IsEnabled="{x:Bind ViewModel.IsConnecting, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                            Style="{StaticResource AccentButtonStyle}" />
+                                    </StackPanel>
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="8"
+                                        Visibility="{x:Bind ViewModel.IsConnecting, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <ProgressBar
+                                            Width="200"
+                                            Maximum="100"
+                                            Minimum="0"
+                                            Value="{x:Bind ViewModel.ConnectingProgressPercent, Mode=OneWay}" />
+                                        <TextBlock Text="{x:Bind ViewModel.ConnectingStatusText, Mode=OneWay}" />
+                                    </StackPanel>
                                 </StackPanel>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
+                        <tkcontrols:SettingsExpander.ItemsFooter>
+                            <InfoBar
+                                x:Uid="MouseWithoutBorders_ConnectError"
+                                IsClosable="True"
+                                IsOpen="{x:Bind ViewModel.ShowConnectionError, Mode=TwoWay}"
+                                IsTabStop="{x:Bind ViewModel.ShowConnectionError, Mode=OneWay}"
+                                Severity="Error">
+                                <TextBlock
+                                    IsTextSelectionEnabled="True"
+                                    Text="{x:Bind ViewModel.ConnectionErrorMessage, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </InfoBar>
+                        </tkcontrols:SettingsExpander.ItemsFooter>
                         <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button
+                                x:Name="CopySecurityKeyButton"
+                                Padding="4"
+                                Command="{x:Bind CopySecurityKeyCommand, Mode=OneTime}"
+                                Content="{ui:FontIcon Glyph=&#xE8C8;,
+                                                      FontSize=16}"
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="MouseWithoutBorders_CopySecurityKey" TextWrapping="Wrap" />
+                                </ToolTipService.ToolTip>
+                            </Button>
                             <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=OneWay}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
                                 Command="{x:Bind GenerateNewKeyCommand, Mode=OneTime}"
                                 Style="{StaticResource AccentButtonStyle}" />
-                            <Button
-                                x:Uid="MouseWithoutBorders_Connect"
-                                Command="{x:Bind ShowConnectFieldsCommand, Mode=OneTime}"
-                                IsEnabled="{x:Bind ViewModel.CanConnectPairing, Mode=OneWay}"
-                                Style="{StaticResource AccentButtonStyle}"
-                                Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}" />
                         </StackPanel>
                     </tkcontrols:SettingsExpander>
                     <InfoBar
@@ -104,6 +145,7 @@
                                 IsTextSelectionEnabled="True"
                                 Text="{x:Bind ViewModel.MachineHostName, Mode=OneTime}" />
                             <Button
+                                x:Name="CopyPCNameButton"
                                 Padding="4"
                                 Command="{x:Bind CopyPCNameCommand, Mode=OneTime}"
                                 Content="{ui:FontIcon Glyph=&#xE8C8;,
