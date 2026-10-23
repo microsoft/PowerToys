@@ -11,8 +11,8 @@
         <Grid Padding="16">
             <StackPanel
                 MaxWidth="1000"
-                Margin="16,16,16,24"
-                HorizontalAlignment="Stretch">
+                HorizontalAlignment="Stretch"
+                Spacing="16">
                 <TextBlock x:Name="QueryText" TextWrapping="Wrap" />
                 <TextBlock
                     x:Name="EmptyState"
