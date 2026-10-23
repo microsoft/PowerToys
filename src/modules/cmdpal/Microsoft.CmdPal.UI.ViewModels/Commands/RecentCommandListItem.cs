@@ -14,7 +14,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Commands;
 /// context commands without changing the item everywhere else it is displayed.
 /// </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public sealed partial class RecentCommandListItem : IListItem, IExtendedAttributesProvider, ICommandContextSource
+public sealed partial class RecentCommandListItem : CommandItemViewModelAdapter, IListItem, IExtendedAttributesProvider, ICommandContextSource
 {
     public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
     {
@@ -31,6 +31,8 @@ public sealed partial class RecentCommandListItem : IListItem, IExtendedAttribut
     ICommandProviderContext? ICommandContextSource.ProviderContext => (Source as ICommandContextSource)?.ProviderContext;
 
     public ICommand? Command => Source.Command;
+
+    public override CommandViewModel? CommandViewModel => (Source as CommandItemViewModelAdapter)?.CommandViewModel;
 
     public IContextItem?[] MoreCommands => Source.MoreCommands;
 

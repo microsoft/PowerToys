@@ -121,6 +121,98 @@ public partial class CommandItemViewModelLifecycleTests
         public Action CaptureTitleChanged() => CapturePropertyChanged(nameof(Title));
     }
 
+    private sealed partial class CachedCommandAdapter(CommandViewModel command, TestCommandItem source) : CommandItemViewModelAdapter, ICommandItem
+    {
+        public int CachedCommandReads { get; private set; }
+
+        public bool FailTitleRead { get; set; }
+
+        public override CommandViewModel CommandViewModel
+        {
+            get
+            {
+                CachedCommandReads++;
+                return command;
+            }
+        }
+
+        public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
+        {
+            add => source.PropChanged += value;
+            remove => source.PropChanged -= value;
+        }
+
+        public ICommand? Command => source.Command;
+
+        public IContextItem[] MoreCommands => source.MoreCommands;
+
+        public IIconInfo? Icon => source.Icon;
+
+        public string Title => FailTitleRead ? throw new InvalidOperationException("Title read failed.") : source.Title;
+
+        public string Subtitle => source.Subtitle;
+    }
+
+    [TestMethod]
+    public void CachedCommandAdapter_BorrowsWithoutOwningCommandLifetime()
+    {
+        var context = new TestPageContext();
+        var command = new TestCommand();
+        var cachedCommand = new CommandViewModel(command, new(context));
+        cachedCommand.InitializeProperties();
+        var source = new TestCommandItem { CommandValue = command };
+        var adapter = new CachedCommandAdapter(cachedCommand, source);
+        var viewModel = new CommandItemViewModel(new(adapter), new(context), null);
+        try
+        {
+            viewModel.InitializeProperties();
+            Assert.AreSame(cachedCommand, viewModel.Command);
+
+            source.RaisePropertyChanged(nameof(ICommandItem.Command));
+            Assert.AreSame(cachedCommand, viewModel.Command);
+            Assert.AreEqual(2, adapter.CachedCommandReads);
+
+            viewModel.SafeCleanup();
+            Assert.AreEqual(1, command.SubscriberCount);
+            AssertNoSubscriptions(source, viewModel);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            cachedCommand.SafeCleanup();
+            GC.KeepAlive(context);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void FailedCachedCommandInitialization_ClearsCommandWithoutReadingAdapterAgain(bool fastInit)
+    {
+        var context = new TestPageContext();
+        var command = new TestCommand { Name = "Run" };
+        var cachedCommand = new CommandViewModel(command, new(context));
+        cachedCommand.InitializeProperties();
+        var source = new TestCommandItem { CommandValue = command };
+        var adapter = new CachedCommandAdapter(cachedCommand, source) { FailTitleRead = true };
+        var viewModel = new CommandItemViewModel(new(adapter), new(context), null);
+        try
+        {
+            Assert.IsFalse(fastInit ? viewModel.SafeFastInit() : viewModel.SafeInitializeProperties());
+            Assert.IsTrue(viewModel.IsInErrorState);
+            Assert.IsFalse(viewModel.Command.IsSet);
+            Assert.AreNotSame(cachedCommand, viewModel.Command);
+            Assert.AreEqual(1, adapter.CachedCommandReads);
+            Assert.AreEqual(1, command.SubscriberCount);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            cachedCommand.SafeCleanup();
+            GC.KeepAlive(context);
+        }
+    }
+
     [TestMethod]
     public Task CleanupDuringIconGetter_DoesNotLeaveSubscriptions() =>
         VerifyCleanupDuringInitialization((item, block) => item.ReadIcon = block);

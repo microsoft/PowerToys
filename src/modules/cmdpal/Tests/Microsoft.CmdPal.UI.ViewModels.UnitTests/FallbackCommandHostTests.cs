@@ -22,6 +22,58 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public sealed partial class FallbackCommandHostTests
 {
     [TestMethod]
+    [DataRow(FallbackCommandMode.Active)]
+    [DataRow(FallbackCommandMode.Passive)]
+    [DataRow(FallbackCommandMode.Results)]
+    public async Task FallbackProvider_CreatesSpecializedTopLevelViewModel(FallbackCommandMode mode)
+    {
+        var fallback = new RecordingFallback(mode);
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        try
+        {
+            Assert.IsInstanceOfType<TopLevelFallbackViewModel>(source);
+            Assert.IsTrue(source.IsFallback);
+            Assert.IsTrue(source.IsFallbackV2);
+            Assert.AreEqual(mode, source.FallbackMode);
+            Assert.AreEqual("fallback", source.Id);
+            Assert.AreEqual("Test fallback", source.DisplayTitle);
+            Assert.IsTrue(source.IsEnabled);
+        }
+        finally
+        {
+            source.Cleanup();
+        }
+    }
+
+    [TestMethod]
+    public async Task FallbackInitialization_PreservesPreparedQueryAndDoesNotReadAfterCleanup()
+    {
+        var fallback = new RecordingFallback(FallbackCommandMode.Passive) { Name = "Run" };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        try
+        {
+            PrepareQuery(source, FallbackCommandMode.Passive, CancellationToken.None);
+            var invocation = source.CommandViewModel;
+            fallback.FailNameRead = true;
+
+            source.InitializeProperties();
+            Assert.AreSame(invocation, source.CommandViewModel);
+
+            source.Cleanup();
+            source.InitializeProperties();
+            Assert.IsNull(ShellViewModel.ResolveRequestedCommand(invocation));
+            Assert.AreEqual(0, fallback.CreateCount);
+        }
+        finally
+        {
+            fallback.FailNameRead = false;
+            source.Cleanup();
+        }
+    }
+
+    [TestMethod]
     [DataRow("a.*", "abc", true)]
     [DataRow("abc", "xabc", false)]
     [DataRow(".", "ab", false)]
@@ -207,6 +259,44 @@ public sealed partial class FallbackCommandHostTests
     }
 
     [TestMethod]
+    public async Task FallbackNameReadFailure_PreservesCachedNameAndForwardsNotification()
+    {
+        var fallback = new RecordingFallback(FallbackCommandMode.Passive) { Name = "Run" };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        try
+        {
+            PrepareQuery(source, FallbackCommandMode.Passive, CancellationToken.None);
+            var invocation = source.CommandViewModel;
+            var nameNotifications = 0;
+            source.PropChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(ICommand.Name))
+                {
+                    nameNotifications++;
+                }
+            };
+
+            fallback.FailNameRead = true;
+            fallback.NotifyNameChanged();
+            source.ItemViewModel.ApplyPendingUpdates();
+
+            Assert.AreEqual("Run", invocation.Name);
+            Assert.IsTrue(nameNotifications > 0);
+
+            fallback.FailNameRead = false;
+            fallback.Name = "Recovered";
+            source.ItemViewModel.ApplyPendingUpdates();
+            Assert.AreEqual("Recovered", invocation.Name);
+        }
+        finally
+        {
+            fallback.FailNameRead = false;
+            source.Cleanup();
+        }
+    }
+
+    [TestMethod]
     public async Task ActiveFallback_PersistsSuggestedQuerySettings()
     {
         var fallback = new RecordingFallback(FallbackCommandMode.Active)
@@ -304,6 +394,16 @@ public sealed partial class FallbackCommandHostTests
         : FallbackCommandItem(new NoOpCommand { Id = "command" }, "Test fallback", "fallback")
     {
         public override FallbackCommandMode Mode => mode;
+
+        public bool FailNameRead { get; set; }
+
+        public override string Name
+        {
+            get => FailNameRead ? throw new InvalidOperationException("Name read failed.") : base.Name;
+            set => base.Name = value;
+        }
+
+        public void NotifyNameChanged() => OnPropertyChanged(nameof(Name));
 
         public int UpdateCount { get; private set; }
 

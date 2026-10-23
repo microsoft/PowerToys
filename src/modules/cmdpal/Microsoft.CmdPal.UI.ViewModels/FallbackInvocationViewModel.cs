@@ -17,19 +17,18 @@ internal sealed partial class FallbackInvocationViewModel : CommandViewModel
 
     internal FallbackInvocationViewModel(
         TopLevelFallbackViewModel fallback,
-        TopLevelViewModel source,
         string id,
         string name,
         IFallbackCommandInvocationArgs? args,
         CancellationToken queryToken)
-        : base(null, source.ItemViewModel.PageContext)
+        : base(null, fallback.ItemViewModel.PageContext)
     {
         _fallback = fallback;
         _args = args;
-        QueryContext = new(source.ExtensionHost, source.ProviderContext, source, queryToken);
+        QueryContext = new(fallback.ExtensionHost, fallback.ProviderContext, fallback, queryToken);
         Id = $"{id}.placeholder.{args?.QueryId}";
         Name = name;
-        Icon = source.IconViewModel;
+        Icon = fallback.IconViewModel;
     }
 
     public override void FastInitializeProperties()
@@ -53,7 +52,7 @@ internal sealed partial class FallbackInvocationViewModel : CommandViewModel
             return null;
         }
 
-        var command = _fallback.CreateCommand(_args);
+        var command = _fallback.UnsafeCreateCommand(_args);
         if (command is null)
         {
             return null;

@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
-using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -166,7 +165,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var command = model.Command;
-        if (!ReplaceCommand(command))
+        if (!ReplaceCommand(command, (model as CommandItemViewModelAdapter)?.CommandViewModel))
         {
             return;
         }
@@ -221,7 +220,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         UpdateProperty(nameof(Icon));
 
         // Load-bearing: if you don't raise a IsInitialized here, then
-        // TopLevelViewModel will never know what the command's ID is, so it
+        // host adapters will never know what the command's ID is, so they
         // will never be able to load Hotkeys & aliases
         UpdateProperty(nameof(IsInitialized));
 
@@ -343,6 +342,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
+        command.PropertyChanged -= Command_PropertyChanged;
         command.PropertyChanged += Command_PropertyChanged;
         if (IsCleanedUp || !ReferenceEquals(command, Command))
         {
@@ -382,7 +382,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 // ReplaceCommand detaches this item's handler from the command it
                 // displaces, so there is no manual unsubscribe to remember here.
-                if (!ReplaceCommand(command))
+                if (!ReplaceCommand(command, (model as CommandItemViewModelAdapter)?.CommandViewModel))
                 {
                     return;
                 }
@@ -600,27 +600,21 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         => _subtitleCache.GetOrUpdate(matcher, Subtitle);
 
     /// <summary>
-    /// Replaces <see cref="Command"/> with a newly built view-model this item owns, cleaning up the one being dropped.
+    /// Replaces <see cref="Command"/> and releases the previous command according to its ownership.
     /// </summary>
     /// <remarks>
-    /// Takes the extension command instead of a view-model - the view-model is built here so that we can guarantee ownership..
+    /// Borrows a cached host command when supplied; otherwise builds and owns the extension command's view-model.
     /// </remarks>
-    private bool ReplaceCommand(ICommand? model)
+    private bool ReplaceCommand(ICommand? model, CommandViewModel? cachedCommand = null)
     {
         if (IsCleanedUp)
         {
             return false;
         }
 
-        var source = _commandItemModel.Unsafe;
-        while (source is RecentCommandListItem recent)
+        if (cachedCommand is not null)
         {
-            source = recent.Source;
-        }
-
-        if (source is TopLevelViewModel topLevel)
-        {
-            BorrowCommand(topLevel.CommandViewModel);
+            BorrowCommand(cachedCommand);
             return !IsCleanedUp;
         }
 
