@@ -6949,7 +6949,12 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_DetailsFileWrite" xml:space="preserve"><value>Write files</value></data>
   <data name="PowerScripts_DetailsNetwork" xml:space="preserve"><value>Network access</value></data>
   <data name="PowerScripts_DetailsUi" xml:space="preserve"><value>Display user interface</value></data>
-  <data name="PowerScripts_Templates.Header" xml:space="preserve"><value>Start from a template</value></data>
+  <data name="PowerScripts_CreateScriptButton.Text" xml:space="preserve"><value>Create Script</value></data>
+  <data name="PowerScripts_CreateScriptAction.AutomationProperties.Name" xml:space="preserve"><value>Create Script</value></data>
+  <data name="PowerScripts_CreateScriptTitle" xml:space="preserve"><value>Create Script</value></data>
+  <data name="PowerScripts_TemplatesPage.ModuleTitle" xml:space="preserve"><value>Create Script</value></data>
+  <data name="PowerScripts_TemplatesPage.ModuleDescription" xml:space="preserve"><value>Choose a template, then customize your new script.</value></data>
+  <data name="PowerScripts_TemplateNavigationFailed" xml:space="preserve"><value>Could not open the script templates page. Try again.</value></data>
   <data name="PowerScripts_TemplatesHelp.Text" xml:space="preserve"><value>Create an editable script, .tool.json descriptor and README guide in your scripts folder. Each guide explains the fields and safe policy choices. Creation does not run the script, approve trust or change isolation.</value></data>
   <data name="PowerScripts_TemplateCreate" xml:space="preserve"><value>Create script</value></data>
   <data name="PowerScripts_TemplateCustomize" xml:space="preserve"><value>Set up...</value></data>

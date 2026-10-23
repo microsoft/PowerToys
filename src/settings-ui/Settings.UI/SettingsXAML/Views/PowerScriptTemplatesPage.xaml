@@ -1,0 +1,55 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerScriptTemplatesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    AutomationProperties.AutomationId="PowerScriptsTemplatesPage"
+    AutomationProperties.LandmarkType="Main">
+    <local:NavigablePage.KeyboardAccelerators>
+        <KeyboardAccelerator
+            Key="Left"
+            Invoked="BackKeyboardAccelerator_Invoked"
+            Modifiers="Menu" />
+    </local:NavigablePage.KeyboardAccelerators>
+    <Grid RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Margin="20,0,20,0" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Uid="PowerScripts_SettingsBack"
+                AutomationProperties.AutomationId="PowerScriptsTemplatesBack"
+                Click="BackButton_Click"
+                Style="{StaticResource SubtleButtonStyle}">
+                <SymbolIcon Symbol="Back" />
+            </Button>
+            <BreadcrumbBar
+                x:Name="TemplateBreadcrumb"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                AutomationProperties.AutomationId="PowerScriptsTemplatesBreadcrumb"
+                ItemClicked="TemplateBreadcrumb_ItemClicked" />
+        </Grid>
+        <controls:SettingsPageControl x:Uid="PowerScripts_TemplatesPage" Grid.Row="1">
+            <controls:SettingsPageControl.ModuleContent>
+                <StackPanel Spacing="16">
+                    <TextBlock x:Uid="PowerScripts_TemplatesHelp" TextWrapping="Wrap" />
+                    <StackPanel
+                        x:Name="TemplateCards"
+                        AutomationProperties.AutomationId="PowerScriptsTemplates"
+                        Spacing="8" />
+                    <InfoBar
+                        x:Name="TemplateStatus"
+                        AutomationProperties.AutomationId="PowerScriptsTemplateStatus"
+                        IsClosable="False" />
+                </StackPanel>
+            </controls:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl>
+    </Grid>
+</local:NavigablePage>

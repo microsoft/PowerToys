@@ -86,8 +86,9 @@ Script bodies are not scanned for metadata or special function names.
 
 ### Templates and authoritative metadata
 
-Settings offers **Greeting with parameters**, **Create a text file**, and **Describe selected files**
-starter templates. **Set up...** asks for a project name and description before creating anything.
+Select **+ Create Script** above the installed script list to open the template page. It offers
+**Greeting with parameters**, **Create a text file**, and **Describe selected files** starter templates.
+**Set up...** asks for a project name and description before creating anything.
 The file-input example also asks for allowed extensions: `.txt, .md`, `*.png`, or plain `txt`
 are accepted and normalized; leave blank for all types. Only relevant options are shown.
 **Create script** writes those choices directly into the descriptor and creates a new package

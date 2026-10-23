@@ -184,18 +184,18 @@
                         Severity="Warning" />
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerScripts_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <TextBlock x:Uid="PowerScripts_TemplatesHelp" TextWrapping="Wrap" />
-                    <StackPanel
-                        x:Name="TemplateCards"
-                        AutomationProperties.AutomationId="PowerScriptsTemplates"
-                        Spacing="8" />
-                    <InfoBar
-                        x:Name="TemplateStatus"
-                        AutomationProperties.AutomationId="PowerScriptsTemplateStatus"
-                        IsClosable="False" />
-                </controls:SettingsGroup>
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <Button
+                        x:Uid="PowerScripts_CreateScriptAction"
+                        HorizontalAlignment="Left"
+                        AutomationProperties.AutomationId="PowerScriptsCreateScript"
+                        Click="CreateScriptButton_Click"
+                        Style="{StaticResource AccentButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Symbol="Add" />
+                            <TextBlock x:Uid="PowerScripts_CreateScriptButton" />
+                        </StackPanel>
+                    </Button>
                     <InfoBar
                         x:Name="ScriptSettingsError"
                         AutomationProperties.AutomationId="PowerScriptsSettingsError"
