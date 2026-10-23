@@ -28,7 +28,8 @@
 - All DLLs, executables, and Windows Runtime metadata (`.winmd`) files must be signed
 - New files need to be added to the signing configuration
 - Add metadata to the appropriate first-party or third-party signing batch before packaging; preserve existing upstream signatures
-- CI checks signatures in the extracted MSI payload and the unpacked Command Palette MSIX metadata
+- CI checks signatures in the extracted MSI payload, the unpacked Command Palette MSIX metadata, and the SDK metadata before NuGet packing
+- The independent SDK job signs repository-root `x64\Release` and `arm64\Release` outputs using `ESRPSigning_sdk.json`; the outer NuGet signature does not replace the WinMD's Authenticode signature
 - Metadata does not require a `FileVersion` resource, but must still have a valid Authenticode signature
 - Even Microsoft-sourced dependencies are signed if they aren't already
 

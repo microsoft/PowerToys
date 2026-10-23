@@ -4,6 +4,7 @@
 $signingPolicies = @{
     Core = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\ESRPSigning_core.json') -Raw | ConvertFrom-Json
     CmdPal = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\ESRPSigning_cmdpal_msix_content.json') -Raw | ConvertFrom-Json
+    Sdk = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\ESRPSigning_sdk.json') -Raw | ConvertFrom-Json
 }
 
 function Get-MatchingSigningBatch {
@@ -52,6 +53,9 @@ Describe 'WinMD release signing policy' {
         )) {
             @{ PolicyName = 'CmdPal'; PayloadPath = $payloadPath }
         }
+        foreach ($platform in @('x64', 'arm64')) {
+            @{ PolicyName = 'Sdk'; PayloadPath = "$platform\Release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" }
+        }
     )
 
     It 'signs <PolicyName> product metadata <PayloadPath> with the product identity' -TestCases $productPayloads {
@@ -63,6 +67,20 @@ Describe 'WinMD release signing policy' {
         $signOperation = @($batches[0].SigningInfo.Operations | Where-Object OperationSetCode -eq 'SigntoolSign')
         $signOperation.Count | Should Be 1
         $signOperation[0].KeyCode | Should Be 'CP-230012'
+        @($batches[0].SigningInfo.Operations | Where-Object OperationSetCode -like 'StrongName*').Count | Should Be 0
+    }
+
+    It 'signs every metadata input packaged by the SDK NuGet manifest' {
+        [xml]$nuspec = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\src\modules\cmdpal\extensionsdk\nuget\Microsoft.CommandPalette.Extensions.SDK.nuspec') -Raw
+        $metadataFiles = @($nuspec.package.files.file | Where-Object { $_.src -like '*.winmd' })
+
+        $metadataFiles.Count | Should BeGreaterThan 0
+        foreach ($file in $metadataFiles) {
+            $batches = @(Get-MatchingSigningBatch -SigningPolicy $signingPolicies.Sdk -PayloadPath $file.src)
+            $batches.Count | Should Be 1
+            ($batches[0].SigningInfo.Operations | Where-Object OperationSetCode -eq 'SigntoolSign').KeyCode | Should Be 'CP-230012'
+            ($batches[0].SigningInfo.Operations | Where-Object OperationSetCode -eq 'SigntoolVerify').KeyCode | Should Be 'CP-230012'
+        }
     }
 
     It 'uses the external-component identity without replacing upstream signatures for <PayloadPath>' -TestCases @(
@@ -91,7 +109,9 @@ Describe 'WinMD release signing policy' {
         @{ PolicyName = 'Core'; PayloadPath = 'WinUI3Apps\PowerToys.Unknown.winmd' },
         @{ PolicyName = 'CmdPal'; PayloadPath = 'Microsoft.UI.Xaml.winmd' },
         @{ PolicyName = 'CmdPal'; PayloadPath = 'Microsoft.CmdPal.Common\Microsoft.Management.Deployment.winmd' },
-        @{ PolicyName = 'CmdPal'; PayloadPath = 'Contoso.Dependency.winmd' }
+        @{ PolicyName = 'CmdPal'; PayloadPath = 'Contoso.Dependency.winmd' },
+        @{ PolicyName = 'Sdk'; PayloadPath = 'x64\Release\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.UI.Xaml.winmd' },
+        @{ PolicyName = 'Sdk'; PayloadPath = 'arm64\Release\Contoso.Dependency.winmd' }
     ) {
         param($PolicyName, $PayloadPath)
 
