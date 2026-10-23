@@ -121,18 +121,20 @@ public partial class CommandItemViewModelLifecycleTests
         public Action CaptureTitleChanged() => CapturePropertyChanged(nameof(Title));
     }
 
-    private sealed partial class CachedCommandAdapter(CommandViewModel command, TestCommandItem source) : CommandItemViewModelAdapter, ICommandItem
+    private sealed partial class CachedCommandAdapter(CommandViewModel? command, TestCommandItem source) : CommandItemViewModelAdapter, ICommandItem
     {
+        public CommandViewModel? CachedCommand { get; set; } = command;
+
         public int CachedCommandReads { get; private set; }
 
         public bool FailTitleRead { get; set; }
 
-        public override CommandViewModel CommandViewModel
+        public override CommandViewModel? CommandViewModel
         {
             get
             {
                 CachedCommandReads++;
-                return command;
+                return CachedCommand;
             }
         }
 
@@ -174,6 +176,89 @@ public partial class CommandItemViewModelLifecycleTests
 
             viewModel.SafeCleanup();
             Assert.AreEqual(1, command.SubscriberCount);
+            AssertNoSubscriptions(source, viewModel);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            cachedCommand.SafeCleanup();
+            GC.KeepAlive(context);
+        }
+    }
+
+    [TestMethod]
+    public void CachedCommandAdapter_DoesNotReadRawCommandForPrimaryActionOrUpdates()
+    {
+        var context = new TestPageContext();
+        var command = new TestCommand { Name = "Run" };
+        var cachedCommand = new CommandViewModel(command, new(context));
+        cachedCommand.InitializeProperties();
+        var source = new TestCommandItem
+        {
+            ReadCommand = () => Assert.Fail("A cached host command must not read the raw SDK command."),
+        };
+        var adapter = new CachedCommandAdapter(cachedCommand, source);
+        var viewModel = new CommandItemViewModel(new(adapter), new(context), null);
+        try
+        {
+            viewModel.SlowInitializeProperties();
+            Assert.AreSame(cachedCommand, viewModel.Command);
+            Assert.IsNotNull(viewModel.PrimaryMenuItem);
+            Assert.AreSame(cachedCommand, viewModel.PrimaryMenuItem.Command);
+
+            source.RaisePropertyChanged(nameof(ICommandItem.Command));
+            Assert.AreSame(cachedCommand, viewModel.Command);
+            Assert.AreSame(cachedCommand, viewModel.PrimaryMenuItem.Command);
+            Assert.AreEqual(2, adapter.CachedCommandReads);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            cachedCommand.SafeCleanup();
+            GC.KeepAlive(context);
+        }
+    }
+
+    [TestMethod]
+    public void CommandOwnershipTransitions_ReleaseOwnedCommandsAndPreserveBorrowedCommand()
+    {
+        var context = new TestPageContext();
+        var borrowed = new TestCommand();
+        var cachedCommand = new CommandViewModel(borrowed, new(context));
+        cachedCommand.InitializeProperties();
+        var owned = new TestCommand();
+        var rawReads = 0;
+        var source = new TestCommandItem { CommandValue = owned, ReadCommand = () => rawReads++ };
+        var adapter = new CachedCommandAdapter(null, source);
+        var viewModel = new CommandItemViewModel(new(adapter), new(context), null);
+        try
+        {
+            viewModel.InitializeProperties();
+            Assert.AreSame(owned, viewModel.Command.Model.Unsafe);
+            Assert.AreEqual(1, owned.SubscriberCount);
+            Assert.AreEqual(1, rawReads);
+
+            adapter.CachedCommand = cachedCommand;
+            source.RaisePropertyChanged(nameof(ICommandItem.Command));
+            Assert.AreSame(cachedCommand, viewModel.Command);
+            Assert.AreEqual(0, owned.SubscriberCount);
+            Assert.AreEqual(1, rawReads);
+
+            adapter.CachedCommand = null;
+            source.RaisePropertyChanged(nameof(ICommandItem.Command));
+            Assert.AreSame(owned, viewModel.Command.Model.Unsafe);
+            Assert.AreEqual(1, borrowed.SubscriberCount);
+            Assert.AreEqual(1, owned.SubscriberCount);
+            Assert.AreEqual(2, rawReads);
+
+            source.CommandValue = null;
+            source.RaisePropertyChanged(nameof(ICommandItem.Command));
+            Assert.IsFalse(viewModel.Command.IsSet);
+            Assert.AreEqual(0, owned.SubscriberCount);
+            Assert.AreEqual(3, rawReads);
+
+            viewModel.SafeCleanup();
+            Assert.AreEqual(1, borrowed.SubscriberCount);
             AssertNoSubscriptions(source, viewModel);
         }
         finally
