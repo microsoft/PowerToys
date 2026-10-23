@@ -121,6 +121,48 @@ jobs:
       # and '!' lines do NOT exclude. Per the task docs they "include files that don't match any
       # include pattern", so a '!**/*.pdb' line pulls in every non-pdb file — i.e. the whole product
       # tree (~14 GB). Use INCLUDE-ONLY patterns so only the installer + tests folder transfer.
+      # The whole 'tests' folder is still ~12 GB (every unit/fuzz/UI test output), so narrow it to
+      # the selected UI test projects' output folders, or to every *UITest* folder when none are
+      # selected. Fixtures (e.g. TestApp msix) are staged into each UI test project's own folder.
+      - pwsh: |
+          $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+          if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
+            $modulesRaw = $env:AUTO_UI_TEST_MODULES
+          }
+          $modules = @($modulesRaw -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+
+          if ($modules.Count -eq 0) {
+            $patterns = @('**/tests/*UITest*/**')
+          } else {
+            # Map each selected project (csproj or assembly name) to its OutputPath folder under tests\.
+            $projects = @(Get-ChildItem -Path "$(Build.SourcesDirectory)\src" -Filter '*.csproj' -File -Recurse)
+            $folders = foreach ($module in $modules) {
+              $folder = $module
+              $escaped = [regex]::Escape($module)
+              $project = $projects | Where-Object { $_.BaseName -eq $module } | Select-Object -First 1
+              if (-not $project) {
+                $project = $projects |
+                  Where-Object { [IO.File]::ReadAllText($_.FullName) -match "<AssemblyName>$escaped</AssemblyName>" } |
+                  Select-Object -First 1
+              }
+              if ($project -and [IO.File]::ReadAllText($project.FullName) -match '<OutputPath>[^<]*\\tests\\([^\\<]+)') {
+                $folder = $Matches[1]
+              }
+              $folder
+            }
+            $folders = @($folders | Sort-Object -Unique)
+            $patterns = @($folders | ForEach-Object { "**/tests/$_/**" })
+          }
+
+          # One pattern per line: the artifact download does not expand {a,b} braces, and
+          # setvariable decodes %0A to a newline that the task splits into separate patterns.
+          Write-Host "UI test artifact patterns:"
+          $patterns | ForEach-Object { Write-Host "  $_" }
+          Write-Host "##vso[task.setvariable variable=UiTestArtifactPattern]$($patterns -join '%0A')"
+        displayName: Compute UI test artifact pattern
+        ${{ if eq(parameters.autoSelectUiTests, true) }}:
+          env:
+            AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
       - task: DownloadPipelineArtifact@2
         displayName: Download artifacts (slim)
         inputs:
@@ -129,7 +171,7 @@ jobs:
           targetPath: '$(Pipeline.Workspace)/$(TestArtifactsName)'
           patterns: |
             **/PowerToysSetup*.exe
-            **/tests/**
+            $(UiTestArtifactPattern)
   - ${{ else }}:
       # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
       # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The
