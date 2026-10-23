@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
@@ -216,6 +217,68 @@ public sealed class MainListPageCacheTests
         }
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CatalogChanges_RebuildNonEmptySearchFromFullCatalog(bool removeCommand)
+    {
+        var settingsService = Mock.Of<ISettingsService>(service => service.Settings == new SettingsModel());
+        var services = new Mock<IServiceProvider>();
+        services.Setup(service => service.GetService(typeof(TaskScheduler))).Returns(TaskScheduler.Default);
+        services.Setup(service => service.GetService(typeof(ISettingsService))).Returns(settingsService);
+        var appStateService = Mock.Of<IAppStateService>(service => service.State == new AppStateModel());
+        using var commandManager = new TopLevelCommandManager(services.Object, []);
+        var pageContext = new TestPageContext();
+        var first = CreateTopLevelCommand("first", "Alpha first", services.Object, pageContext, CommandProviderContext.Empty);
+        var second = CreateTopLevelCommand("second", "Alpha second", services.Object, pageContext, CommandProviderContext.Empty);
+        commandManager.TopLevelCommands.Add(first);
+        if (removeCommand)
+        {
+            commandManager.TopLevelCommands.Add(second);
+        }
+
+        using var page = new MainListPage(
+            commandManager,
+            new AliasManager(commandManager, settingsService),
+            new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions()),
+            settingsService,
+            appStateService,
+            new ListPage());
+        try
+        {
+            page.SearchText = "alpha";
+            Assert.IsTrue(page.GetItems().Contains(first));
+            Assert.AreEqual(removeCommand, page.GetItems().Contains(second));
+            var refreshed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            page.ItemsChanged += (_, _) =>
+            {
+                var items = page.GetItems();
+                if (items.Contains(first) && items.Contains(second) != removeCommand)
+                {
+                    refreshed.TrySetResult();
+                }
+            };
+
+            if (removeCommand)
+            {
+                commandManager.TopLevelCommands.Remove(second);
+            }
+            else
+            {
+                commandManager.TopLevelCommands.Add(second);
+            }
+
+            await refreshed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.AreEqual("alpha", page.SearchText);
+        }
+        finally
+        {
+            first.Cleanup();
+            second.Cleanup();
+            GC.KeepAlive(pageContext);
+        }
+    }
+
     private static TopLevelViewModel CreateTopLevelCommand(
         string id,
         string title,
@@ -235,7 +298,6 @@ public sealed class MainListPageCacheTests
             providerContext,
             new ProviderSettings(),
             services,
-            model,
             DefaultContextMenuFactory.Instance);
         return topLevel;
     }

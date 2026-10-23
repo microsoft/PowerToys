@@ -12,8 +12,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// context for each provider that still connects those top-level items to the
 /// CommandProvider they came from.
 /// </summary>
-public partial class TopLevelItemPageContext : IPageContext
+public partial class TopLevelItemPageContext : IPageContext, ICommandContextSource
 {
+    private readonly CommandProviderWrapper _provider;
+
     public TaskScheduler Scheduler { get; private set; }
 
     public ICommandProviderContext ProviderContext { get; private set; }
@@ -22,8 +24,14 @@ public partial class TopLevelItemPageContext : IPageContext
 
     ICommandProviderContext IPageContext.ProviderContext => ProviderContext;
 
+    // The wrapper creates this context before it creates its host, so read the host on demand.
+    AppExtensionHost? ICommandContextSource.ExtensionHost => _provider.ExtensionHost;
+
+    ICommandProviderContext? ICommandContextSource.ProviderContext => ProviderContext;
+
     internal TopLevelItemPageContext(CommandProviderWrapper provider, TaskScheduler scheduler)
     {
+        _provider = provider;
         ProviderContext = provider.GetProviderContext();
         Scheduler = scheduler;
     }

@@ -258,8 +258,16 @@ public sealed partial class MainListPage : DynamicListPage,
         InvalidateDefaultView();
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var currentSearch = SearchText;
-            _ = Task.Run(() => UpdateSearchTextCore(currentSearch, currentSearch, isUserInput: false, forceReset: true));
+            lock (_tlcManager.TopLevelCommands)
+            {
+                ClearResults();
+
+                // Reserve this generation before queuing work so a later keystroke cancels it.
+                var token = BeginQuery();
+                var currentSearch = SearchText;
+                _ = Task.Run(() => UpdateSearchTextCore(currentSearch, currentSearch, isUserInput: false, token));
+            }
+
             return;
         }
 
@@ -615,27 +623,29 @@ public sealed partial class MainListPage : DynamicListPage,
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
     }
 
-    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput, bool forceReset = false)
+    private CancellationToken BeginQuery()
     {
         CancellationTokenSource? previousCancellationTokenSource;
         CancellationToken token;
         lock (_queryGenerationLock)
         {
-            if (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal))
-            {
-                return;
-            }
-
             var nextCancellationTokenSource = new CancellationTokenSource();
             previousCancellationTokenSource = _cancellationTokenSource;
             _cancellationTokenSource = nextCancellationTokenSource;
             token = nextCancellationTokenSource.Token;
         }
 
-        var stopwatch = Stopwatch.StartNew();
-
         previousCancellationTokenSource?.Cancel();
         previousCancellationTokenSource?.Dispose();
+        return token;
+    }
+
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput) =>
+        UpdateSearchTextCore(oldSearch, newSearch, isUserInput, BeginQuery());
+
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput, CancellationToken token)
+    {
+        var stopwatch = Stopwatch.StartNew();
 
         var queryId = Guid.NewGuid().ToString("N");
         if (token.IsCancellationRequested)
@@ -648,8 +658,7 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             var aliases = _aliasManager;
 
-            if (token.IsCancellationRequested
-                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
+            if (token.IsCancellationRequested)
             {
                 return;
             }
@@ -693,8 +702,7 @@ public sealed partial class MainListPage : DynamicListPage,
         // ===== SNAPSHOT PHASE (under lock) =====
         lock (commands)
         {
-            if (token.IsCancellationRequested
-                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
+            if (token.IsCancellationRequested)
             {
                 return;
             }
@@ -777,8 +785,7 @@ public sealed partial class MainListPage : DynamicListPage,
             // A query that doesn't extend the old one, or a change in app inclusion, means we
             // can't re-use the previous results and have to rebuild from the full catalog. On an
             // extend we re-score only the previously matched subset.
-            var reset = forceReset
-                || !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
+            var reset = !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
                 || _filteredItemsIncludesApps != includeAppsSnapshot;
 
             var prevFilteredItems = reset ? null : _filteredItems;
@@ -928,8 +935,7 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             // A newer keystroke cancels this token before doing its own work, so a stale snapshot
             // can never overwrite a newer query's results.
-            if (token.IsCancellationRequested
-                || (forceReset && !string.Equals(newSearch, SearchText, StringComparison.Ordinal)))
+            if (token.IsCancellationRequested)
             {
                 return;
             }

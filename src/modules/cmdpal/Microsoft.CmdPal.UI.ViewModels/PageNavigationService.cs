@@ -13,14 +13,14 @@ internal sealed class PageNavigationService(
 {
     public AppExtensionHost ResolveHost(PerformCommandMessage message, PageViewModel? currentPage) =>
         message.FallbackContext?.ExtensionHost
-        ?? (message.Command.Unsafe as IFallbackInvocationContext)?.ExtensionHost
+        ?? (message.Command as FallbackInvocationViewModel)?.QueryContext.ExtensionHost
         ?? appHostService.GetHostForCommand(
             message.CommandContext,
             message.Context?.ExtensionHost ?? currentPage?.ExtensionHost);
 
     public ICommandProviderContext ResolveProviderContext(PerformCommandMessage message, PageViewModel? currentPage) =>
         message.FallbackContext?.ProviderContext
-        ?? (message.Command.Unsafe as IFallbackInvocationContext)?.ProviderContext
+        ?? (message.Command as FallbackInvocationViewModel)?.QueryContext.ProviderContext
         ?? appHostService.GetProviderContextForCommand(
             message.CommandContext,
             message.Context?.ProviderContext ?? currentPage?.ProviderContext);

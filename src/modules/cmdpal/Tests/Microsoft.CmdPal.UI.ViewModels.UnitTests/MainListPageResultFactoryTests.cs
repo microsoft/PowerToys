@@ -48,17 +48,6 @@ public partial class MainListPageResultFactoryTests
         public override string ToString() => Title;
     }
 
-    private sealed class MockInvocationContext(ICommand? resolvedCommand) : IFallbackInvocationContext
-    {
-        public AppExtensionHost ExtensionHost => null!;
-
-        public ICommandProviderContext ProviderContext => null!;
-
-        public object InvocationContext => this;
-
-        public ICommand? ResolveCommand(ICommand requestedCommand) => resolvedCommand;
-    }
-
     private sealed partial class DisposableFallbackResult : IFallbackCommandResult, IDisposable
     {
         public string Query => "query";
@@ -336,39 +325,6 @@ public partial class MainListPageResultFactoryTests
         var result = MainListPage.OrderFallbackResultSources(sources, ranks, static id => id);
 
         CollectionAssert.AreEqual(ranks, result.ToArray());
-    }
-
-    [TestMethod]
-    public void ResolveRequestedCommand_WithoutFallbackContextPreservesCommand()
-    {
-        var requestedCommand = new NoOpCommand();
-
-        var result = ShellViewModel.ResolveRequestedCommand(requestedCommand, null);
-
-        Assert.AreSame(requestedCommand, result);
-    }
-
-    [TestMethod]
-    public void ResolveRequestedCommand_UsesExplicitSelectedCommandFromContext()
-    {
-        var requestedCommand = new NoOpCommand();
-        var selectedCommand = new NoOpCommand();
-        var context = new MockInvocationContext(selectedCommand);
-
-        var result = ShellViewModel.ResolveRequestedCommand(requestedCommand, context);
-
-        Assert.AreSame(selectedCommand, result);
-    }
-
-    [TestMethod]
-    public void ResolveRequestedCommand_PreservesContextRejection()
-    {
-        var requestedCommand = new NoOpCommand();
-        var context = new MockInvocationContext(null);
-
-        var result = ShellViewModel.ResolveRequestedCommand(requestedCommand, context);
-
-        Assert.IsNull(result);
     }
 
     [TestMethod]

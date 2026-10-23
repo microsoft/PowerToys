@@ -454,6 +454,11 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
 
                 _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
                 _listViewModel.AttachFallbackContext(FallbackContext, snapshotLease);
+                if (pageContext is PageViewModel page)
+                {
+                    _listViewModel.DockRoute = page.DockRoute;
+                }
+
                 _listViewModel.InitializeProperties();
             }
         }

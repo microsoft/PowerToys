@@ -128,6 +128,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public ICommandProviderContext ProviderContext { get; protected set; }
 
+    public DockCommandRoute? DockRoute { get; internal set; }
+
     private IDisposable? _fallbackSnapshotLease;
 
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)

@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             this.InitializeComponent();
 
             // Re-apply the markdown theme workaround when the theme changes at runtime so the
-            // headings/links stay readable after the user switches between light and dark.
+            // headings, links and code stay readable after the user switches between light and dark.
             this.ActualThemeChanged += OnActualThemeChanged;
             this.Unloaded += OnUnloaded;
         }
@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             ApplyMarkdownThemeWorkaround();
 
-            // The MarkdownTextBlock captures heading/link brushes when it renders, so re-set the
+            // The MarkdownTextBlock captures brushes when it renders, so re-set the
             // text to force it to rebuild with the brushes for the now-active theme.
             ReleaseNotesMarkdown.Text = string.Empty;
             ReleaseNotesMarkdown.Text = _releaseNotesMarkdownText;
@@ -168,12 +168,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 LoadingProgressRing.Visibility = Visibility.Collapsed;
 
-                // Workaround: the MarkdownTextBlock control captures its heading foreground
+                // Workaround: the MarkdownTextBlock control captures its theme
                 // brushes from Application.Current.Resources when its theme config is created,
                 // which resolves against the OS (application) theme rather than the app's
                 // selected theme. When the OS is Light but PowerToys is Dark (or vice versa),
-                // headings render with an unreadable color. Force the control's theme and
-                // reapply correctly-themed heading brushes before the markdown is rendered.
+                // text can render with an unreadable color. Force the control's theme and
+                // reapply correctly-themed brushes before the markdown is rendered.
                 // TODO: Remove once the upstream control resolves brushes against the element theme.
                 // Upstream fix: https://github.com/CommunityToolkit/Labs-Windows/pull/785
                 ApplyMarkdownThemeWorkaround();
@@ -202,10 +202,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         }
 
         /// <summary>
-        /// Works around the <see cref="MarkdownTextBlock"/> control pinning its heading and link
+        /// Works around the <see cref="MarkdownTextBlock"/> control pinning its heading, link and code
         /// brushes to the OS (application) theme instead of the element's selected theme, which makes
-        /// titles/links unreadable when the OS and PowerToys themes differ. Pins the control's theme and
-        /// reassigns the heading/link brushes resolved for the selected theme before the markdown renders.
+        /// text unreadable when the OS and PowerToys themes differ. Pins the control's theme and
+        /// reassigns brushes resolved for the selected theme before the markdown renders.
         /// TODO: Remove once the upstream control resolves brushes against the element theme.
         /// Upstream fix: https://github.com/CommunityToolkit/Labs-Windows/pull/785
         /// </summary>
@@ -214,6 +214,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             var elementTheme = App.IsDarkTheme() ? ElementTheme.Dark : ElementTheme.Light;
             ReleaseNotesMarkdown.RequestedTheme = elementTheme;
             LinkBrushProvider.RequestedTheme = elementTheme;
+            CodeBrushProvider.RequestedTheme = elementTheme;
 
             if (Resources["ReleaseNotesMarkdownConfig"] is MarkdownConfig config
                 && config.Themes is MarkdownThemes themes)
@@ -229,6 +230,20 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     themes.H4Foreground = headingForeground;
                     themes.H5Foreground = headingForeground;
                     themes.H6Foreground = headingForeground;
+                    themes.InlineCodeForeground = headingForeground;
+                    themes.CodeBlockForeground = headingForeground;
+                }
+
+                if (CodeBrushProvider.Background is Brush codeBackground)
+                {
+                    themes.InlineCodeBackground = codeBackground;
+                    themes.CodeBlockBackground = codeBackground;
+                }
+
+                if (CodeBrushProvider.BorderBrush is Brush codeBorder)
+                {
+                    themes.InlineCodeBorderBrush = codeBorder;
+                    themes.CodeBlockBorderBrush = codeBorder;
                 }
 
                 // The link brush is likewise pinned to the OS theme's accent color, which can be

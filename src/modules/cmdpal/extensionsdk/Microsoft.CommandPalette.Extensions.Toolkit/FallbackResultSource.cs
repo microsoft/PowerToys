@@ -10,7 +10,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// <summary>
 /// Defines a fallback that returns a set of query results.
 /// </summary>
-public abstract partial class FallbackResultSource : FallbackCommandItem3, IFallbackHandler2
+public abstract partial class FallbackResultSource : FallbackCommandItem, IFallbackHandler2
 {
     protected FallbackResultSource(string displayTitle, string id)
         : base(displayTitle, id)

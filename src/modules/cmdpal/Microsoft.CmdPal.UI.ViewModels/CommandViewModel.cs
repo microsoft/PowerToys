@@ -13,7 +13,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public ExtensionObject<ICommand> Model { get; private set; } = new(null);
 
-    public bool IsSet => Model.Unsafe is not null;
+    public virtual bool IsSet => Model.Unsafe is not null;
 
     protected bool IsCleanedUp => _modelSubscription.IsClosed;
 
@@ -35,11 +35,11 @@ public partial class CommandViewModel : ExtensionObjectViewModel
     // [ObservableProperty]s, because PropChanged comes in off the UI thread,
     // and ObservableProperty is not smart enough to raise the PropertyChanged
     // on the UI thread.
-    public string Id { get; private set; } = string.Empty;
+    public string Id { get; protected set; } = string.Empty;
 
-    public string Name { get; private set; } = string.Empty;
+    public string Name { get; protected set; } = string.Empty;
 
-    public IconInfoViewModel Icon { get; private set; }
+    public IconInfoViewModel Icon { get; protected set; }
 
     // UNDER NO CIRCUMSTANCES MAY SOMEONE WRITE TO THIS DICTIONARY.
     // This is our copy of the data from the extension.
@@ -57,7 +57,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         Icon = new(null);
     }
 
-    public void FastInitializeProperties()
+    public virtual void FastInitializeProperties()
     {
         if (IsFastInitialized || IsCleanedUp)
         {

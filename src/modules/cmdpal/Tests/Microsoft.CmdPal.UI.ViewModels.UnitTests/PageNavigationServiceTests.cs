@@ -66,7 +66,7 @@ public sealed partial class PageNavigationServiceTests
         var fallbackContext = new FallbackQueryContext(host, provider, new object(), CancellationToken.None);
         var sourcePage = new PageViewModel(new Page(), TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
         sourcePage.InheritFallbackContext(fallbackContext);
-        var message = new PerformCommandMessage(new ExtensionObject<ICommand>(page), sourcePage);
+        var message = new PerformCommandMessage(new CommandViewModel(page, new(sourcePage)), sourcePage);
         var viewModel = new PageViewModel(page, TaskScheduler.Default, host, provider);
         var factory = new Mock<IPageViewModelFactoryService>(MockBehavior.Strict);
         factory.Setup(f => f.TryCreatePageViewModel(

@@ -293,20 +293,23 @@ or pass the query to a command at activation time.
 The host may apply `SuggestedQueryDelayMilliseconds`,
 `SuggestedMinQueryLength`, and user overrides before calling `UpdateQuery`.
 Only the newest pending query needs to run. Calls are serialized for each
-fallback. The host publishes an active fallback's updated properties only when
-the call returns and the query is still current.
+fallback.
 
-`UpdateQuery` cannot be cancelled and has no query ID. An active fallback must
-finish its query-dependent changes before returning. It must not start
-background work which later mutates query-dependent properties. The strict
-cancellation and stale-snapshot rules below apply to `Results` mode, not to
-legacy active implementations.
+`UpdateQuery` cannot be cancelled and has no query ID. An active fallback should
+finish its query-dependent changes before it returns. The host continues to
+apply property changes which the fallback raises later, as it does for v1
+fallbacks. The strict cancellation and stale-snapshot rules below apply to
+`Results` mode, not to active fallbacks.
 
-When a v2 active fallback is activated, the host calls `CreateCommand` with the
-query whose completed update produced the displayed item.
+When an active fallback which implements `IFallbackCommandItem3` is activated,
+the host calls `CreateCommand` with the most recent query whose `UpdateQuery`
+call has completed.
 
 Existing `IFallbackCommandItem` implementations are treated as active
-fallbacks. Their behavior does not change.
+fallbacks. Their behavior does not change. The host queries and displays all
+active fallbacks with the same rules. The only difference is activation: the
+host calls `CreateCommand` on an `IFallbackCommandItem3`, and uses
+`ICommandItem.Command` for a v1 fallback.
 
 ### Result sources
 
@@ -537,11 +540,33 @@ release the provider after all of those objects have been released.
 
 The toolkit should provide default implementations for:
 
-* `FallbackCommandItem3`, with `Active` as its compatibility default,
+* `FallbackCommandItem`, the existing fallback base class, which now
+  implements `IFallbackCommandItem3` with `Active` as its default mode,
 * `PassiveFallbackCommandItem`,
 * `FallbackResultSource`,
 * `FallbackQueryResult`, which owns an optional paging callback, and
 * `OptionalUInt32` conversions from nullable `uint` values.
+
+The toolkit has one fallback base class. It does not add a versioned class such
+as `FallbackCommandItem3`; the version of the API is not part of the toolkit's
+class names. `PassiveFallbackCommandItem` and `FallbackResultSource` derive from
+`FallbackCommandItem`. The defaults of `FallbackCommandItem` keep the v1
+behavior of an existing subclass:
+
+* `Mode` is `Active`, so the host continues to call `UpdateQuery`.
+* `Name` returns the name of the current `Command` until the extension sets it.
+  Setting `Name` also sets the name of the current toolkit `Command`.
+* `CreateCommand` returns the current `Command`.
+* `QueryHandler` is null, and the suggested query delay and minimum query length
+  have no value.
+
+Thus, when an extension recompiles against the new toolkit without other
+changes, a new host treats its fallbacks as v2 active fallbacks, and an older
+host treats them as v1 fallbacks, as before. An extension author must change
+code only when a subclass already declares a member with the same name as one of
+the new members, such as `Name` or `Mode`. The compiler reports warning CS0108
+or CS0114 for that member. Rename the member, or override the toolkit member if
+the two members have the same meaning.
 
 The passive helper should implement `UpdateQuery` as a no-op. Only the host
 should replace `{query}`. `FallbackResultSource` implements `UpdateQuery` as a

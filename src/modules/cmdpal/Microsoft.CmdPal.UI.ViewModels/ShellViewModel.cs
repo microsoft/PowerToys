@@ -95,7 +95,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private IPage? _rootPage;
+    private CommandViewModel _rootCommand;
 
     private bool _isNested;
     private bool _currentlyTransient;
@@ -118,6 +118,7 @@ public partial class ShellViewModel : ObservableObject,
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
+        _rootCommand = new(null, new(_currentPage));
 
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
@@ -136,10 +137,11 @@ public partial class ShellViewModel : ObservableObject,
         IsLoaded = true;
 
         // Now that the basics are set up, we can load the root page.
-        _rootPage = _rootPageService.GetRootPage();
+        _rootCommand = new(_rootPageService.GetRootPage(), new(CurrentPage));
+        _rootCommand.FastInitializeProperties();
 
         // This sends a message to us to load the root page view model.
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
 
         // Now that the root page is loaded, do any post-load work that the root page service needs to do.
         // This runs asynchronously, on a background thread.
@@ -201,18 +203,16 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(PerformCommandMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         PerformCommand(message);
     }
 
     private void PerformCommand(PerformCommandMessage message)
     {
-        var requestedCommand = message.Command.Unsafe;
-        if (requestedCommand is null)
-        {
-            return;
-        }
-
-        var commandResolver = requestedCommand as IFallbackInvocationContext;
         var fallbackContext = message.FallbackContext;
         if (fallbackContext?.CanInvoke == false)
         {
@@ -226,9 +226,8 @@ public partial class ShellViewModel : ObservableObject,
         }
 
         var invocationContext = fallbackContext?.InvocationContext
-            ?? commandResolver?.InvocationContext
+            ?? (message.Command as FallbackInvocationViewModel)?.QueryContext.InvocationContext
             ?? message.CommandContext;
-        var invocationSender = invocationContext;
 
         // Determine whether this is the root/home page navigation BEFORE
         // computing providerContext. When navigating back to the root page we
@@ -238,17 +237,28 @@ public partial class ShellViewModel : ObservableObject,
         // isMainPage must be evaluated here; if it were moved inside the
         // "if (command is IPage)" block below, it would be too late to affect
         // the providerContext that is passed to the new page view-model.
+        // Only commands sent from the palette's own root page are top-level. Commands from
+        // other surfaces (for example, a dock flyout page) must not update home-page history.
+        var sourcePage = message.Context?.Page;
+        var isTopLevel = CurrentPage.IsRootPage && (sourcePage is null || ReferenceEquals(sourcePage, CurrentPage));
+
         var host = _pageNavigation.ResolveHost(message, CurrentPage);
 
         try
         {
-            var command = ResolveRequestedCommand(requestedCommand, commandResolver);
+            var commandViewModel = ResolveRequestedCommand(message.Command);
+            if (commandViewModel is null)
+            {
+                return;
+            }
+
+            var command = commandViewModel.Model.Unsafe;
             if (command is null)
             {
                 return;
             }
 
-            var isMainPage = command == _rootPage;
+            var isMainPage = command == _rootCommand.Model.Unsafe;
             var providerContext = isMainPage
                 ? CommandProviderContext.Empty
                 : _pageNavigation.ResolveProviderContext(message, CurrentPage);
@@ -282,7 +292,7 @@ public partial class ShellViewModel : ObservableObject,
 
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
-                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
 
                 // Create/replace the navigation cancellation token.
                 // If one already exists, cancel and dispose it first.
@@ -317,8 +327,8 @@ public partial class ShellViewModel : ObservableObject,
                 if (host is not null)
                 {
                     var extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    var commandId = command.Id ?? "unknown";
-                    var commandName = command.Name ?? "unknown";
+                    var commandId = commandViewModel.Id;
+                    var commandName = commandViewModel.Name;
                     WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
@@ -351,9 +361,9 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
-                StartInvoke(message, invokable, host, invocationSender, invocationLease);
+                StartInvoke(message, invokable, host, invocationContext, commandViewModel, invocationLease);
 
                 // StartInvoke now owns the reference and releases it when the command
                 // ends, which can be long after this method returns. Clear the local so
@@ -362,7 +372,7 @@ public partial class ShellViewModel : ObservableObject,
             }
             else
             {
-                _rootPageService.OnPerformCommand(invocationContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
             }
         }
         catch (Exception ex)
@@ -377,20 +387,15 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    internal static ICommand? ResolveRequestedCommand(
-        ICommand requestedCommand,
-        IFallbackInvocationContext? fallbackContext)
-    {
-        return fallbackContext is null
-            ? requestedCommand
-            : fallbackContext.ResolveCommand(requestedCommand);
-    }
+    internal static CommandViewModel? ResolveRequestedCommand(CommandViewModel requestedCommand) =>
+        requestedCommand is FallbackInvocationViewModel fallback ? fallback.CreateCommand() : requestedCommand;
 
     private void StartInvoke(
         PerformCommandMessage message,
         IInvokableCommand invokable,
         AppExtensionHost? host,
         object? invocationSender,
+        CommandViewModel command,
         IDisposable? invocationLease)
     {
         // Takes ownership of invocationLease. Every path through this method either
@@ -409,7 +414,7 @@ public partial class ShellViewModel : ObservableObject,
                 WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, invocationLease);
+                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, command, invocationLease);
                 });
             }
         }
@@ -420,14 +425,14 @@ public partial class ShellViewModel : ObservableObject,
         IInvokableCommand invokable,
         AppExtensionHost? host,
         object? invocationSender,
+        CommandViewModel command,
         IDisposable? invocationLease)
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var command = message.Command.Unsafe;
-        var extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-        var commandId = command?.Id ?? "unknown";
-        var commandName = command?.Name ?? "unknown";
+        var extensionId = "builtin";
+        var commandId = command.Id;
+        var commandName = command.Name;
         var success = false;
 
         try
@@ -435,6 +440,8 @@ public partial class ShellViewModel : ObservableObject,
             ICommandResult? result;
             try
             {
+                extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
@@ -456,13 +463,9 @@ public partial class ShellViewModel : ObservableObject,
                 message.ResultHandler,
                 message.Context?.Page,
                 message.FallbackContext);
-
-            _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
-            _handleInvokeTask = null;
-
             // Telemetry: Track errors for session metrics
             WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
 
@@ -473,6 +476,10 @@ public partial class ShellViewModel : ObservableObject,
         finally
         {
             invocationLease?.Dispose();
+            lock (_invokeLock)
+            {
+                _handleInvokeTask = null;
+            }
         }
     }
 
@@ -624,7 +631,7 @@ public partial class ShellViewModel : ObservableObject,
     {
         _currentlyTransient = false;
         _rootPageService.GoHome();
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
     }
 
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
@@ -634,6 +641,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(HandleCommandResultMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         UnsafeHandleCommandResult(
             message.Result.Unsafe,
             message.OnBeforeShowConfirmation,
@@ -651,7 +663,7 @@ public partial class ShellViewModel : ObservableObject,
 
             // navigate back to the main page without animation
             GoHome(withAnimation: false, focusSearch: false);
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
         }
     }
 
