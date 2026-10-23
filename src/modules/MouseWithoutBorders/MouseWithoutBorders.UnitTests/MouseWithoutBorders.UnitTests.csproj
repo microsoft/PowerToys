@@ -25,6 +25,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\App\MouseWithoutBorders.csproj" />
+    <ProjectReference Include="..\Tests\ClipboardHelper.PipeTestHost\ClipboardHelper.PipeTestHost.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <Target Name="CopyClipboardPipeTestHost" AfterTargets="Build">
+    <ItemGroup>
+      <ClipboardPipeTestHostFiles Include="$(RepoRoot)$(Platform)\$(Configuration)\ClipboardHelper.PipeTestHost\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ClipboardPipeTestHostFiles)" DestinationFiles="@(ClipboardPipeTestHostFiles->'$(TargetDir)ClipboardHelper.PipeTestHost\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>
