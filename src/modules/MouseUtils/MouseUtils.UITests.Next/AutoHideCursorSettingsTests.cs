@@ -142,6 +142,26 @@ public class AutoHideCursorSettingsTests : UITestBase
         AssertIdleDelaySetting(60000);
     }
 
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("AutoHideCursor")]
+    public void IdleHiddenCursorReturnsAfterPositionChange()
+    {
+        OpenSettings();
+        SetToggleState(HideOnTypingToggleId, enabled: false);
+        SetToggleState(HideOnIdleToggleId, enabled: true);
+        Session.Find<NumberBox>(By.AccessibilityId(IdleDelayId), 5_000).SetValue(2);
+        AssertIdleDelaySetting(2000);
+        AssertWorkerState(expectedRunning: true);
+        WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+        var (x, y) = WindowHelper.GetScreenCenter();
+        MouseHelper.MoveTo(x, y);
+        MouseUtilsTestHelper.AssertSystemCursorVisible(expectedVisible: false);
+
+        MouseHelper.MoveTo(x + 100, y + 100);
+        MouseUtilsTestHelper.AssertSystemCursorVisible(expectedVisible: true);
+    }
+
     private void OpenSettings()
     {
         MouseUtilsTestHelper.NavigateToMouseUtilities(this);
@@ -256,13 +276,6 @@ public class AutoHideCursorSettingsTests : UITestBase
 
     [DllImport("user32.dll", EntryPoint = "SystemParametersInfoW", SetLastError = true)]
     private static extern bool SystemParametersInfo(int uiAction, int uiParam, IntPtr pvParam, int fWinIni);
-
-    [DllImport("user32.dll", EntryPoint = "LoadCursorW", SetLastError = true)]
-    private static extern IntPtr LoadCursor(IntPtr instance, IntPtr cursorName);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DrawIconEx(IntPtr dc, int x, int y, IntPtr icon, int width, int height, int step, IntPtr brush, int flags);
 
     [DllImport("user32.dll", EntryPoint = "PostThreadMessageW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
