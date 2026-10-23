@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -40,10 +41,10 @@ internal sealed partial class MainListPageSearchTelemetry : IDisposable
     // selection telemetry resolves rank, tier and query length from one coherent generation even
     // after a newer query has already published fresh scored fields.
     private IReadOnlyList<IListItem>? _lastViewItems;
-    private IReadOnlyList<RoScored<IListItem>>? _lastScoredGlobalFallbacks;
-    private RoScored<IListItem>[]? _lastViewFilteredItems;
-    private RoScored<IListItem>[]? _lastViewFilteredApps;
-    private IEnumerable<RoScored<IListItem>>? _lastViewFallbackItems;
+    private IReadOnlyList<RoScored<InProcObject<IListItem>>>? _lastScoredGlobalFallbacks;
+    private RoScored<InProcObject<IListItem>>[]? _lastViewFilteredItems;
+    private RoScored<InProcObject<IListItem>>[]? _lastViewFilteredApps;
+    private IEnumerable<RoScored<InProcObject<IListItem>>>? _lastViewFallbackItems;
     private int _lastViewQueryLength;
 
     public MainListPageSearchTelemetry()
@@ -68,10 +69,10 @@ internal sealed partial class MainListPageSearchTelemetry : IDisposable
     // the hot path. These are plain reference assignments - no extra allocation.
     public void CaptureSearchView(
         IReadOnlyList<IListItem> renderedItems,
-        RoScored<IListItem>[]? filteredItems,
-        RoScored<IListItem>[]? filteredApps,
-        IReadOnlyList<RoScored<IListItem>>? scoredGlobalFallbacks,
-        IEnumerable<RoScored<IListItem>>? fallbackItems,
+        RoScored<InProcObject<IListItem>>[]? filteredItems,
+        RoScored<InProcObject<IListItem>>[]? filteredApps,
+        IReadOnlyList<RoScored<InProcObject<IListItem>>>? scoredGlobalFallbacks,
+        IEnumerable<RoScored<InProcObject<IListItem>>>? fallbackItems,
         int queryLength)
     {
         _lastViewItems = renderedItems;
@@ -104,7 +105,7 @@ internal sealed partial class MainListPageSearchTelemetry : IDisposable
     // only non-identifying aggregates: the query LENGTH, the invoked item's visible rank, and its
     // ranker tier. Nothing is emitted for the default (no-search) view, or when the invoked item is
     // not among the last rendered search results.
-    public void ReportSelection(IListItem invoked, Separator resultsSeparator, Separator fallbacksSeparator)
+    public void ReportSelection(InProcObject<IListItem> invoked, Separator resultsSeparator, Separator fallbacksSeparator)
     {
         // Resolve everything from the last rendered search-view snapshot so the invoked item's rank,
         // tier, and the reported query length all come from one generation. If the last render was
@@ -115,15 +116,15 @@ internal sealed partial class MainListPageSearchTelemetry : IDisposable
             return;
         }
 
-        var index = ResolveVisibleIndex(lastView, invoked, resultsSeparator, fallbacksSeparator);
+        var index = ResolveVisibleIndex(lastView, invoked.Safe, resultsSeparator, fallbacksSeparator);
         if (index < 0)
         {
             return;
         }
 
-        var packed = (_lastViewFilteredItems ?? Enumerable.Empty<RoScored<IListItem>>())
-            .Concat(_lastViewFilteredApps ?? Enumerable.Empty<RoScored<IListItem>>())
-            .Concat(_lastScoredGlobalFallbacks ?? Enumerable.Empty<RoScored<IListItem>>());
+        var packed = (_lastViewFilteredItems ?? Enumerable.Empty<RoScored<InProcObject<IListItem>>>())
+            .Concat(_lastViewFilteredApps ?? Enumerable.Empty<RoScored<InProcObject<IListItem>>>())
+            .Concat(_lastScoredGlobalFallbacks ?? Enumerable.Empty<RoScored<InProcObject<IListItem>>>());
 
         var tier = ResolveSelectedTier(invoked, packed, _lastViewFallbackItems);
         if (tier == RankTier.None)
@@ -215,15 +216,15 @@ internal sealed partial class MainListPageSearchTelemetry : IDisposable
     // (non-packed) scores, so they are reported at the fallback floor. Returns None when the item
     // is not found in any source.
     internal static RankTier ResolveSelectedTier(
-        IListItem invoked,
-        IEnumerable<RoScored<IListItem>>? packedResults,
-        IEnumerable<RoScored<IListItem>>? fallbackResults)
+        InProcObject<IListItem> invoked,
+        IEnumerable<RoScored<InProcObject<IListItem>>>? packedResults,
+        IEnumerable<RoScored<InProcObject<IListItem>>>? fallbackResults)
     {
         if (packedResults is not null)
         {
             foreach (var scored in packedResults)
             {
-                if (ReferenceEquals(scored.Item, invoked))
+                if (ReferenceEquals(scored.Item.Safe, invoked.Safe))
                 {
                     return MainListRanker.TierOf(scored.Score);
                 }
@@ -234,7 +235,7 @@ internal sealed partial class MainListPageSearchTelemetry : IDisposable
         {
             foreach (var scored in fallbackResults)
             {
-                if (ReferenceEquals(scored.Item, invoked))
+                if (ReferenceEquals(scored.Item.Safe, invoked.Safe))
                 {
                     return RankTier.FallbackFloor;
                 }

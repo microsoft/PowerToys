@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -306,7 +307,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
             pinnedCommands,
             recentCommandIds,
             availableCommands,
-            AllAppsCommandProvider.Page,
+            new(AllAppsCommandProvider.Page),
             includeApps: includeRecentCommands && _topLevelCommandManager.IsProviderActive(AllAppsCommandProvider.WellKnownId),
             pinnedCommandLimit: configuration.PinnedCommandLimit,
             recentCommandLimit: configuration.RecentCommandLimit,
@@ -328,7 +329,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
                 var provider = _topLevelCommandManager.LookupProvider(TopLevelCommandResolver.GetProviderId(item.Item));
                 var canPin = !item.IsPinned &&
                     provider is not null &&
-                    (item.Item is TopLevelViewModel || provider.SupportsPinning);
+                    (item.Item.Safe is TopLevelViewModel || provider.SupportsPinning);
                 return QuickAccessShelfItem.CreateOrReuse(
                     existingItems,
                     item.Item,
@@ -417,7 +418,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
     private static bool IncludesRecentCommands(RecentCommandsPlacement recentCommandsPlacement) =>
         recentCommandsPlacement is RecentCommandsPlacement.BeforePinned or RecentCommandsPlacement.AfterPinned;
 
-    private void UpdateObservedItems(IEnumerable<IListItem> items)
+    private void UpdateObservedItems(IEnumerable<InProcObject<IListItem>> items)
     {
         lock (_observedItemsLock)
         {
@@ -434,7 +435,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 
             foreach (var item in items)
             {
-                if (item is INotifyPropChanged observable)
+                if (item.Safe is INotifyPropChanged observable)
                 {
                     observable.PropChanged += ObservedItem_PropChanged;
                     _observedItems.Add(observable);
