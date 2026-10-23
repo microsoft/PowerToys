@@ -101,6 +101,28 @@ public class HostCliTests
     }
 
     [TestMethod]
+    public void TemplateConfigurationFlowsFromStdinIntoDiscoverableMetadata()
+    {
+        var (exit, stdout, error) = RunHostWithInput(
+            """{"projectName":"My input files","description":"Configured from the wizard.","fileExtensions":"TXT; *.md"}""",
+            "template", "create", "file-info", "--configure", "--root", _root);
+        Assert.AreEqual(0, exit, error);
+        using var created = JsonDocument.Parse(stdout);
+        var entry = created.RootElement.GetProperty("entryPath").GetString()!;
+        var manifest = new ScriptSettingsStore().Get(_root, entry).Manifest;
+        Assert.AreEqual("My input files", manifest.Name);
+        CollectionAssert.AreEqual(new[] { ".txt", ".md" }, manifest.Input!.Extensions);
+        Assert.IsFalse(File.Exists(new ScriptSettingsStore().GetSettingsPath(_root, entry)));
+
+        var before = Directory.GetDirectories(_root);
+        (exit, _, error) = RunHostWithInput("""{"projectName":"Invalid","fileExtensions":"../txt"}""",
+            "template", "create", "file-info", "--configure", "--root", _root);
+        Assert.AreNotEqual(0, exit);
+        StringAssert.Contains(error, "extensions");
+        CollectionAssert.AreEquivalent(before, Directory.GetDirectories(_root));
+    }
+
+    [TestMethod]
     public void ConsumerDiscoveryFiltersAudienceAndIoWhileManagementSeesAll()
     {
         WriteDescriptor("py_upper.py", "\"function\":\"uppercase\",\"input\":\"text\",\"output\":\"text\",\"consumers\":[\"color-picker\"]");
@@ -114,11 +136,11 @@ public class HostCliTests
         Assert.AreEqual(1, exit);
         StringAssert.Contains(error, "--consumer");
         WriteDescriptor("wc.ps1", "\"input\":\"files\",\"extensions\":[\".md\"],\"consumers\":[\"color-picker\"]");
-        Assert.AreEqual(string.Empty, RunHostOk("shell-menu", "--root", _root, "--files", "test.md").Trim());
+        Assert.IsFalse(Ids(RunHostOk("list", "--json", "--consumer", "advanced-paste", "--root", _root)).Contains("wc"));
     }
 
     [TestMethod]
-    public void ScriptSettingsCliRegistersOnlyChosenFileAndKeepsDescriptorsUntouched()
+    public void ScriptSettingsCliOnlyAcceptsSecuritySettingsForDescriptorBackedScripts()
     {
         var entry = Path.Combine(_root, "chosen.ps1");
         Write("chosen.ps1", "Write-Output 'chosen'");
@@ -134,26 +156,23 @@ public class HostCliTests
             }
 
             Assert.AreEqual(5, ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root)).Count);
-            var (exit, output, error) = RunHostWithInput(
-                """{"overrides":{"title":"Personal action","x-powerscript":{"consumers":["keyboard-manager"]}}}""",
+            var (exit, _, _) = RunHostWithInput(
+                """{"mxc":null}""",
                 "script-settings", "save", "--entry", entry, "--root", _root);
-            Assert.AreEqual(0, exit, error);
-            using var saved = JsonDocument.Parse(output);
-            var id = saved.RootElement.GetProperty("effective").GetProperty("name").GetString()!;
-            var listed = ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root));
-            Assert.AreEqual(6, listed.Count);
-            Assert.AreEqual("Personal action", listed[id].GetProperty("name").GetString());
-            Assert.IsFalse(listed[id].GetProperty("trusted").GetBoolean());
+            Assert.AreNotEqual(0, exit);
+            Assert.IsFalse(File.Exists(settingsPath));
             Assert.IsFalse(File.Exists(entry + ".tool.json"));
-            Assert.AreEqual(5, ParseList(RunHostOk("list", "--json", "--include-disabled", "--consumer", "color-picker", "--root", _root)).Count);
 
             var authorEntry = Path.Combine(_root, "act_hello.ps1");
             var descriptor = File.ReadAllBytes(authorEntry + ".tool.json");
             try
             {
-                (exit, _, error) = RunHostWithInput("""{"overrides":{"title":"Personal title"}}""",
+                (exit, _, _) = RunHostWithInput("""{"overrides":{"title":"Personal title"}}""",
                     "script-settings", "save", "--entry", authorEntry, "--root", _root);
-                Assert.AreEqual(0, exit, error);
+                Assert.AreNotEqual(0, exit);
+                (exit, _, _) = RunHostWithInput("""{"mxc":null}""",
+                    "script-settings", "save", "--entry", authorEntry, "--root", _root);
+                Assert.AreEqual(0, exit);
                 CollectionAssert.AreEqual(descriptor, File.ReadAllBytes(authorEntry + ".tool.json"));
                 var reset = RunHostOk("script-settings", "reset", "--entry", authorEntry, "--root", _root);
                 using var resetDocument = JsonDocument.Parse(reset);
@@ -166,8 +185,6 @@ public class HostCliTests
 
             File.Delete(entry);
             Assert.AreEqual(5, ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root)).Count);
-            var includingUnconfigured = ParseList(RunHostOk("list", "--json", "--include-disabled", "--include-unconfigured", "--root", _root));
-            Assert.IsTrue(includingUnconfigured[id].GetProperty("configurationErrors").GetArrayLength() > 0);
             Assert.AreEqual(0, RunHost("script-settings", "forget", "--entry", entry, "--root", _root).Exit);
             Assert.IsFalse(File.Exists(settingsPath));
         }
@@ -274,11 +291,6 @@ public class HostCliTests
                 new[] { "act_hello", "md2html", "wc", "py_upper", "py_named", "py_files" },
                 Ids(json));
 
-            var (menuExit, menu) = RunHostInProcess("shell-menu", "--icons", "--root", _root, "--files", "example.md");
-            Assert.AreEqual(0, menuExit);
-            var menuIds = menu.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(line => line.Split('\t')[0]).ToArray();
-            CollectionAssert.AreEquivalent(pythonEnabled ? new[] { "wc", "py_files" } : new[] { "wc" }, menuIds);
         }
         finally
         {
@@ -287,7 +299,7 @@ public class HostCliTests
     }
 
     [TestMethod]
-    public void Catalogue_ProjectsResolvedIcons_ToJsonClientAndOptInShellFeed()
+    public void Catalogue_ProjectsResolvedIcons_ToJsonClient()
     {
         var icon = Path.Combine(_root, "script icon.ico");
         File.WriteAllBytes(icon, Convert.FromBase64String(
@@ -297,11 +309,6 @@ public class HostCliTests
         Assert.AreEqual(icon, ParseList(json)["wc"].GetProperty("iconPath").GetString());
         Assert.AreEqual(icon, PowerScriptInfo.ParseList(json).Single(script => script.Id == "wc").IconPath);
         Assert.IsNull(PowerScriptInfo.ParseList(json).Single(script => script.Id == "act_hello").IconPath);
-
-        var classic = RunHostOk("shell-menu", "--root", _root, "--files", "example.md").TrimEnd('\r', '\n');
-        var withIcons = RunHostOk("shell-menu", "--icons", "--root", _root, "--files", "example.md").TrimEnd('\r', '\n');
-        Assert.AreEqual("wc\twc", classic, "The existing two-column shell contract must remain unchanged.");
-        Assert.AreEqual($"wc\twc\t{icon}", withIcons);
 
         File.Delete(icon);
         json = RunHostOk("list", "--json", "--root", _root);

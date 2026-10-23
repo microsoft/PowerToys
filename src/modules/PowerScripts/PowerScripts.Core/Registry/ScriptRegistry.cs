@@ -120,7 +120,7 @@ public sealed class ScriptRegistry
         {
             foreach (var script in duplicate)
             {
-                var error = $"duplicate id '{script.Id}' - choose a unique action id in script settings.";
+                var error = $"duplicate id '{script.Id}' - choose a unique 'name' in the .tool.json descriptor.";
                 script.ConfigurationErrors = script.ConfigurationErrors.Append(error).ToList();
                 _errors.Add(new ScriptLoadError(script.EntryFullPath, error));
                 _scripts.Remove(script);

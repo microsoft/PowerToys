@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static readonly JsonSerializerOptions WriteJsonOptions = new() { WriteIndented = true };
 
-        private static readonly string[] CatalogueInputTokens = { string.Empty, "none", "files", "text" };
+        private static readonly string[] CatalogueIoTokens = { string.Empty, "none", "files", "text" };
 
         private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
         private readonly Func<string, int> _sendConfigMsg;
@@ -51,6 +51,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _mxcProbeGeneration;
         private int _scriptSortIndex;
         private int _scriptInputFilterIndex;
+        private int _scriptOutputFilterIndex;
+        private string _scriptSearchText = string.Empty;
 
         public PowerScriptsViewModel(ISettingsRepository<GeneralSettings> generalSettingsRepository, Func<string, int> sendConfigMsg)
         {
@@ -98,6 +100,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_scriptInputFilterIndex != value)
                 {
                     _scriptInputFilterIndex = value;
+                    RefreshCatalogue();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int ScriptOutputFilterIndex
+        {
+            get => _scriptOutputFilterIndex;
+            set
+            {
+                if (_scriptOutputFilterIndex != value)
+                {
+                    _scriptOutputFilterIndex = value;
+                    RefreshCatalogue();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string ScriptSearchText
+        {
+            get => _scriptSearchText;
+            set
+            {
+                if (_scriptSearchText != value)
+                {
+                    _scriptSearchText = value;
                     RefreshCatalogue();
                     OnPropertyChanged();
                 }
@@ -154,17 +184,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         _sendConfigMsg(outgoing.ToString());
                     }
 
-                    // Also persist the enabled state into the module's own config.json. The runner
-                    // rewrites settings.json on launch and drops entries for modules it does not host
-                    // (the prototype is not yet a registered runner module), so the config.json flag is
-                    // the authoritative, restart-durable gate that every surface (hotkey, context menu,
-                    // Advanced Paste) honors.
+                    // The shared Host uses this restart-durable gate independently of consumers.
                     SaveEnabledOverride(value);
-
-                    // Prototype: wire the Explorer right-click submenu directly from Settings, so
-                    // enabling/disabling PowerScripts installs/removes the context-menu entries even
-                    // without a dedicated runner module.
-                    RunHostShellCommand(value ? "shell-install" : "shell-uninstall");
 
                     OnPropertyChanged();
                 }
@@ -428,13 +449,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public static IReadOnlyList<PowerScriptListItem> FilterAndSortScripts(
             IEnumerable<PowerScriptListItem> scripts,
             int sortIndex,
-            int inputFilterIndex)
+            int inputFilterIndex,
+            int outputFilterIndex = 0,
+            string searchText = null)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(inputFilterIndex);
-            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(inputFilterIndex, CatalogueInputTokens.Length);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(inputFilterIndex, CatalogueIoTokens.Length);
+            ArgumentOutOfRangeException.ThrowIfNegative(outputFilterIndex);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(outputFilterIndex, CatalogueIoTokens.Length);
+            var search = searchText?.Trim();
             var filtered = scripts.Where(script =>
-                inputFilterIndex == 0 ||
-                string.Equals(script.Io?.Input ?? "none", CatalogueInputTokens[inputFilterIndex], StringComparison.OrdinalIgnoreCase));
+                (inputFilterIndex == 0 ||
+                    string.Equals(script.Io?.Input ?? "none", CatalogueIoTokens[inputFilterIndex], StringComparison.OrdinalIgnoreCase)) &&
+                (outputFilterIndex == 0 ||
+                    string.Equals(script.Io?.Output ?? "none", CatalogueIoTokens[outputFilterIndex], StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrEmpty(search) || script.Name?.Contains(search, StringComparison.CurrentCultureIgnoreCase) == true));
             var names = StringComparer.CurrentCultureIgnoreCase;
             var ordered = sortIndex switch
             {
@@ -450,7 +479,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void RefreshCatalogue(bool preserveEditorOrder = false)
         {
-            var visible = FilterAndSortScripts(Scripts, ScriptSortIndex, ScriptInputFilterIndex);
+            var visible = FilterAndSortScripts(Scripts, ScriptSortIndex, ScriptInputFilterIndex, ScriptOutputFilterIndex, ScriptSearchText);
             if (preserveEditorOrder)
             {
                 // Saving must not move focused editors or recycle another script's draft.
@@ -502,12 +531,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             SaveConfiguredScriptsRoot(folder.Trim());
             ScriptsFolder = ResolveScriptsFolder();
-
-            // Re-register the Explorer submenu so right-click entries reflect the new folder's scripts.
-            if (_isEnabled)
-            {
-                RunHostShellCommand("shell-install");
-            }
         }
 
         /// <summary>Clears the override so the default folder under %LOCALAPPDATA% is used again.</summary>
@@ -515,11 +538,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             SaveConfiguredScriptsRoot(null);
             ScriptsFolder = ResolveScriptsFolder();
-
-            if (_isEnabled)
-            {
-                RunHostShellCommand("shell-install");
-            }
         }
 
         private static string ModuleDirectory => Path.Combine(
@@ -1070,33 +1088,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             return string.Empty;
-        }
-
-        private static void RunHostShellCommand(string command)
-        {
-            string hostPath = ResolveHostPath();
-            if (string.IsNullOrEmpty(hostPath))
-            {
-                return;
-            }
-
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = hostPath,
-                    Arguments = command,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
-
-                using var process = Process.Start(psi);
-                process?.WaitForExit(5000);
-            }
-            catch (Exception)
-            {
-                // Prototype: best-effort context-menu (un)registration.
-            }
         }
 
         internal static IReadOnlyList<PowerScriptListItem> LoadScriptsFromHost()

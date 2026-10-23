@@ -422,9 +422,9 @@
                             </tkcontrols:SettingsExpander.ItemTemplate>
                         </tkcontrols:SettingsExpander>
                         <InfoBar
+                            x:Uid="AdvancedPaste_PowerScriptsEmpty"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.HasPowerScripts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                            Message="No PowerScripts found. Add scripts in the PowerScripts settings page."
                             Severity="Informational" />
                     </controls:SettingsGroup>
                 </StackPanel>

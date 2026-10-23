@@ -1,0 +1,15 @@
+{
+  "name": "file-info-template",
+  "title": "Describe selected files",
+  "description": "Return the name and size of each selected file without changing it.",
+  "inputSchema": { "type": "object", "properties": {}, "required": [] },
+  "x-powerscript": {
+    "runtime": "powershell",
+    "input": "files",
+    "output": "text",
+    "extensions": ["*"],
+    "minFiles": 1,
+    "maxFiles": 0,
+    "capabilities": ["fileRead"]
+  }
+}

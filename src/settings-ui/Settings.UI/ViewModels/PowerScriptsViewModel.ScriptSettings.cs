@@ -17,27 +17,53 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 
 public partial class PowerScriptsViewModel
 {
+    private static readonly string[] TemplateListArguments = { "template", "list" };
     private int _catalogueGeneration;
     private string _loadedScriptsRoot;
 
+    public async Task<IReadOnlyList<PowerScriptTemplateItem>> GetTemplatesAsync() =>
+        JsonSerializer.Deserialize<List<PowerScriptTemplateItem>>(
+            await InvokeHostAsync(TemplateListArguments), JsonOptions)
+        ?? throw new InvalidDataException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+
+    public async Task<string> CreateTemplateAsync(string id, string projectName, string description, string fileExtensions)
+    {
+        var request = new JsonObject
+        {
+            ["projectName"] = projectName,
+            ["description"] = description,
+            ["fileExtensions"] = fileExtensions,
+        };
+        var result = JsonNode.Parse(await InvokeHostAsync(new[] { "template", "create", id, "--configure", "--root", ScriptsFolder }, request));
+        var entry = result?["entryPath"]?.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(entry) || !File.Exists(entry) || !File.Exists(entry + ".tool.json"))
+        {
+            throw new InvalidDataException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+        }
+
+        await ReloadScriptsAsync();
+        return entry;
+    }
+
     public async Task<PowerScriptSettingsSnapshot> GetScriptSettingsAsync(string entryPath) =>
         DeserializeSnapshot(await InvokeScriptSettingsHostAsync("get", entryPath));
-
-    public async Task<PowerScriptSettingsSnapshot> SaveScriptSettingsAsync(string entryPath, JsonObject overrides)
-    {
-        var snapshot = DeserializeSnapshot(await InvokeScriptSettingsHostAsync(
-            "save",
-            entryPath,
-            new JsonObject { ["overrides"] = overrides.DeepClone() }));
-        await ReloadScriptsAsync(preserveEditorOrder: true);
-        return snapshot;
-    }
 
     public async Task ResetScriptSettingsAsync(string entryPath)
     {
         DeserializeSnapshot(await InvokeScriptSettingsHostAsync("reset", entryPath));
         await ReloadScriptsAsync(preserveEditorOrder: true);
         Scripts.FirstOrDefault(script => string.Equals(script.EntryFullPath, entryPath, StringComparison.OrdinalIgnoreCase))?.InvalidateSettings();
+    }
+
+    public sealed class PowerScriptTemplateItem
+    {
+        public string Id { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+        public bool AcceptsFiles { get; set; }
     }
 
     public async Task ForgetScriptSettingsAsync(string entryPath)

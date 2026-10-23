@@ -1,0 +1,206 @@
+﻿<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerScriptSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    AutomationProperties.AutomationId="PowerScriptsScriptSettingsPage"
+    AutomationProperties.LandmarkType="Main">
+    <local:NavigablePage.KeyboardAccelerators>
+        <KeyboardAccelerator
+            Key="Left"
+            Invoked="BackKeyboardAccelerator_Invoked"
+            Modifiers="Menu" />
+    </local:NavigablePage.KeyboardAccelerators>
+    <Grid RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Margin="20,0,20,0" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Uid="PowerScripts_SettingsBack"
+                AutomationProperties.AutomationId="PowerScriptsSettingsBack"
+                Click="BackButton_Click"
+                Style="{StaticResource SubtleButtonStyle}">
+                <SymbolIcon Symbol="Back" />
+            </Button>
+            <BreadcrumbBar
+                x:Name="ScriptBreadcrumb"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                AutomationProperties.AutomationId="PowerScriptsSettingsBreadcrumb"
+                ItemClicked="ScriptBreadcrumb_ItemClicked" />
+        </Grid>
+        <controls:SettingsPageControl x:Uid="PowerScripts_SettingsSubpage" Grid.Row="1">
+            <controls:SettingsPageControl.ModuleContent>
+                <StackPanel Spacing="16">
+                    <InfoBar
+                        x:Name="ScriptSettingsError"
+                        AutomationProperties.AutomationId="PowerScriptsSettingsPageError"
+                        IsClosable="False"
+                        Severity="Error" />
+                    <tkcontrols:SettingsCard x:Uid="PowerScripts_SettingsReviewIsolation" Visibility="{Binding IsMxcReviewRequired, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerScripts_SettingsConfigurationErrors"
+                        Description="{Binding ConfigurationErrorDisplay, Mode=OneWay}"
+                        Visibility="{Binding HasConfigurationErrors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <CommandBar x:Name="MetadataCommands" DefaultLabelPosition="Right">
+                        <AppBarButton
+                            x:Uid="PowerScripts_ShowInExplorer"
+                            AutomationProperties.AutomationId="PowerScriptsShowInExplorer"
+                            Click="OpenScriptFolderButton_Click"
+                            Icon="OpenLocal" />
+                        <AppBarButton
+                            x:Uid="PowerScripts_EditMetadata"
+                            AutomationProperties.AutomationId="PowerScriptsEditMetadata"
+                            Click="EditMetadataButton_Click"
+                            Icon="Edit" />
+                        <AppBarButton
+                            x:Uid="PowerScripts_EditScript"
+                            AutomationProperties.AutomationId="PowerScriptsEditScript"
+                            Click="EditScriptButton_Click"
+                            Icon="Edit" />
+                        <AppBarButton
+                            x:Uid="PowerScripts_RefreshMetadata"
+                            AutomationProperties.AutomationId="PowerScriptsRefreshMetadata"
+                            Click="RefreshMetadataButton_Click"
+                            Icon="Refresh" />
+                    </CommandBar>
+                    <InfoBar
+                        x:Name="EditorStatus"
+                        x:Uid="PowerScripts_EditorFallback"
+                        AutomationProperties.AutomationId="PowerScriptsEditorStatus"
+                        IsClosable="True"
+                        Severity="Informational" />
+                    <controls:SettingsGroup
+                        x:Uid="PowerScripts_ScriptIsolation"
+                        AutomationProperties.AutomationId="PowerScriptsScriptIsolation">
+                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPerScript">
+                            <Button
+                                x:Uid="PowerScripts_MxcConfigure"
+                                AutomationProperties.AutomationId="{Binding MxcPolicyEditorAutomationId, Mode=OneWay}"
+                                Click="ConfigureScriptMxcPolicyButton_Click" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEffective" ContentAlignment="Right">
+                            <TextBlock
+                                MaxWidth="360"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{Binding MxcEffectiveDisplay, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcRecommendation" ContentAlignment="Right">
+                            <StackPanel MaxWidth="360" Spacing="4">
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding RecommendedPoliciesDisplay, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="{Binding RecommendationSummary, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+                    </controls:SettingsGroup>
+                    <TextBlock x:Uid="PowerScripts_MetadataHelp" TextWrapping="Wrap" />
+                    <ItemsControl x:Name="MetadataSections">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:PowerScriptMetadataSection">
+                                <controls:SettingsGroup Margin="0,0,0,16" Header="{x:Bind Title, Mode=OneTime}">
+                                    <ItemsControl ItemsSource="{x:Bind Rows, Mode=OneTime}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:PowerScriptMetadataRow">
+                                                <tkcontrols:SettingsCard
+                                                    Margin="0,0,0,4"
+                                                    ContentAlignment="Right"
+                                                    Header="{x:Bind Label, Mode=OneTime}">
+                                                    <TextBlock
+                                                        MaxWidth="480"
+                                                        VerticalAlignment="Center"
+                                                        AutomationProperties.AutomationId="{x:Bind AutomationId, Mode=OneTime}"
+                                                        IsTextSelectionEnabled="True"
+                                                        Text="{x:Bind Value, Mode=OneTime}"
+                                                        TextWrapping="Wrap" />
+                                                </tkcontrols:SettingsCard>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </controls:SettingsGroup>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Expander
+                        x:Uid="PowerScripts_RawMetadata"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch">
+                        <TextBox
+                            x:Name="MetadataText"
+                            AcceptsReturn="True"
+                            AutomationProperties.AutomationId="PowerScriptsMetadata"
+                            IsReadOnly="True"
+                            TextWrapping="Wrap" />
+                    </Expander>
+                    <Expander
+                        x:Uid="PowerScripts_SettingsDetails"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        AutomationProperties.AutomationId="PowerScriptsSecurityDetails">
+                        <StackPanel Spacing="8">
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_SettingsConfiguration">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button
+                                        x:Uid="PowerScripts_SettingsResetAllButton"
+                                        AutomationProperties.AutomationId="{Binding ResetAutomationId, Mode=OneWay}"
+                                        Click="ResetScriptButton_Click" />
+                                    <Button
+                                        x:Uid="PowerScripts_SettingsForgetButton"
+                                        AutomationProperties.AutomationId="{Binding ForgetAutomationId, Mode=OneWay}"
+                                        Click="ForgetScriptButton_Click" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                x:Uid="PowerScripts_IconWarning"
+                                Description="{Binding IconWarning, Mode=OneWay}"
+                                Visibility="{Binding HasIconWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <tkcontrols:SettingsCard ContentAlignment="Right" Header="Trust">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding TrustDisplay, Mode=OneWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Header="Location" Visibility="{Binding HasFolderPath, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <StackPanel
+                                    HorizontalAlignment="Right"
+                                    Orientation="Horizontal"
+                                    Spacing="8">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{Binding FolderPath, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTipService.ToolTip="{Binding FolderPath, Mode=OneWay}" />
+                                    <Button
+                                        AutomationProperties.AutomationId="{Binding OpenFolderAutomationId, Mode=OneWay}"
+                                        AutomationProperties.Name="Open script folder"
+                                        Click="OpenScriptFolderButton_Click"
+                                        ToolTipService.ToolTip="Open script folder">
+                                        <FontIcon FontSize="16" Glyph="&#xE838;" />
+                                    </Button>
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </controls:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl>
+    </Grid>
+</local:NavigablePage>

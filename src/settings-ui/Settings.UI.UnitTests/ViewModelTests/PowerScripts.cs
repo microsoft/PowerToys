@@ -155,6 +155,39 @@ namespace ViewModelTests
             Assert.AreEqual(2, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 0).Count);
         }
 
+        [DataTestMethod]
+        [DataRow(0, "action,text,files")]
+        [DataRow(1, "files")]
+        [DataRow(2, "text")]
+        [DataRow(3, "action")]
+        public void CatalogueFiltersByOutput(int outputFilter, string expectedIds)
+        {
+            var visible = PowerScriptsViewModel.FilterAndSortScripts(CreateCatalogue(), 0, 0, outputFilter);
+            Assert.AreEqual(expectedIds, string.Join(",", visible.Select(script => script.Id)));
+        }
+
+        [TestMethod]
+        public void CatalogueCombinesNameInputAndOutputWithoutReplacingScriptInstances()
+        {
+            var scripts = CreateCatalogue();
+            var visible = PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 2, 1, "  eBR  ");
+            Assert.AreSame(scripts[1], visible.Single());
+            Assert.AreEqual(0, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 3, 1, "ebr").Count);
+            Assert.AreEqual(0, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 2, 3, "ebr").Count);
+            Assert.AreEqual(0, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 2, 1, "files").Count, "Search matches the display name, not the action ID.");
+        }
+
+        [TestMethod]
+        public void CatalogueSortsNameSearchResultsAndRecoversWhenSearchIsCleared()
+        {
+            var scripts = CreateCatalogue();
+            var visible = PowerScriptsViewModel.FilterAndSortScripts(scripts, 1, 0, 0, "a");
+            Assert.AreEqual("files,text,action", string.Join(",", visible.Select(script => script.Id)));
+            Assert.AreEqual(0, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 0, 3, "no matching name").Count);
+            Assert.AreSame(scripts[0], PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 0, 3, "   ").Single(), "Clearing search must preserve the active output filter.");
+            Assert.AreEqual(3, PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 0, 0, null).Count);
+        }
+
         private static PowerScriptListItem[] CreateCatalogue() => new[]
         {
             new PowerScriptListItem { Id = "action", Name = "alpha", Runtime = "PowerShell", Io = new PowerScriptIo { Input = "none", Output = "text" } },

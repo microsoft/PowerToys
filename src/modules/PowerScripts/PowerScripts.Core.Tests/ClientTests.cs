@@ -12,6 +12,22 @@ namespace PowerScripts.Core.Tests;
 [TestClass]
 public class ClientTests
 {
+    [TestMethod]
+    public async Task AsyncDiscoverySurfacesMissingHostInsteadOfAnEmptyCatalogue()
+    {
+        var client = new PowerScriptsClient(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "host.exe"));
+        await Assert.ThrowsExceptionAsync<FileNotFoundException>(() => client.ListAsync());
+    }
+
+    [TestMethod]
+    public async Task CancelledDiscoveryDoesNotStartTheHost()
+    {
+        var client = new PowerScriptsClient(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "host.exe"));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => client.ListAsync(cancellation.Token));
+    }
+
     private const string SampleJson = """
     [
       {
@@ -190,7 +206,7 @@ public class ClientTests
     }
 
     [TestMethod]
-    public void Client_FileDiscoveryAndTransform_UseTheSamePngContractAsExplorer()
+    public void Client_FileDiscoveryAndTransform_UseTheSharedPngContract()
     {
         var hostPath = PowerScriptsClient.ResolveHostPath();
         Assert.IsFalse(string.IsNullOrEmpty(hostPath), "The referenced Host project must be built.");
@@ -226,35 +242,6 @@ public class ClientTests
             Assert.AreEqual(0, client.ListForFiles(new[] { png, png }).Count);
             Assert.AreEqual(0, client.ListForFiles(new[] { Path.ChangeExtension(png, ".jpg") }).Count);
             Assert.AreEqual(0, client.ListForFiles(Array.Empty<string>()).Count);
-
-            foreach (var selection in new[] { new[] { png }, new[] { png, png }, new[] { Path.ChangeExtension(png, ".jpg") }, Array.Empty<string>() })
-            {
-                var startInfo = new ProcessStartInfo(hostPath!)
-                {
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                };
-                foreach (var argument in new[] { "shell-menu", "--root", root, "--files" }.Concat(selection))
-                {
-                    startInfo.ArgumentList.Add(argument);
-                }
-
-                using var process = Process.Start(startInfo)!;
-                var output = process.StandardOutput.ReadToEndAsync();
-                var error = process.StandardError.ReadToEndAsync();
-                if (!process.WaitForExit(15000))
-                {
-                    process.Kill(entireProcessTree: true);
-                    Assert.Fail("Explorer discovery timed out.");
-                }
-                Assert.AreEqual(0, process.ExitCode, error.GetAwaiter().GetResult());
-                var shellIds = output.GetAwaiter().GetResult()
-                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(line => line.Split('\t')[0]).ToArray();
-                CollectionAssert.AreEquivalent(client.ListForFiles(selection).Select(script => script.Id).ToArray(), shellIds);
-            }
 
             Assert.IsTrue(client.TrustApprove(id));
             var result = client.TransformAsync(

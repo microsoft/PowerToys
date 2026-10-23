@@ -96,8 +96,7 @@ Use structured process argument APIs where available. Do not concatenate untrust
 parameter values into a command line.
 
 Default `list` discovery (JSON or text, with or without I/O filters) omits Python scripts when
-Settings has Python execution disabled. Windows and WSL modes both enable Python discovery. The
-modern Explorer `shell-menu` feed applies the same runtime filter. Consumers should re-enumerate
+Settings has Python execution disabled. Windows and WSL modes both enable Python discovery. Consumers should re-enumerate
 when presenting available scripts rather than caching runtime availability indefinitely.
 
 Only configuration/catalogue UIs should opt into `--include-disabled`, so users can still inspect
@@ -106,9 +105,9 @@ enable a runtime or bypass execution checks.
 
 ## Script presentation and icons
 
-Scripts are registered from sibling `<script>.tool.json` descriptors or explicit **Add script**
-configuration in Settings. Bare helper files are never auto-discovered. Local per-source settings
-override author recommendations centrally, so every consumer sees the same effective contract.
+Scripts are discovered from sibling `<script>.tool.json` descriptors. Bare helper files are never
+actions, even if an old local registration exists. Descriptor metadata is authoritative; local
+per-source records are reserved for MXC security policy, never ordinary metadata overrides.
 Inline metadata and
 Python function-name inference are not supported. Built-in Python execution requires
 `x-powerscript.function`; its input/output contract comes from descriptor metadata, not the function
@@ -128,9 +127,9 @@ are rejected. A missing or invalid optional icon does not remove the script: the
 
 `list --json` and `PowerScriptInfo.IconPath` expose the validated absolute path. Display it when
 appropriate, use a runtime-specific default script icon when absent or undecodable, and do not execute or fetch icon
-metadata. Consumers must tolerate missing icon fields from older Hosts. Explorer requests
-`shell-menu --icons --files ...`, which adds a third tab-separated icon-path column; without
-`--icons`, the existing two-column id/name protocol is unchanged.
+metadata. Consumers must tolerate missing icon fields from older Hosts. The prototype Explorer
+handler and `shell-menu` feed have been removed. Any future file context menu belongs to
+File Explorer Add-ons and should consume the shared JSON/client discovery contract.
 
 ## Parameters
 

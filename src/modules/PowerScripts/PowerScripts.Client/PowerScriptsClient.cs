@@ -114,6 +114,52 @@ public sealed class PowerScriptsClient
     public IReadOnlyList<PowerScriptInfo> ListActions(string? consumer) =>
         List(consumer).Where(s => s.IsAction).ToList();
 
+    /// <summary>
+    /// Enumerates scripts asynchronously, surfacing Host failures instead of treating them as an empty catalogue.
+    /// Interactive consumers should supply a cancellation token with a bounded timeout.
+    /// </summary>
+    public async Task<IReadOnlyList<PowerScriptInfo>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!IsAvailable)
+        {
+            throw new FileNotFoundException("The PowerScripts Host is not installed.", _hostPath);
+        }
+
+        var psi = CreateStartInfo(redirectStdOut: true, redirectStdErr: true);
+        psi.ArgumentList.Add("list");
+        psi.ArgumentList.Add("--json");
+        AppendRoot(psi);
+        using var process = Process.Start(psi)
+            ?? throw new InvalidOperationException("Failed to start the PowerScripts Host.");
+        try
+        {
+            var stdout = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            var stderr = process.StandardError.ReadToEndAsync(cancellationToken);
+            await Task.WhenAll(stdout, stderr).ConfigureAwait(false);
+            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            if (process.ExitCode != PowerScriptsProtocol.ExitCode.Ok)
+            {
+                throw new InvalidOperationException($"PowerScripts discovery failed ({process.ExitCode}): {await stderr}");
+            }
+
+            var json = await stdout;
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new JsonException("PowerScripts discovery did not return a script list.");
+            }
+
+            return PowerScriptInfo.ParseList(json);
+        }
+        catch (OperationCanceledException)
+        {
+            TryKill(process);
+            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
+    }
+
     /// <summary>Enumerates the scripts that consume <paramref name="input"/> — e.g. <c>ListAccepting(PowerScriptIO.Text)</c> when text is on the clipboard.</summary>
     public IReadOnlyList<PowerScriptInfo> ListAccepting(PowerScriptIO input) => ListAccepting(input, consumer: null);
 

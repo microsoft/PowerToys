@@ -2,32 +2,27 @@
 
 > **Status: prototype.** Write a small script once and use it across compatible PowerToys modules.
 > This folder contains the **working core** (MCP-style descriptors, registry, shared executor
-> `PowerScripts.Host.exe`), the Explorer context-menu handler, and sample scripts. Integrations with
+> `PowerScripts.Host.exe`), starter templates, and sample scripts. Integrations with
 > other PowerToys modules are developed in separate branches.
 
-## Included integration (prototype)
+## Consumer-owned capabilities
 
-| Integration | What it does | How |
-| --- | --- | --- |
-| **Explorer right-click** | Supports file scripts (`input: files`) whose declared extensions and file-count limits match the complete selection. Selected files are supplied automatically; the menu does not collect additional scalar parameters. | The Windows 11 `IExplorerCommand` handler asks `Host.exe shell-menu --files <paths>` for matching scripts and invokes `Host.exe run <id> --files <paths>`. |
-
-### End-to-end demo
-
-1. Enumerate scripts with `PowerScripts.Host.exe list --json`.
-2. Right-click one or more matching files → PowerScripts → select a file script.
-3. The context-menu handler passes the complete selection to the shared Host. With filesystem
-   isolation enabled, generated files are retained in the per-run MXC workspace.
+PowerScripts alone adds no end-user action surface. It supplies script discovery, the metadata
+protocol and shared execution/security policy to compatible PowerToys modules. An Explorer
+integration belongs in **File Explorer Add-ons**, not PowerScripts. The earlier prototype shell
+handler and its `shell-menu`, `shell-install`, `shell-uninstall` verbs have been removed; no new
+File Explorer Add-ons integration is implemented here.
 
 
 ## The idea
 
-A **PowerScript** is a registered script file, normally paired with a sibling `.tool.json` descriptor.
+A **PowerScript** is a script file paired with a required sibling `.tool.json` descriptor.
 A script declares what it **consumes** and **produces** (its input → output); there is no separate "kind":
 
 - An **action** — input `none`, output `text` (its stdout). "Do something on my PC." Triggered by a
   Keyboard Manager hotkey or Command Palette command.
 - A **file script** — input `files`. "Do something with these files", of declared types. Surfaced in
-  the Explorer right-click menu. (A script is "file-driven" precisely when its resolved input is `files`.)
+  a compatible file consumer. (A script is "file-driven" precisely when its resolved input is `files`.)
 - A **data transform** — e.g. input `text` → output `files` containing an HTML document. Consumed by Advanced Paste.
 
 Every module is a thin consumer of one **registry** and invokes one **executor**. Modules discover
@@ -37,7 +32,7 @@ compatible scripts from the resolved I/O contract, optionally narrowed by discov
 
 ```
  Registry (PowerScripts.Core)  ──read──►  consumers:
-   scans <root> for *.tool.json             • Explorer context menu  (file actions)
+   scans <root> for *.tool.json             • File Explorer Add-ons (future file consumer)
    descriptors                              • Keyboard Manager editor (system actions)
                                             • LightSwitch / Command Palette / Advanced Paste
         ▲                                          │ invoke
@@ -62,6 +57,26 @@ compatible scripts from the resolved I/O contract, optionally narrowed by discov
 `%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts\<id>.ps1` (or `.py`)
 (override with the `POWERSCRIPTS_ROOT` env var or `--root`).
 
+## Temporary Debug test window
+
+**Open launcher** on the PowerScripts Settings page is available in **Debug builds only**.
+There is no global shortcut or standalone Runner module. This is a removable testing aid,
+not a planned product capability. Release builds do not contain the window or expose its route.
+
+Search scripts with **no primary input**, select one, and complete its typed parameter form when
+it has parameters. Scripts without parameters run immediately on selection. Execution still goes
+through the shared Host, including normal trust consent, runtime availability, parameter validation,
+and MXC policy. Results show literal text, completion without output, or a file list. **Copy text**
+copies text; **Save as** saves a separate copy of one result file; **Copy files** places real file
+items on the clipboard for pasting into Explorer. Returned files are never moved or deleted.
+Failures show the Host exit code and diagnostics; runs can be cancelled and have a 60-second limit.
+Escape cancels an active run or hides an idle launcher.
+
+This is a small removable consumer: `PowerScriptLauncherWindow` owns the three-screen
+UI and uses `PowerScripts.Client`, not the execution engine. It adds no service, execution protocol,
+or security-policy exception. Remove the Debug launcher route/window/card,
+and launcher model/tests to retire the experiment without changing script execution.
+
 ## Script packages
 
 For distribution, use a sibling descriptor: `example.py` plus `example.py.tool.json`, or
@@ -69,49 +84,63 @@ For distribution, use a sibling descriptor: `example.py` plus `example.py.tool.j
 root and one sub-folder below it, so a package can keep companion assets beside its script.
 Script bodies are not scanned for metadata or special function names.
 
-### Personal settings and explicit registration
+### Templates and authoritative metadata
 
-The descriptor supplies recommendations, not immutable settings. In PowerToys Settings, expand a
-script to view local metadata and optional consumer visibility. Values are read-only until their
-pencil button is selected, with a reset button beside each field. Nested **Parameters** and
-**Advanced settings** sections expose parameter contracts/defaults and launch settings. Parameter
-headers show their types, required state and defaults (including **Not set**); new parameters explicitly select their type. Choose
-**Save** to apply edits, or **Discard changes** to reload the last saved settings.
-Each field/group can be reset to its current recommendation, then saved. Reset removes its override rather than
-copying today's default, so future author updates remain effective. Neither saving nor resetting
-rewrites the script or its `.tool.json`.
+Settings offers **Greeting with parameters**, **Create a text file**, and **Describe selected files**
+starter templates. **Set up...** asks for a project name and description before creating anything.
+The file-input example also asks for allowed extensions: `.txt, .md`, `*.png`, or plain `txt`
+are accepted and normalized; leave blank for all types. Only relevant options are shown.
+**Create script** writes those choices directly into the descriptor and creates a new package
+folder derived from the project name with a unique action ID, editable `script.ps1`,
+`script.ps1.tool.json`, and a README explaining every example field and the safe MXC policy.
+It opens that package in Explorer. Creation never runs code, approves trust, or relaxes policy.
+All examples work with the default MXC restrictions enabled. The file-output example writes inside
+the isolated temporary workspace and returns explicit `file_paths`; the file-input example reads
+only consumer-supplied files staged by the Host. The Debug test window lists only no-input scripts.
 
-**Add script** explicitly registers a chosen `.ps1` or `.py` without creating a descriptor. Merely
-placing a bare file in the scripts folder does **not** register it; helper files stay helpers.
-Plain Python registrations default to a Windows Python launch recipe. Choose the built-in function
-runner explicitly when function-based transforms or the configured WSL Python runtime are needed.
-Scripts still require trust approval and an enabled runtime before execution.
+The CLI equivalents are `template list` and `template create <template-id> [--configure] [--root <dir>]`.
+With `--configure`, pass a JSON object on stdin, for example
+`{"projectName":"My file helper","description":"Describe my files.","fileExtensions":".txt, .md"}`.
+Omit `fileExtensions` for templates without file input. Without `--configure`, template defaults apply.
+To add a template, add its assets under `PowerScripts.Core/Templates/<id>/` and one catalogue
+entry in `ScriptTemplates.All`. Assets are embedded automatically; Settings builds its cards
+from the Host catalogue.
 
-Local records live below
-`%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\script-settings\<catalogue-path-hash>\<source-path-hash>.json`.
-Each versioned record holds sparse nested descriptor overrides and optional per-script MXC settings.
-Identity is associated with the normalized catalogue/source paths, not only the action ID. There is
-no growing metadata dictionary in `config.json`; unchanged descriptor-backed scripts need no record.
-Records are limited to 256 KiB, written using a cross-process lock and atomic replacement, and
-unknown record fields are preserved. Duplicate action IDs quarantine **all** colliding sources.
+The installed script list supports live, case-insensitive name search combined with input and output
+type filters. The selected sort order applies to the matching scripts.
 
-Removed registered files remain visible as unavailable, cannot execute, and can be forgotten without
-deleting the script or descriptor. Records are not silently expired: **Forget local settings**
-removes a registration/preferences, while a remaining descriptor still supplies an action.
-Changing paths creates a distinct local identity rather than inheriting another source's overrides.
+The `.tool.json` descriptor is authoritative for names, I/O, parameters, consumers and execution
+recipes. Script pages display resolved metadata as grouped, read-only property/value cards, including
+parameter types, defaults, choices and bounds. **Edit metadata** and **Edit script** request the Windows
+**Edit** action rather than the default Open action (which can execute scripts or launch a non-editor).
+If no Edit association exists, Settings opens Notepad and reports that fallback.
+**Show in File Explorer** opens the containing folder with the script selected. The visible
+**Execution isolation (MXC)** section above the metadata provides per-script policy configuration,
+effective isolation and the author's recommendations without expanding advanced details.
+After saving, select **Refresh** to reload the properties, catalogue, trust and MXC status. Metadata and
+script edits require trust review again. Raw JSON remains available in a collapsed advanced section.
+There are no normal metadata overrides, pencil/reset editors or descriptor-free registrations.
+Bare helper scripts are never actions. Descriptor-backed packages are discovered automatically;
+there is no manual registration step. Use a template for a new package. A pair such as
+`scripts\my-script\main.ps1` and `scripts\my-script\main.ps1.tool.json` is supported.
+Discovery scans the root and its immediate subfolders, not arbitrary nested folders.
 
-Effective local metadata participates in content-hash trust. New per-script MXC relaxations are
-bound to that content hash too; changing script, descriptor, or effective settings invalidates their
-risk acceptance. Legacy `config.json` `mxc.scripts` entries remain compatible until edited/reset.
-Editing metadata moves that script to a local policy record and requires renewed acceptance for
-any legacy weakening. Reset inherits global policy and never revives a legacy per-ID relaxation.
-These ordinary same-user JSON files are **not** a tamper-resistant security boundary.
+Separate records under
+`%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\script-settings\<catalogue-path-hash>\<source-path-hash>.json`
+are retained only for per-script MXC policy and content-bound risk acceptance. They use the
+existing atomic writes, size limits and source/root identity checks. Descriptor-backed scripts
+need no record unless their security settings differ. Trust and runtime gates remain unchanged.
 
-Configuration tools use `script-settings get|save|reset|forget --entry <path> [--root <dir>]`.
-`get` returns recommended/effective descriptors, sparse overrides, and validation errors without
-registering anything. `save` reads `{"overrides":{...},"mxc":{...}}` from UTF-8 stdin; omitted sections
-are preserved. Within overrides, null clears an author property, and omitting an override restores
-the recommendation. Explicit `"mxc":null` resets the per-script policy to global defaults.
+**Migration:** existing prototype metadata overrides are ignored, never copied into descriptors.
+Their stored values are retained until security settings are edited/reset so source files are
+not silently rewritten. Old bare registrations remain unavailable until a descriptor is supplied
+or the record is forgotten. Changed effective content invalidates content-bound policy acceptance.
+Reset inherits global policy without reviving legacy per-ID relaxations. Ordinary same-user
+JSON records are not a tamper-resistant boundary.
+
+`script-settings get|save|reset|forget --entry <path> [--root <dir>]` now saves only
+`{"mxc":{...}}`; `"mxc":null` restores global policy. Requests containing `overrides` are rejected.
+The read snapshot retains its old descriptor-shaped fields for compatibility, with empty overrides.
 
 **Migration:** inline metadata is no longer supported. Move identity, parameters, file filters,
 icons, and capabilities into `.tool.json`. Built-in Python scripts must declare
@@ -122,7 +151,7 @@ invalidate existing content-hash trust and require approval again.
 ### Consumer discovery
 
 Each consumer filters the resolved
-**input → output** contract it supports: Explorer selects file inputs, action consumers select
+**input → output** contract it supports: file consumers select file inputs, action consumers select
 `input: none`, and Advanced Paste selects compatible transform contracts.
 
 Optional `"x-powerscript": { "consumers": ["color-picker"] }` narrows normal discovery for
@@ -130,7 +159,7 @@ Optional `"x-powerscript": { "consumers": ["color-picker"] }` narrows normal dis
 targets stable, nonlocalized module IDs, matched case-insensitively. An explicit empty list is
 invalid. Omit `--consumer` for a complete management catalogue. This is a discovery preference,
 **not** execution authorization: direct invocation still uses the normal trust/MXC gate.
-The Explorer menu supplies `explorer`; other consumers supply their own ID.
+Each consuming module supplies its own ID.
 
 Inputs and outputs are only `none`, `text`, and `files`. Inline HTML is a string (`text`); images,
 audio, video, and HTML documents use `files` with extension and selection-count filters. A PNG
@@ -195,8 +224,7 @@ Consumer `list` discovery omits Python scripts while Python execution is disable
 Windows and WSL modes both enable discovery. The Settings catalogue uses
 `list --json --include-disabled --include-unconfigured` to keep all installed and unavailable
 registered scripts visible for configuration; these flags
-does not enable Python or bypass execution checks. The modern Explorer menu also omits disabled
-Python scripts.
+do not enable Python or bypass execution checks.
 
 ### Parameters (optional)
 
@@ -272,7 +300,7 @@ How the descriptor maps onto the manifest the rest of PowerScripts already uses:
 | `title` / `annotations.title` → else `name` | display name. |
 | `description` | description. |
 | each **scalar** `inputSchema` property | a typed parameter (`string`/`int`/`bool`; an `enum` → `choice`; `format: file-path` → `file`, with `default`, `minimum`/`maximum`). |
-| a primary **file input** property (`contentMediaType` without `format: file-path`) or `x-powerscript.extensions` | makes the script **file-driven** (input resolves to `files`) and sets the Explorer extension filter. |
+| a primary **file input** property (`contentMediaType` without `format: file-path`) or `x-powerscript.extensions` | makes the script **file-driven** (input resolves to `files`) and sets the consumer file filter. |
 | `x-execute` | an **optional** explicit launch recipe (see below). |
 | `x-powerscript.*` | runtime override, explicit `input`/`output`, Python `function` entry, capabilities, publisher/version/icon/source, and min/max files. |
 | `x-powerscript.mxc.recommendedPolicies` | Display-only author recommendation using `filesystem`, `network`, `ui`, and `leastPrivilege`; it never weakens the user's effective policy. Defaults to all four. |

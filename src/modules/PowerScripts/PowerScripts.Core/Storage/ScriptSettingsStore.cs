@@ -83,7 +83,7 @@ public sealed class ScriptSettingsStore
     }
 
     /// <summary>
-    /// Registers a bare script only on explicit save. Omitted request fields preserve that section;
+    /// Stores security settings only. Script metadata always comes from the sibling descriptor.
     /// null MXC explicitly inherits global policy rather than resurrecting an old id-only grant.
     /// </summary>
     public ScriptSettingsSnapshot Save(string scriptsRoot, string entryPath, JsonObject request)
@@ -93,33 +93,15 @@ public sealed class ScriptSettingsStore
         return WithWriteLock(root, entry, () =>
         {
             var record = ReadRecord(root, entry) ?? new ScriptSettingsRecord { ScriptsRoot = root, EntryPath = entry };
-            if (request.TryGetPropertyValue("overrides", out var overrides))
-            {
-                if (!record.HasMxcOverride)
-                {
-                    var previousId = BuildSnapshot(root, entry, record).Manifest.Id;
-                    var legacy = MxcSettings.Load(_moduleSettings).Scripts.GetValueOrDefault(previousId);
-                    record.HasMxcOverride = true;
-                    if (legacy is not null)
-                    {
-                        record.Mxc = legacy;
-                        record.Mxc.RiskAccepted = false;
-                    }
-                }
-
-                record.Overrides = overrides is JsonObject values
-                    ? (JsonObject)values.DeepClone()
-                    : throw new InvalidDataException("'overrides' must be an object; use {} to reset metadata.");
-            }
-
             foreach (var key in request.Select(pair => pair.Key))
             {
-                if (key is not ("overrides" or "mxc"))
+                if (key != "mxc")
                 {
-                    throw new InvalidDataException($"Unknown script settings section '{key}'.");
+                    throw new InvalidDataException($"Script settings only support 'mxc', not '{key}'. Edit the .tool.json descriptor to change metadata.");
                 }
             }
 
+            record.Overrides.Clear();
             var snapshot = BuildSnapshot(root, entry, record);
             if (snapshot.ValidationErrors.Count > 0)
             {
@@ -209,12 +191,15 @@ public sealed class ScriptSettingsStore
     {
         var descriptorPath = entry + ToolDescriptorParser.DescriptorSuffix;
         var hasDescriptor = File.Exists(descriptorPath);
-        var recommended = hasDescriptor ? ReadObject(descriptorPath) : CreateBareDefaults(entry);
+        var recommended = hasDescriptor ? ReadObject(descriptorPath) : new JsonObject();
         NormalizePropertyNames(recommended, typeof(ToolDescriptor));
         NormalizeRecommendations(recommended, entry);
         var effective = (JsonObject)recommended.DeepClone();
-        Merge(effective, record?.Overrides ?? new JsonObject());
         var errors = new List<string>();
+        if (!hasDescriptor)
+        {
+            errors.Add("A sibling .tool.json descriptor is required. Create a script from a template or add its descriptor.");
+        }
         PowerScriptManifest? manifest = null;
         try
         {
@@ -250,11 +235,6 @@ public sealed class ScriptSettingsStore
         manifest.HasDescriptor = hasDescriptor;
         manifest.HasLocalSettings = record is not null;
         manifest.HasLocalMxcSettings = record?.HasMxcOverride == true;
-        if (!hasDescriptor || record?.Overrides.Count > 0)
-        {
-            manifest.LocalSettingsFingerprint = Canonicalize(effective).ToJsonString();
-        }
-
         errors.AddRange(ManifestValidator.Validate(manifest, Path.GetFileName(manifest.FolderPath)));
         var (input, output) = ScriptIo.Resolve(manifest);
         manifest.InputFormat = input;
@@ -277,34 +257,12 @@ public sealed class ScriptSettingsStore
             HasLocalSettings = record is not null,
             Recommended = recommended,
             Effective = effective,
-            Overrides = (JsonObject)(record?.Overrides.DeepClone() ?? new JsonObject()),
+            Overrides = new JsonObject(),
             ValidationErrors = errors,
             HasLocalMxcSettings = manifest.HasLocalMxcSettings,
             Mxc = mxc,
             Manifest = manifest,
         };
-    }
-
-    private static JsonObject CreateBareDefaults(string entry)
-    {
-        var extension = Path.GetExtension(entry);
-        var python = extension.Equals(".py", StringComparison.OrdinalIgnoreCase);
-        if (!python && !extension.Equals(".ps1", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidDataException("Choose a .ps1 or .py script, or provide its .tool.json descriptor.");
-        }
-
-        var result = new JsonObject
-        {
-            ["name"] = "local-" + Hash(entry)[..32],
-            ["title"] = Path.GetFileNameWithoutExtension(entry),
-        };
-        if (python)
-        {
-            result["x-execute"] = new JsonObject { ["command"] = new JsonArray("python", Path.GetFileName(entry)) };
-        }
-
-        return result;
     }
 
     private static void NormalizeRecommendations(JsonObject descriptor, string entry)
@@ -494,39 +452,6 @@ public sealed class ScriptSettingsStore
 
     private static string? ReadString(JsonNode? node) =>
         node is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
-
-    private static void Merge(JsonObject target, JsonObject overrides)
-    {
-        foreach (var (key, value) in overrides)
-        {
-            if (value is null)
-            {
-                target.Remove(key);
-            }
-            else if (value is JsonObject nested)
-            {
-                if (target[key] is not JsonObject existing)
-                {
-                    existing = new JsonObject();
-                    target[key] = existing;
-                }
-
-                Merge(existing, nested);
-            }
-            else
-            {
-                target[key] = value?.DeepClone();
-            }
-        }
-    }
-
-    private static JsonNode Canonicalize(JsonNode? node) => node switch
-    {
-        JsonObject obj => new JsonObject(obj.OrderBy(pair => pair.Key, StringComparer.Ordinal)
-            .Select(pair => new KeyValuePair<string, JsonNode?>(pair.Key, pair.Value is null ? null : Canonicalize(pair.Value)))),
-        JsonArray array => new JsonArray(array.Select(item => item is null ? null : Canonicalize(item)).ToArray()),
-        _ => node!.DeepClone(),
-    };
 
     private static void ValidateMxc(MxcScriptOverride? mxc)
     {

@@ -11,6 +11,7 @@ using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
 using PowerScripts.Core.Security;
 using PowerScripts.Core.Storage;
+using PowerScripts.Core.Templates;
 
 namespace PowerScripts.Host;
 
@@ -42,6 +43,44 @@ internal static class Program
             var (positional, options) = ParseArgs(args.Skip(1).ToArray());
             var root = options.TryGetValue("root", out var r) ? r.FirstOrDefault() : null;
 
+            if (args[0].Equals("template", StringComparison.OrdinalIgnoreCase))
+            {
+                if (positional.Count == 1 && positional[0] == "list" && options.Count == 0)
+                {
+                    Console.WriteLine(JsonSerializer.Serialize(ScriptTemplates.All, ScriptSettingsStore.JsonOptions));
+                    return 0;
+                }
+
+                if (positional.Count == 2 && positional[0] == "create" &&
+                    options.Keys.All(key => key.Equals("root", StringComparison.OrdinalIgnoreCase) || key.Equals("configure", StringComparison.OrdinalIgnoreCase)) &&
+                    (!options.TryGetValue("root", out var roots) || roots.Count == 1) &&
+                    (!options.TryGetValue("configure", out var configure) || configure.Count == 0))
+                {
+                    ScriptTemplateOptions? templateOptions = null;
+                    if (options.ContainsKey("configure"))
+                    {
+                        using var reader = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8);
+                        var buffer = new char[16_385];
+                        var length = reader.ReadBlock(buffer, 0, buffer.Length);
+                        if (length == buffer.Length)
+                        {
+                            throw new InvalidDataException("Template configuration is too large.");
+                        }
+
+                        templateOptions = JsonSerializer.Deserialize<ScriptTemplateOptions>(new string(buffer, 0, length), ScriptSettingsStore.JsonOptions)
+                            ?? throw new InvalidDataException("Template configuration must be a JSON object.");
+                    }
+
+                    Console.WriteLine(JsonSerializer.Serialize(
+                        ScriptTemplates.Create(positional[1], PowerScriptsPaths.ResolveScriptsRoot(root), templateOptions),
+                        ScriptSettingsStore.JsonOptions));
+                    return 0;
+                }
+
+                Console.Error.WriteLine("template: use list or create <template-id> [--configure] [--root <dir>]. --configure reads projectName, description and fileExtensions from JSON on stdin.");
+                return 1;
+            }
+
             if (args[0].Equals("script-settings", StringComparison.OrdinalIgnoreCase))
             {
                 return ScriptSettingsCommands.Run(PowerScriptsPaths.ResolveScriptsRoot(root), positional, options);
@@ -57,9 +96,6 @@ internal static class Program
                 "transform" => RunTransform(registry, positional, options),
                 "mxc-support" => RunMxcSupport(options.ContainsKey("json")),
                 "trust" => RunTrust(registry, positional),
-                "shell-menu" => RunShellMenu(registry, options),
-                "shell-install" => ShellRegistration.Install(registry, Environment.ProcessPath ?? "PowerScripts.Host.exe"),
-                "shell-uninstall" => ShellRegistration.Uninstall(registry),
                 "-h" or "--help" or "help" => PrintUsage(),
                 _ => Unknown(args[0]),
             };
@@ -608,30 +644,6 @@ internal static class Program
     /// Windows 11 modern context-menu handler (IExplorerCommand) consumes to build its submenu; a
     /// line-based format keeps the native handler free of a JSON parser.
     /// </summary>
-    private static int RunShellMenu(ScriptRegistry registry, IReadOnlyDictionary<string, List<string>> options)
-    {
-        // When the module is disabled, emit nothing so the Explorer submenu has no items to show.
-        if (!ModuleState.IsPowerScriptsEnabled())
-        {
-            return 0;
-        }
-
-        var files = options.TryGetValue("files", out var f) ? f : new List<string>();
-        if (files.Count == 0)
-        {
-            return 0;
-        }
-
-        foreach (var script in FilterEnabledRuntimes(registry.FileScriptsForSelection(files)).Where(script => script.IsDiscoverableBy("explorer")))
-        {
-            var name = script.Name.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
-            var row = $"{script.Id}\t{name}";
-            Console.WriteLine(options.ContainsKey("icons") ? $"{row}\t{script.IconPath}" : row);
-        }
-
-        return 0;
-    }
-
     private static IEnumerable<PowerScriptManifest> FilterEnabledRuntimes(IEnumerable<PowerScriptManifest> scripts)
     {
         var pythonEnabled = PythonSettings.Load().Mode != PythonRuntimeMode.Disabled;
@@ -730,10 +742,9 @@ internal static class Program
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  script-settings get|save|reset|forget --entry <script-path> [--root <dir>]");
-        Console.WriteLine("       Author defaults and local overrides; save reads a JSON object from stdin. Discovery never registers helper files.");
-        Console.WriteLine("  shell-menu [--icons] --files <f1> <f2> ... (tab-separated id/name, optional icon path)");
-        Console.WriteLine("  shell-install [--root <dir>]        (register the Explorer right-click submenu)");
-        Console.WriteLine("  shell-uninstall [--root <dir>]      (remove the Explorer right-click submenu)");
+        Console.WriteLine("  template list | template create <template-id> [--configure] [--root <dir>]");
+        Console.WriteLine("       --configure reads {\"projectName\":\"My script\",\"description\":\"...\",\"fileExtensions\":\".txt, .md\"} from stdin. Extensions apply only to file-input templates.");
+        Console.WriteLine("       Per-script MXC security settings only; save reads {\"mxc\":{...}} from stdin. Metadata belongs in .tool.json.");
         return 0;
     }
 }
