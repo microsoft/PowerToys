@@ -1,8 +1,7 @@
 #include "pch.h"
 
 #include "NtdllExtensions.h"
-#include <thread>
-#include <atomic>
+#include <optional>
 
 #define STATUS_INFO_LENGTH_MISMATCH ((LONG)0xC0000004)
 
@@ -10,6 +9,11 @@
 
 namespace
 {
+    using NtQueryObjectFn = NTSTATUS(NTAPI*)(HANDLE, ULONG, PVOID, ULONG, PULONG);
+
+    constexpr ULONG ObjectNameInformationClass = 1;
+    constexpr size_t ObjectInfoBufferSize = 64 * 1024;
+
     std::wstring_view unicode_to_view(UNICODE_STRING unicode_str)
     {
         return std::wstring_view(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
@@ -20,6 +24,214 @@ namespace
         return std::wstring(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
     }
 
+    NtQueryObjectFn get_nt_query_object()
+    {
+        static const auto nt_query_object = reinterpret_cast<NtQueryObjectFn>(GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtQueryObject"));
+        return nt_query_object;
+    }
+
+    std::wstring file_handle_to_kernel_name(NtQueryObjectFn nt_query_object, HANDLE file_handle, std::vector<BYTE>& buffer)
+    {
+        if (!nt_query_object || GetFileType(file_handle) != FILE_TYPE_DISK)
+        {
+            return L"";
+        }
+
+        ULONG return_length;
+        auto status = nt_query_object(file_handle, ObjectNameInformationClass, buffer.data(), static_cast<ULONG>(buffer.size()), &return_length);
+        if (NT_SUCCESS(status))
+        {
+            auto object_name_info = reinterpret_cast<UNICODE_STRING*>(buffer.data());
+            return unicode_to_str(*object_name_info);
+        }
+
+        return L"";
+    }
+
+    // GetFileType and NtQueryObject(ObjectNameInformation) can block indefinitely on some file
+    // handles (e.g. synchronous handles with pending I/O), and neither accepts a timeout. They run
+    // on a helper thread that is abandoned, never terminated, when it stalls.
+    //
+    // An abandoned thread can wake up at any time, including during process shutdown, so it must
+    // not use the CRT or anything owned by the caller. It only touches this heap block, which it
+    // shares with the caller through a reference count, and calls into kernel32/ntdll.
+    struct NameQueryBlock
+    {
+        enum State : LONG
+        {
+            Busy,
+            Done,
+            Abandoned,
+        };
+
+        volatile LONG ref_count;
+        volatile LONG state;
+        HANDLE request_event;
+        HANDLE done_event;
+        NtQueryObjectFn nt_query_object;
+
+        // Request. A null file_handle asks the thread to exit.
+        HANDLE file_handle;
+
+        // Response.
+        bool is_disk;
+        NTSTATUS status;
+        alignas(UNICODE_STRING) BYTE buffer[ObjectInfoBufferSize];
+    };
+
+    void release_name_query_block(NameQueryBlock* block) noexcept
+    {
+        if (InterlockedDecrement(&block->ref_count) == 0)
+        {
+            if (block->request_event)
+            {
+                CloseHandle(block->request_event);
+            }
+
+            if (block->done_event)
+            {
+                CloseHandle(block->done_event);
+            }
+
+            HeapFree(GetProcessHeap(), 0, block);
+        }
+    }
+
+    DWORD WINAPI name_query_thread(LPVOID parameter) noexcept
+    {
+        auto block = static_cast<NameQueryBlock*>(parameter);
+
+        for (;;)
+        {
+            WaitForSingleObject(block->request_event, INFINITE);
+            if (!block->file_handle)
+            {
+                break;
+            }
+
+            block->is_disk = GetFileType(block->file_handle) == FILE_TYPE_DISK;
+            if (block->is_disk)
+            {
+                ULONG return_length;
+                block->status = block->nt_query_object(block->file_handle, ObjectNameInformationClass, block->buffer, sizeof(block->buffer), &return_length);
+            }
+
+            if (InterlockedCompareExchange(&block->state, NameQueryBlock::Done, NameQueryBlock::Busy) == NameQueryBlock::Abandoned)
+            {
+                // The caller gave up on this request and transferred ownership of the handle to us.
+                CloseHandle(block->file_handle);
+                break;
+            }
+
+            SetEvent(block->done_event);
+        }
+
+        release_name_query_block(block);
+        return 0;
+    }
+
+    class FileNameQueryWorker
+    {
+    public:
+        FileNameQueryWorker(NtQueryObjectFn nt_query_object, std::chrono::milliseconds stall_timeout) :
+            m_nt_query_object(nt_query_object),
+            m_timeout(static_cast<DWORD>(stall_timeout.count()))
+        {
+        }
+
+        FileNameQueryWorker(const FileNameQueryWorker&) = delete;
+        FileNameQueryWorker& operator=(const FileNameQueryWorker&) = delete;
+
+        ~FileNameQueryWorker()
+        {
+            if (m_block)
+            {
+                m_block->file_handle = nullptr;
+                SetEvent(m_block->request_event);
+                release_name_query_block(m_block);
+            }
+        }
+
+        // Takes ownership of file_handle. Returns the kernel name of the file (empty if it is not
+        // a disk file or the name can't be queried), or nullopt if the query stalled.
+        std::optional<std::wstring> query(HANDLE file_handle)
+        {
+            if (!ensure_thread())
+            {
+                CloseHandle(file_handle);
+                return std::nullopt;
+            }
+
+            m_block->file_handle = file_handle;
+            m_block->is_disk = false;
+            InterlockedExchange(&m_block->state, NameQueryBlock::Busy);
+            SetEvent(m_block->request_event);
+
+            if (WaitForSingleObject(m_block->done_event, m_timeout) != WAIT_OBJECT_0)
+            {
+                if (InterlockedCompareExchange(&m_block->state, NameQueryBlock::Abandoned, NameQueryBlock::Busy) == NameQueryBlock::Busy)
+                {
+                    release_name_query_block(m_block);
+                    m_block = nullptr;
+                    return std::nullopt;
+                }
+
+                // The query completed just as we timed out; consume its completion signal.
+                WaitForSingleObject(m_block->done_event, INFINITE);
+            }
+
+            std::wstring result;
+            if (m_block->is_disk && NT_SUCCESS(m_block->status))
+            {
+                result = unicode_to_str(*reinterpret_cast<UNICODE_STRING*>(m_block->buffer));
+            }
+
+            CloseHandle(file_handle);
+            return result;
+        }
+
+    private:
+        bool ensure_thread() noexcept
+        {
+            if (m_block)
+            {
+                return true;
+            }
+
+            auto block = static_cast<NameQueryBlock*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(NameQueryBlock)));
+            if (!block)
+            {
+                return false;
+            }
+
+            block->ref_count = 1;
+            block->nt_query_object = m_nt_query_object;
+            block->request_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+            block->done_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+            if (!block->request_event || !block->done_event)
+            {
+                release_name_query_block(block);
+                return false;
+            }
+
+            InterlockedIncrement(&block->ref_count);
+            HANDLE thread = CreateThread(nullptr, 0, name_query_thread, block, 0, nullptr);
+            if (!thread)
+            {
+                InterlockedDecrement(&block->ref_count);
+                release_name_query_block(block);
+                return false;
+            }
+
+            CloseHandle(thread);
+            m_block = block;
+            return true;
+        }
+
+        NtQueryObjectFn m_nt_query_object;
+        DWORD m_timeout;
+        NameQueryBlock* m_block = nullptr;
+    };
     // Implementation adapted from src/common/utils
     inline std::wstring get_module_name(HANDLE process, HMODULE mod)
     {
@@ -115,28 +327,10 @@ NtdllExtensions::MemoryLoopResult NtdllExtensions::NtQuerySystemInformationMemor
     return result;
 }
 
-std::wstring NtdllExtensions::file_handle_to_kernel_name(HANDLE file_handle, std::vector<BYTE>& buffer)
-{
-    if (GetFileType(file_handle) != FILE_TYPE_DISK)
-    {
-        return L"";
-    }
-
-    ULONG return_length;
-    auto status = NtQueryObject(file_handle, ObjectNameInformation, buffer.data(), static_cast<ULONG>(buffer.size()), &return_length);
-    if (NT_SUCCESS(status))
-    {
-        auto object_name_info = reinterpret_cast<UNICODE_STRING*>(buffer.data());
-        return unicode_to_str(*object_name_info);
-    }
-
-    return L"";
-}
-
 std::wstring NtdllExtensions::file_handle_to_kernel_name(HANDLE file_handle)
 {
     std::vector<BYTE> buffer(DefaultResultBufferSize);
-    return file_handle_to_kernel_name(file_handle, buffer);
+    return ::file_handle_to_kernel_name(get_nt_query_object(), file_handle, buffer);
 }
 
 std::wstring NtdllExtensions::path_to_kernel_name(LPCWSTR path)
@@ -152,7 +346,7 @@ std::wstring NtdllExtensions::path_to_kernel_name(LPCWSTR path)
     return kernel_name;
 }
 
-std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
+std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles(std::chrono::milliseconds stall_timeout) noexcept
 {
     auto get_info_result = NtQuerySystemInformationMemoryLoop(SystemExtendedHandleInformation);
     if (NT_ERROR(get_info_result.status))
@@ -165,118 +359,64 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
     std::map<ULONG_PTR, HANDLE> pid_to_handle;
     std::vector<HandleInfo> result;
 
-    std::vector<BYTE> object_info_buffer(DefaultResultBufferSize);
-
-    std::atomic<ULONG> i = 0;
-    std::atomic<ULONG_PTR> handle_count = info_ptr->NumberOfHandles;
-    std::atomic<HANDLE> process_handle = NULL;
-    std::atomic<HANDLE> handle_copy = NULL;
-    ULONG previous_i;
-
-
-    while (i < handle_count)
+    try
     {
-        previous_i = i;
+        std::vector<BYTE> object_info_buffer(DefaultResultBufferSize);
+        FileNameQueryWorker name_query_worker(get_nt_query_object(), stall_timeout);
 
-        // The system calls we use in this block were reported to hang on some machines.
-        // We need to offload the cycle to another thread and keep track of progress to terminate and resume when needed.
-        // Unfortunately, there are no alternative APIs to what we're using that accept timeouts. (NtQueryObject and GetFileType)
-        auto offload_function = std::thread([&] {
-            for (; i < handle_count; i++)
-            {
-                process_handle = NULL;
-                handle_copy = NULL;
-
-                auto handle_info = info_ptr->Handles + i;
-                auto pid = handle_info->UniqueProcessId;
-
-                auto iter = pid_to_handle.find(pid);
-                if (iter != pid_to_handle.end())
-                {
-                    process_handle = iter->second;
-                }
-                else
-                {
-                    process_handle = OpenProcess(PROCESS_DUP_HANDLE, FALSE, static_cast<DWORD>(pid));
-                    if (!process_handle)
-                    {
-                        continue;
-                    }
-                    pid_to_handle[pid] = process_handle;
-                }
-
-                // According to this:
-                // https://stackoverflow.com/questions/46384048/enumerate-handles
-                // NtQueryObject could hang
-
-                // TODO uncomment and investigate
-                // if (handle_info->GrantedAccess == 0x0012019f) {
-                //     continue;
-                // }
-
-                HANDLE local_handle_copy;
-                auto dh_result = DuplicateHandle(process_handle, reinterpret_cast<HANDLE>(handle_info->HandleValue), GetCurrentProcess(), &local_handle_copy, 0, 0, DUPLICATE_SAME_ACCESS);
-                if (dh_result == 0)
-                {
-                    // Ignore this handle.
-                    continue;
-                }
-                handle_copy = local_handle_copy;
-
-                ULONG return_length;
-                auto status = NtQueryObject(handle_copy, ObjectTypeInformation, object_info_buffer.data(), static_cast<ULONG>(object_info_buffer.size()), &return_length);
-                if (NT_ERROR(status))
-                {
-                    // Ignore this handle.
-                    CloseHandle(handle_copy);
-                    handle_copy = NULL;
-                    continue;
-                }
-
-                auto object_type_info = reinterpret_cast<OBJECT_TYPE_INFORMATION*>(object_info_buffer.data());
-                auto type_name = unicode_to_str(object_type_info->Name);
-
-                std::wstring file_name;
-
-                if (type_name == L"File")
-                {
-                    file_name = file_handle_to_kernel_name(handle_copy, object_info_buffer);
-                    result.push_back(HandleInfo{ pid, handle_info->HandleValue, type_name, file_name });
-                }
-
-                CloseHandle(handle_copy);
-                handle_copy = NULL;
-            }
-        });
-
-        offload_function.detach();
-        do
+        for (ULONG_PTR i = 0; i < info_ptr->NumberOfHandles; i++)
         {
-            Sleep(200); // Timeout in milliseconds for detecting that the system hang on getting information for a handle.
-            if (i >= handle_count)
+            auto handle_info = info_ptr->Handles + i;
+            auto pid = handle_info->UniqueProcessId;
+
+            HANDLE process_handle;
+            if (auto iter = pid_to_handle.find(pid); iter != pid_to_handle.end())
             {
-                // We're done.
-                break;
+                process_handle = iter->second;
             }
-
-            if (previous_i >= i)
+            else
             {
-                // The thread looks like it's hanging on some handle. Let's kill it and resume.
-
-                // HACK: This is unsafe and may leak something, but looks like there's no way to properly clean up a thread when it's hanging on a system call.
-                TerminateThread(offload_function.native_handle(), 1);
-
-                // Close Handles that might be lingering.
-                if (handle_copy!=NULL)
+                process_handle = OpenProcess(PROCESS_DUP_HANDLE, FALSE, static_cast<DWORD>(pid));
+                if (!process_handle)
                 {
-                    CloseHandle(handle_copy);
+                    continue;
                 }
-                i++;
-                break;
+                pid_to_handle[pid] = process_handle;
             }
-            previous_i = i;
-        } while (1);
 
+            HANDLE handle_copy;
+            if (!DuplicateHandle(process_handle, reinterpret_cast<HANDLE>(handle_info->HandleValue), GetCurrentProcess(), &handle_copy, 0, 0, DUPLICATE_SAME_ACCESS))
+            {
+                // Ignore this handle.
+                continue;
+            }
+
+            ULONG return_length;
+            auto status = NtQueryObject(handle_copy, ObjectTypeInformation, object_info_buffer.data(), static_cast<ULONG>(object_info_buffer.size()), &return_length);
+            if (NT_ERROR(status))
+            {
+                // Ignore this handle.
+                CloseHandle(handle_copy);
+                continue;
+            }
+
+            auto object_type_info = reinterpret_cast<OBJECT_TYPE_INFORMATION*>(object_info_buffer.data());
+            auto type_name = unicode_to_str(object_type_info->Name);
+            if (type_name != L"File")
+            {
+                CloseHandle(handle_copy);
+                continue;
+            }
+
+            // A stalled query is skipped.
+            if (auto file_name = name_query_worker.query(handle_copy))
+            {
+                result.push_back(HandleInfo{ pid, handle_info->HandleValue, std::move(type_name), std::move(*file_name) });
+            }
+        }
+    }
+    catch (...)
+    {
     }
 
     for (auto [pid, handle] : pid_to_handle)
@@ -286,7 +426,6 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 
     return result;
 }
-
 // Returns the list of all processes.
 // On failure, returns an empty vector.
 
