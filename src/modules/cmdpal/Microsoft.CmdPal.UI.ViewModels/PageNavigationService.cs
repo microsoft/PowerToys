@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 
@@ -11,6 +12,37 @@ internal sealed class PageNavigationService(
     IPageViewModelFactoryService pageFactory,
     IAppHostService appHostService)
 {
+    /// <summary>
+    /// Resolves the sender and prepares a page on a worker. Callers own publication and
+    /// must discard the returned page if navigation was canceled while RPC was in progress.
+    /// </summary>
+    public Task<PageViewModel?> PreparePageAsync(
+        PerformCommandMessage message,
+        PageViewModel? currentPage,
+        bool nested,
+        CancellationToken cancellationToken,
+        ICommandProviderContext? providerContext = null)
+    {
+        return Task.Run(
+            () =>
+            {
+                try
+                {
+                    var host = ResolveHost(message, currentPage);
+                    var provider = providerContext ?? ResolveProviderContext(message, currentPage);
+                    return message.Command.Model.Unsafe is IPage page
+                        ? TryPreparePage(page, nested, host, provider, message.ListPageOptions)
+                        : null;
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError("Failed to prepare a page.", ex);
+                    throw;
+                }
+            },
+            cancellationToken);
+    }
+
     public AppExtensionHost ResolveHost(PerformCommandMessage message, PageViewModel? currentPage) =>
         appHostService.GetHostForCommand(
             message.CommandContext,

@@ -79,11 +79,62 @@ public partial class ShellViewModelTests
         return viewModel;
     }
 
+    [TestMethod]
+    [DataRow("Kind")]
+    [DataRow("Args")]
+    [DataRow("Handler")]
+    public async Task HandleCommandResult_RpcFailureIsHandledOffTheUiThread(string failingMember)
+    {
+        using var shell = CreateViewModel();
+        var uiContext = SynchronizationContext.Current;
+        var source = shell.CurrentPage;
+        var errorShown = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var accessedOnUiThread = false;
+        var result = new Mock<ICommandResult>();
+        var exception = Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!;
+        result.SetupGet(model => model.Kind).Returns(() =>
+        {
+            accessedOnUiThread |= ReferenceEquals(uiContext, SynchronizationContext.Current);
+            return failingMember == "Kind" ? throw exception : CommandResultKind.ShowToast;
+        });
+        result.SetupGet(model => model.Args).Throws(exception);
+        source.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(PageViewModel.ErrorMessage))
+            {
+                errorShown.TrySetResult();
+            }
+        };
+
+        shell.Receive(new HandleCommandResultMessage(new(result.Object), source)
+        {
+            ResultHandler = failingMember == "Handler" ? _ => throw exception : null,
+        });
+        await errorShown.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.IsFalse(accessedOnUiThread);
+        Assert.IsFalse(string.IsNullOrEmpty(source.ErrorMessage));
+
+        var handled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        shell.Receive(new HandleCommandResultMessage(new(CommandResult.KeepOpen()), source)
+        {
+            ResultHandler = _ =>
+            {
+                handled.TrySetResult();
+                return true;
+            },
+        });
+        await handled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
     [TestInitialize]
     public void TestInitialize()
     {
         _originalSynchronizationContext = SynchronizationContext.Current;
         SynchronizationContext.SetSynchronizationContext(new ImmediateSynchronizationContext());
+
+        // Initialize the host's UI-bound logging context before worker-thread invocations.
+        _ = AppExtensionHost.LogMessages;
     }
 
     [TestCleanup]
@@ -96,7 +147,7 @@ public partial class ShellViewModelTests
     [DataRow("none")]
     [DataRow("page")]
     [DataRow("owner")]
-    public void PerformCommand_ResolvesHostAndProviderFromSourceContext(string source)
+    public async Task PerformCommand_ResolvesHostAndProviderFromSourceContext(string source)
     {
         var currentHost = new TestAppExtensionHost();
         var sourceHost = new TestAppExtensionHost();
@@ -125,7 +176,7 @@ public partial class ShellViewModelTests
         var expectedHost = source == "none" ? shell.CurrentPage.ExtensionHost : sourceHost;
         var expectedProvider = source == "none" ? shell.CurrentPage.ProviderContext : sourceProvider;
 
-        shell.Receive(message);
+        await shell.PerformCommandAsync(message);
 
         appHostService.Verify(service => service.GetHostForCommand(item, expectedHost), Times.Once);
         appHostService.Verify(service => service.GetProviderContextForCommand(item, expectedProvider), Times.Once);
@@ -203,6 +254,74 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    [DataRow("cancel")]
+    [DataRow("replace")]
+    [DataRow("dispose")]
+    public async Task PerformCommand_AbandonedPreparationDoesNotPublishPage(string action)
+    {
+        var host = new TestAppExtensionHost();
+        var model = new TestPage();
+        var abandoned = new TestPageViewModel(model, host);
+        var replacement = new TestPageViewModel(new TestPage(), host);
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var release = new ManualResetEventSlim();
+        var factory = new Mock<IPageViewModelFactoryService>();
+        factory.Setup(f => f.TryCreatePageViewModel(model, true, host, CommandProviderContext.Empty))
+            .Returns(() =>
+            {
+                Assert.AreSame(TaskScheduler.Default, TaskScheduler.Current);
+                started.TrySetResult();
+                if (!release.Wait(TimeSpan.FromSeconds(10)))
+                {
+                    throw new TimeoutException("Preparation was not released.");
+                }
+
+                return abandoned;
+            });
+        factory.Setup(f => f.TryCreatePageViewModel(It.Is<IPage>(page => !ReferenceEquals(page, model)), true, host, CommandProviderContext.Empty))
+            .Returns(replacement);
+        using var shell = new ShellViewModel(
+            TaskScheduler.Default, Mock.Of<IRootPageService>(), factory.Object, CreateAppHostService(host).Object);
+        var original = shell.CurrentPage;
+        var publications = new List<PageViewModel>();
+        shell.PageNavigationRequested += (_, args) => publications.Add(args.Page);
+        var navigation = shell.PerformCommandAsync(new(CreateCommandViewModel(model, original)));
+
+        try
+        {
+            await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            switch (action)
+            {
+                case "cancel":
+                    shell.CancelNavigation();
+                    break;
+                case "replace":
+                    await shell.PerformCommandAsync(new(CreateCommandViewModel(new TestPage(), original)));
+                    break;
+                case "dispose":
+                    shell.Dispose();
+                    break;
+            }
+
+            release.Set();
+            await navigation.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.IsTrue(abandoned.IsDiscarded);
+            Assert.AreSame(action == "replace" ? replacement : original, shell.CurrentPage);
+            CollectionAssert.DoesNotContain(publications, abandoned);
+            await abandoned.CleanupAsync();
+        }
+        finally
+        {
+            release.Set();
+            await navigation.WaitAsync(TimeSpan.FromSeconds(5));
+            await abandoned.CleanupAsync();
+            await replacement.CleanupAsync();
+            WeakReferenceMessenger.Default.UnregisterAll(shell);
+        }
+    }
+
+    [TestMethod]
     public async Task PerformCommand_RootPage_DoesNotInheritProviderContext()
     {
         var host = new TestAppExtensionHost();
@@ -218,15 +337,24 @@ public partial class ShellViewModelTests
         factory.Setup(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty)).Returns(rootViewModel);
         using var shell = new ShellViewModel(TaskScheduler.Default, rootPageService.Object, factory.Object, appHostService.Object);
         var nestedPage = new PageViewModel(new Page(), TaskScheduler.Default, host, provider);
+        var rootLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        shell.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(ShellViewModel.CurrentPage) && ReferenceEquals(shell.CurrentPage, rootViewModel))
+            {
+                rootLoaded.TrySetResult();
+            }
+        };
 
         try
         {
             await shell.LoadAsync();
+            await rootLoaded.Task.WaitAsync(TimeSpan.FromSeconds(5));
             shell.CurrentPage = nestedPage;
             factory.Invocations.Clear();
             appHostService.Invocations.Clear();
 
-            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(rootPage, nestedPage), nestedPage));
+            await shell.PerformCommandAsync(new PerformCommandMessage(CreateCommandViewModel(rootPage, nestedPage), nestedPage));
 
             Assert.AreSame(rootViewModel, shell.CurrentPage);
             Assert.IsTrue(rootViewModel.IsRootPage);
@@ -246,7 +374,7 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
-    public void PerformCommand_InvalidListPageOptions_DoesNotMutateNavigationState()
+    public async Task PerformCommand_InvalidListPageOptions_DoesNotMutateNavigationState()
     {
         var host = new TestAppExtensionHost();
         var rootPageService = new Mock<IRootPageService>();
@@ -278,7 +406,7 @@ public partial class ShellViewModelTests
                 TransientPage = true,
             };
 
-            shell.Receive(message);
+            await shell.PerformCommandAsync(message);
 
             Assert.IsFalse(shell.IsNested);
             Assert.IsFalse(shell.IsTransient);
@@ -306,7 +434,7 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
-    public void PerformCommand_TransientNestedPage_HidesBackButton()
+    public async Task PerformCommand_TransientNestedPage_HidesBackButton()
     {
         var host = new TestAppExtensionHost();
         var rootPageService = new Mock<IRootPageService>();
@@ -338,7 +466,7 @@ public partial class ShellViewModelTests
                 TransientPage = true,
             };
 
-            shell.Receive(message);
+            await shell.PerformCommandAsync(message);
 
             Assert.IsTrue(shell.IsTransient);
             Assert.IsFalse(shell.IsNested);
@@ -577,7 +705,7 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
-    public void PerformCommand_PageNavigationUsesCachedMetadata()
+    public async Task PerformCommand_PageNavigationUsesCachedMetadata()
     {
         using var shell = CreateViewModel();
         var page = new Mock<IPage>();
@@ -592,7 +720,7 @@ public partial class ShellViewModelTests
         var navigated = false;
         shell.PageNavigationRequested += (_, _) => navigated = true;
 
-        shell.Receive(new PerformCommandMessage(cachedCommand));
+        await shell.PerformCommandAsync(new PerformCommandMessage(cachedCommand));
 
         Assert.IsTrue(navigated);
         Assert.IsNotNull(telemetry);
@@ -603,7 +731,7 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
-    public void PerformCommand_CountsPageNavigationOnceAfterShowingWindow()
+    public async Task PerformCommand_CountsPageNavigationOnceAfterShowingWindow()
     {
         var viewModel = CreateViewModel();
         var recipient = new object();
@@ -615,7 +743,7 @@ public partial class ShellViewModelTests
 
         try
         {
-            viewModel.Receive(new PerformCommandMessage(CreateCommandViewModel(new TestPage(), viewModel.CurrentPage)) { ShowWindowIfPage = true });
+            await viewModel.PerformCommandAsync(new PerformCommandMessage(CreateCommandViewModel(new TestPage(), viewModel.CurrentPage)) { ShowWindowIfPage = true });
 
             string[] expected = ["show", "started", "completed", "navigate"];
             CollectionAssert.AreEqual(expected, events);
