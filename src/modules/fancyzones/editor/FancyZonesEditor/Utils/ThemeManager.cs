@@ -6,10 +6,11 @@ using System;
 using System.Linq;
 using System.Windows;
 
+using Common.UI;
 using ManagedCommon;
 using Microsoft.Win32;
 
-namespace Common.UI
+namespace FancyZonesEditor.Utils
 {
     public partial class ThemeManager : IDisposable
     {
@@ -108,11 +109,6 @@ namespace Common.UI
             ChangeTheme(_settingsTheme == Theme.System ? Theme.System : _currentTheme);
         }
 
-        public static string GetWindowsBaseColor()
-        {
-            return ControlzEx.Theming.WindowsThemeHelper.GetWindowsBaseColor();
-        }
-
         public void ChangeTheme(Theme theme, bool fromSettings = false)
         {
             if (fromSettings)
@@ -201,6 +197,4 @@ namespace Common.UI
             GC.SuppressFinalize(this);
         }
     }
-
-    public delegate void ThemeChangedHandler(Theme oldTheme, Theme newTheme);
 }

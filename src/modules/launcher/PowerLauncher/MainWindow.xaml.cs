@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 using Common.UI;
 using ManagedCommon;
@@ -93,7 +94,7 @@ namespace PowerLauncher
             NativeEventWaiter.WaitForEventLoop(
                 Constants.RunSendSettingsTelemetryEvent(),
                 SendSettingsTelemetry,
-                Application.Current.Dispatcher,
+                new DispatcherSynchronizationContext(Application.Current.Dispatcher),
                 _nativeWaiterCancelToken);
         }
 

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
@@ -106,7 +107,7 @@ namespace PowerLauncher
                         application.etwTrace = null;
                         ExitPowerToys(application);
                     },
-                    Application.Current.Dispatcher,
+                    new DispatcherSynchronizationContext(Application.Current.Dispatcher),
                     NativeThreadCTS.Token);
 
                 if (powerToysPid != 0)
