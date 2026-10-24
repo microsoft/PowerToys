@@ -26,6 +26,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     private readonly ICommandProviderCache? _commandProviderCache;
 
+    private readonly Lock _commandLoadLock = new();
+
+    private long _commandLoadGeneration;
+
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
     public TopLevelViewModel[] FallbackItems { get; private set; } = [];
@@ -135,13 +139,32 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         return ps.WithConnection(this);
     }
 
-    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider)
+    /// <summary>
+    /// Loads commands and returns the view models created by this invocation.
+    /// </summary>
+    /// <param name="serviceProvider">The services used to initialize and publish the commands.</param>
+    /// <returns>A task containing the view models created by this invocation.</returns>
+    public async Task<IReadOnlyList<TopLevelViewModel>> LoadTopLevelCommands(IServiceProvider serviceProvider)
     {
+        var commands = await PrepareTopLevelCommandsAsync(serviceProvider).ConfigureAwait(false);
+        PublishTopLevelCommands(commands, serviceProvider, requireCurrentLoad: false);
+        return commands.CreatedCommands;
+    }
+
+    // Keep new items private until the caller accepts the completed load
+    internal async Task<PreparedCommands> PrepareTopLevelCommandsAsync(IServiceProvider serviceProvider)
+    {
+        PreparedCommands prepared;
+        lock (_commandLoadLock)
+        {
+            prepared = new PreparedCommands(++_commandLoadGeneration);
+        }
+
         if (!isValid)
         {
             IsActive = false;
             RecallFromCache();
-            return;
+            return prepared;
         }
 
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
@@ -170,7 +193,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         if (!IsActive)
         {
             RecallFromCache();
-            return;
+            return prepared;
         }
 
         ICommandItem[]? commands = null;
@@ -233,8 +256,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
             // We do need to explicitly initialize commands though
             var objects = new TopLevelObjects(commands, fallbacks, pinnedCommands, dockBands);
-            InitializeCommands(objects, serviceProvider, four);
-            PersistFallbackDefaults(settingsService);
+            InitializeCommands(objects, serviceProvider, four, prepared);
+            prepared.IsInitialized = true;
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -247,6 +270,69 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 RecallFromCache();
             }
         }
+
+        return prepared;
+    }
+
+    internal void InvalidatePendingCommands()
+    {
+        lock (_commandLoadLock)
+        {
+            _commandLoadGeneration++;
+        }
+    }
+
+    internal bool IsCurrentLoad(PreparedCommands prepared)
+    {
+        lock (_commandLoadLock)
+        {
+            return prepared.Generation == _commandLoadGeneration;
+        }
+    }
+
+    internal bool TryPublishTopLevelCommands(PreparedCommands prepared, IServiceProvider serviceProvider)
+    {
+        return PublishTopLevelCommands(prepared, serviceProvider, requireCurrentLoad: true);
+    }
+
+    private bool PublishTopLevelCommands(PreparedCommands prepared, IServiceProvider serviceProvider, bool requireCurrentLoad)
+    {
+        lock (_commandLoadLock)
+        {
+            if (requireCurrentLoad && prepared.Generation != _commandLoadGeneration)
+            {
+                return false;
+            }
+
+            if (prepared.TopLevelItems is not null)
+            {
+                TopLevelItems = prepared.TopLevelItems;
+            }
+
+            if (prepared.FallbackItems is not null)
+            {
+                FallbackItems = prepared.FallbackItems;
+            }
+
+            if (prepared.DockBandItems is not null)
+            {
+                DockBandItems = prepared.DockBandItems;
+            }
+        }
+
+        if (prepared.IsInitialized)
+        {
+            try
+            {
+                PersistFallbackDefaults(serviceProvider.GetRequiredService<ISettingsService>());
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Failed to persist fallback defaults for provider '{ProviderId}'.", e);
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -288,14 +374,19 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     private void InitializeCommands(
         TopLevelObjects objects,
         IServiceProvider serviceProvider,
-        ICommandProvider4? four)
+        ICommandProvider4? four,
+        PreparedCommands prepared)
     {
         var settings = serviceProvider.GetRequiredService<ISettingsService>().Settings;
         var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
         var make = (ICommandItem? i, TopLevelType t) =>
-            CreateTopLevelViewModel(i, t, serviceProvider, providerSettings, contextMenuFactory, ourContext);
+        {
+            var command = CreateTopLevelViewModel(i, t, serviceProvider, providerSettings, contextMenuFactory, ourContext);
+            prepared.CreatedCommands.Add(command);
+            return command;
+        };
 
         var topLevelList = new List<TopLevelViewModel>();
 
@@ -326,11 +417,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             }
         }
 
-        TopLevelItems = topLevelList.ToArray();
+        prepared.TopLevelItems = topLevelList.ToArray();
 
         if (objects.Fallbacks is not null)
         {
-            FallbackItems = objects.Fallbacks
+            prepared.FallbackItems = objects.Fallbacks
                 .Select(c => make(c, TopLevelType.Fallback))
                 .ToArray();
         }
@@ -369,7 +460,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             // First, try to lookup the command as one of this provider's
             // top-level commands. If it's there, then we can skip a lot of
             // work and just clone it as a band.
-            if (LookupTopLevelCommand(commandId) is TopLevelViewModel topLevelCommand)
+            if (topLevelList.FirstOrDefault(c => c.Id == commandId) is TopLevelViewModel topLevelCommand)
             {
                 Logger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} as a top-level command");
                 var bandModel = topLevelCommand.ToPinnedDockBandItem();
@@ -410,7 +501,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             }
         }
 
-        DockBandItems = bands.ToArray();
+        prepared.DockBandItems = bands.ToArray();
     }
 
     internal TopLevelViewModel? ResolveCommandItem(string commandId, IServiceProvider serviceProvider)
@@ -472,19 +563,6 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
             throw;
         }
-    }
-
-    private TopLevelViewModel? LookupTopLevelCommand(string commandId)
-    {
-        foreach (var c in TopLevelItems)
-        {
-            if (c.Id == commandId)
-            {
-                return c;
-            }
-        }
-
-        return null;
     }
 
     private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, SettingsModel settings)
@@ -747,6 +825,62 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         bands.Add(bandVm);
         this.DockBandItems = bands.ToArray();
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs());
+    }
+
+    /// <summary>
+    /// Holds a command load's view models until they are published or cleaned up.
+    /// </summary>
+    internal sealed class PreparedCommands
+    {
+        /// <summary>
+        /// Gets the load generation used to reject superseded results.
+        /// </summary>
+        public long Generation { get; }
+
+        /// <summary>
+        /// Gets all view models created by this load, including any partially initialized results.
+        /// </summary>
+        public List<TopLevelViewModel> CreatedCommands { get; } = [];
+
+        /// <summary>
+        /// Gets or sets the top-level commands prepared for publication.
+        /// </summary>
+        public TopLevelViewModel[]? TopLevelItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fallback commands prepared for publication.
+        /// </summary>
+        public TopLevelViewModel[]? FallbackItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the dock bands prepared for publication.
+        /// </summary>
+        public TopLevelViewModel[]? DockBandItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether command initialization completed successfully.
+        /// </summary>
+        public bool IsInitialized { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PreparedCommands"/> class.
+        /// </summary>
+        /// <param name="generation">The load generation used to reject superseded results.</param>
+        public PreparedCommands(long generation)
+        {
+            Generation = generation;
+        }
+
+        /// <summary>
+        /// Releases the extension subscriptions of all view models created by this load.
+        /// </summary>
+        public void Cleanup()
+        {
+            foreach (var command in CreatedCommands)
+            {
+                command.Cleanup();
+            }
+        }
     }
 
     private record TopLevelObjects(

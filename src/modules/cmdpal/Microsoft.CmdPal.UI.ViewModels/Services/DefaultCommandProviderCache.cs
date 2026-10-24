@@ -9,18 +9,25 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
-public sealed partial class DefaultCommandProviderCache : ICommandProviderCache, IDisposable
+public sealed partial class DefaultCommandProviderCache : ICommandProviderCache, IDisposable, IAsyncDisposable
 {
     private const string CacheFileName = "commandProviderCache.json";
 
     private readonly Dictionary<string, CommandProviderCacheItem> _cache = new(StringComparer.Ordinal);
     private readonly Lock _sync = new();
+    private readonly string? _cacheFilePath;
 
-    private readonly SupersedingAsyncGate _saveGate;
+    private readonly CoalescingAsyncRunner _saveRunner;
 
     public DefaultCommandProviderCache()
+        : this(null)
     {
-        _saveGate = new SupersedingAsyncGate(async _ => await TrySaveAsync().ConfigureAwait(false));
+    }
+
+    internal DefaultCommandProviderCache(string? cacheFilePath)
+    {
+        _cacheFilePath = cacheFilePath;
+        _saveRunner = new CoalescingAsyncRunner(TrySaveAsync);
         TryLoad();
     }
 
@@ -33,7 +40,7 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
             _cache[providerId] = item;
         }
 
-        _ = _saveGate.ExecuteAsync();
+        _ = _saveRunner.RequestAsync();
     }
 
     public CommandProviderCacheItem? Recall(string providerId)
@@ -58,7 +65,7 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
     {
         try
         {
-            var path = GetCacheFilePath();
+            var path = _cacheFilePath ?? GetCacheFilePath();
             if (!File.Exists(path))
             {
                 return;
@@ -108,7 +115,7 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
                 Cache = snapshot,
             };
 
-            var path = GetCacheFilePath();
+            var path = _cacheFilePath ?? GetCacheFilePath();
             var json = JsonSerializer.Serialize(container, CommandProviderCacheSerializationContext.Default.CommandProviderCacheContainer!);
             await File.WriteAllTextAsync(path, json).ConfigureAwait(false);
         }
@@ -118,9 +125,20 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
         }
     }
 
+    internal Task WhenIdleAsync()
+    {
+        return _saveRunner.WhenIdleAsync();
+    }
+
+    /// <inheritdoc/>
+    public ValueTask DisposeAsync()
+    {
+        return _saveRunner.DisposeAsync();
+    }
+
     public void Dispose()
     {
-        _saveGate.Dispose();
+        _saveRunner.Dispose();
         GC.SuppressFinalize(this);
     }
 }

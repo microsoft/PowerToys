@@ -2,16 +2,117 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
 [TestClass]
+[DoNotParallelize]
 public class PowerToysRootPageServiceTests
 {
+    private static readonly TimeSpan LoadTimeout = TimeSpan.FromSeconds(5);
+
+    [TestMethod]
+    public async Task PostLoadRootPageAsync_WaitsForExternalLoad()
+    {
+        using var services = CreateManagerServices();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource<IEnumerable<CommandProviderWrapper>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var extensionService = new Mock<IExtensionService>();
+        extensionService.Setup(s => s.LoadProvidersAsync(It.IsAny<CancellationToken>())).Returns(() =>
+        {
+            started.TrySetResult();
+            return release.Task;
+        });
+        var manager = new TopLevelCommandManager(services, [extensionService.Object]);
+        var service = CreateService(manager);
+        try
+        {
+            var postLoad = Task.Run(service.PostLoadRootPageAsync);
+            await started.Task.WaitAsync(LoadTimeout);
+            Assert.IsFalse(postLoad.IsCompleted);
+
+            release.SetResult([]);
+            await postLoad.WaitAsync(LoadTimeout);
+
+            Assert.IsNotNull(manager.LoadExternalProvidersCommand.ExecutionTask);
+            Assert.IsTrue(manager.LoadExternalProvidersCommand.ExecutionTask.IsCompletedSuccessfully);
+            extensionService.Verify(s => s.LoadProvidersAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+        finally
+        {
+            release.TrySetResult([]);
+            await manager.DisposeAsync().AsTask().WaitAsync(LoadTimeout);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task PostLoadRootPageAsync_UnsuccessfulLoad_IsObservedAndPreservesCommandOutcome(bool canceled)
+    {
+        using var services = CreateManagerServices();
+        using var output = new StringWriter();
+        using var listener = new TextWriterTraceListener(output);
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource<IEnumerable<CommandProviderWrapper>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var extensionService = new Mock<IExtensionService>();
+        extensionService.Setup(s => s.LoadProvidersAsync(It.IsAny<CancellationToken>())).Returns(() =>
+        {
+            started.TrySetResult();
+            return release.Task;
+        });
+        var manager = new TopLevelCommandManager(services, [extensionService.Object]);
+        var service = CreateService(manager);
+        var failure = new InvalidOperationException("External provider startup failed.");
+        Trace.Listeners.Add(listener);
+        try
+        {
+            var postLoad = Task.Run(service.PostLoadRootPageAsync);
+            await started.Task.WaitAsync(LoadTimeout);
+            var disposal = canceled ? manager.DisposeAsync().AsTask() : Task.CompletedTask;
+            if (canceled)
+            {
+                release.SetResult([]);
+            }
+            else
+            {
+                release.SetException(failure);
+            }
+
+            await postLoad.WaitAsync(LoadTimeout);
+            await disposal.WaitAsync(LoadTimeout);
+
+            var executionTask = manager.LoadExternalProvidersCommand.ExecutionTask;
+            Assert.IsNotNull(executionTask);
+            Assert.AreEqual(canceled, executionTask.IsCanceled);
+            Assert.AreEqual(!canceled, executionTask.IsFaulted);
+            var log = output.ToString();
+            if (canceled)
+            {
+                Assert.AreEqual(string.Empty, log);
+            }
+            else
+            {
+                Assert.AreSame(failure, executionTask.Exception!.InnerException);
+                StringAssert.Contains(log, "Failed to load external command providers");
+                Assert.AreEqual(1, log.Split(failure.Message, StringSplitOptions.None).Length - 1);
+            }
+        }
+        finally
+        {
+            Trace.Listeners.Remove(listener);
+            release.TrySetResult([]);
+            await manager.DisposeAsync().AsTask().WaitAsync(LoadTimeout);
+        }
+    }
+
     [TestMethod]
     [DataRow(false, true)]
     [DataRow(true, true)]
@@ -92,5 +193,18 @@ public class PowerToysRootPageServiceTests
         return extension.Object;
     }
 
-    private static PowerToysRootPageService CreateService() => new(null!, null!, null!, null!, null!);
+    private static ServiceProvider CreateManagerServices()
+    {
+        var settingsService = new Mock<ISettingsService>();
+        settingsService.SetupGet(s => s.Settings).Returns(new SettingsModel());
+        return new ServiceCollection()
+            .AddSingleton(TaskScheduler.Default)
+            .AddSingleton(settingsService.Object)
+            .BuildServiceProvider();
+    }
+
+    private static PowerToysRootPageService CreateService(TopLevelCommandManager? manager = null)
+    {
+        return new(manager!, null!, null!, null!, null!);
+    }
 }
