@@ -382,6 +382,97 @@ namespace EnvironmentVariablesUILib.UnitTests.ViewModels
             Assert.AreEqual(0, fixture.Service.Writes.Single().Length);
         }
 
+        [DataTestMethod]
+        [DataRow(VariablesSetType.User)]
+        [DataRow(VariablesSetType.System)]
+        public async Task EditDefault_RenameWriteFailureLosesOldValueAndRefreshesWithoutRollback(VariablesSetType type)
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var target = type == VariablesSetType.User ? fixture.Environment.User : fixture.Environment.Machine;
+            var other = type == VariablesSetType.User ? fixture.Environment.Machine : fixture.Environment.User;
+            var hive = type == VariablesSetType.User ? RegistryHive.CurrentUser : RegistryHive.LocalMachine;
+            var otherType = type == VariablesSetType.User ? VariablesSetType.System : VariablesSetType.User;
+            target["TMP"] = "%OLD%;;";
+            target["KEEP"] = "%KEEP%;";
+            other["TMP"] = "other old";
+            other["NEW"] = "other new";
+            other["OTHER"] = "untouched";
+            var vm = fixture.CreateViewModel(elevated: type == VariablesSetType.System);
+            vm.LoadEnvironmentVariables();
+            var set = type == VariablesSetType.User ? vm.UserDefaultSet : vm.SystemDefaultSet;
+            var original = set.Variables.Single(variable => variable.Name == "TMP");
+            var previousProjection = vm.AppliedVariables;
+            var failure = new InvalidOperationException("scripted renamed-value write failure");
+            fixture.Environment.Operations.Clear();
+            fixture.Environment.BeforeOperation = (operation, operationHive, name) =>
+            {
+                if (operation == "Write" && operationHive == hive && name == "NEW")
+                {
+                    throw failure;
+                }
+            };
+
+            vm.EditVariable(original, new Variable("NEW", "%NEW%;;", type), null!);
+
+            Assert.AreEqual(("NEW", "%NEW%;;"), (original.Name, original.Values));
+            Assert.AreEqual("%OLD%;;", target["TMP"]);
+            Assert.IsFalse(target.ContainsKey("NEW"));
+            Assert.AreSame(previousProjection, vm.AppliedVariables);
+            Assert.AreEqual(0, fixture.Environment.Operations.Count);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            CollectionAssert.AreEqual(new[] { type }, fixture.Telemetry.Changed.ToArray());
+
+            await fixture.Work.CompleteActionAsync(0);
+
+            Assert.IsFalse(target.ContainsKey("TMP"));
+            Assert.IsFalse(target.ContainsKey("NEW"));
+            Assert.AreEqual("%KEEP%;", target["KEEP"]);
+            Assert.AreEqual(1, target.Count);
+            Assert.AreEqual(1, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(2, fixture.Logger.Entries.Count);
+            Assert.AreEqual(("Error", "Failed to write environment variable 'NEW'."), (fixture.Logger.Entries[0].Level, fixture.Logger.Entries[0].Message));
+            Assert.AreSame(failure, fixture.Logger.Entries[0].Exception);
+            Assert.AreEqual(("Error", "Failed to set new variable.", (Exception?)null), fixture.Logger.Entries[1]);
+            Assert.AreSame(previousProjection, vm.AppliedVariables);
+            Assert.AreEqual(1, fixture.Work.RefreshReceiptCount);
+
+            fixture.Work.DrainRefreshes();
+            await fixture.Work.CompleteSaveAsync(0);
+
+            Assert.AreNotSame(previousProjection, vm.AppliedVariables);
+            Assert.AreEqual(("NEW", "%NEW%;;"), (original.Name, original.Values));
+            Assert.AreEqual(1, set.Variables.Count);
+            Assert.AreEqual(("KEEP", "%KEEP%;"), (set.Variables[0].Name, set.Variables[0].Values));
+            Assert.IsFalse(set.Variables.Contains(original));
+            CollectionAssert.AreEquivalent(
+                new[]
+                {
+                    ("KEEP", "%KEEP%;", type),
+                    ("TMP", "other old", otherType),
+                    ("NEW", "other new", otherType),
+                    ("OTHER", "untouched", otherType),
+                },
+                vm.AppliedVariables.Select(variable => (variable.Name, variable.Values, variable.ParentType)).ToArray());
+            Assert.AreEqual(3, other.Count);
+            Assert.AreEqual("other old", other["TMP"]);
+            Assert.AreEqual("other new", other["NEW"]);
+            Assert.AreEqual("untouched", other["OTHER"]);
+            CollectionAssert.AreEqual(
+                new[] { (hive, "Delete", "TMP"), (hive, "Write", "NEW") },
+                fixture.Environment.Operations.Where(operation => operation.Operation is "Delete" or "Write")
+                    .Select(operation => (operation.Hive, operation.Operation, operation.Name)).ToArray());
+            Assert.AreEqual(((object)"%NEW%;;", RegistryValueKind.ExpandString), fixture.Environment.Operations.Single(operation => operation.Operation == "Write").Value);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(1, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(1, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(2, fixture.Logger.Entries.Count);
+            Assert.AreSame(failure, fixture.Logger.Entries[0].Exception);
+            Assert.AreEqual(0, fixture.Service.Writes.Single().Length);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
         [TestMethod]
         public async Task EditInactiveProfile_ChangesOwnedItemButDoesNotPropagateEnvironment()
         {
