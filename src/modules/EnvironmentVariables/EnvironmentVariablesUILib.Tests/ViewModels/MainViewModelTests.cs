@@ -1390,6 +1390,102 @@ namespace EnvironmentVariablesUILib.UnitTests.ViewModels
             Assert.IsTrue(fixture.Work.IsQuiescent);
         }
 
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task FreshRealServiceLoad_ReconstructsOwnershipAndEditabilityForElevation(bool elevated)
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            var authored = Profile("Persisted", true, "TMP", "%OVERRIDE%;;");
+            var expectedUser = new[]
+            {
+                ("TMP", "%OVERRIDE%;;"),
+                ("TMP_PowerToys_Persisted", "%ORIGINAL%;;"),
+                ("TMP_PowerToys_Other", "%LOOKALIKE%;"),
+                ("UNRELATED", "%USER%;"),
+            };
+            foreach (var (name, value) in expectedUser)
+            {
+                fixture.Environment.User[name] = value;
+            }
+
+            fixture.Environment.Machine["MACHINE_ONLY"] = "%MACHINE%;";
+            await service.WriteAsync(new[] { authored });
+            var payload = files.Files[service.ProfilesJsonFilePath];
+            var previous = fixture.CreateViewModel(elevated, service);
+            previous.LoadEnvironmentVariables();
+            var previousProfile = previous.Profiles.Single();
+            var previousChild = previousProfile.Variables.Single();
+            Assert.AreEqual(elevated, previous.SystemDefaultSet.Variables.Single().IsEditable);
+            var callsBeforeFreshLoad = files.Calls.Count;
+            Assert.AreEqual(3, callsBeforeFreshLoad);
+            Assert.AreEqual(1, files.Writes.Count);
+            var operationsBeforeFreshLoad = fixture.Environment.Operations.Count;
+            var fresh = fixture.CreateViewModel(elevated, service);
+            Assert.IsNull(fresh.AppliedProfile);
+
+            fresh.LoadEnvironmentVariables();
+
+            var owned = fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "TMP");
+            var backup = fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "TMP_PowerToys_Persisted");
+            Assert.IsTrue(owned.IsAppliedFromProfile);
+            Assert.IsTrue(backup.IsAppliedFromProfile);
+            Assert.IsFalse(owned.IsEditable);
+            Assert.IsFalse(backup.IsEditable);
+            var lookalike = fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "TMP_PowerToys_Other");
+            var unrelated = fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "UNRELATED");
+            Assert.IsFalse(lookalike.IsAppliedFromProfile);
+            Assert.IsFalse(unrelated.IsAppliedFromProfile);
+            Assert.IsTrue(lookalike.IsEditable);
+            Assert.IsTrue(unrelated.IsEditable);
+            var machine = fresh.SystemDefaultSet.Variables.Single();
+            Assert.IsFalse(machine.IsAppliedFromProfile);
+            Assert.AreEqual(elevated, machine.IsEditable);
+            Assert.AreEqual(("MACHINE_ONLY", "%MACHINE%;", VariablesSetType.System), (machine.Name, machine.Values, machine.ParentType));
+            Assert.IsTrue(fresh.UserDefaultSet.Variables.All(variable => variable.ParentType == VariablesSetType.User));
+            CollectionAssert.AreEquivalent(expectedUser, fresh.UserDefaultSet.Variables.Select(variable => (variable.Name, variable.Values)).ToArray());
+            Assert.AreEqual(elevated, fresh.IsElevated);
+            var loaded = fresh.Profiles.Single();
+            Assert.AreEqual((authored.Id, "Persisted", true), (loaded.Id, loaded.Name, loaded.IsEnabled));
+            Assert.AreSame(loaded, fresh.AppliedProfile);
+            Assert.AreNotSame(authored, loaded);
+            Assert.AreNotSame(previousProfile, loaded);
+            Assert.AreNotSame(previous.Profiles, fresh.Profiles);
+            Assert.AreNotSame(previousProfile.Variables, loaded.Variables);
+            var child = loaded.Variables.Single();
+            Assert.AreNotSame(authored.Variables.Single(), child);
+            Assert.AreNotSame(previousChild, child);
+            Assert.AreNotSame(previousChild.ValuesList, child.ValuesList);
+            Assert.AreEqual(3, previousChild.ValuesList.Count);
+            Assert.AreEqual(3, child.ValuesList.Count);
+            Assert.AreNotSame(previousChild.ValuesList[0], child.ValuesList[0]);
+            Assert.AreEqual(("TMP", "%OVERRIDE%;;", VariablesSetType.Profile), (child.Name, child.Values, child.ParentType));
+            Assert.IsFalse(child.IsAppliedFromProfile);
+            Assert.IsTrue(child.IsEditable);
+            Assert.AreEqual(EnvironmentState.Unchanged, fresh.EnvironmentState);
+            CollectionAssert.AreEquivalent(expectedUser, fixture.Environment.User.Select(entry => (entry.Key, (string)entry.Value!)).ToArray());
+            Assert.AreEqual(1, fixture.Environment.Machine.Count);
+            Assert.AreEqual("%MACHINE%;", fixture.Environment.Machine["MACHINE_ONLY"]);
+            CollectionAssert.AreEqual(
+                new[] { ("Exists", service.ProfilesJsonFilePath), ("ReadAllText", service.ProfilesJsonFilePath) },
+                files.Calls.Skip(callsBeforeFreshLoad).ToArray());
+            Assert.AreEqual(1, files.Writes.Count);
+            Assert.AreEqual(payload, files.Writes.Single().Contents);
+            Assert.AreEqual(payload, files.Files[service.ProfilesJsonFilePath]);
+            Assert.IsFalse(fixture.Environment.Operations.Skip(operationsBeforeFreshLoad).Any(operation => operation.Operation is "Write" or "Delete"));
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Changed.Count);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
         [TestMethod]
         public async Task ExistingTmp_InactiveCloneAndEditPersistImmutableRealJsonWithoutChangingUserSource()
         {
