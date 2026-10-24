@@ -100,10 +100,14 @@ public class CardFormattingTests
     [TestMethod]
     public void RateScaleUsesBitsForTheDefaultUnit()
     {
-        var (divisor, unit) = PerformanceChartData.GetRateScale(SpeedUnit.BitsPerSecond, 50 * 1024 * 1024 / 8);
+        var (divisor, unit) = PerformanceChartData.GetRateScale(SpeedUnit.BitsPerSecond, 50_000_000 / 8);
 
         Assert.AreEqual("Mbps", unit);
-        Assert.AreEqual(50f, 50 * 1024 * 1024 / 8 / divisor, 1e-3);
+        Assert.AreEqual(50f, 50_000_000 / 8 / divisor, 1e-3);
+
+        // Bits step by 1000, as the labels do.
+        Assert.AreEqual((125f, "Kbps"), PerformanceChartData.GetRateScale(SpeedUnit.BitsPerSecond, 999_999 / 8f));
+        Assert.AreEqual((125_000f, "Mbps"), PerformanceChartData.GetRateScale(SpeedUnit.BitsPerSecond, 1_000_000 / 8f));
     }
 
     [TestMethod]
@@ -130,6 +134,16 @@ public class CardFormattingTests
         Assert.AreEqual(2.5f, scaled[1]);
         Assert.AreEqual(9f, PerformanceChartData.Max([1f, 9f], [4f]));
         Assert.AreEqual(0f, PerformanceChartData.Max());
+    }
+
+    [TestMethod]
+    public void LinkSpeedUsesTheLargestWholeUnit()
+    {
+        Assert.AreEqual("1 Gbps", SystemNetworkUsageWidgetPage.LinkSpeedToString(1e9));
+        Assert.AreEqual("2.5 Gbps", SystemNetworkUsageWidgetPage.LinkSpeedToString(2.5e9));
+        Assert.AreEqual("866.7 Mbps", SystemNetworkUsageWidgetPage.LinkSpeedToString(866.7e6));
+        Assert.AreEqual("56 Kbps", SystemNetworkUsageWidgetPage.LinkSpeedToString(56e3));
+        Assert.AreEqual("—", SystemNetworkUsageWidgetPage.LinkSpeedToString(0));
     }
 
     [TestMethod]
