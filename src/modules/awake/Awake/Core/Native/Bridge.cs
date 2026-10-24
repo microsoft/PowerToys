@@ -21,6 +21,9 @@ namespace Awake.Core.Native
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern bool SetConsoleCtrlHandler(ConsoleEventHandler handler, bool add);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        internal static extern IntPtr GetModuleHandle(string? moduleName);
+
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern ExecutionState SetThreadExecutionState(ExecutionState esFlags);
 

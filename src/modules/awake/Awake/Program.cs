@@ -5,14 +5,13 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Awake.Core;
@@ -28,7 +27,6 @@ namespace Awake
 {
     internal sealed class Program
     {
-        private static readonly JsonSerializerOptions _serializerOptions = new() { IncludeFields = true };
         private static readonly ETWTrace _etwTrace = new();
 
         private static FileSystemWatcher? _watcher;
@@ -37,6 +35,7 @@ namespace Awake
         private static RegisteredWaitHandle? _registeredWaitHandle;
 
         private static bool _startedFromPowerToys;
+        private static bool _hasDeadlineCommand;
 
         public static Mutex? LockMutex { get; set; }
 
@@ -47,10 +46,29 @@ namespace Awake
         {
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
-            var rootCommand = BuildRootCommand();
-
             Bridge.AttachConsole(Core.Native.Constants.ATTACH_PARENT_PROCESS);
+            LoadConfiguredLanguage();
+            Manager.ExitCleanup = Cleanup;
+            Manager.InitializeAttachedConsole();
 
+            _hasDeadlineCommand = args.Length > 0 &&
+                (args[0].Equals("for", StringComparison.OrdinalIgnoreCase) ||
+                 args[0].Equals("until", StringComparison.OrdinalIgnoreCase));
+
+            if (!CommandLineArgumentNormalizer.TryNormalize(
+                    args,
+                    DateTimeOffset.Now,
+                    CultureInfo.CurrentCulture,
+                    out args,
+                    out CommandLineNormalizationError normalizationError,
+                    out string? invalidValue))
+            {
+                LogCLITelemetry(successful: false);
+                Console.Error.WriteLine(GetCommandLineNormalizationError(normalizationError, invalidValue));
+                return 1;
+            }
+
+            var rootCommand = BuildRootCommand(_hasDeadlineCommand);
             var parseResult = rootCommand.Parse(args);
 
             if (parseResult.Tokens.Any(t => t.Value.ToLowerInvariant() is "--help" or "-h" or "-?"))
@@ -75,19 +93,6 @@ namespace Awake
 
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
 
-            try
-            {
-                string appLanguage = LanguageHelper.LoadLanguage();
-                if (!string.IsNullOrEmpty(appLanguage))
-                {
-                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
-                }
-            }
-            catch (CultureNotFoundException ex)
-            {
-                Logger.LogError("CultureNotFoundException: " + ex.Message);
-            }
-
             await TrayHelper.InitializeTray(TrayHelper.DefaultAwakeIcon, Core.Constants.FullAppName);
             AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
@@ -111,7 +116,7 @@ namespace Awake
                 else
                 {
                     Logger.LogInfo($"Launching {Core.Constants.AppName}...");
-                    Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+                    Logger.LogInfo(FileVersionInfo.GetVersionInfo(Environment.ProcessPath!).FileVersion);
                     Logger.LogInfo($"Build: {Core.Constants.BuildId}");
                     Logger.LogInfo($"OS: {Environment.OSVersion}");
                     Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
@@ -125,19 +130,24 @@ namespace Awake
                     // To make it easier to diagnose future issues, let's get the
                     // system power capabilities and aggregate them in the log.
                     Bridge.GetPwrCapabilities(out _powerCapabilities);
-                    Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities, _serializerOptions));
+                    Logger.LogInfo(AwakeJson.Serialize(_powerCapabilities));
 
                     var result = await parseResult.InvokeAsync();
                     LogCLITelemetry(successful: result == 0);
-                    return result;
+
+                    // Keep Main alive while cleanup stops the last foreground monitor thread.
+                    return await WaitForShutdownAsync(result, Manager.ShutdownCompletion);
                 }
             }
         }
 
-        private static RootCommand BuildRootCommand()
+        internal static Task<int> WaitForShutdownAsync(int commandExitCode, Task<int> shutdownCompletion)
         {
-            Logger.LogInfo("Parsing parameters...");
+            return commandExitCode == 0 ? shutdownCompletion : Task.FromResult(commandExitCode);
+        }
 
+        internal static RootCommand BuildRootCommand(bool hasDeadlineCommand = false)
+        {
             Option<bool> configOption = new("--use-pt-config", "-c")
             {
                 Description = Resources.AWAKE_CMD_HELP_CONFIG_OPTION,
@@ -166,7 +176,7 @@ namespace Awake
             {
                 Description = Resources.AWAKE_CMD_HELP_PID_OPTION,
                 DefaultValueFactory = _ => 0,
-                Arity = ArgumentArity.ZeroOrOne,
+                Arity = ArgumentArity.ExactlyOne,
                 Required = false,
             };
 
@@ -174,11 +184,11 @@ namespace Awake
             {
                 Description = Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION,
                 DefaultValueFactory = _ => string.Empty,
-                Arity = ArgumentArity.ZeroOrOne,
+                Arity = ArgumentArity.ExactlyOne,
                 Required = false,
             };
 
-            Option<bool> parentPidOption = new("--use-parent-pid", "-u")
+            Option<bool> parentPidOption = new("--use-parent-pid", "--parent", "-u")
             {
                 Description = Resources.AWAKE_CMD_PARENT_PID_OPTION,
                 DefaultValueFactory = _ => false,
@@ -226,7 +236,21 @@ namespace Awake
                 parentPidOption,
             ];
 
-            rootCommand.Description = Core.Constants.AppName;
+            rootCommand.Description = Resources.ResourceManager.GetString("AWAKE_CMD_DESCRIPTION", CultureInfo.CurrentUICulture)
+                ?? Core.Constants.AppName;
+            if (hasDeadlineCommand)
+            {
+                rootCommand.Validators.Add(result =>
+                {
+                    if (result.GetResult(configOption) is { Implicit: false } ||
+                        (result.GetResult(timeOption) is { Implicit: false } &&
+                         result.GetResult(expireAtOption) is { Implicit: false }))
+                    {
+                        result.AddError(GetCommandLineNormalizationError(CommandLineNormalizationError.ConflictingOptions, null));
+                    }
+                });
+            }
+
             rootCommand.SetAction(parseResult => HandleCommandLineArguments(
                 parseResult.GetValue(configOption),
                 parseResult.GetValue(displayOption),
@@ -236,6 +260,41 @@ namespace Awake
                 parseResult.GetValue(parentPidOption)));
 
             return rootCommand;
+        }
+
+        private static void LoadConfiguredLanguage()
+        {
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
+            }
+        }
+
+        private static string GetCommandLineNormalizationError(
+            CommandLineNormalizationError error,
+            string? invalidValue)
+        {
+            string resourceName = error switch
+            {
+                CommandLineNormalizationError.DurationRequired => "AWAKE_CMD_ERROR_DURATION_REQUIRED",
+                CommandLineNormalizationError.InvalidDuration => "AWAKE_CMD_ERROR_DURATION_INVALID",
+                CommandLineNormalizationError.TimeRequired => "AWAKE_CMD_ERROR_TIME_REQUIRED",
+                CommandLineNormalizationError.InvalidTime => "AWAKE_CMD_ERROR_TIME_INVALID",
+                CommandLineNormalizationError.TimeAlreadyPassed => "AWAKE_CMD_ERROR_TIME_PAST",
+                CommandLineNormalizationError.ConflictingOptions => "AWAKE_CMD_ERROR_CONFLICTING_OPTIONS",
+                _ => throw new ArgumentOutOfRangeException(nameof(error)),
+            };
+
+            string message = Resources.ResourceManager.GetString(resourceName, CultureInfo.CurrentUICulture) ?? resourceName;
+            return invalidValue is null ? message : string.Format(CultureInfo.CurrentCulture, message, invalidValue);
         }
 
         private static void LogCLITelemetry(bool successful)
@@ -272,12 +331,16 @@ namespace Awake
 
         private static void Exit(string message, int exitCode)
         {
+            Logger.LogInfo(message);
+            Manager.CompleteExit(exitCode);
+        }
+
+        private static void Cleanup()
+        {
             _etwTrace?.Dispose();
             DisposeFileSystemWatcher();
             _registeredWaitHandle?.Unregister(null);
             _exitEventHandle?.Dispose();
-            Logger.LogInfo(message);
-            Manager.CompleteExit(exitCode);
         }
 
         private static void DisposeFileSystemWatcher()
@@ -307,6 +370,12 @@ namespace Awake
             {
                 // Process with the specified ID is not running
                 return false;
+            }
+            catch (Win32Exception ex)
+            {
+                // An inaccessible process is not necessarily missing; let the monitor report the failure.
+                Logger.LogError($"Could not query PID {processId}; deferring to process monitoring.", ex);
+                return true;
             }
             catch (InvalidOperationException ex)
             {
@@ -366,7 +435,7 @@ namespace Awake
                         Logger.LogError("The settings file does not exist. Scaffolding default configuration...");
 
                         AwakeSettings scaffoldSettings = new();
-                        _settingsUtils.SaveSettings(JsonSerializer.Serialize(scaffoldSettings), Core.Constants.AppName);
+                        _settingsUtils.SaveSettings(AwakeJson.Serialize(scaffoldSettings), Core.Constants.AppName);
                     }
 
                     ScaffoldConfiguration(settingsPath);
@@ -381,11 +450,15 @@ namespace Awake
 
                         Logger.LogInfo($"Bound to target process while also using PowerToys settings: {pid}");
 
-                        RunnerHelper.WaitForPowerToysRunner(pid, () =>
-                        {
-                            Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
-                            Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
-                        });
+                        RunnerHelper.WaitForPowerToysRunner(
+                            pid,
+                            () =>
+                            {
+                                Logger.LogInfo($"Triggered PID-based exit handler for PID {pid}.");
+                                Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+                            },
+                            error => HandleProcessMonitoringFailure(pid, error),
+                            nameof(HandleCommandLineArguments));
                     }
                 }
                 catch (Exception ex)
@@ -395,7 +468,7 @@ namespace Awake
             }
             else if (pid != 0 || useParentPid)
             {
-                HandleProcessScopedKeepAwake(pid, useParentPid, displayOn);
+                HandleProcessScopedKeepAwake(pid, useParentPid, displayOn, timeLimit, expireAt);
             }
             else
             {
@@ -407,7 +480,13 @@ namespace Awake
                     {
                         DateTimeOffset expirationDateTime = DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture);
                         Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
-                        Manager.SetExpirableKeepAwake(expirationDateTime, displayOn);
+                        if (!Manager.SetExpirableKeepAwake(expirationDateTime, displayOn) && _hasDeadlineCommand)
+                        {
+                            string message = GetCommandLineNormalizationError(CommandLineNormalizationError.TimeAlreadyPassed, null);
+                            Console.Error.WriteLine(message);
+                            Exit(message, 1);
+                            return;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -433,13 +512,15 @@ namespace Awake
 
         /// <summary>
         /// Start a process-scoped keep-awake session. The application will keep the system awake
-        /// indefinitely until the target process terminates.
+        /// until the target process terminates or a modern command's deadline is reached.
         /// </summary>
         /// <param name="pid">The explicit process ID to monitor.</param>
         /// <param name="useParentPid">A flag indicating whether the application should monitor its
         /// parent process.</param>
         /// <param name="displayOn">Whether to keep the display on during the session.</param>
-        private static void HandleProcessScopedKeepAwake(int pid, bool useParentPid, bool displayOn)
+        /// <param name="timeLimit">The duration for a modern timed command.</param>
+        /// <param name="expireAt">The expiration for a modern until command.</param>
+        private static void HandleProcessScopedKeepAwake(int pid, bool useParentPid, bool displayOn, uint timeLimit, string expireAt)
         {
             int targetPid = 0;
 
@@ -477,14 +558,44 @@ namespace Awake
             Logger.LogInfo($"Bound to target process: {targetPid}");
 
             // Sets the keep-awake plan and updates the tray icon.
-            Manager.SetIndefiniteKeepAwake(displayOn, targetPid);
+            if (_hasDeadlineCommand && !string.IsNullOrEmpty(expireAt))
+            {
+                if (!Manager.SetExpirableKeepAwake(DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture), displayOn))
+                {
+                    string message = GetCommandLineNormalizationError(CommandLineNormalizationError.TimeAlreadyPassed, null);
+                    Console.Error.WriteLine(message);
+                    Exit(message, 1);
+                    return;
+                }
+            }
+            else if (_hasDeadlineCommand)
+            {
+                Manager.SetTimedKeepAwake(timeLimit, displayOn);
+            }
+            else
+            {
+                Manager.SetIndefiniteKeepAwake(displayOn, targetPid);
+            }
 
             // Synchronize with the target process, and trigger Exit() when it finishes.
-            RunnerHelper.WaitForPowerToysRunner(targetPid, () =>
-            {
-                Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
-                Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
-            });
+            RunnerHelper.WaitForPowerToysRunner(
+                targetPid,
+                () =>
+                {
+                    Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
+                    Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+                },
+                error => HandleProcessMonitoringFailure(targetPid, error),
+                nameof(HandleProcessScopedKeepAwake));
+        }
+
+        private static void HandleProcessMonitoringFailure(int pid, Win32Exception error)
+        {
+            Logger.LogError($"Could not monitor target PID {pid}.", error);
+            Exit(
+                Resources.ResourceManager.GetString("AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE", CultureInfo.CurrentUICulture)
+                    ?? throw new InvalidOperationException("Missing resource: AWAKE_EXIT_PROCESS_MONITORING_FAILURE_MESSAGE"),
+                1);
         }
 
         private static void AllocateLocalConsole()
@@ -586,7 +697,7 @@ namespace Awake
                         if (settings.Properties.ExpirationDateTime <= DateTimeOffset.Now)
                         {
                             settings.Properties.ExpirationDateTime = DateTimeOffset.Now.AddMinutes(5);
-                            _settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), Core.Constants.AppName);
+                            _settingsUtils.SaveSettings(AwakeJson.Serialize(settings), Core.Constants.AppName);
 
                             // Return here - the FileSystemWatcher will re-trigger ProcessSettings
                             // with the corrected expiration time, which will then call SetExpirableKeepAwake.
