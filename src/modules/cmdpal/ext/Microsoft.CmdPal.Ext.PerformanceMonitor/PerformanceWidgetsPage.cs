@@ -826,6 +826,7 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -835,15 +836,45 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 
             ContentData["allMem"] = MemUlongToString(currentData.AllMem);
             ContentData["usedMem"] = MemUlongToString(currentData.UsedMem);
+            ContentData["availableMem"] = MemUlongToString(currentData.MemAvailable);
             ContentData["memUsage"] = FloatToPercentString(currentData.MemUsage);
+            ContentData["memUsageOfTotal"] = string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.GetResource("Memory_Widget_Template/UsageOfTotal"),
+                FloatToPercentString(currentData.MemUsage),
+                MemUlongToString(currentData.AllMem));
+            ContentData["memUsedOfTotal"] = FormatUsedOfTotal(currentData.UsedMem, currentData.AllMem);
+
+            // Memory hardware, as on Task Manager's memory page.
+            if (MemoryHardware.Modules is MemoryModules modules)
+            {
+                if (modules.SpeedMegaTransfers > 0)
+                {
+                    ContentData["memSpeed"] = string.Format(CultureInfo.CurrentCulture, "{0} MT/s", modules.SpeedMegaTransfers);
+                }
+
+                ContentData["memSlots"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Memory_Widget_Template/Slots_Used_Value"), modules.SlotsUsed, modules.SlotCount);
+                if (MemoryHardware.GetFormFactorName(modules.FormFactor) is string formFactor)
+                {
+                    ContentData["memFormFactor"] = formFactor;
+                }
+            }
+
+            if (MemoryHardware.InstalledBytes > currentData.AllMem)
+            {
+                ContentData["memReserved"] = MemUlongToString(MemoryHardware.InstalledBytes - currentData.AllMem);
+            }
+
             ContentData["committedMem"] = MemUlongToString(currentData.MemCommitted);
             ContentData["committedLimitMem"] = MemUlongToString(currentData.MemCommitLimit);
             ContentData["cachedMem"] = MemUlongToString(currentData.MemCached);
             ContentData["pagedPoolMem"] = MemUlongToString(currentData.MemPagedPool);
             ContentData["nonPagedPoolMem"] = MemUlongToString(currentData.MemNonPagedPool);
-            ContentData["memGraphUrl"] = currentData.CreateMemImageUrl();
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentJson["memSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("Memory_Widget_Template/Chart_Y_Axis"),
+                PerformanceChartData.MemoryColor,
+                PerformanceChartData.Snapshot(currentData.MemChartValues)));
+            ContentJson["memComposition"] = CreateComposition(currentData);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -852,9 +883,36 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         catch (Exception e)
         {
             ContentData.Clear();
+            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
         }
+    }
+
+    /// <summary>Builds a stacked bar of in use, modified, standby, and free memory, as in Task Manager.</summary>
+    private JsonArray CreateComposition(MemoryStats stats)
+    {
+        static JsonObject Part(string legend, ulong bytes, string color) => new()
+        {
+            ["legend"] = legend,
+            ["value"] = Math.Round(bytes / 1048576.0),
+            ["color"] = color,
+        };
+
+        string Legend(string key, ulong bytes) => string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.GetResource(key),
+            MemUlongToString(bytes));
+
+        var parts = new JsonArray
+        {
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_InUse", stats.MemInUse), stats.MemInUse, PerformanceChartData.MemoryColor),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Modified", stats.MemModified), stats.MemModified, "categoricalMarigold"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Standby", stats.MemStandby), stats.MemStandby, "categoricalLightBlue"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Free", stats.MemFree), stats.MemFree, "neutral"),
+        };
+
+        return new JsonArray { (JsonNode)new JsonObject { ["data"] = parts } };
     }
 
     protected override string GetTemplatePath(WidgetPageState page)
