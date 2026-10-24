@@ -418,46 +418,59 @@ public partial class CommandItemViewModelTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void PresentationAndSdkAdapter_UseCachedEntries(bool isDock)
+    public async Task PresentationAndSdkAdapter_UseCachedEntries(bool isDock)
     {
-        var pageContext = new TestPageContext();
-        var key = new KeyChord(0, (int)VirtualKey.F6, 0);
-        var secondary = new CountingContextItem(new NoOpCommand { Name = "Secondary" }) { RequestedShortcut = key };
-        var item = new CountingCommandItem
+        var ui = new TaskFactory(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+        await ui.StartNew(() =>
         {
-            Command = new NoOpCommand { Name = "Primary" },
-            MoreCommands = [new Separator("Group"), secondary],
-        };
-        var viewModel = isDock
-            ? new DockItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), true, true, DefaultContextMenuFactory.Instance)
-            : new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
-        viewModel.SlowInitializeProperties();
-        var readCount = item.MenuReadCount;
-        var snapshot = viewModel.AllCommands;
-        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+            var pageContext = new TestPageContext(ui.Scheduler);
+            var key = new KeyChord(0, (int)VirtualKey.F6, 0);
+            var secondary = new CountingContextItem(new NoOpCommand { Name = "Secondary" }) { RequestedShortcut = key };
+            var item = new CountingCommandItem
+            {
+                Command = new NoOpCommand { Name = "Primary" },
+                MoreCommands = [new Separator("Group"), secondary],
+            };
+            var viewModel = isDock
+                ? new DockItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), true, true, DefaultContextMenuFactory.Instance)
+                : new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
+            var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
 
-        for (var i = 0; i < 3; i++)
-        {
-            Assert.AreSame(snapshot, viewModel.AllCommands);
-            Assert.IsTrue(viewModel.HasSubmenu);
-            Assert.IsFalse(viewModel.HasOverflowCommands);
-            Assert.IsTrue(viewModel.CanOpenContextMenu);
-            Assert.AreSame(viewModel.SecondaryCommand, ((IContextMenuContext)viewModel).FindKeybinding(key)!);
-            menu.PrepareForOpen(viewModel);
-            menu.SetSearchText("Secondary");
-            Assert.AreSame(viewModel.SecondaryCommand, menu.FindKeybinding(key));
-            menu.Close();
+            try
+            {
+                viewModel.SlowInitializeProperties();
+                var readCount = item.MenuReadCount;
+                var snapshot = viewModel.AllCommands;
 
-            List<IContextItem?> sdkEntries = [];
-            viewModel.CopySdkContextItemsTo(sdkEntries);
-            Assert.AreEqual(2, sdkEntries.Count);
-            Assert.IsInstanceOfType<SeparatorViewModel>(sdkEntries[0]);
-            Assert.AreSame(secondary, sdkEntries[1]);
-        }
+                for (var i = 0; i < 3; i++)
+                {
+                    Assert.AreSame(snapshot, viewModel.AllCommands);
+                    Assert.IsTrue(viewModel.HasSubmenu);
+                    Assert.IsFalse(viewModel.HasOverflowCommands);
+                    Assert.IsTrue(viewModel.CanOpenContextMenu);
+                    Assert.AreSame(viewModel.SecondaryCommand, ((IContextMenuContext)viewModel).FindKeybinding(key)!);
+                    menu.PrepareForOpen(viewModel);
+                    menu.SetSearchText("Secondary");
+                    Assert.AreSame(viewModel.SecondaryCommand, menu.FindKeybinding(key));
+                    menu.Close();
 
-        Assert.AreEqual(readCount, item.MenuReadCount, "Presentation reads must not fetch SDK menu entries again.");
-        Assert.AreEqual(1, secondary.ShortcutReadCount, "Read the extension shortcut once during initialization; menu preparation, filtering and lookups use its cached value.");
-        GC.KeepAlive(pageContext);
+                    List<IContextItem?> sdkEntries = [];
+                    viewModel.CopySdkContextItemsTo(sdkEntries);
+                    Assert.AreEqual(2, sdkEntries.Count);
+                    Assert.IsInstanceOfType<SeparatorViewModel>(sdkEntries[0]);
+                    Assert.AreSame(secondary, sdkEntries[1]);
+                }
+
+                Assert.AreEqual(readCount, item.MenuReadCount, "Presentation reads must not fetch SDK menu entries again.");
+                Assert.AreEqual(1, secondary.ShortcutReadCount, "Read the extension shortcut once during initialization; menu preparation, filtering and lookups use its cached value.");
+            }
+            finally
+            {
+                menu.Close();
+                viewModel.SafeCleanup();
+                GC.KeepAlive(pageContext);
+            }
+        });
     }
 
     [TestMethod]
