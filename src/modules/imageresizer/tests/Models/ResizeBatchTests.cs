@@ -248,6 +248,44 @@ namespace ImageResizer.Models
         }
 
         [TestMethod]
+        public async Task ProcessCanceledOperationReportsErrorAndContinuesBatch()
+        {
+            var canceledFile = @"root\canceled.jpg";
+            var expectedFiles = new[] { canceledFile, @"root\success1.jpg", @"root\success2.jpg" };
+            var settings = new Settings();
+            var attempts = new ConcurrentBag<(string File, Settings Settings)>();
+            var batch = CreateBatch((file, actualSettings) =>
+            {
+                attempts.Add((file, actualSettings));
+                return file == canceledFile
+                    ? Task.FromCanceled(new CancellationToken(true))
+                    : Task.CompletedTask;
+            });
+            foreach (var file in expectedFiles)
+            {
+                batch.Files.Add(file);
+            }
+
+            var calls = new ConcurrentBag<(int I, double Count)>();
+            var processing = batch.ProcessAsync(
+                (i, count) => calls.Add((i, count)),
+                settings,
+                CancellationToken.None);
+            var errors = (await processing.WaitAsync(TimeSpan.FromSeconds(10))).ToList();
+
+            Assert.IsTrue(processing.IsCompletedSuccessfully);
+            Assert.AreEqual(1, errors.Count);
+            Assert.AreEqual("canceled.jpg", errors[0].File);
+            CollectionAssert.AreEquivalent(expectedFiles, attempts.Select(attempt => attempt.File).ToArray());
+            foreach (var attempt in attempts)
+            {
+                Assert.AreSame(settings, attempt.Settings);
+            }
+
+            AssertProgress(calls, 3);
+        }
+
+        [TestMethod]
         public async Task ProcessProgressCallbackErrorFaultsBatch()
         {
             var attempts = 0;
