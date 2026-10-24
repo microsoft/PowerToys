@@ -238,7 +238,7 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers
         }
 
         [TestMethod]
-        public async Task ScheduledDisabledRemovals_NewerWriteCompletesFirstThenOlderPublishesStaleJson()
+        public async Task ScheduledDisabledRemovals_StaleWriteThenReloadRestoresRemovedProfile()
         {
             using var fixture = new EnvironmentVariablesFixture();
             var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
@@ -371,6 +371,55 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers
 
             Assert.AreEqual(2, fixture.Work.SaveCount);
             Assert.AreEqual(2, files.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+
+            var profilesBeforeReload = vm.Profiles;
+            var backingBeforeReload = files.Files[service.ProfilesJsonFilePath];
+            var callsBeforeReload = files.Calls.Count;
+            var savesBeforeReload = fixture.Work.SaveCount;
+            var actionsBeforeReload = fixture.Work.ActionCount;
+            var telemetryBeforeReload = fixture.Telemetry.Changed.Count;
+
+            vm.LoadEnvironmentVariables();
+
+            Assert.AreEqual(2, vm.Profiles.Count);
+            Assert.AreNotSame(profilesBeforeReload, vm.Profiles);
+            CollectionAssert.AreEqual(new[] { first.Id, last.Id }, vm.Profiles.Select(profile => profile.Id).ToArray());
+            var reloadedFirst = vm.Profiles[0];
+            var reloadedLast = vm.Profiles[1];
+            Assert.AreNotSame(first, reloadedFirst);
+            Assert.AreNotSame(last, reloadedLast);
+            Assert.AreSame(last, profilesBeforeReload.Single());
+            Assert.AreEqual(("First", false), (reloadedFirst.Name, reloadedFirst.IsEnabled));
+            Assert.AreEqual(("Last", false), (reloadedLast.Name, reloadedLast.IsEnabled));
+            Assert.AreEqual(1, reloadedFirst.Variables.Count);
+            Assert.AreEqual(1, reloadedLast.Variables.Count);
+            Assert.AreEqual(
+                ("PATH", @"%ROOT%;;C:\Tools;", VariablesSetType.Profile),
+                (reloadedFirst.Variables[0].Name, reloadedFirst.Variables[0].Values, reloadedFirst.Variables[0].ParentType));
+            Assert.AreEqual(
+                ("FINAL", "raw%LAST%", VariablesSetType.Profile),
+                (reloadedLast.Variables[0].Name, reloadedLast.Variables[0].Values, reloadedLast.Variables[0].ParentType));
+            CollectionAssert.AreEqual(
+                new[] { ("Exists", (string?)service.ProfilesJsonFilePath), ("ReadAllText", service.ProfilesJsonFilePath) },
+                files.Calls.Skip(callsBeforeReload).ToArray());
+            Assert.AreEqual(backingBeforeReload, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(files.Writes[0].Contents, backingBeforeReload);
+            Assert.AreNotEqual(files.Writes[1].Contents, backingBeforeReload);
+            Assert.AreEqual(2, files.Writes.Count);
+            Assert.AreEqual(2, callbackCount);
+            Assert.AreEqual(savesBeforeReload, fixture.Work.SaveCount);
+            Assert.AreEqual(actionsBeforeReload, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(telemetryBeforeReload, fixture.Telemetry.Changed.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.IsFalse(fixture.Environment.Operations.Any(operation => operation.Operation == "Write" || operation.Operation == "Delete"));
+            Assert.AreEqual(0, fixture.Environment.User.Count);
+            Assert.AreEqual(0, fixture.Environment.Machine.Count);
+            Assert.IsNull(vm.AppliedProfile);
+            Assert.AreEqual(EnvironmentState.Unchanged, vm.EnvironmentState);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
             Assert.IsTrue(fixture.Work.IsQuiescent);
         }
 
