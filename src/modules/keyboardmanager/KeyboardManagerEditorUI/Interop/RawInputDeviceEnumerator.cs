@@ -3,34 +3,21 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Interop
 {
     /// <summary>
-    /// Enumerates connected keyboards using Raw Input (no window required). Mirrors the engine's
-    /// identity model: device paths are normalized to the stable prefix (up to the 2nd '#') and
-    /// de-duplicated, so the list matches what the engine writes into the device→profile map.
+    /// Describes Raw Input keyboard devices (name + product string) for the Auto-switch dialog.
+    /// Mirrors the engine's identity model: device paths are normalized to the stable prefix (up to
+    /// the 2nd '#'), so an entry matches what the engine writes into the device→profile map.
     /// </summary>
     internal static class RawInputDeviceEnumerator
     {
         private const uint RidiDeviceName = 0x20000007;
-        private const uint RimTypeKeyboard = 1;
         private const uint FileShareRead = 0x1;
         private const uint FileShareWrite = 0x2;
         private const uint OpenExisting = 3;
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RawInputDeviceList
-        {
-            public IntPtr HDevice;
-            public uint DwType;
-        }
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern uint GetRawInputDeviceList([In, Out] RawInputDeviceList[]? pRawInputDeviceList, ref uint puiNumDevices, uint cbSize);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern uint GetRawInputDeviceInfoW(IntPtr hDevice, uint uiCommand, IntPtr pData, ref uint pcbSize);
@@ -73,50 +60,6 @@ namespace KeyboardManagerEditorUI.Interop
 
             int second = path.IndexOf('#', first + 1);
             return second < 0 ? path : path.Substring(0, second);
-        }
-
-        public static List<DetectedKeyboard> EnumerateKeyboards()
-        {
-            var result = new List<DetectedKeyboard>();
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            try
-            {
-                uint count = 0;
-                uint structSize = (uint)Marshal.SizeOf<RawInputDeviceList>();
-                if (GetRawInputDeviceList(null, ref count, structSize) != 0 || count == 0)
-                {
-                    return result;
-                }
-
-                var list = new RawInputDeviceList[count];
-                if (GetRawInputDeviceList(list, ref count, structSize) == unchecked((uint)-1))
-                {
-                    return result;
-                }
-
-                for (int i = 0; i < count; i++)
-                {
-                    if (list[i].DwType != RimTypeKeyboard)
-                    {
-                        continue;
-                    }
-
-                    DetectedKeyboard? keyboard = DescribeDevice(list[i].HDevice);
-                    if (keyboard is null || !seen.Add(keyboard.DevicePath))
-                    {
-                        continue; // unreadable, or already listed (one entry per physical device)
-                    }
-
-                    result.Add(keyboard);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to enumerate keyboards: " + ex.Message);
-            }
-
-            return result;
         }
 
         /// <summary>

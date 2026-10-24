@@ -144,6 +144,20 @@ private:
     // vulnerable to that mismatch, and all physical keys must be released before it is safe to switch.
     std::unordered_map<USHORT, std::chrono::steady_clock::time_point> heldKeys;
 
+    // The same held-key set as seen by the low-level hook, which is the only place a key remapped by
+    // the active profile is visible: the hook suppresses it, so it never reaches raw input and is
+    // missing from heldKeys. Without this, holding a remapped key (e.g. Q -> Ctrl) on one keyboard
+    // while typing on another let the switch fire mid-hold and left the injected Ctrl stuck.
+    // Written on the hook thread, read on the tracker thread; guarded by hookHeldKeysMutex.
+    std::unordered_map<DWORD, std::chrono::steady_clock::time_point> hookHeldKeys;
+    std::mutex hookHeldKeysMutex;
+
+    // Hook thread: record a physical (non-injected) key-down / key-up in hookHeldKeys.
+    void TrackHookKeyEvent(DWORD vkCode, bool keyDown) noexcept;
+
+    // Tracker thread: true while the hook still sees a physical key held (stale entries pruned).
+    bool AnyHookKeyHeld(std::chrono::steady_clock::time_point now);
+
     // A profile switch requested while keys were held, fired once heldKeys empties. Tracker-thread-only.
     std::wstring deferredSwitchTarget;
 

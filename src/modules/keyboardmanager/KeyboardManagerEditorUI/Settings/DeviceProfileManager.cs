@@ -39,7 +39,9 @@ namespace KeyboardManagerEditorUI.Settings
             public List<DeviceProfileEntry> Map { get; set; } = new();
 
             // The engine's profile-cycle hotkey definition. The editor doesn't own this (yet);
-            // keep it as a raw node so saving from the editor round-trips it unchanged.
+            // keep it as a raw node so saving from the editor round-trips it unchanged. Omitted when
+            // unset: the engine treats a missing key as "no hotkey" but used to fail on an explicit null.
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             public System.Text.Json.Nodes.JsonNode? CycleHotkey { get; set; }
         }
 

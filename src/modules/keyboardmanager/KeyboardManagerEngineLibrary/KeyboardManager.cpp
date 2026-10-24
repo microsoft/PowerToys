@@ -158,8 +158,11 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
     }
 
     // A switch was deferred until the keys were released; fire it now that nothing is held, so a
-    // key-down and its matching key-up are always resolved under the same profile.
-    if (!deferredSwitchTarget.empty() && heldKeys.empty())
+    // key-down and its matching key-up are always resolved under the same profile. Keys remapped by
+    // the active profile never reach raw input, so the hook's view (hookHeldKeys) must be empty too.
+    // If the last key released is such a remapped key, no raw event follows its key-up; the switch
+    // then fires on the next physical keystroke's key-up, which is still resolved under one profile.
+    if (!deferredSwitchTarget.empty() && heldKeys.empty() && !AnyHookKeyHeld(now))
     {
         const std::wstring target = deferredSwitchTarget;
         deferredSwitchTarget.clear();
@@ -333,7 +336,9 @@ void KeyboardManager::LoadDeviceProfiles()
                 }
             }
 
-            if (obj.HasKey(L"cycleHotkey"))
+            // The editor writes "cycleHotkey": null when no hotkey is set; GetNamedObject would throw on
+            // that and log a load failure on every reload, so treat anything but an object as "none".
+            if (obj.HasKey(L"cycleHotkey") && obj.GetNamedValue(L"cycleHotkey").ValueType() == json::JsonValueType::Object)
             {
                 const auto hotkey = obj.GetNamedObject(L"cycleHotkey");
                 hotkeyVk = static_cast<UINT>(hotkey.GetNamedNumber(L"code", 0));
@@ -465,7 +470,7 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
             // CycleActiveProfile. The next keystroke retries the switch.
             Logger::error(L"Auto-switch: settings.json unreadable; leaving it untouched");
 
-            // Clear the request so the next keystroke on this keyboard can retry: HandleAutoSwitch
+            // Clear the request so the next keystroke on this keyboard can retry: OnRawKeyEvent
             // sets requestedProfile before calling us, and otherwise its target == requested guard
             // would filter out all further input from that keyboard and wedge the switch.
             {
@@ -556,6 +561,39 @@ void KeyboardManager::LoadSettings()
     }
 }
 
+void KeyboardManager::TrackHookKeyEvent(const DWORD vkCode, const bool keyDown) noexcept
+{
+    try
+    {
+        std::lock_guard<std::mutex> lock(hookHeldKeysMutex);
+        if (keyDown)
+        {
+            hookHeldKeys[vkCode] = std::chrono::steady_clock::now();
+        }
+        else
+        {
+            hookHeldKeys.erase(vkCode);
+        }
+    }
+    catch (...)
+    {
+        // Never let held-key bookkeeping throw out of the hook; worst case auto-switch is not deferred.
+    }
+}
+
+bool KeyboardManager::AnyHookKeyHeld(const std::chrono::steady_clock::time_point now)
+{
+    std::lock_guard<std::mutex> lock(hookHeldKeysMutex);
+    // Same lost-key-up recovery as heldKeys: a held key keeps auto-repeating, so only an event-less
+    // entry (up swallowed by the secure desktop, sleep, unplug, ...) ages out.
+    for (auto it = hookHeldKeys.begin(); it != hookHeldKeys.end();)
+    {
+        it = (now - it->second > HeldKeyStaleTimeout) ? hookHeldKeys.erase(it) : std::next(it);
+    }
+
+    return !hookHeldKeys.empty();
+}
+
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
 {
     LowlevelKeyboardEvent event{};
@@ -563,6 +601,13 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
     {
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
+
+        // Physical keys only (injected input, incl. KBM's own remap output, carries LLKHF_INJECTED).
+        // Recorded before remapping so keys the active profile suppresses are counted as held too.
+        if (!(event.lParam->flags & LLKHF_INJECTED))
+        {
+            keyboardManagerObjectPtr->TrackHookKeyEvent(event.lParam->vkCode, wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
+        }
         event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
 
         if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)

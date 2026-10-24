@@ -653,7 +653,7 @@
     <value>e.g., Mac keyboard</value>
   </data>
   <data name="CopyCurrentProfileCheckBox.Content" xml:space="preserve">
-    <value>Start from a copy of the current profile</value>
+    <value>Start from a copy of the current profile (turned-off remappings aren't copied)</value>
   </data>
   <data name="DeleteProfileDialog.Title" xml:space="preserve">
     <value>Delete profile?</value>
