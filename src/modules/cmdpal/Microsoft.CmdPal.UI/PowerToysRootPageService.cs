@@ -5,6 +5,8 @@
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -21,13 +23,14 @@ internal sealed class PowerToysRootPageService : IRootPageService
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService)
+    /// <summary>Initializes a new instance of the <see cref="PowerToysRootPageService"/> class. Creates the host's lazy Home page using the shared Apps source and extension services.</summary>
+    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService, IAppListItemSource appListItemSource)
     {
         _tlcManager = topLevelCommandManager;
 
         _mainListPage = new Lazy<MainListPage>(() =>
         {
-            return new MainListPage(_tlcManager, aliasManager, fuzzyMatcherProvider, settingsService, appStateService);
+            return new MainListPage(_tlcManager, aliasManager, fuzzyMatcherProvider, settingsService, appStateService, appListItemSource);
         });
     }
 

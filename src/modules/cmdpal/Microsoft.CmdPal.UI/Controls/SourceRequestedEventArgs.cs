@@ -4,7 +4,6 @@
 
 using CommunityToolkit.Common.Deferred;
 using Microsoft.CmdPal.UI.Helpers;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -12,7 +11,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// <summary>
 /// See <see cref="IconBox.SourceRequested"/> event.
 /// </summary>
-public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, double scale = 1.0) : DeferredEventArgs, IIconRequestDemand, IIconRequestProgress
+public class SourceRequestedEventArgs(object? key, IconRenderContext context, double scale = 1.0) : DeferredEventArgs, IIconRequestDemand, IIconRequestProgress
 {
     private IconRequestDemandState _demandState;
     private Func<IconSource, Action<bool>?, bool>? _intermediateSourceReporter;
@@ -34,7 +33,8 @@ public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, 
     /// </summary>
     internal bool ExpectsImageSource { get; set; }
 
-    public ElementTheme Theme => requestedTheme;
+    /// <summary>Gets the surface theme and contrast captured before this request is queued.</summary>
+    public IconRenderContext Context => context;
 
     public double Scale => scale;
 

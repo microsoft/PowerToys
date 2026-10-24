@@ -54,8 +54,8 @@ public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
 
         // Baseline: both Normal -> equal scores.
         var neutral = LookupBy(new Dictionary<string, ProviderSearchWeight>());
-        var baseA = MainListPage.ScoreTopLevelItem(q, itemA, EmptyHistory(), fuzzyMatcher, neutral);
-        var baseB = MainListPage.ScoreTopLevelItem(q, itemB, EmptyHistory(), fuzzyMatcher, neutral);
+        var baseA = MainListPage.ScoreTopLevelItem(q, itemA, EmptyHistory(), fuzzyMatcher, null, neutral);
+        var baseB = MainListPage.ScoreTopLevelItem(q, itemB, EmptyHistory(), fuzzyMatcher, null, neutral);
         Assert.AreEqual(baseA, baseB, "With both providers Normal, tied items should score equally");
 
         // A Higher, B Lower -> A must now sort above B.
@@ -64,8 +64,8 @@ public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
             ["providerA"] = ProviderSearchWeight.Higher,
             ["providerB"] = ProviderSearchWeight.Lower,
         });
-        var higherA = MainListPage.ScoreTopLevelItem(q, itemA, EmptyHistory(), fuzzyMatcher, lookup);
-        var lowerB = MainListPage.ScoreTopLevelItem(q, itemB, EmptyHistory(), fuzzyMatcher, lookup);
+        var higherA = MainListPage.ScoreTopLevelItem(q, itemA, EmptyHistory(), fuzzyMatcher, null, lookup);
+        var lowerB = MainListPage.ScoreTopLevelItem(q, itemB, EmptyHistory(), fuzzyMatcher, null, lookup);
 
         Assert.IsTrue(higherA > baseA, "Higher weight should raise the score");
         Assert.IsTrue(lowerB < baseB, "Lower weight should reduce the score");
@@ -101,8 +101,8 @@ public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
             history = history.WithHistoryItem(lowerTier.Id);
         }
 
-        var exactScore = MainListPage.ScoreTopLevelItem(q, exact, EmptyHistory(), fuzzyMatcher, lookup);
-        var lowerScore = MainListPage.ScoreTopLevelItem(q, lowerTier, history, fuzzyMatcher, lookup);
+        var exactScore = MainListPage.ScoreTopLevelItem(q, exact, EmptyHistory(), fuzzyMatcher, null, lookup);
+        var lowerScore = MainListPage.ScoreTopLevelItem(q, lowerTier, history, fuzzyMatcher, null, lookup);
 
         Assert.IsTrue(
             MainListRanker.TierOf(exactScore) > MainListRanker.TierOf(lowerScore),
@@ -121,12 +121,13 @@ public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
 
         // No lookup at all should behave exactly like an all-Normal lookup, which should
         // behave exactly like the previous (provider-unaware) scoring.
-        var noLookup = MainListPage.ScoreTopLevelItem(q, item, EmptyHistory(), fuzzyMatcher);
+        var noLookup = MainListPage.ScoreTopLevelItem(q, item, EmptyHistory(), fuzzyMatcher, null);
         var normalLookup = MainListPage.ScoreTopLevelItem(
             q,
             item,
             EmptyHistory(),
             fuzzyMatcher,
+            null,
             LookupBy(new Dictionary<string, ProviderSearchWeight> { ["providerA"] = ProviderSearchWeight.Normal }));
 
         Assert.AreEqual(noLookup, normalLookup, "Normal weight must be a no-op relative to the default path");
@@ -142,12 +143,13 @@ public partial class ProviderWeightingTests : CommandPaletteUnitTestBase
         var q = fuzzyMatcher.PrecomputeQuery("note");
         var appItem = new WeightItemMock("Notepad", ProviderId: "AllApps");
 
-        var normal = MainListPage.ScoreTopLevelItem(q, appItem, EmptyHistory(), fuzzyMatcher);
+        var normal = MainListPage.ScoreTopLevelItem(q, appItem, EmptyHistory(), fuzzyMatcher, null);
         var higher = MainListPage.ScoreTopLevelItem(
             q,
             appItem,
             EmptyHistory(),
             fuzzyMatcher,
+            null,
             LookupBy(new Dictionary<string, ProviderSearchWeight> { ["AllApps"] = ProviderSearchWeight.Higher }));
 
         Assert.IsTrue(higher > normal, "An app-style item should also respond to its provider's Higher weight");

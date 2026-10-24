@@ -5,6 +5,8 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <RootNamespace>Microsoft.CmdPal.Ext.Apps.UnitTests</RootNamespace>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\tests\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -14,6 +16,10 @@
   <ItemGroup>
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\PackagedIcons.pri" />
   </ItemGroup>
 
   <ItemGroup>

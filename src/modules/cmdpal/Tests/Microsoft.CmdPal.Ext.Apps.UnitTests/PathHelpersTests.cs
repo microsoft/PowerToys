@@ -13,6 +13,26 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 public class PathHelpersTests
 {
     [TestMethod]
+    public void NormalizePath_ReturnsFullPathWithoutTrailingSeparator()
+    {
+        var relativePath = $"folder{Path.DirectorySeparatorChar}";
+
+        var normalized = PathHelpers.NormalizePath(relativePath);
+
+        Assert.AreEqual(
+            Path.TrimEndingDirectorySeparator(Path.GetFullPath(relativePath)),
+            normalized);
+    }
+
+    [TestMethod]
+    public void NormalizePath_InvalidPath_ReturnsOriginalValue()
+    {
+        const string invalidPath = "invalid\0path";
+
+        Assert.AreEqual(invalidPath, PathHelpers.NormalizePath(invalidPath));
+    }
+
+    [TestMethod]
     public void IsPathInsideDirectory_System32Child_ReturnsTrue()
     {
         var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);

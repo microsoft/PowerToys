@@ -4,9 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using System.Threading;
+using Microsoft.CmdPal.Ext.Apps.AppList;
+using Microsoft.CmdPal.Ext.Apps.Pages;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.Win32;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -15,35 +17,67 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsCommandProvider : CommandProvider
 {
     public const string WellKnownId = "AllApps";
-    internal const int DefaultResultLimit = 10;
-
-    public static readonly AllAppsPage Page = new();
 
     private readonly AllAppsPage _page;
+    private readonly IAppListItemSource _appListItemSource;
+    private readonly AllAppsSettings _settings;
     private readonly CommandItem _listItem;
+    private AppListItemSnapshot _snapshot;
 
-    public AllAppsCommandProvider()
-        : this(Page)
-    {
-    }
+    public int TopLevelResultLimit => _appListItemSource.TopLevelResultLimit;
 
-    public AllAppsCommandProvider(AllAppsPage page)
+    /// <summary>Initializes a new instance of the <see cref="AllAppsCommandProvider"/> class. Creates the Apps provider over the shared application page, snapshot source, and preferences.</summary>
+    public AllAppsCommandProvider(
+        AllAppsPage page,
+        IAppListItemSource appListItemSource,
+        AllAppsSettings settings)
     {
-        _page = page ?? throw new ArgumentNullException(nameof(page));
+        ArgumentNullException.ThrowIfNull(page);
+        ArgumentNullException.ThrowIfNull(appListItemSource);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        _page = page;
+        _appListItemSource = appListItemSource;
+        _settings = settings;
         Id = WellKnownId;
         DisplayName = Resources.installed_apps;
         Icon = Icons.AllAppsIcon;
-        Settings = AllAppsSettings.Instance.Settings;
+        Settings = _settings.Settings;
 
         _listItem = new(_page)
         {
-            MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
+            MoreCommands =
+            [
+                .. _page.MoreCommands,
+                new CommandContextItem(_settings.Settings.SettingsPage),
+            ],
         };
+        _snapshot = _appListItemSource.GetSnapshot();
+        _appListItemSource.Changed += OnAppListChanged;
     }
 
-    public static int TopLevelResultLimit => AllAppsSettings.Instance.SearchResultLimit ?? DefaultResultLimit;
+    public override ICommandItem[] TopLevelCommands()
+    {
+        return [_listItem];
+    }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem];
+    private void OnAppListChanged(object? sender, EventArgs args)
+    {
+        var snapshot = _appListItemSource.GetSnapshot();
+        var previous = Interlocked.Exchange(ref _snapshot, snapshot);
+        if (!snapshot.HasSameCommandResolution(previous))
+        {
+            RaiseItemsChanged();
+        }
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        _appListItemSource.Changed -= OnAppListChanged;
+        base.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     public ICommandItem? LookupAppByPackageFamilyName(string packageFamilyName, bool requireSingleMatch)
     {
@@ -52,7 +86,7 @@ public partial class AllAppsCommandProvider : CommandProvider
             return null;
         }
 
-        var items = _page.GetItems();
+        var items = _appListItemSource.GetSnapshot().VisibleItems;
         List<ICommandItem> matches = [];
 
         foreach (var item in items)
@@ -83,19 +117,19 @@ public partial class AllAppsCommandProvider : CommandProvider
             return null;
         }
 
-        var items = _page.GetItems();
+        var items = _appListItemSource.GetSnapshot().VisibleItems;
         List<ICommandItem> matches = [];
 
         foreach (var item in items)
         {
-            if (item is not AppListItem appListItem || string.IsNullOrEmpty(appListItem.App.FullExecutablePath))
+            if (item is not AppListItem appListItem || string.IsNullOrEmpty(appListItem.App.ResolvedTarget))
             {
                 continue;
             }
 
             foreach (var candidate in candidates)
             {
-                if (string.Equals(appListItem.App.FullExecutablePath, candidate, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(appListItem.App.ResolvedTarget, candidate, StringComparison.OrdinalIgnoreCase))
                 {
                     matches.Add(item);
                     if (!requireSingleMatch)
@@ -109,69 +143,8 @@ public partial class AllAppsCommandProvider : CommandProvider
         return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
     }
 
-    public ICommandItem? LookupAppByDisplayName(string displayName)
-    {
-        var items = _page.GetItems();
-
-        var nameMatches = new List<ICommandItem>();
-        ICommandItem? bestAppMatch = null;
-        var bestLength = -1;
-
-        foreach (var item in items)
-        {
-            if (item.Title is null)
-            {
-                continue;
-            }
-
-            // We're going to do this search in two directions:
-            // First, is this name a substring of any app...
-            if (item.Title.Contains(displayName))
-            {
-                nameMatches.Add(item);
-            }
-
-            // ... Then, does any app have this name as a substring ...
-            // Only get one of these - "Terminal Preview" contains both "Terminal" and "Terminal Preview", so just take the best one
-            if (displayName.Contains(item.Title))
-            {
-                if (item.Title.Length > bestLength)
-                {
-                    bestLength = item.Title.Length;
-                    bestAppMatch = item;
-                }
-            }
-        }
-
-        // ... Now, combine those two
-        List<ICommandItem> both = bestAppMatch is null ? nameMatches : [.. nameMatches, bestAppMatch];
-
-        if (both.Count == 1)
-        {
-            return both[0];
-        }
-        else if (nameMatches.Count == 1 && bestAppMatch is not null)
-        {
-            if (nameMatches[0] == bestAppMatch)
-            {
-                return nameMatches[0];
-            }
-        }
-
-        return null;
-    }
-
     public override ICommandItem? GetCommandItem(string id)
     {
-        var items = _page.GetItems();
-        foreach (var item in items)
-        {
-            if (item.Command.Id == id)
-            {
-                return item;
-            }
-        }
-
-        return null;
+        return _appListItemSource.GetSnapshot().GetCommandItem(id);
     }
 }
