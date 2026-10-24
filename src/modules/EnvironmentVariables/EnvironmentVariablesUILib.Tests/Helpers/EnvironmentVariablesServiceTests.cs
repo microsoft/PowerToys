@@ -469,6 +469,30 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers
         }
 
         [TestMethod]
+        public async Task WriteAsync_EnumerationFailurePropagatesWithoutFileAccess()
+        {
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            const string original = "[]";
+            files.Files[service.ProfilesJsonFilePath] = original;
+            var failure = new InvalidOperationException("scripted profile enumeration failure");
+
+            var observed = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.WriteAsync(ProfilesWithEnumerationFailure()));
+
+            Assert.AreSame(failure, observed);
+            Assert.AreEqual(0, files.Calls.Count);
+            Assert.AreEqual(0, files.Writes.Count);
+            Assert.AreEqual(1, files.Files.Count);
+            Assert.AreEqual(original, files.Files[service.ProfilesJsonFilePath]);
+
+            IEnumerable<ProfileVariablesSet> ProfilesWithEnumerationFailure()
+            {
+                yield return new ProfileVariablesSet(Guid.NewGuid(), "Unsaved");
+                throw failure;
+            }
+        }
+
+        [TestMethod]
         public async Task ReadWrite_FileFaultsPropagateOriginalExceptionWithoutRetryOrReplacement()
         {
             var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
