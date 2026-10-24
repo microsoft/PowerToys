@@ -138,6 +138,16 @@ namespace ImageResizer.Models
                     // Connect to the pipe or wait until the pipe is available.
                     pipeClient.Connect();
 
+                    if (!PowerToys.Interop.CommonManaged.AuthenticateNamedPipeServer(
+                            unchecked((ulong)pipeClient.SafePipeHandle.DangerousGetHandle().ToInt64()),
+                            string.Empty,
+                            string.Empty,
+                            string.Empty,
+                            PowerToys.Interop.NamedPipePeerValidation.TrustedSignedProcess))
+                    {
+                        throw new UnauthorizedAccessException("The named pipe server is not a trusted Windows Explorer process.");
+                    }
+
                     using (StreamReader sr = new StreamReader(pipeClient, Encoding.Unicode))
                     {
                         string file;
