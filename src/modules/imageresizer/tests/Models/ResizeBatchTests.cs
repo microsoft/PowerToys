@@ -25,34 +25,46 @@ namespace ImageResizer.Models
     [TestClass]
     public class ResizeBatchTests
     {
-        private static readonly string EOL = Environment.NewLine;
-
         [TestMethod]
-        public void FromCommandLineWorks()
+        [DataRow(1)]
+        [DataRow(3)]
+        public void FromCommandLineWorks(int fileCount)
         {
-            // Use actual test files that exist in the test directory
-            var testDir = Path.GetDirectoryName(typeof(ResizeBatchTests).Assembly.Location);
-            var file1 = Path.Combine(testDir, "Test.jpg");
-            var file2 = Path.Combine(testDir, "Test.png");
-            var file3 = Path.Combine(testDir, "Test.gif");
-
-            var standardInput =
-                file1 + EOL +
-                file2;
-            var args = new[]
+            using var directory = new TestDirectory();
+            var files = new List<string>
             {
-                "/d", "OutputDir",
-                file3,
+                CopyTestImage(directory, "選択 1.JpG"),
             };
+            if (fileCount == 3)
+            {
+                files.Add(CopyTestImage(directory, "café 2.PnG", "Test.png"));
+                files.Add(CopyTestImage(directory, "画像 3.GIF", "Test.gif"));
+            }
+
+            var destination = Path.Combine(directory, "出力 folder");
+            Directory.CreateDirectory(destination);
+            var args = new List<string> { "/d", destination };
+            var expected = files.ToArray();
+            if (fileCount == 3)
+            {
+                args.Add(files[2]);
+                expected = new[] { files[2], files[0], files[1] };
+            }
+
+            var unsupported = Path.Combine(directory, "notes.txt");
+            var missing = Path.Combine(directory, "missing.jpg");
+            File.WriteAllText(unsupported, "not an image");
+            var streamFiles = fileCount == 3 ? files.Take(2) : files;
+            using var standardInput = new StringReader(
+                string.Join("\r\n", streamFiles.Concat(new[] { unsupported, missing })) + "\r\n");
 
             var result = ResizeBatch.FromCommandLine(
-                new StringReader(standardInput),
-                args);
+                standardInput,
+                args.ToArray());
 
-            var files = result.Files.Select(Path.GetFileName).ToArray();
-            CollectionAssert.AreEquivalent(new List<string> { "Test.jpg", "Test.png", "Test.gif" }, files);
-
-            Assert.AreEqual("OutputDir", result.DestinationDirectory);
+            CollectionAssert.AreEqual(expected, result.Files.ToArray());
+            Assert.AreEqual(destination, result.DestinationDirectory);
+            Assert.AreEqual(0, result.InputErrors.Count);
         }
 
         [TestMethod]
@@ -62,7 +74,8 @@ namespace ImageResizer.Models
             batch.Files.Add("Image1.jpg");
             batch.Files.Add("Image2.jpg");
 
-            var errors = (await batch.ProcessAsync((_, __) => { }, CancellationToken.None)).ToList();
+            var errors = (await batch.ProcessAsync((_, __) => { }, new Settings(), CancellationToken.None)
+                .WaitAsync(TimeSpan.FromSeconds(10))).ToList();
 
             Assert.AreEqual(2, errors.Count);
 
@@ -81,18 +94,174 @@ namespace ImageResizer.Models
         }
 
         [TestMethod]
-        public async Task ProcessReportsProgress()
+        [DataRow(1)]
+        [DataRow(2)]
+        [DataRow(3)]
+        public async Task ProcessReportsProgress(int fileCount)
         {
-            var batch = CreateBatch(_ => { });
-            batch.Files.Add("Image1.jpg");
-            batch.Files.Add("Image2.jpg");
+            var settings = new Settings();
+            var attempts = new ConcurrentBag<(string File, Settings Settings)>();
+            var batch = CreateBatch((file, actualSettings) =>
+            {
+                attempts.Add((file, actualSettings));
+                return Task.CompletedTask;
+            });
+            for (var i = 0; i < fileCount; i++)
+            {
+                batch.Files.Add($"Image{i}.jpg");
+            }
+
             var calls = new ConcurrentBag<(int I, double Count)>();
 
-            await batch.ProcessAsync(
+            var errors = await batch.ProcessAsync(
                 (i, count) => calls.Add((i, count)),
-                CancellationToken.None);
+                settings,
+                CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(10));
 
-            Assert.AreEqual(2, calls.Count);
+            Assert.AreEqual(0, errors.Count());
+            CollectionAssert.AreEquivalent(batch.Files.ToArray(), attempts.Select(attempt => attempt.File).ToArray());
+            foreach (var attempt in attempts)
+            {
+                Assert.AreSame(settings, attempt.Settings);
+            }
+
+            AssertProgress(calls, fileCount);
+        }
+
+        [TestMethod]
+        [DataRow(1)]
+        [DataRow(3)]
+        public async Task ProcessContinuesAfterErrorAndReportsBasename(int fileCount)
+        {
+            var failedFile = @"root\failed.jpg";
+            var attempts = new ConcurrentBag<string>();
+            var batch = CreateBatch(file =>
+            {
+                attempts.Add(file);
+                if (file == failedFile)
+                {
+                    throw new InvalidOperationException("bad");
+                }
+            });
+            batch.Files.Add(failedFile);
+            for (var i = 1; i < fileCount; i++)
+            {
+                batch.Files.Add($@"root\success{i}.jpg");
+            }
+
+            var calls = new ConcurrentBag<(int I, double Count)>();
+            var errors = (await batch.ProcessAsync(
+                (i, count) => calls.Add((i, count)),
+                new Settings(),
+                CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(10))).ToList();
+
+            CollectionAssert.AreEquivalent(batch.Files.ToArray(), attempts.ToArray());
+            Assert.AreEqual(1, errors.Count);
+            Assert.AreEqual("failed.jpg", errors[0].File);
+            Assert.AreEqual("bad", errors[0].Error);
+            AssertProgress(calls, fileCount);
+        }
+
+        [TestMethod]
+        public async Task ProcessEmptyBatchDoesNotExecuteOrReportProgress()
+        {
+            var attempts = 0;
+            var reports = 0;
+            var batch = CreateBatch(_ => Interlocked.Increment(ref attempts));
+
+            var errors = await batch.ProcessAsync(
+                (_, __) => Interlocked.Increment(ref reports),
+                new Settings(),
+                CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(10));
+
+            Assert.AreEqual(0, errors.Count());
+            Assert.AreEqual(0, attempts);
+            Assert.AreEqual(0, reports);
+        }
+
+        [TestMethod]
+        public async Task ProcessPrecancelledBatchDoesNotExecuteOrReportProgress()
+        {
+            var attempts = 0;
+            var reports = 0;
+            var batch = CreateBatch(_ => Interlocked.Increment(ref attempts));
+            batch.Files.Add("Image1.jpg");
+            batch.Files.Add("Image2.jpg");
+            batch.Files.Add("Image3.jpg");
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            var processing = batch.ProcessAsync(
+                (_, __) => Interlocked.Increment(ref reports),
+                new Settings(),
+                cancellation.Token);
+            try
+            {
+                await processing.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            Assert.IsTrue(processing.IsCanceled);
+            Assert.AreEqual(0, attempts);
+            Assert.AreEqual(0, reports);
+        }
+
+        [TestMethod]
+        public async Task ProcessCancellationAllowsStartedOperationToComplete()
+        {
+            var entered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var completed = 0;
+            var batch = CreateBatch(async (_, __) =>
+            {
+                entered.TrySetResult(true);
+                await release.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                Interlocked.Increment(ref completed);
+            });
+            batch.Files.Add("Image1.jpg");
+            batch.Files.Add("Image2.jpg");
+            batch.Files.Add("Image3.jpg");
+            using var cancellation = new CancellationTokenSource();
+            var processing = batch.ProcessAsync((_, __) => { }, new Settings(), cancellation.Token);
+            try
+            {
+                await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                cancellation.Cancel();
+            }
+            finally
+            {
+                release.TrySetResult(true);
+            }
+
+            try
+            {
+                await processing.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            Assert.IsTrue(processing.IsCanceled);
+            Assert.IsTrue(completed >= 1);
+        }
+
+        [TestMethod]
+        public async Task ProcessProgressCallbackErrorFaultsBatch()
+        {
+            var attempts = 0;
+            var batch = CreateBatch(_ => Interlocked.Increment(ref attempts));
+            batch.Files.Add("Image1.jpg");
+            var expected = new InvalidOperationException("progress");
+            var processing = batch.ProcessAsync((_, __) => throw expected, new Settings(), CancellationToken.None);
+
+            var actual = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+                async () => await processing.WaitAsync(TimeSpan.FromSeconds(10)));
+
+            Assert.AreSame(expected, actual);
+            Assert.IsTrue(processing.IsFaulted);
+            Assert.AreEqual(1, attempts);
         }
 
         [TestMethod]
@@ -117,14 +286,14 @@ namespace ImageResizer.Models
         public void FromCliOptionsWithDiagnostics_ResolvesWildcardMatches()
         {
             using var directory = new TestDirectory();
-            var first = CopyTestImage(directory, "first.jpg");
             var second = CopyTestImage(directory, "second.jpg");
+            var first = CopyTestImage(directory, "first.jpg");
             var options = Options(Path.Combine(directory, "*.jpg"));
 
             var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
 
             Assert.AreEqual(0, batch.InputErrors.Count);
-            CollectionAssert.AreEquivalent(new[] { first, second }, batch.Files.ToArray());
+            CollectionAssert.AreEqual(new[] { first, second }, batch.Files.ToArray());
         }
 
         [TestMethod]
@@ -201,7 +370,7 @@ namespace ImageResizer.Models
         public async Task FromCliOptionsWithDiagnostics_NamedPipeReportsInvalidInputsAndDeduplicatesValidFiles()
         {
             using var directory = new TestDirectory();
-            var valid = CopyTestImage(directory, "pipe.jpg");
+            var valid = CopyTestImage(directory, "画像 pipe.JpG");
             var unsupported = Path.Combine(directory, "notes.txt");
             var missing = Path.Combine(directory, "missing.jpg");
             File.WriteAllText(unsupported, "not an image");
@@ -211,32 +380,70 @@ namespace ImageResizer.Models
             var options = Options(valid);
             options.PipeName = pipeName;
 
-            var batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
-            await writeTask;
+            ResizeBatch batch;
+            try
+            {
+                batch = ResizeBatch.FromCliOptionsWithDiagnostics(null, options);
+            }
+            finally
+            {
+                await writeTask.WaitAsync(TimeSpan.FromSeconds(10));
+            }
 
             CollectionAssert.AreEqual(new[] { valid }, batch.Files.ToArray());
-            CollectionAssert.AreEquivalent(
+            Assert.AreEqual(2, batch.InputErrors.Count);
+            CollectionAssert.AreEqual(
                 new[] { unsupported, missing },
                 batch.InputErrors.Select(error => error.File).ToArray());
+            Assert.AreEqual(Resources.CLI_ErrorUnsupportedFileType, batch.InputErrors[0].Error);
+            Assert.AreEqual(Resources.CLI_ErrorFileNotFound, batch.InputErrors[1].Error);
         }
 
         [TestMethod]
+        [DataRow(1, false)]
+        [DataRow(3, false)]
+        [DataRow(3, true)]
         [Timeout(10000)]
-        public async Task FromCliOptions_NamedPipeRemainsLenient()
+        public async Task FromCliOptions_NamedPipeRemainsLenient(int fileCount, bool duplicateInputs)
         {
             using var directory = new TestDirectory();
-            var valid = CopyTestImage(directory, "pipe.jpg");
+            var valid = Enumerable.Range(1, fileCount)
+                .Select(index => CopyTestImage(directory, $"画像 {index}.JpG"))
+                .ToArray();
+            var unsupported = Path.Combine(directory, "notes.txt");
             var missing = Path.Combine(directory, "missing.jpg");
+            File.WriteAllText(unsupported, "not an image");
             var pipeName = $"ImageResizer-{Guid.NewGuid():N}";
             using var pipe = CreatePipeServer(pipeName);
-            var writeTask = WritePipeLinesAsync(pipe, valid, missing);
+            var lines = new[] { valid[0], unsupported, missing }.Concat(valid.Skip(1)).ToArray();
+            if (duplicateInputs)
+            {
+                lines = lines.Append(valid[0]).ToArray();
+            }
+
+            var writeTask = WritePipeLinesAsync(pipe, lines);
             var options = Options();
             options.PipeName = pipeName;
+            options.DestinationDirectory = Path.Combine(directory, "出力 folder");
+            Directory.CreateDirectory(options.DestinationDirectory);
+            if (duplicateInputs)
+            {
+                options.Files.Add(valid[0]);
+            }
 
-            var batch = ResizeBatch.FromCliOptions(null, options);
-            await writeTask;
+            ResizeBatch batch;
+            try
+            {
+                batch = ResizeBatch.FromCliOptions(null, options);
+            }
+            finally
+            {
+                await writeTask.WaitAsync(TimeSpan.FromSeconds(10));
+            }
 
-            CollectionAssert.AreEqual(new[] { valid }, batch.Files.ToArray());
+            var expected = duplicateInputs ? new[] { valid[0] }.Concat(valid).Append(valid[0]).ToArray() : valid;
+            CollectionAssert.AreEqual(expected, batch.Files.ToArray());
+            Assert.AreEqual(options.DestinationDirectory, batch.DestinationDirectory);
             Assert.AreEqual(0, batch.InputErrors.Count);
         }
 
@@ -314,16 +521,40 @@ namespace ImageResizer.Models
             StringAssert.Contains(result, "0x88982F60");
         }
 
+        [TestMethod]
+        public void FormatErrorMessage_UsesTypeAndHResultWhenMessageIsWhitespace()
+        {
+            var result = ResizeBatch.FormatErrorMessage(new EmptyMessageException(" \t\r\n"));
+
+            StringAssert.Contains(result, nameof(EmptyMessageException));
+            StringAssert.Contains(result, "0x88982F60");
+        }
+
+        private static void AssertProgress(ConcurrentBag<(int I, double Count)> calls, int fileCount)
+        {
+            Assert.AreEqual(fileCount, calls.Count);
+            foreach (var call in calls)
+            {
+                Assert.AreEqual((double)fileCount, call.Count);
+                Assert.IsTrue(call.I >= 1 && call.I <= fileCount);
+            }
+
+            Assert.IsTrue(calls.Any(call => call.I == fileCount));
+        }
+
         private static ResizeBatch CreateBatch(Action<string> executeAction)
+            => CreateBatch((file, _) =>
+            {
+                executeAction(file);
+                return Task.CompletedTask;
+            });
+
+        private static ResizeBatch CreateBatch(Func<string, Settings, Task> executeAction)
         {
             var mock = new Mock<ResizeBatch> { CallBase = true };
             mock.Protected()
                 .Setup<Task>("ExecuteAsync", ItExpr.IsAny<string>(), ItExpr.IsAny<Settings>())
-                .Returns((string file, Settings settings) =>
-                {
-                    executeAction(file);
-                    return Task.CompletedTask;
-                });
+                .Returns((string file, Settings settings) => executeAction(file, settings));
 
             return mock.Object;
         }
@@ -339,11 +570,11 @@ namespace ImageResizer.Models
             return options;
         }
 
-        private static string CopyTestImage(TestDirectory directory, string fileName)
+        private static string CopyTestImage(TestDirectory directory, string fileName, string sourceFileName = "Test.jpg")
         {
             var sourceDirectory = Path.GetDirectoryName(typeof(ResizeBatchTests).Assembly.Location);
             var destination = Path.Combine(directory, fileName);
-            File.Copy(Path.Combine(sourceDirectory, "Test.jpg"), destination);
+            File.Copy(Path.Combine(sourceDirectory, sourceFileName), destination);
             return destination;
         }
 
@@ -363,7 +594,9 @@ namespace ImageResizer.Models
         private static async Task WritePipeLinesAsync(NamedPipeServerStream pipe, params string[] lines)
         {
             await pipe.WaitForConnectionAsync().ConfigureAwait(false);
-            using var writer = new StreamWriter(pipe, Encoding.Unicode);
+
+            // Shell writers send raw UTF-16LE paths without a byte-order mark.
+            using var writer = new StreamWriter(pipe, new UnicodeEncoding(false, false)) { NewLine = "\r\n" };
             foreach (var line in lines)
             {
                 await writer.WriteLineAsync(line).ConfigureAwait(false);
@@ -424,8 +657,8 @@ namespace ImageResizer.Models
 
         private sealed class EmptyMessageException : Exception
         {
-            public EmptyMessageException()
-                : base(string.Empty)
+            public EmptyMessageException(string message = "")
+                : base(message)
             {
                 HResult = unchecked((int)0x88982F60);
             }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
@@ -346,7 +347,12 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void UpdateWidthAndHeightShouldUpdateSizeWhenCorrectValuesAreProvided()
+        [DataRow(-2.0, 0.0)]
+        [DataRow(double.NaN, 0.0)]
+        [DataRow(0.0, 0.0)]
+        [DataRow(2.54, 2.54)]
+        [DataRow(50.0, 50.0)]
+        public void UpdateWidthAndHeightShouldUpdateSizeWhenCorrectValuesAreProvided(double value, double expected)
         {
             // arrange
             ImageSize imageSize = new ImageSize()
@@ -355,28 +361,131 @@ namespace ViewModelTests
                 Name = "Test",
                 Fit = ResizeFit.Fit,
                 Width = 30,
-                Height = 30,
+                Height = 40,
                 Unit = ResizeUnit.Pixel,
             };
 
-            double negativeWidth = -2.0;
-            double negativeHeight = -2.0;
-
             // Act
-            imageSize.Width = negativeWidth;
-            imageSize.Height = negativeHeight;
+            imageSize.Width = value;
 
             // Assert
-            Assert.AreEqual(0, imageSize.Width);
-            Assert.AreEqual(0, imageSize.Height);
+            Assert.AreEqual(expected, imageSize.Width);
+            Assert.AreEqual(40.0, imageSize.Height);
+
+            // Act
+            imageSize.Width = 30;
+            imageSize.Height = value;
+
+            // Assert
+            Assert.AreEqual(30.0, imageSize.Width);
+            Assert.AreEqual(expected, imageSize.Height);
 
             // Act
             imageSize.Width = 50;
+
+            // Assert
+            Assert.AreEqual(50.0, imageSize.Width);
+            Assert.AreEqual(expected, imageSize.Height);
+
+            // Act
             imageSize.Height = 50;
 
             // Assert
-            Assert.AreEqual(50, imageSize.Width);
-            Assert.AreEqual(50, imageSize.Height);
+            Assert.AreEqual(50.0, imageSize.Width);
+            Assert.AreEqual(50.0, imageSize.Height);
+        }
+
+        [TestMethod]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Centimeter, true)]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Inch, true)]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Percent, false)]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Pixel, true)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Centimeter, true)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Inch, true)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Percent, false)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Pixel, true)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Centimeter, true)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Inch, true)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Percent, true)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Pixel, true)]
+        public void ImageSizeShouldUseHeightUnlessNonStretchPercent(ResizeFit fit, ResizeUnit unit, bool expected)
+        {
+            ImageSize imageSize = new ImageSize(id: 1, name: "Test", fit: fit, width: 50, height: 30, unit: unit);
+
+            Assert.AreEqual(expected, imageSize.IsHeightUsed);
+        }
+
+        [TestMethod]
+        public void ImageSizeFitAndUnitChangesShouldNotifyDependentPropertiesOnlyWhenChanged()
+        {
+            ImageSize imageSize = new ImageSize(id: 1, name: "Test", fit: ResizeFit.Fit, width: 50, height: 30, unit: ResizeUnit.Percent);
+            var notifications = new List<string>();
+            imageSize.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+
+            Assert.IsFalse(imageSize.IsHeightUsed);
+
+            AssertChangeAndIdempotent(() => imageSize.Fit = ResizeFit.Stretch, nameof(ImageSize.Fit), true);
+            AssertChangeAndIdempotent(() => imageSize.Unit = ResizeUnit.Pixel, nameof(ImageSize.Unit), true);
+            AssertChangeAndIdempotent(() => imageSize.Fit = ResizeFit.Fit, nameof(ImageSize.Fit), true);
+            AssertChangeAndIdempotent(() => imageSize.Unit = ResizeUnit.Percent, nameof(ImageSize.Unit), false);
+
+            void AssertChangeAndIdempotent(Action change, string propertyName, bool expectedHeightUsed)
+            {
+                change();
+
+                Assert.AreEqual(expectedHeightUsed, imageSize.IsHeightUsed);
+                CollectionAssert.AreEquivalent(
+                    new[] { propertyName, nameof(ImageSize.IsHeightUsed), nameof(ImageSize.AccessibleTextHelper) },
+                    notifications);
+
+                notifications.Clear();
+                change();
+
+                Assert.AreEqual(expectedHeightUsed, imageSize.IsHeightUsed);
+                Assert.AreEqual(0, notifications.Count);
+            }
+        }
+
+        [TestMethod]
+        public void ImageSizeCloneEditsCanBeDiscardedWithoutChangingOriginal()
+        {
+            ImageSize original = new ImageSize(id: 7, name: "Original", fit: ResizeFit.Fit, width: 1024, height: 768, unit: ResizeUnit.Pixel);
+            string originalJson = original.ToJsonString();
+            var originalNotifications = new List<string>();
+            original.PropertyChanged += (_, args) => originalNotifications.Add(args.PropertyName);
+            {
+                ImageSize workingCopy = original.Clone();
+
+                Assert.AreNotSame(original, workingCopy);
+                Assert.AreEqual(original.Id, workingCopy.Id);
+                Assert.AreEqual(original.Name, workingCopy.Name);
+                Assert.AreEqual(original.Fit, workingCopy.Fit);
+                Assert.AreEqual(original.Width, workingCopy.Width);
+                Assert.AreEqual(original.Height, workingCopy.Height);
+                Assert.AreEqual(original.Unit, workingCopy.Unit);
+
+                workingCopy.Name = "Edited";
+                workingCopy.Fit = ResizeFit.Stretch;
+                workingCopy.Width = 50;
+                workingCopy.Height = 25;
+                workingCopy.Unit = ResizeUnit.Percent;
+
+                Assert.AreEqual(7, workingCopy.Id);
+                Assert.AreEqual("Edited", workingCopy.Name);
+                Assert.AreEqual(ResizeFit.Stretch, workingCopy.Fit);
+                Assert.AreEqual(50.0, workingCopy.Width);
+                Assert.AreEqual(25.0, workingCopy.Height);
+                Assert.AreEqual(ResizeUnit.Percent, workingCopy.Unit);
+            }
+
+            Assert.AreEqual(7, original.Id);
+            Assert.AreEqual("Original", original.Name);
+            Assert.AreEqual(ResizeFit.Fit, original.Fit);
+            Assert.AreEqual(1024.0, original.Width);
+            Assert.AreEqual(768.0, original.Height);
+            Assert.AreEqual(ResizeUnit.Pixel, original.Unit);
+            Assert.AreEqual(originalJson, original.ToJsonString());
+            Assert.AreEqual(0, originalNotifications.Count);
         }
 
         [TestMethod]
