@@ -8,12 +8,10 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Point = Windows.Foundation.Point;
-using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -90,33 +88,30 @@ public sealed partial class DockPageCommandBar : UserControl, ICommandBarInterac
         });
     }
 
-    public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
+    public void InvokeContextCommand(IContextMenuContext context, CommandContextItemViewModel command, Func<bool> isContextCurrent)
     {
-        var context = _commandContext;
-        if (context?.CanOpenContextMenu != true)
-        {
-            return false;
-        }
-
-        var chord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-        if (context.FindKeybinding(chord) is not { } command)
-        {
-            return false;
-        }
-
-        if (command.HasSubmenu)
+        CommandBarViewModel.InvokeContextCommand(command, submenu =>
         {
             _menuHost.ShowAfterKeyEvent(() =>
-                ReferenceEquals(context, _commandContext) && context.AllCommands.Contains(command)
-                    ? new ContextMenuRequest(context) { InitialSubmenu = command }
+                isContextCurrent() && context.AllCommands.Contains(submenu)
+                    ? new ContextMenuRequest(context)
+                    {
+                        InitialSubmenu = submenu,
+                        Anchor = context is PageMenuViewModel ? PageMenuAnchor : null,
+                    }
                     : null);
-        }
-        else
-        {
-            ViewModel.InvokeContextCommand(command);
-        }
+        });
+    }
 
-        return true;
+    private ContextMenuAnchor PageMenuAnchor =>
+        new(PageMenuButton, null, FlyoutPlacementMode.TopEdgeAlignedLeft, ContextMenuFilterLocation.Bottom);
+
+    private void PageMenuButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (CurrentPage?.PageMenu is { CanOpenContextMenu: true } menu)
+        {
+            _menuHost.Show(new ContextMenuRequest(menu) { Anchor = PageMenuAnchor });
+        }
     }
 
     public void OpenContextMenu() => OpenSelectedItemContextMenu();

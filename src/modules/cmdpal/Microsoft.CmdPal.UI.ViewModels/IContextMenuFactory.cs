@@ -14,4 +14,9 @@ public interface IContextMenuFactory
         TopLevelViewModel topLevelItem,
         ICommandProviderContext providerContext,
         List<IContextItem?> contextItems);
+
+    /// <summary>
+    /// Appends host actions to the page-title menu on a background thread.
+    /// </summary>
+    void AddMoreCommandsToPage(PageViewModel page, List<IContextItem> contextItems);
 }

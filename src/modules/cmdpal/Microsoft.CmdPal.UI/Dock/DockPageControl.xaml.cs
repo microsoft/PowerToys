@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -334,6 +335,7 @@ public sealed partial class DockPageControl : UserControl, IDisposable, ISearchB
     private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         var modifiers = KeyModifiers.GetCurrent();
+        var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
         if (e.Key == VirtualKey.Left && modifiers.OnlyAlt)
         {
             RequestBackOrClose();
@@ -349,12 +351,7 @@ public sealed partial class DockPageControl : UserControl, IDisposable, ISearchB
             ToggleFilterFocus();
             e.Handled = true;
         }
-        else if (_pageInteractions.TryCommandKeybinding(
-            modifiers.Ctrl,
-            modifiers.Alt,
-            modifiers.Shift,
-            modifiers.Win,
-            e.Key))
+        else if (_pageInteractions.TryCommandKeybinding(chord))
         {
             e.Handled = true;
         }

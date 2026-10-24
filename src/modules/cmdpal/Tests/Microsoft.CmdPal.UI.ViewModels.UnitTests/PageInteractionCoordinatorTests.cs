@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -17,6 +19,23 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public sealed partial class PageInteractionCoordinatorTests
 {
+    private readonly List<PageViewModel> _pages = [];
+    private readonly List<CommandItemViewModel> _selections = [];
+
+    [TestCleanup]
+    public async Task CleanupAsync()
+    {
+        foreach (var selection in _selections)
+        {
+            selection.SafeCleanup();
+        }
+
+        foreach (var page in _pages)
+        {
+            await page.CleanupAsync();
+        }
+    }
+
     private sealed partial class TestAppExtensionHost : AppExtensionHost
     {
         public override string? GetExtensionDisplayName() => "Test Host";
@@ -30,9 +49,7 @@ public sealed partial class PageInteractionCoordinatorTests
 
         public int CloseCount { get; private set; }
 
-        public int KeybindingCount { get; private set; }
-
-        public bool KeybindingResult { get; set; }
+        public List<(IContextMenuContext Context, CommandContextItemViewModel Command, Func<bool> IsContextCurrent)> Invocations { get; } = [];
 
         public void SetCommandContext(ICommandBarContext? context) => Contexts.Add(context);
 
@@ -40,11 +57,12 @@ public sealed partial class PageInteractionCoordinatorTests
 
         public void CloseContextMenu() => CloseCount++;
 
-        public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
-        {
-            KeybindingCount++;
-            return KeybindingResult;
-        }
+        public void InvokeContextCommand(IContextMenuContext context, CommandContextItemViewModel command, Func<bool> isContextCurrent) => Invocations.Add((context, command, isContextCurrent));
+    }
+
+    private sealed partial class TestMenuPage : Page, IExtendedAttributesProvider
+    {
+        public TestMenuPage(IContextItem[] commands) => MenuCommands = commands;
     }
 
     private sealed class TestPageTarget : IPageInteractionTarget, IPageInteractionEventSource
@@ -177,25 +195,283 @@ public sealed partial class PageInteractionCoordinatorTests
     [TestMethod]
     public void ContextMenuOperations_ReachOnlyTheOwningCommandBar()
     {
-        var barA = new TestCommandBar { KeybindingResult = true };
+        var barA = new TestCommandBar();
         var barB = new TestCommandBar();
         using var hostA = new PageInteractionCoordinator(barA);
         using var hostB = new PageInteractionCoordinator(barB);
         var targetA = new TestPageTarget();
         var targetB = new TestPageTarget();
+        hostA.AttachPage(CreatePageWithMenu(CreateMenuCommand("Page A")));
+        hostB.AttachPage(CreatePageWithMenu(CreateMenuCommand("Page B")));
         hostA.AttachTarget(targetA);
         hostB.AttachTarget(targetB);
 
         hostA.OpenContextMenu();
         targetA.RequestContextMenuClose();
-        Assert.IsTrue(hostA.TryCommandKeybinding(true, false, false, false, VirtualKey.K));
+        Assert.IsTrue(TryShortcut(hostA, VirtualKey.S, VirtualKeyModifiers.Control));
 
         Assert.AreEqual(1, barA.OpenCount);
         Assert.AreEqual(1, barA.CloseCount);
-        Assert.AreEqual(1, barA.KeybindingCount);
         Assert.AreEqual(0, barB.OpenCount);
         Assert.AreEqual(0, barB.CloseCount);
-        Assert.AreEqual(0, barB.KeybindingCount);
+        Assert.AreEqual(1, barA.Invocations.Count);
+        Assert.AreEqual("Page A", barA.Invocations[0].Command.Title);
+        Assert.AreEqual(0, barB.Invocations.Count);
+
+        Assert.IsTrue(TryShortcut(hostB, VirtualKey.S, VirtualKeyModifiers.Control));
+        Assert.AreEqual(1, barA.Invocations.Count);
+        Assert.AreEqual(1, barB.Invocations.Count);
+        Assert.AreEqual("Page B", barB.Invocations[0].Command.Title);
+    }
+
+    [TestMethod]
+    public void Shortcut_SelectedItemWinsOverPageMenuWithoutChangingCommandContext()
+    {
+        var page = CreatePageWithMenu(CreateMenuCommand("Page settings"));
+        var selection = CreateSelection(page, CreateMenuCommand("Item settings"));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+        page.SetCommandBarContext(selection);
+        bar.Contexts.Clear();
+
+        Assert.IsTrue(TryShortcut(host, VirtualKey.S, VirtualKeyModifiers.Control));
+
+        Assert.AreEqual(1, bar.Invocations.Count);
+        Assert.AreSame(selection, bar.Invocations[0].Context);
+        Assert.AreEqual("Item settings", bar.Invocations[0].Command.Title);
+        Assert.AreSame(selection, host.CurrentCommandContext);
+        Assert.AreEqual(0, bar.Contexts.Count);
+    }
+
+    [TestMethod]
+    public void Shortcut_PageMenuRemainsAvailableWithNoSelection()
+    {
+        var page = CreatePageWithMenu(CreateMenuCommand("Page settings"));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+        bar.Contexts.Clear();
+
+        Assert.IsTrue(TryShortcut(host, VirtualKey.S, VirtualKeyModifiers.Control));
+
+        Assert.AreEqual(1, bar.Invocations.Count);
+        Assert.AreSame(page.PageMenu, bar.Invocations[0].Context);
+        Assert.AreSame(page.PageMenu.AllCommands[0], bar.Invocations[0].Command);
+        Assert.IsNull(host.CurrentCommandContext);
+        Assert.AreEqual(0, bar.Contexts.Count);
+    }
+
+    [TestMethod]
+    public void Shortcut_PageMenuIsFallbackWhenSelectedItemDoesNotMatch()
+    {
+        var page = CreatePageWithMenu(CreateMenuCommand("Page settings"));
+        var selection = CreateSelection(page, CreateMenuCommand("Other action", VirtualKey.O));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+        page.SetCommandBarContext(selection);
+
+        Assert.IsTrue(TryShortcut(host, VirtualKey.S, VirtualKeyModifiers.Control));
+
+        Assert.AreEqual(1, bar.Invocations.Count);
+        Assert.AreSame(page.PageMenu, bar.Invocations[0].Context);
+        Assert.AreEqual("Page settings", bar.Invocations[0].Command.Title);
+        Assert.AreSame(selection, host.CurrentCommandContext);
+    }
+
+    [DataTestMethod]
+    [DataRow(VirtualKey.K, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Shift, VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.LeftShift, VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.RightShift, VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Control, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.LeftControl, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.RightControl, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Menu, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.LeftMenu, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.RightMenu, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.LeftWindows, VirtualKeyModifiers.Windows)]
+    [DataRow(VirtualKey.RightWindows, VirtualKeyModifiers.Windows)]
+    [DataRow(VirtualKey.Enter, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.Enter, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Escape, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.Back, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.Tab, VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.Up, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.Down, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.Left, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Right, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.Home, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.End, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.PageUp, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.PageDown, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.Insert, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Delete, VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.A, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.A, VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.A, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.C, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.V, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.X, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Y, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Z, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.F, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKeyExtensions.OemCommaKey, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Q, VirtualKeyModifiers.Control | VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.Q, VirtualKeyModifiers.Control | VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.Application, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.Application, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.F10, VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.F4, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.F4, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.F4, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Space, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.NumberPad0, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.NumberPad5, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.NumberPad9, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.NumberPad5, VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift)]
+    public void Shortcut_PageMenuCannotOverrideHostNavigationOrTextInput(VirtualKey key, VirtualKeyModifiers modifiers)
+    {
+        var page = CreatePageWithMenu(CreateMenuCommand("Page action", key, modifiers));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+
+        Assert.IsFalse(TryShortcut(host, key, modifiers));
+
+        Assert.AreEqual(0, bar.Invocations.Count);
+    }
+
+    [DataTestMethod]
+    [DataRow(VirtualKey.S, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.K, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKeyExtensions.OemCommaKey, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.S, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.S, VirtualKeyModifiers.Windows)]
+    [DataRow(VirtualKey.F, VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.Space, VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.F1, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.F5, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.F5, VirtualKeyModifiers.Control | VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.F10, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.F10, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.F24, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.NumberPad5, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.NumberPad5, VirtualKeyModifiers.Menu | VirtualKeyModifiers.Windows)]
+    public void Shortcut_PageMenuAcceptsCommandChords(VirtualKey key, VirtualKeyModifiers modifiers)
+    {
+        var page = CreatePageWithMenu(CreateMenuCommand("Page action", key, modifiers));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+
+        Assert.IsTrue(TryShortcut(host, key, modifiers));
+        Assert.AreEqual(1, bar.Invocations.Count);
+        Assert.AreSame(page.PageMenu, bar.Invocations[0].Context);
+    }
+
+    [DataTestMethod]
+    [DataRow(VirtualKey.Escape, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.C, VirtualKeyModifiers.Control)]
+    [DataRow(VirtualKey.Application, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.F10, VirtualKeyModifiers.Shift)]
+    [DataRow(VirtualKey.F4, VirtualKeyModifiers.None)]
+    [DataRow(VirtualKey.F4, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.Space, VirtualKeyModifiers.Menu)]
+    [DataRow(VirtualKey.NumberPad5, VirtualKeyModifiers.Menu)]
+    public void Shortcut_PageScopeRestrictionsDoNotChangeSelectedItemBindings(VirtualKey key, VirtualKeyModifiers modifiers)
+    {
+        var page = CreatePageWithMenu(CreateMenuCommand("Page action", key, modifiers));
+        var selection = CreateSelection(page, CreateMenuCommand("Item action", key, modifiers));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+        page.SetCommandBarContext(selection);
+
+        Assert.IsTrue(TryShortcut(host, key, modifiers));
+        Assert.AreEqual(1, bar.Invocations.Count);
+        Assert.AreSame(selection, bar.Invocations[0].Context);
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Shortcut_DeferredInvocationChecksLiveContext(bool pageMenu)
+    {
+        var page = CreatePageWithMenu(CreateMenuCommand("Page action"));
+        var selection = CreateSelection(page, CreateMenuCommand("Item action", pageMenu ? VirtualKey.O : VirtualKey.S));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+        page.SetCommandBarContext(selection);
+
+        Assert.IsTrue(TryShortcut(host, VirtualKey.S, VirtualKeyModifiers.Control));
+        var invocation = bar.Invocations[0];
+        Assert.IsTrue(invocation.IsContextCurrent());
+
+        page.SetCommandBarContext(CreateSelection(page, CreateMenuCommand("Replacement")));
+        Assert.AreEqual(pageMenu, invocation.IsContextCurrent());
+
+        host.AttachPage(CreatePage());
+        Assert.IsFalse(invocation.IsContextCurrent());
+    }
+
+    [TestMethod]
+    public void Shortcut_SelectedItemCtrlKRemainsAvailable()
+    {
+        var page = CreatePageWithMenu(CreateMenuCommand("Page action", VirtualKey.K));
+        var selection = CreateSelection(page, CreateMenuCommand("Item action", VirtualKey.K));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+        page.SetCommandBarContext(selection);
+
+        Assert.IsTrue(TryShortcut(host, VirtualKey.K, VirtualKeyModifiers.Control));
+
+        Assert.AreEqual(1, bar.Invocations.Count);
+        Assert.AreSame(selection, bar.Invocations[0].Context);
+        Assert.AreEqual("Item action", bar.Invocations[0].Command.Title);
+    }
+
+    [TestMethod]
+    public void Shortcut_PageSubmenuIsDeliveredWithItsPageMenuContext()
+    {
+        var submenu = CreateMenuCommand("Page tools");
+        submenu.MoreCommands = [CreateMenuCommand("Nested action", VirtualKey.N)];
+        var page = CreatePageWithMenu(submenu);
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(page);
+
+        Assert.IsTrue(TryShortcut(host, VirtualKey.S, VirtualKeyModifiers.Control));
+
+        Assert.AreEqual(1, bar.Invocations.Count);
+        Assert.AreSame(page.PageMenu, bar.Invocations[0].Context);
+        Assert.IsTrue(bar.Invocations[0].Command.HasSubmenu);
+        Assert.IsFalse(TryShortcut(host, VirtualKey.N, VirtualKeyModifiers.Control));
+        Assert.AreEqual(1, bar.Invocations.Count);
+    }
+
+    [TestMethod]
+    public void Shortcut_DetachedPageAndSelectionAreNoLongerAvailable()
+    {
+        var oldPage = CreatePageWithMenu(CreateMenuCommand("Old page settings"));
+        var oldSelection = CreateSelection(oldPage, CreateMenuCommand("Old item action", VirtualKey.O));
+        var bar = new TestCommandBar();
+        using var host = new PageInteractionCoordinator(bar);
+        host.AttachPage(oldPage);
+        oldPage.SetCommandBarContext(oldSelection);
+        host.AttachPage(CreatePage());
+
+        Assert.IsFalse(TryShortcut(host, VirtualKey.S, VirtualKeyModifiers.Control));
+        Assert.IsFalse(TryShortcut(host, VirtualKey.O, VirtualKeyModifiers.Control));
+
+        host.AttachPage(null);
+        oldPage.SetCommandBarContext(oldSelection);
+
+        Assert.IsFalse(TryShortcut(host, VirtualKey.S, VirtualKeyModifiers.Control));
+        Assert.AreEqual(0, bar.Invocations.Count);
     }
 
     [TestMethod]
@@ -296,15 +572,54 @@ public sealed partial class PageInteractionCoordinatorTests
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference AttachAndReplacePage(PageInteractionCoordinator host)
+    private WeakReference AttachAndReplacePage(PageInteractionCoordinator host)
     {
         var oldPage = CreatePage();
-        host.AttachPage(oldPage);
-        var reference = new WeakReference(oldPage);
-        host.AttachPage(CreatePage());
-        return reference;
+        try
+        {
+            host.AttachPage(oldPage);
+            var reference = new WeakReference(oldPage);
+            host.AttachPage(CreatePage());
+            return reference;
+        }
+        finally
+        {
+            _pages.Remove(oldPage);
+            oldPage.CleanupAsync().GetAwaiter().GetResult();
+        }
     }
 
-    private static PageViewModel CreatePage() =>
-        new(new Page(), TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+    private PageViewModel CreatePage()
+    {
+        var page = new PageViewModel(new Page(), TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+        _pages.Add(page);
+        return page;
+    }
+
+    private static bool TryShortcut(PageInteractionCoordinator host, VirtualKey key, VirtualKeyModifiers modifiers) =>
+        host.TryCommandKeybinding(new(modifiers, (int)key, 0));
+
+    private PageViewModel CreatePageWithMenu(params IContextItem[] commands)
+    {
+        var page = new PageViewModel(new TestMenuPage(commands), TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+        _pages.Add(page);
+        page.InitializeProperties();
+        page.PageMenu.InitializeProperties();
+        return page;
+    }
+
+    private static CommandContextItem CreateMenuCommand(string title, VirtualKey key = VirtualKey.S, VirtualKeyModifiers modifiers = VirtualKeyModifiers.Control) =>
+        new(new NoOpCommand { Name = title })
+        {
+            RequestedShortcut = new(modifiers, (int)key, 0),
+        };
+
+    private CommandItemViewModel CreateSelection(PageViewModel page, params IContextItem[] commands)
+    {
+        var model = new ListItem(new NoOpCommand { Name = "Run" }) { MoreCommands = commands };
+        var selection = new CommandItemViewModel(new ExtensionObject<ICommandItem>(model), new(page), DefaultContextMenuFactory.Instance);
+        _selections.Add(selection);
+        selection.SlowInitializeProperties();
+        return selection;
+    }
 }

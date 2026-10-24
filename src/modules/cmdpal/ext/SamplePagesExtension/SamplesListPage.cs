@@ -19,6 +19,7 @@ public partial class SamplesListPage : ListPage
             Title = "List Page Sample Command",
             Subtitle = "Display a list of items",
         },
+        SamplePageMenuPage.Item,
         new ListItem(new SampleToastsPage())
         {
             Title = "Toast Notification Samples",

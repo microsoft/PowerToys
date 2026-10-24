@@ -30,6 +30,7 @@ public class OpenSettingsCommandTests
 
             command.Invoke();
 
+            Assert.AreEqual(OpenSettingsCommand.SettingsCommandId, command.Id);
             Assert.AreEqual(1, recipient.Messages.Count);
             Assert.AreEqual(string.Empty, recipient.Messages[0].SettingsPageTag);
         }
@@ -53,6 +54,32 @@ public class OpenSettingsCommandTests
 
             Assert.AreEqual(1, recipient.Messages.Count);
             Assert.AreEqual("Gallery", recipient.Messages[0].SettingsPageTag);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+        }
+    }
+
+    [TestMethod]
+    public void OpenSettingsCommand_Invoke_PreservesExtensionDestination()
+    {
+        var recipient = new SettingsMessageRecipient();
+        WeakReferenceMessenger.Default.Register<SettingsMessageRecipient, OpenSettingsMessage>(recipient, static (r, m) => r.Messages.Add(m));
+        try
+        {
+            var destination = new OpenSettingsMessage(
+                SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page,
+                ExtensionProviderId: "owning.extension");
+            var command = new OpenSettingsCommand(destination, "Extension settings", OpenSettingsCommand.ExtensionSettingsCommandId);
+
+            command.Invoke();
+
+            Assert.AreEqual("Extension settings", command.Name);
+            Assert.AreEqual(OpenSettingsCommand.ExtensionSettingsCommandId, command.Id);
+            Assert.AreNotEqual(OpenSettingsCommand.SettingsCommandId, command.Id);
+            Assert.HasCount(1, recipient.Messages);
+            Assert.AreSame(destination, recipient.Messages[0]);
         }
         finally
         {
