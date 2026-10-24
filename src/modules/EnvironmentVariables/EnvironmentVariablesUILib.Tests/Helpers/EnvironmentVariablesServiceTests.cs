@@ -10,9 +10,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+using EnvironmentVariablesUILib.Converters;
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
 using EnvironmentVariablesUILib.UnitTests.TestSupport;
+using Microsoft.UI.Xaml;
 
 namespace EnvironmentVariablesUILib.UnitTests.Helpers
 {
@@ -465,6 +467,141 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers
             Assert.IsNull(vm.AppliedProfile);
             Assert.AreEqual(EnvironmentState.Unchanged, vm.EnvironmentState);
             Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [TestMethod]
+        public async Task Reload_FileReadFailureThenRetryReconcilesActiveProfileAndWarning()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            var authored = new ProfileVariablesSet(Guid.NewGuid(), "Recovered") { IsEnabled = true };
+            authored.Variables.Add(new Variable("TMP", "%ACTIVE%;;", VariablesSetType.Profile));
+            var expectedUser = new[]
+            {
+                ("TMP", "%ACTIVE%;;"),
+                ("TMP_PowerToys_Recovered", "%ORIGINAL%;;"),
+                ("Unrelated", "%USER%;"),
+            };
+            foreach (var (name, value) in expectedUser)
+            {
+                fixture.Environment.User[name] = value;
+            }
+
+            fixture.Environment.Machine["MachineOnly"] = "%MACHINE%;";
+            await service.WriteAsync(new[] { authored });
+            var payload = files.Files[service.ProfilesJsonFilePath];
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var originalProfiles = vm.Profiles;
+            var originalActive = vm.Profiles.Single();
+            var originalChild = originalActive.Variables.Single();
+            Assert.AreSame(originalActive, vm.AppliedProfile);
+            Assert.IsTrue(originalActive.IsEnabled);
+            vm.EnvironmentState = EnvironmentState.EnvironmentMessageReceived;
+            var failure = new IOException("scripted file read failure before retry");
+            files.ReadFailure = failure;
+            var callsBeforeFault = files.Calls.Count;
+            Assert.AreEqual(3, callsBeforeFault);
+
+            vm.LoadEnvironmentVariables();
+
+            Assert.AreEqual(EnvironmentState.EnvironmentMessageReceived, vm.EnvironmentState);
+            Assert.AreSame(originalActive, vm.AppliedProfile);
+            Assert.IsTrue(originalActive.IsEnabled);
+            Assert.AreSame(originalChild, originalActive.Variables.Single());
+            Assert.AreEqual(0, vm.Profiles.Count);
+            Assert.AreNotSame(originalProfiles, vm.Profiles);
+            var failedProfiles = vm.Profiles;
+            var error = fixture.Logger.Entries.Single();
+            Assert.AreEqual(("Error", "Failed to load profiles.json file"), (error.Level, error.Message));
+            Assert.AreSame(failure, error.Exception);
+            Assert.AreSame(failure, files.ReadFailure);
+            CollectionAssert.AreEqual(
+                new[] { ("Exists", (string?)service.ProfilesJsonFilePath), ("ReadAllText", service.ProfilesJsonFilePath) },
+                files.Calls.Skip(callsBeforeFault).ToArray());
+            Assert.AreEqual(1, files.Files.Count);
+            Assert.AreEqual(payload, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(1, files.Writes.Count);
+            CollectionAssert.AreEquivalent(expectedUser, fixture.Environment.User.Select(entry => (entry.Key, (string)entry.Value!)).ToArray());
+            Assert.AreEqual(1, fixture.Environment.Machine.Count);
+            Assert.AreEqual("%MACHINE%;", fixture.Environment.Machine["MachineOnly"]);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.IsFalse(fixture.Environment.Operations.Any(operation => operation.Operation is "Write" or "Delete"));
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+            var boolean = new EnvironmentStateToBoolConverter();
+            var visibility = new EnvironmentStateToVisibilityConverter();
+            var messageKeys = new List<string>();
+            var titleKeys = new List<string>();
+            Func<string, string> messageResource = key =>
+            {
+                messageKeys.Add(key);
+                return "message:" + key;
+            };
+            Func<string, string> titleResource = key =>
+            {
+                titleKeys.Add(key);
+                return "title:" + key;
+            };
+            Assert.AreEqual(true, boolean.Convert(vm.EnvironmentState, typeof(bool), null, string.Empty));
+            Assert.AreEqual(Visibility.Visible, visibility.Convert(vm.EnvironmentState, typeof(Visibility), null, string.Empty));
+            Assert.AreEqual("message:StateNotUpToDateEnvironmentMessageReceivedMsg", EnvironmentStateToMessageConverter.ConvertState(vm.EnvironmentState, messageResource));
+            Assert.AreEqual("StateNotUpToDateEnvironmentMessageReceivedMsg", messageKeys.Single());
+            Assert.AreEqual("title:StateNotUpToDateTitle", EnvironmentStateToTitleConverter.ConvertState(vm.EnvironmentState, titleResource));
+            Assert.AreEqual("StateNotUpToDateTitle", titleKeys.Single());
+            Assert.IsTrue(vm.IsInfoBarButtonVisible);
+            messageKeys.Clear();
+            titleKeys.Clear();
+            var callsBeforeRetry = files.Calls.Count;
+            files.ReadFailure = null;
+
+            vm.LoadEnvironmentVariables();
+
+            Assert.AreEqual(EnvironmentState.Unchanged, vm.EnvironmentState);
+            var recovered = vm.Profiles.Single();
+            Assert.AreSame(recovered, vm.AppliedProfile);
+            Assert.AreNotSame(originalActive, recovered);
+            Assert.AreNotSame(authored, recovered);
+            Assert.AreNotSame(originalProfiles, vm.Profiles);
+            Assert.AreNotSame(failedProfiles, vm.Profiles);
+            Assert.AreEqual((authored.Id, "Recovered", true), (recovered.Id, recovered.Name, recovered.IsEnabled));
+            Assert.AreNotSame(originalActive.Variables, recovered.Variables);
+            var child = recovered.Variables.Single();
+            Assert.AreNotSame(originalChild, child);
+            Assert.AreEqual(("TMP", "%ACTIVE%;;", VariablesSetType.Profile), (child.Name, child.Values, child.ParentType));
+            Assert.AreSame(originalChild, originalActive.Variables.Single());
+            Assert.IsTrue(originalActive.IsEnabled);
+            Assert.IsNull(files.ReadFailure);
+            Assert.AreEqual(false, boolean.Convert(vm.EnvironmentState, typeof(bool), null, string.Empty));
+            Assert.AreEqual(Visibility.Collapsed, visibility.Convert(vm.EnvironmentState, typeof(Visibility), null, string.Empty));
+            Assert.AreEqual(string.Empty, EnvironmentStateToMessageConverter.ConvertState(vm.EnvironmentState, messageResource));
+            Assert.AreEqual(0, messageKeys.Count);
+            Assert.AreEqual("title:StateNotUpToDateTitle", EnvironmentStateToTitleConverter.ConvertState(vm.EnvironmentState, titleResource));
+            Assert.AreEqual("StateNotUpToDateTitle", titleKeys.Single());
+            Assert.IsFalse(vm.IsInfoBarButtonVisible);
+            CollectionAssert.AreEqual(
+                new[] { ("Exists", (string?)service.ProfilesJsonFilePath), ("ReadAllText", service.ProfilesJsonFilePath) },
+                files.Calls.Skip(callsBeforeRetry).ToArray());
+            Assert.AreEqual(1, files.Files.Count);
+            Assert.AreEqual(payload, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(payload, files.Writes.Single().Contents);
+            CollectionAssert.AreEquivalent(expectedUser, fixture.Environment.User.Select(entry => (entry.Key, (string)entry.Value!)).ToArray());
+            Assert.AreEqual(1, fixture.Environment.Machine.Count);
+            Assert.AreEqual("%MACHINE%;", fixture.Environment.Machine["MachineOnly"]);
+            Assert.AreEqual(error, fixture.Logger.Entries.Single());
+            Assert.AreSame(failure, fixture.Logger.Entries.Single().Exception);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.IsFalse(fixture.Environment.Operations.Any(operation => operation.Operation is "Write" or "Delete"));
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Changed.Count);
             Assert.IsTrue(fixture.Work.IsQuiescent);
         }
 
