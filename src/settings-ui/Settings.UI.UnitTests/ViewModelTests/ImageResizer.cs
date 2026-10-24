@@ -298,6 +298,8 @@ namespace ViewModelTests
             viewModel.DeleteImageSize(3);
             expectedSizes.RemoveAt(3);
             AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+            string sizesJsonAfterPhoneDeletion = savedSettings[0].Json;
+            string settingsJsonAfterPhoneDeletion = savedSettings[1].Json;
 
             savedSettings.Clear();
             viewModel.AddImageSize(workingCopy);
@@ -318,7 +320,14 @@ namespace ViewModelTests
             Assert.AreEqual(0, reloadedWrites.Count);
             TestContext.WriteLine(
                 "ImageResizerProducerPayloads: {0}",
-                JsonSerializer.Serialize(new { SizesJson = savedSettings[0].Json, SettingsJson = savedSettings[1].Json }));
+                JsonSerializer.Serialize(new
+                {
+                    InitialSettingsJson = originalJson,
+                    SizesJsonAfterPhoneDeletion = sizesJsonAfterPhoneDeletion,
+                    SettingsJsonAfterPhoneDeletion = settingsJsonAfterPhoneDeletion,
+                    SizesJson = savedSettings[0].Json,
+                    SettingsJson = savedSettings[1].Json,
+                }));
         }
 
         [TestMethod]
