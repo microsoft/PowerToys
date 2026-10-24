@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using ImageResizer.Properties;
 using ImageResizer.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Models
 {
@@ -141,6 +142,51 @@ namespace ImageResizer.Models
             await operation.ExecuteAsync();
 
             CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test).png");
+        }
+
+        [TestMethod]
+        public async Task ExecuteConvertsToSelectedOutputFormat()
+        {
+            var operation = new ResizeOperation("Test.png", _directory, Settings(s => s.OutputFormat = OutputFormat.Jpeg));
+
+            await operation.ExecuteAsync();
+
+            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test).jpg");
+            await AssertEx.ImageAsync(
+                _directory.File(),
+                decoder => Assert.AreEqual(BitmapDecoder.JpegDecoderId, decoder.DecoderInformation.CodecId));
+        }
+
+        [TestMethod]
+        public async Task ExecuteKeepsFirstFrameWhenOutputFormatIsSingleFrame()
+        {
+            var operation = new ResizeOperation("Test.gif", _directory, Settings(s => s.OutputFormat = OutputFormat.Png));
+
+            await operation.ExecuteAsync();
+
+            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test).png");
+            await AssertEx.ImageAsync(_directory.File(), decoder => Assert.AreEqual(1u, decoder.FrameCount));
+        }
+
+        [TestMethod]
+        public async Task ExecuteReplacesOriginalWithConvertedFile()
+        {
+            var path = Path.Combine(_directory, "Test.png");
+            File.Copy("Test.png", path);
+
+            var operation = new ResizeOperation(
+                path,
+                null,
+                Settings(
+                    s =>
+                    {
+                        s.Replace = true;
+                        s.OutputFormat = OutputFormat.Jpeg;
+                    }));
+
+            await operation.ExecuteAsync();
+
+            Assert.AreEqual("Test.jpg", _directory.FileNames.Single());
         }
 
         [TestMethod]
