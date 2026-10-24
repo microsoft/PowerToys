@@ -20,11 +20,13 @@ namespace ImageResizer.ViewModels
     {
         private Func<string, string> _originalGetString;
         private string _originalSettingsPath;
+        private AiAvailabilityState _originalAiAvailabilityState;
         private TestDirectory _directory;
 
         [TestInitialize]
         public void Initialize()
         {
+            _originalAiAvailabilityState = App.AiAvailabilityState;
             _originalGetString = ResourceLoaderInstance.GetString;
             _originalSettingsPath = Settings.SettingsPath;
             ResourceLoaderInstance.GetString = key => key;
@@ -35,6 +37,7 @@ namespace ImageResizer.ViewModels
         [TestCleanup]
         public void Cleanup()
         {
+            App.AiAvailabilityState = _originalAiAvailabilityState;
             ResourceLoaderInstance.GetString = _originalGetString;
             Settings.SettingsPath = _originalSettingsPath;
             Dispose();
@@ -115,6 +118,113 @@ namespace ImageResizer.ViewModels
 
             Assert.AreEqual(0, notifications.Count);
             Assert.IsFalse(commandInvalidated);
+        }
+
+        [TestMethod]
+        [DataRow(AiAvailabilityState.NotSupported, true, false, false, false, false, true)]
+        [DataRow(AiAvailabilityState.ModelNotReady, false, true, true, false, true, false)]
+        [DataRow(AiAvailabilityState.Ready, false, true, false, true, true, true)]
+        public void AiSelectionShouldReflectAvailabilityAndResetOnReturnToCustom(
+            AiAvailabilityState availability,
+            bool expectedCustomSelection,
+            bool expectedDescriptionVisibility,
+            bool expectedDownloadPrompt,
+            bool expectedAiControls,
+            bool expectedConfiguration,
+            bool expectedCanResize)
+        {
+            App.AiAvailabilityState = availability;
+            var settings = new Settings();
+            settings.SelectedSizeIndex = settings.Sizes.Count;
+            var batch = new ResizeBatch();
+            var page = new object();
+            var main = new MainViewModel(batch, settings) { CurrentPage = page };
+            var view = new Mock<IMainView>(MockBehavior.Strict);
+            var viewModel = new InputViewModel(settings, main, view.Object, batch);
+            var notifications = new List<string>();
+            var commandInvalidated = false;
+            viewModel.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+            viewModel.ResizeCommand.CanExecuteChanged += (_, _) => commandInvalidated = true;
+
+            Assert.AreSame(settings.CustomSize, settings.SelectedSize);
+            Assert.IsTrue(viewModel.IsCustomSizeSelected);
+            Assert.IsFalse(viewModel.ShowAiSizeDescriptions);
+            Assert.IsFalse(viewModel.ShowModelDownloadPrompt);
+            Assert.IsFalse(viewModel.ShowAiControls);
+            Assert.IsFalse(viewModel.ShowAiConfigurationSection);
+            Assert.IsTrue(viewModel.CanResize);
+            Assert.IsTrue(viewModel.ResizeCommand.CanExecute(null));
+
+            foreach (var selectAi in new[] { true, false })
+            {
+                notifications.Clear();
+                commandInvalidated = false;
+
+                settings.SelectedSizeIndex = settings.Sizes.Count + (selectAi ? 1 : 0);
+
+                if (selectAi && !expectedCustomSelection)
+                {
+                    Assert.AreSame(settings.AiSize, settings.SelectedSize);
+                }
+                else
+                {
+                    Assert.AreSame(settings.CustomSize, settings.SelectedSize);
+                }
+
+                Assert.AreEqual(!selectAi || expectedCustomSelection, viewModel.IsCustomSizeSelected);
+                Assert.AreEqual(selectAi && expectedDescriptionVisibility, viewModel.ShowAiSizeDescriptions);
+                Assert.AreEqual(selectAi && expectedDownloadPrompt, viewModel.ShowModelDownloadPrompt);
+                Assert.AreEqual(selectAi && expectedAiControls, viewModel.ShowAiControls);
+                Assert.AreEqual(selectAi && expectedConfiguration, viewModel.ShowAiConfigurationSection);
+                Assert.AreEqual(!selectAi || expectedCanResize, viewModel.CanResize);
+                Assert.AreEqual(!selectAi || expectedCanResize, viewModel.ResizeCommand.CanExecute(null));
+                var expectedDescription = selectAi && !expectedCustomSelection ? "Input_AiUnknownSize" : string.Empty;
+                Assert.AreEqual(expectedDescription, viewModel.CurrentResolutionDescription);
+                Assert.AreEqual(expectedDescription, viewModel.NewResolutionDescription);
+                foreach (var propertyName in new[]
+                {
+                    nameof(InputViewModel.IsCustomSizeSelected),
+                    nameof(InputViewModel.CanResize),
+                    nameof(InputViewModel.ShowAiSizeDescriptions),
+                    nameof(InputViewModel.ShowModelDownloadPrompt),
+                    nameof(InputViewModel.ShowAiControls),
+                    nameof(InputViewModel.ShowAiConfigurationSection),
+                })
+                {
+                    CollectionAssert.Contains(notifications, propertyName);
+                }
+
+                Assert.IsTrue(commandInvalidated);
+                Assert.AreSame(page, main.CurrentPage);
+                Assert.IsFalse(File.Exists(Settings.SettingsPath));
+                view.VerifyNoOtherCalls();
+            }
+        }
+
+        [TestMethod]
+        public void ClearingBatchShouldKeepMultipleSelectionDescriptionsHidden()
+        {
+            App.AiAvailabilityState = AiAvailabilityState.Ready;
+            var settings = new Settings();
+            settings.SelectedSizeIndex = settings.Sizes.Count;
+            var batch = new ResizeBatch();
+            batch.Files.Add("first-must-not-be-opened.jpg");
+            batch.Files.Add("second-must-not-be-opened.jpg");
+            var page = new object();
+            var main = new MainViewModel(batch, settings) { CurrentPage = page };
+            var view = new Mock<IMainView>(MockBehavior.Strict);
+            var viewModel = new InputViewModel(settings, main, view.Object, batch);
+
+            batch.Files.Clear();
+            settings.SelectedSizeIndex = settings.Sizes.Count + 1;
+
+            Assert.AreSame(settings.AiSize, settings.SelectedSize);
+            Assert.IsFalse(viewModel.ShowAiSizeDescriptions);
+            Assert.AreEqual(string.Empty, viewModel.CurrentResolutionDescription);
+            Assert.AreEqual(string.Empty, viewModel.NewResolutionDescription);
+            Assert.AreSame(page, main.CurrentPage);
+            Assert.IsFalse(File.Exists(Settings.SettingsPath));
+            view.VerifyNoOtherCalls();
         }
 
         [TestMethod]
