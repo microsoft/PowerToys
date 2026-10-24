@@ -105,6 +105,7 @@ namespace FancyZonesDataTypes
         std::wstring name;
         CustomLayoutType type{};
         std::variant<CanvasLayoutInfo, GridLayoutInfo> info;
+        std::optional<ZoneIndexSet> defaultZoneIndexSet;
     };
 
     struct ZoneSetData

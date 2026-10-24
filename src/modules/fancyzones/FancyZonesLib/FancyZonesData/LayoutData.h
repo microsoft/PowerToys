@@ -13,6 +13,10 @@ struct LayoutData
     int spacing = DefaultValues::Spacing;
     int zoneCount = DefaultValues::ZoneCount;
     int sensitivityRadius = DefaultValues::SensitivityRadius;
+
+    // Zone (or inclusive zone range) a newly created window with no recorded zone history falls
+    // back to on this layout. Unset means the feature is off for this layout.
+    std::optional<ZoneIndexSet> defaultZoneIndexSet;
 };
 
 inline bool operator==(const LayoutData& lhs, const LayoutData& rhs)
@@ -22,5 +26,6 @@ inline bool operator==(const LayoutData& lhs, const LayoutData& rhs)
            lhs.showSpacing == rhs.showSpacing &&
            lhs.spacing == rhs.spacing &&
            lhs.zoneCount == rhs.zoneCount &&
-           lhs.sensitivityRadius == rhs.sensitivityRadius;
+           lhs.sensitivityRadius == rhs.sensitivityRadius &&
+           lhs.defaultZoneIndexSet == rhs.defaultZoneIndexSet;
 }
