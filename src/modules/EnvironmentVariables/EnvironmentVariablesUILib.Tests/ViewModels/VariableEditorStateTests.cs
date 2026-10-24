@@ -414,7 +414,7 @@ public class VariableEditorStateTests
 
     [TestMethod]
     [DoNotParallelize]
-    public async Task ShallowProfileDraft_InnerEditPersistsSharedOriginalChildBeforeOuterUpdate()
+    public async Task ShallowProfileDraft_InnerEditThenOuterUpdatePersistSharedChild()
     {
         using var fixture = new EnvironmentVariablesFixture();
         var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
@@ -497,6 +497,58 @@ public class VariableEditorStateTests
             saved.GetProperty("Variables").EnumerateArray().Select(variable => (variable.GetProperty("Name").GetString(), variable.GetProperty("Values").GetString())).ToArray());
         using var oldJson = JsonDocument.Parse(baseline);
         Assert.AreEqual("a;b;;%ROOT%", oldJson.RootElement[0].GetProperty("Variables")[0].GetProperty("Values").GetString());
+        Assert.AreEqual(0, fixture.Logger.Entries.Count);
+        Assert.IsTrue(fixture.Work.IsQuiescent);
+
+        vm.UpdateProfile(draftProfile);
+
+        Assert.AreSame(profiles, vm.Profiles);
+        Assert.AreSame(originalProfile, vm.Profiles.Single());
+        Assert.AreEqual((seed.Id, draftProfile.Name, false), (originalProfile.Id, originalProfile.Name, originalProfile.IsEnabled));
+        Assert.AreSame(draftProfile.Variables, originalProfile.Variables);
+        Assert.AreNotSame(originalVariables, originalProfile.Variables);
+        CollectionAssert.AreEqual(new[] { originalChild, untouchedChild }, originalProfile.Variables.ToArray());
+        Assert.AreEqual(persisted, files.Files[service.ProfilesJsonFilePath]);
+        Assert.AreEqual(2, files.Writes.Count);
+
+        // Name, dependent Valid, Variables and the explicit update each schedule a save.
+        Assert.AreEqual(5, fixture.Work.SaveCount);
+        var outerJson = persisted.Replace("Inactive", draftProfile.Name, StringComparison.Ordinal);
+        for (var saveIndex = 1; saveIndex < 5; saveIndex++)
+        {
+            await fixture.Work.CompleteSaveAsync(saveIndex);
+            Assert.AreEqual(saveIndex + 2, files.Writes.Count);
+            Assert.AreEqual(service.ProfilesJsonFilePath, files.Writes[^1].Path);
+            Assert.AreEqual(outerJson, files.Writes[^1].Contents);
+            Assert.AreEqual(outerJson, files.Files[service.ProfilesJsonFilePath]);
+        }
+
+        using var outerDocument = JsonDocument.Parse(files.Files[service.ProfilesJsonFilePath]);
+        Assert.AreEqual(1, outerDocument.RootElement.GetArrayLength());
+        var savedOuter = outerDocument.RootElement[0];
+        Assert.AreEqual(seed.Id, savedOuter.GetProperty("Id").GetGuid());
+        Assert.AreEqual(draftProfile.Name, savedOuter.GetProperty("Name").GetString());
+        Assert.IsFalse(savedOuter.GetProperty("IsEnabled").GetBoolean());
+        CollectionAssert.AreEqual(
+            new[] { ("PATH", "%EDITED%;;tail"), ("KEEP", "untouched") },
+            savedOuter.GetProperty("Variables").EnumerateArray().Select(variable => (variable.GetProperty("Name").GetString(), variable.GetProperty("Values").GetString())).ToArray());
+        Assert.AreEqual(baseline, files.Writes[0].Contents);
+        Assert.AreEqual(persisted, files.Writes[1].Contents);
+        Assert.AreEqual("Inactive", saved.GetProperty("Name").GetString());
+        Assert.AreEqual("a;b;;%ROOT%", oldJson.RootElement[0].GetProperty("Variables")[0].GetProperty("Values").GetString());
+        Assert.AreEqual(("PATH", "%EDITED%;;tail"), (originalChild.Name, originalChild.Values));
+        Assert.AreEqual(("KEEP", "untouched"), (untouchedChild.Name, untouchedChild.Values));
+        Assert.AreEqual(1, fixture.Work.ActionCount);
+        Assert.AreEqual(1, fixture.Work.RefreshReceiptCount);
+        CollectionAssert.AreEqual(new[] { VariablesSetType.Profile }, fixture.Telemetry.Changed.ToArray());
+        Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+        Assert.IsNull(vm.AppliedProfile);
+        Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+        Assert.IsFalse(fixture.Environment.Operations.Any(operation => operation.Operation == "Write" || operation.Operation == "Delete"));
+        Assert.AreEqual(1, fixture.Environment.User.Count);
+        Assert.AreEqual("user-sentinel", fixture.Environment.User["Unrelated"]);
+        Assert.AreEqual(1, fixture.Environment.Machine.Count);
+        Assert.AreEqual("machine-sentinel", fixture.Environment.Machine["Unrelated"]);
         Assert.AreEqual(0, fixture.Logger.Entries.Count);
         Assert.IsTrue(fixture.Work.IsQuiescent);
     }
