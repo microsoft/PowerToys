@@ -5,8 +5,12 @@ Independent Command Palette extensions exercise the same six UI scenarios while 
 | Project | Pinned SDK | Command Palette command |
 | --- | --- | --- |
 | Sdk010 | 0.1.0 | Compatibility SDK 0.1.0 |
+| Sdk020 | 0.2.0 | Compatibility SDK 0.2.0 |
 | Sdk050 | 0.5.250829002 | Compatibility SDK 0.5.250829002 |
 | Sdk090 | 0.9.260303001 | Compatibility SDK 0.9.260303001 |
+| Sdk012 | 0.12.260812002 | Compatibility SDK 0.12.260812002 |
+
+SDK 0.2.0 and 0.12.260812002 require access to unsaved upstream packages until those versions are saved in the internal feed. An HTTP 401 for either version means feed authentication or upstream package saving is still required.
 
 Package identities, COM class IDs, executables and provider IDs are distinct, so the extensions can be installed together. The fixtures are deliberately outside `PowerToys.slnx` and the product installer. Open `CompatibilityExtension.slnx` to work on them.
 
