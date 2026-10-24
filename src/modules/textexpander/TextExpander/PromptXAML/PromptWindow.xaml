@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="Microsoft.PowerToys.TextExpander.PromptWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid
+        x:Name="Root"
+        KeyDown="Root_KeyDown"
+        Loaded="Root_Loaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  As in a ContentDialog: a lighter layer over the question, the buttons below a line.  -->
+        <Border Grid.RowSpan="2" Background="{ThemeResource LayerFillColorAltBrush}" />
+
+        <!--  The title bar: Text Expander's icon and name, as PowerToys' other utilities show theirs. The close button is the system's.  -->
+        <Grid
+            x:Name="TitleBar"
+            Height="32"
+            Padding="16,0,48,0"
+            ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Image
+                x:Name="TitleBarIcon"
+                Width="16"
+                Height="16"
+                VerticalAlignment="Center" />
+            <TextBlock
+                x:Name="TitleText"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+        </Grid>
+
+        <!--  The snippet's question, as the box's header.  -->
+        <StackPanel
+            Grid.Row="1"
+            Margin="24,12,24,24"
+            Spacing="6">
+            <TextBox
+                x:Name="Answer"
+                IsSpellCheckEnabled="False"
+                TextChanged="Answer_TextChanged" />
+            <TextBlock
+                x:Name="AnswerError"
+                AutomationProperties.LiveSetting="Assertive"
+                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                Style="{ThemeResource CaptionTextBlockStyle}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+        </StackPanel>
+
+        <!--  The buttons on Mica, below a line. OK is the default.  -->
+        <Grid
+            Grid.Row="2"
+            Padding="24"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Name="OkButton"
+                HorizontalAlignment="Stretch"
+                Click="Ok_Click"
+                Style="{StaticResource AccentButtonStyle}" />
+            <Button
+                x:Name="CancelButton"
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                Click="Cancel_Click" />
+        </Grid>
+    </Grid>
+</Window>

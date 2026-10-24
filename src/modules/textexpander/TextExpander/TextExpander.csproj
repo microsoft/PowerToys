@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerToys.TextExpander</AssemblyName>
+    <RootNamespace>Microsoft.PowerToys.TextExpander</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <UseWindowsForms>false</UseWindowsForms>
+    <UseWPF>false</UseWPF>
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <!--
+      WinUI 3 is used only for the {{prompt}} window, on its own thread, and loads the first time a
+      snippet asks for something. The engine already ships in WinUI3Apps beside the Windows App SDK
+      runtime that PowerToys' other WinUI utilities use.
+    -->
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- MRT from the Windows App SDK looks for a pri file named after the executable before resources.pri. -->
+    <ProjectPriFileName>PowerToys.TextExpander.pri</ProjectPriFileName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Page Remove="PromptXAML\App.xaml" />
+    <ApplicationDefinition Include="PromptXAML\App.xaml" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\settings-ui\Settings.UI.Library\HandleBoundFileDeletion.cs" Link="Shared\HandleBoundFileDeletion.cs" />
+    <Compile Include="..\..\..\settings-ui\Settings.UI.Library\TextExpanderStarter.cs" Link="Shared\TextExpanderStarter.cs" />
+  </ItemGroup>
+
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.TextExpander.pri" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+  </Target>
+
+  <ItemGroup>
+    <None Remove="app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="app.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PowerToys.TextExpander.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>
