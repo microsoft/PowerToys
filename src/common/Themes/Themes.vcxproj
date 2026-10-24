@@ -30,12 +30,14 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="dark_mode.h" />
     <ClInclude Include="icon_helpers.h" />
     <ClInclude Include="theme_listener.h" />
     <ClInclude Include="theme_helpers.h" />
     <ClInclude Include="windows_colors.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dark_mode.cpp" />
     <ClCompile Include="icon_helpers.cpp" />
     <ClCompile Include="theme_listener.cpp" />
     <ClCompile Include="theme_helpers.cpp" />
