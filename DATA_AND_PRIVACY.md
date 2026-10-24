@@ -175,6 +175,12 @@ Thank you for using PowerToys!
 | --- | --- |
 | Microsoft.PowerToys.CursorWrap_EnableCursorWrap | Triggered when Cursor Wrap is enabled or disabled. |
 
+### CursorBrake
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.CursorBrake_EnableCursorBrake | Triggered when CursorBrake is enabled or disabled. |
+
 ### Environment Variables
 
 | Event Name | Description |

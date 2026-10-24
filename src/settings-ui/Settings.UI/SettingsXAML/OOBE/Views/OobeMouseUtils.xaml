@@ -11,6 +11,9 @@
     <controls:OOBEPageControl x:Uid="Oobe_MouseUtils" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/MouseUtils.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
+                <TextBlock x:Uid="Oobe_MouseUtils_CursorBrake" Style="{ThemeResource OobeSubtitleStyle}" />
+                <tkcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_CursorBrake_Description" />
+
                 <TextBlock x:Uid="Oobe_MouseUtils_CursorHide" Style="{ThemeResource OobeSubtitleStyle}" />
                 <tkcontrols:MarkdownTextBlock x:Uid="Oobe_MouseUtils_CursorHide_Description" />
 

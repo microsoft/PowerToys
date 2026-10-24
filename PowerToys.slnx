@@ -777,6 +777,7 @@
     <Project Path="src/modules/MouseUtils/MouseJump/MouseJump.vcxproj" Id="8a08d663-4995-40e3-b42c-3f910625f284" />
     <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
     <Project Path="src/modules/MouseUtils/MouseButtonLock/MouseButtonLock.vcxproj" Id="b550866e-10a1-4517-886c-e63d5f1f7d61" />
+    <Project Path="src/modules/MouseUtils/CursorBrake/CursorBrake.vcxproj" Id="0c22107a-af8e-43fa-9af1-cc082083ad76" />
   </Folder>
   <Folder Name="/modules/MouseUtils/Tests/">
     <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
@@ -801,6 +802,10 @@
     </Project>
     <Project Path="src/modules/MouseUtils/MouseButtonLock.UnitTests/MouseButtonLock.UnitTests.vcxproj" Id="15f55815-dffc-4eb7-99e4-b6754a52a5c7" />
     <Project Path="src/modules/MouseUtils/MouseButtonLock.FuzzingTest/MouseButtonLock.FuzzingTest.vcxproj" Id="c3b77613-9c8c-4c23-9a55-73def4921125">
+      <Build Solution="*|ARM64" Project="false" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/CursorBrake.UnitTests/CursorBrake.UnitTests.vcxproj" Id="504cf147-c42d-4a2f-8001-e57e1c3e3c43" />
+    <Project Path="src/modules/MouseUtils/CursorBrake.FuzzingTest/CursorBrake.FuzzingTest.vcxproj" Id="538404a5-f9b1-4715-b02f-80d5edc4e6ca">
       <Build Solution="*|ARM64" Project="false" />
     </Project>
   </Folder>
