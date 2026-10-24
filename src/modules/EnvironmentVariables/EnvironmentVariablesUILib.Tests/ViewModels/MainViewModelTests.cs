@@ -5,8 +5,10 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
+using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
 using EnvironmentVariablesUILib.UnitTests.TestSupport;
 using EnvironmentVariablesUILib.ViewModels;
@@ -27,6 +29,11 @@ namespace EnvironmentVariablesUILib.UnitTests.ViewModels
         private static readonly string[] EditedListEntries = { "%ROOT%", "tail" };
         private static readonly string[] ActiveProfileDeletes = { "TMP", "TMP_PowerToys_Active", "PATH", "PATH_PowerToys_Active" };
         private static readonly string[] AuthoredPathEntries = { "path1", "path2", "path3" };
+        private static readonly (string Name, string Values, VariablesSetType ParentType)[] RetainedOldProjection =
+        {
+            ("TMP", "override", VariablesSetType.Duplicate),
+            ("TMP_PowerToys_Old", "original", VariablesSetType.User),
+        };
 
         [DataTestMethod]
         [DataRow(VariablesSetType.User, false, false, true)]
@@ -1205,6 +1212,477 @@ namespace EnvironmentVariablesUILib.UnitTests.ViewModels
             Assert.AreEqual(("KEEP", "keep-value", VariablesSetType.Profile, true), (saved.Variables[0].Name, saved.Variables[0].Values, saved.Variables[0].ParentType, saved.Variables[0].ApplyToSystem));
             Assert.AreEqual(0, fixture.Environment.Operations.Count);
             Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [TestMethod]
+        public async Task AuthorEnabledProfile_ScheduledRealJsonReconstructsFreshManagedVmWithoutReapplying()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            files.Files[service.ProfilesJsonFilePath] = "[]";
+            fixture.Environment.User["Unrelated"] = "user-sentinel";
+            fixture.Environment.Machine["MachineUnrelated"] = "machine-sentinel";
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var authored = new ProfileVariablesSet(Guid.NewGuid(), "Test_profile_2");
+            VariableEditorState.AddProfileVariable(authored, true, "profile_2_variable_1", "profile_2_value_1", Array.Empty<object>());
+            VariableEditorState.AddProfileVariable(authored, true, "profile_2_variable_2", "profile_2_value_2", Array.Empty<object>());
+            authored.IsEnabled = true;
+
+            vm.AddProfile(authored);
+
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(0, files.Writes.Count);
+            Assert.AreEqual(1, fixture.Environment.User.Count);
+            await fixture.Work.CompleteActionAsync(0);
+            fixture.Work.DrainRefreshes();
+            Assert.AreEqual("profile_2_value_1", fixture.Environment.User["profile_2_variable_1"]);
+            Assert.AreEqual("profile_2_value_2", fixture.Environment.User["profile_2_variable_2"]);
+            Assert.AreEqual("user-sentinel", fixture.Environment.User["Unrelated"]);
+            Assert.AreEqual("machine-sentinel", fixture.Environment.Machine["MachineUnrelated"]);
+            var expected = new[]
+            {
+                ("profile_2_variable_1", "profile_2_value_1"),
+                ("profile_2_variable_2", "profile_2_value_2"),
+            };
+            await fixture.Work.CompleteSaveAsync(0);
+            var contents = files.Writes.Single().Contents!;
+            using var json = JsonDocument.Parse(contents);
+            Assert.AreEqual(1, json.RootElement.GetArrayLength());
+            var saved = json.RootElement[0];
+            Assert.AreEqual(authored.Id, saved.GetProperty("Id").GetGuid());
+            Assert.AreEqual("Test_profile_2", saved.GetProperty("Name").GetString());
+            Assert.IsTrue(saved.GetProperty("IsEnabled").GetBoolean());
+            CollectionAssert.AreEqual(
+                expected,
+                saved.GetProperty("Variables").EnumerateArray().Select(x => (x.GetProperty("Name").GetString(), x.GetProperty("Values").GetString())).ToArray());
+
+            var reconstructed = fixture.CreateViewModel(service: service);
+            reconstructed.LoadEnvironmentVariables();
+
+            var loaded = reconstructed.Profiles.Single();
+            Assert.AreNotSame(authored, loaded);
+            Assert.AreNotSame(authored.Variables, loaded.Variables);
+            Assert.AreEqual((authored.Id, "Test_profile_2", true), (loaded.Id, loaded.Name, loaded.IsEnabled));
+            Assert.AreSame(loaded, reconstructed.AppliedProfile);
+            Assert.AreEqual(EnvironmentState.Unchanged, reconstructed.EnvironmentState);
+            CollectionAssert.AreEqual(expected, loaded.Variables.Select(x => (x.Name, x.Values)).ToArray());
+            Assert.IsTrue(loaded.Variables.All(x => x.ParentType == VariablesSetType.Profile));
+            for (var index = 0; index < loaded.Variables.Count; index++)
+            {
+                Assert.AreNotSame(authored.Variables[index], loaded.Variables[index]);
+                Assert.AreNotSame(authored.Variables[index].ValuesList[0], loaded.Variables[index].ValuesList.Single());
+                Assert.AreEqual(expected[index].Item2, loaded.Variables[index].ValuesList[0].Text);
+            }
+
+            CollectionAssert.AreEqual(
+                new[]
+                {
+                    ("profile_2_variable_1", "profile_2_value_1", VariablesSetType.Duplicate),
+                    ("profile_2_variable_2", "profile_2_value_2", VariablesSetType.Duplicate),
+                    ("Unrelated", "user-sentinel", VariablesSetType.User),
+                    ("MachineUnrelated", "machine-sentinel", VariablesSetType.System),
+                },
+                reconstructed.AppliedVariables.Select(x => (x.Name, x.Values, x.ParentType)).ToArray());
+            CollectionAssert.AreEqual(
+                reconstructed.AppliedVariables.Select(x => (x.Name, x.Values, x.ParentType)).ToArray(),
+                vm.AppliedVariables.Select(x => (x.Name, x.Values, x.ParentType)).ToArray());
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(1, files.Writes.Count);
+            Assert.AreEqual(1, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(contents, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [TestMethod]
+        public async Task ExistingTmp_InactiveCloneAndEditPersistImmutableRealJsonWithoutChangingUserSource()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            files.Files[service.ProfilesJsonFilePath] = """
+                [{"Id":"33333333-3333-3333-3333-333333333333","Name":"Test_profile_1","IsEnabled":false,
+                  "Variables":[{"Name":"KEEP","Values":"keep","ApplyToSystem":true}]}]
+                """;
+            fixture.Environment.User["TMP"] = "original%ROOT%";
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var original = vm.Profiles.Single();
+            var retainedChild = original.Variables.Single();
+            var source = vm.UserDefaultSet.Variables.Single();
+            var sourceRows = source.ValuesList;
+            var draft = original.Clone();
+            Assert.AreSame(retainedChild, draft.Variables.Single());
+            VariableEditorState.AddProfileVariable(draft, false, string.Empty, string.Empty, new object[] { source });
+            Assert.AreEqual(1, original.Variables.Count);
+            Assert.AreNotSame(source, draft.Variables[1]);
+            Assert.AreNotSame(source.ValuesList[0], draft.Variables[1].ValuesList[0]);
+
+            vm.UpdateProfile(draft);
+
+            Assert.AreSame(original, vm.Profiles.Single());
+            Assert.AreSame(draft.Variables, original.Variables);
+            Assert.AreSame(retainedChild, original.Variables[0]);
+            Assert.AreEqual(2, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, files.Writes.Count);
+            await fixture.Work.CompleteSaveAsync(0);
+            await fixture.Work.CompleteSaveAsync(1);
+            var oldContents = files.Writes[0].Contents!;
+            Assert.AreEqual(oldContents, files.Writes[1].Contents);
+            using var oldJson = JsonDocument.Parse(oldContents);
+            using var secondOldJson = JsonDocument.Parse(files.Writes[1].Contents!);
+            Assert.AreEqual(1, oldJson.RootElement.GetArrayLength());
+            Assert.AreEqual(1, secondOldJson.RootElement.GetArrayLength());
+            var expectedBeforeEdit = new[] { ("KEEP", "keep"), ("TMP", "original%ROOT%") };
+            foreach (var previous in new[] { oldJson.RootElement[0], secondOldJson.RootElement[0] })
+            {
+                Assert.AreEqual(original.Id, previous.GetProperty("Id").GetGuid());
+                Assert.AreEqual("Test_profile_1", previous.GetProperty("Name").GetString());
+                Assert.IsFalse(previous.GetProperty("IsEnabled").GetBoolean());
+                CollectionAssert.AreEqual(
+                    expectedBeforeEdit,
+                    previous.GetProperty("Variables").EnumerateArray().Select(x => (x.GetProperty("Name").GetString(), x.GetProperty("Values").GetString())).ToArray());
+            }
+
+            var profileTmp = original.Variables[1];
+            fixture.Environment.Operations.Clear();
+
+            vm.EditVariable(profileTmp, new Variable("TMP", "test_TMP", VariablesSetType.Profile), original);
+
+            Assert.AreEqual("test_TMP", profileTmp.Values);
+            Assert.AreEqual("original%ROOT%", source.Values);
+            Assert.AreSame(sourceRows, source.ValuesList);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(3, fixture.Work.SaveCount);
+            Assert.AreEqual(2, files.Writes.Count);
+            await fixture.Work.CompleteActionAsync(0);
+            Assert.AreEqual(0, fixture.Environment.Operations.Count);
+            fixture.Work.DrainRefreshes();
+            await fixture.Work.CompleteSaveAsync(2);
+            using var latestJson = JsonDocument.Parse(files.Writes[2].Contents!);
+            Assert.AreEqual(1, latestJson.RootElement.GetArrayLength());
+            var latest = latestJson.RootElement[0];
+            Assert.AreEqual(original.Id, latest.GetProperty("Id").GetGuid());
+            Assert.AreEqual("Test_profile_1", latest.GetProperty("Name").GetString());
+            Assert.IsFalse(latest.GetProperty("IsEnabled").GetBoolean());
+            CollectionAssert.AreEqual(
+                new[] { ("KEEP", "keep"), ("TMP", "test_TMP") },
+                latest.GetProperty("Variables").EnumerateArray().Select(x => (x.GetProperty("Name").GetString(), x.GetProperty("Values").GetString())).ToArray());
+            Assert.IsTrue(latest.GetProperty("Variables")[0].GetProperty("ApplyToSystem").GetBoolean());
+            Assert.AreEqual("original%ROOT%", oldJson.RootElement[0].GetProperty("Variables")[1].GetProperty("Values").GetString());
+            Assert.AreEqual(oldContents, files.Writes[0].Contents);
+            Assert.AreEqual(oldContents, files.Writes[1].Contents);
+            var readback = service.ReadProfiles().Single();
+            Assert.AreNotSame(original, readback);
+            Assert.AreNotSame(profileTmp, readback.Variables[1]);
+            Assert.AreEqual("test_TMP", readback.Variables[1].Values);
+            Assert.AreEqual("test_TMP", readback.Variables[1].ValuesList.Single().Text);
+            Assert.IsTrue(readback.Variables[0].ApplyToSystem);
+            Assert.AreEqual(VariablesSetType.User, source.ParentType);
+            Assert.AreEqual("original%ROOT%", fixture.Environment.User["TMP"]);
+            Assert.AreSame(sourceRows, source.ValuesList);
+            Assert.IsFalse(fixture.Environment.Operations.Any(x => x.Operation is "Write" or "Delete"));
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [TestMethod]
+        public async Task InactivePath_ExplicitRawCommitPersistsImmutableJsonAndRebuildsOrderedReadbackRows()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            files.Files[service.ProfilesJsonFilePath] = """
+                [{"Id":"44444444-4444-4444-4444-444444444444","Name":"Test_profile_1","IsEnabled":false,
+                  "Variables":[{"Name":"PATH","Values":"before;value","ApplyToSystem":false}]}]
+                """;
+            fixture.Environment.User["PATH"] = "user-path";
+            fixture.Environment.Machine["Path"] = "system-path";
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var profile = vm.Profiles.Single();
+            var path = profile.Variables.Single();
+            var originalRows = path.ValuesList;
+            vm.UpdateProfile(profile.Clone());
+            Assert.AreEqual(2, fixture.Work.SaveCount);
+            await fixture.Work.CompleteSaveAsync(0);
+            await fixture.Work.CompleteSaveAsync(1);
+            var beforeContents = files.Writes[0].Contents!;
+            using var beforeJson = JsonDocument.Parse(beforeContents);
+            using var secondBeforeJson = JsonDocument.Parse(files.Writes[1].Contents!);
+            Assert.AreEqual(1, beforeJson.RootElement.GetArrayLength());
+            Assert.AreEqual(1, secondBeforeJson.RootElement.GetArrayLength());
+            Assert.AreEqual("before;value", beforeJson.RootElement[0].GetProperty("Variables")[0].GetProperty("Values").GetString());
+            Assert.AreEqual("before;value", secondBeforeJson.RootElement[0].GetProperty("Variables")[0].GetProperty("Values").GetString());
+            Assert.AreEqual(profile.Id, beforeJson.RootElement[0].GetProperty("Id").GetGuid());
+            Assert.IsFalse(beforeJson.RootElement[0].GetProperty("IsEnabled").GetBoolean());
+            var synchronizedDraft = new Variable("PATH", @"%ROOT%\bin;;C:\Tools;C:\Tools;", VariablesSetType.Profile);
+            var expectedRows = new[] { @"%ROOT%\bin", string.Empty, @"C:\Tools", @"C:\Tools", string.Empty };
+            fixture.Environment.Operations.Clear();
+
+            vm.EditVariable(path, synchronizedDraft, profile);
+
+            Assert.AreEqual(@"%ROOT%\bin;;C:\Tools;C:\Tools;", path.Values);
+            Assert.AreNotSame(originalRows, path.ValuesList);
+            CollectionAssert.AreEqual(expectedRows, path.ValuesList.Select(x => x.Text).ToArray());
+            Assert.AreEqual(5, path.ValuesList.Distinct().Count());
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(3, fixture.Work.SaveCount);
+            Assert.AreEqual(2, files.Writes.Count);
+            await fixture.Work.CompleteActionAsync(0);
+            Assert.AreEqual(0, fixture.Environment.Operations.Count);
+            fixture.Work.DrainRefreshes();
+            Assert.AreEqual("system-path;user-path", vm.AppliedVariables.Single().Values);
+            await fixture.Work.CompleteSaveAsync(2);
+            using var committedJson = JsonDocument.Parse(files.Writes[2].Contents!);
+            Assert.AreEqual(1, committedJson.RootElement.GetArrayLength());
+            var saved = committedJson.RootElement[0];
+            Assert.AreEqual(profile.Id, saved.GetProperty("Id").GetGuid());
+            Assert.AreEqual("Test_profile_1", saved.GetProperty("Name").GetString());
+            Assert.IsFalse(saved.GetProperty("IsEnabled").GetBoolean());
+            Assert.AreEqual(1, saved.GetProperty("Variables").GetArrayLength());
+            Assert.AreEqual("PATH", saved.GetProperty("Variables")[0].GetProperty("Name").GetString());
+            Assert.AreEqual(@"%ROOT%\bin;;C:\Tools;C:\Tools;", saved.GetProperty("Variables")[0].GetProperty("Values").GetString());
+            Assert.AreEqual("before;value", beforeJson.RootElement[0].GetProperty("Variables")[0].GetProperty("Values").GetString());
+            Assert.AreEqual(beforeContents, files.Writes[0].Contents);
+            Assert.AreEqual(beforeContents, files.Writes[1].Contents);
+            var readback = service.ReadProfiles().Single().Variables.Single();
+            Assert.AreNotSame(path, readback);
+            Assert.AreEqual(@"%ROOT%\bin;;C:\Tools;C:\Tools;", readback.Values);
+            Assert.IsTrue(readback.ShowAsList);
+            CollectionAssert.AreEqual(expectedRows, readback.ValuesList.Select(x => x.Text).ToArray());
+            Assert.AreEqual(5, readback.ValuesList.Distinct().Count());
+            for (var index = 0; index < readback.ValuesList.Count; index++)
+            {
+                Assert.AreNotSame(path.ValuesList[index], readback.ValuesList[index]);
+            }
+
+            Assert.AreEqual("user-path", fixture.Environment.User["PATH"]);
+            Assert.AreEqual("system-path", fixture.Environment.Machine["Path"]);
+            Assert.IsFalse(fixture.Environment.Operations.Any(x => x.Operation is "Write" or "Delete"));
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [DataTestMethod]
+        [DataRow("missing", null)]
+        [DataRow("[]", null)]
+        [DataRow("null", typeof(NullReferenceException))]
+        [DataRow("{", typeof(JsonException))]
+        [DataRow("[null]", typeof(NullReferenceException))]
+        [DataRow("""[{"Name":"Shape","IsEnabled":true,"Variables":null}]""", typeof(NullReferenceException))]
+        public async Task RealServiceReload_EmptyAndReadShapeFailuresRetainOldActiveWithoutSaving(string input, Type? expectedException)
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            var seed = Profile("Old", true, "TMP", "override");
+            fixture.Environment.User["TMP"] = "override";
+            fixture.Environment.User["TMP_PowerToys_Old"] = "original";
+            await service.WriteAsync(new[] { seed });
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var old = vm.AppliedProfile;
+            Assert.AreNotSame(seed, old);
+            Assert.AreSame(vm.Profiles.Single(), old);
+            vm.EnvironmentState = EnvironmentState.EnvironmentMessageReceived;
+            if (input == "missing")
+            {
+                files.Files.Remove(service.ProfilesJsonFilePath);
+            }
+            else
+            {
+                files.Files[service.ProfilesJsonFilePath] = input;
+            }
+
+            vm.LoadEnvironmentVariables();
+
+            Assert.AreSame(old, vm.AppliedProfile);
+            Assert.IsTrue(old.IsEnabled);
+            Assert.AreEqual(0, vm.Profiles.Count);
+            Assert.AreEqual(EnvironmentState.EnvironmentMessageReceived, vm.EnvironmentState);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(1, files.Writes.Count);
+            Assert.AreEqual("override", fixture.Environment.User["TMP"]);
+            Assert.AreEqual("original", fixture.Environment.User["TMP_PowerToys_Old"]);
+            CollectionAssert.AreEqual(
+                RetainedOldProjection,
+                vm.AppliedVariables.Select(x => (x.Name, x.Values, x.ParentType)).ToArray());
+            if (expectedException == null)
+            {
+                Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            }
+            else
+            {
+                var error = fixture.Logger.Entries.Single();
+                Assert.AreEqual("Failed to load profiles.json file", error.Message);
+                Assert.IsInstanceOfType(error.Exception, expectedException);
+            }
+
+            Assert.AreEqual(input != "missing", files.Files.ContainsKey(service.ProfilesJsonFilePath));
+            if (input != "missing")
+            {
+                Assert.AreEqual(input, files.Files[service.ProfilesJsonFilePath]);
+            }
+
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task RealServiceReload_RawMismatchRejectsSubscribedProfileAndSerializesDisabledState(bool hasOldActive)
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            fixture.Environment.User["TMP"] = "override";
+            fixture.Environment.User["Unrelated"] = "kept";
+            if (hasOldActive)
+            {
+                fixture.Environment.User["TMP_PowerToys_Old"] = "original";
+                await service.WriteAsync(new[] { Profile("Old", true, "TMP", "override") });
+            }
+            else
+            {
+                await service.WriteAsync(Array.Empty<ProfileVariablesSet>());
+            }
+
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var old = vm.AppliedProfile;
+            Assert.AreEqual(hasOldActive, old != null);
+            vm.EnvironmentState = EnvironmentState.EnvironmentMessageReceived;
+            var incoming = Profile("Incoming", true, "TMP", "requested");
+            await service.WriteAsync(new[] { incoming });
+            var enabledContents = files.Writes[1].Contents!;
+
+            vm.LoadEnvironmentVariables();
+
+            var rejected = vm.Profiles.Single();
+            Assert.AreNotSame(incoming, rejected);
+            Assert.AreEqual(incoming.Id, rejected.Id);
+            Assert.IsFalse(rejected.IsEnabled);
+            Assert.IsNull(vm.AppliedProfile);
+            if (hasOldActive)
+            {
+                Assert.IsNotNull(old);
+                Assert.IsFalse(old.IsEnabled);
+            }
+
+            Assert.AreEqual(EnvironmentState.ChangedOnStartup, vm.EnvironmentState);
+            CollectionAssert.AreEqual(DisabledTelemetry, fixture.Telemetry.Enabled.ToArray());
+            Assert.AreEqual(hasOldActive ? 1 : 0, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(2, files.Writes.Count);
+            Assert.AreEqual("override", fixture.Environment.User["TMP"]);
+            Assert.AreEqual(enabledContents, files.Files[service.ProfilesJsonFilePath]);
+            if (hasOldActive)
+            {
+                await fixture.Work.CompleteActionAsync(0);
+            }
+
+            fixture.Work.DrainRefreshes();
+            Assert.AreEqual(hasOldActive ? "original" : "override", fixture.Environment.User["TMP"]);
+            Assert.IsFalse(fixture.Environment.User.ContainsKey("TMP_PowerToys_Old"));
+            Assert.IsFalse(fixture.Environment.User.ContainsKey("TMP_PowerToys_Incoming"));
+            Assert.AreEqual("kept", fixture.Environment.User["Unrelated"]);
+            Assert.AreEqual(hasOldActive ? 1 : 0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(hasOldActive ? 1 : 0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(hasOldActive ? "original" : "override", vm.AppliedVariables.Single(x => x.Name == "TMP").Values);
+            await fixture.Work.CompleteSaveAsync(0);
+            Assert.AreEqual(3, files.Writes.Count);
+            using var savedJson = JsonDocument.Parse(files.Writes[2].Contents!);
+            Assert.AreEqual(1, savedJson.RootElement.GetArrayLength());
+            var saved = savedJson.RootElement[0];
+            Assert.AreEqual(incoming.Id, saved.GetProperty("Id").GetGuid());
+            Assert.AreEqual("Incoming", saved.GetProperty("Name").GetString());
+            Assert.IsFalse(saved.GetProperty("IsEnabled").GetBoolean());
+            Assert.AreEqual(1, saved.GetProperty("Variables").GetArrayLength());
+            Assert.AreEqual("TMP", saved.GetProperty("Variables")[0].GetProperty("Name").GetString());
+            Assert.AreEqual("requested", saved.GetProperty("Variables")[0].GetProperty("Values").GetString());
+            using var enabledJson = JsonDocument.Parse(enabledContents);
+            Assert.AreEqual(1, enabledJson.RootElement.GetArrayLength());
+            Assert.IsTrue(enabledJson.RootElement[0].GetProperty("IsEnabled").GetBoolean());
+            Assert.AreEqual(EnvironmentState.ChangedOnStartup, vm.EnvironmentState);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [TestMethod]
+        public async Task RealServiceReload_ProspectiveBackupBudgetRejectsBeforeApplyAndSavesDisabledIncoming()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            fixture.Environment.User["TMP"] = "override";
+            fixture.Environment.User["TMP_PowerToys_Old"] = "original";
+            await service.WriteAsync(new[] { Profile("Old", true, "TMP", "override") });
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var old = vm.AppliedProfile;
+            var rawOriginal = new string('x', 32750);
+            fixture.Environment.User["BUDGET"] = rawOriginal;
+            var incoming = Profile("IncomingBudget", true, "BUDGET", "requested");
+            await service.WriteAsync(new[] { incoming });
+            fixture.Environment.Operations.Clear();
+
+            vm.LoadEnvironmentVariables();
+
+            Assert.IsNull(vm.AppliedProfile);
+            Assert.IsFalse(old.IsEnabled);
+            Assert.AreEqual(incoming.Id, vm.Profiles.Single().Id);
+            Assert.IsFalse(vm.Profiles.Single().IsEnabled);
+            Assert.AreEqual(EnvironmentState.ProfileNotApplicable, vm.EnvironmentState);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(2, files.Writes.Count);
+            CollectionAssert.AreEqual(DisabledTelemetry, fixture.Telemetry.Enabled.ToArray());
+            var error = fixture.Logger.Entries.Single();
+            StringAssert.Contains(error.Message, "The variable 'BUDGET' cannot be applied");
+            StringAssert.Contains(error.Message, "BUDGET_PowerToys_IncomingBudget");
+            StringAssert.Contains(error.Message, "total length");
+            Assert.IsNull(error.Exception);
+            Assert.AreEqual(rawOriginal, fixture.Environment.User["BUDGET"]);
+            Assert.AreEqual("override", fixture.Environment.User["TMP"]);
+
+            await fixture.Work.CompleteActionAsync(0);
+            fixture.Work.DrainRefreshes();
+            await fixture.Work.CompleteSaveAsync(0);
+
+            Assert.AreEqual("original", fixture.Environment.User["TMP"]);
+            Assert.IsFalse(fixture.Environment.User.ContainsKey("TMP_PowerToys_Old"));
+            Assert.AreEqual(rawOriginal, fixture.Environment.User["BUDGET"]);
+            Assert.IsFalse(fixture.Environment.User.ContainsKey("BUDGET_PowerToys_IncomingBudget"));
+            Assert.IsFalse(fixture.Environment.Operations.Any(x => x.Name == "BUDGET" && x.Operation is "Write" or "Delete"));
+            Assert.AreEqual(1, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(1, fixture.Logger.Entries.Count);
+            Assert.AreEqual(3, files.Writes.Count);
+            using var savedJson = JsonDocument.Parse(files.Writes[2].Contents!);
+            Assert.AreEqual(1, savedJson.RootElement.GetArrayLength());
+            var saved = savedJson.RootElement[0];
+            Assert.AreEqual(incoming.Id, saved.GetProperty("Id").GetGuid());
+            Assert.AreEqual("IncomingBudget", saved.GetProperty("Name").GetString());
+            Assert.IsFalse(saved.GetProperty("IsEnabled").GetBoolean());
+            Assert.AreEqual(1, saved.GetProperty("Variables").GetArrayLength());
+            Assert.AreEqual("BUDGET", saved.GetProperty("Variables")[0].GetProperty("Name").GetString());
+            Assert.AreEqual("requested", saved.GetProperty("Variables")[0].GetProperty("Values").GetString());
+            Assert.AreEqual(EnvironmentState.ProfileNotApplicable, vm.EnvironmentState);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
             Assert.IsTrue(fixture.Work.IsQuiescent);
         }
 

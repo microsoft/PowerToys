@@ -18,6 +18,8 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers
     public class EnvironmentVariablesHelperContractTests
     {
         private static readonly string[] SortedNames = { "Alpha", "Zed" };
+        private static readonly string[] EnumerationFailureOperations = { "Names", "Dispose" };
+        private static readonly string[] DeleteFailureOperations = { "Delete", "Dispose" };
 
         [TestMethod]
         [DataRow(EnvironmentVariableTarget.User, VariablesSetType.User, RegistryHive.CurrentUser, "Environment")]
@@ -206,6 +208,186 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers
 
             Assert.AreEqual(0, fixture.Environment.Opens.Count);
             Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+        }
+
+        [TestMethod]
+        public void GetVariables_OpenFailurePropagatesWithoutDisposalOrCollectionReplacement()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var environment = fixture.Environment;
+            environment.User["Pilot"] = "raw";
+            var set = new DefaultVariablesSet(Guid.NewGuid(), "User", VariablesSetType.User);
+            var existing = new Variable("Existing", "retained", VariablesSetType.User);
+            set.Variables.Add(existing);
+            var collection = set.Variables;
+            var failure = new IOException("scripted open failure");
+            environment.BeforeOperation = (operation, _, _) =>
+            {
+                if (operation == "Open")
+                {
+                    throw failure;
+                }
+            };
+
+            var actual = Assert.ThrowsExactly<IOException>(() => EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.User, set, environment));
+
+            Assert.AreSame(failure, actual);
+            CollectionAssert.AreEqual(new[] { (RegistryHive.CurrentUser, "Environment", false) }, environment.Opens.ToArray());
+            Assert.AreEqual(0, environment.Keys.Count);
+            Assert.AreEqual(0, environment.Operations.Count);
+            Assert.AreEqual(0, environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.AreSame(collection, set.Variables);
+            Assert.AreSame(existing, set.Variables.Single());
+            Assert.AreEqual("raw", environment.User["Pilot"]);
+        }
+
+        [TestMethod]
+        public void GetVariables_EnumerationFailurePropagatesAndDisposesWithoutCollectionReplacement()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var environment = fixture.Environment;
+            environment.User["Pilot"] = "raw";
+            var set = new DefaultVariablesSet(Guid.NewGuid(), "User", VariablesSetType.User);
+            var existing = new Variable("Existing", "retained", VariablesSetType.User);
+            set.Variables.Add(existing);
+            var collection = set.Variables;
+            var failure = new IOException("scripted enumeration failure");
+            environment.BeforeOperation = (operation, _, _) =>
+            {
+                if (operation == "Names")
+                {
+                    throw failure;
+                }
+            };
+
+            var actual = Assert.ThrowsExactly<IOException>(() => EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.User, set, environment));
+
+            Assert.AreSame(failure, actual);
+            CollectionAssert.AreEqual(new[] { (RegistryHive.CurrentUser, "Environment", false) }, environment.Opens.ToArray());
+            CollectionAssert.AreEqual(EnumerationFailureOperations, environment.Operations.Select(operation => operation.Operation).ToArray());
+            Assert.IsTrue(environment.Keys.Single().IsDisposed);
+            Assert.AreEqual(0, environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.AreSame(collection, set.Variables);
+            Assert.AreSame(existing, set.Variables.Single());
+            Assert.AreEqual("raw", environment.User["Pilot"]);
+        }
+
+        [TestMethod]
+        public void SetVariable_OpenFailureReturnsFalseLogsOriginalAndDoesNotMutateOrNotify()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var environment = fixture.Environment;
+            environment.User["Pilot"] = "original";
+            var failure = new IOException("scripted writable open failure");
+            environment.BeforeOperation = (operation, _, _) =>
+            {
+                if (operation == "Open")
+                {
+                    throw failure;
+                }
+            };
+
+            var success = EnvironmentVariablesHelper.SetVariable(new Variable("Pilot", "replacement", VariablesSetType.User), environment);
+
+            Assert.IsFalse(success);
+            CollectionAssert.AreEqual(new[] { (RegistryHive.CurrentUser, "Environment", true) }, environment.Opens.ToArray());
+            Assert.AreEqual(0, environment.Keys.Count);
+            Assert.AreEqual(0, environment.Operations.Count);
+            Assert.AreEqual("original", environment.User["Pilot"]);
+            Assert.AreEqual(0, environment.Notifications.Count);
+            var entry = fixture.Logger.Entries.Single();
+            Assert.AreEqual("Error", entry.Level);
+            Assert.AreEqual("Failed to write environment variable 'Pilot'.", entry.Message);
+            Assert.AreSame(failure, entry.Exception);
+        }
+
+        [TestMethod]
+        public void UnsetVariable_DeleteFailureReturnsFalseLogsOriginalAndDisposesWithoutNotify()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var environment = fixture.Environment;
+            environment.User["Pilot"] = "original";
+            var failure = new IOException("scripted delete failure");
+            environment.BeforeOperation = (operation, _, _) =>
+            {
+                if (operation == "Delete")
+                {
+                    throw failure;
+                }
+            };
+
+            var success = EnvironmentVariablesHelper.UnsetVariable(new Variable("Pilot", "original", VariablesSetType.User), environment);
+
+            Assert.IsFalse(success);
+            CollectionAssert.AreEqual(new[] { (RegistryHive.CurrentUser, "Environment", true) }, environment.Opens.ToArray());
+            CollectionAssert.AreEqual(DeleteFailureOperations, environment.Operations.Select(operation => operation.Operation).ToArray());
+            var deletion = environment.Operations.First();
+            Assert.AreEqual("Pilot", deletion.Name);
+            Assert.AreEqual(false, deletion.Value);
+            Assert.IsTrue(environment.Keys.Single().IsDisposed);
+            Assert.AreEqual("original", environment.User["Pilot"]);
+            Assert.AreEqual(0, environment.Notifications.Count);
+            var entry = fixture.Logger.Entries.Single();
+            Assert.AreEqual("Error", entry.Level);
+            Assert.AreEqual("Failed to write environment variable 'Pilot'.", entry.Message);
+            Assert.AreSame(failure, entry.Exception);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void IndividualMutation_NotificationFailurePropagatesAfterDisposalWithoutRollback(bool unset)
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var environment = fixture.Environment;
+            environment.User["Pilot"] = "original";
+            environment.Machine["Pilot"] = "machine";
+            var variable = new Variable("Pilot", "replacement", VariablesSetType.User);
+            var failure = new IOException("scripted notification failure");
+            var attempts = 0;
+            environment.BeforeNotify = () =>
+            {
+                attempts++;
+                Assert.IsTrue(environment.Keys.Single().IsDisposed);
+                CollectionAssert.AreEqual(
+                    new[] { unset ? "Delete" : "Write", "Dispose" },
+                    environment.Operations.Select(operation => operation.Operation).ToArray());
+                Assert.AreEqual(!unset, environment.User.ContainsKey("Pilot"));
+                if (!unset)
+                {
+                    Assert.AreEqual("replacement", environment.User["Pilot"]);
+                }
+
+                throw failure;
+            };
+
+            var actual = Assert.ThrowsExactly<IOException>(() =>
+            {
+                if (unset)
+                {
+                    EnvironmentVariablesHelper.UnsetVariable(variable, environment);
+                }
+                else
+                {
+                    EnvironmentVariablesHelper.SetVariable(variable, environment);
+                }
+            });
+
+            Assert.AreSame(failure, actual);
+            Assert.AreEqual(1, attempts);
+            CollectionAssert.AreEqual(new[] { (RegistryHive.CurrentUser, "Environment", true) }, environment.Opens.ToArray());
+            Assert.IsTrue(environment.Keys.Single().IsDisposed);
+            Assert.AreEqual(!unset, environment.User.ContainsKey("Pilot"));
+            if (!unset)
+            {
+                Assert.AreEqual("replacement", environment.User["Pilot"]);
+            }
+
+            Assert.AreEqual("machine", environment.Machine["Pilot"]);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.AreEqual(0, environment.Notifications.Count);
         }
 
         [TestMethod]

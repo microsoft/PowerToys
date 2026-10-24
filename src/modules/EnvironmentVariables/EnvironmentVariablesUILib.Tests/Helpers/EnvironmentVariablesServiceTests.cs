@@ -165,6 +165,216 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers
         }
 
         [TestMethod]
+        public async Task ScheduledInactiveRemoval_WriteFailureLogsOriginalWithoutRetryOrRollback()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            const string original = """
+                [{"Id":"031782d2-f6c5-4e62-8454-9f729fbdc5f1","Name":"Inactive","IsEnabled":false,
+                  "Variables":[{"Name":"KEEP","Values":"%RAW%;;"},{"Name":"REMOVE","Values":"gone"}]}]
+                """;
+            files.Files[service.ProfilesJsonFilePath] = original;
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var profile = vm.Profiles.Single();
+            var kept = profile.Variables[0];
+            var removed = profile.Variables[1];
+            vm.EnvironmentState = EnvironmentState.EnvironmentMessageReceived;
+            var failure = new IOException("scripted scheduled write failure");
+            files.WriteFailure = failure;
+
+            vm.DeleteVariable(removed, profile);
+
+            Assert.AreSame(kept, profile.Variables.Single());
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, files.Writes.Count);
+            Assert.AreEqual(original, files.Files[service.ProfilesJsonFilePath]);
+
+            await fixture.Work.CompleteSaveAsync(0);
+
+            var attempted = files.Writes.Single();
+            var attemptedText = attempted.Contents!;
+            Assert.AreEqual(service.ProfilesJsonFilePath, attempted.Path);
+            Assert.AreEqual(CancellationToken.None, attempted.CancellationToken);
+            using (var json = JsonDocument.Parse(attemptedText))
+            {
+                Assert.AreEqual(JsonValueKind.Array, json.RootElement.ValueKind);
+                Assert.AreEqual(1, json.RootElement.GetArrayLength());
+                var savedProfile = json.RootElement.EnumerateArray().Single();
+                Assert.AreEqual(profile.Id, savedProfile.GetProperty("Id").GetGuid());
+                Assert.AreEqual("Inactive", savedProfile.GetProperty("Name").GetString());
+                Assert.IsFalse(savedProfile.GetProperty("IsEnabled").GetBoolean());
+                var savedVariables = savedProfile.GetProperty("Variables");
+                Assert.AreEqual(JsonValueKind.Array, savedVariables.ValueKind);
+                Assert.AreEqual(1, savedVariables.GetArrayLength());
+                var savedVariable = savedVariables.EnumerateArray().Single();
+                Assert.AreEqual("KEEP", savedVariable.GetProperty("Name").GetString());
+                Assert.AreEqual("%RAW%;;", savedVariable.GetProperty("Values").GetString());
+            }
+
+            var error = fixture.Logger.Entries.Single();
+            Assert.AreEqual("Error", error.Level);
+            Assert.AreEqual("Failed to save to profiles.json file", error.Message);
+            Assert.AreSame(failure, error.Exception);
+            Assert.AreEqual(original, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreSame(profile, vm.Profiles.Single());
+            Assert.AreSame(kept, profile.Variables.Single());
+            Assert.IsFalse(profile.IsEnabled);
+            Assert.IsNull(vm.AppliedProfile);
+            Assert.AreEqual(EnvironmentState.EnvironmentMessageReceived, vm.EnvironmentState);
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+
+            await fixture.Work.SettleAsync();
+
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(1, files.Writes.Count);
+            Assert.AreEqual(attemptedText, files.Writes.Single().Contents);
+            Assert.AreEqual(original, files.Files[service.ProfilesJsonFilePath]);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [TestMethod]
+        public async Task ScheduledDisabledRemovals_NewerWriteCompletesFirstThenOlderPublishesStaleJson()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            const string original = """
+                [{"Id":"131782d2-f6c5-4e62-8454-9f729fbdc5f1","Name":"First","IsEnabled":false,
+                  "Variables":[{"Name":"PATH","Values":"%ROOT%;;C:\\Tools;"}]},
+                 {"Id":"231782d2-f6c5-4e62-8454-9f729fbdc5f1","Name":"Middle","IsEnabled":false,"Variables":[]},
+                 {"Id":"331782d2-f6c5-4e62-8454-9f729fbdc5f1","Name":"Last","IsEnabled":false,
+                  "Variables":[{"Name":"FINAL","Values":"raw%LAST%"}]}]
+                """;
+            files.Files[service.ProfilesJsonFilePath] = original;
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var first = vm.Profiles[0];
+            var middle = vm.Profiles[1];
+            var last = vm.Profiles[2];
+            var timeout = TimeSpan.FromSeconds(5);
+            var entered = new[]
+            {
+                new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously),
+            };
+            var release = new[]
+            {
+                new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously),
+            };
+            var ioTasks = new List<Task>();
+            var callbackCount = 0;
+            Task? olderSave = null;
+            Task? newerSave = null;
+            files.WriteAllTextAsyncCallback = (path, contents, _) =>
+            {
+                var index = callbackCount++;
+                var task = PublishAsync(index, path, contents!);
+                ioTasks.Add(task);
+                return task;
+            };
+
+            async Task PublishAsync(int index, string path, string contents)
+            {
+                entered[index].SetResult(contents);
+                await release[index].Task.WaitAsync(timeout).ConfigureAwait(false);
+                files.Files[path] = contents;
+            }
+
+            try
+            {
+                vm.RemoveProfile(middle);
+                Assert.AreEqual(1, fixture.Work.SaveCount);
+                olderSave = fixture.Work.CompleteSaveAsync(0);
+                var olderText = await entered[0].Task.WaitAsync(timeout);
+                Assert.IsFalse(olderSave.IsCompleted);
+                Assert.AreEqual(original, files.Files[service.ProfilesJsonFilePath]);
+
+                vm.RemoveProfile(first);
+                Assert.AreEqual(2, fixture.Work.SaveCount);
+                newerSave = fixture.Work.CompleteSaveAsync(1);
+                var newerText = await entered[1].Task.WaitAsync(timeout);
+                Assert.IsFalse(newerSave.IsCompleted);
+                Assert.AreEqual(original, files.Files[service.ProfilesJsonFilePath]);
+                Assert.AreEqual(2, callbackCount);
+                Assert.AreEqual(2, files.Writes.Count);
+                Assert.AreEqual(olderText, files.Writes[0].Contents);
+                Assert.AreEqual(newerText, files.Writes[1].Contents);
+                Assert.IsTrue(files.Writes.All(write => write.Path == service.ProfilesJsonFilePath && write.CancellationToken == CancellationToken.None));
+                using (var olderJson = JsonDocument.Parse(olderText))
+                using (var newerJson = JsonDocument.Parse(newerText))
+                {
+                    Assert.AreEqual(JsonValueKind.Array, olderJson.RootElement.ValueKind);
+                    Assert.AreEqual(2, olderJson.RootElement.GetArrayLength());
+                    Assert.AreEqual(JsonValueKind.Array, newerJson.RootElement.ValueKind);
+                    Assert.AreEqual(1, newerJson.RootElement.GetArrayLength());
+                    var olderProfiles = olderJson.RootElement.EnumerateArray().ToArray();
+                    var newerProfile = newerJson.RootElement.EnumerateArray().Single();
+                    var expectedOlderIds = new[] { first.Id, last.Id };
+                    CollectionAssert.AreEqual(expectedOlderIds, olderProfiles.Select(profile => profile.GetProperty("Id").GetGuid()).ToArray());
+                    Assert.AreEqual("First", olderProfiles[0].GetProperty("Name").GetString());
+                    Assert.AreEqual("Last", olderProfiles[1].GetProperty("Name").GetString());
+                    Assert.IsTrue(olderProfiles.All(profile => !profile.GetProperty("IsEnabled").GetBoolean()));
+                    var olderVariables = olderProfiles[0].GetProperty("Variables");
+                    Assert.AreEqual(JsonValueKind.Array, olderVariables.ValueKind);
+                    Assert.AreEqual(1, olderVariables.GetArrayLength());
+                    Assert.AreEqual(@"%ROOT%;;C:\Tools;", olderVariables[0].GetProperty("Values").GetString());
+                    Assert.AreEqual(last.Id, newerProfile.GetProperty("Id").GetGuid());
+                    Assert.AreEqual("Last", newerProfile.GetProperty("Name").GetString());
+                    Assert.IsFalse(newerProfile.GetProperty("IsEnabled").GetBoolean());
+                    var newerVariables = newerProfile.GetProperty("Variables");
+                    Assert.AreEqual(JsonValueKind.Array, newerVariables.ValueKind);
+                    Assert.AreEqual(1, newerVariables.GetArrayLength());
+                    Assert.AreEqual("FINAL", newerVariables[0].GetProperty("Name").GetString());
+                    Assert.AreEqual("raw%LAST%", newerVariables[0].GetProperty("Values").GetString());
+                }
+
+                release[1].SetResult(true);
+                await newerSave.WaitAsync(timeout);
+                Assert.AreEqual(newerText, files.Files[service.ProfilesJsonFilePath]);
+                Assert.IsFalse(olderSave.IsCompleted);
+
+                release[0].SetResult(true);
+                await olderSave.WaitAsync(timeout);
+                Assert.AreEqual(olderText, files.Files[service.ProfilesJsonFilePath]);
+                Assert.AreNotEqual(newerText, files.Files[service.ProfilesJsonFilePath]);
+                Assert.AreSame(last, vm.Profiles.Single());
+                Assert.AreEqual(olderText, files.Writes[0].Contents);
+                Assert.AreEqual(newerText, files.Writes[1].Contents);
+                Assert.AreEqual(0, fixture.Logger.Entries.Count);
+                Assert.AreEqual(0, fixture.Work.ActionCount);
+                Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+                Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+                Assert.IsNull(vm.AppliedProfile);
+                Assert.AreEqual(EnvironmentState.Unchanged, vm.EnvironmentState);
+                Assert.IsTrue(fixture.Work.IsQuiescent);
+            }
+            finally
+            {
+                release[0].TrySetResult(true);
+                release[1].TrySetResult(true);
+                try
+                {
+                    var pending = ioTasks.Concat(new[] { olderSave, newerSave }.OfType<Task>()).ToArray();
+                    await Task.WhenAll(pending).WaitAsync(timeout).ConfigureAwait(false);
+                }
+                finally
+                {
+                    await fixture.Work.SettleAsync().ConfigureAwait(false);
+                }
+            }
+
+            Assert.AreEqual(2, fixture.Work.SaveCount);
+            Assert.AreEqual(2, files.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [TestMethod]
         public async Task ReadWrite_FileFaultsPropagateOriginalExceptionWithoutRetryOrReplacement()
         {
             var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
