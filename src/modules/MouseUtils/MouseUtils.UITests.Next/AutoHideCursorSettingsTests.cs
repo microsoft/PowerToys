@@ -176,23 +176,26 @@ public class AutoHideCursorSettingsTests : UITestBase
 
     private void SetToggleState(string accessibilityId, bool enabled)
     {
-        var checkBox = Session.Find<CheckBox>(By.AccessibilityId(accessibilityId), 5_000);
-        if (checkBox.IsChecked != enabled)
+        var control = Session.Find<Element>(By.AccessibilityId(accessibilityId), 5_000);
+        var expectedState = enabled ? "On" : "Off";
+        var currentState = control.GetProperty("ToggleState");
+        Assert.IsTrue(currentState is "On" or "Off", $"{accessibilityId} returned unreadable ToggleState '{currentState}'.");
+        if (currentState != expectedState)
         {
-            checkBox.Invoke(msPostAction: 0);
+            control.Invoke(msPostAction: 0);
         }
 
         Assert.IsTrue(
-            checkBox.WaitForProperty("ToggleState", enabled ? "On" : "Off", 10_000),
+            control.WaitForProperty("ToggleState", expectedState, 10_000),
             $"{accessibilityId} did not reach the expected {(enabled ? "On" : "Off")} state.");
     }
 
     private void AssertToggleState(string accessibilityId, bool expectedOn)
     {
-        var checkBox = Session.Find<CheckBox>(By.AccessibilityId(accessibilityId), 5_000);
+        var control = Session.Find<Element>(By.AccessibilityId(accessibilityId), 5_000);
         Assert.AreEqual(
-            expectedOn,
-            checkBox.IsChecked,
+            expectedOn ? "On" : "Off",
+            control.GetProperty("ToggleState"),
             $"{accessibilityId} did not have the expected persisted state.");
     }
 
