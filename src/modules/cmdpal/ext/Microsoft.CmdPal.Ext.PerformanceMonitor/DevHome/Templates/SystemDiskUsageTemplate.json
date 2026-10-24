@@ -19,84 +19,178 @@
       "$when": "${errorMessage == null}",
       "items": [
         {
-          "type": "Image",
-          "url": "${diskGraphUrl}",
-          "height": "${chartHeight}",
-          "width": "${chartWidth}",
-          "$when": "${$host.widgetSize != \"small\"}",
-          "horizontalAlignment": "center"
-        },
-        {
           "type": "ColumnSet",
           "columns": [
             {
               "type": "Column",
+              "width": "auto",
               "items": [
                 {
-                  "text": "%DiskUsage_Widget_Template/Disk_Usage%",
                   "type": "TextBlock",
-                  "spacing": "none",
-                  "size": "small",
-                  "isSubtle": true
-                },
-                {
-                  "text": "${diskUsage}",
-                  "type": "TextBlock",
-                  "size": "large",
-                  "weight": "bolder"
-                }
-              ]
-            },
-            {
-              "type": "Column",
-              "items": [
-                {
-                  "text": "%DiskUsage_Widget_Template/Read%",
-                  "type": "TextBlock",
-                  "spacing": "none",
-                  "size": "small",
-                  "isSubtle": true
-                },
-                {
-                  "text": "${diskRead}",
-                  "type": "TextBlock",
-                  "size": "large",
-                  "weight": "bolder"
-                }
-              ]
-            },
-            {
-              "type": "Column",
-              "items": [
-                {
-                  "text": "%DiskUsage_Widget_Template/Write%",
-                  "type": "TextBlock",
-                  "spacing": "none",
-                  "size": "small",
                   "isSubtle": true,
-                  "horizontalAlignment": "right"
+                  "size": "small",
+                  "text": "%DiskUsage_Widget_Template/Disk_Usage%"
                 },
                 {
-                  "text": "${diskWrite}",
                   "type": "TextBlock",
-                  "size": "large",
+                  "size": "extraLarge",
                   "weight": "bolder",
-                  "horizontalAlignment": "right"
+                  "spacing": "none",
+                  "text": "${diskUsage}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "spacing": "large",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "size": "small",
+                  "text": "%DiskUsage_Widget_Template/Response_Time%"
+                },
+                {
+                  "type": "TextBlock",
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "text": "${diskResponseTime}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "size": "small",
+                  "horizontalAlignment": "right",
+                  "text": "%DiskUsage_Widget_Template/Read%"
+                },
+                {
+                  "type": "TextBlock",
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "horizontalAlignment": "right",
+                  "text": "${diskRead}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "spacing": "large",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "size": "small",
+                  "horizontalAlignment": "right",
+                  "text": "%DiskUsage_Widget_Template/Write%"
+                },
+                {
+                  "type": "TextBlock",
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "horizontalAlignment": "right",
+                  "text": "${diskWrite}"
                 }
               ]
             }
           ]
         },
         {
-          "text": "%DiskUsage_Widget_Template/Disk_Name%",
-          "type": "TextBlock",
-          "size": "small",
-          "isSubtle": true
+          "type": "Chart.Line",
+          "spacing": "medium",
+          "yAxisTitle": "${diskChartAxis}",
+          "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
+          "yMin": 0,
+          "data": "${diskSeries}",
+          "fallback": "drop"
         },
         {
-          "text": "${diskName}",
-          "type": "TextBlock",
-          "size": "medium"
+          "type": "ColumnSet",
+          "spacing": "medium",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "weight": "bolder",
+                  "text": "${diskDisplayName}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "$when": "${diskType != null}",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "Badge",
+                  "text": "${diskType}",
+                  "icon": "HardDrive",
+                  "style": "informative",
+                  "appearance": "tint",
+                  "shape": "rounded",
+                  "fallback": "drop"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Container",
+          "$data": "${volumes}",
+          "spacing": "small",
+          "items": [
+            {
+              "type": "ColumnSet",
+              "columns": [
+                {
+                  "type": "Column",
+                  "width": "stretch",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "size": "small",
+                      "text": "${name}"
+                    }
+                  ]
+                },
+                {
+                  "type": "Column",
+                  "width": "auto",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "horizontalAlignment": "right",
+                      "text": "${freeText}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "ProgressBar",
+              "spacing": "small",
+              "value": "${usedPercent}",
+              "color": "${color}",
+              "fallback": "drop"
+            }
+          ]
         }
       ]
     }

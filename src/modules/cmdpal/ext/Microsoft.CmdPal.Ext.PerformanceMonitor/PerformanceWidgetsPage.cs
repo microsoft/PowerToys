@@ -999,6 +999,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -1013,9 +1014,27 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
             ContentData["diskRead"] = SpeedToString(diskStats.Read);
             ContentData["diskWrite"] = SpeedToString(diskStats.Written);
             ContentData["diskName"] = diskName;
-            ContentData["diskGraphUrl"] = currentData.CreateDiskImageUrl(_diskIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["diskDisplayName"] = DiskVolumes.GetDisplayName(diskName);
+            ContentData["diskResponseTime"] = ResponseTimeToString(diskStats.ResponseTime);
+            if (DiskVolumes.TryGetDiskNumber(diskName, out var diskNumber)
+                && DiskVolumes.GetTypeText(DiskDevices.Get(diskNumber)) is string diskType)
+            {
+                ContentData["diskType"] = diskType;
+            }
+
+            var history = currentData.GetHistory(_diskIndex);
+            var read = history.Read.Snapshot();
+            var written = history.Write.Snapshot();
+            var (divisor, unit) = PerformanceChartData.GetRateScale(_settingsManager.DiskSpeedUnit, PerformanceChartData.Max(read, written));
+            ContentData["diskChartAxis"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("DiskUsage_Widget_Template/Chart_Y_Axis"), unit);
+            ContentJson["diskSeries"] = PerformanceChartData.Create(
+                new PerformanceChartData.Series(Resources.GetResource("DiskUsage_Widget_Template/Read"), PerformanceChartData.InColor, PerformanceChartData.Scale(read, divisor)),
+                new PerformanceChartData.Series(Resources.GetResource("DiskUsage_Widget_Template/Write"), PerformanceChartData.OutColor, PerformanceChartData.Scale(written, divisor)));
+            ContentJson["diskActiveSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("DiskUsage_Widget_Template/Disk_Usage"),
+                PerformanceChartData.DiskColor,
+                history.ActiveTime.Snapshot()));
+            ContentJson["volumes"] = DiskVolumes.Create(diskName);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1024,6 +1043,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         catch (Exception e)
         {
             ContentData.Clear();
+            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
         }
@@ -1039,17 +1059,25 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         };
     }
 
+    /// <summary>Formats an average response time given in seconds, such as <c>0.4 ms</c>.</summary>
+    internal static string ResponseTimeToString(float seconds) =>
+        string.Format(CultureInfo.CurrentCulture, "{0:0.#} ms", Math.Max(0, seconds) * 1000);
+
     public string GetItemTitle(bool isBandPage)
     {
         if (ContentData.TryGetValue("diskName", out var name) && ContentData.TryGetValue("diskUsage", out var usage))
         {
-            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Label"), name, usage);
+            return isBandPage ? usage : GetListTitle(name, usage);
         }
         else
         {
             return isBandPage ? Resources.GetResource("Disk_Usage_Unknown") : Resources.GetResource("Disk_Usage_Unknown_Label");
         }
     }
+
+    /// <summary>Names the disk in the list as the card does, such as <c>Disk 0 (C:): 3%</c>.</summary>
+    internal static string GetListTitle(string instanceName, string usage) =>
+        string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Display_Label"), DiskVolumes.GetDisplayName(instanceName), usage);
 
     // read/write speed is always used for bands
     public string GetReadSpeed()
