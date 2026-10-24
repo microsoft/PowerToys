@@ -4,11 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -23,6 +26,8 @@ namespace ViewModelTests
         private Mock<SettingsUtils> _mockGeneralSettingsUtils;
 
         private Mock<SettingsUtils> _mockImgResizerSettingsUtils;
+
+        public TestContext TestContext { get; set; }
 
         [TestInitialize]
         public void SetUpStubSettingUtils()
@@ -244,66 +249,353 @@ namespace ViewModelTests
         [TestMethod]
         public void CreateNewImageSizeModelShouldNotAddToCollection()
         {
-            // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
-            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
-            int sizeOfOriginalArray = viewModel.Sizes.Count;
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            string originalJson = settings.ToJsonString();
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+            ImageSize[] originalSizes = viewModel.Sizes.ToArray();
 
-            // act
-            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("New size");
+            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("Web");
+            ImageSize secondWorkingCopy = viewModel.CreateNewImageSizeModel("Web");
 
-            // Assert - the working copy is populated but not committed to the collection
             Assert.IsNotNull(workingCopy);
-            Assert.AreEqual("New size 1", workingCopy.Name);
-            Assert.AreEqual(sizeOfOriginalArray, viewModel.Sizes.Count);
+            Assert.AreEqual(4, workingCopy.Id);
+            Assert.AreEqual(workingCopy.Id, secondWorkingCopy.Id);
+            Assert.AreEqual("Web 1", workingCopy.Name);
+            Assert.AreEqual(settings.Properties.ImageresizerCustomSize.Value.Fit, workingCopy.Fit);
+            Assert.AreEqual(settings.Properties.ImageresizerCustomSize.Value.Width, workingCopy.Width);
+            Assert.AreEqual(settings.Properties.ImageresizerCustomSize.Value.Height, workingCopy.Height);
+            Assert.AreEqual(settings.Properties.ImageresizerCustomSize.Value.Unit, workingCopy.Unit);
+
+            workingCopy.Name = "Discarded";
+            workingCopy.Width = 999;
+            ImageSize editedCopy = originalSizes[0].Clone();
+            editedCopy.Name = "Discarded edit";
+            editedCopy.Height = 999;
+
+            CollectionAssert.AreEqual(originalSizes, viewModel.Sizes.ToArray());
+            Assert.AreEqual(originalJson, settings.ToJsonString());
+            Assert.AreEqual(0, savedSettings.Count);
+            Assert.IsFalse(viewModel.IsListViewFocusRequested);
         }
 
         [TestMethod]
         public void AddImageSizeWithModelShouldCommitPreparedSize()
         {
-            // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
-            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
-            int sizeOfOriginalArray = viewModel.Sizes.Count;
-            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("New size");
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            string originalJson = settings.ToJsonString();
+            var expectedSizes = settings.Properties.ImageresizerSizes.Value.Select(size => size.Clone()).ToList();
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("Web");
+            workingCopy.Name = "Web";
+            workingCopy.Fit = ResizeFit.Fit;
+            workingCopy.Width = 1024;
+            workingCopy.Height = 768;
+            workingCopy.Unit = ResizeUnit.Pixel;
 
-            // act
+            Assert.AreEqual(0, savedSettings.Count);
+            viewModel.DeleteImageSize(3);
+            expectedSizes.RemoveAt(3);
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+
+            savedSettings.Clear();
             viewModel.AddImageSize(workingCopy);
+            expectedSizes.Add(new ImageSize(4, "Web", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel));
 
-            // Assert
-            Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);
-            Assert.IsTrue(viewModel.Sizes.Contains(workingCopy));
+            Assert.AreEqual(4, workingCopy.Id);
+            Assert.AreSame(workingCopy, viewModel.Sizes[3]);
+            CollectionAssert.AreEqual(expectedSizes.Select(size => size.Id).ToArray(), viewModel.Sizes.Select(size => size.Id).ToArray());
+            Assert.IsTrue(viewModel.IsListViewFocusRequested);
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+
+            ImageResizerSettings reloadedSettings = JsonSerializer.Deserialize<ImageResizerSettings>(savedSettings[1].Json);
+            var reloadedWrites = new List<(string Json, string FileName)>();
+            ImageResizerViewModel reloadedViewModel = CreatePresetPersistenceViewModel(reloadedSettings, reloadedWrites);
+            CollectionAssert.AreEqual(
+                expectedSizes.Select(size => size.ToJsonString()).ToArray(),
+                reloadedViewModel.Sizes.Select(size => size.ToJsonString()).ToArray());
+            Assert.AreEqual(0, reloadedWrites.Count);
+            TestContext.WriteLine(
+                "ImageResizerProducerPayloads: {0}",
+                JsonSerializer.Serialize(new { SizesJson = savedSettings[0].Json, SettingsJson = savedSettings[1].Json }));
         }
 
         [TestMethod]
         public void UpdateImageSizeShouldApplyWorkingCopyValuesToOriginal()
         {
-            // arrange
-            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
-            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
-            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
-            viewModel.AddImageSize("Original");
-            ImageSize original = viewModel.Sizes.First(x => x.Id == 0);
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            string originalJson = settings.ToJsonString();
+            var expectedSizes = settings.Properties.ImageresizerSizes.Value.Select(size => size.Clone()).ToList();
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+            ImageSize original = viewModel.Sizes[0];
 
             ImageSize edited = original.Clone();
+            edited.Id = 99;
             edited.Name = "Edited";
             edited.Fit = ResizeFit.Stretch;
             edited.Width = 320;
             edited.Height = 240;
             edited.Unit = ResizeUnit.Percent;
 
-            // act
+            Assert.AreEqual(originalJson, settings.ToJsonString());
+            Assert.AreEqual(0, savedSettings.Count);
             viewModel.UpdateImageSize(original, edited);
+            expectedSizes[0] = new ImageSize(0, "Edited", ResizeFit.Stretch, 320, 240, ResizeUnit.Percent);
 
-            // Assert - the edits are applied to the original preset in place
             Assert.AreEqual("Edited", original.Name);
             Assert.AreEqual(ResizeFit.Stretch, original.Fit);
             Assert.AreEqual(320, original.Width);
             Assert.AreEqual(240, original.Height);
             Assert.AreEqual(ResizeUnit.Percent, original.Unit);
+            Assert.AreEqual(0, original.Id);
             Assert.AreSame(original, viewModel.Sizes.First(x => x.Id == 0));
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+
+            savedSettings.Clear();
+            original.Name = "Renamed";
+            expectedSizes[0].Name = "Renamed";
+
+            Assert.AreEqual(4, savedSettings.Count);
+            AssertSavedPresetPair(savedSettings.Take(2).ToArray(), expectedSizes, originalJson);
+            AssertSavedPresetPair(savedSettings.Skip(2).ToArray(), expectedSizes, originalJson);
+        }
+
+        [TestMethod]
+        public void DeletedPresetChangesShouldNotSaveSettings()
+        {
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            string originalJson = settings.ToJsonString();
+            var expectedSizes = settings.Properties.ImageresizerSizes.Value.Select(size => size.Clone()).ToList();
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+            ImageSize deleted = viewModel.Sizes[3];
+
+            viewModel.DeleteImageSize(deleted.Id);
+            expectedSizes.RemoveAt(3);
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+
+            savedSettings.Clear();
+            deleted.Name = "Detached";
+            deleted.Width = 999;
+
+            Assert.AreEqual(0, savedSettings.Count);
+            Assert.AreEqual(3, viewModel.Sizes.Count);
+            Assert.IsFalse(viewModel.Sizes.Contains(deleted));
+        }
+
+        [TestMethod]
+        public void DiscardedDraftsShouldNotConsumeIdsForPreparedCommits()
+        {
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            settings.Properties.ImageresizerSizes.Value.Clear();
+            string originalJson = settings.ToJsonString();
+            var savedSettings = new List<(string Json, string FileName)>();
+            var expectedSizes = new List<ImageSize>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+
+            ImageSize discarded = viewModel.CreateNewImageSizeModel("Web");
+            ImageSize anotherDiscarded = viewModel.CreateNewImageSizeModel("Web");
+            Assert.AreEqual(0, discarded.Id);
+            Assert.AreEqual(0, anotherDiscarded.Id);
+            discarded.Width = 999;
+            anotherDiscarded.Name = "Discarded";
+            Assert.AreEqual(0, viewModel.Sizes.Count);
+            Assert.AreEqual(0, savedSettings.Count);
+            Assert.AreEqual(originalJson, settings.ToJsonString());
+
+            ImageSize first = viewModel.CreateNewImageSizeModel("Web");
+            ImageSize second = viewModel.CreateNewImageSizeModel("Web");
+            first.Name = "First";
+            second.Name = "Second";
+            viewModel.AddImageSize(first);
+            expectedSizes.Add(new ImageSize(0, "First", ResizeFit.Stretch, 50, 25, ResizeUnit.Percent));
+
+            Assert.AreEqual(0, first.Id);
+            Assert.AreEqual(0, second.Id);
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+
+            savedSettings.Clear();
+            viewModel.AddImageSize(second);
+            expectedSizes.Add(new ImageSize(1, "Second", ResizeFit.Stretch, 50, 25, ResizeUnit.Percent));
+
+            Assert.AreEqual(1, second.Id);
+            Assert.AreSame(first, viewModel.Sizes[0]);
+            Assert.AreSame(second, viewModel.Sizes[1]);
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+        }
+
+        [TestMethod]
+        public void IdenticalPresetUpdatesShouldEachSaveOnePair()
+        {
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            string originalJson = settings.ToJsonString();
+            var expectedSizes = settings.Properties.ImageresizerSizes.Value.Select(size => size.Clone()).ToList();
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+            ImageSize original = viewModel.Sizes[0];
+
+            viewModel.UpdateImageSize(original, original.Clone());
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+
+            savedSettings.Clear();
+            viewModel.UpdateImageSize(original, original.Clone());
+
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+            Assert.AreSame(original, viewModel.Sizes[0]);
+            Assert.AreEqual(originalJson, settings.ToJsonString());
+        }
+
+        [TestMethod]
+        public void InvalidPresetCommitsShouldNotSaveSettings()
+        {
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            string originalJson = settings.ToJsonString();
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+            ImageSize original = viewModel.Sizes[0];
+
+            Assert.ThrowsExactly<ArgumentNullException>(() => viewModel.AddImageSize((ImageSize)null));
+            Assert.ThrowsExactly<ArgumentNullException>(() => viewModel.UpdateImageSize(null, original.Clone()));
+            Assert.ThrowsExactly<ArgumentNullException>(() => viewModel.UpdateImageSize(original, null));
+            Assert.ThrowsExactly<InvalidOperationException>(() => viewModel.DeleteImageSize(99));
+
+            Assert.AreEqual(originalJson, settings.ToJsonString());
+            Assert.AreSame(original, viewModel.Sizes[0]);
+            Assert.AreEqual(4, viewModel.Sizes.Count);
+            Assert.AreEqual(0, savedSettings.Count);
+        }
+
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow(" ")]
+        [DataRow("%1-custom")]
+        public void IgnoredFileNameChangesShouldNotSaveSettings(string fileName)
+        {
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            string originalJson = settings.ToJsonString();
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+
+            viewModel.FileName = fileName;
+
+            Assert.AreEqual("%1-custom", viewModel.FileName);
+            Assert.AreEqual(originalJson, settings.ToJsonString());
+            Assert.AreEqual(0, savedSettings.Count);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void FileNameAndDateChoicesShouldPersistAndReconstruct(bool keepDateModified)
+        {
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            settings.Properties.ImageresizerKeepDateModified.Value = !keepDateModified;
+            ImageResizerSettings expectedSettings = JsonSerializer.Deserialize<ImageResizerSettings>(settings.ToJsonString());
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+            const string fileName = "%1 - %2 - %3 - %4 - %5 - %6";
+
+            viewModel.FileName = fileName;
+            expectedSettings.Properties.ImageresizerFileName.Value = fileName;
+
+            Assert.AreEqual(1, savedSettings.Count);
+            Assert.AreEqual("settings.json", savedSettings[0].FileName);
+            Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(expectedSettings.ToJsonString()), JsonNode.Parse(savedSettings[0].Json)));
+
+            viewModel.FileName = fileName;
+            Assert.AreEqual(1, savedSettings.Count);
+
+            viewModel.KeepDateModified = keepDateModified;
+            expectedSettings.Properties.ImageresizerKeepDateModified.Value = keepDateModified;
+
+            Assert.AreEqual(2, savedSettings.Count);
+            Assert.AreEqual("settings.json", savedSettings[1].FileName);
+            Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(expectedSettings.ToJsonString()), JsonNode.Parse(savedSettings[1].Json)));
+
+            viewModel.KeepDateModified = keepDateModified;
+            Assert.AreEqual(2, savedSettings.Count);
+
+            ImageResizerSettings reloadedSettings = JsonSerializer.Deserialize<ImageResizerSettings>(savedSettings[1].Json);
+            var reloadedWrites = new List<(string Json, string FileName)>();
+            ImageResizerViewModel reloadedViewModel = CreatePresetPersistenceViewModel(reloadedSettings, reloadedWrites);
+            Assert.AreEqual(fileName, reloadedViewModel.FileName);
+            Assert.AreEqual(keepDateModified, reloadedViewModel.KeepDateModified);
+            Assert.AreEqual(0, reloadedWrites.Count);
+        }
+
+        [TestMethod]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Centimeter)]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Inch)]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Percent)]
+        [DataRow(ResizeFit.Fill, ResizeUnit.Pixel)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Centimeter)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Inch)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Percent)]
+        [DataRow(ResizeFit.Fit, ResizeUnit.Pixel)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Centimeter)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Inch)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Percent)]
+        [DataRow(ResizeFit.Stretch, ResizeUnit.Pixel)]
+        public void PresetCommitShouldPreserveFitUnitAndUnicodeName(ResizeFit fit, ResizeUnit unit)
+        {
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            string originalJson = settings.ToJsonString();
+            var expectedSizes = settings.Properties.ImageresizerSizes.Value.Take(3).Select(size => size.Clone()).ToList();
+            var savedSettings = new List<(string Json, string FileName)>();
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings);
+            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("Web");
+            workingCopy.Name = "Web \u6E2C\u8A66";
+            workingCopy.Fit = fit;
+            workingCopy.Width = 2.54;
+            workingCopy.Height = 1.25;
+            workingCopy.Unit = unit;
+            Assert.AreEqual(0, savedSettings.Count);
+
+            viewModel.DeleteImageSize(3);
+            savedSettings.Clear();
+            viewModel.AddImageSize(workingCopy);
+            expectedSizes.Add(new ImageSize(4, "Web \u6E2C\u8A66", fit, 2.54, 1.25, unit));
+
+            AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
+            TestContext.WriteLine(
+                "ImageResizerProducerMatrixPayloads: {0}",
+                JsonSerializer.Serialize(new { SizesJson = savedSettings[0].Json, SettingsJson = savedSettings[1].Json }));
+        }
+
+        [TestMethod]
+        [DataRow(1)]
+        [DataRow(2)]
+        public void ThrowingSettingsSaveShouldPropagateWithoutRollingBackPreset(int failingCall)
+        {
+            ImageResizerSettings settings = CreatePresetPersistenceSettings();
+            var savedSettings = new List<(string Json, string FileName)>();
+            var saveError = new System.IO.IOException("Recording settings-save override failure.");
+            ImageResizerViewModel viewModel = CreatePresetPersistenceViewModel(settings, savedSettings, () =>
+            {
+                if (savedSettings.Count == failingCall)
+                {
+                    throw saveError;
+                }
+            });
+            ImageSize original = viewModel.Sizes[0];
+            ImageSize edited = original.Clone();
+            edited.Name = "Edited";
+
+            System.IO.IOException actualError = Assert.ThrowsExactly<System.IO.IOException>(() => viewModel.UpdateImageSize(original, edited));
+
+            Assert.AreSame(saveError, actualError);
+            Assert.AreSame(original, viewModel.Sizes[0]);
+            Assert.AreEqual(0, original.Id);
+            Assert.AreEqual("Edited", original.Name);
+            Assert.AreEqual(failingCall, savedSettings.Count);
+            Assert.AreEqual("sizes.json", savedSettings[0].FileName);
+            if (failingCall == 2)
+            {
+                Assert.AreEqual("settings.json", savedSettings[1].FileName);
+            }
         }
 
         [TestMethod]
@@ -552,6 +844,72 @@ namespace ViewModelTests
             Assert.IsFalse(defaultSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
             Assert.IsFalse(emptyNameSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
             Assert.IsFalse(nullNameSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
+        }
+
+        private static ImageResizerSettings CreatePresetPersistenceSettings()
+        {
+            var settings = new ImageResizerSettings();
+            settings.Properties.ImageresizerSizes = new ImageResizerSizes(new ObservableCollection<ImageSize>
+            {
+                new ImageSize(0, "Small", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
+                new ImageSize(1, "Medium", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
+                new ImageSize(2, "Large", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+                new ImageSize(3, "Phone", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
+            });
+            settings.Properties.ImageresizerSelectedSizeIndex.Value = 2;
+            settings.Properties.ImageresizerFileName.Value = "%1-custom";
+            settings.Properties.ImageresizerKeepDateModified.Value = true;
+            settings.Properties.ImageresizerCustomSize.Value = new ImageSize(4, "Custom", ResizeFit.Stretch, 50, 25, ResizeUnit.Percent);
+            return settings;
+        }
+
+        private static ImageResizerViewModel CreatePresetPersistenceViewModel(
+            ImageResizerSettings settings,
+            List<(string Json, string FileName)> savedSettings,
+            Action onSave = null)
+        {
+            var settingsUtils = new Mock<SettingsUtils>(new MockFileSystem(), null);
+            settingsUtils.Setup(utils => utils.GetSettings<ImageResizerSettings>(ImageResizerSettings.ModuleName, "settings.json")).Returns(settings);
+            settingsUtils.Setup(utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Callback<string, string, string>((json, module, fileName) =>
+                {
+                    Assert.AreEqual(ImageResizerSettings.ModuleName, module);
+                    savedSettings.Add((json, fileName));
+                    onSave?.Invoke();
+                });
+            var generalSettings = new Mock<ISettingsRepository<GeneralSettings>>();
+            generalSettings.SetupGet(repository => repository.SettingsConfig).Returns(new GeneralSettings());
+            return new ImageResizerViewModel(
+                settingsUtils.Object,
+                generalSettings.Object,
+                _ => throw new AssertFailedException("Preset edits must not send general-settings IPC."),
+                resourceName => resourceName);
+        }
+
+        private static void AssertSavedPresetPair(
+            IReadOnlyList<(string Json, string FileName)> savedSettings,
+            IReadOnlyCollection<ImageSize> expectedSizes,
+            string originalSettingsJson)
+        {
+            Assert.AreEqual(2, savedSettings.Count);
+            Assert.AreEqual("sizes.json", savedSettings[0].FileName);
+            Assert.AreEqual("settings.json", savedSettings[1].FileName);
+
+            ImageResizerSizes sidecar = JsonSerializer.Deserialize<ImageResizerSizes>(savedSettings[0].Json);
+            ImageResizerSettings fullSettings = JsonSerializer.Deserialize<ImageResizerSettings>(savedSettings[1].Json);
+            string[] expected = expectedSizes.Select(size => size.ToJsonString()).ToArray();
+            CollectionAssert.AreEqual(expected, sidecar.Value.Select(size => size.ToJsonString()).ToArray());
+            CollectionAssert.AreEqual(expected, fullSettings.Properties.ImageresizerSizes.Value.Select(size => size.ToJsonString()).ToArray());
+
+            JsonObject originalProperties = JsonNode.Parse(originalSettingsJson)["properties"].AsObject();
+            JsonObject savedProperties = JsonNode.Parse(savedSettings[1].Json)["properties"].AsObject();
+            foreach (var property in originalProperties)
+            {
+                if (property.Key != "imageresizer_sizes")
+                {
+                    Assert.IsTrue(JsonNode.DeepEquals(property.Value, savedProperties[property.Key]), property.Key);
+                }
+            }
         }
     }
 }
