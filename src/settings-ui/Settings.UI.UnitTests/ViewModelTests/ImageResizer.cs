@@ -454,6 +454,17 @@ namespace ViewModelTests
             AssertSavedPresetPair(savedSettings, expectedSizes, originalJson);
             Assert.AreSame(original, viewModel.Sizes[0]);
             Assert.AreEqual(originalJson, settings.ToJsonString());
+
+            savedSettings.Clear();
+            original.Name = "Renamed after repeated updates";
+            expectedSizes[0].Name = "Renamed after repeated updates";
+
+            Assert.AreEqual(4, savedSettings.Count);
+            AssertSavedPresetPair(savedSettings.Take(2).ToList(), expectedSizes, originalJson);
+            AssertSavedPresetPair(savedSettings.Skip(2).ToList(), expectedSizes, originalJson);
+            Assert.AreEqual("Renamed after repeated updates", original.Name);
+            Assert.AreEqual(0, original.Id);
+            Assert.AreSame(original, viewModel.Sizes[0]);
         }
 
         [TestMethod]
