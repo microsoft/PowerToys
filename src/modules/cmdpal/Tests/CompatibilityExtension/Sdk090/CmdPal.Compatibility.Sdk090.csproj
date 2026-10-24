@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <CmdPalSdkVersion>0.9.260303001</CmdPalSdkVersion>
+    <ExtensionClsid>0A88C24F-60E2-44C7-820B-342997C7ABEB</ExtensionClsid>
+    <AssemblyName>CmdPal.Compatibility.Sdk090</AssemblyName>
+  </PropertyGroup>
+  <Import Project="..\Extension.props" />
+</Project>
