@@ -19,6 +19,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public sealed class MainListPageRefreshTests
 {
     [TestMethod]
+    public void UserInputDebounce_FitsWithinOneSixtyHertzFrame()
+    {
+        var interval = MainListPage.RaiseItemsChangedThrottleForUserInput;
+        Assert.IsTrue(interval > TimeSpan.Zero);
+        Assert.IsTrue(interval.TotalMilliseconds <= 16.667);
+    }
+
+    [TestMethod]
     public async Task ProviderUpdates_DoNotPostponePendingUserInput()
     {
         var settingsService = new Mock<ISettingsService>();

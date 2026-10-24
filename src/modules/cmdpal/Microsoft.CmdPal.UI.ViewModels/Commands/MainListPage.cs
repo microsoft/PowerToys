@@ -37,8 +37,8 @@ public sealed partial class MainListPage : DynamicListPage,
     // Throttle for raising items changed events from external sources
     private static readonly TimeSpan RaiseItemsChangedThrottle = TimeSpan.FromMilliseconds(100);
 
-    // Throttle for raising items changed events from user input - we want this to feel more responsive, so a shorter throttle.
-    private static readonly TimeSpan RaiseItemsChangedThrottleForUserInput = TimeSpan.FromMilliseconds(50);
+    // Coalesce rapid input within one frame instead of holding scored results for three frames.
+    internal static readonly TimeSpan RaiseItemsChangedThrottleForUserInput = TimeSpan.FromMilliseconds(16);
 
     private readonly FallbackUpdateManager _fallbackUpdateManager;
     private readonly ThrottledDebouncedAction _refreshThrottledDebouncedAction;
