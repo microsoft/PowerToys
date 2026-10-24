@@ -26,10 +26,12 @@ namespace ImageResizer.Tests.Cli
         {
             var options = new CliOptions { Width = 800 };
             var settings = CreateDefaultSettings();
+            settings.CustomSize.Height = 321.5;
 
             CliSettingsApplier.Apply(options, settings);
 
             Assert.AreEqual(800.0, settings.CustomSize.Width);
+            Assert.AreEqual(0.0, settings.CustomSize.Height);
         }
 
         [TestMethod]
@@ -37,10 +39,12 @@ namespace ImageResizer.Tests.Cli
         {
             var options = new CliOptions { Height = 600 };
             var settings = CreateDefaultSettings();
+            settings.CustomSize.Width = 321.5;
 
             CliSettingsApplier.Apply(options, settings);
 
             Assert.AreEqual(600.0, settings.CustomSize.Height);
+            Assert.AreEqual(0.0, settings.CustomSize.Width);
         }
 
         [TestMethod]
@@ -150,6 +154,57 @@ namespace ImageResizer.Tests.Cli
             CliSettingsApplier.Apply(options, settings);
 
             Assert.AreEqual(originalIndex, settings.SelectedSizeIndex);
+        }
+
+        [TestMethod]
+        public void Apply_WithUnspecifiedSimpleOptions_PreservesExistingSettings()
+        {
+            var options = new CliOptions();
+            var settings = CreateDefaultSettings();
+            settings.ShrinkOnly = true;
+            settings.Replace = true;
+            settings.IgnoreOrientation = false;
+            settings.RemoveMetadata = true;
+            settings.KeepDateModified = true;
+            settings.JpegQualityLevel = 83;
+            settings.FileName = "kept_%1";
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.IsTrue(settings.ShrinkOnly);
+            Assert.IsTrue(settings.Replace);
+            Assert.IsFalse(settings.IgnoreOrientation);
+            Assert.IsTrue(settings.RemoveMetadata);
+            Assert.IsTrue(settings.KeepDateModified);
+            Assert.AreEqual(83, settings.JpegQualityLevel);
+            Assert.AreEqual("kept_%1", settings.FileName);
+        }
+
+        [TestMethod]
+        public void Apply_WithExplicitFalseSimpleOptions_DisablesExistingOptions()
+        {
+            var options = new CliOptions
+            {
+                ShrinkOnly = false,
+                Replace = false,
+                IgnoreOrientation = false,
+                RemoveMetadata = false,
+                KeepDateModified = false,
+            };
+            var settings = CreateDefaultSettings();
+            settings.ShrinkOnly = true;
+            settings.Replace = true;
+            settings.IgnoreOrientation = true;
+            settings.RemoveMetadata = true;
+            settings.KeepDateModified = true;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.IsFalse(settings.ShrinkOnly);
+            Assert.IsFalse(settings.Replace);
+            Assert.IsFalse(settings.IgnoreOrientation);
+            Assert.IsFalse(settings.RemoveMetadata);
+            Assert.IsFalse(settings.KeepDateModified);
         }
 
         [TestMethod]
