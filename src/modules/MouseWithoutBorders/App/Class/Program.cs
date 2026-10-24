@@ -12,6 +12,7 @@
 // </history>
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Printing;
@@ -19,7 +20,10 @@ using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Authentication.ExtendedProtection;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.ServiceProcess;
 using System.Threading;
@@ -30,6 +34,7 @@ using System.Xml.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.Win32.SafeHandles;
 using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
 using StreamJsonRpc;
@@ -173,6 +178,16 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
+                SessionPolicy.Initialize(
+                    serviceMode,
+                    runningAsSystem,
+                    WinAPI.GetMyDesktop(),
+                    Setting.Values.AllowNonConsoleSessions);
+                if (SessionPolicy.Current.AllowNonConsole)
+                {
+                    Logger.Log("Non-console session support enabled. An active user Default desktop is still required; service, System, and secure-desktop scenarios are not supported.");
+                }
+
                 PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersStartedEvent());
 
                 try
@@ -227,7 +242,6 @@ namespace MouseWithoutBorders.Class
                 StartInputCallbackThread();
                 if (!Common.RunOnLogonDesktop)
                 {
-                    StartSettingSyncThread();
                     CommandEventHandler.StartListening();
                 }
 
@@ -236,6 +250,11 @@ namespace MouseWithoutBorders.Class
                 Application.SetCompatibleTextRenderingDefault(false);
 
                 InitAndCleanup.Init();
+                if (!Common.RunOnLogonDesktop)
+                {
+                    StartSettingSyncThread();
+                }
+
                 Core.Helper.WndProcCounter++;
 
                 var formScreen = new FrmScreen();
@@ -267,17 +286,31 @@ namespace MouseWithoutBorders.Class
 
             void Shutdown();
 
-            void Reconnect();
+            Task Reconnect();
 
-            void GenerateNewKey();
+            Task<string> GenerateNewKey();
 
-            void ConnectToMachine(string machineName, string securityKey);
+            Task<string> GetCurrentPairingKey();
+
+            Task ConnectToMachine(string machineName, string securityKey);
 
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
 
         private sealed class SettingsSyncHelper : ISettingsSyncHelper
         {
+            private readonly bool _canManageServicePairing;
+
+            public SettingsSyncHelper()
+                : this(false)
+            {
+            }
+
+            internal SettingsSyncHelper(bool canManageServicePairing)
+            {
+                _canManageServicePairing = canManageServicePairing;
+            }
+
             public Task<ISettingsSyncHelper.MachineSocketState[]> RequestMachineSocketStateAsync()
             {
                 var machineStates = new Dictionary<string, SocketStatus>();
@@ -299,45 +332,75 @@ namespace MouseWithoutBorders.Class
                 return Task.FromResult(machineStates.Select((state) => new ISettingsSyncHelper.MachineSocketState { Name = state.Key, Status = state.Value }).ToArray());
             }
 
-            public void ConnectToMachine(string pcName, string securityKey)
+            public Task<string> GetCurrentPairingKey()
             {
-                Setting.Values.PauseInstantSaving = true;
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
+                var key = Encryption.MyKey;
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    throw new CryptographicException("Pairing setup is required.");
+                }
 
-                MachineStuff.ClearComputerMatrix();
-                Setting.Values.MyKey = securityKey;
-                Encryption.MyKey = securityKey;
-                Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
-                MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
-
-                string[] machines = MachineStuff.MachineMatrix;
-                MachineStuff.MachinePool.Initialize(machines);
-                MachineStuff.UpdateMachinePoolStringSetting();
-
-                SocketStuff.InvalidKeyFound = false;
-                InitAndCleanup.ReopenSocketDueToReadError = true;
-                Common.ReopenSockets(true);
-                MachineStuff.SendMachineMatrix();
-
-                Setting.Values.PauseInstantSaving = false;
-                Setting.Values.SaveSettings();
+                return Task.FromResult(key);
             }
 
-            public void GenerateNewKey()
+            public Task ConnectToMachine(string pcName, string securityKey)
             {
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
+                ArgumentException.ThrowIfNullOrWhiteSpace(pcName);
                 Setting.Values.PauseInstantSaving = true;
+                try
+                {
+                    Setting.Values.MyKey = securityKey;
+                    MachineStuff.ClearComputerMatrix();
+                    Encryption.MyKey = securityKey;
+                    Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
+                    MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
 
-                Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
-                MachineStuff.ClearComputerMatrix();
-                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
-                Encryption.GeneratedKey = true;
+                    string[] machines = MachineStuff.MachineMatrix;
+                    MachineStuff.MachinePool.Initialize(machines);
+                    MachineStuff.UpdateMachinePoolStringSetting();
 
-                Setting.Values.PauseInstantSaving = false;
+                    SocketStuff.InvalidKeyFound = false;
+                    InitAndCleanup.ReopenSocketDueToReadError = true;
+                    Common.ReopenSockets(true);
+                    MachineStuff.SendMachineMatrix();
+                }
+                finally
+                {
+                    Setting.Values.PauseInstantSaving = false;
+                }
+
                 Setting.Values.SaveSettings();
-
-                Reconnect();
+                return Task.CompletedTask;
             }
 
-            public void Reconnect()
+            public async Task<string> GenerateNewKey()
+            {
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
+                Setting.Values.PauseInstantSaving = true;
+                string key;
+                try
+                {
+                    key = Encryption.CreateRandomKey();
+                    Setting.Values.MyKey = key;
+                    Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
+                    MachineStuff.ClearComputerMatrix();
+                    Encryption.MyKey = key;
+                    Encryption.GeneratedKey = true;
+                }
+                finally
+                {
+                    Setting.Values.PauseInstantSaving = false;
+                }
+
+                Setting.Values.SaveSettings();
+
+                await Reconnect();
+                return key;
+            }
+
+            public Task Reconnect()
             {
                 SocketStuff.InvalidKeyFound = false;
                 InitAndCleanup.ReopenSocketDueToReadError = true;
@@ -355,6 +418,7 @@ namespace MouseWithoutBorders.Class
                 }
 
                 MachineStuff.SendMachineMatrix();
+                return Task.CompletedTask;
             }
 
             public void Shutdown()
@@ -376,10 +440,180 @@ namespace MouseWithoutBorders.Class
 
         internal static void StartSettingSyncThread()
         {
-            var serverTaskCancellationSource = new CancellationTokenSource();
-            CancellationToken cancellationToken = serverTaskCancellationSource.Token;
+            using var currentIdentity = WindowsIdentity.GetCurrent();
+            var processUserSid = currentIdentity.User;
+            if (processUserSid == null)
+            {
+                Logger.Log("Settings IPC v2 cannot determine the process user SID.");
+                return;
+            }
 
-            IpcChannel<SettingsSyncHelper>.StartIpcServer("MouseWithoutBorders/SettingsSync", cancellationToken);
+            var sessionId = Process.GetCurrentProcess().SessionId;
+            SecurityIdentifier currentUserSid;
+            try
+            {
+                currentUserSid = ResolveSettingsIpcUserSid(processUserSid, sessionId, GetInteractiveSessionUserSid);
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Settings IPC v2 cannot determine the interactive user SID: {e}");
+                return;
+            }
+
+            try
+            {
+                GrantSettingsIpcProcessQueryAccessIfNeeded(
+                    processUserSid,
+                    currentUserSid,
+                    MouseWithoutBordersIpc.GrantCurrentProcessQueryAccess);
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Settings IPC v2 cannot grant process query access to the interactive user: {e}");
+                return;
+            }
+
+            IpcChannel<SettingsSyncHelper>.StartVerifiedIpcServer(
+                MouseWithoutBordersIpc.GetSettingsSyncPipeName(sessionId),
+                currentUserSid,
+                stream => NamedPipePeerVerification.TryVerifyClient(
+                    stream,
+                    MouseWithoutBordersIpc.SettingsExecutableFileName,
+                    currentUserSid.Value,
+                    sessionId,
+                    out var rejectionReason)
+                    ? string.Empty
+                    : rejectionReason,
+                stream => new SettingsSyncHelper(CanVerifiedClientManageServicePairing(stream, CanProcessManageServicePairing)),
+                CancellationToken.None);
+        }
+
+        internal static bool CanVerifiedClientManageServicePairing(NamedPipeServerStream stream, Func<uint, bool> inspectProcess)
+        {
+            if (!NamedPipePeerVerification.TryGetClientProcessId(stream, out var processId))
+            {
+                return false;
+            }
+
+            try
+            {
+                return inspectProcess(processId);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception or UnauthorizedAccessException or SecurityException)
+            {
+                Logger.Log($"Cannot inspect settings IPC caller token: {ex.Message}");
+                return false;
+            }
+        }
+
+        internal static void EnsurePairingOperationAuthorized(
+            bool protectedMode,
+            bool canManageServicePairing)
+        {
+            if (protectedMode && !canManageServicePairing)
+            {
+                throw new UnauthorizedAccessException("Administrator access is required to manage service pairing.");
+            }
+        }
+
+        private static bool CanProcessManageServicePairing(uint processId)
+        {
+            using var token = OpenProcessTokenForMembership(processId);
+            using var identity = new WindowsIdentity(token.DangerousGetHandle());
+            if (!PairingClientNativeMethods.GetTokenInformation(token, PairingClientNativeMethods.TokenElevation, out var elevation, Marshal.SizeOf<uint>(), out _))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            return elevation != 0 && new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
+        internal static SafeAccessTokenHandle OpenProcessTokenForMembership(uint processId)
+        {
+            using var process = PairingClientNativeMethods.OpenProcess(PairingClientNativeMethods.ProcessQueryLimitedInformation, false, processId);
+            if (process.IsInvalid)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            // WindowsPrincipal duplicates a primary token before checking membership.
+            if (!PairingClientNativeMethods.OpenProcessToken(process, PairingClientNativeMethods.TokenQuery | PairingClientNativeMethods.TokenDuplicate, out var token))
+            {
+                var error = Marshal.GetLastWin32Error();
+                token.Dispose();
+                throw new Win32Exception(error);
+            }
+
+            return token;
+        }
+
+        private static class PairingClientNativeMethods
+        {
+            internal const uint ProcessQueryLimitedInformation = 0x1000;
+            internal const uint TokenQuery = 0x0008;
+            internal const uint TokenDuplicate = 0x0002;
+            internal const int TokenElevation = 20;
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            internal static extern SafeProcessHandle OpenProcess(uint processAccess, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
+
+            [DllImport("advapi32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool OpenProcessToken(SafeProcessHandle processHandle, uint desiredAccess, out SafeAccessTokenHandle tokenHandle);
+
+            [DllImport("advapi32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool GetTokenInformation(SafeAccessTokenHandle tokenHandle, int tokenInformationClass, out uint tokenInformation, int tokenInformationLength, out int returnLength);
+        }
+
+        internal static SecurityIdentifier ResolveSettingsIpcUserSid(
+            SecurityIdentifier processUserSid,
+            int sessionId,
+            Func<int, SecurityIdentifier> interactiveUserSidResolver)
+        {
+            ArgumentNullException.ThrowIfNull(processUserSid);
+            ArgumentNullException.ThrowIfNull(interactiveUserSidResolver);
+
+            return processUserSid.IsWellKnown(WellKnownSidType.LocalSystemSid)
+                ? interactiveUserSidResolver(sessionId) ?? throw new InvalidOperationException("The interactive session has no user SID.")
+                : processUserSid;
+        }
+
+        internal static void GrantSettingsIpcProcessQueryAccessIfNeeded(
+            SecurityIdentifier processUserSid,
+            SecurityIdentifier interactiveUserSid,
+            Action<SecurityIdentifier> grantAccess)
+        {
+            ArgumentNullException.ThrowIfNull(processUserSid);
+            ArgumentNullException.ThrowIfNull(interactiveUserSid);
+            ArgumentNullException.ThrowIfNull(grantAccess);
+
+            if (processUserSid.IsWellKnown(WellKnownSidType.LocalSystemSid))
+            {
+                grantAccess(interactiveUserSid);
+            }
+        }
+
+        internal static SecurityIdentifier GetInteractiveSessionUserSid(int sessionId)
+        {
+            IntPtr userToken = IntPtr.Zero;
+            try
+            {
+                if (NativeMethods.WTSQueryUserToken(unchecked((uint)sessionId), ref userToken) == 0)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+
+                using var interactiveIdentity = new WindowsIdentity(userToken);
+                return interactiveIdentity.User ?? throw new InvalidOperationException("The interactive session token has no user SID.");
+            }
+            finally
+            {
+                if (userToken != IntPtr.Zero)
+                {
+                    _ = NativeMethods.CloseHandle(userToken);
+                }
+            }
         }
 
         internal static void StartInputCallbackThread()

@@ -21,7 +21,11 @@ public class MainListRankerTests
 {
     [DataTestMethod]
     [DataRow("gh", "GitHub", true, true, false, false, RankTier.AliasExact, DisplayName = "Alias-exact is the strongest, most explicit signal and beats even a fallback flag")]
-    [DataRow("anything", "Some Fallback", true, false, false, true, RankTier.FallbackFloor, DisplayName = "A fallback that is not alias-exact lands on the floor regardless of a lexical match")]
+    [DataRow("zzz", "Some Fallback", true, false, false, false, RankTier.FallbackFloor, DisplayName = "A fallback that did not match at all floors to FallbackFloor rather than dropping")]
+    [DataRow("reload", "Reload", true, false, false, true, RankTier.ExactTitle, DisplayName = "A fallback whose dynamic title exactly matches the query earns ExactTitle")]
+    [DataRow("rel", "Reload", true, false, false, true, RankTier.Prefix, DisplayName = "A fallback whose title starts with the query earns Prefix")]
+    [DataRow("vs", "Visual Studio Code", true, false, false, true, RankTier.AcronymWordBoundary, DisplayName = "A fallback acronym match earns AcronymWordBoundary")]
+    [DataRow("cmd", "Command Prompt", true, false, false, true, RankTier.Fuzzy, DisplayName = "A fallback fuzzy match earns Fuzzy")]
     [DataRow("calculator", "Calculator", false, false, false, true, RankTier.ExactTitle, DisplayName = "Exact title match")]
     [DataRow("cal", "Calculator", false, false, false, true, RankTier.Prefix, DisplayName = "Title prefix match")]
     [DataRow("code", "Visual Studio Code", false, false, false, true, RankTier.AcronymWordBoundary, DisplayName = "Word-boundary match")]
@@ -41,6 +45,29 @@ public class MainListRankerTests
         Assert.AreEqual(
             expected,
             MainListRanker.ClassifyTier(query, title, isFallback, isAliasExact, isAliasSubstringMatch, matchedLexically));
+    }
+
+    [TestMethod]
+    public void ClassifyThenPack_ExactFallbackOutranksFuzzyNonFallback()
+    {
+        // The reported bug: searching "reload" surfaced fuzzy junk (e.g. "Fast Virtual Desktops")
+        // above the exact "Reload" fallback because fallbacks were pinned to FallbackFloor. Now a
+        // fallback whose dynamic title exactly matches is tiered like any exact match, so it wins
+        // even against a fuzzy non-fallback carrying the maximum possible within-tier score.
+        var fallbackTier = MainListRanker.ClassifyTier(
+            "reload", "Reload", isFallback: true, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true);
+        var fuzzyTier = MainListRanker.ClassifyTier(
+            "reload", "Fast Virtual Desktops", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true);
+
+        Assert.AreEqual(RankTier.ExactTitle, fallbackTier, "An exact-title fallback should be tiered ExactTitle");
+        Assert.AreEqual(RankTier.Fuzzy, fuzzyTier, "A loose subsequence match should be tiered Fuzzy");
+
+        var fallbackScore = MainListRanker.Pack(fallbackTier, withinTierScore: 0);
+        var fuzzyScore = MainListRanker.Pack(fuzzyTier, MainListRanker.TierStride - 1);
+
+        Assert.IsTrue(
+            fallbackScore > fuzzyScore,
+            "An exact-title fallback must outrank a fuzzy non-fallback even at the fuzzy item's best within-tier score");
     }
 
     [TestMethod]

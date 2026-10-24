@@ -186,11 +186,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
                 if (_isBandPage)
                 {
-                    // Bands only show the usage percentage as the title, so put
-                    // the active GPU's name in the subtitle - otherwise cycling
-                    // Prev/Next GPU between two idle adapters looks like nothing
-                    // changed.
-                    _gpuItem.Subtitle = _gpuPage.GetBandSubtitle();
+                    _gpuPage.ConfigureBandItem(_gpuItem);
                 }
             };
         }
@@ -222,32 +218,47 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             if (_cpuItem is not null)
             {
                 _cpuItem.Subtitle = Resources.GetResource("CPU_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _cpuItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_memoryItem is not null)
             {
                 _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _memoryItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_networkItem is not null)
             {
                 _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _networkItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_diskItem is not null)
             {
                 _diskItem.Subtitle = Resources.GetResource("Disk_Active_Time_Subtitle");
                 _diskItem.Icon = Icons.HardDriveIcon;
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _diskItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_gpuItem is not null)
             {
-                _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
+                _gpuPage!.ConfigureBandItem(_gpuItem);
             }
 
             if (_batteryItem is not null)
             {
                 _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
+                PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+                    _batteryItem,
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
         }
     }
@@ -316,20 +327,24 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private IListItem[] CreateNetworkBandItems()
     {
-        _networkUpItem ??= new ListItem(_networkPage!)
-        {
-            Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-            Icon = Icons.NetworkUpIcon,
-            MoreCommands = _networkPage!.Commands,
-        };
+        _networkUpItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_networkPage!)
+            {
+                Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                Icon = Icons.NetworkUpIcon,
+                MoreCommands = _networkPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _networkUpItem.Title = _networkPage!.GetUpSpeed();
 
-        _networkDownItem ??= new ListItem(_networkPage!)
-        {
-            Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-            Icon = Icons.NetworkDownIcon,
-            MoreCommands = _networkPage!.Commands,
-        };
+        _networkDownItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_networkPage!)
+            {
+                Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                Icon = Icons.NetworkDownIcon,
+                MoreCommands = _networkPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _networkDownItem.Title = _networkPage!.GetDownSpeed();
 
         return [_networkUpItem, _networkDownItem];
@@ -337,20 +352,24 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private IListItem[] CreateDiskBandItems()
     {
-        _diskReadItem ??= new ListItem(_diskPage!)
-        {
-            Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
-            Icon = Icons.FileReadIcon,
-            MoreCommands = _diskPage!.Commands,
-        };
+        _diskReadItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_diskPage!)
+            {
+                Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
+                Icon = Icons.FileReadIcon,
+                MoreCommands = _diskPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _diskReadItem.Title = _diskReadSpeed;
 
-        _diskWriteItem ??= new ListItem(_diskPage!)
-        {
-            Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
-            Icon = Icons.FileWriteIcon,
-            MoreCommands = _diskPage!.Commands,
-        };
+        _diskWriteItem ??= PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem(_diskPage!)
+            {
+                Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
+                Icon = Icons.FileWriteIcon,
+                MoreCommands = _diskPage!.Commands,
+            },
+            PerformanceMonitorDockItemPresentation.TransferRateLabelWidth);
         _diskWriteItem.Title = _diskWriteSpeed;
 
         return [_diskReadItem, _diskWriteItem, _diskItem!];
@@ -1196,6 +1215,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     private readonly DataManager _dataManager;
     private readonly string _gpuActiveEngType = "3D";
     private int _gpuActiveIndex;
+    private GPUStats.DisplayInfo? _gpuDisplayInfo;
 
     public SystemGPUUsageWidgetPage()
     {
@@ -1221,10 +1241,10 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
             var dataDuration = timer.ElapsedMilliseconds;
 
-            var gpuName = stats.GetGPUName(_gpuActiveIndex);
+            _gpuDisplayInfo = stats.GetGPUDisplayInfo(_gpuActiveIndex);
 
             ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
-            ContentData["gpuName"] = gpuName;
+            ContentData["gpuName"] = _gpuDisplayInfo.Name;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
             ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
@@ -1237,6 +1257,11 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         catch (Exception e)
         {
             ContentData.Clear();
+            if (_gpuDisplayInfo is { } previous)
+            {
+                _gpuDisplayInfo = previous with { Name = string.Empty, ShortName = string.Empty };
+            }
+
             ContentData["errorMessage"] = e.Message;
             return;
         }
@@ -1264,15 +1289,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         }
     }
 
-    public string GetBandSubtitle()
-    {
-        if (ContentData.TryGetValue("gpuName", out var name) && !string.IsNullOrEmpty(name))
-        {
-            return name;
-        }
-
-        return Resources.GetResource("GPU_Usage_Subtitle");
-    }
+    public void ConfigureBandItem(ListItem item) => PerformanceMonitorDockItemPresentation.ConfigureGpuValueLabel(item, _gpuDisplayInfo);
 
     protected override void OnActivated() => _dataManager.Start();
 

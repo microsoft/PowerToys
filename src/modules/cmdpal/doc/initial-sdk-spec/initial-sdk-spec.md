@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2026-02-05
+last updated: 2026-09-03
 issue id: n/a
 ---
 
@@ -85,6 +85,12 @@ functionality.
     - [Nov 2025 status](#nov-2025-status)
   - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
     - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
+  - [Addenda V: Extra content types](#addenda-v-extra-content-types)
+    - [Image content](#image-content)
+    - [Plain text content](#plain-text-content)
+  - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
+  - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
+  - [Addenda IX: Dock label layout hints](#addenda-ix-dock-label-layout-hints)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -819,8 +825,21 @@ interface IListItem requires ICommandItem {
     String TextToSuggest { get; };
 }
 
-interface IGridProperties  {
-    Windows.Foundation.Size TileSize { get; };
+[uuid("50C6F080-1CBE-4CE4-B92F-DA2F116ED524")]
+interface IGridProperties requires INotifyPropChanged { }
+
+[uuid("05914D59-6ECB-4992-9CF2-5982B5120A26")]
+interface ISmallGridLayout requires IGridProperties { }
+
+interface IMediumGridLayout requires IGridProperties
+{
+    Boolean ShowTitle { get; };
+}
+
+interface IGalleryGridLayout requires IGridProperties
+{
+    Boolean ShowTitle { get; };
+    Boolean ShowSubtitle { get; };
 }
 
 interface IListPage requires IPage, INotifyItemsChanged {
@@ -942,9 +961,10 @@ of grouped results, they're free to have as many sections as they like.
 
 When the `GridProperties` property is set to null, DevPal will display the items
 as a simple list, grouping them by section. When the `GridProperties` property
-is set to a non-null value, DevPal will display the items as a grid, with each
-item in the grid being a `TileSize` square. Grids are useful for showing items
-that are more visual in nature, like images or icons.
+is set to a non-null value, DevPal uses the implemented layout interface:
+`ISmallGridLayout`, `IMediumGridLayout`, or `IGalleryGridLayout`. Medium and
+gallery layouts can show titles, and gallery layouts can also show subtitles.
+Grids are useful for visual content such as images or icons.
 
 Each item in the list may also include an optional `Details` property. This
 allows the extension to provide additional information about the item, like a
@@ -1125,7 +1145,7 @@ interface IFilterItem {}
 [uuid("0a923c7f-5b7b-431d-9898-3c8c841d02ed")]
 interface ISeparatorFilterItem requires IFilterItem {}
 
-interface IFilter requires IFilterItem {
+interface IFilter requires INotifyPropChanged, IFilterItem {
     String Id { get; };
     String Name { get; };
     IIconInfo Icon { get; };
@@ -1133,7 +1153,7 @@ interface IFilter requires IFilterItem {
 
 interface IFilters {
     String CurrentFilterId { get; set; };
-    IFilterItem[] Filters();
+    IFilterItem[] GetFilters();
 }
 ```
 
@@ -1416,6 +1436,15 @@ interface ITag {
 
 [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
 interface IDetailsData {}
+
+[contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+enum ContentSize
+{
+    Small = 0,
+    Medium = 1,
+    Large = 2,
+};
+
 interface IDetailsElement {
     String Key { get; };
     IDetailsData Data { get; };
@@ -1485,6 +1514,10 @@ interface IFallbackHandler {
 interface IFallbackCommandItem requires ICommandItem {
     IFallbackHandler FallbackHandler{ get; };
     String DisplayTitle { get; };
+};
+
+interface IFallbackCommandItem2 requires IFallbackCommandItem {
+    String Id { get; };
 };
 
 interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
@@ -1756,8 +1789,24 @@ However, this class comes with restrictions around the ability to call it from a
 background thread. Since extensions are always running in the background, this
 presents persistent difficulties.
 
-We'll provide a helper class that allows developers to easily use the clipboard
-in their extensions.
+The extension toolkit provides `ClipboardHelper` for this purpose. Its methods
+create the required STA work automatically, so extension code does not need to
+create a foreground window or manage a clipboard thread:
+
+```cs
+ClipboardHelper.SetText("text");
+ClipboardHelper.SetRtf("plain text", rtfText);
+ClipboardHelper.SetImage(RandomAccessStreamReference.CreateFromStream(stream));
+ClipboardHelper.SetContent(dataPackage);
+```
+
+`SetText` and `SetRtf` use the Win32 clipboard formats directly. `SetImage`
+accepts a `RandomAccessStreamReference` containing an image and writes it as
+the standard bitmap clipboard format. `SetContent` accepts a `DataPackage` for
+other Windows clipboard formats. Clipboard ownership and bounded retries are
+handled by the helper. Clipboard access can still fail when another process
+owns the shared clipboard, so callers should treat clipboard operations as
+best-effort and surface their own user-facing error when appropriate.
 
 ### Settings helpers
 
@@ -2355,6 +2404,170 @@ because that method is was designed for two main purposes:
 In neither of those scenarios was the full "display" of the item needed. In
 pinning scenarios, however, we need everything that the user would see in the UI
 for that item, which is all in the `ICommandItem`.
+
+## Addenda V: Extra content types
+
+Extra content types for [Content Pages](#content-pages) views so we can provide extra functionality to the user.
+
+### Image content
+
+Image content is dedicated to displaying a single image. The host will attempt to display the entire
+image in the UI or a scaled down preview, while respecting the max width and height. If possible, the host will
+provide UI controls to display the image 1:1, save it or copy it to the clipboard.
+
+```csharp
+interface IImageContent requires IContent {
+    IIconInfo Image { get; };
+    Int32 MaxWidth { get; };
+    Int32 MaxHeight { get; };
+}
+```
+
+### Plain text content
+
+Developers can declare that the content is unformatted plain text and provide
+hints about how to render it, such as what font to use and whether to
+wrap words or not. Users can control the view settings.
+
+```csharp
+enum FontFamily
+{
+    UserInterface,
+    Monospace,
+};
+
+interface IPlainTextContent requires IContent {
+    String Text { get; };
+    FontFamily FontFamily { get; };
+    Boolean WrapWords { get; };
+}
+```
+
+## Addenda VI: Adaptive Card Actions
+
+Adaptive Cards supports setting multiple actions on a card. Those actions can be
+identified by an `id` property on the action. That `id` is not necessarily
+encoded in the JSON payload of the action.
+
+For us to properly support the gammut of AC scenarios, we need to be able to
+pass the `id` of the action back to the extension. This is a relatively simple
+addition to the `IForm` interface.
+
+```csharp
+interface IFormContent2 requires IFormContent {
+    ICommandResult SubmitAction(String actionId, String inputs, String data);
+}
+```
+
+## Addenda VII: Rich content details
+
+Originally, the `IDetails` was designed for just a simple title, image, and
+markdown body. However it also makes sense to allow for more complex content in
+the details view. This is especially useful for extensions that want to provide
+richer inline content in the details view, like a card.
+
+```csharp
+interface IDetails2 requires IDetails {
+    IContent[] GetContent();
+}
+```
+
+This is a method, not a property, because we want to explicitly indicate that
+the content may be generated when it is requested. 
+
+Should an extension want to indicate that the content has changed, they can
+raise a `INotifyPropChanged` event on the `IDetails2` object for the property
+name "Content". The host will accept that as a notification that the content has
+changed. 
+
+## Addenda IX: Dock label layout hints
+
+Optional attributes exposed through `IExtendedAttributesProvider.GetProperties()`.
+Apply to the rendered item: the root of a single-item band, or each `IListPage` child.
+
+### Width values
+
+`DockLabelWidth` is an immutable Toolkit helper with three factories:
+
+- `Dips(double value)`: device-independent pixels.
+- `Characters(double value)`: multiples of the `0` glyph width in the target font.
+- `Sample(string text)`: literal text measured in the target font; empty text reserves zero.
+
+Numeric values must be finite, non-negative, and no greater than `float.MaxValue`.
+Factories reject invalid numbers and null samples.
+Helpers serialize widths as primitive attributes; the managed `DockLabelWidth` object does not cross WinRT.
+
+### Toolkit methods
+
+Receiver: `TItem : CommandItem, IExtendedAttributesProvider` (including `ListItem`).
+Requires a persistent, writable property bag. All methods return the same `TItem`.
+
+- `SetDockLabelReservations(DockLabelWidth? titleWidth, DockLabelWidth? subtitleWidth)`:
+  replace both row reservations; `null` removes the corresponding reservation.
+- `ClearDockLabelReservations()`: remove both row reservations; preserve shared limits.
+- `SetDockLabelWidthLimits(DockLabelWidth? minimum, DockLabelWidth? maximum)`:
+  replace both shared limits; `null` removes the corresponding limit.
+- `ClearDockLabelWidthLimits()`: remove both shared limits; preserve row reservations.
+- `SetDockLabelTabularDigits(bool enabled = true)`: enable equal-width digits in both rows.
+- `SetDockLabelTrailingAlignment(bool enabled = true)`: align both rows to the trailing edge.
+
+Both width arguments are required, including explicit `null` values.
+Presentation hints are independent; `enabled: false` removes the corresponding hint.
+Number formatting and decimal precision remain the extension's responsibility.
+
+Example: `item.SetDockLabelReservations(DockLabelWidth.Sample("100%"), DockLabelWidth.Sample(localizedSubtitle))`.
+Optional cap: `item.SetDockLabelWidthLimits(null, DockLabelWidth.Characters(20))`.
+
+### Attributes
+
+Constants are defined in `WellKnownExtensionAttributes`.
+Attribute keys use the prefix `Microsoft.CommandPalette.Dock.`.
+
+| Constant | Key suffix | Value | Measurement font |
+| --- | --- | --- | --- |
+| `DockTitleWidth` | `TitleWidth` | Width | Title |
+| `DockSubtitleWidth` | `SubtitleWidth` | Width | Subtitle |
+| `DockMinLabelWidth` | `MinLabelWidth` | Width | Title |
+| `DockMaxLabelWidth` | `MaxLabelWidth` | Width | Title |
+| `DockLabelTabularDigits` | `TabularDigits` | `bool` | Both rows |
+| `DockLabelTrailingAlignment` | `TrailingAlignment` | `bool` | Both rows |
+
+Width encodings:
+
+- `double`: DIPs.
+- Invariant number followed by `ch`: character units, including fractional or exponent notation.
+- `text:` followed by literal text: sample. For example, `text:12ch` measures the characters `12ch`.
+- Unit suffixes and the sample prefix are case-sensitive. Invalid values are ignored.
+
+### Host behavior
+
+- Reservations: measure each enabled row in its own font and text scale.
+  Fix the shared label width to the largest valid reservation, clamped by explicit min/max.
+- Limits: use the title font for character units and samples.
+  Without a row reservation, constrain the content's natural width.
+  Equal limits fix the width; a maximum alone permits shrinking.
+  Ignore both limits if the resolved minimum exceeds the maximum.
+- Defaults: apply only when no enabled row has a valid reservation.
+  Minimum 24 DIPs with a title, zero for subtitle-only items; maximum 100 DIPs.
+  An explicit limit overrides a conflicting default.
+- Visibility: compact mode excludes the subtitle; settings exclude hidden rows.
+  Empty displayed text retains its row reservation. Hidden labels reserve no space.
+- Samples: independent of displayed text, never rendered or inferred from it.
+  Keep samples stable across value updates to avoid resizing.
+  Measurements include pixel rounding and are cached until hints, fonts, language,
+  direction, text scale, or display scale change.
+- Scope: label column only, excluding icons and padding. Vertical docks may shrink below the minimum.
+- Overflow: ellipsis, with full text in the tooltip.
+
+### Change notifications
+
+- Width attributes: `PropChanged("DockLabelWidth")`.
+- Tabular digits: `PropChanged("DockLabelTabularDigits")`.
+- Trailing alignment: `PropChanged("DockLabelTrailingAlignment")`.
+- Entire property bag: `PropChanged("Properties")`.
+- Helpers notify once after updating all affected keys; unchanged hints do not notify.
+- Ordinary `Title` / `Subtitle` updates require no additional hint notification.
+
 ## Class diagram
 
 This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconData` and `IPropChanged`, which are used in many places.)
@@ -2447,8 +2660,17 @@ classDiagram
     ITag "*" *-- IListItem
     IFallbackHandler "?" *-- IListItem
 
-    class IGridProperties  {
-        Windows.Foundation.Size TileSize
+    IGridProperties --|> INotifyPropChanged
+    class IGridProperties
+    ISmallGridLayout --|> IGridProperties
+    IMediumGridLayout --|> IGridProperties
+    IGalleryGridLayout --|> IGridProperties
+    class IMediumGridLayout {
+        Boolean ShowTitle
+    }
+    class IGalleryGridLayout {
+        Boolean ShowTitle
+        Boolean ShowSubtitle
     }
 
     IListPage --|> IPage
@@ -2607,19 +2829,22 @@ Is that just a `Details` object? A markdown body?
 
 ### Generating the `.idl`
 
-The `.idl` for this SDK can be generated directly from this file. To do so, run the following command:
+This Markdown file is the source for the SDK definitions. Do not edit
+`extensionsdk/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.idl`
+directly. API declarations use `csharp` or `c#` fences; implementation examples use
+`cs` fences and are not emitted by the generator.
+
+Install the generator dependency with `python -m pip install mistletoe`, and ensure
+its `mistletoe` command is on `PATH`. From `src/modules/cmdpal`, regenerate with:
 
 ```ps1
-.\generate-interface.ps1 > .\Microsoft.DevPalette.Extensions.idl
+.\doc\initial-sdk-spec\generate-interface.ps1 |
+    Set-Content -Encoding utf8 .\extensionsdk\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.idl
 ```
 
-(After a `pip3 install mistletoe`)
-
-Or, to generate straight to the place I'm consuming it from:
-
-```ps1
-.\doc\initial-sdk-spec\generate-interface.ps1 > .\extensionsdk\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.Toolkit.idl
-```
+Review the generated diff along with the Markdown changes. Existing interface
+members, UUIDs and `requires` declarations must be preserved when reconciling old
+source drift. Regenerating a second time should produce no further changes.
 
 ### Adding APIs
 

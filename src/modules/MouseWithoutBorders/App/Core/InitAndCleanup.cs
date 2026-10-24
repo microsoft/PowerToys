@@ -96,16 +96,11 @@ internal static class InitAndCleanup
             Encryption.MyKey = Setting.Values.MyKey;
             int tmp = Setting.Values.MyKeyDaysToExpire;
         }
-        catch (FormatException e)
+        catch (Exception e) when (e is FormatException or CryptographicException or ArgumentException)
         {
-            Encryption.KeyCorrupted = true;
-            Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
-            Logger.Log(e.Message);
-        }
-        catch (CryptographicException e)
-        {
-            Encryption.KeyCorrupted = true;
-            Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+            Encryption.KeyCorrupted = !Setting.Values.IsPairingKeyModeMismatch;
+            Encryption.MyKey = string.Empty;
+            Encryption.GeneratedKey = false;
             Logger.Log(e.Message);
         }
 

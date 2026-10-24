@@ -75,6 +75,45 @@ Describe "resolveBuildMetadata" {
         $result.Version | Should Be "0.100.2112.0"
     }
 
+    It "supports an explicit preview release from stable" {
+        $result = & $scriptPath `
+            -ReleaseIntent "preview-release" `
+            -SourceBranch "refs/heads/stable" `
+            -BuildReason "Schedule" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2607.30099-stable" `
+            -DailyVersionSequence "2" `
+            -VersionPropsPath (New-VersionProps)
+
+        $result.Intent | Should Be "preview-release"
+        $result.Channel | Should Be "preview"
+        $result.Version | Should Be "0.100.2112.0"
+        $result.AllowPublicSymbols | Should Be $false
+        $result.ShouldPublishPreview | Should Be $true
+    }
+
+    It "rejects a scheduled stable build without explicit preview intent" {
+        Assert-Throws {
+            & $scriptPath `
+                -SourceBranch "refs/heads/stable" `
+                -BuildReason "Schedule" `
+                -BuildNumber "PowerToys Signed YAML Release Build_2607.30099-stable" `
+                -DailyVersionSequence "2" `
+                -VersionPropsPath (New-VersionProps)
+        }
+    }
+
+    It "rejects stable release intent from main" {
+        Assert-Throws {
+            & $scriptPath `
+                -ReleaseIntent "stable-release" `
+                -SourceBranch "refs/heads/main" `
+                -BuildReason "Manual" `
+                -BuildNumber "PowerToys Signed YAML Release Build_2607.30099-main" `
+                -DailyVersionSequence "2" `
+                -VersionPropsPath (New-VersionProps)
+        }
+    }
+
     It "keeps private builds independent from the release counter" {
         $result = & $scriptPath `
             -SourceBranch "refs/heads/user/feature" `

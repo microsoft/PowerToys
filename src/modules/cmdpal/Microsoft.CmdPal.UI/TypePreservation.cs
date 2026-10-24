@@ -24,6 +24,7 @@ internal static class TypePreservation
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.DataTemplate))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.Controls.DataTemplateSelector))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.Controls.ListViewItem))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.Controls.ItemsWrapGrid))]
     public static void PreserveTypes()
     {
         // This method exists only to hold the DynamicDependency attributes above.

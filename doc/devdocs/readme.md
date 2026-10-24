@@ -14,7 +14,7 @@ Welcome to the PowerToys developer documentation. This documentation provides in
    - Windows 11 SDK (10.0.22621.0)
    - Windows 11 SDK (10.0.26100.3916)
 1. .NET 8 SDK
-1. Enable long paths in Windows (see [Enable Long Paths](https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)
+1. Enable long paths in Windows (see [Enable Long Paths](https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)
 
 > **Tip:** You can install Visual Studio with all required workloads automatically using the [WinGet configuration files](https://github.com/microsoft/PowerToys/tree/main/.config) in the repository:
 > ```powershell
@@ -124,7 +124,7 @@ If you want to build your own extensions for Command Palette, check out the [Com
 - If you are a community contributor, you will not be able to add labels to the issue; in that case just add a comment saying that you have started work on the issue and try to give an estimate for the delivery date.
 - If the work item has a medium/large cost, using the markdown task list, list each sub item and update the list with a check mark after completing each sub item.
 - **Before opening a PR, ensure your changes build successfully locally and functionality tests pass.** This is especially important for AI-assisted (vibe coding) contributions—always verify AI-generated code works as intended. Exploratory PRs or draft PRs for discussion are exceptions.
-- When opening a PR, follow the PR template.
+- When opening a PR, follow the PR template. **You must write the PR description yourself.** You can include AI-generated text only inside a collapsed `<details>` section. Maintainers can close PRs whose description they think was not written by a human. See [Pull request descriptions must be written by a human](../../CONTRIBUTING.md#pull-request-descriptions-must-be-written-by-a-human). AI-assisted translations are allowed as long as the original text is still your own words.
 - When you'd like the team to take a look (even if the work is not yet fully complete) mark the PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
 - When the PR is approved, let the owner of the PR merge it. For community contributions, the reviewer who approved the PR can also merge it.
 - Use the `Squash and merge` option to merge a PR. If you don't want to squash it because there are logically different commits, use `Rebase and merge`.

@@ -46,6 +46,7 @@ ALLOWUNDO
 ALLVIEW
 ALPHATYPE
 altkey
+altwindowcycle
 amr
 animatedvisuals
 Animnate
@@ -104,6 +105,7 @@ authenticode
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
+autohidecursor
 AUTOHSCROLL
 AUTOMATIONPROPERTIES
 autopf
@@ -242,6 +244,7 @@ CLOSEAPP
 clsids
 Clusion
 cmder
+cmdnotfound
 CMDNOTFOUNDMODULEINTERFACE
 cmdpal
 CMIC
@@ -442,6 +445,7 @@ dotnet
 downsampled
 downsampling
 downscale
+dpapi
 DPICHANGED
 DPIs
 dpm
@@ -557,6 +561,7 @@ Fairlight
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+faststart
 fdw
 fdx
 fesf
@@ -746,6 +751,7 @@ HORZRES
 HORZSIZE
 Hostbackdropbrush
 hostfxr
+hostpolicy
 hostsfileeditor
 hotfixes
 hotkeycontrol
@@ -755,6 +761,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HPS
+hqdn
 HRAWINPUT
 HREDRAW
 hres
@@ -932,6 +939,7 @@ lcid
 LCIDTo
 lcl
 Lclean
+lctrl
 Ldone
 Ldr
 LEFTALIGN
@@ -960,6 +968,7 @@ livezoom
 LLKH
 llkhf
 LLMHF
+lmb
 LMEM
 LMENU
 lng
@@ -1040,7 +1049,6 @@ manifestdependency
 MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
-MARKDOWNPREVIEWHANDLERCPP
 maximizebox
 MAXSHORTCUTSIZE
 maxversiontested
@@ -1087,6 +1095,7 @@ minwindef
 Mip
 mkdn
 mlcfg
+mmb
 mmc
 mmcexe
 mmi
@@ -1102,6 +1111,7 @@ MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
 MOUSEACTIVATE
+mousebuttonlock
 mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
@@ -1110,6 +1120,7 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
+mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -1179,11 +1190,14 @@ NCMOUSEMOVE
 ncpa
 NCPAINT
 NCRENDERING
+ncrypt
+ncryptprotect
 ndp
 NEEDDISPATCH
 netcoreapp
 netcpl
 netframework
+NETSDK
 netsetup
 netsh
 NEWDIALOGSTYLE
@@ -1307,6 +1321,7 @@ openxmlformats
 OPTIMIZEFORINVOKE
 Optronics
 ORPHANEDDIALOGTITLE
+osk
 oss
 OSVERSIONINFO
 OSVERSIONINFOEX
@@ -1482,6 +1497,7 @@ psapi
 pscid
 pscustomobject
 PSECURITY
+pseudolocalizer
 psfgao
 psfi
 PSMODULEPATH
@@ -1535,6 +1551,7 @@ RAWPATH
 rbhid
 Rbuttondown
 rclsid
+rctrl
 RCW
 RCZOOMIT
 rdp
@@ -1604,6 +1621,7 @@ RIDEV
 RIGHTBUTTON
 RIGHTSCROLLBAR
 riid
+rmb
 rollups
 ROUNDSMALL
 rpcrt
@@ -1667,6 +1685,7 @@ SETFOREGROUND
 SETHOTKEY
 SETICON
 SETLOWPOWERACTIVE
+setparams
 SETPOWEROFFACTIVE
 SETRANGE
 SETREDRAW
@@ -1684,6 +1703,7 @@ SETWORKAREA
 SFBS
 sfgao
 SFGAOF
+SGNR
 SHACF
 SHANDLE
 sharepoint
@@ -1759,6 +1779,7 @@ slnx
 SMALLICON
 smartphone
 smileys
+smpte
 SMTO
 SNAPPROCESS
 snk
@@ -1979,6 +2000,7 @@ UIA
 UIDs
 UIEx
 uild
+UIPI
 uitests
 UITo
 ULONGLONG
@@ -2149,6 +2171,7 @@ wingetpkgs
 Winhook
 WINL
 winlogon
+WINM
 winmd
 winml
 WINNT
@@ -2216,6 +2239,7 @@ WTSAT
 Wubi
 WUX
 Wwanpp
+Wzhudev
 xap
 Xbuttondown
 xclip

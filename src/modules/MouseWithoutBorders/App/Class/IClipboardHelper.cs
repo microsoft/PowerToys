@@ -11,10 +11,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Threading;
@@ -164,55 +161,6 @@ namespace MouseWithoutBorders
         }
     }
 #endif
-
-    internal sealed class IpcChannel<T>
-        where T : new()
-    {
-        public static T StartIpcServer(string pipeName, CancellationToken cancellationToken)
-        {
-            SecurityIdentifier securityIdentifier = new SecurityIdentifier(
-WellKnownSidType.AuthenticatedUserSid, null);
-
-            PipeSecurity pipeSecurity = new PipeSecurity();
-            pipeSecurity.AddAccessRule(new PipeAccessRule(
-                securityIdentifier,
-                PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
-                AccessControlType.Allow));
-
-            _ = Task.Factory.StartNew(
-                async () =>
-                {
-                    try
-                    {
-                        while (!cancellationToken.IsCancellationRequested)
-                        {
-                            using (var serverChannel = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity))
-                            {
-                                await serverChannel.WaitForConnectionAsync();
-                                var taskRpc = JsonRpc.Attach(serverChannel, new T());
-                                await taskRpc.Completion;
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                    }
-                    catch (Exception e)
-                    {
-#if MM_HELPER
-                        _ = e;
-#else
-                        Logger.Log(e);
-#endif
-                    }
-                },
-                cancellationToken,
-                TaskCreationOptions.None,
-                TaskScheduler.Default);
-
-            return default(T);
-        }
-    }
 
     internal sealed class IpcHelper
     {

@@ -33,6 +33,7 @@ bool LaunchingStatus::AllLaunchedAndMoved() noexcept
     {
         if (data.state != LaunchingState::Failed && 
             data.state != LaunchingState::Canceled && 
+            data.state != LaunchingState::Skipped &&
             data.state != LaunchingState::LaunchedAndMoved)
         {
             return false;
@@ -60,7 +61,7 @@ bool LaunchingStatus::AllInstancesOfTheAppLaunchedAndMoved(const WorkspacesData:
     return true;
 }
 
-const WorkspacesData::LaunchingAppStateMap& LaunchingStatus::Get() noexcept
+WorkspacesData::LaunchingAppStateMap LaunchingStatus::Get()
 {
     std::shared_lock lock(m_mutex);
     return m_appsState;
@@ -115,7 +116,10 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
         return;
     }
 
-    m_appsState[app].state = state;
+    if (m_appsState[app].state != LaunchingState::Skipped)
+    {
+        m_appsState[app].state = state;
+    }
 }
 
 void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Application& app, HWND window, LaunchingState state)
@@ -127,8 +131,11 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
         return;
     }
 
-    m_appsState[app].state = state;
-    m_appsState[app].window = window;
+    if (m_appsState[app].state != LaunchingState::Skipped)
+    {
+        m_appsState[app].state = state;
+        m_appsState[app].window = window;
+    }
 }
 
 void LaunchingStatus::Cancel()

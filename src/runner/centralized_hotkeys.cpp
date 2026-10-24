@@ -58,7 +58,7 @@ namespace CentralizedHotkeys
                 ids[shortcut] = nextId++;
             }
 
-            if (!RegisterHotKey(runnerWindow, ids[shortcut], shortcut.modifiersMask, shortcut.vkCode))
+            if (!RegisterHotKey(runnerWindow, ids[shortcut], shortcut.modifiersMask | MOD_NOREPEAT, shortcut.vkCode))
             {
                 Logger::warn(L"Failed to add {} shortcut. {}", ToWstring(shortcut), get_last_error_or_default(GetLastError()));
                 return false;
@@ -75,12 +75,11 @@ namespace CentralizedHotkeys
     {
         for (auto it = actions.begin(); it != actions.end(); it++)
         {
-            auto val = std::find_if(it->second.begin(), it->second.end(), [moduleName](Action a) { return a.moduleName == moduleName; });
-            if (val != it->second.end())
+            const auto removed = std::erase_if(it->second, [&moduleName](const Action& action) { return action.moduleName == moduleName; });
+            if (removed != 0)
             {
-                it->second.erase(val);
-
-                if (it->second.empty())
+                // Window-owned hotkeys are already removed after WM_DESTROY.
+                if (it->second.empty() && IsWindow(runnerWindow))
                 {
                     if (!UnregisterHotKey(runnerWindow, ids[it->first]))
                     {
@@ -97,11 +96,13 @@ namespace CentralizedHotkeys
 
     void PopulateHotkey(Shortcut shortcut)
     {
-        if (!actions.empty())
+        shortcut.modifiersMask &= static_cast<WORD>(~MOD_NOREPEAT);
+        const auto actionIt = actions.find(shortcut);
+        if (actionIt != actions.end() && !actionIt->second.empty())
         {
             try
             {
-                actions[shortcut].begin()->action(shortcut.modifiersMask, shortcut.vkCode);
+                actionIt->second.begin()->action(shortcut.modifiersMask, shortcut.vkCode);
             }
             catch(std::exception& ex)
             {

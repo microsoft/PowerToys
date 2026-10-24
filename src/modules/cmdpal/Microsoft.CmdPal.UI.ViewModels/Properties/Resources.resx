@@ -303,6 +303,18 @@
     <value>Settings</value>
     <comment>Command name for opening dock settings</comment>
   </data>
+  <data name="dock_monitor_display_name" xml:space="preserve">
+    <value>Display {0}</value>
+    <comment>Fallback display name when no friendly hardware name is available. {0} is a persistent letter label, such as A, B, or AA, not the Windows display number.</comment>
+  </data>
+  <data name="dock_monitor_display_name_default" xml:space="preserve">
+    <value>Display</value>
+    <comment>Fallback display name before a persistent letter label has been assigned.</comment>
+  </data>
+  <data name="dock_monitor_primary_display_name" xml:space="preserve">
+    <value>{0} (Primary)</value>
+    <comment>{0} is the display name. Indicates that this is currently the primary display.</comment>
+  </data>
   <data name="ShowDetailsCommand" xml:space="preserve">
     <value>Show details</value>
     <comment>Name for the command that shows details of an item</comment>
@@ -321,6 +333,9 @@
   </data>
   <data name="home_sections_pinned_title" xml:space="preserve">
     <value>Pinned</value>
+  </data>
+  <data name="home_sections_recent_title" xml:space="preserve">
+    <value>Recent</value>
   </data>
   <data name="home_sections_commands_title" xml:space="preserve">
     <value>Commands</value>
@@ -604,5 +619,11 @@
   </data>
   <data name="winget_operations_recent_activity" xml:space="preserve">
     <value>Recent WinGet activity</value>
+  </data>
+  <data name="list_page_requested_filter_unavailable" xml:space="preserve">
+    <value>The requested filter is no longer available.</value>
+  </data>
+  <data name="Language_Default" xml:space="preserve">
+    <value>Windows display language</value>
   </data>
 </root>

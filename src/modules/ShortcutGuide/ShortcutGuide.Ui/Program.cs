@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
@@ -19,16 +21,19 @@ namespace ShortcutGuide
 {
     public sealed class Program
     {
-        public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
+        private static readonly ManualResetEvent _runnerExitEvent = new(false);
+
+        public static Task ManifestInitializationTask { get; private set; } = Task.CompletedTask;
 
         public static nint ForegroundWindowHandle { get; set; } = nint.Zero;
+
+        internal static WaitHandle RunnerExitEvent => _runnerExitEvent;
 
         [STAThread]
         public static void Main(string[] args)
         {
             ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
-            LogForegroundCapture(ForegroundWindowHandle);
 
             // The module interface passes: <powertoys_pid> [telemetry]
             if (args.Length >= 2 && args[1] == "telemetry")
@@ -38,80 +43,59 @@ namespace ShortcutGuide
                 return;
             }
 
-            if (args.Length >= 1 && int.TryParse(args[0], out int runnerPID))
-            {
-                RunnerHelper.WaitForPowerToysRunner(runnerPID, () =>
-                {
-                    Logger.LogInfo($"PowerToys runner process (PID={runnerPID}) exited. Exiting ShortcutGuide.");
-                    Environment.Exit(0);
-                });
-            }
-
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredShortcutGuideEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                 return;
             }
 
-            Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
-
-            if (NativeMethods.IsCurrentWindowExcludedFromShortcutGuide())
+            if (args.Length >= 1 && int.TryParse(args[0], out int runnerPID))
             {
-                return;
+                MonitorPowerToysRunner(runnerPID);
             }
 
-            // Copy every shipped manifest from the install directory to the per-user manifest folder.
-            // Enumerating the source folder avoids drift between the deployed assets and a hard-coded list.
-            // Todo: Only copy files after an update.
+            Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
+
+            // Copy manifest files from the Assets folder to the user's AppData folder,
+            // but only if the destination is missing or the source is newer.
             string sourceManifestFolder = Path.Combine(
                 Path.GetDirectoryName(Environment.ProcessPath)!,
                 "Assets",
                 "ShortcutGuide",
                 "Manifests");
 
-            CopyAndIndexGenerationThread = new Thread(() =>
+            ManifestInitializationTask = Task.Run(() =>
             {
+                var copyStopwatch = Stopwatch.StartNew();
+                int copyCount = 0;
                 try
                 {
                     foreach (string sourceFile in Directory.EnumerateFiles(sourceManifestFolder, "*.yml"))
                     {
-                        string destinationFile = Path.Combine(ManifestInterpreter.PathOfManifestFiles, Path.GetFileName(sourceFile));
-                        File.Copy(sourceFile, destinationFile, true);
+                        string destinationFile = Path.Combine(
+                            ManifestInterpreter.PathOfManifestFiles, Path.GetFileName(sourceFile));
+
+                        // Only copy if the destination manifest is missing or the bundled
+                        // source is newer. This avoids rewriting unchanged files on every
+                        // launch and prevents triggering anti-virus scans on the
+                        // destination folder unnecessarily.
+                        if (!File.Exists(destinationFile) ||
+                            File.GetLastWriteTimeUtc(sourceFile) > File.GetLastWriteTimeUtc(destinationFile))
+                        {
+                            File.Copy(sourceFile, destinationFile, true);
+                            copyCount++;
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Failed to copy bundled shortcut manifests from '{sourceManifestFolder}'.", ex);
+                    Logger.LogError($"Failed to copy bundled shortcut manifests from '{PathAnonymizer.Anonymize(sourceManifestFolder)}'.", ex);
                 }
 
-                string indexGeneratorPath = Path.Combine(
-                    Path.GetDirectoryName(Environment.ProcessPath)!,
-                    "PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
+                copyStopwatch.Stop();
 
-                try
-                {
-                    using Process? indexGeneration = Process.Start(indexGeneratorPath);
-
-                    if (indexGeneration is null)
-                    {
-                        Logger.LogError($"Failed to start index generation process '{indexGeneratorPath}'.");
-                        return;
-                    }
-
-                    indexGeneration.WaitForExit();
-
-                    if (indexGeneration.ExitCode != 0)
-                    {
-                        Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Failed to start or wait for index generation process '{indexGeneratorPath}'.", ex);
-                    return;
-                }
-
+                // Populate PowerToys dynamic hotkeys into the manifest before index
+                // generation so index.yml reflects the current shortcut definitions.
                 try
                 {
                     PowerToysShortcutsPopulator.Populate();
@@ -120,9 +104,43 @@ namespace ShortcutGuide
                 {
                     Logger.LogError("Failed to populate PowerToys shortcuts in manifest.", ex);
                 }
+
+                bool needsRegeneration = IndexYmlGenerator.ManifestIndexGenerator.NeedsIndexRegeneration(
+                    ManifestInterpreter.PathOfManifestFiles,
+                    [Path.GetFileName(PowerToysShortcutsPopulator.PowerToysManifestPath)]);
+
+                if (!needsRegeneration)
+                {
+                    Logger.LogInfo($"Shortcut Guide index is up-to-date. Skipped generation (checked manifests in {copyStopwatch.ElapsedMilliseconds} ms).");
+                }
+                else
+                {
+                    // Generate the index.yml file in-process.
+                    try
+                    {
+                        var stopwatch = Stopwatch.StartNew();
+                        var result = IndexYmlGenerator.ManifestIndexGenerator.CreateIndexYmlFile(
+                            ManifestInterpreter.PathOfManifestFiles);
+                        stopwatch.Stop();
+
+                        foreach (var (fileName, warning) in result.Warnings)
+                        {
+                            Logger.LogWarning($"Skipping manifest '{fileName}': {warning}");
+                        }
+
+                        foreach (var (fileName, error) in result.Errors)
+                        {
+                            Logger.LogError($"Error processing shortcut manifest '{fileName}'.", error);
+                        }
+
+                        Logger.LogInfo($"Shortcut Guide index generated in-process in {stopwatch.ElapsedMilliseconds} ms ({result.IndexedFiles}/{result.TotalFiles} indexed, copied {copyCount} manifests in {copyStopwatch.ElapsedMilliseconds} ms).");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to generate index in-process. There may be a corrupt shortcuts file in \"{PathAnonymizer.Anonymize(ManifestInterpreter.PathOfManifestFiles)}\".", ex);
+                    }
+                }
             });
-            CopyAndIndexGenerationThread.IsBackground = true;
-            CopyAndIndexGenerationThread.Start();
 
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
@@ -141,9 +159,43 @@ namespace ShortcutGuide
             {
                 Logger.LogWarning("Another instance of ShortcutGuide is running. Exiting ShortcutGuide");
             }
+        }
 
-            // The WinRT/WinUI dispatcher thread doesn't terminate cleanly; force exit.
-            Environment.Exit(0);
+        private static void MonitorPowerToysRunner(int runnerPID)
+        {
+            Process runnerProcess;
+            try
+            {
+                runnerProcess = Process.GetProcessById(runnerPID);
+
+                // Force the process handle to open synchronously so a Runner exit
+                // during WinUI initialization cannot be missed or confused with PID reuse.
+                _ = runnerProcess.Handle;
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception)
+            {
+                Logger.LogWarning($"PowerToys runner process (PID={runnerPID}) is no longer available. Exiting ShortcutGuide.");
+                _runnerExitEvent.Set();
+                return;
+            }
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    runnerProcess.WaitForExit();
+                    Logger.LogInfo($"PowerToys runner process (PID={runnerPID}) exited. Exiting ShortcutGuide.");
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+                {
+                    Logger.LogWarning($"Failed while waiting for PowerToys runner process (PID={runnerPID}): {ex.Message}");
+                }
+                finally
+                {
+                    runnerProcess.Dispose();
+                    _runnerExitEvent.Set();
+                }
+            });
         }
 
         private static void SendSettingsTelemetry()
@@ -168,13 +220,11 @@ namespace ShortcutGuide
         }
 
         /// <summary>
-        /// Logs the foreground window captured at startup so we can see in
-        /// the SG log which app was foreground at the moment SG.exe began
-        /// running. The dictionary populated from this HWND drives the order
-        /// of nav items, so a wrong/empty capture surfaces as the wrong app
-        /// being auto-selected.
+        /// Logs the foreground window's executable name captured on activation. This
+        /// provides diagnostic context for troubleshooting issues where Shortcut
+        /// Guide does not show the expected application's shortcuts.
         /// </summary>
-        private static void LogForegroundCapture(nint hwnd)
+        internal static void LogForegroundCapture(nint hwnd)
         {
             try
             {

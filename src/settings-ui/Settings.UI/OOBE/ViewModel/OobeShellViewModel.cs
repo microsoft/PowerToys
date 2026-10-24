@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             (PowerToysModules.ImageResizer, false),
             (PowerToysModules.KBM, false),
             (PowerToysModules.LightSwitch, false),
-            (PowerToysModules.MouseUtils, false),
+            (PowerToysModules.MouseUtils, true),
             (PowerToysModules.MouseWithoutBorders, false),
             (PowerToysModules.Peek, false),
             (PowerToysModules.PowerDisplay, false),

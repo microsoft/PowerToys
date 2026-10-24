@@ -10,7 +10,7 @@
 
 ## Overview
 
-Screen Ruler (project name: MeasureTool or Measure 2) is a PowerToys module that allows users to measure pixel distances and detect color boundaries on the screen. The tool renders an overlay UI using DirectX and provides several measurement utilities.
+Screen Ruler (project name: MeasureTool or Measure 2) is a PowerToys module that allows users to measure distances and detect color boundaries on the screen. Measurements are always displayed in physical pixels and can optionally include display-independent pixels (DIP), inches, centimeters, or millimeters. The tool renders an overlay UI using DirectX and provides several measurement utilities.
 
 ## Features
 
@@ -62,6 +62,18 @@ The Screen Ruler module consists of several components:
 
 1. Right-click the project MeasureToolUI and click 'Set as Startup Project'
 2. Right-click the project MeasureToolUI and click 'Debug'
+
+### UI testing
+
+The [ScreenRuler.UITests.Next](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests.Next)
+suite discovers the `PowerToys.ScreenRuler` toolbar through Win32 and binds its session to that
+exact HWND. A winappcli app-name target is not a global search across every matching process:
+overlapping cold-start launches can make `-a PowerToys.MeasureToolUI` ambiguous. Window scoping
+also keeps toolbar interactions separate from measurement overlays.
+
+The multi-process regression test opens an additional ruler instance, closes the original toolbar
+through UIA Invoke on its existing session, and verifies that the additional toolbar remains open. The normal
+Bounds test still requires a real drag producing a `100 x 100` clipboard measurement.
 
 ## Known Issues
 

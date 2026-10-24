@@ -80,7 +80,7 @@ Michael contributed the [initial version](https://github.com/microsoft/PowerToys
 
 ### [@Noraa-Junker](https://github.com/Noraa-Junker) - [Noraa Junker](https://noraajunker.ch)
 
-Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files.
+Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files and the second iteration of the Shortcut Guide.
 
 ### [@pedrolamas](https://github.com/pedrolamas/) - Pedro Lamas
 
@@ -227,9 +227,6 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@zadjii-msft](https://github.com/zadjii-msft) - Mike Griese - Dev
 - [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
 - [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
-- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
-- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
-- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
 
 ## Former PowerToys core team members
@@ -262,3 +259,6 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
 - [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
 - [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead
+- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
+- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
+- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev

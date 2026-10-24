@@ -3,6 +3,9 @@ param(
     [AllowEmptyString()]
     [string]$VersionOverride = "",
 
+    [ValidateSet("auto", "preview-release", "stable-release")]
+    [string]$ReleaseIntent = "auto",
+
     [string]$SourceBranch = $env:BUILD_SOURCEBRANCH,
 
     [string]$BuildReason = $env:BUILD_REASON,
@@ -295,8 +298,17 @@ $isMain = $SourceBranch -eq "refs/heads/main"
 $isStable = $SourceBranch -eq "refs/heads/stable"
 $isScheduled = $BuildReason -eq "Schedule"
 
-if ($isScheduled -and -not $isMain) {
-    throw "Scheduled release builds are only supported from refs/heads/main"
+if ($ReleaseIntent -eq "stable-release" -and -not $isStable) {
+    throw "Stable release intent is only supported from refs/heads/stable"
+}
+if ($ReleaseIntent -eq "preview-release" -and -not ($isMain -or $isStable)) {
+    throw "Preview release intent is only supported from refs/heads/main or refs/heads/stable"
+}
+if ($isScheduled -and $isStable -and $ReleaseIntent -ne "preview-release") {
+    throw "Scheduled stable builds must explicitly use preview-release intent"
+}
+if ($isScheduled -and -not ($isMain -or $isStable)) {
+    throw "Scheduled release builds are only supported from refs/heads/main or refs/heads/stable"
 }
 
 $releaseMetadata = Get-ReleaseTrainMetadata -Path $VersionPropsPath
@@ -308,7 +320,7 @@ if ($isMain) {
         throw "Scheduled main builds must use the checked-in ReleaseTrainVersion and cannot specify a version override"
     }
 
-    $intent = if ($isScheduled) { "preview-release" } else { "preview-validation" }
+    $intent = if ($isScheduled -or $ReleaseIntent -eq "preview-release") { "preview-release" } else { "preview-validation" }
     $channel = "preview"
     $version = Get-PreviewVersionOverride -ReleaseTrain $releaseTrain -Override $VersionOverride
     if ($null -eq $version) {
@@ -320,16 +332,24 @@ if ($isMain) {
             -DailySequence $DailyVersionSequence
     }
     $allowPublicSymbols = $false
-    $shouldPublishPreview = $isScheduled
+    $shouldPublishPreview = $intent -eq "preview-release"
 }
 elseif ($isStable) {
-    if ($isScheduled) {
-        throw "Stable release builds must be queued manually"
+    if ($ReleaseIntent -eq "preview-release") {
+        $intent = "preview-release"
+        $channel = "preview"
+        $version = Get-PreviewVersionOverride -ReleaseTrain $releaseTrain -Override $VersionOverride
+        $allowPublicSymbols = $false
+        $shouldPublishPreview = $true
+    }
+    else {
+        $intent = "stable-release"
+        $channel = "stable"
+        $version = Get-StableVersionOverride -Override $VersionOverride
+        $allowPublicSymbols = $true
+        $shouldPublishPreview = $false
     }
 
-    $intent = "stable-release"
-    $channel = "stable"
-    $version = Get-StableVersionOverride -Override $VersionOverride
     if ($null -eq $version) {
         $version = Get-AutomaticReleaseVersion `
             -ReleaseTrain $releaseTrain `
@@ -338,8 +358,6 @@ elseif ($isStable) {
             -DateOverride $BuildDate `
             -DailySequence $DailyVersionSequence
     }
-    $allowPublicSymbols = $true
-    $shouldPublishPreview = $false
 }
 else {
     $intent = "private-validation"

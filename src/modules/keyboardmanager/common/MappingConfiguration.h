@@ -19,6 +19,8 @@ public:
     // Load the configuration.
     bool LoadSettings();
 
+    bool IsConfigurationNameResolved() const;
+
     // Save the updated configuration.
     bool SaveSettingsToFile();
 
@@ -31,6 +33,9 @@ public:
     // Function to clear the Keys to text remapping table
     void ClearSingleKeyToTextRemaps();
 
+    // Function to clear the "Alone" single key remapping table (dual-key: tap-alone action)
+    void ClearSingleKeyAloneRemaps();
+
     // Function to clear the App specific shortcut remapping table
     void ClearAppSpecificShortcuts();
 
@@ -39,6 +44,10 @@ public:
 
     // Function to add a new single key to unicode string remapping
     bool AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text);
+
+    // Function to add a new "Alone" single key remapping (dual-key / Karabiner to_if_alone):
+    // the action applied only when originalKey is tapped alone; in combination the original key passes through.
+    bool AddSingleKeyAloneRemap(const DWORD& originalKey, const KeyShortcutTextUnion& aloneRemapKey);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC);
@@ -50,6 +59,11 @@ public:
     // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
     // Stores single key remappings
     SingleKeyRemapTable singleKeyReMap;
+
+    // Stores "Alone" single key remappings (dual-key tap-alone action). Same source key may also
+    // exist in singleKeyReMap in a fuller implementation; for phase 1 an entry here means
+    // "tap alone -> this action, in combination pass the original key through".
+    SingleKeyRemapTable aloneSingleKeyReMap;
 
     std::unordered_map<DWORD, DWORD> scanMap;
 
@@ -69,8 +83,14 @@ public:
     // Stores the current configuration name.
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
-private:
+    // Parses the single-key remap section of a settings JSON object into singleKeyReMap /
+    // aloneSingleKeyReMap, routing by the optional per-entry "condition" field. Public so the
+    // dual-key (tap-alone) condition round-trip can be unit tested without touching disk.
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
+
+private:
+    bool configurationNameResolved = false;
+
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);

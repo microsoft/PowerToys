@@ -20,12 +20,15 @@ public static class OSInterop
     public const int WM_HOTKEY = 0x0312;
     public const int WM_KEYDOWN = 0x0100;
     public const int WM_KEYUP = 0x0101;
+    public const int SM_XVIRTUALSCREEN = 76;
+    public const int SM_YVIRTUALSCREEN = 77;
+    public const int SM_CXVIRTUALSCREEN = 78;
+    public const int SM_CYVIRTUALSCREEN = 79;
+    public const int SM_CMONITORS = 80;
 
 #pragma warning disable CA1401 // P/Invokes should not be visible
     [DllImport("user32.dll")]
     public static extern int GetSystemMetrics(int smIndex);
-
-    public const int SM_CMONITORS = 80;
 
 #pragma warning restore SA1310 // Field names should not contain underscore
 
@@ -38,11 +41,14 @@ public static class OSInterop
     [DllImport("user32.dll")]
     public static extern IntPtr MonitorFromWindow(HandleRef handle, int flags);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     public static extern bool ClipCursor(ref RECT lpRect);
 
-    [DllImport("user32.dll")]
+    [DllImport("user32.dll", SetLastError = true)]
     public static extern bool ClipCursor([In] IntPtr lpRect);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool GetClipCursor(out RECT lpRect);
 
     [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
     internal static extern bool FreeLibrary(IntPtr hModule);
@@ -127,7 +133,7 @@ public static class OSInterop
     [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Auto)]
     public class MONITORINFOEX
     {
-        public int CbSize { get; set; } = Marshal.SizeOf(typeof(MONITORINFOEX));
+        public int CbSize { get; set; } = Marshal.SizeOf<MONITORINFOEX>();
 
         public RECT RcMonitor { get; set; }
 

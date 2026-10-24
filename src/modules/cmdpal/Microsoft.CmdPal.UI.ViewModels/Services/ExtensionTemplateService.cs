@@ -33,6 +33,7 @@ internal sealed class ExtensionTemplateService : IExtensionTemplateService
     {
         ".md",
         ".png",
+        ".vsconfig",
     };
 
     private readonly string _templateZipPath;

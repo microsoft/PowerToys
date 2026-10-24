@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Win32.SystemEvents">
       <!-- This package is a dependency of System.Drawing.Common, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
       <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
@@ -35,7 +36,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ColorPickerUI\ColorPickerUI.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
   </ItemGroup>
-
 
 </Project>

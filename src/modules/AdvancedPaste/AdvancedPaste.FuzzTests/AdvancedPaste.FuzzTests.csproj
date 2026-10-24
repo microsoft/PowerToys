@@ -17,10 +17,10 @@
 		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\AdvancedPaste.FuzzTests\</OutputPath>
 	</PropertyGroup>
 	<ItemGroup>
-		<Compile Include="..\AdvancedPaste\Helpers\JsonHelper.cs" Link="JsonHelper.cs" />
+		<PackageReference Include="MSTest" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="MSTest" />
+		<ProjectReference Include="..\AdvancedPaste.Core\AdvancedPaste.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

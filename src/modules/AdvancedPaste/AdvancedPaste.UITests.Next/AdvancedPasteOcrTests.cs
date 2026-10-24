@@ -1,0 +1,103 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.PowerToys.UITest.Next;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Globalization;
+using Windows.Media.Ocr;
+using Button = Microsoft.PowerToys.UITest.Next.Button;
+using WinClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
+
+namespace AdvancedPaste.UITests;
+
+[TestClass]
+[DoNotParallelize]
+[TestCategory("AdvancedPaste")]
+public sealed class AdvancedPasteOcrTests : AdvancedPasteTestBase
+{
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public async Task WindowsOcrPreviewsAndPastesImageText(bool fileInput, bool acceptWithEnter)
+    {
+        var source = CreateOcrImage();
+        if (fileInput)
+        {
+            SetFileClipboard(source);
+        }
+        else
+        {
+            await SetBitmapClipboard(source);
+        }
+
+        SelectAction(OpenAdvancedPaste(), ProductStrings.ImageToText);
+        var preview = Session.FromProcess(ProcessName);
+        preview.Find<TextBlock>(By.Name(ClipboardFixtures.OcrText), 30_000);
+        var paste = preview.Find<Button>(By.AccessibilityId("PreviewPasteBtn"), 15_000);
+        Assert.AreEqual(string.Empty, Target.Text, "OCR pasted before the preview was accepted.");
+        Assert.IsTrue(
+            WinClipboard.GetContent().Contains(fileInput ? StandardDataFormats.StorageItems : StandardDataFormats.Bitmap),
+            "The preview changed the clipboard before acceptance.");
+        Step("Accepting the offline OCR preview");
+        if (acceptWithEnter)
+        {
+            // The preview flyout focuses Paste when opened; activate its owner without overriding that focus.
+            var keyboardWindow = WindowsFinder.WaitForWindowByApp(
+                ProcessName,
+                window => window.ClassName == "WinUIDesktopWin32WindowClass" && window.Width > 100 && window.Height > 100,
+                timeoutMS: 15_000);
+            Assert.IsNotNull(keyboardWindow, "The OCR preview's top-level WinUI window was not discoverable.");
+            TestWindow.SelectFromTaskbar(new IntPtr(keyboardWindow.WindowHandle), keyboardWindow.ProcessName);
+            SendShortcut(Key.Enter);
+        }
+        else
+        {
+            paste.Invoke(msPostAction: 0);
+        }
+
+        Target.AssertText(ClipboardFixtures.OcrText);
+        Assert.AreEqual(ClipboardFixtures.OcrText, ReadClipboardText());
+        WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste remained visible after accepting OCR.");
+    }
+
+    [TestMethod]
+    public async Task WindowsOcrDirectShortcutPastesWithoutPreview()
+    {
+        await SetBitmapClipboard(CreateOcrImage());
+        Target.Focus();
+        Step("Executing the Image to text direct shortcut without a model/provider");
+        SendShortcut(Key.Ctrl, Key.Alt, Key.LWin, Key.I);
+        Target.AssertText(ClipboardFixtures.OcrText);
+        Assert.AreEqual(ClipboardFixtures.OcrText, ReadClipboardText());
+        WaitUntil(() => !IsAdvancedPasteVisible(), "Direct OCR unexpectedly left a preview open.");
+    }
+
+    [TestMethod]
+    public async Task ImageWithoutTextReportsAnErrorWithoutChangingClipboard()
+    {
+        var source = Path.Combine(TestDirectory, "no-text.png");
+        ClipboardFixtures.CreateImage(source);
+        await SetBitmapClipboard(source);
+        var window = OpenAdvancedPaste();
+        SelectAction(window, ProductStrings.ImageToText);
+        window.Find<TextBlock>(By.Name(ProductStrings.PasteError), 30_000);
+        Assert.AreEqual(string.Empty, Target.Text, "Failed OCR pasted unexpected data.");
+        Assert.IsTrue(WinClipboard.GetContent().Contains(StandardDataFormats.Bitmap), "Failed OCR replaced the original clipboard image.");
+        Assert.IsTrue(IsAdvancedPasteVisible(), "The error unexpectedly closed Advanced Paste.");
+        DismissAdvancedPaste();
+        SetClipboardText("Still usable after an OCR error");
+        SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsPlainText);
+        Target.AssertText("Still usable after an OCR error");
+    }
+
+    private string CreateOcrImage()
+    {
+        Assert.IsTrue(OcrEngine.IsLanguageSupported(new Language("en-US")), "The Windows en-US OCR language is required; no external model is used.");
+        var path = Path.Combine(TestDirectory, "ocr.png");
+        ClipboardFixtures.CreateImage(path, withText: true);
+        return path;
+    }
+}

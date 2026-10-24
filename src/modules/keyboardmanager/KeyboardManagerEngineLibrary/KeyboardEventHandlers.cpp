@@ -1,9 +1,12 @@
 #include "pch.h"
+#include <atlbase.h>
 #include <shellapi.h>
+#include <shobjidl.h>
 #include "KeyboardEventHandlers.h"
 
 #include <common/interop/shared_constants.h>
 #include <common/utils/elevation.h>
+#include <wil/resource.h>
 
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
@@ -88,6 +91,325 @@ namespace
 
 namespace KeyboardEventHandlers
 {
+    namespace ProgramLauncher
+    {
+        namespace
+        {
+            std::optional<std::wstring> ExpandEnvironmentVariables(const std::wstring& value)
+            {
+                DWORD capacity = ExpandEnvironmentStringsW(value.c_str(), nullptr, 0);
+                while (capacity != 0)
+                {
+                    std::wstring expanded(capacity, L'\0');
+                    const DWORD written = ExpandEnvironmentStringsW(value.c_str(), expanded.data(), capacity);
+                    if (written == 0)
+                    {
+                        return std::nullopt;
+                    }
+                    if (written <= capacity)
+                    {
+                        expanded.resize(written - 1);
+                        return expanded;
+                    }
+                    capacity = written;
+                }
+                return std::nullopt;
+            }
+
+            std::optional<std::wstring> GetLinkProcessName(const std::wstring& linkPath)
+            {
+                const HRESULT initialized = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+                if (FAILED(initialized) && initialized != RPC_E_CHANGED_MODE)
+                {
+                    return std::nullopt;
+                }
+
+                const auto uninitialize = wil::scope_exit([initialized] {
+                    if (SUCCEEDED(initialized))
+                    {
+                        CoUninitialize();
+                    }
+                });
+
+                CComPtr<IShellLinkW> link;
+                if (FAILED(link.CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER)))
+                {
+                    return std::nullopt;
+                }
+
+                CComPtr<IPersistFile> file;
+                if (FAILED(link->QueryInterface(IID_PPV_ARGS(&file))) || FAILED(file->Load(linkPath.c_str(), STGM_READ)))
+                {
+                    return std::nullopt;
+                }
+
+                // GetPath supports at most MAX_PATH characters. Read the stored target
+                // without searching for moved files or changing the shortcut.
+                wchar_t rawTarget[MAX_PATH]{};
+                if (link->GetPath(rawTarget, ARRAYSIZE(rawTarget), nullptr, SLGP_RAWPATH) != S_OK || rawTarget[0] == L'\0')
+                {
+                    return std::nullopt;
+                }
+
+                const auto expandedTarget = ExpandEnvironmentVariables(rawTarget);
+                if (!expandedTarget || expandedTarget->empty())
+                {
+                    return std::nullopt;
+                }
+
+                const std::filesystem::path target{ *expandedTarget };
+                const auto extension = target.extension().wstring();
+                if (!target.is_absolute() ||
+                    (_wcsicmp(extension.c_str(), L".exe") != 0 && _wcsicmp(extension.c_str(), L".com") != 0))
+                {
+                    return std::nullopt;
+                }
+
+                return target.filename().wstring();
+            }
+        }
+
+        std::optional<std::wstring> ExpandAndGetAbsolutePath(const std::wstring& value)
+        {
+            const auto expanded = ExpandEnvironmentVariables(value);
+            if (!expanded || expanded->empty())
+            {
+                return std::nullopt;
+            }
+
+            DWORD capacity = GetFullPathNameW(expanded->c_str(), 0, nullptr, nullptr);
+            while (capacity != 0)
+            {
+                std::wstring absolutePath(capacity, L'\0');
+                const DWORD written = GetFullPathNameW(expanded->c_str(), capacity, absolutePath.data(), nullptr);
+                if (written == 0)
+                {
+                    return std::nullopt;
+                }
+                if (written < capacity)
+                {
+                    absolutePath.resize(written);
+                    return absolutePath;
+                }
+                capacity = written;
+            }
+            return std::nullopt;
+        }
+
+        std::wstring GetWorkingDirectory(const std::wstring& filePath, const std::wstring& configuredDirectory)
+        {
+            if (!configuredDirectory.empty())
+            {
+                return configuredDirectory;
+            }
+
+            const std::filesystem::path path{ filePath };
+            const auto extension = path.extension().wstring();
+            if (_wcsicmp(extension.c_str(), L".exe") != 0 && _wcsicmp(extension.c_str(), L".com") != 0)
+            {
+                return {};
+            }
+
+            return path.parent_path().wstring();
+        }
+    }
+
+    // Append a key event for an alone key's ORIGINAL (source) key while preserving its numpad origin.
+    // Alone keys are tracked by the value of `data->lParam->vkCode`, which is stored numpad-origin
+    // encoded (see EncodeKeyNumpadOrigin in KeyboardManager.cpp): the marker rides in bit 31, so a bare
+    // `static_cast<WORD>` would drop it and re-inject e.g. a NumLock-off numpad navigation key as its
+    // extended (arrow-cluster) twin. Clear the marker to recover the real VK, then force the injected
+    // event's extended flag to match the physical origin.
+    void AppendAloneSourceKeyEvent(std::vector<INPUT>& keyEventList, DWORD encodedKey, bool keyUp) noexcept
+    {
+        const DWORD plainKey = Helpers::ClearKeyNumpadOrigin(encodedKey);
+        const DWORD flags = keyUp ? KEYEVENTF_KEYUP : 0;
+        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(plainKey), flags, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+
+        if (Helpers::IsNumpadOriginated(encodedKey))
+        {
+            // Numpad origin: override SetKeyEvent's VK-based extended default. This is the inverse of
+            // EncodeKeyNumpadOrigin -- for the navigation keys a numpad origin means NOT extended, while
+            // for VK_RETURN / VK_DIVIDE it means extended.
+            INPUT& injected = keyEventList.back();
+            if (plainKey == VK_RETURN || plainKey == VK_DIVIDE)
+            {
+                injected.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+            }
+            else
+            {
+                injected.ki.dwFlags &= ~KEYEVENTF_EXTENDEDKEY;
+            }
+        }
+    }
+
+    // See header. Injects the original key-down for each pending alone key (except `exceptKey`) and
+    // marks it as a started combination, so a subsequent mouse/keyboard action is seen with the real
+    // modifier held. Its matching real key-up is injected later when the alone key is released.
+    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey) noexcept
+    {
+        for (const DWORD pendingKey : state.GetPendingAloneKeys())
+        {
+            if (pendingKey == exceptKey)
+            {
+                // Auto-repeat of the alone key itself; keep it a tap candidate.
+                continue;
+            }
+
+            std::vector<INPUT> keyEventList;
+            AppendAloneSourceKeyEvent(keyEventList, pendingKey, /*keyUp*/ false);
+            if (!ii.SendVirtualInput(keyEventList))
+            {
+                // Injection was blocked (e.g. by UIPI). Don't mark this as a started combination,
+                // otherwise the eventual key-up would inject an unmatched real key-up while the physical
+                // key-down was swallowed. Mirrors the injection-failure handling in HandleSingleKeyRemapEvent.
+                continue;
+            }
+
+            state.SetAloneCombination(pendingKey);
+        }
+    }
+
+    // Handle an "Alone" single key remap (dual-key / Karabiner to_if_alone). Semantics:
+    //  - Pressing an alone-mapped key does NOT inject anything yet (lazy): we wait to see whether it
+    //    is tapped alone or used in combination. The physical key-down is suppressed meanwhile.
+    //  - If another key is pressed while the alone key is held, that is a combination: the alone key's
+    //    ORIGINAL key-down is injected as a real key/modifier (so e.g. Right Ctrl behaves as Ctrl), and
+    //    the alone action is cancelled. The matching real key-up is injected when the alone key is released.
+    //  - If the alone key is released with no other key in between, that is a tap: the remapped alone
+    //    action is injected on release (as a down+up tap).
+    // Timeout-based cancellation (hold too long => not a tap) is intentionally out of scope for now;
+    // it needs an injectable clock to be unit-testable and will be added with that abstraction.
+    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        // Ignore our own injected events to avoid re-processing / recursion.
+        if (GeneratedByKBM(data))
+        {
+            return 0;
+        }
+
+        const DWORD vk = data->lParam->vkCode;
+        const bool isKeyUp = (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP);
+        const bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+
+        // Detect, before any state below is mutated, whether another alone-mapped key is already held
+        // (pending or already in a combination) as this key goes down. If so, this key is being pressed
+        // in combination with that one -- it was NOT tapped alone -- so it must not become a solo-tap
+        // candidate that would fire its alone action on release.
+        const bool pressedInCombination = isKeyDown && state.HasOtherHeldAloneKey(vk);
+
+        // Step 1: a key-down of a DIFFERENT key while alone keys are pending means those pending keys
+        // are now being used in combination. Flush them by injecting their original key-down as a real
+        // key/modifier so the in-combination behavior (e.g. Right Ctrl acting as Ctrl) works. (A click
+        // or scroll does the same via the mouse hook; see PromotePendingAloneKeysToCombination.)
+        if (isKeyDown)
+        {
+            PromotePendingAloneKeysToCombination(ii, state, vk);
+        }
+
+        // Step 2: handle the alone-mapped key's own events.
+        const auto aloneRemap = state.GetSingleKeyAloneRemap(vk);
+        if (aloneRemap)
+        {
+            auto it = aloneRemap.value();
+
+            if (isKeyDown)
+            {
+                // Suppress the physical key-down. Become a tap candidate on the first down; while already
+                // in a combination (real key-down injected), just keep suppressing auto-repeats.
+                if (!state.IsAloneCombination(vk))
+                {
+                    if (pressedInCombination)
+                    {
+                        // Pressed while another alone key was held: treat as a combination, not a tap.
+                        // Inject the real key-down now and mark it a combination so its release only
+                        // releases the real key and never fires the alone action.
+                        std::vector<INPUT> keyEventList;
+                        AppendAloneSourceKeyEvent(keyEventList, vk, /*keyUp*/ false);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            // Injection was blocked (e.g. by UIPI): let the physical key-down through
+                            // instead of suppressing it into a combination we could not start, so it is
+                            // not swallowed with no matching injected key. Its later physical key-up then
+                            // also passes through (the key is neither pending nor a combination).
+                            return 0;
+                        }
+                        state.SetAloneCombination(vk);
+                    }
+                    else
+                    {
+                        state.SetAlonePending(vk);
+                    }
+                }
+                return 1;
+            }
+
+            if (isKeyUp)
+            {
+                if (state.IsAlonePending(vk))
+                {
+                    // Tapped alone: fire the remapped alone action as a tap (down + up).
+                    std::vector<INPUT> keyEventList;
+                    const auto& target = it->second;
+                    if (target.index() == 0)
+                    {
+                        const DWORD targetKey = std::get<DWORD>(target);
+                        // A disabled alone target means "tapping alone does nothing".
+                        if (targetKey != CommonSharedConstants::VK_DISABLED)
+                        {
+                            // Filter artificial KBM key codes (e.g. VK_WIN_BOTH -> VK_LWIN) before
+                            // injecting, mirroring HandleSingleKeyRemapEvent; otherwise a "Win (Both)"
+                            // alone target would inject the invalid virtual key 0x104 and do nothing.
+                            const DWORD filteredTargetKey = Helpers::FilterArtificialKeys(targetKey);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredTargetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredTargetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        }
+                    }
+                    else if (target.index() == 1)
+                    {
+                        // Shortcut-valued alone target: a tap fires the whole shortcut as a
+                        // press-and-release (modifiers down, action-key down, then released in
+                        // reverse). Mirrors the key-to-shortcut injection in HandleSingleKeyRemapEvent.
+                        const Shortcut targetShortcut = std::get<Shortcut>(target);
+                        // Filter the action key too (e.g. VK_WIN_BOTH -> VK_LWIN), mirroring the
+                        // key-to-shortcut path in HandleSingleKeyRemapEvent.
+                        const DWORD filteredActionKey = Helpers::FilterArtificialKeys(targetShortcut.GetActionKey());
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredActionKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredActionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
+                    // NOTE: text-valued alone targets are a later phase (no producer yet).
+
+                    if (!keyEventList.empty())
+                    {
+                        ii.SendVirtualInput(keyEventList);
+                    }
+
+                    state.ClearAloneKeyState(vk);
+                    return 1;
+                }
+
+                if (state.IsAloneCombination(vk))
+                {
+                    // Was used in combination: release the real key we injected on its key-down (matching
+                    // its numpad origin, so a numpad-originated key is released as the same key we pressed).
+                    std::vector<INPUT> keyEventList;
+                    AppendAloneSourceKeyEvent(keyEventList, vk, /*keyUp*/ true);
+                    ii.SendVirtualInput(keyEventList);
+
+                    state.ClearAloneKeyState(vk);
+                    return 1;
+                }
+
+                // Not tracked (already resolved): pass the key-up through.
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
     // Function to handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
     {
@@ -1357,128 +1679,143 @@ namespace KeyboardEventHandlers
 
     void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
     {
-        WCHAR fullExpandedFilePath[MAX_PATH];
-        DWORD result = ExpandEnvironmentStrings(shortcut.runProgramFilePath.c_str(), fullExpandedFilePath, MAX_PATH);
-
-        auto fileNamePart = GetFileNameFromPath(fullExpandedFilePath);
-
-        Logger::trace(L"ChordKeyboardHandler:{}, trying to run {}", fileNamePart, fullExpandedFilePath);
-        //lastKeyInChord = 0;
-
-        DWORD targetPid = GetProcessIdByName(fileNamePart);
-
-        /*if (fileNamePart != L"explorer.exe" && fileNamePart != L"powershell.exe" && fileNamePart != L"cmd.exe" && fileNamePart != L"msedge.exe")
+        try
         {
-            targetPid = GetProcessIdByName(fileNamePart);
-        }*/
-
-        Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", fileNamePart, targetPid, shortcut.alreadyRunningAction);
-
-        if (targetPid != 0 && shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
-        {
-            if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+            const auto launchPath = ProgramLauncher::ExpandAndGetAbsolutePath(shortcut.runProgramFilePath);
+            if (!launchPath)
             {
-                TerminateProcessesByName(fileNamePart);
+                toast(L"Error starting program", L"The program path was not valid. It could not be used.");
                 return;
             }
-            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
-            {
-                CloseProcessByName(fileNamePart);
-                Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning 3", fileNamePart);
-                return;
-            }
-            else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
-            {
-                auto processIds = GetProcessesIdByName(fileNamePart);
 
-                for (DWORD pid : processIds)
+            const std::filesystem::path path{ *launchPath };
+            const auto fileNamePart = path.filename().wstring();
+            Logger::trace(L"ChordKeyboardHandler:{}, trying to run {}", fileNamePart, *launchPath);
+
+            if (shortcut.alreadyRunningAction != Shortcut::ProgramAlreadyRunningAction::StartAnother)
+            {
+                auto processName = fileNamePart;
+                if (_wcsicmp(path.extension().c_str(), L".lnk") == 0)
                 {
-                    ShowProgram(targetPid, fileNamePart, false, false, 0);
+                    const auto linkProcessName = ProgramLauncher::GetLinkProcessName(*launchPath);
+                    if (!linkProcessName)
+                    {
+                        toast(fmt::format(L"Error starting {}", fileNamePart),
+                              L"The shortcut target could not be identified as a program. Its already-running action could not be applied.");
+                        return;
+                    }
+                    processName = *linkProcessName;
                 }
 
-                //if (!ShowProgram(targetPid, fileNamePart, false, false, 0))
-                //{
-                //    /*auto future = std::async(std::launch::async, [=] {
-                //    std::this_thread::sleep_for(std::chrono::milliseconds(30));
-                //    Logger::trace(L"ChordKeyboardHandler:{}, second try, pid:{}", fileNamePart, targetPid);
-                //    ShowProgram(targetPid, fileNamePart, false, false);
-                //});*/
-                //}
-                return;
-            }
-        }
-        else
-        {
-            DWORD dwAttrib = GetFileAttributesW(fullExpandedFilePath);
+                const DWORD targetPid = GetProcessIdByName(processName);
+                Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", processName, targetPid, shortcut.alreadyRunningAction);
 
+                if (targetPid != 0)
+                {
+                    if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+                    {
+                        TerminateProcessesByName(processName);
+                    }
+                    else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
+                    {
+                        CloseProcessByName(processName);
+                    }
+                    else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
+                    {
+                        for (DWORD pid : GetProcessesIdByName(processName))
+                        {
+                            TryShowExistingProgram(pid, processName);
+                        }
+                    }
+                    return;
+                }
+            }
+
+            const DWORD dwAttrib = GetFileAttributesW(launchPath->c_str());
             if (dwAttrib == INVALID_FILE_ATTRIBUTES)
             {
-                std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                std::wstring message = fmt::format(L"The program was not found.");
-                toast(title, message);
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The program was not found.");
                 return;
             }
 
-            std::wstring expandedArgs;
-            DWORD dwSize = ExpandEnvironmentStrings(shortcut.runProgramArgs.c_str(), nullptr, 0);
-            expandedArgs.resize(dwSize);
-            DWORD result = ExpandEnvironmentStrings(shortcut.runProgramArgs.c_str(), expandedArgs.data(), dwSize);
-
-            WCHAR currentDir[MAX_PATH];
-            WCHAR* currentDirPtr = currentDir;
-            result = ExpandEnvironmentStrings(shortcut.runProgramStartInDir.c_str(), currentDir, MAX_PATH);
-
-            if (shortcut.runProgramStartInDir == L"")
+            const auto expandedArgs = ProgramLauncher::ExpandEnvironmentVariables(shortcut.runProgramArgs);
+            if (!expandedArgs)
             {
-                currentDirPtr = nullptr;
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The program arguments could not be expanded.");
+                return;
+            }
+
+            std::wstring currentDir;
+            if (shortcut.runProgramStartInDir.empty())
+            {
+                currentDir = ProgramLauncher::GetWorkingDirectory(*launchPath, {});
             }
             else
             {
-                DWORD dwAttrib = GetFileAttributesW(currentDir);
-
-                if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+                const auto expandedCurrentDir = ProgramLauncher::ExpandAndGetAbsolutePath(shortcut.runProgramStartInDir);
+                if (!expandedCurrentDir)
                 {
-                    std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                    std::wstring message = fmt::format(L"The start in path was not valid. It could not be used.", currentDir);
-                    currentDirPtr = nullptr;
-                    toast(title, message);
+                    toast(fmt::format(L"Error starting {}", fileNamePart), L"The start in path was not valid. It could not be used.");
+                    return;
+                }
+
+                currentDir = ProgramLauncher::GetWorkingDirectory(*launchPath, *expandedCurrentDir);
+                const DWORD directoryAttributes = GetFileAttributesW(currentDir.c_str());
+                if (directoryAttributes == INVALID_FILE_ATTRIBUTES || (directoryAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+                {
+                    toast(fmt::format(L"Error starting {}", fileNamePart), L"The start in path was not valid. It could not be used.");
                     return;
                 }
             }
 
             DWORD processId = 0;
-            HANDLE newProcessHandle;
+            HANDLE newProcessHandle = nullptr;
+            bool processStarted = false;
+            const auto currentDirPtr = currentDir.empty() ? nullptr : currentDir.c_str();
 
             if (shortcut.elevationLevel == Shortcut::ElevationLevel::Elevated)
             {
-                newProcessHandle = run_elevated(fullExpandedFilePath, expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
-                processId = GetProcessId(newProcessHandle);
+                newProcessHandle = run_elevated(*launchPath, *expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                processStarted = newProcessHandle != nullptr;
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated)
             {
-                run_non_elevated(fullExpandedFilePath, expandedArgs, &processId, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                if (ProgramLauncher::ShouldUseExplorerShell(shortcut.startWindowType))
+                {
+                    processStarted = RunNonElevatedEx(*launchPath, *expandedArgs, currentDir);
+                }
+                else
+                {
+                    processStarted = run_non_elevated(*launchPath, *expandedArgs, &processId, currentDirPtr, false);
+                }
             }
             else if (shortcut.elevationLevel == Shortcut::ElevationLevel::DifferentUser)
             {
-                newProcessHandle = run_as_different_user(fullExpandedFilePath, expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
-                processId = GetProcessId(newProcessHandle);
+                newProcessHandle = run_as_different_user(*launchPath, *expandedArgs, currentDirPtr, (shortcut.startWindowType == Shortcut::StartWindowType::Normal));
+                processStarted = newProcessHandle != nullptr;
             }
 
-            if (processId == 0)
+            if (newProcessHandle != nullptr)
             {
-                std::wstring title = fmt::format(L"Error starting {}", fileNamePart);
-                std::wstring message = fmt::format(L"The application might not have started.");
-                toast(title, message);
+                processId = GetProcessId(newProcessHandle);
+                CloseHandle(newProcessHandle);
+            }
+
+            if (!processStarted)
+            {
+                toast(fmt::format(L"Error starting {}", fileNamePart), L"The application might not have started.");
                 return;
             }
 
-            if (shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
+            if (processId != 0 && shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
             {
                 HideProgram(processId, fileNamePart, 0);
             }
-            //ShowProgram(processId, fileNamePart, true, false, (shortcut.startWindowType == Shortcut::StartWindowType::Hidden), 0);
         }
-        return;
+        catch (...)
+        {
+            toast(L"Error starting program", L"The program settings could not be processed.");
+        }
     }
 
     void CloseProcessByName(const std::wstring& fileNamePart)
@@ -1603,44 +1940,18 @@ namespace KeyboardEventHandlers
         return true;
     }
 
-    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, int retryCount)
+    bool TryShowExistingProgram(DWORD pid, const std::wstring& programName)
     {
-        Logger::trace(L"ChordKeyboardHandler:ShowProgram starting with {},{},isNewProcess:{}, tryToHide:{} retryCount:{}", pid, programName, isNewProcess, retryCount);
+        Logger::trace(L"ChordKeyboardHandler:TryShowExistingProgram starting with {},{}", pid, programName);
 
-        // a good place to look for this...
-        // https://github.com/ritchielawrence/cmdow
-
-        // try by main window.
-        auto allowNonVisible = false;
-
-        HWND hwnd = FindMainWindow(pid, allowNonVisible);
-
-        if (hwnd == NULL)
-        {
-            if (retryCount < 20)
-            {
-                Logger::trace(L"ChordKeyboardHandler:hwnd not found will retry for pid:{}, allowNonVisible:{}", pid, allowNonVisible);
-
-                auto future = std::async(std::launch::async, [=] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                    auto result = ShowProgram(pid, programName, isNewProcess, minimizeIfVisible, retryCount + 1);
-                    return false;
-                });
-            }
-        }
-        else
+        HWND hwnd = FindMainWindow(pid, false);
+        if (hwnd != nullptr)
         {
             Logger::trace(L"ChordKeyboardHandler:{}, got hwnd from FindMainWindow", programName);
 
             if (hwnd == GetForegroundWindow())
             {
-                // only hide if this was a call from an already open program, don't make small if we just opened it.
-                if (!isNewProcess && minimizeIfVisible)
-                {
-                    Logger::trace(L"ChordKeyboardHandler:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
-                    return ShowWindow(hwnd, SW_MINIMIZE);
-                }
-                return false;
+                return true;
             }
             else
             {
@@ -1673,56 +1984,13 @@ namespace KeyboardEventHandlers
             }
         }
 
-        if (isNewProcess)
-        {
-            return true;
-        }
-
-        if (false)
-        {
-            // try by console.
-            hwnd = FindWindow(nullptr, nullptr);
-            if (AttachConsole(pid))
-            {
-                Logger::trace(L"ChordKeyboardHandler:{}, success on AttachConsole", programName);
-
-                // Get the console window handle
-                hwnd = GetConsoleWindow();
-                auto showByConsoleSuccess = false;
-                if (hwnd != NULL)
-                {
-                    Logger::trace(L"ChordKeyboardHandler:{}, success on GetConsoleWindow, doing SW_RESTORE", programName);
-
-                    ShowWindow(hwnd, SW_RESTORE);
-
-                    if (!SetForegroundWindow(hwnd))
-                    {
-                        auto errorCode = GetLastError();
-                        Logger::warn(L"ChordKeyboardHandler:{}, failed to SetForegroundWindow, {}", programName, errorCode);
-                    }
-                    else
-                    {
-                        Logger::trace(L"ChordKeyboardHandler:{}, success on SetForegroundWindow", programName);
-                        showByConsoleSuccess = true;
-                    }
-                }
-
-                // Detach from the console
-                FreeConsole();
-                if (showByConsoleSuccess)
-                {
-                    return true;
-                }
-            }
-        }
-
-        // try to just show them all (if they have a title)!.
+        // Restore hidden titled windows immediately. An existing process without
+        // a window must not delay restoring windows owned by the remaining PIDs.
         hwnd = FindWindow(nullptr, nullptr);
 
-        auto anyHideResultFailed = false;
         if (hwnd)
         {
-            Logger::trace(L"ChordKeyboardHandler:{}:{},{}, FindWindow (show all mode)", programName, pid, retryCount);
+            Logger::trace(L"ChordKeyboardHandler:{}:{}, FindWindow (show all mode)", programName, pid);
             while (hwnd)
             {
                 DWORD pidForHwnd;
@@ -1900,7 +2168,7 @@ namespace KeyboardEventHandlers
         // reports it as up, so there is no reliable way to tell whether the user is
         // still physically holding the key or has released it. Re-pressing
         // unconditionally would risk leaving a modifier stuck down if the user let
-        // go during injection — the exact failure this change set prevents. Leaving
+        // go during injection - the exact failure this change set prevents. Leaving
         // the modifier released is always safe: the user taps it again to re-engage.
 
         return 1;

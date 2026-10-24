@@ -74,6 +74,23 @@ function ConvertTo-UnattendPassword {
     return [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($Password + $Element))
 }
 
+function Get-ProvisionArguments {
+    param([Parameter(Mandatory)][hashtable]$Configuration)
+
+    foreach ($key in 'AdminUserName', 'StandardUser') {
+        $userName = [string]$Configuration[$key]
+        if ([string]::IsNullOrWhiteSpace($userName) -or $userName -match '["\\/\x00-\x1f]') {
+            throw "$key must be an unqualified local account name without double quotes or control characters."
+        }
+    }
+    if ($Configuration.AdminUserName -eq $Configuration.StandardUser) {
+        throw 'AdminUserName and StandardUser must refer to different local accounts.'
+    }
+
+    # Windows Setup launches powershell.exe -File directly, not through cmd.exe or -Command.
+    return '-AdminUserName "{0}" -StandardUser "{1}"' -f $Configuration.AdminUserName, $Configuration.StandardUser
+}
+
 function Assert-SupportedVmVolume {
     <#
     .SYNOPSIS
@@ -172,25 +189,44 @@ public static void Write(object imageStream, string path)
 {
     System.Runtime.InteropServices.ComTypes.IStream source =
         (System.Runtime.InteropServices.ComTypes.IStream)imageStream;
-    System.Runtime.InteropServices.ComTypes.IStream target;
-    // STGM_CREATE | STGM_WRITE, FILE_ATTRIBUTE_NORMAL
-    SHCreateStreamOnFileEx(path, 0x00001001, 0x80, true, null, out target);
-    source.CopyTo(target, long.MaxValue, System.IntPtr.Zero, System.IntPtr.Zero);
-    target.Commit(0);
+    System.Runtime.InteropServices.ComTypes.IStream target = null;
+    try
+    {
+        // STGM_CREATE | STGM_WRITE, FILE_ATTRIBUTE_NORMAL
+        SHCreateStreamOnFileEx(path, 0x00001001, 0x80, true, null, out target);
+        source.CopyTo(target, long.MaxValue, System.IntPtr.Zero, System.IntPtr.Zero);
+        target.Commit(0);
+    }
+    finally
+    {
+        if (target != null && System.Runtime.InteropServices.Marshal.IsComObject(target))
+        {
+            System.Runtime.InteropServices.Marshal.FinalReleaseComObject(target);
+        }
+    }
 }
 '@
     }
 
     Remove-Item $Destination -Force -ErrorAction SilentlyContinue
     $fileSystemImage = New-Object -ComObject IMAPI2FS.MsftFileSystemImage
+    $resultImage = $null
+    $imageStream = $null
     try {
         $fileSystemImage.FileSystemsToCreate = 3 # ISO9660 | Joliet
         $fileSystemImage.VolumeName = $VolumeName
         $fileSystemImage.Root.AddTree($SourceFolder, $false)
         $resultImage = $fileSystemImage.CreateResultImage()
-        [PowerToysUiTestVm.IsoWriter]::Write($resultImage.ImageStream, $Destination)
+        $imageStream = $resultImage.ImageStream
+        [PowerToysUiTestVm.IsoWriter]::Write($imageStream, $Destination)
     }
     finally {
+        if ($null -ne $imageStream) {
+            [Runtime.InteropServices.Marshal]::FinalReleaseComObject($imageStream) | Out-Null
+        }
+        if ($null -ne $resultImage) {
+            [Runtime.InteropServices.Marshal]::FinalReleaseComObject($resultImage) | Out-Null
+        }
         [Runtime.InteropServices.Marshal]::ReleaseComObject($fileSystemImage) | Out-Null
     }
 
@@ -217,10 +253,10 @@ function New-UnattendContent {
         '{{COMPUTERNAME}}' = $Configuration.ComputerName
         '{{LOCALE}}' = $Configuration.Locale
         '{{TIMEZONE}}' = $Configuration.TimeZone
-        '{{ADMINUSER}}' = $Configuration.AdminUserName
+        '{{ADMINUSER}}' = [Security.SecurityElement]::Escape($Configuration.AdminUserName)
         '{{ADMINPASSWORD}}' = $ObfuscatedPassword
         '{{IMAGENAME}}' = [Security.SecurityElement]::Escape($SelectedImageName)
-        '{{PROVISIONARGUMENTS}}' = $ProvisionArguments
+        '{{PROVISIONARGUMENTS}}' = [Security.SecurityElement]::Escape($ProvisionArguments)
     }
     $content = Get-Content $TemplatePath -Raw
     foreach ($token in $tokens.GetEnumerator()) {
@@ -306,6 +342,7 @@ foreach ($key in 'VmName', 'ComputerName', 'VmPath', 'VhdPath', 'DiskSizeGB', 'M
 if ($configuration.ProcessorArchitecture -notin @('amd64', 'arm64')) {
     throw "ProcessorArchitecture must be amd64 or arm64, not '$($configuration.ProcessorArchitecture)'."
 }
+$provisionArguments = Get-ProvisionArguments -Configuration $configuration
 $hostArchitecture = switch ($env:PROCESSOR_ARCHITECTURE) {
     'AMD64' { 'amd64' }
     'ARM64' { 'arm64' }
@@ -341,7 +378,7 @@ if ($PlanOnly) {
     $preview = New-UnattendContent -Configuration $configuration `
         -ObfuscatedPassword (ConvertTo-UnattendPassword -Password 'preview' -Element 'Password') `
         -SelectedImageName $ImageName `
-        -ProvisionArguments "-StandardUser $($configuration.StandardUser)" `
+        -ProvisionArguments $provisionArguments `
         -TemplatePath $answerTemplatePath
     $plan.AnswerFileBytes = $preview.Length
     $plan.AnswerFileIsWellFormed = $true
@@ -428,7 +465,7 @@ try {
     $unattend = New-UnattendContent -Configuration $configuration `
         -ObfuscatedPassword (ConvertTo-UnattendPassword -Password $credential.GetNetworkCredential().Password -Element 'Password') `
         -SelectedImageName $selected.ImageName `
-        -ProvisionArguments "-StandardUser $($configuration.StandardUser)" `
+        -ProvisionArguments $provisionArguments `
         -TemplatePath $answerTemplatePath
     Set-Content (Join-Path $stagingRoot 'autounattend.xml') -Value $unattend -Encoding utf8
     $unattend = $null
