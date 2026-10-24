@@ -22,8 +22,6 @@
             Height="48"
             Visibility="{x:Bind IsLoading, Mode=OneWay}" />
         <Border
-            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
-            BorderThickness="1"
             Visibility="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
             <controls:WebView2
                 x:Name="Browser"
