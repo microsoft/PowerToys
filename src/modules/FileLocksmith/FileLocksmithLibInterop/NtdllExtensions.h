@@ -24,6 +24,9 @@ private:
 
     std::wstring file_handle_to_kernel_name(HANDLE file_handle, std::vector<BYTE>& buffer);
 
+    // Converts a file handle to a friendly DOS path, falling back to kernel name if needed.
+    std::wstring file_handle_to_path(HANDLE file_handle, std::vector<BYTE>& buffer);
+
 public:
     struct ProcessInfo
     {
@@ -38,12 +41,12 @@ public:
         ULONG_PTR pid;
         ULONG_PTR handle;
         std::wstring type_name;
-        std::wstring kernel_file_name;
+        std::wstring file_path;
     };
 
     std::wstring file_handle_to_kernel_name(HANDLE file_handle);
 
-    std::wstring path_to_kernel_name(LPCWSTR path);
+    std::wstring path_to_canonical_name(LPCWSTR path);
 
     // Gives the user name of the account running this process
     std::wstring pid_to_user(DWORD pid);
