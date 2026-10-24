@@ -28,5 +28,11 @@ namespace Microsoft.PowerToys.Settings.Utilities
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
         public const int SPI_GETCLIENTAREAANIMATION = 0x1042;
+
+        [DllImport("user32.dll")]
+        internal static extern int GetSystemMetrics(int nIndex);
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
+        public const int SM_CMONITORS = 80;
     }
 }

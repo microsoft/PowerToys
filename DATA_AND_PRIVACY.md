@@ -449,6 +449,13 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.MeasureTool_EnableMeasureTool | Occurs when Screen Ruler is enabled. |
 | Microsoft.PowerToys.MeasureTool_MeasureToolActivated | Triggered when Screen Ruler's Measure tool is activated. |
 
+### Seamless Multi-Screen Cursor
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.SeamlessCursor_EnableSeamlessCursor | Triggered when Seamless Multi-Screen Cursor is enabled or disabled. |
+| Microsoft.PowerToys.SeamlessCursor_CalibrationSaved | Occurs when a monitor calibration is saved. Records the number of calibrated borders, how many are enabled and how many are invalid. Does not include monitor identifiers, sizes or positions. |
+
 ### Shortcut Guide
 
 | Event Name | Description |
