@@ -35,6 +35,7 @@ internal enum PerformanceMetricKind
     Disk,
     Gpu,
     Battery,
+    Overview,
 }
 
 /// <summary>
@@ -89,6 +90,10 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private readonly SystemBatteryUsageWidgetPage? _batteryPage;
     private readonly ListItem? _batteryItem;
+
+    // The main list starts with an overview of every metric.
+    private readonly SystemOverviewWidgetPage? _overviewPage;
+    private readonly ListItem? _overviewItem;
 
     // For the network band, show one item for upload and one for download.
     private ListItem? _networkUpItem;
@@ -212,6 +217,18 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             }
         }
 
+        if ((!_isBandPage && _singleMetric is null) || _singleMetric == PerformanceMetricKind.Overview)
+        {
+            _overviewPage = new SystemOverviewWidgetPage(_cpuPage!, _memoryPage!, _gpuPage!, _diskPage!, _networkPage!, _batteryPage);
+            _overviewItem = new ListItem(_overviewPage)
+            {
+                Title = _overviewPage.Title,
+                Subtitle = _isBandPage ? string.Empty : Resources.GetResource("Overview_Subtitle"),
+                Icon = Icons.PerformanceMonitorIcon,
+                MoreCommands = _overviewPage.Commands,
+            };
+        }
+
         if (_isBandPage)
         {
             // add subtitles to them all
@@ -265,6 +282,12 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     protected override void Loaded()
     {
+        // The overview band is a button: its metrics start when the overview opens.
+        if (_singleMetric == PerformanceMetricKind.Overview)
+        {
+            return;
+        }
+
         _cpuPage?.PushActivate();
         _memoryPage?.PushActivate();
         _networkPage?.PushActivate();
@@ -275,6 +298,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     protected override void Unloaded()
     {
+        if (_singleMetric == PerformanceMetricKind.Overview)
+        {
+            return;
+        }
+
         _cpuPage?.PopActivate();
         _memoryPage?.PopActivate();
         _networkPage?.PopActivate();
@@ -310,16 +338,20 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 PerformanceMetricKind.Disk => new IListItem[] { _diskItem! },
                 PerformanceMetricKind.Gpu => new IListItem[] { _gpuItem! },
                 PerformanceMetricKind.Battery => new IListItem[] { _batteryItem! },
+                PerformanceMetricKind.Overview => new IListItem[] { _overviewItem! },
                 _ => Array.Empty<IListItem>(),
             };
         }
 
         if (!_isBandPage)
         {
-            // TODO add details
-            return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem! };
+            List<IListItem> items = [_overviewItem!, _cpuItem!, _memoryItem!, _networkItem!, _diskItem!, _gpuItem!];
+            if (_batteryItem is not null)
+            {
+                items.Add(_batteryItem);
+            }
+
+            return [.. items];
         }
 
         return [_cpuItem!, _memoryItem!];
@@ -377,6 +409,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     public void Dispose()
     {
+        _overviewPage?.Dispose();
         _cpuPage?.Dispose();
         _memoryPage?.Dispose();
         _networkPage?.Dispose();
@@ -394,7 +427,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     {
         if (_singleMetric is PerformanceMetricKind singleMetric)
         {
+            // The overview shows every metric.
             return singleMetric == metric
+                || singleMetric == PerformanceMetricKind.Overview
                 || (singleMetric == PerformanceMetricKind.NetworkSpeed && metric == PerformanceMetricKind.Network);
         }
 
@@ -412,6 +447,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             PerformanceMetricKind.Disk => "disk",
             PerformanceMetricKind.Gpu => "gpu",
             PerformanceMetricKind.Battery => "battery",
+            PerformanceMetricKind.Overview => "overview",
             _ => "unknown",
         };
     }
@@ -621,6 +657,9 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     {
         return ((int)(value * 100)).ToString(CultureInfo.InvariantCulture) + "%";
     }
+
+    /// <summary>Gets a copy of the page's current template data, for the overview card.</summary>
+    internal JsonObject GetDataSnapshot() => ContentDataJson;
 
     /// <summary>Formats memory use against its size in binary units, as Task Manager does, such as <c>1.2 / 8.0 GB</c>.</summary>
     internal static string FormatUsedOfTotal(ulong used, ulong total)
