@@ -68,7 +68,7 @@ internal static class ModulePaths
             [PowerToysModule.Hosts] = new("PowerToys.Hosts.exe", "WinUI3Apps", "PowerToys.Hosts", "Hosts File Editor"),
             [PowerToysModule.Workspaces] = new("PowerToys.WorkspacesEditor.exe", null, "PowerToys.WorkspacesEditor", "Workspaces Editor"),
             [PowerToysModule.PowerRename] = new("PowerToys.PowerRename.exe", "WinUI3Apps", "PowerToys.PowerRename", "PowerRename"),
-            [PowerToysModule.CommandPalette] = new("Microsoft.CmdPal.UI.exe", "WinUI3Apps\\CmdPal", "Microsoft.CmdPal.UI", "PowerToys Command Palette"),
+            [PowerToysModule.CommandPalette] = new("Microsoft.CmdPal.UI.exe", "WinUI3Apps\\CmdPal", "Microsoft.CmdPal.UI", "Command Palette"),
             [PowerToysModule.ScreenRuler] = new("PowerToys.MeasureToolUI.exe", "WinUI3Apps", "PowerToys.MeasureToolUI", "PowerToys.ScreenRuler"),
             [PowerToysModule.LightSwitch] = new("PowerToys.LightSwitch.exe", "LightSwitchService", "PowerToys.LightSwitch", "PowerToys.LightSwitch"),
             [PowerToysModule.RegistryPreview] = new("PowerToys.RegistryPreview.exe", "WinUI3Apps", "PowerToys.RegistryPreview", "RegistryPreview"),
