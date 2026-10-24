@@ -151,6 +151,30 @@ namespace ImageResizer.Tests.Models
             Assert.AreEqual(85, options.JpegQualityLevel);
         }
 
+        [DataTestMethod]
+        [DataRow(1)]
+        [DataRow(100)]
+        public void Parse_WithBoundaryQuality_SetsQuality(int quality)
+        {
+            var options = CliOptions.ParseForCli(["--quality", quality.ToString(CultureInfo.InvariantCulture), "test.jpg"]);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(quality, options.JpegQualityLevel);
+        }
+
+        [DataTestMethod]
+        [DataRow(0)]
+        [DataRow(101)]
+        public void Parse_WithOutOfRangeQuality_ReturnsError(int quality)
+        {
+            var options = CliOptions.ParseForCli(["--quality", quality.ToString(CultureInfo.InvariantCulture), "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            Assert.IsNull(options.JpegQualityLevel);
+            Assert.AreEqual(1, options.Files.Count);
+            CollectionAssert.Contains(options.Files.ToList(), "test.jpg");
+        }
+
         [TestMethod]
         public void Parse_WithKeepDateModified_SetsKeepDateModified()
         {
