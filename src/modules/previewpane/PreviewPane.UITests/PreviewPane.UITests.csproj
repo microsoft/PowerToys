@@ -7,7 +7,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.PowerToys.PreviewPane.UITests</RootNamespace>
     <AssemblyName>PreviewPane.UITests</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

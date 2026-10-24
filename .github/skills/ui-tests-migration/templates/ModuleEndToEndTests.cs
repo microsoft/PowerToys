@@ -21,7 +21,7 @@ public class __MODULE__EndToEndTests : UITestBase
     // fresh CI profile + isolated from other modules' hotkeys/overlays). The name is the settings.json
     // "enabled" key (note spaces, e.g. "Measure Tool", "PowerToys Run"). Add a WindowSize if needed.
     public __MODULE__EndToEndTests()
-        : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "__MODULE_SETTINGS_KEY__" })
+        : base(PowerToysModule.PowerToysSettings, enableModules: ["__MODULE_SETTINGS_KEY__"])
     {
     }
 
@@ -114,10 +114,12 @@ public class __MODULE__EndToEndTests : UITestBase
         return false;
     }
 
+    private static readonly string[] ShortcutSeparators = { " + ", "+", " " };
+
     /// <summary>Parse a UI shortcut string like "Win + Shift + C" into the Key chord.</summary>
     private static Key[] ParseShortcutText(string shortcutText)
     {
-        var parts = shortcutText.Split(new[] { " + ", "+", " " }, StringSplitOptions.RemoveEmptyEntries);
+        var parts = shortcutText.Split(ShortcutSeparators, StringSplitOptions.RemoveEmptyEntries);
         var keys = new List<Key>();
         foreach (var raw in parts)
         {
