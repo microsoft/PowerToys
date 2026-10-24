@@ -293,12 +293,12 @@ static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::Tr
 
             // Fallback: try opening with FILE_SHARE_READ | FILE_SHARE_WRITE to handle locked files
             OutputDebugStringW(L"[GIF Trim] Trying CreateStreamOnFile fallback...\n");
-            HANDLE hFile = CreateFileW(gifPath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-            if (hFile != INVALID_HANDLE_VALUE)
+            wil::unique_hfile hFile{ CreateFileW(gifPath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr) };
+            if (hFile)
             {
                 winrt::com_ptr<IStream> fileStream;
                 // Create an IStream over the file handle using SHCreateStreamOnFileEx
-                CloseHandle(hFile);
+                hFile.reset();
                 hr = SHCreateStreamOnFileEx(gifPath.c_str(), STGM_READ | STGM_SHARE_DENY_NONE, 0, FALSE, nullptr, fileStream.put());
                 if (SUCCEEDED(hr) && fileStream)
                 {
@@ -1980,15 +1980,16 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
     }
 
     // Set up event handler
-    CTrimFileDialogEvents* pEvents = new CTrimFileDialogEvents(hParent, originalVideoPath,
-        &trimmedVideoPath, &trimStart, &trimEnd, &shouldTrim);
+    wil::com_ptr<CTrimFileDialogEvents> pEvents;
+    pEvents.attach(new CTrimFileDialogEvents(hParent, originalVideoPath,
+        &trimmedVideoPath, &trimStart, &trimEnd, &shouldTrim));
     DWORD dwCookie;
-    saveDialog->Advise(pEvents, &dwCookie);
+    saveDialog->Advise(pEvents.get(), &dwCookie);
 
     HRESULT hr = saveDialog->Show(hParent);
 
     saveDialog->Unadvise(dwCookie);
-    pEvents->Release();
+    pEvents.reset();
 
     if (FAILED(hr))
     {
