@@ -43,7 +43,7 @@ public sealed class CommandContextSourceTests
         var model = new CommandItem(page);
         var itemViewModel = new CommandItemViewModel(new(model), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
         itemViewModel.SlowInitializeProperties();
-        var topLevel = new TopLevelViewModel(itemViewModel, TopLevelType.Normal, host, provider, new ProviderSettings(), services, model, DefaultContextMenuFactory.Instance);
+        var topLevel = new TopLevelViewModel(itemViewModel, TopLevelType.Normal, host, provider, new ProviderSettings(), services, DefaultContextMenuFactory.Instance);
 
         try
         {
