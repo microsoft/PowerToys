@@ -7,6 +7,7 @@ using System.IO.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -178,11 +179,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ICommand ConnectCommand => new AsyncCommand(Connect);
 
-        public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync);
+        public ICommand GenerateNewKeyCommand => new AsyncCommand(() => TryExecuteSettingsCommandAsync(ViewModel.SubmitNewKeyRequestAsync, SetSettingsSyncErrorVisibility));
 
         public ICommand CopyPCNameCommand => new RelayCommand(ViewModel.CopyMachineNameToClipboard);
 
-        public ICommand ReconnectCommand => new AsyncCommand(ViewModel.SubmitReconnectRequestAsync);
+        public ICommand ReconnectCommand => new AsyncCommand(() => TryExecuteSettingsCommandAsync(ViewModel.SubmitReconnectRequestAsync, SetSettingsSyncErrorVisibility));
 
         private void ShowConnectFields()
         {
@@ -190,6 +191,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 ViewModel.ConnectFieldsVisible = true;
             }
+        }
+
+        internal static async Task<bool> TryExecuteSettingsCommandAsync(Func<Task> command, Action<bool> setErrorVisible, Action onSuccess = null)
+        {
+            setErrorVisible(false);
+            try
+            {
+                await command();
+            }
+            catch (Exception ex)
+            {
+                // Remote exception messages can contain the submitted security key.
+                Logger.LogError($"Mouse Without Borders Settings command failed ({ex.GetType().Name}).");
+                setErrorVisible(true);
+                return false;
+            }
+
+            onSuccess?.Invoke();
+            return true;
+        }
+
+        private void SetSettingsSyncErrorVisibility(bool visible)
+        {
+            SettingsSyncErrorInfoBar.IsOpen = visible;
         }
 
         private async Task Connect()
