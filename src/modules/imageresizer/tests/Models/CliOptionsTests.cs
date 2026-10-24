@@ -596,6 +596,26 @@ namespace ImageResizer.Tests.Models
         }
 
         [TestMethod]
+        public void Parse_WithMultipleMixedCasePipes_UsesLastPipeAndPreservesFileOrder()
+        {
+            var args = new[]
+            {
+                "test3.jpg",
+                @"\\.\PiPe\FirstChannel",
+                "test1.jpg",
+                @"\\.\pIpE\LastChannel",
+                "test2.jpg",
+            };
+            var expectedFiles = new[] { "test3.jpg", "test1.jpg", "test2.jpg" };
+
+            var options = CliOptions.Parse(args);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual("LastChannel", options.PipeName);
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToList());
+        }
+
+        [TestMethod]
         public void Parse_WithConversionError_PreservesValidDestinationForLenientCallers()
         {
             var options = CliOptions.Parse(["/d", @"C:\Output", "--width", "bad", "good.jpg"]);
