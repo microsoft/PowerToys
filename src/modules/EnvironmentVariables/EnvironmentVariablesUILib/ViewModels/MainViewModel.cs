@@ -21,13 +21,19 @@ namespace EnvironmentVariablesUILib.ViewModels
     {
         private readonly IEnvironmentVariablesService _environmentVariablesService;
 
-        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly Func<Action, bool> _enqueueRefresh;
 
-        public DefaultVariablesSet UserDefaultSet { get; private set; } = new DefaultVariablesSet(VariablesSet.UserGuid, ResourceLoaderInstance.ResourceLoader.GetString("User"), VariablesSetType.User);
+        private readonly IEnvironmentVariablesEnvironment _environment;
 
-        public DefaultVariablesSet SystemDefaultSet { get; private set; } = new DefaultVariablesSet(VariablesSet.SystemGuid, ResourceLoaderInstance.ResourceLoader.GetString("System"), VariablesSetType.System);
+        private readonly Func<Action, Task> _run;
 
-        public VariablesSet DefaultVariables { get; private set; } = new DefaultVariablesSet(Guid.NewGuid(), "DefaultVariables", VariablesSetType.User);
+        private readonly Func<Func<Task>, Task> _runAsync;
+
+        public DefaultVariablesSet UserDefaultSet { get; private set; }
+
+        public DefaultVariablesSet SystemDefaultSet { get; private set; }
+
+        public VariablesSet DefaultVariables { get; private set; }
 
         [ObservableProperty]
         private ObservableCollection<ProfileVariablesSet> _profiles;
@@ -47,8 +53,42 @@ namespace EnvironmentVariablesUILib.ViewModels
         public ProfileVariablesSet AppliedProfile { get; set; }
 
         public MainViewModel(IElevationHelper elevationHelper, IEnvironmentVariablesService environmentVariablesService, ILogger logger, ITelemetry telemetry)
+            : this(
+                elevationHelper,
+                environmentVariablesService,
+                logger,
+                telemetry,
+                CreateRefreshEnqueuer(),
+                new DefaultVariablesSet(VariablesSet.UserGuid, ResourceLoaderInstance.ResourceLoader.GetString("User"), VariablesSetType.User),
+                new DefaultVariablesSet(VariablesSet.SystemGuid, ResourceLoaderInstance.ResourceLoader.GetString("System"), VariablesSetType.System),
+                new DefaultVariablesSet(Guid.NewGuid(), "DefaultVariables", VariablesSetType.User),
+                WindowsEnvironmentVariablesEnvironment.Instance,
+                action => Task.Run(action),
+                work => Task.Run(work))
         {
-            _environmentVariablesService = environmentVariablesService;
+        }
+
+        internal MainViewModel(
+            IElevationHelper elevationHelper,
+            IEnvironmentVariablesService service,
+            ILogger logger,
+            ITelemetry telemetry,
+            Func<Action, bool> enqueueRefresh,
+            DefaultVariablesSet userSet,
+            DefaultVariablesSet systemSet,
+            VariablesSet defaults,
+            IEnvironmentVariablesEnvironment environment,
+            Func<Action, Task> run,
+            Func<Func<Task>, Task> runAsync)
+        {
+            _enqueueRefresh = enqueueRefresh;
+            UserDefaultSet = userSet;
+            SystemDefaultSet = systemSet;
+            DefaultVariables = defaults;
+            _environment = environment;
+            _run = run;
+            _runAsync = runAsync;
+            _environmentVariablesService = service;
 
             ElevationHelper.ElevationHelperInstance = elevationHelper;
             LoggerInstance.Logger = logger;
@@ -58,14 +98,20 @@ namespace EnvironmentVariablesUILib.ViewModels
             IsElevated = isElevated;
         }
 
+        private static Func<Action, bool> CreateRefreshEnqueuer()
+        {
+            var queue = DispatcherQueue.GetForCurrentThread();
+            return action => queue.TryEnqueue(() => action());
+        }
+
         private void LoadDefaultVariables()
         {
             UserDefaultSet.Variables.Clear();
             SystemDefaultSet.Variables.Clear();
             DefaultVariables.Variables.Clear();
 
-            EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.Machine, SystemDefaultSet);
-            EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.User, UserDefaultSet);
+            EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.Machine, SystemDefaultSet, _environment);
+            EnvironmentVariablesHelper.GetVariables(EnvironmentVariableTarget.User, UserDefaultSet, _environment);
 
             foreach (var variable in UserDefaultSet.Variables)
             {
@@ -132,12 +178,12 @@ namespace EnvironmentVariablesUILib.ViewModels
                         EnvironmentState = EnvironmentState.ProfileNameInvalid;
                         appliedProfile.IsEnabled = false;
                     }
-                    else if (!appliedProfile.IsApplicable())
+                    else if (!appliedProfile.IsApplicable(_environment))
                     {
                         EnvironmentState = EnvironmentState.ProfileNotApplicable;
                         appliedProfile.IsEnabled = false;
                     }
-                    else if (appliedProfile.IsCorrectlyApplied())
+                    else if (appliedProfile.IsCorrectlyApplied(_environment))
                     {
                         AppliedProfile = appliedProfile;
                         EnvironmentState = EnvironmentState.Unchanged;
@@ -164,15 +210,24 @@ namespace EnvironmentVariablesUILib.ViewModels
         {
             LoadDefaultVariables();
 
+            AppliedVariables = BuildAppliedVariables(AppliedProfile, UserDefaultSet.Variables, SystemDefaultSet.Variables, _environment.ExpandEnvironmentVariables);
+        }
+
+        internal static ObservableCollection<Variable> BuildAppliedVariables(
+            ProfileVariablesSet appliedProfile,
+            IEnumerable<Variable> userVariables,
+            IEnumerable<Variable> systemVariables,
+            Func<string, string> expand)
+        {
             var variables = new List<Variable>();
-            if (AppliedProfile != null)
+            if (appliedProfile != null)
             {
-                variables = variables.Concat(AppliedProfile.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.Profile)).OrderBy(x => x.Name)).ToList();
+                variables = variables.Concat(appliedProfile.Variables.Select(x => new Variable(x.Name, expand(x.Values), VariablesSetType.Profile)).OrderBy(x => x.Name)).ToList();
             }
 
             // Variables are expanded to be shown in the applied variables section, so the user sees their actual values.
-            variables = variables.Concat(UserDefaultSet.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.User)).OrderBy(x => x.Name))
-                                 .Concat(SystemDefaultSet.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.System)).OrderBy(x => x.Name))
+            variables = variables.Concat(userVariables.Select(x => new Variable(x.Name, expand(x.Values), VariablesSetType.User)).OrderBy(x => x.Name))
+                                 .Concat(systemVariables.Select(x => new Variable(x.Name, expand(x.Values), VariablesSetType.System)).OrderBy(x => x.Name))
                                  .ToList();
 
             // Handle PATH variable - add USER value to the end of the SYSTEM value
@@ -225,12 +280,12 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
 
             variables = variables.OrderBy(x => x.ParentType).ToList();
-            AppliedVariables = new ObservableCollection<Variable>(variables);
+            return new ObservableCollection<Variable>(variables);
         }
 
         internal void AddDefaultVariable(Variable variable, VariablesSetType type)
         {
-            if (!EnvironmentVariablesHelper.SetVariable(variable))
+            if (!EnvironmentVariablesHelper.SetVariable(variable, _environment))
             {
                 return;
             }
@@ -255,17 +310,17 @@ namespace EnvironmentVariablesUILib.ViewModels
             bool changed = original.Name != edited.Name || original.Values != edited.Values;
             if (changed)
             {
-                var task = original.Update(edited, propagateChange, variablesSet);
+                var task = original.Update(edited, propagateChange, variablesSet, _environment, _run);
                 task.ContinueWith(x =>
                 {
-                    _dispatcherQueue.TryEnqueue(() =>
+                    _enqueueRefresh(() =>
                     {
                         PopulateAppliedVariables();
                     });
                 });
 
                 TelemetryInstance.Telemetry.LogEnvironmentVariablesVariableChangedEvent(original.ParentType);
-                _ = Task.Run(SaveAsync);
+                _ = _runAsync(SaveAsync);
             }
         }
 
@@ -280,7 +335,7 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             Profiles.Add(profile);
 
-            _ = Task.Run(SaveAsync);
+            _ = _runAsync(SaveAsync);
         }
 
         internal void UpdateProfile(ProfileVariablesSet updatedProfile)
@@ -299,7 +354,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                 existingProfile.Variables = updatedProfile.Variables;
             }
 
-            _ = Task.Run(SaveAsync);
+            _ = _runAsync(SaveAsync);
         }
 
         private async Task SaveAsync()
@@ -339,7 +394,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                 }
             }
 
-            _ = Task.Run(SaveAsync);
+            _ = _runAsync(SaveAsync);
         }
 
         private void SetAppliedProfile(ProfileVariablesSet profile)
@@ -357,7 +412,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                     return;
                 }
 
-                if (!profile.IsApplicable())
+                if (!profile.IsApplicable(_environment))
                 {
                     profile.PropertyChanged -= Profile_PropertyChanged;
                     profile.IsEnabled = false;
@@ -369,10 +424,10 @@ namespace EnvironmentVariablesUILib.ViewModels
                 }
             }
 
-            var task = profile.Apply();
+            var task = profile.Apply(_environment, _run);
             task.ContinueWith((a) =>
             {
-                _dispatcherQueue.TryEnqueue(() =>
+                _enqueueRefresh(() =>
                 {
                     PopulateAppliedVariables();
                 });
@@ -386,10 +441,10 @@ namespace EnvironmentVariablesUILib.ViewModels
             {
                 var appliedProfile = AppliedProfile;
                 appliedProfile.PropertyChanged -= Profile_PropertyChanged;
-                var task = AppliedProfile.UnApply();
+                var task = AppliedProfile.UnApply(_environment, _run);
                 task.ContinueWith((a) =>
                 {
-                    _dispatcherQueue.TryEnqueue(() =>
+                    _enqueueRefresh(() =>
                     {
                         PopulateAppliedVariables();
                     });
@@ -409,7 +464,7 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             Profiles.Remove(profile);
 
-            _ = Task.Run(SaveAsync);
+            _ = _runAsync(SaveAsync);
         }
 
         internal void DeleteVariable(Variable variable, ProfileVariablesSet profile)
@@ -426,7 +481,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                     propagateChange = false;
                 }
 
-                _ = Task.Run(SaveAsync);
+                _ = _runAsync(SaveAsync);
             }
             else
             {
@@ -442,20 +497,20 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             if (propagateChange)
             {
-                var task = Task.Run(() =>
+                var task = _run(() =>
                 {
                     if (profile == null)
                     {
-                        EnvironmentVariablesHelper.UnsetVariable(variable);
+                        EnvironmentVariablesHelper.UnsetVariable(variable, _environment);
                     }
                     else
                     {
-                        profile.UnapplyVariable(variable);
+                        profile.UnapplyVariable(variable, _environment);
                     }
                 });
                 task.ContinueWith((a) =>
                 {
-                    _dispatcherQueue.TryEnqueue(() =>
+                    _enqueueRefresh(() =>
                     {
                         PopulateAppliedVariables();
                     });

@@ -16,11 +16,16 @@ public partial class EnvironmentStateToTitleConverter : IValueConverter
     {
         var resourceLoader = ResourceLoaderInstance.ResourceLoader;
         var type = (EnvironmentState)value;
-        return type switch
+        return ConvertState(type, resourceLoader.GetString);
+    }
+
+    internal static string ConvertState(EnvironmentState state, Func<string, string> getString)
+    {
+        return state switch
         {
-            EnvironmentState.ProfileNotApplicable => resourceLoader.GetString("ProfileNotApplicableTitle"),
-            EnvironmentState.ProfileNameInvalid => resourceLoader.GetString("ProfileNameInvalidTitle"),
-            _ => resourceLoader.GetString("StateNotUpToDateTitle"),
+            EnvironmentState.ProfileNotApplicable => getString("ProfileNotApplicableTitle"),
+            EnvironmentState.ProfileNameInvalid => getString("ProfileNameInvalidTitle"),
+            _ => getString("StateNotUpToDateTitle"),
         };
     }
 

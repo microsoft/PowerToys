@@ -150,24 +150,13 @@ namespace EnvironmentVariablesUILib
             {
                 if (AddVariableSwitchPresenter.Value as string == "NewVariable")
                 {
-                    var variable = new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile);
-                    if (variable.Validate() && !profile.Variables.Any(x =>
-                        EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)))
-                    {
-                        profile.Variables.Add(variable);
-                    }
+                    VariableEditorState.AddProfileVariable(
+                        profile, true, AddNewVariableName.Text, AddNewVariableValue.Text, Array.Empty<object>());
                 }
                 else
                 {
-                    foreach (Variable variable in ExistingVariablesListView.SelectedItems)
-                    {
-                        if (!profile.Variables.Any(x =>
-                            EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)))
-                        {
-                            var clone = variable.Clone(true);
-                            profile.Variables.Add(clone);
-                        }
-                    }
+                    VariableEditorState.AddProfileVariable(
+                        profile, false, null, null, ExistingVariablesListView.SelectedItems);
                 }
             }
 
@@ -244,20 +233,13 @@ namespace EnvironmentVariablesUILib
 
             if (AddVariableSwitchPresenter.Value as string == "NewVariable")
             {
-                var variable = new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile);
-
-                ConfirmAddVariableBtn.IsEnabled =
-                    variable.Validate()
-                    && !profile.Variables.Any(x =>
-                        EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
-
+                ConfirmAddVariableBtn.IsEnabled = VariableEditorState.CanAddProfileVariable(
+                    profile, true, AddNewVariableName.Text, AddNewVariableValue.Text, Array.Empty<object>());
                 return;
             }
 
-            ConfirmAddVariableBtn.IsEnabled = ExistingVariablesListView.SelectedItems
-                .OfType<Variable>()
-                .Any(variable => !profile.Variables.Any(x =>
-                    EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)));
+            ConfirmAddVariableBtn.IsEnabled = VariableEditorState.CanAddProfileVariable(
+                profile, false, null, null, ExistingVariablesListView.SelectedItems);
         }
 
         private void ReloadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -270,18 +252,15 @@ namespace EnvironmentVariablesUILib
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
 
-            int toRemove = -1;
-
             if (e.AddedItems.Count > 0)
             {
                 var list = sender as ListView;
-                var duplicates = EnvironmentVariableComparisonHelper.GetDuplicateNameGroups(
-                    list.SelectedItems.Cast<Variable>()).ToList();
+                var duplicates = VariableEditorState.GetSecondSelectionsFromDuplicateNameGroups(list.SelectedItems.Cast<Variable>());
 
                 foreach (var dup in duplicates)
                 {
                     ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-                    list.SelectedItems.Remove(dup.ElementAt(1));
+                    list.SelectedItems.Remove(dup);
                     ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
                 }
             }
@@ -289,19 +268,7 @@ namespace EnvironmentVariablesUILib
             if (e.RemovedItems.Count > 0)
             {
                 Variable removedVariable = e.RemovedItems[0] as Variable;
-                for (int i = 0; i < profile.Variables.Count; i++)
-                {
-                    if (EnvironmentVariableComparisonHelper.EntriesEqual(profile.Variables[i], removedVariable))
-                    {
-                        toRemove = i;
-                        break;
-                    }
-                }
-
-                if (toRemove != -1)
-                {
-                    profile.Variables.RemoveAt(toRemove);
-                }
+                VariableEditorState.RemoveFirstEquivalent(profile, removedVariable);
             }
 
             UpdateConfirmAddVariableButtonState();
@@ -330,26 +297,12 @@ namespace EnvironmentVariablesUILib
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
 
-            foreach (Variable item in ExistingVariablesListView.Items)
+            foreach (Variable item in VariableEditorState.LoadSelection(
+                profile, ExistingVariablesListView.Items.Cast<Variable>(), ExistingVariablesListView.SelectedItems.Cast<Variable>()))
             {
-                if (item != null)
-                {
-                    foreach (var profileItem in profile.Variables)
-                    {
-                        if (EnvironmentVariableComparisonHelper.EntriesEqual(profileItem, item))
-                        {
-                            if (ExistingVariablesListView.SelectedItems.Any(x =>
-                                EnvironmentVariableComparisonHelper.NamesEqual(((Variable)x).Name, profileItem.Name)))
-                            {
-                                continue;
-                            }
-
-                            ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-                            ExistingVariablesListView.SelectedItems.Add(item);
-                            ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
-                        }
-                    }
-                }
+                ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
+                ExistingVariablesListView.SelectedItems.Add(item);
+                ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
             }
         }
 
@@ -434,9 +387,7 @@ namespace EnvironmentVariablesUILib
             }
 
             var defaultSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
-            bool isDuplicate = defaultSet.Variables.Any(x =>
-                EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
-            AddDefaultVariableDialog.IsPrimaryButtonEnabled = !isDuplicate && variable.Validate();
+            AddDefaultVariableDialog.IsPrimaryButtonEnabled = VariableEditorState.CanAddDefault(variable, defaultSet);
         }
 
         private void EditVariableDialogValueTxtBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -467,12 +418,7 @@ namespace EnvironmentVariablesUILib
                 variableSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
             }
 
-            bool hasDuplicate = variableSet != null
-                && variableSet.Variables.Any(x =>
-                    !ReferenceEquals(x, param.Variable)
-                    && EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
-
-            EditVariableDialog.IsPrimaryButtonEnabled = !hasDuplicate && variable.Validate();
+            EditVariableDialog.IsPrimaryButtonEnabled = VariableEditorState.CanSaveEdit(variable, param.Variable, variableSet);
         }
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -485,13 +431,7 @@ namespace EnvironmentVariablesUILib
 
             var variable = EditVariableDialog.DataContext as Variable;
 
-            var index = variable.ValuesList.IndexOf(listItem);
-            if (index > 0)
-            {
-                variable.ValuesList.Move(index, index - 1);
-            }
-
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = VariableEditorState.MoveUp(variable, listItem);
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
@@ -506,13 +446,7 @@ namespace EnvironmentVariablesUILib
             var variable = EditVariableDialog.DataContext as Variable;
             var btn = EditVariableDialog.PrimaryButtonCommandParameter as Button;
 
-            var index = variable.ValuesList.IndexOf(listItem);
-            if (index < variable.ValuesList.Count - 1)
-            {
-                variable.ValuesList.Move(index, index + 1);
-            }
-
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = VariableEditorState.MoveDown(variable, listItem);
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
@@ -525,9 +459,7 @@ namespace EnvironmentVariablesUILib
             }
 
             var variable = EditVariableDialog.DataContext as Variable;
-            variable.ValuesList.Remove(listItem);
-
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = VariableEditorState.DeleteEntry(variable, listItem);
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
@@ -551,10 +483,7 @@ namespace EnvironmentVariablesUILib
             }
 
             var variable = EditVariableDialog.DataContext as Variable;
-            var index = variable.ValuesList.IndexOf(listItem);
-            variable.ValuesList.Insert(index, new Variable.ValuesListItem { Text = string.Empty });
-
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = VariableEditorState.InsertBefore(variable, listItem);
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
             EditVariableDialogValueTxtBox.Text = newValues;
             EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
@@ -569,10 +498,7 @@ namespace EnvironmentVariablesUILib
             }
 
             var variable = EditVariableDialog.DataContext as Variable;
-            var index = variable.ValuesList.IndexOf(listItem);
-            variable.ValuesList.Insert(index + 1, new Variable.ValuesListItem { Text = string.Empty });
-
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = VariableEditorState.InsertAfter(variable, listItem);
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
             EditVariableDialogValueTxtBox.Text = newValues;
             EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
@@ -591,10 +517,8 @@ namespace EnvironmentVariablesUILib
                 return;
             }
 
-            listItem.Text = (sender as TextBox)?.Text;
             var variable = EditVariableDialog.DataContext as Variable;
-
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = VariableEditorState.CommitEntryText(variable, listItem, (sender as TextBox)?.Text);
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
             EditVariableDialogValueTxtBox.Text = newValues;
             EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;

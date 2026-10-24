@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using EnvironmentVariablesUILib.Helpers;
@@ -13,6 +14,54 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers;
 [TestClass]
 public class EnvironmentVariableComparisonHelperTests
 {
+    private static readonly string[] TrimmedExpansionInputs =
+    {
+        "%ROOT%", "c:/TOOLS/", @"C:\Other\", "%SECOND%", string.Empty, string.Empty, string.Empty,
+    };
+
+    private static readonly string[] InputsBeforeExpansionFailure = { @"C:\A", "%FAIL%" };
+
+    [TestMethod]
+    [DataRow(null, null, true)]
+    [DataRow("PATH", null, false)]
+    [DataRow(null, "PATH", false)]
+    [DataRow("é", "e\u0301", false)]
+    public void NamesEqual_NullAndDistinctUnicode_ReturnsExpected(string? left, string? right, bool expected)
+    {
+        Assert.AreEqual(expected, EnvironmentVariableComparisonHelper.NamesEqual(left, right));
+    }
+
+    [TestMethod]
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void EntriesEqual_NullOperands_AreNotEqual(bool nullLeft, bool nullRight)
+    {
+        var entry = new Variable("NAME", "value", VariablesSetType.User);
+
+        Assert.IsFalse(EnvironmentVariableComparisonHelper.EntriesEqual(nullLeft ? null : entry, nullRight ? null : entry));
+    }
+
+    [TestMethod]
+    public void EntriesEqual_CanonicallyEquivalentValues_AreOrdinallyDifferentAcrossScopes()
+    {
+        var user = new Variable("NAME", "é", VariablesSetType.User);
+        var profile = new Variable("name", "e\u0301", VariablesSetType.Profile);
+
+        Assert.IsFalse(EnvironmentVariableComparisonHelper.EntriesEqual(user, profile));
+        profile.Values = "é";
+        Assert.IsTrue(EnvironmentVariableComparisonHelper.EntriesEqual(user, profile));
+    }
+
+    [TestMethod]
+    [DataRow("", "")]
+    [DataRow(";C:\\Tools;;c:\\tools;", ";C:\\Tools")]
+    [DataRow(" C:\\Tools ;C:\\Tools;C:\\Other ", " C:\\Tools ;C:\\Other ")]
+    public void RemoveDuplicatePathEntries_EmptyAndWhitespaceSegments_PreservesFirstLiteral(string value, string expected)
+    {
+        Assert.AreEqual(expected, EnvironmentVariableComparisonHelper.RemoveDuplicatePathEntries(value));
+    }
+
     [TestMethod]
     public void NamesEqual_IgnoresCase()
     {
@@ -64,6 +113,52 @@ public class EnvironmentVariableComparisonHelperTests
             @"C:\Tools\;C:/Tools;C:\Other");
 
         Assert.AreEqual(@"C:\Tools\;C:\Other", result);
+    }
+
+    [TestMethod]
+    public void RemoveDuplicatePathEntries_UsesTrimmedInjectedExpansionAndPreservesFirstRawSegments()
+    {
+        var inputs = new List<string>();
+        var expansions = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["%ROOT%"] = @"C:\Tools\",
+            ["%SECOND%"] = @"c:\tools",
+        };
+
+        var result = EnvironmentVariableComparisonHelper.RemoveDuplicatePathEntries(
+            @" %ROOT% ;c:/TOOLS/; C:\Other\ ;%SECOND%;;;",
+            entry =>
+            {
+                inputs.Add(entry);
+                return expansions.GetValueOrDefault(entry, entry);
+            });
+
+        Assert.AreEqual(@" %ROOT% ; C:\Other\ ;", result);
+        CollectionAssert.AreEqual(TrimmedExpansionInputs, inputs);
+    }
+
+    [TestMethod]
+    public void RemoveDuplicatePathEntries_PropagatesInjectedExpansionFailureWithoutContinuing()
+    {
+        var failure = new InvalidOperationException("Scripted expansion failure.");
+        var inputs = new List<string>();
+
+        var actual = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            EnvironmentVariableComparisonHelper.RemoveDuplicatePathEntries(
+                @"C:\A;%FAIL%;C:\B",
+                entry =>
+                {
+                    inputs.Add(entry);
+                    if (entry == "%FAIL%")
+                    {
+                        throw failure;
+                    }
+
+                    return entry;
+                }));
+
+        Assert.AreSame(failure, actual);
+        CollectionAssert.AreEqual(InputsBeforeExpansionFailure, inputs);
     }
 
     [TestMethod]

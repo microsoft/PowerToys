@@ -28,8 +28,13 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static Variable GetExisting(string variableName)
         {
+            return GetExisting(variableName, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static Variable GetExisting(string variableName, IEnvironmentVariablesEnvironment environment)
+        {
             DefaultVariablesSet userSet = new DefaultVariablesSet(Guid.NewGuid(), "tmpUser", VariablesSetType.User);
-            GetVariables(EnvironmentVariableTarget.User, userSet);
+            GetVariables(EnvironmentVariableTarget.User, userSet, environment);
 
             foreach (var variable in userSet.Variables)
             {
@@ -40,7 +45,7 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             DefaultVariablesSet systemSet = new DefaultVariablesSet(Guid.NewGuid(), "tmpSystem", VariablesSetType.System);
-            GetVariables(EnvironmentVariableTarget.Machine, systemSet);
+            GetVariables(EnvironmentVariableTarget.Machine, systemSet, environment);
 
             foreach (var variable in systemSet.Variables)
             {
@@ -147,29 +152,29 @@ namespace EnvironmentVariablesUILib.Helpers
             return true;
         }
 
-        private static RegistryKey OpenEnvironmentKeyIfExists(bool fromMachine, bool writable)
+        private static IEnvironmentVariablesRegistryKey OpenEnvironmentKeyIfExists(bool fromMachine, bool writable, IEnvironmentVariablesEnvironment environment)
         {
-            RegistryKey baseKey;
+            RegistryHive hive;
             string keyName;
 
             if (fromMachine)
             {
-                baseKey = Registry.LocalMachine;
+                hive = RegistryHive.LocalMachine;
                 keyName = @"System\CurrentControlSet\Control\Session Manager\Environment";
             }
             else
             {
-                baseKey = Registry.CurrentUser;
+                hive = RegistryHive.CurrentUser;
                 keyName = "Environment";
             }
 
-            return baseKey.OpenSubKey(keyName, writable: writable);
+            return environment.OpenKey(hive, keyName, writable);
         }
 
         // Code taken from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Environment.Win32.cs
         // Set variables directly to registry instead of using Environment API - Environment.SetEnvironmentVariable() has 1 second timeout for SendNotifyMessage(WM_SETTINGSCHANGED).
         // When applying profile, this would take num_of_variables * 1s to propagate the changes. We do manually SendNotifyMessage with no timeout where needed.
-        private static bool SetEnvironmentVariableFromRegistryWithoutNotify(string variable, string value, bool fromMachine, bool enforceAuthoringLimits = true)
+        private static bool SetEnvironmentVariableFromRegistryWithoutNotify(string variable, string value, bool fromMachine, IEnvironmentVariablesEnvironment environment, bool enforceAuthoringLimits = true)
         {
             // Deletion (value == null) must always be allowed so variables with
             // pre-existing invalid names (older builds, regedit, external tools)
@@ -183,7 +188,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
             try
             {
-                using (RegistryKey environmentKey = OpenEnvironmentKeyIfExists(fromMachine, writable: true))
+                using (IEnvironmentVariablesRegistryKey environmentKey = OpenEnvironmentKeyIfExists(fromMachine, writable: true, environment))
                 {
                     if (environmentKey == null)
                     {
@@ -217,25 +222,29 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static void NotifyEnvironmentChange()
         {
-            unsafe
-            {
-                // send a WM_SETTINGCHANGE message to all windows
-                fixed (char* lParam = "Environment")
-                {
-                    _ = NativeMethods.SendNotifyMessage(new IntPtr(NativeMethods.HWND_BROADCAST), NativeMethods.WindowMessage.WM_SETTINGSCHANGED, (IntPtr)0x12345, (IntPtr)lParam);
-                }
-            }
+            NotifyEnvironmentChange(WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static void NotifyEnvironmentChange(IEnvironmentVariablesEnvironment environment)
+        {
+            // send a WM_SETTINGCHANGE message to all windows
+            _ = environment.SendNotifyMessage(new IntPtr(NativeMethods.HWND_BROADCAST), (int)NativeMethods.WindowMessage.WM_SETTINGSCHANGED, (IntPtr)0x12345, "Environment");
         }
 
         // Code taken from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Environment.Win32.cs
         // Reading variables from registry instead of using Environment API, because Environment API expands variables by default.
         internal static void GetVariables(EnvironmentVariableTarget target, VariablesSet set)
         {
+            GetVariables(target, set, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static void GetVariables(EnvironmentVariableTarget target, VariablesSet set, IEnvironmentVariablesEnvironment environment)
+        {
             var sortedList = new SortedList<string, Variable>();
 
             bool fromMachine = target == EnvironmentVariableTarget.Machine;
 
-            using (RegistryKey environmentKey = OpenEnvironmentKeyIfExists(fromMachine, writable: false))
+            using (IEnvironmentVariablesRegistryKey environmentKey = OpenEnvironmentKeyIfExists(fromMachine, writable: false, environment))
             {
                 if (environmentKey != null)
                 {
@@ -263,15 +272,30 @@ namespace EnvironmentVariablesUILib.Helpers
         // variable's ParentType. These helpers centralize that behavior for the apply/unapply/edit paths.
         internal static bool SetProfileVariableWithoutNotify(Variable variable)
         {
-            return SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine: false);
+            return SetProfileVariableWithoutNotify(variable, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static bool SetProfileVariableWithoutNotify(Variable variable, IEnvironmentVariablesEnvironment environment)
+        {
+            return SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine: false, environment);
         }
 
         internal static bool UnsetProfileVariableWithoutNotify(Variable variable)
         {
-            return SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine: false);
+            return UnsetProfileVariableWithoutNotify(variable, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static bool UnsetProfileVariableWithoutNotify(Variable variable, IEnvironmentVariablesEnvironment environment)
+        {
+            return SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine: false, environment);
         }
 
         internal static bool SetVariable(Variable variable)
+        {
+            return SetVariable(variable, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static bool SetVariable(Variable variable, IEnvironmentVariablesEnvironment environment)
         {
             bool fromMachine = variable.ParentType switch
             {
@@ -281,10 +305,10 @@ namespace EnvironmentVariablesUILib.Helpers
                 _ => throw new NotImplementedException(),
             };
 
-            bool success = SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
+            bool success = SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine, environment);
             if (success)
             {
-                NotifyEnvironmentChange();
+                NotifyEnvironmentChange(environment);
             }
 
             return success;
@@ -292,6 +316,11 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static bool UnsetVariable(Variable variable)
         {
+            return UnsetVariable(variable, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static bool UnsetVariable(Variable variable, IEnvironmentVariablesEnvironment environment)
+        {
             bool fromMachine = variable.ParentType switch
             {
                 VariablesSetType.Profile => false,
@@ -300,10 +329,10 @@ namespace EnvironmentVariablesUILib.Helpers
                 _ => throw new NotImplementedException(),
             };
 
-            bool success = SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine);
+            bool success = SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine, environment);
             if (success)
             {
-                NotifyEnvironmentChange();
+                NotifyEnvironmentChange(environment);
             }
 
             return success;
@@ -313,14 +342,24 @@ namespace EnvironmentVariablesUILib.Helpers
         // authoring limit, since they are PowerToys-internal and never edited via Regedit.
         internal static bool SetBackupVariableWithoutNotify(Variable backupVariable)
         {
+            return SetBackupVariableWithoutNotify(backupVariable, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static bool SetBackupVariableWithoutNotify(Variable backupVariable, IEnvironmentVariablesEnvironment environment)
+        {
             return SetEnvironmentVariableFromRegistryWithoutNotify(
-                backupVariable.Name, backupVariable.Values, fromMachine: false, enforceAuthoringLimits: false);
+                backupVariable.Name, backupVariable.Values, fromMachine: false, environment, enforceAuthoringLimits: false);
         }
 
         internal static bool UnsetBackupVariableWithoutNotify(Variable backupVariable)
         {
+            return UnsetBackupVariableWithoutNotify(backupVariable, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal static bool UnsetBackupVariableWithoutNotify(Variable backupVariable, IEnvironmentVariablesEnvironment environment)
+        {
             return SetEnvironmentVariableFromRegistryWithoutNotify(
-                backupVariable.Name, null, fromMachine: false, enforceAuthoringLimits: false);
+                backupVariable.Name, null, fromMachine: false, environment, enforceAuthoringLimits: false);
         }
     }
 }

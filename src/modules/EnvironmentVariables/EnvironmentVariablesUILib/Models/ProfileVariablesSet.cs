@@ -31,12 +31,17 @@ namespace EnvironmentVariablesUILib.Models
 
         public Task Apply()
         {
-            return Task.Run(() =>
+            return Apply(WindowsEnvironmentVariablesEnvironment.Instance, action => Task.Run(action));
+        }
+
+        internal Task Apply(IEnvironmentVariablesEnvironment environment, Func<Action, Task> run)
+        {
+            return run(() =>
             {
                 foreach (var variable in Variables)
                 {
                     // Get existing variable with the same name if it exist
-                    var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
+                    var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name, environment);
 
                     // It exists. Rename it to preserve it.
                     if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
@@ -44,39 +49,49 @@ namespace EnvironmentVariablesUILib.Models
                         variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
 
                         // Backup the variable
-                        if (!EnvironmentVariablesHelper.SetBackupVariableWithoutNotify(variableToOverride))
+                        if (!EnvironmentVariablesHelper.SetBackupVariableWithoutNotify(variableToOverride, environment))
                         {
                             LoggerInstance.Logger.LogError("Failed to set backup variable.");
                         }
                     }
 
-                    if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variable))
+                    if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variable, environment))
                     {
                         LoggerInstance.Logger.LogError("Failed to set profile variable.");
                     }
                 }
 
-                EnvironmentVariablesHelper.NotifyEnvironmentChange();
+                EnvironmentVariablesHelper.NotifyEnvironmentChange(environment);
             });
         }
 
         public Task UnApply()
         {
-            return Task.Run(() =>
+            return UnApply(WindowsEnvironmentVariablesEnvironment.Instance, action => Task.Run(action));
+        }
+
+        internal Task UnApply(IEnvironmentVariablesEnvironment environment, Func<Action, Task> run)
+        {
+            return run(() =>
             {
                 foreach (var variable in Variables)
                 {
-                    UnapplyVariable(variable);
+                    UnapplyVariable(variable, environment);
                 }
 
-                EnvironmentVariablesHelper.NotifyEnvironmentChange();
+                EnvironmentVariablesHelper.NotifyEnvironmentChange(environment);
             });
         }
 
         public void UnapplyVariable(Variable variable)
         {
+            UnapplyVariable(variable, WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal void UnapplyVariable(Variable variable, IEnvironmentVariablesEnvironment environment)
+        {
             // Unset the variable
-            if (!EnvironmentVariablesHelper.UnsetProfileVariableWithoutNotify(variable))
+            if (!EnvironmentVariablesHelper.UnsetProfileVariableWithoutNotify(variable, environment))
             {
                 LoggerInstance.Logger.LogError("Failed to unset variable.");
             }
@@ -85,18 +100,18 @@ namespace EnvironmentVariablesUILib.Models
             var backupName = EnvironmentVariablesHelper.GetBackupVariableName(variable, this.Name);
 
             // Get backup variable if it exist
-            var backupVariable = EnvironmentVariablesHelper.GetExisting(backupName);
+            var backupVariable = EnvironmentVariablesHelper.GetExisting(backupName, environment);
 
             if (backupVariable != null)
             {
                 var variableToRestore = new Variable(originalName, backupVariable.Values, backupVariable.ParentType);
 
-                if (!EnvironmentVariablesHelper.UnsetBackupVariableWithoutNotify(backupVariable))
+                if (!EnvironmentVariablesHelper.UnsetBackupVariableWithoutNotify(backupVariable, environment))
                 {
                     LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                 }
 
-                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToRestore))
+                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToRestore, environment))
                 {
                     LoggerInstance.Logger.LogError("Failed to restore backup variable.");
                 }
@@ -105,14 +120,19 @@ namespace EnvironmentVariablesUILib.Models
 
         public bool IsCorrectlyApplied()
         {
-            if (!IsEnabled || !IsApplicable())
+            return IsCorrectlyApplied(WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal bool IsCorrectlyApplied(IEnvironmentVariablesEnvironment environment)
+        {
+            if (!IsEnabled || !IsApplicable(environment))
             {
                 return false;
             }
 
             foreach (var variable in Variables)
             {
-                var applied = EnvironmentVariablesHelper.GetExisting(variable.Name);
+                var applied = EnvironmentVariablesHelper.GetExisting(variable.Name, environment);
                 if (applied != null && applied.Values == variable.Values && applied.ParentType == VariablesSetType.User)
                 {
                     continue;
@@ -125,6 +145,11 @@ namespace EnvironmentVariablesUILib.Models
         }
 
         public bool IsApplicable()
+        {
+            return IsApplicable(WindowsEnvironmentVariablesEnvironment.Instance);
+        }
+
+        internal bool IsApplicable(IEnvironmentVariablesEnvironment environment)
         {
             if (!Valid)
             {
@@ -139,7 +164,7 @@ namespace EnvironmentVariablesUILib.Models
                 }
 
                 // Get existing variable with the same name if it exists.
-                var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
+                var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name, environment);
 
                 // It exists. Backup is needed.
                 if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
