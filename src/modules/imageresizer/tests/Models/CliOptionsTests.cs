@@ -17,8 +17,8 @@ namespace ImageResizer.Tests.Models
     [TestClass]
     public class CliOptionsTests
     {
-        private static readonly string[] _multiFileArgs = new[] { "test1.jpg", "test2.jpg", "test3.jpg" };
-        private static readonly string[] _mixedOptionsArgs = new[] { "--width", "800", "test1.jpg", "--height", "600", "test2.jpg" };
+        private static readonly string[] _multiFileArgs = new[] { "test3.jpg", "test1.jpg", "test2.jpg" };
+        private static readonly string[] _mixedOptionsArgs = new[] { "--width", "800", "test2.jpg", "--height", "600", "test1.jpg" };
         private static readonly Lazy<CompositeFormat> _invalidEnumValueFormat = new(() => CompositeFormat.Parse(Resources.CLI_ErrorInvalidEnumValue));
 
         [TestMethod]
@@ -235,23 +235,24 @@ namespace ImageResizer.Tests.Models
         public void Parse_WithMultipleFiles_AddsAllFiles()
         {
             var args = _multiFileArgs;
+            var expectedFiles = new[] { "test3.jpg", "test1.jpg", "test2.jpg" };
             var options = CliOptions.Parse(args);
 
-            Assert.AreEqual(3, options.Files.Count);
-            CollectionAssert.Contains(options.Files.ToList(), "test1.jpg");
-            CollectionAssert.Contains(options.Files.ToList(), "test2.jpg");
-            CollectionAssert.Contains(options.Files.ToList(), "test3.jpg");
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToList());
         }
 
         [TestMethod]
         public void Parse_WithMixedOptionsAndFiles_ParsesCorrectly()
         {
             var args = _mixedOptionsArgs;
+            var expectedFiles = new[] { "test2.jpg", "test1.jpg" };
             var options = CliOptions.Parse(args);
 
             Assert.AreEqual(800.0, options.Width);
             Assert.AreEqual(600.0, options.Height);
-            Assert.AreEqual(2, options.Files.Count);
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToList());
         }
 
         [TestMethod]
@@ -280,8 +281,56 @@ namespace ImageResizer.Tests.Models
 
             Assert.IsNotNull(options);
             Assert.AreEqual(0, options.Files.Count);
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.IsNull(options.Width);
+            Assert.IsNull(options.Height);
+            Assert.IsNull(options.SizeIndex);
+            Assert.IsNull(options.JpegQualityLevel);
             Assert.IsNull(options.Unit);
             Assert.IsNull(options.Fit);
+            Assert.IsNull(options.ShrinkOnly);
+            Assert.IsNull(options.Replace);
+            Assert.IsNull(options.IgnoreOrientation);
+            Assert.IsNull(options.RemoveMetadata);
+            Assert.IsNull(options.KeepDateModified);
+            Assert.IsNull(options.ProgressLines);
+        }
+
+        [TestMethod]
+        public void Parse_WithOnlyZeroHeight_ReturnsError()
+        {
+            var args = new[] { "--height", "0", "test.jpg" };
+            var expectedFiles = new[] { "test.jpg" };
+            var expectedErrors = new[] { "Width and height cannot both be zero for a custom size." };
+            var options = CliOptions.Parse(args);
+
+            Assert.IsNull(options.Width);
+            Assert.AreEqual(0.0, options.Height);
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToList());
+            CollectionAssert.AreEqual(expectedErrors, options.ParseErrors.ToList());
+        }
+
+        [DataTestMethod]
+        [DataRow("--width")]
+        [DataRow("--height")]
+        public void Parse_WithMaximumDimension_AcceptsValue(string option)
+        {
+            var expectedFiles = new[] { "test.jpg" };
+            var options = CliOptions.Parse(new[] { option, "2147483647", "test.jpg" });
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            if (option == "--width")
+            {
+                Assert.AreEqual(2147483647.0, options.Width);
+                Assert.IsNull(options.Height);
+            }
+            else
+            {
+                Assert.IsNull(options.Width);
+                Assert.AreEqual(2147483647.0, options.Height);
+            }
+
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToList());
         }
 
         [TestMethod]
