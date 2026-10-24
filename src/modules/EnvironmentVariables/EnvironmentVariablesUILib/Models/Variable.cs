@@ -116,6 +116,11 @@ namespace EnvironmentVariablesUILib.Models
 
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)
         {
+            return Update(edited, propagateChange, parentProfile, WindowsEnvironmentVariablesEnvironment.Instance, action => Task.Run(action));
+        }
+
+        internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile, IEnvironmentVariablesEnvironment environment, Func<Action, Task> run)
+        {
             bool nameChanged = Name != edited.Name;
 
             var clone = this.Clone();
@@ -126,14 +131,14 @@ namespace EnvironmentVariablesUILib.Models
 
             ValuesList = ValuesStringToValuesListItemCollection(Values);
 
-            return Task.Run(() =>
+            return run(() =>
             {
                 // Apply changes
                 if (propagateChange)
                 {
                     if (nameChanged)
                     {
-                        if (!EnvironmentVariablesHelper.UnsetVariable(clone))
+                        if (!EnvironmentVariablesHelper.UnsetVariable(clone, environment))
                         {
                             LoggerInstance.Logger.LogError("Failed to unset original variable.");
                         }
@@ -143,17 +148,17 @@ namespace EnvironmentVariablesUILib.Models
                             var backupName = EnvironmentVariablesHelper.GetBackupVariableName(clone, parentProfile.Name);
 
                             // Get backup variable if it exist
-                            var backupVariable = EnvironmentVariablesHelper.GetExisting(backupName);
+                            var backupVariable = EnvironmentVariablesHelper.GetExisting(backupName, environment);
                             if (backupVariable != null)
                             {
                                 var variableToRestore = new Variable(clone.Name, backupVariable.Values, backupVariable.ParentType);
 
-                                if (!EnvironmentVariablesHelper.UnsetBackupVariableWithoutNotify(backupVariable))
+                                if (!EnvironmentVariablesHelper.UnsetBackupVariableWithoutNotify(backupVariable, environment))
                                 {
                                     LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                                 }
 
-                                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToRestore))
+                                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToRestore, environment))
                                 {
                                     LoggerInstance.Logger.LogError("Failed to restore backup variable.");
                                 }
@@ -162,7 +167,7 @@ namespace EnvironmentVariablesUILib.Models
                     }
 
                     // Get existing variable with the same name if it exist
-                    var variableToOverride = EnvironmentVariablesHelper.GetExisting(Name);
+                    var variableToOverride = EnvironmentVariablesHelper.GetExisting(Name, environment);
 
                     // It exists. Rename it to preserve it.
                     if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User && parentProfile != null)
@@ -171,17 +176,17 @@ namespace EnvironmentVariablesUILib.Models
                         variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, parentProfile.Name);
 
                         // Only create a backup variable if there's not one already, to avoid overriding. (solves Path nuking errors, for example, after editing path on an enabled profile)
-                        if (EnvironmentVariablesHelper.GetExisting(variableToOverride.Name) == null)
+                        if (EnvironmentVariablesHelper.GetExisting(variableToOverride.Name, environment) == null)
                         {
                             // Backup the variable
-                            if (!EnvironmentVariablesHelper.SetBackupVariableWithoutNotify(variableToOverride))
+                            if (!EnvironmentVariablesHelper.SetBackupVariableWithoutNotify(variableToOverride, environment))
                             {
                                 LoggerInstance.Logger.LogError("Failed to set backup variable.");
                             }
                         }
                     }
 
-                    if (!EnvironmentVariablesHelper.SetVariable(this))
+                    if (!EnvironmentVariablesHelper.SetVariable(this, environment))
                     {
                         LoggerInstance.Logger.LogError("Failed to set new variable.");
                     }
