@@ -254,6 +254,8 @@ namespace ImageResizer.ViewModels
         [DataRow(InputViewModel.Dimension.Width, 0.0, 0.0, 640.0)]
         [DataRow(InputViewModel.Dimension.Width, 2.54, 2.54, 640.0)]
         [DataRow((InputViewModel.Dimension)99, 300.0, 1024.0, 640.0)]
+        [DataRow(InputViewModel.Dimension.Width, double.NaN, double.NaN, 640.0)]
+        [DataRow(InputViewModel.Dimension.Height, double.NaN, 1024.0, double.NaN)]
         public void EnterCommitsOnlyRequestedDimension(InputViewModel.Dimension dimension, double value, double width, double height)
         {
             var settings = new Settings();
