@@ -22,6 +22,7 @@ constexpr bool FIND_MY_MOUSE_DEFAULT_INCLUDE_WIN_KEY = false;
 constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE = 1000;
 constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_INTERVAL_MS = 1000;
 constexpr int FIND_MY_MOUSE_DEFAULT_SHAKE_FACTOR = 400; // 400 percent
+constexpr bool FIND_MY_MOUSE_DEFAULT_HAPTICS_ENABLED = true;
 
 struct FindMyMouseSettings
 {
@@ -36,6 +37,7 @@ struct FindMyMouseSettings
     int shakeMinimumDistance = FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE;
     int shakeIntervalMs = FIND_MY_MOUSE_DEFAULT_SHAKE_INTERVAL_MS;
     int shakeFactor = FIND_MY_MOUSE_DEFAULT_SHAKE_FACTOR;
+    bool hapticsEnabled = FIND_MY_MOUSE_DEFAULT_HAPTICS_ENABLED;
     std::vector<std::wstring> excludedApps;
 };
 
