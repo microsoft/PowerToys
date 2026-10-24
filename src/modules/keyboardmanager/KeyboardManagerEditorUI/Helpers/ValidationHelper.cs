@@ -42,7 +42,8 @@ namespace KeyboardManagerEditorUI.Helpers
             string appName,
             KeyboardMappingService mappingService,
             bool isEditMode = false,
-            string? editingId = null)
+            string? editingId = null,
+            SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always)
         {
             if (originalKeys == null || originalKeys.Count == 0)
             {
@@ -71,7 +72,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.IllegalShortcut;
             }
 
-            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName, editingId))
+            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName, editingId, condition))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
@@ -95,7 +96,8 @@ namespace KeyboardManagerEditorUI.Helpers
             string appName,
             KeyboardMappingService mappingService,
             bool isEditMode = false,
-            string? editingId = null)
+            string? editingId = null,
+            SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always)
         {
             if (originalKeys == null || originalKeys.Count == 0)
             {
@@ -117,7 +119,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.IllegalShortcut;
             }
 
-            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName, editingId))
+            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName, editingId, condition))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
@@ -206,24 +208,15 @@ namespace KeyboardManagerEditorUI.Helpers
             return ValidateProgramOrUrlMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingId);
         }
 
-        public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService, string appName, string? editingId = null)
-        {
-            string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
-
-            // Only rows that are active belong to the current profile's engine configuration;
-            // inactive ones are retained metadata for other profiles and must not block an edit.
-            int matches = SettingsManager.EditorSettings.ShortcutSettingsDictionary
-                .Where(kvp => kvp.Value.IsActive)
-                .Where(kvp => editingId == null || kvp.Key != editingId)
-                .Count(kvp => KeyboardManagerInterop.AreShortcutsEqual(kvp.Value.Shortcut.OriginalKeys, shortcutKeysString) &&
-                              (string.IsNullOrEmpty(kvp.Value.Shortcut.TargetApp) || string.IsNullOrEmpty(appName) || kvp.Value.Shortcut.TargetApp == appName));
-
-            // With the edited row's identity we exclude exactly that row above, so any remaining match is
-            // a genuine duplicate against a *different* row. Without it, fall back to the old tolerance
-            // (edit mode may still match its own not-yet-excluded row once).
-            int upperLimit = editingId != null ? 0 : (isEditMode ? 1 : 0);
-            return matches > upperLimit;
-        }
+        public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService, string appName, string? editingId = null, SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always) =>
+            DuplicateMappingHelper.IsDuplicateMapping(
+                SettingsManager.EditorSettings.ShortcutSettingsDictionary,
+                BuildKeyCodeString(keys, mappingService),
+                isEditMode,
+                appName,
+                editingId,
+                KeyboardManagerInterop.AreShortcutsEqual,
+                condition);
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
         {
