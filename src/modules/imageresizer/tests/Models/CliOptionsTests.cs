@@ -616,6 +616,16 @@ namespace ImageResizer.Tests.Models
         }
 
         [TestMethod]
+        public void Parse_WithOnlyMixedCasePipe_SetsPipeNameAndKeepsFilesEmpty()
+        {
+            var options = CliOptions.Parse([@"\\.\PiPe\ImageResizerChannel"]);
+
+            Assert.AreEqual("ImageResizerChannel", options.PipeName);
+            Assert.AreEqual(0, options.Files.Count);
+            Assert.AreEqual(0, options.ParseErrors.Count);
+        }
+
+        [TestMethod]
         public void Parse_WithConversionError_PreservesValidDestinationForLenientCallers()
         {
             var options = CliOptions.Parse(["/d", @"C:\Output", "--width", "bad", "good.jpg"]);
