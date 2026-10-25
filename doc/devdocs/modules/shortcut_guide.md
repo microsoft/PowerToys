@@ -45,6 +45,26 @@ The hold duration accepts values from 100 through 5,000 milliseconds and default
 > [!NOTE]
 > When run in debug mode, the window behaves differently than in release mode. It will not automatically close when loosing focus, it will be displayed on top of all other windows, and it is not hidden from the taskbar. 
 
+### Automated UI tests
+
+`src\modules\ShortcutGuide\Tests\ShortcutGuide.UITests` uses the winappcli-based
+`UITestAutomation.Next` framework. Build it with:
+
+```powershell
+tools\build\build.cmd -Path src\modules\ShortcutGuide\Tests\ShortcutGuide.UITests -Platform x64 -Configuration Release
+```
+
+The suite covers Settings navigation and shortcut readout, the enable/disable process lifecycle,
+and shortcut activation, Escape dismissal, disabled-shortcut suppression, and reactivation.
+Shortcut Guide keeps its listener process alive while the overlay is hidden: overlay assertions
+must check visible windows, not process presence. Activation also waits for the search control
+before sending input, because a visible host window can precede initialized content.
+
+Use the `ui-tests-local-vm` and `ui-tests-pipeline-ci` skills for the Windows 10/11 default and
+constrained VM matrix and scoped CI (`[ShortcutGuide.UITests]`). The suite participates in the
+pipeline's shared Runner/Settings companion-signing setup so enable/disable assertions exercise
+the real Release Settings IPC path.
+
 ## Project Structure
 
 The Shortcut Guide module consists of the following 4 projects:
