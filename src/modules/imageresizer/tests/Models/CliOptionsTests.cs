@@ -538,6 +538,33 @@ namespace ImageResizer.Tests.Models
         }
 
         [TestMethod]
+        public void Parse_WithDuplicateOptionLikeFilesBeforeEndOfOptions_ReportsBothErrors()
+        {
+            var options = CliOptions.ParseForCli(["--width", "42", "--echo", "z.png", "--echo", "--", "--echo", "a.jpg"]);
+            var expectedFiles = new[] { "--echo", "z.png", "--echo", "--echo", "a.jpg" };
+
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToArray());
+            Assert.AreEqual(42, options.Width);
+            Assert.IsNull(options.Height);
+            Assert.AreEqual(2, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "--echo");
+            StringAssert.Contains(options.ParseErrors[1], "--echo");
+        }
+
+        [TestMethod]
+        public void Parse_WithDuplicateOptionLikeFilesAfterEndOfOptions_ReportsOnlyUnescapedError()
+        {
+            var options = CliOptions.ParseForCli(["--width", "42", "--echo", "z.png", "--", "--echo", "a.jpg", "--echo"]);
+            var expectedFiles = new[] { "--echo", "z.png", "--echo", "a.jpg", "--echo" };
+
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToArray());
+            Assert.AreEqual(42, options.Width);
+            Assert.IsNull(options.Height);
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], "--echo");
+        }
+
+        [TestMethod]
         public void Parse_LenientModePreservesOptionLikeFileForGui()
         {
             var options = CliOptions.Parse(["--photo.jpg"]);
