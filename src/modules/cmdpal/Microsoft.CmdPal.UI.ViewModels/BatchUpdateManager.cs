@@ -85,17 +85,6 @@ internal static class BatchUpdateManager
             // ApplyPendingUpdates must run on a background thread.
             // The VM itself is responsible for marshaling UI notifications to its _uiScheduler.
             ApplyBatch(drained);
-
-            // Adapter notifications can dirty their wrapped rows. Publish that cascade in
-            // this flush rather than imposing another batch delay on the same change.
-            // One extra snapshot bounds the work if a provider keeps producing updates.
-            drained.Clear();
-            while (DirtyQueue.TryDequeue(out var item))
-            {
-                drained.Add(item);
-            }
-
-            ApplyBatch(drained);
         }
         catch (Exception ex)
         {

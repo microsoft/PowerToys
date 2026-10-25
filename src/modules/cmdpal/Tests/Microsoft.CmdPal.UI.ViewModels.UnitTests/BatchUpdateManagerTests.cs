@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public sealed class BatchUpdateManagerTests
 {
-    private sealed class Target(int requiredApplications = 2) : IBatchUpdateTarget
+    private sealed class Target : IBatchUpdateTarget
     {
         private int _queued;
         private int _applications;
@@ -21,17 +21,15 @@ public sealed class BatchUpdateManagerTests
 
         public TaskCompletionSource<bool> Applied { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public int Applications => Volatile.Read(ref _applications);
-
         public bool TryMarkBatchQueued() => Interlocked.Exchange(ref _queued, 1) == 0;
 
         public void ClearBatchQueued() => Interlocked.Exchange(ref _queued, 0);
 
         public void ApplyPendingUpdates()
         {
-            if (Interlocked.Increment(ref _applications) < requiredApplications)
+            if (Interlocked.Increment(ref _applications) == 1)
             {
-                // Requeueing must survive both the cascade pass and the following timer flush.
+                // An update arriving during a flush must schedule the following batch.
                 BatchUpdateManager.Queue(this);
             }
             else
@@ -50,14 +48,11 @@ public sealed class BatchUpdateManagerTests
     }
 
     [TestMethod]
-    [DataRow(2)]
-    [DataRow(5)]
-    public async Task UpdateDuringFlush_IsDeliveredOnBackgroundThread(int applications)
+    public async Task UpdateDuringFlush_IsDeliveredOnBackgroundThread()
     {
-        var target = new Target(applications);
+        var target = new Target();
         BatchUpdateManager.Queue(target);
 
         Assert.IsTrue(await target.Applied.Task.WaitAsync(TimeSpan.FromSeconds(5)));
-        Assert.AreEqual(applications, target.Applications);
     }
 }
