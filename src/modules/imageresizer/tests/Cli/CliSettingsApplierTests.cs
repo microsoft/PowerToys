@@ -164,6 +164,54 @@ namespace ImageResizer.Tests.Cli
             Assert.AreEqual(expectedHeight, settings.CustomSize.Height);
         }
 
+        [DataTestMethod]
+        [DataRow(800.0, null, 800.0, 0.0)]
+        [DataRow(null, 600.0, 0.0, 600.0)]
+        [DataRow(800.0, 600.0, 800.0, 600.0)]
+        public void Apply_WithDimensionsAndFitButNoUnit_PreservesCustomUnit(
+            double? width, double? height, double expectedWidth, double expectedHeight)
+        {
+            var options = new CliOptions { Width = width, Height = height, Fit = ResizeFit.Fill };
+            var settings = CreateDefaultSettings();
+            settings.CustomSize.Unit = ResizeUnit.Inch;
+            settings.CustomSize.Fit = ResizeFit.Stretch;
+            settings.CustomSize.Width = 321.5;
+            settings.CustomSize.Height = 123.5;
+            settings.SelectedSizeIndex = 2;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(ResizeUnit.Inch, settings.CustomSize.Unit);
+            Assert.AreEqual(ResizeFit.Fill, settings.CustomSize.Fit);
+            Assert.AreEqual(expectedWidth, settings.CustomSize.Width);
+            Assert.AreEqual(expectedHeight, settings.CustomSize.Height);
+            Assert.AreEqual(7, settings.SelectedSizeIndex);
+        }
+
+        [DataTestMethod]
+        [DataRow(800.0, null, 800.0, 0.0)]
+        [DataRow(null, 600.0, 0.0, 600.0)]
+        [DataRow(800.0, 600.0, 800.0, 600.0)]
+        public void Apply_WithDimensionsAndUnitButNoFit_PreservesCustomFit(
+            double? width, double? height, double expectedWidth, double expectedHeight)
+        {
+            var options = new CliOptions { Width = width, Height = height, Unit = ResizeUnit.Pixel };
+            var settings = CreateDefaultSettings();
+            settings.CustomSize.Unit = ResizeUnit.Inch;
+            settings.CustomSize.Fit = ResizeFit.Stretch;
+            settings.CustomSize.Width = 321.5;
+            settings.CustomSize.Height = 123.5;
+            settings.SelectedSizeIndex = 2;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(ResizeUnit.Pixel, settings.CustomSize.Unit);
+            Assert.AreEqual(ResizeFit.Stretch, settings.CustomSize.Fit);
+            Assert.AreEqual(expectedWidth, settings.CustomSize.Width);
+            Assert.AreEqual(expectedHeight, settings.CustomSize.Height);
+            Assert.AreEqual(7, settings.SelectedSizeIndex);
+        }
+
         [TestMethod]
         public void Apply_WithValidSizeIndex_SetsSelectedSizeIndex()
         {
