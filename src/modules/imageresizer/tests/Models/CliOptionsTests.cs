@@ -106,6 +106,34 @@ namespace ImageResizer.Tests.Models
             Assert.AreEqual(2, options.SizeIndex);
         }
 
+        [DataTestMethod]
+        [DataRow(0)]
+        [DataRow(int.MaxValue)]
+        public void Parse_WithSizeIndexBoundary_AcceptsValue(int sizeIndex)
+        {
+            var expectedFiles = new[] { "z.png", "a.jpg" };
+            var options = CliOptions.ParseForCli(["--size", sizeIndex.ToString(CultureInfo.InvariantCulture), "--width", "42", "z.png", "a.jpg"]);
+
+            Assert.AreEqual(sizeIndex, options.SizeIndex);
+            Assert.AreEqual(42.0, options.Width);
+            Assert.IsNull(options.Height);
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToArray());
+        }
+
+        [TestMethod]
+        public void Parse_WithNegativeSizeIndex_ReturnsErrorAndPreservesOtherInputs()
+        {
+            var expectedFiles = new[] { "z.png", "a.jpg" };
+            var options = CliOptions.ParseForCli(["--size", (-1).ToString(CultureInfo.InvariantCulture), "--width", "42", "z.png", "a.jpg"]);
+
+            Assert.IsNull(options.SizeIndex);
+            Assert.AreEqual(42.0, options.Width);
+            Assert.IsNull(options.Height);
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToArray());
+        }
+
         [TestMethod]
         public void Parse_WithShrinkOnly_SetsShrinkOnly()
         {
