@@ -13,7 +13,7 @@ internal static class TestHelper
     internal const string ShortcutGuideProcess = "PowerToys.ShortcutGuide";
     internal const string ModuleSettingsKey = "Shortcut Guide";
 
-    // VK_OEM_2 is the default Shortcut Guide shortcut's slash key on the test desktop.
+    // The prepared UI-test desktop uses en-US; the displayed OEM key name is layout-dependent.
     private const Key SlashKey = (Key)0xBF;
 
     internal static void Step(UITestBase testBase, string message) =>
@@ -55,6 +55,11 @@ internal static class TestHelper
 
     internal static Key[] ReadActivationShortcut(UITestBase testBase)
     {
+        var languageId = System.Windows.Forms.InputLanguage.CurrentInputLanguage.Handle.ToInt64() & 0xFFFF;
+        Assert.AreEqual(
+            0x0409L,
+            languageId,
+            $"Shortcut Guide UI tests require the en-US keyboard layout (0x0409), but the active layout is 0x{languageId:X4}.");
         Step(testBase, "Reading the activation shortcut from Settings.");
         var button = testBase.Session.Find<Button>(By.AccessibilityId("EditButton"), 5_000);
         var shortcutText = button.HelpText;
@@ -80,8 +85,8 @@ internal static class TestHelper
             WaitForOverlay(visible: true, timeoutMS: 5_000);
         }
 
-        Assert.IsTrue(IsOverlayVisible(), $"Shortcut Guide overlay never appeared. {GetDiagnostics()}");
-        var window = GetOverlayWindows().First(IsVisibleOverlay);
+        var window = GetOverlayWindows().FirstOrDefault(IsVisibleOverlay);
+        Assert.AreNotEqual(IntPtr.Zero, window.Hwnd, $"Shortcut Guide overlay never appeared or hid before inspection. {GetDiagnostics()}");
         Step(testBase, $"Waiting for overlay HWND={window.Hwnd} and its search control.");
         var overlay = WindowsFinder.WaitForWindowByApp(
             ShortcutGuideProcess,
@@ -127,6 +132,22 @@ internal static class TestHelper
             timeoutMS,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 100).Succeeded;
+
+    internal static void VerifyHiddenOverlay(UITestBase testBase)
+    {
+        Step(testBase, "Waiting for the overlay host to exist and remain hidden for one second.");
+        var result = WaitHelper.WaitForStable(
+            GetOverlayWindows,
+            windows => windows is not null &&
+                windows.Any(IsOverlayHost) &&
+                !windows.Any(IsVisibleOverlay),
+            timeoutMS: 30_000,
+            requiredConsecutiveMatches: 11,
+            pollIntervalMS: 100);
+        Assert.IsTrue(
+            result.Succeeded,
+            $"Enabling Shortcut Guide did not initialize a consistently hidden overlay host. {GetDiagnostics()}");
+    }
 
     internal static bool WaitForProcess(bool running, int timeoutMS = 15_000) =>
         WaitHelper.WaitForStable(
@@ -194,8 +215,11 @@ internal static class TestHelper
     private static IReadOnlyList<WindowControl.ProcessWindow> GetOverlayWindows() =>
         WindowControl.EnumerateProcessWindows(GetProcessIds());
 
+    private static bool IsOverlayHost(WindowControl.ProcessWindow window) =>
+        window.Width > 300 && window.Height > 300;
+
     private static bool IsVisibleOverlay(WindowControl.ProcessWindow window) =>
-        window.IsVisible && window.Width > 300 && window.Height > 300 && !WindowHelper.IsWindowCloaked(window.Hwnd);
+        IsOverlayHost(window) && window.IsVisible && !WindowHelper.IsWindowCloaked(window.Hwnd);
 
     private static bool IsOverlayVisible() => GetOverlayWindows().Any(IsVisibleOverlay);
 

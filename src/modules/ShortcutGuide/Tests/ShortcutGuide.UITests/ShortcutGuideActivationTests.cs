@@ -10,6 +10,8 @@ namespace Microsoft.ShortcutGuide.UITests;
 [TestClass]
 public class ShortcutGuideActivationTests : UITestBase
 {
+    private bool? originalEnabled;
+
     public ShortcutGuideActivationTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: [TestHelper.ModuleSettingsKey])
     {
@@ -18,33 +20,33 @@ public class ShortcutGuideActivationTests : UITestBase
     [TestMethod]
     [TestCategory("ShortcutGuide")]
     [TestCategory("Activation")]
-    public async Task ActivationShortcutShowsAndDismissesOverlay()
+    public void ActivationShortcutShowsAndDismissesOverlay()
     {
         TestHelper.NavigateToSettingsPage(this);
-        var originalEnabled = TestHelper.GetEnableToggle(this).IsOn;
+        originalEnabled = TestHelper.GetEnableToggle(this).IsOn;
 
-        try
+        TestHelper.SetEnabled(this, enabled: true);
+        var keys = TestHelper.ReadActivationShortcut(this);
+        TestHelper.VerifyHiddenOverlay(this);
+
+        var overlay = TestHelper.ActivateOverlay(this, keys);
+        TestHelper.DismissOverlay(this, overlay);
+
+        TestHelper.SetEnabled(this, enabled: false);
+        TestHelper.VerifyDisabledShortcut(this, keys);
+
+        TestHelper.SetEnabled(this, enabled: true);
+        overlay = TestHelper.ActivateOverlay(this, keys);
+        TestHelper.DismissOverlay(this, overlay);
+    }
+
+    [TestCleanup]
+    public async Task Cleanup()
+    {
+        await CaptureFailureArtifactsBeforeCleanupAsync();
+        if (originalEnabled.HasValue)
         {
-            TestHelper.SetEnabled(this, enabled: true);
-            var keys = TestHelper.ReadActivationShortcut(this);
-            Assert.IsTrue(
-                TestHelper.WaitForOverlay(visible: false),
-                "Enabling Shortcut Guide must not display the overlay before its shortcut is pressed.");
-
-            var overlay = TestHelper.ActivateOverlay(this, keys);
-            TestHelper.DismissOverlay(this, overlay);
-
-            TestHelper.SetEnabled(this, enabled: false);
-            TestHelper.VerifyDisabledShortcut(this, keys);
-
-            TestHelper.SetEnabled(this, enabled: true);
-            overlay = TestHelper.ActivateOverlay(this, keys);
-            TestHelper.DismissOverlay(this, overlay);
-        }
-        finally
-        {
-            await CaptureFailureArtifactsBeforeCleanupAsync();
-            TestHelper.CleanupTest(this, originalEnabled);
+            TestHelper.CleanupTest(this, originalEnabled.Value);
         }
     }
 }

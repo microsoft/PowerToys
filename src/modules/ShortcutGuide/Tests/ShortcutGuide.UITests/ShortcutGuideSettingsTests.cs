@@ -10,6 +10,8 @@ namespace Microsoft.ShortcutGuide.UITests;
 [TestClass]
 public class ShortcutGuideSettingsTests : UITestBase
 {
+    private bool? originalEnabled;
+
     public ShortcutGuideSettingsTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: [TestHelper.ModuleSettingsKey])
     {
@@ -28,24 +30,24 @@ public class ShortcutGuideSettingsTests : UITestBase
     [TestMethod]
     [TestCategory("ShortcutGuide")]
     [TestCategory("Settings")]
-    public async Task ToggleEnablesAndDisablesProcess()
+    public void ToggleEnablesAndDisablesProcess()
     {
         TestHelper.NavigateToSettingsPage(this);
-        var originalEnabled = TestHelper.GetEnableToggle(this).IsOn;
+        originalEnabled = TestHelper.GetEnableToggle(this).IsOn;
 
-        try
+        TestHelper.SetEnabled(this, enabled: true);
+        TestHelper.SetEnabled(this, enabled: false);
+        TestHelper.SetEnabled(this, enabled: true);
+        TestHelper.VerifyHiddenOverlay(this);
+    }
+
+    [TestCleanup]
+    public async Task Cleanup()
+    {
+        await CaptureFailureArtifactsBeforeCleanupAsync();
+        if (originalEnabled.HasValue)
         {
-            TestHelper.SetEnabled(this, enabled: true);
-            TestHelper.SetEnabled(this, enabled: false);
-            TestHelper.SetEnabled(this, enabled: true);
-            Assert.IsTrue(
-                TestHelper.WaitForOverlay(visible: false),
-                "Re-enabling Shortcut Guide should start its listener without displaying the overlay.");
-        }
-        finally
-        {
-            await CaptureFailureArtifactsBeforeCleanupAsync();
-            TestHelper.CleanupTest(this, originalEnabled);
+            TestHelper.CleanupTest(this, originalEnabled.Value);
         }
     }
 }

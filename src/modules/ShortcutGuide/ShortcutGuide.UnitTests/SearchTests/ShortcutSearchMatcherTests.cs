@@ -143,6 +143,7 @@ public sealed class ShortcutSearchMatcherTests
     [TestMethod]
     [DataRow("Back", "<Backspace>")]
     [DataRow("Backspace", "<Backspace>")]
+    [DataRow("Backspace", "Back")]
     [DataRow("Enter", "<Enter>")]
     [DataRow(">", "<GreaterThan>")]
     public void Matches_SpecialKeyLabel_ReturnsTrue(string query, string key)
@@ -166,9 +167,9 @@ public sealed class ShortcutSearchMatcherTests
     }
 
     [TestMethod]
-    public void Matches_GenericAngleBracketKey_StripsAngleBrackets()
+    public void Matches_GenericAngleBracketKey_MatchesInnerName()
     {
-        // A key like "<Space>" that is not specially handled falls back to stripping the brackets.
+        // The key's inner name remains searchable through the public matching API.
         var shortcut = CreateShortcut(
             shortcutDescriptions: [new ShortcutDescription(false, false, false, false, ["<Space>"])]);
 

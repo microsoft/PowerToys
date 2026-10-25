@@ -15,9 +15,10 @@ public sealed class ShortcutEntryTests
     [TestMethod]
     public void Equals_IdenticalEntries_ReturnsTrue()
     {
-        var desc = new ShortcutDescription(ctrl: true, shift: false, alt: false, win: true, keys: ["S"]);
-        var a = new ShortcutEntry("Open settings", "Configure", false, [desc]);
-        var b = new ShortcutEntry("Open settings", "Configure", false, [desc]);
+        var descA = new ShortcutDescription(ctrl: true, shift: false, alt: false, win: true, keys: ["S"]);
+        var descB = new ShortcutDescription(ctrl: true, shift: false, alt: false, win: true, keys: ["S"]);
+        var a = new ShortcutEntry("Open settings", "Configure", false, [descA]);
+        var b = new ShortcutEntry("Open settings", "Configure", false, [descB]);
 
         Assert.IsTrue(a.Equals(b));
     }
@@ -109,9 +110,10 @@ public sealed class ShortcutEntryTests
     [TestMethod]
     public void GetHashCode_EqualEntries_ProduceSameHashCode()
     {
-        var desc = new ShortcutDescription(ctrl: true, shift: false, alt: false, win: false, keys: ["T"]);
-        var a = new ShortcutEntry("Task", "Do it", false, [desc]);
-        var b = new ShortcutEntry("Task", "Do it", false, [desc]);
+        var descA = new ShortcutDescription(ctrl: true, shift: false, alt: false, win: false, keys: ["T"]);
+        var descB = new ShortcutDescription(ctrl: true, shift: false, alt: false, win: false, keys: ["T"]);
+        var a = new ShortcutEntry("Task", "Do it", false, [descA]);
+        var b = new ShortcutEntry("Task", "Do it", false, [descB]);
 
         Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
     }
