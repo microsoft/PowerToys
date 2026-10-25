@@ -178,6 +178,16 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
+                SessionPolicy.Initialize(
+                    serviceMode,
+                    runningAsSystem,
+                    WinAPI.GetMyDesktop(),
+                    Setting.Values.AllowNonConsoleSessions);
+                if (SessionPolicy.Current.AllowNonConsole)
+                {
+                    Logger.Log("Non-console session support enabled. An active user Default desktop is still required; service, System, and secure-desktop scenarios are not supported.");
+                }
+
                 PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersStartedEvent());
 
                 try
@@ -276,7 +286,7 @@ namespace MouseWithoutBorders.Class
 
             void Shutdown();
 
-            void Reconnect();
+            Task Reconnect();
 
             Task<string> GenerateNewKey();
 
@@ -284,7 +294,7 @@ namespace MouseWithoutBorders.Class
 
             Task ConnectToMachine(string machineName, string securityKey);
 
-            void RestoreSecurityKey(string previousSecurityKey);
+            Task RestoreSecurityKey(string previousSecurityKey);
 
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
@@ -336,29 +346,6 @@ namespace MouseWithoutBorders.Class
                 return Task.FromResult(key);
             }
 
-            public void RestoreSecurityKey(string previousSecurityKey)
-            {
-                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
-                if (string.IsNullOrEmpty(previousSecurityKey) || Setting.Values.MyKey == previousSecurityKey)
-                {
-                    return;
-                }
-
-                Setting.Values.PauseInstantSaving = true;
-                try
-                {
-                    Setting.Values.MyKey = previousSecurityKey;
-                    Encryption.MyKey = previousSecurityKey;
-                    Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
-                }
-                finally
-                {
-                    Setting.Values.PauseInstantSaving = false;
-                }
-
-                Setting.Values.SaveSettings();
-            }
-
             public Task ConnectToMachine(string pcName, string securityKey)
             {
                 EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
@@ -397,7 +384,7 @@ namespace MouseWithoutBorders.Class
                 return Task.CompletedTask;
             }
 
-            public Task<string> GenerateNewKey()
+            public async Task<string> GenerateNewKey()
             {
                 EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
                 Setting.Values.PauseInstantSaving = true;
@@ -418,12 +405,11 @@ namespace MouseWithoutBorders.Class
 
                 Setting.Values.SaveSettings();
 
-                Reconnect();
-
-                return Task.FromResult(key);
+                await Reconnect();
+                return key;
             }
 
-            public void Reconnect()
+            public Task Reconnect()
             {
                 SocketStuff.InvalidKeyFound = false;
                 InitAndCleanup.ReopenSocketDueToReadError = true;
@@ -441,6 +427,31 @@ namespace MouseWithoutBorders.Class
                 }
 
                 MachineStuff.SendMachineMatrix();
+                return Task.CompletedTask;
+            }
+
+            public Task RestoreSecurityKey(string previousSecurityKey)
+            {
+                EnsurePairingOperationAuthorized(Settings.IsProtectedMode, _canManageServicePairing);
+                if (string.IsNullOrEmpty(previousSecurityKey) || Setting.Values.MyKey == previousSecurityKey)
+                {
+                    return Task.CompletedTask;
+                }
+
+                Setting.Values.PauseInstantSaving = true;
+                try
+                {
+                    Setting.Values.MyKey = previousSecurityKey;
+                    Encryption.MyKey = previousSecurityKey;
+                    Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
+                }
+                finally
+                {
+                    Setting.Values.PauseInstantSaving = false;
+                }
+
+                Setting.Values.SaveSettings();
+                return Task.CompletedTask;
             }
 
             public void Shutdown()

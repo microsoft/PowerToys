@@ -8,6 +8,7 @@ using System.IO.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -30,9 +31,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private const string PowerToyName = "MouseWithoutBorders";
 
-        private const string CopyGlyph = "";
+        private const string CopyGlyph = "\uE8C8";
 
-        private const string CopiedGlyph = "";
+        private const string CopiedGlyph = "\uE73E";
 
         private MouseWithoutBordersViewModel ViewModel { get; set; }
 
@@ -78,6 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     ConnectSecurityKeyTextBox.Text = string.Empty;
                     ClearFieldError(ConnectPCNameTextBox);
                     ClearFieldError(ConnectSecurityKeyTextBox);
+                    ViewModel.ConnectFieldsVisible = false;
                 });
             };
 
@@ -106,6 +108,38 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             textBox.ClearValue(Control.BorderBrushProperty);
             textBox.ClearValue(Control.BorderThicknessProperty);
             ToolTipService.SetToolTip(textBox, null);
+        }
+
+        private static async Task FlashRequiredFieldsAsync(List<TextBox> textBoxes)
+        {
+            var flashBrush = new SolidColorBrush(Colors.Red);
+            var originalBrushes = new Brush[textBoxes.Count];
+            var originalThicknesses = new Thickness[textBoxes.Count];
+
+            for (int i = 0; i < textBoxes.Count; i++)
+            {
+                originalBrushes[i] = textBoxes[i].BorderBrush;
+                originalThicknesses[i] = textBoxes[i].BorderThickness;
+            }
+
+            for (int flash = 0; flash < 3; flash++)
+            {
+                foreach (var textBox in textBoxes)
+                {
+                    textBox.BorderBrush = flashBrush;
+                    textBox.BorderThickness = new Thickness(2);
+                }
+
+                await Task.Delay(150);
+
+                for (int i = 0; i < textBoxes.Count; i++)
+                {
+                    textBoxes[i].BorderBrush = originalBrushes[i];
+                    textBoxes[i].BorderThickness = originalThicknesses[i];
+                }
+
+                await Task.Delay(150);
+            }
         }
 
         private void OnConfigFileUpdate()
@@ -217,9 +251,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             e.AcceptedOperation = DataPackageOperation.Move;
         }
 
+        public ICommand ShowConnectFieldsCommand => new RelayCommand(ShowConnectFields);
+
         public ICommand ConnectCommand => new AsyncCommand(Connect);
 
-        public ICommand GenerateNewKeyCommand => new AsyncCommand(ViewModel.SubmitNewKeyRequestAsync);
+        public ICommand GenerateNewKeyCommand => new AsyncCommand(() => TryExecuteSettingsCommandAsync(ViewModel.SubmitNewKeyRequestAsync, SetSettingsSyncErrorVisibility));
 
         public ICommand CopyPCNameCommand => new RelayCommand(() =>
         {
@@ -256,7 +292,39 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             FontFamily = (FontFamily)Application.Current.Resources["SymbolThemeFontFamily"],
         };
 
-        public ICommand ReconnectCommand => new AsyncCommand(ViewModel.SubmitReconnectRequestAsync);
+        public ICommand ReconnectCommand => new AsyncCommand(() => TryExecuteSettingsCommandAsync(ViewModel.SubmitReconnectRequestAsync, SetSettingsSyncErrorVisibility));
+
+        private void ShowConnectFields()
+        {
+            if (ViewModel.CanConnectPairing)
+            {
+                ViewModel.ConnectFieldsVisible = true;
+            }
+        }
+
+        internal static async Task<bool> TryExecuteSettingsCommandAsync(Func<Task> command, Action<bool> setErrorVisible, Action onSuccess = null)
+        {
+            setErrorVisible(false);
+            try
+            {
+                await command();
+            }
+            catch (Exception ex)
+            {
+                // Remote exception messages can contain the submitted security key.
+                Logger.LogError($"Mouse Without Borders Settings command failed ({ex.GetType().Name}).");
+                setErrorVisible(true);
+                return false;
+            }
+
+            onSuccess?.Invoke();
+            return true;
+        }
+
+        private void SetSettingsSyncErrorVisibility(bool visible)
+        {
+            SettingsSyncErrorInfoBar.IsOpen = visible;
+        }
 
         private async Task Connect()
         {
@@ -287,38 +355,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // (ConnectionSucceeded event), so a failed attempt keeps the values and
             // surfaces an error instead of silently wiping what the user typed.
             _ = await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
-        }
-
-        private static async Task FlashRequiredFieldsAsync(List<TextBox> textBoxes)
-        {
-            var flashBrush = new SolidColorBrush(Colors.Red);
-            var originalBrushes = new Brush[textBoxes.Count];
-            var originalThicknesses = new Thickness[textBoxes.Count];
-
-            for (int i = 0; i < textBoxes.Count; i++)
-            {
-                originalBrushes[i] = textBoxes[i].BorderBrush;
-                originalThicknesses[i] = textBoxes[i].BorderThickness;
-            }
-
-            for (int flash = 0; flash < 3; flash++)
-            {
-                foreach (var textBox in textBoxes)
-                {
-                    textBox.BorderBrush = flashBrush;
-                    textBox.BorderThickness = new Thickness(2);
-                }
-
-                await Task.Delay(150);
-
-                for (int i = 0; i < textBoxes.Count; i++)
-                {
-                    textBoxes[i].BorderBrush = originalBrushes[i];
-                    textBoxes[i].BorderThickness = originalThicknesses[i];
-                }
-
-                await Task.Delay(150);
-            }
         }
 
         private async void ServiceMode_Toggled(object sender, RoutedEventArgs e)

@@ -234,9 +234,9 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var source = ReadSource(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs");
         StringAssert.Contains(source, "PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value)");
         StringAssert.Contains(source, "public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);");
-        StringAssert.Contains(source, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(TimeSpan.FromSeconds(10));");
+        StringAssert.Contains(source, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(SettingsSyncRequests.Timeout);");
         StringAssert.Contains(source, "_servicePairingKey = useService ? generatedKey : null;");
-        StringAssert.Contains(source, "await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(TimeSpan.FromSeconds(10));");
+        StringAssert.Contains(source, "await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(SettingsSyncRequests.Timeout);");
         StringAssert.Contains(source.Replace("\r\n", "\n"), "_servicePairingKey = useService ? securityKey : null;\n                    OnPropertyChanged(nameof(SecurityKey));");
         StringAssert.Contains(source, "public async Task<bool> SubmitConnectionRequestAsync(string pcName, string securityKey)");
         StringAssert.Contains(source, "pcName = pcName?.Trim();");
@@ -262,17 +262,43 @@ public sealed class MouseWithoutBordersPairingPresentationTests
             """
             private async Task Connect()
                     {
-                        var pcName = ConnectPCNameTextBox.Text;
-                        var securityKey = ConnectSecurityKeyTextBox.Text.Trim();
-                        if (await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey))
+                        var emptyFields = new List<TextBox>();
+                        if (ConnectSecurityKeyTextBox.Text.Length == 0)
                         {
-                            ConnectPCNameTextBox.Text = string.Empty;
-                            ConnectSecurityKeyTextBox.Text = string.Empty;
-                            ViewModel.ConnectFieldsVisible = false;
+                            emptyFields.Add(ConnectSecurityKeyTextBox);
                         }
+
+                        if (ConnectPCNameTextBox.Text.Length == 0)
+                        {
+                            emptyFields.Add(ConnectPCNameTextBox);
+                        }
+
+                        if (emptyFields.Count != 0)
+                        {
+                            await FlashRequiredFieldsAsync(emptyFields);
+                            return;
+                        }
+
+                        ClearFieldError(ConnectPCNameTextBox);
+                        ClearFieldError(ConnectSecurityKeyTextBox);
+
+                        string pcName = ConnectPCNameTextBox.Text;
+                        string securityKey = ConnectSecurityKeyTextBox.Text.Trim();
+
+                        // Fields are cleared only once ViewModel confirms the connection succeeded
+                        // (ConnectionSucceeded event), so a failed attempt keeps the values and
+                        // surfaces an error instead of silently wiping what the user typed.
+                        _ = await ViewModel.SubmitConnectionRequestAsync(pcName, securityKey);
                     }
             """.Replace("\r\n", "\n"),
             page.Substring(start, end - start).Trim());
+
+        // The fields are cleared and hidden only once the remote device has actually connected.
+        var succeededStart = page.IndexOf("ViewModel.ConnectionSucceeded += (s, e) =>", StringComparison.Ordinal);
+        var succeeded = page.Substring(succeededStart, page.IndexOf("ViewModel.ConnectionFailed += (s, e) =>", succeededStart, StringComparison.Ordinal) - succeededStart);
+        StringAssert.Contains(succeeded, "ConnectPCNameTextBox.Text = string.Empty;");
+        StringAssert.Contains(succeeded, "ConnectSecurityKeyTextBox.Text = string.Empty;");
+        StringAssert.Contains(succeeded, "ViewModel.ConnectFieldsVisible = false;");
         var clearStart = page.IndexOf("private void ClearPairingUI()", end, StringComparison.Ordinal);
         var clear = page.Substring(clearStart, page.IndexOf("public void RefreshEnabledState()", clearStart, StringComparison.Ordinal) - clearStart);
         StringAssert.Contains(clear, "ViewModel.ResetPairingUiState();");
@@ -306,7 +332,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var end = source.IndexOf("public async Task<bool> SubmitConnectionRequestAsync(", start, StringComparison.Ordinal);
         var request = source.Substring(start, end - start);
         var initialGuard = request.IndexOf("if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)", StringComparison.Ordinal);
-        var semaphore = request.IndexOf("using (await _ipcSemaphore.EnterAsync())", StringComparison.Ordinal);
+        var semaphore = request.IndexOf("using (await SettingsSyncRequests.Semaphore.EnterAsync())", StringComparison.Ordinal);
         var roleGuard = request.IndexOf("if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)", semaphore, StringComparison.Ordinal);
         var read = request.IndexOf("var key = await readPairingKey();", StringComparison.Ordinal);
         var resultGuard = request.IndexOf("if (_disposed || !IsEnabled || UseService != useService || !IsElevated)", StringComparison.Ordinal);
@@ -431,7 +457,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var generateStart = source.IndexOf("public async Task SubmitNewKeyRequestAsync()", StringComparison.Ordinal);
         var loadStart = source.IndexOf("public async Task LoadPairingKeyAsync()", generateStart, StringComparison.Ordinal);
         var generate = source.Substring(generateStart, loadStart - generateStart);
-        StringAssert.Contains(generate, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(TimeSpan.FromSeconds(10));");
+        StringAssert.Contains(generate, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(SettingsSyncRequests.Timeout);");
         StringAssert.Contains(generate, "_servicePairingKey = useService ? generatedKey : null;\n                    OnPropertyChanged(nameof(SecurityKey));");
         var reloadStart = source.IndexOf("public bool LoadUpdatedSettings()", StringComparison.Ordinal);
         var reloadEnd = source.IndexOf("private void SendCustomAction(", reloadStart, StringComparison.Ordinal);
@@ -454,7 +480,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
 
     [DataTestMethod]
     [DataRow("public Task ConnectToMachine(", "Setting.Values.MyKey = securityKey;")]
-    [DataRow("public Task<string> GenerateNewKey()", "Setting.Values.MyKey = key;")]
+    [DataRow("public async Task<string> GenerateNewKey()", "Setting.Values.MyKey = key;")]
     public void PairingRequestSourceContractProtectsKeyBeforeChangingOtherState(string signature, string assignment)
     {
         var source = ReadSource(@"src\modules\MouseWithoutBorders\App\Class\Program.cs");
