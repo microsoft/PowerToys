@@ -264,9 +264,7 @@ public class MousePointerCrosshairsTests : UITestBase
 
     private void AssertAutoHideInteraction(bool autoHide)
     {
-        MouseUtilsTestHelper.ReplaceModuleSettings(
-            "AutoHideCursor",
-            """
+        const string settings = """
             {
               "name": "AutoHideCursor", "version": "1.0",
               "properties": {
@@ -275,7 +273,8 @@ public class MousePointerCrosshairsTests : UITestBase
                 "idle_delay_ms": { "value": 3000 }
               }
             }
-            """);
+            """;
+        MouseUtilsTestHelper.ReplaceModuleSettings("AutoHideCursor", settings);
         RestartScope(enableModules: new[] { ModuleName, "AutoHideCursor" });
         WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
         var (x, y) = WindowHelper.GetScreenCenter();
