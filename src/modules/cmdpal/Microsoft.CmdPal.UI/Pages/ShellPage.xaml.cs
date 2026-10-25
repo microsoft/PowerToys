@@ -9,6 +9,7 @@ using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
@@ -46,27 +47,21 @@ namespace Microsoft.CmdPal.UI.Pages;
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
-    IRecipient<NavigateBackMessage>,
     IRecipient<OpenSettingsMessage>,
     IRecipient<HotkeySummonMessage>,
-    IRecipient<FocusSearchBoxMessage>,
-    IRecipient<ShowDetailsMessage>,
-    IRecipient<HideDetailsMessage>,
     IRecipient<ClearSearchMessage>,
     IRecipient<LaunchUriMessage>,
     IRecipient<SettingsWindowClosedMessage>,
-    IRecipient<GoHomeMessage>,
-    IRecipient<GoBackMessage>,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ExternalCommandLinkRequestedMessage>,
     IRecipient<ShowToastMessage>,
-    IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
     IRecipient<FocusDockMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
-    IRecipient<ClosePaletteContextMenuMessage>,
+    IContextMenuOwner,
     INotifyPropertyChanged,
+    ISearchBarHost,
     IDisposable
 {
     private const double QuickAccessShelfButtonWidth = 40;
@@ -95,6 +90,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly ISettingsService _settingsService;
     private readonly ShellContentDialogHost _dialogHost;
     private readonly ExternalCommandLinkCoordinator _externalCommandLinks;
+
+    private readonly PageInteractionCoordinator _pageInteractions;
 
     private readonly IContextMenuFactory _contextMenuFactory;
 
@@ -139,11 +136,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // The keyboard hook reads this synchronously, so update it only when XAML focus changes.
     private bool _canHandleAccessKeys = true;
     private bool _isDisposed;
+    private IListInteractionSource? _listInteractionSource;
+
+    public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
+
     private IHostWindow? _hostWindow;
 
     public ShellViewModel ViewModel { get; private set; }
 
     public QuickAccessShelfViewModel QuickAccessShelf { get; }
+
+    bool ISearchBarHost.CanFocusSearchBar => HostWindow?.IsVisibleToUser == true;
 
     public IHostWindow? HostWindow
     {
@@ -233,6 +236,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         QuickAccessShelf.RebuildCompleted += QuickAccessShelf_RebuildCompleted;
 
         this.InitializeComponent();
+        _pageInteractions = new(MainCommandBar);
+        _pageInteractions.DetailsChanged += PageInteractions_DetailsChanged;
+        _pageInteractions.FocusSearchRequested += PageInteractions_FocusSearchRequested;
+        _pageInteractions.DragStateChanged += PageInteractions_DragStateChanged;
+        SearchBox.BackRequested += SearchBox_BackRequested;
+        SearchBox.NavigationRequested += SearchBox_NavigationRequested;
+        FiltersDropDown.FocusSearchRequested += FiltersDropDown_FocusSearchRequested;
+        ViewModel.PageNavigationRequested += ViewModel_PageNavigationRequested;
+        ViewModel.GoHomeRequested += ViewModel_GoHomeRequested;
+        ViewModel.GoBackRequested += ViewModel_GoBackRequested;
         SearchBox.AdditionalContextMenuItemsFactory = CreateSearchBoxContextMenuItems;
         SearchBox.SearchTextChanging += SearchBox_SearchTextChanging;
         QuickAccessShelf.VisibleItems.CollectionChanged += QuickAccessShelfVisibleItems_CollectionChanged;
@@ -242,37 +255,29 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _dialogHost = new ShellContentDialogHost(this, SetContentDialogMode);
         _externalCommandLinks = externalCommandLinkCoordinatorFactory.Create(_dialogHost, DispatcherQueue);
         _itemActions = new ItemActionController(
-            () => ViewModel.CurrentCommandContext,
+            () => _pageInteractions.CurrentCommandContext,
             () => IsLoaded && ItemActionsAllowed && !IsContentDialogActive,
             new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout),
             WeakReferenceMessenger.Default);
+        MainCommandBar.ContextMenuOwner = this;
 
         // how we are doing navigation around
-        WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<HotkeySummonMessage>(this);
-        WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<SettingsWindowClosedMessage>(this);
-
-        WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(this);
-        WeakReferenceMessenger.Default.Register<HideDetailsMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<LaunchUriMessage>(this);
 
-        WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
-        WeakReferenceMessenger.Default.Register<GoBackMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ExternalCommandLinkRequestedMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
-        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusDockMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
-        WeakReferenceMessenger.Default.Register<ClosePaletteContextMenuMessage>(this);
 
         // The compact-mode setting can be toggled while the palette is open. React to the
         // hot-reload so the expanded/collapsed layout updates immediately instead of waiting
@@ -297,13 +302,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _quickAccessShelfChangeOrderDragCaption = ResourceLoaderInstance.GetString("QuickAccessShelfChangeOrderDragCaption");
     }
 
-    public void Receive(NavigateBackMessage message)
+    private void HandleNavigateBack(bool fromBackspace = false)
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         if (RootFrame.CanGoBack)
         {
-            if (!message.FromBackspace ||
+            if (!fromBackspace ||
                 settings.BackspaceGoesBack)
             {
                 GoBack();
@@ -311,7 +316,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
         else
         {
-            if (!message.FromBackspace)
+            if (!fromBackspace)
             {
                 // If we can't go back then we must be at the top and thus escape again should quit.
                 WeakReferenceMessenger.Default.Send(new DismissMessage());
@@ -321,13 +326,21 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    public void Receive(NavigateToPageMessage message)
+    private void ViewModel_PageNavigationRequested(object? sender, PageNavigationRequestedEventArgs message)
     {
         // TODO GH #526 This needs more better locking too
         _ = _queue.TryEnqueue(DispatcherQueuePriority.High, () =>
         {
+            if (message.CancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             // Also hide our details pane about here, if we had one
             HideDetails();
+            MainCommandBar.CloseContextMenu();
+            _pageInteractions.AttachPage(message.Page);
+            AttachInteractionTarget(null);
 
             // Navigate to the appropriate host page for that VM
             RootFrame.Navigate(
@@ -563,14 +576,29 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _settingsWindow.Navigate(message);
     }
 
-    public void Receive(ShowDetailsMessage message)
+    private void PageInteractions_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
     {
-        if (ViewModel is null || ViewModel.CurrentPage is null)
+        var sourcePage = _pageInteractions.CurrentPage;
+        if (e.Details is null)
         {
+            _debounceTimer.Debounce(
+                () =>
+                {
+                    if (ReferenceEquals(sourcePage, _pageInteractions.CurrentPage))
+                    {
+                        HideDetails();
+                    }
+                },
+                interval: TimeSpan.FromMilliseconds(150),
+                immediate: false);
             return;
         }
 
-        var details = message.Details;
+        ShowDetails(sourcePage, e.Details);
+    }
+
+    private void ShowDetails(PageViewModel? sourcePage, DetailsViewModel details)
+    {
         var wasVisible = ViewModel.IsDetailsVisible;
 
         // GH #322:
@@ -582,15 +610,20 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // timer so the UI settles between updates. Use immediate=true for
         // the first show so the panel appears without delay; subsequent
         // updates during rapid navigation are coalesced.
-        _debounceTimer.Debounce(ShowDetails, interval: TimeSpan.FromMilliseconds(100), immediate: !wasVisible);
+        _debounceTimer.Debounce(ApplyDetails, interval: TimeSpan.FromMilliseconds(100), immediate: !wasVisible);
 
-        void ShowDetails()
+        void ApplyDetails()
         {
+            if (!ReferenceEquals(sourcePage, _pageInteractions.CurrentPage))
+            {
+                return;
+            }
+
             // Since immediate=true means we're called synchronously from this method, we need to check
             // if we're on the UI thread and re-queue if not.
             if (!_queue.HasThreadAccess)
             {
-                var enqueued = _queue.TryEnqueue(ShowDetails);
+                var enqueued = _queue.TryEnqueue(ApplyDetails);
                 if (!enqueued)
                 {
                     Logger.LogError("Failed to enqueue show details action on UI thread");
@@ -603,7 +636,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 DetailsContent.ChangeView(null, 0, null, true);
                 ViewModel.Details = details;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                 ViewModel.IsDetailsVisible = true;
             }
             catch (Exception ex)
@@ -611,18 +643,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 Logger.LogError("Failed to show detail", ex);
             }
         }
-    }
-
-    public void Receive(HideDetailsMessage message)
-    {
-        // Debounce the hide through the same timer used for show. If a
-        // ShowDetailsMessage arrives before this fires, it cancels the
-        // pending hide - preventing the panel from flickering closed and
-        // reopened during rapid item navigation.
-        _debounceTimer.Debounce(
-            () => HideDetails(),
-            interval: TimeSpan.FromMilliseconds(150),
-            immediate: false);
     }
 
     public void Receive(LaunchUriMessage message) => _ = global::Windows.System.Launcher.LaunchUriAsync(message.Uri);
@@ -634,8 +654,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     public void Receive(ClearSearchMessage message) => SearchBox.ClearSearch();
-
-    public void Receive(FocusSearchBoxMessage message) => RequestTopBarFocusRestore();
 
     public void Receive(HotkeySummonMessage message) => _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
 
@@ -707,10 +725,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // of being stuck in the collapsed search-only layout.
         UpdateCompactModeForCurrentPage();
 
-        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        RequestTopBarFocusRestore();
     }
 
-    public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
+    private void ViewModel_GoBackRequested(object? sender, ShellNavigationRequestedEventArgs e) =>
+        _ = DispatcherQueue.TryEnqueue(() => GoBack(e.WithAnimation, e.FocusSearch));
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
@@ -757,7 +776,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    public void Receive(GoHomeMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoHome(withAnimation: message.WithAnimation, focusSearch: message.FocusSearch));
+    private void ViewModel_GoHomeRequested(object? sender, ShellNavigationRequestedEventArgs e) =>
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            SearchBox.HandleGoHome();
+            GoHome(e.WithAnimation, e.FocusSearch);
+        });
 
     private void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
@@ -837,6 +861,73 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         RequestTopBarFocusRestore();
     }
 
+    private void SearchBox_BackRequested(object? sender, SearchBarBackRequestedEventArgs e)
+    {
+        switch (e.Kind)
+        {
+            case SearchBarBackRequestKind.GoBack:
+                HandleNavigateBack(e.FromBackspace);
+                break;
+            case SearchBarBackRequestKind.Dismiss:
+                WeakReferenceMessenger.Default.Send(new DismissMessage(ForceGoHome: true));
+                break;
+            case SearchBarBackRequestKind.Hide:
+                WeakReferenceMessenger.Default.Send(new HideWindowMessage());
+                break;
+        }
+    }
+
+    private void SearchBox_NavigationRequested(object? sender, SearchBarNavigationRequestedEventArgs e)
+    {
+        switch (e.Direction)
+        {
+            case SearchBarNavigationDirection.Previous:
+                _pageInteractions.NavigatePrevious();
+                break;
+            case SearchBarNavigationDirection.Next:
+                _pageInteractions.NavigateNext();
+                break;
+            case SearchBarNavigationDirection.Left:
+                _pageInteractions.NavigateLeft();
+                break;
+            case SearchBarNavigationDirection.Right:
+                _pageInteractions.NavigateRight();
+                break;
+            case SearchBarNavigationDirection.PageUp:
+                _pageInteractions.NavigatePageUp();
+                break;
+            case SearchBarNavigationDirection.PageDown:
+                _pageInteractions.NavigatePageDown();
+                break;
+        }
+    }
+
+    private void PageInteractions_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
+
+    private void FiltersDropDown_FocusSearchRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
+
+    private void PageInteractions_DragStateChanged(object? sender, PageDragStateChangedEventArgs e) =>
+        DragStateChanged?.Invoke(this, e);
+
+    private void Page_ContextMenuRequested(object? sender, ListItemsContextMenuRequestedEventArgs e) =>
+        MainCommandBar.OpenContextMenu(e.Context, e.Element, e.Placement, e.Position, e.FilterLocation);
+
+    private void AttachInteractionTarget(IPageInteractionTarget? target)
+    {
+        if (_listInteractionSource is not null)
+        {
+            _listInteractionSource.ContextMenuRequested -= Page_ContextMenuRequested;
+        }
+
+        _listInteractionSource = target as IListInteractionSource;
+        if (_listInteractionSource is not null)
+        {
+            _listInteractionSource.ContextMenuRequested += Page_ContextMenuRequested;
+        }
+
+        _pageInteractions.AttachTarget(target);
+    }
+
     private void ContextMenuFlyout_BackRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
 
     private void SearchBox_SearchTextChanging(object? sender, EventArgs e)
@@ -892,7 +983,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+    private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => HandleNavigateBack();
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
@@ -935,6 +1026,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             Logger.LogWarning("Unrecognized target for shell navigation: " + e.Parameter);
         }
+
+        _pageInteractions.AttachPage(ViewModel.CurrentPage);
+        AttachInteractionTarget(e.Content as IPageInteractionTarget);
 
         if (e.Content is Page element)
         {
@@ -1109,29 +1203,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var announcement = string.Format(CultureInfo.CurrentCulture, _pageNavigatedAnnouncement.Format, pageTitle);
 
         UIHelper.AnnounceActionForAccessibility(RootFrame, announcement, "CommandPalettePageNavigatedTo");
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether determines if the current Details have a HeroImage, given the theme
-    /// we're currently in. This needs to be evaluated in the view, because the
-    /// viewModel doesn't actually know what the current theme is.
-    /// </summary>
-    public bool HasHeroImage
-    {
-        get
-        {
-            var requestedTheme = ActualTheme;
-            var iconInfoVM = ViewModel.Details?.HeroImage;
-            return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
-        }
-    }
-
-    private void Command_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
-        }
     }
 
     private void ShellPage_LosingFocus(UIElement sender, LosingFocusEventArgs args)
@@ -1354,7 +1425,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 : Visibility.Collapsed;
 
             _quickAccessShelfDragStarted = true;
-            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
+            DragStateChanged?.Invoke(this, new PageDragStateChangedEventArgs(true));
         }
         catch (Exception ex)
         {
@@ -1543,13 +1614,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         if (_quickAccessShelfDragStarted)
         {
             _quickAccessShelfDragStarted = false;
-            WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+            DragStateChanged?.Invoke(this, new PageDragStateChangedEventArgs(false));
         }
     }
 
-    private static void InvokeQuickAccessShelfItem(QuickAccessShelfItem item)
+    private void InvokeQuickAccessShelfItem(QuickAccessShelfItem item)
     {
-        WeakReferenceMessenger.Default.Send(item.GetPerformCommandMessage());
+        WeakReferenceMessenger.Default.Send(item.GetPerformCommandMessage(ViewModel.CurrentPage));
     }
 
     private async Task HandleQuickAccessShelfItemKeyAsync(Button anchor, QuickAccessShelfItem item, KeyChord chord)
@@ -1607,7 +1678,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
-    public void Receive(ClosePaletteContextMenuMessage message) => ReleaseQuickAccessShelfContext();
+    void IContextMenuOwner.ShowContextMenu(ContextMenuRequest request) => _itemActions.ShowContextMenu(request);
+
+    void IContextMenuOwner.ShowContextMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu) =>
+        _itemActions.ShowContextMenuAfterKeyEvent(context, initialSubmenu);
+
+    void IContextMenuOwner.CloseContextMenu()
+    {
+        _itemActions.CloseContextMenu();
+        ReleaseQuickAccessShelfContext();
+    }
 
     private Task<ListItemViewModel?> EnsureQuickAccessShelfContextAsync(Button anchor, QuickAccessShelfItem item)
     {
@@ -1947,11 +2027,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         switch (e.Key)
         {
             case VirtualKey.Left when modifiers.OnlyAlt: // Alt+Left arrow
-                WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                ((ShellPage)sender).HandleNavigateBack();
                 e.Handled = true;
                 break;
             case VirtualKey.Home when modifiers.OnlyAlt: // Alt+Home
-                WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false));
+                ((ShellPage)sender).ViewModel.GoHome(withAnimation: false);
                 e.Handled = true;
                 break;
             case (VirtualKey)188 when modifiers.OnlyCtrl: // Ctrl+,
@@ -2014,7 +2094,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         break;
                     }
 
-                    e.Handled = shellPage._itemActions.TryHandleShortcut(chord);
+                    if (!shellPage.ItemActionsAllowed)
+                    {
+                        break;
+                    }
+
+                    e.Handled = shellPage._pageInteractions.TryCommandKeybinding(
+                        modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
+                    if (!e.Handled)
+                    {
+                        e.Handled = shellPage._itemActions.TryHandleShortcut(chord);
+                    }
 
                     break;
                 }
@@ -2031,7 +2121,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var modifiers = KeyModifiers.GetCurrent();
         var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key, 0);
         if (FindQuickAccessShelfButton(e.OriginalSource as DependencyObject) is null &&
-            _itemActions.TryHandleKey(chord))
+            (TryHandleItemAction(e) || _itemActions.TryHandleKey(chord)))
         {
             e.Handled = true;
             return;
@@ -2039,9 +2129,41 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (e.Key == VirtualKey.Escape)
         {
-            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+            HandleNavigateBack();
             e.Handled = true;
         }
+    }
+
+    private bool TryHandleItemAction(KeyRoutedEventArgs e)
+    {
+        if (!ItemActionsAllowed || IsContentDialogActive || _pageInteractions.CurrentTarget is null)
+        {
+            return false;
+        }
+
+        var mods = KeyModifiers.GetCurrent();
+        switch (e.Key)
+        {
+            // Ctrl+Enter
+            case VirtualKey.Enter when mods.OnlyCtrl:
+                _pageInteractions.ActivateSecondary();
+                break;
+
+            // Enter
+            case VirtualKey.Enter when mods.None:
+                _pageInteractions.ActivatePrimary();
+                break;
+
+            // Ctrl+K
+            case VirtualKey.K when mods.OnlyCtrl:
+                _pageInteractions.OpenContextMenu();
+                break;
+            default:
+                return false;
+        }
+
+        e.Handled = true;
+        return true;
     }
 
     private ContextMenuAnchor GetDefaultContextMenuAnchor()
@@ -2063,7 +2185,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 if (ptrPt.Properties.IsXButton1Pressed)
                 {
-                    WeakReferenceMessenger.Default.Send(new NavigateBackMessage());
+                    HandleNavigateBack();
                     return;
                 }
             }
@@ -2376,6 +2498,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         FocusManager.GotFocus -= FocusManager_GotFocus;
         FocusManager.LosingFocus -= FocusManager_LosingFocus;
         _settingsService.SettingsChanged -= OnSettingsChanged;
+        ViewModel.PageNavigationRequested -= ViewModel_PageNavigationRequested;
+        ViewModel.GoHomeRequested -= ViewModel_GoHomeRequested;
+        ViewModel.GoBackRequested -= ViewModel_GoBackRequested;
+        SearchBox.BackRequested -= SearchBox_BackRequested;
+        SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
+        FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
+        _pageInteractions.DetailsChanged -= PageInteractions_DetailsChanged;
+        _pageInteractions.FocusSearchRequested -= PageInteractions_FocusSearchRequested;
+        _pageInteractions.DragStateChanged -= PageInteractions_DragStateChanged;
+        AttachInteractionTarget(null);
+        _pageInteractions.Dispose();
         QuickAccessShelf.VisibleItems.CollectionChanged -= QuickAccessShelfVisibleItems_CollectionChanged;
         QuickAccessShelf.PropertyChanged -= QuickAccessShelf_PropertyChanged;
         QuickAccessShelf.RebuildCompleted -= QuickAccessShelf_RebuildCompleted;

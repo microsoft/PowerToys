@@ -17,6 +17,8 @@ public record SettingsModel
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    public const int DefaultCompactCenterHeightPercentage = 75;
+
     internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
     internal const int MaxQuickAccessShelfPinnedCommandLimit = 99;
     internal const int DefaultQuickAccessShelfPinnedCommandLimit = 9;
@@ -125,7 +127,7 @@ public record SettingsModel
     // height from the bottom of the screen (as a percentage) at which the collapsed search
     // box is vertically centered. 75 places it in the upper portion of the display. Ignored
     // when compact mode is off.
-    public int CompactCenterHeightPercentage { get; set; } = 75;
+    public int CompactCenterHeightPercentage { get; set; } = DefaultCompactCenterHeightPercentage;
 
     private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;

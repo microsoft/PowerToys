@@ -350,24 +350,33 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);
 
-        if (openSettings)
+        std::optional<std::wstring> window;
+        if (!settingsWindow.empty())
         {
-            std::optional<std::wstring> window;
-            if (!settingsWindow.empty())
-            {
-                window = winrt::to_hstring(settingsWindow);
-            }
-            open_settings_window(window);
+            window = winrt::to_hstring(settingsWindow);
         }
 
-        if (openOobe)
+        // Settings saves runtime module state when it starts, so defer early opens
+        // until initialization finishes. Explicit requests take precedence over
+        // automatic onboarding, avoiding two Settings processes at startup.
+        const auto settings_startup = complete_settings_window_startup(openSettings, std::move(window));
+        if (!settings_startup.canceled)
         {
-            PTSettingsHelper::save_oobe_opened_state();
-            open_oobe_window();
-        }
-        else if (openScoobe)
-        {
-            open_scoobe_window();
+            if (settings_startup.request)
+            {
+                open_settings_window(settings_startup.request->page);
+            }
+            else if (openOobe)
+            {
+                if (open_oobe_window())
+                {
+                    PTSettingsHelper::save_oobe_opened_state();
+                }
+            }
+            else if (openScoobe)
+            {
+                open_scoobe_window();
+            }
         }
 
         settings_telemetry::init();
@@ -588,6 +597,22 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         // then modules to guarantee the reverse destruction order.
         modules();
 
+        // Join module workers before CRT exit holds the shared UCRT exit lock.
+        // This guard runs before the settings CLI lock and instance mutex are released.
+        auto shutdown_modules = wil::scope_exit([] {
+            cancel_settings_window_startup();
+            CentralizedKeyboardHook::Stop();
+            for (const auto& module : modules())
+            {
+                CentralizedKeyboardHook::ClearModuleHotkeys(module.first);
+                CentralizedHotkeys::UnregisterHotkeysForModule(module.first);
+            }
+
+            Logger::info("Unloading {} modules before CRT exit", modules().size());
+            modules().clear();
+            Logger::info("Runner module shutdown completed");
+        });
+
         std::thread{ [] {
             auto state = UpdateState::read();
             if (state.state == UpdateState::upToDate)
@@ -637,12 +662,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             }
 
             result = runner(elevated, open_settings, settings_window, openOobe, openScoobe, showRestartNotificationAfterUpdate);
-
-            if (result == 0)
-            {
-                // Save settings on closing, if closed 'normal'
-                PTSettingsHelper::save_general_settings(get_general_settings().to_json());
-            }
         }
         else
         {
@@ -669,7 +688,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     if (is_restart_scheduled())
     {
-        modules().clear();
         if (!restart_if_scheduled())
         {
             // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.
