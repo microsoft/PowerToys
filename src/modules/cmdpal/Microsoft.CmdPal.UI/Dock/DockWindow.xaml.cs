@@ -1620,7 +1620,7 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (message.BringToFront)
+            if (message.BringToFront && message.Reveal)
             {
                 RevealAutoHideDock(immediate: true);
             }
@@ -1929,14 +1929,15 @@ internal static class ShowDesktop
                 Logger.LogDebug("ShowDesktop invoked. Bring us back");
             }
 
-            WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(bringToFront));
+            // Restore z-order after Win+D without revealing an auto-hidden dock.
+            WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(bringToFront, Reveal: !bringToFront));
         }
     }
 
     public static bool IsHooked { get; private set; }
 }
 
-internal sealed record BringToTopMessage(bool BringToFront);
+internal sealed record BringToTopMessage(bool BringToFront, bool Reveal = true);
 
 internal sealed record RequestShowPaletteAtMessage(Point PosDips, IntPtr OwnerHwnd);
 
