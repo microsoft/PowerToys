@@ -35,6 +35,7 @@ Describe 'UI test signing selection' {
     $authenticatedModules = @(
         'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
+        'AltWindowCycle.UITests',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
@@ -73,6 +74,7 @@ Describe 'UI test signing selection' {
         'OtherPowerRename.UITests',
         'PowerRename.FuzzingTest',
         'AdvancedPaste.UITests.Next.Extra',
+        'AltWindowCycle.UITests.Extra',
         'FancyZones.UITests.Next',
         'FileLocksmith.UITests.Extra',
         'ImageResizer.UITests.Extra',

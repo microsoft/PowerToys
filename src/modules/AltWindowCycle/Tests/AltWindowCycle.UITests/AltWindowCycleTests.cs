@@ -39,7 +39,12 @@ public sealed class AltWindowCycleTests : UITestBase
     {
     }
 
+    protected override IReadOnlyList<string> StaleProcessNames => [.. base.StaleProcessNames, "AltWindowCycle.TestApp"];
+
     private WindowFixture Fixture => fixture ?? throw new InvalidOperationException("Window fixtures were not initialized.");
+
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void RemoveCopiedApplication() => WindowFixture.RemoveApplicationCopy();
 
     protected override void PrepareTestState()
     {
@@ -111,15 +116,21 @@ public sealed class AltWindowCycleTests : UITestBase
     public void ShiftChangesDirectionWithoutCommittingUntilAltIsReleased()
     {
         StartCycle([Key.Alt, Backtick]);
+        Step("Cycling forward again before reversing to a non-anchor selection.");
+        Tap(Backtick);
         Hold(Key.Shift);
         Step("Cycling backward within the open forward cycle.");
         Tap(Backtick);
+        var overlay = WindowControl.EnumerateAllWindows().Single(window => window.ClassName == OverlayClass && window.IsVisible);
+        using var watcher = new WindowShowWatcher(OverlayClass, overlay.Hwnd.ToInt64());
         Step("Releasing only Shift; Alt must keep the cycle open.");
         Release(Key.Shift);
+        Assert.IsFalse(watcher.WaitForHidden(1_000), $"Releasing Shift hid the Alt-held switcher: {string.Join(", ", watcher.Events)}.");
         Assert.IsTrue(WindowControl.IsAnyWindowOfClassVisible(OverlayClass), "Releasing Shift prematurely committed the Alt-held cycle.");
         AssertAnchorForeground();
         Tap(Backtick);
-        CommitCycle(Fixture.Windows[1]);
+        CommitCycle(Fixture.Windows[2]);
+        Assert.IsTrue(watcher.WaitForHidden(5_000), "The event observer did not detect the positively confirmed Alt-release commit.");
     }
 
     [TestMethod]

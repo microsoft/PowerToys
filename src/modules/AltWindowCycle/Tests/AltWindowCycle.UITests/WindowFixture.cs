@@ -14,8 +14,8 @@ internal sealed class WindowFixture : IDisposable
     internal static readonly Color[] Colors = [Color.FromArgb(180, 30, 70), Color.FromArgb(35, 170, 85), Color.FromArgb(35, 90, 190)];
     internal static readonly Color OtherColor = Color.FromArgb(220, 50, 200);
 
+    private static readonly Lazy<string> OtherDirectory = new(CreateOtherApplicationCopy);
     private readonly List<Process> processes = [];
-    private readonly string otherDirectory = Path.Combine(Path.GetTempPath(), $"AltWindowCycleFixture-{Guid.NewGuid():N}");
     private readonly TestContext context;
 
     internal WindowFixture(TestContext context)
@@ -26,18 +26,14 @@ internal sealed class WindowFixture : IDisposable
             var fixtureDirectory = Path.Combine(AppContext.BaseDirectory, "Fixture");
             var executable = Path.Combine(fixtureDirectory, "AltWindowCycle.TestApp.exe");
             Assert.IsTrue(File.Exists(executable), $"Fixture executable was not staged: {executable}");
-            Directory.CreateDirectory(otherDirectory);
-            foreach (var file in Directory.GetFiles(fixtureDirectory))
-            {
-                File.Copy(file, Path.Combine(otherDirectory, Path.GetFileName(file)));
-            }
+            var otherExecutable = Path.Combine(OtherDirectory.Value, Path.GetFileName(executable));
 
             Windows = Colors.Select((color, index) => Open(executable, $"Window Hopper source {index + 1}", color)).ToArray();
-            OtherWindow = Open(Path.Combine(otherDirectory, Path.GetFileName(executable)), "Window Hopper different application", OtherColor);
+            OtherWindow = Open(otherExecutable, "Window Hopper different application", OtherColor);
             Assert.HasCount(4, processes.Select(process => process.Id).Distinct().ToArray(), "Every source must have its own live process.");
             Assert.IsTrue(processes.All(process => !process.HasExited), "A fixture process exited before the test began.");
             CollectionAssert.AreEqual(
-                new[] { executable, executable, executable, Path.Combine(otherDirectory, Path.GetFileName(executable)) },
+                new[] { executable, executable, executable, otherExecutable },
                 processes.Select(process => process.MainModule!.FileName).ToArray(),
                 "The fixture must provide three same-image processes and one different-image process.");
             ArrangeForegroundOrder();
@@ -52,6 +48,14 @@ internal sealed class WindowFixture : IDisposable
     internal IntPtr[] Windows { get; } = [];
 
     internal IntPtr OtherWindow { get; }
+
+    internal static void RemoveApplicationCopy()
+    {
+        if (OtherDirectory.IsValueCreated && Directory.Exists(OtherDirectory.Value))
+        {
+            Directory.Delete(OtherDirectory.Value, recursive: true);
+        }
+    }
 
     internal void ArrangeForegroundOrder()
     {
@@ -98,14 +102,40 @@ internal sealed class WindowFixture : IDisposable
         }
 
         processes.Clear();
-        if (errors.Count == 0 && Directory.Exists(otherDirectory))
-        {
-            Directory.Delete(otherDirectory, recursive: true);
-        }
-
         if (errors.Count > 0)
         {
             throw new AggregateException("Could not stop the test-owned window fixtures.", errors);
+        }
+    }
+
+    private static string CreateOtherApplicationCopy()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"AltWindowCycleFixture-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(directory);
+            foreach (var file in Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "Fixture")))
+            {
+                File.Copy(file, Path.Combine(directory, Path.GetFileName(file)));
+            }
+
+            return directory;
+        }
+        catch (Exception copyError)
+        {
+            try
+            {
+                if (Directory.Exists(directory))
+                {
+                    Directory.Delete(directory, recursive: true);
+                }
+            }
+            catch (Exception cleanupError)
+            {
+                throw new AggregateException("Could not create or clean up the different-application fixture copy.", copyError, cleanupError);
+            }
+
+            throw;
         }
     }
 

@@ -31,10 +31,12 @@ The tests cover [#51548](https://github.com/microsoft/PowerToys/issues/51548):
 
 The fixture is a small WinForms application, not Notepad or an installed app with version-dependent
 tabs. Each source has a distinct solid color. A copied fixture at another executable path supplies the
-different-application case because the product groups windows by full executable image path.
+different-application case because the product groups windows by full executable image path. The copy
+is staged once per test class and removed at class cleanup; windows and processes remain isolated per test.
 
 The GDI-painted switcher has no UIA card tree. Tests therefore inspect composed desktop pixels for
 preview membership and assert actual foreground HWNDs for ordering and activation, rather than
 adding product-only automation hooks or asserting private selection state. WinEvent show observers
 catch even a briefly displayed switcher in negative checks. Tests restore exact module-settings
-bytes (or prior absence), release held modifiers, and stop only their owned fixture processes.
+bytes (or prior absence), release held modifiers, and stop their owned fixture processes. Pre-test
+hygiene also removes abandoned `AltWindowCycle.TestApp` processes left by an aborted prior run.
