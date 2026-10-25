@@ -1873,6 +1873,513 @@ namespace EnvironmentVariablesUILib.UnitTests.ViewModels
             Assert.IsTrue(fixture.Work.IsQuiescent);
         }
 
+        [DataTestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public async Task AddEnabledProfile_EffectFailurePersistsAndReconcilesWithoutRollback(bool failBackup)
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            files.Files[service.ProfilesJsonFilePath] = "[]";
+            fixture.Environment.User["TMP"] = "%ORIGINAL%;;";
+            fixture.Environment.User["KEEP"] = "user-sentinel";
+            fixture.Environment.Machine["MachineOnly"] = "machine-sentinel";
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var authored = Profile("FaultApply", true, "TMP", "%OVERRIDE%;;");
+            authored.Variables.Add(new Variable("NEXT", "%NEXT%;", VariablesSetType.Profile));
+            var definitions = new[] { ("TMP", "%OVERRIDE%;;"), ("NEXT", "%NEXT%;") };
+            const string backupName = "TMP_PowerToys_FaultApply";
+            var failingName = failBackup ? backupName : "TMP";
+            var failure = new System.IO.IOException("scripted profile apply failure");
+            fixture.Environment.BeforeOperation = (operation, hive, name) =>
+            {
+                if (operation == "Write" && hive == RegistryHive.CurrentUser && name == failingName)
+                {
+                    throw failure;
+                }
+            };
+
+            vm.AddProfile(authored);
+
+            Assert.AreSame(authored, vm.AppliedProfile);
+            Assert.AreSame(authored, vm.Profiles.Single());
+            Assert.IsTrue(authored.IsEnabled);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(0, files.Writes.Count);
+            Assert.AreEqual("%ORIGINAL%;;", fixture.Environment.User["TMP"]);
+            Assert.IsFalse(fixture.Environment.User.ContainsKey("NEXT"));
+
+            await fixture.Work.CompleteActionAsync(0);
+
+            Assert.AreEqual(!failBackup, fixture.Environment.User.ContainsKey(backupName));
+            Assert.AreEqual(failBackup ? "%OVERRIDE%;;" : "%ORIGINAL%;;", fixture.Environment.User["TMP"]);
+            Assert.AreEqual("%NEXT%;", fixture.Environment.User["NEXT"]);
+            Assert.AreEqual(failBackup ? 3 : 4, fixture.Environment.User.Count);
+            if (!failBackup)
+            {
+                Assert.AreEqual("%ORIGINAL%;;", fixture.Environment.User[backupName]);
+            }
+
+            var writes = fixture.Environment.Operations.Where(operation => operation.Operation == "Write").ToArray();
+            var expectedWrites = new[] { backupName, "TMP", "NEXT" };
+            CollectionAssert.AreEqual(expectedWrites, writes.Select(operation => operation.Name).ToArray());
+            Assert.AreEqual(((object)"%ORIGINAL%;;", RegistryValueKind.ExpandString), writes[0].Value);
+            Assert.AreEqual(((object)"%OVERRIDE%;;", RegistryValueKind.ExpandString), writes[1].Value);
+            Assert.AreEqual(((object)"%NEXT%;", RegistryValueKind.ExpandString), writes[2].Value);
+            Assert.IsTrue(writes.All(operation => operation.Hive == RegistryHive.CurrentUser));
+            Assert.AreEqual(1, writes.Count(operation => operation.Name == failingName));
+            Assert.AreEqual(2, fixture.Logger.Entries.Count);
+            var error = fixture.Logger.Entries[0];
+            Assert.AreEqual(("Error", $"Failed to write environment variable '{failingName}'."), (error.Level, error.Message));
+            Assert.AreSame(failure, error.Exception);
+            Assert.AreEqual(
+                ("Error", failBackup ? "Failed to set backup variable." : "Failed to set profile variable.", (Exception?)null),
+                fixture.Logger.Entries[1]);
+            Assert.AreEqual(1, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(1, fixture.Work.RefreshReceiptCount);
+            fixture.Work.DrainRefreshes();
+            Assert.AreEqual(("%OVERRIDE%;;", VariablesSetType.Duplicate), (vm.AppliedVariables.Single(variable => variable.Name == "TMP").Values, vm.AppliedVariables.Single(variable => variable.Name == "TMP").ParentType));
+            await fixture.Work.CompleteSaveAsync(0);
+            var enabledPayload = files.Writes.Single().Contents!;
+            using (var json = JsonDocument.Parse(enabledPayload))
+            {
+                Assert.AreEqual(1, json.RootElement.GetArrayLength());
+                var saved = json.RootElement[0];
+                Assert.AreEqual(authored.Id, saved.GetProperty("Id").GetGuid());
+                Assert.IsTrue(saved.GetProperty("IsEnabled").GetBoolean());
+                CollectionAssert.AreEqual(definitions, saved.GetProperty("Variables").EnumerateArray().Select(variable => (variable.GetProperty("Name").GetString(), variable.GetProperty("Values").GetString())).ToArray());
+            }
+
+            fixture.Environment.BeforeOperation = null;
+            var callsBeforeReload = files.Calls.Count;
+            var mutationsBeforeReload = fixture.Environment.Operations.Count(operation => operation.Operation is "Write" or "Delete");
+            var fresh = fixture.CreateViewModel(service: service);
+
+            fresh.LoadEnvironmentVariables();
+
+            Assert.AreEqual(failBackup ? EnvironmentState.Unchanged : EnvironmentState.ChangedOnStartup, fresh.EnvironmentState);
+            var loaded = fresh.Profiles.Single();
+            Assert.AreEqual((authored.Id, "FaultApply", failBackup), (loaded.Id, loaded.Name, loaded.IsEnabled));
+            Assert.AreSame(failBackup ? loaded : null, fresh.AppliedProfile);
+            Assert.AreNotSame(authored, loaded);
+            Assert.AreNotSame(authored.Variables, loaded.Variables);
+            Assert.AreEqual(2, authored.Variables.Count);
+            Assert.AreEqual(2, loaded.Variables.Count);
+            CollectionAssert.AreEqual(definitions, loaded.Variables.Select(variable => (variable.Name, variable.Values)).ToArray());
+            for (var index = 0; index < loaded.Variables.Count; index++)
+            {
+                Assert.AreNotSame(authored.Variables[index], loaded.Variables[index]);
+                Assert.AreEqual(VariablesSetType.Profile, loaded.Variables[index].ParentType);
+            }
+
+            Assert.AreEqual(failBackup, fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "TMP").IsAppliedFromProfile);
+            Assert.AreEqual(failBackup, fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "NEXT").IsAppliedFromProfile);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(failBackup ? 1 : 2, fixture.Work.SaveCount);
+            Assert.AreEqual(mutationsBeforeReload, fixture.Environment.Operations.Count(operation => operation.Operation is "Write" or "Delete"));
+            CollectionAssert.AreEqual(
+                new[] { ("Exists", (string?)service.ProfilesJsonFilePath), ("ReadAllText", service.ProfilesJsonFilePath) },
+                files.Calls.Skip(callsBeforeReload).ToArray());
+            Assert.AreEqual(enabledPayload, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(1, files.Writes.Count);
+
+            loaded.IsEnabled = false;
+
+            Assert.IsNull(fresh.AppliedProfile);
+            Assert.AreEqual(failBackup ? 2 : 1, fixture.Work.ActionCount);
+            Assert.AreEqual(2, fixture.Work.SaveCount);
+            CollectionAssert.AreEqual(DisabledTelemetry, fixture.Telemetry.Enabled.ToArray());
+            if (failBackup)
+            {
+                await fixture.Work.CompleteActionAsync(1);
+                fixture.Work.DrainRefreshes();
+                Assert.IsFalse(fixture.Environment.User.ContainsKey("TMP"));
+                Assert.IsFalse(fixture.Environment.User.ContainsKey("NEXT"));
+                Assert.IsFalse(fixture.Environment.User.ContainsKey(backupName));
+                Assert.AreEqual(1, fixture.Environment.User.Count);
+            }
+            else
+            {
+                Assert.AreEqual("%ORIGINAL%;;", fixture.Environment.User["TMP"]);
+                Assert.AreEqual("%ORIGINAL%;;", fixture.Environment.User[backupName]);
+                Assert.AreEqual("%NEXT%;", fixture.Environment.User["NEXT"]);
+                Assert.AreEqual(4, fixture.Environment.User.Count);
+            }
+
+            await fixture.Work.CompleteSaveAsync(1);
+
+            Assert.AreEqual(2, files.Writes.Count);
+            using var disabledJson = JsonDocument.Parse(files.Writes[1].Contents!);
+            Assert.AreEqual(1, disabledJson.RootElement.GetArrayLength());
+            Assert.AreEqual(authored.Id, disabledJson.RootElement[0].GetProperty("Id").GetGuid());
+            Assert.IsFalse(disabledJson.RootElement[0].GetProperty("IsEnabled").GetBoolean());
+            CollectionAssert.AreEqual(definitions, disabledJson.RootElement[0].GetProperty("Variables").EnumerateArray().Select(variable => (variable.GetProperty("Name").GetString(), variable.GetProperty("Values").GetString())).ToArray());
+            Assert.AreEqual(enabledPayload, files.Writes[0].Contents);
+            Assert.AreEqual(files.Writes[1].Contents, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(2, files.Writes.Count);
+            Assert.IsTrue(authored.IsEnabled);
+            Assert.IsTrue(fresh.UserDefaultSet.Variables.All(variable => !variable.IsAppliedFromProfile && variable.IsEditable));
+            CollectionAssert.AreEquivalent(
+                fixture.Environment.User.Select(entry => (entry.Key, (string)entry.Value!, VariablesSetType.User))
+                    .Concat(fixture.Environment.Machine.Select(entry => (entry.Key, (string)entry.Value!, VariablesSetType.System))).ToArray(),
+                fresh.AppliedVariables.Select(variable => (variable.Name, variable.Values, variable.ParentType)).ToArray());
+            Assert.AreEqual("user-sentinel", fixture.Environment.User["KEEP"]);
+            Assert.AreEqual(1, fixture.Environment.Machine.Count);
+            Assert.AreEqual("machine-sentinel", fixture.Environment.Machine["MachineOnly"]);
+            Assert.AreEqual(failBackup ? 5 : 3, fixture.Environment.Operations.Count(operation => operation.Operation is "Write" or "Delete"));
+            Assert.AreEqual(failBackup ? 2 : 1, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(failBackup ? 2 : 1, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(2, fixture.Logger.Entries.Count);
+            Assert.AreEqual(error, fixture.Logger.Entries[0]);
+            Assert.AreSame(failure, fixture.Logger.Entries[0].Exception);
+            Assert.AreEqual(0, fixture.Telemetry.Changed.Count);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [DataTestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public async Task DisableProfile_EffectFailureSurvivesDisabledJsonAndFreshLoad(bool failBackupDelete)
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            var authored = Profile("FaultUnapply", true, "TMP", "%OVERRIDE%;;");
+            authored.Variables.Add(new Variable("NEXT", "%NEXT%;", VariablesSetType.Profile));
+            var definitions = new[] { ("TMP", "%OVERRIDE%;;"), ("NEXT", "%NEXT%;") };
+            const string backupName = "TMP_PowerToys_FaultUnapply";
+            fixture.Environment.User["TMP"] = "%OVERRIDE%;;";
+            fixture.Environment.User[backupName] = "%ORIGINAL%;;";
+            fixture.Environment.User["NEXT"] = "%NEXT%;";
+            fixture.Environment.User["KEEP"] = "user-sentinel";
+            fixture.Environment.Machine["MachineOnly"] = "machine-sentinel";
+            await service.WriteAsync(new[] { authored });
+            var enabledPayload = files.Files[service.ProfilesJsonFilePath];
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var active = vm.Profiles.Single();
+            Assert.AreSame(active, vm.AppliedProfile);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.SaveCount);
+            var failingOperation = failBackupDelete ? "Delete" : "Write";
+            var failingName = failBackupDelete ? backupName : "TMP";
+            var failure = new System.IO.IOException("scripted profile unapply failure");
+            fixture.Environment.BeforeOperation = (operation, hive, name) =>
+            {
+                if (operation == failingOperation && hive == RegistryHive.CurrentUser && name == failingName)
+                {
+                    throw failure;
+                }
+            };
+            fixture.Environment.Operations.Clear();
+
+            active.IsEnabled = false;
+
+            Assert.IsNull(vm.AppliedProfile);
+            Assert.IsFalse(active.IsEnabled);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(1, files.Writes.Count);
+            Assert.AreEqual("%OVERRIDE%;;", fixture.Environment.User["TMP"]);
+            Assert.AreEqual("%NEXT%;", fixture.Environment.User["NEXT"]);
+
+            await fixture.Work.CompleteActionAsync(0);
+
+            Assert.AreEqual(failBackupDelete, fixture.Environment.User.ContainsKey(backupName));
+            Assert.AreEqual(failBackupDelete, fixture.Environment.User.ContainsKey("TMP"));
+            Assert.IsFalse(fixture.Environment.User.ContainsKey("NEXT"));
+            Assert.AreEqual(failBackupDelete ? 3 : 1, fixture.Environment.User.Count);
+            if (failBackupDelete)
+            {
+                Assert.AreEqual("%ORIGINAL%;;", fixture.Environment.User["TMP"]);
+                Assert.AreEqual("%ORIGINAL%;;", fixture.Environment.User[backupName]);
+            }
+
+            var mutations = fixture.Environment.Operations.Where(operation => operation.Operation is "Write" or "Delete").ToArray();
+            var expectedMutations = new[] { ("Delete", "TMP"), ("Delete", backupName), ("Write", "TMP"), ("Delete", "NEXT") };
+            CollectionAssert.AreEqual(expectedMutations, mutations.Select(operation => (operation.Operation, operation.Name)).ToArray());
+            Assert.AreEqual(((object)"%ORIGINAL%;;", RegistryValueKind.ExpandString), mutations[2].Value);
+            Assert.IsTrue(mutations.All(operation => operation.Hive == RegistryHive.CurrentUser));
+            Assert.AreEqual(1, mutations.Count(operation => operation.Operation == failingOperation && operation.Name == failingName));
+            Assert.AreEqual(2, fixture.Logger.Entries.Count);
+            var error = fixture.Logger.Entries[0];
+            Assert.AreEqual(("Error", $"Failed to write environment variable '{failingName}'."), (error.Level, error.Message));
+            Assert.AreSame(failure, error.Exception);
+            Assert.AreEqual(
+                ("Error", failBackupDelete ? "Failed to unset backup variable." : "Failed to restore backup variable.", (Exception?)null),
+                fixture.Logger.Entries[1]);
+            Assert.AreEqual(1, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(1, fixture.Work.RefreshReceiptCount);
+            fixture.Work.DrainRefreshes();
+            await fixture.Work.CompleteSaveAsync(0);
+            Assert.AreEqual(2, files.Writes.Count);
+            var disabledPayload = files.Writes[1].Contents!;
+            using (var json = JsonDocument.Parse(disabledPayload))
+            {
+                Assert.AreEqual(1, json.RootElement.GetArrayLength());
+                var saved = json.RootElement[0];
+                Assert.AreEqual(authored.Id, saved.GetProperty("Id").GetGuid());
+                Assert.IsFalse(saved.GetProperty("IsEnabled").GetBoolean());
+                CollectionAssert.AreEqual(definitions, saved.GetProperty("Variables").EnumerateArray().Select(variable => (variable.GetProperty("Name").GetString(), variable.GetProperty("Values").GetString())).ToArray());
+            }
+
+            fixture.Environment.BeforeOperation = null;
+            var callsBeforeReload = files.Calls.Count;
+            var mutationsBeforeReload = fixture.Environment.Operations.Count(operation => operation.Operation is "Write" or "Delete");
+            var fresh = fixture.CreateViewModel(service: service);
+
+            fresh.LoadEnvironmentVariables();
+
+            Assert.IsNull(fresh.AppliedProfile);
+            Assert.AreEqual(EnvironmentState.Unchanged, fresh.EnvironmentState);
+            var loaded = fresh.Profiles.Single();
+            Assert.AreEqual((authored.Id, "FaultUnapply", false), (loaded.Id, loaded.Name, loaded.IsEnabled));
+            Assert.AreNotSame(active, loaded);
+            Assert.AreNotSame(active.Variables, loaded.Variables);
+            Assert.AreNotSame(vm.Profiles, fresh.Profiles);
+            Assert.AreEqual(2, active.Variables.Count);
+            Assert.AreEqual(2, loaded.Variables.Count);
+            CollectionAssert.AreEqual(definitions, loaded.Variables.Select(variable => (variable.Name, variable.Values)).ToArray());
+            for (var index = 0; index < loaded.Variables.Count; index++)
+            {
+                Assert.AreNotSame(active.Variables[index], loaded.Variables[index]);
+                Assert.AreEqual(VariablesSetType.Profile, loaded.Variables[index].ParentType);
+            }
+
+            Assert.AreEqual(failBackupDelete, fixture.Environment.User.ContainsKey(backupName));
+            Assert.AreEqual(failBackupDelete, fixture.Environment.User.ContainsKey("TMP"));
+            Assert.IsFalse(fixture.Environment.User.ContainsKey("NEXT"));
+            Assert.AreEqual(failBackupDelete ? 3 : 1, fixture.Environment.User.Count);
+            if (failBackupDelete)
+            {
+                Assert.AreEqual("%ORIGINAL%;;", fixture.Environment.User["TMP"]);
+                var backup = fresh.UserDefaultSet.Variables.Single(variable => variable.Name == backupName);
+                Assert.AreEqual("%ORIGINAL%;;", backup.Values);
+                Assert.IsFalse(backup.IsAppliedFromProfile);
+                Assert.IsTrue(backup.IsEditable);
+            }
+
+            Assert.IsTrue(fresh.UserDefaultSet.Variables.All(variable => !variable.IsAppliedFromProfile && variable.IsEditable));
+            CollectionAssert.AreEquivalent(
+                fixture.Environment.User.Select(entry => (entry.Key, (string)entry.Value!, VariablesSetType.User))
+                    .Concat(fixture.Environment.Machine.Select(entry => (entry.Key, (string)entry.Value!, VariablesSetType.System))).ToArray(),
+                fresh.AppliedVariables.Select(variable => (variable.Name, variable.Values, variable.ParentType)).ToArray());
+            Assert.AreEqual("user-sentinel", fixture.Environment.User["KEEP"]);
+            Assert.AreEqual(1, fixture.Environment.Machine.Count);
+            Assert.AreEqual("machine-sentinel", fixture.Environment.Machine["MachineOnly"]);
+            CollectionAssert.AreEqual(
+                new[] { ("Exists", (string?)service.ProfilesJsonFilePath), ("ReadAllText", service.ProfilesJsonFilePath) },
+                files.Calls.Skip(callsBeforeReload).ToArray());
+            Assert.AreEqual(mutationsBeforeReload, fixture.Environment.Operations.Count(operation => operation.Operation is "Write" or "Delete"));
+            Assert.AreEqual(enabledPayload, files.Writes[0].Contents);
+            Assert.AreEqual(disabledPayload, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(2, files.Writes.Count);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(1, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(1, fixture.Environment.Notifications.Count);
+            CollectionAssert.AreEqual(DisabledTelemetry, fixture.Telemetry.Enabled.ToArray());
+            Assert.AreEqual(0, fixture.Telemetry.Changed.Count);
+            Assert.AreEqual(2, fixture.Logger.Entries.Count);
+            Assert.AreEqual(error, fixture.Logger.Entries[0]);
+            Assert.AreSame(failure, fixture.Logger.Entries[0].Exception);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
+        [TestMethod]
+        public async Task ActivePath_RepeatedEditsPersistOriginalBackupAndFreshUndoRestoresRawValue()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            const string originalRaw = @"%ROOT%\user;;C:\Original;";
+            const string initialRaw = @"%ROOT%\profile;start;";
+            const string firstRaw = @"%ROOT%\first;;C:\One;";
+            const string secondRaw = @"%ROOT%\second;C:\Two;;";
+            const string machineRaw = @"%ROOT%\system;C:\Machine";
+            const string backupName = "PATH_PowerToys_PathUndo";
+            const string expandedBackup = @"R:\Expanded\user;;C:\Original;";
+            files.Files[service.ProfilesJsonFilePath] = "[]";
+            fixture.Environment.User["PATH"] = originalRaw;
+            fixture.Environment.User["KEEP"] = "user-sentinel";
+            fixture.Environment.Machine["Path"] = machineRaw;
+            fixture.Environment.Machine["MachineOnly"] = "machine-sentinel";
+            Func<string, string> expand = value => value.Replace("%ROOT%", @"R:\Expanded", StringComparison.Ordinal);
+            var vm = fixture.CreateViewModel(service: service);
+            fixture.Environment.Expand = expand;
+            vm.LoadEnvironmentVariables();
+            var authored = Profile("PathUndo", true, "PATH", initialRaw);
+            var path = authored.Variables.Single();
+            var initialRows = new[] { @"%ROOT%\profile", "start", string.Empty };
+
+            vm.AddProfile(authored);
+
+            Assert.AreSame(authored, vm.AppliedProfile);
+            Assert.AreEqual(1, fixture.Work.ActionCount);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(originalRaw, fixture.Environment.User["PATH"]);
+            await fixture.Work.CompleteActionAsync(0);
+            Assert.AreEqual(originalRaw, fixture.Environment.User[backupName]);
+            Assert.AreEqual(initialRaw, fixture.Environment.User["PATH"]);
+            CollectionAssert.AreEqual(initialRows, path.ValuesList.Select(item => item.Text).ToArray());
+            fixture.Work.DrainRefreshes();
+            Assert.AreEqual(@"R:\Expanded\system;C:\Machine;R:\Expanded\profile;start;", vm.AppliedVariables.Single(variable => variable.ParentType == VariablesSetType.Path).Values);
+            Assert.AreEqual(expandedBackup, vm.AppliedVariables.Single(variable => variable.Name == backupName).Values);
+            await fixture.Work.CompleteSaveAsync(0);
+            var payloads = new[] { files.Writes.Single().Contents!, string.Empty, string.Empty };
+            var firstRows = new[] { @"%ROOT%\first", string.Empty, @"C:\One", string.Empty };
+            var secondRows = new[] { @"%ROOT%\second", @"C:\Two", string.Empty, string.Empty };
+            var edits = new[]
+            {
+                (Raw: firstRaw, Rows: firstRows, Effective: @"R:\Expanded\system;C:\Machine;R:\Expanded\first;;C:\One;"),
+                (Raw: secondRaw, Rows: secondRows, Effective: @"R:\Expanded\system;C:\Machine;R:\Expanded\second;C:\Two;;"),
+            };
+            var editMutation = new[] { (RegistryHive.CurrentUser, "Write", "PATH") };
+            for (var index = 0; index < edits.Length; index++)
+            {
+                var edit = edits[index];
+                var previousRows = path.ValuesList;
+                var draft = path.Clone();
+                draft.Values = edit.Raw;
+                draft.ValuesList = Variable.ValuesStringToValuesListItemCollection(edit.Raw);
+                var operationsBeforeEdit = fixture.Environment.Operations.Count;
+                if (index == 1)
+                {
+                    Assert.AreEqual(originalRaw, fixture.Environment.User[backupName]);
+                }
+
+                vm.EditVariable(path, draft, authored);
+
+                Assert.AreSame(path, authored.Variables.Single());
+                Assert.AreEqual(edit.Raw, path.Values);
+                Assert.AreNotSame(previousRows, path.ValuesList);
+                Assert.AreNotSame(draft.ValuesList, path.ValuesList);
+                CollectionAssert.AreEqual(edit.Rows, path.ValuesList.Select(item => item.Text).ToArray());
+                Assert.AreEqual(edit.Rows.Length, path.ValuesList.Distinct().Count());
+                Assert.AreEqual(index + 2, fixture.Work.ActionCount);
+                Assert.AreEqual(index + 2, fixture.Work.SaveCount);
+                Assert.AreEqual(index + 1, files.Writes.Count);
+                Assert.AreEqual(index == 0 ? initialRaw : firstRaw, fixture.Environment.User["PATH"]);
+                await fixture.Work.CompleteActionAsync(index + 1);
+                Assert.AreEqual(originalRaw, fixture.Environment.User[backupName]);
+                Assert.AreEqual(edit.Raw, fixture.Environment.User["PATH"]);
+                var mutations = fixture.Environment.Operations.Skip(operationsBeforeEdit).Where(operation => operation.Operation is "Write" or "Delete").ToArray();
+                CollectionAssert.AreEqual(editMutation, mutations.Select(operation => (operation.Hive, operation.Operation, operation.Name)).ToArray());
+                Assert.AreEqual(((object)edit.Raw, RegistryValueKind.ExpandString), mutations.Single().Value);
+                fixture.Work.DrainRefreshes();
+                Assert.AreEqual(edit.Effective, vm.AppliedVariables.Single(variable => variable.ParentType == VariablesSetType.Path).Values);
+                Assert.AreEqual((expandedBackup, VariablesSetType.User), (vm.AppliedVariables.Single(variable => variable.Name == backupName).Values, vm.AppliedVariables.Single(variable => variable.Name == backupName).ParentType));
+                Assert.AreEqual(machineRaw, fixture.Environment.Machine["Path"]);
+                await fixture.Work.CompleteSaveAsync(index + 1);
+                Assert.AreEqual(index + 2, files.Writes.Count);
+                payloads[index + 1] = files.Writes[index + 1].Contents!;
+                Assert.AreEqual(0, fixture.Logger.Entries.Count);
+                Assert.IsTrue(fixture.Work.IsQuiescent);
+            }
+
+            var callsBeforeReload = files.Calls.Count;
+            var mutationsBeforeReload = fixture.Environment.Operations.Count(operation => operation.Operation is "Write" or "Delete");
+            var fresh = fixture.CreateViewModel(service: service);
+            fixture.Environment.Expand = expand;
+
+            fresh.LoadEnvironmentVariables();
+
+            Assert.AreEqual(EnvironmentState.Unchanged, fresh.EnvironmentState);
+            var loaded = fresh.Profiles.Single();
+            Assert.AreEqual((authored.Id, "PathUndo", true), (loaded.Id, loaded.Name, loaded.IsEnabled));
+            Assert.AreSame(loaded, fresh.AppliedProfile);
+            Assert.AreNotSame(authored, loaded);
+            Assert.AreNotSame(authored.Variables, loaded.Variables);
+            var loadedPath = loaded.Variables.Single();
+            Assert.AreNotSame(path, loadedPath);
+            Assert.AreNotSame(path.ValuesList, loadedPath.ValuesList);
+            Assert.AreEqual(("PATH", secondRaw, VariablesSetType.Profile), (loadedPath.Name, loadedPath.Values, loadedPath.ParentType));
+            CollectionAssert.AreEqual(secondRows, loadedPath.ValuesList.Select(item => item.Text).ToArray());
+            for (var index = 0; index < secondRows.Length; index++)
+            {
+                Assert.AreNotSame(path.ValuesList[index], loadedPath.ValuesList[index]);
+            }
+
+            Assert.IsTrue(fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "PATH").IsAppliedFromProfile);
+            var backup = fresh.UserDefaultSet.Variables.Single(variable => variable.Name == backupName);
+            Assert.AreEqual(originalRaw, backup.Values);
+            Assert.IsTrue(backup.IsAppliedFromProfile);
+            Assert.IsFalse(backup.IsEditable);
+            Assert.AreEqual(edits[1].Effective, fresh.AppliedVariables.Single(variable => variable.ParentType == VariablesSetType.Path).Values);
+            Assert.AreEqual(expandedBackup, fresh.AppliedVariables.Single(variable => variable.Name == backupName).Values);
+            CollectionAssert.AreEqual(
+                new[] { ("Exists", (string?)service.ProfilesJsonFilePath), ("ReadAllText", service.ProfilesJsonFilePath) },
+                files.Calls.Skip(callsBeforeReload).ToArray());
+            Assert.AreEqual(mutationsBeforeReload, fixture.Environment.Operations.Count(operation => operation.Operation is "Write" or "Delete"));
+            Assert.AreEqual(3, fixture.Work.ActionCount);
+            Assert.AreEqual(3, fixture.Work.SaveCount);
+            Assert.AreEqual(3, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(3, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(3, files.Writes.Count);
+            Assert.AreEqual(payloads[2], files.Files[service.ProfilesJsonFilePath]);
+
+            loaded.IsEnabled = false;
+
+            Assert.IsNull(fresh.AppliedProfile);
+            Assert.AreEqual(4, fixture.Work.ActionCount);
+            Assert.AreEqual(4, fixture.Work.SaveCount);
+            await fixture.Work.CompleteActionAsync(3);
+            Assert.AreEqual(originalRaw, fixture.Environment.User["PATH"]);
+            Assert.IsFalse(fixture.Environment.User.ContainsKey(backupName));
+            fixture.Work.DrainRefreshes();
+            Assert.AreEqual(@"R:\Expanded\system;C:\Machine;R:\Expanded\user;;C:\Original;", fresh.AppliedVariables.Single(variable => variable.ParentType == VariablesSetType.Path).Values);
+            Assert.IsFalse(fresh.AppliedVariables.Any(variable => variable.Name == backupName));
+            Assert.IsFalse(fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "PATH").IsAppliedFromProfile);
+            Assert.IsTrue(fresh.UserDefaultSet.Variables.Single(variable => variable.Name == "PATH").IsEditable);
+            await fixture.Work.CompleteSaveAsync(3);
+            Assert.AreEqual(4, files.Writes.Count);
+            var expectedRaws = new[] { initialRaw, firstRaw, secondRaw };
+            for (var index = 0; index < payloads.Length; index++)
+            {
+                Assert.AreEqual(payloads[index], files.Writes[index].Contents);
+                using var json = JsonDocument.Parse(payloads[index]);
+                Assert.AreEqual(1, json.RootElement.GetArrayLength());
+                var saved = json.RootElement[0];
+                Assert.AreEqual((authored.Id, "PathUndo", true), (saved.GetProperty("Id").GetGuid(), saved.GetProperty("Name").GetString(), saved.GetProperty("IsEnabled").GetBoolean()));
+                Assert.AreEqual(1, saved.GetProperty("Variables").GetArrayLength());
+                Assert.AreEqual(("PATH", expectedRaws[index]), (saved.GetProperty("Variables")[0].GetProperty("Name").GetString(), saved.GetProperty("Variables")[0].GetProperty("Values").GetString()));
+            }
+
+            using var disabledJson = JsonDocument.Parse(files.Writes[3].Contents!);
+            Assert.AreEqual(1, disabledJson.RootElement.GetArrayLength());
+            var disabled = disabledJson.RootElement[0];
+            Assert.AreEqual((authored.Id, "PathUndo", false), (disabled.GetProperty("Id").GetGuid(), disabled.GetProperty("Name").GetString(), disabled.GetProperty("IsEnabled").GetBoolean()));
+            Assert.AreEqual(1, disabled.GetProperty("Variables").GetArrayLength());
+            Assert.AreEqual(("PATH", secondRaw), (disabled.GetProperty("Variables")[0].GetProperty("Name").GetString(), disabled.GetProperty("Variables")[0].GetProperty("Values").GetString()));
+            Assert.AreEqual(secondRaw, loadedPath.Values);
+            CollectionAssert.AreEqual(secondRows, loadedPath.ValuesList.Select(item => item.Text).ToArray());
+            Assert.AreEqual(files.Writes[3].Contents, files.Files[service.ProfilesJsonFilePath]);
+            var allMutations = fixture.Environment.Operations.Where(operation => operation.Operation is "Write" or "Delete").ToArray();
+            Assert.AreEqual(7, allMutations.Length);
+            Assert.IsTrue(allMutations.All(operation => operation.Hive == RegistryHive.CurrentUser));
+            Assert.AreEqual(1, allMutations.Count(operation => operation.Operation == "Write" && operation.Name == backupName));
+            Assert.AreEqual(2, fixture.Environment.User.Count);
+            Assert.AreEqual("user-sentinel", fixture.Environment.User["KEEP"]);
+            Assert.AreEqual(2, fixture.Environment.Machine.Count);
+            Assert.AreEqual(machineRaw, fixture.Environment.Machine["Path"]);
+            Assert.AreEqual("machine-sentinel", fixture.Environment.Machine["MachineOnly"]);
+            var expectedFileOperations = new[] { "Exists", "ReadAllText", "WriteAllTextAsync", "WriteAllTextAsync", "WriteAllTextAsync", "Exists", "ReadAllText", "WriteAllTextAsync" };
+            CollectionAssert.AreEqual(expectedFileOperations, files.Calls.Select(call => call.Operation).ToArray());
+            var expectedChanged = new[] { VariablesSetType.Profile, VariablesSetType.Profile };
+            CollectionAssert.AreEqual(expectedChanged, fixture.Telemetry.Changed.ToArray());
+            CollectionAssert.AreEqual(DisabledTelemetry, fixture.Telemetry.Enabled.ToArray());
+            Assert.AreEqual(4, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(4, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
         private static ProfileVariablesSet LoadActive(EnvironmentVariablesFixture fixture, out MainViewModel vm)
         {
             var old = Profile("Old", true, "TMP", "override");
