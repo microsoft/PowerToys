@@ -703,6 +703,30 @@ namespace ImageResizer.Tests.Models
         }
 
         [DataTestMethod]
+        [DataRow("--shrink-only=false")]
+        [DataRow("--replace=false")]
+        [DataRow("--ignore-orientation=false")]
+        [DataRow("--remove-metadata=false")]
+        [DataRow("--keep-date-modified=false")]
+        [DataRow("--progress-lines=false")]
+        public void Parse_WithExplicitFalseSwitch_LeavesOverridesUnsetAndPreservesInputs(string argument)
+        {
+            var expectedFiles = new[] { "z.png", "a.jpg" };
+            var options = CliOptions.ParseForCli([argument, "--width", "42", "z.png", "a.jpg"]);
+
+            Assert.IsNull(options.ShrinkOnly);
+            Assert.IsNull(options.Replace);
+            Assert.IsNull(options.IgnoreOrientation);
+            Assert.IsNull(options.RemoveMetadata);
+            Assert.IsNull(options.KeepDateModified);
+            Assert.IsNull(options.ProgressLines);
+            Assert.AreEqual(42.0, options.Width);
+            Assert.IsNull(options.Height);
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            CollectionAssert.AreEqual(expectedFiles, options.Files.ToArray());
+        }
+
+        [DataTestMethod]
         [DataRow("-rtrue")]
         [DataRow("-rTRUE")]
         public void Parse_WithAttachedTrueBooleanValue_PreservesCompatibility(string argument)
