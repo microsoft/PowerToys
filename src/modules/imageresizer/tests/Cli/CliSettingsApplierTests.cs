@@ -59,6 +59,43 @@ namespace ImageResizer.Tests.Cli
             Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex);
         }
 
+        [DataTestMethod]
+        [DataRow(0, 800.0, null)]
+        [DataRow(0, null, 600.0)]
+        [DataRow(0, 800.0, 600.0)]
+        [DataRow(0, 0.0, null)]
+        [DataRow(0, null, 0.0)]
+        [DataRow(0, 0.0, 0.0)]
+        [DataRow(1, 800.0, null)]
+        [DataRow(1, null, 600.0)]
+        [DataRow(1, 800.0, 600.0)]
+        [DataRow(1, 0.0, null)]
+        [DataRow(1, null, 0.0)]
+        [DataRow(1, 0.0, 0.0)]
+        [DataRow(3, 800.0, null)]
+        [DataRow(3, null, 600.0)]
+        [DataRow(3, 800.0, 600.0)]
+        [DataRow(3, 0.0, null)]
+        [DataRow(3, null, 0.0)]
+        [DataRow(3, 0.0, 0.0)]
+        public void Apply_WithDimensions_SelectsCustomSizeAfterPresetList(int presetCount, double? width, double? height)
+        {
+            var options = new CliOptions { Width = width, Height = height };
+            var settings = CreateDefaultSettings();
+            settings.Sizes.Clear();
+            for (var i = 0; i < presetCount; i++)
+            {
+                settings.Sizes.Add(new ResizeSize(i, $"Preset {i}", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel));
+            }
+
+            settings.SelectedSizeIndex = 42;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(presetCount, settings.SelectedSizeIndex);
+            Assert.AreSame(settings.CustomSize, settings.SelectedSize);
+        }
+
         [TestMethod]
         public void Apply_WithZeroWidth_SetsZeroForAutoCalculation()
         {
