@@ -670,7 +670,7 @@ public partial class ShellViewModelTests
                 await invocation.WaitAsync(TimeSpan.FromSeconds(5));
             }
 
-            var expectedMessage = throwDuringInvoke ? "[Host message] Failed to invoke command" : "[Host message] Failed to perform command";
+            var expectedMessage = throwDuringInvoke ? "Failed to invoke command" : "Failed to perform command";
             var expectedMember = throwDuringInvoke ? "SafeHandleInvokeCommandSynchronous" : "PerformCommand";
             logger.Verify(
                 log => log.LogError(

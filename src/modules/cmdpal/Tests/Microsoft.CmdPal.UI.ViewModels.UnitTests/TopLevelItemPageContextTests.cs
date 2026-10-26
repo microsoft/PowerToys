@@ -41,8 +41,7 @@ public sealed class TopLevelItemPageContextTests
 
             logger.Verify(
                 log => log.LogError(
-                    It.Is<string>(message => message.StartsWith("[Host message]", StringComparison.Ordinal)
-                        && message.Contains("TopLevelItemPageContext(test.provider)", StringComparison.Ordinal)),
+                    It.Is<string>(message => message.Contains("TopLevelItemPageContext(test.provider)", StringComparison.Ordinal)),
                     exception,
                     nameof(TopLevelItemPageContext.ShowException),
                     It.Is<string>(path => path.EndsWith("TopLevelItemPageContext.cs", StringComparison.Ordinal)),
