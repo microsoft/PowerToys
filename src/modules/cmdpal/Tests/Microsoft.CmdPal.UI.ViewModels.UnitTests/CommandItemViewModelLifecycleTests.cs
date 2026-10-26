@@ -20,9 +20,9 @@ public partial class CommandItemViewModelLifecycleTests
 {
     private static readonly TimeSpan TestTimeout = TimeSpan.FromSeconds(5);
 
-    private sealed class TestPageContext : IPageContext
+    private sealed class TestPageContext(TaskScheduler? scheduler = null) : IPageContext
     {
-        public TaskScheduler Scheduler => TaskScheduler.Default;
+        public TaskScheduler Scheduler => scheduler ?? TaskScheduler.Default;
 
         public ICommandProviderContext ProviderContext => CommandProviderContext.Empty;
 
