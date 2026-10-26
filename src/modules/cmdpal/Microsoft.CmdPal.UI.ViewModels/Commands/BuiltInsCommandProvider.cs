@@ -9,44 +9,34 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
 /// <summary>
-/// Built-in Provider for a top-level command which can quit the application. Invokes the <see cref="QuitCommand"/>, which sends a <see cref="QuitMessage"/>.
+/// Provides Command Palette's built-in commands and dock band.
 /// </summary>
 public sealed partial class BuiltInsCommandProvider : CommandProvider
 {
     private readonly IRootPageAccessor _rootPageAccessor;
-    private readonly OpenSettingsCommand openSettings = new();
-    private readonly OpenGallerySettingsCommand openGallerySettings = new();
-    private readonly QuitCommand quitCommand = new();
-    private readonly FallbackReloadItem _fallbackReloadItem = new();
-    private readonly FallbackLogItem _fallbackLogItem;
+    private readonly OpenSettingsCommand _openSettings = new();
+    private readonly OpenGallerySettingsCommand _openGallerySettings = new();
+    private readonly QuitCommand _quitCommand = new();
+    private readonly ReloadExtensionsCommand _reloadCommand = new();
+    private readonly LogCommandItem _logItem;
     private readonly NewExtensionPage _newExtension = new();
     private readonly IApplicationInfoService _applicationInfoService;
 
     public override ICommandItem[] TopLevelCommands() =>
         [
-            new CommandItem(openSettings) { },
-            new CommandItem(openGallerySettings) { },
+            new CommandItem(_openSettings) { },
+            new CommandItem(_openGallerySettings) { },
             new CommandItem(_newExtension) { Title = _newExtension.Title },
-        ];
-
-    public override IFallbackCommandItem[] FallbackCommands() =>
-        [
-            new FallbackCommandItem(
-                    quitCommand,
-                    Properties.Resources.builtin_quit_subtitle,
-                    quitCommand.Id)
-            {
-                Subtitle = Properties.Resources.builtin_quit_subtitle,
-            },
-            _fallbackReloadItem,
-            _fallbackLogItem,
+            new CommandItem(_quitCommand) { Title = Properties.Resources.builtin_quit_title },
+            new CommandItem(_reloadCommand) { Title = Properties.Resources.builtin_reload_title },
+            _logItem,
         ];
 
     public BuiltInsCommandProvider(IRootPageAccessor rootPageAccessor, IApplicationInfoService applicationInfoService)
     {
         _rootPageAccessor = rootPageAccessor;
         _applicationInfoService = applicationInfoService;
-        _fallbackLogItem = new FallbackLogItem(applicationInfoService);
+        _logItem = new LogCommandItem(applicationInfoService);
         Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
         Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
@@ -64,10 +54,12 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
         {
             MoreCommands =
             [
-                new CommandContextItem(openSettings) { Title = Properties.Resources.dock_settings_name },
-                new CommandContextItem(new ReloadExtensionsCommand()) { Title = Properties.Resources.builtin_reload_display_title },
+                new CommandContextItem(_openSettings) { Title = Properties.Resources.dock_settings_name },
                 new CommandContextItem(openLogCommand),
-                new CommandContextItem(quitCommand) { Title = Properties.Resources.builtin_quit_subtitle },
+                new Separator(),
+                new CommandContextItem(_reloadCommand) { Title = Properties.Resources.builtin_reload_display_title },
+                new Separator(),
+                new CommandContextItem(_quitCommand) { Title = Properties.Resources.builtin_quit_title },
             ],
         };
 
