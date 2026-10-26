@@ -374,7 +374,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Use the Windows key</value>
   </data>
   <data name="Settings_GeneralPage_UseWindowsKey_SettingsCard.Description" xml:space="preserve">
-    <value>Press and release the Windows key to open Command Palette instead of Start. Windows key combinations still work. Uses a low-level keyboard hook.</value>
+    <value>Use the Windows key to open Command Palette instead of Start. Uses a low-level keyboard hook.</value>
+    <comment>"Start" is the localized name of the Start menu.</comment>
   </data>
   <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Description" xml:space="preserve">
     <value>May fix shortcut issues, but won't work while an elevated app has focus</value>
