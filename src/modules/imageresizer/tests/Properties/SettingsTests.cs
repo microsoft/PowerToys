@@ -178,17 +178,48 @@ namespace ImageResizer.Properties
             settings.Sizes.Clear();
             var ncc = (INotifyCollectionChanged)settings.AllSizes;
 
-            var result = AssertEx.Raises<NotifyCollectionChangedEventArgs>(
-                h => ncc.CollectionChanged += h,
-                h => ncc.CollectionChanged -= h,
-                () => settings.CustomSize = replacementCustomSize);
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var callbackSizes = new List<ResizeSize>();
+            ncc.CollectionChanged += (sender, e) =>
+            {
+                changes.Add(e);
+                callbackSizes.Add(settings.AllSizes.First());
+            };
+
+            settings.CustomSize = replacementCustomSize;
 
             // Reset is used instead of Replace to avoid ArgumentOutOfRangeException
             // when notifying changes for virtual items (CustomSize/AiSize) that exist
             // outside the bounds of the underlying _sizes collection.
-            Assert.AreEqual(NotifyCollectionChangedAction.Reset, result.Arguments.Action);
+            Assert.AreEqual(1, changes.Count);
+            Assert.AreEqual(NotifyCollectionChangedAction.Reset, changes[0].Action);
+            Assert.AreEqual(1, callbackSizes.Count);
+            Assert.AreSame(replacementCustomSize, callbackSizes[0]);
             Assert.AreSame(replacementCustomSize, settings.AllSizes.First());
             CollectionAssert.DoesNotContain(settings.AllSizes.ToList(), originalCustomSize);
+        }
+
+        [TestMethod]
+        public void AllSizesResetsWhenSameCustomSizeIsAssigned()
+        {
+            var settings = new Settings();
+            var currentCustomSize = settings.CustomSize;
+            settings.Sizes.Clear();
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var callbackSizes = new List<ResizeSize>();
+            ((INotifyCollectionChanged)settings.AllSizes).CollectionChanged += (sender, e) =>
+            {
+                changes.Add(e);
+                callbackSizes.Add(settings.AllSizes.First());
+            };
+
+            settings.CustomSize = currentCustomSize;
+
+            Assert.AreEqual(1, changes.Count);
+            Assert.AreEqual(NotifyCollectionChangedAction.Reset, changes[0].Action);
+            Assert.AreEqual(1, callbackSizes.Count);
+            Assert.AreSame(currentCustomSize, callbackSizes[0]);
+            Assert.AreSame(currentCustomSize, settings.AllSizes.First());
         }
 
         [TestMethod]
