@@ -95,19 +95,39 @@ namespace Peek.FilePreviewer.Previewers.EmailPreviewer
         private static IEnumerable<byte[]> SplitMultipart(byte[] data, string boundary)
         {
             string body = Encoding.Latin1.GetString(data);
-            string marker = "--" + boundary;
-            foreach (string section in body.Split(marker, StringSplitOptions.None).Skip(1))
+            string delimiter = $@"(?m)^--{Regex.Escape(boundary)}(?<closing>--)?[ \t]*(?:\r?\n|$)";
+            int start = -1;
+            foreach (Match match in Regex.Matches(body, delimiter, RegexOptions.None, TimeSpan.FromSeconds(1)))
             {
-                if (section.StartsWith("--", StringComparison.Ordinal))
+                if (start >= 0)
+                {
+                    int end = match.Index;
+                    if (end > start && data[end - 1] == '\n')
+                    {
+                        end--;
+                        if (end > start && data[end - 1] == '\r')
+                        {
+                            end--;
+                        }
+                    }
+
+                    if (end > start)
+                    {
+                        yield return data[start..end];
+                    }
+                }
+
+                if (match.Groups["closing"].Success)
                 {
                     yield break;
                 }
 
-                string trimmed = section.TrimStart('\r', '\n').TrimEnd('\r', '\n');
-                if (trimmed.Length > 0)
-                {
-                    yield return Encoding.Latin1.GetBytes(trimmed);
-                }
+                start = match.Index + match.Length;
+            }
+
+            if (start >= 0 && start < data.Length)
+            {
+                yield return data[start..];
             }
         }
 
