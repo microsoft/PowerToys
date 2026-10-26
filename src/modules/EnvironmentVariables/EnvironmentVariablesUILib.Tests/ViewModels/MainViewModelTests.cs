@@ -466,6 +466,177 @@ namespace EnvironmentVariablesUILib.UnitTests.ViewModels
             Assert.IsTrue(fixture.Work.IsQuiescent);
         }
 
+        [TestMethod]
+        public async Task NamedEmptyProfile_ManualNewTmpRejectsCaseDuplicateAndPersistsFreshDisabledDefinition()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            files.Files[service.ProfilesJsonFilePath] = "[]";
+            fixture.Environment.User["TMP"] = "original user TMP";
+            fixture.Environment.User["KEEP"] = "untouched user";
+            fixture.Environment.Machine["MachineOnly"] = "untouched machine";
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            var profiles = vm.Profiles;
+            var userTmp = vm.UserDefaultSet.Variables.Single(x => x.Name == "TMP");
+            var projection = vm.AppliedVariables;
+            var projectedRows = projection.ToArray();
+            var profile = new ProfileVariablesSet(Guid.NewGuid(), "Test_profile_1");
+            var emptyVariables = profile.Variables;
+
+            vm.AddProfile(profile);
+
+            Assert.AreSame(profiles, vm.Profiles);
+            Assert.AreEqual(1, vm.Profiles.Count);
+            Assert.AreSame(profile, vm.Profiles.Single());
+            Assert.AreEqual("Test_profile_1", profile.Name);
+            Assert.IsTrue(profile.Valid);
+            Assert.IsFalse(profile.IsEnabled);
+            Assert.AreEqual(0, profile.Variables.Count);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(0, files.Writes.Count);
+            Assert.AreEqual("[]", files.Files[service.ProfilesJsonFilePath]);
+            await fixture.Work.CompleteSaveAsync(0);
+            Assert.AreEqual(1, files.Writes.Count);
+            var emptyJson = files.Files[service.ProfilesJsonFilePath];
+            Assert.AreEqual(emptyJson, files.Writes[0].Contents);
+            using var emptyDocument = JsonDocument.Parse(emptyJson);
+            Assert.AreEqual(1, emptyDocument.RootElement.GetArrayLength());
+            var savedEmpty = emptyDocument.RootElement[0];
+            Assert.AreEqual(profile.Id, savedEmpty.GetProperty("Id").GetGuid());
+            Assert.AreEqual("Test_profile_1", savedEmpty.GetProperty("Name").GetString());
+            Assert.IsTrue(savedEmpty.GetProperty("Valid").GetBoolean());
+            Assert.IsFalse(savedEmpty.GetProperty("IsEnabled").GetBoolean());
+            Assert.AreEqual(0, savedEmpty.GetProperty("Variables").GetArrayLength());
+
+            var draft = profile.Clone();
+            Assert.AreNotSame(profile, draft);
+            Assert.AreNotSame(emptyVariables, draft.Variables);
+            Assert.AreEqual(profile.Id, draft.Id);
+            Assert.IsTrue(VariableEditorState.CanAddProfileVariable(draft, true, "TMP", "test_TMP", Array.Empty<object>()));
+
+            VariableEditorState.AddProfileVariable(draft, true, "TMP", "test_TMP", Array.Empty<object>());
+
+            Assert.IsTrue(draft.Variables.Any(x => x.Name == "TMP" && x.Values == "test_TMP"), "New-mode action must author TMP/test_TMP before profile update.");
+            Assert.AreEqual(1, draft.Variables.Count);
+            var authored = draft.Variables.Single();
+            Assert.AreEqual(VariablesSetType.Profile, authored.ParentType);
+            Assert.AreNotSame(userTmp, authored);
+            Assert.IsTrue(authored.Valid);
+            Assert.AreEqual(1, authored.ValuesList.Count);
+            Assert.AreEqual("test_TMP", authored.ValuesList[0].Text);
+            Assert.IsFalse(VariableEditorState.CanAddProfileVariable(draft, true, "tmp", "rejected case duplicate", Array.Empty<object>()));
+
+            VariableEditorState.AddProfileVariable(draft, true, "tmp", "rejected case duplicate", Array.Empty<object>());
+
+            Assert.AreEqual(1, draft.Variables.Count);
+            Assert.AreSame(authored, draft.Variables.Single());
+            Assert.AreEqual(("TMP", "test_TMP"), (authored.Name, authored.Values));
+            Assert.AreSame(emptyVariables, profile.Variables);
+            Assert.AreEqual(0, profile.Variables.Count);
+            Assert.AreEqual("original user TMP", userTmp.Values);
+            Assert.AreEqual("original user TMP", fixture.Environment.User["TMP"]);
+            Assert.AreEqual(1, fixture.Work.SaveCount);
+            Assert.AreEqual(1, files.Writes.Count);
+            Assert.AreEqual(emptyJson, files.Files[service.ProfilesJsonFilePath]);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+
+            vm.UpdateProfile(draft);
+
+            Assert.AreSame(profiles, vm.Profiles);
+            Assert.AreSame(profile, vm.Profiles.Single());
+            Assert.AreEqual((draft.Id, "Test_profile_1", false), (profile.Id, profile.Name, profile.IsEnabled));
+            Assert.IsTrue(profile.Valid);
+            Assert.AreSame(draft.Variables, profile.Variables);
+            Assert.AreSame(authored, profile.Variables.Single());
+            Assert.AreEqual(0, emptyVariables.Count);
+            Assert.AreEqual(3, fixture.Work.SaveCount);
+            Assert.AreEqual(1, files.Writes.Count);
+            Assert.AreEqual(emptyJson, files.Files[service.ProfilesJsonFilePath]);
+            for (var saveIndex = 1; saveIndex < 3; saveIndex++)
+            {
+                await fixture.Work.CompleteSaveAsync(saveIndex);
+                Assert.AreEqual(saveIndex + 1, files.Writes.Count);
+                var payload = files.Writes[saveIndex];
+                Assert.AreEqual(service.ProfilesJsonFilePath, payload.Path);
+                Assert.AreEqual(payload.Contents, files.Files[service.ProfilesJsonFilePath]);
+                Assert.IsNotNull(payload.Contents);
+                using var document = JsonDocument.Parse(payload.Contents);
+                Assert.AreEqual(1, document.RootElement.GetArrayLength());
+                var saved = document.RootElement[0];
+                Assert.AreEqual(profile.Id, saved.GetProperty("Id").GetGuid());
+                Assert.AreEqual("Test_profile_1", saved.GetProperty("Name").GetString());
+                Assert.IsTrue(saved.GetProperty("Valid").GetBoolean());
+                Assert.IsFalse(saved.GetProperty("IsEnabled").GetBoolean());
+                var variables = saved.GetProperty("Variables");
+                Assert.AreEqual(1, variables.GetArrayLength());
+                Assert.AreEqual("TMP", variables[0].GetProperty("Name").GetString());
+                Assert.AreEqual("test_TMP", variables[0].GetProperty("Values").GetString());
+            }
+
+            var finalJson = files.Files[service.ProfilesJsonFilePath];
+            Assert.AreEqual(files.Writes[1].Contents, files.Writes[2].Contents);
+            Assert.AreEqual(emptyJson, files.Writes[0].Contents);
+            Assert.AreEqual(0, savedEmpty.GetProperty("Variables").GetArrayLength());
+            Assert.AreSame(userTmp, vm.UserDefaultSet.Variables.Single(x => x.Name == "TMP"));
+            Assert.AreSame(projection, vm.AppliedVariables);
+            CollectionAssert.AreEqual(projectedRows, vm.AppliedVariables.ToArray());
+            Assert.IsNull(vm.AppliedProfile);
+            var fresh = fixture.CreateViewModel(service: service);
+
+            fresh.LoadEnvironmentVariables();
+
+            Assert.AreEqual(1, fresh.Profiles.Count);
+            var loaded = fresh.Profiles.Single();
+            Assert.AreEqual((profile.Id, "Test_profile_1", false), (loaded.Id, loaded.Name, loaded.IsEnabled));
+            Assert.IsTrue(loaded.Valid);
+            Assert.AreNotSame(profile, loaded);
+            Assert.AreNotSame(draft, loaded);
+            Assert.AreNotSame(profile.Variables, loaded.Variables);
+            Assert.AreEqual(1, loaded.Variables.Count);
+            var loadedTmp = loaded.Variables.Single();
+            Assert.AreEqual(("TMP", "test_TMP", VariablesSetType.Profile), (loadedTmp.Name, loadedTmp.Values, loadedTmp.ParentType));
+            Assert.AreNotSame(authored, loadedTmp);
+            Assert.AreNotSame(authored.ValuesList, loadedTmp.ValuesList);
+            Assert.AreEqual(1, loadedTmp.ValuesList.Count);
+            Assert.AreEqual("test_TMP", loadedTmp.ValuesList[0].Text);
+            Assert.AreNotSame(authored.ValuesList[0], loadedTmp.ValuesList[0]);
+            Assert.IsFalse(VariableEditorState.CanAddProfileVariable(loaded, true, "tmp", "another rejected value", Array.Empty<object>()));
+            Assert.IsNull(fresh.AppliedProfile);
+            Assert.AreEqual("original user TMP", fresh.UserDefaultSet.Variables.Single(x => x.Name == "TMP").Values);
+            Assert.IsFalse(fresh.UserDefaultSet.Variables.Single(x => x.Name == "TMP").IsAppliedFromProfile);
+            Assert.AreEqual("original user TMP", fresh.AppliedVariables.Single(x => x.Name == "TMP").Values);
+            Assert.AreEqual(2, fixture.Environment.User.Count);
+            Assert.AreEqual(1, fixture.Environment.Machine.Count);
+            Assert.AreEqual("original user TMP", fixture.Environment.User["TMP"]);
+            Assert.AreEqual("untouched user", fixture.Environment.User["KEEP"]);
+            Assert.AreEqual("untouched machine", fixture.Environment.Machine["MachineOnly"]);
+            Assert.AreEqual(0, fixture.Environment.Operations.Count(x => x.Operation == "Write" || x.Operation == "Delete"));
+            Assert.AreEqual(28, fixture.Environment.Operations.Count);
+            Assert.AreEqual(8, fixture.Environment.Keys.Count);
+            Assert.AreEqual(8, fixture.Environment.Opens.Count);
+            Assert.IsTrue(fixture.Environment.Keys.All(x => x.IsDisposed));
+            Assert.IsTrue(fixture.Environment.Opens.All(x => !x.Writable));
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(3, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Changed.Count);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.AreEqual(3, files.Writes.Count);
+            Assert.AreEqual("Exists,ReadAllText,WriteAllTextAsync,WriteAllTextAsync,WriteAllTextAsync,Exists,ReadAllText", string.Join(",", files.Calls.Select(x => x.Operation)));
+            Assert.IsTrue(files.Calls.All(x => x.Path == service.ProfilesJsonFilePath));
+            Assert.AreEqual(1, files.Files.Count);
+            Assert.AreEqual(finalJson, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(emptyJson, files.Writes[0].Contents);
+            Assert.AreEqual(finalJson, files.Writes[1].Contents);
+            Assert.AreEqual(finalJson, files.Writes[2].Contents);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
         [DataTestMethod]
         [DataRow(false)]
         [DataRow(true)]
