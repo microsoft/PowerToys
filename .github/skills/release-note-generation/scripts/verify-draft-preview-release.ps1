@@ -8,11 +8,11 @@
     GitHub.
 
 .EXAMPLE
-    .\verify-draft-preview-release.ps1 -Tag v0.101.2181.0 -TargetCommit 0123... -AssetsDirectory .\assets -OutputPath .\final-review.md
+    .\verify-draft-preview-release.ps1 -Tag v0.101.2181 -TargetCommit 0123... -AssetsDirectory .\assets -OutputPath .\final-review.md
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$Tag,
+    [Parameter(Mandatory)][ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+$')][string]$Tag,
     [Parameter(Mandatory)][string]$TargetCommit,
     [Parameter(Mandatory)][string]$AssetsDirectory,
     [string]$Repo = "microsoft/PowerToys",

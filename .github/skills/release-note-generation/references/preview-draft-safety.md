@@ -5,14 +5,18 @@ The preview workflow may create or update GitHub drafts only.
 ## Required identity
 
 ```text
-Tag:        v<resolved version>
-Title:      Preview v<resolved version>
+Tag:        v<first three numeric components of resolved version>
+Title:      Preview <tag>
 Target:     exact ADO source commit
 Draft:      true
 Prerelease: true
 ```
 
 Never use a branch name as the release target and never expose a publish parameter.
+
+For build `0.102.2991.0`, use tag `v0.102.2991` and title `Preview v0.102.2991`. Keep four-component versions in artifact filenames and audit metadata. Use `$context.tag` throughout baseline selection, draft creation, verification, and installer download links. Reject four-component or suffixed tags rather than silently changing an explicitly supplied tag.
+
+Do not rename or delete previously published four-component releases or tags. Historical releases remain valid baselines; the three-component rule applies to the new draft's identity.
 
 ## Managed body
 

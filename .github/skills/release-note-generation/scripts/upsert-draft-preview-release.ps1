@@ -8,11 +8,11 @@
     generated release assets.
 
 .EXAMPLE
-    .\upsert-draft-preview-release.ps1 -Tag v0.101.2181.0 -TargetCommit 0123... -BodyPath .\release-notes.md -AssetsDirectory .\assets
+    .\upsert-draft-preview-release.ps1 -Tag v0.101.2181 -TargetCommit 0123... -BodyPath .\release-notes.md -AssetsDirectory .\assets
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$Tag,
+    [Parameter(Mandatory)][ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+$')][string]$Tag,
     [Parameter(Mandatory)][string]$TargetCommit,
     [Parameter(Mandatory)][string]$BodyPath,
     [Parameter(Mandatory)][string]$AssetsDirectory,

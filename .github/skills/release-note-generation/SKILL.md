@@ -1,6 +1,6 @@
 ---
 name: release-note-generation
-description: Toolkit for generating PowerToys stable or preview release notes from GitHub milestones, commit ranges, or Azure DevOps release-candidate builds. Use when asked to create release notes, summarize milestone PRs, generate changelog, prepare a draft preview release, calculate PR deltas across main and stable, update release documentation, manage PR milestones, or prepare and validate release assets.
+description: Toolkit for generating PowerToys stable or preview release notes from GitHub milestones, commit ranges, or Azure DevOps release-candidate builds. Prepare draft preview releases with three-component GitHub tags while preserving four-component build and asset versions. Use when asked to create release notes, summarize milestone PRs, generate changelog, prepare a draft preview release, calculate PR deltas across main and stable, update release documentation, manage PR milestones, or prepare and validate release assets.
 license: Complete terms in LICENSE.txt
 ---
 
@@ -164,6 +164,7 @@ Do not read all steps at once—only read the step you are executing.
 
 - **Terminal usage**: Disabled by default; only run scripts when user explicitly requests
 - **Preview automation**: An explicit request to prepare a preview release, or invocation by the Prepare Preview Release agent, authorizes the canonical preview scripts
+- **Preview tags**: Use `$context.tag`, containing only `v` and the first three numeric version components (for example, build `0.102.2991.0` maps to tag `v0.102.2991`). Do not append `.0` or `-preview`. Keep `$context.version`, installer filenames, and asset versions unchanged, and pass `-ReleaseTag $context.tag` when preparing asset download links.
 - **Preview manifests**: Keep `release-manifest.json` and `assets-manifest.json` in the local audit package; do not upload either file as a GitHub release asset
 - **Preview note layout**: Place the `Installer Hashes` section immediately after the title and short public introduction, before `Highlights` and all change sections
 - **Batch generation**: Generate ALL grouped_md files in one pass, then human reviews
