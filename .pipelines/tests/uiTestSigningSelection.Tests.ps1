@@ -35,6 +35,7 @@ Describe 'UI test signing selection' {
     $authenticatedModules = @(
         'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
+        'AltWindowCycle.UITests',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
@@ -52,6 +53,7 @@ Describe 'UI test signing selection' {
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
+        'ShortcutGuide.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
     )
@@ -73,12 +75,14 @@ Describe 'UI test signing selection' {
         'OtherPowerRename.UITests',
         'PowerRename.FuzzingTest',
         'AdvancedPaste.UITests.Next.Extra',
+        'AltWindowCycle.UITests.Extra',
         'FancyZones.UITests.Next',
         'FileLocksmith.UITests.Extra',
         'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
         'MouseWithoutBorders.UITests.Extra',
         'ScreenRuler.UITests.Next.Extra',
+        'ShortcutGuide.UITests.Extra',
         'Workspaces.Editor.UITests',
         'ZoomIt.UITests.Extra' | ForEach-Object { @{ Module = $_ } }
     ) {
@@ -88,6 +92,18 @@ Describe 'UI test signing selection' {
         $result.RequiresAuthenticatedSettingsIpc | Should Be $false
         ($result.Files -contains 'PowerToys.exe') | Should Be $false
         ($result.Files -contains 'PowerToys.Settings.exe') | Should Be $false
+    }
+
+    It 'signs IPC companions for a ShortcutGuide-only selection on <Platform>' -TestCases @(
+        'x64Win10', 'x64Win11', 'ARM64' | ForEach-Object { @{ Platform = $_ } }
+    ) {
+        param($Platform)
+        $result = Get-UITestSigningSelection -Modules 'ShortcutGuide.UITests' -Platform $Platform
+
+        $result.RequiresAuthenticatedSettingsIpc | Should Be $true
+        ($result.Files -contains 'PowerToys.exe') | Should Be $true
+        ($result.Files -contains 'PowerToys.Settings.exe') | Should Be $true
+        $result.Packages.Count | Should Be 0
     }
 
     # Regression: an ImageResizer-only PR selection must not rely on another suite to sign the
