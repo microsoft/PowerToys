@@ -86,11 +86,12 @@ Script bodies are not scanned for metadata or special function names.
 
 ### Templates and authoritative metadata
 
-Select **+ Create Script** above the installed script list to open the template page. It offers
-**Greeting with parameters**, **Create a text file**, and **Describe selected files** starter templates.
-**Set up...** asks for a project name and description before creating anything.
-The file-input example also asks for allowed extensions: `.txt, .md`, `*.png`, or plain `txt`
-are accepted and normalized; leave blank for all types. Only relevant options are shown.
+Select **+ Create Script** beside search to open the creation form. Enter a project name and
+description, choose PowerShell or Python, and select primary input and output types independently:
+**None**, **Text**, or **Files**. The generated starter matches all 18 combinations.
+File input also asks for allowed extensions and minimum/maximum file counts (maximum 0 is unlimited).
+`.txt, .md`, `*.png`, or plain `txt` are accepted and normalized; leave blank for all types.
+Only relevant file options are shown; named parameters can be added to the descriptor and script afterward.
 **Create script** writes those choices directly into the descriptor and creates a new package
 folder derived from the project name with a unique action ID, editable `script.ps1`,
 `script.ps1.tool.json`, and a README explaining every example field and the safe MXC policy.
@@ -99,13 +100,11 @@ All examples work with the default MXC restrictions enabled. The file-output exa
 the isolated temporary workspace and returns explicit `file_paths`; the file-input example reads
 only consumer-supplied files staged by the Host. The Debug test window lists only no-input scripts.
 
-The CLI equivalents are `template list` and `template create <template-id> [--configure] [--root <dir>]`.
-With `--configure`, pass a JSON object on stdin, for example
-`{"projectName":"My file helper","description":"Describe my files.","fileExtensions":".txt, .md"}`.
-Omit `fileExtensions` for templates without file input. Without `--configure`, template defaults apply.
-To add a template, add its assets under `PowerScripts.Core/Templates/<id>/` and one catalogue
-entry in `ScriptTemplates.All`. Assets are embedded automatically; Settings builds its cards
-from the Host catalogue.
+The CLI equivalent is `template create --configure [--root <dir>]`, reading JSON on stdin, for example
+`{"projectName":"My file helper","description":"Describe my files.","runtime":"python","input":"files","output":"text","fileExtensions":".txt, .md","minFiles":1,"maxFiles":0}`.
+Omit file options for non-file input. Python generation does not enable the Python runtime.
+The older `template list` and `template create <template-id> [--configure] [--root <dir>]`
+commands remain available for the three original educational examples.
 
 The installed script list supports live, case-insensitive name search combined with input and output
 type filters. The selected sort order applies to the matching scripts.

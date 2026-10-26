@@ -36,18 +36,119 @@
                 AutomationProperties.AutomationId="PowerScriptsTemplatesBreadcrumb"
                 ItemClicked="TemplateBreadcrumb_ItemClicked" />
         </Grid>
-        <controls:SettingsPageControl x:Uid="PowerScripts_TemplatesPage" Grid.Row="1">
+        <controls:SettingsPageControl
+            x:Name="CreationForm"
+            x:Uid="PowerScripts_TemplatesPage"
+            Grid.Row="1">
             <controls:SettingsPageControl.ModuleContent>
                 <StackPanel Spacing="16">
                     <TextBlock x:Uid="PowerScripts_TemplatesHelp" TextWrapping="Wrap" />
+                    <TextBox
+                        x:Name="ProjectNameTextBox"
+                        x:Uid="PowerScripts_TemplateProjectName"
+                        AutomationProperties.AutomationId="PowerScriptsTemplateProjectName"
+                        MaxLength="80"
+                        TextChanged="ProjectName_TextChanged" />
+                    <TextBlock
+                        x:Uid="PowerScripts_TemplateProjectNameHelp"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        TextWrapping="Wrap" />
+                    <TextBox
+                        x:Name="DescriptionTextBox"
+                        x:Uid="PowerScripts_TemplateDescription"
+                        MinHeight="88"
+                        AcceptsReturn="True"
+                        AutomationProperties.AutomationId="PowerScriptsTemplateDescription"
+                        MaxLength="500"
+                        TextWrapping="Wrap" />
+                    <ComboBox
+                        x:Name="RuntimeComboBox"
+                        x:Uid="PowerScripts_TemplateRuntime"
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.AutomationId="PowerScriptsTemplateRuntime"
+                        SelectedIndex="0"
+                        SelectionChanged="Options_SelectionChanged">
+                        <ComboBoxItem Content="PowerShell" Tag="powershell" />
+                        <ComboBoxItem Content="Python" Tag="python" />
+                    </ComboBox>
+                    <TextBlock
+                        x:Name="PythonHelp"
+                        x:Uid="PowerScripts_TemplatePythonHelp"
+                        TextWrapping="Wrap"
+                        Visibility="Collapsed" />
+                    <ComboBox
+                        x:Name="InputComboBox"
+                        x:Uid="PowerScripts_TemplateInput"
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.AutomationId="PowerScriptsTemplateInput"
+                        SelectedIndex="0"
+                        SelectionChanged="Options_SelectionChanged">
+                        <ComboBoxItem x:Uid="PowerScripts_TemplateNone" Tag="none" />
+                        <ComboBoxItem x:Uid="PowerScripts_FilterText" Tag="text" />
+                        <ComboBoxItem x:Uid="PowerScripts_FilterFiles" Tag="files" />
+                    </ComboBox>
                     <StackPanel
-                        x:Name="TemplateCards"
-                        AutomationProperties.AutomationId="PowerScriptsTemplates"
-                        Spacing="8" />
+                        x:Name="FileInputOptions"
+                        AutomationProperties.AutomationId="PowerScriptsTemplateFileOptions"
+                        Spacing="16"
+                        Visibility="Collapsed">
+                        <TextBox
+                            x:Name="ExtensionsTextBox"
+                            x:Uid="PowerScripts_TemplateFileExtensions"
+                            AutomationProperties.AutomationId="PowerScriptsTemplateFileExtensions"
+                            MaxLength="1024"
+                            PlaceholderText=".txt, .md, .png" />
+                        <TextBlock
+                            x:Uid="PowerScripts_TemplateFileExtensionsHelp"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap" />
+                        <NumberBox
+                            x:Name="MinimumFilesNumberBox"
+                            x:Uid="PowerScripts_TemplateMinimumFiles"
+                            AutomationProperties.AutomationId="PowerScriptsTemplateMinimumFiles"
+                            Maximum="2147483647"
+                            Minimum="1"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="1" />
+                        <NumberBox
+                            x:Name="MaximumFilesNumberBox"
+                            x:Uid="PowerScripts_TemplateMaximumFiles"
+                            AutomationProperties.AutomationId="PowerScriptsTemplateMaximumFiles"
+                            Maximum="2147483647"
+                            Minimum="0"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="0" />
+                    </StackPanel>
+                    <ComboBox
+                        x:Name="OutputComboBox"
+                        x:Uid="PowerScripts_TemplateOutput"
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.AutomationId="PowerScriptsTemplateOutput"
+                        SelectedIndex="1">
+                        <ComboBoxItem x:Uid="PowerScripts_TemplateNone" Tag="none" />
+                        <ComboBoxItem x:Uid="PowerScripts_FilterText" Tag="text" />
+                        <ComboBoxItem x:Uid="PowerScripts_FilterFiles" Tag="files" />
+                    </ComboBox>
+                    <TextBlock x:Uid="PowerScripts_TemplateSetupHelp" TextWrapping="Wrap" />
                     <InfoBar
                         x:Name="TemplateStatus"
                         AutomationProperties.AutomationId="PowerScriptsTemplateStatus"
                         IsClosable="False" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            x:Name="CreateButton"
+                            x:Uid="PowerScripts_TemplateCreate"
+                            AutomationProperties.AutomationId="PowerScriptsTemplateCreate"
+                            Click="CreateButton_Click"
+                            IsEnabled="False"
+                            Style="{StaticResource AccentButtonStyle}" />
+                        <Button
+                            x:Uid="PowerScripts_TemplateCancel"
+                            AutomationProperties.AutomationId="PowerScriptsTemplateCancel"
+                            Click="BackButton_Click" />
+                    </StackPanel>
                 </StackPanel>
             </controls:SettingsPageControl.ModuleContent>
         </controls:SettingsPageControl>

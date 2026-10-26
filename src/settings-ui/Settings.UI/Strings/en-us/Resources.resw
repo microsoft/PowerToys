@@ -6953,18 +6953,25 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_CreateScriptAction.AutomationProperties.Name" xml:space="preserve"><value>Create Script</value></data>
   <data name="PowerScripts_CreateScriptTitle" xml:space="preserve"><value>Create Script</value></data>
   <data name="PowerScripts_TemplatesPage.ModuleTitle" xml:space="preserve"><value>Create Script</value></data>
-  <data name="PowerScripts_TemplatesPage.ModuleDescription" xml:space="preserve"><value>Choose a template, then customize your new script.</value></data>
-  <data name="PowerScripts_TemplateNavigationFailed" xml:space="preserve"><value>Could not open the script templates page. Try again.</value></data>
+  <data name="PowerScripts_TemplatesPage.ModuleDescription" xml:space="preserve"><value>Choose a runtime and input/output contract to generate a starter script.</value></data>
+  <data name="PowerScripts_TemplateNavigationFailed" xml:space="preserve"><value>Could not open the script creation page. Try again.</value></data>
   <data name="PowerScripts_TemplatesHelp.Text" xml:space="preserve"><value>Create an editable script, .tool.json descriptor and README guide in your scripts folder. Each guide explains the fields and safe policy choices. Creation does not run the script, approve trust or change isolation.</value></data>
-  <data name="PowerScripts_TemplateCreate" xml:space="preserve"><value>Create script</value></data>
-  <data name="PowerScripts_TemplateCustomize" xml:space="preserve"><value>Set up...</value></data>
-  <data name="PowerScripts_TemplateSetupTitle" xml:space="preserve"><value>Set up {0}</value></data>
-  <data name="PowerScripts_TemplateProjectName" xml:space="preserve"><value>Project name (required)</value></data>
-  <data name="PowerScripts_TemplateProjectNameHelp" xml:space="preserve"><value>Shown as the script title. A unique folder and action ID are derived automatically, so existing projects are never overwritten.</value></data>
-  <data name="PowerScripts_TemplateDescription" xml:space="preserve"><value>Description</value></data>
-  <data name="PowerScripts_TemplateFileExtensions" xml:space="preserve"><value>Allowed input file extensions (optional)</value></data>
-  <data name="PowerScripts_TemplateFileExtensionsHelp" xml:space="preserve"><value>For example: .txt, .md or *.png. Separate types with commas, spaces or semicolons. Leave blank for all file types, or use * alone. For compound names such as archive.tar.gz, use .gz. This filters selected files; it does not grant filesystem access.</value></data>
-  <data name="PowerScripts_TemplateSetupHelp" xml:space="preserve"><value>Your choices are written directly into the new .tool.json descriptor. No files are created until you select Create script. Creation does not run code, approve trust or change MXC isolation.</value></data>
-  <data name="PowerScripts_TemplateCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="PowerScripts_TemplateCreate.Content" xml:space="preserve"><value>Create script</value></data>
+  <data name="PowerScripts_TemplateProjectName.Header" xml:space="preserve"><value>Project name (required)</value></data>
+  <data name="PowerScripts_TemplateProjectNameHelp.Text" xml:space="preserve"><value>Shown as the script title. A unique folder and action ID are derived automatically, so existing projects are never overwritten.</value></data>
+  <data name="PowerScripts_TemplateDescription.Header" xml:space="preserve"><value>Description</value></data>
+  <data name="PowerScripts_TemplateFileExtensions.Header" xml:space="preserve"><value>Allowed input file extensions (optional)</value></data>
+  <data name="PowerScripts_TemplateFileExtensionsHelp.Text" xml:space="preserve"><value>For example: .txt, .md or *.png. Separate types with commas, spaces or semicolons. Leave blank for all file types, or use * alone. For compound names such as archive.tar.gz, use .gz. This filters selected files; it does not grant filesystem access.</value></data>
+  <data name="PowerScripts_TemplateSetupHelp.Text" xml:space="preserve"><value>Your choices are written directly into the new .tool.json descriptor. The starter inspects supplied files or echoes text; file output creates a text file in the temporary workspace. Replace the example code after creation. Creation does not run code, approve trust or change MXC isolation.</value></data>
+  <data name="PowerScripts_TemplateCancel.Content" xml:space="preserve"><value>Cancel</value></data>
   <data name="PowerScripts_TemplateCreated" xml:space="preserve"><value>Created. Read README.md in the new folder, then edit the script and descriptor. Refresh after edits; review trust before running from a consumer.</value></data>
+  <data name="PowerScripts_TemplateRuntime.Header" xml:space="preserve"><value>Runtime</value></data>
+  <data name="PowerScripts_TemplatePythonHelp.Text" xml:space="preserve"><value>Python scripts use a main function. Enable Python execution in PowerScripts settings before running them; creation does not change your runtime settings.</value></data>
+  <data name="PowerScripts_TemplateInput.Header" xml:space="preserve"><value>Primary input type</value></data>
+  <data name="PowerScripts_TemplateOutput.Header" xml:space="preserve"><value>Output type</value></data>
+  <data name="PowerScripts_TemplateNone.Content" xml:space="preserve"><value>None</value></data>
+  <data name="PowerScripts_TemplateMinimumFiles.Header" xml:space="preserve"><value>Minimum input files</value></data>
+  <data name="PowerScripts_TemplateMaximumFiles.Header" xml:space="preserve"><value>Maximum input files (0 means unlimited)</value></data>
+  <data name="PowerScripts_TemplateInvalidFileCount" xml:space="preserve"><value>Enter a whole-number file count. The minimum must be at least 1; maximum 0 means unlimited.</value></data>
+  <data name="PowerScripts_TemplateFolderFailed" xml:space="preserve"><value>The script was created, but its folder could not be opened.</value></data>
 </root>

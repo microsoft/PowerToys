@@ -51,7 +51,7 @@ internal static class Program
                     return 0;
                 }
 
-                if (positional.Count == 2 && positional[0] == "create" &&
+                if ((positional.Count == 2 || (positional.Count == 1 && options.ContainsKey("configure"))) && positional[0] == "create" &&
                     options.Keys.All(key => key.Equals("root", StringComparison.OrdinalIgnoreCase) || key.Equals("configure", StringComparison.OrdinalIgnoreCase)) &&
                     (!options.TryGetValue("root", out var roots) || roots.Count == 1) &&
                     (!options.TryGetValue("configure", out var configure) || configure.Count == 0))
@@ -72,12 +72,14 @@ internal static class Program
                     }
 
                     Console.WriteLine(JsonSerializer.Serialize(
-                        ScriptTemplates.Create(positional[1], PowerScriptsPaths.ResolveScriptsRoot(root), templateOptions),
+                        positional.Count == 1
+                            ? ScriptTemplates.Create(PowerScriptsPaths.ResolveScriptsRoot(root), templateOptions!)
+                            : ScriptTemplates.Create(positional[1], PowerScriptsPaths.ResolveScriptsRoot(root), templateOptions),
                         ScriptSettingsStore.JsonOptions));
                     return 0;
                 }
 
-                Console.Error.WriteLine("template: use list or create <template-id> [--configure] [--root <dir>]. --configure reads projectName, description and fileExtensions from JSON on stdin.");
+                Console.Error.WriteLine("template: use list, create <template-id> [--configure] [--root <dir>], or create --configure [--root <dir>]. Without a template ID, configuration includes projectName, description, runtime, input, output, fileExtensions, minFiles and maxFiles.");
                 return 1;
             }
 
@@ -743,6 +745,7 @@ internal static class Program
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  script-settings get|save|reset|forget --entry <script-path> [--root <dir>]");
         Console.WriteLine("  template list | template create <template-id> [--configure] [--root <dir>]");
+        Console.WriteLine("  template create --configure [--root <dir>] (generate from projectName, description, runtime, input, output, fileExtensions, minFiles and maxFiles JSON on stdin)");
         Console.WriteLine("       --configure reads {\"projectName\":\"My script\",\"description\":\"...\",\"fileExtensions\":\".txt, .md\"} from stdin. Extensions apply only to file-input templates.");
         Console.WriteLine("       Per-script MXC security settings only; save reads {\"mxc\":{...}} from stdin. Metadata belongs in .tool.json.");
         return 0;

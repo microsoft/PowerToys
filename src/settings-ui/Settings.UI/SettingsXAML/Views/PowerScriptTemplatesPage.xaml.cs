@@ -5,14 +5,11 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
-using CommunityToolkit.WinUI.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
@@ -21,178 +18,136 @@ namespace Microsoft.PowerToys.Settings.UI.Views;
 
 public sealed partial class PowerScriptTemplatesPage : NavigablePage
 {
+    private bool _isCreating;
+
     private PowerScriptsViewModel ViewModel { get; set; }
 
     public PowerScriptTemplatesPage()
     {
         InitializeComponent();
-        Loaded += Page_Loaded;
+        UpdateOptions();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         ViewModel = e.Parameter as PowerScriptsViewModel ??
-            throw new ArgumentException("Template navigation requires the PowerScripts view model.", nameof(e));
+            throw new ArgumentException("Creation navigation requires the PowerScripts view model.", nameof(e));
         TemplateBreadcrumb.ItemsSource = new[] { "PowerScripts", ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_CreateScriptTitle") };
     }
 
-    private async void Page_Loaded(object sender, RoutedEventArgs e) => await LoadTemplatesAsync();
-
-    private void BackButton_Click(object sender, RoutedEventArgs e) => NavigationService.GoBack();
-
-    private void BackKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
-        args.Handled = NavigationService.GoBack();
-
-    private void TemplateBreadcrumb_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
+    private void BackButton_Click(object sender, RoutedEventArgs e)
     {
-        if (args.Index == 0)
+        if (!_isCreating)
         {
             NavigationService.GoBack();
         }
     }
 
-    private async Task LoadTemplatesAsync()
+    private void BackKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
+        args.Handled = _isCreating || NavigationService.GoBack();
+
+    private void TemplateBreadcrumb_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
+        if (args.Index == 0 && !_isCreating)
+        {
+            NavigationService.GoBack();
+        }
+    }
+
+    private void ProjectName_TextChanged(object sender, TextChangedEventArgs e) => UpdateCreateButton();
+
+    private void UpdateCreateButton()
+    {
+        if (CreateButton is not null)
+        {
+            CreateButton.IsEnabled = !_isCreating && !string.IsNullOrWhiteSpace(ProjectNameTextBox.Text);
+        }
+    }
+
+    private void Options_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateOptions();
+
+    private void UpdateOptions()
+    {
+        if (FileInputOptions is null || PythonHelp is null)
+        {
+            return;
+        }
+
+        FileInputOptions.Visibility = SelectedToken(InputComboBox) == "files" ? Visibility.Visible : Visibility.Collapsed;
+        PythonHelp.Visibility = SelectedToken(RuntimeComboBox) == "python" ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private static string SelectedToken(ComboBox comboBox) =>
+        (comboBox.SelectedItem as ComboBoxItem)?.Tag as string ??
+        throw new InvalidOperationException("Select a script runtime and input/output types.");
+
+    private static int FileCount(NumberBox numberBox)
+    {
+        var value = numberBox.Value;
+        if (!double.IsFinite(value) || value != Math.Truncate(value) || value < 0 || value > int.MaxValue)
+        {
+            throw new ArgumentException(ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateInvalidFileCount"));
+        }
+
+        return (int)value;
+    }
+
+    private async void CreateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isCreating)
+        {
+            return;
+        }
+
+        _isCreating = true;
+        CreationForm.IsEnabled = false;
+        TemplateStatus.IsOpen = false;
+        string entry = null;
         try
         {
-            TemplateCards.Children.Clear();
-            foreach (var template in await ViewModel.GetTemplatesAsync())
-            {
-                var create = new Button { Content = ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateCustomize") };
-                AutomationProperties.SetAutomationId(create, "PowerScriptsCreateTemplate_" + template.Id);
-                AutomationProperties.SetName(create, template.Name);
-                create.Click += async (_, _) =>
-                {
-                    create.IsEnabled = false;
-                    try
-                    {
-                        var entry = await ShowTemplateSetupAsync(template);
-                        if (entry is null)
-                        {
-                            return;
-                        }
-
-                        TemplateStatus.Severity = InfoBarSeverity.Success;
-                        TemplateStatus.Message = ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateCreated") + Environment.NewLine + Path.GetDirectoryName(entry);
-                        TemplateStatus.IsOpen = true;
-                        Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{entry}\"") { UseShellExecute = true });
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError("Unable to create PowerScript template.", ex);
-                        TemplateStatus.Severity = InfoBarSeverity.Error;
-                        TemplateStatus.Message = ex.Message;
-                        TemplateStatus.IsOpen = true;
-                    }
-                    finally
-                    {
-                        create.IsEnabled = true;
-                    }
-                };
-                TemplateCards.Children.Add(new SettingsCard { Header = template.Name, Description = template.Description, Content = create });
-            }
+            var input = SelectedToken(InputComboBox);
+            entry = await ViewModel.CreateTemplateAsync(
+                ProjectNameTextBox.Text,
+                DescriptionTextBox.Text,
+                SelectedToken(RuntimeComboBox),
+                input,
+                SelectedToken(OutputComboBox),
+                input == "files" ? ExtensionsTextBox.Text : null,
+                input == "files" ? FileCount(MinimumFilesNumberBox) : 1,
+                input == "files" ? FileCount(MaximumFilesNumberBox) : 0);
+            TemplateStatus.Severity = InfoBarSeverity.Success;
+            TemplateStatus.Message = ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateCreated") +
+                Environment.NewLine + Path.GetDirectoryName(entry);
+            TemplateStatus.IsOpen = true;
         }
         catch (Exception ex)
         {
-            Logger.LogError("Unable to load PowerScript templates.", ex);
+            Logger.LogError("Unable to create configured PowerScript.", ex);
             TemplateStatus.Severity = InfoBarSeverity.Error;
             TemplateStatus.Message = ex.Message;
             TemplateStatus.IsOpen = true;
         }
-    }
-
-    private async Task<string> ShowTemplateSetupAsync(PowerScriptsViewModel.PowerScriptTemplateItem template)
-    {
-        var resources = ResourceLoaderInstance.ResourceLoader;
-        var projectName = new TextBox
+        finally
         {
-            Header = resources.GetString("PowerScripts_TemplateProjectName"),
-            Text = template.Name,
-            MaxLength = 80,
-        };
-        AutomationProperties.SetAutomationId(projectName, "PowerScriptsTemplateProjectName");
-        var description = new TextBox
-        {
-            Header = resources.GetString("PowerScripts_TemplateDescription"),
-            AcceptsReturn = true,
-            TextWrapping = TextWrapping.Wrap,
-            MaxLength = 500,
-            Text = template.Description,
-        };
-        AutomationProperties.SetAutomationId(description, "PowerScriptsTemplateDescription");
-        var extensions = new TextBox
-        {
-            Header = resources.GetString("PowerScripts_TemplateFileExtensions"),
-            PlaceholderText = ".txt, .md, .png",
-            MaxLength = 1024,
-        };
-        AutomationProperties.SetAutomationId(extensions, "PowerScriptsTemplateFileExtensions");
-        var error = new InfoBar { IsOpen = false, IsClosable = false, Severity = InfoBarSeverity.Error };
-        AutomationProperties.SetAutomationId(error, "PowerScriptsTemplateSetupError");
-        var content = new StackPanel { Spacing = 16 };
-        content.Children.Add(projectName);
-        content.Children.Add(new TextBlock
-        {
-            Text = resources.GetString("PowerScripts_TemplateProjectNameHelp"),
-            TextWrapping = TextWrapping.Wrap,
-            Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-        });
-        content.Children.Add(description);
-        if (template.AcceptsFiles)
-        {
-            content.Children.Add(extensions);
-            content.Children.Add(new TextBlock
-            {
-                Text = resources.GetString("PowerScripts_TemplateFileExtensionsHelp"),
-                TextWrapping = TextWrapping.Wrap,
-                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-            });
+            _isCreating = false;
+            CreationForm.IsEnabled = true;
+            UpdateCreateButton();
         }
 
-        content.Children.Add(new TextBlock { Text = resources.GetString("PowerScripts_TemplateSetupHelp"), TextWrapping = TextWrapping.Wrap });
-        content.Children.Add(error);
-        var dialog = new ContentDialog
+        if (entry is not null)
         {
-            XamlRoot = XamlRoot,
-            Title = resources.GetString("PowerScripts_TemplateSetupTitle").Replace("{0}", template.Name, StringComparison.Ordinal),
-            Content = content,
-            PrimaryButtonText = resources.GetString("PowerScripts_TemplateCreate"),
-            CloseButtonText = resources.GetString("PowerScripts_TemplateCancel"),
-            DefaultButton = ContentDialogButton.Primary,
-        };
-        AutomationProperties.SetAutomationId(dialog, "PowerScriptsTemplateSetup");
-        var creating = false;
-        string entry = null;
-        projectName.TextChanged += (_, _) => dialog.IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(projectName.Text);
-        dialog.Closing += (_, args) => args.Cancel = creating;
-        dialog.PrimaryButtonClick += async (_, args) =>
-        {
-            var deferral = args.GetDeferral();
-            args.Cancel = true;
-            creating = true;
-            dialog.IsEnabled = false;
-            dialog.IsPrimaryButtonEnabled = false;
-            error.IsOpen = false;
             try
             {
-                entry = await ViewModel.CreateTemplateAsync(template.Id, projectName.Text, description.Text, template.AcceptsFiles ? extensions.Text : null);
-                args.Cancel = false;
+                Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{entry}\"") { UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                Logger.LogError("Unable to create configured PowerScript template.", ex);
-                error.Message = ex.Message;
-                error.IsOpen = true;
+                Logger.LogError("PowerScript created, but its folder could not be opened.", ex);
+                TemplateStatus.Severity = InfoBarSeverity.Warning;
+                TemplateStatus.Message += Environment.NewLine +
+                    ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateFolderFailed") + " " + ex.Message;
             }
-            finally
-            {
-                creating = false;
-                dialog.IsEnabled = true;
-                dialog.IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(projectName.Text);
-                deferral.Complete();
-            }
-        };
-        return await dialog.ShowAsync() == ContentDialogResult.Primary ? entry : null;
+        }
     }
 }

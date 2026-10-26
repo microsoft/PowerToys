@@ -11,12 +11,20 @@ namespace PowerScripts.Core.Templates;
 
 public sealed record ScriptTemplate(string Id, string Name, string Description, bool AcceptsFiles = false);
 
-public sealed record ScriptTemplateOptions(string ProjectName, string? Description = null, string? FileExtensions = null);
+public sealed record ScriptTemplateOptions(
+    string ProjectName,
+    string? Description = null,
+    string? FileExtensions = null,
+    string Runtime = "powershell",
+    string Input = "none",
+    string Output = "text",
+    int MinFiles = 1,
+    int MaxFiles = 0);
 
 public sealed record CreatedScriptTemplate(string EntryPath, string GuidePath);
 
 /// <summary>Creates editable packages, never trust approvals or policy exceptions.</summary>
-public static class ScriptTemplates
+public static partial class ScriptTemplates
 {
     public static IReadOnlyList<ScriptTemplate> All { get; } = Array.AsReadOnly(new[]
     {
@@ -30,18 +38,6 @@ public static class ScriptTemplates
         var template = All.SingleOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal))
             ?? throw new ArgumentException("Unknown script template.", nameof(id));
         var descriptor = JsonNode.Parse(ReadAsset(template.Id, "script.ps1.tool.json"))!.AsObject();
-        var projectName = (options is null ? template.Name : options.ProjectName)?.Trim();
-        if (string.IsNullOrWhiteSpace(projectName) || projectName.Length > 80 || projectName.Any(char.IsControl))
-        {
-            throw new ArgumentException("Enter a project name of 1 to 80 characters without control characters.", nameof(options));
-        }
-
-        var description = options?.Description ?? descriptor["description"]!.GetValue<string>();
-        if (description.Length > 500 || description.Contains('\0'))
-        {
-            throw new ArgumentException("The description must be at most 500 characters and cannot contain null characters.", nameof(options));
-        }
-
         var extension = descriptor["x-powerscript"]!.AsObject();
         if (template.AcceptsFiles)
         {
@@ -52,13 +48,45 @@ public static class ScriptTemplates
             throw new ArgumentException("This template does not accept file inputs, so it cannot have an extension filter.", nameof(options));
         }
 
+        return CreatePackage(
+            scriptsRoot,
+            options is null ? template.Name : options.ProjectName,
+            options?.Description ?? descriptor["description"]!.GetValue<string>(),
+            "script.ps1",
+            descriptor,
+            ReadAsset(template.Id, "script.ps1"),
+            ReadAsset(template.Id, "README.md"),
+            template.Id);
+    }
+
+    private static CreatedScriptTemplate CreatePackage(
+        string scriptsRoot,
+        string? name,
+        string description,
+        string entryName,
+        JsonObject descriptor,
+        string script,
+        string guideContent,
+        string fallbackName = "script")
+    {
+        var projectName = name?.Trim();
+        if (string.IsNullOrWhiteSpace(projectName) || projectName.Length > 80 || projectName.Any(char.IsControl))
+        {
+            throw new ArgumentException("Enter a project name of 1 to 80 characters without control characters.", nameof(name));
+        }
+
+        if (description.Length > 500 || description.Contains('\0'))
+        {
+            throw new ArgumentException("The description must be at most 500 characters and cannot contain null characters.", nameof(description));
+        }
+
         var slug = new string(projectName.ToLowerInvariant().Select(c => char.IsAsciiLetterOrDigit(c) ? c : '-').ToArray()).Trim('-');
-        var packageName = (slug.Length == 0 ? template.Id : slug) + "-" + Guid.NewGuid().ToString("N");
+        var packageName = (slug.Length == 0 ? fallbackName : slug) + "-" + Guid.NewGuid().ToString("N");
         var folder = Path.Combine(Path.GetFullPath(scriptsRoot), packageName);
         descriptor["name"] = packageName;
         descriptor["title"] = projectName;
         descriptor["description"] = description;
-        var manifest = ToolDescriptorParser.Parse(descriptor.Deserialize<ToolDescriptor>(), "script.ps1")
+        var manifest = ToolDescriptorParser.Parse(descriptor.Deserialize<ToolDescriptor>(), entryName)
             ?? throw new InvalidDataException("The template descriptor is invalid.");
         var errors = ManifestValidator.Validate(manifest, packageName);
         if (errors.Count > 0)
@@ -67,10 +95,10 @@ public static class ScriptTemplates
         }
 
         Directory.CreateDirectory(folder);
-        var entry = Path.Combine(folder, "script.ps1");
+        var entry = Path.Combine(folder, entryName);
         var guide = Path.Combine(folder, "README.md");
-        WriteNew(entry, ReadAsset(template.Id, "script.ps1"));
-        WriteNew(guide, ReadAsset(template.Id, "README.md"));
+        WriteNew(entry, script);
+        WriteNew(guide, guideContent);
         // Publish the descriptor last so incomplete packages are not discovered as runnable scripts.
         WriteNew(entry + ToolDescriptorParser.DescriptorSuffix, descriptor.ToJsonString(new() { WriteIndented = true }));
         return new CreatedScriptTemplate(entry, guide);

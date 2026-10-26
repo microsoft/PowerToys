@@ -4,6 +4,7 @@
 
 using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
 using PowerScripts.Core.Storage;
 using PowerScripts.Core.Templates;
@@ -98,5 +99,118 @@ public class ScriptTemplateTests
         var root = Path.Combine(Path.GetTempPath(), "ps-template-invalid-" + Guid.NewGuid().ToString("N"));
         Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(id, root, new(name, FileExtensions: extensions)));
         Assert.IsFalse(Directory.Exists(root));
+    }
+
+    [DataTestMethod]
+    [DataRow("powershell", "none", "none")]
+    [DataRow("powershell", "none", "text")]
+    [DataRow("powershell", "none", "files")]
+    [DataRow("powershell", "text", "none")]
+    [DataRow("powershell", "text", "text")]
+    [DataRow("powershell", "text", "files")]
+    [DataRow("powershell", "files", "none")]
+    [DataRow("powershell", "files", "text")]
+    [DataRow("powershell", "files", "files")]
+    [DataRow("python", "none", "none")]
+    [DataRow("python", "none", "text")]
+    [DataRow("python", "none", "files")]
+    [DataRow("python", "text", "none")]
+    [DataRow("python", "text", "text")]
+    [DataRow("python", "text", "files")]
+    [DataRow("python", "files", "none")]
+    [DataRow("python", "files", "text")]
+    [DataRow("python", "files", "files")]
+    public void ConfiguredCreationMatchesSelectedContractWithoutPolicyChanges(string runtime, string input, string output)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ps-configured-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var options = new ScriptTemplateOptions("  My script  ", "Quoted \"description\"",
+                input == "files" ? "TXT; *.md" : null, runtime, input, output,
+                MinFiles: input == "files" ? 2 : 1, MaxFiles: input == "files" ? 5 : 0);
+            var created = ScriptTemplates.Create(root, options);
+            var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
+            Assert.AreEqual(0, ManifestValidator.Validate(manifest, string.Empty).Count);
+            Assert.AreEqual("My script", manifest.Name);
+            Assert.AreEqual(options.Description, manifest.Description);
+            Assert.AreEqual(runtime == "python" ? ScriptRuntime.Python : ScriptRuntime.PowerShell, manifest.Runtime);
+            Assert.AreEqual(input, ScriptIo.ToToken(manifest.InputFormat!.Value));
+            Assert.AreEqual(output, ScriptIo.ToToken(manifest.OutputFormat!.Value));
+            Assert.AreEqual(runtime == "python" ? ".py" : ".ps1", Path.GetExtension(created.EntryPath));
+            Assert.AreEqual(runtime == "python" ? "main" : null, manifest.EntryFunction);
+            if (input == "files")
+            {
+                CollectionAssert.AreEqual(new[] { ".txt", ".md" }, manifest.Input!.Extensions);
+                Assert.AreEqual(2, manifest.Input.MinFiles);
+                Assert.AreEqual(5, manifest.Input.MaxFiles);
+                CollectionAssert.Contains(manifest.Capabilities, "fileRead");
+            }
+            else
+            {
+                Assert.IsNull(manifest.Input);
+                CollectionAssert.DoesNotContain(manifest.Capabilities, "fileRead");
+            }
+
+            Assert.AreEqual(output == "files", manifest.Capabilities.Contains("fileWrite"));
+            var settings = new ScriptSettingsStore(Path.Combine(root, "settings"), new FileSettingsStore(Path.Combine(root, "module")));
+            var snapshot = settings.Get(root, created.EntryPath);
+            Assert.AreEqual(0, snapshot.ValidationErrors.Count);
+            Assert.IsFalse(snapshot.HasLocalSettings);
+            Assert.IsFalse(snapshot.HasLocalMxcSettings);
+            StringAssert.Contains(File.ReadAllText(created.GuidePath), $"{runtime}, {input} -> {output}");
+            var registry = new ScriptRegistry(root, settings);
+            registry.Load();
+            Assert.AreEqual(1, registry.Scripts.Count);
+            Assert.AreEqual(0, registry.Errors.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow("missing", "none", "text", null, 1, 0)]
+    [DataRow("powershell", "html", "text", null, 1, 0)]
+    [DataRow("python", "none", "image", null, 1, 0)]
+    [DataRow("powershell", "none", "text", ".txt", 1, 0)]
+    [DataRow("python", "text", "text", null, 2, 0)]
+    [DataRow("powershell", "files", "text", "../txt", 1, 0)]
+    [DataRow("python", "files", "text", "*;.txt", 1, 0)]
+    [DataRow("powershell", "files", "text", null, 0, 0)]
+    [DataRow("python", "files", "text", null, 2, 1)]
+    [DataRow("powershell", "files", "text", null, 1, -1)]
+    public void InvalidConfiguredContractCreatesNothing(string runtime, string input, string output, string? extensions, int minimum, int maximum)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ps-configured-invalid-" + Guid.NewGuid().ToString("N"));
+        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(root,
+            new ScriptTemplateOptions("My script", FileExtensions: extensions, Runtime: runtime, Input: input, Output: output, MinFiles: minimum, MaxFiles: maximum)));
+        Assert.IsFalse(Directory.Exists(root));
+    }
+
+    [TestMethod]
+    public void ConfiguredDisplayTextDoesNotChangeExecutableCodeOrOverwriteExistingPackages()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ps-configured-text-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var first = ScriptTemplates.Create(root, new ScriptTemplateOptions("Script ' $(throw 'unexpected')", "Literal quotes and \"text\"."));
+            var second = ScriptTemplates.Create(root, new ScriptTemplateOptions("Different name", "Different description"));
+            Assert.AreNotEqual(first.EntryPath, second.EntryPath);
+            Assert.AreEqual(File.ReadAllText(first.EntryPath), File.ReadAllText(second.EntryPath));
+            Assert.AreNotEqual(
+                JsonNode.Parse(File.ReadAllText(first.EntryPath + ".tool.json"))!["name"]!.GetValue<string>(),
+                JsonNode.Parse(File.ReadAllText(second.EntryPath + ".tool.json"))!["name"]!.GetValue<string>());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
     }
 }
