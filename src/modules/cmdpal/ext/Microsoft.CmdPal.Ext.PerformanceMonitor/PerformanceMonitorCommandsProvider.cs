@@ -54,6 +54,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         Icon = Icons.PerformanceMonitorIcon;
 
         Settings = _settingsManager.Settings;
+        SystemData.Shared.ConfigureNetwork(_settingsManager);
 
         if (softDisabled)
         {
