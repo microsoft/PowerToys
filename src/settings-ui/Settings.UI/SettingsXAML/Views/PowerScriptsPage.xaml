@@ -146,23 +146,29 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
+                        HorizontalContentAlignment="Stretch"
+                        ContentAlignment="Vertical"
                         Description="Optional. Leave empty to auto-detect via the Python launcher (py.exe) or python.exe on PATH."
                         Header="Python interpreter path"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE756;}"
                         Visibility="{x:Bind ViewModel.IsWindowsMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <TextBox
-                                MinWidth="300"
-                                HorizontalAlignment="Stretch"
+                                MinWidth="160"
                                 AutomationProperties.AutomationId="PowerScriptsPythonInterpreterPathTextBox"
                                 Text="{x:Bind ViewModel.PythonInterpreterPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                             <Button
                                 x:Name="BrowsePythonInterpreterButton"
+                                Grid.Column="1"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AutomationId="PowerScriptsBrowsePythonInterpreterButton"
                                 Click="BrowsePythonInterpreterButton_Click"
                                 Content="Browse..." />
-                        </StackPanel>
+                        </Grid>
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
@@ -202,11 +208,16 @@
                         </Grid.ColumnDefinitions>
                         <Grid Grid.ColumnSpan="3" ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
+                            <TextBox
+                                x:Uid="PowerScripts_CatalogueSearch"
+                                AutomationProperties.AutomationId="PowerScriptsSearchTextBox"
+                                Text="{x:Bind ViewModel.ScriptSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button
                                 x:Uid="PowerScripts_CreateScriptAction"
+                                Grid.Column="1"
                                 VerticalAlignment="Bottom"
                                 AutomationProperties.AutomationId="PowerScriptsCreateScript"
                                 Click="CreateScriptButton_Click"
@@ -216,11 +227,6 @@
                                     <TextBlock x:Uid="PowerScripts_CreateScriptButton" />
                                 </StackPanel>
                             </Button>
-                            <TextBox
-                                x:Uid="PowerScripts_CatalogueSearch"
-                                Grid.Column="1"
-                                AutomationProperties.AutomationId="PowerScriptsSearchTextBox"
-                                Text="{x:Bind ViewModel.ScriptSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
                         <ComboBox
                             x:Uid="PowerScripts_CatalogueInputFilter"
