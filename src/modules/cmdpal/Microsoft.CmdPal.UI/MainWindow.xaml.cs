@@ -1706,7 +1706,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         UnregisterHotkeys();
 
-        if (settings.UseWindowsKey)
+        if (settings.IsWindowsKeyHotkeyActive)
         {
             _keyboardListener.SetWindowsKeyAction(string.Empty);
         }

@@ -60,10 +60,11 @@ public class SettingsLinkCoverageTests
                     control.Attributes().Any(attribute => attribute.Value.Contains("UseWindowsKey", StringComparison.Ordinal)),
                     $"{page.FileName} must not expose the Windows-key checkbox outside the shortcut dialog.");
 
-                if ((string?)control.Attribute("AllowWindowsKey") == "True")
+                if (control.Attribute("AllowWindowsKey") is { } allowWindowsKey)
                 {
                     Assert.AreEqual("GeneralPage.xaml", page.FileName);
                     Assert.AreEqual("ShortcutControl", control.Name.LocalName);
+                    Assert.AreEqual("{x:Bind viewModel.IsWindowsKeyHotkeyAvailable}", allowWindowsKey.Value);
                     Assert.AreEqual("{x:Bind viewModel.UseWindowsKey, Mode=TwoWay}", (string?)control.Attribute("UseWindowsKey"));
                     Assert.IsNull(control.Attribute("IsEnabled"), "The picker must stay accessible in Windows-key mode.");
                 }
@@ -71,7 +72,7 @@ public class SettingsLinkCoverageTests
         }
 
         var generalPage = LoadPage(SettingsPages[0]);
-        Assert.AreEqual(1, generalPage.Descendants().Count(control => (string?)control.Attribute("AllowWindowsKey") == "True"));
+        Assert.AreEqual(1, generalPage.Descendants().Count(control => control.Attribute("AllowWindowsKey") is not null));
     }
 
     [TestMethod]

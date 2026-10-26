@@ -24,6 +24,56 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public class SettingsViewModelTests
 {
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void WindowsKeyModeForcesHookCheckboxWithoutChangingSavedPreference(bool savedPreference)
+    {
+        var featureEnabled = SettingsModel.IsWindowsKeyHotkeyFeatureEnabled;
+        var service = CreateSettingsService();
+        service.Object.UpdateSettings(settings => settings with { UseLowLevelGlobalHotkey = savedPreference });
+        var scheduler = new QueuedTaskScheduler();
+        using var viewModel = CreateViewModel(service.Object, scheduler);
+        var properties = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => properties.Add(args.PropertyName);
+        Assert.AreEqual(savedPreference, viewModel.UseLowLevelGlobalHotkey);
+        Assert.IsTrue(viewModel.CanEditLowLevelGlobalHotkey);
+        service.Invocations.Clear();
+
+        service.Object.UpdateSettings(settings => settings with { UseWindowsKey = true });
+        scheduler.ExecuteAllAvailable();
+
+        Assert.AreEqual(featureEnabled || savedPreference, viewModel.UseLowLevelGlobalHotkey);
+        Assert.AreEqual(!featureEnabled, viewModel.CanEditLowLevelGlobalHotkey);
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseLowLevelGlobalHotkey));
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey));
+        if (featureEnabled)
+        {
+            viewModel.UseLowLevelGlobalHotkey = true;
+            viewModel.UseLowLevelGlobalHotkey = false;
+        }
+
+        service.Verify(
+            settings => settings.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()),
+            Times.Once);
+        var json = JsonSerializer.Serialize(service.Object.Settings, JsonSerializationContext.Default.SettingsModel);
+        var restored = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+        Assert.IsNotNull(restored);
+        Assert.AreEqual(savedPreference, restored.UseLowLevelGlobalHotkey);
+        Assert.IsTrue(restored.UseWindowsKey);
+
+        properties.Clear();
+        service.Object.UpdateSettings(settings => settings with { UseWindowsKey = false });
+        scheduler.ExecuteAllAvailable();
+
+        Assert.AreEqual(savedPreference, viewModel.UseLowLevelGlobalHotkey);
+        Assert.IsTrue(viewModel.CanEditLowLevelGlobalHotkey);
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseLowLevelGlobalHotkey));
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey));
+        viewModel.UseLowLevelGlobalHotkey = !savedPreference;
+        Assert.AreEqual(!savedPreference, service.Object.Settings.UseLowLevelGlobalHotkey);
+    }
+
+    [TestMethod]
     public void WindowsKeyModeIsOptInAndPersistsWithoutReplacingCustomShortcut()
     {
         var oldSettings = JsonSerializer.Deserialize("{}", JsonSerializationContext.Default.SettingsModel);
@@ -36,6 +86,8 @@ public class SettingsViewModelTests
         var restored = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
         Assert.IsNotNull(restored);
         Assert.IsTrue(restored.UseWindowsKey);
+        Assert.AreEqual(SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, restored.IsWindowsKeyHotkeyActive);
+        Assert.IsFalse(json.Contains(nameof(SettingsModel.IsWindowsKeyHotkeyActive), StringComparison.Ordinal));
         Assert.AreEqual(customHotkey, restored.Hotkey);
     }
 
@@ -49,7 +101,7 @@ public class SettingsViewModelTests
         Assert.IsFalse(viewModel.UseWindowsKey);
 
         viewModel.UseWindowsKey = true;
-        Assert.IsTrue(service.Object.Settings.UseWindowsKey);
+        Assert.AreEqual(SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, service.Object.Settings.UseWindowsKey);
         Assert.AreEqual(customHotkey, viewModel.Hotkey);
         Assert.IsFalse(service.Object.Settings.UseLowLevelGlobalHotkey);
 
@@ -72,8 +124,12 @@ public class SettingsViewModelTests
         scheduler.ExecuteAllAvailable();
 
         CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseWindowsKey));
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseLowLevelGlobalHotkey));
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey));
         CollectionAssert.Contains(properties, nameof(SettingsViewModel.Hotkey));
-        Assert.IsTrue(viewModel.UseWindowsKey);
+        Assert.AreEqual(SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, viewModel.UseWindowsKey);
+        Assert.AreEqual(SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, viewModel.UseLowLevelGlobalHotkey);
+        Assert.AreEqual(!SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, viewModel.CanEditLowLevelGlobalHotkey);
         service.Verify(
             settings => settings.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()),
             Times.Once);
@@ -90,8 +146,35 @@ public class SettingsViewModelTests
         viewModel.Hotkey = shortcut;
         viewModel.UseWindowsKey = false;
 
-        Assert.IsFalse(service.Object.Settings.UseWindowsKey);
+        Assert.AreEqual(!SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, service.Object.Settings.UseWindowsKey);
         Assert.AreEqual(shortcut, service.Object.Settings.Hotkey);
+    }
+
+    [TestMethod]
+    public void WindowsKeyFeatureRequiresExactEnvironmentOptIn()
+    {
+        var expected = Environment.GetEnvironmentVariable("CMDPAL_ENABLE_WIN_HOTKEY") == "1";
+        Assert.AreEqual(expected, SettingsModel.IsWindowsKeyHotkeyFeatureEnabled);
+        var settings = new SettingsModel { UseWindowsKey = true };
+        Assert.AreEqual(expected, settings.IsWindowsKeyHotkeyActive);
+
+        var service = CreateSettingsService();
+        service.Object.UpdateSettings(current => current with { UseWindowsKey = true });
+        using var viewModel = CreateViewModel(service.Object, new QueuedTaskScheduler());
+        Assert.AreEqual(expected, viewModel.IsWindowsKeyHotkeyAvailable);
+        Assert.AreEqual(expected, viewModel.UseWindowsKey);
+        service.Invocations.Clear();
+
+        // Hidden controls must not clear an existing saved opt-in through binding feedback.
+        viewModel.UseWindowsKey = false;
+        Assert.AreEqual(!expected, service.Object.Settings.UseWindowsKey);
+        if (!expected)
+        {
+            viewModel.UseWindowsKey = true;
+            service.Verify(
+                current => current.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()),
+                Times.Never);
+        }
     }
 
     [TestMethod]
