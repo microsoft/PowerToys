@@ -223,9 +223,10 @@ references may need a lifetime longer than the script invocation.
 
 Consumer `list` discovery omits Python scripts while Python execution is disabled in Settings.
 Windows, existing WSL and managed Linux modes enable discovery. The Settings catalogue uses
-`list --json --include-disabled --include-unconfigured` to keep all installed and unavailable
-registered scripts visible for configuration; these flags
-do not enable Python or bypass execution checks.
+`list --json --include-disabled --include-unconfigured` to retain installed metadata, but its script
+list and counts hide Python scripts while Python is disabled. Re-enabling Python restores them
+immediately without changing scripts, trust, isolation settings, search, or I/O filters.
+The Host's management flags do not enable Python or bypass execution checks.
 
 ### Parameters (optional)
 

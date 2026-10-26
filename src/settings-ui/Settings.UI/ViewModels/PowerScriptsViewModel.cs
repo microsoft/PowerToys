@@ -138,12 +138,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string CatalogueCount => GetResourceString("PowerScripts_CatalogueCount")
             .Replace("{0}", VisibleScripts.Count.ToString(CultureInfo.CurrentCulture), StringComparison.Ordinal)
-            .Replace("{1}", Scripts.Count.ToString(CultureInfo.CurrentCulture), StringComparison.Ordinal);
+            .Replace("{1}", RuntimeEnabledScriptCount.ToString(CultureInfo.CurrentCulture), StringComparison.Ordinal);
 
         /// <summary>The WSL distributions detected via <c>wsl.exe -l -q</c>, offered when Python runs in WSL mode.</summary>
         public ObservableCollection<string> WslDistributions { get; }
 
-        public bool HasScripts => Scripts.Count > 0;
+        public bool HasScripts => RuntimeEnabledScriptCount > 0;
+
+        private int RuntimeEnabledScriptCount => Scripts.Count(script => IsScriptRuntimeEnabled(script, PythonModeIndex != 0));
 
         /// <summary>
         /// The folder PowerScripts scans for <c>.tool.json</c> descriptors. Persisted to
@@ -212,6 +214,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsManagedLinuxMode));
                     OnPropertyChanged(nameof(PythonEnvironmentDescription));
                     RefreshScriptMxcStates();
+                    RefreshCatalogue();
                 }
             }
         }
@@ -461,12 +464,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public static bool ResolveMxcEnabled(bool? explicitPreference, bool isPlatformSupported) =>
             explicitPreference ?? isPlatformSupported;
 
+        private static bool IsScriptRuntimeEnabled(PowerScriptListItem script, bool pythonEnabled) =>
+            pythonEnabled || !string.Equals(script.Runtime, "python", StringComparison.OrdinalIgnoreCase);
+
         public static IReadOnlyList<PowerScriptListItem> FilterAndSortScripts(
             IEnumerable<PowerScriptListItem> scripts,
             int sortIndex,
             int inputFilterIndex,
             int outputFilterIndex = 0,
-            string searchText = null)
+            string searchText = null,
+            bool pythonEnabled = true)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(inputFilterIndex);
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(inputFilterIndex, CatalogueIoTokens.Length);
@@ -474,6 +481,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(outputFilterIndex, CatalogueIoTokens.Length);
             var search = searchText?.Trim();
             var filtered = scripts.Where(script =>
+                IsScriptRuntimeEnabled(script, pythonEnabled) &&
                 (inputFilterIndex == 0 ||
                     string.Equals(script.Io?.Input ?? "none", CatalogueIoTokens[inputFilterIndex], StringComparison.OrdinalIgnoreCase)) &&
                 (outputFilterIndex == 0 ||
@@ -494,7 +502,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void RefreshCatalogue(bool preserveEditorOrder = false)
         {
-            var visible = FilterAndSortScripts(Scripts, ScriptSortIndex, ScriptInputFilterIndex, ScriptOutputFilterIndex, ScriptSearchText);
+            var visible = FilterAndSortScripts(
+                Scripts, ScriptSortIndex, ScriptInputFilterIndex, ScriptOutputFilterIndex, ScriptSearchText, PythonModeIndex != 0);
             if (preserveEditorOrder)
             {
                 // Saving must not move focused editors or recycle another script's draft.
@@ -533,6 +542,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(CatalogueCount));
+            OnPropertyChanged(nameof(HasScripts));
             OnPropertyChanged(nameof(HasNoMatchingScripts));
         }
 

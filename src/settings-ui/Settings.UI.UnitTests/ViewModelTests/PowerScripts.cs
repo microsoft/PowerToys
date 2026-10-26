@@ -121,6 +121,30 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        [DataRow("Python", false)]
+        [DataRow("python", true)]
+        public void DisabledPythonIsHiddenAndRestoredWithoutRemovingInstalledScripts(string runtime, bool explicitExecution)
+        {
+            var scripts = CreateCatalogue();
+            scripts[1].Runtime = runtime;
+            scripts[1].HasExplicitExecution = explicitExecution;
+            var visible = PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 0, pythonEnabled: false);
+            Assert.AreEqual("action,text", string.Join(",", visible.Select(script => script.Id)));
+            Assert.AreEqual(3, scripts.Length);
+            Assert.AreSame(scripts[0], visible[0]);
+            Assert.AreSame(scripts[1], PowerScriptsViewModel.FilterAndSortScripts(scripts, 0, 0, pythonEnabled: true)[^1]);
+        }
+
+        [TestMethod]
+        public void RuntimeVisibilityCombinesWithSearchAndIoFilters()
+        {
+            var scripts = CreateCatalogue();
+            Assert.AreEqual(0, PowerScriptsViewModel.FilterAndSortScripts(scripts, 1, 2, 1, "zeb", pythonEnabled: false).Count);
+            Assert.AreSame(scripts[1], PowerScriptsViewModel.FilterAndSortScripts(scripts, 1, 2, 1, "zeb", pythonEnabled: true).Single());
+            Assert.AreSame(scripts[2], PowerScriptsViewModel.FilterAndSortScripts(scripts, 1, 3, 2, "br", pythonEnabled: false).Single());
+        }
+
+        [TestMethod]
         public void CatalogueFiltersByPrimaryInputWithoutChangingScriptInstances()
         {
             var scripts = CreateCatalogue();
