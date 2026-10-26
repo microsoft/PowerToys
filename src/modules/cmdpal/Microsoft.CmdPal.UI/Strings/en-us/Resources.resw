@@ -370,6 +370,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Header" xml:space="preserve">
     <value>Use low-level keyboard hook</value>
   </data>
+  <data name="Settings_GeneralPage_UseWindowsKey_SettingsCard.Header" xml:space="preserve">
+    <value>Use the Windows key</value>
+  </data>
+  <data name="Settings_GeneralPage_UseWindowsKey_SettingsCard.Description" xml:space="preserve">
+    <value>Press and release the Windows key to open Command Palette instead of Start. Windows key combinations still work. Uses a low-level keyboard hook.</value>
+  </data>
   <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Description" xml:space="preserve">
     <value>May fix shortcut issues, but won't work while an elevated app has focus</value>
   </data>

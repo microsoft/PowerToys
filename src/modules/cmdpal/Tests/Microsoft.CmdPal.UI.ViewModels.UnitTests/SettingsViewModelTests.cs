@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,6 +23,66 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public class SettingsViewModelTests
 {
+    [TestMethod]
+    public void WindowsKeyModeIsOptInAndPersistsWithoutReplacingCustomShortcut()
+    {
+        var oldSettings = JsonSerializer.Deserialize("{}", JsonSerializationContext.Default.SettingsModel);
+        Assert.IsNotNull(oldSettings);
+        Assert.IsFalse(oldSettings.UseWindowsKey);
+        var customHotkey = new HotkeySettings(false, true, false, true, 0x4B);
+        var settings = oldSettings with { UseWindowsKey = true, Hotkey = customHotkey };
+
+        var json = JsonSerializer.Serialize(settings, JsonSerializationContext.Default.SettingsModel);
+        var restored = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+        Assert.IsNotNull(restored);
+        Assert.IsTrue(restored.UseWindowsKey);
+        Assert.AreEqual(customHotkey, restored.Hotkey);
+    }
+
+    [TestMethod]
+    public void WindowsKeyModeShowsWindowsKeyAndPreservesCustomShortcut()
+    {
+        var service = CreateSettingsService();
+        var customHotkey = new HotkeySettings(false, true, true, false, 0x4B);
+        service.Object.UpdateSettings(settings => settings with { Hotkey = customHotkey });
+        using var viewModel = CreateViewModel(service.Object, new QueuedTaskScheduler());
+        Assert.IsFalse(viewModel.UseWindowsKey);
+        Assert.IsTrue(viewModel.CanEditActivationHotkey);
+
+        viewModel.UseWindowsKey = true;
+        Assert.IsTrue(service.Object.Settings.UseWindowsKey);
+        Assert.IsFalse(viewModel.CanEditActivationHotkey);
+        Assert.AreEqual(new HotkeySettings(true, false, false, false, 0), viewModel.Hotkey);
+        Assert.IsFalse(service.Object.Settings.UseLowLevelGlobalHotkey);
+
+        viewModel.Hotkey = viewModel.Hotkey;
+        Assert.AreEqual(customHotkey, service.Object.Settings.Hotkey);
+        viewModel.UseWindowsKey = false;
+        Assert.IsTrue(viewModel.CanEditActivationHotkey);
+        Assert.AreEqual(customHotkey, viewModel.Hotkey);
+    }
+
+    [TestMethod]
+    public void ExternalWindowsKeyModeChangesRefreshBindingsWithoutSavingAgain()
+    {
+        var service = CreateSettingsService();
+        var scheduler = new QueuedTaskScheduler();
+        using var viewModel = CreateViewModel(service.Object, scheduler);
+        var properties = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => properties.Add(args.PropertyName);
+
+        service.Object.UpdateSettings(settings => settings with { UseWindowsKey = true });
+        scheduler.ExecuteAllAvailable();
+
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseWindowsKey));
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.CanEditActivationHotkey));
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.Hotkey));
+        Assert.IsFalse(viewModel.CanEditActivationHotkey);
+        service.Verify(
+            settings => settings.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()),
+            Times.Once);
+    }
+
     [TestMethod]
     public async Task SettingsChanges_RefreshShelfBindingsOnSuppliedSchedulerWithoutSavingAgain()
     {

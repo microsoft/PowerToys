@@ -108,13 +108,37 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
     public HotkeySettings? Hotkey
     {
-        get => _settingsService.Settings.Hotkey;
+        get => UseWindowsKey ? new HotkeySettings(true, false, false, false, 0) : _settingsService.Settings.Hotkey;
         set
         {
+            if (UseWindowsKey)
+            {
+                return;
+            }
+
             _settingsService.UpdateSettings(s => s with { Hotkey = value ?? SettingsModel.DefaultActivationShortcut });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
         }
     }
+
+    public bool UseWindowsKey
+    {
+        get => _settingsService.Settings.UseWindowsKey;
+        set
+        {
+            if (value == UseWindowsKey)
+            {
+                return;
+            }
+
+            _settingsService.UpdateSettings(s => s with { UseWindowsKey = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseWindowsKey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanEditActivationHotkey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
+        }
+    }
+
+    public bool CanEditActivationHotkey => !UseWindowsKey;
 
     public bool UseLowLevelGlobalHotkey
     {
@@ -721,6 +745,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandPaletteOpeningModeIndex)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowQuickAccessShelf)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseWindowsKey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanEditActivationHotkey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             },
             CancellationToken.None,
             TaskCreationOptions.None,
