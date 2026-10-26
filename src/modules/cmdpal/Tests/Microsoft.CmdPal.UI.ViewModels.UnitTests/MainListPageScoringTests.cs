@@ -113,7 +113,6 @@ public sealed class MainListPageScoringTests
             CommandProviderContext.Empty,
             new ProviderSettings(),
             services,
-            model,
             DefaultContextMenuFactory.Instance);
         _commands.Add(command);
         return command;
