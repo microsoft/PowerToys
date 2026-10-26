@@ -537,6 +537,7 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 Describe 'UI-test pipeline non-elevated dispatch' {
     It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
         @{ Suite = 'AdvancedPaste.UITests.Next' }
+        @{ Suite = 'AltWindowCycle.UITests' }
         @{ Suite = 'CropAndLock.UITests' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
@@ -582,6 +583,8 @@ Describe 'UI-test pipeline non-elevated dispatch' {
 
     It 'scopes Workspaces authenticated Settings IPC signing without changing other families' -TestCases @(
         @{ Modules = @('AdvancedPaste.UITests.Next'); AllModules = $false; Expected = $true }
+        @{ Modules = @('AltWindowCycle.UITests'); AllModules = $false; Expected = $true }
+        @{ Modules = @('AltWindowCycle.UITests.Extra'); AllModules = $false; Expected = $false }
         @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
         @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
         @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }

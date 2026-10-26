@@ -184,6 +184,14 @@
   </Folder>
   <Folder Name="/modules/AltWindowCycle/">
     <Project Path="src/modules/AltWindowCycle/AltWindowCycle.vcxproj" Id="4d1d41c7-e22b-4a8b-8805-660a100e1d79" />
+    <Project Path="src/modules/AltWindowCycle/Tests/AltWindowCycle.TestApp/AltWindowCycle.TestApp.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/AltWindowCycle/Tests/AltWindowCycle.UITests/AltWindowCycle.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/AltWindowCycle/UnitTests/AltWindowCycleUnitTests.vcxproj" Id="9ebe5c3a-4a37-477e-9176-07c7cf0eba6e" />
   </Folder>
   <Folder Name="/modules/AlwaysOnTop/">
