@@ -222,6 +222,23 @@ namespace ImageResizer.Properties
             Assert.AreSame(currentCustomSize, settings.AllSizes.First());
         }
 
+        [DataTestMethod]
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow(" ")]
+        public void FileNameRejectsBlankValuesWithoutChangingStateOrNotifying(string invalidFileName)
+        {
+            var settings = new Settings { FileName = "retained-%1" };
+            var notifications = new List<string>();
+            settings.PropertyChanged += (sender, e) => notifications.Add(e.PropertyName);
+
+            var exception = Assert.ThrowsExactly<ArgumentNullException>(() => settings.FileName = invalidFileName);
+
+            Assert.AreEqual(nameof(Settings.FileName), exception.ParamName);
+            Assert.AreEqual("retained-%1", settings.FileName);
+            Assert.AreEqual(0, notifications.Count);
+        }
+
         [TestMethod]
         public void FileNameFormatWorks()
         {
