@@ -185,17 +185,6 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <Button
-                        x:Uid="PowerScripts_CreateScriptAction"
-                        HorizontalAlignment="Left"
-                        AutomationProperties.AutomationId="PowerScriptsCreateScript"
-                        Click="CreateScriptButton_Click"
-                        Style="{StaticResource AccentButtonStyle}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <SymbolIcon Symbol="Add" />
-                            <TextBlock x:Uid="PowerScripts_CreateScriptButton" />
-                        </StackPanel>
-                    </Button>
                     <InfoBar
                         x:Name="ScriptSettingsError"
                         AutomationProperties.AutomationId="PowerScriptsSettingsError"
@@ -211,11 +200,28 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <TextBox
-                            x:Uid="PowerScripts_CatalogueSearch"
-                            Grid.ColumnSpan="3"
-                            AutomationProperties.AutomationId="PowerScriptsSearchTextBox"
-                            Text="{x:Bind ViewModel.ScriptSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <Grid Grid.ColumnSpan="3" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                x:Uid="PowerScripts_CreateScriptAction"
+                                VerticalAlignment="Bottom"
+                                AutomationProperties.AutomationId="PowerScriptsCreateScript"
+                                Click="CreateScriptButton_Click"
+                                Style="{StaticResource AccentButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <SymbolIcon Symbol="Add" />
+                                    <TextBlock x:Uid="PowerScripts_CreateScriptButton" />
+                                </StackPanel>
+                            </Button>
+                            <TextBox
+                                x:Uid="PowerScripts_CatalogueSearch"
+                                Grid.Column="1"
+                                AutomationProperties.AutomationId="PowerScriptsSearchTextBox"
+                                Text="{x:Bind ViewModel.ScriptSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
                         <ComboBox
                             x:Uid="PowerScripts_CatalogueInputFilter"
                             Grid.Row="1"
