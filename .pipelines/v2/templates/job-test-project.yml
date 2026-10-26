@@ -291,6 +291,7 @@ jobs:
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
+        'ShortcutGuide.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
       ) + $newPlusModules

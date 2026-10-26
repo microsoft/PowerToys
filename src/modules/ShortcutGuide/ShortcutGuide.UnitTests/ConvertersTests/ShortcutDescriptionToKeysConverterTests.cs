@@ -57,4 +57,53 @@ public sealed class ShortcutDescriptionToKeysConverterTests
 
         CollectionAssert.AreEqual(new object[] { 38 }, result);
     }
+
+    [TestMethod]
+    [DataRow("Down", 40)]
+    [DataRow("Left", 37)]
+    [DataRow("Right", 39)]
+    public void GetKeysList_OtherDirectionalNameKeys_MapToVirtualKeyCode(string key, int expectedVk)
+    {
+        var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: [key]));
+
+        CollectionAssert.AreEqual(new object[] { expectedVk }, result);
+    }
+
+    [TestMethod]
+    public void GetKeysList_BackNameKey_MapsToVirtualKeyCode()
+    {
+        // "Back" maps to VK 8 (the Backspace key).
+        var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: ["Back"]));
+
+        CollectionAssert.AreEqual(new object[] { 8 }, result);
+    }
+
+    [TestMethod]
+    [DataRow("37", 37)]
+    [DataRow("38", 38)]
+    [DataRow("39", 39)]
+    [DataRow("40", 40)]
+    public void GetKeysList_NumericArrowVkCode_IsAddedAsInteger(string key, int expectedVk)
+    {
+        // Numeric strings for arrow VK codes (37-40) are parsed and added as ints, not mapped via GetKeyName.
+        var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: [key]));
+
+        CollectionAssert.AreEqual(new object[] { expectedVk }, result);
+    }
+
+    [TestMethod]
+    public void GetKeysList_NoModifiersNoKeys_ReturnsEmptyList()
+    {
+        var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: []));
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetKeysList_WinModifierOnly_ReturnsWinVirtualKey()
+    {
+        var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: true, keys: []));
+
+        CollectionAssert.AreEqual(new object[] { 92 }, result);
+    }
 }
