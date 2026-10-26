@@ -257,23 +257,19 @@ jobs:
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.slnx'
     displayName: Verify ARM64 configurations
 
+  # No restoreKeys: a fallback restore plus a save under the new key keeps every package version
+  # ever used, which grew these caches to ~10x what one restore needs. A key miss restores cold once.
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
       displayName: 'Cache nuget packages (PackageReference)'
       inputs:
-        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
-        restoreKeys: |
-           "PackageReference" | "$(Agent.OS)"
-           "PackageReference"
+        key: '"PackageReference" | "v2" | "$(Agent.OS)" | Directory.Packages.props'
         path: $(NUGET_PACKAGES)
 
     - task: Cache@2
       displayName: 'Cache nuget packages (packages.config)'
       inputs:
-        key: '"packages.config" | "$(Agent.OS)" | **/packages.config'
-        restoreKeys: |
-           "packages.config" | "$(Agent.OS)"
-           "packages.config"
+        key: '"packages.config" | "v2" | "$(Agent.OS)" | **/packages.config'
         path: packages
   
   - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
