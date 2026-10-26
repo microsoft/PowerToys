@@ -183,13 +183,13 @@ public sealed partial class PageCleanupTests
             page.Object, scheduler, new TestHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
         var recipient = new object();
         var updates = 0;
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, message) =>
+        viewModel.CommandBarContextChanged += (_, message) =>
         {
-            if (ReferenceEquals(message.ViewModel, viewModel.Command))
+            if (ReferenceEquals(message.Context, viewModel.Command))
             {
                 updates++;
             }
-        });
+        };
 
         try
         {

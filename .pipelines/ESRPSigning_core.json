@@ -53,6 +53,10 @@
             "PowerToys.AdvancedPasteModuleInterface.dll",
             "WinUI3Apps\\PowerToys.AdvancedPaste.exe",
             "WinUI3Apps\\PowerToys.AdvancedPaste.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Core.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Engine.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.exe",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.dll",
 
             "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",
@@ -143,6 +147,8 @@
 
             "PowerToys.LightSwitchModuleInterface.dll",
             "LightSwitchService\\PowerToys.LightSwitchService.exe",
+            "PowerToys.LightSwitch.Cli.exe",
+            "PowerToys.LightSwitch.Cli.dll",
 
             "PowerToys.KeyboardManager.dll",
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
@@ -265,7 +271,6 @@
             "WinUI3Apps\\PowerToys.Settings.Cli.exe",
 
             "PowerToys.CmdPalModuleInterface.dll",
-            "CmdPalKeyboardService.dll",
             "PowerToys.ModuleContracts.dll",
             "Awake.ModuleServices.dll",
             "ColorPicker.ModuleServices.dll",

@@ -45,10 +45,12 @@ jobs:
         $modules = @($result.UiTestModules)
         $modulesValue = $modules -join ';'
         $hasUiTests = if ($modules.Count -gt 0) { 'true' } else { 'false' }
+        $hasMwbUiTests = if ($modules -contains 'MouseWithoutBorders.UITests') { 'true' } else { 'false' }
 
         Write-Host "Touched modules: $($result.TouchedModules -join ', ')"
         Write-Host "Selected UI tests: $($modules -join ', ')"
         Write-Host "##vso[task.setvariable variable=hasUiTests;isOutput=true]$hasUiTests"
+        Write-Host "##vso[task.setvariable variable=hasMwbUiTests;isOutput=true]$hasMwbUiTests"
         Write-Host "##vso[task.setvariable variable=uiTestModules;isOutput=true]$modulesValue"
       name: resolve
       displayName: Resolve UI tests from pull request changes
