@@ -201,6 +201,131 @@ namespace ImageResizer.Properties
         }
 
         [TestMethod]
+        public void AllSizesForwardsPresetReplacement()
+        {
+            var settings = new Settings();
+            var allSizes = settings.AllSizes;
+            var originalPresets = settings.Sizes.ToArray();
+            var originalView = allSizes.ToList();
+            var replacement = new ResizeSize(4, "Web", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel);
+            var expected = new[] { originalPresets[0], replacement, originalPresets[2], originalPresets[3] }
+                .Concat(originalView.Skip(originalPresets.Length)).ToList();
+            var sourceChanges = new List<NotifyCollectionChangedEventArgs>();
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var collectionSenders = new List<object>();
+            var sourceProperties = new List<PropertyChangedEventArgs>();
+            var properties = new List<PropertyChangedEventArgs>();
+            var propertySenders = new List<object>();
+            var chronology = new List<string>();
+            settings.Sizes.CollectionChanged += (sender, e) => sourceChanges.Add(e);
+            ((INotifyPropertyChanged)settings.Sizes).PropertyChanged += (sender, e) => sourceProperties.Add(e);
+            ((INotifyCollectionChanged)allSizes).CollectionChanged += (sender, e) =>
+            {
+                changes.Add(e);
+                collectionSenders.Add(sender);
+                chronology.Add("collection");
+            };
+            ((INotifyPropertyChanged)allSizes).PropertyChanged += (sender, e) =>
+            {
+                properties.Add(e);
+                propertySenders.Add(sender);
+                chronology.Add("property");
+            };
+
+            settings.Sizes[1] = replacement;
+
+            Assert.AreEqual(1, sourceChanges.Count);
+            Assert.AreEqual(1, changes.Count);
+            Assert.AreEqual(1, collectionSenders.Count);
+            Assert.AreSame(allSizes, collectionSenders[0]);
+            Assert.AreSame(sourceChanges[0], changes[0]);
+            Assert.AreEqual(NotifyCollectionChangedAction.Replace, changes[0].Action);
+            Assert.AreEqual(1, changes[0].OldItems.Count);
+            Assert.AreEqual(1, changes[0].NewItems.Count);
+            Assert.AreSame(originalPresets[1], changes[0].OldItems[0]);
+            Assert.AreSame(replacement, changes[0].NewItems[0]);
+            Assert.AreEqual(1, changes[0].OldStartingIndex);
+            Assert.AreEqual(1, changes[0].NewStartingIndex);
+            Assert.AreEqual(1, sourceProperties.Count);
+            Assert.AreEqual(1, properties.Count);
+            Assert.AreEqual(1, propertySenders.Count);
+            Assert.AreSame(allSizes, propertySenders[0]);
+            Assert.AreSame(sourceProperties[0], properties[0]);
+            Assert.AreEqual("Item[]", properties[0].PropertyName);
+            Assert.AreEqual(2, chronology.Count);
+            Assert.AreEqual("property", chronology[0]);
+            Assert.AreEqual("collection", chronology[1]);
+            var actual = allSizes.ToList();
+            Assert.AreEqual(originalView.Count, actual.Count);
+            CollectionAssert.AreEqual(expected, actual);
+            CollectionAssert.DoesNotContain(actual, originalPresets[1]);
+        }
+
+        [DataTestMethod]
+        [DataRow(0, 3)]
+        [DataRow(3, 0)]
+        public void AllSizesForwardsPresetMove(int oldIndex, int newIndex)
+        {
+            var settings = new Settings();
+            var allSizes = settings.AllSizes;
+            var originalPresets = settings.Sizes.ToArray();
+            var originalView = allSizes.ToList();
+            var movedPreset = originalPresets[oldIndex];
+            var expectedPresets = oldIndex == 0
+                ? new[] { originalPresets[1], originalPresets[2], originalPresets[3], originalPresets[0] }
+                : new[] { originalPresets[3], originalPresets[0], originalPresets[1], originalPresets[2] };
+            var expected = expectedPresets.Concat(originalView.Skip(originalPresets.Length)).ToList();
+            var sourceChanges = new List<NotifyCollectionChangedEventArgs>();
+            var changes = new List<NotifyCollectionChangedEventArgs>();
+            var collectionSenders = new List<object>();
+            var sourceProperties = new List<PropertyChangedEventArgs>();
+            var properties = new List<PropertyChangedEventArgs>();
+            var propertySenders = new List<object>();
+            var chronology = new List<string>();
+            settings.Sizes.CollectionChanged += (sender, e) => sourceChanges.Add(e);
+            ((INotifyPropertyChanged)settings.Sizes).PropertyChanged += (sender, e) => sourceProperties.Add(e);
+            ((INotifyCollectionChanged)allSizes).CollectionChanged += (sender, e) =>
+            {
+                changes.Add(e);
+                collectionSenders.Add(sender);
+                chronology.Add("collection");
+            };
+            ((INotifyPropertyChanged)allSizes).PropertyChanged += (sender, e) =>
+            {
+                properties.Add(e);
+                propertySenders.Add(sender);
+                chronology.Add("property");
+            };
+
+            settings.Sizes.Move(oldIndex, newIndex);
+
+            Assert.AreEqual(1, sourceChanges.Count);
+            Assert.AreEqual(1, changes.Count);
+            Assert.AreEqual(1, collectionSenders.Count);
+            Assert.AreSame(allSizes, collectionSenders[0]);
+            Assert.AreSame(sourceChanges[0], changes[0]);
+            Assert.AreEqual(NotifyCollectionChangedAction.Move, changes[0].Action);
+            Assert.AreEqual(1, changes[0].OldItems.Count);
+            Assert.AreEqual(1, changes[0].NewItems.Count);
+            Assert.AreSame(movedPreset, changes[0].OldItems[0]);
+            Assert.AreSame(movedPreset, changes[0].NewItems[0]);
+            Assert.AreEqual(oldIndex, changes[0].OldStartingIndex);
+            Assert.AreEqual(newIndex, changes[0].NewStartingIndex);
+            Assert.AreEqual(1, sourceProperties.Count);
+            Assert.AreEqual(1, properties.Count);
+            Assert.AreEqual(1, propertySenders.Count);
+            Assert.AreSame(allSizes, propertySenders[0]);
+            Assert.AreSame(sourceProperties[0], properties[0]);
+            Assert.AreEqual("Item[]", properties[0].PropertyName);
+            Assert.AreEqual(2, chronology.Count);
+            Assert.AreEqual("property", chronology[0]);
+            Assert.AreEqual("collection", chronology[1]);
+            var actual = allSizes.ToList();
+            Assert.AreEqual(originalView.Count, actual.Count);
+            CollectionAssert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
         public void AllSizesHandlesPropertyEventsForCustomSize()
         {
             var originalCustomSize = new CustomSize();
