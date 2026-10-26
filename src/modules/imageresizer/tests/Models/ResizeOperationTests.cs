@@ -122,6 +122,37 @@ namespace ImageResizer.Models
         }
 
         [TestMethod]
+        public async Task ExecuteDefaultSmallReplacesLiteralSourceWithoutCopy()
+        {
+            using var sourceDirectory = new TestDirectory();
+            var source = Path.Combine(sourceDirectory, "photo.jpg");
+            await CreateJpegFixtureAsync(source, 1200, 800);
+            var originalBytes = File.ReadAllBytes(source);
+            var settings = new Settings
+            {
+                Replace = true,
+                SelectedSizeIndex = 0,
+            };
+            Assert.AreEqual(854d, settings.SelectedSize.Width);
+            Assert.AreEqual(480d, settings.SelectedSize.Height);
+            Assert.AreEqual(ResizeFit.Fit, settings.SelectedSize.Fit);
+            Assert.AreEqual(ResizeUnit.Pixel, settings.SelectedSize.Unit);
+
+            await new ResizeOperation(source, null, settings).ExecuteAsync();
+
+            Assert.IsTrue(File.Exists(source), "The original path must still exist.");
+            Assert.IsFalse(originalBytes.SequenceEqual(File.ReadAllBytes(source)), "The original file content must be replaced.");
+            await AssertEx.ImageAsync(source, decoder =>
+            {
+                Assert.AreEqual(BitmapDecoder.JpegDecoderId, decoder.DecoderInformation.CodecId, "The original path must contain JPEG output.");
+                Assert.AreEqual(1u, decoder.FrameCount);
+                Assert.AreEqual(720u, decoder.PixelWidth);
+                Assert.AreEqual(480u, decoder.PixelHeight);
+            });
+            CollectionAssert.AreEqual(OriginalPhotoFileNames, sourceDirectory.FileNames.ToArray(), "Only the original filename may remain; no copy or backup.");
+        }
+
+        [TestMethod]
         public async Task ExecuteTransformsEachFrame()
         {
             var operation = new ResizeOperation("Test.gif", _directory, Settings());
@@ -1362,16 +1393,27 @@ namespace ImageResizer.Models
             int sourceWidth, int sourceHeight, int referenceWidth, int referenceHeight, int cropX, int cropY)
         {
             using var sourceDirectory = new TestDirectory();
-            using var referenceDirectory = new TestDirectory();
             using var fillDirectory = new TestDirectory();
             var source = Path.Combine(sourceDirectory, "coordinates.png");
             await CreateCoordinateFixtureAsync(source, sourceWidth, sourceHeight);
-            var referenceSettings = CreateCoordinateSettings(ResizeFit.Stretch, referenceWidth, referenceHeight);
-            var fillSettings = CreateCoordinateSettings(ResizeFit.Fill, 400, 400);
-            await new ResizeOperation(source, referenceDirectory, referenceSettings).ExecuteAsync();
-            await new ResizeOperation(source, fillDirectory, fillSettings).ExecuteAsync();
-            var reference = await ReadPixels(referenceDirectory.File(), referenceWidth, referenceHeight);
-            var actual = await ReadPixels(fillDirectory.File(), 400, 400);
+            byte[] reference = null;
+            await AssertEx.ImageAsync(source, async decoder =>
+            {
+                var transform = new BitmapTransform
+                {
+                    ScaledWidth = (uint)referenceWidth,
+                    ScaledHeight = (uint)referenceHeight,
+                    InterpolationMode = BitmapInterpolationMode.Fant,
+                };
+                var pixels = await decoder.GetPixelDataAsync(
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Premultiplied,
+                    transform,
+                    ExifOrientationMode.IgnoreExifOrientation,
+                    ColorManagementMode.DoNotColorManage);
+                reference = pixels.DetachPixelData();
+                Assert.AreEqual(referenceWidth * referenceHeight * 4, reference.Length, "Full-source reference buffer length.");
+            });
             var expected = Rectangle(cropX, cropY);
             foreach (var shift in new[] { -5, -1, 1, 5 })
             {
@@ -1379,6 +1421,9 @@ namespace ImageResizer.Models
                 Assert.IsFalse(expected.SequenceEqual(shifted), "Fixture cannot distinguish crop shift " + shift);
             }
 
+            var fillSettings = CreateCoordinateSettings(ResizeFit.Fill, 400, 400);
+            await new ResizeOperation(source, fillDirectory, fillSettings).ExecuteAsync();
+            var actual = await ReadPixels(fillDirectory.File(), 400, 400);
             var mismatches = 0;
             var channelCounts = new int[4];
             for (var offset = 0; offset < expected.Length; offset++)
