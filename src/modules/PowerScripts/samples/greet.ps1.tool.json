@@ -5,27 +5,55 @@
   "inputSchema": {
     "type": "object",
     "properties": {
-      "greeting": {
-        "type": "string",
-        "enum": ["Hello", "Hi", "Hey", "Howdy"],
-        "default": "Hello",
-        "description": "Pick how to say hello."
-      },
-      "name": {
-        "type": "string",
-        "default": "World",
-        "description": "Who to greet."
-      },
-      "shout": {
-        "type": "boolean",
-        "default": false,
-        "description": "Shout (UPPERCASE)."
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "greeting": {
+            "type": "string",
+            "enum": [
+              "Hello",
+              "Hi",
+              "Hey",
+              "Howdy"
+            ],
+            "default": "Hello",
+            "description": "Pick how to say hello."
+          },
+          "name": {
+            "type": "string",
+            "default": "World",
+            "description": "Who to greet."
+          },
+          "shout": {
+            "type": "boolean",
+            "default": false,
+            "description": "Shout (UPPERCASE)."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
       }
-    }
+    },
+    "required": [],
+    "additionalProperties": false
   },
   "x-powerscript": {
-    "capabilities": ["ui"],
+    "capabilities": [
+      "ui"
+    ],
     "publisher": "PowerToys samples",
     "version": "1.0.0"
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "additionalProperties": false
   }
 }

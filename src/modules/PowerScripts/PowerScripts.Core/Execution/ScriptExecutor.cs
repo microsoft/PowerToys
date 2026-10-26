@@ -4,6 +4,8 @@
 
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Security;
 
@@ -46,18 +48,32 @@ public sealed class ScriptExecutor
     public ScriptExecutionResult Execute(
         PowerScriptManifest manifest,
         IReadOnlyList<string>? files = null,
-        IReadOnlyDictionary<string, string?>? parameters = null)
+        IReadOnlyDictionary<string, string?>? parameters = null,
+        string? text = null)
     {
+        if (!ScriptParameterResolver.TryResolve(manifest, parameters ?? new Dictionary<string, string?>(), out var resolved, out var error))
+        {
+            throw new InvalidDataException(error);
+        }
+
+        parameters = resolved;
+        var input = new PythonTransformInput
+        {
+            Text = text,
+            FilePaths = files?.ToList(),
+            Params = parameters?.ToDictionary(pair => pair.Key, pair => pair.Value ?? string.Empty),
+        };
+        var request = input.CreateRequest(manifest);
         // A descriptor-authored script (explicit .tool.json) carries its own launch recipe and is run
         // through the language-agnostic descriptor executor, regardless of runtime.
         if (manifest.Execute is not null)
         {
-            return DescriptorExecutor.Run(manifest, files, parameters, mxcSettings: _mxcSettings);
+            return ValidateOutput(manifest, DescriptorExecutor.Run(manifest, files, parameters, mxcSettings: _mxcSettings, text: text));
         }
 
         if (manifest.Runtime == ScriptRuntime.Python)
         {
-            return ExecutePython(manifest, files, parameters);
+            return ExecutePython(manifest, input);
         }
 
         if (manifest.Runtime != ScriptRuntime.PowerShell)
@@ -82,46 +98,41 @@ public sealed class ScriptExecutor
             StandardErrorEncoding = Encoding.UTF8,
             CreateNoWindow = true,
             WorkingDirectory = manifest.FolderPath,
+            StandardInputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
         };
 
         psi.ArgumentList.Add("-NoProfile");
         psi.ArgumentList.Add("-NonInteractive");
         psi.ArgumentList.Add("-ExecutionPolicy");
         psi.ArgumentList.Add("Bypass");
-        psi.ArgumentList.Add("-File");
-        psi.ArgumentList.Add(manifest.EntryFullPath);
+        // JSON plus native splatting preserves booleans and path arrays, including on PowerShell 5.1.
+        var command = """
+            [Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
+            $request = ConvertFrom-Json -InputObject ([Console]::In.ReadToEnd())
+            $arguments = @{}
+            foreach ($property in $request.parameters.PSObject.Properties) {
+                $arguments[$property.Name] = $property.Value
+            }
+            if ($request.PSObject.Properties['text']) { $arguments['Text'] = $request.text }
+            if ($request.PSObject.Properties['files']) { $arguments['Files'] = [string[]]$request.files }
+            """ + Environment.NewLine + $"& '{manifest.EntryFullPath.Replace("'", "''")}' @arguments";
+        psi.ArgumentList.Add("-EncodedCommand");
+        psi.ArgumentList.Add(Convert.ToBase64String(Encoding.Unicode.GetBytes(command)));
 
-        // Files are passed both as a -Files parameter (array binding) and via an environment
-        // variable so scripts can consume whichever is convenient.
         if (files.Count > 0)
         {
-            psi.ArgumentList.Add("-Files");
-            foreach (var file in files)
-            {
-                psi.ArgumentList.Add(file);
-            }
-
             psi.Environment[FilesEnvironmentVariable] = string.Join('\n', files);
         }
 
-        if (parameters is not null)
-        {
-            foreach (var (name, value) in parameters)
-            {
-                psi.ArgumentList.Add("-" + name);
-                psi.ArgumentList.Add(value ?? string.Empty);
-            }
-        }
-
         var context = Security.ProcessExecutionContext.FromManifest(manifest, files, parameters);
-        var result = Security.ProcessRunner.Run(psi, context, mxcSettings: _mxcSettings);
+        var result = Security.ProcessRunner.Run(psi, context, request.ToJsonString(), mxcSettings: _mxcSettings);
 
-        return new ScriptExecutionResult
+        return ValidateOutput(manifest, new ScriptExecutionResult
         {
             ExitCode = result.ExitCode,
             StdOut = result.StdOut,
             StdErr = result.StdErr,
-        };
+        });
     }
 
     /// <summary>
@@ -132,17 +143,8 @@ public sealed class ScriptExecutor
     /// </summary>
     private ScriptExecutionResult ExecutePython(
         PowerScriptManifest manifest,
-        IReadOnlyList<string>? files,
-        IReadOnlyDictionary<string, string?>? parameters)
+        PythonTransformInput input)
     {
-        var input = new PythonTransformInput
-        {
-            FilePaths = files?.ToList() ?? new List<string>(),
-            Params = parameters?
-                .Where(kv => kv.Value is not null)
-                .ToDictionary(kv => kv.Key, kv => kv.Value!),
-        };
-
         var result = new PythonRuntime(mxcSettings: _mxcSettings).Run(manifest, input);
 
         var stdoutParts = new List<string>();
@@ -162,6 +164,33 @@ public sealed class ScriptExecutor
             StdOut = string.Join(Environment.NewLine, stdoutParts),
             StdErr = result.StdErr,
         };
+    }
+
+    private static ScriptExecutionResult ValidateOutput(PowerScriptManifest manifest, ScriptExecutionResult result)
+    {
+        if (!result.Succeeded)
+        {
+            return result;
+        }
+
+        try
+        {
+            var output = manifest.OutputFormat switch
+            {
+                PowerScriptDataFormat.None => new PythonTransformResult(),
+                PowerScriptDataFormat.Text => new PythonTransformResult { Text = result.StdOut },
+                _ => PythonTransformResult.Parse(result.StdOut, PowerScriptDataFormat.Files),
+            };
+            ScriptSchema.Validate(manifest.OutputSchema, JsonSerializer.SerializeToElement(output, new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            }), "output");
+            return result;
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidDataException)
+        {
+            return new ScriptExecutionResult { ExitCode = 2, StdErr = $"{result.StdErr}{Environment.NewLine}Invalid script output: {ex.Message}" };
+        }
     }
 
     /// <summary>

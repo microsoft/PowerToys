@@ -414,9 +414,9 @@ public sealed class PowerScriptsClient
             writer.WriteStartObject();
             WriteString(writer, "text", input.Text);
 
-            if (input.FilePaths is { Count: > 0 })
+            if (input.FilePaths is not null)
             {
-                writer.WriteStartArray("file_paths");
+                writer.WriteStartArray("files");
                 foreach (var path in input.FilePaths)
                 {
                     writer.WriteStringValue(path);
@@ -425,12 +425,13 @@ public sealed class PowerScriptsClient
                 writer.WriteEndArray();
             }
 
-            if (input.Params is { Count: > 0 })
+            if (input.Parameters is not null)
             {
-                writer.WriteStartObject("params");
-                foreach (var (key, value) in input.Params)
+                writer.WriteStartObject("parameters");
+                foreach (var (key, value) in input.Parameters)
                 {
-                    writer.WriteString(key, value);
+                    writer.WritePropertyName(key);
+                    value.WriteTo(writer);
                 }
 
                 writer.WriteEndObject();
@@ -468,17 +469,17 @@ public sealed class PowerScriptsClient
 
             foreach (var property in root.EnumerateObject())
             {
-                if (property.Name is not ("text" or "file_paths"))
+                if (property.Name is not ("text" or "files"))
                 {
-                    throw new JsonException($"Unsupported output field '{property.Name}'. Use text or file_paths.");
+                    throw new JsonException($"Unsupported output field '{property.Name}'. Use text or files.");
                 }
             }
 
             var text = ReadString(root, "text");
-            var files = ReadStringArray(root, "file_paths");
+            var files = ReadStringArray(root, "files");
             if (text is not null && files is not null)
             {
-                throw new JsonException("An output must contain text or file_paths, not both.");
+                throw new JsonException("An output must contain text or files, not both.");
             }
 
             return new PowerScriptTransformResult

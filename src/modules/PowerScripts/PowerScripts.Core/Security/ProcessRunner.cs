@@ -49,8 +49,7 @@ public static class ProcessRunner
         MxcSettings? mxcSettings = null)
     {
         var settings = mxcSettings ?? MxcSettings.Load();
-        var policy = MxcPolicyResolver.Resolve(
-            settings, context.ScriptId, context.RecommendedPolicies, context.HasLocalMxcSettings, context.LocalMxc);
+        var policy = MxcPolicyResolver.Resolve(settings);
 
         if (policy.Enabled && IsWslTarget(startInfo))
         {
@@ -62,7 +61,7 @@ public static class ProcessRunner
             return new ProcessRunResult(
                 UnsupportedIsolationExitCode,
                 string.Empty,
-                "MXC's Windows processcontainer cannot host wsl.exe. Use Windows execution, or explicitly disable MXC for this script.");
+                "MXC's Windows processcontainer cannot host wsl.exe. Use Windows or managed Linux execution, or disable MXC globally.");
         }
 
         return policy.Enabled

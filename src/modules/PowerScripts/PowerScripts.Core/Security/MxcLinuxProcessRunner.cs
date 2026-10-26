@@ -19,33 +19,28 @@ public static class MxcLinuxProcessRunner
     public static string ImageStorePath => Path.Combine(PowerScriptsPaths.ModuleDirectory, "linux-container-images");
 
     /// <summary>Rejects unsupported requests before any script or executor is started.</summary>
-    public static string? GetPolicyError(ProcessExecutionContext context, MxcEffectivePolicy policy)
+    public static string? GetPolicyError(MxcEffectivePolicy policy)
     {
         if (!policy.Enabled)
         {
-            return "Managed Linux containers require MXC. Require MXC in this script's isolation settings; no direct fallback is available.";
+            return "Managed Linux containers require global MXC isolation; no direct fallback is available.";
         }
 
         if (!policy.IsEnabled(MxcPolicies.Filesystem))
         {
-            return "Managed Linux containers require restricted Windows file access. Enable the filesystem restriction for this script.";
+            return "Managed Linux containers require the global filesystem restriction.";
         }
 
-        var local = context.LocalMxc;
-        if (policy.IsEnabled(MxcPolicies.Ui) || policy.IsEnabled(MxcPolicies.LeastPrivilege) ||
-            !context.HasLocalMxcSettings || local is not { RiskAccepted: true } ||
-            !local.DisabledPolicies.Contains(MxcPolicies.Ui, StringComparer.Ordinal) ||
-            !local.DisabledPolicies.Contains(MxcPolicies.LeastPrivilege, StringComparer.Ordinal))
+        if (policy.IsEnabled(MxcPolicies.Ui) || policy.IsEnabled(MxcPolicies.LeastPrivilege))
         {
             return "Blocked by isolation requirements: the managed Linux image cannot enforce the Windows UI and least-privilege policies and runs as guest root. " +
-                "Review this script's MXC settings and explicitly accept those two unsupported-policy exceptions. Global exceptions alone are not sufficient.";
+                "Review the global MXC settings and explicitly accept those two unsupported-policy exceptions.";
         }
 
         return null;
     }
 
     public static ProcessRunResult Run(
-        string runnerPath,
         string scriptPath,
         string payload,
         PowerScriptDataFormat outputFormat,
@@ -56,7 +51,7 @@ public static class MxcLinuxProcessRunner
         IProcessLauncher? launcher = null,
         Func<string>? runDirectoryFactory = null)
     {
-        var policyError = GetPolicyError(context, policy);
+        var policyError = GetPolicyError(policy);
         if (policyError is not null)
         {
             return new ProcessRunResult(ProcessRunner.UnsupportedIsolationExitCode, string.Empty, policyError);
@@ -76,7 +71,7 @@ public static class MxcLinuxProcessRunner
             var inputPath = Path.Combine(requestDirectory, "input.json");
             File.WriteAllText(inputPath, payload, new UTF8Encoding(false));
 
-            var readonlyPaths = new[] { context.ScriptDirectory, runnerPath, requestDirectory }
+            var readonlyPaths = new[] { context.ScriptDirectory, requestDirectory }
                 .Concat(context.InputPaths)
                 .Select(ValidateExistingPath)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -86,7 +81,7 @@ public static class MxcLinuxProcessRunner
                 $"env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/tmp PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONUNBUFFERED=1 " +
                 $"TMPDIR={Quote(ToContainerPath(workspace))} " +
                 $"{MxcProcessRunner.WorkspaceEnvironmentVariable}={Quote(ToContainerPath(workspace))} " +
-                $"python3 -X utf8 {Quote(ToContainerPath(runnerPath))} {Quote(ToContainerPath(scriptPath))} < {Quote(ToContainerPath(inputPath))}";
+                $"python3 -X utf8 {Quote(ToContainerPath(scriptPath))} < {Quote(ToContainerPath(inputPath))}";
             var config = BuildConfiguration(command, workspace, readonlyPaths, policy.IsEnabled(MxcPolicies.Network), timeoutMs);
             var result = Execute(config, directory, settings, launcher, timeoutMs);
             if (result.ExitCode != 0 || outputFormat != PowerScriptDataFormat.Files)

@@ -2,12 +2,28 @@
   "name": "whats-my-ip",
   "title": "What's my IP",
   "description": "Look up this PC's public IP address and show it in a message box.",
-  "inputSchema": { "type": "object", "properties": {} },
+  "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
   "x-powerscript": {
-    "capabilities": ["network"],
-    "mxc": {
-      "recommendedPolicies": ["filesystem", "ui", "leastPrivilege"]
+    "capabilities": [
+      "network"
+    ],
+    "icon": ""
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
     },
-    "icon": "\uE774"
+    "required": [
+      "text"
+    ],
+    "additionalProperties": false
   }
 }

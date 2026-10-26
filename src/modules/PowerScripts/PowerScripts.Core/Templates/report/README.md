@@ -1,40 +1,23 @@
 # File-output template
 
-Creation never runs this script, approves trust or changes MXC settings. Review the package, edit
-`script.ps1` and `script.ps1.tool.json`, then refresh the catalogue. A compatible consuming module
-decides how to use the returned file. The Debug Settings test window offers Save as and Copy files.
+Edit `script.ps1` and its sibling `.tool.json`, then refresh the catalogue.
+Creation never executes code, approves trust, or changes isolation.
 
-## Every field in this descriptor
+`name`, `title`, and `description` identify and explain the action.
+Both schemas are required closed objects (`additionalProperties: false`).
+The empty `inputSchema.properties` means no primary input or named options.
+`outputSchema.properties.files` is a required array of path strings.
+Stdout must contain exactly `{"files":["absolute path"]}`, even for one file.
+UTF-8 output is explicit; diagnostics belong on stderr.
+The `.ps1` extension selects PowerShell, without runtime or function metadata.
 
-| Field | Meaning |
-| --- | --- |
-| `name` | Stable, unique action ID. Each template copy gets a fresh ID. |
-| `title` | Friendly name shown in a consumer's picker. |
-| `description` | Explains the action and where it writes. |
-| `inputSchema.type` | `object`: named parameters, if any, form a property bag. |
-| `inputSchema.properties` / `required` | Empty because this example has no named parameters. |
-| `x-powerscript.runtime` | `powershell` uses the built-in executor, with no explicit launch recipe. |
-| `x-powerscript.input` | `none`: no primary text or file selection is required. |
-| `x-powerscript.output` | `files`: stdout must contain exactly `{"file_paths":["absolute path"]}`. A single file is still an array. |
-| `x-powerscript.capabilities` | `fileWrite` declares intent for review; it does not turn off filesystem isolation or grant arbitrary paths. |
+With global MXC filesystem restrictions enabled, TEMP is the per-run writable
+workspace. Write there, not to Desktop, Documents, or the script package.
+Successful file outputs remain temporarily available to consumers; save a
+separate copy for durable use. Consumers decide how to present or save files.
+`x-powerscript.capabilities: ["fileWrite"]` describes intent, not a permission grant.
 
-UTF-8 is explicit so JSON paths survive Windows PowerShell. Do not print status messages to stdout
-alongside the result JSON; use stderr for diagnostics. `output: "text"` would instead return literal
-stdout. `output: "none"` represents completion with no result.
-
-## Safe workspace and policy
-
-With all default MXC restrictions enabled, TEMP is inside the per-run workspace. Write there rather
-than to Desktop/Documents. Successful nonempty output workspaces are retained temporarily so consumers
-can read the files; save a copy elsewhere for durable use. Return existing absolute paths, not file
-contents or guessed destinations. The consumer, not this isolated script, chooses a final save path.
-
-Network, UI and least-privilege restrictions remain enabled too. No local policy record is needed.
-Per-script Settings is reserved for necessary MXC policy and explicit risk acceptance, never metadata
-overrides. Review any relaxation separately; capability declarations do not grant it.
-
-Optional `x-powerscript.consumers` restricts discovery by module ID, not execution authorization.
-Omit it for all compatible consumers. A file-input variant would use `input: "files"` plus
-`extensions`, `minFiles`, `maxFiles`; it is not the same as this file-output example.
-Optional `icon` is a package-relative `.ico` path. Python built-in execution also needs `function`;
-advanced `x-execute` recipes are unnecessary here.
+All scripts use the global MXC policy. There are no per-script settings.
+Script or descriptor edits invalidate trust and require renewed consent.
+Optional root `x-powerscript` fields include discovery `consumers`, provenance,
+and a package-relative `.ico` `icon`.

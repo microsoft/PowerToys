@@ -28,7 +28,8 @@ public static class DescriptorExecutor
         IReadOnlyList<string>? files,
         IReadOnlyDictionary<string, string?>? parameters,
         int timeoutMs = 0,
-        MxcSettings? mxcSettings = null)
+        MxcSettings? mxcSettings = null,
+        string? text = null)
     {
         var execute = manifest.Execute
             ?? throw new InvalidOperationException($"Script '{manifest.Id}' has no x-execute recipe.");
@@ -63,6 +64,12 @@ public static class DescriptorExecutor
         var usesJsonStdin = execute.UsesJsonStdin;
         if (!usesJsonStdin)
         {
+            if (manifest.InputFormat == PowerScriptDataFormat.Text)
+            {
+                psi.ArgumentList.Add(FlagFor(execute, "text"));
+                psi.ArgumentList.Add(text ?? string.Empty);
+            }
+
             // Scalars go on argv: an explicit argMap flag, else --name.
             if (parameters is not null)
             {
@@ -85,7 +92,12 @@ public static class DescriptorExecutor
             psi.Environment[ScriptExecutor.FilesEnvironmentVariable] = string.Join('\n', files);
         }
 
-        var standardInput = usesJsonStdin ? BuildJsonStdin(parameters, files) : null;
+        var standardInput = usesJsonStdin ? new PythonTransformInput
+        {
+            Text = text,
+            FilePaths = files.ToList(),
+            Params = parameters?.ToDictionary(pair => pair.Key, pair => pair.Value ?? string.Empty),
+        }.CreateRequest(manifest).ToJsonString() : null;
 
         if (usesJsonStdin)
         {
@@ -108,26 +120,6 @@ public static class DescriptorExecutor
         execute.ArgMap is not null && execute.ArgMap.TryGetValue(name, out var flag) && !string.IsNullOrWhiteSpace(flag)
             ? flag
             : "--" + name;
-
-    /// <summary>Serializes the params + selected file paths into the single JSON object for stdin.</summary>
-    private static string BuildJsonStdin(IReadOnlyDictionary<string, string?>? parameters, IReadOnlyList<string> files)
-    {
-        var payload = new Dictionary<string, object?>(StringComparer.Ordinal);
-        if (parameters is not null)
-        {
-            foreach (var (name, value) in parameters)
-            {
-                payload[name] = value;
-            }
-        }
-
-        if (files.Count > 0)
-        {
-            payload["file_paths"] = files;
-        }
-
-        return JsonSerializer.Serialize(payload);
-    }
 
     /// <summary>
     /// Resolves a command token: the entry-script name becomes its absolute path; any other token that

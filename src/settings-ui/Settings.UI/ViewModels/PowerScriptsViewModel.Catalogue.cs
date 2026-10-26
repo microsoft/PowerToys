@@ -52,23 +52,6 @@ public partial class PowerScriptsViewModel
         return entry;
     }
 
-    public async Task<PowerScriptSettingsSnapshot> GetScriptSettingsAsync(string entryPath) =>
-        DeserializeSnapshot(await InvokeScriptSettingsHostAsync("get", entryPath));
-
-    public async Task ResetScriptSettingsAsync(string entryPath)
-    {
-        DeserializeSnapshot(await InvokeScriptSettingsHostAsync("reset", entryPath));
-        await ReloadScriptsAsync(preserveEditorOrder: true);
-        Scripts.FirstOrDefault(script => string.Equals(script.EntryFullPath, entryPath, StringComparison.OrdinalIgnoreCase))?.InvalidateSettings();
-    }
-
-    public async Task ForgetScriptSettingsAsync(string entryPath)
-    {
-        await InvokeScriptSettingsHostAsync("forget", entryPath);
-        await ReloadScriptsAsync(preserveEditorOrder: true);
-        Scripts.FirstOrDefault(script => string.Equals(script.EntryFullPath, entryPath, StringComparison.OrdinalIgnoreCase))?.InvalidateSettings();
-    }
-
     public async Task ReloadScriptsAsync(bool preserveEditorOrder = false)
     {
         var generation = Interlocked.Increment(ref _catalogueGeneration);
@@ -109,21 +92,6 @@ public partial class PowerScriptsViewModel
         OnPropertyChanged(nameof(HasScripts));
         RefreshCatalogue(preserveEditorOrder);
     }
-
-    private static PowerScriptSettingsSnapshot DeserializeSnapshot(string json)
-    {
-        var snapshot = JsonSerializer.Deserialize<PowerScriptSettingsSnapshot>(json, JsonOptions);
-        if (snapshot is null || string.IsNullOrWhiteSpace(snapshot.EntryPath) ||
-            snapshot.Recommended is null || snapshot.Effective is null || snapshot.Overrides is null)
-        {
-            throw new InvalidDataException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
-        }
-
-        return snapshot;
-    }
-
-    private Task<string> InvokeScriptSettingsHostAsync(string operation, string entryPath, JsonObject request = null) =>
-        InvokeHostAsync(new[] { "script-settings", operation, "--entry", Path.GetFullPath(entryPath), "--root", ScriptsFolder }, request);
 
     private static async Task<string> InvokeHostAsync(IEnumerable<string> arguments, JsonObject request = null, TimeSpan? commandTimeout = null)
     {
@@ -184,7 +152,11 @@ public partial class PowerScriptsViewModel
         }
         catch (OperationCanceledException ex)
         {
-            // Do not terminate a Host which may be completing an atomic settings write.
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+
             throw new TimeoutException(GetResourceString("PowerScripts_SettingsTimeout"), ex);
         }
     }

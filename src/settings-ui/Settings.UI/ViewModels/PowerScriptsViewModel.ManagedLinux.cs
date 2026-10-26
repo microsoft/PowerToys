@@ -95,7 +95,7 @@ public partial class PowerScriptsViewModel
                 .Replace("{0}", distribution, StringComparison.Ordinal);
             isolation = GetResourceString("PowerScripts_MxcEffectiveDisabled");
             if (script.IsMxcEffectivelyEnabled &&
-                (!_mxcUsesPlatformDefault || _hasRejectedGlobalMxcWeakening || script.MxcEnabledOverride.HasValue))
+                (!_mxcUsesPlatformDefault || _hasRejectedGlobalMxcWeakening))
             {
                 blocked = GetResourceString("PowerScripts_ExecutionWslBlocked");
             }
@@ -110,7 +110,7 @@ public partial class PowerScriptsViewModel
                 .Replace("{0}", network, StringComparison.Ordinal);
             if (!script.IsMxcEffectivelyEnabled || !script.IsFilesystemRestrictionEffective ||
                 script.IsUiRestrictionEffective || script.IsLeastPrivilegeRestrictionEffective ||
-                !script.HasAcceptedLinuxExceptions)
+                !_mxcRiskAccepted)
             {
                 blocked = GetResourceString("PowerScripts_ExecutionLinuxBlocked");
             }

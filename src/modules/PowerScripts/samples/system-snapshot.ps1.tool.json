@@ -2,8 +2,27 @@
   "name": "system-snapshot",
   "title": "System Snapshot",
   "description": "Show computer name, OS and uptime.",
-  "inputSchema": { "type": "object", "properties": {} },
+  "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
   "x-powerscript": {
-    "capabilities": ["systemInfo"]
+    "capabilities": [
+      "systemInfo"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "additionalProperties": false
   }
 }

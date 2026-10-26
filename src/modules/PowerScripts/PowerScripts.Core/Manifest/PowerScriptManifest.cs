@@ -4,7 +4,6 @@
 
 using System.Text.Json.Serialization;
 using PowerScripts.Core.Execution;
-using PowerScripts.Core.Security;
 
 namespace PowerScripts.Core.Manifest;
 
@@ -17,24 +16,10 @@ public enum ScriptRuntime
     PowerShell,
 
     /// <summary>
-    /// A Python script whose descriptor selects its entry function. Runs on native Windows Python or
+    /// A Python script executed from its top-level statements. Runs on native Windows Python or
     /// inside WSL depending on the user's PowerScripts Python settings.
     /// </summary>
     Python,
-}
-
-/// <summary>
-/// The kind of result a file PowerScript produces.
-/// </summary>
-public enum ScriptOutputType
-{
-    None,
-
-    /// <summary>Produces a converted file (e.g. HEIC -> JPG).</summary>
-    ConvertedFile,
-
-    /// <summary>Performs a side effect (e.g. checksum, OCR, strip metadata).</summary>
-    SideEffect,
 }
 
 /// <summary>
@@ -47,35 +32,15 @@ public sealed class ScriptInput
     public List<string> Extensions { get; set; } = new();
 
     /// <summary>Minimum number of files required.</summary>
-    public int MinFiles { get; set; } = 1;
+    public int MinFiles { get; set; }
 
-    /// <summary>Maximum number of files; 0 means unbounded.</summary>
-    public int MaxFiles { get; set; }
-}
-
-/// <summary>
-/// Declares the output contract for a file-driven script.
-/// </summary>
-public sealed class ScriptOutput
-{
-    public ScriptOutputType Type { get; set; } = ScriptOutputType.None;
-
-    /// <summary>For <see cref="ScriptOutputType.ConvertedFile"/>: the produced extension (e.g. ".jpg").</summary>
-    public string? Extension { get; set; }
-}
-
-/// <summary>
-/// Display-only MXC guidance supplied by a script author. Recommendations never weaken the
-/// user/system policy selected by <see cref="MxcPolicyResolver"/>.
-/// </summary>
-public sealed class PowerScriptMxcMetadata
-{
-    public List<string> RecommendedPolicies { get; set; } = MxcPolicies.All.ToList();
+    /// <summary>Maximum number of files; null means unbounded.</summary>
+    public int? MaxFiles { get; set; }
 }
 
 /// <summary>
 /// A typed parameter contract exposed to consumer modules. Each consumer owns its parameter UI and
-/// passes chosen values to the Host. Values reach scripts as strings.
+/// passes chosen values to the Host. The runtime restores declared boolean and integer types.
 /// </summary>
 public sealed class ScriptParameter
 {
@@ -171,10 +136,11 @@ public sealed class PowerScriptManifest
     /// <summary>Script body file name, relative to the script folder (e.g. "run.ps1").</summary>
     public string Entry { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Descriptor-declared Python entry function. Required when using the built-in Python runtime.
-    /// </summary>
-    public string? EntryFunction { get; set; }
+    [JsonIgnore]
+    public JsonSchemaObject InputSchema { get; set; } = new();
+
+    [JsonIgnore]
+    public JsonSchemaObject OutputSchema { get; set; } = new();
 
     /// <summary>
     /// File input contract; present when the script is file-driven (its input shape is
@@ -182,21 +148,15 @@ public sealed class PowerScriptManifest
     /// </summary>
     public ScriptInput? Input { get; set; }
 
-    public ScriptOutput? Output { get; set; }
-
     public List<ScriptParameter> Parameters { get; set; } = new();
 
     /// <summary>
-    /// The data shape this script consumes, when the author declares it explicitly (e.g. a PowerShell
-    /// script that reads text and writes a file). Null means infer from a declared file <see cref="Input"/> (files),
-    /// otherwise none. Populated (baked) by the registry once resolved so every consumer reads the same
-    /// shape. Valid inputs are None, Text, and Files; inline HTML is Text, while media/documents are Files.
-    /// Optional discovery targeting is independent of this compatibility contract.
+    /// The primary input shape derived from inputSchema. HTML markup is text; media/documents are files.
     /// </summary>
-    public PowerScriptDataFormat? InputFormat { get; set; }
+    public PowerScriptDataFormat InputFormat { get; set; }
 
-    /// <summary>The output shape (None, Text, or Files), when declared explicitly; null means infer.</summary>
-    public PowerScriptDataFormat? OutputFormat { get; set; }
+    /// <summary>The primary output shape derived from outputSchema.</summary>
+    public PowerScriptDataFormat OutputFormat { get; set; }
 
     /// <summary>
     /// Declared capabilities (e.g. "fileRead", "fileWrite", "process"). Doubles as the user-consent
@@ -214,22 +174,7 @@ public sealed class PowerScriptManifest
     public bool HasDescriptor { get; internal set; }
 
     [JsonIgnore]
-    public bool HasLocalSettings { get; internal set; }
-
-    [JsonIgnore]
-    public bool HasLocalMxcSettings { get; internal set; }
-
-    [JsonIgnore]
-    public MxcScriptOverride? LocalMxc { get; internal set; }
-
-    [JsonIgnore]
     public IReadOnlyList<string> ConfigurationErrors { get; internal set; } = Array.Empty<string>();
-
-    [JsonIgnore]
-    internal string LocalSettingsFingerprint { get; set; } = string.Empty;
-
-    /// <summary>Display-only MXC recommendations; enforcement remains centrally resolved.</summary>
-    public PowerScriptMxcMetadata Mxc { get; set; } = new();
 
     /// <summary>Prototype always runs "asInvoker" (non-elevated).</summary>
     public string Elevation { get; set; } = "asInvoker";

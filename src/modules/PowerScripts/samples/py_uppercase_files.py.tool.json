@@ -5,21 +5,46 @@
   "inputSchema": {
     "type": "object",
     "properties": {
-      "file": {
-        "type": "string",
-        "contentMediaType": "text/plain",
-        "description": "The text file to uppercase."
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "x-powerscript": {
+            "extensions": [
+              ".txt",
+              ".md"
+            ]
+          }
+        },
+        "minItems": 1
       }
     },
-    "required": ["file"]
+    "required": [
+      "files"
+    ],
+    "additionalProperties": false
   },
   "x-powerscript": {
-    "function": "uppercase_files",
-    "input": "files",
-    "output": "files",
-    "extensions": [".txt", ".md"],
-    "capabilities": ["fileRead", "fileWrite"],
+    "capabilities": [
+      "fileRead",
+      "fileWrite"
+    ],
     "publisher": "PowerToys samples",
     "version": "1.0.0"
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "files"
+    ],
+    "additionalProperties": false
   }
 }

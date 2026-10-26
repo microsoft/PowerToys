@@ -14,9 +14,7 @@ namespace PowerScripts.Core.Storage;
 /// so all current functionality — including pointing PowerScripts at a folder of your choosing —
 /// behaves exactly as before. To move the trust store and config into the protected store later, this
 /// return a broker-backed <see cref="ISettingsStore"/> (bound to the
-/// <see cref="Namespace"/>) here, guarded by a capability/flag check. The separate, file-backed
-/// <see cref="ScriptSettingsStore"/> also needs a broker-backed implementation before local
-/// per-script configuration can be considered protected.
+/// <see cref="Namespace"/>) here, guarded by a capability/flag check.
 /// </summary>
 public static class SettingsStore
 {

@@ -1,11 +1,13 @@
 # Convert Markdown to Text. Metadata lives in the sibling convert_md_to_txt.ps1.tool.json descriptor
-# (an MCP Tool). Its file input and .md extension filter make it available in the Explorer context
-# menu. Writes a plain .txt next to each selected .md file (light Markdown stripping).
+# (an MCP Tool). Writes plain text files in the temporary workspace.
 
 param(
     [string[]]$Files
 )
 
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+$ErrorActionPreference = 'Stop'
+$outputs = @()
 if (-not $Files -or $Files.Count -eq 0) {
     if ($env:POWERSCRIPTS_FILES) {
         $Files = $env:POWERSCRIPTS_FILES -split "`n"
@@ -30,12 +32,14 @@ foreach ($f in $Files) {
     $text = $text -replace '(?m)^\s{0,3}#{1,6}\s*', ''
     $text = $text -replace '(\*\*|__|\*|_|`)', ''
 
-    $outputDirectory = Split-Path -Parent $path
+    $outputDirectory = $env:TEMP
     if ($env:POWERSCRIPTS_MXC_WORKSPACE) {
         $outputDirectory = $env:POWERSCRIPTS_MXC_WORKSPACE
     }
 
     $out = Join-Path $outputDirectory ([System.IO.Path]::GetFileNameWithoutExtension($path) + '.txt')
     Set-Content -LiteralPath $out -Value $text -Encoding UTF8 -ErrorAction Stop
-    "Converted: $out"
+    $outputs += $out
 }
+
+@{ files = @($outputs) } | ConvertTo-Json -Compress

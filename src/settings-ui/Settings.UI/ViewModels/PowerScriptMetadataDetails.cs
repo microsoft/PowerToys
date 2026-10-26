@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 /// <summary>Read-only presentation of authoritative metadata; never generates settings overrides.</summary>
 public static class PowerScriptMetadataDetails
 {
-    public static IReadOnlyList<PowerScriptMetadataSection> Create(JsonObject descriptor, Func<string, string> getString)
+    public static IReadOnlyList<PowerScriptMetadataSection> Create(JsonObject descriptor, Func<string, string> getString, string entryExtension = null)
     {
         string Text(string key) => getString("PowerScripts_Details" + key);
         string Value(JsonNode node) => node switch
@@ -32,13 +32,9 @@ public static class PowerScriptMetadataDetails
         };
         string Optional(JsonNode node) => node is null ? Text("NotSpecified") : Value(node);
         string Token(JsonNode node) => node is JsonValue value && value.TryGetValue<string>(out var text) ? text : string.Empty;
-        string Io(JsonNode node) => Token(node) switch
-        {
-            "none" => Text("None"),
-            "text" => Text("Text"),
-            "files" => Text("Files"),
-            _ => Optional(node),
-        };
+        string Shape(JsonNode node) => node?["properties"] is JsonObject properties
+            ? properties.ContainsKey("files") ? "files" : properties.ContainsKey("text") ? "text" : "none" : "none";
+        string Io(string shape) => Text(shape switch { "files" => "Files", "text" => "Text", _ => "None" });
         PowerScriptMetadataRow Row(string key, string label, string value) => new(key, Text(label), value);
         var sections = new List<PowerScriptMetadataSection>();
         var general = new List<PowerScriptMetadataRow>
@@ -60,18 +56,17 @@ public static class PowerScriptMetadataDetails
         sections.Add(new("General", Text("General"), general));
         var io = new List<PowerScriptMetadataRow>
         {
-            Row("Input", "Input", Io(extension["input"])),
-            Row("Output", "Output", Io(extension["output"])),
+            Row("Input", "Input", Io(Shape(descriptor["inputSchema"]))),
+            Row("Output", "Output", Io(Shape(descriptor["outputSchema"]))),
         };
-        if (Token(extension["input"]) == "files")
+        if (descriptor["inputSchema"]?["properties"]?["files"] is JsonObject files)
         {
-            var extensions = extension["extensions"] as JsonArray;
+            var extensions = files["items"]?["x-powerscript"]?["extensions"] as JsonArray;
             var acceptedExtensions = extensions?.Any(value => Token(value) == "*") == true
                 ? Text("AllFiles") : extensions is { Count: > 0 } ? string.Join(", ", extensions.Select(Value)) : Text("NotSpecified");
-            var maximumFiles = extension["maxFiles"] is JsonValue maximum &&
-                maximum.TryGetValue<int>(out var count) && count == 0 ? Text("NoLimit") : Optional(extension["maxFiles"]);
+            var maximumFiles = files["maxItems"] is null ? Text("NoLimit") : Value(files["maxItems"]);
             io.Add(Row("Extensions", "Extensions", acceptedExtensions));
-            io.Add(Row("MinFiles", "MinFiles", Optional(extension["minFiles"])));
+            io.Add(Row("MinFiles", "MinFiles", files["minItems"] is null ? "0" : Value(files["minItems"])));
             io.Add(Row("MaxFiles", "MaxFiles", maximumFiles));
         }
 
@@ -103,8 +98,9 @@ public static class PowerScriptMetadataDetails
                 continue;
             }
 
-            var properties = schema?["properties"] as JsonObject;
-            var required = schema?["required"] as JsonArray;
+            var fields = isOutput ? schema : schema?["properties"]?["parameters"] as JsonObject;
+            var properties = fields?["properties"] as JsonObject;
+            var required = fields?["required"] as JsonArray;
             var index = 0;
             foreach (var (name, node) in properties ?? new JsonObject())
             {
@@ -117,8 +113,7 @@ public static class PowerScriptMetadataDetails
                 var label = Token(parameter["title"]);
                 var type = Token(parameter["type"]);
                 var filePath = Token(parameter["format"]) == "file-path";
-                var primaryFile = !isOutput && !filePath && !string.IsNullOrEmpty(Token(parameter["contentMediaType"]));
-                var typeLabel = filePath ? Text("FilePath") : primaryFile ? Text("Files") : type switch
+                var typeLabel = filePath ? Text("FilePath") : type switch
                 {
                     "string" => Text("Text"),
                     "integer" => Text("Integer"),
@@ -135,15 +130,10 @@ public static class PowerScriptMetadataDetails
                     Row(key + "_Required", "Required", required?.Any(value => Token(value) == name) == true ? Text("Yes") : Text("No")),
                     Row(key + "_Default", "Default", parameter.ContainsKey("default") ? Value(parameter["default"]) : Text("NotSpecified")),
                 };
-                if (primaryFile)
-                {
-                    rows.Add(Row(key + "_Role", "Role", Text("PrimaryFiles")));
-                }
-
                 foreach (var (field, fieldLabel) in new[]
                 {
                     ("description", "Description"), ("enum", "Options"), ("minimum", "Minimum"),
-                    ("maximum", "Maximum"), ("format", "Format"), ("contentMediaType", "MediaType"),
+                    ("maximum", "Maximum"), ("format", "Format"),
                 })
                 {
                     if (parameter[field] is { } value)
@@ -163,17 +153,11 @@ public static class PowerScriptMetadataDetails
         }
 
         var execute = descriptor["x-execute"] as JsonObject;
-        var runtime = Token(extension["runtime"]);
         var execution = new List<PowerScriptMetadataRow>
         {
-            Row("Runtime", "Runtime", runtime switch { "powershell" => "PowerShell", "python" => "Python", _ => Optional(extension["runtime"]) }),
+            Row("Runtime", "Runtime", entryExtension?.ToLowerInvariant() switch { ".ps1" => "PowerShell", ".py" => "Python", _ => Text("NotSpecified") }),
             Row("ExecutionMode", "ExecutionMode", Text(execute is null ? "BuiltIn" : "Custom")),
         };
-        if (extension["function"] is { } function)
-        {
-            execution.Add(Row("Function", "Function", Value(function)));
-        }
-
         if (execute is not null)
         {
             foreach (var (field, label) in new[]

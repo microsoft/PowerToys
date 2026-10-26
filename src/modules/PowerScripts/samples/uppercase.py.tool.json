@@ -2,12 +2,32 @@
   "name": "uppercase",
   "title": "Uppercase Text",
   "description": "Convert clipboard text to UPPERCASE. A Python PowerScript usable from Advanced Paste or a hotkey.",
-  "inputSchema": { "type": "object", "properties": {} },
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "additionalProperties": false
+  },
   "x-powerscript": {
-    "function": "uppercase",
-    "input": "text",
-    "output": "text",
     "publisher": "PowerToys samples",
     "version": "1.0.0"
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "additionalProperties": false
   }
 }

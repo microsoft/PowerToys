@@ -34,7 +34,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
         private readonly Func<string, int> _sendConfigMsg;
-        private readonly Dictionary<string, MxcScriptOverrideSnapshot> _mxcScriptOverrides = new(StringComparer.OrdinalIgnoreCase);
 
         private bool _isEnabled;
         private string _scriptsFolder;
@@ -358,106 +357,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return true;
         }
 
-        public async Task<bool> TrySetScriptMxcModeAsync(PowerScriptListItem script, int modeIndex, bool isRiskAccepted)
-        {
-            if (script is null || string.IsNullOrWhiteSpace(script.Id) || modeIndex < 0 || modeIndex > 2)
-            {
-                return false;
-            }
-
-            bool? enabledOverride = modeIndex switch
-            {
-                1 => true,
-                2 => false,
-                _ => null,
-            };
-
-            if (enabledOverride == false && !isRiskAccepted)
-            {
-                return false;
-            }
-
-            var enabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(script.MxcEnabledPolicies);
-            var disabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(script.MxcDisabledPolicies);
-            await SaveScriptMxcSettingsAsync(script, enabledOverride, enabledPolicies, disabledPolicies);
-            return true;
-        }
-
-        public async Task<bool> TrySetScriptMxcPolicyAsync(PowerScriptListItem script, string policy, bool isEnabled, bool isRiskAccepted)
-        {
-            if (script is null || string.IsNullOrWhiteSpace(script.Id) || !IsKnownMxcPolicy(policy))
-            {
-                return false;
-            }
-
-            if (!isEnabled && !isRiskAccepted)
-            {
-                return false;
-            }
-
-            var enabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(script.MxcEnabledPolicies);
-            var disabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(script.MxcDisabledPolicies);
-            if (isEnabled)
-            {
-                disabledPolicies.RemoveAll(item => string.Equals(item, policy, StringComparison.OrdinalIgnoreCase));
-                if (!enabledPolicies.Contains(policy, StringComparer.OrdinalIgnoreCase))
-                {
-                    enabledPolicies.Add(CanonicalizeMxcPolicy(policy));
-                }
-            }
-            else if (!disabledPolicies.Contains(policy, StringComparer.OrdinalIgnoreCase))
-            {
-                enabledPolicies.RemoveAll(item => string.Equals(item, policy, StringComparison.OrdinalIgnoreCase));
-                disabledPolicies.Add(CanonicalizeMxcPolicy(policy));
-            }
-
-            await SaveScriptMxcSettingsAsync(script, script.MxcEnabledOverride, enabledPolicies, disabledPolicies);
-            return true;
-        }
-
-        public async Task<bool> TrySetScriptMxcConfigurationAsync(
-            PowerScriptListItem script,
-            int modeIndex,
-            IEnumerable<string> enabledPolicies,
-            bool usesGlobalPolicy,
-            bool isRiskAccepted)
-        {
-            if (script is null || string.IsNullOrWhiteSpace(script.Id) || modeIndex < 0 || modeIndex > 2)
-            {
-                return false;
-            }
-
-            var normalizedEnabled = usesGlobalPolicy
-                ? new List<string>()
-                : PowerScriptListItem.NormalizeMxcPolicies(enabledPolicies);
-            var disabledPolicies = new[]
-            {
-                PowerScriptListItem.FilesystemPolicy,
-                PowerScriptListItem.NetworkPolicy,
-                PowerScriptListItem.UiPolicy,
-                PowerScriptListItem.LeastPrivilegePolicy,
-            }.Where(policy => !normalizedEnabled.Contains(policy, StringComparer.Ordinal)).ToList();
-            bool? enabledOverride = usesGlobalPolicy ? null : modeIndex switch
-            {
-                1 => true,
-                2 => false,
-                _ => null,
-            };
-
-            if (usesGlobalPolicy)
-            {
-                disabledPolicies.Clear();
-            }
-
-            if (RequiresMxcRiskAcceptance(enabledOverride, disabledPolicies) && !isRiskAccepted)
-            {
-                return false;
-            }
-
-            await SaveScriptMxcSettingsAsync(script, enabledOverride, normalizedEnabled, disabledPolicies, usesGlobalPolicy);
-            return true;
-        }
-
         public static bool RequiresMxcRiskAcceptance(bool? enabled, IEnumerable<string> disabledPolicies) =>
             enabled == false || PowerScriptListItem.NormalizeMxcPolicies(disabledPolicies).Count > 0;
 
@@ -652,7 +551,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mxcDisabledPolicies = new List<string>();
             _mxcRiskAccepted = false;
             _hasRejectedGlobalMxcWeakening = false;
-            _mxcScriptOverrides.Clear();
 
             try
             {
@@ -692,48 +590,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _mxcRiskAccepted = false;
                     _hasRejectedGlobalMxcWeakening = true;
                 }
-
-                if (settings.Scripts is null)
-                {
-                    return;
-                }
-
-                foreach (var (id, scriptOverride) in settings.Scripts)
-                {
-                    if (string.IsNullOrWhiteSpace(id) || scriptOverride is null)
-                    {
-                        continue;
-                    }
-
-                    var normalizedDisabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(scriptOverride.DisabledPolicies);
-                    var normalizedEnabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(scriptOverride.EnabledPolicies);
-                    normalizedDisabledPolicies.RemoveAll(policy =>
-                        normalizedEnabledPolicies.Contains(policy, StringComparer.Ordinal));
-                    if (RequiresMxcRiskAcceptance(scriptOverride.Enabled, normalizedDisabledPolicies) && !scriptOverride.RiskAccepted)
-                    {
-                        _mxcScriptOverrides[id] = new MxcScriptOverrideSnapshot
-                        {
-                            Enabled = true,
-                            EnabledPolicies = new List<string>
-                            {
-                                PowerScriptListItem.FilesystemPolicy,
-                                PowerScriptListItem.NetworkPolicy,
-                                PowerScriptListItem.UiPolicy,
-                                PowerScriptListItem.LeastPrivilegePolicy,
-                            },
-                        };
-                    }
-                    else
-                    {
-                        _mxcScriptOverrides[id] = new MxcScriptOverrideSnapshot
-                        {
-                            Enabled = scriptOverride.Enabled,
-                            EnabledPolicies = normalizedEnabledPolicies,
-                            DisabledPolicies = normalizedDisabledPolicies,
-                            RiskAccepted = RequiresMxcRiskAcceptance(scriptOverride.Enabled, normalizedDisabledPolicies),
-                        };
-                    }
-                }
             }
             catch (Exception)
             {
@@ -743,7 +599,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _mxcDisabledPolicies = new List<string>();
                 _mxcRiskAccepted = false;
                 _hasRejectedGlobalMxcWeakening = false;
-                _mxcScriptOverrides.Clear();
             }
         }
 
@@ -762,7 +617,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             mxc["disabledPolicies"] = CreateJsonArray(_mxcDisabledPolicies);
             mxc["riskAccepted"] = _mxcRiskAccepted;
-            mxc["scripts"] = CreateScriptOverridesJson();
+            mxc.Remove("scripts");
             WriteConfigNode(config);
 
             if (_hasRejectedGlobalMxcWeakening)
@@ -772,72 +627,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private JsonObject CreateScriptOverridesJson()
-        {
-            var scripts = new JsonObject();
-            foreach (var (id, scriptOverride) in _mxcScriptOverrides)
-            {
-                scripts[id] = new JsonObject
-                {
-                    ["enabled"] = scriptOverride.Enabled.HasValue ? JsonValue.Create(scriptOverride.Enabled.Value) : null,
-                    ["enabledPolicies"] = CreateJsonArray(scriptOverride.EnabledPolicies),
-                    ["disabledPolicies"] = CreateJsonArray(scriptOverride.DisabledPolicies),
-                    ["riskAccepted"] = scriptOverride.RiskAccepted,
-                };
-            }
-
-            return scripts;
-        }
-
-        private async Task SaveScriptMxcSettingsAsync(
-            PowerScriptListItem script,
-            bool? enabledOverride,
-            List<string> enabledPolicies,
-            List<string> disabledPolicies,
-            bool usesGlobalPolicy = false)
-        {
-            enabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(enabledPolicies);
-            disabledPolicies = PowerScriptListItem.NormalizeMxcPolicies(disabledPolicies);
-            disabledPolicies.RemoveAll(policy => enabledPolicies.Contains(policy, StringComparer.Ordinal));
-            var riskAccepted = RequiresMxcRiskAcceptance(enabledOverride, disabledPolicies);
-            var storedOverride = new JsonObject();
-            storedOverride["enabled"] = enabledOverride.HasValue ? JsonValue.Create(enabledOverride.Value) : null;
-            storedOverride["enabledPolicies"] = CreateJsonArray(enabledPolicies);
-            storedOverride["disabledPolicies"] = CreateJsonArray(disabledPolicies);
-            storedOverride["riskAccepted"] = riskAccepted;
-            DeserializeSnapshot(await InvokeScriptSettingsHostAsync(
-                "save",
-                script.EntryFullPath,
-                new JsonObject { ["mxc"] = usesGlobalPolicy ? null : storedOverride }));
-            await ReloadScriptsAsync(preserveEditorOrder: true);
-        }
-
         private void ApplyMxcSettingsToScript(PowerScriptListItem script)
         {
-            if (script.HasLocalMxcSettings)
-            {
-                script.ApplyLocalMxcSettings(_isMxcEnabled, _mxcDisabledPolicies);
-            }
-            else if (!_hasRejectedGlobalMxcWeakening &&
-                _mxcScriptOverrides.TryGetValue(script.Id, out var scriptOverride))
-            {
-                script.ApplyMxcSettings(
-                    scriptOverride.Enabled,
-                    scriptOverride.EnabledPolicies,
-                    scriptOverride.DisabledPolicies,
-                    _isMxcEnabled,
-                    _mxcDisabledPolicies);
-            }
-            else
-            {
-                script.ApplyMxcSettings(
-                    null,
-                    Array.Empty<string>(),
-                    Array.Empty<string>(),
-                    _isMxcEnabled,
-                    _mxcDisabledPolicies);
-            }
-
+            script.ApplyGlobalMxcSettings(_isMxcEnabled, _mxcDisabledPolicies);
             ApplyExecutionSummary(script);
         }
 
@@ -1234,20 +1026,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             public bool Enabled { get; set; } = true;
 
             public string ExecutorPath { get; set; } = string.Empty;
-
-            public List<string> DisabledPolicies { get; set; } = new();
-
-            public bool RiskAccepted { get; set; }
-
-            public Dictionary<string, MxcScriptOverrideSnapshot> Scripts { get; set; } =
-                new(StringComparer.OrdinalIgnoreCase);
-        }
-
-        private sealed class MxcScriptOverrideSnapshot
-        {
-            public bool? Enabled { get; set; }
-
-            public List<string> EnabledPolicies { get; set; } = new();
 
             public List<string> DisabledPolicies { get; set; } = new();
 

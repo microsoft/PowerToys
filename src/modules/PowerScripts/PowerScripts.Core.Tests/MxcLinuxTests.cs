@@ -33,19 +33,23 @@ public class MxcLinuxTests
     }
 
     [TestMethod]
-    [DataRow(true, false, false)]
-    [DataRow(true, false, true)]
-    [DataRow(false, false, true)]
-    [DataRow(true, true, false)]
-    public void Unsupported_Or_Unaccepted_Policies_Never_Launch(bool enabled, bool acceptExceptions, bool local)
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(false, false)]
+    public void Unsupported_Or_Unaccepted_Policies_Never_Launch(bool enabled, bool acceptExceptions)
     {
-        var context = Context(acceptExceptions, local);
-        var settings = new MxcSettings { Enabled = enabled, RiskAccepted = !enabled };
-        var policy = MxcPolicyResolver.Resolve(settings, "demo", hasLocalOverride: local, localOverride: context.LocalMxc);
+        var context = Context();
+        var settings = new MxcSettings
+        {
+            Enabled = enabled,
+            RiskAccepted = acceptExceptions,
+            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
+        };
+        var policy = MxcPolicyResolver.Resolve(settings);
         var launcher = new RecordingLauncher(_ => throw new AssertFailedException("Unsupported execution must never start."));
 
         var result = MxcLinuxProcessRunner.Run(
-            "missing-runner.py", "missing-script.py", "{}", PowerScriptDataFormat.Text,
+            "missing-script.py", "{}", PowerScriptDataFormat.Text,
             context, policy, settings, 1000, launcher);
 
         Assert.AreEqual(125, result.ExitCode);
@@ -54,7 +58,7 @@ public class MxcLinuxTests
     }
 
     [TestMethod]
-    public void Global_Exceptions_Do_Not_Replace_Source_Bound_Script_Acceptance()
+    public void AcceptedGlobalExceptionsAreSufficientWithoutAnyScriptSettings()
     {
         var settings = new MxcSettings
         {
@@ -62,9 +66,8 @@ public class MxcLinuxTests
             RiskAccepted = true,
             DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
         };
-        var context = Context(false, false);
-        var policy = MxcPolicyResolver.Resolve(settings, "demo");
-        StringAssert.Contains(MxcLinuxProcessRunner.GetPolicyError(context, policy)!, "Global exceptions alone");
+        var policy = MxcPolicyResolver.Resolve(settings);
+        Assert.IsNull(MxcLinuxProcessRunner.GetPolicyError(policy));
     }
 
     [TestMethod]
@@ -79,8 +82,8 @@ public class MxcLinuxTests
         var policy = new MxcEffectivePolicy { Enabled = true, EnabledPolicies = enabled };
         var launcher = new RecordingLauncher(_ => throw new AssertFailedException("Unsupported policy must not execute."));
         var result = MxcLinuxProcessRunner.Run(
-            "missing.py", "missing.py", "{}", PowerScriptDataFormat.Text,
-            Context(true, true), policy, new MxcSettings(), 1000, launcher);
+            "missing.py", "{}", PowerScriptDataFormat.Text,
+            Context(), policy, new MxcSettings(), 1000, launcher);
         Assert.AreEqual(125, result.ExitCode);
         Assert.AreEqual(0, launcher.Calls);
     }
@@ -92,21 +95,25 @@ public class MxcLinuxTests
         Directory.CreateDirectory(scriptDirectory);
         var script = Path.Combine(scriptDirectory, "main.py");
         var selected = Path.Combine(_root, "selected input.txt");
-        File.WriteAllText(script, "def main(): return []");
+        File.WriteAllText(script, "import json\nprint(json.dumps({'files': []}))");
         File.WriteAllText(selected, "selected");
         var executor = Path.Combine(_root, "wxc-exec.exe");
         File.WriteAllText(executor, "test executor");
         File.WriteAllText(Path.Combine(_root, "wslcsdk.dll"), "test SDK");
         var runDirectory = Path.Combine(_root, "run");
-        var context = Context(true, true, scriptDirectory, selected);
-        var policy = MxcPolicyResolver.Resolve(new MxcSettings(), "demo", hasLocalOverride: true, localOverride: context.LocalMxc);
+        var context = Context(scriptDirectory, selected);
+        var policy = MxcPolicyResolver.Resolve(new MxcSettings
+        {
+            RiskAccepted = true,
+            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
+        });
         var launcher = new RecordingLauncher(start =>
         {
             Assert.AreEqual("--experimental", start.ArgumentList[0]);
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             var filesystem = config.RootElement.GetProperty("filesystem");
             CollectionAssert.AreEquivalent(
-                new[] { scriptDirectory, script, Path.Combine(runDirectory, "request"), selected },
+                new[] { scriptDirectory, Path.Combine(runDirectory, "request"), selected },
                 filesystem.GetProperty("readonlyPaths").EnumerateArray().Select(path => path.GetString()!).ToArray());
             Assert.AreEqual("block", config.RootElement.GetProperty("network").GetProperty("defaultPolicy").GetString());
             StringAssert.StartsWith(config.RootElement.GetProperty("process").GetProperty("commandLine").GetString()!, "cd '");
@@ -115,18 +122,18 @@ public class MxcLinuxTests
             Assert.AreEqual("{\"text\":\"input\"}", File.ReadAllText(Path.Combine(runDirectory, "request", "input.json")));
             var output = Path.Combine(runDirectory, "workspace", "output.txt");
             File.WriteAllText(output, "produced");
-            return new ProcessRunResult(0, JsonSerializer.Serialize(new { file_paths = new[] { MxcLinuxProcessRunner.ToContainerPath(output) } }), string.Empty);
+            return new ProcessRunResult(0, JsonSerializer.Serialize(new { files = new[] { MxcLinuxProcessRunner.ToContainerPath(output) } }), string.Empty);
         });
 
         var result = MxcLinuxProcessRunner.Run(
-            script, script, "{\"text\":\"input\"}", PowerScriptDataFormat.Files, context, policy,
+            script, "{\"text\":\"input\"}", PowerScriptDataFormat.Files, context, policy,
             new MxcSettings { ExecutorPath = executor }, 1000, launcher,
             () => Directory.CreateDirectory(runDirectory).FullName);
 
         Assert.AreEqual(0, result.ExitCode, result.StdErr);
         Assert.AreEqual(1, launcher.Calls);
         using var outputJson = JsonDocument.Parse(result.StdOut);
-        var path = outputJson.RootElement.GetProperty("file_paths")[0].GetString()!;
+        var path = outputJson.RootElement.GetProperty("files")[0].GetString()!;
         Assert.AreEqual("produced", File.ReadAllText(path));
         Assert.IsFalse(Directory.Exists(Path.Combine(runDirectory, "request")));
         Assert.IsFalse(File.Exists(Path.Combine(runDirectory, "mxc-config.json")));
@@ -186,18 +193,12 @@ public class MxcLinuxTests
         }
     }
 
-    private static ProcessExecutionContext Context(bool accepted, bool local, string directory = "", params string[] inputs) => new()
+    private static ProcessExecutionContext Context(string directory = "", params string[] inputs) => new()
     {
         ScriptId = "demo",
         ScriptDirectory = directory,
         ScriptsRoot = directory,
         InputPaths = inputs,
-        HasLocalMxcSettings = local,
-        LocalMxc = new()
-        {
-            RiskAccepted = accepted,
-            DisabledPolicies = new() { MxcPolicies.Ui, MxcPolicies.LeastPrivilege },
-        },
     };
 
     private sealed class RecordingLauncher(Func<ProcessStartInfo, ProcessRunResult> execute) : IProcessLauncher

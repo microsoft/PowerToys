@@ -49,12 +49,12 @@ public static class ManifestValidator
 
         if (manifest.InputFormat is { } inputFormat && !ScriptIo.IsSupported(inputFormat))
         {
-            errors.Add("'x-powerscript.input' must be none, text, or files. Pass inline HTML as text and media or HTML documents as files with declared extensions.");
+            errors.Add("'inputSchema' must describe none, text, or files.");
         }
 
         if (manifest.OutputFormat is { } outputFormat && !ScriptIo.IsSupported(outputFormat))
         {
-            errors.Add("'x-powerscript.output' must be none, text, or files. Return literal markup as text and rich HTML or media as files.");
+            errors.Add("'outputSchema' must describe none, text, or files.");
         }
 
         if (manifest.Input is not null)
@@ -64,15 +64,15 @@ public static class ManifestValidator
                 errors.Add("file scripts must declare 'input.extensions'.");
             }
 
-            if (manifest.Input is { MinFiles: < 1 })
+            if (manifest.Input is { MinFiles: < 0 })
             {
-                errors.Add("'input.minFiles' must be at least 1.");
+                errors.Add("'files.minItems' cannot be negative.");
             }
 
             if (manifest.Input.MaxFiles < 0 ||
-                (manifest.Input is { MaxFiles: > 0 } input && input.MaxFiles < input.MinFiles))
+                manifest.Input.MaxFiles < manifest.Input.MinFiles)
             {
-                errors.Add("'input.maxFiles' must be 0 (unbounded) or >= minFiles.");
+                errors.Add("'input.maxFiles' must be omitted (unbounded) or >= minFiles.");
             }
         }
 
@@ -95,13 +95,6 @@ public static class ManifestValidator
             {
                 errors.Add("'x-execute.stdin' must be 'json' or omitted.");
             }
-        }
-
-        if (manifest.Runtime == ScriptRuntime.Python &&
-            manifest.Execute is null &&
-            string.IsNullOrWhiteSpace(manifest.EntryFunction))
-        {
-            errors.Add("'x-powerscript.function' is required for Python scripts without 'x-execute'.");
         }
 
         ValidateParameters(manifest, errors);

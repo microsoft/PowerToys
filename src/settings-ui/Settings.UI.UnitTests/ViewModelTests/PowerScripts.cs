@@ -261,36 +261,5 @@ namespace ViewModelTests
             Assert.IsTrue(PowerScriptsViewModel.ResolveMxcEnabled(true, false));
             Assert.IsFalse(PowerScriptsViewModel.ResolveMxcEnabled(false, true));
         }
-
-        [TestMethod]
-        public void PerScriptPolicyCanStrengthenGlobalPolicy()
-        {
-            var effectiveDisabled = PowerScriptListItem.ResolveEffectiveDisabledPolicies(
-                new[] { PowerScriptListItem.NetworkPolicy },
-                new[] { PowerScriptListItem.NetworkPolicy },
-                Array.Empty<string>());
-
-            CollectionAssert.DoesNotContain(
-                new System.Collections.Generic.List<string>(effectiveDisabled),
-                PowerScriptListItem.NetworkPolicy);
-        }
-
-        [TestMethod]
-        public void PerScriptPolicyCanRequestOnlyNeededAccess()
-        {
-            var effectiveDisabled = PowerScriptListItem.ResolveEffectiveDisabledPolicies(
-                Array.Empty<string>(),
-                new[]
-                {
-                    PowerScriptListItem.FilesystemPolicy,
-                    PowerScriptListItem.UiPolicy,
-                    PowerScriptListItem.LeastPrivilegePolicy,
-                },
-                new[] { PowerScriptListItem.NetworkPolicy });
-
-            CollectionAssert.AreEqual(
-                new[] { PowerScriptListItem.NetworkPolicy },
-                new System.Collections.Generic.List<string>(effectiveDisabled));
-        }
     }
 }

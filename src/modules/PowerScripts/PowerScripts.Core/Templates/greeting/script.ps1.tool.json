@@ -5,15 +5,44 @@
   "inputSchema": {
     "type": "object",
     "properties": {
-      "name": { "type": "string", "title": "Your name", "description": "Included literally in the greeting.", "default": "World" },
-      "times": { "type": "integer", "title": "Repetitions", "description": "How many greetings to return.", "default": 1, "minimum": 1, "maximum": 5 }
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Your name",
+            "description": "Included literally in the greeting.",
+            "default": "World"
+          },
+          "times": {
+            "type": "integer",
+            "title": "Repetitions",
+            "description": "How many greetings to return.",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 5
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
     },
-    "required": []
+    "required": [],
+    "additionalProperties": false
   },
   "x-powerscript": {
-    "runtime": "powershell",
-    "input": "none",
-    "output": "text",
     "capabilities": []
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "additionalProperties": false
   }
 }

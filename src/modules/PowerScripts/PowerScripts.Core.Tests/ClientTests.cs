@@ -72,8 +72,7 @@ public class ClientTests
         "runtime": "Python",
         "io": { "input": "text", "output": "text" },
         "capabilities": [],
-        "trusted": false,
-        "transform": { "function": "uppercase", "inputFormat": "Text", "outputFormat": "Text" }
+        "trusted": false
       },
       { "name": "no-id-skipped" }
     ]
@@ -118,7 +117,6 @@ public class ClientTests
         Assert.AreEqual("format", ip.Parameters[0].Name);
         Assert.IsTrue(ip.Parameters[0].IsRequired);
         CollectionAssert.AreEqual(new[] { "short", "long" }, ip.Parameters[0].Options.ToArray());
-        Assert.IsNull(ip.Transform);
     }
 
     [TestMethod]
@@ -145,7 +143,7 @@ public class ClientTests
     }
 
     [TestMethod]
-    public void ParseList_ReadsInputExtensions_AndTransform()
+    public void ParseListReadsInputExtensionsAndPrimaryIo()
     {
         var scripts = PowerScriptInfo.ParseList(SampleJson);
 
@@ -155,9 +153,8 @@ public class ClientTests
         Assert.AreEqual(3, file.InputMaxFiles);
 
         var transform = scripts.Single(s => s.Id == "py_upper");
-        Assert.IsNotNull(transform.Transform);
-        Assert.AreEqual("uppercase", transform.Transform!.Function);
-        Assert.AreEqual("Text", transform.Transform.InputFormat);
+        Assert.AreEqual(PowerScriptIO.Text, transform.Input);
+        Assert.AreEqual(PowerScriptIO.Text, transform.Output);
     }
 
     [TestMethod]
@@ -223,14 +220,47 @@ public class ClientTests
                 if ($env:POWERSCRIPTS_FILES) { $Files = $env:POWERSCRIPTS_FILES -split "`n" }
                 $output = Join-Path $env:POWERSCRIPTS_MXC_WORKSPACE ('result ' + [char]0x6D4B + [char]0x8BD5 + '.png')
                 [IO.File]::WriteAllBytes($output, [IO.File]::ReadAllBytes($Files[0]))
-                @{ file_paths = @($output) } | ConvertTo-Json -Compress
+                @{ files = @($output) } | ConvertTo-Json -Compress
                 """);
             File.WriteAllText(Path.Combine(root, "inspect.ps1.tool.json"), $$"""
                 {
                   "name": "{{id}}",
-                  "x-powerscript": {
-                    "input": "files", "output": "files", "extensions": [".png"],
-                    "minFiles": 1, "maxFiles": 1
+                  "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                      "files": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "x-powerscript": {
+                            "extensions": [
+                              ".png"
+                            ]
+                          }
+                        },
+                        "minItems": 1,
+                        "maxItems": 1
+                      }
+                    },
+                    "required": [
+                      "files"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                      "files": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "files"
+                    ],
+                    "additionalProperties": false
                   }
                 }
                 """);
@@ -295,7 +325,15 @@ public class ClientTests
             File.WriteAllText(Path.Combine(root, "it_hello.ps1"), "Write-Host hi");
             File.WriteAllText(
                 Path.Combine(root, "it_hello.ps1.tool.json"),
-                "{ \"name\":\"it_hello\", \"description\":\"it\", \"inputSchema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}},\"required\":[\"name\"]} }");
+                """
+                {"name":"it_hello",
+                 "inputSchema":{"type":"object","additionalProperties":false,"properties":{
+                   "parameters":{"type":"object","additionalProperties":false,
+                     "properties":{"name":{"type":"string"}},"required":["name"]}
+                 }},
+                 "outputSchema":{"type":"object","additionalProperties":false,
+                   "properties":{"text":{"type":"string"}},"required":["text"]}}
+                """);
 
             var client = new PowerScriptsClient(hostPath, scriptsRoot: root);
             Assert.IsTrue(client.IsAvailable);
@@ -309,7 +347,7 @@ public class ClientTests
             Assert.IsTrue(client.List().Single(s => s.Id == "it_hello").Trusted);
             var missingParameter = client.TransformAsync("it_hello", new PowerScriptTransformInput()).GetAwaiter().GetResult();
             Assert.AreEqual(PowerScriptsProtocol.ExitCode.Usage, missingParameter.ExitCode);
-            StringAssert.Contains(missingParameter.StdErr, "Missing required parameter");
+            StringAssert.Contains(missingParameter.StdErr, "Missing required property");
             Assert.IsTrue(client.TrustRevoke("it_hello"));
         }
         finally

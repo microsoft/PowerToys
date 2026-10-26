@@ -15,13 +15,11 @@ namespace PowerScripts.Core.Manifest;
 /// <c>inputSchema</c> + <c>outputSchema</c>) doubles as PowerScripts' authoring format — with no new
 /// protocol to invent and no server to run.
 ///
-/// Only one key is not part of MCP: <see cref="Execute"/> (<c>x-execute</c>) says how to turn the
-/// JSON inputs into a command line. It is an <c>x-</c>-prefixed extension that any MCP / JSON Schema
-/// reader ignores, so the file stays a valid MCP tool. A second optional extension,
-/// <see cref="PowerScript"/> (<c>x-powerscript</c>), carries the small residue that has no
-/// language-native home (the Explorer file-type filter and capability/consent string) — the metadata
-/// that introspection could never recover on its own.
+/// Optional extensions provide an explicit launch recipe (<c>x-execute</c>) and discovery,
+/// provenance, and capability metadata (<c>x-powerscript</c>). Schemas are authoritative for I/O,
+/// parameters, and schema-local file restrictions; the script extension determines the runtime.
 /// </summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class ToolDescriptor
 {
     /// <summary>The tool name; becomes the PowerScript <see cref="PowerScriptManifest.Id"/>.</summary>
@@ -70,7 +68,8 @@ public sealed class ToolAnnotations
 /// A minimal JSON Schema <c>object</c> node: enough to read a tool's declared inputs/outputs without
 /// pulling in a full JSON Schema library.
 /// </summary>
-public sealed class JsonSchemaObject
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public class JsonSchemaObject
 {
     [JsonPropertyName("type")]
     public string? Type { get; set; }
@@ -80,18 +79,31 @@ public sealed class JsonSchemaObject
 
     [JsonPropertyName("required")]
     public List<string>? Required { get; set; }
+
+    [JsonPropertyName("additionalProperties")]
+    public bool? AdditionalProperties { get; set; }
+
+    [JsonPropertyName("items")]
+    public JsonSchemaProperty? Items { get; set; }
+
+    [JsonPropertyName("minItems")]
+    public int? MinItems { get; set; }
+
+    [JsonPropertyName("maxItems")]
+    public int? MaxItems { get; set; }
+
+    [JsonPropertyName("x-powerscript")]
+    public FileSchemaHints? PowerScript { get; set; }
 }
 
 /// <summary>A single property of a JSON Schema object.</summary>
-public sealed class JsonSchemaProperty
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class JsonSchemaProperty : JsonSchemaObject
 {
     public const string FilePathFormat = "file-path";
 
     [JsonPropertyName("title")]
     public string? Title { get; set; }
-
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
 
     [JsonPropertyName("format")]
     public string? Format { get; set; }
@@ -100,7 +112,8 @@ public sealed class JsonSchemaProperty
     public string? Description { get; set; }
 
     [JsonPropertyName("default")]
-    public JsonElement? Default { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public JsonElement Default { get; set; }
 
     [JsonPropertyName("enum")]
     public List<string>? Enum { get; set; }
@@ -111,46 +124,48 @@ public sealed class JsonSchemaProperty
     [JsonPropertyName("maximum")]
     public int? Maximum { get; set; }
 
-    /// <summary>
-    /// When set on a property without <c>format: file-path</c>, this string value is a
-    /// <em>path to a file</em> of the given media type (never raw bytes). Its presence marks the
-    /// property as the script's primary file input rather than a prompt parameter.
-    /// </summary>
-    [JsonPropertyName("contentMediaType")]
-    public string? ContentMediaType { get; set; }
+    [JsonPropertyName("minLength")]
+    public int? MinLength { get; set; }
+
+    [JsonPropertyName("maxLength")]
+    public int? MaxLength { get; set; }
+
+    [JsonPropertyName("pattern")]
+    public string? Pattern { get; set; }
 
     /// <summary>True when this is a scalar file-path parameter rendered with a consumer-owned picker.</summary>
     [JsonIgnore]
     public bool IsFileParameter => string.Equals(Format, FilePathFormat, StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>True when this property declares the script's primary Explorer file input.</summary>
-    [JsonIgnore]
-    public bool IsPrimaryFileInput => !IsFileParameter && !string.IsNullOrEmpty(ContentMediaType);
-
     /// <summary>Renders the schema <c>default</c> (of any JSON type) as the string the manifest uses.</summary>
     public string? DefaultAsString()
     {
-        if (Default is not { } value)
+        if (Default.ValueKind == JsonValueKind.Undefined)
         {
             return null;
         }
 
-        return value.ValueKind switch
+        return Default.ValueKind switch
         {
-            JsonValueKind.String => value.GetString(),
-            JsonValueKind.Number => value.ToString(),
+            JsonValueKind.String => Default.GetString(),
+            JsonValueKind.Number => Default.ToString(),
             JsonValueKind.True => "true",
             JsonValueKind.False => "false",
             JsonValueKind.Null or JsonValueKind.Undefined => null,
-            _ => value.GetRawText(),
+            _ => Default.GetRawText(),
         };
     }
 }
 
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class FileSchemaHints
+{
+    [JsonPropertyName("extensions")]
+    public List<string>? Extensions { get; set; }
+}
+
 /// <summary>
-/// The <c>x-execute</c> block: how the launcher turns JSON inputs into a process. This is the only
-/// part of the descriptor MCP does not define, and the only part <em>PowerScripts</em>, not an agent,
-/// reads.
+/// The optional <c>x-execute</c> extension describes a custom executable and input transport.
 /// </summary>
 public sealed class ScriptExecute
 {
@@ -189,46 +204,12 @@ public sealed class ScriptExecute
 /// The <c>x-powerscript</c> block: the small, PowerToys-specific residue that neither MCP nor a
 /// language signature can express. Everything here is optional.
 /// </summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class PowerScriptExtension
 {
-    /// <summary>Overrides the runtime instead of inferring it from the entry extension.</summary>
-    [JsonPropertyName("runtime")]
-    public string? Runtime { get; set; }
-
-    /// <summary>
-    /// Python entry-function name. Required for the built-in Python runtime; ignored by explicit
-    /// launch recipes and non-Python runtimes.
-    /// </summary>
-    [JsonPropertyName("function")]
-    public string? Function { get; set; }
-
-    /// <summary>Explorer right-click file-type filter for a file script (e.g. <c>[".md", ".txt"]</c> or <c>["*"]</c>).</summary>
-    [JsonPropertyName("extensions")]
-    public List<string>? Extensions { get; set; }
-
-    [JsonPropertyName("minFiles")]
-    public int? MinFiles { get; set; }
-
-    [JsonPropertyName("maxFiles")]
-    public int? MaxFiles { get; set; }
-
     /// <summary>Declared capabilities: the consent string and the agent permission contract.</summary>
     [JsonPropertyName("capabilities")]
     public List<string>? Capabilities { get; set; }
-
-    /// <summary>
-    /// Optional explicit input data shape (<c>none</c>/<c>text</c>/<c>files</c>). Inline HTML is text;
-    /// media and HTML documents use files with extension filters, regardless of their source.
-    /// When omitted it is inferred from a declared file input, otherwise none. Authors
-    /// normally declare only I/O. A resolved input of <c>files</c> is what makes a
-    /// script file-driven (surfaced in the Explorer right-click menu); there is no separate "kind".
-    /// </summary>
-    [JsonPropertyName("input")]
-    public string? Input { get; set; }
-
-    /// <summary>Optional output shape (<c>none</c>/<c>text</c>/<c>files</c>); inferred when omitted. Rich HTML and media are files.</summary>
-    [JsonPropertyName("output")]
-    public string? Output { get; set; }
 
     /// <summary>Optional discovery audience. Omitted means every compatible consumer; not execution authorization.</summary>
     [JsonPropertyName("consumers")]
@@ -246,13 +227,4 @@ public sealed class PowerScriptExtension
     [JsonPropertyName("icon")]
     public string? Icon { get; set; }
 
-    /// <summary>Display-only MXC recommendations. They cannot disable an enforced policy.</summary>
-    [JsonPropertyName("mxc")]
-    public PowerScriptMxcExtension? Mxc { get; set; }
-}
-
-public sealed class PowerScriptMxcExtension
-{
-    [JsonPropertyName("recommendedPolicies")]
-    public List<string>? RecommendedPolicies { get; set; }
 }

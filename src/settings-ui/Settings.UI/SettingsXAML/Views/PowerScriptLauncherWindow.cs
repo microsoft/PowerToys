@@ -441,7 +441,21 @@ public sealed class PowerScriptLauncherWindow : WindowEx
         {
             var result = await _client.TransformAsync(
                 _selected.Id,
-                new PowerScriptTransformInput { Params = parameters },
+                new PowerScriptTransformInput
+                {
+                    Parameters = parameters.Count == 0 ? null : parameters.ToDictionary(
+                        pair => pair.Key,
+                        pair =>
+                        {
+                            var declaration = _selected.Parameters.Single(parameter => parameter.Name.Equals(pair.Key, StringComparison.OrdinalIgnoreCase));
+                            return declaration.Type switch
+                            {
+                                "int" => System.Text.Json.JsonSerializer.SerializeToElement(int.Parse(pair.Value, CultureInfo.InvariantCulture)),
+                                "bool" => System.Text.Json.JsonSerializer.SerializeToElement(bool.Parse(pair.Value)),
+                                _ => System.Text.Json.JsonSerializer.SerializeToElement(pair.Value),
+                            };
+                        }),
+                },
                 cancellationToken: operation.Token);
             if (!_closed)
             {

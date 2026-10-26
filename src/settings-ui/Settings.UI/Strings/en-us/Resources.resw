@@ -6210,86 +6210,17 @@ Text uses the current drawing color.</value>
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
   </data>
-  <data name="PowerScripts_MxcPolicyDialog_Title" xml:space="preserve">
-    <value>MXC permissions for {0}</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_Apply" xml:space="preserve">
-    <value>Apply permissions</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_Cancel" xml:space="preserve">
+  <data name="PowerScripts_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="PowerScripts_MxcPolicyDialog_RecommendationInfo.Message" xml:space="preserve">
-    <value>Author recommendations are guidance only. PowerScripts never weakens isolation until you explicitly apply and accept the change.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_UseRecommended.Content" xml:space="preserve">
-    <value>Use author recommendation</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_UseMaximum.Content" xml:space="preserve">
-    <value>Maximum isolation</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_UseGlobal.Content" xml:space="preserve">
-    <value>Use global policy</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_ExecutionIsolation.Header" xml:space="preserve">
-    <value>Execution isolation</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_ExecutionIsolation.Description" xml:space="preserve">
-    <value>Use the global MXC mode, explicitly require MXC, or allow this script to run directly.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_ModeGlobal.Content" xml:space="preserve">
-    <value>Use global setting</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_ModeRequired.Content" xml:space="preserve">
-    <value>Require MXC</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_ModeDirect.Content" xml:space="preserve">
-    <value>Run without MXC</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_ReducedIsolationWarning.Message" xml:space="preserve">
-    <value>This policy grants the script broader access. Review the script and enable the confirmation below before applying.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicyDialog_RiskAcceptance.Content" xml:space="preserve">
-    <value>I understand and accept the reduced isolation for this script.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_Filesystem_Title" xml:space="preserve">
-    <value>Restrict filesystem access</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_Filesystem_Description" xml:space="preserve">
-    <value>Keep the script package and selected inputs read-only; allow writes only in the per-run workspace.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_Network_Title" xml:space="preserve">
-    <value>Block network access</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_Network_Description" xml:space="preserve">
-    <value>Deny outbound, inbound, and host-loopback network access.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_Ui_Title" xml:space="preserve">
-    <value>Isolate desktop interaction</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_Ui_Description" xml:space="preserve">
-    <value>Block clipboard access, input injection, and system-control access.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_LeastPrivilege_Title" xml:space="preserve">
-    <value>Use least-privilege mode</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_LeastPrivilege_Description" xml:space="preserve">
-    <value>Run the script in MXC's least-privilege ProcessContainer mode.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_RecommendedKeep" xml:space="preserve">
-    <value>Author recommendation: keep this restriction.</value>
-  </data>
-  <data name="PowerScripts_MxcPolicy_RecommendedAllow" xml:space="preserve">
-    <value>Author recommendation: allow this access if the script needs it.</value>
-  </data>
   <data name="PowerScripts_MxcGroup.Header" xml:space="preserve">
-    <value>Windows script isolation</value>
+    <value>Global script isolation</value>
   </data>
   <data name="PowerScripts_MxcEnabled.Header" xml:space="preserve">
     <value>Use MXC</value>
   </data>
   <data name="PowerScripts_MxcEnabled.Description" xml:space="preserve">
-    <value>Default isolation for Windows PowerShell and Windows Python. Managed Linux requires its own per-script review. Turning this off requires accepting the reduced-isolation risk.</value>
+    <value>Global isolation for scripts. Managed Linux requires MXC and filesystem protection. Turning this off requires accepting the reduced-isolation risk.</value>
   </data>
   <data name="PowerScripts_MxcEnabledToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Use MXC</value>
@@ -6349,31 +6280,7 @@ Text uses the current drawing color.</value>
     <value>Effective isolation</value>
   </data>
   <data name="PowerScripts_MxcEffective.Description" xml:space="preserve">
-    <value>Effective policy after applying the global setting and this script's override.</value>
-  </data>
-  <data name="PowerScripts_MxcRecommendation.Header" xml:space="preserve">
-    <value>Author-recommended restrictions</value>
-  </data>
-  <data name="PowerScripts_MxcRecommendation.Description" xml:space="preserve">
-    <value>The author's recommendation is advisory only and can never weaken your configured policy automatically.</value>
-  </data>
-  <data name="PowerScripts_MxcPerScript.Header" xml:space="preserve">
-    <value>Per-script MXC permissions</value>
-  </data>
-  <data name="PowerScripts_MxcPerScript.Description" xml:space="preserve">
-    <value>Review each restriction, compare it with the author's recommendation, and apply a per-script policy as one change.</value>
-  </data>
-  <data name="PowerScripts_MxcConfigure.Content" xml:space="preserve">
-    <value>Configure...</value>
-  </data>
-  <data name="PowerScripts_MxcNoRestrictions" xml:space="preserve">
-    <value>No restrictions specified</value>
-  </data>
-  <data name="PowerScripts_MxcRecommendationMaximum" xml:space="preserve">
-    <value>The author recommends maximum isolation.</value>
-  </data>
-  <data name="PowerScripts_MxcRecommendationAccess" xml:space="preserve">
-    <value>The author indicates this script may need: {0}.</value>
+    <value>All scripts use the global MXC policy. Change it on the main PowerScripts page.</value>
   </data>
   <data name="PowerScripts_MxcEffectiveDisabled" xml:space="preserve">
     <value>Runs without MXC.</value>
@@ -6515,27 +6422,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_IoText" xml:space="preserve">
     <value>Text</value>
   </data>
-  <data name="PowerScripts_SettingsTitle" xml:space="preserve">
-    <value>Configure script</value>
-  </data>
-  <data name="PowerScripts_SettingsSave" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="PowerScripts_SettingsCancel" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-  <data name="PowerScripts_SettingsDiscard" xml:space="preserve">
-    <value>Discard changes</value>
-  </data>
-  <data name="PowerScripts_SettingsRetry" xml:space="preserve">
-    <value>Retry</value>
-  </data>
-  <data name="PowerScripts_SettingsInlineHelp" xml:space="preserve">
-    <value>Use the pencil to edit a value, or reset to its recommendation. Save applies local changes without approving execution.</value>
-  </data>
-  <data name="PowerScripts_SettingsEdit" xml:space="preserve">
-    <value>Edit</value>
-  </data>
   <data name="PowerScripts_SettingsBack.AutomationProperties.Name" xml:space="preserve">
     <value>Back to PowerScripts</value>
   </data>
@@ -6543,199 +6429,19 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Back to PowerScripts</value>
   </data>
   <data name="PowerScripts_SettingsSubpage.ModuleTitle" xml:space="preserve">
-    <value>Script settings</value>
+    <value>Script details</value>
   </data>
   <data name="PowerScripts_SettingsSubpage.ModuleDescription" xml:space="preserve">
-    <value>Review the script's descriptor and configure execution isolation. To change metadata, edit the .tool.json file; Settings does not override it.</value>
+    <value>Review the script's descriptor and global execution isolation. To change metadata, edit the .tool.json file.</value>
   </data>
   <data name="PowerScripts_SettingsNavigationFailed" xml:space="preserve">
     <value>Could not open the script settings page. Try again.</value>
   </data>
-  <data name="PowerScripts_SettingsNotSet" xml:space="preserve">
-    <value>Not set</value>
-  </data>
-  <data name="PowerScripts_SettingsRequirement" xml:space="preserve">
-    <value>Requirement</value>
-  </data>
   <data name="PowerScripts_SettingsDetails.Header" xml:space="preserve">
     <value>Security and script details</value>
   </data>
-  <data name="PowerScripts_SettingsShortName" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="PowerScripts_SettingsShortConsumers" xml:space="preserve">
-    <value>Module discovery</value>
-  </data>
-  <data name="PowerScripts_SettingsShortExtensions" xml:space="preserve">
-    <value>Accepted input file types</value>
-  </data>
-  <data name="PowerScripts_SettingsShortCapabilities" xml:space="preserve">
-    <value>Capabilities</value>
-  </data>
-  <data name="PowerScripts_SettingsShortIcon" xml:space="preserve">
-    <value>Icon</value>
-  </data>
-  <data name="PowerScripts_SettingsShortFunction" xml:space="preserve">
-    <value>Entry function</value>
-  </data>
-  <data name="PowerScripts_SettingsShortMinFiles" xml:space="preserve">
-    <value>Minimum input files</value>
-  </data>
-  <data name="PowerScripts_SettingsShortMaxFiles" xml:space="preserve">
-    <value>Maximum input files</value>
-  </data>
-  <data name="PowerScripts_SettingsShortDefault" xml:space="preserve">
-    <value>Default value</value>
-  </data>
-  <data name="PowerScripts_SettingsOptional" xml:space="preserve">
-    <value>Optional</value>
-  </data>
-  <data name="PowerScripts_SettingsDefaultSummary" xml:space="preserve">
-    <value>Default: {0}</value>
-  </data>
-  <data name="PowerScripts_SettingsParameterOptions" xml:space="preserve">
-    <value>Constraints and file input</value>
-  </data>
-  <data name="PowerScripts_SettingsChooseParameterType" xml:space="preserve">
-    <value>Choose a parameter type.</value>
-  </data>
-  <data name="PowerScripts_SettingsNotice" xml:space="preserve">
-    <value>Changes are saved locally, separately from the script's recommended defaults. Saving does not approve execution or grant permissions. Changes may require you to trust the script again before running it.</value>
-  </data>
-  <data name="PowerScripts_SettingsDisplayName" xml:space="preserve">
-    <value>Display name</value>
-  </data>
-  <data name="PowerScripts_SettingsDescription" xml:space="preserve">
-    <value>Description</value>
-  </data>
-  <data name="PowerScripts_SettingsRuntime" xml:space="preserve">
-    <value>Runtime</value>
-  </data>
-  <data name="PowerScripts_SettingsFunction" xml:space="preserve">
-    <value>Entry function (optional with a custom execution command)</value>
-  </data>
-  <data name="PowerScripts_SettingsInput" xml:space="preserve">
-    <value>Input</value>
-  </data>
-  <data name="PowerScripts_SettingsOutput" xml:space="preserve">
-    <value>Output</value>
-  </data>
-  <data name="PowerScripts_SettingsExtensions" xml:space="preserve">
-    <value>Accepted input file types</value>
-  </data>
-  <data name="PowerScripts_SettingsInputFiles" xml:space="preserve">
-    <value>Input files</value>
-  </data>
-  <data name="PowerScripts_SettingsInputFilesHelp" xml:space="preserve">
-    <value>These options apply when Input is set to Files. Choose which file types and how many files this script accepts.</value>
-  </data>
-  <data name="PowerScripts_SettingsAllFileTypes" xml:space="preserve">
-    <value>All file types</value>
-  </data>
-  <data name="PowerScripts_SettingsSpecificExtensions" xml:space="preserve">
-    <value>Specific extensions</value>
-  </data>
-  <data name="PowerScripts_SettingsExtensionsExample" xml:space="preserve">
-    <value>For example: .png, .jpg, .pdf</value>
-  </data>
-  <data name="PowerScripts_SettingsExtensionsHelp" xml:space="preserve">
-    <value>For specific types, enter extensions separated by commas, for example .png, .jpg, .pdf. The leading dot is optional; duplicates and letter case are handled automatically. Enter extensions only, not file names, paths, or wildcard patterns.</value>
-  </data>
-  <data name="PowerScripts_SettingsExtensionsError" xml:space="preserve">
-    <value>Enter at least one extension, for example .png, .jpg, .pdf. Do not enter file names, paths, or patterns such as *.png. For a compound suffix such as .tar.gz, use its final extension (.gz). To accept everything, choose All file types.</value>
-  </data>
-  <data name="PowerScripts_SettingsMinFilesHelp" xml:space="preserve">
-    <value>Leave empty for the default of 1 file.</value>
-  </data>
-  <data name="PowerScripts_SettingsMaxFilesHelp" xml:space="preserve">
-    <value>Leave empty or enter 0 for no limit.</value>
-  </data>
-  <data name="PowerScripts_SettingsMinFiles" xml:space="preserve">
-    <value>Minimum input files</value>
-  </data>
-  <data name="PowerScripts_SettingsMaxFiles" xml:space="preserve">
-    <value>Maximum input files (leave empty for no limit)</value>
-  </data>
-  <data name="PowerScripts_SettingsIcon" xml:space="preserve">
-    <value>Icon path (relative to the script, or absolute)</value>
-  </data>
-  <data name="PowerScripts_SettingsCapabilities" xml:space="preserve">
-    <value>Declared capabilities (comma-separated; not permission grants)</value>
-  </data>
-  <data name="PowerScripts_SettingsConsumers" xml:space="preserve">
-    <value>Discoverable by these modules (comma-separated; empty for all)</value>
-  </data>
-  <data name="PowerScripts_SettingsConsumersHelp" xml:space="preserve">
-    <value>Optional discovery targeting only, not authorization. Common IDs: advanced-paste, command-palette, keyboard-manager, color-picker, explorer, light-switch. Other module IDs are allowed.</value>
-  </data>
   <data name="PowerScripts_SettingsAllConsumers" xml:space="preserve">
     <value>All compatible modules</value>
-  </data>
-  <data name="PowerScripts_SettingsParameters" xml:space="preserve">
-    <value>Parameters</value>
-  </data>
-  <data name="PowerScripts_SettingsAdvanced" xml:space="preserve">
-    <value>Advanced settings</value>
-  </data>
-  <data name="PowerScripts_SettingsExecutionHelp" xml:space="preserve">
-    <value>These settings change how the script is launched. Use one command argument per line, without shell quoting. Maps use one name=value pair per line. Leave standard input empty for command-line parameters, or select json to send structured input through standard input. To remove the entire custom execution recipe, choose Use built-in runtime; clearing only the command is not sufficient. The built-in Python runtime requires an entry function.</value>
-  </data>
-  <data name="PowerScripts_SettingsCommand" xml:space="preserve">
-    <value>Command and fixed arguments (one token per line)</value>
-  </data>
-  <data name="PowerScripts_SettingsStdin" xml:space="preserve">
-    <value>Standard input mode</value>
-  </data>
-  <data name="PowerScripts_SettingsArgMap" xml:space="preserve">
-    <value>Parameter to argument mapping (name=flag)</value>
-  </data>
-  <data name="PowerScripts_SettingsExitCodes" xml:space="preserve">
-    <value>Exit code meanings (code=description)</value>
-  </data>
-  <data name="PowerScripts_SettingsResetRecommended" xml:space="preserve">
-    <value>Reset to recommended</value>
-  </data>
-  <data name="PowerScripts_SettingsParameterType" xml:space="preserve">
-    <value>Type</value>
-  </data>
-  <data name="PowerScripts_SettingsFormat" xml:space="preserve">
-    <value>Format (file-path enables a file picker)</value>
-  </data>
-  <data name="PowerScripts_SettingsDefault" xml:space="preserve">
-    <value>Default value (empty clears the default)</value>
-  </data>
-  <data name="PowerScripts_SettingsChoices" xml:space="preserve">
-    <value>Choices (one per line)</value>
-  </data>
-  <data name="PowerScripts_SettingsMinimum" xml:space="preserve">
-    <value>Minimum value</value>
-  </data>
-  <data name="PowerScripts_SettingsMaximum" xml:space="preserve">
-    <value>Maximum value</value>
-  </data>
-  <data name="PowerScripts_SettingsRequired" xml:space="preserve">
-    <value>Required</value>
-  </data>
-  <data name="PowerScripts_SettingsRemoveParameter" xml:space="preserve">
-    <value>Remove parameter</value>
-  </data>
-  <data name="PowerScripts_SettingsParameterName" xml:space="preserve">
-    <value>New parameter name</value>
-  </data>
-  <data name="PowerScripts_SettingsAddParameter" xml:space="preserve">
-    <value>Add parameter</value>
-  </data>
-  <data name="PowerScripts_SettingsParameterNameError" xml:space="preserve">
-    <value>Enter a unique, nonempty parameter name.</value>
-  </data>
-  <data name="PowerScripts_SettingsStructuredDefaultHelp" xml:space="preserve">
-    <value>Structured defaults are preserved unless changed. This form supports string, number, integer, and boolean defaults. Clear the value to remove a structured default, or reset to recommended.</value>
-  </data>
-  <data name="PowerScripts_SettingsIntegerError" xml:space="preserve">
-    <value>Enter a whole number within the supported integer range.</value>
-  </data>
-  <data name="PowerScripts_SettingsMapError" xml:space="preserve">
-    <value>Enter one name=value pair per line, with a nonempty name.</value>
   </data>
   <data name="PowerScripts_SettingsInvalidResponse" xml:space="preserve">
     <value>PowerScripts Host returned an invalid settings response.</value>
@@ -6756,70 +6462,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Local settings</value>
   </data>
   <data name="PowerScripts_SettingsConfiguration.Description" xml:space="preserve">
-    <value>Only per-script execution isolation settings are stored locally. Metadata comes from the .tool.json descriptor.</value>
-  </data>
-  <data name="PowerScripts_SettingsConfigureButton.Content" xml:space="preserve">
-    <value>Configure</value>
-  </data>
-  <data name="PowerScripts_SettingsConsumersCard.Header" xml:space="preserve">
-    <value>Module discovery</value>
-  </data>
-  <data name="PowerScripts_SettingsResetAll" xml:space="preserve">
-    <value>Reset local settings</value>
-  </data>
-  <data name="PowerScripts_SettingsResetAllButton.Content" xml:space="preserve">
-    <value>Reset</value>
-  </data>
-  <data name="PowerScripts_SettingsResetAllHelp" xml:space="preserve">
-    <value>Restore global execution isolation settings for this script? The descriptor and script are not changed. This does not approve execution.</value>
-  </data>
-  <data name="PowerScripts_SettingsForget" xml:space="preserve">
-    <value>Forget local settings</value>
-  </data>
-  <data name="PowerScripts_SettingsForgetButton.Content" xml:space="preserve">
-    <value>Forget</value>
-  </data>
-  <data name="PowerScripts_SettingsForgetHelp" xml:space="preserve">
-    <value>Remove this script's local security settings? No script or descriptor files are deleted. Scripts with descriptors remain discoverable; obsolete registrations without descriptors disappear.</value>
-  </data>
-  <data name="PowerScripts_SettingsActionId" xml:space="preserve">
-    <value>Action ID (advanced; must be unique)</value>
-  </data>
-  <data name="PowerScripts_SettingsChoiceUnspecified" xml:space="preserve">
-    <value>Not specified</value>
-  </data>
-  <data name="PowerScripts_SettingsChoiceString" xml:space="preserve">
-    <value>Text</value>
-  </data>
-  <data name="PowerScripts_SettingsChoiceInteger" xml:space="preserve">
-    <value>Whole number</value>
-  </data>
-  <data name="PowerScripts_SettingsChoiceNumber" xml:space="preserve">
-    <value>Number</value>
-  </data>
-  <data name="PowerScripts_SettingsChoiceBoolean" xml:space="preserve">
-    <value>True or false</value>
-  </data>
-  <data name="PowerScripts_SettingsChoiceArray" xml:space="preserve">
-    <value>List (advanced)</value>
-  </data>
-  <data name="PowerScripts_SettingsChoiceObject" xml:space="preserve">
-    <value>Object (advanced)</value>
-  </data>
-  <data name="PowerScripts_SettingsChoiceFilePath" xml:space="preserve">
-    <value>File path</value>
-  </data>
-  <data name="PowerScripts_SettingsUseBuiltInRuntime" xml:space="preserve">
-    <value>Use built-in runtime</value>
-  </data>
-  <data name="PowerScripts_SettingsCommandRequired" xml:space="preserve">
-    <value>A custom execution recipe needs a command. Enter a command, reset it to recommended, or choose Use built-in runtime to remove the entire custom recipe.</value>
-  </data>
-  <data name="PowerScripts_SettingsReviewIsolation.Header" xml:space="preserve">
-    <value>Review isolation settings after script changes</value>
-  </data>
-  <data name="PowerScripts_SettingsReviewIsolation.Description" xml:space="preserve">
-    <value>Previous approval to relax isolation no longer applies. All isolation restrictions are enforced until you explicitly review and confirm this script's isolation settings, even if global isolation is off or relaxed.</value>
+    <value>Metadata comes from the .tool.json descriptor. All scripts use global runtime and isolation settings.</value>
   </data>
   <data name="PowerScripts_LauncherCard.Header" xml:space="preserve"><value>Test scripts (Debug only)</value></data>
   <data name="PowerScripts_LauncherCard.Description" xml:space="preserve"><value>Temporary test window for scripts with no primary input. Not a product feature; no global shortcut.</value></data>
@@ -6862,7 +6505,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_LauncherSaved" xml:space="preserve"><value>Saved a copy to {0}</value></data>
   <data name="PowerScripts_LauncherFileHelp" xml:space="preserve"><value>Save a copy of a file, or copy these files and paste them into Explorer. Original returned files are not moved or deleted.</value></data>
   <data name="AdvancedPaste_PowerScriptsEmpty.Message" xml:space="preserve"><value>No compatible PowerScripts found. Manage script packages in PowerScripts settings.</value></data>
-  <data name="PowerScripts_MetadataHelp.Text" xml:space="preserve"><value>These properties come from the script's .tool.json file. Edit metadata or script in an external editor, then select Refresh to see your changes. Edits require trust review before the script runs again. Only MXC security settings are stored separately.</value></data>
+  <data name="PowerScripts_MetadataHelp.Text" xml:space="preserve"><value>These properties come from the script's .tool.json file. Edit metadata or script in an external editor, then select Refresh to see your changes. Edits require trust review before the script runs again. All scripts use the global MXC settings.</value></data>
   <data name="PowerScripts_EditMetadata.Label" xml:space="preserve"><value>Edit metadata</value></data>
   <data name="PowerScripts_ShowInExplorer.Label" xml:space="preserve"><value>Show in File Explorer</value></data>
   <data name="PowerScripts_ShowInExplorer.ToolTipService.ToolTip" xml:space="preserve"><value>Open the containing folder and select the script file.</value></data>
@@ -6916,7 +6559,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_DetailsExecutionMode" xml:space="preserve"><value>Launch method</value></data>
   <data name="PowerScripts_DetailsBuiltIn" xml:space="preserve"><value>Built-in runtime</value></data>
   <data name="PowerScripts_DetailsCustom" xml:space="preserve"><value>Custom execution command</value></data>
-  <data name="PowerScripts_DetailsFunction" xml:space="preserve"><value>Python entry function</value></data>
   <data name="PowerScripts_DetailsCommand" xml:space="preserve"><value>Command and fixed arguments (one per line)</value></data>
   <data name="PowerScripts_DetailsArgumentMap" xml:space="preserve"><value>Parameter-to-argument mapping</value></data>
   <data name="PowerScripts_DetailsExitCodes" xml:space="preserve"><value>Exit code meanings</value></data>
@@ -6966,7 +6608,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_TemplateCancel.Content" xml:space="preserve"><value>Cancel</value></data>
   <data name="PowerScripts_TemplateCreated" xml:space="preserve"><value>Created. Read README.md in the new folder, then edit the script and descriptor. Refresh after edits; review trust before running from a consumer.</value></data>
   <data name="PowerScripts_TemplateRuntime.Header" xml:space="preserve"><value>Runtime</value></data>
-  <data name="PowerScripts_TemplatePythonHelp.Text" xml:space="preserve"><value>Python scripts use a main function. Enable Python execution in PowerScripts settings before running them; creation does not change your runtime settings.</value></data>
+  <data name="PowerScripts_TemplatePythonHelp.Text" xml:space="preserve"><value>Python scripts execute top-level code and read typed JSON from stdin. Enable Python execution before running them; creation does not change runtime settings.</value></data>
   <data name="PowerScripts_TemplateInput.Header" xml:space="preserve"><value>Primary input type</value></data>
   <data name="PowerScripts_TemplateOutput.Header" xml:space="preserve"><value>Output type</value></data>
   <data name="PowerScripts_TemplateNone.Content" xml:space="preserve"><value>None</value></data>
@@ -7009,9 +6651,9 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   </data>
   <data name="PowerScripts_LinuxControlsText.Text" xml:space="preserve">
     <value>Required: MXC and restricted Windows file access. Script packages and selected inputs are read-only; only the output workspace is writable on Windows.
-Available: block or allow all networking, per script.
+Available: block or allow all networking through global policy.
 Unsupported: Windows UI and least-privilege policies. Python runs as root inside the Linux container, not as a Windows administrator.
-Each script requires explicit acceptance of these two unsupported-policy exceptions. There is no direct or existing-WSL fallback.</value>
+Global policy requires explicit acceptance of these two unsupported-policy exceptions. There is no direct or existing-WSL fallback.</value>
   </data>
   <data name="PowerScripts_LinuxStatus.Header" xml:space="preserve">
     <value>Environment status</value>
@@ -7065,7 +6707,7 @@ Each script requires explicit acceptance of these two unsupported-policy excepti
     <value>WSL default distribution</value>
   </data>
   <data name="PowerScripts_ExecutionWslBlocked" xml:space="preserve">
-    <value>Blocked: this script explicitly requires MXC, which cannot isolate your existing WSL distribution. Select managed Linux and review its supported policies, or explicitly review this script's direct-execution permissions.</value>
+    <value>Blocked: global policy requires MXC, which cannot isolate your existing WSL distribution. Select managed Linux or review the global isolation policy.</value>
   </data>
   <data name="PowerScripts_ExecutionLinux" xml:space="preserve">
     <value>Python 3.12 in a separate managed Linux container. MXC required; your WSL distribution and packages are not used.</value>
@@ -7080,7 +6722,7 @@ Each script requires explicit acceptance of these two unsupported-policy excepti
     <value>allowed</value>
   </data>
   <data name="PowerScripts_ExecutionLinuxBlocked" xml:space="preserve">
-    <value>Blocked by isolation requirements. Configure this script to require MXC and filesystem protection, then explicitly accept the unsupported Windows UI and least-privilege exceptions. Source changes require a new review.</value>
+    <value>Blocked by global isolation policy. Managed Linux requires MXC and filesystem protection, with explicitly accepted global exceptions for unsupported Windows UI and least-privilege policies.</value>
   </data>
   <data name="PowerScripts_ExecutionLinuxSetupRequired" xml:space="preserve">
     <value>The managed Linux environment is not ready or has not been checked. Check or prepare it in PowerScripts settings.</value>
@@ -7089,7 +6731,7 @@ Each script requires explicit acceptance of these two unsupported-policy excepti
     <value>Execution blocked. No direct-execution fallback is permitted.</value>
   </data>
   <data name="PowerScripts_LinuxPolicyHelp.Title" xml:space="preserve">
-    <value>Managed Linux requires a per-script exception review</value>
+    <value>Review global policies for managed Linux</value>
   </data>
   <data name="PowerScripts_LinuxPolicyHelp.Message" xml:space="preserve">
     <value>MXC and restricted Windows file access are mandatory. Windows UI and least-privilege policies are unsupported; Python runs as guest root. Use the supported Linux policies below, review networking, and explicitly accept the risk before applying. Choosing the preset alone saves nothing.</value>

@@ -38,10 +38,10 @@ public static partial class ScriptTemplates
         var template = All.SingleOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal))
             ?? throw new ArgumentException("Unknown script template.", nameof(id));
         var descriptor = JsonNode.Parse(ReadAsset(template.Id, "script.ps1.tool.json"))!.AsObject();
-        var extension = descriptor["x-powerscript"]!.AsObject();
         if (template.AcceptsFiles)
         {
-            extension["extensions"] = JsonSerializer.SerializeToNode(ParseFileExtensions(options?.FileExtensions));
+            descriptor["inputSchema"]!["properties"]!["files"]!["items"]!["x-powerscript"]!["extensions"] =
+                JsonSerializer.SerializeToNode(ParseFileExtensions(options?.FileExtensions));
         }
         else if (!string.IsNullOrWhiteSpace(options?.FileExtensions))
         {

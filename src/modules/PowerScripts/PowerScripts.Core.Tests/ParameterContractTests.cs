@@ -273,10 +273,36 @@ public class ParameterContractTests
                   "inputSchema": {
                     "type": "object",
                     "properties": {
-                      "requiredValue": { "type": "string" },
-                      "optionalValue": { "type": "string" }
+                      "parameters": {
+                        "type": "object",
+                        "properties": {
+                          "requiredValue": {
+                            "type": "string"
+                          },
+                          "optionalValue": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "requiredValue"
+                        ],
+                        "additionalProperties": false
+                      }
                     },
-                    "required": ["requiredValue"]
+                    "required": [],
+                    "additionalProperties": false
+                  },
+                  "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "additionalProperties": false
                   }
                 }
                 """);

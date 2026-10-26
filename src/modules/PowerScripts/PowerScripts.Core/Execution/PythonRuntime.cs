@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
+using System.Globalization;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Security;
 
@@ -18,24 +20,82 @@ public sealed class PythonTransformInput
     [JsonPropertyName("text")]
     public string? Text { get; set; }
 
-    [JsonPropertyName("file_paths")]
+    [JsonPropertyName("files")]
     public List<string>? FilePaths { get; set; }
 
-    [JsonPropertyName("params")]
+    [JsonPropertyName("parameters")]
     public Dictionary<string, string>? Params { get; set; }
 
-    /// <summary>
-    /// Entry-function name declared by the descriptor.
-    /// </summary>
-    [JsonPropertyName("entry")]
-    public string? Entry { get; set; }
+    public JsonObject CreateRequest(PowerScriptManifest manifest, bool validate = true)
+    {
+        if ((manifest.InputFormat != PowerScriptDataFormat.Files && FilePaths is { Count: > 0 }) ||
+            (manifest.InputFormat != PowerScriptDataFormat.Text && Text is not null))
+        {
+            throw new InvalidDataException("The supplied primary data does not match inputSchema.");
+        }
 
-    /// <summary>
-    /// The input data shape (<c>none</c>/<c>text</c>/<c>files</c>) used to build the argument passed
-    /// to the declared <see cref="Entry"/> function.
-    /// </summary>
-    [JsonPropertyName("input_format")]
-    public string? InputFormat { get; set; }
+        var request = new JsonObject();
+        if (manifest.InputFormat == PowerScriptDataFormat.Files)
+        {
+            request["files"] = JsonSerializer.SerializeToNode(FilePaths ?? new());
+        }
+        else if (manifest.InputFormat == PowerScriptDataFormat.Text)
+        {
+            request["text"] = Text ?? string.Empty;
+        }
+
+        if (manifest.InputSchema.Properties?.ContainsKey("parameters") == true)
+        {
+            var parameters = new JsonObject();
+            foreach (var (name, value) in Params ?? new())
+            {
+                var declaration = manifest.Parameters.SingleOrDefault(parameter => parameter.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    ?? throw new InvalidDataException($"Unknown parameter '{name}'.");
+                parameters[declaration.Name] = declaration.IsBool
+                    ? JsonValue.Create(bool.Parse(value))
+                    : declaration.IsInt
+                        ? JsonValue.Create(int.Parse(value, CultureInfo.InvariantCulture))
+                        : JsonValue.Create(value);
+            }
+
+            request["parameters"] = parameters;
+        }
+        else if (Params is { Count: > 0 })
+        {
+            throw new InvalidDataException("This script does not declare parameters.");
+        }
+
+        ScriptSchema.ApplyDefaults(manifest.InputSchema, request);
+        if (validate)
+        {
+            ScriptSchema.Validate(manifest.InputSchema, JsonSerializer.SerializeToElement(request), "input");
+        }
+
+        return request;
+    }
+
+    public static PythonTransformInput Parse(PowerScriptManifest manifest, string json)
+    {
+        var request = JsonNode.Parse(json) as JsonObject
+            ?? throw new InvalidDataException("Input must be an object.");
+        if (manifest.InputSchema.Properties?.ContainsKey("parameters") == true && !request.ContainsKey("parameters"))
+        {
+            request["parameters"] = new JsonObject();
+        }
+
+        ScriptSchema.ApplyDefaults(manifest.InputSchema, request);
+        var value = JsonSerializer.SerializeToElement(request);
+        ScriptSchema.Validate(manifest.InputSchema, value, "input");
+        return new PythonTransformInput
+        {
+            Text = request["text"]?.GetValue<string>(),
+            FilePaths = request["files"]?.Deserialize<List<string>>(),
+            Params = request["parameters"]?.AsObject().ToDictionary(
+                pair => pair.Key,
+                pair => pair.Value is JsonValue scalar && scalar.TryGetValue<string>(out var text) ? text : pair.Value!.ToJsonString(),
+                StringComparer.Ordinal),
+        };
+    }
 }
 
 /// <summary>The typed result produced by a Python PowerScript transform.</summary>
@@ -45,7 +105,7 @@ public sealed class PythonTransformResult
     [JsonPropertyName("text")]
     public string? Text { get; set; }
 
-    [JsonPropertyName("file_paths")]
+    [JsonPropertyName("files")]
     public List<string>? FilePaths { get; set; }
 
     [JsonIgnore]
@@ -72,7 +132,7 @@ public sealed class PythonTransformResult
         };
         if (!valid)
         {
-            throw new JsonException($"Output does not match '{ScriptIo.ToToken(format)}'. Return {{}} for none, {{\"text\":\"...\"}} for text, or {{\"file_paths\":[\"...\"]}} for files.");
+            throw new JsonException($"Output does not match '{ScriptIo.ToToken(format)}'. Return {{}} for none, {{\"text\":\"...\"}} for text, or {{\"files\":[\"...\"]}} for files.");
         }
 
         return result;
@@ -80,8 +140,8 @@ public sealed class PythonTransformResult
 }
 
 /// <summary>
-/// Executes Python PowerScripts either on native Windows Python or inside WSL, via the bundled
-/// <c>_runner.py</c> and a JSON stdin/stdout protocol. This is the single Python execution path
+/// Executes top-level Python scripts on Windows, WSL, or managed Linux using JSON stdin.
+/// This is the single Python execution path
 /// shared by every surface (Keyboard Manager, context menu, Advanced Paste), so behavior and the
 /// input/output contract stay identical wherever a script is invoked.
 /// </summary>
@@ -107,8 +167,7 @@ public sealed class PythonRuntime
     public bool IsEnabled => _settings.Mode != PythonRuntimeMode.Disabled;
 
     /// <summary>
-    /// Runs a Python PowerScript transform. Resolves the runner + interpreter, serializes the input
-    /// to the runner's stdin, and parses its stdout back into a typed result.
+    /// Runs a Python script with schema-validated arguments and normalizes its stdout.
     /// </summary>
     public PythonTransformResult Run(PowerScriptManifest manifest, PythonTransformInput input)
     {
@@ -122,11 +181,6 @@ public sealed class PythonRuntime
             return new PythonTransformResult { ExitCode = 2, StdErr = "Python PowerScripts are disabled. Select Windows, an existing WSL distribution, or managed Linux in PowerScripts settings." };
         }
 
-        if (string.IsNullOrWhiteSpace(manifest.EntryFunction))
-        {
-            return new PythonTransformResult { ExitCode = 2, StdErr = "'x-powerscript.function' is required for Python execution." };
-        }
-
         var inputFormat = ScriptIo.Resolve(manifest).Input;
         if (!ScriptIo.IsSupported(inputFormat))
         {
@@ -138,33 +192,24 @@ public sealed class PythonRuntime
             return new PythonTransformResult { ExitCode = 2, StdErr = "Unsupported output. Use none, text, or files." };
         }
 
-        var runnerPath = ResolveRunnerPath();
-        if (runnerPath is null)
-        {
-            return new PythonTransformResult { ExitCode = 2, StdErr = "Could not locate the PowerScripts Python runner (_runner.py)." };
-        }
-
         var scriptPath = manifest.EntryFullPath;
         if (!File.Exists(scriptPath))
         {
             return new PythonTransformResult { ExitCode = 2, StdErr = $"Script entry file not found: {scriptPath}" };
         }
 
-        input.Entry = manifest.EntryFunction;
-        input.InputFormat = ScriptIo.ToToken(inputFormat);
-
+        _ = input.CreateRequest(manifest);
         return _settings.Mode switch
         {
-            PythonRuntimeMode.Windows => RunOnWindows(manifest, runnerPath, scriptPath, input),
-            PythonRuntimeMode.Wsl => RunViaWsl(manifest, runnerPath, scriptPath, input),
-            PythonRuntimeMode.ManagedLinux => RunInManagedLinux(manifest, runnerPath, scriptPath, input),
+            PythonRuntimeMode.Windows => RunOnWindows(manifest, scriptPath, input),
+            PythonRuntimeMode.Wsl => RunViaWsl(manifest, scriptPath, input),
+            PythonRuntimeMode.ManagedLinux => RunInManagedLinux(manifest, scriptPath, input),
             _ => new PythonTransformResult { ExitCode = 2, StdErr = "Unknown Python execution environment." },
         };
     }
 
     private PythonTransformResult RunInManagedLinux(
         PowerScriptManifest manifest,
-        string runnerPath,
         string scriptPath,
         PythonTransformInput input)
     {
@@ -175,20 +220,17 @@ public sealed class PythonRuntime
                 Text = input.Text,
                 FilePaths = input.FilePaths?.Select(path => MxcLinuxProcessRunner.ToContainerPath(path)).ToList(),
                 Params = TranslateWslFileParameters(manifest, input.Params),
-                Entry = input.Entry,
-                InputFormat = input.InputFormat,
             };
-            var payload = JsonSerializer.Serialize(translated, JsonOptions);
+            var payload = translated.CreateRequest(manifest, validate: false).ToJsonString();
             return RunAndParse(
                 manifest,
                 input,
                 (context, timeout) =>
                 {
                     var settings = _mxcSettings ?? MxcSettings.Load();
-                    var policy = MxcPolicyResolver.Resolve(
-                        settings, context.ScriptId, context.RecommendedPolicies, context.HasLocalMxcSettings, context.LocalMxc);
+                    var policy = MxcPolicyResolver.Resolve(settings);
                     return MxcLinuxProcessRunner.Run(
-                        runnerPath, scriptPath, payload, ScriptIo.Resolve(manifest).Output, context, policy, settings, timeout);
+                        scriptPath, payload, ScriptIo.Resolve(manifest).Output, context, policy, settings, timeout);
                 },
                 translateResultPaths: false);
         }
@@ -200,7 +242,6 @@ public sealed class PythonRuntime
 
     private PythonTransformResult RunOnWindows(
         PowerScriptManifest manifest,
-        string runnerPath,
         string scriptPath,
         PythonTransformInput input)
     {
@@ -230,20 +271,18 @@ public sealed class PythonRuntime
 
         psi.ArgumentList.Add("-X");
         psi.ArgumentList.Add("utf8");
-        psi.ArgumentList.Add(runnerPath);
         psi.ArgumentList.Add(scriptPath);
 
         return RunProcess(
             psi,
             manifest,
             input,
-            JsonSerializer.Serialize(input, JsonOptions),
+            input.CreateRequest(manifest).ToJsonString(),
             translateResultPaths: false);
     }
 
     private PythonTransformResult RunViaWsl(
         PowerScriptManifest manifest,
-        string runnerPath,
         string scriptPath,
         PythonTransformInput input)
     {
@@ -257,14 +296,12 @@ public sealed class PythonRuntime
             return new PythonTransformResult { ExitCode = 2, StdErr = ex.Message };
         }
 
-        // Translate the runner + script + any input paths to /mnt/... so the Linux Python can read them.
+        // Validate Windows paths before translating the separate Linux payload.
         var wslInput = new PythonTransformInput
         {
             Text = input.Text,
             FilePaths = input.FilePaths?.Select(p => ToWslPath(p)!).ToList(),
             Params = wslParameters,
-            Entry = input.Entry,
-            InputFormat = input.InputFormat,
         };
 
         var psi = new ProcessStartInfo
@@ -290,14 +327,30 @@ public sealed class PythonRuntime
         psi.ArgumentList.Add("bash");
         psi.ArgumentList.Add("-l");
         psi.ArgumentList.Add("-c");
-        psi.ArgumentList.Add($"python3 -X utf8 {ShellQuote(ToWslPath(runnerPath)!)} {ShellQuote(ToWslPath(scriptPath)!)}");
+        var payload = wslInput.CreateRequest(manifest, validate: false).ToJsonString();
+        var workspace = manifest.OutputFormat == PowerScriptDataFormat.Files
+            ? MxcProcessRunner.CreateRunDirectory() : null;
+        var environment = workspace is null ? string.Empty : $"TMPDIR={ShellQuote(ToWslPath(workspace)!)} ";
+        psi.ArgumentList.Add($"{environment}python3 -X utf8 {ShellQuote(ToWslPath(scriptPath)!)}");
 
         var result = RunProcess(
             psi,
             manifest,
             input,
-            JsonSerializer.Serialize(wslInput, JsonOptions),
+            payload,
             translateResultPaths: true);
+        if (workspace is not null && (!result.Succeeded || result.FilePaths is not { Count: > 0 }))
+        {
+            try
+            {
+                Directory.Delete(workspace, recursive: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                result.StdErr += $"{Environment.NewLine}Could not clean up the WSL output workspace: {ex.Message}";
+            }
+        }
+
         return result;
     }
 
@@ -346,9 +399,20 @@ public sealed class PythonRuntime
             PythonTransformResult result;
             try
             {
-                result = PythonTransformResult.Parse(stdout, ScriptIo.Resolve(manifest).Output);
+                result = ScriptIo.Resolve(manifest).Output switch
+                {
+                    PowerScriptDataFormat.None => new PythonTransformResult(),
+                    PowerScriptDataFormat.Text => new PythonTransformResult { Text = stdout },
+                    _ => PythonTransformResult.Parse(stdout, ScriptIo.Resolve(manifest).Output),
+                };
+                if (translateResultPaths)
+                {
+                    result.FilePaths = result.FilePaths?.Select(p => FromWslPath(p)!).ToList();
+                }
+
+                ScriptSchema.Validate(manifest.OutputSchema, JsonSerializer.SerializeToElement(result, JsonOptions), "output");
             }
-            catch (JsonException ex)
+            catch (Exception ex) when (ex is JsonException or InvalidDataException)
             {
                 var error = $"Invalid Python output: {ex.Message}";
                 return new PythonTransformResult
@@ -359,12 +423,9 @@ public sealed class PythonRuntime
             }
 
             result.ExitCode = 0;
-            result.StdErr = stderr;
-
-            if (translateResultPaths)
-            {
-                result.FilePaths = result.FilePaths?.Select(p => FromWslPath(p)!).ToList();
-            }
+            result.StdErr = manifest.OutputFormat == PowerScriptDataFormat.None
+                ? string.Concat(stderr, string.IsNullOrEmpty(stderr) || string.IsNullOrEmpty(stdout) ? string.Empty : Environment.NewLine, stdout)
+                : stderr;
 
             return result;
         }
@@ -372,18 +433,6 @@ public sealed class PythonRuntime
         {
             return new PythonTransformResult { ExitCode = 2, StdErr = ex.Message };
         }
-    }
-
-    /// <summary>Locates <c>_runner.py</c>, bundled next to the executing assembly.</summary>
-    private static string? ResolveRunnerPath()
-    {
-        var candidates = new[]
-        {
-            Path.Combine(AppContext.BaseDirectory, "_runner.py"),
-            Path.Combine(AppContext.BaseDirectory, "Execution", "_runner.py"),
-        };
-
-        return candidates.FirstOrDefault(File.Exists);
     }
 
     /// <summary>

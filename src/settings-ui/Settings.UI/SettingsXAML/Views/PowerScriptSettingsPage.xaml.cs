@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 using ManagedCommon;
@@ -23,7 +24,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views;
 public sealed partial class PowerScriptSettingsPage : NavigablePage
 {
     private NavigationContext _context;
-    private bool _isDialogOpen;
     private bool _isLoading;
 
     public PowerScriptSettingsPage()
@@ -79,12 +79,13 @@ public sealed partial class PowerScriptSettingsPage : NavigablePage
                 UpdateBreadcrumb();
             }
 
-            var snapshot = await _context.ViewModel.GetScriptSettingsAsync(entryPath);
-            MetadataSections.ItemsSource = PowerScriptMetadataDetails.Create(snapshot.Effective, ResourceLoaderInstance.ResourceLoader.GetString);
-            MetadataText.Text = snapshot.Effective.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-            if (snapshot.ValidationErrors.Length > 0)
+            var descriptor = JsonNode.Parse(await File.ReadAllTextAsync(entryPath + ".tool.json")) as JsonObject
+                ?? throw new InvalidDataException("Metadata must be a JSON object.");
+            MetadataSections.ItemsSource = PowerScriptMetadataDetails.Create(descriptor, ResourceLoaderInstance.ResourceLoader.GetString, Path.GetExtension(entryPath));
+            MetadataText.Text = descriptor.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            if (_context.Script.HasConfigurationErrors)
             {
-                ShowError(new InvalidDataException(string.Join(Environment.NewLine, snapshot.ValidationErrors)));
+                ShowError(new InvalidDataException(_context.Script.ConfigurationErrorDisplay));
             }
             else
             {
@@ -142,94 +143,6 @@ public sealed partial class PowerScriptSettingsPage : NavigablePage
         if (args.Index == 0)
         {
             NavigationService.GoBack();
-        }
-    }
-
-    private async void ResetScriptButton_Click(object sender, RoutedEventArgs e) =>
-        await ChangeScriptRegistrationAsync(isForget: false);
-
-    private async void ForgetScriptButton_Click(object sender, RoutedEventArgs e) =>
-        await ChangeScriptRegistrationAsync(isForget: true);
-
-    private async Task ChangeScriptRegistrationAsync(bool isForget)
-    {
-        if (_isDialogOpen)
-        {
-            return;
-        }
-
-        _isDialogOpen = true;
-        try
-        {
-            var resources = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
-            {
-                XamlRoot = XamlRoot,
-                Title = resources.GetString(isForget ? "PowerScripts_SettingsForget" : "PowerScripts_SettingsResetAll"),
-                Content = resources.GetString(isForget ? "PowerScripts_SettingsForgetHelp" : "PowerScripts_SettingsResetAllHelp"),
-                PrimaryButtonText = resources.GetString(isForget ? "PowerScripts_SettingsForget" : "PowerScripts_SettingsResetAll"),
-                CloseButtonText = resources.GetString("PowerScripts_SettingsCancel"),
-                DefaultButton = ContentDialogButton.Close,
-            };
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
-            {
-                return;
-            }
-
-            if (isForget)
-            {
-                await _context.ViewModel.ForgetScriptSettingsAsync(_context.Script.EntryFullPath);
-                NavigationService.GoBack();
-            }
-            else
-            {
-                await _context.ViewModel.ResetScriptSettingsAsync(_context.Script.EntryFullPath);
-            }
-
-            ScriptSettingsError.IsOpen = false;
-        }
-        catch (Exception ex)
-        {
-            ShowError(ex);
-        }
-        finally
-        {
-            _isDialogOpen = false;
-        }
-    }
-
-    private async void ConfigureScriptMxcPolicyButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_isDialogOpen)
-        {
-            return;
-        }
-
-        _isDialogOpen = true;
-        try
-        {
-            var dialog = new PowerScriptMxcPolicyDialog(_context.Script) { XamlRoot = XamlRoot };
-            dialog.SaveAsync = async () =>
-            {
-                if (!await _context.ViewModel.TrySetScriptMxcConfigurationAsync(
-                    _context.Script,
-                    dialog.MxcModeIndex,
-                    dialog.EnabledPolicies,
-                    dialog.UsesGlobalPolicy,
-                    dialog.RiskAccepted))
-                {
-                    throw new InvalidOperationException(ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_SettingsHostFailed"));
-                }
-            };
-            await dialog.ShowAsync();
-        }
-        catch (Exception ex)
-        {
-            ShowError(ex);
-        }
-        finally
-        {
-            _isDialogOpen = false;
         }
     }
 

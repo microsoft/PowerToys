@@ -44,38 +44,54 @@ public static partial class ScriptTemplates
             capabilities.Add("fileWrite");
         }
 
-        var extension = new JsonObject
-        {
-            ["runtime"] = options.Runtime,
-            ["input"] = options.Input,
-            ["output"] = options.Output,
-            ["capabilities"] = capabilities,
-        };
-        if (options.Runtime == "python")
-        {
-            extension["function"] = "main";
-        }
-
-        if (options.Input == "files")
-        {
-            extension["extensions"] = JsonSerializer.SerializeToNode(ParseFileExtensions(options.FileExtensions));
-            extension["minFiles"] = options.MinFiles;
-            extension["maxFiles"] = options.MaxFiles;
-        }
-
         var descriptor = new JsonObject
         {
-            ["inputSchema"] = new JsonObject
-            {
-                ["type"] = "object",
-                ["properties"] = new JsonObject(),
-                ["required"] = new JsonArray(),
-            },
-            ["x-powerscript"] = extension,
+            ["inputSchema"] = CreateSchema(options.Input, options),
+            ["outputSchema"] = CreateSchema(options.Output),
+            ["x-powerscript"] = new JsonObject { ["capabilities"] = capabilities },
         };
         return CreatePackage(scriptsRoot, options.ProjectName, options.Description ?? string.Empty,
             entryName, descriptor, options.Runtime == "python" ? CreatePython(options) : CreatePowerShell(options),
             CreateGuide(options, entryName));
+    }
+
+    private static JsonObject CreateSchema(string shape, ScriptTemplateOptions? options = null)
+    {
+        var properties = new JsonObject();
+        var required = new JsonArray();
+        if (shape == "text")
+        {
+            properties["text"] = new JsonObject { ["type"] = "string" };
+            required.Add("text");
+        }
+        else if (shape == "files")
+        {
+            var items = new JsonObject { ["type"] = "string" };
+            var files = new JsonObject { ["type"] = "array", ["items"] = items };
+            if (options is not null)
+            {
+                items["x-powerscript"] = new JsonObject
+                {
+                    ["extensions"] = JsonSerializer.SerializeToNode(ParseFileExtensions(options.FileExtensions)),
+                };
+                files["minItems"] = options.MinFiles;
+                if (options.MaxFiles > 0)
+                {
+                    files["maxItems"] = options.MaxFiles;
+                }
+            }
+
+            properties["files"] = files;
+            required.Add("files");
+        }
+
+        return new JsonObject
+        {
+            ["type"] = "object",
+            ["properties"] = properties,
+            ["required"] = required,
+            ["additionalProperties"] = false,
+        };
     }
 
     private static string CreatePowerShell(ScriptTemplateOptions options)
@@ -93,7 +109,6 @@ public static partial class ScriptTemplates
                 if ($env:POWERSCRIPTS_FILES) {
                     $Files = @($env:POWERSCRIPTS_FILES -split "`n" | Where-Object { $_ })
                 }
-                if (-not $Files) { throw 'Select at least one file.' }
                 $content = ($Files | ForEach-Object {
                     $file = Get-Item -LiteralPath $_ -ErrorAction Stop
                     '{0} ({1} bytes)' -f $file.Name, $file.Length
@@ -107,9 +122,9 @@ public static partial class ScriptTemplates
             "files" => """
                 $path = Join-Path $env:TEMP ('powerscript-' + [Guid]::NewGuid().ToString('N') + '.txt')
                 Set-Content -LiteralPath $path -Value $content -Encoding UTF8
-                @{ file_paths = @($path) } | ConvertTo-Json -Compress
+                @{ files = @($path) } | ConvertTo-Json -Compress
                 """,
-            _ => "# Add your work here. The none-output contract must not write to stdout.",
+            _ => "# Add work here; send diagnostics to stderr.",
         };
         return $"""
             # Edit the sibling script.ps1.tool.json to change the contract; see README.md.
@@ -118,7 +133,6 @@ public static partial class ScriptTemplates
             $ErrorActionPreference = 'Stop'
             {input}
 
-            # Replace this example with your own implementation.
             {output}
 
             """;
@@ -126,73 +140,79 @@ public static partial class ScriptTemplates
 
     private static string CreatePython(ScriptTemplateOptions options)
     {
-        var parameter = options.Input switch
-        {
-            "text" => "text: str",
-            "files" => "file_paths: list[str]",
-            _ => string.Empty,
-        };
         var input = options.Input switch
         {
-            "text" => "content = text",
-            "files" => "content = \"\\n\".join(f\"{Path(path).name} ({Path(path).stat().st_size} bytes)\" for path in file_paths)",
-            _ => "content = \"Hello from your new PowerScript.\"",
+            "text" => "content = request['text']",
+            "files" => "content = '\\n'.join(f'{Path(path).name} ({Path(path).stat().st_size} bytes)' for path in request['files'])",
+            _ => "content = 'Hello from your new PowerScript.'",
         };
         var output = options.Output switch
         {
-            "text" => "    return content\n",
+            "text" => "print(content)",
             "files" => """
-                    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", encoding="utf-8", delete=False) as output:
-                        output.write(content)
-                    return [output.name]
-
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', encoding='utf-8', delete=False) as output:
+                    output.write(content)
+                print(json.dumps({'files': [output.name]}))
                 """,
-            _ => "    return None\n",
+            _ => "# Add work here; send diagnostics to stderr with print(..., file=sys.stderr).",
         };
-        return "# Edit script.py.tool.json to change the contract; see README.md.\n" +
-            (options.Input == "files" ? "from pathlib import Path\n" : string.Empty) +
-            (options.Output == "files" ? "import tempfile\n" : string.Empty) +
-            $"\n\ndef main({parameter}):\n    {input}\n    # Replace this example with your own implementation.\n{output}";
+        return $"""
+            # Read the schema-validated request; no entry function is required.
+            import json
+            import sys
+            from pathlib import Path
+            import tempfile
+
+            request = json.load(sys.stdin)
+            {input}
+
+            {output}
+
+            """;
     }
 
-    private static string CreateGuide(ScriptTemplateOptions options, string entryName) => $"""
+    private static string CreateGuide(ScriptTemplateOptions options, string entryName) => $$"""
         # Your PowerScript
 
-        Edit `{entryName}` and `{entryName}.tool.json`, then refresh the catalogue.
-        Selected contract: **{options.Runtime}, {options.Input} -> {options.Output}**.
-        Creation does not run code, approve trust, write local policy or relax MXC restrictions.
+        Edit `{{entryName}}` and `{{entryName}}.tool.json`, then refresh the catalogue.
+        Selected contract: **{{options.Runtime}}, {{options.Input}} -> {{options.Output}}**.
+        Creation neither runs code nor approves trust.
 
-        ## Descriptor fields
+        ## Schemas
 
-        - `name`: generated unique action ID; keep it stable when sharing the script.
-        - `title` and `description`: the project name and explanation shown by consumers.
-        - `inputSchema`: named parameters, separate from primary input. Add properties and required
-          names here, and matching PowerShell parameters or Python keyword parameters in the script.
-          Use `type`, `title`, `description`, `default`, `enum`, `minimum`, `maximum`, and
-          `format: "file-path"` as needed. An empty properties object means no extra prompts.
-        - `x-powerscript.runtime`: PowerShell or Python. Python must be enabled in module settings.
-        - `x-powerscript.function`: `main` for the Python entry point; omitted for PowerShell.
-        - `x-powerscript.input`: `none`, `text` or `files`. PowerShell receives text as `$Text` and
-          files as `$Files` / `POWERSCRIPTS_FILES`; Python receives a string or list of paths.
-        - `x-powerscript.output`: `none`, `text` or `files`. PowerShell emits nothing, literal text,
-          or a JSON object with `file_paths`. Python returns None, a string, or a list of paths.
-          Rich HTML and media use files, not text.
-        - `extensions`, `minFiles`, `maxFiles`: only present for file input. `*` accepts any type;
-          maximum 0 means unlimited. These are discovery/selection rules, not access grants.
-        - `capabilities`: fileRead for selected-file inspection and fileWrite for file output.
-          They describe intent, not permission grants. Update them when changing the implementation.
+        Both `inputSchema` and `outputSchema` are required closed JSON Schema objects.
+        Declare one required `text` string or `files` array of path strings, or neither for no primary data.
+        Add named options in `inputSchema.properties.parameters`, an object with its own `properties`,
+        `required` list and `additionalProperties: false`. Supported options are string, integer and boolean.
+        String options support `enum`, `minLength`, `maxLength` and `pattern`; integers support
+        `minimum` and `maximum`. Defaults are applied by PowerScripts. `format: "file-path"` enables a picker.
+        Use `minItems` / `maxItems` on a files array and `x-powerscript.extensions` on its string `items`.
+        Omit `maxItems` for no limit. Restrictions are enforced on invocation and output, not just discovery.
+        Unsupported schema keywords are rejected rather than silently ignored.
 
-        ## Execution and policy
+        ## Script arguments and results
 
-        The starter reads only supplied files and writes output only to the temporary workspace.
-        All default MXC restrictions stay enabled; review code and trust before running from a consumer.
-        Per-script local settings are only for MXC policy, never metadata overrides.
-        Do not write output into this source package. Files returned from an isolated run are exported
-        for the consuming module, which decides how to display, save or copy them.
-        Metadata and source changes require trust review again.
-        Optional `consumers`, `publisher`, `version`, `source`, `icon` and `mxc.recommendedPolicies`
-        belong under `x-powerscript`. A consumer list narrows discovery, not authorization.
-        Advanced custom launch recipes use `x-execute`; the starter uses the built-in runtime.
+        Runtime is inferred from `.ps1` or `.py`; there is no entry function setting.
+        PowerShell uses native `param(...)`: `$Text` or `$Files` for primary input, plus named options.
+        `POWERSCRIPTS_FILES` contains the complete newline-separated selection.
+        Python executes top-level statements and reads the complete request with `json.load(sys.stdin)`.
+        Use `request["files"]`, `request["text"]` and `request["parameters"]` as declared.
+        Parameters retain JSON boolean and integer types; Python does not receive keyword arguments.
+        Text output is literal stdout. File output is a JSON object `{"files": ["absolute path"]}`.
+        No-output scripts emit no result; send diagnostics to stderr.
+        Rich HTML and media use files, not text.
+
+        ## Metadata and isolation
+
+        `name`, `title`, `description`, `annotations`, `inputSchema` and `outputSchema` describe the tool.
+        Optional `capabilities`, `consumers`, `publisher`, `version`, `source` and `icon` belong
+        under root `x-powerscript`. They do not grant permissions.
+        All scripts use the global MXC settings; there are no per-script settings or policy overrides.
+        Python environment selection is also global. Managed Linux requires globally acknowledged
+        UI and least-privilege exceptions because those Windows policies cannot be enforced there.
+        Write output only to the temporary workspace, never the source package.
+        Source or metadata edits invalidate trust and require renewed consent.
+        Advanced custom launch recipes use `x-execute`.
 
         """;
 }

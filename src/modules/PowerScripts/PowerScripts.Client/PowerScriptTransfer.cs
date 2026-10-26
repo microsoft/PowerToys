@@ -6,8 +6,8 @@ namespace PowerScripts.Client;
 
 /// <summary>
 /// The data-plane input for <c>transform &lt;id&gt;</c>: written as JSON to the host's stdin. Every field
-/// is optional — set only the ones your script consumes. Field names map to the host's snake_case
-/// JSON (<c>text</c>, <c>file_paths</c>, <c>params</c>). Inline HTML uses text; media and HTML
+/// is optional — set only the ones your script consumes. Fields map to the schema's
+/// JSON (<c>text</c>, <c>files</c>, <c>parameters</c>). Inline HTML uses text; media and HTML
 /// documents use file paths, matched by extension and selection count regardless of their source.
 /// </summary>
 public sealed class PowerScriptTransformInput
@@ -19,7 +19,7 @@ public sealed class PowerScriptTransformInput
     public IReadOnlyList<string>? FilePaths { get; set; }
 
     /// <summary>Extra named parameters passed to the script.</summary>
-    public IReadOnlyDictionary<string, string>? Params { get; set; }
+    public IReadOnlyDictionary<string, System.Text.Json.JsonElement>? Parameters { get; set; }
 }
 
 /// <summary>

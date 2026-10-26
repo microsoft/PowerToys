@@ -10,12 +10,12 @@ The security review selected a hybrid of the two proposals:
   enabled. Unsupported hosts default MXC off and surface the reason to the user.
 - The scripts folder and selected inputs are read-only inside MXC; writes are limited to a per-run
   workspace.
-- A user may disable MXC or individual policies globally or per script only after explicitly
+- A user may disable MXC or individual policies globally only after explicitly
   accepting the reduced-isolation risk.
-- Script descriptors may recommend MXC policies. Settings can use that recommendation as a draft,
-  but it cannot weaken enforcement until the user applies it and explicitly accepts any added access.
-- Per-script policy can also strengthen a globally relaxed policy, such as blocking network access
-  for one script even when network access is globally allowed.
+- Descriptors cannot configure or recommend security policy. Every script uses the global policy;
+  there are no per-script overrides or local policy records.
+- Managed Linux requires MXC and filesystem protection. Its unsupported Windows UI and
+  least-privilege policies require explicitly acknowledged global exceptions; Python runs as guest root.
 
 See the MXC configuration and E2E setup in [`README.md`](./README.md).
 

@@ -47,7 +47,7 @@ public static class ScriptParameterResolver
 
             if (string.IsNullOrEmpty(value))
             {
-                if (parameter.IsRequired)
+                if (parameter.IsRequired && ((!hasSuppliedValue && parameter.Default is null) || parameter.IsFile))
                 {
                     error = $"Missing required parameter '{parameter.Name}'.";
                     return false;

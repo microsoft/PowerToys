@@ -2,13 +2,23 @@
   "name": "py_beep",
   "title": "Beep (Python)",
   "description": "Play a short beep. A Python system PowerScript you can bind to a hotkey from Keyboard Manager.",
-  "inputSchema": { "type": "object", "properties": {} },
+  "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
   "x-powerscript": {
-    "function": "beep",
-    "input": "none",
-    "output": "none",
-    "capabilities": ["systemControl"],
+    "capabilities": [
+      "systemControl"
+    ],
     "publisher": "PowerToys samples",
     "version": "1.0.0"
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
   }
 }

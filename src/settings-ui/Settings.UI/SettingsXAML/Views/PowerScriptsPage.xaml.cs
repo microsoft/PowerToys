@@ -108,7 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 Title = resources.GetString("PowerScripts_LinuxSetupTitle"),
                 Content = resources.GetString("PowerScripts_LinuxSetupHelp"),
                 PrimaryButtonText = resources.GetString("PowerScripts_LinuxSetupConfirm"),
-                CloseButtonText = resources.GetString("PowerScripts_MxcPolicyDialog_Cancel"),
+                CloseButtonText = resources.GetString("PowerScripts_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
             };
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
@@ -257,7 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 Content = resourceLoader.GetString("PowerScripts_MxcRiskDialogContent")
                     .Replace("{0}", changeDescription, StringComparison.Ordinal),
                 PrimaryButtonText = resourceLoader.GetString("PowerScripts_MxcRiskDialogAccept"),
-                CloseButtonText = resourceLoader.GetString("PowerScripts_MxcPolicyDialog_Cancel"),
+                CloseButtonText = resourceLoader.GetString("PowerScripts_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
             };
 

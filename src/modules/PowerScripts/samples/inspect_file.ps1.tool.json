@@ -5,17 +5,42 @@
   "inputSchema": {
     "type": "object",
     "properties": {
-      "file": {
-        "type": "string",
-        "format": "file-path",
-        "description": "Choose a file to inspect."
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "file-path",
+            "description": "Choose a file to inspect."
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "additionalProperties": false
       }
     },
-    "required": ["file"]
+    "required": [],
+    "additionalProperties": false
   },
   "x-powerscript": {
-    "capabilities": ["fileRead", "ui"],
+    "capabilities": [
+      "fileRead",
+      "ui"
+    ],
     "publisher": "PowerToys samples",
     "version": "1.0.0"
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "additionalProperties": false
   }
 }

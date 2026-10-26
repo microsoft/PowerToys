@@ -30,26 +30,6 @@ public static class MxcPolicies
             .ToList();
 }
 
-/// <summary>An MXC override applying to one stable PowerScript id.</summary>
-public sealed class MxcScriptOverride
-{
-    [JsonPropertyName("enabled")]
-    public bool? Enabled { get; set; }
-
-    [JsonPropertyName("disabledPolicies")]
-    public List<string> DisabledPolicies { get; set; } = new();
-
-    /// <summary>
-    /// Restrictions explicitly enabled for this script, even when the global policy disables them.
-    /// Enabling a restriction is always safe and does not require risk acceptance.
-    /// </summary>
-    [JsonPropertyName("enabledPolicies")]
-    public List<string> EnabledPolicies { get; set; } = new();
-
-    [JsonPropertyName("riskAccepted")]
-    public bool RiskAccepted { get; set; }
-}
-
 /// <summary>
 /// PowerScripts' MXC configuration, stored below the module <c>config.json</c> key <c>mxc</c>.
 /// When no explicit enabled preference exists, MXC follows platform support: on for supported hosts
@@ -81,11 +61,6 @@ public sealed class MxcSettings
 
     [JsonPropertyName("riskAccepted")]
     public bool RiskAccepted { get; set; }
-
-    /// <summary>Overrides keyed by the manifest's stable script id.</summary>
-    [JsonPropertyName("scripts")]
-    public Dictionary<string, MxcScriptOverride> Scripts { get; set; } =
-        new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Loads settings. A missing enabled preference follows the current host's MXC support probe.
@@ -184,25 +159,6 @@ public sealed class MxcSettings
         settings.ExecutorPath ??= string.Empty;
         settings.DisabledPolicies = MxcPolicies.Normalize(settings.DisabledPolicies);
 
-        var normalizedScripts = new Dictionary<string, MxcScriptOverride>(StringComparer.OrdinalIgnoreCase);
-        if (settings.Scripts is not null)
-        {
-            foreach (var (id, scriptOverride) in settings.Scripts)
-            {
-                if (string.IsNullOrWhiteSpace(id) || scriptOverride is null)
-                {
-                    continue;
-                }
-
-                scriptOverride.DisabledPolicies = MxcPolicies.Normalize(scriptOverride.DisabledPolicies);
-                scriptOverride.EnabledPolicies = MxcPolicies.Normalize(scriptOverride.EnabledPolicies);
-                scriptOverride.DisabledPolicies.RemoveAll(policy =>
-                    scriptOverride.EnabledPolicies.Contains(policy, StringComparer.Ordinal));
-                normalizedScripts[id] = scriptOverride;
-            }
-        }
-
-        settings.Scripts = normalizedScripts;
         return settings;
     }
 

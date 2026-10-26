@@ -42,7 +42,7 @@ public class MxcTests
         Assert.AreEqual(string.Empty, settings.ExecutorPath);
         Assert.AreEqual(0, settings.DisabledPolicies.Count);
 
-        var effective = MxcPolicyResolver.Resolve(settings, "demo");
+        var effective = MxcPolicyResolver.Resolve(settings);
         Assert.IsTrue(effective.Enabled);
         CollectionAssert.AreEquivalent(MxcPolicies.All.ToArray(), effective.EnabledPolicies.ToArray());
     }
@@ -58,26 +58,12 @@ public class MxcTests
             ExecutorPath = @"C:\tools\wxc-exec.exe",
             RiskAccepted = true,
             DisabledPolicies = new List<string> { MxcPolicies.Network },
-            Scripts = new Dictionary<string, MxcScriptOverride>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["stable-id"] = new()
-                {
-                    Enabled = false,
-                    EnabledPolicies = new List<string> { MxcPolicies.Filesystem },
-                    RiskAccepted = true,
-                },
-            },
         };
         settings.Save(store);
 
         var loaded = MxcSettings.Load(store);
         Assert.AreEqual(settings.ExecutorPath, loaded.ExecutorPath);
         CollectionAssert.AreEqual(new[] { MxcPolicies.Network }, loaded.DisabledPolicies);
-        Assert.AreEqual(false, loaded.Scripts["stable-id"].Enabled);
-        CollectionAssert.AreEqual(
-            new[] { MxcPolicies.Filesystem },
-            loaded.Scripts["stable-id"].EnabledPolicies);
-        Assert.IsTrue(loaded.Scripts["stable-id"].RiskAccepted);
 
         using var document = JsonDocument.Parse(store.ReadBlob(PowerScriptsPaths.ConfigFileName)!);
         Assert.AreEqual(@"C:\scripts", document.RootElement.GetProperty("scriptsRoot").GetString());
@@ -92,7 +78,7 @@ public class MxcTests
         store.WriteBlob(PowerScriptsPaths.ConfigFileName, """{"mxc":{"enabled":"no","riskAccepted":true,"disabledPolicies":["filesystem"]}}""");
 
         var settings = MxcSettings.Load(store, _ => SupportedPlatform());
-        var effective = MxcPolicyResolver.Resolve(settings, "demo");
+        var effective = MxcPolicyResolver.Resolve(settings);
 
         Assert.IsTrue(effective.Enabled);
         CollectionAssert.AreEquivalent(MxcPolicies.All.ToArray(), effective.EnabledPolicies.ToArray());
@@ -112,7 +98,7 @@ public class MxcTests
         Assert.IsFalse(settings.Enabled);
         Assert.IsTrue(settings.UsesPlatformDefault);
         Assert.AreEqual("unsupported test host", settings.PlatformSupport?.Reason);
-        Assert.IsFalse(MxcPolicyResolver.Resolve(settings, "demo").Enabled);
+        Assert.IsFalse(MxcPolicyResolver.Resolve(settings).Enabled);
     }
 
     [TestMethod]
@@ -135,7 +121,7 @@ public class MxcTests
         var reloaded = MxcSettings.Load(store, _ => unsupported);
         Assert.IsFalse(reloaded.Enabled);
         Assert.IsTrue(reloaded.UsesPlatformDefault);
-        Assert.IsFalse(MxcPolicyResolver.Resolve(reloaded, "demo").Enabled);
+        Assert.IsFalse(MxcPolicyResolver.Resolve(reloaded).Enabled);
     }
 
     [TestMethod]
@@ -193,33 +179,31 @@ public class MxcTests
         var platformDefault = MxcSettings.Load(
             new FileSettingsStore(_root),
             _ => SupportedPlatform());
-        var defaultPolicy = MxcPolicyResolver.Resolve(platformDefault, "demo");
+        var defaultPolicy = MxcPolicyResolver.Resolve(platformDefault);
         Assert.IsTrue(defaultPolicy.Enabled);
         Assert.IsTrue(defaultPolicy.UsesPlatformDefault);
         Assert.IsTrue(ProcessRunner.IsWslTarget(new ProcessStartInfo { FileName = "wsl.exe" }));
 
-        var explicitPolicy = MxcPolicyResolver.Resolve(new MxcSettings { Enabled = true }, "demo");
+        var explicitPolicy = MxcPolicyResolver.Resolve(new MxcSettings { Enabled = true });
         Assert.IsFalse(explicitPolicy.UsesPlatformDefault);
     }
 
     [TestMethod]
-    public void Weakening_Requires_Risk_Acceptance_At_Each_Scope()
+    public void GlobalWeakeningRequiresRiskAcceptance()
     {
         var globalRejected = MxcPolicyResolver.Resolve(
             new MxcSettings
             {
                 DisabledPolicies = new List<string> { MxcPolicies.Network },
-            },
-            "demo");
+            });
         CollectionAssert.AreEquivalent(MxcPolicies.All.ToArray(), globalRejected.EnabledPolicies.ToArray());
 
-        var disableRejected = MxcPolicyResolver.Resolve(new MxcSettings { Enabled = false }, "demo");
+        var disableRejected = MxcPolicyResolver.Resolve(new MxcSettings { Enabled = false });
         Assert.IsTrue(disableRejected.Enabled);
         CollectionAssert.AreEquivalent(MxcPolicies.All.ToArray(), disableRejected.EnabledPolicies.ToArray());
 
         var disableAccepted = MxcPolicyResolver.Resolve(
-            new MxcSettings { Enabled = false, RiskAccepted = true },
-            "demo");
+            new MxcSettings { Enabled = false, RiskAccepted = true });
         Assert.IsFalse(disableAccepted.Enabled);
 
         var globalAccepted = MxcPolicyResolver.Resolve(
@@ -227,112 +211,30 @@ public class MxcTests
             {
                 RiskAccepted = true,
                 DisabledPolicies = new List<string> { MxcPolicies.Network },
-            },
-            "demo");
+            });
         Assert.IsFalse(globalAccepted.IsEnabled(MxcPolicies.Network));
 
-        var perScriptRejected = MxcPolicyResolver.Resolve(
-            new MxcSettings
-            {
-                RiskAccepted = true,
-                DisabledPolicies = new List<string> { MxcPolicies.Network },
-                Scripts = new Dictionary<string, MxcScriptOverride>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["demo"] = new() { Enabled = false },
-                },
-            },
-            "demo");
-        Assert.IsTrue(perScriptRejected.Enabled);
-        CollectionAssert.AreEquivalent(MxcPolicies.All.ToArray(), perScriptRejected.EnabledPolicies.ToArray());
-
-        var neutralOverrideInheritsAcceptedGlobalWeakening = MxcPolicyResolver.Resolve(
-            new MxcSettings
-            {
-                Enabled = false,
-                RiskAccepted = true,
-                Scripts = new Dictionary<string, MxcScriptOverride>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["demo"] = new(),
-                },
-            },
-            "demo");
-        Assert.IsFalse(neutralOverrideInheritsAcceptedGlobalWeakening.Enabled);
-
-        var perScriptAccepted = MxcPolicyResolver.Resolve(
-            new MxcSettings
-            {
-                Scripts = new Dictionary<string, MxcScriptOverride>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["demo"] = new() { Enabled = false, RiskAccepted = true },
-                },
-            },
-            "demo");
-        Assert.IsFalse(perScriptAccepted.Enabled);
-
-        var perPolicyAccepted = MxcPolicyResolver.Resolve(
-            new MxcSettings
-            {
-                Scripts = new Dictionary<string, MxcScriptOverride>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["demo"] = new()
-                    {
-                        DisabledPolicies = new List<string> { MxcPolicies.Ui },
-                        RiskAccepted = true,
-                    },
-                },
-            },
-            "demo");
-        Assert.IsFalse(perPolicyAccepted.IsEnabled(MxcPolicies.Ui));
-
-        var perScriptStrengthening = MxcPolicyResolver.Resolve(
-            new MxcSettings
-            {
-                RiskAccepted = true,
-                DisabledPolicies = new List<string> { MxcPolicies.Network },
-                Scripts = new Dictionary<string, MxcScriptOverride>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["demo"] = new()
-                    {
-                        EnabledPolicies = new List<string> { MxcPolicies.Network },
-                    },
-                },
-            },
-            "demo");
-        Assert.IsTrue(perScriptStrengthening.IsEnabled(MxcPolicies.Network));
     }
 
     [TestMethod]
-    public void Descriptor_Parses_Display_Only_Recommendations()
+    public void RemovedScriptOverridesAreNotLoadedOrSaved()
     {
-        File.WriteAllText(Path.Combine(_root, "demo.ps1"), "Write-Output ok");
-        var descriptor = Path.Combine(_root, "demo.ps1.tool.json");
-        File.WriteAllText(descriptor, """
-            {
-              "name": "demo",
-              "description": "demo",
-              "x-powerscript": {
-                "mxc": {
-                  "recommendedPolicies": ["filesystem", "network"]
-                }
-              }
-            }
-            """);
-
-        var manifest = ToolDescriptorParser.TryParseFile(descriptor);
-        Assert.IsNotNull(manifest);
-        CollectionAssert.AreEqual(
-            new[] { MxcPolicies.Filesystem, MxcPolicies.Network },
-            manifest!.Mxc.RecommendedPolicies);
-
-        var effective = MxcPolicyResolver.Resolve(new MxcSettings(), manifest.Id, manifest.Mxc.RecommendedPolicies);
+        var store = new FileSettingsStore(_root);
+        store.WriteBlob(PowerScriptsPaths.ConfigFileName,
+            """{"mxc":{"enabled":true,"scripts":{"demo":{"enabled":false,"riskAccepted":true}}}}""");
+        var settings = MxcSettings.Load(store);
+        var effective = MxcPolicyResolver.Resolve(settings);
         CollectionAssert.AreEquivalent(MxcPolicies.All.ToArray(), effective.EnabledPolicies.ToArray());
+        settings.Save(store);
+        using var document = JsonDocument.Parse(store.ReadBlob(PowerScriptsPaths.ConfigFileName)!);
+        Assert.IsFalse(document.RootElement.GetProperty("mxc").TryGetProperty("scripts", out _));
     }
 
     [TestMethod]
     public void Config_Uses_Stable_Schema_And_Readonly_Script_Root()
     {
         var scriptsRoot = Path.Combine(_root, "scripts");
-        var package = Path.Combine(scriptsRoot, "demo");
+        var package = Path.Combine(scriptsRoot);
         var workspace = Path.Combine(_root, "workspace");
         var input = Path.Combine(_root, "input.txt");
         Directory.CreateDirectory(package);
@@ -358,7 +260,7 @@ public class MxcTests
             ScriptsRoot = scriptsRoot,
             InputPaths = new[] { input },
         };
-        var policy = MxcPolicyResolver.Resolve(new MxcSettings(), "demo");
+        var policy = MxcPolicyResolver.Resolve(new MxcSettings());
         var json = MxcProcessRunner.BuildConfigurationJson(
             target,
             target.FileName,
@@ -424,7 +326,7 @@ public class MxcTests
     public void Config_Keeps_Script_Package_Readonly_When_Filesystem_Restriction_Is_Disabled()
     {
         var scriptsRoot = Path.Combine(_root, "scripts");
-        var package = Path.Combine(scriptsRoot, "demo");
+        var package = Path.Combine(scriptsRoot);
         var workspace = Path.Combine(_root, "workspace");
         var input = Path.Combine(_root, "input.txt");
         Directory.CreateDirectory(package);
@@ -448,8 +350,7 @@ public class MxcTests
             {
                 RiskAccepted = true,
                 DisabledPolicies = new List<string> { MxcPolicies.Filesystem },
-            },
-            "demo");
+            });
 
         Assert.IsTrue(policy.Enabled);
         Assert.IsFalse(policy.IsEnabled(MxcPolicies.Filesystem));
@@ -497,8 +398,7 @@ public class MxcTests
             {
                 Enabled = false,
                 RiskAccepted = true,
-            },
-            "demo");
+            });
 
         Assert.IsFalse(policy.Enabled);
         Assert.ThrowsException<InvalidOperationException>(() =>
@@ -560,7 +460,7 @@ public class MxcTests
         var result = MxcProcessRunner.Run(
             new ProcessStartInfo { FileName = "cmd.exe" },
             context,
-            MxcPolicyResolver.Resolve(new MxcSettings(), "demo"),
+            MxcPolicyResolver.Resolve(new MxcSettings()),
             new MxcSettings(),
             launcher: launcher,
             executorResolver: _ => null);
@@ -574,7 +474,7 @@ public class MxcTests
     public void Successful_Run_Preserves_NonEmpty_Workspace_Output()
     {
         var scriptsRoot = Path.Combine(_root, "scripts");
-        var scriptDirectory = Path.Combine(scriptsRoot, "demo");
+        var scriptDirectory = Path.Combine(scriptsRoot);
         var runDirectory = Path.Combine(_root, "runs", "mxc-test");
         Directory.CreateDirectory(scriptDirectory);
 
@@ -589,7 +489,7 @@ public class MxcTests
         var result = MxcProcessRunner.Run(
             new ProcessStartInfo { FileName = "cmd.exe" },
             context,
-            MxcPolicyResolver.Resolve(new MxcSettings(), "demo"),
+            MxcPolicyResolver.Resolve(new MxcSettings()),
             new MxcSettings(),
             launcher: launcher,
             executorResolver: _ => "wxc-exec.exe",

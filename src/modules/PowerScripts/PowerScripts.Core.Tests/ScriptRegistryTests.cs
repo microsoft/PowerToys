@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
@@ -30,17 +31,27 @@ public class ScriptRegistryTests
         }
     }
 
-    private void WriteScript(string fileName, object? metadata = null, string? id = null, string? title = null)
+    private void WriteScript(string fileName, object? metadata = null, string? id = null, string? title = null,
+        string[]? extensions = null, int minimum = 1, int? maximum = null)
     {
         var entry = Path.Combine(_root, fileName + ".ps1");
         File.WriteAllText(entry, "# noop\n");
-        File.WriteAllText(entry + ".tool.json", JsonSerializer.Serialize(new Dictionary<string, object?>
+        var descriptor = TestTool.Descriptor(extensions is null ? "none" : "files", name: id ?? fileName);
+        descriptor["title"] = title ?? fileName;
+        descriptor["x-powerscript"] = JsonSerializer.SerializeToNode(metadata ?? new { });
+        if (extensions is not null)
         {
-            ["name"] = id ?? fileName,
-            ["title"] = title ?? fileName,
-            ["inputSchema"] = new { type = "object", properties = new { } },
-            ["x-powerscript"] = metadata ?? new { },
-        }));
+            var files = descriptor["inputSchema"]!["properties"]!["files"]!;
+            files["minItems"] = minimum;
+            if (maximum.HasValue)
+            {
+                files["maxItems"] = maximum.Value;
+            }
+
+            files["items"]!["x-powerscript"] = new JsonObject { ["extensions"] = JsonSerializer.SerializeToNode(extensions) };
+        }
+
+        File.WriteAllText(entry + ".tool.json", descriptor.ToJsonString());
     }
 
     [TestMethod]
@@ -146,8 +157,8 @@ public class ScriptRegistryTests
     [TestMethod]
     public void FileScriptsFor_Matches_Extension_And_Wildcard()
     {
-        WriteScript("png-only", new { extensions = new[] { ".png" } });
-        WriteScript("any-file", new { extensions = new[] { "*" } });
+        WriteScript("png-only", extensions: new[] { ".png" });
+        WriteScript("any-file", extensions: new[] { "*" });
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -162,7 +173,7 @@ public class ScriptRegistryTests
     [TestMethod]
     public void FileScriptsForSelection_Respects_MinMax_And_MixedExtensions()
     {
-        WriteScript("single-png", new { extensions = new[] { ".png" }, minFiles = 1, maxFiles = 1 });
+        WriteScript("single-png", extensions: new[] { ".png" }, maximum: 1);
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
@@ -181,7 +192,7 @@ public class ScriptRegistryTests
     public void SystemScripts_ExcludesFileScripts()
     {
         WriteScript("sys");
-        WriteScript("file", new { extensions = new[] { "*" } });
+        WriteScript("file", extensions: new[] { "*" });
 
         var registry = new ScriptRegistry(_root);
         registry.Load();

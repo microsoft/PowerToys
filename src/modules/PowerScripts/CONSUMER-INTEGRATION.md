@@ -106,12 +106,10 @@ enable a runtime or bypass execution checks.
 ## Script presentation and icons
 
 Scripts are discovered from sibling `<script>.tool.json` descriptors. Bare helper files are never
-actions, even if an old local registration exists. Descriptor metadata is authoritative; local
-per-source records are reserved for MXC security policy, never ordinary metadata overrides.
-Inline metadata and
-Python function-name inference are not supported. Built-in Python execution requires
-`x-powerscript.function`; its input/output contract comes from descriptor metadata, not the function
-name. An explicit `x-execute` recipe uses its declared command instead of the Python function runner.
+actions. Descriptor schemas are authoritative; there are no per-script settings or policy records.
+Runtime is inferred from `.ps1`/`.py`. Inline metadata and Python function-name inference are not
+supported. Built-in Python executes top-level statements and reads the schema-shaped request from
+JSON stdin. An explicit `x-execute` recipe uses its declared command instead of the built-in runtime.
 
 Present scripts by name and resolved input/output contract, not a separate "System" or "File"
 category. Put the runtime first, for example `PowerShell · None → Text` or
@@ -175,7 +173,9 @@ For a multi-file selection, a script is compatible only when:
 
 - every selected extension matches the declared extensions or `*`;
 - the selection count is at least `minFiles`;
-- the selection count does not exceed `maxFiles`, unless `maxFiles` is `0` (unbounded).
+- the selection count does not exceed schema `maxItems` (derived `maxFiles`), when present.
+
+An omitted/null maximum is unbounded; zero is a genuine zero maximum.
 
 Pass the complete selection in one invocation. Do not invoke the script once per file unless that is
 an explicit consumer behavior.
@@ -201,10 +201,13 @@ if (result.Succeeded)
 }
 ```
 
-The input transfer model contains `text`, `file_paths`, and `params`. Inline HTML goes in `Text`,
+The input transfer model contains `text`, `files`, and `parameters`. Inline HTML goes in `Text`,
 not a separate `Html` field. PowerShell text transforms receive `-Text`; Python text transforms
-receive the string as their first positional argument. File transforms receive `-Files` and
-`POWERSCRIPTS_FILES` in PowerShell, or one positional path list in Python.
+read `request["text"]` from JSON stdin. File transforms receive `$Files` and
+`POWERSCRIPTS_FILES` in PowerShell, or `request["files"]` in Python.
+Named options are declared under `inputSchema.properties.parameters`.
+Use `PowerScriptTransformInput.Parameters` with `JsonElement` values to retain JSON integer
+and boolean types; numeric/boolean strings are rejected. The CLI `--set` transport remains strings.
 
 For a clipboard bitmap, first encode it as an actual PNG temporary file, then use exactly the same
 file discovery and execution contract as Explorer:
@@ -220,7 +223,8 @@ var result = await client.TransformAsync(
     cancellationToken: cancellationToken);
 ```
 
-A script declaring `input: files`, `extensions: [".png"]`, and a count range including one is
+A script whose input schema declares a required `files` array, `.png` item extension hints,
+and a count range including one is
 eligible regardless of the PNG's source. Batch-only scripts are not offered for a single clipboard
 image. Extension matching is not content validation: scripts must handle invalid file contents.
 Keep consumer-created temporary files available until execution completes and clean up only those
@@ -229,35 +233,30 @@ temporary files, not user-owned clipboard files.
 Transform input JSON uses UTF-8, independently of the Windows console code page. Unicode text and
 file paths can be sent literally or as JSON Unicode escapes.
 
-Output JSON is `{}` for `none`, `{"text":"..."}` for `text`, or `{"file_paths":["..."]}` for `files`.
-Built-in Python functions may return `None`, a string, or a list/tuple of paths respectively;
-explicit dictionaries use the same JSON fields. File paths should be absolute and accessible to
+Output JSON is `{}` for `none`, `{"text":"..."}` for `text`, or `{"files":["..."]}` for `files`.
+Both schemas are required closed object envelopes. File paths should be absolute and accessible to
 the Windows consumer; WSL scripts should produce files on shared mounted drives so returned
 `/mnt/<drive>/...` paths can be translated back to Windows.
 
-PowerShell and explicit launch recipes emit literal stdout for text output, or the explicit JSON
-object for file output. For example, `@{ file_paths = @($producedPaths) } | ConvertTo-Json -Compress`.
+Python, PowerShell and explicit launch recipes emit literal stdout for text output, or the explicit JSON
+object for file output. For example, `@{ files = @($producedPaths) } | ConvertTo-Json -Compress`.
 Stdout uses UTF-8. PowerShell authors should set
 `[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)` before producing output, particularly
 on Windows PowerShell 5.1, so Unicode paths survive the pipe.
 For no output, transform stdout is forwarded as diagnostics and the JSON result is `{}`.
-Python stdout must contain only the runner's result; use stderr for diagnostics.
+File-output stdout must contain only the result object; use stderr for diagnostics.
 Malformed JSON, removed fields, and output shapes inconsistent with the descriptor fail explicitly.
 
-The `files` output shape alone does not predict which extensions a script will produce. Inspect
+Output file-item extension hints can constrain results, but are not content validation. Inspect
 actual results before decoding or publishing them, and do not offer a restricted consumer workflow
 based solely on that shape. Retain returned files for as long as the consumer needs them, including
 deferred clipboard reads. If a returned path reuses a temporary input, transfer its lifetime before
 input cleanup. Delete only consumer-owned files, never arbitrary returned user files.
 This is the core integration contract, not an automatic change to a consumer's clipboard UI.
 
-**Migration:** change old `input: image/audio/video` declarations to `input: files` with the
-appropriate extensions and count bounds. Change inline `input: html` to `input: text`, or use files
-with `.html`/`.htm` for HTML documents. Consumers must replace `html`, `image_path`, `audio_path`,
-and `video_path` input payload fields with `text` or `file_paths`. Likewise, change old HTML/media
-outputs to `text` for literal markup or `files` for HTML/media documents, and replace the old output
-fields with an explicit file-path list. Removed fields fail validation rather than silently
-delivering empty data. Descriptor changes require renewed trust.
+This is a breaking profile: legacy root I/O/runtime/function/policy metadata and old payload
+fields are rejected, not migrated or inferred. Schema-local extensions refine path strings;
+`minItems`/`maxItems` constrain arrays. Descriptor changes require renewed trust.
 
 ## Consumer responsibilities
 

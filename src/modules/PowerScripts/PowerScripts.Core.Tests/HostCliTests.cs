@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Client;
 using PowerScripts.Core;
 using PowerScripts.Core.Storage;
+using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Tests;
 
@@ -56,25 +57,49 @@ public class HostCliTests
               "inputSchema": {
                 "type": "object",
                 "properties": {
-                  "format": {
-                    "type": "string",
-                    "description": "Output format",
-                    "enum": ["short", "long"],
-                    "default": "short"
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "description": "Output format",
+                        "enum": [
+                          "short",
+                          "long"
+                        ],
+                        "default": "short"
+                      }
+                    },
+                    "required": [
+                      "format"
+                    ],
+                    "additionalProperties": false
                   }
                 },
-                "required": ["format"]
+                "required": [],
+                "additionalProperties": false
               },
-              "x-powerscript": {}
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "additionalProperties": false
+              }
             }
             """);
 
         Write("py_upper.py", "def uppercase(text):\n    return text.upper()\n");
-        WriteDescriptor("py_upper.py", "\"function\":\"uppercase\",\"input\":\"text\",\"output\":\"text\"");
+        Write("py_upper.py.tool.json", "{\"name\": \"py_upper\", \"description\": \"py_upper\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
 
         // The same PNG file contract applies to clipboard temporary files and Explorer selections.
         Write("py_named.py", "def inspect_files(paths):\n    return '\\n'.join(paths)\n");
-        WriteDescriptor("py_named.py", "\"function\":\"inspect_files\",\"input\":\"files\",\"output\":\"text\",\"extensions\":[\".png\"],\"maxFiles\":1");
+        Write("py_named.py.tool.json", "{\"name\": \"py_named\", \"description\": \"py_named\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".png\"]}}, \"minItems\": 1, \"maxItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
 
         // Rich HTML is a file output; literal markup would be a text output.
         Write("md2html.ps1", """
@@ -82,13 +107,13 @@ public class HostCliTests
             [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
             $output = Join-Path $env:POWERSCRIPTS_MXC_WORKSPACE 'result.html'
             Set-Content -LiteralPath $output -Value "<p>$Text</p>" -Encoding UTF8
-            @{ file_paths = @($output) } | ConvertTo-Json -Compress
+            @{ files = @($output) } | ConvertTo-Json -Compress
             """);
-        WriteDescriptor("md2html.ps1", "\"input\":\"text\",\"output\":\"files\"");
+        Write("md2html.ps1.tool.json", "{\"name\": \"md2html\", \"description\": \"md2html\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}}, \"required\": [\"files\"], \"additionalProperties\": false}}");
 
         // A file script: acts on selected files (file-driven because it declares extensions).  io = files -> none
         Write("wc.ps1", "param([string]$file)\n(Get-Content $file).Length");
-        WriteDescriptor("wc.ps1", "\"extensions\":[\".md\"]");
+        Write("wc.ps1.tool.json", "{\"name\": \"wc\", \"description\": \"wc\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".md\"]}}, \"minItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}}");
     }
 
     [TestCleanup]
@@ -118,17 +143,38 @@ public class HostCliTests
             {
               "name": "recipe",
               "description": "Explicit Python command",
-              "inputSchema": {"type":"object"},
-              "x-execute": {"command":["python", "recipe.py"]},
-              "x-powerscript": {"input":"none", "output":"text"}
+              "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "x-execute": {
+                "command": [
+                  "python",
+                  "recipe.py"
+                ]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "additionalProperties": false
+              }
             }
             """);
         using var json = JsonDocument.Parse(RunHostOk("list", "--json", "--include-disabled", "--root", _root));
         var scripts = json.RootElement.EnumerateArray().ToDictionary(row => row.GetProperty("id").GetString()!);
         Assert.IsTrue(scripts["recipe"].GetProperty("hasExplicitExecution").GetBoolean());
-        Assert.AreEqual(JsonValueKind.Null, scripts["recipe"].GetProperty("transform").ValueKind);
+        Assert.IsFalse(scripts["recipe"].TryGetProperty("transform", out _));
         Assert.IsFalse(scripts["py_upper"].GetProperty("hasExplicitExecution").GetBoolean());
-        Assert.AreEqual(JsonValueKind.Object, scripts["py_upper"].GetProperty("transform").ValueKind);
+        Assert.AreEqual(JsonValueKind.Object, scripts["py_upper"].GetProperty("inputSchema").ValueKind);
     }
 
     [TestMethod]
@@ -140,10 +186,9 @@ public class HostCliTests
         Assert.AreEqual(0, exit, error);
         using var created = JsonDocument.Parse(stdout);
         var entry = created.RootElement.GetProperty("entryPath").GetString()!;
-        var manifest = new ScriptSettingsStore().Get(_root, entry).Manifest;
+        var manifest = ToolDescriptorParser.TryParseFile(entry + ".tool.json")!;
         Assert.AreEqual("My input files", manifest.Name);
         CollectionAssert.AreEqual(new[] { ".txt", ".md" }, manifest.Input!.Extensions);
-        Assert.IsFalse(File.Exists(new ScriptSettingsStore().GetSettingsPath(_root, entry)));
 
         var before = Directory.GetDirectories(_root);
         (exit, _, error) = RunHostWithInput("""{"projectName":"Invalid","fileExtensions":"../txt"}""",
@@ -156,7 +201,7 @@ public class HostCliTests
     [TestMethod]
     public void ConsumerDiscoveryFiltersAudienceAndIoWhileManagementSeesAll()
     {
-        WriteDescriptor("py_upper.py", "\"function\":\"uppercase\",\"input\":\"text\",\"output\":\"text\",\"consumers\":[\"color-picker\"]");
+        Write("py_upper.py.tool.json", "{\"name\": \"py_upper\", \"description\": \"py_upper\", \"x-powerscript\": {\"consumers\": [\"color-picker\"]}, \"inputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
         var all = RunHostOk("list", "--json", "--include-disabled", "--root", _root);
         Assert.AreEqual(5, ParseList(all).Count);
         var targeted = RunHostOk("list", "--json", "--include-disabled", "--consumer", "COLOR-PICKER", "--input", "text", "--output", "text", "--root", _root);
@@ -166,68 +211,16 @@ public class HostCliTests
         var (exit, _, error) = RunHost("list", "--json", "--consumer", "not a module", "--root", _root);
         Assert.AreEqual(1, exit);
         StringAssert.Contains(error, "--consumer");
-        WriteDescriptor("wc.ps1", "\"input\":\"files\",\"extensions\":[\".md\"],\"consumers\":[\"color-picker\"]");
+        Write("wc.ps1.tool.json", "{\"name\": \"wc\", \"description\": \"wc\", \"x-powerscript\": {\"consumers\": [\"color-picker\"]}, \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".md\"]}}, \"minItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}}");
         Assert.IsFalse(Ids(RunHostOk("list", "--json", "--consumer", "advanced-paste", "--root", _root)).Contains("wc"));
     }
 
     [TestMethod]
-    public void ScriptSettingsCliOnlyAcceptsSecuritySettingsForDescriptorBackedScripts()
+    public void RemovedScriptSettingsCliIsNotAvailable()
     {
-        var entry = Path.Combine(_root, "chosen.ps1");
-        Write("chosen.ps1", "Write-Output 'chosen'");
-        Write("helper.ps1", "Write-Output 'not an action'");
-        var store = new ScriptSettingsStore();
-        var settingsPath = store.GetSettingsPath(_root, entry);
-        try
-        {
-            var preview = RunHostOk("script-settings", "get", "--entry", entry, "--root", _root);
-            using (var document = JsonDocument.Parse(preview))
-            {
-                Assert.IsFalse(document.RootElement.GetProperty("hasLocalSettings").GetBoolean());
-            }
-
-            Assert.AreEqual(5, ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root)).Count);
-            var (exit, _, _) = RunHostWithInput(
-                """{"mxc":null}""",
-                "script-settings", "save", "--entry", entry, "--root", _root);
-            Assert.AreNotEqual(0, exit);
-            Assert.IsFalse(File.Exists(settingsPath));
-            Assert.IsFalse(File.Exists(entry + ".tool.json"));
-
-            var authorEntry = Path.Combine(_root, "act_hello.ps1");
-            var descriptor = File.ReadAllBytes(authorEntry + ".tool.json");
-            try
-            {
-                (exit, _, _) = RunHostWithInput("""{"overrides":{"title":"Personal title"}}""",
-                    "script-settings", "save", "--entry", authorEntry, "--root", _root);
-                Assert.AreNotEqual(0, exit);
-                (exit, _, _) = RunHostWithInput("""{"mxc":null}""",
-                    "script-settings", "save", "--entry", authorEntry, "--root", _root);
-                Assert.AreEqual(0, exit);
-                CollectionAssert.AreEqual(descriptor, File.ReadAllBytes(authorEntry + ".tool.json"));
-                var reset = RunHostOk("script-settings", "reset", "--entry", authorEntry, "--root", _root);
-                using var resetDocument = JsonDocument.Parse(reset);
-                Assert.AreEqual(0, resetDocument.RootElement.GetProperty("overrides").EnumerateObject().Count());
-            }
-            finally
-            {
-                File.Delete(store.GetSettingsPath(_root, authorEntry));
-            }
-
-            File.Delete(entry);
-            Assert.AreEqual(5, ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root)).Count);
-            Assert.AreEqual(0, RunHost("script-settings", "forget", "--entry", entry, "--root", _root).Exit);
-            Assert.IsFalse(File.Exists(settingsPath));
-        }
-        finally
-        {
-            File.Delete(settingsPath);
-            var directory = Path.GetDirectoryName(settingsPath)!;
-            if (Directory.Exists(directory) && !Directory.EnumerateFileSystemEntries(directory).Any())
-            {
-                Directory.Delete(directory);
-            }
-        }
+        var (exit, _, error) = RunHost("script-settings", "get", "--root", _root);
+        Assert.AreNotEqual(0, exit);
+        StringAssert.Contains(error, "Unknown command");
     }
 
     [TestMethod]
@@ -259,16 +252,11 @@ public class HostCliTests
             new[] { "short", "long" },
             parameter.GetProperty("options").EnumerateArray().Select(value => value.GetString()!).ToArray());
         Assert.AreEqual("Python", byId["py_upper"].GetProperty("runtime").GetString());
-        Assert.AreEqual("uppercase", byId["py_upper"].GetProperty("transform").GetProperty("function").GetString());
-        Assert.AreEqual("Text", byId["py_upper"].GetProperty("transform").GetProperty("inputFormat").GetString());
-        Assert.AreEqual("inspect_files", byId["py_named"].GetProperty("transform").GetProperty("function").GetString());
-        Assert.AreEqual("Files", byId["py_named"].GetProperty("transform").GetProperty("inputFormat").GetString());
-        CollectionAssert.AreEquivalent(
-            new[] { "filesystem", "network", "ui", "leastPrivilege" },
-            byId["act_hello"].GetProperty("mxc").GetProperty("recommendedPolicies")
-                .EnumerateArray()
-                .Select(value => value.GetString()!)
-                .ToArray());
+        Assert.IsFalse(byId["py_upper"].TryGetProperty("transform", out _));
+        Assert.IsFalse(byId["act_hello"].TryGetProperty("mxc", out _));
+        Assert.IsFalse(byId["act_hello"].TryGetProperty("hasLocalSettings", out _));
+        Assert.AreEqual("string", byId["py_upper"].GetProperty("inputSchema").GetProperty("properties").GetProperty("text").GetProperty("type").GetString());
+        Assert.AreEqual("array", byId["py_named"].GetProperty("inputSchema").GetProperty("properties").GetProperty("files").GetProperty("type").GetString());
     }
 
     [DataTestMethod]
@@ -281,7 +269,7 @@ public class HostCliTests
     public void Discovery_RespectsPythonMode_WhileConfigurationCanListAll(string? mode, bool pythonEnabled)
     {
         Write("py_files.py", "def inspect_files(files):\n    pass\n");
-        WriteDescriptor("py_files.py", "\"function\":\"inspect_files\",\"input\":\"files\",\"output\":\"none\",\"extensions\":[\".md\"]");
+        Write("py_files.py.tool.json", "{\"name\": \"py_files\", \"description\": \"py_files\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".md\"]}}, \"minItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}}");
         var previousStore = SettingsStore.Current;
         try
         {
@@ -336,7 +324,7 @@ public class HostCliTests
         var icon = Path.Combine(_root, "script icon.ico");
         File.WriteAllBytes(icon, Convert.FromBase64String(
             "AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA=="));
-        WriteDescriptor("wc.ps1", "\"extensions\":[\".md\"],\"icon\":\"script icon.ico\"");
+        Write("wc.ps1.tool.json", "{\"name\": \"wc\", \"description\": \"wc\", \"x-powerscript\": {\"icon\": \"script icon.ico\"}, \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".md\"]}}, \"minItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}}");
         var json = RunHostOk("list", "--json", "--root", _root);
         Assert.AreEqual(icon, ParseList(json)["wc"].GetProperty("iconPath").GetString());
         Assert.AreEqual(icon, PowerScriptInfo.ParseList(json).Single(script => script.Id == "wc").IconPath);
@@ -426,7 +414,7 @@ public class HostCliTests
     }
 
     [TestMethod]
-    public void List_ExplicitEntryFunction_TypesFromDescriptor()
+    public void ListUsesSchemaIoWithoutAnEntryFunction()
     {
         var byId = ParseList(RunHostOk("list", "--json", "--include-disabled", "--root", _root));
         AssertIo(byId, "py_named", "files", "text");
@@ -477,7 +465,7 @@ public class HostCliTests
     public void Transform_FileOutputRejectsLegacyAndMismatchedPayloads(string payload)
     {
         Write("bad-output.ps1", "Write-Output '" + payload + "'");
-        WriteDescriptor("bad-output.ps1", "\"input\":\"none\",\"output\":\"files\"");
+        Write("bad-output.ps1.tool.json", "{\"name\": \"bad-output\", \"description\": \"bad-output\", \"inputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}}, \"required\": [\"files\"], \"additionalProperties\": false}}");
         var client = new PowerScriptsClient(_hostPath, _root);
         try
         {
@@ -485,7 +473,7 @@ public class HostCliTests
             var result = client.TransformAsync("bad-output", new PowerScriptTransformInput(), noConsent: true)
                 .GetAwaiter().GetResult();
             Assert.AreEqual(PowerScriptsProtocol.ExitCode.Error, result.ExitCode);
-            StringAssert.Contains(result.StdErr, "invalid output");
+            StringAssert.Contains(result.StdErr, "Invalid script output");
             Assert.IsNull(result.Text);
             Assert.IsNull(result.FilePaths);
         }
@@ -499,7 +487,7 @@ public class HostCliTests
     public void Transform_NoneReturnsNoDataAndPreservesActionDiagnostics()
     {
         Write("no-output.ps1", "Write-Output 'action completed'");
-        WriteDescriptor("no-output.ps1", "\"input\":\"none\",\"output\":\"none\"");
+        Write("no-output.ps1.tool.json", "{\"name\": \"no-output\", \"description\": \"no-output\", \"inputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}}");
         var client = new PowerScriptsClient(_hostPath, _root);
         try
         {
@@ -527,7 +515,7 @@ public class HostCliTests
             [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
             Write-Output $Text
             """);
-        WriteDescriptor("unicode-text.ps1", "\"input\":\"text\",\"output\":\"text\"");
+        Write("unicode-text.ps1.tool.json", "{\"name\": \"unicode-text\", \"description\": \"unicode-text\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
         const string text = "\u6D4B\u8BD5 caf\u00E9 \U0001F600";
         var payload = JsonSerializer.Serialize(new { text }, new JsonSerializerOptions
         {
@@ -558,11 +546,11 @@ public class HostCliTests
             [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
             [IO.File]::ReadAllText($Files[0])
             """);
-        WriteDescriptor("unicode-files.ps1", "\"input\":\"files\",\"output\":\"text\",\"extensions\":[\".txt\"]");
+        Write("unicode-files.ps1.tool.json", "{\"name\": \"unicode-files\", \"description\": \"unicode-files\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".txt\"]}}, \"minItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
         var path = Path.Combine(_root, "input \u6D4B\u8BD5 \U0001F600.txt");
         const string content = "selected Unicode file";
         File.WriteAllText(path, content);
-        var payload = JsonSerializer.Serialize(new { file_paths = new[] { path } }, new JsonSerializerOptions
+        var payload = JsonSerializer.Serialize(new { files = new[] { path } }, new JsonSerializerOptions
         {
             Encoder = escapeUnicode ? JavaScriptEncoder.Default : JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         });
@@ -593,16 +581,6 @@ public class HostCliTests
     // ---- helpers ----
 
     private void Write(string name, string body) => File.WriteAllText(Path.Combine(_root, name), body);
-
-    private void WriteDescriptor(string scriptFile, string xPowerScriptBody)
-    {
-        var name = Path.GetFileNameWithoutExtension(scriptFile);
-        var json =
-            "{ \"name\":\"" + name + "\", \"description\":\"" + name + "\", " +
-            "\"inputSchema\":{\"type\":\"object\",\"properties\":{}}, " +
-            "\"x-powerscript\":{" + xPowerScriptBody + "} }";
-        File.WriteAllText(Path.Combine(_root, scriptFile + ".tool.json"), json);
-    }
 
     private (int Exit, string StdOut, string StdErr) RunHost(params string[] args) => RunHostWithInput(null, args);
 

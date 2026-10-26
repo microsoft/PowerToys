@@ -19,15 +19,16 @@ public class PowerScriptMetadataTests
         var descriptor = JsonNode.Parse("""
             {
               "title":"Example", "name":"example",
-              "inputSchema":{"type":"object","required":["count"],"properties":{
+              "inputSchema":{"type":"object","additionalProperties":false,"properties":{"parameters":{
+                "type":"object","additionalProperties":false,"required":["count"],"properties":{
                 "count":{"type":"integer","default":0,"minimum":0,"maximum":5},
                 "enabled":{"type":"boolean","default":false},
                 "label":{"type":"string","default":""},
                 "nullable":{"type":"string","default":null},
                 "absent":{"type":"string"},
                 "ratio":{"type":"number","default":1.5}
-              }},
-              "x-powerscript":{"input":"none","output":"text","runtime":"powershell"}
+              }}}},
+              "outputSchema":{"type":"object","additionalProperties":false,"properties":{"text":{"type":"string"}},"required":["text"]}
             }
             """)!.AsObject();
         var original = descriptor.ToJsonString();
@@ -49,22 +50,24 @@ public class PowerScriptMetadataTests
     {
         var descriptor = JsonNode.Parse("""
             {
-              "inputSchema":{"properties":{
-                "selection":{"type":"string","contentMediaType":"image/png"},
-                "destination":{"type":"string","format":"file-path","contentMediaType":"text/plain"},
-                "mode":{"type":"string","enum":["fast","precise"],"default":"precise"}
+              "inputSchema":{"type":"object","additionalProperties":false,"required":["files"],"properties":{
+                "files":{"type":"array","minItems":1,"items":{"type":"string","x-powerscript":{"extensions":["*"]}}},
+                "parameters":{"type":"object","additionalProperties":false,"properties":{
+                  "destination":{"type":"string","format":"file-path"},
+                  "mode":{"type":"string","enum":["fast","precise"],"default":"precise"}
+                }}
               }},
-              "x-powerscript":{"input":"files","output":"files","extensions":["*"],"minFiles":1,"maxFiles":0}
+              "outputSchema":{"type":"object","additionalProperties":false,"properties":{"files":{"type":"array","items":{"type":"string"}}},"required":["files"]}
             }
             """)!.AsObject();
         var rows = PowerScriptMetadataDetails.Create(descriptor, key => key).SelectMany(section => section.Rows).ToDictionary(row => row.Key);
         Assert.AreEqual("PowerScripts_DetailsAllFiles", rows["Extensions"].Value);
         Assert.AreEqual("PowerScripts_DetailsNoLimit", rows["MaxFiles"].Value);
-        Assert.AreEqual("PowerScripts_DetailsPrimaryFiles", rows["Parameter0_Role"].Value);
-        Assert.AreEqual("PowerScripts_DetailsFilePath", rows["Parameter1_Type"].Value);
-        Assert.IsFalse(rows.ContainsKey("Parameter1_Role"));
-        StringAssert.Contains(rows["Parameter2_Options"].Value, "fast");
-        StringAssert.Contains(rows["Parameter2_Options"].Value, "precise");
+        Assert.AreEqual("PowerScripts_DetailsFiles", rows["Input"].Value);
+        Assert.AreEqual("PowerScripts_DetailsFilePath", rows["Parameter0_Type"].Value);
+        Assert.IsFalse(rows.ContainsKey("Parameter0_Role"));
+        StringAssert.Contains(rows["Parameter1_Options"].Value, "fast");
+        StringAssert.Contains(rows["Parameter1_Options"].Value, "precise");
     }
 
     [TestMethod]
@@ -72,14 +75,16 @@ public class PowerScriptMetadataTests
     {
         var descriptor = JsonNode.Parse("""
             {
-              "inputSchema":{},
-              "outputSchema":{"properties":{"result":{"type":"string","title":"Result text"}},"required":["result"]},
+              "inputSchema":{"type":"object","additionalProperties":false,"properties":{}},
+              "outputSchema":{"type":"object","additionalProperties":false,"properties":{"text":{"type":"string","title":"Result text"}},"required":["text"]},
               "annotations":{"readOnlyHint":false,"destructiveHint":true},
               "x-execute":{"command":["python","script with spaces.py"],"stdin":"json","argMap":{"name":"--name"},"exitCodes":{"2":"Invalid input"}},
-              "x-powerscript":{"runtime":"python","function":"main","input":"text","output":"text","consumers":["advanced-paste"]}
+              "x-powerscript":{"consumers":["advanced-paste"]}
             }
             """)!.AsObject();
-        var rows = PowerScriptMetadataDetails.Create(descriptor, key => key).SelectMany(section => section.Rows).ToDictionary(row => row.Key);
+        var rows = PowerScriptMetadataDetails.Create(descriptor, key => key, ".py").SelectMany(section => section.Rows).ToDictionary(row => row.Key);
+        Assert.AreEqual("Python", rows["Runtime"].Value);
+        Assert.IsFalse(rows.ContainsKey("Function"));
         StringAssert.Contains(rows["Command"].Value, "python");
         StringAssert.Contains(rows["Command"].Value, "script with spaces.py");
         StringAssert.Contains(rows["Command"].Value, System.Environment.NewLine);
@@ -87,7 +92,7 @@ public class PowerScriptMetadataTests
         Assert.AreEqual("name: --name", rows["ArgumentMap"].Value);
         Assert.AreEqual("PowerScripts_DetailsNo", rows["Annotation_ReadOnlyHint"].Value);
         Assert.AreEqual("PowerScripts_DetailsYes", rows["Annotation_DestructiveHint"].Value);
-        Assert.AreEqual("result", rows["Result0_Name"].Value);
+        Assert.AreEqual("text", rows["Result0_Name"].Value);
         Assert.AreEqual("PowerScripts_DetailsYes", rows["Result0_Required"].Value);
     }
 

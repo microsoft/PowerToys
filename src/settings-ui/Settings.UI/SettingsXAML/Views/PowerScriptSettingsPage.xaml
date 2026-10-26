@@ -46,7 +46,6 @@
                         AutomationProperties.AutomationId="PowerScriptsSettingsPageError"
                         IsClosable="False"
                         Severity="Error" />
-                    <tkcontrols:SettingsCard x:Uid="PowerScripts_SettingsReviewIsolation" Visibility="{Binding IsMxcReviewRequired, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <tkcontrols:SettingsCard
                         x:Uid="PowerScripts_SettingsConfigurationErrors"
                         Description="{Binding ConfigurationErrorDisplay, Mode=OneWay}"
@@ -91,35 +90,14 @@
                         IsOpen="{Binding HasExecutionBlock, Mode=OneWay}"
                         Message="{Binding ExecutionBlockedReason, Mode=OneWay}"
                         Severity="Warning" />
-                    <controls:SettingsGroup x:Uid="PowerScripts_ScriptIsolation" AutomationProperties.AutomationId="PowerScriptsScriptIsolation">
-                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPerScript">
-                            <Button
-                                x:Uid="PowerScripts_MxcConfigure"
-                                AutomationProperties.AutomationId="{Binding MxcPolicyEditorAutomationId, Mode=OneWay}"
-                                Click="ConfigureScriptMxcPolicyButton_Click" />
-                        </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEffective" ContentAlignment="Right">
-                            <TextBlock
-                                MaxWidth="360"
-                                VerticalAlignment="Center"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="{Binding ExecutionPolicyDisplay, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcRecommendation" ContentAlignment="Right">
-                            <StackPanel MaxWidth="360" Spacing="4">
-                                <TextBlock
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding RecommendedPoliciesDisplay, Mode=OneWay}"
-                                    TextWrapping="Wrap" />
-                                <TextBlock
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                    Text="{Binding RecommendationSummary, Mode=OneWay}"
-                                    TextWrapping="Wrap" />
-                            </StackPanel>
-                        </tkcontrols:SettingsCard>
-                    </controls:SettingsGroup>
+                    <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEffective" ContentAlignment="Right">
+                        <TextBlock
+                            MaxWidth="360"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{Binding ExecutionPolicyDisplay, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </tkcontrols:SettingsCard>
                     <TextBlock x:Uid="PowerScripts_MetadataHelp" TextWrapping="Wrap" />
                     <ItemsControl x:Name="MetadataSections">
                         <ItemsControl.ItemTemplate>
@@ -164,18 +142,6 @@
                         HorizontalContentAlignment="Stretch"
                         AutomationProperties.AutomationId="PowerScriptsSecurityDetails">
                         <StackPanel Spacing="8">
-                            <tkcontrols:SettingsCard x:Uid="PowerScripts_SettingsConfiguration">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button
-                                        x:Uid="PowerScripts_SettingsResetAllButton"
-                                        AutomationProperties.AutomationId="{Binding ResetAutomationId, Mode=OneWay}"
-                                        Click="ResetScriptButton_Click" />
-                                    <Button
-                                        x:Uid="PowerScripts_SettingsForgetButton"
-                                        AutomationProperties.AutomationId="{Binding ForgetAutomationId, Mode=OneWay}"
-                                        Click="ForgetScriptButton_Click" />
-                                </StackPanel>
-                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 x:Uid="PowerScripts_IconWarning"
                                 Description="{Binding IconWarning, Mode=OneWay}"

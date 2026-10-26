@@ -23,12 +23,9 @@ public sealed class ScriptRegistry
     private readonly List<PowerScriptManifest> _scripts = new();
     private readonly List<ScriptLoadError> _errors = new();
     private readonly List<PowerScriptManifest> _unconfiguredScripts = new();
-    private readonly ScriptSettingsStore _settings;
-
-    public ScriptRegistry(string? root = null, ScriptSettingsStore? settings = null)
+    public ScriptRegistry(string? root = null)
     {
         Root = Path.GetFullPath(PowerScriptsPaths.ResolveScriptsRoot(root));
-        _settings = settings ?? new ScriptSettingsStore();
     }
 
     /// <summary>Absolute path to the scanned scripts root.</summary>
@@ -61,19 +58,19 @@ public sealed class ScriptRegistry
             }
         }
 
-        foreach (var entry in _settings.GetRegisteredEntries(Root, (path, error) => _errors.Add(new ScriptLoadError(path, error))))
-        {
-            entries.Add(entry);
-        }
-
         foreach (var entry in entries.OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
         {
             PowerScriptManifest manifest;
             try
             {
-                manifest = _settings.Get(Root, entry).Manifest;
+                manifest = ToolDescriptorParser.TryParseFile(entry + ToolDescriptorParser.DescriptorSuffix)
+                    ?? throw new InvalidDataException("A valid .tool.json descriptor is required.");
+                manifest.FolderPath = Path.GetDirectoryName(entry)!;
+                manifest.ScriptsRoot = Root;
+                manifest.HasDescriptor = true;
+                manifest.ConfigurationErrors = ManifestValidator.Validate(manifest, Path.GetFileName(manifest.FolderPath));
             }
-            catch (Exception ex) when (ScriptSettingsStore.IsSettingsError(ex))
+            catch (Exception ex) when (ex is System.Text.Json.JsonException or InvalidDataException or IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
             {
                 _errors.Add(new ScriptLoadError(entry, ex.Message));
                 _unconfiguredScripts.Add(new PowerScriptManifest
@@ -85,7 +82,6 @@ public sealed class ScriptRegistry
                     FolderPath = Path.GetDirectoryName(entry)!,
                     ScriptsRoot = Root,
                     HasDescriptor = File.Exists(entry + ToolDescriptorParser.DescriptorSuffix),
-                    HasLocalSettings = File.Exists(_settings.GetSettingsPath(Root, entry)),
                     ConfigurationErrors = new[] { ex.Message },
                 });
                 continue;
@@ -241,7 +237,7 @@ public sealed class ScriptRegistry
             s.Input is not null &&
             extensions.All(ext => s.Input.Extensions.Any(e => MatchesExtension(e, ext))) &&
             files.Count >= s.Input.MinFiles &&
-            (s.Input.MaxFiles == 0 || files.Count <= s.Input.MaxFiles));
+            (s.Input.MaxFiles is null || files.Count <= s.Input.MaxFiles));
     }
 
     private static string NormalizeExtension(string extension)

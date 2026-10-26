@@ -6,9 +6,5 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\**\*.ps1;Templates\**\*.json;Templates\**\*.md" />
-    <!-- The Python bootstrap ships next to the executor and any project that references Core. -->
-    <None Update="Execution\_runner.py">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>

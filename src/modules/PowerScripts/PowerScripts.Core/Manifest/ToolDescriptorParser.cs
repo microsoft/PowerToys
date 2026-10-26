@@ -4,44 +4,25 @@
 
 using System.Text.Json;
 using PowerScripts.Core.Execution;
-using PowerScripts.Core.Security;
 
 namespace PowerScripts.Core.Manifest;
 
-/// <summary>
-/// Builds a <see cref="PowerScriptManifest"/> from an explicit <c>&lt;script&gt;.tool.json</c>
-/// descriptor (see <see cref="ToolDescriptor"/>). This is the "write the MCP Tool shape by hand"
-/// authoring path: language-agnostic (works for <c>.py</c>, <c>.ps1</c>, <c>.cmd</c>, <c>.sh</c>,
-/// with metadata kept separate from the script body).
-///
-/// The descriptor's standard MCP fields map onto the manifest the rest of PowerScripts already
-/// understands: <c>name</c> -&gt; id, <c>description</c> -&gt; description, and each scalar
-/// <c>inputSchema</c> property -&gt; a typed <see cref="ScriptParameter"/> (a file-typed property,
-/// carrying a <c>contentMediaType</c>, marks the script as file-driven instead). The
-/// <c>x-execute</c> block is kept on the manifest so the executor can launch the script.
-/// </summary>
+/// <summary>Loads the schema-authoritative PowerScripts profile of an MCP tool.</summary>
 public static class ToolDescriptorParser
 {
-    /// <summary>The sidecar filename suffix: a descriptor for <c>foo.py</c> is <c>foo.py.tool.json</c>.</summary>
     public const string DescriptorSuffix = ".tool.json";
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    public static JsonSerializerOptions JsonOptions { get; } = new()
     {
-        PropertyNameCaseInsensitive = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        AllowTrailingCommas = true,
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        MaxDepth = 32,
     };
 
-    /// <summary>True when <paramref name="path"/> is a <c>*.tool.json</c> descriptor file.</summary>
     public static bool IsDescriptorFile(string path) =>
         path.EndsWith(DescriptorSuffix, StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// Parses a descriptor file and returns a manifest whose <see cref="PowerScriptManifest.Entry"/>
-    /// is the sibling script (the descriptor filename minus <c>.tool.json</c>) and whose runtime is
-    /// inferred from that script's extension. Returns <c>null</c> when the file is not a descriptor,
-    /// cannot be read/parsed, or declares no tool <c>name</c>.
-    /// </summary>
     public static PowerScriptManifest? TryParseFile(string descriptorPath)
     {
         if (!IsDescriptorFile(descriptorPath))
@@ -49,196 +30,133 @@ public static class ToolDescriptorParser
             return null;
         }
 
-        ToolDescriptor? descriptor;
-        try
-        {
-            descriptor = JsonSerializer.Deserialize<ToolDescriptor>(File.ReadAllText(descriptorPath), JsonOptions);
-        }
-        catch (Exception)
-        {
-            // A malformed descriptor is skipped here; the registry surfaces it as a load error when it
-            // still can't produce a valid manifest.
-            return null;
-        }
-
-        // The script sits next to the descriptor and shares its stem: foo.py.tool.json -> foo.py.
-        var entry = Path.GetFileName(descriptorPath[..^DescriptorSuffix.Length]);
-        return Parse(descriptor, entry);
+        return Parse(
+            JsonSerializer.Deserialize<ToolDescriptor>(File.ReadAllText(descriptorPath), JsonOptions),
+            Path.GetFileName(descriptorPath[..^DescriptorSuffix.Length]));
     }
 
-    /// <summary>Parses the effective descriptor after local settings have been overlaid.</summary>
     public static PowerScriptManifest? Parse(ToolDescriptor? descriptor, string entry)
     {
-        if (descriptor is null || string.IsNullOrWhiteSpace(descriptor.Name) ||
-            descriptor.InputSchema?.Properties?.Values.Any(property => property is null) == true ||
-            descriptor.PowerScript?.Capabilities?.Any(capability => capability is null) == true)
+        if (descriptor is null || string.IsNullOrWhiteSpace(descriptor.Name))
         {
-            return null;
+            throw new InvalidDataException("The descriptor requires a non-empty 'name'.");
         }
 
+        var runtime = Path.GetExtension(entry).ToLowerInvariant() switch
+        {
+            ".py" => ScriptRuntime.Python,
+            ".ps1" => ScriptRuntime.PowerShell,
+            _ when descriptor.Execute is not null => ScriptRuntime.PowerShell,
+            _ => throw new InvalidDataException("Script entries must be .py or .ps1 unless an explicit launch recipe is supplied."),
+        };
+        ScriptSchema.ValidateDefinition(descriptor.InputSchema, "inputSchema");
+        ScriptSchema.ValidateDefinition(descriptor.OutputSchema, "outputSchema");
+        var input = ResolveShape(descriptor.InputSchema!, isInput: true);
+        var output = ResolveShape(descriptor.OutputSchema!, isInput: false);
         var extension = descriptor.PowerScript;
         var manifest = new PowerScriptManifest
         {
-            Id = descriptor.Name!.Trim(),
+            Id = descriptor.Name.Trim(),
             Name = FirstNonEmpty(descriptor.Title, descriptor.Annotations?.Title, descriptor.Name)!.Trim(),
             Description = descriptor.Description?.Trim() ?? string.Empty,
             Entry = entry,
-            Runtime = ResolveRuntime(extension?.Runtime, entry),
+            Runtime = runtime,
             Execute = descriptor.Execute,
+            InputSchema = descriptor.InputSchema!,
+            OutputSchema = descriptor.OutputSchema!,
+            InputFormat = input,
+            OutputFormat = output,
             Publisher = extension?.Publisher,
             Version = extension?.Version,
             Source = extension?.Source,
             Icon = extension?.Icon,
-            Consumers = extension?.Consumers is { } consumers ? new List<string>(consumers) : null,
+            Consumers = extension?.Consumers,
+            Capabilities = extension?.Capabilities ?? new(),
         };
-
-        if (extension?.Capabilities is { Count: > 0 } capabilities)
+        if (input == PowerScriptDataFormat.Files)
         {
-            manifest.Capabilities.AddRange(capabilities);
-        }
-
-        if (extension?.Mxc?.RecommendedPolicies is { } recommendedPolicies)
-        {
-            manifest.Mxc.RecommendedPolicies = MxcPolicies.Normalize(recommendedPolicies);
-        }
-
-        if (!string.IsNullOrWhiteSpace(extension?.Input))
-        {
-            if (ScriptIo.TryParse(extension.Input) is not { } inputFormat)
+            var files = descriptor.InputSchema!.Properties!["files"];
+            manifest.Input = new ScriptInput
             {
-                return null;
+                Extensions = files.Items!.PowerScript?.Extensions ?? new List<string> { "*" },
+                MinFiles = files.MinItems ?? 0,
+                MaxFiles = files.MaxItems,
+            };
+        }
+
+        if (descriptor.InputSchema!.Properties?.TryGetValue("parameters", out var parameters) == true)
+        {
+            if (parameters.Type != "object")
+            {
+                throw new InvalidDataException("'inputSchema.properties.parameters' must be an object.");
             }
 
-            manifest.InputFormat = inputFormat;
-        }
-
-        if (!string.IsNullOrWhiteSpace(extension?.Output))
-        {
-            if (ScriptIo.TryParse(extension.Output) is not { } outputFormat)
+            foreach (var (name, schema) in parameters.Properties ?? new())
             {
-                return null;
+                if ((input == PowerScriptDataFormat.Text && name.Equals("Text", StringComparison.OrdinalIgnoreCase)) ||
+                    (input == PowerScriptDataFormat.Files && name.Equals("Files", StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new InvalidDataException($"Parameter '{name}' conflicts with the primary input binding.");
+                }
+
+                var type = schema.IsFileParameter ? ScriptParameter.ParameterTypeFile :
+                    schema.Enum is { Count: > 0 } ? ScriptParameter.ParameterTypeChoice :
+                    schema.Type switch
+                    {
+                        "string" => ScriptParameter.ParameterTypeString,
+                        "integer" => ScriptParameter.ParameterTypeInt,
+                        "boolean" => ScriptParameter.ParameterTypeBool,
+                        _ => throw new InvalidDataException($"Parameter '{name}' must be a string, integer, or boolean."),
+                    };
+                manifest.Parameters.Add(new ScriptParameter
+                {
+                    Name = name,
+                    Label = schema.Title,
+                    Description = schema.Description,
+                    Type = type,
+                    Default = schema.DefaultAsString(),
+                    IsRequired = parameters.Required?.Contains(name, StringComparer.Ordinal) == true,
+                    Options = schema.Enum ?? new(),
+                    Min = schema.Minimum,
+                    Max = schema.Maximum,
+                });
             }
-
-            manifest.OutputFormat = outputFormat;
-        }
-
-        ApplyParameters(manifest, descriptor.InputSchema);
-        ApplyFileInput(manifest, descriptor, extension);
-
-        if (extension?.Function is { Length: > 0 } function)
-        {
-            manifest.EntryFunction = function.Trim();
         }
 
         return manifest;
     }
 
-    /// <summary>
-    /// Turns each scalar <c>inputSchema</c> property into a typed parameter. Primary file-input
-    /// properties (those carrying a <c>contentMediaType</c> without <c>format: file-path</c>) are
-    /// skipped here and handled by <see cref="ApplyFileInput"/>.
-    /// </summary>
-    private static void ApplyParameters(PowerScriptManifest manifest, JsonSchemaObject? inputSchema)
+    private static PowerScriptDataFormat ResolveShape(JsonSchemaObject schema, bool isInput)
     {
-        if (inputSchema?.Properties is not { } properties)
+        if (schema.Type != "object" || schema.AdditionalProperties != false)
         {
-            return;
+            throw new InvalidDataException("Input and output schemas must be closed objects ('type': 'object', 'additionalProperties': false).");
         }
 
-        foreach (var (name, schema) in properties)
+        var properties = schema.Properties ?? new();
+        var primary = properties.Keys.Where(name => !isInput || name != "parameters").ToList();
+        if (primary.Count > 1 || primary.Any(name => name is not ("files" or "text")))
         {
-            if (schema.IsPrimaryFileInput)
-            {
-                continue;
-            }
-
-            manifest.Parameters.Add(new ScriptParameter
-            {
-                Name = name,
-                Label = schema.Title,
-                Type = MapType(schema),
-                Description = schema.Description,
-                Default = schema.DefaultAsString(),
-                IsRequired = inputSchema.Required?.Contains(name, StringComparer.Ordinal) == true,
-                Options = schema.Enum is { Count: > 0 } options ? new List<string>(options) : new List<string>(),
-                Min = schema.Minimum,
-                Max = schema.Maximum,
-            });
-        }
-    }
-
-    /// <summary>Maps a JSON Schema property to one of the manifest's parameter types.</summary>
-    private static string MapType(JsonSchemaProperty schema)
-    {
-        if (schema.IsFileParameter)
-        {
-            return ScriptParameter.ParameterTypeFile;
+            throw new InvalidDataException("Declare at most one primary property, 'files' or 'text'; named options belong in input 'parameters'.");
         }
 
-        if (schema.Enum is { Count: > 0 })
+        if (primary.Count == 0)
         {
-            return ScriptParameter.ParameterTypeChoice;
+            return PowerScriptDataFormat.None;
         }
 
-        return (schema.Type ?? string.Empty).ToLowerInvariant() switch
+        var name = primary[0];
+        var property = properties[name];
+        if (schema.Required?.Contains(name, StringComparer.Ordinal) != true ||
+            (name == "text" && property.Type != "string") ||
+            (name == "files" && (property.Type != "array" || property.Items?.Type != "string")))
         {
-            "integer" or "number" => ScriptParameter.ParameterTypeInt,
-            "boolean" => ScriptParameter.ParameterTypeBool,
-            _ => ScriptParameter.ParameterTypeString,
-        };
-    }
-
-    /// <summary>
-    /// Populates the file input contract when the script is file-driven, so the registry can offer it
-    /// in the Explorer right-click menu. A script is file-driven when it declares
-    /// <c>x-powerscript.extensions</c>, has a file-typed input property, or explicitly declares
-    /// <c>input: files</c>. There is no separate "kind" — a non-file script simply has no
-    /// <see cref="PowerScriptManifest.Input"/>. File extensions come from the declaration (default
-    /// <c>*</c> = any file).
-    /// </summary>
-    private static void ApplyFileInput(
-        PowerScriptManifest manifest,
-        ToolDescriptor descriptor,
-        PowerScriptExtension? extension)
-    {
-        var hasFileInput = descriptor.InputSchema?.Properties?.Values.Any(p => p.IsPrimaryFileInput) ?? false;
-        var hasExtensions = extension?.Extensions is { Count: > 0 };
-        var declaresFiles = manifest.InputFormat == PowerScriptDataFormat.Files;
-
-        if (!hasFileInput && !hasExtensions && !declaresFiles)
-        {
-            return;
+            throw new InvalidDataException("Primary 'text' must be a required string; primary 'files' must be a required array of strings.");
         }
 
-        manifest.Input = new ScriptInput
-        {
-            Extensions = extension?.Extensions is { Count: > 0 } exts ? new List<string>(exts) : new List<string> { "*" },
-            MinFiles = extension?.MinFiles ?? 1,
-            MaxFiles = extension?.MaxFiles ?? 0,
-        };
-    }
-
-    private static ScriptRuntime ResolveRuntime(string? declared, string entry)
-    {
-        if (!string.IsNullOrWhiteSpace(declared))
-        {
-            if (declared.Equals("python", StringComparison.OrdinalIgnoreCase))
-            {
-                return ScriptRuntime.Python;
-            }
-
-            if (declared.Equals("powershell", StringComparison.OrdinalIgnoreCase) ||
-                declared.Equals("pwsh", StringComparison.OrdinalIgnoreCase))
-            {
-                return ScriptRuntime.PowerShell;
-            }
-        }
-
-        return string.Equals(Path.GetExtension(entry), ".py", StringComparison.OrdinalIgnoreCase)
-            ? ScriptRuntime.Python
-            : ScriptRuntime.PowerShell;
+        return name == "files" ? PowerScriptDataFormat.Files : PowerScriptDataFormat.Text;
     }
 
     private static string? FirstNonEmpty(params string?[] values) =>
-        values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+        values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
 }

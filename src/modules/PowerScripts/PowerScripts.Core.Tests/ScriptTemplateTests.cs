@@ -21,22 +21,18 @@ public class ScriptTemplateTests
         Directory.CreateDirectory(root);
         try
         {
-            var settings = new ScriptSettingsStore(Path.Combine(root, "settings"), new FileSettingsStore(Path.Combine(root, "module")));
             foreach (var template in ScriptTemplates.All)
             {
                 var first = ScriptTemplates.Create(template.Id, root);
                 var second = ScriptTemplates.Create(template.Id, root);
                 Assert.AreNotEqual(first.EntryPath, second.EntryPath);
                 Assert.IsTrue(File.ReadAllText(first.GuidePath).Contains("MXC", StringComparison.Ordinal));
-                var snapshot = settings.Get(root, first.EntryPath);
-                Assert.AreEqual(0, snapshot.ValidationErrors.Count);
-                Assert.IsFalse(snapshot.HasLocalSettings);
-                Assert.IsFalse(snapshot.HasLocalMxcSettings);
-                Assert.IsTrue(snapshot.Manifest.HasDescriptor);
+                var manifest = ToolDescriptorParser.TryParseFile(first.EntryPath + ".tool.json")!;
+                Assert.AreEqual(0, ManifestValidator.Validate(manifest, string.Empty).Count);
                 Assert.IsTrue(File.ReadAllText(first.EntryPath).Contains("OutputEncoding", StringComparison.Ordinal));
             }
 
-            var registry = new ScriptRegistry(root, settings);
+            var registry = new ScriptRegistry(root);
             registry.Load();
             Assert.AreEqual(ScriptTemplates.All.Count * 2, registry.Scripts.Count);
             Assert.AreEqual(0, registry.Errors.Count);
@@ -70,7 +66,7 @@ public class ScriptTemplateTests
             var descriptor = JsonNode.Parse(File.ReadAllText(first.EntryPath + ".tool.json"))!;
             Assert.AreEqual("My File Inspector", descriptor["title"]!.GetValue<string>());
             Assert.AreEqual(options.Description, descriptor["description"]!.GetValue<string>());
-            CollectionAssert.AreEqual(new[] { ".txt", ".md", ".png" }, descriptor["x-powerscript"]!["extensions"]!.AsArray().Select(value => value!.GetValue<string>()).ToArray());
+            CollectionAssert.AreEqual(new[] { ".txt", ".md", ".png" }, descriptor["inputSchema"]!["properties"]!["files"]!["items"]!["x-powerscript"]!["extensions"]!.AsArray().Select(value => value!.GetValue<string>()).ToArray());
             StringAssert.StartsWith(Path.GetFileName(Path.GetDirectoryName(first.EntryPath))!, "my-file-inspector-");
             Assert.AreNotEqual(first.EntryPath, second.EntryPath);
             Assert.AreEqual(File.ReadAllText(first.EntryPath), File.ReadAllText(second.EntryPath));
@@ -134,10 +130,10 @@ public class ScriptTemplateTests
             Assert.AreEqual("My script", manifest.Name);
             Assert.AreEqual(options.Description, manifest.Description);
             Assert.AreEqual(runtime == "python" ? ScriptRuntime.Python : ScriptRuntime.PowerShell, manifest.Runtime);
-            Assert.AreEqual(input, ScriptIo.ToToken(manifest.InputFormat!.Value));
-            Assert.AreEqual(output, ScriptIo.ToToken(manifest.OutputFormat!.Value));
+            Assert.AreEqual(input, ScriptIo.ToToken(manifest.InputFormat));
+            Assert.AreEqual(output, ScriptIo.ToToken(manifest.OutputFormat));
             Assert.AreEqual(runtime == "python" ? ".py" : ".ps1", Path.GetExtension(created.EntryPath));
-            Assert.AreEqual(runtime == "python" ? "main" : null, manifest.EntryFunction);
+            Assert.IsFalse(File.ReadAllText(created.EntryPath).Contains("def main(", StringComparison.Ordinal));
             if (input == "files")
             {
                 CollectionAssert.AreEqual(new[] { ".txt", ".md" }, manifest.Input!.Extensions);
@@ -152,13 +148,8 @@ public class ScriptTemplateTests
             }
 
             Assert.AreEqual(output == "files", manifest.Capabilities.Contains("fileWrite"));
-            var settings = new ScriptSettingsStore(Path.Combine(root, "settings"), new FileSettingsStore(Path.Combine(root, "module")));
-            var snapshot = settings.Get(root, created.EntryPath);
-            Assert.AreEqual(0, snapshot.ValidationErrors.Count);
-            Assert.IsFalse(snapshot.HasLocalSettings);
-            Assert.IsFalse(snapshot.HasLocalMxcSettings);
             StringAssert.Contains(File.ReadAllText(created.GuidePath), $"{runtime}, {input} -> {output}");
-            var registry = new ScriptRegistry(root, settings);
+            var registry = new ScriptRegistry(root);
             registry.Load();
             Assert.AreEqual(1, registry.Scripts.Count);
             Assert.AreEqual(0, registry.Errors.Count);

@@ -2,14 +2,42 @@
   "name": "file-info-template",
   "title": "Describe selected files",
   "description": "Return the name and size of each selected file without changing it.",
-  "inputSchema": { "type": "object", "properties": {}, "required": [] },
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "x-powerscript": {
+            "extensions": [
+              "*"
+            ]
+          }
+        },
+        "minItems": 1
+      }
+    },
+    "required": [
+      "files"
+    ],
+    "additionalProperties": false
+  },
   "x-powerscript": {
-    "runtime": "powershell",
-    "input": "files",
-    "output": "text",
-    "extensions": ["*"],
-    "minFiles": 1,
-    "maxFiles": 0,
-    "capabilities": ["fileRead"]
+    "capabilities": [
+      "fileRead"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "additionalProperties": false
   }
 }

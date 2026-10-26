@@ -47,7 +47,7 @@ internal static class Program
             {
                 if (positional.Count == 1 && positional[0] == "list" && options.Count == 0)
                 {
-                    Console.WriteLine(JsonSerializer.Serialize(ScriptTemplates.All, ScriptSettingsStore.JsonOptions));
+                    Console.WriteLine(JsonSerializer.Serialize(ScriptTemplates.All, ToolDescriptorParser.JsonOptions));
                     return 0;
                 }
 
@@ -67,7 +67,7 @@ internal static class Program
                             throw new InvalidDataException("Template configuration is too large.");
                         }
 
-                        templateOptions = JsonSerializer.Deserialize<ScriptTemplateOptions>(new string(buffer, 0, length), ScriptSettingsStore.JsonOptions)
+                        templateOptions = JsonSerializer.Deserialize<ScriptTemplateOptions>(new string(buffer, 0, length), ToolDescriptorParser.JsonOptions)
                             ?? throw new InvalidDataException("Template configuration must be a JSON object.");
                     }
 
@@ -75,17 +75,12 @@ internal static class Program
                         positional.Count == 1
                             ? ScriptTemplates.Create(PowerScriptsPaths.ResolveScriptsRoot(root), templateOptions!)
                             : ScriptTemplates.Create(positional[1], PowerScriptsPaths.ResolveScriptsRoot(root), templateOptions),
-                        ScriptSettingsStore.JsonOptions));
+                        ToolDescriptorParser.JsonOptions));
                     return 0;
                 }
 
                 Console.Error.WriteLine("template: use list, create <template-id> [--configure] [--root <dir>], or create --configure [--root <dir>]. Without a template ID, configuration includes projectName, description, runtime, input, output, fileExtensions, minFiles and maxFiles.");
                 return 1;
-            }
-
-            if (args[0].Equals("script-settings", StringComparison.OrdinalIgnoreCase))
-            {
-                return ScriptSettingsCommands.Run(PowerScriptsPaths.ResolveScriptsRoot(root), positional, options);
             }
 
             if (args[0].ToLowerInvariant() is "linux-container-status" or "linux-container-setup")
@@ -208,9 +203,6 @@ internal static class Program
                     s.IconWarning,
                     consumers = s.Consumers ?? new List<string>(),
                     s.HasDescriptor,
-                    s.HasLocalSettings,
-                    s.HasLocalMxcSettings,
-                    s.LocalMxc,
                     s.ConfigurationErrors,
                     io = new
                     {
@@ -219,10 +211,8 @@ internal static class Program
                     },
 
                     s.Capabilities,
-                    mxc = new
-                    {
-                        recommendedPolicies = s.Mxc.RecommendedPolicies,
-                    },
+                    s.InputSchema,
+                    s.OutputSchema,
                     folderPath = s.FolderPath,
                     entryFullPath = s.EntryFullPath,
                     trusted = s.ConfigurationErrors.Count == 0 && trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
@@ -239,12 +229,6 @@ internal static class Program
                         parameter.Min,
                         parameter.Max,
                     }),
-                    transform = s.Runtime != ScriptRuntime.Python || s.Execute is not null ? null : new
-                    {
-                        function = s.EntryFunction,
-                        inputFormat = ioInput.ToString(),
-                        outputFormat = ioOutput.ToString(),
-                    },
                 };
             });
 
@@ -459,9 +443,8 @@ internal static class Program
 
     /// <summary>
     /// Runs a script as a typed data transform for surfaces like Advanced Paste. Reads a single JSON
-    /// payload from stdin (<c>text</c>, <c>file_paths</c>,
-    /// <c>params</c>), runs the script through the shared runtime, and writes a single JSON result
-    /// object (<c>text</c> or <c>file_paths</c>, or empty for no output) to stdout. This
+    /// payload from stdin (<c>text</c> or <c>files</c>, and <c>parameters</c>), runs the script
+    /// through the shared runtime, and writes a schema-validated result object to stdout. This
     /// is the same execution + trust path as <c>run</c>, so a script behaves identically whether it
     /// is triggered by a hotkey, the context menu, or a paste.
     /// </summary>
@@ -494,11 +477,9 @@ internal static class Program
         PythonTransformInput input;
         try
         {
-            input = string.IsNullOrWhiteSpace(stdin)
-                ? new PythonTransformInput()
-                : JsonSerializer.Deserialize<PythonTransformInput>(stdin, TransformJsonOptions) ?? new PythonTransformInput();
+            input = PythonTransformInput.Parse(manifest, string.IsNullOrWhiteSpace(stdin) ? "{}" : stdin);
         }
-        catch (JsonException ex)
+        catch (Exception ex) when (ex is JsonException or InvalidDataException)
         {
             Console.Error.WriteLine($"transform: invalid input JSON: {ex.Message}");
             return 1;
@@ -543,12 +524,7 @@ internal static class Program
         // PowerShell transform and descriptor-authored scripts: hand text in as a parameter plus
         // any files. File outputs use the same explicit JSON object as Python; text stays literal.
         var parameters = new Dictionary<string, string?>(resolvedParameters, StringComparer.OrdinalIgnoreCase);
-        if (manifest.InputFormat == PowerScriptDataFormat.Text)
-        {
-            parameters.TryAdd("Text", input.Text ?? string.Empty);
-        }
-
-        var psResult = new ScriptExecutor().Execute(manifest, input.FilePaths, parameters);
+        var psResult = new ScriptExecutor().Execute(manifest, input.FilePaths, parameters, input.Text);
         if (!string.IsNullOrEmpty(psResult.StdErr))
         {
             Console.Error.Write(psResult.StdErr);
@@ -569,8 +545,9 @@ internal static class Program
                 PowerScriptDataFormat.Text => new PythonTransformResult { Text = psResult.StdOut },
                 _ => PythonTransformResult.Parse(psResult.StdOut, ScriptIo.Resolve(manifest).Output),
             };
+            ScriptSchema.Validate(manifest.OutputSchema, JsonSerializer.SerializeToElement(output, TransformJsonOptions), "output");
         }
-        catch (JsonException ex)
+        catch (Exception ex) when (ex is JsonException or InvalidDataException)
         {
             Console.Error.WriteLine($"transform: invalid output: {ex.Message}");
             return 2;
@@ -669,11 +646,7 @@ internal static class Program
     }
 
     /// <summary>
-    /// Emits the file scripts that match a right-clicked selection as tab-separated
-    /// <c>&lt;id&gt;\t&lt;name&gt;</c> lines (one per script), with an optional icon-path column when
-    /// <c>--icons</c> is supplied. This is the machine-readable feed the
-    /// Windows 11 modern context-menu handler (IExplorerCommand) consumes to build its submenu; a
-    /// line-based format keeps the native handler free of a JSON parser.
+    /// Applies the global Python availability gate to ordinary consumer discovery.
     /// </summary>
     private static IEnumerable<PowerScriptManifest> FilterEnabledRuntimes(IEnumerable<PowerScriptManifest> scripts)
     {
@@ -774,7 +747,6 @@ internal static class Program
         Console.WriteLine("  linux-container-status             (check the managed Python image without downloading)");
         Console.WriteLine("  linux-container-setup              (explicitly download/cache the managed Python image)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
-        Console.WriteLine("  script-settings get|save|reset|forget --entry <script-path> [--root <dir>]");
         Console.WriteLine("  template list | template create <template-id> [--configure] [--root <dir>]");
         Console.WriteLine("  template create --configure [--root <dir>] (generate from projectName, description, runtime, input, output, fileExtensions, minFiles and maxFiles JSON on stdin)");
         Console.WriteLine("       --configure reads {\"projectName\":\"My script\",\"description\":\"...\",\"fileExtensions\":\".txt, .md\"} from stdin. Extensions apply only to file-input templates.");

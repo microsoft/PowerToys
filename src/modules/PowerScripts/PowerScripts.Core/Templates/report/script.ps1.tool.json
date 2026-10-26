@@ -2,11 +2,30 @@
   "name": "report-template",
   "title": "Create a text file",
   "description": "Create a timestamped report inside the isolated temporary workspace and return its path.",
-  "inputSchema": { "type": "object", "properties": {}, "required": [] },
+  "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
   "x-powerscript": {
-    "runtime": "powershell",
-    "input": "none",
-    "output": "files",
-    "capabilities": ["fileWrite"]
+    "capabilities": [
+      "fileWrite"
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "files"
+    ],
+    "additionalProperties": false
   }
 }

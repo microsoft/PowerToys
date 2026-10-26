@@ -18,12 +18,6 @@ public sealed class ProcessExecutionContext
 
     public IReadOnlyList<string> InputPaths { get; init; } = Array.Empty<string>();
 
-    public IReadOnlyList<string> RecommendedPolicies { get; init; } = MxcPolicies.All;
-
-    public bool HasLocalMxcSettings { get; init; }
-
-    public MxcScriptOverride? LocalMxc { get; init; }
-
     public static ProcessExecutionContext FromManifest(
         PowerScriptManifest manifest,
         IEnumerable<string?>? inputPaths = null,
@@ -39,9 +33,6 @@ public sealed class ProcessExecutionContext
                 .Select(path => path!)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList(),
-            RecommendedPolicies = manifest.Mxc.RecommendedPolicies,
-            HasLocalMxcSettings = manifest.HasLocalMxcSettings,
-            LocalMxc = manifest.LocalMxc,
         };
 
     private static IEnumerable<string?> GetFileParameterPaths(
