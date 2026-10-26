@@ -75,6 +75,41 @@ namespace ImageResizer.Properties
         }
 
         [TestMethod]
+        public void SelectedSizeSetterSelectsContainedPreset()
+        {
+            var settings = new Settings
+            {
+                SelectedSizeIndex = 0,
+            };
+            var expectedPreset = settings.Sizes[1];
+
+            settings.SelectedSize = expectedPreset;
+
+            Assert.AreEqual(1, settings.SelectedSizeIndex);
+            Assert.AreSame(expectedPreset, settings.SelectedSize);
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void SelectedSizeSetterSelectsCustomForAbsentSize(bool useNullSize)
+        {
+            var settings = new Settings
+            {
+                SelectedSizeIndex = 0,
+            };
+            var expectedCustomSize = settings.CustomSize;
+            var expectedCustomIndex = settings.Sizes.Count;
+            var requestedSize = useNullSize ? null : new ResizeSize();
+            Assert.IsFalse(settings.Sizes.Contains(requestedSize));
+
+            settings.SelectedSize = requestedSize;
+
+            Assert.AreEqual(expectedCustomIndex, settings.SelectedSizeIndex);
+            Assert.AreSame(expectedCustomSize, settings.SelectedSize);
+        }
+
+        [TestMethod]
         public void AllSizesPropagatesSizesPropertyEvents()
         {
             var settings = new Settings
