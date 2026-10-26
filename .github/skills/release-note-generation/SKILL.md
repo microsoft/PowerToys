@@ -165,6 +165,7 @@ Do not read all steps at once—only read the step you are executing.
 - **Terminal usage**: Disabled by default; only run scripts when user explicitly requests
 - **Preview automation**: An explicit request to prepare a preview release, or invocation by the Prepare Preview Release agent, authorizes the canonical preview scripts
 - **Preview tags**: Use `$context.tag`, containing only `v` and the first three numeric version components (for example, build `0.102.2991.0` maps to tag `v0.102.2991`). Do not append `.0` or `-preview`. Keep `$context.version`, installer filenames, and asset versions unchanged, and pass `-ReleaseTag $context.tag` when preparing asset download links.
+- **Release titles**: Use `Release <tag>` for a stable release, `Release preview <tag>` for a prerelease built from `stable`, and `Development preview <tag>` for a prerelease built from `main`. Use the requested GitHub release type and the build's `sourceBranch`, not its original intent/channel. Pass `-SourceBranch $context.sourceBranch` to preview draft creation and verification; previews remain prereleases regardless of branch.
 - **Preview manifests**: Keep `release-manifest.json` and `assets-manifest.json` in the local audit package; do not upload either file as a GitHub release asset
 - **Preview note layout**: Place the `Installer Hashes` section immediately after the title and short public introduction, before `Highlights` and all change sections
 - **Batch generation**: Generate ALL grouped_md files in one pass, then human reviews

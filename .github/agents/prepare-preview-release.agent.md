@@ -18,6 +18,8 @@ Do not request a version, branch, baseline tag, milestone, or release-note range
 
 Use the resolved context's `tag`: `v` followed by only the first three numeric version components. For example, build `0.102.2991.0` uses tag `v0.102.2991`. Preserve the full four-component version in build metadata and asset filenames; use the three-component tag in GitHub download URLs. Keep the release a draft prerelease.
 
+Name a preview built from `stable` `Release preview <tag>` and one built from `main` `Development preview <tag>`. Pass the build context's `sourceBranch` to draft creation and verification. Reserve `Release <tag>` for actual stable releases outside this preview-only workflow; a stable build intent alone does not make the requested preview a stable release.
+
 ## Supported preview build sources
 
 During release preparation, preview builds may be sourced from either `main` or `stable`. Both are official supported patterns. A successful build from trusted release definition `76541` on either branch is eligible regardless of its resolved intent, channel, or `shouldPublishPreview` value.

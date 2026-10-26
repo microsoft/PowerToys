@@ -29,6 +29,18 @@ Use the first three numeric components of the resolved build version for the Git
 
 Keep the four-component `$context.version` for ADO artifact lookup, installer and GPO filenames, hashes, and build audit metadata. Installer download URLs use the three-component tag and the unchanged four-component filename. Older PowerToys updaters reject four-component release tags; this format remains parseable if the release is later promoted through the separate release-management process. This workflow still creates only draft prereleases and never sets a release as Latest.
 
+## Release title
+
+Use the requested GitHub release type and the immutable build's source branch:
+
+| Release type | Build source | Title |
+| --- | --- | --- |
+| Stable release (separate workflow) | `stable` | `Release <tag>` |
+| Prerelease | `stable` | `Release preview <tag>` |
+| Prerelease | `main` | `Development preview <tag>` |
+
+For example, a preview of build `0.102.2991.0` from `stable` is `Release preview v0.102.2991`. Pass `$context.sourceBranch` explicitly to creation and verification. Do not infer it from a local checkout or `TargetCommit`, and do not use the build's intent/channel to override the requested prerelease type. If release management later promotes the preview to a stable release, change its title to `Release <tag>` as part of that separate operation.
+
 ## Workflow
 
 1. Resolve and validate build metadata:
@@ -76,6 +88,7 @@ Keep the four-component `$context.version` for ADO artifact lookup, installer an
    - Put unlabeled PRs under `General`.
    - Use conservative title-based wording when summary confidence is low.
    - Place `Installer Hashes` immediately after the title and short public introduction, before `Highlights` and all change sections.
+   - Use the same branch-specific release title for the release-note heading and GitHub draft.
    - Include removed PRs under `Differences from the previous preview`.
    - Include unattributed commits under `Changes needing final review`.
    - Enclose the generated body in the managed markers documented in [preview draft safety](../preview-draft-safety.md).
@@ -107,6 +120,7 @@ Keep the four-component `$context.version` for ADO artifact lookup, installer an
    ```powershell
    .\.github\skills\release-note-generation\scripts\verify-draft-preview-release.ps1 `
      -Tag $context.tag `
+     -SourceBranch $context.sourceBranch `
      -TargetCommit $context.sourceCommit `
      -AssetsDirectory '<run directory>\assets' `
      -BodyPath '<run directory>\release-notes.md' `
@@ -122,6 +136,7 @@ Keep the four-component `$context.version` for ADO artifact lookup, installer an
    ```powershell
    .\.github\skills\release-note-generation\scripts\upsert-draft-preview-release.ps1 `
      -Tag $context.tag `
+     -SourceBranch $context.sourceBranch `
      -TargetCommit $context.sourceCommit `
      -BodyPath '<run directory>\release-notes.md' `
      -AssetsDirectory '<run directory>\assets'
@@ -132,6 +147,7 @@ Keep the four-component `$context.version` for ADO artifact lookup, installer an
     ```powershell
     .\.github\skills\release-note-generation\scripts\verify-draft-preview-release.ps1 `
       -Tag $context.tag `
+      -SourceBranch $context.sourceBranch `
       -TargetCommit $context.sourceCommit `
       -AssetsDirectory '<run directory>\assets' `
       -ContextPath '<run directory>\release-context.json' `

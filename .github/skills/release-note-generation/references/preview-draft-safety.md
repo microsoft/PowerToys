@@ -6,7 +6,7 @@ The preview workflow may create or update GitHub drafts only.
 
 ```text
 Tag:        v<first three numeric components of resolved version>
-Title:      Preview <tag>
+Title:      Release preview <tag> (stable) / Development preview <tag> (main)
 Target:     exact ADO source commit
 Draft:      true
 Prerelease: true
@@ -14,7 +14,7 @@ Prerelease: true
 
 Never use a branch name as the release target and never expose a publish parameter.
 
-For build `0.102.2991.0`, use tag `v0.102.2991` and title `Preview v0.102.2991`. Keep four-component versions in artifact filenames and audit metadata. Use `$context.tag` throughout baseline selection, draft creation, verification, and installer download links. Reject four-component or suffixed tags rather than silently changing an explicitly supplied tag.
+For build `0.102.2991.0`, use tag `v0.102.2991`. Select `Release preview v0.102.2991` for source branch `refs/heads/stable`, or `Development preview v0.102.2991` for `refs/heads/main`. Reserve `Release <tag>` for actual stable releases, never for this draft-prerelease workflow, even if the build originally had stable intent/channel. Keep four-component versions in artifact filenames and audit metadata. Use `$context.tag` throughout baseline selection, draft creation, verification, and installer download links. Reject four-component or suffixed tags rather than silently changing an explicitly supplied tag.
 
 Do not rename or delete previously published four-component releases or tags. Historical releases remain valid baselines; the three-component rule applies to the new draft's identity.
 

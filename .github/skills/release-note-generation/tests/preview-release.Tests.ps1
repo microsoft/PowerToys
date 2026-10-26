@@ -563,10 +563,69 @@ Describe "preview release asset links" {
     }
 }
 
+Describe "release title selection" {
+    BeforeAll {
+        . (Join-Path $scripts "release-title.ps1")
+    }
+
+    It "requires a known source branch for a preview title" {
+        Assert-Throws { Get-PowerToysReleaseTitle -Tag "v0.101.2181" -Prerelease }
+        Assert-Throws { Get-PowerToysReleaseTitle -Tag "v0.101.2181" -SourceBranch "refs/heads/feature" -Prerelease }
+    }
+
+    It "generates the default draft title <ExpectedTitle>" -TestCases @(
+        @{ Prerelease = $false; SourceBranch = $null; ExpectedTitle = "Release v0.101.2181" },
+        @{ Prerelease = $true; SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181" },
+        @{ Prerelease = $true; SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181" }
+    ) {
+        param($Prerelease, $SourceBranch, $ExpectedTitle)
+
+        $releasePath = Join-Path $TestDrive "titled-release"
+        New-Item -ItemType Directory -Path $releasePath -Force | Out-Null
+        $links = @()
+        foreach ($entry in @(
+            @{ Prefix = "PowerToysUserSetup"; Arch = "x64"; Ref = "ptUserX64" },
+            @{ Prefix = "PowerToysUserSetup"; Arch = "arm64"; Ref = "ptUserArm64" },
+            @{ Prefix = "PowerToysSetup"; Arch = "x64"; Ref = "ptMachineX64" },
+            @{ Prefix = "PowerToysSetup"; Arch = "arm64"; Ref = "ptMachineArm64" }
+        )) {
+            $name = "$($entry.Prefix)-0.101.2181.0-$($entry.Arch).exe"
+            "installer" | Set-Content -LiteralPath (Join-Path $releasePath $name)
+            $links += "[$($entry.Ref)]: https://github.com/microsoft/PowerToys/releases/download/v0.101.2181/$name"
+        }
+        foreach ($name in @("symbols-x64.zip", "symbols-arm64.zip", "GroupPolicyObjectFiles-0.101.2181.0.zip")) {
+            "archive" | Set-Content -LiteralPath (Join-Path $releasePath $name)
+        }
+        $links | Set-Content -LiteralPath (Join-Path $releasePath "release-notes.md")
+        $parameters = @{
+            ReleaseFolder = $releasePath
+            TagName = "v0.101.2181"
+            Target = "0123456789abcdef0123456789abcdef01234567"
+            Prerelease = $Prerelease
+            DryRun = $true
+        }
+        if ($SourceBranch) {
+            $parameters.SourceBranch = $SourceBranch
+        }
+
+        $output = & (Join-Path $scripts "create-github-draft-release.ps1") @parameters 6>&1 | Out-String
+
+        $output.Contains("Title:          $ExpectedTitle") | Should Be $true
+        $output.Contains("--title $ExpectedTitle --notes-file") | Should Be $true
+        $output.Contains("--draft") | Should Be $true
+        $output.Contains("--prerelease") | Should Be $Prerelease
+    }
+}
+
 Describe "draft preview release dry run" {
-    It "constructs a draft-only operation without contacting GitHub" {
+    It "constructs a draft-only operation for <SourceBranch> without contacting GitHub" -TestCases @(
+        @{ SourceBranch = "refs/heads/main"; ExpectedTitle = "Development preview v0.101.2181" },
+        @{ SourceBranch = "refs/heads/stable"; ExpectedTitle = "Release preview v0.101.2181" }
+    ) {
+        param($SourceBranch, $ExpectedTitle)
+
         $bodyPath = Join-Path $TestDrive "release-notes.md"
-        $assetsPath = Join-Path $TestDrive "assets"
+        $assetsPath = Join-Path $TestDrive ("assets-" + (Split-Path $SourceBranch -Leaf))
         New-Item -ItemType Directory -Path $assetsPath | Out-Null
         "Preview notes" | Set-Content -LiteralPath $bodyPath
         "installer" | Set-Content -LiteralPath (Join-Path $assetsPath "PowerToysSetup-0.101.2181.0-x64.exe")
@@ -575,6 +634,7 @@ Describe "draft preview release dry run" {
 
         $result = & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
             -Tag "v0.101.2181" `
+            -SourceBranch $SourceBranch `
             -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
             -BodyPath $bodyPath `
             -AssetsDirectory $assetsPath `
@@ -583,7 +643,7 @@ Describe "draft preview release dry run" {
         $result.draft | Should Be $true
         $result.prerelease | Should Be $true
         $result.tag | Should Be "v0.101.2181"
-        $result.title | Should Be "Preview v0.101.2181"
+        $result.title | Should Be $ExpectedTitle
         $result.assetNames.Count | Should Be 1
         $result.assetNames[0] | Should Be "PowerToysSetup-0.101.2181.0-x64.exe"
         ($result.assetNames -contains "release-manifest.json") | Should Be $false
@@ -613,6 +673,7 @@ New generated notes
 
         & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
             -Tag "v0.101.2181" `
+            -SourceBranch "refs/heads/main" `
             -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
             -BodyPath $bodyPath `
             -AssetsDirectory $assetsPath `
@@ -640,6 +701,7 @@ New generated notes
         Assert-Throws {
             & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
                 -Tag "v0.101.2181" `
+                -SourceBranch "refs/heads/main" `
                 -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
                 -BodyPath $bodyPath `
                 -AssetsDirectory $assetsPath `
@@ -660,6 +722,7 @@ New generated notes
         Assert-Throws {
             & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
                 -Tag "v0.101.2181" `
+                -SourceBranch "refs/heads/main" `
                 -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
                 -BodyPath $bodyPath `
                 -AssetsDirectory $assetsPath `
@@ -680,6 +743,7 @@ New generated notes
         Assert-Throws {
             & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
                 -Tag "v0.101.2181" `
+                -SourceBranch "refs/heads/main" `
                 -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
                 -BodyPath $bodyPath `
                 -AssetsDirectory $assetsPath `
@@ -687,10 +751,15 @@ New generated notes
         }
     }
 
-    It "writes a complete local final review in dry-run mode" {
+    It "writes a final review for <SourceBranch> independently of build intent" -TestCases @(
+        @{ SourceBranch = "refs/heads/main"; BuildIntent = "preview-release"; ExpectedTitle = "Development preview v0.101.2181" },
+        @{ SourceBranch = "refs/heads/stable"; BuildIntent = "stable-release"; ExpectedTitle = "Release preview v0.101.2181" }
+    ) {
+        param($SourceBranch, $BuildIntent, $ExpectedTitle)
+
         $bodyPath = Join-Path $TestDrive "dry-run-notes.md"
-        $assetsPath = Join-Path $TestDrive "dry-run-assets"
-        $deltaPath = Join-Path $TestDrive "dry-run-delta"
+        $assetsPath = Join-Path $TestDrive ("dry-run-assets-" + (Split-Path $SourceBranch -Leaf))
+        $deltaPath = Join-Path $TestDrive ("dry-run-delta-" + (Split-Path $SourceBranch -Leaf))
         $contextPath = Join-Path $TestDrive "release-context.json"
         $previousReleasePath = Join-Path $TestDrive "previous-release.json"
         $reviewPath = Join-Path $TestDrive "final-review.md"
@@ -709,17 +778,15 @@ Preview notes
             Set-Content -LiteralPath (Join-Path $deltaPath "unattributed-commits.json")
         '{"deltaMode":"same-lineage","mergeBase":null}' |
             Set-Content -LiteralPath (Join-Path $deltaPath "delta-commits.json")
-        @'
-{
-  "buildId": 154000000,
-  "buildUrl": "https://microsoft.visualstudio.com/Dart/_build/results?buildId=154000000",
-  "version": "0.101.2181.0",
-  "sourceBranch": "refs/heads/main",
-  "sourceCommit": "0123456789abcdef0123456789abcdef01234567",
-  "intent": "preview-release",
-  "channel": "preview"
-}
-'@ | Set-Content -LiteralPath $contextPath
+        [ordered]@{
+            buildId = 154000000
+            buildUrl = "https://microsoft.visualstudio.com/Dart/_build/results?buildId=154000000"
+            version = "0.101.2181.0"
+            sourceBranch = $SourceBranch
+            sourceCommit = "0123456789abcdef0123456789abcdef01234567"
+            intent = $BuildIntent
+            channel = if ($BuildIntent -eq "stable-release") { "stable" } else { "preview" }
+        } | ConvertTo-Json | Set-Content -LiteralPath $contextPath
         @'
 {
   "tag": "v0.100.0",
@@ -729,6 +796,7 @@ Preview notes
 
         $result = & (Join-Path $scripts "verify-draft-preview-release.ps1") `
             -Tag "v0.101.2181" `
+            -SourceBranch $SourceBranch `
             -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
             -AssetsDirectory $assetsPath `
             -BodyPath $bodyPath `
@@ -742,13 +810,29 @@ Preview notes
         $result.draftUrl | Should Be $null
         $review = Get-Content -LiteralPath $reviewPath -Raw
         $review.Contains("Local dry-run package is complete") | Should Be $true
-        (($review -split "\r?\n") -contains "- Title: Preview v0.101.2181") | Should Be $true
+        (($review -split "\r?\n") -contains "- Title: $ExpectedTitle") | Should Be $true
         $review.Contains("Version: 0.101.2181.0") | Should Be $true
         $review.Contains("abcdef0123456789abcdef0123456789abcdef01") | Should Be $true
         $review.Contains("Aggregate promotion commit") | Should Be $true
         $review.Contains("154000000") | Should Be $true
         $review.Contains("v0.100.0@1123456789ab") | Should Be $true
         $review.Contains("Delta mode: same-lineage") | Should Be $true
+    }
+
+    It "rejects a title source branch that conflicts with the build context" {
+        $contextPath = Join-Path $TestDrive "conflicting-branch.json"
+        '{"sourceBranch":"refs/heads/main"}' | Set-Content -LiteralPath $contextPath
+
+        {
+            & (Join-Path $scripts "verify-draft-preview-release.ps1") `
+                -Tag "v0.101.2181" `
+                -SourceBranch "refs/heads/stable" `
+                -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
+                -AssetsDirectory $TestDrive `
+                -ContextPath $contextPath `
+                -OutputPath (Join-Path $TestDrive "conflicting-branch-review.md") `
+                -DryRun
+        } | Should Throw "does not match build context"
     }
 
     It "rejects four-component and suffixed tags before creating or verifying a draft" {
@@ -767,6 +851,7 @@ Preview notes
             Assert-Throws {
                 & (Join-Path $scripts "upsert-draft-preview-release.ps1") `
                     -Tag $tag `
+                    -SourceBranch "refs/heads/main" `
                     -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
                     -BodyPath $bodyPath `
                     -AssetsDirectory $assetsPath `
@@ -775,6 +860,7 @@ Preview notes
             Assert-Throws {
                 & (Join-Path $scripts "verify-draft-preview-release.ps1") `
                     -Tag $tag `
+                    -SourceBranch "refs/heads/main" `
                     -TargetCommit "0123456789abcdef0123456789abcdef01234567" `
                     -BodyPath $bodyPath `
                     -AssetsDirectory $assetsPath `
