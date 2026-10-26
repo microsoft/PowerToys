@@ -303,6 +303,169 @@ namespace EnvironmentVariablesUILib.UnitTests.ViewModels
             }
         }
 
+        [TestMethod]
+        public void AddDefault_NotificationFailureLeavesCommittedRawValueStaleUntilPublicReload()
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var files = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
+            using var service = new EnvironmentVariablesService(files);
+            const string json = "[]";
+            const string raw = @"%ROOT%\added;;C:\Tail;";
+            const string expanded = @"R:\Expanded\added;;C:\Tail;";
+            files.Files[service.ProfilesJsonFilePath] = json;
+            fixture.Environment.User["KEEP"] = "user sentinel";
+            fixture.Environment.Machine["MachineOnly"] = "machine sentinel";
+            var vm = fixture.CreateViewModel(service: service);
+            vm.LoadEnvironmentVariables();
+            fixture.Environment.Expand = value => value.Replace("%ROOT%", @"R:\Expanded", StringComparison.Ordinal);
+            var userSet = vm.UserDefaultSet;
+            var systemSet = vm.SystemDefaultSet;
+            var oldUserVariables = userSet.Variables;
+            var oldSystemVariables = systemSet.Variables;
+            var oldUser = oldUserVariables.Single();
+            var oldSystem = oldSystemVariables.Single();
+            var oldDefaults = vm.DefaultVariables.Variables;
+            var oldDefaultRows = oldDefaults.ToArray();
+            var oldProjection = vm.AppliedVariables;
+            var oldProjectedRows = oldProjection.ToArray();
+            var oldProjectionValues = oldProjection.Select(x => (x.Name, x.Values, x.ParentType)).ToArray();
+            var draft = new Variable("ADDED", raw, VariablesSetType.User);
+            var rawEntries = raw.Split(';');
+            var expandedEntries = expanded.Split(';');
+            var failure = new System.IO.IOException("notification failed after committed default Add");
+            var notifyAttempts = 0;
+            Action failNotify = () =>
+            {
+                notifyAttempts++;
+                Assert.AreEqual(raw, fixture.Environment.User["ADDED"]);
+                Assert.AreEqual(1, fixture.Environment.Operations.Count(x => x.Operation == "Write"));
+                var write = fixture.Environment.Operations.Single(x => x.Operation == "Write");
+                Assert.AreEqual(RegistryHive.CurrentUser, write.Hive);
+                Assert.AreEqual("ADDED", write.Name);
+                Assert.AreEqual(((object)raw, RegistryValueKind.ExpandString), write.Value);
+                Assert.AreEqual(5, fixture.Environment.Keys.Count);
+                Assert.IsTrue(fixture.Environment.Keys.All(x => x.IsDisposed));
+                throw failure;
+            };
+            fixture.Environment.BeforeNotify = failNotify;
+
+            var observed = Assert.ThrowsException<System.IO.IOException>(() => vm.AddDefaultVariable(draft, VariablesSetType.User));
+
+            Assert.AreSame(failure, observed);
+            Assert.AreEqual(1, notifyAttempts);
+            Assert.AreSame(failNotify, fixture.Environment.BeforeNotify);
+            Assert.AreSame(userSet, vm.UserDefaultSet);
+            Assert.AreSame(systemSet, vm.SystemDefaultSet);
+            Assert.AreSame(oldUserVariables, userSet.Variables);
+            Assert.AreSame(oldSystemVariables, systemSet.Variables);
+            Assert.AreSame(oldUser, userSet.Variables.Single());
+            Assert.AreSame(oldSystem, systemSet.Variables.Single());
+            Assert.AreEqual(("KEEP", "user sentinel", VariablesSetType.User), (oldUser.Name, oldUser.Values, oldUser.ParentType));
+            Assert.AreEqual(("MachineOnly", "machine sentinel", VariablesSetType.System), (oldSystem.Name, oldSystem.Values, oldSystem.ParentType));
+            Assert.AreSame(oldDefaults, vm.DefaultVariables.Variables);
+            CollectionAssert.AreEqual(oldDefaultRows, vm.DefaultVariables.Variables.ToArray());
+            Assert.AreSame(oldProjection, vm.AppliedVariables);
+            CollectionAssert.AreEqual(oldProjectedRows, vm.AppliedVariables.ToArray());
+            CollectionAssert.AreEqual(oldProjectionValues, vm.AppliedVariables.Select(x => (x.Name, x.Values, x.ParentType)).ToArray());
+            Assert.IsFalse(userSet.Variables.Any(x => x.Name == "ADDED"));
+            Assert.IsFalse(vm.AppliedVariables.Any(x => x.Name == "ADDED"));
+            Assert.AreEqual(raw, fixture.Environment.User["ADDED"]);
+            Assert.AreEqual(raw, draft.Values);
+            CollectionAssert.AreEqual(rawEntries, draft.ValuesList.Select(x => x.Text).ToArray());
+            Assert.AreEqual(14, fixture.Environment.Operations.Count);
+            Assert.AreEqual(5, fixture.Environment.Opens.Count);
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Changed.Count);
+            Assert.AreEqual("Exists,ReadAllText", string.Join(",", files.Calls.Select(x => x.Operation)));
+            Assert.AreEqual(0, files.Writes.Count);
+            Assert.AreEqual(json, files.Files[service.ProfilesJsonFilePath]);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+
+            vm.LoadEnvironmentVariables();
+
+            Assert.IsTrue(vm.UserDefaultSet.Variables.Any(x => x.Name == "ADDED"), "Public reload must discover committed ADDED raw value.");
+            Assert.IsTrue(vm.AppliedVariables.Any(x => x.Name == "ADDED"), "Public reload must project committed ADDED value.");
+            Assert.AreEqual(1, vm.UserDefaultSet.Variables.Count(x => x.Name == "ADDED"));
+            Assert.AreEqual(1, vm.AppliedVariables.Count(x => x.Name == "ADDED"));
+            var loaded = vm.UserDefaultSet.Variables.Single(x => x.Name == "ADDED");
+            var projected = vm.AppliedVariables.Single(x => x.Name == "ADDED");
+            Assert.AreEqual((raw, VariablesSetType.User, false, true), (loaded.Values, loaded.ParentType, loaded.IsAppliedFromProfile, loaded.IsEditable));
+            Assert.AreEqual((expanded, VariablesSetType.User, false, true), (projected.Values, projected.ParentType, projected.IsAppliedFromProfile, projected.IsEditable));
+            CollectionAssert.AreEqual(rawEntries, loaded.ValuesList.Select(x => x.Text).ToArray());
+            CollectionAssert.AreEqual(expandedEntries, projected.ValuesList.Select(x => x.Text).ToArray());
+            Assert.AreNotSame(draft, loaded);
+            Assert.AreNotSame(draft, projected);
+            Assert.AreNotSame(loaded, projected);
+            Assert.AreNotSame(draft.ValuesList, loaded.ValuesList);
+            Assert.AreNotSame(loaded.ValuesList, projected.ValuesList);
+            for (var index = 0; index < rawEntries.Length; index++)
+            {
+                Assert.AreNotSame(draft.ValuesList[index], loaded.ValuesList[index]);
+                Assert.AreNotSame(loaded.ValuesList[index], projected.ValuesList[index]);
+            }
+
+            Assert.AreSame(userSet, vm.UserDefaultSet);
+            Assert.AreSame(systemSet, vm.SystemDefaultSet);
+            Assert.AreNotSame(oldUserVariables, userSet.Variables);
+            Assert.AreNotSame(oldSystemVariables, systemSet.Variables);
+            Assert.AreNotSame(oldUser, userSet.Variables.Single(x => x.Name == "KEEP"));
+            Assert.AreNotSame(oldSystem, systemSet.Variables.Single());
+            Assert.AreNotSame(oldProjection, vm.AppliedVariables);
+            Assert.AreEqual(2, userSet.Variables.Count);
+            Assert.AreEqual(1, systemSet.Variables.Count);
+            Assert.AreEqual(3, vm.AppliedVariables.Count);
+            Assert.AreEqual("user sentinel", userSet.Variables.Single(x => x.Name == "KEEP").Values);
+            Assert.AreEqual("machine sentinel", systemSet.Variables.Single().Values);
+            Assert.IsFalse(systemSet.Variables.Single().IsEditable);
+            Assert.IsTrue(vm.DefaultVariables.Variables.Contains(loaded));
+            Assert.AreEqual(("KEEP", "user sentinel"), (oldUser.Name, oldUser.Values));
+            Assert.AreEqual(("MachineOnly", "machine sentinel"), (oldSystem.Name, oldSystem.Values));
+            CollectionAssert.AreEqual(oldProjectionValues, oldProjection.Select(x => (x.Name, x.Values, x.ParentType)).ToArray());
+            Assert.AreEqual(2, fixture.Environment.User.Count);
+            Assert.AreEqual(1, fixture.Environment.Machine.Count);
+            Assert.AreEqual(raw, fixture.Environment.User["ADDED"]);
+            Assert.AreEqual("user sentinel", fixture.Environment.User["KEEP"]);
+            Assert.AreEqual("machine sentinel", fixture.Environment.Machine["MachineOnly"]);
+            Assert.IsFalse(fixture.Environment.Machine.ContainsKey("ADDED"));
+            Assert.AreEqual(1, fixture.Environment.Operations.Count(x => x.Operation == "Write"));
+            Assert.AreEqual(0, fixture.Environment.Operations.Count(x => x.Operation == "Delete"));
+            Assert.AreEqual(8, fixture.Environment.Operations.Count(x => x.Operation == "Names"));
+            Assert.AreEqual(10, fixture.Environment.Operations.Count(x => x.Operation == "Read"));
+            Assert.AreEqual(9, fixture.Environment.Operations.Count(x => x.Operation == "Dispose"));
+            Assert.AreEqual(28, fixture.Environment.Operations.Count);
+            Assert.AreEqual(9, fixture.Environment.Opens.Count);
+            Assert.AreEqual(9, fixture.Environment.Keys.Count);
+            Assert.IsTrue(fixture.Environment.Keys.All(x => x.IsDisposed));
+            Assert.AreEqual(1, fixture.Environment.Opens.Count(x => x.Writable));
+            var writable = fixture.Environment.Opens.Single(x => x.Writable);
+            Assert.AreEqual((RegistryHive.CurrentUser, "Environment"), (writable.Hive, writable.SubKey));
+            Assert.IsTrue(fixture.Environment.Operations.Where(x => x.Operation == "Read").All(x => Equals(((object)string.Empty, RegistryValueOptions.DoNotExpandEnvironmentNames), x.Value)));
+            Assert.AreSame(failNotify, fixture.Environment.BeforeNotify);
+            Assert.AreEqual(1, notifyAttempts);
+            Assert.AreEqual(0, fixture.Environment.Notifications.Count);
+            Assert.AreEqual(0, fixture.Work.ActionCount);
+            Assert.AreEqual(0, fixture.Work.SaveCount);
+            Assert.AreEqual(0, fixture.Work.RefreshReceiptCount);
+            Assert.AreEqual(0, fixture.Telemetry.Enabled.Count);
+            Assert.AreEqual(0, fixture.Telemetry.Changed.Count);
+            Assert.AreEqual(0, fixture.Logger.Entries.Count);
+            Assert.AreEqual("Exists,ReadAllText,Exists,ReadAllText", string.Join(",", files.Calls.Select(x => x.Operation)));
+            Assert.IsTrue(files.Calls.All(x => x.Path == service.ProfilesJsonFilePath));
+            Assert.AreEqual(0, files.Writes.Count);
+            Assert.AreEqual(1, files.Files.Count);
+            Assert.AreEqual(json, files.Files[service.ProfilesJsonFilePath]);
+            Assert.AreEqual(0, vm.Profiles.Count);
+            Assert.IsNull(vm.AppliedProfile);
+            Assert.AreEqual(EnvironmentState.Unchanged, vm.EnvironmentState);
+            Assert.AreEqual(0, fixture.Service.Writes.Count);
+            Assert.IsTrue(fixture.Work.IsQuiescent);
+        }
+
         [DataTestMethod]
         [DataRow(false)]
         [DataRow(true)]
