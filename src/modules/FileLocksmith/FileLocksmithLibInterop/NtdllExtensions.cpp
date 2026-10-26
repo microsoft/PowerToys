@@ -180,13 +180,15 @@ namespace
                 WaitForSingleObject(m_block->done_event, INFINITE);
             }
 
+            // The helper is done with the handle; close it before anything below can throw.
+            CloseHandle(file_handle);
+
             std::wstring result;
             if (m_block->is_disk && NT_SUCCESS(m_block->status))
             {
                 result = unicode_to_str(*reinterpret_cast<UNICODE_STRING*>(m_block->buffer));
             }
 
-            CloseHandle(file_handle);
             return result;
         }
 
@@ -400,9 +402,9 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles(std::chrono::m
                 continue;
             }
 
+            // Compare without allocating so nothing can throw while handle_copy is open.
             auto object_type_info = reinterpret_cast<OBJECT_TYPE_INFORMATION*>(object_info_buffer.data());
-            auto type_name = unicode_to_str(object_type_info->Name);
-            if (type_name != L"File")
+            if (unicode_to_view(object_type_info->Name) != L"File")
             {
                 CloseHandle(handle_copy);
                 continue;
@@ -411,7 +413,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles(std::chrono::m
             // A stalled query is skipped.
             if (auto file_name = name_query_worker.query(handle_copy))
             {
-                result.push_back(HandleInfo{ pid, handle_info->HandleValue, std::move(type_name), std::move(*file_name) });
+                result.push_back(HandleInfo{ pid, handle_info->HandleValue, L"File", std::move(*file_name) });
             }
         }
     }
