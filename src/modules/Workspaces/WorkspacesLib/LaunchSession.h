@@ -19,9 +19,10 @@ namespace WorkspacesSession
         int exitCode;
         std::wstring code;
         bool executionStillRunning;
+        std::wstring fileName;
 
-        Error(int exitCode, std::wstring code, const char* message, bool executionStillRunning = false) :
-            std::runtime_error(message), exitCode(exitCode), code(std::move(code)), executionStillRunning(executionStillRunning)
+        Error(int exitCode, std::wstring code, const char* message, bool executionStillRunning = false, std::wstring fileName = {}) :
+            std::runtime_error(message), exitCode(exitCode), code(std::move(code)), executionStillRunning(executionStillRunning), fileName(std::move(fileName))
         {
         }
     };

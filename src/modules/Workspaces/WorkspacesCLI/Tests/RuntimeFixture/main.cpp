@@ -10,8 +10,12 @@
 #include <atomic>
 #include <sstream>
 #include <common/logger/logger.h>
+#include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/logger_helper.h>
+#include <common/utils/resources.h>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/sinks/null_sink.h>
+#include <WorkspacesLauncher/LaunchSessionHost.h>
 #include <WorkspacesLauncher/LauncherUIHelper.h>
 #include <WorkspacesLib/LauncherUiMessage.h>
 #include <wil/resource.h>
@@ -129,12 +133,122 @@ namespace CliTelemetryProbe
 #undef Trace
 #undef wmain
 
+namespace GuiErrorProbe
+{
+    std::filesystem::path folder;
+    std::wstring commandLine;
+    std::wstring message;
+    unsigned int dialogs{};
+
+    namespace Session
+    {
+        using namespace WorkspacesSession;
+
+        std::optional<int> TryRunHost(const std::vector<std::wstring>&)
+        {
+            return std::nullopt;
+        }
+
+        WorkspacesSession::Result Start(const Request& request)
+        {
+            WorkspacesCli::ReadJson(folder / (request.invokePoint == InvokePoint::LaunchAndEdit ? L"temp-workspaces.json" : L"workspaces.json"));
+            throw std::runtime_error("Expected a fixture file read error.");
+        }
+    }
+
+    struct LoggerHelpers
+    {
+        static void init_logger(std::wstring, std::wstring, std::string) {}
+    };
+
+    void InitUnhandledExceptionHandler() {}
+    LPWSTR CommandLine()
+    {
+        return commandLine.data();
+    }
+    std::wstring Resource(UINT id);
+
+    int WINAPI MessageBox(HWND, LPCWSTR text, LPCWSTR, UINT)
+    {
+        message = text;
+        ++dialogs;
+        return IDOK;
+    }
+}
+
+// Exercise the real GUI catch block with isolated files and a captured dialog.
+#pragma push_macro("GET_RESOURCE_STRING")
+#undef GET_RESOURCE_STRING
+#define GET_RESOURCE_STRING(id) GuiErrorProbe::Resource(id)
+#define WinMain GuiMainForReadErrorTest
+#define WorkspacesSession GuiErrorProbe::Session
+#define LoggerHelpers GuiErrorProbe::LoggerHelpers
+#define InitUnhandledExceptionHandler GuiErrorProbe::InitUnhandledExceptionHandler
+#define GetCommandLineW GuiErrorProbe::CommandLine
+#define MessageBoxW GuiErrorProbe::MessageBox
+#include <WorkspacesLauncher/main.cpp>
+#undef MessageBoxW
+#undef GetCommandLineW
+#undef InitUnhandledExceptionHandler
+#undef LoggerHelpers
+#undef WorkspacesSession
+#undef WinMain
+#pragma pop_macro("GET_RESOURCE_STRING")
+
+std::wstring GuiErrorProbe::Resource(UINT id)
+{
+    switch (id)
+    {
+    case IDS_FILE_READING_ERROR:
+        return L"Localized read error: {}";
+    case IDS_INCORRECT_FILE_ERROR:
+        return L"Localized invalid file: {}";
+    case IDS_WORKSPACES:
+        return L"Workspaces";
+    default:
+        throw std::runtime_error("Unexpected GUI error resource.");
+    }
+}
+
 namespace
 {
     void Check(bool value)
     {
         if (!value)
             throw std::runtime_error("CLI runtime fixture assertion failed.");
+    }
+
+    void CheckGuiFileErrors()
+    {
+        GUID guid{};
+        winrt::check_hresult(CoCreateGuid(&guid));
+        wchar_t id[40]{};
+        Check(StringFromGUID2(guid, id, ARRAYSIZE(id)) != 0);
+        GuiErrorProbe::folder = std::filesystem::temp_directory_path() / (std::wstring(L"WorkspacesGuiErrors-") + id);
+        Check(std::filesystem::create_directory(GuiErrorProbe::folder));
+        auto cleanup = wil::scope_exit([&] { std::filesystem::remove_all(GuiErrorProbe::folder); });
+        for (const bool draft : { false, true })
+        {
+            const auto file = GuiErrorProbe::folder / (draft ? L"temp-workspaces.json" : L"workspaces.json");
+            for (const bool malformed : { false, true })
+            {
+                wil::unique_handle locked(CreateFileW(file.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr));
+                Check(static_cast<bool>(locked));
+                constexpr char invalid[] = "{invalid}";
+                DWORD written{};
+                Check(WriteFile(locked.get(), invalid, sizeof(invalid) - 1, &written, nullptr) != FALSE);
+                if (malformed)
+                    locked.reset();
+                const auto invoke = draft ? InvokePoint::LaunchAndEdit : InvokePoint::EditorButton;
+                GuiErrorProbe::commandLine = L"PowerToys.WorkspacesLauncher.exe " + std::wstring(id) + L" " + std::to_wstring(static_cast<int>(invoke));
+                GuiErrorProbe::message.clear();
+                GuiErrorProbe::dialogs = 0;
+                Check(GuiMainForReadErrorTest(nullptr, nullptr, nullptr, 0) == 1);
+                Check(GuiErrorProbe::dialogs == 1);
+                const auto resource = malformed ? IDS_INCORRECT_FILE_ERROR : IDS_FILE_READING_ERROR;
+                Check(GuiErrorProbe::message == fmt::format(GuiErrorProbe::Resource(resource), file.wstring()));
+            }
+        }
     }
 
     void CheckTelemetry()
@@ -668,6 +782,12 @@ int wmain(int argc, wchar_t** argv)
             Check(result.GetNamedString(L"state") == L"launched");
             Check(result.GetNamedString(L"message") == L"Localized unconfirmed arrangement test message.");
             Check(exitCode == 10);
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
+        if (std::wstring_view(argv[1]) == L"gui-file-errors")
+        {
+            CheckGuiFileErrors();
             std::cout << "{\"passed\":true}\n";
             return 0;
         }

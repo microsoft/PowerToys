@@ -92,7 +92,7 @@ namespace WorkspacesSession
             {
                 auto draft = WorkspacesData::WorkspacesProjectJSON::FromJson(*loaded);
                 if (!draft)
-                    throw Error(8, L"invalidData", "The editor workspace draft could not be read.");
+                    throw Error(8, L"invalidData", "The editor workspace draft could not be read.", false, WorkspacesData::TempWorkspacesFile());
                 if (WorkspacesCli::NormalizeId(draft->id) == WorkspacesCli::NormalizeId(request.id))
                 {
                     editorDraft = true;

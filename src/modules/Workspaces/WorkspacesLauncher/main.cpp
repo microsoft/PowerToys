@@ -52,8 +52,11 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             message = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), command.workspaceId);
         else if (error.code == L"invalidArguments")
             message = GET_RESOURCE_STRING(IDS_INCORRECT_ARGS);
-        else if (error.code == L"invalidData")
-            message = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), WorkspacesData::WorkspacesFile());
+        else if (error.code == L"storageError" || error.code == L"invalidData")
+        {
+            const auto resource = error.code == L"storageError" ? IDS_FILE_READING_ERROR : IDS_INCORRECT_FILE_ERROR;
+            message = fmt::format(GET_RESOURCE_STRING(resource), error.fileName.empty() ? WorkspacesData::WorkspacesFile() : error.fileName);
+        }
         if (!message.empty())
             MessageBoxW(nullptr, message.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;

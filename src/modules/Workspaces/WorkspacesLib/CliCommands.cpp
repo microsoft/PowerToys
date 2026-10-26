@@ -184,15 +184,15 @@ namespace WorkspacesCli
             const auto error = GetLastError();
             if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND)
                 return std::nullopt;
-            throw Error(8, L"storageError", "Cannot read the configuration file.");
+            throw Error(8, L"storageError", "Cannot read the configuration file.", false, path.wstring());
         }
         LARGE_INTEGER size{};
         if (!GetFileSizeEx(file.get(), &size) || size.QuadPart <= 0 || size.QuadPart > 16 * 1024 * 1024)
-            throw Error(8, L"invalidData", "Configuration is empty or exceeds the supported size.");
+            throw Error(8, L"invalidData", "Configuration is empty or exceeds the supported size.", false, path.wstring());
         std::string bytes(static_cast<size_t>(size.QuadPart), '\0');
         DWORD read{};
         if (!ReadFile(file.get(), bytes.data(), static_cast<DWORD>(bytes.size()), &read, nullptr) || read != bytes.size())
-            throw Error(8, L"storageError", "Configuration changed or could not be read completely.");
+            throw Error(8, L"storageError", "Configuration changed or could not be read completely.", false, path.wstring());
         try
         {
             if (bytes.starts_with("\xEF\xBB\xBF"))
@@ -201,7 +201,7 @@ namespace WorkspacesCli
         }
         catch (const winrt::hresult_error&)
         {
-            throw Error(8, L"invalidData", "Configuration contains invalid JSON.");
+            throw Error(8, L"invalidData", "Configuration contains invalid JSON.", false, path.wstring());
         }
     }
 
@@ -235,12 +235,13 @@ namespace WorkspacesCli
 
     std::vector<WorkspacesData::WorkspacesProject> LoadWorkspaces()
     {
-        const auto data = ReadJson(SettingsRoot() / L"Workspaces" / L"workspaces.json");
+        const auto file = SettingsRoot() / L"Workspaces" / L"workspaces.json";
+        const auto data = ReadJson(file);
         if (!data)
             return {};
         auto parsed = WorkspacesData::WorkspacesListJSON::FromJson(*data);
         if (!parsed)
-            throw Error(8, L"invalidData", "Invalid workspace configuration.");
+            throw Error(8, L"invalidData", "Invalid workspace configuration.", false, file.wstring());
         return *parsed;
     }
 

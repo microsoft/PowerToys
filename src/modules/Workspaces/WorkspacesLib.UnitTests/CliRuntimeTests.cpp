@@ -103,6 +103,11 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (GuiFileReadAndParseErrorsIdentifySavedWorkspaceAndDraft)
+        {
+            Run(L"gui-file-errors");
+        }
+
         TEST_METHOD (PersistenceVerificationFailureRetainsObservedApplicationsInTextAndJson)
         {
             Run(L"persistence-output");

@@ -169,6 +169,9 @@ drafts; CLI mode only displays required confirmation UI. No Editor save-workflow
 Launch and Edit can start an already-saved workspace without a temporary draft. A missing
 `temp-workspaces.json` falls back to saved configuration; an existing malformed draft remains an
 error, and a valid matching draft takes precedence.
+The GUI displays the existing localized file-read or invalid-file dialog when configuration loading
+fails, identifying the saved workspace file or temporary draft that caused the error. This local
+diagnostic context does not change the public CLI error JSON.
 
 The progress window's Cancel button and CLI cancellation both stop the shared launch wait and return
 an acknowledged `canceled` result without requiring normal arranger completion. Pending application
