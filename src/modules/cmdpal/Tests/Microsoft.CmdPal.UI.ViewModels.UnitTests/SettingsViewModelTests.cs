@@ -40,25 +40,22 @@ public class SettingsViewModelTests
     }
 
     [TestMethod]
-    public void WindowsKeyModeShowsWindowsKeyAndPreservesCustomShortcut()
+    public void WindowsKeyModePreservesCustomShortcutForDialogEditing()
     {
         var service = CreateSettingsService();
         var customHotkey = new HotkeySettings(false, true, true, false, 0x4B);
         service.Object.UpdateSettings(settings => settings with { Hotkey = customHotkey });
         using var viewModel = CreateViewModel(service.Object, new QueuedTaskScheduler());
         Assert.IsFalse(viewModel.UseWindowsKey);
-        Assert.IsTrue(viewModel.CanEditActivationHotkey);
 
         viewModel.UseWindowsKey = true;
         Assert.IsTrue(service.Object.Settings.UseWindowsKey);
-        Assert.IsFalse(viewModel.CanEditActivationHotkey);
-        Assert.AreEqual(new HotkeySettings(true, false, false, false, 0), viewModel.Hotkey);
+        Assert.AreEqual(customHotkey, viewModel.Hotkey);
         Assert.IsFalse(service.Object.Settings.UseLowLevelGlobalHotkey);
 
         viewModel.Hotkey = viewModel.Hotkey;
         Assert.AreEqual(customHotkey, service.Object.Settings.Hotkey);
         viewModel.UseWindowsKey = false;
-        Assert.IsTrue(viewModel.CanEditActivationHotkey);
         Assert.AreEqual(customHotkey, viewModel.Hotkey);
     }
 
@@ -75,12 +72,26 @@ public class SettingsViewModelTests
         scheduler.ExecuteAllAvailable();
 
         CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseWindowsKey));
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.CanEditActivationHotkey));
         CollectionAssert.Contains(properties, nameof(SettingsViewModel.Hotkey));
-        Assert.IsFalse(viewModel.CanEditActivationHotkey);
+        Assert.IsTrue(viewModel.UseWindowsKey);
         service.Verify(
             settings => settings.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()),
             Times.Once);
+    }
+
+    [TestMethod]
+    public void DialogCanSaveCustomShortcutWhenLeavingWindowsKeyMode()
+    {
+        var service = CreateSettingsService();
+        service.Object.UpdateSettings(settings => settings with { UseWindowsKey = true });
+        using var viewModel = CreateViewModel(service.Object, new QueuedTaskScheduler());
+        var shortcut = new HotkeySettings(false, true, false, true, 0x4B);
+
+        viewModel.Hotkey = shortcut;
+        viewModel.UseWindowsKey = false;
+
+        Assert.IsFalse(service.Object.Settings.UseWindowsKey);
+        Assert.AreEqual(shortcut, service.Object.Settings.Hotkey);
     }
 
     [TestMethod]
