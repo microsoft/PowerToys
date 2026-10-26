@@ -1022,19 +1022,15 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings();
             settings.SelectedSizeIndex = 0;
+            var expectedSize = settings.Sizes[0];
+            var notifications = new List<string>();
+            settings.PropertyChanged += (sender, e) => notifications.Add(e.PropertyName);
 
-            bool isNotified = false;
-            settings.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == nameof(settings.SelectedSizeIndex))
-                {
-                    isNotified = true;
-                }
-            };
+            settings.SelectedSizeIndex = 0;
 
-            settings.SelectedSizeIndex = 0; // Setting to the same value
-
-            Assert.IsFalse(isNotified, "PropertyChanged should not be raised when setting the same value.");
+            Assert.AreEqual(0, notifications.Count);
+            Assert.AreEqual(0, settings.SelectedSizeIndex);
+            Assert.AreSame(expectedSize, settings.SelectedSize);
         }
 
         [TestMethod]
@@ -1042,19 +1038,26 @@ namespace ImageResizer.Properties
         {
             var settings = new Settings();
             settings.SelectedSizeIndex = 0;
-
-            bool isNotified = false;
+            var expectedSize = settings.Sizes[1];
+            var notifications = new List<(object Sender, string Name, int Index, ResizeSize Size)>();
             settings.PropertyChanged += (sender, e) =>
+                notifications.Add((sender, e.PropertyName, settings.SelectedSizeIndex, settings.SelectedSize));
+
+            settings.SelectedSizeIndex = 1;
+
+            Assert.AreEqual(2, notifications.Count);
+            CollectionAssert.AreEqual(
+                new[] { nameof(Settings.SelectedSizeIndex), nameof(Settings.SelectedSize) },
+                notifications.Select(notification => notification.Name).ToArray());
+            foreach (var notification in notifications)
             {
-                if (e.PropertyName == nameof(settings.SelectedSizeIndex))
-                {
-                    isNotified = true;
-                }
-            };
+                Assert.AreSame(settings, notification.Sender);
+                Assert.AreEqual(1, notification.Index);
+                Assert.AreSame(expectedSize, notification.Size);
+            }
 
-            settings.SelectedSizeIndex = 1; // Setting to a different value
-
-            Assert.IsTrue(isNotified, "PropertyChanged should be raised when setting a different value.");
+            Assert.AreEqual(1, settings.SelectedSizeIndex);
+            Assert.AreSame(expectedSize, settings.SelectedSize);
         }
 
         [TestMethod]
