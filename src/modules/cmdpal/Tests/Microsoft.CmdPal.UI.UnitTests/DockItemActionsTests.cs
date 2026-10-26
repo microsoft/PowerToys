@@ -75,7 +75,7 @@ public partial class DockItemActionsTests
 
         CollectionAssert.AreEqual(new[] { item }, invocations);
         var message = DockItemActions.CreateInvocationMessage(invocations[0]);
-        Assert.AreSame(item.Command.Model, message.Command);
+        Assert.AreSame(item.Command, message.Command);
         Assert.IsNull(message.CommandContext, "Direct dock activation must not change the sender or enter home-page history.");
         Assert.IsFalse(message.WithAnimation);
         Assert.IsTrue(message.TransientPage);

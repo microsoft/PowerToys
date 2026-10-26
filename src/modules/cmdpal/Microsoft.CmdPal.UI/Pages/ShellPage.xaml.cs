@@ -1616,9 +1616,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private static void InvokeQuickAccessShelfItem(QuickAccessShelfItem item)
+    private void InvokeQuickAccessShelfItem(QuickAccessShelfItem item)
     {
-        WeakReferenceMessenger.Default.Send(item.GetPerformCommandMessage());
+        WeakReferenceMessenger.Default.Send(item.GetPerformCommandMessage(ViewModel.CurrentPage));
     }
 
     private async Task HandleQuickAccessShelfItemKeyAsync(Button anchor, QuickAccessShelfItem item, KeyChord chord)
