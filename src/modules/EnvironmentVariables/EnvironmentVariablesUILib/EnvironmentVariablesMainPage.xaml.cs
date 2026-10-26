@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
 using EnvironmentVariablesUILib.ViewModels;
@@ -17,34 +16,32 @@ namespace EnvironmentVariablesUILib
 {
     public sealed partial class EnvironmentVariablesMainPage : Page
     {
-        private sealed class RelayCommandParameter
-        {
-            public RelayCommandParameter(Variable variable, VariablesSet set)
-            {
-                Variable = variable;
-                this.Set = set;
-            }
+        private EnvironmentVariablesPageActions _actions;
 
-            public Variable Variable { get; set; }
-
-            public VariablesSet Set { get; set; }
-        }
+        private EnvironmentVariablesPageActions Actions => _actions ??= new EnvironmentVariablesPageActions(
+            () => ViewModel,
+            () => EditVariableDialog.DataContext,
+            () => AddProfileDialog.DataContext,
+            () => AddDefaultVariableDialog.DataContext,
+            AddProfileAsync,
+            AddVariable,
+            CancelAddVariable);
 
         public MainViewModel ViewModel { get; private set; }
 
-        public ICommand EditCommand => new RelayCommand<RelayCommandParameter>(EditVariable);
+        public ICommand EditCommand => Actions.EditCommand;
 
-        public ICommand NewProfileCommand => new AsyncRelayCommand(AddProfileAsync);
+        public ICommand NewProfileCommand => Actions.NewProfileCommand;
 
-        public ICommand AddProfileCommand => new RelayCommand(AddProfile);
+        public ICommand AddProfileCommand => Actions.AddProfileCommand;
 
-        public ICommand UpdateProfileCommand => new RelayCommand(UpdateProfile);
+        public ICommand UpdateProfileCommand => Actions.UpdateProfileCommand;
 
-        public ICommand AddVariableCommand => new RelayCommand(AddVariable);
+        public ICommand AddVariableCommand => Actions.AddVariableCommand;
 
-        public ICommand CancelAddVariableCommand => new RelayCommand(CancelAddVariable);
+        public ICommand CancelAddVariableCommand => Actions.CancelAddVariableCommand;
 
-        public ICommand AddDefaultVariableCommand => new RelayCommand<DefaultVariablesSet>(AddDefaultVariable);
+        public ICommand AddDefaultVariableCommand => Actions.AddDefaultVariableCommand;
 
         public EnvironmentVariablesMainPage(MainViewModel viewModel)
         {
@@ -57,20 +54,20 @@ namespace EnvironmentVariablesUILib
 
         private async Task ShowEditDialogAsync(Variable variable, VariablesSet parentSet)
         {
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-
-            EditVariableDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
-            EditVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
-            EditVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
-            EditVariableDialog.PrimaryButtonCommand = EditCommand;
-            EditVariableDialog.PrimaryButtonCommandParameter = new RelayCommandParameter(variable, parentSet);
-
-            var clone = variable.Clone();
-            EditVariableDialog.DataContext = clone;
-
-            UpdateEditVariableDialogPrimaryButtonState();
-
-            await EditVariableDialog.ShowAsync();
+            await EnvironmentVariablesPageActions.ShowVariableEditAsync(
+                variable,
+                () =>
+                {
+                    var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                    EditVariableDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
+                    EditVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+                    EditVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
+                    EditVariableDialog.PrimaryButtonCommand = EditCommand;
+                    EditVariableDialog.PrimaryButtonCommandParameter = new EnvironmentVariablesPageActions.EditTarget(variable, parentSet);
+                },
+                clone => EditVariableDialog.DataContext = clone,
+                UpdateEditVariableDialogPrimaryButtonState,
+                async () => await EditVariableDialog.ShowAsync());
         }
 
         private async void EditVariable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -85,38 +82,20 @@ namespace EnvironmentVariablesUILib
             }
         }
 
-        private void EditVariable(RelayCommandParameter param)
-        {
-            var variableSet = param.Set as ProfileVariablesSet;
-            var original = param.Variable;
-            var edited = EditVariableDialog.DataContext as Variable;
-            ViewModel.EditVariable(original, edited, variableSet);
-        }
-
         private async Task AddProfileAsync()
         {
-            SwitchViewsSegmentedView.SelectedIndex = 0;
-
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
-            AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
-            AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
-            AddProfileDialog.PrimaryButtonCommand = AddProfileCommand;
-            AddProfileDialog.DataContext = new ProfileVariablesSet(Guid.NewGuid(), string.Empty);
-
-            await AddProfileDialog.ShowAsync();
-        }
-
-        private void AddProfile()
-        {
-            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
-            ViewModel.AddProfile(profile);
-        }
-
-        private void UpdateProfile()
-        {
-            var updatedProfile = AddProfileDialog.DataContext as ProfileVariablesSet;
-            ViewModel.UpdateProfile(updatedProfile);
+            await EnvironmentVariablesPageActions.ShowNewProfileAsync(
+                () => SwitchViewsSegmentedView.SelectedIndex = 0,
+                () =>
+                {
+                    var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                    AddProfileDialog.Title = resourceLoader.GetString("AddNewProfileDialog_Title");
+                    AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
+                    AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
+                    AddProfileDialog.PrimaryButtonCommand = AddProfileCommand;
+                },
+                profile => AddProfileDialog.DataContext = profile,
+                async () => await AddProfileDialog.ShowAsync());
         }
 
         private async void RemoveProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -124,68 +103,45 @@ namespace EnvironmentVariablesUILib
             var button = sender as MenuFlyoutItem;
             var profile = button.CommandParameter as ProfileVariablesSet;
 
-            if (profile != null)
+            await EnvironmentVariablesPageActions.ConfirmRemoveProfileAsync(() => ViewModel, profile, async (readTitle, primary) =>
             {
                 var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
                 ContentDialog dialog = new ContentDialog();
                 dialog.XamlRoot = RootPage.XamlRoot;
-                dialog.Title = profile.Name;
+                dialog.Title = readTitle();
                 dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
                 dialog.CloseButtonText = resourceLoader.GetString("No");
                 dialog.DefaultButton = ContentDialogButton.Primary;
                 dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
                 dialog.PrimaryButtonClick += (s, args) =>
                 {
-                    ViewModel.RemoveProfile(profile);
+                    primary();
                 };
 
                 var result = await dialog.ShowAsync();
-            }
+            });
         }
 
         private void AddVariable()
         {
-            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
-            if (profile != null)
-            {
-                if (AddVariableSwitchPresenter.Value as string == "NewVariable")
-                {
-                    VariableEditorState.AddProfileVariable(
-                        profile, true, AddNewVariableName.Text, AddNewVariableValue.Text, Array.Empty<object>());
-                }
-                else
-                {
-                    VariableEditorState.AddProfileVariable(
-                        profile, false, null, null, ExistingVariablesListView.SelectedItems);
-                }
-            }
-
-            AddNewVariableName.Text = string.Empty;
-            AddNewVariableValue.Text = string.Empty;
-            ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-            ExistingVariablesListView.SelectedItems.Clear();
-            ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
-            AddVariableFlyout.Hide();
+            EnvironmentVariablesPageActions.AddProfileVariable(
+                () => AddProfileDialog.DataContext as ProfileVariablesSet,
+                () => AddVariableSwitchPresenter.Value as string,
+                () => AddNewVariableName.Text,
+                () => AddNewVariableValue.Text,
+                () => ExistingVariablesListView.SelectedItems,
+                CancelAddVariable);
         }
 
         private void CancelAddVariable()
         {
-            AddNewVariableName.Text = string.Empty;
-            AddNewVariableValue.Text = string.Empty;
-
-            ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-            ExistingVariablesListView.SelectedItems.Clear();
-            ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
-
-            AddVariableFlyout.Hide();
-        }
-
-        private void AddDefaultVariable(DefaultVariablesSet set)
-        {
-            var variable = AddDefaultVariableDialog.DataContext as Variable;
-            var type = set.Type;
-
-            ViewModel.AddDefaultVariable(variable, type);
+            EnvironmentVariablesPageActions.CancelAddVariable(
+                () => AddNewVariableName.Text = string.Empty,
+                () => AddNewVariableValue.Text = string.Empty,
+                () => ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged,
+                () => ExistingVariablesListView.SelectedItems.Clear(),
+                () => ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged,
+                () => AddVariableFlyout.Hide());
         }
 
         private async void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -194,22 +150,22 @@ namespace EnvironmentVariablesUILib
             var variableSet = selectedItem.DataContext as ProfileVariablesSet;
             var variable = selectedItem.CommandParameter as Variable;
 
-            if (variable != null)
+            await EnvironmentVariablesPageActions.ConfirmDeleteVariableAsync(() => ViewModel, variable, variableSet, async (readTitle, primary) =>
             {
                 var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
                 ContentDialog dialog = new ContentDialog();
                 dialog.XamlRoot = RootPage.XamlRoot;
-                dialog.Title = variable.Name;
+                dialog.Title = readTitle();
                 dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
                 dialog.CloseButtonText = resourceLoader.GetString("No");
                 dialog.DefaultButton = ContentDialogButton.Primary;
                 dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Variable_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
                 dialog.PrimaryButtonClick += (s, args) =>
                 {
-                    ViewModel.DeleteVariable(variable, variableSet);
+                    primary();
                 };
                 var result = await dialog.ShowAsync();
-            }
+            });
         }
 
         private void AddNewVariableName_TextChanged(object sender, TextChangedEventArgs e)
@@ -244,84 +200,75 @@ namespace EnvironmentVariablesUILib
 
         private void ReloadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            ViewModel.LoadEnvironmentVariables();
-            ViewModel.EnvironmentState = EnvironmentState.Unchanged;
+            EnvironmentVariablesPageActions.Reload(ViewModel);
         }
 
         private void ExistingVariablesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
 
-            if (e.AddedItems.Count > 0)
-            {
-                var list = sender as ListView;
-                var duplicates = VariableEditorState.GetSecondSelectionsFromDuplicateNameGroups(list.SelectedItems.Cast<Variable>());
-
-                foreach (var dup in duplicates)
-                {
-                    ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-                    list.SelectedItems.Remove(dup);
-                    ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
-                }
-            }
-
-            if (e.RemovedItems.Count > 0)
-            {
-                Variable removedVariable = e.RemovedItems[0] as Variable;
-                VariableEditorState.RemoveFirstEquivalent(profile, removedVariable);
-            }
-
-            UpdateConfirmAddVariableButtonState();
+            EnvironmentVariablesPageActions.SelectionChanged(
+                profile,
+                e.AddedItems.Count,
+                () => (sender as ListView).SelectedItems.Cast<Variable>(),
+                () => e.RemovedItems[0],
+                () => e.RemovedItems.Count,
+                () => ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged,
+                duplicate => (sender as ListView).SelectedItems.Remove(duplicate),
+                () => ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged,
+                UpdateConfirmAddVariableButtonState);
         }
 
         private async void EditProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            SwitchViewsSegmentedView.SelectedIndex = 0;
-
-            var button = sender as MenuFlyoutItem;
-            var profile = button.CommandParameter as ProfileVariablesSet;
-
-            if (profile != null)
-            {
-                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-                AddProfileDialog.Title = resourceLoader.GetString("EditProfileDialog_Title");
-                AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
-                AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
-                AddProfileDialog.PrimaryButtonCommand = UpdateProfileCommand;
-                AddProfileDialog.DataContext = profile.Clone();
-                await AddProfileDialog.ShowAsync();
-            }
+            await EnvironmentVariablesPageActions.ShowProfileEditAsync(
+                () => SwitchViewsSegmentedView.SelectedIndex = 0,
+                () =>
+                {
+                    var button = sender as MenuFlyoutItem;
+                    return button.CommandParameter as ProfileVariablesSet;
+                },
+                () =>
+                {
+                    var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                    AddProfileDialog.Title = resourceLoader.GetString("EditProfileDialog_Title");
+                    AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+                    AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
+                    AddProfileDialog.PrimaryButtonCommand = UpdateProfileCommand;
+                },
+                profile => AddProfileDialog.DataContext = profile,
+                async () => await AddProfileDialog.ShowAsync());
         }
 
         private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
 
-            foreach (Variable item in VariableEditorState.LoadSelection(
-                profile, ExistingVariablesListView.Items.Cast<Variable>(), ExistingVariablesListView.SelectedItems.Cast<Variable>()))
-            {
-                ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-                ExistingVariablesListView.SelectedItems.Add(item);
-                ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
-            }
+            EnvironmentVariablesPageActions.LoadSelection(
+                profile,
+                ExistingVariablesListView.Items.Cast<Variable>(),
+                ExistingVariablesListView.SelectedItems.Cast<Variable>(),
+                () => ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged,
+                item => ExistingVariablesListView.SelectedItems.Add(item),
+                () => ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged);
         }
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
         {
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-
-            AddDefaultVariableDialog.Title = resourceLoader.GetString("AddVariable_Title");
-            AddDefaultVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
-            AddDefaultVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
-            AddDefaultVariableDialog.PrimaryButtonCommand = AddDefaultVariableCommand;
-            AddDefaultVariableDialog.PrimaryButtonCommandParameter = set;
-
-            var variableType = set.Id == VariablesSet.SystemGuid ? VariablesSetType.System : VariablesSetType.User;
-            AddDefaultVariableDialog.DataContext = new Variable(string.Empty, string.Empty, variableType);
-
-            UpdateAddDefaultVariableDialogButtonState();
-
-            await AddDefaultVariableDialog.ShowAsync();
+            await EnvironmentVariablesPageActions.ShowDefaultAddAsync(
+                set,
+                () =>
+                {
+                    var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                    AddDefaultVariableDialog.Title = resourceLoader.GetString("AddVariable_Title");
+                    AddDefaultVariableDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+                    AddDefaultVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
+                    AddDefaultVariableDialog.PrimaryButtonCommand = AddDefaultVariableCommand;
+                    AddDefaultVariableDialog.PrimaryButtonCommandParameter = set;
+                },
+                variable => AddDefaultVariableDialog.DataContext = variable,
+                UpdateAddDefaultVariableDialogButtonState,
+                async () => await AddDefaultVariableDialog.ShowAsync());
         }
 
         private async void AddDefaultVariableBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -393,18 +340,16 @@ namespace EnvironmentVariablesUILib
         private void EditVariableDialogValueTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var txtBox = sender as TextBox;
-            var variable = EditVariableDialog.DataContext as Variable;
-
-            // Ensure Values is current regardless of binding timing.
-            variable.Values = txtBox.Text;
-            variable.ValuesList = Variable.ValuesStringToValuesListItemCollection(txtBox.Text);
-            UpdateEditVariableDialogPrimaryButtonState();
+            EnvironmentVariablesPageActions.EditValueTextChanged(
+                () => EditVariableDialog.DataContext as Variable,
+                () => txtBox.Text,
+                UpdateEditVariableDialogPrimaryButtonState);
         }
 
         private void UpdateEditVariableDialogPrimaryButtonState()
         {
             var variable = EditVariableDialog.DataContext as Variable;
-            var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
+            var param = EditVariableDialog.PrimaryButtonCommandParameter as EnvironmentVariablesPageActions.EditTarget;
 
             if (variable == null || param == null)
             {
@@ -484,9 +429,11 @@ namespace EnvironmentVariablesUILib
 
             var variable = EditVariableDialog.DataContext as Variable;
             var newValues = VariableEditorState.InsertBefore(variable, listItem);
-            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            EnvironmentVariablesPageActions.SetRawTextWithHandlerSuppressed(
+                newValues,
+                () => EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged,
+                text => EditVariableDialogValueTxtBox.Text = text,
+                () => EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged);
         }
 
         private void InsertListEntryAfterButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -499,9 +446,11 @@ namespace EnvironmentVariablesUILib
 
             var variable = EditVariableDialog.DataContext as Variable;
             var newValues = VariableEditorState.InsertAfter(variable, listItem);
-            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            EnvironmentVariablesPageActions.SetRawTextWithHandlerSuppressed(
+                newValues,
+                () => EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged,
+                text => EditVariableDialogValueTxtBox.Text = text,
+                () => EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged);
         }
 
         private void EditVariableValuesListTextBox_LostFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -519,20 +468,21 @@ namespace EnvironmentVariablesUILib
 
             var variable = EditVariableDialog.DataContext as Variable;
             var newValues = VariableEditorState.CommitEntryText(variable, listItem, (sender as TextBox)?.Text);
-            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            EnvironmentVariablesPageActions.SetRawTextWithHandlerSuppressed(
+                newValues,
+                () => EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged,
+                text => EditVariableDialogValueTxtBox.Text = text,
+                () => EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged);
         }
 
         private void InvalidStateInfoBar_CloseButtonClick(InfoBar sender, object args)
         {
-            ViewModel.EnvironmentState = EnvironmentState.Unchanged;
+            EnvironmentVariablesPageActions.DismissWarning(ViewModel);
         }
 
         private void AddVariableFlyout_Closed(object sender, object e)
         {
-            CancelAddVariable();
-            ConfirmAddVariableBtn.IsEnabled = false;
+            EnvironmentVariablesPageActions.FlyoutClosed(CancelAddVariable, () => ConfirmAddVariableBtn.IsEnabled = false);
         }
     }
 }
