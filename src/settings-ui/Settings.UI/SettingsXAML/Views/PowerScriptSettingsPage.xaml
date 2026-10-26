@@ -79,9 +79,19 @@
                         AutomationProperties.AutomationId="PowerScriptsEditorStatus"
                         IsClosable="True"
                         Severity="Informational" />
-                    <controls:SettingsGroup
-                        x:Uid="PowerScripts_ScriptIsolation"
-                        AutomationProperties.AutomationId="PowerScriptsScriptIsolation">
+                    <tkcontrols:SettingsCard x:Uid="PowerScripts_ExecutionEnvironment" ContentAlignment="Vertical">
+                        <TextBlock
+                            AutomationProperties.AutomationId="PowerScriptsExecutionSummary"
+                            Text="{Binding ExecutionSummary, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        AutomationProperties.AutomationId="PowerScriptsExecutionBlocked"
+                        IsClosable="False"
+                        IsOpen="{Binding HasExecutionBlock, Mode=OneWay}"
+                        Message="{Binding ExecutionBlockedReason, Mode=OneWay}"
+                        Severity="Warning" />
+                    <controls:SettingsGroup x:Uid="PowerScripts_ScriptIsolation" AutomationProperties.AutomationId="PowerScriptsScriptIsolation">
                         <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPerScript">
                             <Button
                                 x:Uid="PowerScripts_MxcConfigure"
@@ -93,7 +103,7 @@
                                 MaxWidth="360"
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="{Binding MxcEffectiveDisplay, Mode=OneWay}"
+                                Text="{Binding ExecutionPolicyDisplay, Mode=OneWay}"
                                 TextWrapping="Wrap" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcRecommendation" ContentAlignment="Right">

@@ -6283,13 +6283,13 @@ Text uses the current drawing color.</value>
     <value>Author recommendation: allow this access if the script needs it.</value>
   </data>
   <data name="PowerScripts_MxcGroup.Header" xml:space="preserve">
-    <value>MXC execution isolation</value>
+    <value>Windows script isolation</value>
   </data>
   <data name="PowerScripts_MxcEnabled.Header" xml:space="preserve">
     <value>Use MXC</value>
   </data>
   <data name="PowerScripts_MxcEnabled.Description" xml:space="preserve">
-    <value>Run PowerScripts through MXC. Turning this off requires accepting the reduced-isolation risk.</value>
+    <value>Default isolation for Windows PowerShell and Windows Python. Managed Linux requires its own per-script review. Turning this off requires accepting the reduced-isolation risk.</value>
   </data>
   <data name="PowerScripts_MxcEnabledToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Use MXC</value>
@@ -6974,4 +6974,127 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_TemplateMaximumFiles.Header" xml:space="preserve"><value>Maximum input files (0 means unlimited)</value></data>
   <data name="PowerScripts_TemplateInvalidFileCount" xml:space="preserve"><value>Enter a whole-number file count. The minimum must be at least 1; maximum 0 means unlimited.</value></data>
   <data name="PowerScripts_TemplateFolderFailed" xml:space="preserve"><value>The script was created, but its folder could not be opened.</value></data>
+  <data name="PowerScripts_PythonEnvironmentGroup.Header" xml:space="preserve">
+    <value>Python environment</value>
+  </data>
+  <data name="PowerScripts_PythonEnvironment.Header" xml:space="preserve">
+    <value>Run Python scripts in</value>
+  </data>
+  <data name="PowerScripts_EnvironmentDisabled.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="PowerScripts_EnvironmentWindows.Content" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="PowerScripts_EnvironmentWsl.Content" xml:space="preserve">
+    <value>Existing WSL distribution</value>
+  </data>
+  <data name="PowerScripts_EnvironmentLinux.Content" xml:space="preserve">
+    <value>Managed Linux container</value>
+  </data>
+  <data name="PowerScripts_EnvironmentDisabledHelp" xml:space="preserve">
+    <value>Python scripts are disabled. PowerShell scripts are unaffected.</value>
+  </data>
+  <data name="PowerScripts_EnvironmentWindowsHelp" xml:space="preserve">
+    <value>Use Python installed on Windows, with Windows script isolation.</value>
+  </data>
+  <data name="PowerScripts_EnvironmentWslHelp" xml:space="preserve">
+    <value>Use Python and packages in your existing WSL distribution. This environment does not support MXC isolation.</value>
+  </data>
+  <data name="PowerScripts_EnvironmentLinuxHelp" xml:space="preserve">
+    <value>Use a separate Python 3.12 Linux image with MXC. This does not use or modify your WSL distribution, its Python, or its packages.</value>
+  </data>
+  <data name="PowerScripts_LinuxControls.Header" xml:space="preserve">
+    <value>Managed Linux isolation</value>
+  </data>
+  <data name="PowerScripts_LinuxControlsText.Text" xml:space="preserve">
+    <value>Required: MXC and restricted Windows file access. Script packages and selected inputs are read-only; only the output workspace is writable on Windows.
+Available: block or allow all networking, per script.
+Unsupported: Windows UI and least-privilege policies. Python runs as root inside the Linux container, not as a Windows administrator.
+Each script requires explicit acceptance of these two unsupported-policy exceptions. There is no direct or existing-WSL fallback.</value>
+  </data>
+  <data name="PowerScripts_LinuxStatus.Header" xml:space="preserve">
+    <value>Environment status</value>
+  </data>
+  <data name="PowerScripts_LinuxStatus.Description" xml:space="preserve">
+    <value>Requires a compatible WSL runtime. Checking status never downloads an image. Preparing the environment downloads and caches python:3.12-alpine; it does not trust scripts or accept isolation exceptions.</value>
+  </data>
+  <data name="PowerScripts_LinuxCheck.Content" xml:space="preserve">
+    <value>Check status</value>
+  </data>
+  <data name="PowerScripts_LinuxSetup.Content" xml:space="preserve">
+    <value>Prepare environment</value>
+  </data>
+  <data name="PowerScripts_LinuxNotChecked" xml:space="preserve">
+    <value>Environment has not been checked.</value>
+  </data>
+  <data name="PowerScripts_LinuxPreparing" xml:space="preserve">
+    <value>Downloading and preparing the managed Python environment...</value>
+  </data>
+  <data name="PowerScripts_LinuxChecking" xml:space="preserve">
+    <value>Checking the managed Python environment...</value>
+  </data>
+  <data name="PowerScripts_LinuxSetupTitle" xml:space="preserve">
+    <value>Prepare the managed Linux environment?</value>
+  </data>
+  <data name="PowerScripts_LinuxSetupHelp" xml:space="preserve">
+    <value>This downloads the python:3.12-alpine image from its container registry into the PowerScripts cache. Preparation needs network access, independently of script network permissions. Your existing WSL distributions are not changed. No script is trusted and no isolation exception is accepted.</value>
+  </data>
+  <data name="PowerScripts_LinuxSetupConfirm" xml:space="preserve">
+    <value>Download environment</value>
+  </data>
+  <data name="PowerScripts_ExecutionEnvironment.Header" xml:space="preserve">
+    <value>Execution environment</value>
+  </data>
+  <data name="PowerScripts_ExecutionDescriptor" xml:space="preserve">
+    <value>This script supplies its own launch command in the descriptor. Python environment selection does not change that command.</value>
+  </data>
+  <data name="PowerScripts_ExecutionDescriptorPolicy" xml:space="preserve">
+    <value>The requested MXC policy is evaluated against the descriptor's executable. Windows isolation cannot host wsl.exe; explicitly required MXC is refused for that target.</value>
+  </data>
+  <data name="PowerScripts_ExecutionWindowsPython" xml:space="preserve">
+    <value>Python on Windows, using the configured Windows interpreter.</value>
+  </data>
+  <data name="PowerScripts_ExecutionPowerShell" xml:space="preserve">
+    <value>PowerShell on Windows. Python environment selection does not affect this script.</value>
+  </data>
+  <data name="PowerScripts_ExecutionWsl" xml:space="preserve">
+    <value>Python in your existing WSL distribution: {0}. No MXC isolation.</value>
+  </data>
+  <data name="PowerScripts_WslDefaultDistribution" xml:space="preserve">
+    <value>WSL default distribution</value>
+  </data>
+  <data name="PowerScripts_ExecutionWslBlocked" xml:space="preserve">
+    <value>Blocked: this script explicitly requires MXC, which cannot isolate your existing WSL distribution. Select managed Linux and review its supported policies, or explicitly review this script's direct-execution permissions.</value>
+  </data>
+  <data name="PowerScripts_ExecutionLinux" xml:space="preserve">
+    <value>Python 3.12 in a separate managed Linux container. MXC required; your WSL distribution and packages are not used.</value>
+  </data>
+  <data name="PowerScripts_ExecutionLinuxControls" xml:space="preserve">
+    <value>Windows files restricted; networking {0}. Windows UI and least-privilege policies are not enforced. Python runs as guest root.</value>
+  </data>
+  <data name="PowerScripts_LinuxNetworkBlocked" xml:space="preserve">
+    <value>blocked</value>
+  </data>
+  <data name="PowerScripts_LinuxNetworkAllowed" xml:space="preserve">
+    <value>allowed</value>
+  </data>
+  <data name="PowerScripts_ExecutionLinuxBlocked" xml:space="preserve">
+    <value>Blocked by isolation requirements. Configure this script to require MXC and filesystem protection, then explicitly accept the unsupported Windows UI and least-privilege exceptions. Source changes require a new review.</value>
+  </data>
+  <data name="PowerScripts_ExecutionLinuxSetupRequired" xml:space="preserve">
+    <value>The managed Linux environment is not ready or has not been checked. Check or prepare it in PowerScripts settings.</value>
+  </data>
+  <data name="PowerScripts_ExecutionBlocked" xml:space="preserve">
+    <value>Execution blocked. No direct-execution fallback is permitted.</value>
+  </data>
+  <data name="PowerScripts_LinuxPolicyHelp.Title" xml:space="preserve">
+    <value>Managed Linux requires a per-script exception review</value>
+  </data>
+  <data name="PowerScripts_LinuxPolicyHelp.Message" xml:space="preserve">
+    <value>MXC and restricted Windows file access are mandatory. Windows UI and least-privilege policies are unsupported; Python runs as guest root. Use the supported Linux policies below, review networking, and explicitly accept the risk before applying. Choosing the preset alone saves nothing.</value>
+  </data>
+  <data name="PowerScripts_LinuxUseSupported.Content" xml:space="preserve">
+    <value>Use supported Linux policies</value>
+  </data>
 </root>

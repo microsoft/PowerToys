@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,8 +56,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 .Replace("{0}", script.Name, StringComparison.Ordinal);
             PrimaryButtonText = resourceLoader.GetString("PowerScripts_MxcPolicyDialog_Apply");
             CloseButtonText = resourceLoader.GetString("PowerScripts_MxcPolicyDialog_Cancel");
-            MxcModeComboBox.SelectedIndex = script.MxcModeIndex;
-            _usesGlobalPolicy = script.MxcModeIndex == 0 &&
+            MxcModeComboBox.SelectedIndex = IsManagedLinux ? 1 : script.MxcModeIndex;
+            _usesGlobalPolicy = !IsManagedLinux && script.MxcModeIndex == 0 &&
                                 script.MxcEnabledPolicies.Count == 0 &&
                                 script.MxcDisabledPolicies.Count == 0;
             UpdateRiskState(resetAcceptance: false);
@@ -68,6 +69,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerScriptListItem Script { get; }
 
         public ObservableCollection<PowerScriptMxcPolicyOption> Policies { get; }
+
+        public bool IsManagedLinux => Script.UsesManagedLinux;
+
+        public Visibility WindowsControlsVisibility => IsManagedLinux ? Visibility.Collapsed : Visibility.Visible;
+
+        public Visibility LinuxControlsVisibility => IsManagedLinux ? Visibility.Visible : Visibility.Collapsed;
+
+        public IEnumerable<PowerScriptMxcPolicyOption> VisiblePolicies =>
+            IsManagedLinux ? Policies.Where(policy => policy.Key == PowerScriptListItem.NetworkPolicy) : Policies;
 
         public int MxcModeIndex => MxcModeComboBox.SelectedIndex;
 
@@ -128,6 +138,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             _usesGlobalPolicy = true;
+            UpdateRiskState();
+        }
+
+        private void UseLinuxPolicy_Click(object sender, RoutedEventArgs e)
+        {
+            MxcModeComboBox.SelectedIndex = 1;
+            foreach (var policy in Policies)
+            {
+                policy.IsEnabled = policy.Key is PowerScriptListItem.FilesystemPolicy or PowerScriptListItem.NetworkPolicy;
+            }
+
+            _usesGlobalPolicy = false;
             UpdateRiskState();
         }
 
@@ -194,7 +216,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             ReducedIsolationWarning.IsOpen = requiresAcceptance;
-            IsPrimaryButtonEnabled = !requiresAcceptance || RiskAcceptanceCheckBox.IsChecked == true;
+            var supported = !IsManagedLinux ||
+                (MxcModeIndex == 1 &&
+                 Policies.Single(policy => policy.Key == PowerScriptListItem.FilesystemPolicy).IsEnabled &&
+                 !Policies.Single(policy => policy.Key == PowerScriptListItem.UiPolicy).IsEnabled &&
+                 !Policies.Single(policy => policy.Key == PowerScriptListItem.LeastPrivilegePolicy).IsEnabled);
+            IsPrimaryButtonEnabled = supported && (!requiresAcceptance || RiskAcceptanceCheckBox.IsChecked == true);
             DefaultButton = requiresAcceptance ? ContentDialogButton.Close : ContentDialogButton.Primary;
         }
     }

@@ -119,7 +119,7 @@ public sealed class PythonRuntime
 
         if (_settings.Mode == PythonRuntimeMode.Disabled)
         {
-            return new PythonTransformResult { ExitCode = 2, StdErr = "Python PowerScripts are disabled. Enable them in PowerScripts settings (Windows or WSL)." };
+            return new PythonTransformResult { ExitCode = 2, StdErr = "Python PowerScripts are disabled. Select Windows, an existing WSL distribution, or managed Linux in PowerScripts settings." };
         }
 
         if (string.IsNullOrWhiteSpace(manifest.EntryFunction))
@@ -153,9 +153,49 @@ public sealed class PythonRuntime
         input.Entry = manifest.EntryFunction;
         input.InputFormat = ScriptIo.ToToken(inputFormat);
 
-        return _settings.Mode == PythonRuntimeMode.Wsl
-            ? RunViaWsl(manifest, runnerPath, scriptPath, input)
-            : RunOnWindows(manifest, runnerPath, scriptPath, input);
+        return _settings.Mode switch
+        {
+            PythonRuntimeMode.Windows => RunOnWindows(manifest, runnerPath, scriptPath, input),
+            PythonRuntimeMode.Wsl => RunViaWsl(manifest, runnerPath, scriptPath, input),
+            PythonRuntimeMode.ManagedLinux => RunInManagedLinux(manifest, runnerPath, scriptPath, input),
+            _ => new PythonTransformResult { ExitCode = 2, StdErr = "Unknown Python execution environment." },
+        };
+    }
+
+    private PythonTransformResult RunInManagedLinux(
+        PowerScriptManifest manifest,
+        string runnerPath,
+        string scriptPath,
+        PythonTransformInput input)
+    {
+        try
+        {
+            var translated = new PythonTransformInput
+            {
+                Text = input.Text,
+                FilePaths = input.FilePaths?.Select(path => MxcLinuxProcessRunner.ToContainerPath(path)).ToList(),
+                Params = TranslateWslFileParameters(manifest, input.Params),
+                Entry = input.Entry,
+                InputFormat = input.InputFormat,
+            };
+            var payload = JsonSerializer.Serialize(translated, JsonOptions);
+            return RunAndParse(
+                manifest,
+                input,
+                (context, timeout) =>
+                {
+                    var settings = _mxcSettings ?? MxcSettings.Load();
+                    var policy = MxcPolicyResolver.Resolve(
+                        settings, context.ScriptId, context.RecommendedPolicies, context.HasLocalMxcSettings, context.LocalMxc);
+                    return MxcLinuxProcessRunner.Run(
+                        runnerPath, scriptPath, payload, ScriptIo.Resolve(manifest).Output, context, policy, settings, timeout);
+                },
+                translateResultPaths: false);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or IOException)
+        {
+            return new PythonTransformResult { ExitCode = 2, StdErr = ex.Message };
+        }
     }
 
     private PythonTransformResult RunOnWindows(
@@ -266,6 +306,17 @@ public sealed class PythonRuntime
         PowerScriptManifest manifest,
         PythonTransformInput input,
         string payload,
+        bool translateResultPaths) =>
+        RunAndParse(
+            manifest,
+            input,
+            (context, timeout) => ProcessRunner.Run(psi, context, payload, timeout, _mxcSettings),
+            translateResultPaths);
+
+    private PythonTransformResult RunAndParse(
+        PowerScriptManifest manifest,
+        PythonTransformInput input,
+        Func<ProcessExecutionContext, int, ProcessRunResult> execute,
         bool translateResultPaths)
     {
         try
@@ -277,7 +328,7 @@ public sealed class PythonRuntime
                 parameter => (string?)parameter.Value,
                 StringComparer.OrdinalIgnoreCase);
             var context = Security.ProcessExecutionContext.FromManifest(manifest, inputPaths, parameterValues);
-            var run = Security.ProcessRunner.Run(psi, context, payload, timeoutMs, _mxcSettings);
+            var run = execute(context, timeoutMs);
 
             if (run.ExitCode == 124)
             {

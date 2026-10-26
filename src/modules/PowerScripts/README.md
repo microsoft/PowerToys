@@ -96,7 +96,8 @@ Only relevant file options are shown; named parameters can be added to the descr
 folder derived from the project name with a unique action ID, editable `script.ps1`,
 `script.ps1.tool.json`, and a README explaining every example field and the safe MXC policy.
 It opens that package in Explorer. Creation never runs code, approves trust, or relaxes policy.
-All examples work with the default MXC restrictions enabled. The file-output example writes inside
+Windows examples work with the default MXC restrictions enabled; managed Linux additionally requires
+the explicit unsupported-policy review described below. The file-output example writes inside
 the isolated temporary workspace and returns explicit `file_paths`; the file-input example reads
 only consumer-supplied files staged by the Host. The Debug test window lists only no-input scripts.
 
@@ -221,7 +222,7 @@ Keep produced files available until the consumer has finished reading them; clip
 references may need a lifetime longer than the script invocation.
 
 Consumer `list` discovery omits Python scripts while Python execution is disabled in Settings.
-Windows and WSL modes both enable discovery. The Settings catalogue uses
+Windows, existing WSL and managed Linux modes enable discovery. The Settings catalogue uses
 `list --json --include-disabled --include-unconfigured` to keep all installed and unavailable
 registered scripts visible for configuration; these flags
 do not enable Python or bypass execution checks.
@@ -434,16 +435,51 @@ Run `PowerScripts.Host.exe mxc-support --json` to inspect the effective platform
 An explicit request to enable MXC still fails closed if MXC later becomes unavailable; only the
 machine-derived unsupported default runs directly without requiring a risk-acceptance preference.
 
-PowerScripts' WSL mode uses the user's existing `wsl.exe` and selected distribution; it does not use
-MXC's experimental WSLC backend. Because Windows `processcontainer` cannot host `wsl.exe`, an
+### Python environments
+
+Settings distinguishes **Windows**, **Existing WSL distribution**, and **Managed Linux container**.
+The selection applies to built-in Python execution, not PowerShell or explicit `x-execute` recipes.
+Switching environments preserves the Windows interpreter and WSL distribution settings; it never
+grants script trust or accepts isolation exceptions.
+
+Existing WSL uses the user's `wsl.exe`, distribution, Python and packages, not MXC's WSLC backend.
+Because Windows `processcontainer` cannot host `wsl.exe`, an
 implicit machine-derived MXC default is treated as unsupported for WSL launches and those launches
 run directly with a Settings warning. If MXC was explicitly required, the WSL launch is refused
-instead of silently bypassing isolation. Users do not need the WSLC SDK, a WSLC-enabled MXC build,
-or pre-pulled WSLC images.
+instead of silently bypassing isolation.
+
+Managed Linux uses MXC's WSLC backend with a separate `python:3.12-alpine` image, not the user's
+existing distribution or its installed packages. **Prepare environment** explicitly downloads the
+image into `%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\linux-container-images`; **Check status**
+only runs a fixed Python probe and never downloads. CLI equivalents are `linux-container-setup` and
+`linux-container-status` (JSON readiness, image and diagnostics). A compatible WSL runtime is required;
+this prototype has been verified with WSL 3.0.3. Setup does not upgrade WSL or modify distributions.
+The build bundles the architecture-matched WSL Containers SDK 3.0.3 DLL and notices alongside the
+existing Windows-compatible MXC executor, with the download and SHA-256 declared in `Mxc.Runtime.targets`.
+
+Managed Linux always requires MXC and filesystem protection. Only the active script package,
+Python helper, request JSON, selected input files and declared file parameters are projected
+read-only. Only the per-run workspace is writable on Windows; the Linux container also has its own
+internal writable filesystem. Network access is either wholly blocked (the default) or allowed per
+script; there is no per-host network filtering. Windows UI and `leastPrivilege` policies are
+**unsupported**, and the current image runs Python as **guest root**, not Windows administrator.
+Each script must explicitly require MXC, keep filesystem restriction enabled and accept the
+`ui` and `leastPrivilege` exceptions in its source/content-bound local isolation settings.
+**Use supported Linux policies** prepares this draft but saves nothing until risk acceptance and
+**Apply**. Global exceptions alone are insufficient. Changed source invalidates the exception.
+PowerScripts checks unsupported requirements before starting MXC; it does not rely on this pinned
+executor to reject them. Unavailable setup or incompatible policies never cause direct execution
+or a switch to the existing WSL distribution.
+
+Managed Linux preserves the same Python input/output protocol. File-producing scripts should use
+`tempfile` (whose `TMPDIR` is the projected workspace) or `POWERSCRIPTS_MXC_WORKSPACE`.
+Returned file paths must name existing files beneath that workspace; Linux-only `/tmp` paths,
+outside paths, traversal escapes and symlinks are refused. Successful file outputs remain
+Windows-accessible after container teardown; request JSON and executor configuration are removed.
 
 PowerToys can run as administrator, but a PowerScript **must never inherit that token**. Every launch
 — PowerShell, Python, and descriptor-driven — funnels through a single chokepoint
-(`Security/ProcessRunner`) that enforces this in one place:
+(`Security/ProcessRunner.SecureLauncher`) that enforces this in one place:
 
 - When the host is **not** elevated, `wxc-exec.exe` launches under the user's rights.
 - When the host **is** elevated, `wxc-exec.exe` itself is launched with the interactive shell user's

@@ -101,6 +101,37 @@ public class HostCliTests
     }
 
     [TestMethod]
+    [DataRow("linux-container-status")]
+    [DataRow("LINUX-CONTAINER-SETUP")]
+    public void LinuxEnvironmentCommandsRejectUnexpectedArgumentsBeforePreparation(string command)
+    {
+        var (exit, _, error) = RunHost(command, "unexpected");
+        Assert.AreEqual(1, exit);
+        StringAssert.Contains(error, "do not accept arguments");
+    }
+
+    [TestMethod]
+    public void CatalogueDistinguishesDescriptorLaunchCommandsFromBuiltInPython()
+    {
+        Write("recipe.py", "print('custom interpreter')");
+        Write("recipe.py.tool.json", """
+            {
+              "name": "recipe",
+              "description": "Explicit Python command",
+              "inputSchema": {"type":"object"},
+              "x-execute": {"command":["python", "recipe.py"]},
+              "x-powerscript": {"input":"none", "output":"text"}
+            }
+            """);
+        using var json = JsonDocument.Parse(RunHostOk("list", "--json", "--include-disabled", "--root", _root));
+        var scripts = json.RootElement.EnumerateArray().ToDictionary(row => row.GetProperty("id").GetString()!);
+        Assert.IsTrue(scripts["recipe"].GetProperty("hasExplicitExecution").GetBoolean());
+        Assert.AreEqual(JsonValueKind.Null, scripts["recipe"].GetProperty("transform").ValueKind);
+        Assert.IsFalse(scripts["py_upper"].GetProperty("hasExplicitExecution").GetBoolean());
+        Assert.AreEqual(JsonValueKind.Object, scripts["py_upper"].GetProperty("transform").ValueKind);
+    }
+
+    [TestMethod]
     public void TemplateConfigurationFlowsFromStdinIntoDiscoverableMetadata()
     {
         var (exit, stdout, error) = RunHostWithInput(
@@ -245,6 +276,7 @@ public class HostCliTests
     [DataRow("Disabled", false)]
     [DataRow("Windows", true)]
     [DataRow("Wsl", true)]
+    [DataRow("ManagedLinux", true)]
     [DoNotParallelize]
     public void Discovery_RespectsPythonMode_WhileConfigurationCanListAll(string? mode, bool pythonEnabled)
     {

@@ -4,13 +4,16 @@
     <MxcVersion>0.8.0</MxcVersion>
     <MxcArchiveUrl>https://github.com/microsoft/mxc/releases/download/v0.8.0/mxc-release-binaries.zip</MxcArchiveUrl>
     <MxcArchiveSha256>5c3a27073ba18eddf97efb4caad0f8b201c40a18d17b70f3a1e3847fb6232e3c</MxcArchiveSha256>
+    <MxcWslcSdkVersion>3.0.3</MxcWslcSdkVersion>
+    <MxcWslcSdkUrl>https://github.com/microsoft/WSL/releases/download/3.0.3/Microsoft.WSL.Containers.3.0.3.nupkg</MxcWslcSdkUrl>
+    <MxcWslcSdkSha256>d31f78cc4816ccccc0dc196ecf4d2b27911b8ed677b4b9cc697274e941b6511b</MxcWslcSdkSha256>
     <MxcArchitecture Condition="'$(RuntimeIdentifier)' == 'win-arm64' or ('$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64')">arm64</MxcArchitecture>
     <MxcArchitecture Condition="'$(MxcArchitecture)' == ''">x64</MxcArchitecture>
     <MxcCacheDirectory>$(MSBuildProjectDirectory)\obj\mxc</MxcCacheDirectory>
     <MxcRuntimeDirectory>$(MxcCacheDirectory)\$(MxcVersion)\$(MxcArchitecture)</MxcRuntimeDirectory>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="$(MxcRuntimeDirectory)\wxc-exec.exe;$(MxcRuntimeDirectory)\plm.exe;$(MxcRuntimeDirectory)\Mxc.spdx.json">
+    <Content Include="$(MxcRuntimeDirectory)\wxc-exec.exe;$(MxcRuntimeDirectory)\plm.exe;$(MxcRuntimeDirectory)\Mxc.spdx.json;$(MxcRuntimeDirectory)\wslcsdk.dll;$(MxcRuntimeDirectory)\Wslc.NOTICE.txt">
       <Link>%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>

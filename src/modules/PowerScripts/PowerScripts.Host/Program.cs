@@ -88,6 +88,34 @@ internal static class Program
                 return ScriptSettingsCommands.Run(PowerScriptsPaths.ResolveScriptsRoot(root), positional, options);
             }
 
+            if (args[0].ToLowerInvariant() is "linux-container-status" or "linux-container-setup")
+            {
+                if (args.Length != 1)
+                {
+                    Console.Error.WriteLine("Managed Linux setup and status commands do not accept arguments.");
+                    return 1;
+                }
+
+                if (args[0].Equals("linux-container-setup", StringComparison.OrdinalIgnoreCase))
+                {
+                    var setup = MxcLinuxProcessRunner.Setup();
+                    if (setup.ExitCode != 0)
+                    {
+                        Console.Error.WriteLine(setup.StdErr);
+                        return setup.ExitCode;
+                    }
+                }
+
+                var check = MxcLinuxProcessRunner.Probe();
+                Console.WriteLine(JsonSerializer.Serialize(new
+                {
+                    isReady = check.ExitCode == 0,
+                    image = MxcLinuxProcessRunner.Image,
+                    message = check.ExitCode == 0 ? check.StdOut.Trim() : check.StdErr.Trim(),
+                }));
+                return 0;
+            }
+
             var registry = new ScriptRegistry(root);
             registry.Load();
 
@@ -172,6 +200,7 @@ internal static class Program
                     s.Name,
                     s.Description,
                     runtime = s.Runtime.ToString(),
+                    hasExplicitExecution = s.Execute is not null,
                     s.Publisher,
                     s.Version,
                     s.Source,
@@ -742,6 +771,8 @@ internal static class Program
         Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
         Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
+        Console.WriteLine("  linux-container-status             (check the managed Python image without downloading)");
+        Console.WriteLine("  linux-container-setup              (explicitly download/cache the managed Python image)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  script-settings get|save|reset|forget --entry <script-path> [--root <dir>]");
         Console.WriteLine("  template list | template create <template-id> [--configure] [--root <dir>]");

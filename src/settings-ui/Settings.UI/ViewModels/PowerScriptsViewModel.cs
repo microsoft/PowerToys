@@ -193,7 +193,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Python execution mode: 0 = Disabled, 1 = Windows, 2 = WSL. Persisted to the shared
+        /// Python execution mode: 0 = Disabled, 1 = Windows, 2 = existing WSL, 3 = managed Linux. Persisted to the shared
         /// <c>config.json</c>'s <c>python.mode</c> so the Host runs Python PowerScripts the same way from
         /// every surface (a hotkey, the context menu, or Advanced Paste).
         /// </summary>
@@ -209,6 +209,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(IsWindowsMode));
                     OnPropertyChanged(nameof(IsWslMode));
+                    OnPropertyChanged(nameof(IsManagedLinuxMode));
+                    OnPropertyChanged(nameof(PythonEnvironmentDescription));
+                    RefreshScriptMxcStates();
                 }
             }
         }
@@ -216,6 +219,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsWindowsMode => _pythonModeIndex == 1;
 
         public bool IsWslMode => _pythonModeIndex == 2;
+
+        public bool IsManagedLinuxMode => _pythonModeIndex == 3;
+
+        public string PythonEnvironmentDescription => GetResourceString(_pythonModeIndex switch
+        {
+            1 => "PowerScripts_EnvironmentWindowsHelp",
+            2 => "PowerScripts_EnvironmentWslHelp",
+            3 => "PowerScripts_EnvironmentLinuxHelp",
+            _ => "PowerScripts_EnvironmentDisabledHelp",
+        });
 
         public bool IsMxcEnabled => _isMxcEnabled;
 
@@ -259,6 +272,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _pythonInterpreterPath = normalized;
                     SavePythonSettings();
                     OnPropertyChanged();
+                    RefreshScriptMxcStates();
                 }
             }
         }
@@ -275,6 +289,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _wslDistribution = normalized;
                     SavePythonSettings();
                     OnPropertyChanged();
+                    RefreshScriptMxcStates();
                 }
             }
         }
@@ -792,10 +807,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (script.HasLocalMxcSettings)
             {
                 script.ApplyLocalMxcSettings(_isMxcEnabled, _mxcDisabledPolicies);
-                return;
             }
-
-            if (!_hasRejectedGlobalMxcWeakening &&
+            else if (!_hasRejectedGlobalMxcWeakening &&
                 _mxcScriptOverrides.TryGetValue(script.Id, out var scriptOverride))
             {
                 script.ApplyMxcSettings(
@@ -814,6 +827,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isMxcEnabled,
                     _mxcDisabledPolicies);
             }
+
+            ApplyExecutionSummary(script);
         }
 
         private void RefreshScriptMxcStates()
@@ -956,6 +971,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         "windows" => 1,
                         "wsl" => 2,
+                        "managedlinux" => 3,
                         _ => 0,
                     };
 
@@ -971,7 +987,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         /// <summary>
         /// Persists the Python section into <c>config.json</c>, preserving <c>scriptsRoot</c> and any
-        /// timeout the Host may have written. Mode is stored as "disabled"/"windows"/"wsl".
+        /// timeout the Host may have written. Existing environment settings are retained when switching.
         /// </summary>
         private void SavePythonSettings()
         {
@@ -981,18 +997,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 1 => "windows",
                 2 => "wsl",
+                3 => "managedLinux",
                 _ => "disabled",
             };
 
             var existingTimeout = (config["python"] as JsonObject)?["timeoutSeconds"]?.GetValue<int>() ?? 30;
 
-            config["python"] = new JsonObject
+            var python = config["python"] as JsonObject;
+            if (python is null)
             {
-                ["mode"] = mode,
-                ["windows"] = new JsonObject { ["interpreterPath"] = _pythonInterpreterPath ?? string.Empty },
-                ["wsl"] = new JsonObject { ["distribution"] = _wslDistribution ?? string.Empty },
-                ["timeoutSeconds"] = existingTimeout,
-            };
+                python = new JsonObject();
+                config["python"] = python;
+            }
+
+            python["mode"] = mode;
+            python["windows"] = new JsonObject { ["interpreterPath"] = _pythonInterpreterPath ?? string.Empty };
+            python["wsl"] = new JsonObject { ["distribution"] = _wslDistribution ?? string.Empty };
+            python["timeoutSeconds"] = existingTimeout;
 
             WriteConfigNode(config);
         }

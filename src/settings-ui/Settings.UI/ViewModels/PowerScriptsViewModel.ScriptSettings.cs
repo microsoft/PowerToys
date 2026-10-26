@@ -125,7 +125,7 @@ public partial class PowerScriptsViewModel
     private Task<string> InvokeScriptSettingsHostAsync(string operation, string entryPath, JsonObject request = null) =>
         InvokeHostAsync(new[] { "script-settings", operation, "--entry", Path.GetFullPath(entryPath), "--root", ScriptsFolder }, request);
 
-    private static async Task<string> InvokeHostAsync(IEnumerable<string> arguments, JsonObject request = null)
+    private static async Task<string> InvokeHostAsync(IEnumerable<string> arguments, JsonObject request = null, TimeSpan? commandTimeout = null)
     {
         // Discovery can traverse development output folders, so keep it off the UI thread as well.
         var hostPath = await Task.Run(ResolveHostPath);
@@ -152,7 +152,7 @@ public partial class PowerScriptsViewModel
 
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var timeout = new CancellationTokenSource(commandTimeout ?? TimeSpan.FromSeconds(30));
 
         // Drain both pipes concurrently: stderr must never block stdout or stdin.
         var outputTask = process.StandardOutput.ReadToEndAsync(timeout.Token);

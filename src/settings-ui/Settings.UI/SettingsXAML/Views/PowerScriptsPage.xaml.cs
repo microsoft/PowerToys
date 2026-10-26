@@ -82,6 +82,39 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             await RefreshScriptsAsync();
             await ViewModel.RefreshMxcPlatformSupportAsync();
+            if (ViewModel.IsManagedLinuxMode)
+            {
+                await ViewModel.RefreshLinuxContainerAsync();
+            }
+        }
+
+        private async void PythonEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ComboBox { SelectedIndex: 3 })
+            {
+                await ViewModel.RefreshLinuxContainerAsync();
+            }
+        }
+
+        private async void CheckLinuxContainer_Click(object sender, RoutedEventArgs e) =>
+            await ViewModel.RefreshLinuxContainerAsync();
+
+        private async void SetupLinuxContainer_Click(object sender, RoutedEventArgs e)
+        {
+            var resources = ResourceLoaderInstance.ResourceLoader;
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = resources.GetString("PowerScripts_LinuxSetupTitle"),
+                Content = resources.GetString("PowerScripts_LinuxSetupHelp"),
+                PrimaryButtonText = resources.GetString("PowerScripts_LinuxSetupConfirm"),
+                CloseButtonText = resources.GetString("PowerScripts_MxcPolicyDialog_Cancel"),
+                DefaultButton = ContentDialogButton.Close,
+            };
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                await ViewModel.RefreshLinuxContainerAsync(prepare: true);
+            }
         }
 
         private void CreateScriptButton_Click(object sender, RoutedEventArgs e)

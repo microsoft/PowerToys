@@ -19,6 +19,9 @@ public enum PythonRuntimeMode
 
     /// <summary>Run inside a WSL distribution.</summary>
     Wsl,
+
+    /// <summary>Run in an MXC-managed Linux container, not an existing WSL distribution.</summary>
+    ManagedLinux,
 }
 
 /// <summary>Windows-mode Python settings.</summary>

@@ -16,6 +16,42 @@ $archivePath = Join-Path $cache ($dependency.MxcVersion + '.zip')
 $destination = Join-Path $cache ($dependency.MxcVersion + '\' + $Architecture.ToLowerInvariant())
 $mutex = [Threading.Mutex]::new($false, ('Local\PowerToys.PowerScripts.Mxc.' + $dependency.MxcArchiveSha256))
 $locked = $false
+
+function Restore-VerifiedArchive([string]$Path, [string]$Url, [string]$Sha256) {
+    if (-not (Test-Path -LiteralPath $Path)) {
+        $download = $Path + '.' + [Guid]::NewGuid().ToString('N') + '.download'
+        try {
+            Write-Host "Restoring MXC dependency from $Url"
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -UseBasicParsing -Uri $Url -OutFile $download
+            if ((Get-FileHash -LiteralPath $download -Algorithm SHA256).Hash -ne $Sha256) {
+                throw 'Downloaded MXC dependency failed SHA-256 verification.'
+            }
+            Move-Item -LiteralPath $download -Destination $Path
+        } finally {
+            if (Test-Path -LiteralPath $download) { Remove-Item -LiteralPath $download }
+        }
+    }
+    if ((Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash -ne $Sha256) {
+        throw "Cached MXC dependency failed SHA-256 verification. Remove '$Path' and rebuild."
+    }
+}
+
+function Restore-Entry($Archive, [string]$EntryPath, [string]$Path) {
+    $entry = $Archive.GetEntry($EntryPath)
+    if ($null -eq $entry) { throw "MXC dependency is missing $EntryPath." }
+    $temporary = $Path + '.restore'
+    try {
+        [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $temporary, $true)
+        if (-not (Test-Path -LiteralPath $Path) -or
+            (Get-FileHash -LiteralPath $temporary).Hash -ne (Get-FileHash -LiteralPath $Path).Hash) {
+            Move-Item -LiteralPath $temporary -Destination $Path -Force
+        }
+    } finally {
+        if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary }
+    }
+}
+
 try {
     try {
         $locked = $mutex.WaitOne([TimeSpan]::FromMinutes(10))
@@ -26,50 +62,33 @@ try {
     if (-not $locked) { throw 'Timed out waiting for the MXC dependency restore.' }
 
     New-Item -ItemType Directory -Path $destination -Force | Out-Null
-    if (-not (Test-Path -LiteralPath $archivePath)) {
-        $download = $archivePath + '.' + [Guid]::NewGuid().ToString('N') + '.download'
-        try {
-            Write-Host "Restoring MXC $($dependency.MxcVersion) from $($dependency.MxcArchiveUrl)"
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-            Invoke-WebRequest -UseBasicParsing -Uri $dependency.MxcArchiveUrl -OutFile $download
-            if ((Get-FileHash -LiteralPath $download -Algorithm SHA256).Hash -ne $dependency.MxcArchiveSha256) {
-                throw 'Downloaded MXC archive failed SHA-256 verification.'
-            }
-            Move-Item -LiteralPath $download -Destination $archivePath
-        } finally {
-            if (Test-Path -LiteralPath $download) { Remove-Item -LiteralPath $download }
-        }
-    }
-    if ((Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash -ne $dependency.MxcArchiveSha256) {
-        throw "Cached MXC archive failed SHA-256 verification. Remove '$archivePath' and rebuild."
-    }
+    Restore-VerifiedArchive $archivePath $dependency.MxcArchiveUrl $dependency.MxcArchiveSha256
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $archive = [IO.Compression.ZipFile]::OpenRead($archivePath)
     try {
-        # Only the ProcessContainer runtime and its diagnostic sidecar; no elevated host-prep tools.
+        # No elevated host-prep tools or long-lived backend daemons.
         foreach ($file in @(
             @{ Name = 'wxc-exec.exe'; Entry = 'wxc-exec.exe' },
             @{ Name = 'plm.exe'; Entry = 'plm.exe' },
             @{ Name = 'Mxc.spdx.json'; Entry = '_manifest/spdx_2.2/manifest.spdx.json' }
         )) {
             $entryPath = $Architecture.ToLowerInvariant() + '/' + $file.Entry
-            $entry = $archive.GetEntry($entryPath)
-            if ($null -eq $entry) { throw "MXC archive is missing $entryPath." }
-            $path = Join-Path $destination $file.Name
-            $temporary = $path + '.restore'
-            try {
-                [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $temporary, $true)
-                if (-not (Test-Path -LiteralPath $path) -or
-                    (Get-FileHash -LiteralPath $temporary).Hash -ne (Get-FileHash -LiteralPath $path).Hash) {
-                    Move-Item -LiteralPath $temporary -Destination $path -Force
-                }
-            } finally {
-                if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary }
-            }
+            Restore-Entry $archive $entryPath (Join-Path $destination $file.Name)
         }
     } finally {
         $archive.Dispose()
+    }
+
+    # The WSLC SDK is loaded only by the Linux backend; the Windows executor remains pinned.
+    $sdkPath = Join-Path $cache ('wslc-' + $dependency.MxcWslcSdkVersion + '.nupkg')
+    Restore-VerifiedArchive $sdkPath $dependency.MxcWslcSdkUrl $dependency.MxcWslcSdkSha256
+    $sdk = [IO.Compression.ZipFile]::OpenRead($sdkPath)
+    try {
+        Restore-Entry $sdk ('runtimes/win-' + $Architecture.ToLowerInvariant() + '/native/wslcsdk.dll') (Join-Path $destination 'wslcsdk.dll')
+        Restore-Entry $sdk 'NOTICE.txt' (Join-Path $destination 'Wslc.NOTICE.txt')
+    } finally {
+        $sdk.Dispose()
     }
 } finally {
     if ($locked) { $mutex.ReleaseMutex() }

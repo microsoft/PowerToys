@@ -130,18 +130,23 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup Header="Python runtime" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="PowerScripts_PythonEnvironmentGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        Description="Run Python PowerScripts (scripts whose manifest sets &quot;runtime&quot;: &quot;python&quot;) natively on Windows or inside WSL."
-                        Header="Python execution"
+                        x:Uid="PowerScripts_PythonEnvironment"
+                        HorizontalContentAlignment="Stretch"
+                        ContentAlignment="Vertical"
+                        Description="{x:Bind ViewModel.PythonEnvironmentDescription, Mode=OneWay}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE943;}">
                         <ComboBox
                             MinWidth="160"
+                            HorizontalAlignment="Stretch"
                             AutomationProperties.AutomationId="PowerScriptsPythonModeComboBox"
-                            SelectedIndex="{x:Bind ViewModel.PythonModeIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Disabled" />
-                            <ComboBoxItem Content="Windows" />
-                            <ComboBoxItem Content="WSL" />
+                            SelectedIndex="{x:Bind ViewModel.PythonModeIndex, Mode=TwoWay}"
+                            SelectionChanged="PythonEnvironment_SelectionChanged">
+                            <ComboBoxItem x:Uid="PowerScripts_EnvironmentDisabled" />
+                            <ComboBoxItem x:Uid="PowerScripts_EnvironmentWindows" />
+                            <ComboBoxItem x:Uid="PowerScripts_EnvironmentWsl" />
+                            <ComboBoxItem x:Uid="PowerScripts_EnvironmentLinux" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
@@ -188,6 +193,38 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsWslMode, Mode=OneWay}"
                         Severity="Warning" />
+                    <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsManagedLinuxMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <tkcontrols:SettingsCard x:Uid="PowerScripts_LinuxControls" ContentAlignment="Vertical">
+                            <TextBlock
+                                x:Uid="PowerScripts_LinuxControlsText"
+                                AutomationProperties.AutomationId="PowerScriptsLinuxControls"
+                                TextWrapping="Wrap" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
+                            x:Uid="PowerScripts_LinuxStatus"
+                            HorizontalContentAlignment="Stretch"
+                            ContentAlignment="Vertical">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    AutomationProperties.AutomationId="PowerScriptsLinuxStatus"
+                                    IsTextSelectionEnabled="True"
+                                    Text="{x:Bind ViewModel.LinuxContainerStatus, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button
+                                        x:Uid="PowerScripts_LinuxCheck"
+                                        AutomationProperties.AutomationId="PowerScriptsLinuxCheck"
+                                        Click="CheckLinuxContainer_Click"
+                                        IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
+                                    <Button
+                                        x:Uid="PowerScripts_LinuxSetup"
+                                        AutomationProperties.AutomationId="PowerScriptsLinuxSetup"
+                                        Click="SetupLinuxContainer_Click"
+                                        IsEnabled="{x:Bind ViewModel.CanPrepareLinuxContainer, Mode=OneWay}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+                    </StackPanel>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

@@ -16,9 +16,13 @@ This software incorporates material from third parties.
 
 ## Utility: PowerScripts
 
-### Microsoft eXecution Container (MXC)
+### Microsoft eXecution Container (MXC) and WSL Containers SDK
 
 **Source**: <https://github.com/microsoft/mxc/tree/v0.8.0>
+
+**WSL Containers SDK 3.0.3**: <https://github.com/microsoft/WSL/tree/3.0.3>
+
+The SDK's additional notices are included in `PowerScripts\Wslc.NOTICE.txt`.
 
 MIT License
 

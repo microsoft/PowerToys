@@ -266,7 +266,7 @@ public static class MxcProcessRunner
         return FindOnPath("wxc-exec.exe", pathEnvironment);
     }
 
-    private static string CreateRunDirectory()
+    internal static string CreateRunDirectory()
     {
         var root = Path.Combine(Path.GetTempPath(), "PowerScripts");
         DeleteStaleRunDirectories(root);
@@ -299,7 +299,7 @@ public static class MxcProcessRunner
         }
     }
 
-    private static void EnsureWorkspaceOutsideScripts(ProcessExecutionContext context, string workspace)
+    internal static void EnsureWorkspaceOutsideScripts(ProcessExecutionContext context, string workspace)
     {
         foreach (var protectedRoot in new[] { context.ScriptsRoot, context.ScriptDirectory })
         {

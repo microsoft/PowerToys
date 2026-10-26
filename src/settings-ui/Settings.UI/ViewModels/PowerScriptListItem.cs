@@ -46,6 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             nameof(ForgetAutomationId),
             nameof(InlineSettingsAutomationId),
             nameof(Runtime),
+            nameof(HasExplicitExecution),
             nameof(DefaultIconGlyph),
             nameof(IconPath),
             nameof(IconWarning),
@@ -118,6 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             LocalMxc = script.LocalMxc;
             ConfigurationErrors = script.ConfigurationErrors;
             Runtime = script.Runtime;
+            HasExplicitExecution = script.HasExplicitExecution;
             IconPath = script.IconPath;
             IconWarning = script.IconWarning;
             Io = script.Io;
@@ -138,6 +140,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public string Id { get; set; } = string.Empty;
+
+        public bool HasExplicitExecution { get; set; }
 
         public string Name { get; set; } = string.Empty;
 
@@ -315,6 +319,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsLeastPrivilegeRestrictionEffective => _isLeastPrivilegeRestrictionEffective;
 
         public string MxcEffectiveDisplay => _mxcEffectiveDisplay;
+
+        public string ExecutionSummary { get; private set; } = string.Empty;
+
+        public string ExecutionPolicyDisplay { get; private set; } = string.Empty;
+
+        public string ExecutionBlockedReason { get; private set; } = string.Empty;
+
+        public bool HasExecutionBlock => !string.IsNullOrWhiteSpace(ExecutionBlockedReason);
+
+        public bool UsesManagedLinux { get; private set; }
+
+        public bool HasAcceptedLinuxExceptions =>
+            HasLocalMxcSettings && !IsMxcReviewRequired && LocalMxc is { RiskAccepted: true } &&
+            LocalMxc.DisabledPolicies.Contains(UiPolicy, StringComparer.Ordinal) &&
+            LocalMxc.DisabledPolicies.Contains(LeastPrivilegePolicy, StringComparer.Ordinal);
+
+        internal void SetExecutionSummary(string summary, string isolation, string blocked, bool managedLinux)
+        {
+            ExecutionSummary = summary;
+            ExecutionPolicyDisplay = isolation;
+            ExecutionBlockedReason = blocked;
+            UsesManagedLinux = managedLinux;
+            OnPropertyChanged(nameof(ExecutionSummary));
+            OnPropertyChanged(nameof(ExecutionPolicyDisplay));
+            OnPropertyChanged(nameof(ExecutionBlockedReason));
+            OnPropertyChanged(nameof(HasExecutionBlock));
+            OnPropertyChanged(nameof(UsesManagedLinux));
+        }
 
         public string RecommendedPoliciesDisplay
         {

@@ -27,7 +27,10 @@
                 IsOpen="True"
                 Severity="Informational" />
 
-            <StackPanel Orientation="Horizontal" Spacing="8">
+            <StackPanel
+                Orientation="Horizontal"
+                Spacing="8"
+                Visibility="{x:Bind WindowsControlsVisibility}">
                 <Button
                     x:Uid="PowerScripts_MxcPolicyDialog_UseRecommended"
                     AutomationProperties.AutomationId="PowerScriptsUseRecommendedPolicyButton"
@@ -42,7 +45,18 @@
                     Click="UseGlobalPolicy_Click" />
             </StackPanel>
 
-            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPolicyDialog_ExecutionIsolation">
+            <InfoBar
+                x:Uid="PowerScripts_LinuxPolicyHelp"
+                IsClosable="False"
+                IsOpen="True"
+                Severity="Warning"
+                Visibility="{x:Bind LinuxControlsVisibility}" />
+            <Button
+                x:Uid="PowerScripts_LinuxUseSupported"
+                AutomationProperties.AutomationId="PowerScriptsLinuxUseSupported"
+                Click="UseLinuxPolicy_Click"
+                Visibility="{x:Bind LinuxControlsVisibility}" />
+            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPolicyDialog_ExecutionIsolation" Visibility="{x:Bind WindowsControlsVisibility}">
                 <ComboBox
                     x:Name="MxcModeComboBox"
                     MinWidth="180"
@@ -54,7 +68,7 @@
                 </ComboBox>
             </tkcontrols:SettingsCard>
 
-            <ItemsControl ItemsSource="{x:Bind Policies, Mode=OneWay}">
+            <ItemsControl ItemsSource="{x:Bind VisiblePolicies}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:PowerScriptMxcPolicyOption">
                         <tkcontrols:SettingsCard
