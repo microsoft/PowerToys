@@ -7,6 +7,8 @@ The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Ad
 
 Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. Nothing here is specific to Command Palette, so each piece can move to the open-source renderer and be deleted here (see [Upstream](#upstream)).
 
+Extension authors: see `ExtensionTemplate\TemplateCmdPalExtension\.github\skills\add-adaptive-card-form\references\charts-and-visuals.md`, and the Samples extension's "Charts and visuals" page.
+
 ## Use it
 
 `AdaptiveCardPolyfills` is the entry point. Command Palette's `ContentFormControl` calls it three times:
@@ -55,6 +57,7 @@ To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName
 2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Read any text it shows with `ChartStrings.Get`, and add the string to Command Palette's `Resources.resw`.
 3. Add the element to the list in `AdaptiveCardPolyfills`.
 4. Add parsing tests to `Tests\Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests`.
+5. Document the element for extension authors, and add it to the Samples extension.
 
 ## Upstream
 
