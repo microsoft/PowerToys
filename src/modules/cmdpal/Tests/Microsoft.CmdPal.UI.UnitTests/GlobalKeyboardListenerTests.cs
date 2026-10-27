@@ -15,6 +15,197 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public partial class GlobalKeyboardListenerTests
 {
     [TestMethod]
+    [DataRow(0x5B, true)]
+    [DataRow(0x5C, true)]
+    [DataRow(0xFF, false)]
+    public void InjectedWindowsKeyReleaseUsesExtendedKeyFlag(int key, bool extended)
+    {
+        var input = GlobalKeyboardHook.CreateKeyUpInput((VIRTUAL_KEY)key);
+        Assert.AreEqual(INPUT_TYPE.INPUT_KEYBOARD, input.type);
+        Assert.AreEqual((VIRTUAL_KEY)key, input.Anonymous.ki.wVk);
+        Assert.AreEqual(
+            KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP | (extended ? KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY : 0),
+            input.Anonymous.ki.dwFlags);
+    }
+
+    [TestMethod]
+    [DataRow(0x5B, 0x0100, 0x0101)]
+    [DataRow(0x5C, 0x0104, 0x0105)]
+    public void WindowsKeyAloneActivatesOnlyOnRelease(int key, int down, int up)
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+
+        Assert.AreEqual(42, harness.Hook.Key((uint)key, message: (uint)down));
+        Assert.AreEqual(42, harness.Hook.Key((uint)key, message: (uint)down));
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(1, harness.Hook.Key((uint)key, message: (uint)up));
+        CollectionAssert.AreEqual(new[] { string.Empty }, harness.Commands);
+        CollectionAssert.AreEqual(new[] { (VIRTUAL_KEY)key }, harness.Hook.WindowsKeyReleases);
+        Assert.IsFalse(harness.Hook.IsKeyDown((VIRTUAL_KEY)key));
+
+        // A second press must work after the injected release re-enters the hook.
+        Assert.AreEqual(42, harness.Hook.Key((uint)key));
+        Assert.AreEqual(1, harness.Hook.Key((uint)key, message: (uint)up));
+        Assert.AreEqual(2, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    [DataRow(0x5B)]
+    [DataRow(0x5C)]
+    public void WindowsKeyIsUnchangedByDefault(int key)
+    {
+        using var harness = new Harness();
+        Assert.AreEqual(42, harness.Hook.Key((uint)key));
+        Assert.AreEqual(42, harness.Hook.Key((uint)key, message: 0x0101));
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    [DataRow(0x45, false)]
+    [DataRow(0x4C, false)]
+    [DataRow(0x52, false)]
+    [DataRow(0x09, false)]
+    [DataRow(0x10, false)]
+    [DataRow(0x11, false)]
+    [DataRow(0x12, false)]
+    [DataRow(0x45, true)]
+    public void WindowsKeyCombinationsAreForwardedWithoutActivating(int otherKey, bool releaseWindowsFirst)
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+
+        Assert.AreEqual(42, harness.Hook.Key(0x5B));
+        Assert.AreEqual(42, harness.Hook.Key((uint)otherKey));
+        var first = releaseWindowsFirst ? 0x5BU : (uint)otherKey;
+        var second = releaseWindowsFirst ? (uint)otherKey : 0x5BU;
+        Assert.AreEqual(42, harness.Hook.Key(first, message: 0x0101));
+        Assert.AreEqual(42, harness.Hook.Key(second, message: 0x0101));
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    [DataRow(0x41)]
+    [DataRow(0x10)]
+    [DataRow(0x11)]
+    [DataRow(0x12)]
+    public void KeyHeldBeforeWindowsKeyPreventsActivationEvenIfReleasedFirst(int otherKey)
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Hook.Key((uint)otherKey);
+        harness.Hook.Key(0x5B);
+        harness.Hook.Key((uint)otherKey, message: 0x0101);
+        harness.Hook.Key(0x5B, message: 0x0101);
+
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    public void BothWindowsKeysTogetherDoNotActivate()
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Hook.Key(0x5B);
+        harness.Hook.Key(0x5C);
+        harness.Hook.Key(0x5B, message: 0x0101);
+        harness.Hook.Key(0x5C); // Auto-repeat must not re-arm activation.
+        harness.Hook.Key(0x5C, message: 0x0101);
+
+        Assert.AreEqual(0, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    public void InjectedWindowsKeyUsesSameStandaloneBehavior()
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, injected: true));
+        Assert.AreEqual(1, harness.Hook.Key(0x5B, message: 0x0101, injected: true));
+        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.AreEqual(1, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    public void InjectedCombinationCancelsPendingWindowsKeyActivation()
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Hook.Key(0x5B);
+        harness.Hook.Key(0x45, injected: true);
+        harness.Hook.Key(0x45, message: 0x0101, injected: true);
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        Assert.AreEqual(0, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    public void WindowsKeyModePreservesRegisteredCommandShortcuts()
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Listener.SetHotkeyAction(true, false, false, false, 0x4B, "command");
+        Assert.AreEqual(42, harness.Hook.Key(0x5B));
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        harness.Hook.Key(0x4B, message: 0x0101);
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.AreEqual("command", harness.Commands[0]);
+        Assert.AreEqual(0, harness.Hook.WindowsKeyReleases.Count);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ClearingOrStoppingResetsPendingWindowsKey(bool stop)
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Hook.Key(0x5B);
+        if (stop)
+        {
+            harness.Listener.Stop();
+            Assert.IsTrue(harness.Listener.Start(out _));
+        }
+        else
+        {
+            harness.Listener.ClearHotkeys();
+            harness.Listener.SetWindowsKeyAction(string.Empty);
+        }
+
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        Assert.AreEqual(0, harness.Commands.Count);
+    }
+
+    [TestMethod]
+    public async Task FailedWindowsKeyReleaseForwardsPhysicalReleaseAndReportsError()
+    {
+        using var harness = new Harness();
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Hook.Key(0x5B);
+        harness.Hook.ThrowOnDummyKey = true;
+
+        Assert.AreEqual(42, harness.Hook.Key(0x5B, message: 0x0101));
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+    }
+
+    [TestMethod]
+    public async Task WindowsKeyCommandExceptionStillReleasesModifier()
+    {
+        using var harness = new Harness(_ => throw new InvalidOperationException("Command failed"));
+        harness.Listener.SetWindowsKeyAction(string.Empty);
+        harness.Hook.Key(0x5B);
+
+        Assert.AreEqual(1, harness.Hook.Key(0x5B, message: 0x0101));
+        Assert.IsFalse(harness.Hook.IsKeyDown(VIRTUAL_KEY.VK_LWIN));
+        Assert.AreEqual(1, harness.Hook.WindowsKeyReleases.Count);
+        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+    }
+
+    [TestMethod]
     [DataRow(false, true, false, true, 0x4B, true)]
     [DataRow(true, true, false, true, 0x4B, false)]
     [DataRow(false, false, false, true, 0x4B, false)]
@@ -326,6 +517,8 @@ public partial class GlobalKeyboardListenerTests
 
         public bool ThrowOnDummyKey { get; set; }
 
+        public List<VIRTUAL_KEY> WindowsKeyReleases { get; } = [];
+
         public IDisposable Install(HOOKPROC callback)
         {
             InstallAttempts++;
@@ -377,16 +570,37 @@ public partial class GlobalKeyboardListenerTests
             }
         }
 
+        public void SendWindowsKeyUp(VIRTUAL_KEY key)
+        {
+            SendDummyKeyUp();
+            WindowsKeyReleases.Add(key);
+            Key(0xFF, message: 0x0101, injected: true);
+            Key((uint)key, message: 0x0101, injected: true);
+        }
+
         public LRESULT CallNext(int code, WPARAM wParam, LPARAM lParam)
         {
             Forwarded++;
             return (LRESULT)42;
         }
 
-        public unsafe int Key(uint key, int code = 0, uint message = 0x0100)
+        public unsafe int Key(uint key, int code = 0, uint message = 0x0100, bool injected = false)
         {
-            KBDLLHOOKSTRUCT data = new() { vkCode = key };
-            return (int)_callback(code, (WPARAM)message, (LPARAM)(nint)(&data)).Value;
+            KBDLLHOOKSTRUCT data = new() { vkCode = key, flags = injected ? KBDLLHOOKSTRUCT_FLAGS.LLKHF_INJECTED : 0 };
+            var result = (int)_callback(code, (WPARAM)message, (LPARAM)(nint)(&data)).Value;
+            if (code >= 0 && result == 42)
+            {
+                if (message is 0x0100 or 0x0104)
+                {
+                    _modifiers.Add((VIRTUAL_KEY)key);
+                }
+                else if (message is 0x0101 or 0x0105)
+                {
+                    _modifiers.Remove((VIRTUAL_KEY)key);
+                }
+            }
+
+            return result;
         }
 
         private sealed partial class Registration(Action dispose) : IDisposable

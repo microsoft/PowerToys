@@ -111,8 +111,9 @@ public partial class App : Application, IDisposable
         var logWrapper = new LogWrapper();
         CoreLogger.InitializeLogger(logWrapper);
 
-        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        // Now that CoreLogger is initialized, initialize the logger delegates in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
+        appInfoService.SetLogFile(() => Logger.CurrentLogFile);
     }
 
     /// <summary>

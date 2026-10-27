@@ -21,7 +21,7 @@ parameters:
     default: []
 
 stages:
-  # Stage 1: Build full PowerToys project
+  # Stage 1: build the product and UI tests from the same source revision.
   - stage: Build_${{ parameters.platform }}
     displayName: Build PowerToys ${{ parameters.platform }}
     dependsOn: []
@@ -44,10 +44,11 @@ stages:
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: false
           buildTests: true
+          prepareMwbRuntime: ${{ and(eq(parameters.platform, 'x64'), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'))) }}
           useVSPreview: ${{ parameters.useVSPreview }}
           timeoutInMinutes: 90
 
-  # Stage 2: Run UI Tests
+  # Stage 2: run the selected suites on each applicable Windows test image.
   - ${{ if eq(parameters.platform, 'x64') }}:
     - stage: Test_x64Win10_FullBuild
       displayName: Test x64Win10 (Full Build)

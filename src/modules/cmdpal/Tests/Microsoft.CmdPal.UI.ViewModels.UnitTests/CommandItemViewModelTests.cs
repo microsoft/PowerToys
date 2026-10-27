@@ -523,7 +523,7 @@ public partial class CommandItemViewModelTests
         await uiTasks.StartNew(() => { });
 
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
-        var adapter = new TopLevelViewModel(viewModel, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, item, DefaultContextMenuFactory.Instance);
+        var adapter = new TopLevelViewModel(viewModel, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, DefaultContextMenuFactory.Instance);
         var wrappedViewModel = new CommandItemViewModel(new(adapter), new(pageContext), DefaultContextMenuFactory.Instance);
         wrappedViewModel.SlowInitializeProperties();
         var wrappedNotified = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1395,7 +1395,7 @@ public partial class CommandItemViewModelTests
         await uiTasks.StartNew(() => { });
 
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
-        var adapter = new TopLevelViewModel(source, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, item, DefaultContextMenuFactory.Instance);
+        var adapter = new TopLevelViewModel(source, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, DefaultContextMenuFactory.Instance);
         var wrapped = new ListItemViewModel(adapter, new(pageContext), DefaultContextMenuFactory.Instance);
         wrapped.SlowInitializeProperties();
         var secondary = (CommandContextItemViewModel)wrapped.SecondaryCommand!;
