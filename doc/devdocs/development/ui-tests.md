@@ -39,6 +39,10 @@ not on a working machine.
 - Exit an existing PowerToys instance before a host-desktop run. The harness owns the runner and
   module lifecycle.
 
+The `.Next` value-setting wrappers pass target options before `--`, followed by the literal
+selector and value. Keep this boundary when adding wrappers: application arguments such as
+`--payload "text"` and negative numeric values must not be parsed as winapp options.
+
 ### Legacy tests
 
 - Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1 to the default directory (`C:\Program Files (x86)\Windows Application Driver`)

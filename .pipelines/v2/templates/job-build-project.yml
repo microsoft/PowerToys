@@ -246,6 +246,13 @@ jobs:
   - task: NuGetAuthenticate@1
     displayName: Authenticate NuGet feeds for verification
 
+  - ${{ if eq(parameters.official, true) }}:
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate with permissions to Dependencies feed
+      inputs:
+        azureDevOpsServiceConnection: 'SHINE PowerToys Artifact Feed'
+        feedUrl: "https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/nuget/v3/index.json"
+
   - pwsh: |-
       & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
     displayName: Verify Nuget package versions for PowerToys.slnx

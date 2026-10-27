@@ -276,6 +276,7 @@ jobs:
       $authenticatedSettingsIpcModules = @(
         'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
+        'AltWindowCycle.UITests',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
@@ -291,6 +292,7 @@ jobs:
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
+        'ShortcutGuide.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
       ) + $newPlusModules
@@ -325,7 +327,9 @@ jobs:
 
       if ($allModules -or $selectedModules -contains 'Workspaces.UITests.Next') {
         $requiredPackages += 'Workspaces.TestApp.msix'
-        $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe'
+        $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe', 'PowerToys.WorkspacesCLI.exe',
+          'PowerToys.WorkspacesLauncher.exe', 'PowerToys.WorkspacesWindowArranger.exe',
+          'PowerToys.WorkspacesLauncherUI.exe'
       }
 
       if ($requiresAuthenticatedSettingsIpc) {
@@ -448,7 +452,7 @@ jobs:
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'CropAndLock.UITests', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
