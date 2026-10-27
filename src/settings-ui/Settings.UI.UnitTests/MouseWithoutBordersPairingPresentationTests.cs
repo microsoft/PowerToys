@@ -234,9 +234,9 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var source = ReadSource(@"src\settings-ui\Settings.UI\ViewModels\MouseWithoutBordersViewModel.cs");
         StringAssert.Contains(source, "PairingKeyCodec.IsEncryptedValue(Settings.Properties.SecurityKey.Value)");
         StringAssert.Contains(source, "public bool CanManagePairing => !_isPairingPending && !_isServiceModeChanging && !_hasServiceModeError && (!UseService || IsElevated);");
-        StringAssert.Contains(source, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(TimeSpan.FromSeconds(10));");
+        StringAssert.Contains(source, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(SettingsSyncRequests.Timeout);");
         StringAssert.Contains(source, "_servicePairingKey = useService ? generatedKey : null;");
-        StringAssert.Contains(source, "await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(TimeSpan.FromSeconds(10));");
+        StringAssert.Contains(source, "await endpoint.ConnectToMachine(pcName, securityKey).WaitAsync(SettingsSyncRequests.Timeout);");
         StringAssert.Contains(source.Replace("\r\n", "\n"), "_servicePairingKey = useService ? securityKey : null;\n                    OnPropertyChanged(nameof(SecurityKey));");
         StringAssert.Contains(source, "public async Task<bool> SubmitConnectionRequestAsync(string pcName, string securityKey)");
         StringAssert.Contains(source, "pcName = pcName?.Trim();");
@@ -306,7 +306,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var end = source.IndexOf("public async Task<bool> SubmitConnectionRequestAsync(", start, StringComparison.Ordinal);
         var request = source.Substring(start, end - start);
         var initialGuard = request.IndexOf("if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)", StringComparison.Ordinal);
-        var semaphore = request.IndexOf("using (await _ipcSemaphore.EnterAsync())", StringComparison.Ordinal);
+        var semaphore = request.IndexOf("using (await SettingsSyncRequests.Semaphore.EnterAsync())", StringComparison.Ordinal);
         var roleGuard = request.IndexOf("if (_disposed || _isServiceModeChanging || !IsEnabled || !UseService || !IsElevated || PairingSetupRequired)", semaphore, StringComparison.Ordinal);
         var read = request.IndexOf("var key = await readPairingKey();", StringComparison.Ordinal);
         var resultGuard = request.IndexOf("if (_disposed || !IsEnabled || UseService != useService || !IsElevated)", StringComparison.Ordinal);
@@ -431,7 +431,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
         var generateStart = source.IndexOf("public async Task SubmitNewKeyRequestAsync()", StringComparison.Ordinal);
         var loadStart = source.IndexOf("public async Task LoadPairingKeyAsync()", generateStart, StringComparison.Ordinal);
         var generate = source.Substring(generateStart, loadStart - generateStart);
-        StringAssert.Contains(generate, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(TimeSpan.FromSeconds(10));");
+        StringAssert.Contains(generate, "var generatedKey = await endpoint.GenerateNewKey().WaitAsync(SettingsSyncRequests.Timeout);");
         StringAssert.Contains(generate, "_servicePairingKey = useService ? generatedKey : null;\n                    OnPropertyChanged(nameof(SecurityKey));");
         var reloadStart = source.IndexOf("public bool LoadUpdatedSettings()", StringComparison.Ordinal);
         var reloadEnd = source.IndexOf("private void SendCustomAction(", reloadStart, StringComparison.Ordinal);
@@ -454,7 +454,7 @@ public sealed class MouseWithoutBordersPairingPresentationTests
 
     [DataTestMethod]
     [DataRow("public Task ConnectToMachine(", "Setting.Values.MyKey = securityKey;")]
-    [DataRow("public Task<string> GenerateNewKey()", "Setting.Values.MyKey = key;")]
+    [DataRow("public async Task<string> GenerateNewKey()", "Setting.Values.MyKey = key;")]
     public void PairingRequestSourceContractProtectsKeyBeforeChangingOtherState(string signature, string assignment)
     {
         var source = ReadSource(@"src\modules\MouseWithoutBorders\App\Class\Program.cs");

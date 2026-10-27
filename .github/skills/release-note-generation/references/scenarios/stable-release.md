@@ -10,3 +10,5 @@ Use the existing release-note workflow for a milestone or stable release version
 6. Run [prepare-release-assets.ps1](../../scripts/prepare-release-assets.ps1) when release assets are required.
 
 Do not apply the preview-specific baseline, branch-transition, draft-upsert, or managed-body rules to the stable workflow.
+
+Use `Release <tag>` as the GitHub title for an actual stable release. A build from `stable` prepared as a prerelease instead uses `Release preview <tag>`; a prerelease from `main` uses `Development preview <tag>`. Build origin alone does not determine the release type.
