@@ -51,6 +51,7 @@ function Write-TrustDiagnostics {
             SessionId = (Get-Process -Id $PID).SessionId
             ImportCommandType = $command.CommandType.ToString()
             ImportModule = $command.Module.Path
+            ImportImplementation = 'X509Store.Add in the current process/token'
             FailedStore = $FailedStore
             Failure = $Failure
             Stores = @()
@@ -170,8 +171,17 @@ try {
             $currentStore = $store
             $state.ImportedStores += $store
             Save-State
-            Write-Output "Importing test certificate into Cert:\LocalMachine\$store"
-            Import-Certificate -FilePath (Join-Path $driver 'PtHidProbe.cer') -CertStoreLocation "Cert:\LocalMachine\$store" -Confirm:$false | Out-Null
+            Write-Output "Importing test certificate into Cert:\LocalMachine\$store with X509Store.Add"
+            $machineStore = [Security.Cryptography.X509Certificates.X509Store]::new(
+                $store, [Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine)
+            try {
+                $machineStore.Open([Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite -bor [Security.Cryptography.X509Certificates.OpenFlags]::OpenExistingOnly)
+                $machineStore.Add($certificate)
+            }
+            finally { $machineStore.Close() }
+            if (-not (Test-Path "Cert:\LocalMachine\$store\$($certificate.Thumbprint)")) {
+                throw "The approved test certificate was not persisted in the requested machine store: $store"
+            }
             Write-Output "Imported test certificate into Cert:\LocalMachine\$store"
         }
     }
