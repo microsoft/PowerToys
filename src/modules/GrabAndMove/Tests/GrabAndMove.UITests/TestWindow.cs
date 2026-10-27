@@ -68,13 +68,30 @@ internal sealed class TestWindow : IDisposable
                 $"Foreground: {WindowControl.GetForegroundWindowInfo()}.");
         }
 
+        MouseHelper.MoveTo(x, y);
+        var cursor = WaitHelper.WaitForStable(
+            MouseHelper.GetMousePosition,
+            position => position == (x, y),
+            5_000,
+            requiredConsecutiveMatches: 3,
+            recover: _ => MouseHelper.MoveTo(x, y));
+        if (!cursor.Succeeded)
+        {
+            throw new InvalidOperationException($"The fixture cursor did not settle at ({x}, {y}): {cursor.LastObservation}.");
+        }
+
         var previousClicks = Volatile.Read(ref clientClickCount);
         MouseHelper.LeftClickAt(x, y);
         var delivered = WaitHelper.WaitForStable(
             () => Volatile.Read(ref clientClickCount),
             count => count > previousClicks && lastClientClick == new Point(x, y),
             5_000,
-            requiredConsecutiveMatches: 3);
+            requiredConsecutiveMatches: 3,
+            recover: _ =>
+            {
+                RaiseFixture();
+                MouseHelper.LeftClickAt(x, y);
+            });
         if (!delivered.Succeeded)
         {
             throw new InvalidOperationException(
