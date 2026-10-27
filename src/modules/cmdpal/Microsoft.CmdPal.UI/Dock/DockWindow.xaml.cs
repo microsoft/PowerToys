@@ -80,9 +80,11 @@ public sealed partial class DockWindow : WindowEx,
     private DockViewModel viewModel;
     private DockControl _dock;
     private DesktopAcrylicController? _acrylicController;
+    private MicaController? _micaController;
     private SystemBackdropConfiguration? _configurationSource;
     private bool _isUpdatingBackdrop;
     private BackdropParameters? _lastAppliedAcrylicBackdrop;
+    private MicaKind? _lastAppliedMicaKind;
     private DockSize _lastSize;
     private bool _isDisposed;
     private DockAppBarMode _appBarMode;
@@ -316,7 +318,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private void InitializeBackdropSupport()
     {
-        if (DesktopAcrylicController.IsSupported())
+        if (DesktopAcrylicController.IsSupported() || MicaController.IsSupported())
         {
             _configurationSource = new SystemBackdropConfiguration
             {
@@ -337,6 +339,16 @@ public sealed partial class DockWindow : WindowEx,
 
         try
         {
+            if (_configurationSource is not null)
+            {
+                _configurationSource.Theme = _themeService.CurrentDockTheme.Theme switch
+                {
+                    ElementTheme.Light => SystemBackdropTheme.Light,
+                    ElementTheme.Dark => SystemBackdropTheme.Dark,
+                    _ => SystemBackdropTheme.Default,
+                };
+            }
+
             switch (_settings.Backdrop)
             {
                 case DockBackdrop.Transparent:
@@ -346,6 +358,14 @@ public sealed partial class DockWindow : WindowEx,
                         SetupTransparentBackdrop();
                     }
 
+                    break;
+
+                case DockBackdrop.Mica:
+                    SetupMica(MicaKind.Base);
+                    break;
+
+                case DockBackdrop.MicaAlt:
+                    SetupMica(MicaKind.BaseAlt);
                     break;
 
                 case DockBackdrop.Acrylic:
@@ -376,6 +396,15 @@ public sealed partial class DockWindow : WindowEx,
 
     private void CleanupBackdropControllers()
     {
+        if (_micaController is not null)
+        {
+            _micaController.RemoveAllSystemBackdropTargets();
+            _micaController.Dispose();
+            _micaController = null;
+        }
+
+        _lastAppliedMicaKind = null;
+
         if (_acrylicController is not null)
         {
             _acrylicController.RemoveAllSystemBackdropTargets();
@@ -422,7 +451,29 @@ public sealed partial class DockWindow : WindowEx,
         _lastAppliedAcrylicBackdrop = backdrop;
     }
 
-    private void DisposeAcrylic()
+    private void SetupMica(MicaKind kind)
+    {
+        if (_configurationSource is null || !MicaController.IsSupported())
+        {
+            // Try Acrylic before the transparent fallback on systems without Mica support.
+            SetupDesktopAcrylic(_themeService.CurrentDockTheme.BackdropParameters);
+            return;
+        }
+
+        if (_micaController is not null && _lastAppliedMicaKind == kind)
+        {
+            return;
+        }
+
+        CleanupBackdropControllers();
+        SystemBackdrop = null;
+        _micaController = new MicaController { Kind = kind };
+        _micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _micaController.SetSystemBackdropConfiguration(_configurationSource);
+        _lastAppliedMicaKind = kind;
+    }
+
+    private void DisposeBackdrop()
     {
         CleanupBackdropControllers();
         _configurationSource = null;
@@ -1846,7 +1897,7 @@ public sealed partial class DockWindow : WindowEx,
         WeakReferenceMessenger.Default.UnregisterAll(this);
 
         StopCollapseTimer();
-        DisposeAcrylic();
+        DisposeBackdrop();
         _dock.Dispose();
         _windowViewModel.Dispose();
 
