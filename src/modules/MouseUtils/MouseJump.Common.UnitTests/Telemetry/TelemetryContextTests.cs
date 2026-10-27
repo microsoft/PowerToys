@@ -185,6 +185,65 @@ public sealed class TelemetryContextTests
         Assert.AreEqual("eventAfterRestart", replacement.Records.Single().Operation);
     }
 
+    [TestMethod]
+    public void PauseDoesNotReturnUntilAWriteInProgressHasFinished()
+    {
+        var telemetry = TelemetryContextTests.CreateContext();
+        var writer = new ControllableTelemetryWriter { BlockWrites = true };
+        telemetry.Start(writer);
+
+        telemetry.WriteEvent(new { }, "slowEvent");
+        writer.WaitForWrites(1);
+
+        // the writer is still busy, so pausing (e.g. to time something without telemetry I/O
+        // in the way) has to wait for it - a negative check, so it can only wait "a while"
+        var pause = Task.Run(telemetry.PauseWriting);
+        Assert.IsFalse(pause.Wait(TimeSpan.FromMilliseconds(250)), "pause returned while a write was still in progress");
+
+        writer.BlockWrites = false;
+        Assert.IsTrue(pause.Wait(TelemetryContextTests.Timeout), "pause should return once the write finishes");
+
+        telemetry.ResumeWriting();
+        TelemetryContextTests.WithinTimeout(telemetry.Stop);
+    }
+
+    [TestMethod]
+    public void AWriteCannotStartWhileTheWriterIsFlushing()
+    {
+        var telemetry = TelemetryContextTests.CreateContext();
+        var writer = new ControllableTelemetryWriter { BlockFlushes = true };
+        telemetry.Start(writer);
+
+        var flush = Task.Run(telemetry.Flush);
+        writer.WaitForFlushes(1);
+
+        // a record arriving while the writer is mid-flush has to wait for the flush to finish -
+        // writers (e.g. FileTelemetryWriter's StreamWriter) aren't safe to use concurrently
+        telemetry.WriteEvent(new { }, "eventDuringFlush");
+        Thread.Sleep(250);
+        Assert.AreEqual(0, writer.WritesStarted, "a write started while the writer was still flushing");
+
+        writer.BlockFlushes = false;
+        Assert.IsTrue(flush.Wait(TelemetryContextTests.Timeout), "flush should complete once released");
+        writer.WaitForWrites(1);
+
+        TelemetryContextTests.WithinTimeout(telemetry.Stop);
+    }
+
+    [TestMethod]
+    public void StoppingWhilePausedStillWritesEverythingQueued()
+    {
+        var telemetry = TelemetryContextTests.CreateContext();
+        var writer = new InMemoryTelemetryWriter();
+        telemetry.Start(writer);
+
+        telemetry.PauseWriting();
+        telemetry.WriteEvent(new { }, "pausedEvent");
+        TelemetryContextTests.WithinTimeout(telemetry.Stop);
+
+        Assert.AreEqual("pausedEvent", writer.Records.Single().Operation);
+    }
+
     /// <summary>
     /// A uniquely-named source, so no other test's listener can see (or add to) these records.
     /// </summary>
@@ -225,6 +284,86 @@ public sealed class TelemetryContextTests
 
         public void Flush()
         {
+        }
+    }
+
+    /// <summary>
+    /// A writer whose <see cref="Write"/> and/or <see cref="Flush"/> calls can be held "in
+    /// progress" until released, and which counts how many of each have started - so a test can
+    /// check what the adapter does (or doesn't do) while a writer call is still running.
+    /// </summary>
+    private sealed class ControllableTelemetryWriter : ITelemetryWriter
+    {
+        private readonly object sync = new();
+        private bool blockWrites;
+        private bool blockFlushes;
+        private int writesStarted;
+        private int flushesStarted;
+
+        public bool BlockWrites
+        {
+            get => this.Get(() => this.blockWrites);
+            set => this.Set(() => this.blockWrites = value);
+        }
+
+        public bool BlockFlushes
+        {
+            get => this.Get(() => this.blockFlushes);
+            set => this.Set(() => this.blockFlushes = value);
+        }
+
+        public int WritesStarted
+            => this.Get(() => this.writesStarted);
+
+        public void Write(TelemetryRecord record)
+            => this.Enter(() => this.writesStarted++, () => this.blockWrites);
+
+        public void Flush()
+            => this.Enter(() => this.flushesStarted++, () => this.blockFlushes);
+
+        public void WaitForWrites(int count)
+            => this.WaitUntil(() => this.writesStarted >= count, "a write to start");
+
+        public void WaitForFlushes(int count)
+            => this.WaitUntil(() => this.flushesStarted >= count, "a flush to start");
+
+        private T Get<T>(Func<T> read)
+        {
+            lock (this.sync)
+            {
+                return read();
+            }
+        }
+
+        private void Set(Action write)
+        {
+            lock (this.sync)
+            {
+                write();
+                Monitor.PulseAll(this.sync);
+            }
+        }
+
+        private void Enter(Action count, Func<bool> blocked)
+        {
+            this.Set(count);
+            this.WaitUntil(() => !blocked(), "the call to be released");
+        }
+
+        private void WaitUntil(Func<bool> condition, string what)
+        {
+            lock (this.sync)
+            {
+                var deadline = DateTime.UtcNow + TelemetryContextTests.Timeout;
+                while (!condition())
+                {
+                    var remaining = deadline - DateTime.UtcNow;
+                    if ((remaining <= TimeSpan.Zero) || !Monitor.Wait(this.sync, remaining))
+                    {
+                        throw new TimeoutException($"timed out waiting for {what}");
+                    }
+                }
+            }
         }
     }
 
