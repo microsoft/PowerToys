@@ -798,7 +798,7 @@ internal static class MachineStuff
         Encryption.MyKey = key;
         Encryption.GeneratedKey = true;
 
-        if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+        if (!WinAPI.IsCurrentSessionAllowed())
         {
             Logger.Log("Not physical console session.");
             _ = MessageBox.Show(
@@ -844,7 +844,7 @@ internal static class MachineStuff
             return;
         }
 
-        if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+        if (!WinAPI.IsCurrentSessionAllowed())
         {
             Common.ShowToolTip(Application.ProductName + " cannot be used in a remote desktop or virtual machine session.", 5000);
         }

@@ -959,14 +959,15 @@ public sealed partial class MainListPage : DynamicListPage,
         // subtitle match below zero).
         var nameScore = precomputedFuzzyMatcher.Score(query, titleTarget);
         var rawSubtitleScore = precomputedFuzzyMatcher.Score(query, subtitleTarget);
-        var rawExtensionScore = extensionDisplayNameTarget is { } extTarget ? precomputedFuzzyMatcher.Score(query, extTarget) : 0;
+        var rawExtensionScore = nameScore <= 0 && rawSubtitleScore <= 0 && extensionDisplayNameTarget is { } extTarget
+            ? precomputedFuzzyMatcher.Score(query, extTarget)
+            : 0;
 
         var descriptionScore = (rawSubtitleScore - 4) / 2.0;
         var extensionScore = rawExtensionScore / 1.5;
 
-        // Lexical quality preserves the previous relative weighting of the signals: best
-        // of title/description (plus the fallback floor), then a smaller extension-name
-        // contribution added on top so items matching both title AND extension bubble up.
+        // Extension names keep commands discoverable when neither title nor subtitle matches,
+        // but must not boost an existing match over an equally relevant app.
         var lexicalQuality = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0) + extensionScore;
 
         var matchedLexically = nameScore > 0 || rawSubtitleScore > 0 || rawExtensionScore > 0;

@@ -66,6 +66,8 @@ jobs:
       sdk: true
       version: '10.0'
 
+  - template: steps-test-mwb-infrastructure.yml
+
   - template: .\steps-restore-nuget.yml
 
   - task: MSBuild@1
