@@ -5,6 +5,9 @@ parameters:
 - name: exactVersion
   type: string
   default: ""
+- name: jsonFile
+  type: string
+  default: ""
 - name: sdk
   type: boolean
   default: false
@@ -25,7 +28,11 @@ steps:
     }
     $NEW_DOTNET_ROOT = "$(Agent.ToolsDirectory)\dotnet"
     $EXACT_VERSION = "${{parameters.exactVersion}}"
-    if ([string]::IsNullOrWhiteSpace($EXACT_VERSION)) {
+    $JSON_FILE = "${{parameters.jsonFile}}"
+    if (-not [string]::IsNullOrWhiteSpace($JSON_FILE)) {
+      # dotnet-install reads only sdk.version, so this installs that exact SDK regardless of rollForward.
+      & ./dotnet-install.ps1 -JsonFile $JSON_FILE -InstallDir $NEW_DOTNET_ROOT
+    } elseif ([string]::IsNullOrWhiteSpace($EXACT_VERSION)) {
       & ./dotnet-install.ps1 -Channel "${{parameters.version}}" -InstallDir $NEW_DOTNET_ROOT
     } else {
       & ./dotnet-install.ps1 -Version $EXACT_VERSION -InstallDir $NEW_DOTNET_ROOT

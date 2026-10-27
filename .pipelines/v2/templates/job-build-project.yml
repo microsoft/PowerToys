@@ -233,8 +233,8 @@ jobs:
     parameters:
       sdk: true
       version: '10.0'
-      # SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
-      exactVersion: '10.0.303'
+      # The SDK version comes from global.json; its bundled runtime must match DotNetRuntimePackageVersion in Directory.Packages.props.
+      jsonFile: '$(Build.SourcesDirectory)\global.json'
 
   - ${{ if eq(parameters.buildTests, true) }}:
     - template: steps-test-mwb-infrastructure.yml

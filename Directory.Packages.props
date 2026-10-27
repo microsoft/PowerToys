@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <MSTestVersion>3.8.3</MSTestVersion>
-    <!-- .NET SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with exactVersion in .pipelines/v2/templates/job-build-project.yml. -->
+    <!-- .NET SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with sdk.version in global.json, which CI installs. -->
     <DotNetRuntimePackageVersion>10.0.11</DotNetRuntimePackageVersion>
   </PropertyGroup>
   <ItemGroup>

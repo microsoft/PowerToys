@@ -42,6 +42,9 @@ Tip: Add `D:\PowerToys\tools\build` to your PATH to use the wrappers anywhere.
 - VS environment init:
   - Scripts try DevShell first (`Microsoft.VisualStudio.DevShell.dll` / `Enter-VsDevShell`), then fall back to `VsDevCmd.bat`.
   - If VS isn't found, run from "Developer PowerShell for VS 2022" or "Developer PowerShell for VS", or ensure `vswhere.exe` exists under `Program Files (x86)\Microsoft Visual Studio\Installer`.
+- .NET SDK:
+  - The repo root `global.json` sets the minimum .NET SDK (`sdk.version`, the exact version CI installs). Newer 10.0 feature bands are accepted (`rollForward: latestFeature`); prerelease SDKs are not.
+  - Run `dotnet --version` at the repo root to see which SDK is selected. A "compatible .NET SDK was not found" error means you need to install that SDK version or newer.
 
 ## Notes
 - Override platform explicitly with `-Platform x64|arm64` if needed.
