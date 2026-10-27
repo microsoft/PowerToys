@@ -35,6 +35,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     private readonly Core.PowerAccent _powerAccent;
     private int _selectedIndex = -1;
     private int _showGeneration;
+    private bool _isCharacterListReady;
 
     // The view model lives on the SelectorControl (the x:Bind target); expose it here for the
     // PowerAccent event handlers that populate the accent list and description.
@@ -91,6 +92,8 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     {
         if (!isActive)
         {
+            _isCharacterListReady = false;
+
             // Invalidate any layout callback still queued for the summon being dismissed, so it
             // cannot reveal a bar that is on its way out. Every dismissal bumps the counter and
             // every summon captures it, so this is the only liveness check the callback needs.
@@ -119,6 +122,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
             ViewModel.Characters.Add(c);
         }
 
+        _isCharacterListReady = true;
         Selector.SetSelectedIndex(_selectedIndex);
         ViewModel.Description = (_selectedIndex >= 0 && _selectedIndex < _powerAccent.CharacterDescriptions.Length)
             ? _powerAccent.CharacterDescriptions[_selectedIndex]
@@ -178,6 +182,13 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     private void PowerAccent_OnSelectCharacter(int index, string character)
     {
         _selectedIndex = index;
+
+        // Initial navigation precedes the delayed display, while the UI still holds the previous list.
+        if (!_isCharacterListReady)
+        {
+            return;
+        }
+
         Selector.SetSelectedIndex(index);
 
         if (index >= 0 && index < _powerAccent.CharacterDescriptions.Length)
