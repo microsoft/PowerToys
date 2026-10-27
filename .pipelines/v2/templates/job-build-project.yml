@@ -66,6 +66,9 @@ parameters:
   - name: prepareMwbRuntime
     type: boolean
     default: false
+  - name: prepareUmdfHid
+    type: boolean
+    default: false
   - name: mwbRuntimeCondition
     type: string
     default: succeeded()
@@ -763,6 +766,9 @@ jobs:
       displayName: Prepare coherent lean MWB runtime and official winapp CLI release
       condition: ${{ parameters.mwbRuntimeCondition }}
       timeoutInMinutes: 35
+
+  - ${{ if eq(parameters.prepareUmdfHid, true) }}:
+    - template: steps-build-umdf-hid.yml
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)

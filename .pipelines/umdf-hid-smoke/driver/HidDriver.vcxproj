@@ -36,11 +36,11 @@
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>UMDF_VERSION_MAJOR=2;UMDF_VERSION_MINOR=33;UMDF_USING_NTSTATUS;UNICODE;_UNICODE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(WdkRoot)Include\wdf\umdf\2.33;$(WdkRoot)Include\10.0.28000.0\km;$(WdkRoot)Include\10.0.28000.0\km\wdm;$(WdkRoot)Include\10.0.28000.0\shared;$(SampleRoot)inc;$(SampleRoot)driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>UMDF_VERSION_MAJOR=2;UMDF_VERSION_MINOR=31;UMDF_USING_NTSTATUS;UNICODE;_UNICODE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(WdkRoot)Include\wdf\umdf\2.31;$(WdkRoot)Include\10.0.28000.0\km;$(WdkRoot)Include\10.0.28000.0\km\wdm;$(WdkRoot)Include\10.0.28000.0\shared;$(SampleRoot)inc;$(SampleRoot)driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(WdkRoot)Lib\wdf\umdf\$(Platform)\2.33\WdfDriverStubUm.lib;ntdll.lib;mincore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(WdkRoot)Lib\wdf\umdf\$(Platform)\2.31\WdfDriverStubUm.lib;ntdll.lib;mincore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/EXPORT:FxDriverEntryUm %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>

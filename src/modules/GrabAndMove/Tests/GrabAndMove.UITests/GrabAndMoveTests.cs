@@ -40,6 +40,7 @@ public sealed class GrabAndMoveTests : UITestBase
 
     private static readonly string SettingsPath = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, ModuleName, "settings.json");
     private static IDisposable? originalSettings;
+    private static UmdfHidInput? hidInput;
     private TestWindow? fixture;
     private Point originalPointer;
 
@@ -55,6 +56,8 @@ public sealed class GrabAndMoveTests : UITestBase
     {
         ArgumentNullException.ThrowIfNull(context);
         Assert.IsFalse(ElevationHelper.IsCurrentProcessElevated(), "Run Grab And Move tests in a standard-user desktop.");
+        hidInput = UmdfHidInput.Activate();
+        context.WriteLine($"Real HID input: {hidInput.DevicePath}");
         StopProduct();
         originalSettings = SettingsConfigHelper.PreserveModuleSettings(ModuleName);
     }
@@ -68,8 +71,16 @@ public sealed class GrabAndMoveTests : UITestBase
         }
         finally
         {
-            originalSettings?.Dispose();
-            originalSettings = null;
+            try
+            {
+                originalSettings?.Dispose();
+            }
+            finally
+            {
+                originalSettings = null;
+                hidInput?.Dispose();
+                hidInput = null;
+            }
         }
     }
 

@@ -79,6 +79,36 @@ a larger value for a module or project-wide run.
 
 - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`).
 
+### Optional virtual HID input
+
+Some modules intentionally reject injected input. In a dedicated test VM with the PowerToys
+UMDF virtual HID test driver already provisioned, opt the existing helpers into real device input:
+
+```csharp
+using var input = UmdfHidInput.Activate();
+KeyboardHelper.PressKey(Key.Alt);
+try
+{
+    MouseHelper.Drag(300, 300, 396, 364);
+}
+finally
+{
+    KeyboardHelper.ReleaseKey(Key.Alt);
+}
+```
+
+The scope is process-wide; input tests must not run in parallel. Disposal releases held device
+keys/buttons and restores the default helpers. Activation fails if the driver is missing, with no
+`SendInput` fallback. The current report descriptor supports six simultaneous non-modifier keys,
+primary-monitor mouse coordinates, and whole wheel detents (120 units).
+
+Driver provisioning is separate, elevated test infrastructure; tests themselves run non-elevated.
+The test package targets UMDF 2.31 on Windows 10 2004+ and Windows 11 and is never shipped in the
+PowerToys installer. The Microsoft sample-derived driver is MS-PL licensed; its attribution and
+license accompany the test artifacts. ARM64 builds are supported, but the current ARM64 CI image
+rejects the self-signed catalog under Code Integrity: an accepted signing route is required, not
+weaker boot or certificate policies.
+
 ## Running `.Next` tests in persistent local VMs
 
 The supported local backend is a pair of persistent Hyper-V guests driven through PowerShell Direct:

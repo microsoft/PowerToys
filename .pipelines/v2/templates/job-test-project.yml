@@ -97,6 +97,7 @@ jobs:
       Write-Host "##vso[task.setvariable variable=MwbSelectionBlocked]$($selection.Blocked.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=MwbUiTestsPassed]false"
       Write-Host "##vso[task.setvariable variable=UiTestCleanupComplete]false"
+      Write-Host "##vso[task.setvariable variable=UmdfHidRequested]false"
       if ($selection.Reason -eq 'SkippedRequiresCurrentBuildBundle') {
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
@@ -173,6 +174,7 @@ jobs:
             **/PowerToysSetup*.exe
             **/tests/**
             mwb-sandbox-ci/**
+            umdf-hid/**
   - ${{ else }}:
       # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
       # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The
@@ -464,6 +466,17 @@ jobs:
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
+          if ($base -eq 'GrabAndMove.UITests') {
+            Write-Host "##vso[task.setvariable variable=UmdfHidRequested]true"
+            $hidArguments = @{
+              StatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json"
+              ResultsDirectory = Join-Path $resultsDir 'umdf-hid'
+            }
+            & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+              -Action Cleanup @hidArguments
+            & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+              -Action Install -ArtifactDirectory (Join-Path $artifactRoot 'umdf-hid\$(BuildPlatform)') @hidArguments
+          }
           if ($base -eq 'LightSwitch.UITests.Next') {
             try {
               Enable-LightSwitchLocation -StatePath $locationStatePath
@@ -495,6 +508,15 @@ jobs:
           $suiteFailed = $true
         } finally {
           try {
+            if ($base -eq 'GrabAndMove.UITests') {
+              try {
+                & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+                  -Action Cleanup @hidArguments
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Virtual HID cleanup failed: $($_.Exception.Message)"
+                $suiteFailed = $true
+              }
+            }
             if ($base -eq 'LightSwitch.UITests.Next') {
               try {
                 Restore-LightSwitchLocation -StatePath $locationStatePath
@@ -555,6 +577,16 @@ jobs:
   - pwsh: |
       $ErrorActionPreference = 'Stop'
       $failures = 0
+      $hidState = "$(Agent.WorkFolder)\PowerToysUiTestState\UmdfHidSmoke.json"
+      if (Test-Path -LiteralPath $hidState) {
+        try {
+          & "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\Manage-SmokeDriver.ps1" `
+            -Action Cleanup -StatePath $hidState -ResultsDirectory "$(Common.TestResultsDirectory)\umdf-hid"
+        } catch {
+          Write-Host "##vso[task.logissue type=error]Virtual HID prerequisite cleanup failed: $($_.Exception.Message)"
+          $failures++
+        }
+      }
       if ($env:RUN_MWB_SANDBOX -eq 'true') {
         try {
           . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
@@ -580,6 +612,13 @@ jobs:
       RUN_MWB_SANDBOX: $(RunMwbSandbox)
 
   # Preserve pre-TRX/cancellation evidence before potentially lengthy recording uploads.
+  - task: PublishPipelineArtifact@1
+    displayName: Publish virtual HID readiness and cleanup evidence
+    condition: and(always(), eq(variables['UmdfHidRequested'], 'true'))
+    inputs:
+      targetPath: '$(Common.TestResultsDirectory)\umdf-hid'
+      artifactName: umdf-hid-$(TestPlatform)-$(System.JobId)
+
   - task: PublishPipelineArtifact@1
     displayName: Publish UI-test diagnostics
     condition: and(always(), eq(variables['RunMwbSandbox'], 'true'), or(failed(), canceled(), ne(variables['MwbUiTestsPassed'], 'true'), ne(variables['UiTestCleanupComplete'], 'true')))

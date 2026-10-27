@@ -127,6 +127,9 @@ jobs:
       contents: '**/$(BuildPlatform)/$(BuildConfiguration)/tests/**/*'
       targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
+  - ${{ if or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests')) }}:
+    - template: steps-build-umdf-hid.yml
+
   - publish: $(JobOutputDirectory)
     artifact: $(JobOutputArtifactName)
     displayName: Publish UI Test artifacts

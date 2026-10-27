@@ -17,6 +17,7 @@ public sealed class TransportSmokeTests : IDisposable
 {
     private TestWindow? fixture;
     private Point originalPointer;
+    private UmdfHidInput? input;
 
     public TestContext TestContext { get; set; } = null!;
 
@@ -33,13 +34,14 @@ public sealed class TransportSmokeTests : IDisposable
         fixture = new TestWindow();
         fixture.Focus();
         using var trace = new InputTrace();
+        input = UmdfHidInput.Activate();
         var bounds = fixture.Bounds;
         var target = new Point(bounds.Left + (bounds.Width / 2), bounds.Top + (bounds.Height / 2));
-        HidInput.MoveTo(target.X, target.Y);
-        HidInput.SetButton(1, true);
-        HidInput.SetButton(1, false);
-        HidInput.SetModifier(Key.LShift, true);
-        HidInput.SetModifier(Key.LShift, false);
+        MouseHelper.MoveTo(target.X, target.Y);
+        MouseHelper.LeftDown();
+        MouseHelper.LeftUp();
+        KeyboardHelper.PressKey(Key.LShift);
+        KeyboardHelper.ReleaseKey(Key.LShift);
         Assert.IsTrue(
             WaitHelper.WaitForStable(
                 () => trace.Samples,
@@ -48,7 +50,7 @@ public sealed class TransportSmokeTests : IDisposable
                 5_000).Succeeded,
             "The HID transport did not produce both keyboard and mouse button hook events.");
         var hid = trace.Samples;
-        TestContext.WriteLine($"Real HID device: {HidInput.DevicePath}");
+        TestContext.WriteLine($"Real HID device: {input.DevicePath}");
         TestContext.WriteLine($"HID events: {JsonSerializer.Serialize(hid)}");
         Assert.IsTrue(hid.Where(item => item.Kind == "keyboard").All(item => (item.Flags & 0x10) == 0), "HID keyboard input was marked injected.");
         Assert.IsTrue(hid.Where(item => item.Kind == "mouse").All(item => (item.Flags & 1) == 0), "HID mouse input was marked injected.");
@@ -59,6 +61,8 @@ public sealed class TransportSmokeTests : IDisposable
             requiredConsecutiveMatches: 3);
         Assert.IsTrue(cursor.Succeeded, $"Absolute HID positioning was not pixel exact: {cursor.LastObservation}.");
 
+        input.Dispose();
+        input = null;
         trace.Clear();
         KeyboardHelper.PressKey(Key.LShift);
         KeyboardHelper.ReleaseKey(Key.LShift);
@@ -98,16 +102,23 @@ public sealed class TransportSmokeTests : IDisposable
         try
         {
             KeyboardHelper.ReleaseKey(Key.LShift);
-            if (HidInput.IsConnected)
+            MouseHelper.LeftUp();
+            if (fixture is not null)
             {
-                HidInput.SetButton(1, false);
-                HidInput.SetModifier(Key.LShift, false);
-                HidInput.MoveTo(originalPointer.X, originalPointer.Y);
+                MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
             }
         }
         finally
         {
-            Dispose();
+            try
+            {
+                input?.Dispose();
+                input = null;
+            }
+            finally
+            {
+                Dispose();
+            }
         }
     }
 

@@ -53,6 +53,7 @@ internal sealed class TestWindow : IDisposable
 
     internal void Focus()
     {
+        KeyboardHelper.SendKey(Key.Esc);
         WindowControl.TryBringToForeground(Handle);
         var bounds = Bounds;
         var x = bounds.Left + (bounds.Width / 2);
@@ -107,7 +108,11 @@ internal sealed class TestWindow : IDisposable
                 BackColor = Color.White,
                 FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable,
                 StartPosition = System.Windows.Forms.FormStartPosition.Manual,
-                Bounds = new Rectangle(workArea.Left + (workArea.Width / 4), workArea.Top + (workArea.Height / 4), 640, 400),
+                Bounds = new Rectangle(
+                    workArea.Left + (workArea.Width / 8),
+                    workArea.Top + (workArea.Height / 8),
+                    Math.Min(640, workArea.Width / 3),
+                    Math.Min(400, workArea.Height / 3)),
             };
             form.Shown += (_, _) =>
             {

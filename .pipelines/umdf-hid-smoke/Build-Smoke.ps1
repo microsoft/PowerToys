@@ -7,7 +7,8 @@ param(
     [Parameter(Mandatory)][string]$WorkRoot,
     [Parameter(Mandatory)][string]$OutputRoot,
     [string[]]$Platforms = @('x64', 'ARM64'),
-    [string]$PackageCache
+    [string]$PackageCache,
+    [switch]$DriverOnly
 )
 $ErrorActionPreference = 'Stop'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
@@ -108,7 +109,7 @@ try {
         Export-Certificate -Cert $certificate -FilePath (Join-Path $driver 'PtHidProbe.cer') | Out-Null
         & $signTool sign /s My /sha1 $certificate.Thumbprint /fd SHA256 (Join-Path $driver 'VhidminiUm.dll')
         if ($LASTEXITCODE) { throw "Driver DLL signing failed: $platform" }
-        $catalogOs = if ($platform -eq 'ARM64') { '10_CO_ARM64' } else { '10_CO_X64' }
+        $catalogOs = if ($platform -eq 'ARM64') { '10_VB_ARM64,10_CO_ARM64' } else { '10_VB_X64,10_CO_X64' }
         & $inf2cat "/driver:$driver" "/os:$catalogOs" /uselocaltime
         if ($LASTEXITCODE) { throw "Driver catalog generation failed: $platform" }
         & $signTool sign /s My /sha1 $certificate.Thumbprint /fd SHA256 (Join-Path $driver 'PtHidProbe.cat')
@@ -119,19 +120,21 @@ try {
         Copy-Item (Join-Path $sample 'LICENSE') (Join-Path $driver 'MS-PL.txt')
         Copy-Item (Join-Path $PSScriptRoot 'UPSTREAM.txt') $driver
 
-        & dotnet restore (Join-Path $PSScriptRoot 'GrabAndMove.HidSmoke.Probe.csproj') "-p:Platform=$platform"
-        if ($LASTEXITCODE) { throw "Smoke client restore failed: $platform" }
-        & (Join-Path $repo 'tools\build\build.cmd') -Path $PSScriptRoot -Platform $platform -Configuration Release
-        if ($LASTEXITCODE) { throw "Smoke client build failed: $platform" }
-        $client = Join-Path $repo "$platform\Release\tests\GrabAndMove.HidSmoke.Probe\net10.0-windows10.0.26100.0"
-        New-Item (Join-Path $destination 'tests') -ItemType Directory -Force | Out-Null
-        Copy-Item "$client\*" (Join-Path $destination 'tests') -Recurse -Force
+        if (-not $DriverOnly) {
+            & dotnet restore (Join-Path $PSScriptRoot 'GrabAndMove.HidSmoke.Probe.csproj') "-p:Platform=$platform"
+            if ($LASTEXITCODE) { throw "Smoke client restore failed: $platform" }
+            & (Join-Path $repo 'tools\build\build.cmd') -Path $PSScriptRoot -Platform $platform -Configuration Release
+            if ($LASTEXITCODE) { throw "Smoke client build failed: $platform" }
+            $client = Join-Path $repo "$platform\Release\tests\GrabAndMove.HidSmoke.Probe\net10.0-windows10.0.26100.0"
+            New-Item (Join-Path $destination 'tests') -ItemType Directory -Force | Out-Null
+            Copy-Item "$client\*" (Join-Path $destination 'tests') -Recurse -Force
+        }
         Get-ChildItem $driver -File | Get-FileHash -Algorithm SHA256 | Select-Object Path, Hash |
             ConvertTo-Json | Set-Content (Join-Path $destination 'driver-hashes.json')
     }
 }
 finally {
-    Remove-Item "Cert:\CurrentUser\My\$($certificate.Thumbprint)"
+    Remove-Item "Cert:\CurrentUser\My\$($certificate.Thumbprint)" -DeleteKey
     foreach ($name in $originalBuildEnvironment.Keys) {
         [Environment]::SetEnvironmentVariable($name, $originalBuildEnvironment[$name], 'Process')
     }
