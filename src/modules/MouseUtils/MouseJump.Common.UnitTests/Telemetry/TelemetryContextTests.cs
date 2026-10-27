@@ -160,6 +160,31 @@ public sealed class TelemetryContextTests
         TelemetryContextTests.WithinTimeout(telemetry.Stop);
     }
 
+    [TestMethod]
+    public void AStopWhoseFinalWriterFlushFailsStillLeavesTheContextUsable()
+    {
+        var telemetry = TelemetryContextTests.CreateContext();
+        telemetry.Start(new FlushFailingTelemetryWriter());
+        telemetry.WriteEvent(new { }, "eventBeforeStop");
+
+        // the failed final flush is reported to whoever called Stop...
+        var stop = Task.Run(telemetry.Stop);
+        Assert.AreEqual(0, Task.WaitAny([stop], TelemetryContextTests.Timeout), "timed out waiting for Stop");
+        Assert.IsInstanceOfType<InvalidOperationException>(stop.Exception?.InnerException);
+
+        // ...but the context is still stopped cleanly - later calls mustn't hang on the
+        // already-shut-down adapter, and a replacement writer can be started
+        TelemetryContextTests.WithinTimeout(telemetry.Flush);
+        TelemetryContextTests.WithinTimeout(telemetry.Stop);
+
+        var replacement = new InMemoryTelemetryWriter();
+        telemetry.Start(replacement);
+        telemetry.WriteEvent(new { }, "eventAfterRestart");
+        TelemetryContextTests.WithinTimeout(telemetry.Stop);
+
+        Assert.AreEqual("eventAfterRestart", replacement.Records.Single().Operation);
+    }
+
     /// <summary>
     /// A uniquely-named source, so no other test's listener can see (or add to) these records.
     /// </summary>
@@ -201,5 +226,19 @@ public sealed class TelemetryContextTests
         public void Flush()
         {
         }
+    }
+
+    /// <summary>
+    /// Writes nothing, and throws from every <see cref="Flush"/> - including the final one
+    /// <see cref="TelemetryContext.Stop"/> makes.
+    /// </summary>
+    private sealed class FlushFailingTelemetryWriter : ITelemetryWriter
+    {
+        public void Write(TelemetryRecord record)
+        {
+        }
+
+        public void Flush()
+            => throw new InvalidOperationException("simulated flush failure");
     }
 }

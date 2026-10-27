@@ -8,18 +8,22 @@ using System.Runtime.CompilerServices;
 namespace MouseJump.Common.Telemetry;
 
 /// <summary>
-/// Records lightweight, opt-in diagnostic telemetry (as opposed to <c>NLog.ILogger</c>-style
-/// application logging) - ambient key-value context via <see cref="BeginScope"/>, measured spans
-/// via <see cref="BeginTimer"/>, and one-off point-in-time facts via <see cref="WriteEvent"/>.
-/// Built on <see cref="System.Diagnostics.Activity"/> rather than a bespoke implementation, so it
-/// gets ambient async-flowing context, parent/child nesting, and (critically) a genuinely free
-/// no-op path when nothing is listening: without calling <see cref="Start"/>, every method here
-/// still runs (so callers don't need to guard call sites), but
-/// <see cref="ActivitySource.StartActivity(string)"/> returns <see langword="null"/> immediately
-/// and nothing further happens. A plain instance class - no ambient/global state of its own, so
-/// it's easy to construct more than one (e.g. in tests) - see <see cref="Telemetry"/> for the
-/// process-wide ambient instance most call sites actually use.
+/// Provides lightweight, opt-in diagnostic telemetry - timers (<see cref="BeginTimer"/>)
+/// and events (<see cref="WriteEvent"/>) written to a structured <see cref="ITelemetryWriter"/>.
+/// Nested timers and events are correlated automatically, and scopes
+/// (<see cref="BeginScope"/>) attach key-value pairs that every timer and event
+/// inside them inherits. Has negligible performance impact until <see cref="Start"/>
+/// is called. Implemented as a plain instance class so it's easy to construct more
+/// than one (e.g. in tests). See <see cref="Telemetry"/> for a process-wide static
+/// instance that can be accessed without the need to use dependency injection or
+/// weave an instance through the call hierarchy.
 /// </summary>
+/// <remarks>
+/// Built on <see cref="System.Diagnostics.Activity"/>, which provides the async context flow,
+/// nesting and no-op path when nothing is listening, so only a thin adapter is bespoke. This is
+/// local diagnostic output for development, not PowerToys product telemetry, and is disabled
+/// by default.
+/// </remarks>
 public sealed class TelemetryContext
 {
     /// <summary>
@@ -88,12 +92,16 @@ public sealed class TelemetryContext
     /// <summary>
     /// Stops routing anywhere - <see cref="BeginScope"/>/<see cref="BeginTimer"/>/
     /// <see cref="WriteEvent"/> keep working but go nowhere (see the class remarks). Blocks until
-    /// any already-queued records have been flushed to the previous writer.
+    /// any already-queued records have been flushed to the previous writer. If that final flush
+    /// throws, the exception is passed on to the caller, but the context is still stopped.
     /// </summary>
     public void Stop()
     {
-        this.adapter?.Dispose();
+        // detach before disposing - if the writer's final flush throws, the adapter has already
+        // shut down, and a later Flush (or Stop) mustn't try to use it again
+        var adapter = this.adapter;
         this.adapter = null;
+        adapter?.Dispose();
     }
 
     /// <summary>
