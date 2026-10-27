@@ -12,8 +12,7 @@ public readonly record struct ProcessRunResult(int ExitCode, string StdOut, stri
 /// <summary>
 /// The single process-launch chokepoint for <b>every</b> PowerScript execution path (PowerShell,
 /// Python, WSL, and descriptor-driven). It resolves MXC policy in one place and, whether launching
-/// the MXC executor, an explicitly risk-accepted direct process, or a platform-default direct WSL
-/// process that ProcessContainer cannot host, ensures that launch uses the interactive user's
+/// the MXC executor or an explicitly risk-accepted direct process, ensures that launch uses the interactive user's
 /// rights rather than the host's administrator token.
 ///
 /// <list type="bullet">
@@ -53,15 +52,10 @@ public static class ProcessRunner
 
         if (policy.Enabled && IsWslTarget(startInfo))
         {
-            if (policy.UsesPlatformDefault)
-            {
-                return SecureLauncher.Run(startInfo, standardInput, timeoutMs);
-            }
-
             return new ProcessRunResult(
                 UnsupportedIsolationExitCode,
                 string.Empty,
-                "MXC's Windows processcontainer cannot host wsl.exe. Use Windows or managed Linux execution, or disable MXC globally.");
+                "MXC's Windows processcontainer cannot host explicit wsl.exe recipes. Built-in Linux Python uses WSLC automatically; explicit WSL recipes require MXC to be disabled globally.");
         }
 
         return policy.Enabled

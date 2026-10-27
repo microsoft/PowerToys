@@ -174,18 +174,18 @@ public class MxcTests
     }
 
     [TestMethod]
-    public void Wsl_Target_Uses_Direct_Execution_Only_For_Platform_Default()
+    [DataRow(true)]
+    [DataRow(false)]
+    public void Explicit_Wsl_Recipes_Never_Bypass_Enabled_Mxc(bool platformDefault)
     {
-        var platformDefault = MxcSettings.Load(
-            new FileSettingsStore(_root),
-            _ => SupportedPlatform());
-        var defaultPolicy = MxcPolicyResolver.Resolve(platformDefault);
-        Assert.IsTrue(defaultPolicy.Enabled);
-        Assert.IsTrue(defaultPolicy.UsesPlatformDefault);
-        Assert.IsTrue(ProcessRunner.IsWslTarget(new ProcessStartInfo { FileName = "wsl.exe" }));
-
-        var explicitPolicy = MxcPolicyResolver.Resolve(new MxcSettings { Enabled = true });
-        Assert.IsFalse(explicitPolicy.UsesPlatformDefault);
+        var settings = platformDefault
+            ? MxcSettings.Load(new FileSettingsStore(_root), _ => SupportedPlatform())
+            : new MxcSettings { Enabled = true };
+        var result = ProcessRunner.Run(
+            new ProcessStartInfo { FileName = "wsl.exe" },
+            new ProcessExecutionContext(), mxcSettings: settings);
+        Assert.AreEqual(ProcessRunner.UnsupportedIsolationExitCode, result.ExitCode);
+        StringAssert.Contains(result.StdErr, "WSLC");
     }
 
     [TestMethod]

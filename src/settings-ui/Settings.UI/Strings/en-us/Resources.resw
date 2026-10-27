@@ -6270,12 +6270,6 @@ Text uses the current drawing color.</value>
   <data name="PowerScripts_MxcLeastPrivilegeToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Use least-privilege mode</value>
   </data>
-  <data name="PowerScripts_MxcWslUnavailable.Title" xml:space="preserve">
-    <value>MXC isolation is unavailable for WSL execution.</value>
-  </data>
-  <data name="PowerScripts_MxcWslUnavailable.Message" xml:space="preserve">
-    <value>WSL cannot run inside MXC's Windows process container. With the machine-derived default, WSL scripts run directly in the selected distribution. If MXC was explicitly required, execution is refused instead of silently bypassing isolation.</value>
-  </data>
   <data name="PowerScripts_MxcEffective.Header" xml:space="preserve">
     <value>Effective isolation</value>
   </data>
@@ -6629,10 +6623,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Windows</value>
   </data>
   <data name="PowerScripts_EnvironmentWsl.Content" xml:space="preserve">
-    <value>Existing WSL distribution</value>
-  </data>
-  <data name="PowerScripts_EnvironmentLinux.Content" xml:space="preserve">
-    <value>Managed Linux container</value>
+    <value>Linux (WSL)</value>
   </data>
   <data name="PowerScripts_EnvironmentDisabledHelp" xml:space="preserve">
     <value>Python scripts are disabled. PowerShell scripts are unaffected.</value>
@@ -6641,10 +6632,10 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Use Python installed on Windows, with Windows script isolation.</value>
   </data>
   <data name="PowerScripts_EnvironmentWslHelp" xml:space="preserve">
-    <value>Use Python and packages in your existing WSL distribution. This environment does not support MXC isolation.</value>
+    <value>MXC is off: use Python and packages in your WSL distribution. Enabling global MXC switches Linux execution to a separate WSLC container.</value>
   </data>
   <data name="PowerScripts_EnvironmentLinuxHelp" xml:space="preserve">
-    <value>Use a separate Python 3.12 Linux image with MXC. This does not use or modify your WSL distribution, its Python, or its packages.</value>
+    <value>MXC is on: use a separate Python 3.12 WSLC container, not your WSL distribution. Disabling global MXC switches Linux execution to your WSL distribution.</value>
   </data>
   <data name="PowerScripts_LinuxControls.Header" xml:space="preserve">
     <value>Managed Linux isolation</value>
@@ -6705,9 +6696,6 @@ Global policy requires explicit acceptance of these two unsupported-policy excep
   </data>
   <data name="PowerScripts_WslDefaultDistribution" xml:space="preserve">
     <value>WSL default distribution</value>
-  </data>
-  <data name="PowerScripts_ExecutionWslBlocked" xml:space="preserve">
-    <value>Blocked: global policy requires MXC, which cannot isolate your existing WSL distribution. Select managed Linux or review the global isolation policy.</value>
   </data>
   <data name="PowerScripts_ExecutionLinux" xml:space="preserve">
     <value>Python 3.12 in a separate managed Linux container. MXC required; your WSL distribution and packages are not used.</value>

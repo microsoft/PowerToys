@@ -13,8 +13,6 @@ public sealed class MxcEffectivePolicy
 
     public IReadOnlyList<string> DisabledPolicies { get; init; } = Array.Empty<string>();
 
-    public bool UsesPlatformDefault { get; init; }
-
     public bool IsEnabled(string policy) =>
         Enabled && EnabledPolicies.Contains(policy, StringComparer.Ordinal);
 }
@@ -36,7 +34,6 @@ public static class MxcPolicyResolver
             Enabled = settings.Enabled,
             EnabledPolicies = MxcPolicies.All.Where(policy => !disabled.Contains(policy, StringComparer.Ordinal)).ToList(),
             DisabledPolicies = disabled,
-            UsesPlatformDefault = settings.UsesPlatformDefault,
         };
     }
 }

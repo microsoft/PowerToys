@@ -94,11 +94,6 @@ public partial class PowerScriptsViewModel
             summary = GetResourceString("PowerScripts_ExecutionWsl")
                 .Replace("{0}", distribution, StringComparison.Ordinal);
             isolation = GetResourceString("PowerScripts_MxcEffectiveDisabled");
-            if (script.IsMxcEffectivelyEnabled &&
-                (!_mxcUsesPlatformDefault || _hasRejectedGlobalMxcWeakening))
-            {
-                blocked = GetResourceString("PowerScripts_ExecutionWslBlocked");
-            }
         }
         else if (IsManagedLinuxMode)
         {

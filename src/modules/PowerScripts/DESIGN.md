@@ -81,10 +81,12 @@ or policy dialogs. Details are read-only descriptor metadata and effective globa
 isolation, with external editing and explicit refresh. All runtime/MXC configuration
 is global. Trust remains bound to exact body/descriptor content.
 
-Windows, existing WSL, and managed Linux enforce the selected global policy or
-fail closed if it cannot be honored. Managed Linux requires MXC/filesystem protection
+Python has one Linux/WSL choice: global MXC on selects managed WSLC; MXC off selects
+the configured user distribution. Neither route silently falls back to the other.
+Windows and managed Linux enforce the selected global policy or fail closed if
+it cannot be honored. Managed Linux requires MXC/filesystem protection
 and acknowledged global exceptions for unsupported UI/least-privilege policies.
-Existing WSL never silently substitutes for managed Linux.
+Explicit WSL recipes are refused while MXC is enabled, including platform defaults.
 
 The Debug launcher is a temporary shared-client consumer. The former standalone
 Explorer handler is removed; future file integration belongs to File Explorer Add-ons.

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using PowerScripts.Core.Storage;
 
@@ -17,11 +18,8 @@ public enum PythonRuntimeMode
     /// <summary>Run using native Windows Python (auto-detected or a configured interpreter path).</summary>
     Windows,
 
-    /// <summary>Run inside a WSL distribution.</summary>
+    /// <summary>Run in WSLC when global MXC is enabled, or in the configured WSL distribution otherwise.</summary>
     Wsl,
-
-    /// <summary>Run in an MXC-managed Linux container, not an existing WSL distribution.</summary>
-    ManagedLinux,
 }
 
 /// <summary>Windows-mode Python settings.</summary>
@@ -85,7 +83,13 @@ public sealed class PythonSettings
             if (document.RootElement.TryGetProperty("python", out var python) &&
                 python.ValueKind == JsonValueKind.Object)
             {
-                return python.Deserialize<PythonSettings>(SerializerOptions) ?? new PythonSettings();
+                var configuration = JsonNode.Parse(python.GetRawText())!.AsObject();
+                if (string.Equals(configuration["mode"]?.GetValue<string>(), "managedLinux", StringComparison.OrdinalIgnoreCase))
+                {
+                    configuration["mode"] = "wsl";
+                }
+
+                return configuration.Deserialize<PythonSettings>(SerializerOptions) ?? new PythonSettings();
             }
         }
         catch (Exception)

@@ -199,14 +199,20 @@ host-preparation tool or host-DACL mutation is enabled.
 
 ### Python environments
 
-Global Python mode selects Disabled, Windows, Existing WSL, or Managed Linux.
+Global Python mode selects Disabled, Windows, or Linux (WSL).
 It never affects PowerShell or explicit recipes and does not approve scripts.
 Disabled Python is hidden from normal discovery and Settings counts; management
 can use `--include-disabled`. Re-enabling preserves identities and filters.
 
-Existing WSL uses the selected user distribution and its Python/packages.
-Windows process containers cannot host `wsl.exe`: the implicit platform default
-runs WSL directly with a warning; explicitly required MXC refuses the launch.
+Linux execution follows global MXC automatically: when enabled (including the
+supported-machine default), use the managed WSLC container; when disabled, use
+the selected user WSL distribution and its Python/packages. The distribution
+picker is shown only when MXC is off. There is no separate container-mode setting.
+Older `managedLinux` mode values load as `wsl` and save in that canonical form.
+Explicit `wsl.exe` recipes cannot run inside Windows process containers and are
+refused whenever MXC is enabled, including the machine-derived default.
+
+For user-distribution execution with MXC off,
 Windows input/file-parameter paths are translated in a separate Linux payload;
 returned mounted-drive paths are translated back before output validation.
 For file-output scripts, the Host supplies a Windows-backed `TMPDIR`, so Python

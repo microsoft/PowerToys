@@ -146,7 +146,6 @@
                             <ComboBoxItem x:Uid="PowerScripts_EnvironmentDisabled" />
                             <ComboBoxItem x:Uid="PowerScripts_EnvironmentWindows" />
                             <ComboBoxItem x:Uid="PowerScripts_EnvironmentWsl" />
-                            <ComboBoxItem x:Uid="PowerScripts_EnvironmentLinux" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
@@ -188,11 +187,6 @@
                             ItemsSource="{x:Bind ViewModel.WslDistributions, Mode=OneWay}"
                             Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                     </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="PowerScripts_MxcWslUnavailable"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsWslMode, Mode=OneWay}"
-                        Severity="Warning" />
                     <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsManagedLinuxMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <tkcontrols:SettingsCard x:Uid="PowerScripts_LinuxControls" ContentAlignment="Vertical">
                             <TextBlock

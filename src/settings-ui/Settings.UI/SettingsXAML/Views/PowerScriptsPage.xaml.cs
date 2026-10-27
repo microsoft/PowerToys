@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void PythonEnvironment_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (sender is ComboBox { SelectedIndex: 3 })
+            if (sender is ComboBox { SelectedIndex: 2 } && ViewModel.IsMxcEnabled)
             {
                 await ViewModel.RefreshLinuxContainerAsync();
             }
@@ -222,6 +222,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (!ViewModel.TrySetMxcEnabled(toggle.IsOn, isConfirmed))
             {
                 toggle.IsOn = ViewModel.IsMxcEnabled;
+            }
+            else if (ViewModel.IsManagedLinuxMode)
+            {
+                await ViewModel.RefreshLinuxContainerAsync();
             }
         }
 

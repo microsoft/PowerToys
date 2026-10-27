@@ -194,7 +194,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Python execution mode: 0 = Disabled, 1 = Windows, 2 = existing WSL, 3 = managed Linux. Persisted to the shared
+        /// Python execution mode: 0 = Disabled, 1 = Windows, 2 = Linux (WSL). Persisted to the shared
         /// <c>config.json</c>'s <c>python.mode</c> so the Host runs Python PowerScripts the same way from
         /// every surface (a hotkey, the context menu, or Advanced Paste).
         /// </summary>
@@ -209,9 +209,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SavePythonSettings();
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(IsWindowsMode));
-                    OnPropertyChanged(nameof(IsWslMode));
-                    OnPropertyChanged(nameof(IsManagedLinuxMode));
-                    OnPropertyChanged(nameof(PythonEnvironmentDescription));
+                    NotifyPythonEnvironmentChanged();
                     RefreshScriptMxcStates();
                     RefreshCatalogue();
                 }
@@ -220,17 +218,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsWindowsMode => _pythonModeIndex == 1;
 
-        public bool IsWslMode => _pythonModeIndex == 2;
+        public bool IsWslMode => _pythonModeIndex == 2 && !IsMxcEnabled;
 
-        public bool IsManagedLinuxMode => _pythonModeIndex == 3;
+        public bool IsManagedLinuxMode => _pythonModeIndex == 2 && IsMxcEnabled;
 
         public string PythonEnvironmentDescription => GetResourceString(_pythonModeIndex switch
         {
             1 => "PowerScripts_EnvironmentWindowsHelp",
-            2 => "PowerScripts_EnvironmentWslHelp",
-            3 => "PowerScripts_EnvironmentLinuxHelp",
+            2 => IsMxcEnabled ? "PowerScripts_EnvironmentLinuxHelp" : "PowerScripts_EnvironmentWslHelp",
             _ => "PowerScripts_EnvironmentDisabledHelp",
         });
+
+        private void NotifyPythonEnvironmentChanged()
+        {
+            OnPropertyChanged(nameof(IsWslMode));
+            OnPropertyChanged(nameof(IsManagedLinuxMode));
+            OnPropertyChanged(nameof(PythonEnvironmentDescription));
+        }
 
         public bool IsMxcEnabled => _isMxcEnabled;
 
@@ -321,6 +325,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UpdateGlobalMxcRiskAcceptance();
             SaveGlobalMxcSettings();
             OnPropertyChanged(nameof(IsMxcEnabled));
+            NotifyPythonEnvironmentChanged();
             RefreshScriptMxcStates();
             return true;
         }
@@ -660,6 +665,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _isMxcEnabled = _isMxcSupported;
                 UpdateGlobalMxcRiskAcceptance();
                 OnPropertyChanged(nameof(IsMxcEnabled));
+                NotifyPythonEnvironmentChanged();
                 RefreshScriptMxcStates();
             }
 
@@ -772,8 +778,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _pythonModeIndex = mode.ToLowerInvariant() switch
                     {
                         "windows" => 1,
-                        "wsl" => 2,
-                        "managedlinux" => 3,
+                        "wsl" or "managedlinux" => 2,
                         _ => 0,
                     };
 
@@ -799,7 +804,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 1 => "windows",
                 2 => "wsl",
-                3 => "managedLinux",
                 _ => "disabled",
             };
 

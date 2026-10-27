@@ -163,27 +163,54 @@ public class MxcLinuxTests
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void Linux_Mode_Uses_Wslc_Without_Falling_Back_To_The_User_Distribution(bool enabled)
+    {
+        var script = Path.Combine(_root, "script.py");
+        File.WriteAllText(script, "raise RuntimeError('Must not run outside WSLC')");
+        var manifest = TestTool.Parse(TestTool.Descriptor(), script);
+        var settings = new MxcSettings { Enabled = enabled, RiskAccepted = false };
+        var result = new PythonRuntime(
+            new PythonSettings { Mode = PythonRuntimeMode.Wsl, Wsl = new() { Distribution = "must-not-use-this-distribution" } },
+            settings).Run(manifest, new PythonTransformInput());
+
+        Assert.AreEqual(ProcessRunner.UnsupportedIsolationExitCode, result.ExitCode);
+        Assert.AreEqual(MxcLinuxProcessRunner.GetPolicyError(MxcPolicyResolver.Resolve(settings)), result.StdErr);
+        StringAssert.Contains(result.StdErr, "managed Linux image");
+    }
+
+    [TestMethod]
+    [DataRow("wsl")]
+    [DataRow("managedLinux")]
+    [DataRow("ManagedLinux")]
     [DoNotParallelize]
-    public void Managed_Mode_RoundTrips_Without_Changing_Existing_Environments_Or_Isolation()
+    public void Linux_Mode_Migrates_Without_Changing_Existing_Environments_Or_Isolation(string mode)
     {
         var previous = SettingsStore.Current;
         try
         {
             SettingsStore.Current = new FileSettingsStore(_root);
-            SettingsStore.Current.WriteBlob(PowerScriptsPaths.ConfigFileName, """{"mxc":{"enabled":true},"scriptsRoot":"C:\\scripts"}""");
-            new PythonSettings
+            SettingsStore.Current.WriteBlob(PowerScriptsPaths.ConfigFileName, JsonSerializer.Serialize(new
             {
-                Mode = PythonRuntimeMode.ManagedLinux,
-                Windows = new() { InterpreterPath = @"C:\Python\python.exe" },
-                Wsl = new() { Distribution = "Ubuntu" },
-                TimeoutSeconds = 47,
-            }.Save();
+                mxc = new { enabled = true },
+                scriptsRoot = @"C:\scripts",
+                python = new
+                {
+                    mode,
+                    windows = new { interpreterPath = @"C:\Python\python.exe" },
+                    wsl = new { distribution = "Ubuntu" },
+                    timeoutSeconds = 47,
+                },
+            }));
             var loaded = PythonSettings.Load();
-            Assert.AreEqual(PythonRuntimeMode.ManagedLinux, loaded.Mode);
+            Assert.AreEqual(PythonRuntimeMode.Wsl, loaded.Mode);
             Assert.AreEqual("Ubuntu", loaded.Wsl.Distribution);
             Assert.AreEqual(@"C:\Python\python.exe", loaded.Windows.InterpreterPath);
             Assert.AreEqual(47, loaded.TimeoutSeconds);
+            loaded.Save();
             using var config = JsonDocument.Parse(SettingsStore.Current.ReadBlob(PowerScriptsPaths.ConfigFileName)!);
+            Assert.AreEqual("Wsl", config.RootElement.GetProperty("python").GetProperty("mode").GetString());
             Assert.IsTrue(config.RootElement.GetProperty("mxc").GetProperty("enabled").GetBoolean());
             Assert.AreEqual(@"C:\scripts", config.RootElement.GetProperty("scriptsRoot").GetString());
         }

@@ -178,7 +178,7 @@ public sealed class PythonRuntime
 
         if (_settings.Mode == PythonRuntimeMode.Disabled)
         {
-            return new PythonTransformResult { ExitCode = 2, StdErr = "Python PowerScripts are disabled. Select Windows, an existing WSL distribution, or managed Linux in PowerScripts settings." };
+            return new PythonTransformResult { ExitCode = 2, StdErr = "Python PowerScripts are disabled. Select Windows or Linux (WSL) in PowerScripts settings." };
         }
 
         var inputFormat = ScriptIo.Resolve(manifest).Input;
@@ -199,11 +199,13 @@ public sealed class PythonRuntime
         }
 
         _ = input.CreateRequest(manifest);
+        var settings = _mxcSettings ?? MxcSettings.Load();
         return _settings.Mode switch
         {
-            PythonRuntimeMode.Windows => RunOnWindows(manifest, scriptPath, input),
-            PythonRuntimeMode.Wsl => RunViaWsl(manifest, scriptPath, input),
-            PythonRuntimeMode.ManagedLinux => RunInManagedLinux(manifest, scriptPath, input),
+            PythonRuntimeMode.Windows => RunOnWindows(manifest, scriptPath, input, settings),
+            PythonRuntimeMode.Wsl => MxcPolicyResolver.Resolve(settings).Enabled
+                ? RunInManagedLinux(manifest, scriptPath, input, settings)
+                : RunViaWsl(manifest, scriptPath, input, settings),
             _ => new PythonTransformResult { ExitCode = 2, StdErr = "Unknown Python execution environment." },
         };
     }
@@ -211,7 +213,8 @@ public sealed class PythonRuntime
     private PythonTransformResult RunInManagedLinux(
         PowerScriptManifest manifest,
         string scriptPath,
-        PythonTransformInput input)
+        PythonTransformInput input,
+        MxcSettings settings)
     {
         try
         {
@@ -227,7 +230,6 @@ public sealed class PythonRuntime
                 input,
                 (context, timeout) =>
                 {
-                    var settings = _mxcSettings ?? MxcSettings.Load();
                     var policy = MxcPolicyResolver.Resolve(settings);
                     return MxcLinuxProcessRunner.Run(
                         scriptPath, payload, ScriptIo.Resolve(manifest).Output, context, policy, settings, timeout);
@@ -243,7 +245,8 @@ public sealed class PythonRuntime
     private PythonTransformResult RunOnWindows(
         PowerScriptManifest manifest,
         string scriptPath,
-        PythonTransformInput input)
+        PythonTransformInput input,
+        MxcSettings settings)
     {
         var interpreter = ResolveWindowsInterpreter();
         if (interpreter is null)
@@ -278,13 +281,15 @@ public sealed class PythonRuntime
             manifest,
             input,
             input.CreateRequest(manifest).ToJsonString(),
+            settings,
             translateResultPaths: false);
     }
 
     private PythonTransformResult RunViaWsl(
         PowerScriptManifest manifest,
         string scriptPath,
-        PythonTransformInput input)
+        PythonTransformInput input,
+        MxcSettings settings)
     {
         Dictionary<string, string>? wslParameters;
         try
@@ -338,6 +343,7 @@ public sealed class PythonRuntime
             manifest,
             input,
             payload,
+            settings,
             translateResultPaths: true);
         if (workspace is not null && (!result.Succeeded || result.FilePaths is not { Count: > 0 }))
         {
@@ -359,11 +365,12 @@ public sealed class PythonRuntime
         PowerScriptManifest manifest,
         PythonTransformInput input,
         string payload,
+        MxcSettings settings,
         bool translateResultPaths) =>
         RunAndParse(
             manifest,
             input,
-            (context, timeout) => ProcessRunner.Run(psi, context, payload, timeout, _mxcSettings),
+            (context, timeout) => ProcessRunner.Run(psi, context, payload, timeout, settings),
             translateResultPaths);
 
     private PythonTransformResult RunAndParse(

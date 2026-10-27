@@ -264,7 +264,6 @@ public class HostCliTests
     [DataRow("Disabled", false)]
     [DataRow("Windows", true)]
     [DataRow("Wsl", true)]
-    [DataRow("ManagedLinux", true)]
     [DoNotParallelize]
     public void Discovery_RespectsPythonMode_WhileConfigurationCanListAll(string? mode, bool pythonEnabled)
     {
