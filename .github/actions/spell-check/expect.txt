@@ -700,6 +700,7 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
+hdd
 HDEVNOTIFY
 hdmi
 hdr
@@ -1290,6 +1291,7 @@ NULLCURSOR
 nullonfailure
 nullref
 numberbox
+nvme
 nwc
 ocr
 Ocrsettings
