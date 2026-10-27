@@ -11,6 +11,7 @@ internal sealed class TestWindow : IDisposable
 {
     private readonly TaskCompletionSource<IntPtr> ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Thread windowThread;
+    private System.Windows.Forms.Form? fixtureForm;
     private int stopRequested;
     private bool disposed;
 
@@ -54,7 +55,7 @@ internal sealed class TestWindow : IDisposable
     internal void Focus()
     {
         KeyboardHelper.SendKey(Key.Esc);
-        WindowControl.TryBringToForeground(Handle);
+        RaiseFixture();
         var bounds = Bounds;
         var x = bounds.Left + (bounds.Width / 2);
         var y = bounds.Top + (bounds.Height / 2);
@@ -62,10 +63,13 @@ internal sealed class TestWindow : IDisposable
             () => WindowControl.IsPointOwnedByWindow(Handle, x, y),
             owned => owned,
             5_000,
-            requiredConsecutiveMatches: 3);
+            requiredConsecutiveMatches: 3,
+            recover: _ => RaiseFixture());
         if (!point.Succeeded)
         {
-            throw new InvalidOperationException($"The fixture HWND {Handle} is occluded at ({x}, {y}).");
+            throw new InvalidOperationException(
+                $"The fixture HWND {Handle} did not own ({x}, {y}); bounds={Bounds}, DPI={fixtureForm!.DeviceDpi}. " +
+                $"Foreground: {WindowControl.GetForegroundWindowInfo()}.");
         }
 
         MouseHelper.MoveTo(x, y);
@@ -97,6 +101,13 @@ internal sealed class TestWindow : IDisposable
         }
     }
 
+    private void RaiseFixture()
+    {
+        var form = fixtureForm ?? throw new InvalidOperationException("The fixture form is not initialized.");
+        form.InvokeAsync(new Action(() => WindowControl.TryBringToForeground(Handle)))
+            .WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+    }
+
     private void RunWindow()
     {
         try
@@ -114,6 +125,7 @@ internal sealed class TestWindow : IDisposable
                     Math.Min(640, workArea.Width / 3),
                     Math.Min(400, workArea.Height / 3)),
             };
+            fixtureForm = form;
             form.Shown += (_, _) =>
             {
                 ready.TrySetResult(form.Handle);

@@ -365,6 +365,12 @@ public sealed class GrabAndMoveTests : UITestBase
             : before;
         Step($"{modifier}+{(resize ? "right" : "left")} drag from {start}; before={before}, expected={expected}");
         MouseHelper.MoveTo(start.X, start.Y);
+        var cursor = WaitHelper.WaitForStable(
+            MouseHelper.GetMousePosition,
+            position => position == (start.X, start.Y),
+            5_000,
+            requiredConsecutiveMatches: 3);
+        Assert.IsTrue(cursor.Succeeded, $"The gesture cursor did not settle at {start}: {cursor.LastObservation}.");
         try
         {
             KeyboardHelper.PressKey(modifier);
@@ -377,6 +383,8 @@ public sealed class GrabAndMoveTests : UITestBase
                 MouseHelper.LeftDown();
             }
 
+            // Pending activation has no visible acknowledgement until movement; match MouseHelper.Drag's down pacing.
+            Thread.Sleep(100);
             for (var step = 1; step <= 16; step++)
             {
                 MouseHelper.MoveTo(start.X + (DeltaX * step / 16), start.Y + (DeltaY * step / 16));
