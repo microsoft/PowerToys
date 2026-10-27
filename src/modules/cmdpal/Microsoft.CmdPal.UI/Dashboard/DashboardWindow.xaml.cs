@@ -709,7 +709,7 @@ public sealed partial class DashboardWindow : WindowEx,
         DispatcherQueue.TryEnqueue(() =>
         {
             var navigation = FindNavigation(message.DockRoute);
-            if (message.Command.Unsafe is IPage)
+            if (message.Command.IsPage)
             {
                 if (navigation is not null)
                 {

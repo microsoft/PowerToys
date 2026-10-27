@@ -490,7 +490,7 @@ public sealed partial class TaskbarBandControl : UserControl,
         var hwnd = OwnerHwnd;
         try
         {
-            PerformCommandMessage message = new(command.Model, item.Model)
+            PerformCommandMessage message = new(command, item.Model)
             {
                 WithAnimation = false,
                 TransientPage = true,

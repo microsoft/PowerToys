@@ -135,7 +135,7 @@ public partial class TopLevelCommandManagerTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public async Task FailedTopLevelItem_QuarantinesProviderWhenSafeInitializationSwallowsError(bool usesTopLevelContext)
+    public async Task CachedTopLevelItem_DoesNotReadDisconnectedCommandIdentity(bool usesTopLevelContext)
     {
         using var services = CreateServices();
         var disconnected = false;
@@ -152,8 +152,10 @@ public partial class TopLevelCommandManagerTests
         pageContext.SetupGet(context => context.Scheduler).Returns(TaskScheduler.Default);
         var item = new CommandItemViewModel(new(topLevel), new(usesTopLevelContext ? wrapper.TopLevelPageContext : pageContext.Object), null);
 
-        Assert.IsFalse(item.SafeFastInit());
-        Assert.IsTrue(wrapper.IsFailed);
+        Assert.IsTrue(item.SafeFastInit());
+        Assert.AreSame(topLevel.CommandViewModel, item.Command);
+        Assert.AreEqual("command", item.Command.Id);
+        Assert.IsFalse(wrapper.IsFailed);
         item.SafeCleanup();
         topLevel.Cleanup();
     }

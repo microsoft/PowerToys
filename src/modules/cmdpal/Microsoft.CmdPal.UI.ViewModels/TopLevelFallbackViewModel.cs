@@ -61,6 +61,11 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     internal override bool SafeUpdateFallbackTextSynchronous(string newQuery)
     {
+        if (ProviderContext is CommandProviderWrapper { IsFailed: true })
+        {
+            return false;
+        }
+
         if (!IsEnabled)
         {
             return false;
@@ -72,7 +77,14 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex.ToString());
+            if (ProviderContext is CommandProviderWrapper provider)
+            {
+                provider.ReportFailure(ex);
+            }
+            else
+            {
+                Logger.LogError(ex.ToString());
+            }
         }
 
         return false;

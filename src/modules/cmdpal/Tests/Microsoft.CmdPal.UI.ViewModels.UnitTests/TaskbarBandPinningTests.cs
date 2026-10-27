@@ -227,7 +227,6 @@ public class TaskbarBandPinningTests
                 ProviderContext,
                 new ProviderSettings(),
                 _serviceProvider.Object,
-                command,
                 DefaultContextMenuFactory.Instance);
             _commandManager.DockBands.Add(band);
             return band;
