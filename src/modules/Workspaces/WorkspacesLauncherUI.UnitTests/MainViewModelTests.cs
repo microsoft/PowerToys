@@ -13,6 +13,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Models;
@@ -26,6 +27,74 @@ namespace WorkspacesLauncherUI.UnitTests
     {
         private const string FirstId = "{A1111111-B111-C111-D111-E11111111111}";
         private const string SecondId = "{A2222222-B222-C222-D222-E22222222222}";
+
+        [TestMethod]
+        public void MissingConfirmationOwnerCannotBeWatched()
+        {
+            var notified = false;
+            Assert.IsFalse(RunnerHelper.TryWaitForProcessExit(0, () => notified = true));
+            Assert.IsFalse(notified);
+        }
+
+        [DataTestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void ConfirmationOnlyUsesExistingDialogWithoutShowingStatusWindow(bool allow)
+        {
+            Run(
+                session =>
+                {
+                    Assert.IsFalse(session.Owner.IsVisible);
+                    session.OnLoaded = window =>
+                    {
+                        Assert.IsNull(window.Owner);
+                        Assert.IsTrue(window.ShowInTaskbar);
+                        Assert.IsTrue(window.Topmost);
+                        Assert.AreEqual(WindowStartupLocation.CenterScreen, window.WindowStartupLocation);
+                        Assert.IsFalse(window.RunButton.IsEnabled);
+                        window.Render();
+                        Assert.IsTrue(window.RunButton.IsEnabled);
+                        if (allow)
+                        {
+                            window.ClickRun();
+                        }
+                        else
+                        {
+                            window.Close();
+                        }
+                    };
+                    session.Receive(Warning(FirstId));
+                    session.Drain();
+                    Assert.AreEqual(1, session.Windows.Count);
+                    Assert.IsFalse(session.Owner.IsVisible);
+                    CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, allow ? "run" : "skip") }, session.Messages);
+                },
+                confirmationOnly: true);
+        }
+
+        [TestMethod]
+        public void ConfirmationOnlyDismissUsesExistingRequestLifecycle()
+        {
+            Run(
+                session =>
+                {
+                    session.OnLoaded = window =>
+                    {
+                        window.Render();
+                        session.Receive(Dismiss(FirstId));
+                        session.Drain();
+                        Assert.IsFalse(window.IsVisible);
+                        window.ClickRun();
+                    };
+                    session.Receive(Warning(FirstId));
+                    session.Drain();
+                    session.Receive(Warning(FirstId));
+                    session.Drain();
+                    Assert.AreEqual(1, session.Windows.Count);
+                    CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
+                },
+                confirmationOnly: true);
+        }
 
         [TestMethod]
         public void OriginalLaunchStatusNeedsNoMessageEnvelope()
@@ -516,11 +585,11 @@ namespace WorkspacesLauncherUI.UnitTests
 
         private static string Response(string requestId, string choice) => JsonSerializer.Serialize(new { type = "elevation-response", requestId, choice });
 
-        private static void Run(Action<WarningSession> test)
+        private static void Run(Action<WarningSession> test, bool confirmationOnly = false)
         {
             SignatureWarningLayoutTests.RunOnSta(() =>
             {
-                using var session = new WarningSession();
+                using var session = new WarningSession(confirmationOnly);
                 test(session);
             });
         }
@@ -529,7 +598,7 @@ namespace WorkspacesLauncherUI.UnitTests
         {
             private ExceptionDispatchInfo _failure;
 
-            internal WarningSession()
+            internal WarningSession(bool confirmationOnly)
             {
                 ViewModel = new MainViewModel(
                     message =>
@@ -548,7 +617,8 @@ namespace WorkspacesLauncherUI.UnitTests
                             DispatcherPriority.Normal,
                             new Action(() => InvokeAndClose(window, () => OnLoaded?.Invoke(window))));
                         return window;
-                    });
+                    },
+                    confirmationOnly);
                 Owner = new Window
                 {
                     ShowInTaskbar = false,
@@ -560,7 +630,10 @@ namespace WorkspacesLauncherUI.UnitTests
                 };
                 ViewModel.SetSnapshotWindow(Owner);
                 Owner.Closing += (_, _) => ViewModel.Dispose();
-                Owner.Show();
+                if (!confirmationOnly)
+                {
+                    Owner.Show();
+                }
             }
 
             internal MainViewModel ViewModel { get; }
