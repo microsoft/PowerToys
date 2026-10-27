@@ -75,7 +75,7 @@ internal static class DockItemActions
         // Primary dock activation has no sender and must not become a home-page history entry.
         var message = item is CommandContextItemViewModel contextItem
             ? new PerformCommandMessage(contextItem)
-            : new PerformCommandMessage(item.Command.Model);
+            : new PerformCommandMessage(item.Command);
         message = WithOwnerContext(message, item);
         message.WithAnimation = false;
         message.TransientPage = true;

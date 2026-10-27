@@ -30,6 +30,7 @@ public class PeekFilePreviewTests : UITestBase
     private static readonly string[] PeekModules = { "Peek" };
 
     private long explorerWindowHandle;
+    private string? singleFilePreviewDirectory;
     private IReadOnlyList<string> expectedExplorerSelection = Array.Empty<string>();
     private string? expectedExplorerFocusedPath;
 
@@ -137,7 +138,12 @@ public class PeekFilePreviewTests : UITestBase
     public async Task CleanupPeekTest()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
-        CloseTestWindows();
+        CloseTestWindows(preservePeekProcess: singleFilePreviewDirectory is null);
+        if (singleFilePreviewDirectory is not null)
+        {
+            Directory.Delete(singleFilePreviewDirectory, recursive: true);
+            singleFilePreviewDirectory = null;
+        }
     }
 
     [TestMethod("Peek.FilePreview.Folder")]
@@ -871,7 +877,13 @@ public class PeekFilePreviewTests : UITestBase
 
     private void TestSingleFilePreview(string filePath, string expectedFileName)
     {
-        var previewWindow = OpenPeekWindow(filePath);
+        // A single Explorer selection can still include neighboring files in Peek's title counter.
+        singleFilePreviewDirectory = Path.Combine(Path.GetTempPath(), "PowerToys.Peek.UITests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(singleFilePreviewDirectory);
+        var isolatedFilePath = Path.Combine(singleFilePreviewDirectory, Path.GetFileName(filePath));
+        File.Copy(filePath, isolatedFilePath);
+
+        var previewWindow = OpenPeekWindow(isolatedFilePath);
         VisualAssert.AreEqual(TestContext, previewWindow, expectedFileName);
     }
 

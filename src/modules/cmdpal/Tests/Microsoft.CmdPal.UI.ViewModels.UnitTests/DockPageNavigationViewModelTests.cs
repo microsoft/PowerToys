@@ -12,7 +12,6 @@ using AdaptiveCards.ObjectModel.WinUI3;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -248,7 +247,7 @@ public sealed partial class DockPageNavigationViewModelTests
         Assert.IsTrue(await navigation.NavigateAsync(CreatePageMessage(new TestContentPage(), navigation)));
         var current = navigation.CurrentPage;
 
-        Assert.IsFalse(await navigation.NavigateAsync(new PerformCommandMessage(new ExtensionObject<ICommand>(new ListPage()), root)));
+        Assert.IsFalse(await navigation.NavigateAsync(new PerformCommandMessage(CreateCommandViewModel(new ListPage(), root), root)));
         Assert.IsFalse(await navigation.NavigateAsync(CreateOwnerMessage(new ListPage(), route, host, CommandProviderContext.Empty)));
 
         Assert.AreSame(current, navigation.CurrentPage);
@@ -378,7 +377,7 @@ public sealed partial class DockPageNavigationViewModelTests
         var sourcePage = navigation.CurrentPage!;
 
         var result = new HandleCommandResultMessage(new(CommandResult.KeepOpen()), sourcePage);
-        var command = new PerformCommandMessage(new ExtensionObject<ICommand>(new NoOpCommand()), sourcePage);
+        var command = new PerformCommandMessage(CreateCommandViewModel(new NoOpCommand(), sourcePage), sourcePage);
 
         Assert.AreEqual(route, result.DockRoute);
         Assert.AreSame(sourcePage, result.Context?.Page);
@@ -569,7 +568,7 @@ public sealed partial class DockPageNavigationViewModelTests
         DockCommandRoute route,
         AppExtensionHost host,
         ICommandProviderContext providerContext) =>
-        new(new ExtensionObject<ICommand>(page))
+        new(CreateCommandViewModel(page, Mock.Of<IPageContext>()))
         {
             Context = new SourceContext(host, providerContext),
             DockRoute = route,
@@ -577,7 +576,14 @@ public sealed partial class DockPageNavigationViewModelTests
 
     // A request sent by the page the flyout currently shows.
     private static PerformCommandMessage CreatePageMessage(IPage page, DockPageNavigationViewModel navigation) =>
-        new(new ExtensionObject<ICommand>(page), navigation.CurrentPage);
+        new(CreateCommandViewModel(page, navigation.CurrentPage!), navigation.CurrentPage);
+
+    private static CommandViewModel CreateCommandViewModel(ICommand command, IPageContext pageContext)
+    {
+        var viewModel = new CommandViewModel(command, new(pageContext));
+        viewModel.FastInitializeProperties();
+        return viewModel;
+    }
 
     private static CommandResult CreateResult(CommandResultKind kind) =>
         kind switch

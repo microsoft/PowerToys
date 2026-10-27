@@ -95,7 +95,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private IPage? _rootPage;
+    private CommandViewModel _rootCommand;
 
     private bool _isNested;
     private bool _currentlyTransient;
@@ -118,6 +118,7 @@ public partial class ShellViewModel : ObservableObject,
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
+        _rootCommand = new(null, new(_currentPage));
 
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
@@ -136,10 +137,11 @@ public partial class ShellViewModel : ObservableObject,
         IsLoaded = true;
 
         // Now that the basics are set up, we can load the root page.
-        _rootPage = _rootPageService.GetRootPage();
+        _rootCommand = new(_rootPageService.GetRootPage(), new(CurrentPage));
+        _rootCommand.FastInitializeProperties();
 
         // This sends a message to us to load the root page view model.
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
 
         // Now that the root page is loaded, do any post-load work that the root page service needs to do.
         // This runs asynchronously, on a background thread.
@@ -211,7 +213,7 @@ public partial class ShellViewModel : ObservableObject,
 
     private void PerformCommand(PerformCommandMessage message)
     {
-        var command = message.Command.Unsafe;
+        var command = message.Command.Model.Unsafe;
         if (command is null)
         {
             return;
@@ -225,7 +227,7 @@ public partial class ShellViewModel : ObservableObject,
         // isMainPage must be evaluated here; if it were moved inside the
         // "if (command is IPage)" block below, it would be too late to affect
         // the providerContext that is passed to the new page view-model.
-        var isMainPage = command == _rootPage;
+        var isMainPage = command == _rootCommand.Model.Unsafe;
 
         // Only commands sent from the palette's own root page are top-level. Commands from
         // other surfaces (for example, a dock flyout page) must not update home-page history.
@@ -289,8 +291,8 @@ public partial class ShellViewModel : ObservableObject,
                 if (host is not null)
                 {
                     var extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    var commandId = command.Id ?? "unknown";
-                    var commandName = command.Name ?? "unknown";
+                    var commandId = message.Command.Id;
+                    var commandName = message.Command.Name;
                     WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
@@ -365,10 +367,9 @@ public partial class ShellViewModel : ObservableObject,
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var command = message.Command.Unsafe;
-        var extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-        var commandId = command?.Id ?? "unknown";
-        var commandName = command?.Name ?? "unknown";
+        var extensionId = "builtin";
+        var commandId = "unknown";
+        var commandName = "unknown";
         var success = false;
 
         try
@@ -376,6 +377,10 @@ public partial class ShellViewModel : ObservableObject,
             ICommandResult? result;
             try
             {
+                extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+                commandId = message.Command.Id;
+                commandName = message.Command.Name;
+
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
@@ -396,19 +401,22 @@ public partial class ShellViewModel : ObservableObject,
                 message.OnBeforeShowConfirmation,
                 message.ResultHandler,
                 message.Context?.Page);
-
-            _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
-            _handleInvokeTask = null;
-
             // Telemetry: Track errors for session metrics
             WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
 
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
+        }
+        finally
+        {
+            lock (_invokeLock)
+            {
+                _handleInvokeTask = null;
+            }
         }
     }
 
@@ -538,7 +546,7 @@ public partial class ShellViewModel : ObservableObject,
     {
         _currentlyTransient = false;
         _rootPageService.GoHome();
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
     }
 
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
@@ -569,7 +577,7 @@ public partial class ShellViewModel : ObservableObject,
 
             // navigate back to the main page without animation
             GoHome(withAnimation: false, focusSearch: false);
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_rootCommand));
         }
     }
 

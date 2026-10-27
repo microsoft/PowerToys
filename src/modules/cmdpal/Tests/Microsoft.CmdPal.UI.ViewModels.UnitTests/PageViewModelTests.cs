@@ -117,7 +117,7 @@ public partial class PageViewModelTests
         Action confirmation = () => { };
         Func<ICommandResult, bool> resultHandler = _ => true;
 
-        var perform = new PerformCommandMessage(new ExtensionObject<ICommand>(new NoOpCommand()), viewModel)
+        var perform = new PerformCommandMessage(new CommandViewModel(new NoOpCommand(), new(viewModel)), viewModel)
         {
             OnBeforeShowConfirmation = confirmation,
             ResultHandler = resultHandler,
@@ -155,13 +155,14 @@ public partial class PageViewModelTests
         var listItem = new ListItem(command);
         var commandItem = new CommandItem(command);
         var contextItem = new CommandContextItem(command);
+        var commandViewModel = new CommandViewModel(command, new(page));
         var confirmation = new ConfirmResultViewModel(Mock.Of<IConfirmationArgs>(), new(page));
         (PerformCommandMessage Message, object? Payload)[] cases =
         [
-            (new(new ExtensionObject<ICommand>(command), sourcePage), null),
-            (new(new ExtensionObject<ICommand>(command), new ExtensionObject<IListItem>(listItem), sourcePage), listItem),
-            (new(new ExtensionObject<ICommand>(command), new ExtensionObject<ICommandItem>(commandItem), sourcePage), commandItem),
-            (new(new ExtensionObject<ICommand>(command), new ExtensionObject<ICommandContextItem>(contextItem), sourcePage), contextItem),
+            (new(commandViewModel, sourcePage), null),
+            (new(commandViewModel, new ExtensionObject<IListItem>(listItem), sourcePage), listItem),
+            (new(commandViewModel, new ExtensionObject<ICommandItem>(commandItem), sourcePage), commandItem),
+            (new(commandViewModel, new ExtensionObject<ICommandContextItem>(contextItem), sourcePage), contextItem),
             (new(confirmation, sourcePage), null),
         ];
 
@@ -213,7 +214,7 @@ public partial class PageViewModelTests
                 command.InitializeProperties();
                 var message = new PerformCommandMessage(command);
 
-                Assert.AreSame(command.Command.Model, message.Command);
+                Assert.AreSame(command.Command, message.Command);
                 Assert.AreSame(command.Model.Unsafe, message.CommandContext);
                 if (withPage)
                 {
@@ -246,7 +247,7 @@ public partial class PageViewModelTests
     {
         var page = new TestPageViewModel(new Page(), TaskScheduler.Default);
         var originalProvider = page.ProviderContext;
-        var perform = new PerformCommandMessage(new ExtensionObject<ICommand>(new NoOpCommand()), page);
+        var perform = new PerformCommandMessage(new CommandViewModel(new NoOpCommand(), new(page)), page);
         var handled = new HandleCommandResultMessage(new(Mock.Of<ICommandResult>()), page);
 
         page.SetProviderContext(Mock.Of<ICommandProviderContext>());

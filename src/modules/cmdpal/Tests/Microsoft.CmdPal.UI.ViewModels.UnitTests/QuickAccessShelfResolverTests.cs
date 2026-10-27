@@ -138,6 +138,24 @@ public partial class QuickAccessShelfResolverTests
     }
 
     [TestMethod]
+    public void ShelfInvocation_InitializesCommandMetadataAndPreservesItemContext()
+    {
+        var command = new NoOpCommand { Id = "app", Name = "Open app" };
+        var item = new ListItem(command) { Title = "App" };
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse([], item, shortcutIndex: 0, startsNewSection: false);
+        var sourcePage = new PageViewModel(null, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+        var message = shelfItem.GetPerformCommandMessage(sourcePage);
+
+        Assert.AreSame(command, message.Command.Model.Unsafe);
+        Assert.AreEqual("app", message.Command.Id);
+        Assert.AreEqual("Open app", message.Command.Name);
+        Assert.IsTrue(message.Command.IsInvokableCommand);
+        Assert.AreSame(item, message.CommandContext);
+        Assert.IsNull(message.Context);
+    }
+
+    [TestMethod]
     public void GetContextMenuItem_PinnedItemUsesOriginalPresentation()
     {
         var item = new ListItem { Title = "Pinned" };
@@ -275,6 +293,11 @@ public partial class QuickAccessShelfResolverTests
 
     private static KeyChord Chord(VirtualKey key, VirtualKeyModifiers modifiers) =>
         new(modifiers, (int)key, 0);
+
+    private sealed partial class TestAppExtensionHost : AppExtensionHost
+    {
+        public override string? GetExtensionDisplayName() => "Test Host";
+    }
 
     private sealed partial class CountingIconInfo : IconInfo
     {

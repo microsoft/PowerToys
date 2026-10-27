@@ -22,20 +22,30 @@ namespace WorkspacesLauncherUI.ViewModels
         private readonly Func<SignatureWarningRequest, SignatureWarningWindow> _createWarning;
         private readonly Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
         private readonly HashSet<Guid> _seenRequests = new HashSet<Guid>();
+        private readonly bool _confirmationOnly;
         private Window _snapshotWindow;
         private ActiveWarning _warning;
         private bool _stopped;
 
         public MainViewModel()
-            : this(App.SendIPCMessage, request => new SignatureWarningWindow(request))
+            : this(false)
         {
-            _ = new PwaHelper();
         }
 
-        internal MainViewModel(Action<string> sendMessage, Func<SignatureWarningRequest, SignatureWarningWindow> createWarning)
+        public MainViewModel(bool confirmationOnly)
+            : this(App.SendIPCMessage, request => new SignatureWarningWindow(request), confirmationOnly)
+        {
+            if (!confirmationOnly)
+            {
+                _ = new PwaHelper();
+            }
+        }
+
+        internal MainViewModel(Action<string> sendMessage, Func<SignatureWarningRequest, SignatureWarningWindow> createWarning, bool confirmationOnly = false)
         {
             _sendMessage = sendMessage;
             _createWarning = createWarning;
+            _confirmationOnly = confirmationOnly;
             App.IPCMessageReceivedCallback = ReceiveMessage;
         }
 
@@ -164,7 +174,17 @@ namespace WorkspacesLauncherUI.ViewModels
             try
             {
                 warning.Window = _createWarning(warning.Request);
-                warning.Window.Owner = _snapshotWindow;
+                if (!_confirmationOnly)
+                {
+                    warning.Window.Owner = _snapshotWindow;
+                }
+                else
+                {
+                    warning.Window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    warning.Window.ShowInTaskbar = true;
+                    warning.Window.Topmost = true;
+                }
+
                 warning.Window.ContentRendered += rendered;
                 if (CanShowWarning(warning))
                 {
@@ -213,8 +233,10 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private bool CanShowWarning(ActiveWarning warning)
         {
-            return !_stopped && ReferenceEquals(_warning, warning) && _snapshotWindow?.IsVisible == true;
+            return !_stopped && ReferenceEquals(_warning, warning) && CanDisplayWarning;
         }
+
+        private bool CanDisplayWarning => _confirmationOnly || _snapshotWindow?.IsVisible == true;
 
         private void CompleteWarning(ActiveWarning warning, bool? run)
         {
@@ -239,7 +261,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
             if (run.HasValue)
             {
-                SendResponse(warning.Request.RequestId, allowRun && !_stopped && _snapshotWindow?.IsVisible == true);
+                SendResponse(warning.Request.RequestId, allowRun && !_stopped && CanDisplayWarning);
             }
         }
 

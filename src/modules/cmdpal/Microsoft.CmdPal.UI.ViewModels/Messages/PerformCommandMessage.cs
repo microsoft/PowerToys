@@ -8,11 +8,11 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Used to do a command - navigate to a page or invoke it
+/// Navigates to a page or invokes a command using an initialized view model's cached metadata.
 /// </summary>
 public record PerformCommandMessage
 {
-    public ExtensionObject<ICommand> Command { get; }
+    public CommandViewModel Command { get; }
 
     public object? CommandContext { get; }
 
@@ -51,26 +51,26 @@ public record PerformCommandMessage
     /// </summary>
     public ListPageLaunchOptions? ListPageOptions { get; set; }
 
-    public PerformCommandMessage(ExtensionObject<ICommand> command, PageViewModel? sourcePage = null)
+    public PerformCommandMessage(CommandViewModel command, PageViewModel? sourcePage = null)
     {
         Command = command;
         Context = sourcePage is null ? null : new(sourcePage);
         DockRoute = sourcePage?.DockRoute;
     }
 
-    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context, PageViewModel? sourcePage = null)
+    public PerformCommandMessage(CommandViewModel command, ExtensionObject<IListItem> context, PageViewModel? sourcePage = null)
         : this(command, sourcePage)
     {
         CommandContext = context.Unsafe;
     }
 
-    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandItem> context, PageViewModel? sourcePage = null)
+    public PerformCommandMessage(CommandViewModel command, ExtensionObject<ICommandItem> context, PageViewModel? sourcePage = null)
         : this(command, sourcePage)
     {
         CommandContext = context.Unsafe;
     }
 
-    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandContextItem> context, PageViewModel? sourcePage = null)
+    public PerformCommandMessage(CommandViewModel command, ExtensionObject<ICommandContextItem> context, PageViewModel? sourcePage = null)
         : this(command, sourcePage)
     {
         CommandContext = context.Unsafe;
@@ -78,14 +78,14 @@ public record PerformCommandMessage
 
     public PerformCommandMessage(CommandItemViewModel contextCommand)
         : this(
-            contextCommand.Command.Model,
+            contextCommand.Command,
             contextCommand.Model,
             contextCommand.PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null)
     {
     }
 
     public PerformCommandMessage(ConfirmResultViewModel vm, PageViewModel? sourcePage = null)
-        : this(vm.PrimaryCommand.Model, sourcePage)
+        : this(vm.PrimaryCommand, sourcePage)
     {
     }
 }
