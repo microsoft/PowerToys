@@ -2,7 +2,7 @@
 
 The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Adaptive Cards schema. This library fills the gaps until it does:
 
-- The `Chart.Line`, `ProgressBar`, `Badge`, and `Icon` elements.
+- The `Chart.Line`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, `Badge`, and `Icon` elements.
 - `roundedCorners` and `showBorder` on containers, column sets, and columns.
 
 Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. Nothing here is specific to Command Palette, so each piece can move to the open-source renderer and be deleted here (see [Upstream](#upstream)).
@@ -40,7 +40,7 @@ Models read only the properties that the element's page in the [Adaptive Cards e
 ## Theming
 
 - `ChartPalette` resolves color names (semantic, categorical, sequential, and diverging) to a light theme and a dark theme variant.
-- `ChartTheme` adds the accent color, text and track colors, and high contrast: data takes the contrast theme's colors in turn, and line series also differ by dash pattern.
+- `ChartTheme` adds the accent color, text and track colors, and high contrast: data takes the contrast theme's colors in turn, line series also differ by dash pattern, and every third and fourth part is an outline.
 - The host config sets text sizes, spacing, and container styles. Command Palette's is in `AdaptiveCardsConfig`.
 
 ## Icons
@@ -62,7 +62,7 @@ Everything here is registered through the WinUI 3 renderer's public custom eleme
 
 | Piece | What upstream needs |
 |---|---|
-| `Chart.Line` | An object model class and a XAML renderer. This control and its tests are a reference implementation. |
+| The chart elements | New object model classes and XAML renderers. These controls and their tests are a reference implementation. |
 | `ProgressBar`, `Badge`, `Icon` | The object model classes from the shared C++ model in [microsoft/AdaptiveCards-Mobile](https://github.com/microsoft/AdaptiveCards-Mobile), and XAML renderers. |
 | `roundedCorners`, `showBorder` | The parsing from AdaptiveCards-Mobile's shared model, and support in the container renderers. |
 | `AdaptiveFallbackRenderer` | A fix in `XamlBuilder::RenderAsUIElement`, which renders an element's fallback but returns an empty result. |
