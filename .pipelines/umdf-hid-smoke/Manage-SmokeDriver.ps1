@@ -45,6 +45,7 @@ function Write-TrustDiagnostics {
             PSEdition = $PSVersionTable.PSEdition
             ProcessArchitecture = [Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()
             OsArchitecture = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+            OsVersion = [Environment]::OSVersion.Version.ToString()
             IsSystem = $currentIdentity.IsSystem
             IsAdmin = ([Security.Principal.WindowsPrincipal]::new($currentIdentity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
             ImpersonationLevel = $currentIdentity.ImpersonationLevel.ToString()
@@ -56,6 +57,7 @@ function Write-TrustDiagnostics {
             Failure = $Failure
             Stores = @()
             Policies = @()
+            RegistryAccess = @()
         }
     }
     finally { $currentIdentity.Dispose() }
@@ -78,7 +80,9 @@ function Write-TrustDiagnostics {
     foreach ($path in @(
         'HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates',
         'HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates\TrustedPublisher',
+        'HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates\TrustedPublisher\Safer',
         'HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates\Root',
+        'HKLM:\SOFTWARE\Microsoft\SystemCertificates\TrustedPublisher\Safer',
         'HKLM:\SOFTWARE\Microsoft\SystemCertificates\Root\ProtectedRoots'
     )) {
         if (Test-Path $path) {
@@ -92,6 +96,48 @@ function Write-TrustDiagnostics {
             }
         }
     }
+    $machineRegistry = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
+        [Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
+    try {
+        foreach ($key in @(
+            'SOFTWARE\Microsoft\SystemCertificates',
+            'SOFTWARE\Microsoft\SystemCertificates\Root',
+            'SOFTWARE\Microsoft\SystemCertificates\Root\Certificates',
+            'SOFTWARE\Microsoft\SystemCertificates\TrustedPublisher',
+            'SOFTWARE\Microsoft\SystemCertificates\TrustedPublisher\Certificates'
+        )) {
+            $access = [ordered]@{
+                Key = "HKLM:\$key"
+                Exists = Test-Path "HKLM:\$key"
+                OwnerSid = $null
+                Dacl = $null
+                RequestedRights = 'ReadKey, CreateSubKey, SetValue (open only; no registry mutation)'
+                WritableOpenError = $null
+                ReadError = $null
+            }
+            if ($access.Exists) {
+                try {
+                    $acl = Get-Acl "HKLM:\$key"
+                    $access.OwnerSid = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
+                    $access.Dacl = $acl.GetSecurityDescriptorSddlForm([Security.AccessControl.AccessControlSections]::Access)
+                }
+                catch { $access.ReadError = $_.Exception.ToString() }
+                $writableKey = $null
+                try {
+                    $writableKey = $machineRegistry.OpenSubKey(
+                        $key, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree,
+                        [Security.AccessControl.RegistryRights]::ReadKey -bor
+                        [Security.AccessControl.RegistryRights]::CreateSubKey -bor
+                        [Security.AccessControl.RegistryRights]::SetValue)
+                    if ($null -eq $writableKey) { throw 'The existing registry key could not be opened.' }
+                }
+                catch { $access.WritableOpenError = $_.Exception.ToString() }
+                finally { if ($null -ne $writableKey) { $writableKey.Dispose() } }
+            }
+            $context.RegistryAccess += [pscustomobject]$access
+        }
+    }
+    finally { $machineRegistry.Dispose() }
     $context | ConvertTo-Json -Depth 7 | Tee-Object -FilePath (Join-Path $ResultsDirectory 'trust-diagnostics.json')
 }
 
