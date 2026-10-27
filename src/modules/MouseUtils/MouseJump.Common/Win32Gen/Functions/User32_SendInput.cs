@@ -50,10 +50,36 @@ internal static partial class User32
         // Note that neither GetLastError nor the return value will indicate the failure was caused by UIPI blocking.
         var result = PInvoke.SendInput(pInputs, cbSize);
 
-        // A nonzero count lower than pInputs.Length still means some events were dropped,
-        // so success is only when every event was inserted.
+        // The documentation is ambiguous in some edge cases - for example if pInputs.Length is 0 and
+        // SendInput *returns* 0 then it matches both of these conditions:
+        //
+        //   * The function returns the number of events that it successfully inserted into the keyboard or mouse input stream.
+        //   * If the function returns zero, the input was already blocked by another thread.
+        //
+        // Strictly speaking, this means the docs only define what the returned *count* means - they
+        // don't say whether zero (e.g. for an empty pInputs) counts as an error, or whether a
+        // partial count is possible or should be treated as success / failure.
+        //
+        // In practice, testing on Windows 11 (10.0.26200, 2026-10-27) with LastError pre-set before
+        // various calls to SendInput showed the following results:
+        //
+        //   * when it rejects a call (empty input, bad cbSize, unreadable array) it returns zero
+        //     and sets LastError itself, so zero is a genuine failure with a meaningful error code
+        //
+        //   * when input is blocked by UIPI (calling SendInput from a non-elevated process and targeting
+        //     an elevated application window) it returns the full count and leaves LastError untouched,
+        //     which is indistinguishable from a legitimate success result
+        //
+        //   * in all other executed test cases it returned "success" - i.e. the full count, and left
+        //     LastError untouched. There were no test cases that returned a smaller non-zero value
+        //     (e.g. pInputs containing 5 items and SendInput returning 3).
+        //
+        // So zero is treated as failure, with LastError captured as the reason. A partial count
+        // isn't a documented failure and was never observed, so callers that need every input
+        // inserted should compare the returned count themselves (as MouseHelper does).
+
         return result
-            .SuccessIsEqualTo((uint)pInputs.Length)
+            .SuccessIsNonZero()
             .WithLastError();
     }
 }
