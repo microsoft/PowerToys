@@ -12,10 +12,8 @@ internal static class BatchUpdateManager
 {
     private const int ExpectedBatchSize = 32;
 
-    // 30 ms chosen empirically to balance responsiveness and batching:
-    // - Keeps perceived latency low (< ~50 ms) for user-visible updates.
-    // - Still allows multiple COM/background events to be coalesced into a single batch.
-    private static readonly TimeSpan BatchDelay = TimeSpan.FromMilliseconds(40);
+    // Keep coalescing background updates without holding each adapter layer for multiple frames.
+    internal static readonly TimeSpan BatchDelay = TimeSpan.FromMilliseconds(16);
     private static readonly ConcurrentQueue<IBatchUpdateTarget> DirtyQueue = [];
     private static readonly Timer Timer = new(static _ => Flush(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 

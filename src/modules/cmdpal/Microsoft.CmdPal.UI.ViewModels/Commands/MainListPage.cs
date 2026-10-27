@@ -37,11 +37,12 @@ public sealed partial class MainListPage : DynamicListPage,
     // Throttle for raising items changed events from external sources
     private static readonly TimeSpan RaiseItemsChangedThrottle = TimeSpan.FromMilliseconds(100);
 
-    // Throttle for raising items changed events from user input - we want this to feel more responsive, so a shorter throttle.
-    private static readonly TimeSpan RaiseItemsChangedThrottleForUserInput = TimeSpan.FromMilliseconds(50);
+    // Coalesce rapid input within one frame instead of holding scored results for three frames.
+    internal static readonly TimeSpan RaiseItemsChangedThrottleForUserInput = TimeSpan.FromMilliseconds(16);
 
     private readonly FallbackUpdateManager _fallbackUpdateManager;
     private readonly ThrottledDebouncedAction _refreshThrottledDebouncedAction;
+    private readonly ThrottledDebouncedAction _userInputRefreshThrottledDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
     private readonly ISettingsService _settingsService;
@@ -155,39 +156,8 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
         _tlcManager.PinnedCommandsChanged += PinnedCommands_Changed;
 
-        _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(
-            () =>
-            {
-                try
-                {
-#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
-                    var delta = DateTimeOffset.UtcNow - _last;
-                    _last = DateTimeOffset.UtcNow;
-                    Logger.LogDebug($"UpdateFallbacks: RaiseItemsChanged, delta {delta}");
-
-                    var sw = Stopwatch.StartNew();
-#endif
-                    if (_fullRefreshRequested.Clear())
-                    {
-                        // full refresh
-                        RaiseItemsChanged();
-                    }
-                    else
-                    {
-                        // preserve selection
-                        RaiseItemsChanged(ListViewModel.IncrementalRefresh);
-                    }
-
-#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
-                    Logger.LogInfo($"UpdateFallbacks: RaiseItemsChanged took {sw.Elapsed}");
-#endif
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Unhandled exception in MainListPage refresh debounced action", ex);
-                }
-            },
-            RaiseItemsChangedThrottle);
+        _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(RaisePendingItemsChanged, RaiseItemsChangedThrottle);
+        _userInputRefreshThrottledDebouncedAction = new ThrottledDebouncedAction(RaisePendingItemsChanged, RaiseItemsChangedThrottleForUserInput);
 
         _fallbackUpdateManager = new FallbackUpdateManager(() => RequestRefresh(fullRefresh: false));
         _appStateService.StateChanged += AppStateService_StateChanged;
@@ -204,6 +174,38 @@ public sealed partial class MainListPage : DynamicListPage,
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
+    }
+
+    private void RaisePendingItemsChanged()
+    {
+        try
+        {
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+            var delta = DateTimeOffset.UtcNow - _last;
+            _last = DateTimeOffset.UtcNow;
+            Logger.LogDebug($"UpdateFallbacks: RaiseItemsChanged, delta {delta}");
+
+            var sw = Stopwatch.StartNew();
+#endif
+            if (_fullRefreshRequested.Clear())
+            {
+                // full refresh
+                RaiseItemsChanged();
+            }
+            else
+            {
+                // preserve selection
+                RaiseItemsChanged(ListViewModel.IncrementalRefresh);
+            }
+
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+            Logger.LogInfo($"UpdateFallbacks: RaiseItemsChanged took {sw.Elapsed}");
+#endif
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Unhandled exception in MainListPage refresh debounced action", ex);
+        }
     }
 
     private void TlcManager_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -269,7 +271,15 @@ public sealed partial class MainListPage : DynamicListPage,
             _fullRefreshRequested.Set();
         }
 
-        _refreshThrottledDebouncedAction.Invoke(interval);
+        // Provider completions must not restart the shorter user-input deadline.
+        if (interval.HasValue)
+        {
+            _userInputRefreshThrottledDebouncedAction.Invoke(interval);
+        }
+        else
+        {
+            _refreshThrottledDebouncedAction.Invoke();
+        }
     }
 
     private void ReapplySearchInBackground()
@@ -1168,6 +1178,8 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
+        _refreshThrottledDebouncedAction.Dispose();
+        _userInputRefreshThrottledDebouncedAction.Dispose();
         _fallbackUpdateManager.Dispose();
         _searchTelemetry.Dispose();
 
