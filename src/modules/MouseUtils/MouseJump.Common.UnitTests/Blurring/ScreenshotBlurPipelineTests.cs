@@ -18,7 +18,7 @@ public sealed class ScreenshotBlurPipelineTests
     private static readonly TimeSpan CompletionTimeout = TimeSpan.FromSeconds(10);
 
     [TestMethod]
-    public async Task ACompletedBlurIsServedByTryGet()
+    public async Task ACompletedBlurIsLentByTryBorrow()
     {
         var screen = ScreenshotBlurPipelineTests.CreateScreenInfo(1);
         var pipeline = new ScreenshotBlurPipeline();
@@ -30,7 +30,7 @@ public sealed class ScreenshotBlurPipelineTests
         await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
 
         Size? blurredSize = null;
-        Assert.IsTrue(pipeline.TryGet(screen, blurred =>
+        Assert.IsTrue(pipeline.TryBorrow(screen, blurred =>
         {
             Assert.AreNotSame(screenshot, blurred);
             blurredSize = blurred.Size;
@@ -51,11 +51,11 @@ public sealed class ScreenshotBlurPipelineTests
         // screen for its next screenshot rather than leaving it stuck as "in progress" forever
         pipeline.SetScreenshot(screen, ScreenshotBlurPipelineTests.CreateDisposedBitmap());
         await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
-        Assert.IsFalse(pipeline.TryGet(screen, _ => Assert.Fail("a failed blur should not produce a result")));
+        Assert.IsFalse(pipeline.TryBorrow(screen, _ => Assert.Fail("a failed blur should not produce a result")));
 
         pipeline.SetScreenshot(screen, new Bitmap(4, 4));
         await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
-        Assert.IsTrue(pipeline.TryGet(screen, _ => { }));
+        Assert.IsTrue(pipeline.TryBorrow(screen, _ => { }));
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public sealed class ScreenshotBlurPipelineTests
 
         // the earlier blur is still a perfectly good stand-in - a later failure shouldn't throw it away
         Size? blurredSize = null;
-        Assert.IsTrue(pipeline.TryGet(screen, blurred => blurredSize = blurred.Size));
+        Assert.IsTrue(pipeline.TryBorrow(screen, blurred => blurredSize = blurred.Size));
         Assert.AreEqual(new Size(4, 4), blurredSize);
     }
 
@@ -91,10 +91,10 @@ public sealed class ScreenshotBlurPipelineTests
         await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
 
         timeProvider.Advance(TimeSpan.FromMinutes(2));
-        Assert.IsTrue(pipeline.TryGet(screen, _ => { }));
+        Assert.IsTrue(pipeline.TryBorrow(screen, _ => { }));
 
         timeProvider.Advance(TimeSpan.FromSeconds(1));
-        Assert.IsFalse(pipeline.TryGet(screen, _ => Assert.Fail("an expired blur should not be served")));
+        Assert.IsFalse(pipeline.TryBorrow(screen, _ => Assert.Fail("an expired blur should not be served")));
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public sealed class ScreenshotBlurPipelineTests
         // the pipeline took ownership, so it's responsible for disposing what it won't use -
         // a disposed GDI+ bitmap throws on any property access
         Assert.ThrowsExactly<ArgumentException>(() => _ = screenshot.Width);
-        Assert.IsFalse(pipeline.TryGet(inactiveScreen, _ => Assert.Fail("an inactive screen should have nothing to serve")));
+        Assert.IsFalse(pipeline.TryBorrow(inactiveScreen, _ => Assert.Fail("an inactive screen should have nothing to serve")));
     }
 
     [TestMethod]
@@ -145,7 +145,7 @@ public sealed class ScreenshotBlurPipelineTests
         CollectionAssert.AreEqual(new[] { new Size(1, 1), new Size(10, 10) }, blur.Inputs.ToList());
 
         Size? blurredSize = null;
-        Assert.IsTrue(pipeline.TryGet(screen, blurred => blurredSize = blurred.Size));
+        Assert.IsTrue(pipeline.TryBorrow(screen, blurred => blurredSize = blurred.Size));
         Assert.AreEqual(new Size(10, 10), blurredSize);
     }
 
@@ -166,7 +166,7 @@ public sealed class ScreenshotBlurPipelineTests
 
         var outputs = blur.Outputs;
         Assert.IsTrue(ScreenshotBlurPipelineTests.IsDisposed(outputs[0]));
-        Assert.IsTrue(pipeline.TryGet(screen, blurred => Assert.AreSame(outputs[1], blurred)));
+        Assert.IsTrue(pipeline.TryBorrow(screen, blurred => Assert.AreSame(outputs[1], blurred)));
     }
 
     [TestMethod]
@@ -195,7 +195,48 @@ public sealed class ScreenshotBlurPipelineTests
         CollectionAssert.AreEqual(new[] { new Size(1, 1) }, blur.Inputs.ToList());
 
         pipeline.SetActiveScreens([screen]);
-        Assert.IsFalse(pipeline.TryGet(screen, _ => Assert.Fail("a removed screen's result should have been discarded")));
+        Assert.IsFalse(pipeline.TryBorrow(screen, _ => Assert.Fail("a removed screen's result should have been discarded")));
+    }
+
+    [TestMethod]
+    public async Task AnOldBlurCannotAffectTheStateOfTheSameScreenAfterItIsRemovedAndReAdded()
+    {
+        var screen = ScreenshotBlurPipelineTests.CreateScreenInfo(1);
+        var blur = new GatedBlur();
+        var pipeline = new ScreenshotBlurPipeline(null, blur.Blur);
+        pipeline.SetActiveScreens([screen]);
+        using var completions = ScreenshotBlurPipelineTests.TrackCompletions(pipeline);
+
+        // an old blur is running when the monitor is removed and re-added (same handle, fresh state)
+        pipeline.SetScreenshot(screen, new Bitmap(1, 1));
+        blur.WaitForInputs(1);
+        pipeline.SetActiveScreens([]);
+        pipeline.SetActiveScreens([screen]);
+
+        // the replacement state starts its own blur, and queues another behind it
+        pipeline.SetScreenshot(screen, new Bitmap(2, 2));
+        blur.WaitForInputs(2);
+        var queued = new Bitmap(3, 3);
+        pipeline.SetScreenshot(screen, queued);
+
+        // the old blur finishing must not touch the replacement state at all - no result stored,
+        // and no "in progress" flag cleared or queued work started while its own blur still runs
+        blur.Release(new Size(1, 1));
+        await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
+        Assert.IsTrue(ScreenshotBlurPipelineTests.IsDisposed(blur.Outputs.Single()));
+        Assert.IsFalse(pipeline.TryBorrow(screen, _ => Assert.Fail("an old blur's result should not reach the replacement state")));
+        Assert.IsFalse(ScreenshotBlurPipelineTests.IsDisposed(queued));
+        Assert.AreEqual(2, blur.Inputs.Count, "the queued screenshot should still be waiting for the replacement state's own blur");
+
+        // the replacement state then carries on exactly as normal
+        blur.ReleaseAll();
+        await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
+        await ScreenshotBlurPipelineTests.WaitForCompletionAsync(completions);
+        CollectionAssert.AreEqual(new[] { new Size(1, 1), new Size(2, 2), new Size(3, 3) }, blur.Inputs.ToList());
+
+        Size? blurredSize = null;
+        Assert.IsTrue(pipeline.TryBorrow(screen, blurred => blurredSize = blurred.Size));
+        Assert.AreEqual(new Size(3, 3), blurredSize);
     }
 
     private static ScreenInfo CreateScreenInfo(nint handle)
@@ -244,8 +285,9 @@ public sealed class ScreenshotBlurPipelineTests
     }
 
     /// <summary>
-    /// A stand-in for the real blur that blocks every call until <see cref="ReleaseAll"/>, so a
-    /// test can hold a blur "in progress" for as long as it needs. Records each input's size
+    /// A stand-in for the real blur that blocks every call until it's released - either all at
+    /// once (<see cref="ReleaseAll"/>) or one input at a time by its size (<see cref="Release"/>) -
+    /// so a test can hold a blur "in progress" for as long as it needs. Records each input's size
     /// (the input is disposed as soon as the blur returns) and each output bitmap it returns.
     /// </summary>
     private sealed class GatedBlur
@@ -253,6 +295,7 @@ public sealed class ScreenshotBlurPipelineTests
         private readonly object sync = new();
         private readonly List<Size> inputs = [];
         private readonly List<Bitmap> outputs = [];
+        private readonly HashSet<Size> releasedSizes = [];
         private bool released;
 
         public IReadOnlyList<Size> Inputs
@@ -282,9 +325,10 @@ public sealed class ScreenshotBlurPipelineTests
             lock (this.sync)
             {
                 this.inputs.Add(source.Size);
+                Monitor.PulseAll(this.sync);
 
                 var deadline = DateTime.UtcNow + ScreenshotBlurPipelineTests.CompletionTimeout;
-                while (!this.released)
+                while (!this.released && !this.releasedSizes.Contains(source.Size))
                 {
                     var remaining = deadline - DateTime.UtcNow;
                     if ((remaining <= TimeSpan.Zero) || !Monitor.Wait(this.sync, remaining))
@@ -305,6 +349,38 @@ public sealed class ScreenshotBlurPipelineTests
             {
                 this.released = true;
                 Monitor.PulseAll(this.sync);
+            }
+        }
+
+        /// <summary>
+        /// Releases only the blur (or blurs) whose input is <paramref name="size"/>.
+        /// </summary>
+        public void Release(Size size)
+        {
+            lock (this.sync)
+            {
+                this.releasedSizes.Add(size);
+                Monitor.PulseAll(this.sync);
+            }
+        }
+
+        /// <summary>
+        /// Blocks until at least <paramref name="count"/> blurs have started - blurs run on the
+        /// thread pool, so this is the only way to know which one has actually begun.
+        /// </summary>
+        public void WaitForInputs(int count)
+        {
+            lock (this.sync)
+            {
+                var deadline = DateTime.UtcNow + ScreenshotBlurPipelineTests.CompletionTimeout;
+                while (this.inputs.Count < count)
+                {
+                    var remaining = deadline - DateTime.UtcNow;
+                    if ((remaining <= TimeSpan.Zero) || !Monitor.Wait(this.sync, remaining))
+                    {
+                        Assert.Fail("timed out waiting for a blur to start");
+                    }
+                }
             }
         }
     }
