@@ -1,0 +1,140 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+using AdvancedPaste.Helpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+
+namespace AdvancedPaste.Cli.UnitTests;
+
+[TestClass]
+public class AdvancedPasteTempFileManagerTests
+{
+    [TestMethod]
+    public void CleanupStaleDirectories_PreservesUnownedDirectories()
+    {
+        var directoryPath = Path.Combine(Path.GetTempPath(), $"PowerToys_AdvancedPaste_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directoryPath);
+        var userFilePath = Path.Combine(directoryPath, "user-data.txt");
+        File.WriteAllText(userFilePath, "preserve");
+        Directory.SetCreationTimeUtc(directoryPath, DateTime.UtcNow.AddDays(-2));
+
+        try
+        {
+            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
+
+            Assert.IsTrue(File.Exists(userFilePath));
+            Assert.AreEqual("preserve", File.ReadAllText(userFilePath));
+        }
+        finally
+        {
+            if (Directory.Exists(directoryPath))
+            {
+                Directory.Delete(directoryPath, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void CleanupStaleDirectories_RemovesOwnedDirectories()
+    {
+        var directory = AdvancedPasteTempFileManager.CreateDirectory();
+        File.WriteAllText(Path.Combine(directory.FullName, "stale.txt"), "stale");
+        Directory.SetCreationTimeUtc(directory.FullName, DateTime.UtcNow.AddDays(-2));
+
+        try
+        {
+            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
+
+            Assert.IsFalse(Directory.Exists(directory.FullName));
+        }
+        finally
+        {
+            if (Directory.Exists(directory.FullName))
+            {
+                Directory.Delete(directory.FullName, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void CleanupStaleDirectories_PreservesOwnershipMarkerUntilDirectoryIsEmpty()
+    {
+        var directory = AdvancedPasteTempFileManager.CreateDirectory();
+        var nestedDirectory = Directory.CreateDirectory(Path.Combine(directory.FullName, "nested"));
+        File.WriteAllText(Path.Combine(nestedDirectory.FullName, "stale.txt"), "stale");
+        Directory.SetCreationTimeUtc(directory.FullName, DateTime.UtcNow.AddDays(-2));
+
+        try
+        {
+            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
+
+            Assert.IsTrue(File.Exists(Path.Combine(directory.FullName, ".powertoys-advanced-paste-owned")));
+            Assert.IsTrue(Directory.Exists(directory.FullName));
+
+            Directory.Delete(nestedDirectory.FullName, recursive: true);
+            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
+
+            Assert.IsFalse(Directory.Exists(directory.FullName));
+        }
+        finally
+        {
+            if (Directory.Exists(directory.FullName))
+            {
+                Directory.Delete(directory.FullName, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task TryCleanupAfterDelayAsync_RemovesOwnershipMarkerFromConsumedFileDirectory()
+    {
+        var directory = AdvancedPasteTempFileManager.CreateDirectory();
+        var filePath = Path.Combine(directory.FullName, "result.txt");
+        File.WriteAllText(filePath, "generated");
+        var storageFile = await StorageFile.GetFileFromPathAsync(filePath);
+        var package = new DataPackage();
+        package.SetStorageItems([storageFile]);
+
+        await package.GetView().TryCleanupAfterDelayAsync(TimeSpan.Zero);
+
+        Assert.IsFalse(Directory.Exists(directory.FullName));
+    }
+
+    [TestMethod]
+    public void CleanupStaleDirectories_PreservesReferencedPathsOnly()
+    {
+        var protectedDirectory = AdvancedPasteTempFileManager.CreateDirectory();
+        var staleDirectory = AdvancedPasteTempFileManager.CreateDirectory();
+        var protectedPath = Path.Combine(protectedDirectory.FullName, "clipboard.txt");
+        File.WriteAllText(protectedPath, "keep");
+        File.WriteAllText(Path.Combine(staleDirectory.FullName, "stale.txt"), "remove");
+        Directory.SetCreationTimeUtc(protectedDirectory.FullName, DateTime.UtcNow.AddDays(-2));
+        Directory.SetCreationTimeUtc(staleDirectory.FullName, DateTime.UtcNow.AddDays(-2));
+        try
+        {
+            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1), [protectedPath]);
+
+            Assert.AreEqual("keep", File.ReadAllText(protectedPath));
+            Assert.IsFalse(Directory.Exists(staleDirectory.FullName));
+        }
+        finally
+        {
+            if (Directory.Exists(protectedDirectory.FullName))
+            {
+                Directory.Delete(protectedDirectory.FullName, recursive: true);
+            }
+
+            if (Directory.Exists(staleDirectory.FullName))
+            {
+                Directory.Delete(staleDirectory.FullName, recursive: true);
+            }
+        }
+    }
+}

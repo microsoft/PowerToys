@@ -53,6 +53,7 @@ public enum PowerToysModule
 /// and finally the installed path as a last resort. This lets the same tests run against an installed
 /// PowerToys or a dev / CI-artifact build without any environment configuration.
 /// </remarks>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "ModuleConfigData.cs keeps the legacy UITestAutomation file name for parity; it holds the PowerToysModule enum and its path resolver together.")]
 internal static class ModulePaths
 {
     private sealed record ModuleMeta(string ExeName, string? SubDir, string ProcessName, string WindowTitle);

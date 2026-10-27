@@ -6,7 +6,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -14,6 +16,16 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 {
+    public event EventHandler<PageCommandBarContextChangedEventArgs>? CommandBarContextChanged;
+
+    public event EventHandler<PageDetailsChangedEventArgs>? DetailsChanged;
+
+    public event EventHandler<PageSearchSuggestionChangedEventArgs>? SearchSuggestionChanged;
+
+    public event EventHandler? FocusSearchRequested;
+
+    public event EventHandler<ParameterFocusRequestedEventArgs>? ParameterFocusRequested;
+
     private static readonly PropertyChangingEventArgs SearchTextBoxChangingEventArgs = new(nameof(SearchTextBox));
     private static readonly PropertyChangedEventArgs SearchTextBoxChangedEventArgs = new(nameof(SearchTextBox));
     private static readonly PropertyChangedEventArgs ShowSuggestionChangedEventArgs = new(nameof(ShowSuggestion));
@@ -115,6 +127,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public IconInfoViewModel Icon { get; protected set; }
 
     public ICommandProviderContext ProviderContext { get; protected set; }
+
+    public DockCommandRoute? DockRoute { get; internal set; }
 
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)
         : base(scheduler)
@@ -249,6 +263,23 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         // The base page has no notion of data, so we do nothing here...
         // subclasses should override.
     }
+
+    protected internal void SetCommandBarContext(ICommandBarContext? context) =>
+        CommandBarContextChanged?.Invoke(this, new(context));
+
+    protected internal void SetDetails(DetailsViewModel? details) =>
+        DetailsChanged?.Invoke(this, new(details));
+
+    protected internal void SetSearchSuggestion(string suggestion) =>
+        SearchSuggestionChanged?.Invoke(this, new(suggestion));
+
+    protected internal void RequestSearchFocus() =>
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+
+    protected internal void RequestParameterFocus(ParameterValueRunViewModel parameter) =>
+        ParameterFocusRequested?.Invoke(this, new(parameter));
+
+    internal virtual bool OwnsCommandSource(PageViewModel source) => ReferenceEquals(this, source);
 
     protected virtual void FetchProperty(string propertyName)
     {

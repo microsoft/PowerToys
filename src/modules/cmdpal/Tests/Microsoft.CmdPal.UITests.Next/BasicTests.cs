@@ -28,19 +28,23 @@ public class BasicTests : CommandPaletteTestBase
 
     [TestMethod]
     [TestCategory("CmdPal")]
-    public void BasicCalculatorTest()
+    [DataRow("1+2", "3")]
+    [DataRow("(12-3)*4", "36")]
+    public void BasicCalculatorTest(string expression, string expectedResult)
     {
-        SetSearchBox("calculator");
-
-        var calculatorItem = CommandPaletteSession.Find<NavigationViewItem>("Calculator");
-        Assert.AreEqual("Calculator", calculatorItem.Name);
-        Step("Opening the Calculator extension");
-        DoubleClickResult(calculatorItem);
-
-        SetCalculatorExtensionSearchBox("1+2");
-
-        // The first evaluation cold-starts the calculator engine, which can exceed the 5 s default.
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("3", timeoutMS: 20_000));
+        var originalClipboard = ClipboardHelper.GetText();
+        try
+        {
+            OpenExtension("calculator", "Calculator");
+            SetCalculatorExtensionSearchBox(expression);
+            ClipboardHelper.Clear();
+            InvokeResultWithEnter(expectedResult);
+            Assert.AreEqual(expectedResult, ClipboardHelper.WaitForText(string.Empty, timeoutMS: 10_000));
+        }
+        finally
+        {
+            ClipboardHelper.SetText(originalClipboard);
+        }
     }
 
     [TestMethod]
@@ -57,6 +61,60 @@ public class BasicTests : CommandPaletteTestBase
         SetTimeAndDateExtensionSearchBox("year");
         Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>(
             DateTime.Now.Year.ToString(CultureInfo.InvariantCulture)));
+    }
+
+    [TestMethod]
+    [TestCategory("CmdPal")]
+    [DataRow("year")]
+    [DataRow("week")]
+    public void TimeAndDateCopiesCurrentResult(string query)
+    {
+        var originalClipboard = ClipboardHelper.GetText();
+        try
+        {
+            OpenExtension("time and date", "Time and date");
+            SetTimeAndDateExtensionSearchBox(query);
+            var now = DateTime.Now;
+            var culture = CultureInfo.CurrentCulture;
+            var expected = query == "year"
+                ? now.Year.ToString(culture)
+                : culture.Calendar.GetWeekOfYear(
+                    now,
+                    culture.DateTimeFormat.CalendarWeekRule,
+                    culture.DateTimeFormat.FirstDayOfWeek).ToString(culture);
+            ClipboardHelper.Clear();
+            InvokeResultWithEnter(expected);
+            Assert.AreEqual(expected, ClipboardHelper.WaitForText(string.Empty, timeoutMS: 10_000));
+        }
+        finally
+        {
+            ClipboardHelper.SetText(originalClipboard);
+        }
+    }
+
+    [TestMethod]
+    [TestCategory("CmdPal")]
+    public void TimeAndDateNowMatchesLocalClock()
+    {
+        OpenExtension("time and date", "Time and date");
+        SetTimeAndDateExtensionSearchBox("now");
+        var culture = CultureInfo.CurrentCulture;
+        TimeOnly observed = default;
+        var found = CommandPaletteSession.WaitFor(
+            () => CommandPaletteSession.FindAll<NavigationViewItem>(By.Name(":"), timeoutMS: 0)
+                .Any(item => TimeOnly.TryParseExact(
+                    item.Name,
+                    [culture.DateTimeFormat.ShortTimePattern, culture.DateTimeFormat.LongTimePattern],
+                    culture,
+                    DateTimeStyles.None,
+                    out observed)),
+            timeoutMS: 15_000);
+        Assert.IsTrue(found, "The 'now' query did not return a current local time.");
+        var difference = Math.Abs(TimeOnly.FromDateTime(DateTime.Now).Ticks - observed.Ticks);
+        var clockDifference = Math.Min(difference, TimeSpan.TicksPerDay - difference);
+        Assert.IsTrue(
+            clockDifference <= TimeSpan.FromSeconds(75).Ticks,
+            "The 'now' result does not match the guest's local clock to minute precision.");
     }
 
     [TestMethod]
@@ -82,19 +140,42 @@ public class BasicTests : CommandPaletteTestBase
         DoubleClickResult(settingsItem);
 
         SetSearchBox("power");
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Power and sleep"));
+        var powerSettings = CommandPaletteSession.Find<NavigationViewItem>("Power and sleep");
+        Step("Opening the selected Windows Settings page");
+        try
+        {
+            InvokeResultWithEnter(powerSettings.Name);
+            AssertWindowsSettingsOpened();
+        }
+        finally
+        {
+            WindowControl.TryCloseByApp("SystemSettings");
+        }
     }
 
     [TestMethod]
     [TestCategory("CmdPal")]
     public void BasicRegistryTest()
     {
-        SetSearchBox("Registry");
-
-        var registryItem = CommandPaletteSession.Find<NavigationViewItem>("Registry Editor");
-        Assert.AreEqual("Registry Editor", registryItem.Name);
-        Step("Opening the Registry extension");
-        DoubleClickResult(registryItem);
+        OpenExtension("registry", "Browse the Windows registry");
+        SetSearchBox(@"HKEY_CURRENT_USER\Software");
+        SelectResult(@"HKEY_CURRENT_USER\Software");
+        var originalClipboard = ClipboardHelper.GetText();
+        try
+        {
+            ClipboardHelper.Clear();
+            var copyKey = CommandPaletteSession.Find<Button>(By.AccessibilityId("SecondaryCommandButton"));
+            Assert.AreEqual("Copy key name (path)", copyKey.Name);
+            copyKey.Click();
+            var copiedKey = ClipboardHelper.WaitForText(string.Empty, timeoutMS: 10_000);
+            Assert.IsTrue(
+                string.Equals(@"HKEY_CURRENT_USER\Software", copiedKey, StringComparison.OrdinalIgnoreCase),
+                $"Expected the current-user Software key path, but the clipboard contained '{copiedKey}'.");
+        }
+        finally
+        {
+            ClipboardHelper.SetText(originalClipboard);
+        }
     }
 
     [TestMethod]

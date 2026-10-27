@@ -7,7 +7,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.CmdPal.UITests</RootNamespace>
     <AssemblyName>Microsoft.CmdPal.UITests.Next</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -67,7 +66,8 @@
     which clean machines (for example Windows 10 test agents) do not have. Ship the framework MSIX
     so registration can supply it as a dependency.
   -->
-  <Target Name="CopyWindowsAppRuntimeFramework" AfterTargets="Build">
+  <Target Name="CopyWindowsAppRuntimeFramework" AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(_IsSkippedTestProject)' != 'true'">
     <PropertyGroup>
       <_WindowsAppRuntimeMsix>$(PkgMicrosoft_WindowsAppSDK_Runtime)\tools\MSIX\win10-$(Platform.ToLowerInvariant())\Microsoft.WindowsAppRuntime.2.msix</_WindowsAppRuntimeMsix>
     </PropertyGroup>

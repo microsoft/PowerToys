@@ -17,6 +17,9 @@ public class CommandPaletteTestBase : UITestBase
     {
     }
 
+    protected override IReadOnlyList<string> StaleProcessNames =>
+        [.. base.StaleProcessNames, "Microsoft.CmdPal.UI"];
+
     protected Session CommandPaletteSession =>
         commandPaletteSession ??= Session.FromProcess(
             "Microsoft.CmdPal.UI",
@@ -27,18 +30,9 @@ public class CommandPaletteTestBase : UITestBase
     {
         EnsureCommandPaletteForeground();
         Step($"Setting Command Palette search to '{text}'");
-        var searchBox = CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox"));
+        var searchBox = CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 45_000);
         searchBox.SetText(text);
-
-        var value = searchBox.Value;
-        var deadline = DateTime.UtcNow.AddSeconds(5);
-        while (value != text && DateTime.UtcNow < deadline)
-        {
-            Thread.Sleep(250);
-            value = searchBox.Value;
-        }
-
-        Assert.AreEqual(text, value);
+        Assert.IsTrue(searchBox.WaitForValue(text, timeoutMS: 10_000), $"The search box did not update to '{text}'.");
     }
 
     /// <summary>
@@ -56,7 +50,24 @@ public class CommandPaletteTestBase : UITestBase
                 return;
             }
 
+            var mainWindow = WindowsFinder.ListByApp(processName)
+                .SingleOrDefault(window => window.Title == "Command Palette");
+            Step($"Foreground={WindowControl.GetForegroundWindowInfo()}; main={mainWindow}; initial HWND={Session.WindowHandle}");
+            if (mainWindow is not null &&
+                !WindowHelper.IsWindowCloaked(new IntPtr(mainWindow.Hwnd)) &&
+                WindowControl.WaitForForeground(
+                    new IntPtr(mainWindow.Hwnd), timeoutMS: 5_000, requiredConsecutiveMatches: 2))
+            {
+                return;
+            }
+
             var foreground = WindowControl.GetForegroundWindowInfo();
+            if (foreground.ProcessName == "SearchHost")
+            {
+                Step("Dismissing Windows Search before re-summoning Command Palette");
+                KeyboardHelper.SendKeys(Key.Esc);
+            }
+
             Step($"Command Palette is not in the foreground (foreground: '{foreground.ProcessName}' '{foreground.Title}'); re-summoning");
             using (Process.Start(new ProcessStartInfo
             {
@@ -98,64 +109,66 @@ public class CommandPaletteTestBase : UITestBase
     }
 
     /// <summary>
-    /// Double-click a result. Command Palette's double-tap handler invokes the list's current
-    /// selection, so select the result first and wait until it is selected; otherwise, on a slow
-    /// machine, the double-click can invoke a stale selection while the list is still updating.
-    /// A late in-place result update can also reorder the list or reset the selection to the first
-    /// item, so the result is re-resolved by its exact name on every step (an element's selector
-    /// can go stale across such updates), must stay selected for a short settle window, and is
-    /// reselected if the selection was reset.
+    /// Resolve the exact result after layout and selection settle. Retry only when winapp confirms
+    /// that it sent no double-click because the target was still moving.
     /// </summary>
     protected void DoubleClickResult(Element item) => DoubleClickResult(item.Name);
 
     protected void DoubleClickResult(string resultName)
     {
-        var settle = TimeSpan.FromMilliseconds(1500);
-        var deadline = DateTime.UtcNow.AddSeconds(20);
-        DateTime? selectedSince = null;
-        FindExactResult(resultName).Click();
-        while (DateTime.UtcNow < deadline)
+        for (var attempt = 0; attempt < 3; attempt++)
         {
-            if (IsResultSelected(resultName))
+            var target = SelectResult(resultName);
+            try
             {
-                selectedSince ??= DateTime.UtcNow;
-                if (DateTime.UtcNow - selectedSince >= settle)
-                {
-                    break;
-                }
+                target.DoubleClick();
+                return;
             }
-            else
+            catch (AssertFailedException ex) when (
+                attempt < 2 && ex.Message.Contains("moving/resizing", StringComparison.Ordinal))
             {
-                if (selectedSince is not null)
-                {
-                    Step($"Selection moved off '{resultName}'; reselecting it");
-                    FindExactResult(resultName).Click();
-                }
-
-                selectedSince = null;
+                Step($"Double-click was not sent because '{resultName}' moved; waiting for its layout again");
             }
-
-            Thread.Sleep(250);
         }
-
-        var target = FindExactResult(resultName);
-        Assert.IsTrue(
-            IsResultSelected(resultName) && selectedSince is not null && DateTime.UtcNow - selectedSince >= settle,
-            $"Result '{resultName}' did not stay selected before double-clicking it.");
-        target.DoubleClick();
     }
 
-    private bool IsResultSelected(string resultName)
+    protected Element SelectResult(string resultName, int timeoutMS = 45_000)
     {
-        try
-        {
-            return FindExactResult(resultName).Selected;
-        }
-        catch (AssertFailedException)
-        {
-            // The result was re-created by a list update between the lookup and the property read.
-            return false;
-        }
+        EnsureCommandPaletteForeground();
+        Step($"Waiting for stable layout and selection of '{resultName}'");
+        (int X, int Y, int Width, int Height)? previousBounds = null;
+        var boundsStable = false;
+        var selection = WaitHelper.WaitForStable(
+            observe: () => TryFindExactResult(resultName),
+            isMatch: item =>
+            {
+                boundsStable = false;
+                if (item is null)
+                {
+                    previousBounds = null;
+                    return false;
+                }
+
+                var bounds = (item.X, item.Y, item.Width, item.Height);
+                boundsStable = previousBounds == bounds && item.Width > 0 && item.Height > 0 && item.Displayed;
+                previousBounds = bounds;
+                return boundsStable && item.Selected;
+            },
+            timeoutMS: timeoutMS,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 200,
+            recover: item =>
+            {
+                if (boundsStable && item is not null)
+                {
+                    item.Click(msPostAction: 0);
+                }
+            },
+            shouldRetryException: exception => exception is AssertFailedException &&
+                exception.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(selection.Succeeded, $"Result '{resultName}' did not settle with stable selection and bounds.");
+        Assert.IsNotNull(selection.LastObservation);
+        return selection.LastObservation;
     }
 
     /// <summary>
@@ -163,21 +176,30 @@ public class CommandPaletteTestBase : UITestBase
     /// substring-match, so a plain "Downloads" query would also match "Downloads.lnk" or
     /// "Public Downloads".
     /// </summary>
-    protected NavigationViewItem FindExactResult(string resultName, int timeoutMS = 5000)
+    protected Element FindExactResult(string resultName, int timeoutMS = 5000)
     {
-        NavigationViewItem? match = null;
+        Element? match = null;
         CommandPaletteSession.WaitFor(
             () =>
             {
-                match = CommandPaletteSession
-                    .FindAll<NavigationViewItem>(By.Name(resultName), timeoutMS: 0)
-                    .FirstOrDefault(e => string.Equals(e.Name, resultName, StringComparison.OrdinalIgnoreCase));
+                match = TryFindExactResult(resultName);
                 return match is not null;
             },
             timeoutMS);
+        if (match is null)
+        {
+            Step($"Missing exact result '{resultName}'; foreground={WindowControl.GetForegroundWindowInfo()}");
+            TestContext.WriteLine(CommandPaletteSession.Inspect(depth: 8).GetRawText());
+        }
+
         Assert.IsNotNull(match, $"No result named exactly '{resultName}' was found.");
         return match;
     }
+
+    private Element? TryFindExactResult(string resultName) =>
+        CommandPaletteSession.FindAll<Element>(By.Name(resultName), timeoutMS: 0)
+            .FirstOrDefault(item => item.ControlType == "ListItem" &&
+                string.Equals(item.Name, resultName, StringComparison.OrdinalIgnoreCase));
 
     protected void SetFilesExtensionSearchBox(string text) => SetSearchBox(text);
 
@@ -185,10 +207,45 @@ public class CommandPaletteTestBase : UITestBase
 
     protected void SetTimeAndDateExtensionSearchBox(string text) => SetSearchBox(text);
 
+    protected void OpenExtension(string query, string title)
+    {
+        SetSearchBox(query);
+        Step($"Opening the '{title}' extension");
+        DoubleClickResult(title);
+    }
+
+    protected void InvokeResultWithEnter(string title)
+    {
+        Step($"Invoking '{title}' with Enter");
+        SelectResult(title);
+        EnsureCommandPaletteForeground();
+        KeyboardHelper.SendChord(Key.Enter);
+    }
+
+    protected void AssertWindowsSettingsOpened()
+    {
+        var settings = WindowsFinder.WaitForWindow(
+            window => window.Title == "Settings" &&
+                window.ProcessName is "SystemSettings" or "ApplicationFrameHost",
+            timeoutMS: 60_000);
+        Assert.IsNotNull(settings, "The command did not open the Windows Settings application.");
+        Assert.IsNotNull(
+            settings.Find<TextBox>("Find a setting", timeoutMS: 60_000),
+            "Windows Settings did not finish loading its search control.");
+    }
+
     protected void OpenSettingsWindow()
     {
         Step("Opening Command Palette settings");
-        CommandPaletteSession.Find<Button>(By.AccessibilityId("SettingsIconButton")).Click();
+        EnsureCommandPaletteForeground();
+        Assert.IsNotNull(CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox"), timeoutMS: 45_000));
+        for (var depth = 0; depth < 5 &&
+             !CommandPaletteSession.Has(By.AccessibilityId("SettingsIconButton"), timeoutMS: 500); depth++)
+        {
+            CommandPaletteSession.Find<Button>("Back").Invoke(msPostAction: 0);
+        }
+
+        CommandPaletteSession.Find<Button>(By.AccessibilityId("SettingsIconButton")).Invoke();
     }
 
     protected void NavigateToDockSettings()

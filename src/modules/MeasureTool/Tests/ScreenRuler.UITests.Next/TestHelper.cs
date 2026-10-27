@@ -18,9 +18,8 @@ namespace ScreenRuler.UITests.Next;
 /// <list type="bullet">
 ///   <item><description>The Settings tree is driven through <c>testBase.Session</c> (the Settings
 ///   window). The Screen Ruler toolbar buttons live in a <b>different process/window</b>
-///   (<c>PowerToys.MeasureToolUI</c>), so they're found through a process-scoped
-///   <see cref="Session.FromProcess(string, PowerToysModule, int)"/> session — the winappcli
-///   equivalent of the legacy <c>global: true</c> Find.</description></item>
+///   (<c>PowerToys.MeasureToolUI</c>), so they're found through a window-scoped session pinned
+///   to the toolbar's HWND, independently of other ruler processes or measurement overlays.</description></item>
 ///   <item><description>Mouse / keyboard / clipboard go through the static
 ///   <c>MouseHelper</c> / <c>KeyboardHelper</c> / <c>ClipboardHelper</c> instead of instance
 ///   methods on <c>Session</c> / <c>UITestBase</c>.</description></item>
@@ -40,6 +39,8 @@ public static class TestHelper
     // The Measure Tool UI process (the toolbar + measurement overlays). NOTE: the window TITLE is
     // "PowerToys.ScreenRuler", but the PROCESS name winappcli's -a flag needs is "PowerToys.MeasureToolUI".
     public const string ScreenRulerProcess = "PowerToys.MeasureToolUI";
+
+    public const string ScreenRulerWindowTitle = "PowerToys.ScreenRuler";
 
     // The module's key in the global settings.json "enabled" section (note the space). Pass this to
     // the UITestBase ctor's enableModules so the runner boots ONLY this module — much faster on a
@@ -366,11 +367,15 @@ public static class TestHelper
             SendShortcutUntilVisible(testBase, activationKeys),
             $"ScreenRulerUI should appear after pressing activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");
 
-        // Process-scoped session so the toolbar buttons resolve regardless of which Measure Tool
-        // window owns them (the winappcli equivalent of the legacy global Find).
-        Log("ActivateScreenRuler: toolbar is up; building the process-scoped session");
-        var ruler = Session.FromProcess(ScreenRulerProcess, PowerToysModule.ScreenRuler, timeoutMS: 5000);
-        Log("ActivateScreenRuler: session ready");
+        // Cold-start hotkeys can produce overlapping launches. An app-name session then fails
+        // with an ambiguous-process error, even though the toolbar is visible. Pin its HWND via
+        // Win32 so later lookups also cannot drift into a measurement overlay.
+        var ruler = WindowsFinder.WaitForWindowByApp(
+            ScreenRulerProcess,
+            window => window.Title == ScreenRulerWindowTitle,
+            timeoutMS: 20000);
+        Assert.IsNotNull(ruler, $"The {ScreenRulerWindowTitle} toolbar did not appear for {testName}.");
+        Log($"ActivateScreenRuler: toolbar session ready; hwnd={ruler.WindowHandle}, pid={ruler.ProcessId}");
         return ruler;
     }
 
@@ -474,7 +479,7 @@ public static class TestHelper
             }
             catch (Exception ex)
             {
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} not found yet ({ex.GetType().Name}); the toolbar may still be coming up — retrying");
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} lookup failed ({ex.GetType().Name}: {ex.Message}); retrying");
                 if (DateTime.UtcNow >= deadline)
                 {
                     break;

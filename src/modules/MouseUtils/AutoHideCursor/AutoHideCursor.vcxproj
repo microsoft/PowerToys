@@ -30,6 +30,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
+    <!-- Separate intermediate dir to avoid colliding with AutoHideCursorWorker.vcxproj in the same folder (MSB8028). -->
+    <IntDir>$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>PowerToys.AutoHideCursor</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">

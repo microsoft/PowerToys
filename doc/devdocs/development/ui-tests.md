@@ -42,22 +42,33 @@ not on a working machine.
 #### Command Palette (`Microsoft.CmdPal.UITests.Next`)
 
 - Build Command Palette and the test project as **Release**. A Debug Command Palette build is not a
-  supported target for these tests.
+  supported target for these tests. The runner lifecycle case needs release branding
+  (`CommandPaletteBranding=Release`) and the corresponding signed `Microsoft.CommandPalette` MSIX
+  in the runtime's `WinUI3Apps\CmdPal` directory or its `AppPackages` subtree. A loose-only or
+  development-branded app is not a substitute for testing the runner's package activation.
+- `ModuleLifecycleTests` installs that package for the test user only when it is absent and removes
+  only the installation it created. It drives the real PowerToys Settings toggle and verifies process
+  shutdown, startup, and activation-shortcut behavior; it does not seed settings and restart the
+  runner to simulate a live toggle.
 - The test project builds `SamplePagesExtension` and packages its layout as an unsigned
   `SamplePagesExtension.msix` next to the test executable. Sign this package and trust its signing
   certificate on the test machine before running the suite. `SamplePagesTests` installs it for the
   current user and removes it after the class; it preserves an extension installed beforehand.
   **Developer Mode is not required for this extension deployment.** Windows policy must permit
   sideloading trusted app packages; certificate trust does not override a policy that blocks it.
-- CI uses `.pipelines\signSparsePackages.ps1` to sign and trust the package during elevated setup,
+- CI uses `.pipelines\signSparsePackages.ps1` to sign and trust packages during elevated setup,
   with `.pipelines\removeTestSigningCertificates.ps1` in the always-running cleanup step. Missing or
-  untrusted sample packages fail setup for CmdPal jobs on both Windows 10 and Windows 11.
+  untrusted sample packages fail setup for CmdPal jobs on both Windows 10 and Windows 11. The
+  selected project also opts into the shared authenticated-Settings-IPC setup, which signs both
+  `PowerToys.exe` and `PowerToys.Settings.exe` so Release lifecycle assertions exercise the production
+  authentication path.
 - For a local host-desktop run, execute the same signing helper from an elevated terminal before
   running the tests as the normal test user (replace `<test-output>` with the executable's directory):
 
   ```powershell
-  .\.pipelines\signSparsePackages.ps1 -PackageRoot "<test-output>" `
-    -Include SamplePagesExtension.msix -RequiredPackage SamplePagesExtension.msix `
+  .\.pipelines\signSparsePackages.ps1 -PackageRoot "<test-output>", "<runtime-root>" `
+    -RequiredPackage SamplePagesExtension.msix `
+    -RequiredAuthenticodeFile PowerToys.exe, PowerToys.Settings.exe `
     -CertificateMarkerPath "$env:TEMP\CmdPalUiTestSigning.txt"
   ```
 
@@ -76,6 +87,38 @@ not on a working machine.
   installs it for the current user when a compatible version is missing (for example on clean
   Windows 10 machines).
 - Indexer tests create temporary files under `Downloads` and need Windows Search indexing enabled.
+
+##### Checklist coverage
+
+The `.Next` project lives beside the unchanged legacy project. It ports its basic-provider,
+Indexer, Dock, Settings-search, and sample-extension keyboard cases. The expanded workflows use
+test-owned files, shortcuts, windows, and bookmarks; live configuration tests preserve the same
+Command Palette process and restore changed settings.
+
+Coverage below refers to [the Command Palette checklist, #40685](https://github.com/microsoft/PowerToys/issues/40685).
+Command discovery alone is not treated as successful execution, and manual cases are not represented
+by ignored or inconclusive automated tests.
+
+| Checklist items | Automated evidence / remaining manual scope |
+| --- | --- |
+| 1-2: PowerToys installation/uninstallation | Manual installer validation. The package deployment fixture is not a PowerToys installer test. |
+| 3, 31: unelevated startup, enable/disable, activation shortcut | `ModuleLifecycleTests.SettingsToggleControlsProcessAndActivationShortcut` verifies real Settings IPC, process lifetime, activation, disabled-hotkey behavior, and re-enablement. |
+| 4-5, 7, 15, 19: elevated startup/restart/application actions | Manual administrator/UAC scenarios, outside the standard-user desktop suite. |
+| 6, 8: Win32 and packaged application launch | `CommandWorkflowTests.InstalledAppsLaunchesWin32Application` and `InstalledAppsLaunchesPackagedSettings` verify launched windows. |
+| 9: Calculator result and Enter-to-copy | `BasicTests.BasicCalculatorTest` checks exact results for addition and arithmetic precedence, then exact clipboard contents. |
+| 10-12: file open, copy path, show containing folder | `IndexerTests` checks primary and double-click actions, the complete copied path, and exact Shell selection/focus after Show in folder. |
+| 13: Run commands | `CommandWorkflowTests.RunCommandsExecutesLocalCommand` executes a local command and verifies its uniquely named output file; no network dependency. |
+| 14: Window Walker | `CommandWorkflowTests.WindowWalkerActivatesSelectedWindow` verifies the exact owned target HWND becomes foreground. |
+| 16-17: WinGet installation and web search | Manual external-service/browser workflows; this suite does not install third-party applications or depend on web responses. |
+| 18: Windows Terminal profile launch | Manual. `BasicWindowsTerminalTest` covers command discovery only, not profile execution. |
+| 20: Windows Settings | `BasicTests.BasicWindowsSettingsTest` opens the selected extension result and verifies the Settings application appears. |
+| 21-22: Registry navigation/editor/copy | `BasicTests.BasicRegistryTest` browses the current-user Software key and copies its exact path. Registry Editor launch remains manual. |
+| 23: service start/stop/restart | Manual privileged mutation. `BasicWindowsServicesTest` verifies service discovery only. |
+| 24: now/year/week | `BasicTests` verifies the current local time, year, and calendar week; year/week actions also verify clipboard contents. |
+| 25-28: lock, empty Recycle Bin, shutdown, network-adapter copy | Manual. Destructive/session-disrupting actions are not executed by the suite; system-command discovery is additional smoke coverage, not execution coverage. |
+| 29-30: bookmarks | `CommandWorkflowTests.BookmarkCanBeAddedOpenedAndDeleted` adds a local-folder bookmark through its form, opens the folder, and confirms deletion during cleanup. |
+| 32-34: extension enablement, command hotkey, alias | `SettingsSearchTests` verifies Calculator command visibility, command-specific global-shortcut activation, and alias activation without restarting Command Palette. |
+| 35: all-extensions-disabled warning | Not automated: the checklist explicitly marks this behavior unsupported. |
 
 ### Legacy tests
 
@@ -184,14 +227,21 @@ desktop, PowerShell Direct, payload, shell-extension signing, and evidence failu
 
 The PowerToys UI test pipeline provides flexible options for building and testing:
 
+Full builds with test compilation enabled and UI-tests-only builds first run the
+MWB/shared winapp CLI PowerShell infrastructure tests using Pester 3.4.0 under
+PowerShell 7. The build publishes NUnit results and fails if any selected test is
+missing, skipped or failed. Optional `NativeCompiler` integration tests require
+explicit tool/runtime paths and are excluded from this fast gate.
+
 ### Pipeline Options
 
 - **buildSource**: Select the build type for testing:
-  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
+  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch; does not support Mouse Without Borders Sandbox tests
   - `buildNow`: Builds PowerToys from current source code and uses it for testing
-  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter
+  - `buildNowSlim`: Builds the same current-source product, but downloads and installs its installer rather than the whole artifact
+  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter; does not support Mouse Without Borders Sandbox tests
 
-  **Default value**: `latestMainOfficialBuild`
+  **Default value**: `buildNow`
 
 - **specificBuildId**: When `buildSource` is set to `specificBuildId`, specify the exact PowerToys build ID to download and test against.
 
@@ -211,6 +261,26 @@ The PowerToys UI test pipeline provides flexible options for building and testin
   - Leave empty to build and run all UI test modules
 
   **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
+
+  **Mouse Without Borders**: Selecting `MouseWithoutBorders.UITests` automatically
+  prepares its current-source x64 Release runtime bundle and runs the dedicated
+  Sandbox suite; there is no separate enable/disable switch. Empty all-modules
+  selections include it on `buildNow` and `buildNowSlim`. An explicit MWB selection
+  with an official build is blocked; an empty all-modules official selection skips
+  MWB with a warning and still runs the other suites. ARM64 Sandbox execution is
+  skipped independently of the other ARM64 suites. PR builds prepare the bundle
+  only when the affected-project resolver selects MWB. To omit MWB, select the
+  other desired modules explicitly.
+
+  MWB executes inside **Run UI Tests** and shares **Publish UI Test Results** with
+  the other suites. Its isolated setup/standard-user execution preserves the
+  existing timeouts and privilege boundaries. **Restore UI-test prerequisites**
+  always attempts recovery and cleanup, even after failure or cancellation.
+  Selection/skip reasons are logged; no separate selection artifact is uploaded.
+  Allowlisted prerequisite reports are published as **UI-test diagnostics** only
+  for failed, canceled or incomplete runs, including setup failures without TRX.
+  Successful runs retain their normal test-result attachments without an extra
+  prerequisite artifact.
 
 ### Build Modes
 
@@ -313,6 +383,31 @@ public void TestEmptyView()
     VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "NonEmptyView");
 }
 ```
+
+### Visual assertions in UITestAutomation.Next
+
+The `.Next` harness compares complete, equal-sized window captures using local
+structural similarity (SSIM), with a default threshold of **95%**. It does not
+resize images, crop their frames, or mask pixels. The existing embedded baseline
+images are used unchanged, and capture retries remain bounded to 15 seconds.
+The legacy harness shown above retains its original comparison behavior.
+
+The score is the pixel-weighted mean of non-overlapping 8-by-8 blocks, including
+partial blocks at the image edges. Each RGB channel uses local mean, variance
+and covariance with the standard 8-bit SSIM stabilizers `(0.01 * 255)^2` and
+`(0.03 * 255)^2`. Alpha is compared independently; the lower of the RGB and alpha
+scores is used, so an opaque capture cannot pass by becoming transparent.
+Dimension mismatches are retried during settling and reported explicitly if they
+persist.
+
+This replaces the `.Next` harness's former 64-bit average hash. That hash's
+1.5625-percentage-point steps were not percentages of matching pixels: a small
+frame-color change could alter the global average and flip unrelated hash bits,
+while uniform black and white images could have identical hashes. Local SSIM
+keeps changes local and detects missing preview structure. Regression tests cover
+blank images, removed content, inverted structure, color and alpha changes,
+dimension mismatches, and partial edge blocks. Peek PNG uses the same 95%
+threshold as the other previews; there is no architecture-specific exception.
 
 ## Extra tools and information
 

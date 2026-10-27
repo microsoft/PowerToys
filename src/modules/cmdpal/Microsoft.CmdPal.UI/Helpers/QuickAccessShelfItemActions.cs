@@ -65,7 +65,7 @@ internal static class QuickAccessShelfItemActions
             case VirtualKey.Enter when chord.Modifiers == VirtualKeyModifiers.Control:
                 if (item.SecondaryCommand is { } secondary)
                 {
-                    invoke(new PerformCommandMessage(secondary.Command.Model, item.Model));
+                    invoke(new PerformCommandMessage(secondary.Command, item.Model));
                 }
 
                 return true;

@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -35,6 +37,18 @@ public class ThumbnailHelperTests
         }
 
         Assert.AreEqual(modeBefore, ShellThreadErrorModeScope.CurrentMode);
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task MissingShortcutDoesNotReturnAnIcon(bool jumbo)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"CmdPal-missing-shortcut-{Guid.NewGuid():N}.lnk");
+
+        using var result = await ThumbnailHelper.GetThumbnail(path, jumbo);
+
+        Assert.IsNull(result);
     }
 
     [DataTestMethod]

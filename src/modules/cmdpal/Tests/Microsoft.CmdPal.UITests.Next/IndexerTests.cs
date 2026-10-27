@@ -99,13 +99,14 @@ public class IndexerTests : CommandPaletteTestBase
     }
 
     // A freshly created item may not be indexed yet; re-run the query until it appears.
-    private NavigationViewItem FindIndexedItem(string name, int timeoutMS = 30_000)
+    private NavigationViewItem FindIndexedItem(string name, int timeoutMS = 90_000)
     {
         var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMS);
         while (true)
         {
             SetFilesExtensionSearchBox(name);
-            var item = CommandPaletteSession.FindAll<NavigationViewItem>(By.Name(name), timeoutMS: 3_000).FirstOrDefault();
+            var item = CommandPaletteSession.FindAll<NavigationViewItem>(By.Name(name), timeoutMS: 3_000)
+                .FirstOrDefault(result => string.Equals(result.Name, name, StringComparison.OrdinalIgnoreCase));
             if (item is not null)
             {
                 return item;
@@ -147,11 +148,9 @@ public class IndexerTests : CommandPaletteTestBase
     public void IndexerOpenFileTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(testFileName);
-
-        var searchItem = CommandPaletteSession.Find<NavigationViewItem>(testFileName);
+        var searchItem = FindIndexedItem(testFileName);
         Step($"Opening indexed file '{testFileName}' through the primary command");
-        searchItem.Click();
+        searchItem.MouseClick();
         var windowsBefore = SnapshotWindowHandles();
         CommandPaletteSession.Find<Button>(By.AccessibilityId("PrimaryCommandButton")).Click();
         ChooseDefaultAppIfPrompted(windowsBefore);
@@ -169,7 +168,7 @@ public class IndexerTests : CommandPaletteTestBase
     public void IndexerDoubleClickOpenFileTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(testFileName);
+        FindIndexedItem(testFileName);
 
         Step($"Double-clicking indexed file '{testFileName}'");
         var windowsBefore = SnapshotWindowHandles();
@@ -190,7 +189,7 @@ public class IndexerTests : CommandPaletteTestBase
         EnterIndexerExtension();
         SetFilesExtensionSearchBox(TestFolderName);
 
-        FindExactResult(TestFolderName).Click();
+        FindExactResult(TestFolderName).MouseClick();
         Step("Opening Downloads through the primary command");
         CommandPaletteSession.Find<Button>(By.AccessibilityId("PrimaryCommandButton")).Click();
 
@@ -222,7 +221,7 @@ public class IndexerTests : CommandPaletteTestBase
         File.WriteAllText(Path.Combine(browseFolderPath, childFileName), TestFileContent, Encoding.UTF8);
 
         EnterIndexerExtension();
-        FindIndexedItem(folderName).Click();
+        FindIndexedItem(folderName).MouseClick();
         Step($"Browsing '{folderName}' with the secondary command");
         CommandPaletteSession.Find<Button>(By.AccessibilityId("SecondaryCommandButton")).Click();
         Assert.IsNotNull(
@@ -235,18 +234,23 @@ public class IndexerTests : CommandPaletteTestBase
     public void IndexerCopyPathTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(testFileName);
-
-        CommandPaletteSession.Find<NavigationViewItem>(testFileName).Click();
-        ClipboardHelper.Clear();
-        OpenContextMenu();
-        Step("Copying the selected file path");
-        CommandPaletteSession.Find<NavigationViewItem>("Copy path").Click();
-
-        var clipboardContent = ClipboardHelper.WaitForText(string.Empty, timeoutMS: 5_000);
-        Assert.IsTrue(
-            clipboardContent.Contains(testFileName, StringComparison.OrdinalIgnoreCase),
-            $"Clipboard content does not contain the expected file name. Clipboard: {clipboardContent}");
+        FindIndexedItem(testFileName).MouseClick();
+        var originalClipboard = ClipboardHelper.GetText();
+        try
+        {
+            ClipboardHelper.Clear();
+            OpenContextMenu();
+            Step("Copying the selected file path");
+            CommandPaletteSession.Find<NavigationViewItem>("Copy path").Click();
+            var clipboardContent = ClipboardHelper.WaitForText(string.Empty, timeoutMS: 5_000);
+            Assert.IsTrue(
+                string.Equals(testFilePath, clipboardContent.Trim('"'), StringComparison.OrdinalIgnoreCase),
+                $"Expected path '{testFilePath}', but the clipboard contained '{clipboardContent}'.");
+        }
+        finally
+        {
+            ClipboardHelper.SetText(originalClipboard);
+        }
     }
 
     [TestMethod]
@@ -254,16 +258,21 @@ public class IndexerTests : CommandPaletteTestBase
     public void IndexerShowInFolderTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(testFileName);
-
-        CommandPaletteSession.Find<NavigationViewItem>(testFileName).Click();
+        FindIndexedItem(testFileName).MouseClick();
         OpenContextMenu();
         Step("Showing the selected file in File Explorer");
         CommandPaletteSession.Find<NavigationViewItem>("Show in folder").Click();
 
-        Assert.IsNotNull(
-            WaitForExplorerWindow(timeoutMS: 20_000),
-            "File Explorer did not open the folder containing the indexed file.");
+        var explorer = WaitForExplorerWindow(timeoutMS: 20_000);
+        Assert.IsNotNull(explorer, "File Explorer did not open the folder containing the indexed file.");
+        var selection = WaitHelper.WaitForStable(
+            observe: () => ExplorerShell.TryGetSelection(new IntPtr(explorer.WindowHandle)),
+            isMatch: snapshot => snapshot is not null &&
+                                 snapshot.SelectedPaths.SetEquals([testFilePath]) &&
+                                 string.Equals(snapshot.FocusedPath, testFilePath, StringComparison.OrdinalIgnoreCase),
+            timeoutMS: 20_000,
+            requiredConsecutiveMatches: 3);
+        Assert.IsTrue(selection.Succeeded, $"Show in folder did not select and focus '{testFilePath}'.");
     }
 
     [TestMethod]
@@ -271,9 +280,7 @@ public class IndexerTests : CommandPaletteTestBase
     public void IndexerOpenPathInConsoleTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(testFileName);
-
-        CommandPaletteSession.Find<NavigationViewItem>(testFileName).Click();
+        FindIndexedItem(testFileName).MouseClick();
         OpenContextMenu();
         var windowsBefore = SnapshotWindowHandles();
         var cmdProcessesBefore = GetProcessIds("cmd").ToHashSet();
@@ -311,9 +318,7 @@ public class IndexerTests : CommandPaletteTestBase
     public void IndexerOpenPropertiesTest()
     {
         EnterIndexerExtension();
-        SetFilesExtensionSearchBox(testFileName);
-
-        CommandPaletteSession.Find<NavigationViewItem>(testFileName).Click();
+        FindIndexedItem(testFileName).MouseClick();
         OpenContextMenu();
         Step("Opening Properties for the selected file");
         CommandPaletteSession.Find<NavigationViewItem>("Properties").Click();

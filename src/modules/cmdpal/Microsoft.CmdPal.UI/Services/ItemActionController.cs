@@ -4,7 +4,6 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Helpers;
-using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
@@ -14,13 +13,10 @@ namespace Microsoft.CmdPal.UI.Services;
 
 // CsWinRT generates the other partial declaration for IDisposable's IClosable projection.
 /// <summary>
-/// Routes palette item keys and menu messages independently of the command bar's presentation.
+/// Routes palette item keys and menu requests independently of the command bar's presentation.
 /// </summary>
 /// <remarks>Call on the UI thread and dispose with the owning shell.</remarks>
-internal sealed partial class ItemActionController :
-    IRecipient<OpenContextMenuMessage>,
-    IRecipient<ClosePaletteContextMenuMessage>,
-    IDisposable
+internal sealed partial class ItemActionController : IContextMenuOwner, IDisposable
 {
     private readonly Func<ICommandBarContext?> _currentContext;
     private readonly Func<bool> _canAct;
@@ -29,12 +25,12 @@ internal sealed partial class ItemActionController :
     private bool _isDisposed;
 
     /// <summary>
-    /// Creates the controller and subscribes to palette menu messages.
+    /// Creates the controller for one shell's palette menu.
     /// </summary>
     /// <param name="currentContext">Returns the live selection, independently of debounced bar updates.</param>
     /// <param name="canAct">Reports whether the shell currently allows item actions.</param>
     /// <param name="menuHost">The palette's menu host.</param>
-    /// <param name="messenger">The messenger used for menu requests and command activation.</param>
+    /// <param name="messenger">The messenger used for command activation.</param>
     internal ItemActionController(
         Func<ICommandBarContext?> currentContext,
         Func<bool> canAct,
@@ -45,9 +41,6 @@ internal sealed partial class ItemActionController :
         _canAct = canAct;
         _menuHost = menuHost;
         _messenger = messenger;
-
-        _messenger.Register<OpenContextMenuMessage>(this);
-        _messenger.Register<ClosePaletteContextMenuMessage>(this);
     }
 
     private bool CanAct => !_isDisposed && _canAct();
@@ -66,18 +59,18 @@ internal sealed partial class ItemActionController :
 
         if (command.HasSubmenu)
         {
-            OpenMenuAfterKeyEvent(context, command);
+            ShowContextMenuAfterKeyEvent(context, command);
         }
         else
         {
-            _messenger.Send(new PerformCommandMessage(command.Command.Model, command.Model));
+            _messenger.Send(new PerformCommandMessage(command));
         }
 
         return true;
     }
 
     /// <summary>
-    /// Handles Enter, Ctrl+Enter, and Ctrl+K during normal key routing.
+    /// Handles Ctrl+K during normal key routing. Page interaction targets handle Enter and Ctrl+Enter.
     /// </summary>
     /// <returns>True when the key is consumed, even if no applicable action or menu exists.</returns>
     public bool TryHandleKey(KeyChord chord)
@@ -89,16 +82,10 @@ internal sealed partial class ItemActionController :
 
         switch ((VirtualKey)chord.Vkey)
         {
-            case VirtualKey.Enter when chord.Modifiers == VirtualKeyModifiers.Control:
-                _messenger.Send<ActivateSecondaryCommandMessage>();
-                break;
-            case VirtualKey.Enter when chord.Modifiers == VirtualKeyModifiers.None:
-                _messenger.Send<ActivateSelectedListItemMessage>();
-                break;
             case VirtualKey.K when chord.Modifiers == VirtualKeyModifiers.Control:
                 if (_currentContext() is { } context)
                 {
-                    OpenMenuAfterKeyEvent(context);
+                    ShowContextMenuAfterKeyEvent(context);
                 }
 
                 break;
@@ -112,21 +99,30 @@ internal sealed partial class ItemActionController :
     /// <summary>
     /// Opens the supplied context when item actions are allowed, superseding a deferred keyboard open.
     /// </summary>
-    public void Receive(OpenContextMenuMessage message)
+    public void ShowContextMenu(ContextMenuRequest request)
     {
         if (CanAct)
         {
-            _menuHost.Show(message.Request);
+            _menuHost.Show(request);
         }
     }
 
     /// <summary>
     /// Closes the palette menu and cancels its pending opens, including while item actions are disabled.
     /// </summary>
-    public void Receive(ClosePaletteContextMenuMessage message) => _menuHost.Close();
+    public void CloseContextMenu() => _menuHost.Close();
 
-    private void OpenMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu = null)
+    /// <summary>
+    /// Defers opening until the triggering key finishes routing. The open is cancelled when superseded,
+    /// closed, disabled, or when <paramref name="context"/> is no longer the live selection.
+    /// </summary>
+    public void ShowContextMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu = null)
     {
+        if (!CanAct)
+        {
+            return;
+        }
+
         _menuHost.ShowAfterKeyEvent(
             () =>
             {
@@ -143,7 +139,7 @@ internal sealed partial class ItemActionController :
     }
 
     /// <summary>
-    /// Stops handling item actions, unregisters messages, and closes the palette menu. Safe to call repeatedly.
+    /// Stops handling item actions and closes the palette menu. Safe to call repeatedly.
     /// </summary>
     public void Dispose()
     {
@@ -153,7 +149,6 @@ internal sealed partial class ItemActionController :
         }
 
         _isDisposed = true;
-        _messenger.UnregisterAll(this);
         _menuHost.Close();
     }
 }

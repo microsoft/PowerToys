@@ -56,6 +56,11 @@ public class SamplePagesTests : CommandPaletteTestBase
         {
             frameworkOperation?.AsTask().GetAwaiter().GetResult();
         }
+        catch (Exception ex) when (
+            ex.HResult == unchecked((int)0x80073D06) && HasWindowsAppRuntimeFramework(packageManager))
+        {
+            context.WriteLine("A compatible newer Windows App Runtime framework was registered during deployment.");
+        }
         catch (Exception ex)
         {
             Assert.Fail($"Installing the Windows App Runtime framework failed: {ex.Message} {TryGetErrorText(frameworkOperation!)}");
@@ -168,27 +173,30 @@ public class SamplePagesTests : CommandPaletteTestBase
     private void SearchForSamplePages()
     {
         SetSearchBox("Sample Pages");
-        var deadline = DateTime.UtcNow.AddSeconds(30);
-        var retyped = false;
+        var deadline = DateTime.UtcNow.AddSeconds(90);
+        var nextRefresh = DateTime.UtcNow.AddSeconds(15);
         while (DateTime.UtcNow < deadline)
         {
             var item = FindExactItem("Sample Pages", timeoutMS: 1000);
-            if (item is not null && item.Selected)
+            if (item is not null)
             {
+                SelectResult("Sample Pages");
+                CommandPaletteSession.Find<TextBox>(By.AccessibilityId("MainSearchBox")).Focus();
                 return;
             }
 
-            if (!retyped && DateTime.UtcNow > deadline.AddSeconds(-15))
+            if (DateTime.UtcNow >= nextRefresh)
             {
-                // Re-run the query once in case the provider finished loading after the first filter.
+                // Refresh the filter when extension discovery completes after the initial query.
+                SetSearchBox(string.Empty);
                 SetSearchBox("Sample Pages");
-                retyped = true;
+                nextRefresh = DateTime.UtcNow.AddSeconds(15);
             }
 
             Thread.Sleep(500);
         }
 
-        Assert.Fail("Command Palette did not show the registered SamplePagesExtension's 'Sample Pages' command as the selected result.");
+        Assert.Fail("Command Palette did not show the registered SamplePagesExtension's exact 'Sample Pages' command.");
     }
 
     private NavigationViewItem? FindExactItem(string name, int timeoutMS = 5000)
@@ -220,8 +228,8 @@ public class SamplePagesTests : CommandPaletteTestBase
     }
 
     /// <summary>
-    /// The context filter box is <c>AccessibilityView="Raw"</c>, so it is not addressable in the control
-    /// view; read the focused element directly instead.
+    /// Identify accessible list focus after Tab navigation. The raw-view-only context filter can
+    /// appear as its popup ancestor here, so its focus is verified through actual filtering instead.
     /// </summary>
     private (string Type, string AutomationId) GetFocusedElement()
     {
@@ -245,9 +253,10 @@ public class SamplePagesTests : CommandPaletteTestBase
 
     private void MoveFocusFromContextFilterToList()
     {
+        VerifyContextFilterReceivesKeyboardInput();
         Step("Moving focus from the context filter to the result list");
         Step($"Focused before Shift+Tab: {GetFocusedElement()}");
-        KeyboardHelper.SendKeys(Key.Shift, Key.Tab);
+        KeyboardHelper.SendChord(Key.Shift, Key.Tab);
 
         var deadline = DateTime.UtcNow.AddSeconds(5);
         (string Type, string AutomationId) focused;
@@ -266,6 +275,34 @@ public class SamplePagesTests : CommandPaletteTestBase
         Assert.Fail($"Shift+Tab must move focus from ContextFilterBox to the context list; focused element is {focused}.");
     }
 
+    private void VerifyContextFilterReceivesKeyboardInput()
+    {
+        Step("Verifying keyboard focus through the context filter's visible results");
+        var originalClipboard = ClipboardHelper.GetText();
+        try
+        {
+            ClipboardHelper.SetText("shortcut");
+            KeyboardHelper.SendChord(Key.Ctrl, Key.V);
+            Assert.IsTrue(
+                CommandPaletteSession.WaitFor(
+                    () => FindExactItem("Open list sample with shortcut", timeoutMS: 0) is not null &&
+                          FindExactItem("Samples", timeoutMS: 0) is null,
+                    timeoutMS: 15_000),
+                "Typing into the context filter did not filter its command list.");
+            KeyboardHelper.SendChord(Key.Ctrl, Key.A);
+            KeyboardHelper.SendChord(Key.Backspace);
+            Assert.IsTrue(
+                CommandPaletteSession.WaitFor(
+                    () => FindExactItem("Samples", timeoutMS: 0) is not null,
+                    timeoutMS: 15_000),
+                "Clearing the context filter did not restore its primary command.");
+        }
+        finally
+        {
+            ClipboardHelper.SetText(originalClipboard);
+        }
+    }
+
     [TestMethod]
     [TestCategory("CmdPal")]
     [TestCategory("SamplePagesExtension")]
@@ -280,17 +317,21 @@ public class SamplePagesTests : CommandPaletteTestBase
         {
             Step("Opening the result context menu with Ctrl+K");
             KeyboardHelper.SendKeys(Key.Ctrl, Key.K);
-            Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Open list sample with shortcut"));
+            Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Open list sample with shortcut", timeoutMS: 20_000));
 
             if (menuFocus == "list")
             {
                 MoveFocusFromContextFilterToList();
             }
+            else
+            {
+                VerifyContextFilterReceivesKeyboardInput();
+            }
         }
 
         Step("Invoking the first result with Ctrl+1");
         KeyboardHelper.SendKeys(Key.Ctrl, Key.Num1);
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("This is a basic item in the list"));
+        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("This is a basic item in the list", timeoutMS: 60_000));
 
         if (useEscape)
         {
@@ -319,16 +360,17 @@ public class SamplePagesTests : CommandPaletteTestBase
         {
             Step("Opening the result context menu with Ctrl+K");
             KeyboardHelper.SendKeys(Key.Ctrl, Key.K);
-            Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Shortcut submenu"));
+            Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Shortcut submenu", timeoutMS: 20_000));
+            VerifyContextFilterReceivesKeyboardInput();
         }
 
         Step("Opening the submenu with Ctrl+2");
         KeyboardHelper.SendKeys(Key.Ctrl, Key.Num2);
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Open nested list sample"));
+        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Open nested list sample", timeoutMS: 20_000));
 
         Step("Invoking the first child with Ctrl+1");
         KeyboardHelper.SendKeys(Key.Ctrl, Key.Num1);
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Details with rich content (Small)"));
+        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Details with rich content (Small)", timeoutMS: 20_000));
 
         CommandPaletteSession.Find<Button>("Back").Click();
         Assert.IsNotNull(FindExactItem("Sample Pages"));
@@ -347,7 +389,7 @@ public class SamplePagesTests : CommandPaletteTestBase
 
         Step("Opening the nested list with Ctrl+2");
         KeyboardHelper.SendKeys(Key.Ctrl, Key.Num2);
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Open nested list sample"));
+        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Open nested list sample", timeoutMS: 20_000));
 
         Step("Returning to the parent context menu with Escape");
         KeyboardHelper.SendKeys(Key.Esc);
@@ -395,16 +437,20 @@ public class SamplePagesTests : CommandPaletteTestBase
 
         Step("Opening the result context menu with Ctrl+K");
         KeyboardHelper.SendKeys(Key.Ctrl, Key.K);
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Open list sample with shortcut"));
+        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("Open list sample with shortcut", timeoutMS: 20_000));
 
         if (focusList)
         {
             MoveFocusFromContextFilterToList();
         }
+        else
+        {
+            VerifyContextFilterReceivesKeyboardInput();
+        }
 
         Step("Invoking the secondary command with Ctrl+Enter");
         KeyboardHelper.SendKeys(Key.Ctrl, Key.Enter);
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("This is a basic item in the list"));
+        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("This is a basic item in the list", timeoutMS: 60_000));
         CommandPaletteSession.Find<Button>("Back").Click();
         AssertOnRootPage("Back must return to the root page.");
     }

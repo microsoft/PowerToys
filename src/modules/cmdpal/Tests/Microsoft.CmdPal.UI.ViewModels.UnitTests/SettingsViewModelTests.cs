@@ -28,6 +28,7 @@ public class SettingsViewModelTests
         var scheduler = new QueuedTaskScheduler();
         using var viewModel = CreateViewModel(settingsService.Object, scheduler);
         var boundCompactMode = viewModel.CompactMode;
+        var boundOpeningModeIndex = viewModel.CommandPaletteOpeningModeIndex;
         var boundShowShelf = viewModel.ShowQuickAccessShelf;
         var boundCanConfigureShelf = viewModel.CanConfigureQuickAccessShelf;
         TaskScheduler? notificationScheduler = null;
@@ -38,6 +39,10 @@ public class SettingsViewModelTests
             if (args.PropertyName == nameof(SettingsViewModel.CompactMode))
             {
                 boundCompactMode = viewModel.CompactMode;
+            }
+            else if (args.PropertyName == nameof(SettingsViewModel.CommandPaletteOpeningModeIndex))
+            {
+                boundOpeningModeIndex = viewModel.CommandPaletteOpeningModeIndex;
             }
             else if (args.PropertyName == nameof(SettingsViewModel.ShowQuickAccessShelf))
             {
@@ -53,16 +58,19 @@ public class SettingsViewModelTests
         foreach (var (compactMode, showShelf) in new[] { (true, true), (true, false), (false, true), (true, true) })
         {
             var previousCompactMode = boundCompactMode;
+            var previousOpeningModeIndex = boundOpeningModeIndex;
             var previousShowShelf = boundShowShelf;
             await Task.Run(() => settingsService.Object.UpdateSettings(
                 settings => settings with { CompactMode = compactMode, ShowQuickAccessShelf = showShelf }));
             expectedSaves++;
 
             Assert.AreEqual(previousCompactMode, boundCompactMode);
+            Assert.AreEqual(previousOpeningModeIndex, boundOpeningModeIndex);
             Assert.AreEqual(previousShowShelf, boundShowShelf);
             scheduler.ExecuteAllAvailable();
 
             Assert.AreEqual(compactMode, boundCompactMode);
+            Assert.AreEqual(compactMode ? 1 : 0, boundOpeningModeIndex);
             Assert.AreEqual(showShelf, boundShowShelf);
             Assert.AreEqual(compactMode && showShelf, boundCanConfigureShelf);
             Assert.AreSame(scheduler, notificationScheduler);

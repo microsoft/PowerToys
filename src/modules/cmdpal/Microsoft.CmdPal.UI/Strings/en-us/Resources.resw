@@ -406,14 +406,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Select search text when opened</value>
   </data>
-  <data name="Settings_GeneralPage_CompactMode_SettingsCard.Header" xml:space="preserve">
-    <value>Open with a compact search box</value>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_SettingsCard.Header" xml:space="preserve">
+    <value>How Command Palette opens</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_FullPalette.Text" xml:space="preserve">
+    <value>Full palette</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox.Text" xml:space="preserve">
+    <value>Compact search box</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_FullPalette_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Full palette</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Compact search box</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Header" xml:space="preserve">
     <value>Quick access shelf</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
-    <value>Show pinned and recent items below the search box while compact mode is collapsed.</value>
+    <value>Show pinned and recent items below the compact search box</value>
   </data>
   <data name="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard.Header" xml:space="preserve">
     <value>Alt+number shortcuts in lists</value>
@@ -517,7 +529,57 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Vertical search box position</value>
   </data>
   <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Description" xml:space="preserve">
-    <value>Move left to place it lower on the screen, or right to place it higher</value>
+    <value>Choose where the compact search box appears on the screen</value>
+  </data>
+  <data name="Settings_GeneralPage_CompactCenterHeight_Button.Content" xml:space="preserve">
+    <value>Choose position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Title" xml:space="preserve">
+    <value>Compact search box position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Heading.Text" xml:space="preserve">
+    <value>Move the compact search box</value>
+  </data>
+  <data name="CompactPositionPickerWindow_Instruction.Text" xml:space="preserve">
+    <value>Drag the preview or scroll to move.</value>
+  </data>
+  <data name="CompactPositionPickerWindow_KeyboardInstruction.Text" xml:space="preserve">
+    <value>Up/Down: move in small steps.
+Page Up/Down: move in larger steps.
+Home: highest position. End: lowest position.</value>
+  </data>
+  <data name="CompactPositionPickerWindow_PositionFormat" xml:space="preserve">
+    <value>Position: {0:0}% from bottom</value>
+    <comment>Screen reader position feedback. {0} is the vertical position as a percentage from the bottom of the work area.</comment>
+  </data>
+  <data name="CompactPositionPickerWindow_Preview.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search box position</value>
+  </data>
+  <data name="CompactPositionPickerWindow_ExpandedPreviewHint.Text" xml:space="preserve">
+    <value>Space for search results</value>
+  </data>
+  <data name="CompactPositionPickerWindow_ReservedAreaHint.Text" xml:space="preserve">
+    <value>Hatched areas are reserved for the taskbar and toolbars.</value>
+    <comment>Explains the diagonal shading outside the usable work area in the position picker.</comment>
+  </data>
+  <data name="CompactPositionPickerWindow_Root.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Compact search box position picker</value>
+  </data>
+  <data name="CompactPositionPickerWindow_DefaultButton.Content" xml:space="preserve">
+    <value>Default</value>
+    <comment>Restores the default vertical position of the compact search box.</comment>
+  </data>
+  <data name="CompactPositionPickerWindow_CancelButton.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CompactPositionPickerWindow_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="CompactPositionPickerWindow_CloseButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Close position picker</value>
+  </data>
+  <data name="CompactPositionPickerWindow_CloseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Header" xml:space="preserve">
     <value>Keep search text when reopened</value>
@@ -1393,6 +1455,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Pin to Dock</value>
     <comment>Drag-over caption shown when dragging a file or shortcut onto the dock to bookmark and pin it</comment>
   </data>
+  <data name="Dock_Drop_TimedOut" xml:space="preserve">
+    <value>Pinning to the dock took too long. Please try again.</value>
+    <comment>Toast shown when resolving dropped items times out before any bookmarks are pinned.</comment>
+  </data>
   <data name="Dock_AddBand_NoCommandsAvailable.Text" xml:space="preserve">
     <value>All available bands are already pinned.</value>
   </data>
@@ -1860,5 +1926,200 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_LanguageRestartFailed" xml:space="preserve">
     <value>Command Palette couldn't restart. Try again, or close and reopen Command Palette to apply the language change.</value>
     <comment>Shown when restarting Command Palette after a language change fails</comment>
+  </data>
+  <data name="SettingsWindow_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search settings, commands, and extensions (Ctrl+E)</value>
+  </data>
+  <data name="SettingsWindow_SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search settings, commands, and extensions</value>
+  </data>
+  <data name="SettingsWindow_SearchNoResults" xml:space="preserve">
+    <value>No results found</value>
+  </data>
+  <data name="SettingsWindow_SearchShowAllResults" xml:space="preserve">
+    <value>Show all {0} results</value>
+    <comment>{0} is the total number of search results, including those not shown in the suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchShowOneResult" xml:space="preserve">
+    <value>Show {0} result</value>
+    <comment>{0} is the number of search results. Used when there is exactly one result.</comment>
+  </data>
+  <data name="SettingsWindow_SearchPagesGroup" xml:space="preserve">
+    <value>Pages</value>
+    <comment>Heading for settings pages in grouped search results.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryPage" xml:space="preserve">
+    <value>Page</value>
+    <comment>Compact category tag for a settings page in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategorySettings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Compact category tag for an individual setting or settings section in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryExtension" xml:space="preserve">
+    <value>Extension</value>
+    <comment>Compact category tag for an extension in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryCommand" xml:space="preserve">
+    <value>Command</value>
+    <comment>Compact category tag for a configurable command in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchBreadcrumb" xml:space="preserve">
+    <value>{0} › {1}</value>
+    <comment>Search result location. {0} is the settings page title, {1} is the section title.</comment>
+  </data>
+  <data name="SettingsWindow_SearchResultsTitle" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="SettingsWindow_SearchResultsQuery" xml:space="preserve">
+    <value>Results for '{0}'</value>
+    <comment>{0} is the search query.</comment>
+  </data>
+  <data name="SettingsWindow_SearchEmptyState.Text" xml:space="preserve">
+    <value>No settings, commands, or extensions found. Try a different search term.</value>
+  </data>
+  <data name="SettingsSearch_Keywords_Shortcuts" xml:space="preserve">
+    <value>hotkey shortcut keyboard keybinding key combination</value>
+    <comment>Search aliases for keyboard shortcuts. Translate and add natural alternatives for your language; these words are not displayed.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_GoHome" xml:space="preserve">
+    <value>reset return home timeout delay</value>
+    <comment>Search aliases for automatically returning to the home page.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_PreviousQuery" xml:space="preserve">
+    <value>remember retain last previous search text query</value>
+    <comment>Search aliases for keeping the previous query.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_HighlightSearch" xml:space="preserve">
+    <value>select selection search text</value>
+    <comment>Search aliases for highlighting the search text on activation.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_TrayIcon" xml:space="preserve">
+    <value>taskbar notification area tray icon</value>
+    <comment>Search aliases for the system tray icon.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Quit" xml:space="preserve">
+    <value>quit exit close alt f4</value>
+    <comment>Search aliases for allowing Alt+F4 to close Command Palette.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Language" xml:space="preserve">
+    <value>locale localization translation display language</value>
+    <comment>Search aliases for the display language.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Links" xml:space="preserve">
+    <value>deep link deeplink uri url protocol external permissions consent</value>
+    <comment>Search aliases for external command links and their permissions.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_About" xml:space="preserve">
+    <value>version build license credits</value>
+    <comment>Search aliases for information about Command Palette.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Feedback" xml:space="preserve">
+    <value>bug issue report suggestion feedback</value>
+    <comment>Search aliases for sending feedback.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Appearance" xml:space="preserve">
+    <value>personalization customise customize look style visuals</value>
+    <comment>Search aliases for appearance settings.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Theme" xml:space="preserve">
+    <value>light dark mode system theme</value>
+    <comment>Search aliases for the light, dark, and system themes.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Backdrop" xml:space="preserve">
+    <value>acrylic mica blur transparent transparency material</value>
+    <comment>Search aliases for the window or dock backdrop material.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Background" xml:space="preserve">
+    <value>wallpaper picture image photo accent tint color colour colorization opacity</value>
+    <comment>Search aliases for background images and colors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockBackdrop" xml:space="preserve">
+    <value>acrylic blur transparent transparency material</value>
+    <comment>Search aliases for the dock backdrop material.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockBackground" xml:space="preserve">
+    <value>accent tint color colour colorization opacity</value>
+    <comment>Search aliases for dock background colors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Animations" xml:space="preserve">
+    <value>motion movement transitions effects reduce</value>
+    <comment>Search aliases for disabling animations.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_OpeningMode" xml:space="preserve">
+    <value>compact full mode expanded search box small mini minimal collapsed</value>
+    <comment>Search aliases for how Command Palette opens, including compact mode.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_QuickAccessShelf" xml:space="preserve">
+    <value>shelf quick access pinned</value>
+    <comment>Search aliases for the quick access shelf.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_History" xml:space="preserve">
+    <value>history recently used recent commands</value>
+    <comment>Search aliases for recently used commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_ClearHistory" xml:space="preserve">
+    <value>history recently used clear delete remove erase reset</value>
+    <comment>Search aliases for clearing recent commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_LaunchPosition" xml:space="preserve">
+    <value>window location screen monitor display cursor mouse center centre remember position</value>
+    <comment>Search aliases for where the Command Palette window opens.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_CompactPosition" xml:space="preserve">
+    <value>compact height offset top bottom center centre placement</value>
+    <comment>Search aliases for the vertical position of the compact search box.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Toast" xml:space="preserve">
+    <value>notification popup pop-up toast message indicator</value>
+    <comment>Search aliases for the toast notification position.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_SingleClick" xml:space="preserve">
+    <value>mouse click open run launch execute double-click</value>
+    <comment>Search aliases for activating commands with a single click.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AppDetails" xml:space="preserve">
+    <value>preview pane panel details information info expand sidebar</value>
+    <comment>Search aliases for automatically expanding app details, also known as the preview pane.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_GoBack" xml:space="preserve">
+    <value>back navigation previous page keyboard</value>
+    <comment>Search aliases for using Backspace to go back.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Escape" xml:space="preserve">
+    <value>esc dismiss hide close back keyboard</value>
+    <comment>Search aliases for Escape key behavior.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Extensions" xml:space="preserve">
+    <value>plugins plug-ins addons add-ons providers</value>
+    <comment>Search aliases for extensions and installed extension providers.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_FallbackOrder" xml:space="preserve">
+    <value>priority ranking reorder sort fallback commands</value>
+    <comment>Search aliases for ordering fallback commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockPosition" xml:space="preserve">
+    <value>location edge side top bottom left right</value>
+    <comment>Search aliases for the dock position.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockSize" xml:space="preserve">
+    <value>height width small compact large</value>
+    <comment>Search aliases for the dock size.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AlwaysOnTop" xml:space="preserve">
+    <value>foreground above windows overlay topmost</value>
+    <comment>Search aliases for keeping the dock above other windows.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AutoHide" xml:space="preserve">
+    <value>automatic hide reveal hover show</value>
+    <comment>Search aliases for automatically hiding the dock.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Monitors" xml:space="preserve">
+    <value>screens displays multiple primary secondary overrides</value>
+    <comment>Search aliases for configuring the dock on individual monitors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Gallery" xml:space="preserve">
+    <value>browse discover download install extensions plugins plug-ins addons add-ons store marketplace</value>
+    <comment>Search aliases for finding new extensions in the gallery.</comment>
   </data>
 </root>
